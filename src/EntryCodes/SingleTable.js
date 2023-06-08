@@ -1,0 +1,29 @@
+import React from "react";
+import { Box, Typography } from "@mui/material";
+import { CustomPalette } from "../constants/customPalette";
+import CodeGrid from "./CodeGrid";
+
+export default function SingleTable({ attribute, index, codeRefs }) {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+      }}
+    >
+      <Typography
+        sx={{
+          fontSize: 20,
+          fontWeight: "bold",
+          textAlign: "left",
+          margin: "1rem 0 1rem 0",
+          color: CustomPalette.BLUE_700,
+        }}
+      >
+        {attribute.Attribute}
+      </Typography>
+      <CodeGrid index={index} codeRefs={codeRefs} />
+    </Box>
+  );
+}
