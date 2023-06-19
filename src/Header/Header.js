@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Stack, Tooltip, Button, Box } from "@mui/material";
+import { Typography, Stack, Tooltip, Button, Box, Avatar } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import logo from '../assets/agri-logo.png';
 
 export default function Header({ currentPage }) {
   const [header, setHeader] = useState(currentPage);
@@ -63,12 +64,14 @@ export default function Header({ currentPage }) {
         borderColor: CustomPalette.GREY_300,
       }}
     >
+
       <Box sx={{ display: "flex", alignItems: "center" }}>
+        <img src={logo} style={{ width: '150px', marginRight: '20px' }} alt="Logo" />
         <Typography
           sx={{
             fontSize: 25,
             fontWeight: "bold",
-            color: CustomPalette.BLUE_700,
+            color: CustomPalette.PRIMARY,
             alignSelf: "center",
           }}
         >
@@ -111,7 +114,7 @@ export default function Header({ currentPage }) {
         >
           Help with this page
         </Button>
-        <Box>En</Box>
+        <Box sx={{ color: CustomPalette.PRIMARY }}>En</Box>
       </Stack>
     </Stack>
   );

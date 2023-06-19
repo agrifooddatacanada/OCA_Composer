@@ -151,7 +151,7 @@ export default function AddAttribute({
             variant="standard"
             inputProps={{
               style: {
-                color: CustomPalette.BLUE_500,
+                color: CustomPalette.PRIMARY,
                 fontWeight: "bold",
                 paddingLeft: "0.8rem",
               },
@@ -162,16 +162,16 @@ export default function AddAttribute({
                 borderBottomColor: CustomPalette.GREY_300,
               },
               "& .MuiInput-underline:after": {
-                borderBottomColor: CustomPalette.BLUE_700,
+                borderBottomColor: CustomPalette.PRIMARY,
               },
             }}
           />
           <Button onClick={handleAddRow} ref={addButton2}>
             <AddIcon
               sx={{
-                color: CustomPalette.BLUE_300,
+                color: CustomPalette.SECONDARY,
                 "&:hover": {
-                  color: CustomPalette.BLUE_500,
+                  color: CustomPalette.PRIMARY,
                   transform: "scale(1.1)",
                 },
               }}

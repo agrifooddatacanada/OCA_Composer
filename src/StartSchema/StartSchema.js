@@ -8,6 +8,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Context } from "../App";
 import { messages } from "../constants/messages";
 import { removeSpacesFromString } from "../constants/removeSpaces";
+import { CustomPalette } from "../constants/customPalette";
 
 export default function StartSchema({ pageForward }) {
   const {
@@ -30,14 +31,14 @@ export default function StartSchema({ pageForward }) {
         Papa.parse(file[0], {
           header: true,
           skipEmptyLines: "greedy",
-          transformHeader: function (header, index) {
+          transformHeader: function(header, index) {
             if (header !== "") {
               return header;
             }
             //without this, papaparse will save blank headers as "", "_1", "_2", etc.
             return `header_empty_placeholder_${index}`;
           },
-          complete: function (results) {
+          complete: function(results) {
             if (!results.data[0] && !results.meta.fields) {
               setDropMessage({
                 message: messages.noDataUploadFail,
@@ -368,7 +369,7 @@ export default function StartSchema({ pageForward }) {
             <Button
               variant="text"
               color="navButton"
-              sx={{ fontSize: "1.2rem" }}
+              sx={{ fontSize: "1.2rem", color: CustomPalette.PRIMARY }}
               onClick={pageForward}
             >
               Next <ArrowForwardIosIcon />

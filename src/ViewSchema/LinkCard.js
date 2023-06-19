@@ -16,7 +16,7 @@ export default function LinkCard({ setShowLink }) {
           height: "15.8rem",
           zIndex: 100,
           boxShadow: 10,
-          backgroundColor: CustomPalette.BLUE_300,
+          backgroundColor: CustomPalette.SECONDARY,
           display: "flex",
           flexDirection: "column",
         }}
@@ -27,9 +27,9 @@ export default function LinkCard({ setShowLink }) {
               setShowLink(false);
             }}
             sx={{
-              color: CustomPalette.BLUE_900,
+              color: CustomPalette.DARK,
               "&:hover": {
-                color: CustomPalette.BLUE_700,
+                color: CustomPalette.PRIMARY,
                 transform: "scale(1.1)",
               },
             }}
@@ -53,7 +53,7 @@ export default function LinkCard({ setShowLink }) {
           Upload your file to the following address:
           <br />
           <br />
-          <Link href="https://www.semanticengine.org/#/develop" target="_blank">
+          <Link href="https://www.semanticengine.org/#/develop" target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }}>
             https://www.semanticengine.org/#/develop
           </Link>
         </Box>

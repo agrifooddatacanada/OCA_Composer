@@ -37,8 +37,8 @@ export default function DropCard({ loading, dropDisabled, dropMessage }) {
     dropDisabled === true
       ? CustomPalette.GREY_600
       : hover === true
-      ? CustomPalette.BLUE_200
-      : CustomPalette.BLUE_300;
+        ? CustomPalette.SECONDARY
+        : CustomPalette.PRIMARY;
 
   return (
     <Box>
@@ -118,7 +118,8 @@ export default function DropCard({ loading, dropDisabled, dropMessage }) {
               sx={{
                 m: 2,
                 fontSize: "60px",
-                color: CustomPalette.GREEN_400,
+                // color: CustomPalette.GREEN_400,
+                color: CustomPalette.PRIMARY,
               }}
             />
           ) : (
@@ -139,7 +140,7 @@ export default function DropCard({ loading, dropDisabled, dropMessage }) {
               mb: 2,
               color:
                 dropDisabled === false
-                  ? CustomPalette.BLUE_300
+                  ? CustomPalette.PRIMARY
                   : CustomPalette.GREY_600,
               whiteSpace: "pre-line",
             }}

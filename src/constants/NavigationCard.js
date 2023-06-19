@@ -30,7 +30,7 @@ export default function NavigationCard({
           borderRadius: "0.5rem",
           backgroundColor: CustomPalette.WHITE,
           border: "1px solid",
-          borderColor: CustomPalette.BLUE_200,
+          borderColor: CustomPalette.PRIMARY,
         }}
       >
         <Box
@@ -39,13 +39,13 @@ export default function NavigationCard({
             justifyContent: "center",
             alignItems: "center",
             width: "100%",
-            backgroundColor: CustomPalette.BLUE_100,
+            backgroundColor: CustomPalette.RED_100,
             mb: 2,
           }}
         >
           <ErrorOutlineIcon
             sx={{
-              color: CustomPalette.BLUE_300,
+              color: CustomPalette.SECONDARY,
               p: 1,
               pl: 0,
               fontSize: 35,
@@ -70,7 +70,7 @@ export default function NavigationCard({
             onClick={() => {
               setShowCard(false);
             }}
-            sx={{ mr: 2 }}
+            sx={{ mr: 2, color: CustomPalette.PRIMARY, borderColor: CustomPalette.PRIMARY, ":hover": { borderColor: CustomPalette.SECONDARY, color: CustomPalette.SECONDARY } }}
           >
             Cancel
           </Button>
@@ -80,7 +80,7 @@ export default function NavigationCard({
             onClick={() => {
               handleForward();
             }}
-            sx={{ mr: 2 }}
+            sx={{ mr: 2, backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY } }}
           >
             Continue
           </Button>

@@ -31,7 +31,7 @@ export default function SchemaMetadata({
     useContext(Context);
 
   const toTitleCase = (str) => {
-    return str.toLowerCase().replace(/^(.)|\s(.)/g, function (match) {
+    return str.toLowerCase().replace(/^(.)|\s(.)/g, function(match) {
       return match.toUpperCase();
     });
   };
@@ -105,7 +105,7 @@ export default function SchemaMetadata({
         >
           <Button
             color="navButton"
-            sx={{ textAlign: "left", alignSelf: "flex-start" }}
+            sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
             onClick={pageBack}
           >
             <ArrowBackIosIcon /> Back
@@ -113,7 +113,7 @@ export default function SchemaMetadata({
           <Button
             color="navButton"
             onClick={handleForward}
-            sx={{ alignSelf: "flex-end" }}
+            sx={{ alignSelf: "flex-end", color: CustomPalette.PRIMARY }}
           >
             Next <ArrowForwardIosIcon />
           </Button>
@@ -153,7 +153,7 @@ export default function SchemaMetadata({
                 fontWeight: "bold",
                 textAlign: "left",
                 margin: "1rem 0 1rem 0",
-                color: CustomPalette.BLUE_700,
+                color: CustomPalette.PRIMARY,
                 width: "7rem",
               }}
             >
@@ -174,7 +174,7 @@ export default function SchemaMetadata({
               fontWeight: "bold",
               textAlign: "left",
               margin: "1rem 0 1rem 0",
-              color: CustomPalette.BLUE_700,
+              color: CustomPalette.PRIMARY,
             }}
           >
             Schema Description

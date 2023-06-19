@@ -98,7 +98,7 @@ export default function IsoCard({
           borderRadius: "0.5rem",
           backgroundColor: CustomPalette.WHITE,
           border: "1px solid",
-          borderColor: CustomPalette.BLUE_200,
+          borderColor: CustomPalette.RED_100,
           animation: appearAnimation,
         }}
       >
@@ -108,13 +108,13 @@ export default function IsoCard({
             justifyContent: "center",
             alignItems: "center",
             width: "100%",
-            backgroundColor: CustomPalette.BLUE_100,
+            backgroundColor: CustomPalette.RED_100,
             mb: 2,
           }}
         >
           <ErrorOutlineIcon
             sx={{
-              color: CustomPalette.BLUE_300,
+              color: CustomPalette.SECONDARY,
               p: 1,
               pl: 0,
               fontSize: 35,
@@ -162,7 +162,7 @@ export default function IsoCard({
               flexDirection: "column",
               justifyContent: "space-between",
               width: "13rem",
-              borderRight: `2px solid ${CustomPalette.BLUE_100}`,
+              borderRight: `2px solid ${CustomPalette.RED_100}`,
               paddingRight: 4.3,
               paddingTop: 2,
             }}

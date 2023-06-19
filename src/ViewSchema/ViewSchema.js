@@ -95,12 +95,12 @@ export default function ViewSchema({ pageBack }) {
           sx={{
             backgroundColor:
               currentLanguage === language
-                ? CustomPalette.BLUE_900
-                : CustomPalette.BLUE_300,
+                ? CustomPalette.PRIMARY
+                : CustomPalette.SECONDARY,
             borderRadius,
             minWidth: languages.length < 5 ? "12rem" : "10rem",
             boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.BLUE_700}`,
+            border: `0.5px solid ${CustomPalette.PRIMARY}`,
           }}
         >
           <Typography variant="button">{minimizedLanguage}</Typography>
@@ -178,7 +178,7 @@ export default function ViewSchema({ pageBack }) {
       >
         <Button
           color="navButton"
-          sx={{ textAlign: "left", alignSelf: "flex-start" }}
+          sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
           onClick={pageBack}
         >
           <ArrowBackIosIcon /> Back
@@ -202,7 +202,7 @@ export default function ViewSchema({ pageBack }) {
               sx={{
                 fontSize: 22,
                 fontWeight: "bold",
-                color: CustomPalette.BLUE_700,
+                color: CustomPalette.PRIMARY,
               }}
             >
               Schema Language
@@ -232,7 +232,7 @@ export default function ViewSchema({ pageBack }) {
             sx={{
               fontSize: 28,
               fontWeight: "bold",
-              color: CustomPalette.BLUE_700,
+              color: CustomPalette.PRIMARY,
               mb: 2,
               wordWrap: "break-word",
               textAlign: "left",
@@ -253,7 +253,7 @@ export default function ViewSchema({ pageBack }) {
               sx={{
                 fontSize: 22,
                 fontWeight: "bold",
-                color: CustomPalette.BLUE_700,
+                color: CustomPalette.PRIMARY,
               }}
             >
               Schema Metadata
@@ -282,7 +282,7 @@ export default function ViewSchema({ pageBack }) {
               sx={{
                 fontSize: 22,
                 fontWeight: "bold",
-                color: CustomPalette.BLUE_700,
+                color: CustomPalette.PRIMARY,
               }}
             >
               Schema Details
