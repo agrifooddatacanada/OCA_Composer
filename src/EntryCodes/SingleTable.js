@@ -18,7 +18,7 @@ export default function SingleTable({ attribute, index, codeRefs }) {
           fontWeight: "bold",
           textAlign: "left",
           margin: "1rem 0 1rem 0",
-          color: CustomPalette.BLUE_700,
+          color: CustomPalette.PRIMARY,
         }}
       >
         {attribute.Attribute}

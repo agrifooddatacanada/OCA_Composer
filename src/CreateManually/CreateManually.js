@@ -358,7 +358,7 @@ export default function CreateManually() {
           width: "100%",
         }}
       >
-        <Button onClick={() => handleBack()} sx={{ m: 3 }}>
+        <Button color="button" onClick={() => handleBack()} sx={{ m: 3 }}>
           <ArrowBackIosIcon />
           Back
         </Button>
@@ -382,7 +382,7 @@ export default function CreateManually() {
             {forwardErrorMessage}
           </Alert>
         )}
-        <Button onClick={() => handleForward()} sx={{ m: "0.4rem" }}>
+        <Button color="button" onClick={() => handleForward()} sx={{ m: "0.4rem" }}>
           Forward
           <ArrowForwardIosIcon />
         </Button>
@@ -392,7 +392,7 @@ export default function CreateManually() {
           sx={{
             fontSize: 35,
             fontWeight: "bold",
-            color: CustomPalette.BLUE_700,
+            color: CustomPalette.PRIMARY,
             p: 0,
           }}
         >

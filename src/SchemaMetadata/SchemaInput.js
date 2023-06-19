@@ -96,7 +96,7 @@ export default function SchemaInput({
                   onClick={handleDelete}
                   sx={{
                     pr: 1,
-                    color: CustomPalette.BLUE_300,
+                    color: CustomPalette.PRIMARY,
                     transform: "scale(1.2)",
                     transition: "all 0.2s ease-in-out",
                   }}

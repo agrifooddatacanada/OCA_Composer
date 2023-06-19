@@ -102,12 +102,12 @@ export default function LanguageDetails({ pageBack, pageForward }) {
           sx={{
             backgroundColor:
               currentLanguage === language
-                ? CustomPalette.BLUE_900
-                : CustomPalette.BLUE_300,
+                ? CustomPalette.PRIMARY
+                : CustomPalette.SECONDARY,
             borderRadius,
             width: languages.length < 5 ? "12rem" : "8.335rem",
             boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.BLUE_700}`,
+            border: `0.5px solid ${CustomPalette.PRIMARY}`,
           }}
         >
           <Typography noWrap={true} variant="button">
@@ -155,7 +155,7 @@ export default function LanguageDetails({ pageBack, pageForward }) {
           <Button
             color="navButton"
             onClick={pageForwardSave}
-            sx={{ alignSelf: "flex-end" }}
+            sx={{ alignSelf: "flex-end", color: CustomPalette.PRIMARY }}
           >
             Next <ArrowForwardIosIcon />
           </Button>

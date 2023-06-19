@@ -236,7 +236,7 @@ export default function CodeGrid({ index, codeRefs }) {
               <DeleteForeverIcon
                 onClick={() => handleDeleteRow(index)}
                 sx={{
-                  color: CustomPalette.BLUE_300,
+                  color: CustomPalette.PRIMARY,
                 }}
               />
             ) : (
