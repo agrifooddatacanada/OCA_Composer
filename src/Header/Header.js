@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Stack, Tooltip, Button, Box, Avatar } from "@mui/material";
+import { Typography, Stack, Tooltip, Button, Box } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import logo from '../assets/agri-logo.png';
@@ -7,7 +7,7 @@ import logo from '../assets/agri-logo.png';
 export default function Header({ currentPage }) {
   const [header, setHeader] = useState(currentPage);
   const [toolTipText, setToolTipText] = useState("");
-  const [headerLink, setHeaderLink] = useState(
+  const [headerLink] = useState(
     "https://agrifooddatacanada.ca/semantic-engine/"
   );
   //Sets headers and tooltip Text based on current page
