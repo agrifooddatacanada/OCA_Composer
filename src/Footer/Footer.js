@@ -22,12 +22,10 @@ export default function Footer() {
           padding: "2rem",
           cursor: 'pointer'
         }}
-
-        onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })}
       >
-        <img src={logoUoG} style={{ height: '60px' }} alt="University of Guelph Logo" />
-        <img src={logoAgri} style={{ height: '60px' }} alt="Agri Logo" />
-        <img src={logoSE} style={{ height: '60px' }} alt="Semantic Engine Logo" />
+        <img src={logoUoG} style={{ height: '60px' }} alt="University of Guelph Logo" onClick={() => window.open('https://www.uoguelph.ca/', '_blank')} />
+        <img src={logoAgri} style={{ height: '60px' }} alt="Agri Logo" onClick={() => window.open('https://agrifooddatacanada.ca/', '_blank')} />
+        <img src={logoSE} style={{ height: '60px' }} alt="Semantic Engine Logo" onClick={() => window.open('https://www.semanticengine.org/#/', '_blank')} />
       </Stack>
     </Stack >
   );
