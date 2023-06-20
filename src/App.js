@@ -1,17 +1,19 @@
 import "./App.css";
 import { Box, ThemeProvider } from "@mui/material";
-import StartSchema from "./StartSchema/StartSchema";
 import { CustomTheme } from "./constants/theme";
-import Header from "./Header/Header";
 import { useState } from "react";
-import SchemaMetadata from "./SchemaMetadata/SchemaMetadata";
-import AttributeDetails from "./AttributeDetails/AttributeDetails";
 import { useEffect, createContext } from "react";
-import EntryCodes from "./EntryCodes/EntryCodes";
-import LanguageDetails from "./LanguageDetails/LanguageDetails";
-import ViewSchema from "./ViewSchema/ViewSchema";
-import CreateManually from "./CreateManually/CreateManually";
+import Home from "./Home";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import AddEntryCodesHelp from "./UsersHelp/Add_Entry_Codes_Help";
+import Header from "./Header/Header";
 import Footer from "./Footer/Footer";
+import AttributeDetailsHelp from "./UsersHelp/Attribute_Details_Help";
+import CreatingOCASchemaHelp from "./UsersHelp/Creating_OCA_Schema_Help";
+import LanguageAttributeHelp from "./UsersHelp/Language_Attribute_Help";
+import SchemaMetadataHelp from "./UsersHelp/Schema_Metadata_Help";
+import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
+import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
 
 export const Context = createContext();
 
@@ -185,30 +187,22 @@ function App() {
         >
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Header currentPage={currentPage} />
-            <Box sx={{ flex: 1 }}>
-              {currentPage === "Start" && (
-                <StartSchema pageForward={pageForward} />
-              )}
-              {currentPage === "Metadata" && (
-                <SchemaMetadata
-                  pageBack={pageBack}
-                  pageForward={pageForward}
-                  showIntroCard={showIntroCard}
-                  setShowIntroCard={setShowIntroCard}
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Home currentPage={currentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
+                <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
+                <Route path="/attribute_details_help" element={<AttributeDetailsHelp />} />
+                <Route path="/creating_oca_schema_help" element={<CreatingOCASchemaHelp />} />
+                <Route path="/language_attribute_help" element={<LanguageAttributeHelp />} />
+                <Route path="/schema_metadata_help" element={<SchemaMetadataHelp />} />
+                <Route path="/start_schema_help" element={<StartSchemaHelp />} />
+                <Route path="/view_schema_help" element={<ViewSchemaHelp />} />
+                <Route
+                  path="*"
+                  element={<Navigate to="/" />}
                 />
-              )}
-              {currentPage === "Details" && (
-                <AttributeDetails pageBack={pageBack} pageForward={pageForward} />
-              )}
-              {currentPage === "Codes" && <EntryCodes />}
-
-              {currentPage === "LanguageDetails" && (
-                <LanguageDetails pageBack={pageBack} pageForward={pageForward} />
-              )}
-              {currentPage === "View" && <ViewSchema pageBack={pageBack} />}
-              {currentPage === "Create" && <CreateManually />}
-
-            </Box>
+              </Routes>
+            </BrowserRouter>
             <Footer />
           </Box>
         </Context.Provider>
