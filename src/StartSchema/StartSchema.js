@@ -346,7 +346,7 @@ export default function StartSchema({ pageForward }) {
   }, [loading]);
 
   return (
-    <Box sx={{ pt: 5, pb: 3 }}>
+    <Box sx={{ mt: 5, mb: 3 }}>
       <StartIntro />
       <Box
         display="flex"

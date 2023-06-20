@@ -183,7 +183,7 @@ function App() {
             setCustomIsos,
           }}
         >
-          <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Header currentPage={currentPage} />
             <Box sx={{ flex: 1 }}>
               {currentPage === "Start" && (
@@ -207,6 +207,7 @@ function App() {
               )}
               {currentPage === "View" && <ViewSchema pageBack={pageBack} />}
               {currentPage === "Create" && <CreateManually />}
+
             </Box>
             <Footer />
           </Box>
