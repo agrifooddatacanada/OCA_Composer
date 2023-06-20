@@ -11,6 +11,7 @@ import EntryCodes from "./EntryCodes/EntryCodes";
 import LanguageDetails from "./LanguageDetails/LanguageDetails";
 import ViewSchema from "./ViewSchema/ViewSchema";
 import CreateManually from "./CreateManually/CreateManually";
+import Footer from "./Footer/Footer";
 
 export const Context = createContext();
 
@@ -182,29 +183,33 @@ function App() {
             setCustomIsos,
           }}
         >
-          <Box>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Header currentPage={currentPage} />
-            {currentPage === "Start" && (
-              <StartSchema pageForward={pageForward} />
-            )}
-            {currentPage === "Metadata" && (
-              <SchemaMetadata
-                pageBack={pageBack}
-                pageForward={pageForward}
-                showIntroCard={showIntroCard}
-                setShowIntroCard={setShowIntroCard}
-              />
-            )}
-            {currentPage === "Details" && (
-              <AttributeDetails pageBack={pageBack} pageForward={pageForward} />
-            )}
-            {currentPage === "Codes" && <EntryCodes />}
+            <Box sx={{ flex: 1 }}>
+              {currentPage === "Start" && (
+                <StartSchema pageForward={pageForward} />
+              )}
+              {currentPage === "Metadata" && (
+                <SchemaMetadata
+                  pageBack={pageBack}
+                  pageForward={pageForward}
+                  showIntroCard={showIntroCard}
+                  setShowIntroCard={setShowIntroCard}
+                />
+              )}
+              {currentPage === "Details" && (
+                <AttributeDetails pageBack={pageBack} pageForward={pageForward} />
+              )}
+              {currentPage === "Codes" && <EntryCodes />}
 
-            {currentPage === "LanguageDetails" && (
-              <LanguageDetails pageBack={pageBack} pageForward={pageForward} />
-            )}
-            {currentPage === "View" && <ViewSchema pageBack={pageBack} />}
-            {currentPage === "Create" && <CreateManually />}
+              {currentPage === "LanguageDetails" && (
+                <LanguageDetails pageBack={pageBack} pageForward={pageForward} />
+              )}
+              {currentPage === "View" && <ViewSchema pageBack={pageBack} />}
+              {currentPage === "Create" && <CreateManually />}
+
+            </Box>
+            <Footer />
           </Box>
         </Context.Provider>
       </ThemeProvider>
