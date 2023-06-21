@@ -1,14 +1,12 @@
 import "./App.css";
 import { Box } from "@mui/material";
 import StartSchema from "./StartSchema/StartSchema";
-import Header from "./Header/Header";
 import SchemaMetadata from "./SchemaMetadata/SchemaMetadata";
 import AttributeDetails from "./AttributeDetails/AttributeDetails";
 import EntryCodes from "./EntryCodes/EntryCodes";
 import LanguageDetails from "./LanguageDetails/LanguageDetails";
 import ViewSchema from "./ViewSchema/ViewSchema";
 import CreateManually from "./CreateManually/CreateManually";
-import Footer from "./Footer/Footer";
 
 const Home = ({ currentPage, pageForward, pageBack, showIntroCard, setShowIntroCard }) => {
   return (

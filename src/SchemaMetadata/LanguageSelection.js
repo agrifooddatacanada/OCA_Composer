@@ -1,8 +1,7 @@
 import { Box } from "@mui/system";
-import { Button, TextField, Alert } from "@mui/material";
+import { Button, Alert } from "@mui/material";
 import React, { useContext, useState } from "react";
 import { CustomPalette } from "../constants/customPalette";
-import AddIcon from "@mui/icons-material/Add";
 import { Context } from "../App";
 import { removeSpacesFromString } from "../constants/removeSpaces";
 import { allLanguagesWithCodesArray } from "../constants/isoCodes";
@@ -33,7 +32,6 @@ export default function LanguageSelection({
 }) {
   const { languages, setLanguages, schemaDescription, setSchemaDescription } =
     useContext(Context);
-  const [newLanguage, setNewLanguage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const toTitleCase = (str) => {
@@ -119,11 +117,6 @@ export default function LanguageSelection({
     }
   };
 
-  const handleLanguageField = (e) => {
-    e.preventDefault();
-    setNewLanguage(e.target.value);
-  };
-
   const languageDisplay = languageList.map((item) => {
     return (
       <Button
@@ -176,48 +169,6 @@ export default function LanguageSelection({
       )}
 
       {languageDisplay}
-      <Button
-        sx={{
-          color: CustomPalette.DARK,
-          borderRadius: 0,
-          mr: -2,
-        }}
-      >
-        <TextField
-          id="customLanguageField"
-          type="text"
-          onChange={handleLanguageField}
-          placeholder="Other"
-          size="small"
-          variant="standard"
-          inputProps={{
-            style: {
-              color: CustomPalette.PRIMARY,
-              fontWeight: "bold",
-              paddingLeft: "0.8rem",
-            },
-          }}
-          sx={{
-            width: "9rem",
-            "& .MuiInput-underline:before": {
-              borderBottomColor: CustomPalette.GREY_300,
-            },
-            "& .MuiInput-underline:after": {
-              borderBottomColor: CustomPalette.PRIMARY,
-            },
-          }}
-        />
-        <AddIcon
-          onClick={() => addLanguage(newLanguage)}
-          sx={{
-            color: CustomPalette.SECONDARY,
-            "&:hover": {
-              color: CustomPalette.PRIMARY,
-              transform: "scale(1.1)",
-            },
-          }}
-        />
-      </Button>
     </Box>
   );
 }
