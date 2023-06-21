@@ -1,6 +1,6 @@
 import React from "react";
-import { Box, Link, Typography } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
+import { Box, Typography } from "@mui/material";
+import CustomAnchorLink from "../components/CustomAnchorLink";
 
 export default function StartIntro() {
   return (
@@ -8,13 +8,10 @@ export default function StartIntro() {
       <Typography variant="h5">
         <Box sx={{ m: 2, pb: 3 }}>
           Welcome to{" "}
-          <Link href="https://agrifooddatacanada.ca/" target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }}>
-            Agri-food Data Canada
-          </Link>
+          <CustomAnchorLink link="https://agrifooddatacanada.ca/" text="Agri-food Data Canada" />
           's web-based schema writer for creating <br />
-          <Link href="https://oca.colossi.network/" target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }}>
-            Overlays Capture Architecture
-          </Link>{" "}
+          <CustomAnchorLink link="https://oca.colossi.network/" text="Overlays Capture Architecture" />
+          {" "}
           (OCA) schemas.
         </Box>
       </Typography>
@@ -28,9 +25,8 @@ export default function StartIntro() {
           Overlays Capture Architecture is an international, open standard for
           writing machine-actionable data schemas stewarded by the Swiss
           non-profit{" "}
-          <Link href="https://humancolossus.foundation/" target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }}>
-            Human Colossus Foundation
-          </Link>{" "}
+          <CustomAnchorLink link="https://humancolossus.foundation/" text="Human Colossus Foundation" />
+          {" "}
           and adopted by Agri-food Data Canada (ADC).
         </Box>
         <Box sx={{ m: 2 }}>
@@ -40,9 +36,7 @@ export default function StartIntro() {
           these semantic artifacts together with your datasets which will help
           make your data more Findable, Accessible, Interoperable, and Reusable
           (
-          <Link href="https://www.go-fair.org/fair-principles/" target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }}>
-            FAIR
-          </Link>
+          <CustomAnchorLink link="https://www.go-fair.org/fair-principles/" text="FAIR" />
           ).
         </Box>
       </Typography>
