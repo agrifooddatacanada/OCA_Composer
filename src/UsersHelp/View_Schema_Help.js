@@ -1,6 +1,6 @@
-import { Box, Link, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import React from 'react';
-import { CustomPalette } from '../constants/customPalette';
+import CustomAnchorLink from '../components/CustomAnchorLink';
 
 const ViewSchemaHelp = () => {
   return (
@@ -26,11 +26,11 @@ const ViewSchemaHelp = () => {
       </Typography>
       <br />
       <Typography variant="body1">
-        The Excel template with the schema information can be parsed into a machine actionable, standard representation of the schema called <Link target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }} href='https://oca.colossi.network/'>Overlays Capture Architecture (OCA)</Link>.
+        The Excel template with the schema information can be parsed into a machine actionable, standard representation of the schema called <CustomAnchorLink link='https://oca.colossi.network/' text="Overlays Capture Architecture (OCA)" />.
       </Typography>
       <br />
       <Typography variant="body1">
-        The <Link target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }} href='https://www.semanticengine.org/#/'>SemanticEngine.org</Link> website is where you will find the <Link target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }} href='https://www.semanticengine.org/#/develop'>XLS to OCA Converter</Link> which converts the Excel Template to the OCA Bundle.
+        The <CustomAnchorLink link='https://www.semanticengine.org/#/' text="SemanticEngine.org" /> website is where you will find the <CustomAnchorLink link='https://www.semanticengine.org/#/develop' text="XLS to OCA Converter" /> which converts the Excel Template to the OCA Bundle.
       </Typography>
       <br />
       <Typography variant="body1">
@@ -50,7 +50,7 @@ const ViewSchemaHelp = () => {
       </Typography>
       <br />
       <Typography variant="body1">
-        Overlays Capture Architecture is a machine-readable way to encode a schema expressed in the JSON scripting language. You can view the JSON file contents using a text editor such as Notepad in Windows but since JSON files do not usually contain line breaks it is easier to read using a <Link target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }} href='https://jsonformatter.curiousconcept.com/'>JSON viewer</Link> or in the JSON viewer when you <Link target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }} href='https://www.semanticengine.org/#/validate'>validate your schema bundle</Link>.
+        Overlays Capture Architecture is a machine-readable way to encode a schema expressed in the JSON scripting language. You can view the JSON file contents using a text editor such as Notepad in Windows but since JSON files do not usually contain line breaks it is easier to read using a <CustomAnchorLink link='https://jsonformatter.curiousconcept.com/' text="JSON viewer" /> or in the JSON viewer when you <CustomAnchorLink link='https://www.semanticengine.org/#/validate' text="validate your schema bundle" />.
       </Typography>
       <br />
       <Typography variant="h3" component="h3">

@@ -1,6 +1,6 @@
-import { Box, Link, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import React from 'react';
-import { CustomPalette } from '../constants/customPalette';
+import CustomAnchorLink from '../components/CustomAnchorLink';
 
 const SchemaMetadataHelp = () => {
   return (
@@ -30,7 +30,7 @@ const SchemaMetadataHelp = () => {
       </Typography>
       <br />
       <Typography variant="body1" component="p">
-        Languages are referenced in the OCA schema by their <Link href='https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes' target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }}>2 letter ISO language code</Link>. You can add multiple languages to your schema by selecting the languages you want to support here.
+        Languages are referenced in the OCA schema by their <CustomAnchorLink link='https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes' text="2 letter ISO language code" />. You can add multiple languages to your schema by selecting the languages you want to support here.
       </Typography>
     </Box>
   );

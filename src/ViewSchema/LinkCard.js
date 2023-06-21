@@ -1,7 +1,8 @@
 import React from "react";
-import { Card, Box, Link } from "@mui/material";
+import { Card, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { CustomPalette } from "../constants/customPalette";
+import CustomAnchorLink from "../components/CustomAnchorLink";
 
 export default function LinkCard({ setShowLink }) {
   return (
@@ -53,9 +54,7 @@ export default function LinkCard({ setShowLink }) {
           Upload your file to the following address:
           <br />
           <br />
-          <Link href="https://www.semanticengine.org/#/develop" target="_blank" sx={{ color: CustomPalette.SECONDARY, textDecorationColor: CustomPalette.SECONDARY }}>
-            https://www.semanticengine.org/#/develop
-          </Link>
+          <CustomAnchorLink link='https://www.semanticengine.org/#/develop' text="https://www.semanticengine.org/#/develop" />
         </Box>
       </Card>
     </Box>
