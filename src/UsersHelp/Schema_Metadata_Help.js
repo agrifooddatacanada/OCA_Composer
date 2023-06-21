@@ -1,38 +1,33 @@
-import { Box, Typography } from '@mui/material';
 import React from 'react';
 import CustomAnchorLink from '../components/CustomAnchorLink';
+import HelpPageContainer from '../components/HelpPageContainer';
+import HelpPageH2Title from '../components/HelpPageH2Title';
+import HelpPageH3Title from '../components/HelpPageH3Title';
+import TypographyTag from '../components/TypographyTag';
 
 const SchemaMetadataHelp = () => {
   return (
-    <Box sx={{ flex: 1, textAlign: 'left', padding: '1.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
-      <Typography variant="h2" component="h2" sx={{ fontWeight: 'normal' }}>
-        Schema Metadata
-      </Typography>
+    <HelpPageContainer>
+      <HelpPageH2Title text="Schema Metadata" />
       <br />
-      <Typography variant="h3" component="h3">
-        Attributes
-      </Typography>
+      <HelpPageH3Title text="Attributes" />
       <br />
-      <Typography variant="body1" component="p" sx={{ fontSize: 20 }}>
+      <TypographyTag>
         This list of attributes was generated either manually, or read from an uploaded dataset. If these attribute labels need to be changed you will be able to do this on the next pages.
-      </Typography>
+      </TypographyTag>
       <br />
-      <Typography variant="h3" component="h3">
-        Schema Description
-      </Typography>
+      <HelpPageH3Title text="Schema Description" />
       <br />
-      <Typography variant="body1" component="p" sx={{ fontSize: 20 }}>
+      <TypographyTag>
         The OCA language for writing schemas lets users easily add multiple language support to their schemas. By default the schema begings with English language where you can add a schema title and description. The title and description should help anyone find and use your schema to help them understand how to interpret an associated dataset.
-      </Typography>
+      </TypographyTag>
       <br />
-      <Typography variant="h3" component="h3">
-        Adding a language
-      </Typography>
+      <HelpPageH3Title text="Adding a language" />
       <br />
-      <Typography variant="body1" component="p" sx={{ fontSize: 20 }}>
+      <TypographyTag>
         Languages are referenced in the OCA schema by their <CustomAnchorLink link='https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes' text="2 letter ISO language code" />. You can add multiple languages to your schema by selecting the languages you want to support here.
-      </Typography>
-    </Box>
+      </TypographyTag>
+    </HelpPageContainer>
   );
 };
 

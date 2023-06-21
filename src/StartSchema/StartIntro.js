@@ -7,12 +7,7 @@ export default function StartIntro() {
     <Box width="80%" margin="auto">
       <Typography variant="h5">
         <Box sx={{ m: 2, pb: 3 }}>
-          Welcome to{" "}
-          <CustomAnchorLink link="https://agrifooddatacanada.ca/" text="Agri-food Data Canada" />
-          's web-based schema writer for creating <br />
-          <CustomAnchorLink link="https://oca.colossi.network/" text="Overlays Capture Architecture" />
-          {" "}
-          (OCA) schemas.
+          Welcome to Agri-food Data Canada's schema writer for helping researchers write better, machine-actionable, context for their research data.
         </Box>
       </Typography>
       <Typography
@@ -22,24 +17,14 @@ export default function StartIntro() {
         textAlign={"left"}
       >
         <Box sx={{ m: 2 }}>
-          Overlays Capture Architecture is an international, open standard for
-          writing machine-actionable data schemas stewarded by the Swiss
-          non-profit{" "}
-          <CustomAnchorLink link="https://humancolossus.foundation/" text="Human Colossus Foundation" />
-          {" "}
-          and adopted by Agri-food Data Canada (ADC).
+          Briefly, schemas describe the attributes (variable names/column headers) of your dataset and help make your data more useful (more FAIR). Using the Agri-food Data Canada schema editor, you can write a schema for your data sets. Using the language of Overlays Capture Architecture (OCA) you can easily write human- and machine-actionable descriptions of your data which you can store with your data, share with your data or deposit with your data. If your schema is of general interest you can also deposit it to be cited as an independent research object, contributing to data standardization and interoperability.
         </Box>
         <Box sx={{ m: 2 }}>
-          At the end of this process, you will be able to download a
-          machine-actionable OCA version of your schema as well as the Excel
-          Template which is a more human readable format. You can store both of
-          these semantic artifacts together with your datasets which will help
-          make your data more Findable, Accessible, Interoperable, and Reusable
-          (
-          <CustomAnchorLink link="https://www.go-fair.org/fair-principles/" text="FAIR" />
-          ).
+          To learn more about schemas and the OCA schema specification <CustomAnchorLink link="https://agrifooddatacanada.ca/semantic-engine/" text="read our introduction on the ADC webpage" />.
         </Box>
       </Typography>
+      <br />
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/r8VIIBWmL_k" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
     </Box>
   );
 }

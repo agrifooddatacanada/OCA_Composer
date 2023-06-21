@@ -190,7 +190,8 @@ export default function SchemaMetadata({
               alignSelf: "flex-end",
               position: "absolute",
               zIndex: "1000",
-              top: -300,
+              // top: -300,
+              top: -260,
               width: "100%",
             }}
           >

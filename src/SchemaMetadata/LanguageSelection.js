@@ -1,8 +1,7 @@
 import { Box } from "@mui/system";
-import { Button, TextField, Alert } from "@mui/material";
+import { Button, Alert } from "@mui/material";
 import React, { useContext, useState } from "react";
 import { CustomPalette } from "../constants/customPalette";
-import AddIcon from "@mui/icons-material/Add";
 import { Context } from "../App";
 import { removeSpacesFromString } from "../constants/removeSpaces";
 import { allLanguagesWithCodesArray } from "../constants/isoCodes";
@@ -33,7 +32,7 @@ export default function LanguageSelection({
 }) {
   const { languages, setLanguages, schemaDescription, setSchemaDescription } =
     useContext(Context);
-  const [newLanguage, setNewLanguage] = useState("");
+  // const [newLanguage, setNewLanguage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const toTitleCase = (str) => {
@@ -119,10 +118,11 @@ export default function LanguageSelection({
     }
   };
 
-  const handleLanguageField = (e) => {
-    e.preventDefault();
-    setNewLanguage(e.target.value);
-  };
+  // const handleLanguageField = (e) => {
+  //   e.preventDefault();
+  //   setNewLanguage(e.target.value);
+  // };
+
 
   const languageDisplay = languageList.map((item) => {
     return (
@@ -176,7 +176,7 @@ export default function LanguageSelection({
       )}
 
       {languageDisplay}
-      <Button
+      {/* <Button
         sx={{
           color: CustomPalette.DARK,
           borderRadius: 0,
@@ -217,7 +217,7 @@ export default function LanguageSelection({
             },
           }}
         />
-      </Button>
+      </Button> */}
     </Box>
   );
 }
