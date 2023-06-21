@@ -32,6 +32,7 @@ export default function LanguageSelection({
 }) {
   const { languages, setLanguages, schemaDescription, setSchemaDescription } =
     useContext(Context);
+  // const [newLanguage, setNewLanguage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const toTitleCase = (str) => {
@@ -117,6 +118,12 @@ export default function LanguageSelection({
     }
   };
 
+  // const handleLanguageField = (e) => {
+  //   e.preventDefault();
+  //   setNewLanguage(e.target.value);
+  // };
+
+
   const languageDisplay = languageList.map((item) => {
     return (
       <Button
@@ -169,6 +176,48 @@ export default function LanguageSelection({
       )}
 
       {languageDisplay}
+      {/* <Button
+        sx={{
+          color: CustomPalette.BLUE_900,
+          borderRadius: 0,
+          mr: -2,
+        }}
+      >
+        <TextField
+          id="customLanguageField"
+          type="text"
+          onChange={handleLanguageField}
+          placeholder="Other"
+          size="small"
+          variant="standard"
+          inputProps={{
+            style: {
+              color: CustomPalette.BLUE_500,
+              fontWeight: "bold",
+              paddingLeft: "0.8rem",
+            },
+          }}
+          sx={{
+            width: "9rem",
+            "& .MuiInput-underline:before": {
+              borderBottomColor: CustomPalette.GREY_300,
+            },
+            "& .MuiInput-underline:after": {
+              borderBottomColor: CustomPalette.BLUE_700,
+            },
+          }}
+        />
+        <AddIcon
+          onClick={() => addLanguage(newLanguage)}
+          sx={{
+            color: CustomPalette.BLUE_300,
+            "&:hover": {
+              color: CustomPalette.BLUE_500,
+              transform: "scale(1.1)",
+            },
+          }}
+        />
+      </Button> */}
     </Box>
   );
 }
