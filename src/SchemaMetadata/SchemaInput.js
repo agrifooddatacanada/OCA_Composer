@@ -6,12 +6,14 @@ import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { languageCodesObject } from "../constants/isoCodes";
+import Classification from "./Classification";
 
 export default function SchemaInput({
   language,
   setShowIsoInput,
   setEditingLanguage,
 }) {
+
   const {
     schemaDescription,
     setSchemaDescription,
@@ -64,7 +66,7 @@ export default function SchemaInput({
           display: "flex",
           flexDirection: "column",
           mt: 1,
-          height: "8rem",
+          height: "10.5rem",
         }}
       >
         <Box
@@ -118,7 +120,7 @@ export default function SchemaInput({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            height: "3rem",
+
           }}
         >
           <Box>
@@ -142,6 +144,7 @@ export default function SchemaInput({
             </Button>
           )}
         </Box>
+        {language === 'English' && <Classification />}
       </Box>
 
       <Box sx={{ display: "flex", flexDirection: "column" }}>
