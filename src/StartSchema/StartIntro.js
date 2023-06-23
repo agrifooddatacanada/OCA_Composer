@@ -5,11 +5,6 @@ import CustomAnchorLink from "../components/CustomAnchorLink";
 export default function StartIntro() {
   return (
     <Box width="80%" margin="auto">
-      <Typography variant="h5">
-        <Box sx={{ m: 2, pb: 3 }}>
-          Welcome to Agri-food Data Canada's schema writer for helping researchers write better, machine-actionable, context for their research data.
-        </Box>
-      </Typography>
       <Typography
         variant="subtitle1"
         width="67%"

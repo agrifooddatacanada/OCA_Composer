@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Button, Box } from "@mui/material";
+import { Button, Box, Typography } from "@mui/material";
 import StartIntro from "./StartIntro";
 import Drop from "./Drop";
 import Papa from "papaparse";
@@ -347,7 +347,13 @@ export default function StartSchema({ pageForward }) {
 
   return (
     <Box sx={{ mt: 5, mb: 3 }}>
-      <StartIntro />
+      <Box width="80%" margin="auto">
+        <Typography variant="h5">
+          <Box sx={{ marginTop: 2 }}>
+            Welcome to Agri-food Data Canada's schema writer for helping researchers write better, machine-actionable, context for their research data.
+          </Box>
+        </Typography>
+      </Box>
       <Box
         display="flex"
         sx={{
@@ -355,7 +361,7 @@ export default function StartSchema({ pageForward }) {
           alignItems: "center",
           width: 600,
           margin: "auto",
-          marginBottom: 5,
+          marginBottom: 10,
         }}
       >
         <Box
@@ -418,6 +424,7 @@ export default function StartSchema({ pageForward }) {
           </Button>
         )}
       </Box>
+      <StartIntro />
     </Box>
   );
 }
