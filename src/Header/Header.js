@@ -11,9 +11,6 @@ export default function Header({ currentPage }) {
   const [toolTipText, setToolTipText] = useState("");
   const [helpLink, setHelpLink] = useState("");
 
-  const [headerLink] = useState(
-    "https://agrifooddatacanada.ca/semantic-engine/"
-  );
   //Sets headers and tooltip Text based on current page
   useEffect(() => {
     switch (currentPage) {
