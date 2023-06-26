@@ -24,6 +24,10 @@ function App() {
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: "", description: "" },
   });
+  const [divisionGroup, setDivisionGroup] = useState({
+    division: 'Natural sciences',
+    group: 'Mathematics and statistics',
+  });
   const [languages, setLanguages] = useState(["English"]);
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
@@ -149,6 +153,11 @@ function App() {
       English: { name: "", description: "" },
     });
 
+    setDivisionGroup({
+      division: 'Natural sciences',
+      group: 'Mathematics and statistics',
+    });
+
     setLanguages(["English"]);
     setAttributeRowData([]);
     setEntryCodeRowData([]);
@@ -168,6 +177,8 @@ function App() {
             setAttributesList,
             schemaDescription,
             setSchemaDescription,
+            divisionGroup,
+            setDivisionGroup,
             languages,
             setLanguages,
             attributeRowData,
