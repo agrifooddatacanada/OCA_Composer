@@ -197,8 +197,8 @@ function App() {
           }}
         >
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <Header currentPage={currentPage} />
             <BrowserRouter>
+              <Header currentPage={currentPage} />
               <Routes>
                 <Route path="/" element={<Home currentPage={currentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
                 <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
