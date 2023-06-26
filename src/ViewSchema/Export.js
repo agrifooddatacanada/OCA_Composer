@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { Button, Tooltip, Box } from "@mui/material";
 import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
@@ -7,6 +7,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
+import { groupCodes } from "../constants/constants";
 
 const ExcelJS = require("exceljs");
 
@@ -17,6 +18,7 @@ export default function Export({ setShowLink }) {
     lanAttributeRowData,
     attributesList,
     schemaDescription,
+    divisionGroup,
     savedEntryCodes,
     setFileData,
     setAttributesList,
@@ -30,6 +32,10 @@ export default function Export({ setShowLink }) {
     setSavedEntryCodes,
     customIsos,
   } = useContext(Context);
+
+  const groupCode = useMemo(() => {
+    return groupCodes[divisionGroup.group];
+  }, [divisionGroup.group]);
 
   const [exportDisabled, setExportDisabled] = useState(false);
 
@@ -321,8 +327,8 @@ export default function Export({ setShowLink }) {
         attributeCell.value = item;
         const classificationCell = worksheetMain.getCell(index + 4, 1);
         classificationCell.value = {
-          formula: `IF(B${index + 4}="", "", "CRDC:RDF40")`,
-          result: attributeCell.value === "" ? "" : "CRDC:RDF40",
+          formula: `IF(B${index + 4}="", "", "${groupCode}")`,
+          result: attributeCell.value === "" ? "" : groupCode,
         };
         const typeCell = worksheetMain.getCell(index + 4, 3);
         typeCell.value = dataArray[1][index].Type;
@@ -350,9 +356,8 @@ export default function Export({ setShowLink }) {
         };
         const encodingCell = worksheetMain.getCell(index + 4, 6);
         encodingCell.value = {
-          formula: `IF(OR(C${index + 4}="Binary", C${
-            index + 4
-          }="Array[Binary]"), "base64", "utf-8")`,
+          formula: `IF(OR(C${index + 4}="Binary", C${index + 4
+            }="Array[Binary]"), "base64", "utf-8")`,
 
           result:
             typeCell.value === "Binary" || typeCell.value === "Array[Binary]"
