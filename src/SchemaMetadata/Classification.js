@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
@@ -40,17 +40,16 @@ const Classification = () => {
   }, [divisionGroup.division, setDivisionGroup]);
 
   return (
-    <Box sx={{ textAlign: 'left', marginTop: '1rem', }}>
+    <Box sx={{ textAlign: 'left', marginBottom: '1rem', height: '5rem' }}>
       <Typography
         sx={{
           fontSize: 15,
           fontWeight: "bold",
           textAlign: "left",
-          margin: "0.5rem 0 0 0",
-          width: "8rem",
+          width: "10rem",
           color: CustomPalette.BLACK,
         }}
-      >Classification</Typography>
+      >Schema Classification</Typography>
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
         <FormControl variant="standard" sx={{ minWidth: 120, width: '45%' }}>
           <Typography variant="body2">Divisions</Typography>

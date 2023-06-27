@@ -16,12 +16,13 @@ export default function Description({ setShowIsoInput, setEditingLanguage }) {
       }}
     >
       <Box sx={{ display: "flex", width: "max-content" }}>
-        {languages.map((value) => (
+        {languages.map((value, index) => (
           <SchemaInput
             language={value}
             key={value}
             setShowIsoInput={setShowIsoInput}
             setEditingLanguage={setEditingLanguage}
+            index={index}
           />
         ))}
       </Box>
