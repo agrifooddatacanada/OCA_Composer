@@ -69,6 +69,9 @@ export default function SchemaInput({
           height: "10.5rem",
         }}
       >
+        {language === 'English' ? <Classification /> : (
+          <Box sx={{ marginBottom: '1rem', height: '5rem' }} />
+        )}
         <Box
           sx={{
             display: "flex",
@@ -144,7 +147,6 @@ export default function SchemaInput({
             </Button>
           )}
         </Box>
-        {language === 'English' && <Classification />}
       </Box>
 
       <Box sx={{ display: "flex", flexDirection: "column" }}>
