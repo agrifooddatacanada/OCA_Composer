@@ -12,6 +12,7 @@ export default function SchemaInput({
   language,
   setShowIsoInput,
   setEditingLanguage,
+  index
 }) {
 
   const {
@@ -69,7 +70,7 @@ export default function SchemaInput({
           height: "10.5rem",
         }}
       >
-        {language === 'English' ? <Classification /> : (
+        {index === 0 ? <Classification /> : (
           <Box sx={{ marginBottom: '1rem', height: '5rem' }} />
         )}
         <Box
