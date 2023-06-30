@@ -168,75 +168,78 @@ export default function SchemaMetadata({
             </Tooltip>
           </Box>
           <Attributes />
-          <Typography
-            sx={{
-              fontSize: 20,
-              fontWeight: "bold",
-              textAlign: "left",
-              margin: "1rem 0 1rem 0",
-              color: CustomPalette.PRIMARY,
-            }}
-          >
-            Schema Description
-          </Typography>
+          <Box sx={{ display: "flex", justifyContent: 'space-between' }}>
+            <Typography
+              sx={{
+                fontSize: 20,
+                fontWeight: "bold",
+                textAlign: "left",
+                margin: "1rem 0 1rem 0",
+                color: CustomPalette.PRIMARY,
+              }}
+            >
+              Schema Description
+            </Typography>
+            <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
+              <Box
+                sx={{
+                  alignSelf: "flex-end",
+                  position: "absolute",
+                  zIndex: "1000",
+                  // top: -300,
+                  top: 70,
+                  width: "100%",
+                }}
+              >
+                {showLanguages && (
+                  <LanguageSelection
+                    setShowLanguages={setShowLanguages}
+                    setEditingLanguage={setEditingLanguage}
+                    setShowIsoInput={setShowIsoInput}
+                  />
+                )}
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: CustomPalette.GREY_600,
+                }}
+              >
+                <Tooltip
+                  title="Add another language to your schema. Without changing the basic structure of your schema, you can ensure it can be shared and used in different languages."
+                  placement="left"
+                  arrow
+                >
+                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                </Tooltip>
+                <Button
+                  color="button"
+                  onClick={() => setShowLanguages(!showLanguages)}
+                  variant="contained"
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "11rem",
+                    m: 2,
+                  }}
+                >
+                  Add Language
+                  {showLanguages === true ? (
+                    <RemoveCircleIcon />
+                  ) : (
+                    <AddCircleIcon />
+                  )}
+                </Button>
+              </Box>
+            </Box>
+          </Box>
           <Description
             setShowIsoInput={setShowIsoInput}
             setEditingLanguage={setEditingLanguage}
           />
         </Box>
-        <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
-          <Box
-            sx={{
-              alignSelf: "flex-end",
-              position: "absolute",
-              zIndex: "1000",
-              // top: -300,
-              top: -260,
-              width: "100%",
-            }}
-          >
-            {showLanguages && (
-              <LanguageSelection
-                setShowLanguages={setShowLanguages}
-                setEditingLanguage={setEditingLanguage}
-                setShowIsoInput={setShowIsoInput}
-              />
-            )}
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              color: CustomPalette.GREY_600,
-            }}
-          >
-            <Tooltip
-              title="Add another language to your schema. Without changing the basic structure of your schema, you can ensure it can be shared and used in different languages."
-              placement="left"
-              arrow
-            >
-              <HelpOutlineIcon sx={{ fontSize: 15 }} />
-            </Tooltip>
-            <Button
-              color="button"
-              onClick={() => setShowLanguages(!showLanguages)}
-              variant="contained"
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "11rem",
-                m: 2,
-              }}
-            >
-              Add Language
-              {showLanguages === true ? (
-                <RemoveCircleIcon />
-              ) : (
-                <AddCircleIcon />
-              )}
-            </Button>
-          </Box>
-        </Box>
+
       </Box>
     </Box>
   );
