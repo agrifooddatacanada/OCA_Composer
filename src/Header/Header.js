@@ -117,7 +117,7 @@ export default function Header({ currentPage }) {
             p: 1,
             width: "15rem",
           }}
-          onClick={() => window.open(`${process.env.REACT_APP_URL_BASE}${helpLink}`, '_blank', 'width=800,height=600')}
+          onClick={() => window.open(`${helpLink}`, '_blank', 'rel=noopener noreferrer')}
         >
           Help with this page
         </Button>
