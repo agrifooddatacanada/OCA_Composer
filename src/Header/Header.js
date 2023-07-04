@@ -3,13 +3,11 @@ import { Typography, Stack, Tooltip, Button, Box } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import logo from '../assets/agri-logo.png';
-import { useNavigate } from "react-router-dom";
 
 export default function Header({ currentPage }) {
-  const navigate = useNavigate();
   const [header, setHeader] = useState(currentPage);
   const [toolTipText, setToolTipText] = useState("");
-  const [helpLink, setHelpLink] = useState("");
+  const [helpLink, setHelpLink] = useState("start_schema_help");
 
   //Sets headers and tooltip Text based on current page
   useEffect(() => {
@@ -119,12 +117,12 @@ export default function Header({ currentPage }) {
             p: 1,
             width: "15rem",
           }}
-          onClick={() => navigate(helpLink)}
+          onClick={() => window.open(`${helpLink}`, '_blank', 'rel=noopener noreferrer')}
         >
           Help with this page
         </Button>
         <Box sx={{ color: CustomPalette.PRIMARY }}>En</Box>
       </Stack>
-    </Stack>
+    </Stack >
   );
 }
