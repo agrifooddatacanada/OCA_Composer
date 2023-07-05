@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Stack, Divider } from '@mui/material';
 import React from 'react';
 import logoUoG from '../assets/uog-logo.png';
 import logoAgri from '../assets/agri-logo.png';
@@ -15,9 +15,10 @@ export default function Footer() {
     >
       <Stack
         direction="row"
+        divider={<Divider orientation="vertical" flexItem />}
         sx={{
           flexDirection: "row",
-          gap: "1.5rem",
+          gap: "2rem",
           justifyContent: "space-between",
           padding: "2rem",
           cursor: 'pointer'
