@@ -24,6 +24,8 @@ const AddEntryCodesHelp = () => {
       <TypographyTag >
         If you don't need to have specific labels created for the Entry Codes (e.g. you create an Entry Code list of GO terms) you can copy the Entry Code into the language specific language columns.
       </TypographyTag>
+      <br />
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/T-Uzr3p41SM" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
     </HelpPageContainer>
   );
 };
