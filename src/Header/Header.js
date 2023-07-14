@@ -17,7 +17,7 @@ export default function Header({ currentPage }) {
       case "Start":
         setHeader("Start Creating an OCA Schema");
         setToolTipText("");
-        setHelpLink('/start_schema_help');
+        setHelpLink('https://agrifooddatacanada.ca/semantic-engine/');
         break;
       case "Metadata":
         setHeader("Schema Metadata");
