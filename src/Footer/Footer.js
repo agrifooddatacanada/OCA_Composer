@@ -6,6 +6,8 @@ import logoSE from '../assets/se-logo.png';
 
 export default function Footer() {
   return (
+    <>
+    <Divider orientation="horizontal" flexItem />
     <Stack
       direction="row"
       justifyContent="end"
@@ -15,7 +17,6 @@ export default function Footer() {
     >
       <Stack
         direction="row"
-        divider={<Divider orientation="vertical" flexItem />}
         sx={{
           flexDirection: "row",
           gap: "2rem",
@@ -29,6 +30,7 @@ export default function Footer() {
         <img src={logoSE} style={{ height: '60px' }} alt="Semantic Engine Logo" onClick={() => window.open('https://www.semanticengine.org/#/', '_blank')} />
       </Stack>
     </Stack >
+    </>
   );
 };
 
