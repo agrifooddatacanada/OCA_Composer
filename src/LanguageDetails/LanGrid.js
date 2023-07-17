@@ -255,25 +255,6 @@ export default function LanGrid({ gridRef, currentLanguage }) {
     ]);
   }, [attributesList]);
 
-  //Makes grid stop editing when clicking outside grid
-  useEffect(() => {
-    const handleClickOutsideGrid = (event) => {
-      if (gridRef.current.api) {
-        if (
-          typeof event.target.className === "string" &&
-          !event.target.className.includes("ag-cell")
-        ) {
-          gridRef.current.api.stopEditing();
-        }
-      }
-    };
-
-    document.addEventListener("click", handleClickOutsideGrid);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutsideGrid);
-    };
-  }, [gridRef]);
 
   return (
     <div className="ag-theme-balham" style={{ width: 800 }}>

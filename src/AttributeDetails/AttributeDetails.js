@@ -30,9 +30,9 @@ export default function AttributeDetails({ pageBack, pageForward }) {
   const [fieldArray, setFieldArray] = useState(["Type"]);
   const navigationSafe = useRef();
   const gridRef = useRef();
+  const refContainer = useRef();
   const entryCodesRef = useRef();
   const typeBlanksRef = useRef();
-
   const typesObjectRef = useRef({});
 
   useEffect(() => {
@@ -42,6 +42,21 @@ export default function AttributeDetails({ pageBack, pageForward }) {
     });
     typesObjectRef.current = newTypesObjetRef;
   }, [attributeRowData]);
+
+  // Stops grid editing when clicking outside grid
+  useEffect(() => {
+    const handleClickOutsideGrid = (event) => {
+      if (gridRef.current.api && refContainer.current && !refContainer.current.contains(event.target)) {
+        gridRef.current.api.stopEditing();
+      }
+    };
+
+    document.addEventListener("click", handleClickOutsideGrid);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutsideGrid);
+    };
+  }, [gridRef, refContainer]);
 
   const handleSave = () => {
     entryCodesRef.current = false;
@@ -105,7 +120,7 @@ export default function AttributeDetails({ pageBack, pageForward }) {
             : item.Attribute,
         Type:
           typesObjectRef.current &&
-          item.Type !== typesObjectRef.current[item.Attribute]
+            item.Type !== typesObjectRef.current[item.Attribute]
             ? typesObjectRef.current[item.Attribute]
             : item.Type,
       }));
@@ -229,16 +244,18 @@ export default function AttributeDetails({ pageBack, pageForward }) {
           {errorMessage}
         </Alert>
       )}
-      <Grid
-        gridRef={gridRef}
-        addButton1={addButton1}
-        addButton2={addButton2}
-        setErrorMessage={setErrorMessage}
-        canDelete={canDelete}
-        setCanDelete={setCanDelete}
-        setAddByTab={setAddByTab}
-        typesObjectRef={typesObjectRef}
-      />
+      <div ref={refContainer}>
+        <Grid
+          gridRef={gridRef}
+          addButton1={addButton1}
+          addButton2={addButton2}
+          setErrorMessage={setErrorMessage}
+          canDelete={canDelete}
+          setCanDelete={setCanDelete}
+          setAddByTab={setAddByTab}
+          typesObjectRef={typesObjectRef}
+        />
+      </div>
       <AddAttribute
         addButton1={addButton1}
         addButton2={addButton2}

@@ -19,6 +19,7 @@ export default function EntryCodes() {
     setCurrentPage,
     languages,
   } = useContext(Context);
+  const [chosenTable, setChosenTable] = useState(0);
 
   const codeRefs = useRef();
   const entryCodeData = useRef();
@@ -132,6 +133,8 @@ export default function EntryCodes() {
         key={selectedAttributes[index].Attribute}
         index={index}
         codeRefs={codeRefs}
+        chosenTable={chosenTable}
+        setChosenTable={setChosenTable}
       />
     );
   });
