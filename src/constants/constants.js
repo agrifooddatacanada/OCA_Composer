@@ -1,4 +1,5 @@
 export const classification = {
+  "": [""],
   "Natural sciences": ["Mathematics and statistics", "Computer and information sciences", "Physical sciences", "Chemical sciences", "Earth and related environmental sciences", "Biological sciences", "Other natural sciences"],
   "Engineering and technology": ["Civil engineering, maritime engineering, transport engineering, and mining engineering", "Industrial, systems and processes engineering", "Electrical engineering, computer engineering, and information engineering", "Mechanical engineering", "Chemical engineering", "Materials engineering and resources engineering", "Medical and biomedical engineering", "Environmental engineering and related engineering", "Environmental biotechnology", "Industrial biotechnology", "Nano-technology", "Other engineering and technologies"],
   "Medical and health sciences": ["Basic medicine and life sciences", "Clinical medicine", "Health sciences", "Medical biotechnology", "Other medical sciences"],
@@ -8,6 +9,7 @@ export const classification = {
 };
 
 export const divisionCodes = {
+  "": "",
   "Natural sciences": "RDF10",
   "Engineering and technology": "RDF20-21",
   "Medical and health sciences": "RDF30",
@@ -17,6 +19,7 @@ export const divisionCodes = {
 };
 
 export const groupCodes = {
+  "": "",
   "Mathematics and statistics": "RDF101",
   "Computer and information sciences": "RDF102",
   "Physical sciences": "RDF103",

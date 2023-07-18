@@ -16,7 +16,7 @@ const Classification = () => {
   const divisionsDropdown = useMemo(() => {
     return Object.keys(classification).map((division) => {
       return (
-        <MenuItem key={division} value={division}>{division}</MenuItem>
+        <MenuItem sx={{ height: '38px' }} key={division} value={division}>{division}</MenuItem>
       );
     });
   }, []);
@@ -24,7 +24,7 @@ const Classification = () => {
   const groupsDropdown = useMemo(() => {
     return classification[divisionGroup.division].map((group) => {
       return (
-        <MenuItem key={group} value={group}>{group}</MenuItem>
+        <MenuItem sx={{ height: '38px' }} key={group} value={group}>{group}</MenuItem>
       );
     });
   }, [divisionGroup.division]);
