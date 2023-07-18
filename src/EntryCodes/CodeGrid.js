@@ -22,13 +22,15 @@ import { CustomPalette } from "../constants/customPalette";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-export default function CodeGrid({ index, codeRefs }) {
+export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable }) {
   const { languages, setEntryCodeRowData } = useContext(Context);
   const { entryCodeRowData } = useContext(Context);
 
   const [buttonArray, setButtonArray] = useState([]);
   const [gridWidth, setGridWidth] = useState(500);
   const [hoveredRowIndex, setHoveredRowIndex] = useState(-1);
+
+  const refContainer = useRef(null);
 
   //Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
 
@@ -300,21 +302,18 @@ export default function CodeGrid({ index, codeRefs }) {
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
       const clickedGrid = event.target.closest(".ag-root-wrapper");
-      if (clickedGrid) {
-        const clickedGridPath = clickedGrid.getAttribute("data-ag-path");
 
-        codeRefs.current.forEach((grid) => {
-          const gridElement =
-            grid.current?.gridOptions?.api?.gridPanel?.eGridDiv;
-          const gridPath = gridElement?.getAttribute("data-ag-path");
-
-          if (gridPath !== clickedGridPath && grid.current?.api) {
-            grid.current.api.stopEditing();
-          }
-        });
-      } else {
+      if (!clickedGrid && refContainer.current && !refContainer.current.contains(event.target)) {
         codeRefs.current.forEach((grid) => {
           grid.current?.api?.stopEditing();
+        });
+      }
+
+      if (chosenTable) {
+        codeRefs.current.forEach((grid, idx) => {
+          if (idx !== chosenTable && grid.current?.api) {
+            grid.current?.api?.stopEditing();
+          }
         });
       }
     };
@@ -324,21 +323,24 @@ export default function CodeGrid({ index, codeRefs }) {
     return () => {
       document.removeEventListener("click", handleClickOutsideGrid);
     };
-  }, [codeRefs]);
+  }, [codeRefs, chosenTable]);
 
   return (
     <Box style={{ margin: "3rem", display: "flex", flexDirection: "column" }}>
       <Box style={{ display: "flex" }}>
         <Box className="ag-theme-alpine" style={{ width: gridWidth }}>
           <style>{gridStyle}</style>
-          <AgGridReact
-            ref={codeRefs.current[index]}
-            rowData={entryCodeRowData[index]}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            domLayout="autoHeight"
-            onCellKeyDown={onCellKeyDown}
-          />
+          <div ref={refContainer}>
+            <AgGridReact
+              ref={codeRefs.current[index]}
+              rowData={entryCodeRowData[index]}
+              columnDefs={columnDefs}
+              defaultColDef={defaultColDef}
+              domLayout="autoHeight"
+              onCellKeyDown={onCellKeyDown}
+              onCellClicked={() => setChosenTable(index)}
+            />
+          </div>
         </Box>
         <Box
           style={{
