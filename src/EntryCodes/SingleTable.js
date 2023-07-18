@@ -3,7 +3,7 @@ import { Box, Typography } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import CodeGrid from "./CodeGrid";
 
-export default function SingleTable({ attribute, index, codeRefs }) {
+export default function SingleTable({ attribute, index, codeRefs, chosenTable, setChosenTable }) {
   return (
     <Box
       sx={{
@@ -23,7 +23,7 @@ export default function SingleTable({ attribute, index, codeRefs }) {
       >
         {attribute.Attribute}
       </Typography>
-      <CodeGrid index={index} codeRefs={codeRefs} />
+      <CodeGrid index={index} codeRefs={codeRefs} chosenTable={chosenTable} setChosenTable={setChosenTable} />
     </Box>
   );
 }

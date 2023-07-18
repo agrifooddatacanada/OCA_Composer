@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useState } from "react";
+import React, { useRef, useContext, useState, useEffect } from "react";
 import { Context } from "../App";
 import { Box } from "@mui/system";
 import { Button, Tooltip, Typography } from "@mui/material";
@@ -21,7 +21,23 @@ export default function LanguageDetails({ pageBack, pageForward }) {
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
 
   const gridRef = useRef();
+  const refContainer = useRef();
   const entryCodesRef = useRef();
+
+  // Stops grid editing when clicking outside grid
+  useEffect(() => {
+    const handleClickOutsideGrid = (event) => {
+      if (gridRef.current.api && refContainer.current && !refContainer.current.contains(event.target)) {
+        gridRef.current.api.stopEditing();
+      }
+    };
+
+    document.addEventListener("click", handleClickOutsideGrid);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutsideGrid);
+    };
+  }, [gridRef, refContainer]);
 
   const handleSave = () => {
     entryCodesRef.current = false;
@@ -197,7 +213,9 @@ export default function LanguageDetails({ pageBack, pageForward }) {
               <HelpOutlineIcon sx={{ fontSize: 15 }} />
             </Tooltip>
           </Box>
-          <LanGrid gridRef={gridRef} currentLanguage={currentLanguage} />
+          <div ref={refContainer}>
+            <LanGrid gridRef={gridRef} currentLanguage={currentLanguage} />
+          </div>
         </Box>
       </Box>
     </Box>

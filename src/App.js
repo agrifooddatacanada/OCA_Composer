@@ -25,8 +25,8 @@ function App() {
     English: { name: "", description: "" },
   });
   const [divisionGroup, setDivisionGroup] = useState({
-    division: 'Natural sciences',
-    group: 'Mathematics and statistics',
+    division: '',
+    group: '',
   });
   const [languages, setLanguages] = useState(["English"]);
   const [attributeRowData, setAttributeRowData] = useState([]);
@@ -154,8 +154,8 @@ function App() {
     });
 
     setDivisionGroup({
-      division: 'Natural sciences',
-      group: 'Mathematics and statistics',
+      division: '',
+      group: '',
     });
 
     setLanguages(["English"]);

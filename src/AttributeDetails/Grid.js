@@ -26,7 +26,7 @@ export default function Grid({
   canDelete,
   setCanDelete,
   setAddByTab,
-  typesObjectRef,
+  typesObjectRef
 }) {
   const { attributesList, setAttributesList } = useContext(Context);
   const [selectedCells, setSelectedCells] = useState([]);
@@ -691,26 +691,6 @@ export default function Grid({
     },
     [attributeRowData, attributesList]
   );
-
-  //Stops grid editing when clicking outside grid
-  useEffect(() => {
-    const handleClickOutsideGrid = (event) => {
-      if (gridRef.current.api) {
-        if (
-          typeof event.target.className === "string" &&
-          !event.target.className.includes("ag-cell")
-        ) {
-          gridRef.current.api.stopEditing();
-        }
-      }
-    };
-
-    document.addEventListener("click", handleClickOutsideGrid);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutsideGrid);
-    };
-  }, [gridRef]);
 
   //Saves elements in proper order after dragging
   const onRowDragEnd = (event) => {

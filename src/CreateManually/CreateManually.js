@@ -25,6 +25,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 export default function CreateManually() {
   const addRef = useRef();
   const gridRef = useRef();
+  const refContainer = useRef();
 
   const { setCurrentPage, setAttributesList, attributesList, setFileData } =
     useContext(Context);
@@ -268,15 +269,11 @@ export default function CreateManually() {
     setCanDelete(false);
   };
 
+  // Stops grid editing when clicking outside grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
-      if (gridRef.current.api) {
-        if (
-          typeof event.target.className === "string" &&
-          !event.target.className.includes("ag-cell")
-        ) {
-          gridRef.current.api.stopEditing();
-        }
+      if (gridRef.current.api && refContainer.current && !refContainer.current.contains(event.target)) {
+        gridRef.current.api.stopEditing();
       }
     };
 
@@ -285,7 +282,7 @@ export default function CreateManually() {
     return () => {
       document.removeEventListener("click", handleClickOutsideGrid);
     };
-  }, [gridRef]);
+  }, [gridRef, refContainer]);
 
   //Drops element when item is taken off grid
   //Prevents error where when element comes back onto grid, the index isn't saved correctly onRowDragEnd
@@ -424,7 +421,7 @@ export default function CreateManually() {
       </Box>
       <Box>
         <Box style={{ display: "flex" }}>
-          <Box className="ag-theme-alpine" style={{ width: 503 }}>
+          <Box className="ag-theme-alpine" style={{ width: 503 }} ref={refContainer}>
             <style>{gridStyle}</style>
             <AgGridReact
               ref={gridRef}

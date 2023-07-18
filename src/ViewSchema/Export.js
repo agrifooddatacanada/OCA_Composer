@@ -167,6 +167,9 @@ export default function Export({ setShowLink }) {
       userCell.value = "User Entry";
       userCell.style.font = { bold: true };
 
+      worksheet.getCell(6, 3).value = OCADataArray[0][0].Name;
+      worksheet.getCell(7, 3).value = OCADataArray[0][0].Description;
+
       //All language codes must be unique for export to work
       //Creates language codes for all custom languages
 
@@ -450,9 +453,12 @@ export default function Export({ setShowLink }) {
         const languageIndex = OCADataArray[0].findIndex(
           (obj) => obj.Language === language.language
         );
-        worksheetLanguage.getCell(4, 1).value =
+        worksheetLanguage.getCell(4, 1).value = "name";
+        worksheetLanguage.getCell(5, 1).value = "description";
+
+        worksheetLanguage.getCell(4, 2).value =
           OCADataArray[0][languageIndex].Name;
-        worksheetLanguage.getCell(5, 1).value =
+        worksheetLanguage.getCell(5, 2).value =
           OCADataArray[0][languageIndex].Description;
 
         attributesList.forEach((item, index) => {
