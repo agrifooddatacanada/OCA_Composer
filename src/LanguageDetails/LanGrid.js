@@ -32,11 +32,20 @@ const TextareaCellEditor = forwardRef((props, ref) => {
     };
   });
 
+  const textareaStyle = {
+    width: '98%',
+    height: '100%',
+    resize: 'none',
+    outline: 'none',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+    fontSize: '12px',
+  };
+
   return (
     <textarea
       autoFocus
       maxLength={200}
-      style={{ width: "98%", height: "100%", resize: "none", outline: "none" }}
+      style={textareaStyle}
       value={value}
       onChange={(event) => setValue(event.target.value)}
     />
