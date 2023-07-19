@@ -41,12 +41,16 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
         cellStyle: (params) => ({
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
+          backgroundColor: CustomPalette.GREY_200,
         }),
       },
       {
         field: "Flagged",
         width: 75,
         cellRenderer: CheckboxRenderer,
+        cellStyle: (params) => ({
+          backgroundColor: CustomPalette.GREY_200,
+        })
       },
       {
         field: "Unit",
@@ -55,6 +59,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
         cellStyle: (params) => ({
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
+          backgroundColor: CustomPalette.GREY_200,
         }),
       },
       {
@@ -63,6 +68,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
         cellStyle: (params) => ({
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
+          backgroundColor: CustomPalette.GREY_200,
         }),
       },
       {
@@ -72,6 +78,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
         cellStyle: (params) => ({
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
+          backgroundColor: CustomPalette.GREY_200,
         }),
         headerComponent: () => {
           return (
@@ -88,6 +95,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
         cellStyle: (params) => ({
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
+          backgroundColor: CustomPalette.GREY_200,
         }),
         headerComponent: () => {
           return (

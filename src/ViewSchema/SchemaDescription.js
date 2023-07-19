@@ -17,16 +17,13 @@ export default function SchemaDescription({ currentLanguage }) {
       >
         Name of Schema
       </Typography>
-      <TextField
-        InputProps={{
-          readOnly: true,
-          style: {
-            height: "2rem",
-            width: "30rem",
-          },
-        }}
-        value={schemaDescription[currentLanguage].name}
-      />
+      <Box sx={{
+        textAlign: 'left',
+        width: "30rem",
+        overflowY: 'auto'
+      }}>
+        {schemaDescription[currentLanguage].name}
+      </Box>
       <Typography
         sx={{
           fontSize: 15,
@@ -37,18 +34,14 @@ export default function SchemaDescription({ currentLanguage }) {
       >
         Description
       </Typography>
-      <TextField
-        InputProps={{
-          readOnly: true,
-          style: {
-            height: "8rem",
-            width: "30rem",
-          },
-        }}
-        multiline={true}
-        rows="5"
-        value={schemaDescription[currentLanguage].description}
-      />
+      <Box sx={{
+        textAlign: 'left',
+        height: "8rem",
+        width: "30rem",
+        overflowY: 'auto'
+      }}>
+        {schemaDescription[currentLanguage].description}
+      </Box>
     </Box>
   );
 }
