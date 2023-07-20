@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useImperativeHandle, forwardRef, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
@@ -7,6 +7,51 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
+
+
+const TextareaCellEditor = forwardRef((props, ref) => {
+  const [value, setValue] = useState(props.value);
+
+  useEffect(() => {
+    setValue(props.value);
+  }, [props.value]);
+
+  useImperativeHandle(ref, () => {
+    return {
+      getValue() {
+        return value;
+      },
+
+      isCancelBeforeStart() {
+        return false;
+      },
+
+      isCancelAfterEnd() {
+        return false;
+      }
+    };
+  });
+
+  const textareaStyle = {
+    width: '98%',
+    height: '100%',
+    resize: 'none',
+    outline: 'none',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+    fontSize: '12px',
+  };
+
+  return (
+    <textarea
+      autoFocus
+      maxLength={200}
+      style={textareaStyle}
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+    />
+  );
+});
+
 
 const gridStyles = `
   .ag-cell {
@@ -198,12 +243,7 @@ export default function LanGrid({ gridRef, currentLanguage }) {
         field: "Description",
         editable: true,
         width: 240,
-        cellEditor: "agLargeTextCellEditor",
-        cellEditorPopup: true,
-        cellEditorParams: {
-          maxLength: 200,
-          rows: attributesList.length >= 6 ? 6 : attributesList.length,
-        },
+        cellEditor: TextareaCellEditor,
         autoHeight: true,
         cellStyle: (params) => ({
           whiteSpace: "pre-wrap",
