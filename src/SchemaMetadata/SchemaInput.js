@@ -214,7 +214,7 @@ export default function SchemaInput({
           </Typography>
           {language === languages[0] && (
             <Tooltip
-              title="The description of the schema that will help yourself and others determine what the schema describes. It is recommended to use a more general name rather than one that identifies a specific dataset or experiment."
+              title="The description of the schema that will help yourself and others determine what kind of data the schema describes."
               placement="right"
               arrow
             >
