@@ -48,7 +48,7 @@ export default function Header({ currentPage }) {
         setHelpLink('/language_attribute_help');
         break;
       case "View":
-        setHeader("View Schema");
+        setHeader("Review Schema");
         setToolTipText(
           "Before finishing your schema you can preview the final contents on this page."
         );
