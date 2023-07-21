@@ -2,6 +2,7 @@ import React from 'react';
 import HelpPageContainer from '../components/HelpPageContainer';
 import HelpPageH2Title from '../components/HelpPageH2Title';
 import TypographyTag from '../components/TypographyTag';
+import CustomAnchorLink from '../components/CustomAnchorLink';
 
 const AttributeDetailsHelp = () => {
   return (
@@ -26,6 +27,10 @@ const AttributeDetailsHelp = () => {
       <br />
       <TypographyTag>
         Flagging an attribute acts as an alert to data users to treat the data as high-risk throughout the data lifecycle and encrypted or removed at any stage.
+      </TypographyTag>
+      <br />
+      <TypographyTag>
+        For help evaluating which attributes can be flagged you can read advice in the <CustomAnchorLink link='https://docs.kantarainitiative.org/Blinding-Identity-Taxonomy-Report-Version-1.0.html' text="Blinding Identity Taxonomy" /> report by the Kantara Initiative.
       </TypographyTag>
       <br />
       <HelpPageH2Title text="Unit" />
@@ -69,7 +74,7 @@ const AttributeDetailsHelp = () => {
       </TypographyTag>
       <br />
       <iframe width="560" height="315" src="https://www.youtube.com/embed/T-Uzr3p41SM" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
-    </HelpPageContainer>
+    </HelpPageContainer >
   );
 };
 
