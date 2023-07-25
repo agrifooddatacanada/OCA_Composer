@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Box } from "@mui/system";
-import { TextField, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { Context } from "../App";
 
 export default function SchemaDescription({ currentLanguage }) {

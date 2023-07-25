@@ -10,10 +10,13 @@ export default function Drop({
   dropDisabled,
   dropMessage,
   setDropMessage,
+  zipEntries,
+  processFileInZip
 }) {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: {
       "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
+      "application/zip": ['.zip'],
     },
     maxSize: 10485760,
     onDropRejected: (file) => {
@@ -53,6 +56,8 @@ export default function Drop({
           dropMessage={dropMessage}
           loading={loading}
           dropDisabled={dropDisabled}
+          zipEntries={zipEntries}
+          processFileInZip={processFileInZip}
         />
       </div>
     </section>

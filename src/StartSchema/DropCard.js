@@ -6,6 +6,9 @@ import {
   Alert,
   Tooltip,
   Box,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -13,7 +16,7 @@ import LoopIcon from "@mui/icons-material/Loop";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
-export default function DropCard({ loading, dropDisabled, dropMessage }) {
+export default function DropCard({ loading, dropDisabled, dropMessage, zipEntries, processFileInZip }) {
   const [hover, setHover] = useState(false);
   const spinningAnimation =
     "spin 1.5s linear infinite; @keyframes spin {from {transform: rotate(0deg);}to {transform: rotate(-360deg);}";
@@ -88,9 +91,9 @@ export default function DropCard({ loading, dropDisabled, dropMessage }) {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
       >
-        {dropMessage.message.length > 0 && (
+        {dropMessage?.message.length > 0 && (
           <Alert
-            severity={dropMessage.type}
+            severity={dropMessage?.type}
             style={{
               position: "absolute",
               zIndex: 9999,
@@ -98,7 +101,7 @@ export default function DropCard({ loading, dropDisabled, dropMessage }) {
               transform: "translate(-50%, -110%)",
             }}
           >
-            {dropMessage.message}
+            {dropMessage?.message}
           </Alert>
         )}
 
@@ -113,6 +116,22 @@ export default function DropCard({ loading, dropDisabled, dropMessage }) {
                 transition: "all 0.2s ease-in-out",
               }}
             />
+          ) : Object.keys(zipEntries).length > 0 ? (
+            <List
+              sx={{
+                width: '100%',
+                maxHeight: 100,
+                overflow: 'auto',
+                padding: 0,
+
+              }}
+            >
+              {Object.keys(zipEntries).map((entry) => (
+                <ListItem sx={{ padding: 0 }} key={entry} onClick={() => processFileInZip(entry)}>
+                  <ListItemText primary={entry} />
+                </ListItem>
+              ))}
+            </List>
           ) : dropDisabled === true ? (
             <CheckCircleOutlineIcon
               sx={{
