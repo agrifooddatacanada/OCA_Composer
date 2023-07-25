@@ -26,7 +26,7 @@ export default function StartSchema({ pageForward }) {
   const [zipEntries, setZipEntries] = useState({});
   // current fileData structure: [[tableHeading, [tableValues]], [tableHeading, [tableValues]], [tableHeading, [tableValues]], ...etc]
 
-  const processExcelWorksheet = useCallback((workbook) => {
+  const processExcelFile = useCallback((workbook) => {
     const sheet_name_list = workbook.SheetNames[0];
     const jsonFromExcel = XLSX.utils.sheet_to_json(
       workbook.Sheets[sheet_name_list],
@@ -288,7 +288,7 @@ export default function StartSchema({ pageForward }) {
           const workbook = XLSX.read(bstr, {
             type: rABS ? "binary" : "array",
           });
-          processExcelWorksheet(workbook);
+          processExcelFile(workbook);
         };
         if (rABS) reader.readAsBinaryString(file);
         else reader.readAsArrayBuffer(file);
@@ -300,7 +300,7 @@ export default function StartSchema({ pageForward }) {
         setDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [processExcelWorksheet]);
+  }, [processExcelFile]);
 
 
   const handleZipDrop = useCallback((acceptedFiles) => {
@@ -338,7 +338,7 @@ export default function StartSchema({ pageForward }) {
   const processFileInZip = useCallback((fileName) => {
     if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) {
       const workbook = XLSX.read(new Uint8Array(zipEntries[fileName]), { type: "array" });
-      processExcelWorksheet(workbook);
+      processExcelFile(workbook);
     }
 
     if (fileName.endsWith(".csv")) {
@@ -348,7 +348,7 @@ export default function StartSchema({ pageForward }) {
     }
 
     setZipEntries({});
-  }, [processCSVFile, processExcelWorksheet, zipEntries]);
+  }, [processCSVFile, processExcelFile, zipEntries]);
 
 
   useEffect(() => {
