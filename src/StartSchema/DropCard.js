@@ -36,6 +36,8 @@ export default function DropCard({ loading, dropDisabled, dropMessage, zipEntrie
     setHover(false);
   };
 
+  const showZipMode = Object.keys(zipEntries).length > 0;
+
   const downloadIconColor =
     dropDisabled === true
       ? CustomPalette.GREY_600
@@ -116,22 +118,39 @@ export default function DropCard({ loading, dropDisabled, dropMessage, zipEntrie
                 transition: "all 0.2s ease-in-out",
               }}
             />
-          ) : Object.keys(zipEntries).length > 0 ? (
-            <List
-              sx={{
-                width: '100%',
-                maxHeight: 100,
-                overflow: 'auto',
-                padding: 0,
-
-              }}
-            >
-              {Object.keys(zipEntries).map((entry) => (
-                <ListItem sx={{ padding: 0 }} key={entry} onClick={() => processFileInZip(entry)}>
-                  <ListItemText primary={entry} />
-                </ListItem>
-              ))}
-            </List>
+          ) : showZipMode ? (
+            <Box>
+              <Typography>
+                Please choose the file to process
+              </Typography>
+              <List
+                sx={{
+                  width: '100%',
+                  maxHeight: 150,
+                  overflow: 'auto',
+                  padding: 0,
+                  display: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                {Object.keys(zipEntries).map((entry) => (
+                  <ListItem
+                    sx={{
+                      padding: 0,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: '#f5f5f5',  // Any color you want for the hover state
+                      },
+                    }}
+                    key={entry}
+                    onClick={() => processFileInZip(entry)}
+                  >
+                    <ListItemText primary={entry} />
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
           ) : dropDisabled === true ? (
             <CheckCircleOutlineIcon
               sx={{
@@ -165,7 +184,7 @@ export default function DropCard({ loading, dropDisabled, dropMessage, zipEntrie
             }}
             gutterBottom
           >
-            {dropDisabled === false ? (
+            {showZipMode ? (<></>) : dropDisabled === false ? (
               "Click here to select a spreadsheet or drag and drop one here"
             ) : (
               <>
