@@ -10,8 +10,6 @@ export default function Drop({
   dropDisabled,
   dropMessage,
   setDropMessage,
-  zipEntries,
-  processFileInZip
 }) {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -56,8 +54,6 @@ export default function Drop({
           dropMessage={dropMessage}
           loading={loading}
           dropDisabled={dropDisabled}
-          zipEntries={zipEntries}
-          processFileInZip={processFileInZip}
         />
       </div>
     </section>

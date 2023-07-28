@@ -23,7 +23,6 @@ export default function StartSchema({ pageForward }) {
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
   const [dropMessage, setDropMessage] = useState({ message: "", type: "" });
-  const [zipEntries, setZipEntries] = useState({});
   // current fileData structure: [[tableHeading, [tableValues]], [tableHeading, [tableValues]], [tableHeading, [tableValues]], ...etc]
 
   const processExcelFile = useCallback((workbook) => {
@@ -312,10 +311,15 @@ export default function StartSchema({ pageForward }) {
           JSZip.loadAsync(data).then((zip) => {
             // Loop over the files in the ZIP.
             zip.forEach((relativePath, zipEntry) => {
-              if ((relativePath.endsWith(".xls") || relativePath.endsWith(".xlsx") || relativePath.endsWith(".csv")) && !relativePath.startsWith("__MACOSX")) {
+              if ((relativePath.endsWith(".json")) && !relativePath.startsWith("__MACOSX")) {
                 // Get the content of each file.
-                zipEntry.async("arraybuffer").then((content) => {
-                  setZipEntries(prev => ({ ...prev, [relativePath]: content }));
+                zipEntry.async("text").then((content) => {
+                  try {
+                    const jsonData = JSON.parse(content);
+                    console.log('JSON content', jsonData);
+                  } catch (error) {
+                    console.error('Invalid JSON in file', relativePath);
+                  }
                 });
               }
             });
@@ -333,22 +337,6 @@ export default function StartSchema({ pageForward }) {
       }, [2500]);
     }
   }, []);
-
-
-  const processFileInZip = useCallback((fileName) => {
-    if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) {
-      const workbook = XLSX.read(new Uint8Array(zipEntries[fileName]), { type: "array" });
-      processExcelFile(workbook);
-    }
-
-    if (fileName.endsWith(".csv")) {
-      const contentArray = new Uint8Array(zipEntries[fileName]);
-      const contentString = new TextDecoder("utf-8").decode(contentArray);
-      processCSVFile(contentString);
-    }
-
-    setZipEntries({});
-  }, [processCSVFile, processExcelFile, zipEntries]);
 
 
   useEffect(() => {
@@ -444,8 +432,6 @@ export default function StartSchema({ pageForward }) {
           dropDisabled={dropDisabled}
           dropMessage={dropMessage}
           setDropMessage={setDropMessage}
-          zipEntries={zipEntries}
-          processFileInZip={processFileInZip}
         />
         {attributesList.length > 0 ? (
           <Box display="flex">

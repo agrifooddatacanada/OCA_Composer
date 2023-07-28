@@ -5,10 +5,7 @@ import {
   Typography,
   Alert,
   Tooltip,
-  Box,
-  List,
-  ListItem,
-  ListItemText,
+  Box
 } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -16,7 +13,7 @@ import LoopIcon from "@mui/icons-material/Loop";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
-export default function DropCard({ loading, dropDisabled, dropMessage, zipEntries, processFileInZip }) {
+export default function DropCard({ loading, dropDisabled, dropMessage }) {
   const [hover, setHover] = useState(false);
   const spinningAnimation =
     "spin 1.5s linear infinite; @keyframes spin {from {transform: rotate(0deg);}to {transform: rotate(-360deg);}";
@@ -36,7 +33,6 @@ export default function DropCard({ loading, dropDisabled, dropMessage, zipEntrie
     setHover(false);
   };
 
-  const showZipMode = Object.keys(zipEntries).length > 0;
 
   const downloadIconColor =
     dropDisabled === true
@@ -118,39 +114,6 @@ export default function DropCard({ loading, dropDisabled, dropMessage, zipEntrie
                 transition: "all 0.2s ease-in-out",
               }}
             />
-          ) : showZipMode ? (
-            <Box>
-              <Typography>
-                Please choose the file to process
-              </Typography>
-              <List
-                sx={{
-                  width: '100%',
-                  maxHeight: 150,
-                  overflow: 'auto',
-                  padding: 0,
-                  display: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                {Object.keys(zipEntries).map((entry) => (
-                  <ListItem
-                    sx={{
-                      padding: 0,
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: '#f5f5f5',  // Any color you want for the hover state
-                      },
-                    }}
-                    key={entry}
-                    onClick={() => processFileInZip(entry)}
-                  >
-                    <ListItemText primary={entry} />
-                  </ListItem>
-                ))}
-              </List>
-            </Box>
           ) : dropDisabled === true ? (
             <CheckCircleOutlineIcon
               sx={{
@@ -184,7 +147,7 @@ export default function DropCard({ loading, dropDisabled, dropMessage, zipEntrie
             }}
             gutterBottom
           >
-            {showZipMode ? (<></>) : dropDisabled === false ? (
+            {dropDisabled === false ? (
               "Click here to select a spreadsheet or drag and drop one here"
             ) : (
               <>
