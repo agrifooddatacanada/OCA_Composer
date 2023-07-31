@@ -7,7 +7,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
-import { groupCodes } from "../constants/constants";
+import { divisionCodes, groupCodes } from "../constants/constants";
 
 const ExcelJS = require("exceljs");
 
@@ -33,9 +33,13 @@ export default function Export({ setShowLink }) {
     customIsos,
   } = useContext(Context);
 
-  const groupCode = useMemo(() => {
-    return groupCodes[divisionGroup.group];
-  }, [divisionGroup.group]);
+  const classificationCode = useMemo(() => {
+    if (groupCodes[divisionGroup.group]) {
+      return groupCodes[divisionGroup.group];
+    }
+
+    return divisionCodes[divisionGroup.division];
+  }, [divisionGroup.division, divisionGroup.group]);
 
   const [exportDisabled, setExportDisabled] = useState(false);
 
@@ -330,8 +334,8 @@ export default function Export({ setShowLink }) {
         attributeCell.value = item;
         const classificationCell = worksheetMain.getCell(index + 4, 1);
         classificationCell.value = {
-          formula: `IF(B${index + 4}="", "", "${groupCode}")`,
-          result: attributeCell.value === "" ? "" : groupCode,
+          formula: `IF(B${index + 4}="", "", "${classificationCode}")`,
+          result: attributeCell.value === "" ? "" : classificationCode,
         };
         const typeCell = worksheetMain.getCell(index + 4, 3);
         typeCell.value = dataArray[1][index].Type;

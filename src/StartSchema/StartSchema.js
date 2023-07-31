@@ -10,8 +10,9 @@ import { messages } from "../constants/messages";
 import { removeSpacesFromString } from "../constants/removeSpaces";
 import { CustomPalette } from "../constants/customPalette";
 import JSZip from "jszip";
+import useZipParser from "./useZipParser";
 
-export default function StartSchema({ pageForward }) {
+export default function StartSchema({ pageForward, jumpToLastPage }) {
   const {
     setFileData,
     fileData,
@@ -19,10 +20,16 @@ export default function StartSchema({ pageForward }) {
     attributesList,
     setAttributesList,
   } = useContext(Context);
+  const {
+    processLanguages,
+    processMetadata,
+    processLabelsDescriptionRootUnits
+  } = useZipParser();
   const [file, setFile] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
   const [dropMessage, setDropMessage] = useState({ message: "", type: "" });
+
   // current fileData structure: [[tableHeading, [tableValues]], [tableHeading, [tableValues]], [tableHeading, [tableValues]], ...etc]
 
   const processExcelFile = useCallback((workbook) => {
@@ -304,37 +311,60 @@ export default function StartSchema({ pageForward }) {
 
   const handleZipDrop = useCallback((acceptedFiles) => {
     try {
+      setLoading(true);
       acceptedFiles.forEach((file) => {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          const data = e.target.result;
-          JSZip.loadAsync(data).then((zip) => {
-            // Loop over the files in the ZIP.
-            zip.forEach((relativePath, zipEntry) => {
-              if ((relativePath.endsWith(".json")) && !relativePath.startsWith("__MACOSX")) {
-                // Get the content of each file.
-                zipEntry.async("text").then((content) => {
-                  try {
-                    const jsonData = JSON.parse(content);
-                    console.log('JSON content', jsonData);
-                  } catch (error) {
-                    console.error('Invalid JSON in file', relativePath);
-                  }
-                });
-              }
-            });
-          });
+        reader.onload = async (e) => {
+          const zip = await JSZip.loadAsync(e.target.result);
+          const languageList = [];
+          const informationList = [];
+          const labelList = [];
+          const metaList = [];
+
+          // load up metadata file in OCA bundle
+          const loadMetadataFile = await zip.files["meta.json"].async("text");
+          const metadataJson = JSON.parse(loadMetadataFile);
+          const root = metadataJson.root;
+
+          // loop through all files in OCA bundle
+          for (const [key, file] of Object.entries(metadataJson.files[root])) {
+            if (key.includes("meta")) {
+              const content = await zip.files[file + '.json'].async("text");
+              metaList.push(JSON.parse(content));
+              languageList.push(key.substring(6, 8));
+            }
+
+            if (key.includes("information")) {
+              const content = await zip.files[file + '.json'].async("text");
+              informationList.push(JSON.parse(content));
+            }
+
+            if (key.includes("label")) {
+              const content = await zip.files[file + '.json'].async("text");
+              labelList.push(JSON.parse(content));
+            }
+          }
+
+          const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
+          const loadUnits = await zip.files[metadataJson.files[root].unit + '.json'].async("text");
+
+          processLanguages(languageList);
+          processMetadata(metaList);
+          processLabelsDescriptionRootUnits(labelList, informationList, JSON.parse(loadRoot), JSON.parse(loadUnits));
+
           setDropDisabled(true);
-          setLoading(false);
+
+          setTimeout(() => {
+            setLoading(false);
+            jumpToLastPage();
+          }, [300]);
         };
         reader.readAsArrayBuffer(file);
       });
     } catch (error) {
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
-      setTimeout(() => {
-        setDropMessage({ message: "", type: "" });
-      }, [2500]);
+
     }
   }, []);
 

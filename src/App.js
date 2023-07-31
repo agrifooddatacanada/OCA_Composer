@@ -61,6 +61,10 @@ function App() {
     }
   };
 
+  const jumpToLastPage = () => {
+    setCurrentPage('View');
+  };
+
   //Create Attributes List from File Data
   useEffect(() => {
     const fileAttributes = [];
@@ -200,7 +204,7 @@ function App() {
             <BrowserRouter>
               <Header currentPage={currentPage} />
               <Routes>
-                <Route path="/" element={<Home currentPage={currentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
+                <Route path="/" element={<Home currentPage={currentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} jumpToLastPage={jumpToLastPage} />} />
                 <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
                 <Route path="/attribute_details_help" element={<AttributeDetailsHelp />} />
                 <Route path="/creating_oca_schema_help" element={<CreatingOCASchemaHelp />} />

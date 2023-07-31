@@ -227,4 +227,14 @@ export const languageCodesObject = {
   zulu: "zu",
 };
 
+export const codesToLanguages = {
+  en: "English",
+  fr: "French",
+  es: "Spanish",
+  zh: "Mandarin",
+  de: "German",
+  ja: "Japanese",
+  it: "Italian"
+};
+
 export const allLanguagesWithCodesArray = Object.keys(languageCodesObject);

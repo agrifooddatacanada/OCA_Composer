@@ -64,3 +64,13 @@ export const groupCodes = {
   "Arts (arts, history of arts, performing arts, music), architecture and design": "RDF604",
   "Other humanities": "RDF605",
 };
+
+export const codeToDivision = {
+  "": "",
+  "RDF10": "Natural sciences",
+  "RDF20-21": "Engineering and technology",
+  "RDF30": "Medical and health sciences",
+  "RDF40": "Agricultural and veterinary sciences",
+  "RDF50": "Social sciences",
+  "RDF60": "Humanities and the arts",
+};
