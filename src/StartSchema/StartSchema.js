@@ -25,7 +25,16 @@ export default function StartSchema({ pageForward }) {
   // current fileData stucture: [[tableHeading, [tableValues]], [tableHeading, [tableValues]], [tableHeading, [tableValues]], ...etc]
 
   useEffect(() => {
-    if (file.length > 0 && file[0].path.includes(".csv")) {
+    if (file.length > 0 && file[0].size > 1000000) {
+      setDropMessage({
+        message: messages.fileSizeLimit,
+        type: "error",
+      });
+      setLoading(false);
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
+    } else if (file.length > 0 && file[0].path.includes(".csv")) {
       try {
         let parsingComplete = false;
         Papa.parse(file[0], {

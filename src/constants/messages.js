@@ -16,4 +16,5 @@ export const messages = {
   fileRejectedFail: "File rejected. Please try again or create manually.",
   blankEntries:
     "Uploaded file contains blank entries. They will need to be deleted or updated on a future page.",
+  fileSizeLimit: "Please upload a file smaller than 1 MB. Only data headers in the first row are needed.",
 };
