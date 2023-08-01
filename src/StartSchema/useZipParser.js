@@ -3,6 +3,8 @@ import { Context } from '../App';
 import { codesToLanguages } from '../constants/isoCodes';
 import { codeToDivision } from '../constants/constants';
 
+const UNKNOWN_LANGUAGE = "Other";
+
 const useZipParser = () => {
   const {
     setAttributesList,
@@ -21,7 +23,7 @@ const useZipParser = () => {
   const processMetadata = (metadata) => {
     const newMetadata = {};
     for (const { language, name, description } of metadata) {
-      newMetadata[codesToLanguages[language]] = { name, description };
+      newMetadata[codesToLanguages[language] || UNKNOWN_LANGUAGE] = { name, description };
     }
     setSchemaDescription(newMetadata);
   };
@@ -44,10 +46,10 @@ const useZipParser = () => {
 
     for (const { language, attribute_labels } of labels) {
       Object.keys(attribute_labels).forEach((key) => attrList.add(key));
-      newLangAttributeRowData[codesToLanguages[language]] = [];
+      newLangAttributeRowData[codesToLanguages[language] || UNKNOWN_LANGUAGE] = [];
 
       for (const [key, value] of Object.entries(attribute_labels)) {
-        newLangAttributeRowData[codesToLanguages[language]].push({
+        newLangAttributeRowData[codesToLanguages[language] || UNKNOWN_LANGUAGE].push({
           Attribute: key,
           Description: languageDescriptionMap[language][key],
           Label: value,
