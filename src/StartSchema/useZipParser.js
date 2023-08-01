@@ -1,9 +1,7 @@
 import { useContext } from 'react';
 import { Context } from '../App';
-import { codesToLanguages } from '../constants/isoCodes';
+import { codesToLanguages, languageCodesObject } from '../constants/isoCodes';
 import { codeToDivision } from '../constants/constants';
-
-const UNKNOWN_LANGUAGE = "Other";
 
 const useZipParser = () => {
   const {
@@ -16,14 +14,21 @@ const useZipParser = () => {
   } = useContext(Context);
 
   const processLanguages = (languages) => {
-    const newLanguages = languages.map((language) => codesToLanguages[language]);
+    const newLanguages = languages.map((language) => {
+      if (!codesToLanguages[language]) {
+        const randomString = (Math.random() + 1).toString(36).substring(7);
+        codesToLanguages[language] = randomString;
+        languageCodesObject[randomString] = language;
+      }
+      return codesToLanguages[language];
+    });
     setLanguages(newLanguages);
   };
 
   const processMetadata = (metadata) => {
     const newMetadata = {};
     for (const { language, name, description } of metadata) {
-      newMetadata[codesToLanguages[language] || UNKNOWN_LANGUAGE] = { name, description };
+      newMetadata[codesToLanguages[language]] = { name, description };
     }
     setSchemaDescription(newMetadata);
   };
@@ -46,10 +51,10 @@ const useZipParser = () => {
 
     for (const { language, attribute_labels } of labels) {
       Object.keys(attribute_labels).forEach((key) => attrList.add(key));
-      newLangAttributeRowData[codesToLanguages[language] || UNKNOWN_LANGUAGE] = [];
+      newLangAttributeRowData[codesToLanguages[language]] = [];
 
       for (const [key, value] of Object.entries(attribute_labels)) {
-        newLangAttributeRowData[codesToLanguages[language] || UNKNOWN_LANGUAGE].push({
+        newLangAttributeRowData[codesToLanguages[language]].push({
           Attribute: key,
           Description: languageDescriptionMap[language][key],
           Label: value,
