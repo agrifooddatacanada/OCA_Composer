@@ -10,13 +10,15 @@ const useZipParser = () => {
     setDivisionGroup,
     setLanguages,
     setAttributeRowData,
-    setLanAttributeRowData
+    setLanAttributeRowData,
+    setAttributesWithLists,
+    setSavedEntryCodes
   } = useContext(Context);
 
   const processLanguages = (languages) => {
     const newLanguages = languages.map((language) => {
       if (!codesToLanguages[language]) {
-        const randomString = (Math.random() + 1).toString(36).substring(7);
+        const randomString = 'lang_' + language;
         codesToLanguages[language] = randomString;
         languageCodesObject[randomString] = language;
       }
@@ -33,10 +35,39 @@ const useZipParser = () => {
     setSchemaDescription(newMetadata);
   };
 
-  const processLabelsDescriptionRootUnits = (labels, description, root, units) => {
+  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries) => {
+    const newSavedEntryCodes = {};
     const attrList = new Set();
     const newLangAttributeRowData = {};
     const newAttributeRowData = [];
+    const listStringMap = {};
+    let attributesListType = [];
+
+    if (entries.length > 0) {
+      attributesListType = Object.keys(entryCodes['attribute_entry_codes']);
+      for (const attrWithList of attributesListType) {
+        const newRow = [];
+
+        for (const option of entryCodes['attribute_entry_codes'][attrWithList]) {
+          const newObject = {
+            Code: option
+          };
+          for (let i = 0; i < entries.length; i++) {
+            if (listStringMap[attrWithList + '_' + entries[i].language]) {
+              listStringMap[attrWithList + '_' + entries[i].language] += (' | ' + entries[i]['attribute_entries'][attrWithList][option]);
+            } else {
+              listStringMap[attrWithList + '_' + entries[i].language] = entries[i]['attribute_entries'][attrWithList][option];
+            }
+            newObject[codesToLanguages[entries[i]['language']]] = entries[i]['attribute_entries'][attrWithList][option];
+          }
+          newRow.push(newObject);
+        }
+
+        newSavedEntryCodes[attrWithList] = (newSavedEntryCodes[attrWithList] || []).concat(newRow);
+      }
+      setAttributesWithLists(attributesListType);
+      setSavedEntryCodes(newSavedEntryCodes);
+    }
 
     const divisionCode = root['classification'].split(':')[1];
     setDivisionGroup({
@@ -58,7 +89,7 @@ const useZipParser = () => {
           Attribute: key,
           Description: languageDescriptionMap[language][key],
           Label: value,
-          List: "Not a List"
+          List: listStringMap[key + '_' + language] || "Not a List"
         });
       }
     }
@@ -67,7 +98,7 @@ const useZipParser = () => {
     uniqueAttrList.forEach((item) => newAttributeRowData.push({
       Attribute: item,
       Flagged: false,
-      List: false,
+      List: attributesListType.includes(item),
       Type: root['attributes'][item],
       Unit: units['attribute_units'][item]
     }));
@@ -77,10 +108,11 @@ const useZipParser = () => {
     setAttributeRowData(newAttributeRowData);
   };
 
+
   return {
     processLanguages,
     processMetadata,
-    processLabelsDescriptionRootUnits
+    processLabelsDescriptionRootUnitsEntries,
   };
 };
 

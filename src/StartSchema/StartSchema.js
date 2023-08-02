@@ -23,7 +23,7 @@ export default function StartSchema({ pageForward, jumpToLastPage }) {
   const {
     processLanguages,
     processMetadata,
-    processLabelsDescriptionRootUnits
+    processLabelsDescriptionRootUnitsEntries
   } = useZipParser();
   const [file, setFile] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -320,6 +320,8 @@ export default function StartSchema({ pageForward, jumpToLastPage }) {
           const informationList = [];
           const labelList = [];
           const metaList = [];
+          const entryList = [];
+          let entryCodeSummary = {};
 
           // load up metadata file in OCA bundle
           const loadMetadataFile = await zip.files["meta.json"].async("text");
@@ -343,6 +345,16 @@ export default function StartSchema({ pageForward, jumpToLastPage }) {
               const content = await zip.files[file + '.json'].async("text");
               labelList.push(JSON.parse(content));
             }
+
+            if (key.includes("entry (")) {
+              const content = await zip.files[file + '.json'].async("text");
+              entryList.push(JSON.parse(content));
+            }
+
+            if (key.includes("entry_code")) {
+              const content = await zip.files[file + '.json'].async("text");
+              entryCodeSummary = JSON.parse(content);
+            }
           }
 
           const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
@@ -350,10 +362,9 @@ export default function StartSchema({ pageForward, jumpToLastPage }) {
 
           processLanguages(languageList);
           processMetadata(metaList);
-          processLabelsDescriptionRootUnits(labelList, informationList, JSON.parse(loadRoot), JSON.parse(loadUnits));
+          processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), JSON.parse(loadUnits), entryCodeSummary, entryList);
 
           setDropDisabled(true);
-
           setTimeout(() => {
             setLoading(false);
             jumpToLastPage();

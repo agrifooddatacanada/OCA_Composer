@@ -30,10 +30,15 @@ function App() {
   });
   const [languages, setLanguages] = useState(["English"]);
   const [attributeRowData, setAttributeRowData] = useState([]);
+  console.log('attributeRowData', attributeRowData);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
+  console.log('entryCodeRowData', entryCodeRowData);
   const [attributesWithLists, setAttributesWithLists] = useState([]);
+  console.log('attributesWithLists', attributesWithLists);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
+  console.log('savedEntryCodes', savedEntryCodes);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
+  console.log('lanAttributeRowData', lanAttributeRowData);
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
 
