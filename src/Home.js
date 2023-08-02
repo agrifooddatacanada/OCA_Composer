@@ -8,11 +8,11 @@ import LanguageDetails from "./LanguageDetails/LanguageDetails";
 import ViewSchema from "./ViewSchema/ViewSchema";
 import CreateManually from "./CreateManually/CreateManually";
 
-const Home = ({ currentPage, pageForward, pageBack, showIntroCard, setShowIntroCard, jumpToLastPage }) => {
+const Home = ({ currentPage, pageForward, pageBack, showIntroCard, setShowIntroCard }) => {
   return (
     <Box sx={{ flex: 1 }}>
       {currentPage === "Start" && (
-        <StartSchema pageForward={pageForward} jumpToLastPage={jumpToLastPage} />
+        <StartSchema pageForward={pageForward} />
       )}
       {currentPage === "Metadata" && (
         <SchemaMetadata

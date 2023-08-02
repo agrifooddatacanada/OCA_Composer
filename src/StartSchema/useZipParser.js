@@ -40,41 +40,52 @@ const useZipParser = () => {
     const attrList = new Set();
     const newLangAttributeRowData = {};
     const newAttributeRowData = [];
-    const listStringMap = {};
-    let attributesListType = [];
+    const attributeListStringMap = {};
+    let attributesWithListType = [];
 
+    // Parse entry codes for list type attributes
     if (entries.length > 0) {
-      attributesListType = Object.keys(entryCodes['attribute_entry_codes']);
-      for (const attrWithList of attributesListType) {
-        const newRow = [];
+      attributesWithListType = Object.keys(entryCodes['attribute_entry_codes']);
 
-        for (const option of entryCodes['attribute_entry_codes'][attrWithList]) {
-          const newObject = {
-            Code: option
+      for (const attrWithList of attributesWithListType) {
+        const newEntryCodeValueRowsForAttribute = [];
+        const entryCodesForAttribute = entryCodes['attribute_entry_codes'][attrWithList];
+
+        for (const entryCode of entryCodesForAttribute) {
+          const entryCodeValueEntity = {
+            Code: entryCode
           };
+
           for (let i = 0; i < entries.length; i++) {
-            if (listStringMap[attrWithList + '_' + entries[i].language]) {
-              listStringMap[attrWithList + '_' + entries[i].language] += (' | ' + entries[i]['attribute_entries'][attrWithList][option]);
+            const keyName = attrWithList + '_' + entries[i].language;
+            const entryCodeValue = entries[i]['attribute_entries'][attrWithList][entryCode];
+
+            if (attributeListStringMap[keyName]) {
+              attributeListStringMap[keyName] += (' | ' + entryCodeValue);
             } else {
-              listStringMap[attrWithList + '_' + entries[i].language] = entries[i]['attribute_entries'][attrWithList][option];
+              attributeListStringMap[keyName] = entryCodeValue;
             }
-            newObject[codesToLanguages[entries[i]['language']]] = entries[i]['attribute_entries'][attrWithList][option];
+
+            entryCodeValueEntity[codesToLanguages[entries[i].language]] = entryCodeValue;
           }
-          newRow.push(newObject);
+          newEntryCodeValueRowsForAttribute.push(entryCodeValueEntity);
         }
 
-        newSavedEntryCodes[attrWithList] = (newSavedEntryCodes[attrWithList] || []).concat(newRow);
+        newSavedEntryCodes[attrWithList] = (newSavedEntryCodes[attrWithList] || []).concat(newEntryCodeValueRowsForAttribute);
       }
-      setAttributesWithLists(attributesListType);
+
+      setAttributesWithLists(attributesWithListType);
       setSavedEntryCodes(newSavedEntryCodes);
     }
 
+    // Parse classification
     const divisionCode = root['classification'].split(':')[1];
     setDivisionGroup({
       division: codeToDivision[divisionCode],
       group: '',
     });
 
+    // meta data: label and description
     const languageDescriptionMap = {};
     for (const { language, attribute_information } of description) {
       languageDescriptionMap[language] = attribute_information;
@@ -89,16 +100,17 @@ const useZipParser = () => {
           Attribute: key,
           Description: languageDescriptionMap[language][key],
           Label: value,
-          List: listStringMap[key + '_' + language] || "Not a List"
+          List: attributeListStringMap[key + '_' + language] || "Not a List"
         });
       }
     }
 
+    // Parse attributes details such as type and unit
     const uniqueAttrList = [...attrList];
     uniqueAttrList.forEach((item) => newAttributeRowData.push({
       Attribute: item,
       Flagged: false,
-      List: attributesListType.includes(item),
+      List: attributesWithListType.includes(item),
       Type: root['attributes'][item],
       Unit: units['attribute_units'][item]
     }));

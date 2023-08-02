@@ -12,7 +12,7 @@ import { CustomPalette } from "../constants/customPalette";
 import JSZip from "jszip";
 import useZipParser from "./useZipParser";
 
-export default function StartSchema({ pageForward, jumpToLastPage }) {
+export default function StartSchema({ pageForward }) {
   const {
     setFileData,
     fileData,
@@ -29,6 +29,7 @@ export default function StartSchema({ pageForward, jumpToLastPage }) {
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
   const [dropMessage, setDropMessage] = useState({ message: "", type: "" });
+  const [switchToLastPage, setSwitchToLastPage] = useState(false);
 
   // current fileData structure: [[tableHeading, [tableValues]], [tableHeading, [tableValues]], [tableHeading, [tableValues]], ...etc]
 
@@ -312,73 +313,81 @@ export default function StartSchema({ pageForward, jumpToLastPage }) {
   const handleZipDrop = useCallback((acceptedFiles) => {
     try {
       setLoading(true);
-      acceptedFiles.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const zip = await JSZip.loadAsync(e.target.result);
-          const languageList = [];
-          const informationList = [];
-          const labelList = [];
-          const metaList = [];
-          const entryList = [];
-          let entryCodeSummary = {};
+      const reader = new FileReader();
 
-          // load up metadata file in OCA bundle
-          const loadMetadataFile = await zip.files["meta.json"].async("text");
-          const metadataJson = JSON.parse(loadMetadataFile);
-          const root = metadataJson.root;
+      reader.onload = async (e) => {
+        const zip = await JSZip.loadAsync(e.target.result);
+        const languageList = [];
+        const informationList = [];
+        const labelList = [];
+        const metaList = [];
+        const entryList = [];
+        let entryCodeSummary = {};
 
-          // loop through all files in OCA bundle
-          for (const [key, file] of Object.entries(metadataJson.files[root])) {
-            if (key.includes("meta")) {
-              const content = await zip.files[file + '.json'].async("text");
-              metaList.push(JSON.parse(content));
-              languageList.push(key.substring(6, 8));
-            }
+        // load up metadata file in OCA bundle
+        const loadMetadataFile = await zip.files["meta.json"].async("text");
+        const metadataJson = JSON.parse(loadMetadataFile);
+        const root = metadataJson.root;
 
-            if (key.includes("information")) {
-              const content = await zip.files[file + '.json'].async("text");
-              informationList.push(JSON.parse(content));
-            }
-
-            if (key.includes("label")) {
-              const content = await zip.files[file + '.json'].async("text");
-              labelList.push(JSON.parse(content));
-            }
-
-            if (key.includes("entry (")) {
-              const content = await zip.files[file + '.json'].async("text");
-              entryList.push(JSON.parse(content));
-            }
-
-            if (key.includes("entry_code")) {
-              const content = await zip.files[file + '.json'].async("text");
-              entryCodeSummary = JSON.parse(content);
-            }
+        // loop through all files in OCA bundle
+        for (const [key, file] of Object.entries(metadataJson.files[root])) {
+          if (key.includes("meta")) {
+            const content = await zip.files[file + '.json'].async("text");
+            metaList.push(JSON.parse(content));
+            languageList.push(key.substring(6, 8));
           }
 
-          const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
-          const loadUnits = await zip.files[metadataJson.files[root].unit + '.json'].async("text");
+          if (key.includes("information")) {
+            const content = await zip.files[file + '.json'].async("text");
+            informationList.push(JSON.parse(content));
+          }
 
-          processLanguages(languageList);
-          processMetadata(metaList);
-          processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), JSON.parse(loadUnits), entryCodeSummary, entryList);
+          if (key.includes("label")) {
+            const content = await zip.files[file + '.json'].async("text");
+            labelList.push(JSON.parse(content));
+          }
 
-          setDropDisabled(true);
-          setTimeout(() => {
-            setLoading(false);
-            jumpToLastPage();
-          }, [300]);
-        };
-        reader.readAsArrayBuffer(file);
-      });
+          if (key.includes("entry (")) {
+            const content = await zip.files[file + '.json'].async("text");
+            entryList.push(JSON.parse(content));
+          }
+
+          if (key.includes("entry_code")) {
+            const content = await zip.files[file + '.json'].async("text");
+            entryCodeSummary = JSON.parse(content);
+          }
+        }
+
+        const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
+        const loadUnits = await zip.files[metadataJson.files[root].unit + '.json'].async("text");
+
+        processLanguages(languageList);
+        processMetadata(metaList);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), JSON.parse(loadUnits), entryCodeSummary, entryList);
+      };
+
+      reader.readAsArrayBuffer(acceptedFiles[0]);
+
+      setTimeout(() => {
+        setDropDisabled(true);
+        setDropMessage({ message: "", type: "" });
+        setLoading(false);
+        setSwitchToLastPage(true);
+      }, 900);
     } catch (error) {
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
-
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
     }
   }, []);
 
+  useEffect(() => {
+    if (switchToLastPage) {
+      setCurrentPage('View');
+    }
+  }, [switchToLastPage]);
 
   useEffect(() => {
     if (file.length > 0 && file[0].path.includes(".csv")) {
@@ -428,6 +437,8 @@ export default function StartSchema({ pageForward, jumpToLastPage }) {
       }
     }
   }, [loading]);
+
+  console.log('startSchema');
 
   return (
     <Box sx={{ mt: 5, mb: 3 }}>
