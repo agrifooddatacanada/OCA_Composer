@@ -390,7 +390,16 @@ export default function StartSchema({ pageForward }) {
   }, [switchToLastPage]);
 
   useEffect(() => {
-    if (file.length > 0 && file[0].path.includes(".csv")) {
+    if (file.length > 0 && file[0].size > 1000000) {
+      setDropMessage({
+        message: messages.fileSizeLimit,
+        type: "error",
+      });
+      setLoading(false);
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
+    } else if (file.length > 0 && file[0].path.includes(".csv")) {
       processCSVFile(file[0]);
     } else if (file.length > 0 && file[0].path.includes(".xls")) {
       handleExcelDrop(file);
