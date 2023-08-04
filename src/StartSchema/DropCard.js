@@ -5,7 +5,7 @@ import {
   Typography,
   Alert,
   Tooltip,
-  Box,
+  Box
 } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -32,6 +32,7 @@ export default function DropCard({ loading, dropDisabled, dropMessage }) {
   const handleDragLeave = () => {
     setHover(false);
   };
+
 
   const downloadIconColor =
     dropDisabled === true
@@ -88,9 +89,9 @@ export default function DropCard({ loading, dropDisabled, dropMessage }) {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
       >
-        {dropMessage.message.length > 0 && (
+        {dropMessage?.message.length > 0 && (
           <Alert
-            severity={dropMessage.type}
+            severity={dropMessage?.type}
             style={{
               position: "absolute",
               zIndex: 9999,
@@ -98,7 +99,7 @@ export default function DropCard({ loading, dropDisabled, dropMessage }) {
               transform: "translate(-50%, -110%)",
             }}
           >
-            {dropMessage.message}
+            {dropMessage?.message}
           </Alert>
         )}
 

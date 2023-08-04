@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useImperativeHandle, forwardRef, useRef } from "react";
+import React, { useState, useEffect, useContext, useImperativeHandle, forwardRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";

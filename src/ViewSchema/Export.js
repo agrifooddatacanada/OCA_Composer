@@ -7,9 +7,19 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
-import { groupCodes } from "../constants/constants";
+import { divisionCodes, groupCodes } from "../constants/constants";
 
 const ExcelJS = require("exceljs");
+
+function columnToLetter(column) {
+  var temp, letter = '';
+  while (column > 0) {
+    temp = (column - 1) % 26;
+    letter = String.fromCharCode(temp + 65) + letter;
+    column = (column - temp - 1) / 26;
+  }
+  return letter;
+}
 
 export default function Export({ setShowLink }) {
   const {
@@ -33,9 +43,13 @@ export default function Export({ setShowLink }) {
     customIsos,
   } = useContext(Context);
 
-  const groupCode = useMemo(() => {
-    return groupCodes[divisionGroup.group];
-  }, [divisionGroup.group]);
+  const classificationCode = useMemo(() => {
+    if (groupCodes[divisionGroup.group]) {
+      return groupCodes[divisionGroup.group];
+    }
+
+    return divisionCodes[divisionGroup.division];
+  }, [divisionGroup.division, divisionGroup.group]);
 
   const [exportDisabled, setExportDisabled] = useState(false);
 
@@ -306,6 +320,28 @@ export default function Export({ setShowLink }) {
       console.log('Error creating "Start Here" page');
     }
 
+    //////CREATE DATA WORKSHEET FOR ENTRY_CODE DROPDOWN MENUS
+    try {
+      const entryCodeOptionWorksheet = workbook.addWorksheet("options");
+      attributesList.forEach((item, index) => {
+        const codesArray = savedEntryCodes[item];
+        if (codesArray) {
+          let columnCounter = 1;
+          for (const entryCodeOption of codesArray) {
+            let languageCounter = 1;
+            for (const lang of languagesWithCode) {
+              entryCodeOptionWorksheet.getCell(2 * index + languageCounter, columnCounter).value = entryCodeOption[lang.language];
+              languageCounter++;
+            }
+            columnCounter++;
+          }
+        }
+
+      });
+    } catch (error) {
+      console.error(error);
+    }
+
     //////CREATE 'MAIN' WORKSHEET
     try {
       const worksheetMain = workbook.addWorksheet("Main");
@@ -330,8 +366,8 @@ export default function Export({ setShowLink }) {
         attributeCell.value = item;
         const classificationCell = worksheetMain.getCell(index + 4, 1);
         classificationCell.value = {
-          formula: `IF(B${index + 4}="", "", "${groupCode}")`,
-          result: attributeCell.value === "" ? "" : groupCode,
+          formula: `IF(B${index + 4}="", "", "${classificationCode}")`,
+          result: attributeCell.value === "" ? "" : classificationCode,
         };
         const typeCell = worksheetMain.getCell(index + 4, 3);
         typeCell.value = dataArray[1][index].Type;
@@ -412,7 +448,8 @@ export default function Export({ setShowLink }) {
     //////CREATE 'LANGUAGE' WORKSHEETS
     try {
       let doubleIndex = 1;
-      languagesWithCode.forEach((language, index) => {
+      console.log('languagesWithCode', languagesWithCode);
+      languagesWithCode.forEach((language, langIndex) => {
         let worksheetLanguage;
         let worksheetName = language.code;
         try {
@@ -424,7 +461,7 @@ export default function Export({ setShowLink }) {
             doubleIndex += 1;
           }
         } catch (error) {
-          worksheetName = `${worksheetName}__${index}`;
+          worksheetName = `${worksheetName}__${langIndex}`;
         }
 
         const englishHeaders = [
@@ -475,18 +512,13 @@ export default function Export({ setShowLink }) {
           labelCell.value = dataArray[languageIndex][index].Label;
 
           const entryCodesCell = worksheetLanguage.getCell(index + 4, 5);
-          const codesArray = savedEntryCodes[item];
 
-          if (codesArray) {
-            const codeDisplay = [];
-            codesArray.forEach((code) => {
-              codeDisplay.push(code[language.language]);
-            });
-            const menuList = `"${codeDisplay.join(",")}"`;
+          if (savedEntryCodes[item]) {
+            const optionsIndex = 2 * index + (langIndex + 1);
             entryCodesCell.dataValidation = {
               type: "list",
               allowBlank: true,
-              formulae: [menuList],
+              formulae: [`options!A${optionsIndex}:${columnToLetter(savedEntryCodes[item].length)}${optionsIndex}`],
             };
           }
 

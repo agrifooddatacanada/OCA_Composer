@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import { Button, Box, Typography } from "@mui/material";
 import StartIntro from "./StartIntro";
 import Drop from "./Drop";
@@ -9,6 +9,8 @@ import { Context } from "../App";
 import { messages } from "../constants/messages";
 import { removeSpacesFromString } from "../constants/removeSpaces";
 import { CustomPalette } from "../constants/customPalette";
+import JSZip from "jszip";
+import useZipParser from "./useZipParser";
 
 export default function StartSchema({ pageForward }) {
   const {
@@ -18,11 +20,374 @@ export default function StartSchema({ pageForward }) {
     attributesList,
     setAttributesList,
   } = useContext(Context);
+  const {
+    processLanguages,
+    processMetadata,
+    processLabelsDescriptionRootUnitsEntries
+  } = useZipParser();
   const [file, setFile] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
   const [dropMessage, setDropMessage] = useState({ message: "", type: "" });
-  // current fileData stucture: [[tableHeading, [tableValues]], [tableHeading, [tableValues]], [tableHeading, [tableValues]], ...etc]
+  const [switchToLastPage, setSwitchToLastPage] = useState(false);
+
+  // current fileData structure: [[tableHeading, [tableValues]], [tableHeading, [tableValues]], [tableHeading, [tableValues]], ...etc]
+
+  const processExcelFile = useCallback((workbook) => {
+    const sheet_name_list = workbook.SheetNames[0];
+    const jsonFromExcel = XLSX.utils.sheet_to_json(
+      workbook.Sheets[sheet_name_list],
+      {
+        raw: false,
+        dateNF: "MM-DD-YYYY",
+        header: 1,
+        defval: "",
+      }
+    );
+
+    const rowsArray = jsonFromExcel[0];
+    if (!rowsArray) {
+      setDropMessage({
+        message: messages.noDataUploadFail,
+        type: "error",
+      });
+      setLoading(false);
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
+
+      return;
+    }
+
+    //format element: [[attribute name, [table values]], [attribute name, [table values]], [attribute name, [table values]]]
+    const dataArray = [];
+    let blanks = false;
+
+    rowsArray.forEach((value, index) => {
+      const valuesArray = [];
+      const noSpacesValue = removeSpacesFromString(value);
+      const allEmpty = (array) => {
+        let result = true;
+        array.forEach((item) => {
+          if (item !== "") {
+            result = false;
+          }
+        });
+        return result;
+      };
+      jsonFromExcel.forEach((val, subIndex) => {
+        if (subIndex > 0) {
+          valuesArray.push(val[index]);
+        }
+      });
+      if (valuesArray.length) {
+        if (!value && !allEmpty(valuesArray)) {
+          blanks = true;
+          dataArray.push(["", valuesArray]);
+        }
+        if (value && allEmpty(valuesArray)) {
+          dataArray.push([noSpacesValue, []]);
+        }
+        if (value && !allEmpty(valuesArray)) {
+          dataArray.push([noSpacesValue, valuesArray]);
+        }
+      } else {
+        dataArray.push([noSpacesValue, []]);
+      }
+    });
+
+    setFileData(dataArray);
+    setLoading(false);
+    setDropDisabled(true);
+    setDropMessage({
+      message: messages.successfulUpload,
+      type: "success",
+    });
+
+    if (blanks) {
+      setTimeout(() => {
+        setDropMessage({
+          message: messages.blankEntries,
+          type: "info",
+        });
+      }, [500]);
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [3500]);
+    } else {
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, [setFileData]);
+
+
+  const processCSVFile = useCallback((file) => {
+    try {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: "greedy",
+        transformHeader: function(header, index) {
+          if (header !== "") {
+            return header;
+          }
+          //without this, papaparse will save blank headers as "", "_1", "_2", etc.
+          return `header_empty_placeholder_${index}`;
+        },
+        complete: function(results) {
+          if (!results.data[0] && !results.meta.fields) {
+            setDropMessage({
+              message: messages.noDataUploadFail,
+              type: "error",
+            });
+            setLoading(false);
+            setTimeout(() => {
+              setDropMessage({ message: "", type: "" });
+            }, [2500]);
+
+            return;
+          }
+
+          const findLongest = (arr1, arr2) => {
+            const result = arr1.length > arr2.length ? arr1 : arr2;
+            return result;
+          };
+
+          let rowsArray;
+
+          //in some cases, results.data[0] is undefined, and headers are usually (but not always) present in results.meta.fields
+          if (results.data[0]) {
+            rowsArray = findLongest(
+              results.meta.fields,
+              Object.keys(results.data[0])
+            );
+          } else {
+            rowsArray = results.meta.fields;
+          }
+
+          if (!results.data[0]) {
+            let allBlank = true;
+            rowsArray.forEach((value) => {
+              if (
+                !value.includes("header_empty_placeholder_") &&
+                !value.includes("__parsed_extra")
+              ) {
+                allBlank = false;
+              }
+            });
+            if (allBlank === true) {
+              setDropMessage({
+                message: messages.noDataUploadFail,
+                type: "error",
+              });
+              setLoading(false);
+              setTimeout(() => {
+                setDropMessage({ message: "", type: "" });
+              }, [2500]);
+
+              return;
+            }
+          }
+
+          //create dataArray structure: [[attribute name, [table values]], [attribute name, [table values]], [attribute name, [table values]]]
+
+          const dataArray = [];
+          let blanks = false;
+          rowsArray.forEach((value, index) => {
+            const noSpacesAttribute = removeSpacesFromString(value);
+            const valuesArray = [];
+            let emptyCounter = 0;
+            results.data.forEach((val) => {
+              valuesArray.push(val[value]);
+              if (!val[value]) {
+                emptyCounter++;
+              }
+            });
+
+            const createBlankValue = () => {
+              blanks = true;
+              return "";
+            };
+
+            if (valuesArray.length > 0) {
+              if (valuesArray.length !== emptyCounter) {
+                if (
+                  !noSpacesAttribute.includes("header_empty_placeholder_")
+                ) {
+                  let newValue;
+                  noSpacesAttribute.includes("__parsed_extra")
+                    ? (newValue = createBlankValue())
+                    : (newValue = noSpacesAttribute);
+
+                  dataArray.push([newValue, valuesArray]);
+                } else {
+                  dataArray.push(["", valuesArray]);
+                  blanks = true;
+                }
+              } else {
+                if (
+                  !noSpacesAttribute.includes("header_empty_placeholder_")
+                ) {
+                  dataArray.push([noSpacesAttribute, valuesArray]);
+                }
+              }
+            } else {
+              if (!noSpacesAttribute.includes("header_empty_placeholder_")) {
+                let newValue;
+                noSpacesAttribute.includes("__parsed_extra")
+                  ? (newValue = createBlankValue())
+                  : (newValue = noSpacesAttribute);
+
+                dataArray.push([newValue, []]);
+              } else {
+                dataArray.push(["", valuesArray]);
+                blanks = true;
+              }
+            }
+          });
+
+          setFileData(dataArray);
+          setLoading(false);
+          setDropDisabled(true);
+
+          setDropMessage({
+            message: messages.successfulUpload,
+            type: "success",
+          });
+
+          if (blanks) {
+            setTimeout(() => {
+              setDropMessage({
+                message: messages.blankEntries,
+                type: "info",
+              });
+            }, [500]);
+
+            setTimeout(() => {
+              setDropMessage({ message: "", type: "" });
+            }, [3500]);
+          } else {
+            setTimeout(() => {
+              setDropMessage({ message: "", type: "" });
+            }, [2500]);
+          }
+        },
+      });
+    } catch {
+      setDropMessage({ message: messages.parseUploadFail, type: "error" });
+      setLoading(false);
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, [setFileData]);
+
+
+  const handleExcelDrop = useCallback((acceptedFiles) => {
+    try {
+      acceptedFiles.forEach((file) => {
+        const reader = new FileReader();
+        const rABS = !!reader.readAsBinaryString; // converts object to boolean
+        reader.onabort = () => console.log("file reading was aborted");
+        reader.onerror = () => console.log("file reading has failed");
+        reader.onload = (e) => {
+          const bstr = e.target.result;
+          const workbook = XLSX.read(bstr, {
+            type: rABS ? "binary" : "array",
+          });
+          processExcelFile(workbook);
+        };
+        if (rABS) reader.readAsBinaryString(file);
+        else reader.readAsArrayBuffer(file);
+      });
+    } catch (error) {
+      setDropMessage({ message: messages.uploadFail, type: "error" });
+      setLoading(false);
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, [processExcelFile]);
+
+
+  const handleZipDrop = useCallback((acceptedFiles) => {
+    try {
+      setLoading(true);
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        const zip = await JSZip.loadAsync(e.target.result);
+        const languageList = [];
+        const informationList = [];
+        const labelList = [];
+        const metaList = [];
+        const entryList = [];
+        let entryCodeSummary = {};
+
+        // load up metadata file in OCA bundle
+        const loadMetadataFile = await zip.files["meta.json"].async("text");
+        const metadataJson = JSON.parse(loadMetadataFile);
+        const root = metadataJson.root;
+
+        // loop through all files in OCA bundle
+        for (const [key, file] of Object.entries(metadataJson.files[root])) {
+          if (key.includes("meta")) {
+            const content = await zip.files[file + '.json'].async("text");
+            metaList.push(JSON.parse(content));
+            languageList.push(key.substring(6, 8));
+          }
+
+          if (key.includes("information")) {
+            const content = await zip.files[file + '.json'].async("text");
+            informationList.push(JSON.parse(content));
+          }
+
+          if (key.includes("label")) {
+            const content = await zip.files[file + '.json'].async("text");
+            labelList.push(JSON.parse(content));
+          }
+
+          if (key.includes("entry (")) {
+            const content = await zip.files[file + '.json'].async("text");
+            entryList.push(JSON.parse(content));
+          }
+
+          if (key.includes("entry_code")) {
+            const content = await zip.files[file + '.json'].async("text");
+            entryCodeSummary = JSON.parse(content);
+          }
+        }
+
+        const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
+        const loadUnits = await zip.files[metadataJson.files[root].unit + '.json'].async("text");
+
+        processLanguages(languageList);
+        processMetadata(metaList);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), JSON.parse(loadUnits), entryCodeSummary, entryList);
+      };
+
+      reader.readAsArrayBuffer(acceptedFiles[0]);
+
+      setTimeout(() => {
+        setDropDisabled(true);
+        setDropMessage({ message: "", type: "" });
+        setLoading(false);
+        setSwitchToLastPage(true);
+      }, 900);
+    } catch (error) {
+      setDropMessage({ message: messages.uploadFail, type: "error" });
+      setLoading(false);
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (switchToLastPage) {
+      setCurrentPage('View');
+    }
+  }, [switchToLastPage]);
 
   useEffect(() => {
     if (file.length > 0 && file[0].size > 1000000) {
@@ -35,285 +400,11 @@ export default function StartSchema({ pageForward }) {
         setDropMessage({ message: "", type: "" });
       }, [2500]);
     } else if (file.length > 0 && file[0].path.includes(".csv")) {
-      try {
-        let parsingComplete = false;
-        Papa.parse(file[0], {
-          header: true,
-          skipEmptyLines: "greedy",
-          transformHeader: function(header, index) {
-            if (header !== "") {
-              return header;
-            }
-            //without this, papaparse will save blank headers as "", "_1", "_2", etc.
-            return `header_empty_placeholder_${index}`;
-          },
-          complete: function(results) {
-            if (!results.data[0] && !results.meta.fields) {
-              setDropMessage({
-                message: messages.noDataUploadFail,
-                type: "error",
-              });
-              setLoading(false);
-              setTimeout(() => {
-                setDropMessage({ message: "", type: "" });
-              }, [2500]);
-
-              return;
-            }
-
-            const findLongest = (arr1, arr2) => {
-              const result = arr1.length > arr2.length ? arr1 : arr2;
-              return result;
-            };
-
-            let rowsArray;
-
-            //in some cases, results.data[0] is undefined, and headers are usually (but not always) present in results.meta.fields
-            if (results.data[0]) {
-              rowsArray = findLongest(
-                results.meta.fields,
-                Object.keys(results.data[0])
-              );
-            } else {
-              rowsArray = results.meta.fields;
-            }
-
-            if (!results.data[0]) {
-              let allBlank = true;
-              rowsArray.forEach((value) => {
-                if (
-                  !value.includes("header_empty_placeholder_") &&
-                  !value.includes("__parsed_extra")
-                ) {
-                  allBlank = false;
-                }
-              });
-              if (allBlank === true) {
-                setDropMessage({
-                  message: messages.noDataUploadFail,
-                  type: "error",
-                });
-                setLoading(false);
-                setTimeout(() => {
-                  setDropMessage({ message: "", type: "" });
-                }, [2500]);
-
-                return;
-              }
-            }
-
-            //create dataArray structure: [[attribute name, [table values]], [attribute name, [table values]], [attribute name, [table values]]]
-
-            const dataArray = [];
-            let blanks = false;
-            rowsArray.forEach((value, index) => {
-              const noSpacesAttribute = removeSpacesFromString(value);
-              const valuesArray = [];
-              let emptyCounter = 0;
-              results.data.forEach((val) => {
-                valuesArray.push(val[value]);
-                if (!val[value]) {
-                  emptyCounter++;
-                }
-              });
-
-              const createBlankValue = () => {
-                blanks = true;
-                return "";
-              };
-
-              if (valuesArray.length > 0) {
-                if (valuesArray.length !== emptyCounter) {
-                  if (
-                    !noSpacesAttribute.includes("header_empty_placeholder_")
-                  ) {
-                    let newValue;
-                    noSpacesAttribute.includes("__parsed_extra")
-                      ? (newValue = createBlankValue())
-                      : (newValue = noSpacesAttribute);
-
-                    dataArray.push([newValue, valuesArray]);
-                  } else {
-                    dataArray.push(["", valuesArray]);
-                    blanks = true;
-                  }
-                } else {
-                  if (
-                    !noSpacesAttribute.includes("header_empty_placeholder_")
-                  ) {
-                    dataArray.push([noSpacesAttribute, valuesArray]);
-                  }
-                }
-              } else {
-                if (!noSpacesAttribute.includes("header_empty_placeholder_")) {
-                  let newValue;
-                  noSpacesAttribute.includes("__parsed_extra")
-                    ? (newValue = createBlankValue())
-                    : (newValue = noSpacesAttribute);
-
-                  dataArray.push([newValue, []]);
-                } else {
-                  dataArray.push(["", valuesArray]);
-                  blanks = true;
-                }
-              }
-            });
-
-            setFileData(dataArray);
-            setLoading(false);
-            setDropDisabled(true);
-
-            setDropMessage({
-              message: messages.successfulUpload,
-              type: "success",
-            });
-
-            if (blanks) {
-              setTimeout(() => {
-                setDropMessage({
-                  message: messages.blankEntries,
-                  type: "info",
-                });
-              }, [500]);
-
-              setTimeout(() => {
-                setDropMessage({ message: "", type: "" });
-              }, [3500]);
-            } else {
-              setTimeout(() => {
-                setDropMessage({ message: "", type: "" });
-              }, [2500]);
-            }
-            parsingComplete = true;
-          },
-        });
-        if (!parsingComplete) {
-          setDropMessage({ message: messages.parseUploadFail, type: "error" });
-          setLoading(false);
-          setTimeout(() => {
-            setDropMessage({ message: "", type: "" });
-          }, [2500]);
-        }
-      } catch (error) {
-        setDropMessage({ message: messages.parseUploadFail, type: "error" });
-        setLoading(false);
-        setTimeout(() => {
-          setDropMessage({ message: "", type: "" });
-        }, [2500]);
-      }
+      processCSVFile(file[0]);
     } else if (file.length > 0 && file[0].path.includes(".xls")) {
-      const handleExcelDrop = (acceptedFiles) => {
-        try {
-          acceptedFiles.forEach((file) => {
-            const reader = new FileReader();
-            const rABS = !!reader.readAsBinaryString; // converts object to boolean
-            reader.onabort = () => console.log("file reading was aborted");
-            reader.onerror = () => console.log("file reading has failed");
-            reader.onload = (e) => {
-              const bstr = e.target.result;
-              const workbook = XLSX.read(bstr, {
-                type: rABS ? "binary" : "array",
-              });
-              const sheet_name_list = workbook.SheetNames[0];
-              const jsonFromExcel = XLSX.utils.sheet_to_json(
-                workbook.Sheets[sheet_name_list],
-                {
-                  raw: false,
-                  dateNF: "MM-DD-YYYY",
-                  header: 1,
-                  defval: "",
-                }
-              );
-
-              const rowsArray = jsonFromExcel[0];
-              if (!rowsArray) {
-                setDropMessage({
-                  message: messages.noDataUploadFail,
-                  type: "error",
-                });
-                setLoading(false);
-                setTimeout(() => {
-                  setDropMessage({ message: "", type: "" });
-                }, [2500]);
-
-                return;
-              }
-
-              //format element: [[attribute name, [table values]], [attribute name, [table values]], [attribute name, [table values]]]
-
-              const dataArray = [];
-              let blanks = false;
-
-              rowsArray.forEach((value, index) => {
-                const valuesArray = [];
-                const noSpacesValue = removeSpacesFromString(value);
-                const allEmpty = (array) => {
-                  let result = true;
-                  array.forEach((item) => {
-                    if (item !== "") {
-                      result = false;
-                    }
-                  });
-                  return result;
-                };
-                jsonFromExcel.forEach((val, subIndex) => {
-                  if (subIndex > 0) {
-                    valuesArray.push(val[index]);
-                  }
-                });
-                if (valuesArray.length) {
-                  if (!value && !allEmpty(valuesArray)) {
-                    blanks = true;
-                    dataArray.push(["", valuesArray]);
-                  }
-                  if (value && allEmpty(valuesArray)) {
-                    dataArray.push([noSpacesValue, []]);
-                  }
-                  if (value && !allEmpty(valuesArray)) {
-                    dataArray.push([noSpacesValue, valuesArray]);
-                  }
-                } else {
-                  dataArray.push([noSpacesValue, []]);
-                }
-              });
-
-              setFileData(dataArray);
-              setLoading(false);
-              setDropDisabled(true);
-              setDropMessage({
-                message: messages.successfulUpload,
-                type: "success",
-              });
-
-              if (blanks) {
-                setTimeout(() => {
-                  setDropMessage({
-                    message: messages.blankEntries,
-                    type: "info",
-                  });
-                }, [500]);
-
-                setTimeout(() => {
-                  setDropMessage({ message: "", type: "" });
-                }, [3500]);
-              } else {
-                setTimeout(() => {
-                  setDropMessage({ message: "", type: "" });
-                }, [2500]);
-              }
-            };
-            if (rABS) reader.readAsBinaryString(file);
-            else reader.readAsArrayBuffer(file);
-          });
-        } catch (error) {
-          setDropMessage({ message: messages.uploadFail, type: "error" });
-          setLoading(false);
-          setTimeout(() => {
-            setDropMessage({ message: "", type: "" });
-          }, [2500]);
-        }
-      };
       handleExcelDrop(file);
+    } else if (file.length > 0 && file[0].path.includes(".zip")) {
+      handleZipDrop(file);
     } else if (file.length > 0) {
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
@@ -321,13 +412,15 @@ export default function StartSchema({ pageForward }) {
         setDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [file, setFileData]);
+  }, [file, handleExcelDrop, handleZipDrop, processCSVFile, setFileData]);
+
 
   useEffect(() => {
     if (fileData.length > 0 || attributesList.length > 0) {
       setDropDisabled(true);
     }
   }, [fileData]);
+
 
   //this setTimeout times the upload and will abort the process if it takes longer than 1 minute. If this happens, there is likely an uncaught issue somewhere in the parsing process
   const [timeoutId, setTimeoutId] = useState(null);
