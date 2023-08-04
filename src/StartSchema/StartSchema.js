@@ -438,8 +438,6 @@ export default function StartSchema({ pageForward }) {
     }
   }, [loading]);
 
-  console.log('startSchema');
-
   return (
     <Box sx={{ mt: 5, mb: 3 }}>
       <Box width="80%" margin="auto">

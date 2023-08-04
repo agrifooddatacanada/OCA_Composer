@@ -19,32 +19,21 @@ export const Context = createContext();
 
 function App() {
   const [fileData, setFileData] = useState([]);
-  console.log('fileData', fileData);
   const [attributesList, setAttributesList] = useState([]);
-  console.log('attributesList', attributesList);
   const [currentPage, setCurrentPage] = useState("Start");
-  console.log('currentPage', currentPage);
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: "", description: "" },
   });
-  console.log('schemaDescription', schemaDescription);
   const [divisionGroup, setDivisionGroup] = useState({
     division: '',
     group: '',
   });
-  console.log('divisionGroup', divisionGroup);
   const [languages, setLanguages] = useState(["English"]);
-  console.log('languages', languages);
   const [attributeRowData, setAttributeRowData] = useState([]);
-  console.log('attributeRowData', attributeRowData);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
-  console.log('entryCodeRowData', entryCodeRowData);
   const [attributesWithLists, setAttributesWithLists] = useState([]);
-  console.log('attributesWithLists', attributesWithLists);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
-  console.log('savedEntryCodes', savedEntryCodes);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
-  console.log('lanAttributeRowData', lanAttributeRowData);
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
 

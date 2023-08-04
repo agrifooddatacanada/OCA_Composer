@@ -73,7 +73,6 @@ const useZipParser = () => {
 
         newSavedEntryCodes[attrWithList] = (newSavedEntryCodes[attrWithList] || []).concat(newEntryCodeValueRowsForAttribute);
       }
-
       setAttributesWithLists(attributesWithListType);
       setSavedEntryCodes(newSavedEntryCodes);
     }
