@@ -13,7 +13,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import LinkCard from "./LinkCard";
 
 export default function ViewSchema({ pageBack }) {
-  const { languages, attributeRowData, lanAttributeRowData } =
+  const { languages, attributeRowData, lanAttributeRowData, isZip, setCurrentPage } =
     useContext(Context);
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
@@ -176,13 +176,31 @@ export default function ViewSchema({ pageBack }) {
           pl: 10,
         }}
       >
-        <Button
-          color="navButton"
-          sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
-          onClick={pageBack}
-        >
-          <ArrowBackIosIcon /> Back
-        </Button>
+        <Box sx={{
+          display: "flex",
+          justifyContent: "space-between",
+        }}>
+          <Button
+            color="navButton"
+            sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
+            onClick={pageBack}
+          >
+            <ArrowBackIosIcon /> Back
+          </Button>
+          {isZip ? <Button
+            color="button"
+            variant='contained'
+            onClick={() => setCurrentPage("Metadata")}
+            sx={{
+              alignSelf: "flex-end",
+              display: "flex",
+              justifyContent: "space-around",
+              padding: "0.5rem 1rem",
+            }}
+          >
+            Edit OCA Bundle
+          </Button> : <></>}
+        </Box>
         {showLink && <LinkCard setShowLink={setShowLink} />}
         <Box
           sx={{
@@ -304,6 +322,6 @@ export default function ViewSchema({ pageBack }) {
         </Box>
         <Export setShowLink={setShowLink} />
       </Box>
-    </Box>
+    </Box >
   );
 }
