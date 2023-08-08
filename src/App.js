@@ -18,6 +18,7 @@ import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
 export const Context = createContext();
 
 function App() {
+  const [isZip, setIsZip] = useState(false);
   const [fileData, setFileData] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
   const [currentPage, setCurrentPage] = useState("Start");
@@ -164,6 +165,7 @@ function App() {
     setAttributesWithLists([]);
     setSavedEntryCodes({});
     setLanAttributeRowData({});
+    setIsZip(false);
   }, [fileData]);
 
   return (
@@ -194,6 +196,8 @@ function App() {
             setCurrentPage,
             customIsos,
             setCustomIsos,
+            isZip,
+            setIsZip
           }}
         >
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

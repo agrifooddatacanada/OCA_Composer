@@ -19,6 +19,7 @@ export default function StartSchema({ pageForward }) {
     setCurrentPage,
     attributesList,
     setAttributesList,
+    setIsZip
   } = useContext(Context);
   const {
     processLanguages,
@@ -404,6 +405,7 @@ export default function StartSchema({ pageForward }) {
     } else if (file.length > 0 && file[0].path.includes(".xls")) {
       handleExcelDrop(file);
     } else if (file.length > 0 && file[0].path.includes(".zip")) {
+      setIsZip(true);
       handleZipDrop(file);
     } else if (file.length > 0) {
       setDropMessage({ message: messages.uploadFail, type: "error" });
