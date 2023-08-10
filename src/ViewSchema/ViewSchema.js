@@ -166,8 +166,6 @@ export default function ViewSchema({ pageBack }) {
     setDisplayArray(newDisplayArray);
   }, [attributeRowData, lanAttributeRowData]);
 
-  console.log('setZipToJson', zipToReadme);
-
   return (
     <Box>
       <Box
