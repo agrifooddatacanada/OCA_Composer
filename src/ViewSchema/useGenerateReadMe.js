@@ -160,8 +160,6 @@ const useGenerateReadMe = () => {
     });
 
     const text = textFile.join('');
-    console.log('text', text);
-    // await fs.writeFile(filename, text);
     const textBlob = new Blob([text], { type: "text/plain" });
     const downloadUrl = URL.createObjectURL(textBlob);
 
