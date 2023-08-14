@@ -45,6 +45,7 @@ function App() {
     "Details",
     "LanguageDetails",
     "Overlays",
+    "CharacterEncoding",
     "View",
   ];
 

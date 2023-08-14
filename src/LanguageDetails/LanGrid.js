@@ -295,7 +295,7 @@ export default function LanGrid({ gridRef, currentLanguage }) {
     ]);
   }, [attributesList]);
 
-
+  console.log('lanAttributeRowData', lanAttributeRowData);
   return (
     <div className="ag-theme-balham" style={{ width: 800 }}>
       <style>{gridStyles}</style>
