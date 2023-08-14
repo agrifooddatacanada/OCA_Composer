@@ -54,6 +54,15 @@ export default function Header({ currentPage }) {
         );
         setHelpLink('/view_schema_help');
         break;
+      case "Overlays":
+        setHeader("Overlays");
+
+        // TODO: Add help tooltips
+        setToolTipText("");
+
+        // TODO: Add Help page
+        setHelpLink('/overlays_help');
+        break;
       default:
         setHeader("Start Schema");
         setHelpLink('/start_schema_help');

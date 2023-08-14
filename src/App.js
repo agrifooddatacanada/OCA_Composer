@@ -14,6 +14,7 @@ import LanguageAttributeHelp from "./UsersHelp/Language_Attribute_Help";
 import SchemaMetadataHelp from "./UsersHelp/Schema_Metadata_Help";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
+import OverlaysHelp from "./UsersHelp/Overlays_Help";
 
 export const Context = createContext();
 
@@ -43,6 +44,7 @@ function App() {
     "Metadata",
     "Details",
     "LanguageDetails",
+    "Overlays",
     "View",
   ];
 
@@ -212,6 +214,7 @@ function App() {
                 <Route path="/schema_metadata_help" element={<SchemaMetadataHelp />} />
                 <Route path="/start_schema_help" element={<StartSchemaHelp />} />
                 <Route path="/view_schema_help" element={<ViewSchemaHelp />} />
+                <Route path="/overlays_help" element={<OverlaysHelp />} />
                 <Route
                   path="*"
                   element={<Navigate to="/" />}
