@@ -63,6 +63,15 @@ export default function Header({ currentPage }) {
         // TODO: Add Help page
         setHelpLink('/overlays_help');
         break;
+      case "CharacterEncoding":
+        setHeader("Character Encoding");
+
+        // TODO: Add help tooltips
+        setToolTipText("");
+
+        // TODO: Add Help page
+        setHelpLink('/overlays_help');
+        break;
       default:
         setHeader("Start Schema");
         setHelpLink('/start_schema_help');

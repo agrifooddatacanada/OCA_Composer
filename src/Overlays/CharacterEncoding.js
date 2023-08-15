@@ -2,11 +2,12 @@ import { Box, Button, Tooltip } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CustomPalette } from "../constants/customPalette";
-import { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../App";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-theme-balham.css";
+import useCharacterEncodingType from "./useCharacterEncodingType";
 
 const rowData = [
   {
@@ -21,8 +22,46 @@ const rowData = [
     Attribute: "attr_3",
     Label: "",
   },
-
 ];
+
+const AttributeHeader = () => {
+  return (
+    <>
+      <span style={{ margin: "auto" }}>Attribute</span>
+      <Tooltip
+        title="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
+        placement="top"
+        PopperProps={{
+          sx: {
+            "& .MuiTooltip-tooltip": {
+              backgroundColor: CustomPalette.GREY_200,
+              color: CustomPalette.GREY_800,
+              boxShadow: 3,
+            },
+          },
+        }}
+      >
+        <HelpOutlineIcon sx={{ fontSize: 15 }} />
+      </Tooltip>
+    </>
+  );
+};
+
+const CharacterEncodingTypeHeader = () => {
+  return (
+    <div className="ag-cell-label-container">
+      <div
+        className="ag-header-cell-label"
+        style={{ display: "flex", justifyContent: "space-between" }}
+      >
+        Type
+        <Tooltip placement="right" arrow>
+          <HelpOutlineIcon sx={{ fontSize: 15 }} />
+        </Tooltip>
+      </div>
+    </div>
+  );
+};
 
 const gridStyles = `
   .ag-cell {
@@ -50,20 +89,11 @@ const CharacterEncoding = ({
   pageBack,
   pageForward
 }) => {
-  const {
-    attributesList,
-    lanAttributeRowData,
-    setLanAttributeRowData,
-    attributeRowData,
-    savedEntryCodes,
-    attributesWithLists,
-    languages,
-  } = useContext(Context);
-
-  //Sets Language Dependent Attribute row data
+  const { attributesList } = useContext(Context);
 
   const [columnDefs, setColumnDefs] = useState([]);
   const gridRef = useRef();
+  const { CharacterEncodingTypeRenderer } = useCharacterEncodingType();
 
   useEffect(() => {
     setColumnDefs([
@@ -76,65 +106,16 @@ const CharacterEncoding = ({
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
         }),
-        headerComponent: () => {
-          return (
-            <>
-              <span style={{ margin: "auto" }}>Attribute</span>
-              <Tooltip
-                title="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
-                placement="top"
-                PopperProps={{
-                  sx: {
-                    "& .MuiTooltip-tooltip": {
-                      backgroundColor: CustomPalette.GREY_200,
-                      color: CustomPalette.GREY_800,
-                      boxShadow: 3,
-                    },
-                  },
-                }}
-              >
-                <HelpOutlineIcon sx={{ fontSize: 15 }} />
-              </Tooltip>
-            </>
-          );
-        },
+        headerComponent: AttributeHeader,
       },
       {
-        field: "Label",
-        editable: true,
-        width: 250,
-        autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
+        field: "Type",
+        headerComponent: CharacterEncodingTypeHeader,
+        cellRenderer: CharacterEncodingTypeRenderer,
+        cellRendererParams: (params) => ({
+          attr: params.data.Attribute,
         }),
-        headerComponent: () => {
-          return (
-            <>
-              <span style={{ margin: "auto" }}>
-                Character encoding
-              </span>
-              <Tooltip
-                title="Please choose an appropriate character encoding."
-                placement="top"
-                PopperProps={{
-                  sx: {
-                    "& .MuiTooltip-tooltip": {
-                      backgroundColor: CustomPalette.GREY_200,
-                      color: CustomPalette.GREY_800,
-                      boxShadow: 3,
-                    },
-                  },
-                }}
-              >
-                <HelpOutlineIcon sx={{ fontSize: 15 }} />
-              </Tooltip>
-            </>
-          );
-        },
-        cellEditorParams: {
-          maxLength: 50,
-        },
+        width: 200,
       },
     ]);
   }, [attributesList]);
@@ -168,7 +149,7 @@ const CharacterEncoding = ({
           </Button>
           <Button
             color="navButton"
-            onClick={pageForward}
+            onClick={pageBack}
             sx={{ alignSelf: "flex-end", color: CustomPalette.PRIMARY }}
           >
             Next <ArrowForwardIosIcon />
@@ -182,7 +163,7 @@ const CharacterEncoding = ({
             flexDirection: "column",
           }}
         >
-          <div className="ag-theme-balham" style={{ width: 430 }}>
+          <div className="ag-theme-balham" style={{ width: 380 }}>
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
