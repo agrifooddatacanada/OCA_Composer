@@ -215,7 +215,7 @@ export default function ViewSchema({ pageBack }) {
                   padding: "0.5rem 1rem",
                 }}
               >
-                Edit OCA Bundle
+                Edit Schema
               </Button>
             </Box>
           ) : <></>}
