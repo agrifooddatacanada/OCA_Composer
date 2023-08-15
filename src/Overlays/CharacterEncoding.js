@@ -9,21 +9,6 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import useCharacterEncodingType from "./useCharacterEncodingType";
 
-const rowData = [
-  {
-    Attribute: "attr_1",
-    Label: "",
-  },
-  {
-    Attribute: "attr_2",
-    Label: "",
-  },
-  {
-    Attribute: "attr_3",
-    Label: "",
-  },
-];
-
 const AttributeHeader = () => {
   return (
     <>
@@ -89,7 +74,7 @@ const CharacterEncoding = ({
   pageBack,
   pageForward
 }) => {
-  const { attributesList } = useContext(Context);
+  const { attributesList, characterEncodingRowData } = useContext(Context);
 
   const [columnDefs, setColumnDefs] = useState([]);
   const gridRef = useRef();
@@ -109,7 +94,7 @@ const CharacterEncoding = ({
         headerComponent: AttributeHeader,
       },
       {
-        field: "Type",
+        field: "CharacterEncoding",
         headerComponent: CharacterEncodingTypeHeader,
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
@@ -167,7 +152,7 @@ const CharacterEncoding = ({
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
-              rowData={rowData}
+              rowData={characterEncodingRowData}
               columnDefs={columnDefs}
               domLayout="autoHeight"
             />

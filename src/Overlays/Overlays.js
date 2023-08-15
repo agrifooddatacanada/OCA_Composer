@@ -6,25 +6,59 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { useState } from 'react';
 
-const items = ["Attribute type-CB", "Attributes-CB", "Classification-CB", "Flagged-CB", "entry", "entry code", "cardinality", "character encoding", "conformance", "format", "information", "label", "meta", "unit"];
+const items = {
+  "Attribute type-CB": { feature: "Attribute type-CB", selected: false },
+  "Attributes-CB": { feature: "Attributes-CB", selected: false },
+  "Classification-CB": { feature: "Classification-CB", selected: false },
+  "Flagged-CB": { feature: "Flagged-CB", selected: false },
+  "entry": { feature: "entry", selected: false },
+  "entry code": { feature: "entry code", selected: false },
+  "cardinality": { feature: "cardinality", selected: false },
+  "character encoding": { feature: "character encoding", selected: false },
+  "conformance": { feature: "conformance", selected: false },
+  "format": { feature: "format", selected: false },
+  "information": { feature: "information", selected: false },
+  "label": { feature: "label", selected: false },
+  "meta": { feature: "meta", selected: false },
+  "unit": { feature: "unit", selected: false }
+};
 
 const Overlays = ({
   pageBack,
   pageForward,
 }) => {
   const [categories, setCategories] = useState(items);
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [categoriesInfo, setCategoriesInfo] = useState({});
 
   const addToSelected = (item) => {
-    setCategories(prev => prev.filter(cat => cat !== item));
-    setSelectedCategories(prev => [...prev, item]);
+    setCategories(prev => ({ ...prev, [item]: { ...prev[item], selected: true } }));
+    setCategoriesInfo(prev => {
+
+      //  TODO: Add default values according to attribute list for each feature
+      // {"cardinality": {...attributes}}
+      return { ...prev, [item]: {} };
+    });
   };
 
   const removeFromSelected = (item) => {
-    setSelectedCategories(prev => prev.filter(cat => cat !== item));
-    setCategories(prev => [...prev, item].sort());
+    setCategories(prev => ({ ...prev, [item]: { ...prev[item], selected: false } }));
+
+    const newCategoriesInfo = { ...categoriesInfo };
+    delete newCategoriesInfo[item];
+    setCategoriesInfo(newCategoriesInfo);
   };
 
+  // Convert categories into a list of features
+  const selectedFeatures = [];
+  const unselectedFeatures = [];
+
+  Object.values(categories).forEach(item => {
+    if (item.selected) {
+      selectedFeatures.push(item.feature);
+    } else {
+      unselectedFeatures.push(item.feature);
+    }
+  });
 
   return (
     <Box>
@@ -79,7 +113,7 @@ const Overlays = ({
               borderRadius: '4px',
             }}>
               <List>
-                {categories.map((text, _) => (
+                {unselectedFeatures.map((text, _) => (
                   <ListItemButton key={text} onClick={() => addToSelected(text)}>
                     <AddCircleIcon sx={{ color: CustomPalette.PRIMARY }} />
                     <ListItemText primary={text} sx={{ marginLeft: 2 }} />
@@ -98,7 +132,7 @@ const Overlays = ({
               borderRadius: '4px',
             }}>
               <List>
-                {selectedCategories.map((text, index) => (
+                {selectedFeatures.map((text, index) => (
                   <Box key={index} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <ListItemText primary={text} sx={{ display: 'flex', paddingLeft: '1rem' }} />
                     <DeleteForeverIcon sx={{ cursor: 'pointer', color: CustomPalette.PRIMARY }} onClick={() => removeFromSelected(text)} />

@@ -36,6 +36,7 @@ function App() {
   const [attributesWithLists, setAttributesWithLists] = useState([]);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
+  const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
 
@@ -77,6 +78,7 @@ function App() {
   //Create Attribute Row Data object when Attributes List updates
   useEffect(() => {
     const newAttributesArray = [];
+    const newCharacterEncodingArray = [];
     if (attributesList.length > 0) {
       attributesList.forEach((item) => {
         const attributeObject = attributeRowData.find(
@@ -93,8 +95,21 @@ function App() {
             List: false,
           });
         }
+
+        const characterEncodingObject = characterEncodingRowData.find(
+          (obj) => obj.Attribute === item
+        );
+        if (characterEncodingObject) {
+          newCharacterEncodingArray.push(characterEncodingObject);
+        } else {
+          newCharacterEncodingArray.push({
+            Attribute: item,
+            CharacterEncoding: "",
+          });
+        }
       });
       setAttributeRowData(newAttributesArray);
+      setCharacterEncodingRowData(newCharacterEncodingArray);
     }
   }, [attributesList]);
 
@@ -200,7 +215,9 @@ function App() {
             customIsos,
             setCustomIsos,
             isZip,
-            setIsZip
+            setIsZip,
+            characterEncodingRowData,
+            setCharacterEncodingRowData
           }}
         >
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
