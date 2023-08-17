@@ -92,7 +92,8 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
         },
         {
           field: "Description",
-          width: 350,
+          flex: 1,
+          minWidth: 350,
           autoHeight: true,
           cellStyle: (params) => ({
             whiteSpace: "pre-wrap",
@@ -168,8 +169,6 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
     });
     setRowData(newRowData);
   }, [displayArray, currentLanguage]);
-
-  console.log('rowData', rowData);
 
   return (
     <div className="ag-theme-balham" style={{ width: '100%' }}>
