@@ -10,10 +10,10 @@ const displayValues = [
 ];
 
 const useCharacterEncodingType = (gridRef) => {
-  const { attributesList, attributeRowData, characterEncodingRowData, setCharacterEncodingRowData, selectedOverlay } = useContext(Context);
+  const { attributesList, characterEncodingRowData, setCharacterEncodingRowData, selectedOverlay } = useContext(Context);
 
   const typesObjectRef = useRef({});
-  const dropRefs = useRef(attributeRowData.map(() => createRef()));
+  const dropRefs = useRef(characterEncodingRowData.map(() => createRef()));
 
   // Load up the typesObjectRef from the characterEncodingRowData
   useEffect(() => {
@@ -27,8 +27,8 @@ const useCharacterEncodingType = (gridRef) => {
   }, [characterEncodingRowData, selectedOverlay]);
 
   useEffect(() => {
-    dropRefs.current = attributeRowData.map(() => createRef());
-  }, [attributesList, attributeRowData]);
+    dropRefs.current = characterEncodingRowData.map(() => createRef());
+  }, [attributesList, characterEncodingRowData]);
 
   const handleSave = () => {
     gridRef.current.api.stopEditing();
@@ -46,7 +46,7 @@ const useCharacterEncodingType = (gridRef) => {
   const CharacterEncodingTypeRenderer = (props) => {
     const attributeName = props.attr;
 
-    const index = attributeRowData.findIndex(
+    const index = characterEncodingRowData.findIndex(
       (item) => item.Attribute === attributeName
     );
 

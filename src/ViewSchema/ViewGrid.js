@@ -150,7 +150,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
 
       return predefinedColumns;
     };
-    console.log('getColumns', getColumns());
+
     setColumnDefs(getColumns());
   }, [attributesWithLists]);
 
