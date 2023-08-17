@@ -6,6 +6,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Context } from "../App";
 import SingleTable from "./SingleTable";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
+import BackNextSkeleton from "../components/BackNextSkeleton";
 
 export default function EntryCodes() {
   const [selectedAttributes, setSelectedAttributes] = useState({});
@@ -140,63 +141,21 @@ export default function EntryCodes() {
   });
 
   return (
-    <Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          pr: 10,
-          pl: 10,
-        }}
-      >
-        <Box
+    <BackNextSkeleton isBack pageBack={pageBackSave} isForward pageForward={pageForwardSave} errorMessage={errorMessage}>
+      <Box sx={{ width: "90%", margin: "auto" }}>
+        <Typography
           sx={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "space-between",
+            fontSize: 15,
+            textAlign: "left",
+            margin: "1rem 0 1rem 0",
+            width: 500,
           }}
         >
-          <Button
-            color="navButton"
-            sx={{ textAlign: "left", alignSelf: "flex-start" }}
-            onClick={pageBackSave}
-          >
-            <ArrowBackIosIcon /> Back
-          </Button>
-          <Box sx={{ alignSelf: "flex-end", mb: 5 }}>
-            <Button color="navButton" onClick={pageForwardSave}>
-              Next <ArrowForwardIosIcon />
-            </Button>
-            {errorMessage.length > 0 && (
-              <Alert
-                severity="error"
-                style={{
-                  position: "absolute",
-                  zIndex: 9999,
-                  right: "20%",
-                  transform: "translateY(-90%)",
-                }}
-              >
-                {errorMessage}
-              </Alert>
-            )}
-          </Box>
-        </Box>
-        <Box sx={{ width: "90%", margin: "auto" }}>
-          <Typography
-            sx={{
-              fontSize: 15,
-              textAlign: "left",
-              margin: "1rem 0 1rem 0",
-              width: 500,
-            }}
-          >
-            You indicated in the previous step that one or more attributes is a
-            list. Please add entry codes for the same:
-          </Typography>
-          {selectedAttributes.length > 0 && allCodesDisplay}
-        </Box>
+          You indicated in the previous step that one or more attributes is a
+          list. Please add entry codes for the same:
+        </Typography>
+        {selectedAttributes.length > 0 && allCodesDisplay}
       </Box>
-    </Box>
+    </BackNextSkeleton>
   );
 }

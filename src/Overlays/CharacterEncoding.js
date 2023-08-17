@@ -1,5 +1,4 @@
-import { Box, Button, Tooltip } from "@mui/material";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import { Box, Tooltip } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../App";
@@ -7,6 +6,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import useCharacterEncodingType from "./useCharacterEncodingType";
+import BackNextSkeleton from "../components/BackNextSkeleton";
 
 const AttributeHeader = () => {
   return (
@@ -114,53 +114,26 @@ const CharacterEncoding = () => {
   };
 
   return (
-    <Box>
+    <BackNextSkeleton isBack pageBack={handleBackward}>
       <Box
         sx={{
+          margin: "2rem",
+          gap: "3rem",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "space-between",
-          margin: "auto",
-          pr: 10,
-          pl: 10,
         }}
       >
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
-          <Button
-            color="navButton"
-            sx={{ textAlign: "left", alignSelf: "flex-start" }}
-            onClick={() => handleBackward()}
-          >
-            <ArrowBackIosIcon /> Back
-          </Button>
-        </Box>
-        <Box
-          sx={{
-            margin: "2rem",
-            gap: "3rem",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <div className="ag-theme-balham" style={{ width: 380 }}>
-            <style>{gridStyles}</style>
-            <AgGridReact
-              ref={gridRef}
-              rowData={characterEncodingRowData}
-              columnDefs={columnDefs}
-              domLayout="autoHeight"
-            />
-          </div>
-        </Box>
+        <div className="ag-theme-balham" style={{ width: 380 }}>
+          <style>{gridStyles}</style>
+          <AgGridReact
+            ref={gridRef}
+            rowData={characterEncodingRowData}
+            columnDefs={columnDefs}
+            domLayout="autoHeight"
+          />
+        </div>
       </Box>
-    </Box>
+    </BackNextSkeleton>
   );
 };
 

@@ -1,6 +1,7 @@
 import { createRef, useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../App";
-import { Box, FormControl, MenuItem, Select } from "@mui/material";
+import { MenuItem } from "@mui/material";
+import { DropdownMenuList } from "../components/DropdownMenuCell";
 
 const displayValues = [
   "",
@@ -11,7 +12,6 @@ const displayValues = [
 
 const useCharacterEncodingType = (gridRef) => {
   const { attributesList, characterEncodingRowData, setCharacterEncodingRowData, selectedOverlay } = useContext(Context);
-
   const typesObjectRef = useRef({});
   const dropRefs = useRef(characterEncodingRowData.map(() => createRef()));
 
@@ -45,12 +45,34 @@ const useCharacterEncodingType = (gridRef) => {
 
   const CharacterEncodingTypeRenderer = (props) => {
     const attributeName = props.attr;
+    const [type, setType] = useState(displayValues[0]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const index = characterEncodingRowData.findIndex(
       (item) => item.Attribute === attributeName
     );
 
-    const [type, setType] = useState(displayValues[0]);
+    useEffect(() => {
+      setType(typesObjectRef.current[attributeName]);
+    }, [attributeName]);
+
+    const handleChange = (e) => {
+      setType(e.target.value);
+      typesObjectRef.current = { ...typesObjectRef.current, [attributeName]: e.target.value };
+      setIsDropdownOpen(false);
+    };
+
+    const handleClick = () => {
+      setIsDropdownOpen(!isDropdownOpen);
+    };
+
+    const handleKeyDown = (e) => {
+      const keyPressed = e.key;
+      if (keyPressed === "Delete" || keyPressed === "Backspace") {
+        setType("");
+        typesObjectRef.current[attributeName] = "";
+      }
+    };
 
     const typesDisplay = displayValues.map((value, index) => (
       <MenuItem
@@ -62,66 +84,17 @@ const useCharacterEncodingType = (gridRef) => {
       </MenuItem>
     ));
 
-    const handleChange = (e) => {
-      setType(e.target.value);
-      typesObjectRef.current = { ...typesObjectRef.current, [attributeName]: e.target.value };
-      setIsDropdownOpen(false);
-    };
-
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-    const handleClick = () => {
-      setIsDropdownOpen(!isDropdownOpen);
-    };
-
-    useEffect(() => {
-      setType(typesObjectRef.current[attributeName]);
-    }, [attributeName]);
-
-    const handleKeyDown = (e) => {
-      const keyPressed = e.key;
-      if (keyPressed === "Delete" || keyPressed === "Backspace") {
-        setType("");
-        typesObjectRef.current[attributeName] = "";
-      }
-    };
-
     return (
-      <Box
-        sx={{
-          height: "105%",
-          display: "flex",
-          alignItems: "center",
-          width: "100%",
-        }}
-      >
-        <FormControl
-          fullWidth
-          variant="standard"
-          sx={{
-            height: "100%",
-          }}
-          onKeyDown={handleKeyDown}
-        >
-          <Select
-            id="select-drop"
-            value={type || ""}
-            label="Character Encoding"
-            onChange={handleChange}
-            sx={{
-              height: "100%",
-              fontSize: "small",
-            }}
-            ref={dropRefs.current[index]}
-            onClick={handleClick}
-            open={isDropdownOpen}
-            onClose={() => setIsDropdownOpen(false)}
-            onOpen={() => setIsDropdownOpen(true)}
-          >
-            {typesDisplay}
-          </Select>
-        </FormControl>
-      </Box>
+      <DropdownMenuList
+        handleKeyDown={handleKeyDown}
+        type={type}
+        handleChange={handleChange}
+        dropRefs={dropRefs.current[index]}
+        handleClick={handleClick}
+        isDropdownOpen={isDropdownOpen}
+        setIsDropdownOpen={setIsDropdownOpen}
+        typesDisplay={typesDisplay}
+      />
     );
   };
 

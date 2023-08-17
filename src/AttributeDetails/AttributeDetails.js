@@ -11,6 +11,7 @@ import {
   removeSpacesFromString,
   removeSpacesFromArrayOfObjects,
 } from "../constants/removeSpaces";
+import BackNextSkeleton from "../components/BackNextSkeleton";
 
 export default function AttributeDetails({ pageBack, pageForward }) {
   const {
@@ -186,39 +187,7 @@ export default function AttributeDetails({ pageBack, pageForward }) {
   const addButton1 = useRef();
   const addButton2 = useRef();
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "space-between",
-        margin: "auto",
-        pr: 10,
-        pl: 10,
-      }}
-    >
-      <Box
-        sx={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <Button
-          color="navButton"
-          sx={{ textAlign: "left", alignSelf: "flex-start" }}
-          onClick={pageBackSave}
-        >
-          <ArrowBackIosIcon /> Back
-        </Button>
-        <Button
-          color="navButton"
-          onClick={pageForwardSave}
-          sx={{ alignSelf: "flex-end" }}
-        >
-          Next <ArrowForwardIosIcon />
-        </Button>
-      </Box>
+    <BackNextSkeleton isBack pageBack={pageBackSave} isForward pageForward={pageForwardSave}>
       {showCard && (
         <NavigationCard
           fieldArray={fieldArray}
@@ -268,6 +237,7 @@ export default function AttributeDetails({ pageBack, pageForward }) {
         setAddByTab={setAddByTab}
         typesObjectRef={typesObjectRef}
       />
-    </Box>
+    </BackNextSkeleton>
+
   );
 }

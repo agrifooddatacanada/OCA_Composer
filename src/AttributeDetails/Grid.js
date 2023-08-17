@@ -9,7 +9,8 @@ import { AgGridReact } from "ag-grid-react";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { Tooltip, Box, FormControl, Select, MenuItem } from "@mui/material";
+import { Tooltip, MenuItem } from "@mui/material";
+import { DropdownMenuList } from "../components/DropdownMenuCell";
 
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
@@ -17,6 +18,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 
 import TypeTooltip from "./TypeTooltip";
+
 
 export default function Grid({
   gridRef,
@@ -370,40 +372,16 @@ export default function Grid({
     };
 
     return (
-      <Box
-        sx={{
-          height: "105%",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <FormControl
-          fullWidth
-          variant="standard"
-          sx={{
-            height: "100%",
-          }}
-          onKeyDown={handleKeyDown}
-        >
-          <Select
-            id="select-drop"
-            value={type || ""}
-            label="Type"
-            onChange={handleChange}
-            sx={{
-              height: "100%",
-              fontSize: "small",
-            }}
-            ref={dropRefs.current[index]}
-            onClick={handleClick}
-            open={isDropdownOpen}
-            onClose={() => setIsDropdownOpen(false)}
-            onOpen={() => setIsDropdownOpen(true)}
-          >
-            {typesDisplay}
-          </Select>
-        </FormControl>
-      </Box>
+      <DropdownMenuList
+        handleKeyDown={handleKeyDown}
+        type={type}
+        handleChange={handleChange}
+        dropRefs={dropRefs.current[index]}
+        handleClick={handleClick}
+        isDropdownOpen={isDropdownOpen}
+        setIsDropdownOpen={setIsDropdownOpen}
+        typesDisplay={typesDisplay}
+      />
     );
   };
 
