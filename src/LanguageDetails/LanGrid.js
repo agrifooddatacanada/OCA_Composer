@@ -8,6 +8,14 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 
+const textareaStyle = {
+  width: '98%',
+  height: '100%',
+  resize: 'none',
+  outline: 'none',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+  fontSize: '12px',
+};
 
 const TextareaCellEditor = forwardRef((props, ref) => {
   const [value, setValue] = useState(props.value);
@@ -31,15 +39,6 @@ const TextareaCellEditor = forwardRef((props, ref) => {
       }
     };
   });
-
-  const textareaStyle = {
-    width: '98%',
-    height: '100%',
-    resize: 'none',
-    outline: 'none',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
-    fontSize: '12px',
-  };
 
   return (
     <textarea
@@ -295,7 +294,6 @@ export default function LanGrid({ gridRef, currentLanguage }) {
     ]);
   }, [attributesList]);
 
-  console.log('lanAttributeRowData', lanAttributeRowData);
   return (
     <div className="ag-theme-balham" style={{ width: 800 }}>
       <style>{gridStyles}</style>

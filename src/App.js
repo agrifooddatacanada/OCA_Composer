@@ -15,8 +15,26 @@ import SchemaMetadataHelp from "./UsersHelp/Schema_Metadata_Help";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
 import OverlaysHelp from "./UsersHelp/Overlays_Help";
+import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
 
 export const Context = createContext();
+
+const items = {
+  "Attribute type-CB": { feature: "Attribute type-CB", selected: false },
+  "Attributes-CB": { feature: "Attributes-CB", selected: false },
+  "Classification-CB": { feature: "Classification-CB", selected: false },
+  "Flagged-CB": { feature: "Flagged-CB", selected: false },
+  "entry": { feature: "entry", selected: false },
+  "entry code": { feature: "entry code", selected: false },
+  "cardinality": { feature: "cardinality", selected: false },
+  "character encoding": { feature: "character encoding", selected: false },
+  "conformance": { feature: "conformance", selected: false },
+  "format": { feature: "format", selected: false },
+  "information": { feature: "information", selected: false },
+  "label": { feature: "label", selected: false },
+  "meta": { feature: "meta", selected: false },
+  "unit": { feature: "unit", selected: false }
+};
 
 function App() {
   const [isZip, setIsZip] = useState(false);
@@ -36,9 +54,13 @@ function App() {
   const [attributesWithLists, setAttributesWithLists] = useState([]);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
-  const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
+
+  // Use for Overlays
+  const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
+  const [overlay, setOverlay] = useState(items);
+  const [selectedOverlay, setSelectedOverlay] = useState('');
 
   const pagesArray = [
     "Start",
@@ -46,8 +68,7 @@ function App() {
     "Details",
     "LanguageDetails",
     "Overlays",
-    "CharacterEncoding",
-    "View",
+    "View", 1
   ];
 
   const pageForward = () => {
@@ -80,6 +101,8 @@ function App() {
     const newAttributesArray = [];
     const newCharacterEncodingArray = [];
     if (attributesList.length > 0) {
+      const { selectedFeatures } = getListOfSelectedOverlays(overlay);
+
       attributesList.forEach((item) => {
         const attributeObject = attributeRowData.find(
           (obj) => obj.Attribute === item
@@ -102,10 +125,11 @@ function App() {
         if (characterEncodingObject) {
           newCharacterEncodingArray.push(characterEncodingObject);
         } else {
-          newCharacterEncodingArray.push({
-            Attribute: item,
-            CharacterEncoding: "",
+          const newCharacterEncodingRow = { Attribute: item };
+          selectedFeatures.forEach(feature => {
+            newCharacterEncodingRow[feature] = "";
           });
+          newCharacterEncodingArray.push(newCharacterEncodingRow);
         }
       });
       setAttributeRowData(newAttributesArray);
@@ -217,7 +241,11 @@ function App() {
             isZip,
             setIsZip,
             characterEncodingRowData,
-            setCharacterEncodingRowData
+            setCharacterEncodingRowData,
+            overlay,
+            setOverlay,
+            selectedOverlay,
+            setSelectedOverlay
           }}
         >
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

@@ -1,6 +1,5 @@
 import { Box, Button, Tooltip } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CustomPalette } from "../constants/customPalette";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../App";
@@ -34,17 +33,24 @@ const AttributeHeader = () => {
 
 const CharacterEncodingTypeHeader = () => {
   return (
-    <div className="ag-cell-label-container">
-      <div
-        className="ag-header-cell-label"
-        style={{ display: "flex", justifyContent: "space-between" }}
+    <>
+      <span style={{ margin: "auto" }}>Character Encoding</span>
+      <Tooltip
+        title="This is the character encoding table."
+        placement="top"
+        PopperProps={{
+          sx: {
+            "& .MuiTooltip-tooltip": {
+              backgroundColor: CustomPalette.GREY_200,
+              color: CustomPalette.GREY_800,
+              boxShadow: 3,
+            },
+          },
+        }}
       >
-        Type
-        <Tooltip placement="right" arrow>
-          <HelpOutlineIcon sx={{ fontSize: 15 }} />
-        </Tooltip>
-      </div>
-    </div>
+        <HelpOutlineIcon sx={{ fontSize: 15 }} />
+      </Tooltip>
+    </>
   );
 };
 
@@ -70,15 +76,11 @@ const gridStyles = `
   }
 `;
 
-const CharacterEncoding = ({
-  pageBack,
-  pageForward
-}) => {
-  const { attributesList, characterEncodingRowData } = useContext(Context);
-
+const CharacterEncoding = () => {
+  const { attributesList, characterEncodingRowData, setCurrentPage, setSelectedOverlay } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
   const gridRef = useRef();
-  const { CharacterEncodingTypeRenderer } = useCharacterEncodingType();
+  const { handleSave, CharacterEncodingTypeRenderer } = useCharacterEncodingType(gridRef);
 
   useEffect(() => {
     setColumnDefs([
@@ -87,7 +89,7 @@ const CharacterEncoding = ({
         editable: false,
         width: 180,
         autoHeight: true,
-        cellStyle: (params) => ({
+        cellStyle: () => ({
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
         }),
@@ -104,6 +106,12 @@ const CharacterEncoding = ({
       },
     ]);
   }, [attributesList]);
+
+  const handleBackward = () => {
+    handleSave();
+    setSelectedOverlay('');
+    setCurrentPage('Overlays');
+  };
 
   return (
     <Box>
@@ -128,16 +136,9 @@ const CharacterEncoding = ({
           <Button
             color="navButton"
             sx={{ textAlign: "left", alignSelf: "flex-start" }}
-            onClick={pageBack}
+            onClick={() => handleBackward()}
           >
             <ArrowBackIosIcon /> Back
-          </Button>
-          <Button
-            color="navButton"
-            onClick={pageBack}
-            sx={{ alignSelf: "flex-end", color: CustomPalette.PRIMARY }}
-          >
-            Next <ArrowForwardIosIcon />
           </Button>
         </Box>
         <Box

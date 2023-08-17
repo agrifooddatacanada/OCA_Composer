@@ -4,61 +4,41 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { useState } from 'react';
+import { useContext } from 'react';
+import { Context } from '../App';
+import { getListOfSelectedOverlays } from '../constants/getListOfSelectedOverlays';
 
-const items = {
-  "Attribute type-CB": { feature: "Attribute type-CB", selected: false },
-  "Attributes-CB": { feature: "Attributes-CB", selected: false },
-  "Classification-CB": { feature: "Classification-CB", selected: false },
-  "Flagged-CB": { feature: "Flagged-CB", selected: false },
-  "entry": { feature: "entry", selected: false },
-  "entry code": { feature: "entry code", selected: false },
-  "cardinality": { feature: "cardinality", selected: false },
-  "character encoding": { feature: "character encoding", selected: false },
-  "conformance": { feature: "conformance", selected: false },
-  "format": { feature: "format", selected: false },
-  "information": { feature: "information", selected: false },
-  "label": { feature: "label", selected: false },
-  "meta": { feature: "meta", selected: false },
-  "unit": { feature: "unit", selected: false }
-};
 
 const Overlays = ({
   pageBack,
   pageForward,
 }) => {
-  const [categories, setCategories] = useState(items);
-  const [categoriesInfo, setCategoriesInfo] = useState({});
+  const { setCurrentPage, characterEncodingRowData, setCharacterEncodingRowData, overlay, setOverlay, setSelectedOverlay } = useContext(Context);
 
   const addToSelected = (item) => {
-    setCategories(prev => ({ ...prev, [item]: { ...prev[item], selected: true } }));
-    setCategoriesInfo(prev => {
-
-      //  TODO: Add default values according to attribute list for each feature
-      // {"cardinality": {...attributes}}
-      return { ...prev, [item]: {} };
-    });
+    setOverlay(prev => ({ ...prev, [item]: { ...prev[item], selected: true } }));
+    setSelectedOverlay(item);
+    setCurrentPage('CharacterEncoding');
   };
+
+  // Convert overlay into a list of features
+  const { selectedFeatures, unselectedFeatures } = getListOfSelectedOverlays(overlay);
 
   const removeFromSelected = (item) => {
-    setCategories(prev => ({ ...prev, [item]: { ...prev[item], selected: false } }));
+    setOverlay(prev => ({ ...prev, [item]: { ...prev[item], selected: false } }));
 
-    const newCategoriesInfo = { ...categoriesInfo };
-    delete newCategoriesInfo[item];
-    setCategoriesInfo(newCategoriesInfo);
+    // Delete attribute from characterEncodingRowData
+    const newCharacterEncodingRowData = characterEncodingRowData.map((row) => {
+      delete row[item];
+      return row;
+    });
+    setCharacterEncodingRowData(newCharacterEncodingRowData);
   };
 
-  // Convert categories into a list of features
-  const selectedFeatures = [];
-  const unselectedFeatures = [];
-
-  Object.values(categories).forEach(item => {
-    if (item.selected) {
-      selectedFeatures.push(item.feature);
-    } else {
-      unselectedFeatures.push(item.feature);
-    }
-  });
+  const handleEditOverlay = (overlayName) => {
+    setSelectedOverlay(overlayName);
+    setCurrentPage('CharacterEncoding');
+  };
 
   return (
     <Box>
@@ -136,7 +116,7 @@ const Overlays = ({
                   <Box key={index} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <ListItemText primary={text} sx={{ display: 'flex', paddingLeft: '1rem' }} />
                     <DeleteForeverIcon sx={{ cursor: 'pointer', color: CustomPalette.PRIMARY }} onClick={() => removeFromSelected(text)} />
-                    <Button sx={{ color: CustomPalette.PRIMARY }}>
+                    <Button sx={{ color: CustomPalette.PRIMARY }} onClick={() => handleEditOverlay(text)}>
                       Edit
                     </Button>
                   </Box>

@@ -13,7 +13,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import LinkCard from "./LinkCard";
 
 export default function ViewSchema({ pageBack }) {
-  const { languages, attributeRowData, lanAttributeRowData, isZip, setCurrentPage } =
+  const { languages, attributeRowData, lanAttributeRowData, isZip, characterEncodingRowData, setCurrentPage } =
     useContext(Context);
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
@@ -159,6 +159,12 @@ export default function ViewSchema({ pageBack }) {
       dataObject.Label = labelObject;
       dataObject.Description = descriptionObject;
       dataObject.List = codesObject;
+
+      const attrWithOverlay = characterEncodingRowData.find((row) => row.Attribute === attributeName);
+      if (attrWithOverlay) {
+        Object.assign(dataObject, attrWithOverlay);
+      }
+
       newDisplayArray.push(dataObject);
     });
     setDisplayArray(newDisplayArray);

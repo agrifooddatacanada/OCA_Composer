@@ -9,29 +9,48 @@ const displayValues = [
   "ISO-8859-1"
 ];
 
-const useCharacterEncodingType = () => {
-  const { attributesList, attributeRowData } = useContext(Context);
+const useCharacterEncodingType = (gridRef) => {
+  const { attributesList, attributeRowData, characterEncodingRowData, setCharacterEncodingRowData, selectedOverlay } = useContext(Context);
 
   const typesObjectRef = useRef({});
   const dropRefs = useRef(attributeRowData.map(() => createRef()));
+
+  // Load up the typesObjectRef from the characterEncodingRowData
+  useEffect(() => {
+    const newTypesObjetRef = {};
+    characterEncodingRowData.forEach((item) => {
+      if (item[selectedOverlay]) {
+        newTypesObjetRef[item.Attribute] = item[selectedOverlay];
+      }
+    });
+    typesObjectRef.current = newTypesObjetRef;
+  }, [characterEncodingRowData, selectedOverlay]);
 
   useEffect(() => {
     dropRefs.current = attributeRowData.map(() => createRef());
   }, [attributesList, attributeRowData]);
 
+  const handleSave = () => {
+    gridRef.current.api.stopEditing();
+    const attributeWithCharacterEncoding = typesObjectRef.current;
+    const newCharacterEncodingRowData = [];
+    characterEncodingRowData.forEach((item) => {
+      newCharacterEncodingRowData.push({
+        ...item,
+        [selectedOverlay]: attributeWithCharacterEncoding[item.Attribute] || '',
+      });
+    });
+    setCharacterEncodingRowData(newCharacterEncodingRowData);
+  };
+
   const CharacterEncodingTypeRenderer = (props) => {
     const attributeName = props.attr;
-
-    const currentAttribute = attributeRowData.find(
-      (item) => item.Attribute === attributeName
-    );
 
     const index = attributeRowData.findIndex(
       (item) => item.Attribute === attributeName
     );
-    const [type, setType] = useState(
-      (currentAttribute && currentAttribute.Type) || displayValues[0]
-    );
+
+    const [type, setType] = useState(displayValues[0]);
 
     const typesDisplay = displayValues.map((value, index) => (
       <MenuItem
@@ -45,10 +64,7 @@ const useCharacterEncodingType = () => {
 
     const handleChange = (e) => {
       setType(e.target.value);
-
-      const newTypesObject = { ...typesObjectRef.current };
-      newTypesObject[attributeName] = e.target.value;
-      typesObjectRef.current = newTypesObject;
+      typesObjectRef.current = { ...typesObjectRef.current, [attributeName]: e.target.value };
       setIsDropdownOpen(false);
     };
 
@@ -90,7 +106,7 @@ const useCharacterEncodingType = () => {
           <Select
             id="select-drop"
             value={type || ""}
-            label="Type"
+            label="Character Encoding"
             onChange={handleChange}
             sx={{
               height: "100%",
@@ -109,7 +125,7 @@ const useCharacterEncodingType = () => {
     );
   };
 
-  return { CharacterEncodingTypeRenderer };
+  return { handleSave, CharacterEncodingTypeRenderer };
 };
 
 export default useCharacterEncodingType;
