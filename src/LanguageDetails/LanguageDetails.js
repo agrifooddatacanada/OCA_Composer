@@ -2,8 +2,6 @@ import React, { useRef, useContext, useState, useEffect } from "react";
 import { Context } from "../App";
 import { Box } from "@mui/system";
 import { Button, Tooltip, Typography } from "@mui/material";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import LanGrid from "./LanGrid";
 import { CustomPalette } from "../constants/customPalette";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";

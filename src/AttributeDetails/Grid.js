@@ -18,6 +18,8 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 
 import TypeTooltip from "./TypeTooltip";
+import CellHeader from "../components/CellHeader";
+import { flexCenter, preWrapWordBreak } from "../constants/styles";
 
 
 export default function Grid({
@@ -71,6 +73,7 @@ export default function Grid({
           { attribute: node.data.Attribute, column: colId },
         ]);
       } else {
+        // TODO: savedEntryCodes has the entries, might need to erase the entries when the checkbox is unchecked
         setSelectedCells((prevSelectedCells) =>
           prevSelectedCells.filter(
             (cell) =>
@@ -238,61 +241,6 @@ export default function Grid({
     );
   };
 
-  const AttributeHeader = () => {
-    return (
-      <div className="ag-cell-label-container">
-        <div
-          className="ag-header-cell-label"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          Attribute
-          <Tooltip
-            title="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
-            placement="top"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </div>
-      </div>
-    );
-  };
-
-  const UnitHeader = () => {
-    return (
-      <div className="ag-cell-label-container">
-        <div
-          className="ag-header-cell-label"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          Unit
-          <Tooltip
-            title="The units of each attribute (or leave blank if the attribute is not a measurement and has no units)."
-            placement="top"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </div>
-      </div>
-    );
-  };
-
-  const TypeHeader = () => {
-    return (
-      <div className="ag-cell-label-container">
-        <div
-          className="ag-header-cell-label"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          Type
-          <Tooltip title={<TypeTooltip />} placement="right" arrow>
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </div>
-      </div>
-    );
-  };
 
   //AG grid's built-in drop-down menu had functionality issues (single click cannot open the menu)
   //Using AG grid's custom cell editor component had similar issues.
@@ -391,22 +339,19 @@ export default function Grid({
         field: "Drag",
         headerName: "",
         width: 40,
-        cellStyle: (params) => ({
+        cellStyle: () => ({
           display: "flex",
         }),
-        rowDrag: (params) => canDrag.current,
+        rowDrag: () => canDrag.current,
       },
       {
         field: "Attribute",
-        headerComponent: AttributeHeader,
+        headerComponent: () => <CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
         editable: true,
         autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+        cellStyle: () => ({
+          ...preWrapWordBreak,
+          ...flexCenter
         }),
         width: 150,
       },
@@ -415,28 +360,21 @@ export default function Grid({
         headerComponent: FlaggedHeader,
         cellRenderer: CheckboxRenderer,
         checkboxSelection: false,
-        cellStyle: (params) => ({
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }),
+        cellStyle: () => flexCenter,
       },
       {
         field: "Unit",
         editable: true,
-        headerComponent: UnitHeader,
+        headerComponent: () => <CellHeader headerText='Unit' helpText='The units of each attribute (or leave blank if the attribute is not a measurement and has no units).' />,
         autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+        cellStyle: () => ({
+          ...preWrapWordBreak,
+          ...flexCenter
         }),
       },
       {
         field: "Type",
-        headerComponent: TypeHeader,
+        headerComponent: () => <CellHeader headerText='Type' helpText={<TypeTooltip />} />,
         cellRenderer: TypeRenderer,
         cellRendererParams: (params) => ({
           data: params.data,
@@ -448,11 +386,7 @@ export default function Grid({
         headerComponent: ListHeader,
         cellRenderer: CheckboxRenderer,
         checkboxSelection: false,
-        cellStyle: (params) => ({
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }),
+        cellStyle: () => flexCenter,
         width: 100,
       },
       {
@@ -460,11 +394,7 @@ export default function Grid({
         headerName: "",
         cellRenderer: DeleteRenderer,
         cellRendererParams: (params) => ({ data: params.data }),
-        cellStyle: (params) => ({
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }),
+        cellStyle: () => flexCenter,
         width: 60,
       },
     ]);

@@ -1,83 +1,15 @@
-import { Box, Tooltip } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
+import { Box } from "@mui/material";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../App";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import useCharacterEncodingType from "./useCharacterEncodingType";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-
-const AttributeHeader = () => {
-  return (
-    <>
-      <span style={{ margin: "auto" }}>Attribute</span>
-      <Tooltip
-        title="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
-        placement="top"
-        PopperProps={{
-          sx: {
-            "& .MuiTooltip-tooltip": {
-              backgroundColor: CustomPalette.GREY_200,
-              color: CustomPalette.GREY_800,
-              boxShadow: 3,
-            },
-          },
-        }}
-      >
-        <HelpOutlineIcon sx={{ fontSize: 15 }} />
-      </Tooltip>
-    </>
-  );
-};
-
-const CharacterEncodingTypeHeader = () => {
-  return (
-    <>
-      <span style={{ margin: "auto" }}>Character Encoding</span>
-      <Tooltip
-        title="This is the character encoding table."
-        placement="top"
-        PopperProps={{
-          sx: {
-            "& .MuiTooltip-tooltip": {
-              backgroundColor: CustomPalette.GREY_200,
-              color: CustomPalette.GREY_800,
-              boxShadow: 3,
-            },
-          },
-        }}
-      >
-        <HelpOutlineIcon sx={{ fontSize: 15 }} />
-      </Tooltip>
-    </>
-  );
-};
-
-const gridStyles = `
-  .ag-cell {
-    line-height: 1.5;
-  }
-  
-  .ag-theme-balham .ag-cell {
-    border-right: 1px solid ${CustomPalette.GREY_300};
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .ag-header-cell-label {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
-    height: 100%;
-  }
-`;
+import CellHeader from "../components/CellHeader";
+import { gridStyles, preWrapWordBreak } from "../constants/styles";
 
 const CharacterEncoding = () => {
-  const { attributesList, characterEncodingRowData, setCurrentPage, setSelectedOverlay } = useContext(Context);
+  const { characterEncodingRowData, setCurrentPage, setSelectedOverlay } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
   const gridRef = useRef();
   const { handleSave, CharacterEncodingTypeRenderer } = useCharacterEncodingType(gridRef);
@@ -89,15 +21,12 @@ const CharacterEncoding = () => {
         editable: false,
         width: 180,
         autoHeight: true,
-        cellStyle: () => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-        }),
-        headerComponent: AttributeHeader,
+        cellStyle: () => preWrapWordBreak,
+        headerComponent: () => <CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
       },
       {
         field: "CharacterEncoding",
-        headerComponent: CharacterEncodingTypeHeader,
+        headerComponent: () => <CellHeader headerText='Character Encoding' helpText='This is the character encoding table.' />,
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
           attr: params.data.Attribute,
@@ -105,7 +34,7 @@ const CharacterEncoding = () => {
         width: 200,
       },
     ]);
-  }, [attributesList]);
+  }, []);
 
   const handleBackward = () => {
     handleSave();

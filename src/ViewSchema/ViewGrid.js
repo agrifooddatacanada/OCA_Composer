@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-
+import { greyCellStyle } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { getListOfSelectedOverlays } from "../constants/getListOfSelectedOverlays";
+import CellHeader from "../components/CellHeader";
 
 const gridStyles = `
 .ag-cell {
@@ -19,8 +19,9 @@ const gridStyles = `
 }
 `;
 
+
 export default function ViewGrid({ displayArray, currentLanguage }) {
-  const { attributesWithLists, overlay } = useContext(Context);
+  const { overlay } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
 
@@ -40,90 +41,46 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
         {
           field: "Attribute",
           autoHeight: true,
-          cellStyle: (params) => ({
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            backgroundColor: CustomPalette.GREY_200,
-          }),
+          cellStyle: () => greyCellStyle,
         },
         {
           field: "Flagged",
           width: 75,
           cellRenderer: CheckboxRenderer,
-          cellStyle: (params) => ({
-            backgroundColor: CustomPalette.GREY_200,
-          })
+          cellStyle: () => greyCellStyle
         },
         {
           field: "Unit",
           width: 90,
           autoHeight: true,
-          cellStyle: (params) => ({
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            backgroundColor: CustomPalette.GREY_200,
-          }),
+          cellStyle: () => greyCellStyle,
         },
         {
           field: "Type",
           autoHeight: true,
-          cellStyle: (params) => ({
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            backgroundColor: CustomPalette.GREY_200,
-          }),
+          cellStyle: () => greyCellStyle,
         },
         {
           field: "Label",
           autoHeight: true,
           width: 170,
-          cellStyle: (params) => ({
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            backgroundColor: CustomPalette.GREY_200,
-          }),
-          headerComponent: () => {
-            return (
-              <span style={{ margin: "auto" }}>
-                Label <span style={{ fontSize: "10px" }}>(max 50 chars)</span>
-              </span>
-            );
-          },
+          cellStyle: () => greyCellStyle,
+          headerComponent: () => <CellHeader headerText='Label' constraint='max 50 chars' />
+
         },
         {
           field: "Description",
           flex: 1,
           minWidth: 350,
           autoHeight: true,
-          cellStyle: (params) => ({
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            backgroundColor: CustomPalette.GREY_200,
-          }),
-          headerComponent: () => {
-            return (
-              <span style={{ margin: "auto" }}>
-                Description{" "}
-                <span style={{ fontSize: "10px" }}>(max 200 chars)</span>
-              </span>
-            );
-          },
+          cellStyle: () => greyCellStyle,
+          headerComponent: () => <CellHeader headerText='Description' constraint='max 200 chars' />
         },
         {
           field: "List",
           width: 173,
           autoHeight: true,
-          cellStyle: (params) => {
-            if (attributesWithLists.includes(params.data.Attribute)) {
-              return { whiteSpace: "pre-wrap", wordBreak: "break-word" };
-            } else {
-              return {
-                backgroundColor: CustomPalette.GREY_200,
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
-              };
-            }
-          },
+          cellStyle: () => greyCellStyle,
         },
       ];
 
@@ -133,11 +90,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
           field: feature,
           width: 140,
           autoHeight: true,
-          cellStyle: () => ({
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            backgroundColor: CustomPalette.GREY_200,
-          }),
+          cellStyle: () => greyCellStyle,
           headerComponent: () => {
             return (
               <span style={{ margin: "auto" }}>
@@ -152,7 +105,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
     };
 
     setColumnDefs(getColumns());
-  }, [attributesWithLists]);
+  }, [overlay]);
 
   const defaultColDef = {
     width: 120,

@@ -1,8 +1,5 @@
 import React, { useRef, useContext, useState, useEffect } from "react";
-import { Box } from "@mui/system";
-import { Button, Alert } from "@mui/material";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { Alert } from "@mui/material";
 import Grid from "./Grid";
 import AddAttribute from "./AddAttribute";
 import NavigationCard from "../constants/NavigationCard";

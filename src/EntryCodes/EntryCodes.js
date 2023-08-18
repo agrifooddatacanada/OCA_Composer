@@ -1,8 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
 import { Box } from "@mui/system";
-import { Button, Typography, Alert } from "@mui/material";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { Typography } from "@mui/material";
 import { Context } from "../App";
 import SingleTable from "./SingleTable";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
