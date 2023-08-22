@@ -21,6 +21,19 @@ import TypeTooltip from "./TypeTooltip";
 import CellHeader from "../components/CellHeader";
 import { flexCenter, preWrapWordBreak } from "../constants/styles";
 
+//styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
+const gridStyle = `
+  .ag-cell {
+    line-height: 1.5
+  }
+  .ag-select-list {
+    height: 90px;
+    overflow-y: auto;
+  }
+  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
+    height: 100%;
+  }
+  `;
 
 export default function Grid({
   gridRef,
@@ -38,20 +51,6 @@ export default function Grid({
   const canDrag = useRef(true);
 
   const { attributeRowData, setAttributeRowData } = useContext(Context);
-
-  //styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
-  const gridStyle = `
-  .ag-cell {
-    line-height: 1.5
-  }
-  .ag-select-list {
-    height: 90px;
-    overflow-y: auto;
-  }
-  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
-    height: 100%;
-  }
-  `;
 
   //Renderers define input cells, Headers define grid header cells
   //.stopEditing() needs to run whenever the grid refreshes, or the current table state won't be saved. Adding/Deleting/Navigation
@@ -115,6 +114,7 @@ export default function Grid({
     }, []);
 
     return (
+      // TODO: Replace with CellHeader component
       <div className="ag-cell-label-container">
         <div
           className="ag-header-cell-label"

@@ -73,7 +73,7 @@ export default function Header({ currentPage }) {
         setHelpLink('/overlays_help');
         break;
       case "RequiredEntries":
-        setHeader("Add Required Entries");
+        setHeader("Required Entries");
 
         // TODO: Add help tooltips
         setToolTipText("");
