@@ -44,6 +44,20 @@ const useCharacterEncodingType = (gridRef) => {
     setCharacterEncodingRowData(newCharacterEncodingRowData);
   };
 
+  const applyAllFunc = () => {
+    const firstValue = Object.values(typesObjectRef.current)[0];
+
+    // Save data directly to the source (characterEncodingRowData)
+    const newCharacterEncodingRowData = [];
+    characterEncodingRowData.forEach((item) => {
+      newCharacterEncodingRowData.push({
+        ...item,
+        [selectedOverlay]: firstValue || '',
+      });
+    });
+    setCharacterEncodingRowData(newCharacterEncodingRowData);
+  };
+
   const CharacterEncodingTypeRenderer = (props) => {
     const attributeName = props.attr;
     const [type, setType] = useState(displayValues[0]);
@@ -99,7 +113,7 @@ const useCharacterEncodingType = (gridRef) => {
     );
   };
 
-  return { handleSave, CharacterEncodingTypeRenderer };
+  return { handleSave, applyAllFunc, CharacterEncodingTypeRenderer };
 };
 
 export default useCharacterEncodingType;
