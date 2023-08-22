@@ -38,20 +38,15 @@ function App() {
   });
   const [languages, setLanguages] = useState(["English"]);
   const [attributeRowData, setAttributeRowData] = useState([]);
-  console.log('attributeRowData', attributeRowData);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
-  console.log('entryCodeRowData', entryCodeRowData);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
-  console.log('savedEntryCodes', savedEntryCodes);
   const [attributesWithLists, setAttributesWithLists] = useState([]);
-  console.log('attributesWithLists', attributesWithLists);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
 
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
-  console.log('characterEncodingRowData', characterEncodingRowData);
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
 
