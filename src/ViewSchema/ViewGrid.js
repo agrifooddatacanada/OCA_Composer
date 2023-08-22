@@ -88,7 +88,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
       selectedFeatures.forEach((feature) => {
         predefinedColumns.push({
           field: feature,
-          width: 140,
+          width: 160,
           autoHeight: true,
           cellStyle: () => greyCellStyle,
           headerComponent: () => {

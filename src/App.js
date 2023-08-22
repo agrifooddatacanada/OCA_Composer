@@ -20,20 +20,8 @@ import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays
 export const Context = createContext();
 
 const items = {
-  "Attribute type-CB": { feature: "Attribute type-CB", selected: false },
-  "Attributes-CB": { feature: "Attributes-CB", selected: false },
-  "Classification-CB": { feature: "Classification-CB", selected: false },
-  "Flagged-CB": { feature: "Flagged-CB", selected: false },
-  "entry": { feature: "entry", selected: false },
-  "entry code": { feature: "entry code", selected: false },
-  "cardinality": { feature: "cardinality", selected: false },
-  "character encoding": { feature: "character encoding", selected: false },
-  "conformance": { feature: "conformance", selected: false },
-  "format": { feature: "format", selected: false },
-  "information": { feature: "information", selected: false },
-  "label": { feature: "label", selected: false },
-  "meta": { feature: "meta", selected: false },
-  "unit": { feature: "unit", selected: false }
+  "Character Encoding": { feature: "Character Encoding", selected: false },
+  "Make entries required": { feature: "Make entries required", selected: false },
 };
 
 function App() {

@@ -55,7 +55,7 @@ export default function Header({ currentPage }) {
         setHelpLink('/view_schema_help');
         break;
       case "Overlays":
-        setHeader("Overlays");
+        setHeader("Additional Optional Information");
 
         // TODO: Add help tooltips
         setToolTipText("");

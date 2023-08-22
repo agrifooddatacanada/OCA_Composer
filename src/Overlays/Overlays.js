@@ -2,17 +2,19 @@ import { Box, Button, List, ListItemButton, ListItemText } from '@mui/material';
 import { CustomPalette } from '../constants/customPalette';
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { Context } from '../App';
 import { getListOfSelectedOverlays } from '../constants/getListOfSelectedOverlays';
 import BackNextSkeleton from '../components/BackNextSkeleton';
-
+import DeleteConfirmation from './DeleteConfirmation';
 
 const Overlays = ({
   pageBack,
   pageForward,
 }) => {
   const { setCurrentPage, characterEncodingRowData, setCharacterEncodingRowData, overlay, setOverlay, setSelectedOverlay } = useContext(Context);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [selectedItemToDelete, setSelectedItemToDelete] = useState('');
 
   const addToSelected = (item) => {
     setOverlay(prev => ({ ...prev, [item]: { ...prev[item], selected: true } }));
@@ -23,15 +25,16 @@ const Overlays = ({
   // Convert overlay into a list of features
   const { selectedFeatures, unselectedFeatures } = getListOfSelectedOverlays(overlay);
 
-  const removeFromSelected = (item) => {
-    setOverlay(prev => ({ ...prev, [item]: { ...prev[item], selected: false } }));
+  const removeFromSelected = () => {
+    setOverlay(prev => ({ ...prev, [selectedItemToDelete]: { ...prev[selectedItemToDelete], selected: false } }));
 
     // Delete attribute from characterEncodingRowData
     const newCharacterEncodingRowData = characterEncodingRowData.map((row) => {
-      delete row[item];
+      delete row[selectedItemToDelete];
       return row;
     });
     setCharacterEncodingRowData(newCharacterEncodingRowData);
+    setShowDeleteConfirmation(false);
   };
 
   const handleEditOverlay = (overlayName) => {
@@ -41,6 +44,12 @@ const Overlays = ({
 
   return (
     <BackNextSkeleton isBack pageBack={pageBack} isForward pageForward={pageForward}>
+      {showDeleteConfirmation && (
+        <DeleteConfirmation
+          removeFromSelected={removeFromSelected}
+          closeModal={() => setShowDeleteConfirmation(false)}
+        />
+      )}
       <Box
         sx={{
           margin: "2rem",
@@ -81,7 +90,10 @@ const Overlays = ({
               {selectedFeatures.map((text, index) => (
                 <Box key={index} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                   <ListItemText primary={text} sx={{ display: 'flex', paddingLeft: '1rem' }} />
-                  <DeleteForeverIcon sx={{ cursor: 'pointer', color: CustomPalette.PRIMARY }} onClick={() => removeFromSelected(text)} />
+                  <DeleteForeverIcon sx={{ cursor: 'pointer', color: CustomPalette.PRIMARY }} onClick={() => {
+                    setSelectedItemToDelete(text);
+                    setShowDeleteConfirmation(true);
+                  }} />
                   <Button sx={{ color: CustomPalette.PRIMARY }} onClick={() => handleEditOverlay(text)}>
                     Edit
                   </Button>

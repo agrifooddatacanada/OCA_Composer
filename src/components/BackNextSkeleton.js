@@ -24,13 +24,13 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
             justifyContent: "space-between",
           }}
         >
-          {isBack && <Button
+          {isBack ? <Button
             color="navButton"
             sx={{ textAlign: "left", alignSelf: "flex-start" }}
             onClick={pageBack}
           >
             <ArrowBackIosIcon /> Back
-          </Button>}
+          </Button> : <Box />}
           <Box sx={{ alignSelf: "flex-end" }}>
             {isForward && <Button
               color="navButton"

@@ -43,7 +43,7 @@ const CharacterEncoding = () => {
   };
 
   return (
-    <BackNextSkeleton isBack pageBack={handleBackward}>
+    <BackNextSkeleton isForward pageForward={handleBackward}>
       <Box
         sx={{
           margin: "2rem",

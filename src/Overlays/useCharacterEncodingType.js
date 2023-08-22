@@ -5,9 +5,10 @@ import { DropdownMenuList } from "../components/DropdownMenuCell";
 
 const displayValues = [
   "",
-  "UTF-8",
-  "ASCII",
-  "ISO-8859-1"
+  "base64",
+  "utf-8",
+  "iso-8859-1",
+  "UTF-16LE"
 ];
 
 const useCharacterEncodingType = (gridRef) => {
