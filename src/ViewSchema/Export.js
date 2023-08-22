@@ -41,6 +41,7 @@ export default function Export({ setShowLink }) {
     setAttributesWithLists,
     setSavedEntryCodes,
     customIsos,
+    characterEncodingRowData
   } = useContext(Context);
 
   const classificationCode = useMemo(() => {
@@ -428,6 +429,7 @@ export default function Export({ setShowLink }) {
           allowBlank: true,
           formulae: ['"M,O"'],
         };
+        conformanceCell.value = characterEncodingRowData[index]['Make entries required'] ? "M" : "O";
 
         worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
 
