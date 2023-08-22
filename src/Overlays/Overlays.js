@@ -19,7 +19,11 @@ const Overlays = ({
   const addToSelected = (item) => {
     setOverlay(prev => ({ ...prev, [item]: { ...prev[item], selected: true } }));
     setSelectedOverlay(item);
-    setCurrentPage('CharacterEncoding');
+    if (item === 'Character Encoding') {
+      setCurrentPage('CharacterEncoding');
+    } else {
+      setCurrentPage('RequiredEntries');
+    }
   };
 
   // Convert overlay into a list of features
@@ -39,7 +43,11 @@ const Overlays = ({
 
   const handleEditOverlay = (overlayName) => {
     setSelectedOverlay(overlayName);
-    setCurrentPage('CharacterEncoding');
+    if (overlayName === 'Character Encoding') {
+      setCurrentPage('CharacterEncoding');
+    } else {
+      setCurrentPage('RequiredEntries');
+    }
   };
 
   return (

@@ -56,7 +56,7 @@ function App() {
     "Details",
     "LanguageDetails",
     "Overlays",
-    "View", 1
+    "View",
   ];
 
   const pageForward = () => {

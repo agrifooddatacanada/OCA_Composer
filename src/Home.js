@@ -9,6 +9,7 @@ import ViewSchema from "./ViewSchema/ViewSchema";
 import CreateManually from "./CreateManually/CreateManually";
 import Overlays from "./Overlays/Overlays";
 import CharacterEncoding from "./Overlays/CharacterEncoding";
+import RequiredEntries from "./Overlays/RequiredEntries";
 
 const Home = ({ currentPage, pageForward, pageBack, showIntroCard, setShowIntroCard }) => {
   return (
@@ -35,7 +36,8 @@ const Home = ({ currentPage, pageForward, pageBack, showIntroCard, setShowIntroC
       {currentPage === "View" && <ViewSchema pageBack={pageBack} />}
       {currentPage === "Create" && <CreateManually />}
       {currentPage === "Overlays" && <Overlays pageBack={pageBack} pageForward={pageForward} />}
-      {currentPage === "CharacterEncoding" && <CharacterEncoding pageBack={pageBack} pageForward={pageForward} />}
+      {currentPage === "CharacterEncoding" && <CharacterEncoding />}
+      {currentPage === "RequiredEntries" && <RequiredEntries />}
     </Box>
   );
 };

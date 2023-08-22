@@ -46,17 +46,11 @@ const DeleteConfirmation = ({ removeFromSelected, closeModal }) => {
             }}
           />
           <Typography variant="body1" sx={{ p: 1, fontSize: 20 }}>
-            There are one or more blank entries in the following field(s):
+            WARNING: this action is irreversible.
           </Typography>
         </Box>
 
-        <Typography
-          variant="h5"
-          sx={{ width: "80%", fontSize: 19, wordBreak: "break-word" }}
-        >
-          <em>Hi</em>
-        </Typography>
-        <Typography variant="h6">Do you wish to continue?</Typography>
+        <Typography variant="h6">Are you sure you want to delete this item?</Typography>
         <Box sx={{ alignSelf: "flex-end" }}>
           <Button
             variant="outlined"

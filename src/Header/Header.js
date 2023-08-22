@@ -72,6 +72,15 @@ export default function Header({ currentPage }) {
         // TODO: Add Help page
         setHelpLink('/overlays_help');
         break;
+      case "RequiredEntries":
+        setHeader("Add Required Entries");
+
+        // TODO: Add help tooltips
+        setToolTipText("");
+
+        // TODO: Add Help page
+        setHelpLink('/overlays_help');
+        break;
       default:
         setHeader("Start Schema");
         setHelpLink('/start_schema_help');
