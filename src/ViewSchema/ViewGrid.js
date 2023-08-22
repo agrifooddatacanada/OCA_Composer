@@ -94,10 +94,11 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
           headerComponent: () => {
             return (
               <span style={{ margin: "auto" }}>
-                {feature}
+                {feature === 'Make entries required' ? 'Required Entry' : feature}
               </span>
             );
           },
+          cellRenderer: feature === 'Make entries required' ? CheckboxRenderer : null,
         });
       });
 
@@ -120,6 +121,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
       item.Label = item.Label[currentLanguage];
       item.List = item.List[currentLanguage];
     });
+
     setRowData(newRowData);
   }, [displayArray, currentLanguage]);
 
