@@ -333,6 +333,7 @@ export default function StartSchema({ pageForward }) {
         const root = metadataJson.root;
         allJSONFiles.push(loadMetadataFile);
 
+
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
           const content = await zip.files[file + '.json'].async("text");
