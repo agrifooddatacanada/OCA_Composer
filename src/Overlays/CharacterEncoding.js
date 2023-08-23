@@ -37,14 +37,14 @@ const CharacterEncoding = () => {
     ]);
   }, []);
 
-  const handleBackward = () => {
+  const handleForward = () => {
     handleSave();
     setSelectedOverlay('');
     setCurrentPage('Overlays');
   };
 
   return (
-    <BackNextSkeleton isForward pageForward={handleBackward}>
+    <BackNextSkeleton isForward pageForward={handleForward}>
       <Box
         sx={{
           margin: "2rem",

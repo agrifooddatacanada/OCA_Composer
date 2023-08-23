@@ -45,7 +45,8 @@ const useCharacterEncodingType = (gridRef) => {
   };
 
   const applyAllFunc = () => {
-    const firstValue = Object.values(typesObjectRef.current)[0];
+    const firstAttribute = attributesList[0];
+    const firstValue = typesObjectRef.current[firstAttribute];
 
     // Save data directly to the source (characterEncodingRowData)
     const newCharacterEncodingRowData = [];

@@ -9,7 +9,7 @@ import { AgGridReact } from "ag-grid-react";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { Tooltip, MenuItem } from "@mui/material";
+import { Tooltip, MenuItem, Box } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -72,6 +72,7 @@ export default function Grid({
           { attribute: node.data.Attribute, column: colId },
         ]);
       } else {
+
         // TODO: savedEntryCodes has the entries, might need to erase the entries when the checkbox is unchecked
         setSelectedCells((prevSelectedCells) =>
           prevSelectedCells.filter(
@@ -114,43 +115,34 @@ export default function Grid({
     }, []);
 
     return (
-      // TODO: Replace with CellHeader component
-      <div className="ag-cell-label-container">
-        <div
-          className="ag-header-cell-label"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          Flagged
-          <input
-            type="checkbox"
-            ref={inputRef}
-            onChange={handleCheckboxChange}
-          />
-          <Tooltip
-            title={
-              <>
-                <div>
-                  If the attribute could be considered Personally Identifiable
-                  Information (PII) you can flag the attribute here. This will
-                  be documented in the schema and downstream users of your
-                  schema will understand they need to take care of the data that
-                  has been flagged.
-                </div>
-                <br />
-                <div>
-                  Examples of PII include names, locations, postal codes,
-                  telephone numbers, identifying genetic data, race, gender,
-                  ethnicity, etc.
-                </div>
-              </>
-            }
-            placement="top"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </div>
-      </div>
+      <CellHeader
+        headerText={
+          <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center' }}>
+            Flagged {' '}
+            <input
+              type="checkbox"
+              ref={inputRef}
+              onChange={handleCheckboxChange}
+            />
+          </Box>
+        }
+        helpText={
+          <>
+            <div>
+              If the attribute could be considered Personally Identifiable
+              Information (PII) you can flag the attribute here. This will
+              be documented in the schema and downstream users of your
+              schema will understand they need to take care of the data that
+              has been flagged.
+            </div>
+            <br />
+            <div>
+              Examples of PII include names, locations, postal codes,
+              telephone numbers, identifying genetic data, race, gender,
+              ethnicity, etc.
+            </div>
+          </>
+        } />
     );
   };
 
