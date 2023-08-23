@@ -84,7 +84,6 @@ const RequiredEntries = () => {
   }, [attributesList]);
 
   const handleForward = () => {
-    // handleSave();
     setSelectedOverlay('');
     setCurrentPage('Overlays');
   };
