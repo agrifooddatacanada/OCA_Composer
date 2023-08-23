@@ -331,6 +331,7 @@ export default function StartSchema({ pageForward }) {
         const loadMetadataFile = await zip.files["meta.json"].async("text");
         const metadataJson = JSON.parse(loadMetadataFile);
         const root = metadataJson.root;
+        allJSONFiles.push(loadMetadataFile);
 
 
         // loop through all files in OCA bundle
@@ -362,6 +363,9 @@ export default function StartSchema({ pageForward }) {
         }
 
         const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
+        allJSONFiles.push(loadRoot);
+
+        // loadUnits does not need to add to allJSONFiles since it is already added when looping above
         const loadUnits = await zip.files[metadataJson.files[root].unit + '.json'].async("text");
 
         processLanguages(languageList);
