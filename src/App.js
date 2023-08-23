@@ -26,6 +26,7 @@ const items = {
 
 function App() {
   const [isZip, setIsZip] = useState(false);
+  const [zipToReadme, setZipToReadme] = useState([]);
   const [fileData, setFileData] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
   const [currentPage, setCurrentPage] = useState("Start");
@@ -196,6 +197,7 @@ function App() {
     setSavedEntryCodes({});
     setLanAttributeRowData({});
     setIsZip(false);
+    setZipToReadme([]);
   }, [fileData]);
 
   return (
@@ -233,7 +235,9 @@ function App() {
             overlay,
             setOverlay,
             selectedOverlay,
-            setSelectedOverlay
+            setSelectedOverlay,
+            zipToReadme,
+            setZipToReadme
           }}
         >
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

@@ -19,7 +19,8 @@ export default function StartSchema({ pageForward }) {
     setCurrentPage,
     attributesList,
     setAttributesList,
-    setIsZip
+    setIsZip,
+    setZipToReadme
   } = useContext(Context);
   const {
     processLanguages,
@@ -323,6 +324,7 @@ export default function StartSchema({ pageForward }) {
         const labelList = [];
         const metaList = [];
         const entryList = [];
+        const allJSONFiles = [];
         let entryCodeSummary = {};
 
         // load up metadata file in OCA bundle
@@ -330,33 +332,33 @@ export default function StartSchema({ pageForward }) {
         const metadataJson = JSON.parse(loadMetadataFile);
         const root = metadataJson.root;
 
+
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
+          const content = await zip.files[file + '.json'].async("text");
+
           if (key.includes("meta")) {
-            const content = await zip.files[file + '.json'].async("text");
             metaList.push(JSON.parse(content));
             languageList.push(key.substring(6, 8));
           }
 
           if (key.includes("information")) {
-            const content = await zip.files[file + '.json'].async("text");
             informationList.push(JSON.parse(content));
           }
 
           if (key.includes("label")) {
-            const content = await zip.files[file + '.json'].async("text");
             labelList.push(JSON.parse(content));
           }
 
           if (key.includes("entry (")) {
-            const content = await zip.files[file + '.json'].async("text");
             entryList.push(JSON.parse(content));
           }
 
           if (key.includes("entry_code")) {
-            const content = await zip.files[file + '.json'].async("text");
             entryCodeSummary = JSON.parse(content);
           }
+
+          allJSONFiles.push(content);
         }
 
         const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
@@ -365,6 +367,7 @@ export default function StartSchema({ pageForward }) {
         processLanguages(languageList);
         processMetadata(metaList);
         processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), JSON.parse(loadUnits), entryCodeSummary, entryList);
+        setZipToReadme(allJSONFiles);
       };
 
       reader.readAsArrayBuffer(acceptedFiles[0]);

@@ -11,10 +11,11 @@ import Export from "./Export";
 
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import LinkCard from "./LinkCard";
+import useGenerateReadMe from "./useGenerateReadMe";
 
 export default function ViewSchema({ pageBack }) {
-  const { languages, attributeRowData, lanAttributeRowData, isZip, characterEncodingRowData, setCurrentPage } =
-    useContext(Context);
+  const { languages, attributeRowData, lanAttributeRowData, isZip, characterEncodingRowData, setCurrentPage, zipToReadme } = useContext(Context);
+  const { toTextFile } = useGenerateReadMe();
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
@@ -193,19 +194,36 @@ export default function ViewSchema({ pageBack }) {
           >
             <ArrowBackIosIcon /> Back
           </Button>
-          {isZip ? <Button
-            color="button"
-            variant='contained'
-            onClick={() => setCurrentPage("Metadata")}
-            sx={{
-              alignSelf: "flex-end",
-              display: "flex",
-              justifyContent: "space-around",
-              padding: "0.5rem 1rem",
-            }}
-          >
-            Edit OCA Bundle
-          </Button> : <></>}
+          {isZip ? (
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+              <Button
+                color="button"
+                variant='contained'
+                onClick={() => toTextFile(zipToReadme)}
+                sx={{
+                  alignSelf: "flex-end",
+                  display: "flex",
+                  justifyContent: "space-around",
+                  padding: "0.5rem 1rem",
+                }}
+              >
+                Download ReadMe
+              </Button>
+              <Button
+                color="button"
+                variant='contained'
+                onClick={() => setCurrentPage("Metadata")}
+                sx={{
+                  alignSelf: "flex-end",
+                  display: "flex",
+                  justifyContent: "space-around",
+                  padding: "0.5rem 1rem",
+                }}
+              >
+                Edit Schema
+              </Button>
+            </Box>
+          ) : <></>}
         </Box>
         {showLink && <LinkCard setShowLink={setShowLink} />}
         <Box

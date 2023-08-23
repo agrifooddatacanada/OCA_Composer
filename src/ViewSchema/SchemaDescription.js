@@ -4,7 +4,7 @@ import { Typography } from "@mui/material";
 import { Context } from "../App";
 
 export default function SchemaDescription({ currentLanguage }) {
-  const { schemaDescription } = useContext(Context);
+  const { schemaDescription, divisionGroup } = useContext(Context);
   return (
     <Box>
       <Typography
@@ -36,11 +36,26 @@ export default function SchemaDescription({ currentLanguage }) {
       </Typography>
       <Box sx={{
         textAlign: 'left',
-        height: "8rem",
+        width: "30rem",
+      }}>
+        {schemaDescription[currentLanguage].description}
+      </Box>
+      <Typography
+        sx={{
+          fontSize: 15,
+          fontWeight: "bold",
+          textAlign: "left",
+          margin: "1rem 0 0.5rem 0",
+        }}
+      >
+        Classification
+      </Typography>
+      <Box sx={{
+        textAlign: 'left',
         width: "30rem",
         overflowY: 'auto'
       }}>
-        {schemaDescription[currentLanguage].description}
+        {divisionGroup.group || divisionGroup.division}
       </Box>
     </Box>
   );
