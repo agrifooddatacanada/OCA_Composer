@@ -2,12 +2,11 @@ import React, { useRef, useContext, useState, useEffect } from "react";
 import { Context } from "../App";
 import { Box } from "@mui/system";
 import { Button, Tooltip, Typography } from "@mui/material";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import LanGrid from "./LanGrid";
 import { CustomPalette } from "../constants/customPalette";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import BackNextSkeleton from "../components/BackNextSkeleton";
 
 export default function LanguageDetails({ pageBack, pageForward }) {
   const {
@@ -142,82 +141,48 @@ export default function LanguageDetails({ pageBack, pageForward }) {
   );
 
   return (
-    <Box>
+    <BackNextSkeleton isBack pageBack={handlePageBack} isForward pageForward={pageForwardSave}>
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "space-between",
-          margin: "auto",
-          pr: 10,
-          pl: 10,
+          margin: "2rem",
         }}
       >
         <Box
           sx={{
-            width: "100%",
             display: "flex",
-            justifyContent: "space-between",
+            flexDirection: "column-reverse",
+            alignItems: languages.length < 6 ? "flex-start" : "flex-end",
           }}
         >
-          <Button
-            color="navButton"
-            sx={{ textAlign: "left", alignSelf: "flex-start" }}
-            onClick={handlePageBack}
-          >
-            <ArrowBackIosIcon /> Back
-          </Button>
-          <Button
-            color="navButton"
-            onClick={pageForwardSave}
-            sx={{ alignSelf: "flex-end", color: CustomPalette.PRIMARY }}
-          >
-            Next <ArrowForwardIosIcon />
-          </Button>
+          {languageButtonDisplay}
         </Box>
         <Box
           sx={{
-            margin: "2rem",
+            textAlign: "left",
+            transform: "translate(-25px, -25px)",
+            color: CustomPalette.GREY_600,
+            height: "0rem",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column-reverse",
-              alignItems: languages.length < 6 ? "flex-start" : "flex-end",
-            }}
-          >
-            {languageButtonDisplay}
-          </Box>
-          <Box
-            sx={{
-              textAlign: "left",
-              transform: "translate(-25px, -25px)",
-              color: CustomPalette.GREY_600,
-              height: "0rem",
-            }}
-          >
-            <Tooltip
-              title="Toggles between the one or more languages used in the schema."
-              placement="left"
-              arrow
-              PopperProps={{
-                sx: {
-                  "& .MuiTooltip-tooltip": {
-                    width: 100,
-                  },
+          <Tooltip
+            title="Toggles between the one or more languages used in the schema."
+            placement="left"
+            arrow
+            PopperProps={{
+              sx: {
+                "& .MuiTooltip-tooltip": {
+                  width: 100,
                 },
-              }}
-            >
-              <HelpOutlineIcon sx={{ fontSize: 15 }} />
-            </Tooltip>
-          </Box>
-          <div ref={refContainer}>
-            <LanGrid gridRef={gridRef} currentLanguage={currentLanguage} />
-          </div>
+              },
+            }}
+          >
+            <HelpOutlineIcon sx={{ fontSize: 15 }} />
+          </Tooltip>
         </Box>
+        <div ref={refContainer}>
+          <LanGrid gridRef={gridRef} currentLanguage={currentLanguage} />
+        </div>
       </Box>
-    </Box>
+    </BackNextSkeleton>
   );
 }

@@ -54,6 +54,33 @@ export default function Header({ currentPage }) {
         );
         setHelpLink('/view_schema_help');
         break;
+      case "Overlays":
+        setHeader("Add Additional Optional Information");
+
+        // TODO: Add help tooltips
+        setToolTipText("");
+
+        // TODO: Add Help page
+        setHelpLink('/overlays_help');
+        break;
+      case "CharacterEncoding":
+        setHeader("Add Character Encoding");
+
+        // TODO: Add help tooltips
+        setToolTipText("");
+
+        // TODO: Add Help page
+        setHelpLink('/overlays_help');
+        break;
+      case "RequiredEntries":
+        setHeader("Add Required Entries");
+
+        // TODO: Add help tooltips
+        setToolTipText("");
+
+        // TODO: Add Help page
+        setHelpLink('/overlays_help');
+        break;
       default:
         setHeader("Start Schema");
         setHelpLink('/start_schema_help');

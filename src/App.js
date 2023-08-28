@@ -14,8 +14,15 @@ import LanguageAttributeHelp from "./UsersHelp/Language_Attribute_Help";
 import SchemaMetadataHelp from "./UsersHelp/Schema_Metadata_Help";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
+import OverlaysHelp from "./UsersHelp/Overlays_Help";
+import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
 
 export const Context = createContext();
+
+const items = {
+  "Character Encoding": { feature: "Character Encoding", selected: false },
+  "Make entries required": { feature: "Make entries required", selected: false },
+};
 
 function App() {
   const [isZip, setIsZip] = useState(false);
@@ -33,18 +40,23 @@ function App() {
   const [languages, setLanguages] = useState(["English"]);
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
-  const [attributesWithLists, setAttributesWithLists] = useState([]);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
+  const [attributesWithLists, setAttributesWithLists] = useState([]);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
 
+  // Use for Overlays
+  const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
+  const [overlay, setOverlay] = useState(items);
+  const [selectedOverlay, setSelectedOverlay] = useState('');
 
   const pagesArray = [
     "Start",
     "Metadata",
     "Details",
     "LanguageDetails",
+    "Overlays",
     "View",
   ];
 
@@ -76,7 +88,10 @@ function App() {
   //Create Attribute Row Data object when Attributes List updates
   useEffect(() => {
     const newAttributesArray = [];
+    const newCharacterEncodingArray = [];
     if (attributesList.length > 0) {
+      const { selectedFeatures } = getListOfSelectedOverlays(overlay);
+
       attributesList.forEach((item) => {
         const attributeObject = attributeRowData.find(
           (obj) => obj.Attribute === item
@@ -92,8 +107,22 @@ function App() {
             List: false,
           });
         }
+
+        const characterEncodingObject = characterEncodingRowData.find(
+          (obj) => obj.Attribute === item
+        );
+        if (characterEncodingObject) {
+          newCharacterEncodingArray.push(characterEncodingObject);
+        } else {
+          const newCharacterEncodingRow = { Attribute: item };
+          selectedFeatures.forEach(feature => {
+            newCharacterEncodingRow[feature] = "";
+          });
+          newCharacterEncodingArray.push(newCharacterEncodingRow);
+        }
       });
       setAttributeRowData(newAttributesArray);
+      setCharacterEncodingRowData(newCharacterEncodingArray);
     }
   }, [attributesList]);
 
@@ -201,6 +230,12 @@ function App() {
             setCustomIsos,
             isZip,
             setIsZip,
+            characterEncodingRowData,
+            setCharacterEncodingRowData,
+            overlay,
+            setOverlay,
+            selectedOverlay,
+            setSelectedOverlay,
             zipToReadme,
             setZipToReadme
           }}
@@ -217,6 +252,7 @@ function App() {
                 <Route path="/schema_metadata_help" element={<SchemaMetadataHelp />} />
                 <Route path="/start_schema_help" element={<StartSchemaHelp />} />
                 <Route path="/view_schema_help" element={<ViewSchemaHelp />} />
+                <Route path="/overlays_help" element={<OverlaysHelp />} />
                 <Route
                   path="*"
                   element={<Navigate to="/" />}

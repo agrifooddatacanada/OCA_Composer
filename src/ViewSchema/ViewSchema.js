@@ -14,8 +14,7 @@ import LinkCard from "./LinkCard";
 import useGenerateReadMe from "./useGenerateReadMe";
 
 export default function ViewSchema({ pageBack }) {
-  const { languages, attributeRowData, lanAttributeRowData, isZip, setCurrentPage, zipToReadme } =
-    useContext(Context);
+  const { languages, attributeRowData, lanAttributeRowData, isZip, characterEncodingRowData, setCurrentPage, zipToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
@@ -161,6 +160,12 @@ export default function ViewSchema({ pageBack }) {
       dataObject.Label = labelObject;
       dataObject.Description = descriptionObject;
       dataObject.List = codesObject;
+
+      const attrWithOverlay = characterEncodingRowData.find((row) => row.Attribute === attributeName);
+      if (attrWithOverlay) {
+        Object.assign(dataObject, attrWithOverlay);
+      }
+
       newDisplayArray.push(dataObject);
     });
     setDisplayArray(newDisplayArray);
