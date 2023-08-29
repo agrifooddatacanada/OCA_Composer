@@ -1,20 +1,19 @@
 
-
 const readmeText = `
 This is a human-readable format of an OCA schema
 OCA_READ_ME/1.0
-README SAID: xxxxxxxxxxxxxxxxxxxxxxxx
 
 Reference for Overlays Capture Architecture (OCA): 
 https://doi.org/10.5281/zenodo.7707467
+
 Reference for OCA_READ_ME/1.0:
-<when available>
+https://github.com/agrifooddatacanada/OCA_README
 
 In OCA, a schema consists of a capture_base which documents the attributes and their most basic features.
 A schema may also contain overlays which add details to the capture_base.
 For each overlay and capture_base, a hash of their original contents has been calculated and is reported here as the SAID value.
 
-This READ ME format documents the capture_base and overlays that were associated together in a single OCA Bundle.
+This README format documents the capture_base and overlays that were associated together in a single OCA Bundle.
 OCA_MANIFEST lists all components of the OCA Bundle.
 For the OCA_BUNDLE, each section between rows of ****'s contains the details of one "layer type/version" of the OCA Bundle.\n\n`;
 
@@ -67,13 +66,22 @@ const useGenerateReadMe = () => {
         ...other_variables,
       };
       variablesArray.push(variables);
+      // shift the capture base to the top of the array always
+     for (let i = 0; i < variablesArray.length; i++) {
+      if (variablesArray[i].hasOwnProperty("classification")) {
+        const classifiedVariable = variablesArray.splice(i, 1)[0];
+        variablesArray.unshift(classifiedVariable);
+        break;
+      }
     }
+  }
+   
 
     // turning OCA bundle into OCA readme begins here
     textFile.push(
       readmeText,
       "BEGIN_OCA_MANIFEST\n",
-      "************************************************************\n",
+      "**********************************************************************\n",
       "Bundle SAID: XXXXXXXXXX\n\n"
     );
 
@@ -83,10 +91,10 @@ const useGenerateReadMe = () => {
     textFile.push(
       cleaned_manifest,
       "\n",
-      "************************************************************\n",
+      "**********************************************************************\n",
       "END_OCA_MANIFEST\n\n",
       "BEGIN_OCA_BUNDLE\n",
-      "************************************************************"
+      "**********************************************************************"
     );
 
     // for each overlay individually, counting all possible cases that need Regex handling
@@ -146,8 +154,6 @@ const useGenerateReadMe = () => {
 
       // adding overaly name to the textFile 
       const text_with_schema_attributes = result.replace(/Schema attribute:/g, '\nSchema attribute: ' + variable.Layer_name);
-      // const text_with_schema_attributes = result.replace(/Schema attribute:/g, ' Schema attribute: ' + variable.Layer_name);
-
       const text_with_schema_layer_name = text_with_schema_attributes.replace(/Layer_name:/g, 'Layer name:');
 
 
@@ -155,17 +161,18 @@ const useGenerateReadMe = () => {
       if (!textFile.includes(text_with_schema_layer_name)) {
         textFile.push(
           text_with_schema_layer_name);
-        textFile.push("************************************************************");
+        textFile.push("**********************************************************************");
       }
     });
 
+    textFile.push("\nEND_OCA_BUNDLE")
     const text = textFile.join('');
     const textBlob = new Blob([text], { type: "text/plain" });
     const downloadUrl = URL.createObjectURL(textBlob);
 
     const link = document.createElement('a');
     link.href = downloadUrl;
-    link.download = 'Text_ReadMe.txt';
+    link.download = 'README_OCA_schema.txt';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
