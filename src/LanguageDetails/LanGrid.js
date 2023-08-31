@@ -187,6 +187,18 @@ export default function LanGrid({ gridRef, currentLanguage }) {
     ]);
   }, [attributesList]);
 
+  const onCellKeyDown = (e) => {
+    const keyPressed = e.event.code;
+    const isLabelRow = e.column.colId === "Label";
+
+    if (keyPressed === "Enter" && isLabelRow) {
+      const api = e.api;
+      const editingRowIndex = e.rowIndex;
+      console.log('editingRowIndex', editingRowIndex);
+      api.setFocusedCell(editingRowIndex + 1, "Label");
+    }
+  };
+
   return (
     <div className="ag-theme-balham" style={{ width: 800 }}>
       <style>{gridStyles}</style>
@@ -194,6 +206,7 @@ export default function LanGrid({ gridRef, currentLanguage }) {
         ref={gridRef}
         rowData={lanAttributeRowData[currentLanguage]}
         columnDefs={columnDefs}
+        onCellKeyDown={onCellKeyDown}
         domLayout="autoHeight"
       />
     </div>

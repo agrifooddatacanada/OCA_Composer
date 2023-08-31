@@ -48,7 +48,6 @@ function App() {
 
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
-  console.log('characterEncodingRowData', characterEncodingRowData);
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
 
