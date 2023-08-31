@@ -396,6 +396,7 @@ export default function Export({ setShowLink }) {
           formulae: ['"Y"'],
         };
         const encodingCell = worksheetMain.getCell(index + 4, 6);
+        // TODO: Might not need this formula
         encodingCell.value = {
           formula: `IF(OR(C${index + 4}="Binary", C${index + 4
             }="Array[Binary]"), "base64", "utf-8")`,
@@ -405,6 +406,8 @@ export default function Export({ setShowLink }) {
               ? "base64"
               : "utf-8",
         };
+
+        encodingCell.value = characterEncodingRowData[index]['Character Encoding'];
 
         const entryCodesCell = worksheetMain.getCell(index + 4, 8);
 
