@@ -41,7 +41,8 @@ export default function Export({ setShowLink }) {
     setAttributesWithLists,
     setSavedEntryCodes,
     customIsos,
-    characterEncodingRowData
+    characterEncodingRowData,
+    overlay
   } = useContext(Context);
 
   const classificationCode = useMemo(() => {
@@ -395,6 +396,7 @@ export default function Export({ setShowLink }) {
           formulae: ['"Y"'],
         };
         const encodingCell = worksheetMain.getCell(index + 4, 6);
+        // TODO: Might not need this formula
         encodingCell.value = {
           formula: `IF(OR(C${index + 4}="Binary", C${index + 4
             }="Array[Binary]"), "base64", "utf-8")`,
@@ -404,6 +406,8 @@ export default function Export({ setShowLink }) {
               ? "base64"
               : "utf-8",
         };
+
+        encodingCell.value = characterEncodingRowData[index]['Character Encoding'];
 
         const entryCodesCell = worksheetMain.getCell(index + 4, 8);
 
@@ -429,7 +433,9 @@ export default function Export({ setShowLink }) {
           allowBlank: true,
           formulae: ['"M,O"'],
         };
-        conformanceCell.value = characterEncodingRowData[index]['Make entries required'] ? "M" : "O";
+        if (overlay["Make entries required"].selected) {
+          conformanceCell.value = characterEncodingRowData[index]['Make entries required'] ? "M" : "O";
+        }
 
         worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
 

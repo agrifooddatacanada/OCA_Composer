@@ -27,7 +27,7 @@ const CharacterEncoding = () => {
       },
       {
         field: "CharacterEncoding",
-        headerComponent: () => <CellHeader headerText='Character Encoding' helpText='This is the character encoding table.' />,
+        headerComponent: () => <CellHeader headerText='Character Encoding' helpText='Character encoding for the attribute. Recommend utf-8 unless you know it must be something else.' />,
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
           attr: params.data.Attribute,
