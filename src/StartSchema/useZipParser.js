@@ -114,13 +114,13 @@ const useZipParser = () => {
         Attribute: item,
         Flagged: false,
         List: attributesWithListType.includes(item),
-        Type: root['attributes'][item],
-        Unit: units['attribute_units'][item]
+        Type: root?.['attributes']?.[item],
+        Unit: units?.['attribute_units']?.[item]
       });
 
       const newRowForCharacterEncoding = { Attribute: item };
       if (conformance) {
-        newRowForCharacterEncoding['Make entries required'] = conformance['attribute_conformance'][item] === "M";
+        newRowForCharacterEncoding['Make entries required'] = conformance?.['attribute_conformance']?.[item] === "M";
 
         setOverlay(prev => ({
           ...prev,
@@ -131,7 +131,7 @@ const useZipParser = () => {
         }));
       }
       if (characterEncoding) {
-        newRowForCharacterEncoding['Character Encoding'] = characterEncoding['attribute_character_encoding'][item] || characterEncoding['default_character_encoding'];
+        newRowForCharacterEncoding['Character Encoding'] = characterEncoding?.['attribute_character_encoding']?.[item] || characterEncoding?.['default_character_encoding'];
         setOverlay(prev => ({
           ...prev,
           "Character Encoding": {
