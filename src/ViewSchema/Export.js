@@ -434,7 +434,6 @@ export default function Export({ setShowLink }) {
     //////CREATE 'LANGUAGE' WORKSHEETS
     try {
       let doubleIndex = 1;
-      console.log('languagesWithCode', languagesWithCode);
       languagesWithCode.forEach((language, langIndex) => {
         let worksheetLanguage;
         let worksheetName = language.code;

@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { Context } from '../App';
 import { codesToLanguages, languageCodesObject } from '../constants/isoCodes';
-import { codeToDivision } from '../constants/constants';
+import { codeToDivision, codeToGroup } from '../constants/constants';
 
 const useZipParser = () => {
   const {
@@ -78,11 +78,19 @@ const useZipParser = () => {
     }
 
     // Parse classification
-    const divisionCode = root['classification'].split(':')[1];
-    setDivisionGroup({
-      division: codeToDivision[divisionCode],
-      group: '',
-    });
+    const classificationFromJson = root['classification'];
+    const indexOfRDF = classificationFromJson.indexOf('RDF');
+    if (indexOfRDF !== -1 && !isNaN(classificationFromJson[indexOfRDF + 5])) {
+      setDivisionGroup({
+        division: codeToDivision[classificationFromJson.substring(indexOfRDF, indexOfRDF + 5)],
+        group: codeToGroup[classificationFromJson.substring(indexOfRDF, indexOfRDF + 6)],
+      });
+    } else if (indexOfRDF !== -1 && classificationFromJson[indexOfRDF + 4] && !isNaN(classificationFromJson[indexOfRDF + 4])) {
+      setDivisionGroup({
+        division: codeToDivision[classificationFromJson.substring(indexOfRDF, indexOfRDF + 5)],
+        group: '',
+      });
+    }
 
     // meta data: label and description
     const languageDescriptionMap = {};
