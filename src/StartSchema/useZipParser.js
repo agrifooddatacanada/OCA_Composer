@@ -78,16 +78,16 @@ const useZipParser = () => {
     }
 
     // Parse classification
-    const classificationFromJson = root['classification'];
-    const indexOfRDF = classificationFromJson.indexOf('RDF');
-    if (indexOfRDF !== -1 && !isNaN(classificationFromJson[indexOfRDF + 5])) {
+    const classificationFromJson = root?.['classification'];
+    const indexOfRDF = classificationFromJson?.indexOf('RDF');
+    if (indexOfRDF !== -1 && !isNaN(classificationFromJson?.[indexOfRDF + 5])) {
       setDivisionGroup({
-        division: codeToDivision[classificationFromJson.substring(indexOfRDF, indexOfRDF + 5)],
-        group: codeToGroup[classificationFromJson.substring(indexOfRDF, indexOfRDF + 6)],
+        division: codeToDivision?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5)],
+        group: codeToGroup?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 6)],
       });
-    } else if (indexOfRDF !== -1 && classificationFromJson[indexOfRDF + 4] && !isNaN(classificationFromJson[indexOfRDF + 4])) {
+    } else if (indexOfRDF !== -1 && classificationFromJson?.[indexOfRDF + 4] && !isNaN(classificationFromJson?.[indexOfRDF + 4])) {
       setDivisionGroup({
-        division: codeToDivision[classificationFromJson.substring(indexOfRDF, indexOfRDF + 5)],
+        division: codeToDivision?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5)],
         group: '',
       });
     }
