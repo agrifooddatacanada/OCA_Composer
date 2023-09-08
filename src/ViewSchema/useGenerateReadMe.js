@@ -1,7 +1,9 @@
 
 const readmeText = `
-This is a human-readable format of an OCA schema
+BEGIN_REFERENCE_MATERIAL
+******************************************************************
 OCA_READ_ME/1.0
+This is a human-readable schema, based on the OCA schema standard.
 
 Reference for Overlays Capture Architecture (OCA): 
 https://doi.org/10.5281/zenodo.7707467
@@ -9,14 +11,16 @@ https://doi.org/10.5281/zenodo.7707467
 Reference for OCA_READ_ME/1.0:
 https://github.com/agrifooddatacanada/OCA_README
 
+A schema describes details about a dataset.
 In OCA, a schema consists of a capture_base which documents the attributes and their most basic features.
 A schema may also contain overlays which add details to the capture_base.
 For each overlay and capture_base, a hash of their original contents has been calculated and is reported here as the SAID value.
 
 This README format documents the capture_base and overlays that were associated together in a single OCA Bundle.
 OCA_MANIFEST lists all components of the OCA Bundle.
-For the OCA_BUNDLE, each section between rows of ****'s contains the details of one "layer type/version" of the OCA Bundle.\n\n`;
-
+For the OCA_BUNDLE, each section between rows of ****'s contains the details of one "layer type/version" of the OCA Bundle.
+******************************************************************
+END_REFERENCE_MATERIAL\n\n`;
 
 const useGenerateReadMe = () => {
 
@@ -76,13 +80,12 @@ const useGenerateReadMe = () => {
     }
   }
    
-
     // turning OCA bundle into OCA readme begins here
     textFile.push(
       readmeText,
       "BEGIN_OCA_MANIFEST\n",
       "**********************************************************************\n",
-      "Bundle SAID: XXXXXXXXXX\n\n"
+      // "Bundle SAID: XXXXXXXXXX\n\n"
     );
 
     // the OCA manifest (all the overlay hashes (SAIDs))
