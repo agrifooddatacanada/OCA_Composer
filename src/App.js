@@ -29,7 +29,7 @@ function App() {
   const [zipToReadme, setZipToReadme] = useState([]);
   const [fileData, setFileData] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
-  const [currentPage, setCurrentPage] = useState("Start");
+  const [currentPage, setCurrentPage] = useState("Landing");
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: "", description: "" },
   });

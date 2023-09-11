@@ -4,11 +4,12 @@ import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import logo from '../assets/agri-logo.png';
 import { useLocation } from 'react-router-dom';
+import logoSE from '../assets/se-logo.png';
 
 export default function Header({ currentPage }) {
   const [header, setHeader] = useState(currentPage);
   const [toolTipText, setToolTipText] = useState("");
-  const [helpLink, setHelpLink] = useState("start_schema_help");
+  const [helpLink, setHelpLink] = useState("");
   const location = useLocation();
 
   //Sets headers and tooltip Text based on current page
@@ -82,8 +83,8 @@ export default function Header({ currentPage }) {
         setHelpLink('/overlays_help');
         break;
       default:
-        setHeader("Start Schema");
-        setHelpLink('/start_schema_help');
+        setHeader("");
+        setHelpLink('');
     }
   }, [currentPage]);
 
@@ -133,27 +134,34 @@ export default function Header({ currentPage }) {
         sx={{
           width: 250,
           alignItems: "center",
+          justifyContent: 'flex-end',
         }}
       >
-        {!location.pathname.includes('_help') && (
-          <Button
-            color='button'
-            variant='contained'
-            target='_blank'
-            sx={{
-              m: 2,
-              mr: 5,
-              p: 1,
-              width: '15rem',
-            }}
-            onClick={() =>
-              window.open(`${helpLink}`, '_blank', 'rel=noopener noreferrer')
-            }
-          >
-            Help with this page
-          </Button>
-        )}
-        <Box sx={{ color: CustomPalette.PRIMARY }}>En</Box>
+        {currentPage === "Landing" ?
+          <img src={logoSE} style={{ height: '60px', marginTop: '10px', marginBottom: '10px' }} alt="Semantic Engine Logo" onClick={() => window.open('https://www.semanticengine.org/#/', '_blank')} />
+          :
+          <>
+            {!location.pathname.includes('_help') && helpLink !== "" && (
+              <Button
+                color='button'
+                variant='contained'
+                target='_blank'
+                sx={{
+                  m: 2,
+                  mr: 5,
+                  p: 1,
+                  width: '15rem',
+                }}
+                onClick={() =>
+                  window.open(`${helpLink}`, '_blank', 'rel=noopener noreferrer')
+                }
+              >
+                Help with this page
+              </Button>
+            )}
+            <Box sx={{ color: CustomPalette.PRIMARY }}>En</Box>
+          </>
+        }
       </Stack>
     </Stack >
   );
