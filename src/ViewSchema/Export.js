@@ -367,7 +367,9 @@ export default function Export({ setShowLink }) {
         };
 
         const flaggedCell = worksheetMain.getCell(index + 4, 5);
-        flaggedCell.value = dataArray[1][index].Flagged;
+        if (dataArray[1]?.[index]?.Flagged && dataArray[1]?.[index]?.Flagged !== '') {
+          flaggedCell.value = dataArray[1][index].Flagged;
+        }
         flaggedCell.dataValidation = {
           type: "list",
           allowBlank: true,
