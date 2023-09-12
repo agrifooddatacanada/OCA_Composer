@@ -1,27 +1,26 @@
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import React from 'react';
 import { CustomPalette } from '../constants/customPalette';
+import QuickStart from './Quick_Start';
+import Introduction from './Introduction';
+import AccordionList from './AccordionList';
+
 
 const Landing = () => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
-      <Box>
-        <Typography sx={{ color: CustomPalette.PRIMARY, fontWeight: '500', fontSize: '1.3rem', textAlign: "left" }}>
-          Your data is valuable.
-        </Typography>
-        <Typography sx={{ textAlign: 'left' }}>
-          Make that value accessible with a data schema.
-        </Typography>
-        <Typography sx={{ textAlign: 'left' }}>
-          New to Schemas? Watch our video and then <em>Learn more-></em>
-        </Typography>
-        <Typography sx={{ textAlign: 'left' }}>
-          Follow our quick-start to begin writing your own data schemas.
-        </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', maxWidth: '1500px', paddingRight: 5, paddingLeft: 5, gap: 10, marginTop: '10px' }}>
+        <Introduction />
       </Box>
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/r8VIIBWmL_k" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
-    </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', backgroundColor: CustomPalette.PRIMARY, marginTop: '30px', width: '100%' }}>
+        <QuickStart />
+      </Box>
+      <Box sx={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '30px' }}>
+        <AccordionList />
+      </Box>
+    </Box >
   );
 };
+
 
 export default Landing;
