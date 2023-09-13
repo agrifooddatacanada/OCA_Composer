@@ -94,11 +94,11 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
           headerComponent: () => {
             return (
               <span style={{ margin: "auto" }}>
-                {feature === 'Make entries required' ? 'Required Entry' : feature}
+                {feature === 'Make selected entries required' ? 'Required Entry' : feature}
               </span>
             );
           },
-          cellRenderer: feature === 'Make entries required' ? CheckboxRenderer : null,
+          cellRenderer: feature === 'Make selected entries required' ? CheckboxRenderer : null,
         });
       });
 
