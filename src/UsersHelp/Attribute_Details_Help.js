@@ -19,10 +19,10 @@ const AttributeDetailsHelp = () => {
         You can edit each attribute name, and reorder the attributes.
       </TypographyTag>
       <br />
-      <HelpPageH2Title text="Flagged" />
+      <HelpPageH2Title text="Sensitive" />
       <br />
       <TypographyTag>
-        Flagged attributes are where you can specify Flagged Attribute for sensitive data (e.g. names of people, government identification, birth date etc.). Marking an entry with a check will allow you to flag any attributes where identifying information about entities may be captured.
+        Sensitive attributes are where you can specify Sensitive Attribute for sensitive data (e.g. names of people, government identification, birth date etc.). Marking an entry with a check will allow you to flag any attributes where identifying information about entities may be captured.
       </TypographyTag>
       <br />
       <TypographyTag>
@@ -30,7 +30,7 @@ const AttributeDetailsHelp = () => {
       </TypographyTag>
       <br />
       <TypographyTag>
-        For help evaluating which attributes can be flagged you can read advice in the <CustomAnchorLink link='https://docs.kantarainitiative.org/Blinding-Identity-Taxonomy-Report-Version-1.0.html' text="Blinding Identity Taxonomy" /> report by the Kantara Initiative.
+        For help evaluating which attributes can be sensitive you can read advice in the <CustomAnchorLink link='https://docs.kantarainitiative.org/Blinding-Identity-Taxonomy-Report-Version-1.0.html' text="Blinding Identity Taxonomy" /> report by the Kantara Initiative.
       </TypographyTag>
       <br />
       <HelpPageH2Title text="Unit" />

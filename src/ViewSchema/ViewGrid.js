@@ -45,7 +45,8 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
         },
         {
           field: "Flagged",
-          width: 75,
+          width: 78,
+          headerComponent: () => <CellHeader headerText='Sensitive' />,
           cellRenderer: CheckboxRenderer,
           cellStyle: () => greyCellStyle
         },
