@@ -3,7 +3,7 @@ import React from 'react';
 
 const QuickStart = () => {
   return (
-    <Box sx={{ maxWidth: '1500px', padding: 10, color: 'white', textAlign: 'left' }}>
+    <Box sx={{ maxWidth: '1500px', padding: 10, textAlign: 'left' }}>
       <Typography sx={{ fontWeight: '800' }}>
         Quick-start:
       </Typography>

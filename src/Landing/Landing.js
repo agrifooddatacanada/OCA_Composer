@@ -9,10 +9,10 @@ import AccordionList from './AccordionList';
 const Landing = () => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', maxWidth: '1500px', paddingRight: 5, paddingLeft: 5, gap: 10, marginTop: '10px' }}>
+      <Box sx={{ backgroundColor: CustomPalette.PRIMARY, width: '100%', height: '100%', paddingTop: 3, paddingBottom: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <Introduction />
       </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', backgroundColor: CustomPalette.PRIMARY, marginTop: '30px', width: '100%' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', backgroundColor: '#ffefea', width: '100%' }}>
         <QuickStart />
       </Box>
       <Box sx={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '30px' }}>
