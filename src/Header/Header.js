@@ -173,7 +173,7 @@ export default function Header({ currentPage }) {
           {currentPage === "Landing" ?
             <Typography
               sx={{
-                fontSize: 25,
+                fontSize: 40,
                 fontWeight: "bold",
                 color: 'white',
                 alignSelf: "center",
@@ -214,7 +214,7 @@ export default function Header({ currentPage }) {
       rightItem={
         <>
           {currentPage === "Landing" ?
-            <img src={logoWhite} style={{ width: '150px', marginRight: '20px' }} alt="Logo" />
+            <img src={logoWhite} style={{ width: '250px', marginRight: '20px' }} alt="Logo" />
             :
             <>
               {!location.pathname.includes('_help') && helpLink !== "" && (

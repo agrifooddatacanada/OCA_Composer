@@ -11,7 +11,7 @@ import { CustomPalette } from '../constants/customPalette';
 
 const AccordionList = () => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', maxWidth: '1500px', gap: 5, marginRight: 2, marginLeft: 2, marginBottom: 10 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', maxWidth: '1500px', gap: 8, marginRight: 2, marginLeft: 2, marginBottom: 10 }}>
       <Box sx={{ maxWidth: '500px', minWidth: '300px', width: "100%" }}>
         <SchemaAccordionItem />
         <WriteASchemaAccordionItem />

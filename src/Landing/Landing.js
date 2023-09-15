@@ -9,7 +9,7 @@ import AccordionList from './AccordionList';
 const Landing = () => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-      <Box sx={{ backgroundColor: CustomPalette.PRIMARY, width: '100%', height: '100%', paddingTop: 3, paddingBottom: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+      <Box sx={{ backgroundColor: CustomPalette.PRIMARY, width: '100%', height: '100%', paddingTop: 10, paddingBottom: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <Introduction />
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', backgroundColor: '#ffefea', width: '100%' }}>

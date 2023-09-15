@@ -259,7 +259,7 @@ function App() {
                 />
               </Routes>
             </BrowserRouter>
-            <Footer />
+            <Footer currentPage={currentPage} />
           </Box>
         </Context.Provider>
       </ThemeProvider>

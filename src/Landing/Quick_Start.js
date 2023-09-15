@@ -4,10 +4,10 @@ import React from 'react';
 const QuickStart = () => {
   return (
     <Box sx={{ maxWidth: '1500px', padding: 10, textAlign: 'left' }}>
-      <Typography sx={{ fontWeight: '800' }}>
-        Quick-start:
+      <Typography sx={{ fontWeight: '800', fontSize: '1.2rem' }}>
+        Quick-start (with Quick Links):
       </Typography>
-      <Typography sx={{ fontWeight: '600' }}>
+      <Typography sx={{ fontWeight: '600', marginTop: 1 }}>
         1. Write your schema and generate the schema .zip bundle and a simple .txt Readme.
       </Typography>
       <Typography sx={{ fontWeight: '600' }}>
