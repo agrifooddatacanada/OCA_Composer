@@ -1,12 +1,22 @@
 import { Box } from '@mui/material';
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { CustomPalette } from '../constants/customPalette';
 import QuickStart from './Quick_Start';
 import Introduction from './Introduction';
 import AccordionList from './AccordionList';
-
+import { useLocation } from 'react-router-dom';
+import { Context } from '../App';
 
 const Landing = () => {
+  const path = useLocation();
+  const { setCurrentPage } = useContext(Context);
+
+  useEffect(() => {
+    if (path.pathname === '/') {
+      setCurrentPage('Landing');
+    }
+  }, [path.pathname, setCurrentPage]);
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
       <Box sx={{ backgroundColor: CustomPalette.PRIMARY, width: '100%', height: '100%', paddingTop: 10, paddingBottom: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>

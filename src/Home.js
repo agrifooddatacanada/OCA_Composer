@@ -10,14 +10,10 @@ import CreateManually from "./CreateManually/CreateManually";
 import Overlays from "./Overlays/Overlays";
 import CharacterEncoding from "./Overlays/CharacterEncoding";
 import RequiredEntries from "./Overlays/RequiredEntries";
-import Landing from "./Landing/Landing";
 
 const Home = ({ currentPage, pageForward, pageBack, showIntroCard, setShowIntroCard }) => {
   return (
     <Box sx={{ flex: 1 }}>
-      {currentPage === "Landing" && (
-        <Landing />
-      )}
       {currentPage === "Start" && (
         <StartSchema pageForward={pageForward} />
       )}

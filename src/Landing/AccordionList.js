@@ -1,5 +1,5 @@
 import { Box, Button, Typography } from '@mui/material';
-import React from 'react';
+import React, { useContext } from 'react';
 import UseASchemaAccordionItem from './UseASchemaAccordionItem';
 import UseASchemaWithDataAccordionItem from './UseASchemaWithDataAccordionItem';
 import SchemaAccordionItem from './SchemaAccordionItem';
@@ -8,16 +8,26 @@ import FindASchemaAccordionItem from './FindASchemaAccordionItem';
 import StoreASchemaAccordionItem from './StoreASchemaAccordionItem';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 import { CustomPalette } from '../constants/customPalette';
+import { useNavigate } from 'react-router-dom';
+import { Context } from '../App';
 
 const AccordionList = () => {
+  const navigate = useNavigate();
+  const { setCurrentPage } = useContext(Context);
+
+  const navigateToStartPage = () => {
+    setCurrentPage('Start');
+    navigate('/start');
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', maxWidth: '1500px', gap: 8, marginRight: 2, marginLeft: 2, marginBottom: 10 }}>
       <Box sx={{ maxWidth: '500px', minWidth: '300px', width: "100%" }}>
         <SchemaAccordionItem />
-        <WriteASchemaAccordionItem />
+        <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
         <FindASchemaAccordionItem />
         <StoreASchemaAccordionItem />
-        <UseASchemaAccordionItem />
+        <UseASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
         <UseASchemaWithDataAccordionItem />
       </Box>
       <Box sx={{ maxWidth: '500px', minWidth: '300px', width: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
@@ -44,9 +54,7 @@ const AccordionList = () => {
             <Button
               variant="contained"
               color="navButton"
-              onClick={() => {
-
-              }}
+              onClick={navigateToStartPage}
               sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
             >
               View Schema
@@ -54,9 +62,7 @@ const AccordionList = () => {
             <Button
               variant="contained"
               color="navButton"
-              onClick={() => {
-
-              }}
+              onClick={navigateToStartPage}
               sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
             >
               Edit Schema

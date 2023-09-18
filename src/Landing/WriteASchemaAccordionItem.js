@@ -1,11 +1,11 @@
-import { AccordionDetails, AccordionSummary, Box, Button, Typography } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material';
 import React from 'react';
 import { CustomPalette } from '../constants/customPalette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionItemWrapper from './AccordionItemWrapper';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 
-const WriteASchemaAccordionItem = () => {
+const WriteASchemaAccordionItem = ({ navigateToStartPage }) => {
   return (
     <AccordionItemWrapper>
       <AccordionSummary
@@ -25,7 +25,7 @@ const WriteASchemaAccordionItem = () => {
         </Typography>
 
         <Box sx={{ width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-          <CustomAnchorLink link='https://docs.kantarainitiative.org/Blinding-Identity-Taxonomy-Report-Version-1.0.html' text="Write a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY }} />
+          <CustomAnchorLink text="Write a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY }} onClick={navigateToStartPage} />
         </Box>
 
       </AccordionDetails>

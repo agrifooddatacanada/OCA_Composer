@@ -4,7 +4,7 @@ import { CustomPalette } from '../constants/customPalette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionItemWrapper from './AccordionItemWrapper';
 
-const UseASchemaAccordionItem = () => {
+const UseASchemaAccordionItem = ({ navigateToStartPage }) => {
   return (
     <AccordionItemWrapper>
       <AccordionSummary
@@ -49,9 +49,7 @@ const UseASchemaAccordionItem = () => {
           <Button
             variant="contained"
             color="navButton"
-            onClick={() => {
-
-            }}
+            onClick={navigateToStartPage}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '20px' }}
           >
             View Schema
@@ -59,9 +57,7 @@ const UseASchemaAccordionItem = () => {
           <Button
             variant="contained"
             color="navButton"
-            onClick={() => {
-
-            }}
+            onClick={navigateToStartPage}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '20px' }}
           >
             Edit Schema
