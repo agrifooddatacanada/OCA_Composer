@@ -7,11 +7,11 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
-import Export from "./Export";
-
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import LinkCard from "./LinkCard";
 import useGenerateReadMe from "./useGenerateReadMe";
+import useExport from "./useExport";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 export default function ViewSchema({ pageBack }) {
   const { languages, attributeRowData, lanAttributeRowData, isZip, characterEncodingRowData, setCurrentPage, zipToReadme } = useContext(Context);
@@ -19,7 +19,7 @@ export default function ViewSchema({ pageBack }) {
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
-  const [showLink, setShowLink] = useState(false);
+  const { showLink, setShowLink, executeHandleOCAExport, resetToDefaults, exportDisabled } = useExport();
 
   //Formats language buttons in a way that can handle many languages cleanly
   //Minimizes language for cases where it's too long to fit in button size
@@ -179,7 +179,7 @@ export default function ViewSchema({ pageBack }) {
           flexDirection: "column",
           justifyContent: "space-between",
           margin: "auto",
-          pr: 10,
+          pr: 5,
           pl: 10,
         }}
       >
@@ -194,36 +194,71 @@ export default function ViewSchema({ pageBack }) {
           >
             <ArrowBackIosIcon /> Back
           </Button>
-          {isZip ? (
-            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+            {isZip ? (
+              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+                <Button
+                  color="button"
+                  variant='contained'
+                  onClick={() => toTextFile(zipToReadme)}
+                  sx={{
+                    alignSelf: "flex-end",
+                    display: "flex",
+                    justifyContent: "space-around",
+                    padding: "0.5rem 1rem",
+                  }}
+                >
+                  Download ReadMe
+                </Button>
+                <Button
+                  color="button"
+                  variant='contained'
+                  onClick={() => setCurrentPage("Metadata")}
+                  sx={{
+                    alignSelf: "flex-end",
+                    display: "flex",
+                    justifyContent: "space-around",
+                    padding: "0.5rem 1rem",
+                  }}
+                >
+                  Edit Schema
+                </Button>
+              </Box>
+            ) : <></>}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                color: CustomPalette.GREY_600,
+              }}
+            >
               <Button
                 color="button"
-                variant='contained'
-                onClick={() => toTextFile(zipToReadme)}
+                variant="contained"
+                onClick={executeHandleOCAExport}
                 sx={{
                   alignSelf: "flex-end",
+                  width: "12rem",
                   display: "flex",
                   justifyContent: "space-around",
-                  padding: "0.5rem 1rem",
+                  p: 1,
                 }}
+                disabled={exportDisabled}
               >
-                Download ReadMe
+                Finish and Export <CheckCircleIcon />
               </Button>
-              <Button
-                color="button"
-                variant='contained'
-                onClick={() => setCurrentPage("Metadata")}
-                sx={{
-                  alignSelf: "flex-end",
-                  display: "flex",
-                  justifyContent: "space-around",
-                  padding: "0.5rem 1rem",
-                }}
-              >
-                Edit Schema
-              </Button>
+              <Box sx={{ marginLeft: "1rem" }}>
+                <Tooltip
+                  title="Export your schema in an Excel format. This format includes all the information you’ve provided here. After you have created and downloaded the Excel schema template you can upload it into the SemanticEngine.org to create the machine-actionable OCA Schema Bundle."
+                  placement="left"
+                  arrow
+                >
+                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                </Tooltip>
+              </Box>
             </Box>
-          ) : <></>}
+          </Box>
+
         </Box>
         {showLink && <LinkCard setShowLink={setShowLink} />}
         <Box
@@ -344,7 +379,29 @@ export default function ViewSchema({ pageBack }) {
             currentLanguage={currentLanguage}
           />
         </Box>
-        <Export setShowLink={setShowLink} />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+          }}
+        >
+          <Button
+            color="warning"
+            variant="outlined"
+            onClick={resetToDefaults}
+            sx={{
+              alignSelf: "flex-end",
+              width: "20rem",
+              display: "flex",
+              justifyContent: "space-around",
+              p: 1,
+              mb: 5,
+            }}
+          >
+            Clear All Data and Restart
+          </Button>
+        </Box>
       </Box>
     </Box >
   );

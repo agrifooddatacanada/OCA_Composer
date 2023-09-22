@@ -17,7 +17,7 @@ const RequiredEntries = () => {
     const handleCheckboxChange = (event) => {
       const checked = event.target.checked;
       gridRef.current.api.forEachNode((node) => {
-        node.setDataValue("Make entries required", checked);
+        node.setDataValue("Make selected entries required", checked);
       });
     };
 
@@ -52,9 +52,9 @@ const RequiredEntries = () => {
       const checked = event.target.checked;
       gridRef.current.api.forEachNode((node, index) => {
         if (rowIndex === index) {
-          node.setDataValue("Make entries required", checked);
+          node.setDataValue("Make selected entries required", checked);
         } else if (!node.data[colDef.field]) {
-          node.setDataValue("Make entries required", false);
+          node.setDataValue("Make selected entries required", false);
         }
       });
     };
@@ -73,7 +73,7 @@ const RequiredEntries = () => {
         headerComponent: () => <CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
       },
       {
-        field: "Make entries required",
+        field: "Make selected entries required",
         width: 180,
         headerComponent: RequiredEntryHeader,
         cellRenderer: CheckboxRenderer,

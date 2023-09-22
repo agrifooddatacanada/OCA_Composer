@@ -118,7 +118,7 @@ export default function Grid({
       <CellHeader
         headerText={
           <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center' }}>
-            Flagged {' '}
+            Sensitive {' '}
             <input
               type="checkbox"
               ref={inputRef}
