@@ -45,7 +45,8 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
         },
         {
           field: "Flagged",
-          width: 75,
+          width: 78,
+          headerComponent: () => <CellHeader headerText='Sensitive' />,
           cellRenderer: CheckboxRenderer,
           cellStyle: () => greyCellStyle
         },
@@ -94,11 +95,11 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
           headerComponent: () => {
             return (
               <span style={{ margin: "auto" }}>
-                {feature === 'Make entries required' ? 'Required Entry' : feature}
+                {feature === 'Make selected entries required' ? 'Required Entry' : feature}
               </span>
             );
           },
-          cellRenderer: feature === 'Make entries required' ? CheckboxRenderer : null,
+          cellRenderer: feature === 'Make selected entries required' ? CheckboxRenderer : null,
         });
       });
 

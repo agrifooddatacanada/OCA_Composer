@@ -194,7 +194,6 @@ export default function LanGrid({ gridRef, currentLanguage }) {
     if (keyPressed === "Enter" && isLabelRow) {
       const api = e.api;
       const editingRowIndex = e.rowIndex;
-      console.log('editingRowIndex', editingRowIndex);
       api.setFocusedCell(editingRowIndex + 1, "Label");
     }
   };
