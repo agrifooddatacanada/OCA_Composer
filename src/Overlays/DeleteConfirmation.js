@@ -50,7 +50,7 @@ const DeleteConfirmation = ({ removeFromSelected, closeModal }) => {
           </Typography>
         </Box>
 
-        <Typography variant="h6">Are you sure you want to delete this item?</Typography>
+        <Typography variant="h6">Are you sure you want to remove this single feature?</Typography>
         <Box sx={{ alignSelf: "flex-end" }}>
           <Button
             variant="outlined"

@@ -1,10 +1,5 @@
-import React, { useContext, useMemo, useState } from "react";
-import { Button, Tooltip, Box } from "@mui/material";
+import { useContext, useMemo, useState } from "react";
 import { Context } from "../App";
-import { CustomPalette } from "../constants/customPalette";
-
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
 import { divisionCodes, groupCodes } from "../constants/constants";
@@ -21,7 +16,7 @@ function columnToLetter(column) {
   return letter;
 }
 
-export default function Export({ setShowLink }) {
+const useExport = () => {
   const {
     languages,
     attributeRowData,
@@ -44,6 +39,7 @@ export default function Export({ setShowLink }) {
     characterEncodingRowData,
     overlay
   } = useContext(Context);
+  const [showLink, setShowLink] = useState(false);
 
   const classificationCode = useMemo(() => {
     if (groupCodes[divisionGroup.group]) {
@@ -367,7 +363,9 @@ export default function Export({ setShowLink }) {
         };
 
         const flaggedCell = worksheetMain.getCell(index + 4, 5);
-        flaggedCell.value = dataArray[1][index].Flagged;
+        if (dataArray[1]?.[index]?.Flagged && dataArray[1]?.[index]?.Flagged !== '') {
+          flaggedCell.value = dataArray[1][index].Flagged;
+        }
         flaggedCell.dataValidation = {
           type: "list",
           allowBlank: true,
@@ -411,8 +409,8 @@ export default function Export({ setShowLink }) {
           allowBlank: true,
           formulae: ['"M,O"'],
         };
-        if (overlay["Make entries required"].selected) {
-          conformanceCell.value = characterEncodingRowData[index]['Make entries required'] ? "M" : "O";
+        if (overlay["Make selected entries required"].selected) {
+          conformanceCell.value = characterEncodingRowData[index]['Make selected entries required'] ? "M" : "O";
         }
 
         worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
@@ -577,63 +575,17 @@ export default function Export({ setShowLink }) {
     setSavedEntryCodes({});
   };
 
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
+  const executeHandleOCAExport = () => {
+    handleOCAExport(OCADataArray);
+  };
 
-        alignItems: "flex-end",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          color: CustomPalette.GREY_600,
-          mb: 5,
-        }}
-      >
-        <Box sx={{ marginRight: "1rem" }}>
-          <Tooltip
-            title="Export your schema in an Excel format. This format includes all the information you’ve provided here. After you have created and downloaded the Excel schema template you can upload it into the SemanticEngine.org to create the machine-actionable OCA Schema Bundle."
-            placement="left"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </Box>
-        <Button
-          color="button"
-          variant="contained"
-          onClick={() => handleOCAExport(OCADataArray)}
-          sx={{
-            alignSelf: "flex-end",
-            width: "12rem",
-            display: "flex",
-            justifyContent: "space-around",
-            p: 1,
-          }}
-          disabled={exportDisabled}
-        >
-          Finish and Export <CheckCircleIcon />
-        </Button>
-      </Box>
-      <Button
-        color="warning"
-        variant="outlined"
-        onClick={() => resetToDefaults()}
-        sx={{
-          alignSelf: "flex-end",
-          width: "20rem",
-          display: "flex",
-          justifyContent: "space-around",
-          p: 1,
-          mb: 5,
-        }}
-      >
-        Clear All Data and Restart
-      </Button>
-    </Box>
-  );
-}
+  return {
+    showLink,
+    setShowLink,
+    resetToDefaults,
+    exportDisabled,
+    executeHandleOCAExport
+  };
+};
+
+export default useExport;
