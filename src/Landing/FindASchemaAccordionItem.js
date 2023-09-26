@@ -25,7 +25,7 @@ const FindASchemaAccordionItem = () => {
         </Typography>
 
         <Box sx={{ width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-          <CustomAnchorLink link='https://docs.kantarainitiative.org/Blinding-Identity-Taxonomy-Report-Version-1.0.html' text="Find a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY }} />
+          <CustomAnchorLink link='' text="Find a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY }} />
         </Box>
 
       </AccordionDetails>

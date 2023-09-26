@@ -1,7 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import DropCard from "./DropCard";
 import { messages } from "../constants/messages";
+import { CustomPalette } from "../constants/customPalette";
+import LandingDropZone from "../Landing/LandingDropZone";
 
 export default function Drop({
   setFile,
@@ -10,6 +12,7 @@ export default function Drop({
   dropDisabled,
   dropMessage,
   setDropMessage,
+  version
 }) {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -38,24 +41,70 @@ export default function Drop({
     },
     disabled: dropDisabled,
   });
+  const [hover, setHover] = useState(false);
+
+  const spinningAnimation =
+    "spin 1.5s linear infinite; @keyframes spin {from {transform: rotate(0deg);}to {transform: rotate(-360deg);}";
+
+  const handleHover = () => {
+    setHover(true);
+  };
+  const handleHoverLeave = () => {
+    setHover(false);
+  };
+
+  const handleDragOver = () => {
+    setHover(true);
+  };
+
+  const handleDragLeave = () => {
+    setHover(false);
+  };
+
 
   useEffect(() => {
     setFile(acceptedFiles);
   }, [acceptedFiles, setFile]);
 
+  const downloadIconColor = useMemo(() => {
+    return dropDisabled === true
+      ? CustomPalette.GREY_600
+      : hover === true
+        ? CustomPalette.SECONDARY
+        : CustomPalette.PRIMARY;
+  }, [dropDisabled, hover]);
+
   return (
-    <section
-      className="container"
-      style={{ height: "16rem", marginTop: "3rem", marginBottom: "1rem" }}
-    >
-      <div {...getRootProps({ className: "dropzone" })}>
-        <input {...getInputProps()} />
-        <DropCard
+    <>
+      {version === 1 ?
+        <LandingDropZone
           dropMessage={dropMessage}
           loading={loading}
           dropDisabled={dropDisabled}
+          spinningAnimation={spinningAnimation}
+          downloadIconColor={downloadIconColor}
+          getRootProps={getRootProps}
+          getInputProps={getInputProps}
+          hover={hover}
+          handleHover={handleHover}
+          handleHoverLeave={handleHoverLeave}
+          handleDragOver={handleDragOver}
+          handleDragLeave={handleDragLeave}
         />
-      </div>
-    </section>
+        : <DropCard
+          dropMessage={dropMessage}
+          loading={loading}
+          dropDisabled={dropDisabled}
+          spinningAnimation={spinningAnimation}
+          downloadIconColor={downloadIconColor}
+          getRootProps={getRootProps}
+          getInputProps={getInputProps}
+          hover={hover}
+          handleHover={handleHover}
+          handleHoverLeave={handleHoverLeave}
+          handleDragOver={handleDragOver}
+          handleDragLeave={handleDragLeave}
+        />
+      }</>
   );
 }

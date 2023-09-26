@@ -28,7 +28,7 @@ const SchemaAccordionItem = () => {
           Example schema
         </Typography>
         <Typography>
-          Download an <CustomAnchorLink link='https://docs.kantarainitiative.org/Blinding-Identity-Taxonomy-Report-Version-1.0.html' text="Example schema" /> and use it to test schema tools such as viewing, editing, and creating a Data Entry Excel.
+          Download an <CustomAnchorLink link='' text="Example schema" /> and use it to test schema tools such as viewing, editing, and creating a Data Entry Excel.
         </Typography>
 
       </AccordionDetails>

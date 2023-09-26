@@ -181,6 +181,7 @@ export default function ViewSchema({ pageBack }) {
           margin: "auto",
           pr: 10,
           pl: 10,
+          marginTop: 2,
         }}
       >
         <Box sx={{

@@ -32,7 +32,7 @@ const StoreASchemaAccordionItem = () => {
         <Typography sx={{ marginTop: '20px', marginBottom: '20px' }}>
           Store the .zip machine-readable version and the .txt human-readable version together for best usability.
         </Typography>
-        <CustomAnchorLink link='https://docs.kantarainitiative.org/Blinding-Identity-Taxonomy-Report-Version-1.0.html' text="Read more about storage" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY }} />
+        <CustomAnchorLink link='' text="Read more about storage" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY }} />
       </AccordionDetails>
     </AccordionItemWrapper>
   );

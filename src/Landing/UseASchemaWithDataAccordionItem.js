@@ -35,7 +35,7 @@ const UseASchemaWithDataAccordionItem = () => {
           >
             Generate Data Entry Excel
           </Button>
-          <CustomAnchorLink link='https://docs.kantarainitiative.org/Blinding-Identity-Taxonomy-Report-Version-1.0.html' text="Validate data against a schema" />
+          <CustomAnchorLink link='' text="Validate data against a schema" />
         </Box>
       </AccordionDetails>
     </AccordionItemWrapper>

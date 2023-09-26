@@ -29,6 +29,7 @@ function App() {
   const [isZip, setIsZip] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
   const [fileData, setFileData] = useState([]);
+  const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
   const [currentPage, setCurrentPage] = useState("Landing");
   const [schemaDescription, setSchemaDescription] = useState({
@@ -208,6 +209,8 @@ function App() {
           value={{
             fileData,
             setFileData,
+            rawFile,
+            setRawFile,
             attributesList,
             setAttributesList,
             schemaDescription,
