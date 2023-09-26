@@ -28,7 +28,7 @@ const useGenerateReadMe = () => {
     // declare the variables
     const textFile = [];
     const variablesArray = [];
-    let Manifest = [];
+    let manifest = [];
     let Layer_name = null;
     let SAID = null;
 
@@ -41,7 +41,7 @@ const useGenerateReadMe = () => {
         const files = json.files;
         const capture_base_key_value_pair = { capture_base: Object.keys(files) };
         const files_values = [capture_base_key_value_pair, ...Object.values(files)];
-        Manifest.push(files_values);
+        manifest.push(files_values);
         hasFilesProperty = true;
       }
 
@@ -70,6 +70,18 @@ const useGenerateReadMe = () => {
         ...other_variables,
       };
       variablesArray.push(variables);
+
+      // Sort the variablesArray array such that objects with a Layer_name containing meta are first
+      variablesArray.sort((a, b) => {
+        if (a.Layer_name.includes("meta") && !b.Layer_name.includes("meta")) {
+          return -1;
+        } else if (!a.Layer_name.includes("meta") && b.Layer_name.includes("meta")) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+
       // shift the capture base to the top of the array always
      for (let i = 0; i < variablesArray.length; i++) {
       if (variablesArray[i].hasOwnProperty("classification")) {
@@ -79,18 +91,17 @@ const useGenerateReadMe = () => {
       }
     }
   }
-   
     // turning OCA bundle into OCA readme begins here
     textFile.push(
       readmeText,
       "BEGIN_OCA_MANIFEST\n",
       "**********************************************************************\n",
-      // "Bundle SAID: XXXXXXXXXX\n\n"
+      "Bundle SAID: unavailable\n\n"
     );
 
     // the OCA manifest (all the overlay hashes (SAIDs))
-    const manifest_string = JSON.stringify(Manifest, null, 0);
-    const cleaned_manifest = manifest_string.replace(/[\[\]{}]/g, '').replace(/\n/g, '').replace(/,/g, ',\n').replace(/:/g, ' SAID: ');
+    const manifest_string = JSON.stringify(manifest, null, 0);
+    const cleaned_manifest = manifest_string.replace(/[[\]{}]/g, '').replace(/\n/g, '').replace(/,/g, ',\n').replace(/:/g, ' SAID: ');
     textFile.push(
       cleaned_manifest,
       "\n",
@@ -144,7 +155,6 @@ const useGenerateReadMe = () => {
       const text = JSON.stringify(variable, null, 3);
       const cleaned_text = text.replace(/^ {3}/mg, '').replace(/[{}"]/g, '');
 
-
       // Remove commas only for strings not enclosed in square brackets
       const result = cleaned_text.replace(/(\[[^\]]*\]|[^[\],]+),?/g, (match, group) => {
         if (match.includes('[') && match.includes(']')) {
@@ -157,13 +167,15 @@ const useGenerateReadMe = () => {
 
       // adding overaly name to the textFile 
       const text_with_schema_attributes = result.replace(/Schema attribute:/g, '\nSchema attribute: ' + variable.Layer_name);
-      const text_with_schema_layer_name = text_with_schema_attributes.replace(/Layer_name:/g, 'Layer name:');
+      let text_with_schema_layer_name = text_with_schema_attributes.replace(/Layer_name:/g, 'Layer name:');
 
-
-
+      // assembling the OCA readme and chaning the schema attribute to data type
       if (!textFile.includes(text_with_schema_layer_name)) {
-        textFile.push(
-          text_with_schema_layer_name);
+        if (text_with_schema_layer_name.includes("Schema attribute: capture_base/1.0")) {
+          text_with_schema_layer_name = text_with_schema_layer_name.replace("Schema attribute: capture_base/1.0", "Schema attribute: data type");
+        }
+        // Add the text_with_schema_layer_name to the textFile.
+        textFile.push(text_with_schema_layer_name);
         textFile.push("**********************************************************************");
       }
     });
