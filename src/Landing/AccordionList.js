@@ -55,8 +55,8 @@ const AccordionList = () => {
         <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
         <FindASchemaAccordionItem />
         <StoreASchemaAccordionItem />
-        <UseASchemaAccordionItem navigateToStartPage={navigateToMetadataPage} />
-        <UseASchemaWithDataAccordionItem />
+        <UseASchemaAccordionItem />
+        <UseASchemaWithDataAccordionItem disableButtonCheck={disableButtonCheck} handleExport={handleExport} />
       </Box>
       <Box sx={{ maxWidth: '500px', minWidth: '300px', width: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
         <Box sx={{ width: '100%', border: `1px solid ${CustomPalette.PRIMARY}`, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', backgroundColor: '#ffefea' }}>
@@ -78,9 +78,7 @@ const AccordionList = () => {
             <Button
               variant="contained"
               color="navButton"
-              onClick={() => {
-
-              }}
+              onClick={() => { }}
               sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
               disabled={disableButtonCheck}
             >

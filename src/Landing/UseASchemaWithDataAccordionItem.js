@@ -5,7 +5,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionItemWrapper from './AccordionItemWrapper';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 
-const UseASchemaWithDataAccordionItem = () => {
+const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) => {
   return (
     <AccordionItemWrapper>
       <AccordionSummary
@@ -28,10 +28,9 @@ const UseASchemaWithDataAccordionItem = () => {
           <Button
             variant="contained"
             color="navButton"
-            onClick={() => {
-
-            }}
+            onClick={handleExport}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '20px', marginBottom: '20px' }}
+            disabled={disableButtonCheck}
           >
             Generate Data Entry Excel
           </Button>

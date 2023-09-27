@@ -61,9 +61,10 @@ export default function Drop({
     setHover(false);
   };
 
-
   useEffect(() => {
-    setFile(acceptedFiles);
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      setFile(acceptedFiles);
+    }
   }, [acceptedFiles, setFile]);
 
   const downloadIconColor = useMemo(() => {

@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 
-const UseASchemaAccordionItem = ({ navigateToStartPage }) => {
+const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
   const { zipToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();

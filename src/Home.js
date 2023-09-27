@@ -10,8 +10,13 @@ import CreateManually from "./CreateManually/CreateManually";
 import Overlays from "./Overlays/Overlays";
 import CharacterEncoding from "./Overlays/CharacterEncoding";
 import RequiredEntries from "./Overlays/RequiredEntries";
+import { pagesArray } from "./App";
 
-const Home = ({ currentPage, pageForward, pageBack, showIntroCard, setShowIntroCard }) => {
+const Home = ({ currentPage, setCurrentPage, pageForward, pageBack, showIntroCard, setShowIntroCard }) => {
+  if (!pagesArray.includes(currentPage)) {
+    setCurrentPage("Start");
+  }
+
   return (
     <Box sx={{ flex: 1 }}>
       {currentPage === "Start" && (

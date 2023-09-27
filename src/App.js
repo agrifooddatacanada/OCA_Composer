@@ -25,6 +25,15 @@ const items = {
   "Make entries required": { feature: "Make entries required", selected: false },
 };
 
+export const pagesArray = [
+  "Start",
+  "Metadata",
+  "Details",
+  "LanguageDetails",
+  "Overlays",
+  "View",
+];
+
 function App() {
   const [isZip, setIsZip] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
@@ -53,14 +62,6 @@ function App() {
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
 
-  const pagesArray = [
-    "Start",
-    "Metadata",
-    "Details",
-    "LanguageDetails",
-    "Overlays",
-    "View",
-  ];
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -249,7 +250,7 @@ function App() {
               <Header currentPage={currentPage} />
               <Routes>
                 <Route path="/" element={<Landing />} />
-                <Route path="/start" element={<Home currentPage={currentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
+                <Route path="/start" element={<Home currentPage={currentPage} setCurrentPage={setCurrentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
                 <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
                 <Route path="/attribute_details_help" element={<AttributeDetailsHelp />} />
                 <Route path="/creating_oca_schema_help" element={<CreatingOCASchemaHelp />} />
