@@ -11,9 +11,14 @@ import Overlays from "./Overlays/Overlays";
 import CharacterEncoding from "./Overlays/CharacterEncoding";
 import RequiredEntries from "./Overlays/RequiredEntries";
 import { pagesArray } from "./App";
+import { useMemo } from "react";
 
 const Home = ({ currentPage, setCurrentPage, pageForward, pageBack, showIntroCard, setShowIntroCard }) => {
-  if (!pagesArray.includes(currentPage)) {
+  const allowedPages = useMemo(() => {
+    return [...pagesArray, "Codes", "Create", "Overlays", "CharacterEncoding", "RequiredEntries"];
+  }, []);
+
+  if (!allowedPages.includes(currentPage)) {
     setCurrentPage("Start");
   }
 
