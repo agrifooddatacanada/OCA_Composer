@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Stack, Tooltip, Button, Box } from "@mui/material";
+import { Typography, Tooltip, Button, Box } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import logo from '../assets/agri-logo.png';
 import logoWhite from '../assets/agri-logo-white.png';
 import { useLocation } from 'react-router-dom';
-import logoSE from '../assets/se-logo.png';
 import HeaderWrapper from "./HeaderWrapper";
 
 export default function Header({ currentPage }) {
@@ -91,81 +90,6 @@ export default function Header({ currentPage }) {
   }, [currentPage]);
 
   return (
-    // <Stack
-    //   direction="row"
-    //   justifyContent="space-between"
-    //   sx={{
-    //     // TODO: Need to remove this mb in the nav bar
-    //     // mb: 2,
-    //     pl: 4,
-    //     pr: 4,
-    //     borderBottom: 0.5,
-    //     borderColor: CustomPalette.GREY_300,
-    //   }}
-    // >
-    //   <Box sx={{ display: "flex", alignItems: "center" }}>
-    //     <img src={logo} style={{ width: '150px', marginRight: '20px' }} alt="Logo" />
-    //     <Typography
-    //       sx={{
-    //         fontSize: 25,
-    //         fontWeight: "bold",
-    //         color: CustomPalette.PRIMARY,
-    //         alignSelf: "center",
-    //       }}
-    //     >
-    //       {header}
-    //     </Typography>
-    //     {toolTipText.length > 0 && (
-    //       <Box sx={{ marginLeft: 2, color: CustomPalette.GREY_600 }}>
-    //         <Tooltip
-    //           title={toolTipText}
-    //           placement={
-    //             header === "Attribute Details" || header === "View Schema"
-    //               ? "right"
-    //               : "right-start"
-    //           }
-    //           arrow
-    //         >
-    //           <HelpOutlineIcon sx={{ fontSize: 15 }} />
-    //         </Tooltip>
-    //       </Box>
-    //     )}
-    //   </Box>
-    //   <Stack
-    //     direction="row"
-    //     sx={{
-    //       width: 250,
-    //       alignItems: "center",
-    //       justifyContent: 'flex-end',
-    //     }}
-    //   >
-    //     {currentPage === "Landing" ?
-    //       <img src={logoSE} style={{ height: '60px', marginTop: '10px', marginBottom: '10px' }} alt="Semantic Engine Logo" onClick={() => window.open('https://www.semanticengine.org/#/', '_blank')} />
-    //       :
-    //       <>
-    //         {!location.pathname.includes('_help') && helpLink !== "" && (
-    //           <Button
-    //             color='button'
-    //             variant='contained'
-    //             target='_blank'
-    //             sx={{
-    //               m: 2,
-    //               mr: 5,
-    //               p: 1,
-    //               width: '15rem',
-    //             }}
-    //             onClick={() =>
-    //               window.open(`${helpLink}`, '_blank', 'rel=noopener noreferrer')
-    //             }
-    //           >
-    //             Help with this page
-    //           </Button>
-    //         )}
-    //         <Box sx={{ color: CustomPalette.PRIMARY }}>En</Box>
-    //       </>
-    //     }
-    //   </Stack>
-    // </Stack >
     <HeaderWrapper
       headerColor={currentPage === "Landing" && CustomPalette.PRIMARY}
       leftItem={
