@@ -361,7 +361,9 @@ const useExportLogic = (setShowLink = () => { }) => {
         };
 
         const flaggedCell = worksheetMain.getCell(index + 4, 5);
-        flaggedCell.value = dataArray[1][index].Flagged;
+        if (dataArray[1]?.[index]?.Flagged && dataArray[1]?.[index]?.Flagged !== '') {
+          flaggedCell.value = dataArray[1][index].Flagged;
+        }
         flaggedCell.dataValidation = {
           type: "list",
           allowBlank: true,
@@ -427,7 +429,6 @@ const useExportLogic = (setShowLink = () => { }) => {
     //////CREATE 'LANGUAGE' WORKSHEETS
     try {
       let doubleIndex = 1;
-      console.log('languagesWithCode', languagesWithCode);
       languagesWithCode.forEach((language, langIndex) => {
         let worksheetLanguage;
         let worksheetName = language.code;
@@ -511,6 +512,27 @@ const useExportLogic = (setShowLink = () => { }) => {
     }
 
     //////CREATE DATA WORKSHEET FOR ENTRY_CODE DROPDOWN MENUS
+    try {
+      const entryCodeOptionWorksheet = workbook.addWorksheet("options", { state: 'hidden' });
+      attributesList.forEach((item, index) => {
+        const codesArray = savedEntryCodes[item];
+        if (codesArray) {
+          let columnCounter = 1;
+          for (const entryCodeOption of codesArray) {
+            let languageCounter = 1;
+            for (const lang of languagesWithCode) {
+              entryCodeOptionWorksheet.getCell(2 * index + languageCounter, columnCounter).value = entryCodeOption[lang.language];
+              languageCounter++;
+            }
+            columnCounter++;
+          }
+        }
+
+      });
+    } catch (error) {
+      console.error(error);
+    }
+
     try {
       const entryCodeOptionWorksheet = workbook.addWorksheet("options", { state: 'hidden' });
       attributesList.forEach((item, index) => {

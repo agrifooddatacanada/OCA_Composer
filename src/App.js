@@ -22,7 +22,7 @@ export const Context = createContext();
 
 const items = {
   "Character Encoding": { feature: "Character Encoding", selected: false },
-  "Make entries required": { feature: "Make entries required", selected: false },
+  "Make selected entries required": { feature: "Make selected entries required", selected: false },
 };
 
 export const pagesArray = [

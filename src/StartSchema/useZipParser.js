@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { Context } from '../App';
 import { codesToLanguages, languageCodesObject } from '../constants/isoCodes';
-import { codeToDivision } from '../constants/constants';
+import { codeToDivision, codeToGroup } from '../constants/constants';
 
 const useZipParser = () => {
   const {
@@ -12,7 +12,9 @@ const useZipParser = () => {
     setAttributeRowData,
     setLanAttributeRowData,
     setAttributesWithLists,
-    setSavedEntryCodes
+    setSavedEntryCodes,
+    setCharacterEncodingRowData,
+    setOverlay
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -35,11 +37,12 @@ const useZipParser = () => {
     setSchemaDescription(newMetadata);
   };
 
-  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries) => {
+  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding) => {
     const newSavedEntryCodes = {};
     const attrList = new Set();
     const newLangAttributeRowData = {};
     const newAttributeRowData = [];
+    const newCharacterEncodingRowData = [];
     const attributeListStringMap = {};
     let attributesWithListType = [];
 
@@ -78,11 +81,19 @@ const useZipParser = () => {
     }
 
     // Parse classification
-    const divisionCode = root['classification'].split(':')[1];
-    setDivisionGroup({
-      division: codeToDivision[divisionCode],
-      group: '',
-    });
+    const classificationFromJson = root?.['classification'];
+    const indexOfRDF = classificationFromJson?.indexOf('RDF');
+    if (indexOfRDF !== -1 && !isNaN(classificationFromJson?.[indexOfRDF + 5])) {
+      setDivisionGroup({
+        division: codeToDivision?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5)],
+        group: codeToGroup?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 6)],
+      });
+    } else if (indexOfRDF !== -1 && classificationFromJson?.[indexOfRDF + 4] && !isNaN(classificationFromJson?.[indexOfRDF + 4])) {
+      setDivisionGroup({
+        division: codeToDivision?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5)],
+        group: '',
+      });
+    }
 
     // meta data: label and description
     const languageDescriptionMap = {};
@@ -104,16 +115,43 @@ const useZipParser = () => {
       }
     }
 
-    // Parse attributes details such as type and unit
+    // Parse attributes details such as type and unit + Parsing conformance and character encoding to characterEncodingRowData
     const uniqueAttrList = [...attrList];
-    uniqueAttrList.forEach((item) => newAttributeRowData.push({
-      Attribute: item,
-      Flagged: false,
-      List: attributesWithListType.includes(item),
-      Type: root['attributes'][item],
-      Unit: units['attribute_units'][item]
-    }));
+    uniqueAttrList.forEach((item) => {
+      newAttributeRowData.push({
+        Attribute: item,
+        Flagged: false,
+        List: attributesWithListType.includes(item),
+        Type: root?.['attributes']?.[item],
+        Unit: units?.['attribute_units']?.[item]
+      });
 
+      const newRowForCharacterEncoding = { Attribute: item };
+      if (conformance) {
+        newRowForCharacterEncoding['Make entries required'] = conformance?.['attribute_conformance']?.[item] === "M";
+
+        setOverlay(prev => ({
+          ...prev,
+          "Make entries required": {
+            ...prev["Make entries required"],
+            selected: true
+          }
+        }));
+      }
+      if (characterEncoding) {
+        newRowForCharacterEncoding['Character Encoding'] = characterEncoding?.['attribute_character_encoding']?.[item] || characterEncoding?.['default_character_encoding'];
+        setOverlay(prev => ({
+          ...prev,
+          "Character Encoding": {
+            ...prev["Character Encoding"],
+            selected: true
+          }
+        }));
+      }
+      newCharacterEncodingRowData.push(newRowForCharacterEncoding);
+    });
+
+    setCharacterEncodingRowData(newCharacterEncodingRowData);
     setLanAttributeRowData(newLangAttributeRowData);
     setAttributesList(uniqueAttrList);
     setAttributeRowData(newAttributeRowData);

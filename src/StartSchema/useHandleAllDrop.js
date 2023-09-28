@@ -323,6 +323,8 @@ const useHandleAllDrop = () => {
         const entryList = [];
         const allJSONFiles = [];
         let entryCodeSummary = {};
+        let conformance = undefined;
+        let characterEncoding = undefined;
 
         // load up metadata file in OCA bundle
         const loadMetadataFile = await zip.files["meta.json"].async("text");
@@ -356,6 +358,14 @@ const useHandleAllDrop = () => {
             entryCodeSummary = JSON.parse(content);
           }
 
+          if (key.includes("conformance")) {
+            conformance = JSON.parse(content);
+          }
+
+          if (key.includes("character_encoding")) {
+            characterEncoding = JSON.parse(content);
+          }
+
           allJSONFiles.push(content);
         }
 
@@ -367,7 +377,7 @@ const useHandleAllDrop = () => {
 
         processLanguages(languageList);
         processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), JSON.parse(loadUnits), entryCodeSummary, entryList);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), JSON.parse(loadUnits), entryCodeSummary, entryList, conformance, characterEncoding);
         setZipToReadme(allJSONFiles);
       };
 
