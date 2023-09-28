@@ -10,8 +10,8 @@ import ViewGrid from "./ViewGrid";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import LinkCard from "./LinkCard";
 import useGenerateReadMe from "./useGenerateReadMe";
-import useExport from "./useExport";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import useExportLogic from "./useExportLogic";
 
 export default function ViewSchema({ pageBack }) {
   const { languages, attributeRowData, lanAttributeRowData, isZip, characterEncodingRowData, setCurrentPage, zipToReadme } = useContext(Context);
@@ -19,7 +19,8 @@ export default function ViewSchema({ pageBack }) {
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
-  const { showLink, setShowLink, executeHandleOCAExport, resetToDefaults, exportDisabled } = useExport();
+  const [showLink, setShowLink] = useState(false);
+  const { handleExport, resetToDefaults, exportDisabled } = useExportLogic(setShowLink);
 
   //Formats language buttons in a way that can handle many languages cleanly
   //Minimizes language for cases where it's too long to fit in button size
@@ -181,6 +182,7 @@ export default function ViewSchema({ pageBack }) {
           margin: "auto",
           pr: 5,
           pl: 10,
+          marginTop: 2,
         }}
       >
         <Box sx={{
@@ -235,7 +237,7 @@ export default function ViewSchema({ pageBack }) {
               <Button
                 color="button"
                 variant="contained"
-                onClick={executeHandleOCAExport}
+                onClick={handleExport}
                 sx={{
                   alignSelf: "flex-end",
                   width: "12rem",

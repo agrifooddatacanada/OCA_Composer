@@ -16,6 +16,7 @@ import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
 import OverlaysHelp from "./UsersHelp/Overlays_Help";
 import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
+import Landing from "./Landing/Landing";
 
 export const Context = createContext();
 
@@ -24,12 +25,22 @@ const items = {
   "Make selected entries required": { feature: "Make selected entries required", selected: false },
 };
 
+export const pagesArray = [
+  "Start",
+  "Metadata",
+  "Details",
+  "LanguageDetails",
+  "Overlays",
+  "View",
+];
+
 function App() {
   const [isZip, setIsZip] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
   const [fileData, setFileData] = useState([]);
+  const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
-  const [currentPage, setCurrentPage] = useState("Start");
+  const [currentPage, setCurrentPage] = useState("Landing");
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: "", description: "" },
   });
@@ -51,14 +62,6 @@ function App() {
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
 
-  const pagesArray = [
-    "Start",
-    "Metadata",
-    "Details",
-    "LanguageDetails",
-    "Overlays",
-    "View",
-  ];
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -207,6 +210,8 @@ function App() {
           value={{
             fileData,
             setFileData,
+            rawFile,
+            setRawFile,
             attributesList,
             setAttributesList,
             schemaDescription,
@@ -244,7 +249,8 @@ function App() {
             <BrowserRouter>
               <Header currentPage={currentPage} />
               <Routes>
-                <Route path="/" element={<Home currentPage={currentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
+                <Route path="/" element={<Landing />} />
+                <Route path="/start" element={<Home currentPage={currentPage} setCurrentPage={setCurrentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
                 <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
                 <Route path="/attribute_details_help" element={<AttributeDetailsHelp />} />
                 <Route path="/creating_oca_schema_help" element={<CreatingOCASchemaHelp />} />
@@ -259,7 +265,7 @@ function App() {
                 />
               </Routes>
             </BrowserRouter>
-            <Footer />
+            <Footer currentPage={currentPage} />
           </Box>
         </Context.Provider>
       </ThemeProvider>

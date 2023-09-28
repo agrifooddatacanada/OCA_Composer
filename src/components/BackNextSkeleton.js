@@ -15,6 +15,7 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
           margin: "auto",
           pr: 10,
           pl: 10,
+          marginTop: 2,
         }}
       >
         <Box
