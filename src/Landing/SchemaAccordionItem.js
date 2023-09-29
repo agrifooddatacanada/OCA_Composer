@@ -1,4 +1,4 @@
-import { AccordionDetails, AccordionSummary, Box, Button, Typography } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Box, Button, Link, Typography } from '@mui/material';
 import React from 'react';
 import { CustomPalette } from '../constants/customPalette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -23,7 +23,7 @@ const SchemaAccordionItem = () => {
         <Typography sx={{ marginTop: '20px' }}>
           Using the tools of the Semantic Engine you can write human- and machine-readable schemas.
         </Typography>
-        <Typography onClick={() => console.log('Learn more')} sx={{ color: CustomPalette.PRIMARY, fontWeight: '700', cursor: 'pointer' }}>Learn more-{'>'}</Typography>
+        <Link href="https://agrifooddatacanada.ca/semantic-engine/" sx={{ color: CustomPalette.PRIMARY, fontWeight: '700', cursor: 'pointer', textDecoration: 'none' }}>Learn more-{'>'}</Link>
         <Typography sx={{ marginTop: '20px', fontSize: '20px', fontWeight: '700' }}>
           Example schema
         </Typography>

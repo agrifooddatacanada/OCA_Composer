@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Link, Typography } from '@mui/material';
 import React from 'react';
 
 
@@ -13,7 +13,8 @@ const Introduction = () => {
           Make that value accessible with a data schema.
         </Typography>
         <Box sx={{ textAlign: 'left', marginTop: '40px', fontSize: '1.1rem' }}>
-          New to Schemas? Watch our video and then <Typography onClick={() => console.log('Learn more')} sx={{ fontSize: '1.1rem', fontWeight: '700', cursor: 'pointer' }}>Learn more-{'>'}</Typography>
+          <Typography>New to Schemas? Watch our video and then</Typography>
+          <Link href="https://agrifooddatacanada.ca/semantic-engine/" sx={{ fontSize: '1.1rem', fontWeight: '700', cursor: 'pointer', color: 'white', textDecoration: 'none' }}>Learn more-{'>'}</Link>
         </Box>
         <Typography sx={{ textAlign: 'left', marginTop: '40px', fontSize: '1.1rem' }}>
           Follow our quick-start to begin writing your own data schemas.
