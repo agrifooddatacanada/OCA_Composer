@@ -7,10 +7,10 @@ const Introduction = () => {
     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', maxWidth: '1500px', paddingRight: 5, paddingLeft: 5, gap: 10, color: 'white' }}>
       <Box>
         <Typography sx={{ fontWeight: '500', fontSize: '2.2rem', textAlign: "left", marginTop: '35px' }}>
-          Your data is valuable.
+          Schemas add value to data
         </Typography>
         <Typography sx={{ textAlign: 'left', color: '#e6e6e6' }}>
-          Make that value accessible with a data schema.
+          Make your data more valuable with a data schema
         </Typography>
         <Box sx={{ textAlign: 'left', marginTop: '40px', fontSize: '1.1rem' }}>
           <Typography>New to Schemas? Watch our video and then</Typography>

@@ -337,9 +337,6 @@ const useExportLogic = (setShowLink = () => { }) => {
 
       attributesList.forEach((item, index) => {
         const attributeCell = worksheetMain.getCell(index + 4, 2);
-
-        console.log('item', item);
-
         attributeCell.value = item;
         const classificationCell = worksheetMain.getCell(index + 4, 1);
         classificationCell.value = {
