@@ -369,19 +369,23 @@ const useExportLogic = (setShowLink = () => { }) => {
           allowBlank: true,
           formulae: ['"Y"'],
         };
+
+        // Default certain attributes to utf-8 or base64
         const encodingCell = worksheetMain.getCell(index + 4, 6);
-        // TODO: Might not need this formula
-        encodingCell.value = {
-          formula: `IF(OR(C${index + 4}="Binary", C${index + 4
-            }="Array[Binary]"), "base64", "utf-8")`,
+        if (characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
+          encodingCell.value = characterEncodingRowData[index]['Character Encoding'];
+        } else {
+          encodingCell.value = {
+            formula: `IF(OR(C${index + 4}="Binary", C${index + 4
+              }="Array[Binary]"), "base64", "utf-8")`,
 
-          result:
-            typeCell.value === "Binary" || typeCell.value === "Array[Binary]"
-              ? "base64"
-              : "utf-8",
-        };
+            result:
+              typeCell.value === "Binary" || typeCell.value === "Array[Binary]"
+                ? "base64"
+                : "utf-8",
+          };
+        }
 
-        encodingCell.value = characterEncodingRowData[index]['Character Encoding'];
 
         const entryCodesCell = worksheetMain.getCell(index + 4, 8);
 
@@ -407,11 +411,14 @@ const useExportLogic = (setShowLink = () => { }) => {
           allowBlank: true,
           formulae: ['"M,O"'],
         };
-        if (overlay["Make entries required"].selected) {
-          conformanceCell.value = characterEncodingRowData[index]['Make entries required'] ? "M" : "O";
+
+        if (overlay["Make selected entries required"].selected) {
+          conformanceCell.value = characterEncodingRowData[index]['Make selected entries required'] ? "M" : "O";
         }
 
-        worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
+        if (dataArray[1]?.[index] && dataArray[1][index].Unit && dataArray[1][index].Unit !== '') {
+          worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
+        }
 
         const referenceCell = worksheetMain.getCell(index + 4, 11);
         if (
@@ -505,6 +512,11 @@ const useExportLogic = (setShowLink = () => { }) => {
           const descriptionCell = worksheetLanguage.getCell(index + 4, 6);
           descriptionCell.value = dataArray[languageIndex][index].Description;
         });
+
+        // Somehow semantic engine needs this when there are less than 3 attributes 
+        if (attributesList.length < 3) {
+          worksheetLanguage.getCell(6, 3).value = "";
+        }
       });
     } catch (error) {
       console.error(error);
