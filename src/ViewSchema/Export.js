@@ -320,28 +320,6 @@ export default function Export({ setShowLink }) {
       console.log('Error creating "Start Here" page');
     }
 
-    //////CREATE DATA WORKSHEET FOR ENTRY_CODE DROPDOWN MENUS
-    try {
-      const entryCodeOptionWorksheet = workbook.addWorksheet("options");
-      attributesList.forEach((item, index) => {
-        const codesArray = savedEntryCodes[item];
-        if (codesArray) {
-          let columnCounter = 1;
-          for (const entryCodeOption of codesArray) {
-            let languageCounter = 1;
-            for (const lang of languagesWithCode) {
-              entryCodeOptionWorksheet.getCell(2 * index + languageCounter, columnCounter).value = entryCodeOption[lang.language];
-              languageCounter++;
-            }
-            columnCounter++;
-          }
-        }
-
-      });
-    } catch (error) {
-      console.error(error);
-    }
-
     //////CREATE 'MAIN' WORKSHEET
     try {
       const worksheetMain = workbook.addWorksheet("Main");
@@ -529,6 +507,28 @@ export default function Export({ setShowLink }) {
     } catch (error) {
       console.error(error);
       console.log('Error creating "Language" worksheets');
+    }
+
+    //////CREATE DATA WORKSHEET FOR ENTRY_CODE DROPDOWN MENUS
+    try {
+      const entryCodeOptionWorksheet = workbook.addWorksheet("options", { state: 'hidden' });
+      attributesList.forEach((item, index) => {
+        const codesArray = savedEntryCodes[item];
+        if (codesArray) {
+          let columnCounter = 1;
+          for (const entryCodeOption of codesArray) {
+            let languageCounter = 1;
+            for (const lang of languagesWithCode) {
+              entryCodeOptionWorksheet.getCell(2 * index + languageCounter, columnCounter).value = entryCodeOption[lang.language];
+              languageCounter++;
+            }
+            columnCounter++;
+          }
+        }
+
+      });
+    } catch (error) {
+      console.error(error);
     }
 
     ////////CREATE WORKBOOK AND EXPORT
