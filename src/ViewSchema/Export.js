@@ -503,6 +503,11 @@ export default function Export({ setShowLink }) {
           const descriptionCell = worksheetLanguage.getCell(index + 4, 6);
           descriptionCell.value = dataArray[languageIndex][index].Description;
         });
+
+        // Somehow semantic engine needs this when there are less than 3 attributes 
+        if (attributesList.length < 3) {
+          worksheetLanguage.getCell(6, 3).value = "";
+        }
       });
     } catch (error) {
       console.error(error);
