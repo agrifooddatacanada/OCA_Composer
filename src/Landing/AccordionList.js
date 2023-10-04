@@ -58,11 +58,13 @@ const AccordionList = () => {
         <UseASchemaAccordionItem />
         <UseASchemaWithDataAccordionItem disableButtonCheck={disableButtonCheck} handleExport={handleExport} />
       </Box>
-      <Box sx={{ maxWidth: '500px', minWidth: '300px', width: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+      {/* Added marginTop since the Quick Link is short */}
+      <Box sx={{ maxWidth: '500px', minWidth: '300px', width: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', marginTop: '40px' }}>
         <Box sx={{ width: '100%', border: `1px solid ${CustomPalette.PRIMARY}`, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', backgroundColor: '#ffefea' }}>
           <Typography sx={{ fontSize: '23px', fontWeight: '400', textAlign: 'center', width: '100%', marginTop: 2 }}>Quick Links</Typography>
           <CustomAnchorLink text="Write a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 5, marginTop: 2 }} onClick={navigateToStartPage} />
-          <CustomAnchorLink text="Find a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 5, marginTop: 2 }} onClick={navigateToStartPage} />
+          {/* <CustomAnchorLink text="Find a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 5, marginTop: 2 }} onClick={navigateToStartPage} /> */}
+          <CustomAnchorLink link="https://www.semanticengine.org/#/develop" text="Parse a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 5, marginTop: 2 }} />
 
           <Drop
             setFile={setRawFile}
@@ -75,7 +77,7 @@ const AccordionList = () => {
           />
 
           <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-            <Button
+            {/* <Button
               variant="contained"
               color="navButton"
               onClick={() => { }}
@@ -83,7 +85,7 @@ const AccordionList = () => {
               disabled={disableButtonCheck}
             >
               Validate Schema
-            </Button>
+            </Button> */}
             <Button
               variant="contained"
               color="navButton"
@@ -102,16 +104,17 @@ const AccordionList = () => {
             >
               Edit Schema
             </Button>
+            {/* Added marginBottom */}
             <Button
               variant="contained"
               color="navButton"
               onClick={() => toTextFile(zipToReadme)}
-              sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
+              sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px', marginBottom: '20px' }}
               disabled={disableButtonCheck}
             >
               Generate Readme
             </Button>
-            <Button
+            {/* <Button
               variant="contained"
               color="navButton"
               onClick={handleExport}
@@ -119,7 +122,7 @@ const AccordionList = () => {
               disabled={disableButtonCheck}
             >
               Generate Data Entry Excel
-            </Button>
+            </Button> */}
           </Box>
         </Box>
       </Box>

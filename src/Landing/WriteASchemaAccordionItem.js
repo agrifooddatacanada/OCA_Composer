@@ -18,7 +18,7 @@ const WriteASchemaAccordionItem = ({ navigateToStartPage }) => {
 
       <AccordionDetails sx={{ textAlign: 'start' }}>
         <Typography>
-          Using our <CustomAnchorLink link='' text="schema writer" /> you can easily create human- and machine-readable versions of your schema.
+          Using our <CustomAnchorLink text="schema writer" onClick={navigateToStartPage} /> you can easily create human- and machine-readable versions of your schema.
         </Typography>
         <Typography sx={{ marginTop: '20px', marginBottom: '20px' }}>
           You will either be documenting an existing dataset or you will start with an idea of what columns or variables you will be collecting for your dataset. <CustomAnchorLink link='' text="Learn more about how to design a dataset" />.

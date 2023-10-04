@@ -325,6 +325,7 @@ const useHandleAllDrop = () => {
         let entryCodeSummary = {};
         let conformance = undefined;
         let characterEncoding = undefined;
+        let loadUnits = undefined;
 
         // load up metadata file in OCA bundle
         const loadMetadataFile = await zip.files["meta.json"].async("text");
@@ -366,18 +367,19 @@ const useHandleAllDrop = () => {
             characterEncoding = JSON.parse(content);
           }
 
+          if (key.includes("unit")) {
+            loadUnits = JSON.parse(content);
+          }
+
           allJSONFiles.push(content);
         }
 
         const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
         allJSONFiles.push(loadRoot);
 
-        // loadUnits does not need to add to allJSONFiles since it is already added when looping above
-        const loadUnits = await zip.files[metadataJson.files[root].unit + '.json'].async("text");
-
         processLanguages(languageList);
         processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), JSON.parse(loadUnits), entryCodeSummary, entryList, conformance, characterEncoding);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding);
         setZipToReadme(allJSONFiles);
       };
 

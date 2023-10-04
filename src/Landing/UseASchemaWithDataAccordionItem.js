@@ -30,7 +30,8 @@ const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) =
             color="navButton"
             onClick={handleExport}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '20px', marginBottom: '20px' }}
-            disabled={disableButtonCheck}
+            disabled={true}
+          // disabled={disableButtonCheck}
           >
             Generate Data Entry Excel
           </Button>
