@@ -3,7 +3,10 @@ import { Context } from "../App";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
 import { divisionCodes, groupCodes } from "../constants/constants";
+import useGenerateReadMe from "./useGenerateReadMe";
 const ExcelJS = require("exceljs");
+
+const zipUrl = "https://tool.oca.argo.colossi.network";
 
 function columnToLetter(column) {
   var temp, letter = '';
@@ -36,8 +39,10 @@ const useExportLogic = (setShowLink = () => { }) => {
     setSavedEntryCodes,
     customIsos,
     characterEncodingRowData,
-    overlay
+    overlay,
+    zipToReadme
   } = useContext(Context);
+  const { toTextFile } = useGenerateReadMe();
 
   const classificationCode = useMemo(() => {
     if (groupCodes[divisionGroup.group]) {
@@ -548,25 +553,27 @@ const useExportLogic = (setShowLink = () => { }) => {
     ////////CREATE WORKBOOK AND EXPORT
     const workbookName = `OCA_Template_${new Date().toISOString()}.xlsx`;
 
-    try {
-      workbook.xlsx.writeBuffer().then((buffer) => {
-        const blob = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = workbookName;
-        a.click();
-      });
-      setShowLink(true);
-      setExportDisabled(true);
-      setTimeout(() => {
-        setExportDisabled(false);
-      }, 3000);
-    } catch (error) {
-      console.error(error);
-    }
+    // try {
+    //   workbook.xlsx.writeBuffer().then((buffer) => {
+    //     const blob = new Blob([buffer], {
+    //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    //     });
+    //     const url = window.URL.createObjectURL(blob);
+    //     const a = document.createElement("a");
+    //     a.href = url;
+    //     a.download = workbookName;
+    //     a.click();
+    //   });
+    //   setShowLink(true);
+    //   setExportDisabled(true);
+    //   setTimeout(() => {
+    //     setExportDisabled(false);
+    //   }, 3000);
+    // } catch (error) {
+    //   console.error(error);
+    // }
+
+    return { workbook, workbookName };
   };
 
   const resetToDefaults = () => {
@@ -584,8 +591,57 @@ const useExportLogic = (setShowLink = () => { }) => {
     setSavedEntryCodes({});
   };
 
-  const handleExport = () => {
-    handleOCAExport(OCADataArray);
+  const sendFileToAPI = async (workbook, workbookName) => {
+    try {
+      const buffer = await workbook.xlsx.writeBuffer();
+
+      const formData = new FormData();
+      const file = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      formData.append("file", file, workbookName);
+
+      const response = await fetch(`${zipUrl}/`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.filename;
+      } else {
+        throw new Error("Error sending file to API");
+      }
+    } catch (error) {
+      console.error("Error sending file to API:", error);
+      return;
+    }
+  };
+
+  const downloadZipFile = (zipFileName) => {
+    const downloadUrl = `${zipUrl}/${zipFileName}`;
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = zipFileName;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+
+  const handleExport = async () => {
+    setExportDisabled(true);
+    toTextFile(zipToReadme);
+    const { workbook, workbookName } = handleOCAExport(OCADataArray);
+    const fileName = await sendFileToAPI(workbook, workbookName);
+    if (fileName) {
+      downloadZipFile(fileName);
+    }
+    setTimeout(() => {
+      setExportDisabled(false);
+    }, 3000);
   };
 
   return {

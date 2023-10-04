@@ -71,7 +71,7 @@ const UseASchemaAccordionItem = () => {
         />
 
         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <Button
+          {/* <Button
             variant="contained"
             color="navButton"
             onClick={() => { }}
@@ -79,7 +79,7 @@ const UseASchemaAccordionItem = () => {
             disabled={disableButtonCheck}
           >
             Validate Schema
-          </Button>
+          </Button> */}
           <Button
             variant="contained"
             color="navButton"
