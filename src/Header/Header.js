@@ -67,21 +67,20 @@ export default function Header({ currentPage }) {
         break;
       case "CharacterEncoding":
         setHeader("Add Character Encoding");
+        setHelpLink('/character_encoding_help');
 
         // TODO: Add help tooltips
-        setToolTipText("");
+        setToolTipText("Character encoding of the data source (for each attribute). If you don’t know what the data source uses you can leave this blank. If you are creating a schema for new data a good choice would be UTF-8.");
 
-        // TODO: Add Help page
-        setHelpLink('/overlays_help');
         break;
       case "RequiredEntries":
         setHeader("Add Required Entries");
 
         // TODO: Add help tooltips
-        setToolTipText("");
+        setToolTipText("Specify if the underlying data must have an entry for the specific attribute.");
 
         // TODO: Add Help page
-        setHelpLink('/overlays_help');
+        setHelpLink('/required_entry_help');
         break;
       default:
         setHeader("");

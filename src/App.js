@@ -15,8 +15,11 @@ import SchemaMetadataHelp from "./UsersHelp/Schema_Metadata_Help";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
 import OverlaysHelp from "./UsersHelp/Overlays_Help";
+import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
+import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
 import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
 import Landing from "./Landing/Landing";
+
 
 export const Context = createContext();
 
@@ -259,6 +262,8 @@ function App() {
                 <Route path="/start_schema_help" element={<StartSchemaHelp />} />
                 <Route path="/view_schema_help" element={<ViewSchemaHelp />} />
                 <Route path="/overlays_help" element={<OverlaysHelp />} />
+                <Route path="/character_encoding_help" element={<CharacterEncodingHelp />} />
+                <Route path="/required_entry_help" element={<RequiredEntryHelp />} />
                 <Route
                   path="*"
                   element={<Navigate to="/" />}
