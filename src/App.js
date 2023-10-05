@@ -19,6 +19,7 @@ import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
 import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
 import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
 import Landing from "./Landing/Landing";
+import GuidanceForDesigningDataSets from "./Landing/help_designing_datasets";
 
 
 export const Context = createContext();
@@ -253,6 +254,7 @@ function App() {
               <Header currentPage={currentPage} />
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/help_designing_datasets" element={<GuidanceForDesigningDataSets />} />
                 <Route path="/start" element={<Home currentPage={currentPage} setCurrentPage={setCurrentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
                 <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
                 <Route path="/attribute_details_help" element={<AttributeDetailsHelp />} />
