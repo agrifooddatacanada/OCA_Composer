@@ -30,9 +30,10 @@ const AccordionList = () => {
     setCurrentPage,
     setIsZip
   } = useHandleAllDrop();
-  const { handleExport } = useExportLogic();
+  const { handleExport, resetToDefaults } = useExportLogic();
 
   const navigateToStartPage = () => {
+    resetToDefaults();
     setCurrentPage('Start');
     navigate('/start');
   };
