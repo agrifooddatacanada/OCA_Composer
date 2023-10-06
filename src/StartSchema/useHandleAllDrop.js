@@ -472,7 +472,8 @@ const useHandleAllDrop = () => {
     setDropDisabled,
     setFileData,
     setCurrentPage,
-    switchToLastPage
+    switchToLastPage,
+    setIsZip
   };
 };
 

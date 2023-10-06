@@ -17,6 +17,8 @@ import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
 import OverlaysHelp from "./UsersHelp/Overlays_Help";
 import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
 import Landing from "./Landing/Landing";
+import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
+import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
 
 export const Context = createContext();
 
@@ -41,6 +43,7 @@ function App() {
   const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
   const [currentPage, setCurrentPage] = useState("Landing");
+  const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: "", description: "" },
   });
@@ -68,6 +71,7 @@ function App() {
     if (currentIndex >= 0 && currentIndex < pagesArray.length - 1) {
       let newPage = pagesArray[(currentIndex += 1)];
       setCurrentPage(newPage);
+      setHistory(prev => [...prev, newPage]);
     }
   };
 
@@ -76,8 +80,15 @@ function App() {
     if (currentIndex > 0 && currentIndex < pagesArray.length) {
       let newPage = pagesArray[(currentIndex -= 1)];
       setCurrentPage(newPage);
+      setHistory(prev => prev.slice(0, prev.length - 1));
     }
   };
+
+  useEffect(() => {
+    if (history[history.length - 1] !== currentPage) {
+      setHistory(prev => [...prev, currentPage]);
+    }
+  }, [currentPage]);
 
   //Create Attributes List from File Data
   useEffect(() => {
@@ -231,6 +242,8 @@ function App() {
             lanAttributeRowData,
             setLanAttributeRowData,
             setCurrentPage,
+            history,
+            setHistory,
             customIsos,
             setCustomIsos,
             isZip,
@@ -242,7 +255,7 @@ function App() {
             selectedOverlay,
             setSelectedOverlay,
             zipToReadme,
-            setZipToReadme
+            setZipToReadme,
           }}
         >
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -259,6 +272,8 @@ function App() {
                 <Route path="/start_schema_help" element={<StartSchemaHelp />} />
                 <Route path="/view_schema_help" element={<ViewSchemaHelp />} />
                 <Route path="/overlays_help" element={<OverlaysHelp />} />
+                <Route path="/character_encoding_help" element={<CharacterEncodingHelp />} />
+                <Route path="/required_entry_help" element={<RequiredEntryHelp />} />
                 <Route
                   path="*"
                   element={<Navigate to="/" />}
