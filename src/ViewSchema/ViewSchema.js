@@ -12,9 +12,11 @@ import LinkCard from "./LinkCard";
 import useGenerateReadMe from "./useGenerateReadMe";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import useExportLogic from "./useExportLogic";
+import { useNavigate } from "react-router-dom";
 
 export default function ViewSchema({ pageBack }) {
-  const { languages, attributeRowData, lanAttributeRowData, isZip, characterEncodingRowData, setCurrentPage, zipToReadme } = useContext(Context);
+  const navigate = useNavigate();
+  const { languages, attributeRowData, lanAttributeRowData, isZip, setIsZip, characterEncodingRowData, setCurrentPage, zipToReadme, history, setHistory } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
@@ -172,6 +174,16 @@ export default function ViewSchema({ pageBack }) {
     setDisplayArray(newDisplayArray);
   }, [attributeRowData, lanAttributeRowData]);
 
+  const moveBackward = () => {
+    if (history.length > 1 && history[history.length - 2] === "Landing") {
+      setHistory(prev => prev.slice(0, prev.length - 1));
+      setCurrentPage('Landing');
+      navigate('/');
+    } else {
+      pageBack();
+    }
+  };
+
   return (
     <Box>
       <Box
@@ -192,12 +204,28 @@ export default function ViewSchema({ pageBack }) {
           <Button
             color="navButton"
             sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
-            onClick={pageBack}
+            onClick={moveBackward}
           >
             <ArrowBackIosIcon /> Back
           </Button>
           <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-            {isZip ? (
+            <Button
+              color="button"
+              variant='contained'
+              onClick={() => {
+                setCurrentPage("Metadata");
+                setIsZip(false);
+              }}
+              sx={{
+                alignSelf: "flex-end",
+                display: "flex",
+                justifyContent: "space-around",
+                padding: "0.5rem 1rem",
+              }}
+            >
+              Edit Schema
+            </Button>
+            {!isZip ? (
               <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
                 <Button
                   color="button"
@@ -212,53 +240,41 @@ export default function ViewSchema({ pageBack }) {
                 >
                   Download ReadMe
                 </Button>
-                <Button
-                  color="button"
-                  variant='contained'
-                  onClick={() => setCurrentPage("Metadata")}
+                <Box
                   sx={{
-                    alignSelf: "flex-end",
                     display: "flex",
-                    justifyContent: "space-around",
-                    padding: "0.5rem 1rem",
+                    alignItems: "center",
+                    color: CustomPalette.GREY_600,
                   }}
                 >
-                  Edit Schema
-                </Button>
+                  <Button
+                    color="button"
+                    variant="contained"
+                    onClick={handleExport}
+                    sx={{
+                      alignSelf: "flex-end",
+                      width: "12rem",
+                      display: "flex",
+                      justifyContent: "space-around",
+                      p: 1,
+                    }}
+                    disabled={exportDisabled}
+                  >
+                    Finish and Export <CheckCircleIcon />
+                  </Button>
+                  <Box sx={{ marginLeft: "1rem" }}>
+                    <Tooltip
+                      title="Export your schema in an Excel format. This format includes all the information you’ve provided here. After you have created and downloaded the Excel schema template you can upload it into the SemanticEngine.org to create the machine-actionable OCA Schema Bundle."
+                      placement="left"
+                      arrow
+                    >
+                      <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                    </Tooltip>
+                  </Box>
+                </Box>
               </Box>
             ) : <></>}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                color: CustomPalette.GREY_600,
-              }}
-            >
-              <Button
-                color="button"
-                variant="contained"
-                onClick={handleExport}
-                sx={{
-                  alignSelf: "flex-end",
-                  width: "12rem",
-                  display: "flex",
-                  justifyContent: "space-around",
-                  p: 1,
-                }}
-                disabled={exportDisabled}
-              >
-                Finish and Export <CheckCircleIcon />
-              </Button>
-              <Box sx={{ marginLeft: "1rem" }}>
-                <Tooltip
-                  title="Export your schema in an Excel format. This format includes all the information you’ve provided here. After you have created and downloaded the Excel schema template you can upload it into the SemanticEngine.org to create the machine-actionable OCA Schema Bundle."
-                  placement="left"
-                  arrow
-                >
-                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                </Tooltip>
-              </Box>
-            </Box>
+
           </Box>
 
         </Box>

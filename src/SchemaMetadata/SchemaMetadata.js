@@ -14,6 +14,7 @@ import { removeSpacesFromObjectOfObjects } from "../constants/removeSpaces";
 import IntroCard from "./IntroCard";
 import IsoCard from "./IsoCard";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { useNavigate } from "react-router-dom";
 
 export default function SchemaMetadata({
   pageBack,
@@ -21,12 +22,13 @@ export default function SchemaMetadata({
   showIntroCard,
   setShowIntroCard,
 }) {
+  const navigate = useNavigate();
   const [showLanguages, setShowLanguages] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [fieldArray, setFieldArray] = useState([]);
   const [showIsoInput, setShowIsoInput] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState("");
-  const { schemaDescription, setSchemaDescription, languages } =
+  const { schemaDescription, setSchemaDescription, languages, history, setHistory, setCurrentPage } =
     useContext(Context);
 
   const toTitleCase = (str) => {
@@ -82,8 +84,18 @@ export default function SchemaMetadata({
     };
   }, [showIsoInput]);
 
+  const moveBackward = () => {
+    if (history.length > 1 && history[history.length - 2] === "Landing") {
+      setHistory(prev => prev.slice(0, prev.length - 1));
+      setCurrentPage('Landing');
+      navigate('/');
+    } else {
+      pageBack();
+    }
+  };
+
   return (
-    <BackNextSkeleton isBack pageBack={pageBack} isForward pageForward={handleForward}>
+    <BackNextSkeleton isBack pageBack={moveBackward} isForward pageForward={handleForward}>
       {showCard && (
         <NavigationCard
           fieldArray={fieldArray}

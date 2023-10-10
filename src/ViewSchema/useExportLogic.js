@@ -40,7 +40,9 @@ const useExportLogic = (setShowLink = () => { }) => {
     customIsos,
     characterEncodingRowData,
     overlay,
-    zipToReadme
+    zipToReadme,
+    setIsZip,
+    setRawFile
   } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
 
@@ -589,6 +591,9 @@ const useExportLogic = (setShowLink = () => { }) => {
     setLanAttributeRowData([]);
     setAttributesWithLists([]);
     setSavedEntryCodes({});
+    setIsZip(false);
+    setFileData([]);
+    setRawFile([]);
   };
 
   const sendFileToAPI = async (workbook, workbookName) => {

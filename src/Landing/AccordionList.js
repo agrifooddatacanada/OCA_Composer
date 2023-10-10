@@ -28,20 +28,24 @@ const AccordionList = () => {
     dropMessage,
     setDropMessage,
     setCurrentPage,
+    setIsZip
   } = useHandleAllDrop();
-  const { handleExport } = useExportLogic();
+  const { handleExport, resetToDefaults } = useExportLogic();
 
   const navigateToStartPage = () => {
+    resetToDefaults();
     setCurrentPage('Start');
     navigate('/start');
   };
 
   const navigateToMetadataPage = () => {
+    setIsZip(false);
     setCurrentPage('Metadata');
     navigate('/start');
   };
 
   const navigateToViewPage = () => {
+    setIsZip(true);
     setCurrentPage('View');
     navigate('/start');
   };
