@@ -57,7 +57,7 @@ const AccordionList = () => {
       <Box sx={{ maxWidth: '500px', minWidth: '300px', width: "100%" }}>
         <SchemaAccordionItem />
         <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
-        <FindASchemaAccordionItem />
+        {/* <FindASchemaAccordionItem /> */}
         <StoreASchemaAccordionItem />
         <UseASchemaAccordionItem />
         <UseASchemaWithDataAccordionItem disableButtonCheck={disableButtonCheck} handleExport={handleExport} />
