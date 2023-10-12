@@ -11,7 +11,7 @@ import Overlays from "./Overlays/Overlays";
 import CharacterEncoding from "./Overlays/CharacterEncoding";
 import RequiredEntries from "./Overlays/RequiredEntries";
 import { pagesArray } from "./App";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 const Home = ({ currentPage, setCurrentPage, pageForward, pageBack, showIntroCard, setShowIntroCard }) => {
   const allowedPages = useMemo(() => {
@@ -21,6 +21,10 @@ const Home = ({ currentPage, setCurrentPage, pageForward, pageBack, showIntroCar
   if (!allowedPages.includes(currentPage)) {
     setCurrentPage("Start");
   }
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <Box sx={{ flex: 1 }}>
