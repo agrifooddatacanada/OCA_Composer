@@ -19,6 +19,7 @@ import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays
 import Landing from "./Landing/Landing";
 import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
 import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
+import GuidanceForDesigningDataSets from "./Landing/HelpDesigningDatasets";
 
 export const Context = createContext();
 
@@ -264,6 +265,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/start" element={<Home currentPage={currentPage} setCurrentPage={setCurrentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
+                <Route path="/help_designing_datasets" element={<GuidanceForDesigningDataSets />} />
                 <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
                 <Route path="/attribute_details_help" element={<AttributeDetailsHelp />} />
                 <Route path="/creating_oca_schema_help" element={<CreatingOCASchemaHelp />} />

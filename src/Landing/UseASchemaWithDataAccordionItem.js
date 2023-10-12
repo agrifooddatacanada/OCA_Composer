@@ -35,7 +35,7 @@ const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) =
           >
             Generate Data Entry Excel
           </Button>
-          <CustomAnchorLink link='' text="Validate data against a schema" />
+          <CustomAnchorLink link='https://github.com/agrifooddatacanada/OCA_data_set_validator' text="Validate data against a schema" />
         </Box>
       </AccordionDetails>
     </AccordionItemWrapper>
