@@ -4,6 +4,7 @@ import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
 import { divisionCodes, groupCodes } from "../constants/constants";
 import useGenerateReadMe from "./useGenerateReadMe";
+import JSZip from "jszip";
 const ExcelJS = require("exceljs");
 
 const zipUrl = "https://tool.oca.argo.colossi.network";
@@ -40,7 +41,7 @@ const useExportLogic = (setShowLink = () => { }) => {
     customIsos,
     characterEncodingRowData,
     overlay,
-    zipToReadme,
+    setZipToReadme,
     setIsZip,
     setRawFile
   } = useContext(Context);
@@ -624,21 +625,41 @@ const useExportLogic = (setShowLink = () => { }) => {
     }
   };
 
-  const downloadZipFile = (zipFileName) => {
+  const downloadZipFile = async (zipFileName) => {
     const downloadUrl = `${zipUrl}/${zipFileName}`;
-    const a = document.createElement("a");
-    a.href = downloadUrl;
-    a.download = zipFileName;
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const response = await fetch(downloadUrl);
+    if (response.ok) {
+      const allJSONFiles = [];
+      const blob = await response.blob();
+      const zipData = await JSZip.loadAsync(blob);
+      const loadMetadataFile = await zipData.files["meta.json"].async("text");
+      const metadataJson = JSON.parse(loadMetadataFile);
+      const root = metadataJson.root;
+      allJSONFiles.push(loadMetadataFile);
+
+      for (const file of Object.values(metadataJson.files[root])) {
+        const content = await zipData.files[file + '.json'].async("text");
+        allJSONFiles.push(content);
+      }
+      const loadRoot = await zipData.files[metadataJson.root + '.json'].async("text");
+      allJSONFiles.push(loadRoot);
+
+      setZipToReadme(allJSONFiles);
+      toTextFile(allJSONFiles);
+
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = zipFileName;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
 
   const handleExport = async () => {
     setExportDisabled(true);
-    toTextFile(zipToReadme);
     const { workbook, workbookName } = handleOCAExport(OCADataArray);
     const fileName = await sendFileToAPI(workbook, workbookName);
     if (fileName) {
