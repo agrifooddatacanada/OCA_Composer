@@ -9,15 +9,13 @@ import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import LinkCard from "./LinkCard";
-import useGenerateReadMe from "./useGenerateReadMe";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import useExportLogic from "./useExportLogic";
 import { useNavigate } from "react-router-dom";
 
 export default function ViewSchema({ pageBack }) {
   const navigate = useNavigate();
-  const { languages, attributeRowData, lanAttributeRowData, isZip, setIsZip, characterEncodingRowData, setCurrentPage, zipToReadme, history, setHistory } = useContext(Context);
-  const { toTextFile } = useGenerateReadMe();
+  const { languages, attributeRowData, lanAttributeRowData, isZip, setIsZip, characterEncodingRowData, setCurrentPage, history, setHistory } = useContext(Context);
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
@@ -230,7 +228,7 @@ export default function ViewSchema({ pageBack }) {
                 <Button
                   color="button"
                   variant='contained'
-                  onClick={() => toTextFile(zipToReadme)}
+                  onClick={() => handleExport(true)}
                   sx={{
                     alignSelf: "flex-end",
                     display: "flex",

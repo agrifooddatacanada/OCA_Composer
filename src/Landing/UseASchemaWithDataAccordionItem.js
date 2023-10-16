@@ -21,11 +21,12 @@ const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) =
           With your machine-readable .zip schema bundle you can begin to use it in your workflows.
         </Typography>
         <Typography sx={{ marginTop: '20px' }}>
-          For example, using a schema as a template, generate an Excel sheet prepared for data entry. Or if you have a  python workflow you can incorporate data validation using data rules of the schema.
+          {/* For example, using a schema as a template, generate an Excel sheet prepared for data entry. Or  */}
+          If you have a  python workflow you can incorporate data validation using data rules of the schema.
         </Typography>
 
         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <Button
+          {/* <Button
             variant="contained"
             color="navButton"
             onClick={handleExport}
@@ -34,8 +35,8 @@ const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) =
           // disabled={disableButtonCheck}
           >
             Generate Data Entry Excel
-          </Button>
-          <CustomAnchorLink link='https://github.com/agrifooddatacanada/OCA_data_set_validator' text="Validate data against a schema" />
+          </Button> */}
+          <CustomAnchorLink link='https://github.com/agrifooddatacanada/OCA_data_set_validator' text="Validate data against a schema" overrideStyle={{ marginTop: 2 }} />
         </Box>
       </AccordionDetails>
     </AccordionItemWrapper>

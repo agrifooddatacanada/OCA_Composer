@@ -50,9 +50,9 @@ const UseASchemaAccordionItem = () => {
         <Typography>
           When you have a .zip schema bundle you can upload and then:
         </Typography>
-        <Typography>
+        {/* <Typography>
           <strong>Validate</strong> the schema to ensure it is well-formed.
-        </Typography>
+        </Typography> */}
         <Typography>
           <strong>View</strong> the schema and <strong>Edit</strong> the schema if needed.
         </Typography>
