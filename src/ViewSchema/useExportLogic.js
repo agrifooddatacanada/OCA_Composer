@@ -19,7 +19,7 @@ function columnToLetter(column) {
   return letter;
 }
 
-const useExportLogic = (setShowLink = () => { }) => {
+const useExportLogic = () => {
   const {
     languages,
     attributeRowData,

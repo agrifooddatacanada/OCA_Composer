@@ -20,7 +20,7 @@ export default function ViewSchema({ pageBack }) {
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
-  const { handleExport, resetToDefaults, exportDisabled } = useExportLogic(setShowLink);
+  const { handleExport, resetToDefaults, exportDisabled } = useExportLogic();
 
   //Formats language buttons in a way that can handle many languages cleanly
   //Minimizes language for cases where it's too long to fit in button size
