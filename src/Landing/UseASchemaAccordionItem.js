@@ -10,8 +10,8 @@ import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 
 //Edit: import libraries
-import { Validator, OCABox } from 'oca.js'; // Import oca.js modules
-import unzip from 'unzipper'; // Import unzipper for extracting ZIP files
+// import { Validator, OCABox } from 'oca.js'; // Import oca.js modules
+// import unzip from 'unzipper'; // Import unzipper for extracting ZIP files
 
 
 const UseASchemaAccordionItem = () => {
@@ -40,35 +40,7 @@ const UseASchemaAccordionItem = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
-
-  // Function to handle schema validation
-  const handleValidateSchema = () => {
-    if (rawFile.length === 0 || loading) {
-      return;
-    }
-
-    // Extract the contents of the ZIP file
-    unzip.Open.file(rawFile).then((directory) => {
-      // Convert the extracted directory to an OCA-compliant format
-      const ocaData = { data: directory };
-
-      // Create an OCA schema
-      const oca = new OCABox(ocaData).generateBundle();
-
-      // Create a validator
-      const validator = new Validator();
-
-      // Validate the OCA schema
-      const validationResult = validator.validate(oca);
-
-      if (validationResult.success) {
-        alert('OCA schema is valid');
-      } else {
-        alert('OCA schema is invalid');
-        console.error('Errors:', validationResult.errors);
-      }
-    });
-  };
+  
 
 
   return (
@@ -109,7 +81,7 @@ const UseASchemaAccordionItem = () => {
           <Button
             variant="contained"
             color="navButton"
-            onClick={handleValidateSchema}
+            onClick={() => {}}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
             disabled={disableButtonCheck}
           >
