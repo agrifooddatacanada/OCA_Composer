@@ -248,7 +248,7 @@ export default function ViewSchema({ pageBack }) {
                   <Button
                     color="button"
                     variant="contained"
-                    onClick={handleExport}
+                    onClick={() => handleExport(false)}
                     sx={{
                       alignSelf: "flex-end",
                       width: "12rem",
@@ -262,7 +262,7 @@ export default function ViewSchema({ pageBack }) {
                   </Button>
                   <Box sx={{ marginLeft: "1rem" }}>
                     <Tooltip
-                      title="Export your schema in an Excel format. This format includes all the information you’ve provided here. After you have created and downloaded the Excel schema template you can upload it into the SemanticEngine.org to create the machine-actionable OCA Schema Bundle."
+                      title="Export your schema in a .zip machine-readable version and a txt human-readable format using all the information that has been provided here."
                       placement="left"
                       arrow
                     >

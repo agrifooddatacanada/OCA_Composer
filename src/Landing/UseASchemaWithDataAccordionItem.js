@@ -29,7 +29,7 @@ const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) =
           {/* <Button
             variant="contained"
             color="navButton"
-            onClick={handleExport}
+            onClick={}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '20px', marginBottom: '20px' }}
             disabled={true}
           // disabled={disableButtonCheck}
