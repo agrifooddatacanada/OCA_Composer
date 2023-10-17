@@ -19,7 +19,7 @@ function columnToLetter(column) {
   return letter;
 }
 
-const useExportLogic = (setShowLink = () => { }) => {
+const useExportLogic = () => {
   const {
     languages,
     attributeRowData,
@@ -625,45 +625,50 @@ const useExportLogic = (setShowLink = () => { }) => {
     }
   };
 
-  const downloadZipFile = async (zipFileName) => {
-    const downloadUrl = `${zipUrl}/${zipFileName}`;
-    const response = await fetch(downloadUrl);
-    if (response.ok) {
-      const allJSONFiles = [];
-      const blob = await response.blob();
-      const zipData = await JSZip.loadAsync(blob);
-      const loadMetadataFile = await zipData.files["meta.json"].async("text");
-      const metadataJson = JSON.parse(loadMetadataFile);
-      const root = metadataJson.root;
-      allJSONFiles.push(loadMetadataFile);
+  const downloadReadMe = async (responseData) => {
+    const allJSONFiles = [];
+    const blob = await responseData.blob();
+    const zipData = await JSZip.loadAsync(blob);
+    const loadMetadataFile = await zipData.files["meta.json"].async("text");
+    const metadataJson = JSON.parse(loadMetadataFile);
+    const root = metadataJson.root;
+    allJSONFiles.push(loadMetadataFile);
 
-      for (const file of Object.values(metadataJson.files[root])) {
-        const content = await zipData.files[file + '.json'].async("text");
-        allJSONFiles.push(content);
-      }
-      const loadRoot = await zipData.files[metadataJson.root + '.json'].async("text");
-      allJSONFiles.push(loadRoot);
-
-      setZipToReadme(allJSONFiles);
-      toTextFile(allJSONFiles);
-
-      const a = document.createElement("a");
-      a.href = downloadUrl;
-      a.download = zipFileName;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+    for (const file of Object.values(metadataJson.files[root])) {
+      const content = await zipData.files[file + '.json'].async("text");
+      allJSONFiles.push(content);
     }
+    const loadRoot = await zipData.files[metadataJson.root + '.json'].async("text");
+    allJSONFiles.push(loadRoot);
+
+    setZipToReadme(allJSONFiles);
+    toTextFile(allJSONFiles);
+  };
+
+  const downloadZip = async (downloadUrl, zipFileName) => {
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = zipFileName;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
 
-  const handleExport = async () => {
+  const handleExport = async (onlyReadme = false) => {
     setExportDisabled(true);
     const { workbook, workbookName } = handleOCAExport(OCADataArray);
     const fileName = await sendFileToAPI(workbook, workbookName);
-    if (fileName) {
-      downloadZipFile(fileName);
+    const downloadUrl = `${zipUrl}/${fileName}`;
+    const response = await fetch(downloadUrl);
+    if (response.ok) {
+      if (onlyReadme) {
+        downloadReadMe(response);
+      } else {
+        downloadReadMe(response);
+        downloadZip(downloadUrl, fileName);
+      }
     }
     setTimeout(() => {
       setExportDisabled(false);

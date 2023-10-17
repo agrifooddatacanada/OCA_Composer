@@ -1,4 +1,4 @@
-import { AccordionDetails, AccordionSummary, Box, Button, Link, Typography } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Link, Typography } from '@mui/material';
 import React from 'react';
 import { CustomPalette } from '../constants/customPalette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -6,6 +6,18 @@ import AccordionItemWrapper from './AccordionItemWrapper';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 
 const SchemaAccordionItem = () => {
+
+  const downloadChickenZipExample = () => {
+    const zipFilePath = 'chicken_example.zip';
+
+    const link = document.createElement('a');
+    link.href = zipFilePath;
+    link.download = 'chicken_example.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <AccordionItemWrapper>
       <AccordionSummary
@@ -28,7 +40,7 @@ const SchemaAccordionItem = () => {
           Example schema
         </Typography>
         <Typography>
-          Download an <CustomAnchorLink link='' text="Example schema" /> and use it to test schema tools such as viewing, editing, and creating a Data Entry Excel.
+          Download an <CustomAnchorLink link='' text="Example schema" onClick={downloadChickenZipExample} /> and use it to test schema tools such as viewing, editing, and creating a Data Entry Excel.
         </Typography>
 
       </AccordionDetails>

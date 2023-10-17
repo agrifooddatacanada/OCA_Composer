@@ -9,20 +9,18 @@ import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import LinkCard from "./LinkCard";
-import useGenerateReadMe from "./useGenerateReadMe";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import useExportLogic from "./useExportLogic";
 import { useNavigate } from "react-router-dom";
 
 export default function ViewSchema({ pageBack }) {
   const navigate = useNavigate();
-  const { languages, attributeRowData, lanAttributeRowData, isZip, setIsZip, characterEncodingRowData, setCurrentPage, zipToReadme, history, setHistory } = useContext(Context);
-  const { toTextFile } = useGenerateReadMe();
+  const { languages, attributeRowData, lanAttributeRowData, isZip, setIsZip, characterEncodingRowData, setCurrentPage, history, setHistory } = useContext(Context);
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
-  const { handleExport, resetToDefaults, exportDisabled } = useExportLogic(setShowLink);
+  const { handleExport, resetToDefaults, exportDisabled } = useExportLogic();
 
   //Formats language buttons in a way that can handle many languages cleanly
   //Minimizes language for cases where it's too long to fit in button size
@@ -230,13 +228,14 @@ export default function ViewSchema({ pageBack }) {
                 <Button
                   color="button"
                   variant='contained'
-                  onClick={() => toTextFile(zipToReadme)}
+                  onClick={() => handleExport(true)}
                   sx={{
                     alignSelf: "flex-end",
                     display: "flex",
                     justifyContent: "space-around",
                     padding: "0.5rem 1rem",
                   }}
+                  disabled={exportDisabled}
                 >
                   Download ReadMe
                 </Button>
@@ -250,7 +249,7 @@ export default function ViewSchema({ pageBack }) {
                   <Button
                     color="button"
                     variant="contained"
-                    onClick={handleExport}
+                    onClick={() => handleExport(false)}
                     sx={{
                       alignSelf: "flex-end",
                       width: "12rem",
@@ -264,7 +263,7 @@ export default function ViewSchema({ pageBack }) {
                   </Button>
                   <Box sx={{ marginLeft: "1rem" }}>
                     <Tooltip
-                      title="Export your schema in an Excel format. This format includes all the information you’ve provided here. After you have created and downloaded the Excel schema template you can upload it into the SemanticEngine.org to create the machine-actionable OCA Schema Bundle."
+                      title="Export your schema in a .zip machine-readable version and a txt human-readable format using all the information that has been provided here."
                       placement="left"
                       arrow
                     >
