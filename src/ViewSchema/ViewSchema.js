@@ -235,6 +235,7 @@ export default function ViewSchema({ pageBack }) {
                     justifyContent: "space-around",
                     padding: "0.5rem 1rem",
                   }}
+                  disabled={exportDisabled}
                 >
                   Download ReadMe
                 </Button>
