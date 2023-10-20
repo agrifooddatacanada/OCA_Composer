@@ -1,13 +1,19 @@
 import React, { useState, useEffect, useContext, useImperativeHandle, forwardRef } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { Tooltip } from "@mui/material";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-
+import CellHeader from "../components/CellHeader";
+import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 
+const textareaStyle = {
+  width: '98%',
+  height: '100%',
+  resize: 'none',
+  outline: 'none',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+  fontSize: '12px',
+};
 
 const TextareaCellEditor = forwardRef((props, ref) => {
   const [value, setValue] = useState(props.value);
@@ -32,15 +38,6 @@ const TextareaCellEditor = forwardRef((props, ref) => {
     };
   });
 
-  const textareaStyle = {
-    width: '98%',
-    height: '100%',
-    resize: 'none',
-    outline: 'none',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
-    fontSize: '12px',
-  };
-
   return (
     <textarea
       autoFocus
@@ -51,29 +48,6 @@ const TextareaCellEditor = forwardRef((props, ref) => {
     />
   );
 });
-
-
-const gridStyles = `
-  .ag-cell {
-    line-height: 1.5;
-  }
-  
-  .ag-theme-balham .ag-cell {
-    border-right: 1px solid ${CustomPalette.GREY_300};
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .ag-header-cell-label {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
-    height: 100%;
-  }
-`;
 
 export default function LanGrid({ gridRef, currentLanguage }) {
   const {
@@ -87,7 +61,6 @@ export default function LanGrid({ gridRef, currentLanguage }) {
   } = useContext(Context);
 
   //Sets Language Dependent Attribute row data
-
   useEffect(() => {
     let newLanAttributeRowData = JSON.parse(
       JSON.stringify(lanAttributeRowData)
@@ -175,66 +148,16 @@ export default function LanGrid({ gridRef, currentLanguage }) {
         editable: false,
         width: 120,
         autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-        }),
-        headerComponent: () => {
-          return (
-            <>
-              <span style={{ margin: "auto" }}>Attribute</span>
-              <Tooltip
-                title="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
-                placement="top"
-                PopperProps={{
-                  sx: {
-                    "& .MuiTooltip-tooltip": {
-                      backgroundColor: CustomPalette.GREY_200,
-                      color: CustomPalette.GREY_800,
-                      boxShadow: 3,
-                    },
-                  },
-                }}
-              >
-                <HelpOutlineIcon sx={{ fontSize: 15 }} />
-              </Tooltip>
-            </>
-          );
-        },
+        cellStyle: () => preWrapWordBreak,
+        headerComponent: () => (<CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />)
       },
       {
         field: "Label",
         editable: true,
         width: 180,
         autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-        }),
-        headerComponent: () => {
-          return (
-            <>
-              <span style={{ margin: "auto" }}>
-                Label <span style={{ fontSize: "10px" }}>(max 50 chars)</span>
-              </span>
-              <Tooltip
-                title="This is the language specific label for an attribute."
-                placement="top"
-                PopperProps={{
-                  sx: {
-                    "& .MuiTooltip-tooltip": {
-                      backgroundColor: CustomPalette.GREY_200,
-                      color: CustomPalette.GREY_800,
-                      boxShadow: 3,
-                    },
-                  },
-                }}
-              >
-                <HelpOutlineIcon sx={{ fontSize: 15 }} />
-              </Tooltip>
-            </>
-          );
-        },
+        cellStyle: () => preWrapWordBreak,
+        headerComponent: () => <CellHeader headerText='Label' constraint='max 50 chars' helpText='This is the language specific label for an attribute.' />,
         cellEditorParams: {
           maxLength: 50,
         },
@@ -245,35 +168,8 @@ export default function LanGrid({ gridRef, currentLanguage }) {
         width: 240,
         cellEditor: TextareaCellEditor,
         autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-        }),
-        headerComponent: () => {
-          return (
-            <>
-              <span style={{ margin: "auto" }}>
-                Description{" "}
-                <span style={{ fontSize: "10px" }}>(max 200 chars)</span>
-              </span>
-              <Tooltip
-                title="This is a language specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute."
-                placement="top"
-                PopperProps={{
-                  sx: {
-                    "& .MuiTooltip-tooltip": {
-                      backgroundColor: CustomPalette.GREY_200,
-                      color: CustomPalette.GREY_800,
-                      boxShadow: 3,
-                    },
-                  },
-                }}
-              >
-                <HelpOutlineIcon sx={{ fontSize: 15 }} />
-              </Tooltip>
-            </>
-          );
-        },
+        cellStyle: () => preWrapWordBreak,
+        headerComponent: () => <CellHeader headerText='Description' constraint='max 200 chars' helpText='This is a language specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute.' />
       },
       {
         field: "List",
@@ -284,17 +180,23 @@ export default function LanGrid({ gridRef, currentLanguage }) {
           if (attributesWithLists.includes(params.data.Attribute)) {
             return { whiteSpace: "pre-wrap", wordBreak: "break-word" };
           } else {
-            return {
-              backgroundColor: CustomPalette.GREY_200,
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-            };
+            return greyCellStyle;
           }
         },
       },
     ]);
   }, [attributesList]);
 
+  const onCellKeyDown = (e) => {
+    const keyPressed = e.event.code;
+    const isLabelRow = e.column.colId === "Label";
+
+    if (keyPressed === "Enter" && isLabelRow) {
+      const api = e.api;
+      const editingRowIndex = e.rowIndex;
+      api.setFocusedCell(editingRowIndex + 1, "Label");
+    }
+  };
 
   return (
     <div className="ag-theme-balham" style={{ width: 800 }}>
@@ -303,6 +205,7 @@ export default function LanGrid({ gridRef, currentLanguage }) {
         ref={gridRef}
         rowData={lanAttributeRowData[currentLanguage]}
         columnDefs={columnDefs}
+        onCellKeyDown={onCellKeyDown}
         domLayout="autoHeight"
       />
     </div>

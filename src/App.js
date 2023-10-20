@@ -14,15 +14,37 @@ import LanguageAttributeHelp from "./UsersHelp/Language_Attribute_Help";
 import SchemaMetadataHelp from "./UsersHelp/Schema_Metadata_Help";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
+import OverlaysHelp from "./UsersHelp/Overlays_Help";
+import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
+import Landing from "./Landing/Landing";
+import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
+import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
+import GuidanceForDesigningDataSets from "./Landing/HelpDesigningDatasets";
 
 export const Context = createContext();
+
+const items = {
+  "Character Encoding": { feature: "Character Encoding", selected: false },
+  "Make selected entries required": { feature: "Make selected entries required", selected: false },
+};
+
+export const pagesArray = [
+  "Start",
+  "Metadata",
+  "Details",
+  "LanguageDetails",
+  "Overlays",
+  "View",
+];
 
 function App() {
   const [isZip, setIsZip] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
   const [fileData, setFileData] = useState([]);
+  const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
-  const [currentPage, setCurrentPage] = useState("Start");
+  const [currentPage, setCurrentPage] = useState("Landing");
+  const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: "", description: "" },
   });
@@ -33,26 +55,24 @@ function App() {
   const [languages, setLanguages] = useState(["English"]);
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
-  const [attributesWithLists, setAttributesWithLists] = useState([]);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
+  const [attributesWithLists, setAttributesWithLists] = useState([]);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
 
+  // Use for Overlays
+  const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
+  const [overlay, setOverlay] = useState(items);
+  const [selectedOverlay, setSelectedOverlay] = useState('');
 
-  const pagesArray = [
-    "Start",
-    "Metadata",
-    "Details",
-    "LanguageDetails",
-    "View",
-  ];
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
     if (currentIndex >= 0 && currentIndex < pagesArray.length - 1) {
       let newPage = pagesArray[(currentIndex += 1)];
       setCurrentPage(newPage);
+      setHistory(prev => [...prev, newPage]);
     }
   };
 
@@ -61,8 +81,15 @@ function App() {
     if (currentIndex > 0 && currentIndex < pagesArray.length) {
       let newPage = pagesArray[(currentIndex -= 1)];
       setCurrentPage(newPage);
+      setHistory(prev => prev.slice(0, prev.length - 1));
     }
   };
+
+  useEffect(() => {
+    if (history[history.length - 1] !== currentPage) {
+      setHistory(prev => [...prev, currentPage]);
+    }
+  }, [currentPage]);
 
   //Create Attributes List from File Data
   useEffect(() => {
@@ -76,7 +103,10 @@ function App() {
   //Create Attribute Row Data object when Attributes List updates
   useEffect(() => {
     const newAttributesArray = [];
+    const newCharacterEncodingArray = [];
     if (attributesList.length > 0) {
+      const { selectedFeatures } = getListOfSelectedOverlays(overlay);
+
       attributesList.forEach((item) => {
         const attributeObject = attributeRowData.find(
           (obj) => obj.Attribute === item
@@ -92,8 +122,22 @@ function App() {
             List: false,
           });
         }
+
+        const characterEncodingObject = characterEncodingRowData.find(
+          (obj) => obj.Attribute === item
+        );
+        if (characterEncodingObject) {
+          newCharacterEncodingArray.push(characterEncodingObject);
+        } else {
+          const newCharacterEncodingRow = { Attribute: item };
+          selectedFeatures.forEach(feature => {
+            newCharacterEncodingRow[feature] = "";
+          });
+          newCharacterEncodingArray.push(newCharacterEncodingRow);
+        }
       });
       setAttributeRowData(newAttributesArray);
+      setCharacterEncodingRowData(newCharacterEncodingArray);
     }
   }, [attributesList]);
 
@@ -178,6 +222,8 @@ function App() {
           value={{
             fileData,
             setFileData,
+            rawFile,
+            setRawFile,
             attributesList,
             setAttributesList,
             schemaDescription,
@@ -197,19 +243,29 @@ function App() {
             lanAttributeRowData,
             setLanAttributeRowData,
             setCurrentPage,
+            history,
+            setHistory,
             customIsos,
             setCustomIsos,
             isZip,
             setIsZip,
+            characterEncodingRowData,
+            setCharacterEncodingRowData,
+            overlay,
+            setOverlay,
+            selectedOverlay,
+            setSelectedOverlay,
             zipToReadme,
-            setZipToReadme
+            setZipToReadme,
           }}
         >
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <BrowserRouter>
               <Header currentPage={currentPage} />
               <Routes>
-                <Route path="/" element={<Home currentPage={currentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
+                <Route path="/" element={<Landing />} />
+                <Route path="/start" element={<Home currentPage={currentPage} setCurrentPage={setCurrentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
+                <Route path="/help_designing_datasets" element={<GuidanceForDesigningDataSets />} />
                 <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
                 <Route path="/attribute_details_help" element={<AttributeDetailsHelp />} />
                 <Route path="/creating_oca_schema_help" element={<CreatingOCASchemaHelp />} />
@@ -217,13 +273,16 @@ function App() {
                 <Route path="/schema_metadata_help" element={<SchemaMetadataHelp />} />
                 <Route path="/start_schema_help" element={<StartSchemaHelp />} />
                 <Route path="/view_schema_help" element={<ViewSchemaHelp />} />
+                <Route path="/overlays_help" element={<OverlaysHelp />} />
+                <Route path="/character_encoding_help" element={<CharacterEncodingHelp />} />
+                <Route path="/required_entry_help" element={<RequiredEntryHelp />} />
                 <Route
                   path="*"
                   element={<Navigate to="/" />}
                 />
               </Routes>
             </BrowserRouter>
-            <Footer />
+            <Footer currentPage={currentPage} />
           </Box>
         </Context.Provider>
       </ThemeProvider>

@@ -1,15 +1,13 @@
-import React, { useContext, useMemo, useState } from "react";
-import { Button, Tooltip, Box } from "@mui/material";
+import { useContext, useMemo, useState } from "react";
 import { Context } from "../App";
-import { CustomPalette } from "../constants/customPalette";
-
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
 import { divisionCodes, groupCodes } from "../constants/constants";
-
+import useGenerateReadMe from "./useGenerateReadMe";
+import JSZip from "jszip";
 const ExcelJS = require("exceljs");
+
+const zipUrl = "https://tool.oca.argo.colossi.network";
 
 function columnToLetter(column) {
   var temp, letter = '';
@@ -21,7 +19,7 @@ function columnToLetter(column) {
   return letter;
 }
 
-export default function Export({ setShowLink }) {
+const useExportLogic = () => {
   const {
     languages,
     attributeRowData,
@@ -41,7 +39,13 @@ export default function Export({ setShowLink }) {
     setAttributesWithLists,
     setSavedEntryCodes,
     customIsos,
+    characterEncodingRowData,
+    overlay,
+    setZipToReadme,
+    setIsZip,
+    setRawFile
   } = useContext(Context);
+  const { toTextFile } = useGenerateReadMe();
 
   const classificationCode = useMemo(() => {
     if (groupCodes[divisionGroup.group]) {
@@ -365,22 +369,31 @@ export default function Export({ setShowLink }) {
         };
 
         const flaggedCell = worksheetMain.getCell(index + 4, 5);
-        flaggedCell.value = dataArray[1][index].Flagged;
+        if (dataArray[1]?.[index]?.Flagged && dataArray[1]?.[index]?.Flagged !== '') {
+          flaggedCell.value = dataArray[1][index].Flagged;
+        }
         flaggedCell.dataValidation = {
           type: "list",
           allowBlank: true,
           formulae: ['"Y"'],
         };
-        const encodingCell = worksheetMain.getCell(index + 4, 6);
-        encodingCell.value = {
-          formula: `IF(OR(C${index + 4}="Binary", C${index + 4
-            }="Array[Binary]"), "base64", "utf-8")`,
 
-          result:
-            typeCell.value === "Binary" || typeCell.value === "Array[Binary]"
-              ? "base64"
-              : "utf-8",
-        };
+        // Default certain attributes to utf-8 or base64
+        const encodingCell = worksheetMain.getCell(index + 4, 6);
+        if (characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
+          encodingCell.value = characterEncodingRowData[index]['Character Encoding'];
+        } else {
+          encodingCell.value = {
+            formula: `IF(OR(C${index + 4}="Binary", C${index + 4
+              }="Array[Binary]"), "base64", "utf-8")`,
+
+            result:
+              typeCell.value === "Binary" || typeCell.value === "Array[Binary]"
+                ? "base64"
+                : "utf-8",
+          };
+        }
+
 
         const entryCodesCell = worksheetMain.getCell(index + 4, 8);
 
@@ -407,7 +420,13 @@ export default function Export({ setShowLink }) {
           formulae: ['"M,O"'],
         };
 
-        worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
+        if (overlay["Make selected entries required"].selected) {
+          conformanceCell.value = characterEncodingRowData[index]['Make selected entries required'] ? "M" : "O";
+        }
+
+        if (dataArray[1]?.[index] && dataArray[1][index].Unit && dataArray[1][index].Unit !== '') {
+          worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
+        }
 
         const referenceCell = worksheetMain.getCell(index + 4, 11);
         if (
@@ -419,14 +438,12 @@ export default function Export({ setShowLink }) {
       });
       worksheetMain.columns = allColumns;
     } catch (error) {
-      console.error(error);
-      console.log('Error creating "Main" worksheet');
+      console.log('Error creating "Main" worksheet', error);
     }
 
     //////CREATE 'LANGUAGE' WORKSHEETS
     try {
       let doubleIndex = 1;
-      console.log('languagesWithCode', languagesWithCode);
       languagesWithCode.forEach((language, langIndex) => {
         let worksheetLanguage;
         let worksheetName = language.code;
@@ -539,25 +556,27 @@ export default function Export({ setShowLink }) {
     ////////CREATE WORKBOOK AND EXPORT
     const workbookName = `OCA_Template_${new Date().toISOString()}.xlsx`;
 
-    try {
-      workbook.xlsx.writeBuffer().then((buffer) => {
-        const blob = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = workbookName;
-        a.click();
-      });
-      setShowLink(true);
-      setExportDisabled(true);
-      setTimeout(() => {
-        setExportDisabled(false);
-      }, 3000);
-    } catch (error) {
-      console.error(error);
-    }
+    // try {
+    //   workbook.xlsx.writeBuffer().then((buffer) => {
+    //     const blob = new Blob([buffer], {
+    //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    //     });
+    //     const url = window.URL.createObjectURL(blob);
+    //     const a = document.createElement("a");
+    //     a.href = url;
+    //     a.download = workbookName;
+    //     a.click();
+    //   });
+    //   setShowLink(true);
+    //   setExportDisabled(true);
+    //   setTimeout(() => {
+    //     setExportDisabled(false);
+    //   }, 3000);
+    // } catch (error) {
+    //   console.error(error);
+    // }
+
+    return { workbook, workbookName };
   };
 
   const resetToDefaults = () => {
@@ -573,65 +592,94 @@ export default function Export({ setShowLink }) {
     setLanAttributeRowData([]);
     setAttributesWithLists([]);
     setSavedEntryCodes({});
+    setIsZip(false);
+    setFileData([]);
+    setRawFile([]);
   };
 
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
+  const sendFileToAPI = async (workbook, workbookName) => {
+    try {
+      const buffer = await workbook.xlsx.writeBuffer();
 
-        alignItems: "flex-end",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          color: CustomPalette.GREY_600,
-          mb: 5,
-        }}
-      >
-        <Box sx={{ marginRight: "1rem" }}>
-          <Tooltip
-            title="Export your schema in an Excel format. This format includes all the information you’ve provided here. After you have created and downloaded the Excel schema template you can upload it into the SemanticEngine.org to create the machine-actionable OCA Schema Bundle."
-            placement="left"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </Box>
-        <Button
-          color="button"
-          variant="contained"
-          onClick={() => handleOCAExport(OCADataArray)}
-          sx={{
-            alignSelf: "flex-end",
-            width: "12rem",
-            display: "flex",
-            justifyContent: "space-around",
-            p: 1,
-          }}
-          disabled={exportDisabled}
-        >
-          Finish and Export <CheckCircleIcon />
-        </Button>
-      </Box>
-      <Button
-        color="warning"
-        variant="outlined"
-        onClick={() => resetToDefaults()}
-        sx={{
-          alignSelf: "flex-end",
-          width: "20rem",
-          display: "flex",
-          justifyContent: "space-around",
-          p: 1,
-          mb: 5,
-        }}
-      >
-        Clear All Data and Restart
-      </Button>
-    </Box>
-  );
-}
+      const formData = new FormData();
+      const file = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      formData.append("file", file, workbookName);
+
+      const response = await fetch(`${zipUrl}/`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.filename;
+      } else {
+        throw new Error("Error sending file to API");
+      }
+    } catch (error) {
+      console.error("Error sending file to API:", error);
+      return;
+    }
+  };
+
+  const downloadReadMe = async (responseData) => {
+    const allJSONFiles = [];
+    const blob = await responseData.blob();
+    const zipData = await JSZip.loadAsync(blob);
+    const loadMetadataFile = await zipData.files["meta.json"].async("text");
+    const metadataJson = JSON.parse(loadMetadataFile);
+    const root = metadataJson.root;
+    allJSONFiles.push(loadMetadataFile);
+
+    for (const file of Object.values(metadataJson.files[root])) {
+      const content = await zipData.files[file + '.json'].async("text");
+      allJSONFiles.push(content);
+    }
+    const loadRoot = await zipData.files[metadataJson.root + '.json'].async("text");
+    allJSONFiles.push(loadRoot);
+
+    setZipToReadme(allJSONFiles);
+    toTextFile(allJSONFiles);
+  };
+
+  const downloadZip = async (downloadUrl, zipFileName) => {
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = zipFileName;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+
+  const handleExport = async (onlyReadme = false) => {
+    setExportDisabled(true);
+    const { workbook, workbookName } = handleOCAExport(OCADataArray);
+    const fileName = await sendFileToAPI(workbook, workbookName);
+    const downloadUrl = `${zipUrl}/${fileName}`;
+    const response = await fetch(downloadUrl);
+    if (response.ok) {
+      if (onlyReadme) {
+        downloadReadMe(response);
+      } else {
+        downloadReadMe(response);
+        downloadZip(downloadUrl, fileName);
+      }
+    }
+    setTimeout(() => {
+      setExportDisabled(false);
+    }, 3000);
+  };
+
+  return {
+    handleExport,
+    exportDisabled,
+    resetToDefaults
+  };
+};
+
+export default useExportLogic;

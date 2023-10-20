@@ -1,27 +1,29 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-
+import { greyCellStyle } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
+import { getListOfSelectedOverlays } from "../constants/getListOfSelectedOverlays";
+import CellHeader from "../components/CellHeader";
+
+const gridStyles = `
+.ag-cell {
+  line-height: 1.5
+}
+
+.ag-header-cell-label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+`;
+
 
 export default function ViewGrid({ displayArray, currentLanguage }) {
-  const { attributesWithLists } = useContext(Context);
+  const { overlay } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
-
-  const gridStyles = `
-  .ag-cell {
-    line-height: 1.5
-  }
-  
-  .ag-header-cell-label {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-`;
 
   const CheckboxRenderer = ({ value }) => {
     const inputRef = useRef();
@@ -34,96 +36,78 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
   };
 
   useEffect(() => {
-    setColumnDefs([
-      {
-        field: "Attribute",
-        autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          backgroundColor: CustomPalette.GREY_200,
-        }),
-      },
-      {
-        field: "Flagged",
-        width: 75,
-        cellRenderer: CheckboxRenderer,
-        cellStyle: (params) => ({
-          backgroundColor: CustomPalette.GREY_200,
-        })
-      },
-      {
-        field: "Unit",
-        width: 90,
-        autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          backgroundColor: CustomPalette.GREY_200,
-        }),
-      },
-      {
-        field: "Type",
-        autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          backgroundColor: CustomPalette.GREY_200,
-        }),
-      },
-      {
-        field: "Label",
-        autoHeight: true,
-        width: 170,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          backgroundColor: CustomPalette.GREY_200,
-        }),
-        headerComponent: () => {
-          return (
-            <span style={{ margin: "auto" }}>
-              Label <span style={{ fontSize: "10px" }}>(max 50 chars)</span>
-            </span>
-          );
+    const getColumns = () => {
+      const predefinedColumns = [
+        {
+          field: "Attribute",
+          autoHeight: true,
+          cellStyle: () => greyCellStyle,
         },
-      },
-      {
-        field: "Description",
-        width: 350,
-        autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          backgroundColor: CustomPalette.GREY_200,
-        }),
-        headerComponent: () => {
-          return (
-            <span style={{ margin: "auto" }}>
-              Description{" "}
-              <span style={{ fontSize: "10px" }}>(max 200 chars)</span>
-            </span>
-          );
+        {
+          field: "Flagged",
+          width: 78,
+          headerComponent: () => <CellHeader headerText='Sensitive' />,
+          cellRenderer: CheckboxRenderer,
+          cellStyle: () => greyCellStyle
         },
-      },
-      {
-        field: "List",
-        width: 173,
-        autoHeight: true,
-        cellStyle: (params) => {
-          if (attributesWithLists.includes(params.data.Attribute)) {
-            return { whiteSpace: "pre-wrap", wordBreak: "break-word" };
-          } else {
-            return {
-              backgroundColor: CustomPalette.GREY_200,
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-            };
-          }
+        {
+          field: "Unit",
+          width: 90,
+          autoHeight: true,
+          cellStyle: () => greyCellStyle,
         },
-      },
-    ]);
-  }, [attributesWithLists]);
+        {
+          field: "Type",
+          autoHeight: true,
+          cellStyle: () => greyCellStyle,
+        },
+        {
+          field: "Label",
+          autoHeight: true,
+          width: 170,
+          cellStyle: () => greyCellStyle,
+          headerComponent: () => <CellHeader headerText='Label' constraint='max 50 chars' />
+
+        },
+        {
+          field: "Description",
+          flex: 1,
+          minWidth: 350,
+          autoHeight: true,
+          cellStyle: () => greyCellStyle,
+          headerComponent: () => <CellHeader headerText='Description' constraint='max 200 chars' />
+        },
+        {
+          field: "List",
+          width: 173,
+          autoHeight: true,
+          cellStyle: () => greyCellStyle,
+        },
+      ];
+
+      const { selectedFeatures } = getListOfSelectedOverlays(overlay);
+      selectedFeatures.forEach((feature) => {
+        predefinedColumns.push({
+          field: feature,
+          width: 160,
+          autoHeight: true,
+          cellStyle: () => greyCellStyle,
+          headerComponent: () => {
+            return (
+              <span style={{ margin: "auto" }}>
+                {feature === 'Make selected entries required' ? 'Required Entry' : feature}
+              </span>
+            );
+          },
+          cellRenderer: feature === 'Make selected entries required' ? CheckboxRenderer : null,
+        });
+      });
+
+      return predefinedColumns;
+    };
+
+    setColumnDefs(getColumns());
+  }, [overlay]);
 
   const defaultColDef = {
     width: 120,
@@ -138,11 +122,12 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
       item.Label = item.Label[currentLanguage];
       item.List = item.List[currentLanguage];
     });
+
     setRowData(newRowData);
   }, [displayArray, currentLanguage]);
 
   return (
-    <div className="ag-theme-balham" style={{ width: 1100 }}>
+    <div className="ag-theme-balham" style={{ width: '100%' }}>
       <style>{gridStyles}</style>
       <AgGridReact
         rowData={rowData}

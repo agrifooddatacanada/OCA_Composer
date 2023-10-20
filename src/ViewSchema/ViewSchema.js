@@ -7,20 +7,20 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
-import Export from "./Export";
-
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import LinkCard from "./LinkCard";
-import useGenerateReadMe from "./useGenerateReadMe";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import useExportLogic from "./useExportLogic";
+import { useNavigate } from "react-router-dom";
 
 export default function ViewSchema({ pageBack }) {
-  const { languages, attributeRowData, lanAttributeRowData, isZip, setCurrentPage, zipToReadme } =
-    useContext(Context);
-  const { toTextFile } = useGenerateReadMe();
+  const navigate = useNavigate();
+  const { languages, attributeRowData, lanAttributeRowData, isZip, setIsZip, characterEncodingRowData, setCurrentPage, history, setHistory } = useContext(Context);
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
+  const { handleExport, resetToDefaults, exportDisabled } = useExportLogic();
 
   //Formats language buttons in a way that can handle many languages cleanly
   //Minimizes language for cases where it's too long to fit in button size
@@ -161,10 +161,26 @@ export default function ViewSchema({ pageBack }) {
       dataObject.Label = labelObject;
       dataObject.Description = descriptionObject;
       dataObject.List = codesObject;
+
+      const attrWithOverlay = characterEncodingRowData.find((row) => row.Attribute === attributeName);
+      if (attrWithOverlay) {
+        Object.assign(dataObject, attrWithOverlay);
+      }
+
       newDisplayArray.push(dataObject);
     });
     setDisplayArray(newDisplayArray);
   }, [attributeRowData, lanAttributeRowData]);
+
+  const moveBackward = () => {
+    if (history.length > 1 && history[history.length - 2] === "Landing") {
+      setHistory(prev => prev.slice(0, prev.length - 1));
+      setCurrentPage('Landing');
+      navigate('/');
+    } else {
+      pageBack();
+    }
+  };
 
   return (
     <Box>
@@ -174,8 +190,9 @@ export default function ViewSchema({ pageBack }) {
           flexDirection: "column",
           justifyContent: "space-between",
           margin: "auto",
-          pr: 10,
+          pr: 5,
           pl: 10,
+          marginTop: 2,
         }}
       >
         <Box sx={{
@@ -185,40 +202,80 @@ export default function ViewSchema({ pageBack }) {
           <Button
             color="navButton"
             sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
-            onClick={pageBack}
+            onClick={moveBackward}
           >
             <ArrowBackIosIcon /> Back
           </Button>
-          {isZip ? (
-            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-              <Button
-                color="button"
-                variant='contained'
-                onClick={() => toTextFile(zipToReadme)}
-                sx={{
-                  alignSelf: "flex-end",
-                  display: "flex",
-                  justifyContent: "space-around",
-                  padding: "0.5rem 1rem",
-                }}
-              >
-                Download ReadMe
-              </Button>
-              <Button
-                color="button"
-                variant='contained'
-                onClick={() => setCurrentPage("Metadata")}
-                sx={{
-                  alignSelf: "flex-end",
-                  display: "flex",
-                  justifyContent: "space-around",
-                  padding: "0.5rem 1rem",
-                }}
-              >
-                Edit Schema
-              </Button>
-            </Box>
-          ) : <></>}
+          <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+            <Button
+              color="button"
+              variant='contained'
+              onClick={() => {
+                setCurrentPage("Metadata");
+                setIsZip(false);
+              }}
+              sx={{
+                alignSelf: "flex-end",
+                display: "flex",
+                justifyContent: "space-around",
+                padding: "0.5rem 1rem",
+              }}
+            >
+              Edit Schema
+            </Button>
+            {!isZip ? (
+              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+                <Button
+                  color="button"
+                  variant='contained'
+                  onClick={() => handleExport(true)}
+                  sx={{
+                    alignSelf: "flex-end",
+                    display: "flex",
+                    justifyContent: "space-around",
+                    padding: "0.5rem 1rem",
+                  }}
+                  disabled={exportDisabled}
+                >
+                  Download ReadMe
+                </Button>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    color: CustomPalette.GREY_600,
+                  }}
+                >
+                  <Button
+                    color="button"
+                    variant="contained"
+                    onClick={() => handleExport(false)}
+                    sx={{
+                      alignSelf: "flex-end",
+                      width: "12rem",
+                      display: "flex",
+                      justifyContent: "space-around",
+                      p: 1,
+                    }}
+                    disabled={exportDisabled}
+                  >
+                    Finish and Export <CheckCircleIcon />
+                  </Button>
+                  <Box sx={{ marginLeft: "1rem" }}>
+                    <Tooltip
+                      title="Export your schema in a .zip machine-readable version and a txt human-readable format using all the information that has been provided here."
+                      placement="left"
+                      arrow
+                    >
+                      <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                    </Tooltip>
+                  </Box>
+                </Box>
+              </Box>
+            ) : <></>}
+
+          </Box>
+
         </Box>
         {showLink && <LinkCard setShowLink={setShowLink} />}
         <Box
@@ -339,7 +396,29 @@ export default function ViewSchema({ pageBack }) {
             currentLanguage={currentLanguage}
           />
         </Box>
-        <Export setShowLink={setShowLink} />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+          }}
+        >
+          <Button
+            color="warning"
+            variant="outlined"
+            onClick={resetToDefaults}
+            sx={{
+              alignSelf: "flex-end",
+              width: "20rem",
+              display: "flex",
+              justifyContent: "space-around",
+              p: 1,
+              mb: 5,
+            }}
+          >
+            Clear All Data and Restart
+          </Button>
+        </Box>
       </Box>
     </Box >
   );

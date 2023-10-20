@@ -1,8 +1,6 @@
 import { Box, Button, Typography, Tooltip } from "@mui/material";
 import React, { useState, useContext, useEffect, useRef } from "react";
 import Attributes from "./Attributes";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -15,6 +13,8 @@ import { Context } from "../App";
 import { removeSpacesFromObjectOfObjects } from "../constants/removeSpaces";
 import IntroCard from "./IntroCard";
 import IsoCard from "./IsoCard";
+import BackNextSkeleton from "../components/BackNextSkeleton";
+import { useNavigate } from "react-router-dom";
 
 export default function SchemaMetadata({
   pageBack,
@@ -22,12 +22,13 @@ export default function SchemaMetadata({
   showIntroCard,
   setShowIntroCard,
 }) {
+  const navigate = useNavigate();
   const [showLanguages, setShowLanguages] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [fieldArray, setFieldArray] = useState([]);
   const [showIsoInput, setShowIsoInput] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState("");
-  const { schemaDescription, setSchemaDescription, languages } =
+  const { schemaDescription, setSchemaDescription, languages, history, setHistory, setCurrentPage } =
     useContext(Context);
 
   const toTitleCase = (str) => {
@@ -83,164 +84,139 @@ export default function SchemaMetadata({
     };
   }, [showIsoInput]);
 
+  const moveBackward = () => {
+    if (history.length > 1 && history[history.length - 2] === "Landing") {
+      setHistory(prev => prev.slice(0, prev.length - 1));
+      setCurrentPage('Landing');
+      navigate('/');
+    } else {
+      pageBack();
+    }
+  };
+
   return (
-    <Box>
+    <BackNextSkeleton isBack pageBack={moveBackward} isForward pageForward={handleForward}>
+      {showCard && (
+        <NavigationCard
+          fieldArray={fieldArray}
+          setShowCard={setShowCard}
+          handleForward={pageForward}
+        />
+      )}
+      {showIntroCard && <IntroCard setShowIntroCard={setShowIntroCard} />}
+      {showIsoInput && (
+        <IsoCard
+          setShowIsoInput={setShowIsoInput}
+          language={editingLanguage}
+          defaultButton={defaultButton}
+          addCustomButton={addCustomButton}
+        />
+      )}
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "space-between",
-          margin: "auto",
-          pr: 10,
-          pl: 10,
+          mt: 2,
+          width: "100%",
         }}
       >
         <Box
           sx={{
-            width: "100%",
             display: "flex",
-            justifyContent: "space-between",
+            alignItems: "center",
+            color: CustomPalette.GREY_600,
           }}
         >
-          <Button
-            color="navButton"
-            sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
-            onClick={pageBack}
-          >
-            <ArrowBackIosIcon /> Back
-          </Button>
-          <Button
-            color="navButton"
-            onClick={handleForward}
-            sx={{ alignSelf: "flex-end", color: CustomPalette.PRIMARY }}
-          >
-            Next <ArrowForwardIosIcon />
-          </Button>
-        </Box>
-        {showCard && (
-          <NavigationCard
-            fieldArray={fieldArray}
-            setShowCard={setShowCard}
-            handleForward={pageForward}
-          />
-        )}
-        {showIntroCard && <IntroCard setShowIntroCard={setShowIntroCard} />}
-        {showIsoInput && (
-          <IsoCard
-            setShowIsoInput={setShowIsoInput}
-            language={editingLanguage}
-            defaultButton={defaultButton}
-            addCustomButton={addCustomButton}
-          />
-        )}
-        <Box
-          sx={{
-            mt: 2,
-            width: "100%",
-          }}
-        >
-          <Box
+          <Typography
             sx={{
-              display: "flex",
-              alignItems: "center",
-              color: CustomPalette.GREY_600,
+              fontSize: 20,
+              fontWeight: "bold",
+              textAlign: "left",
+              margin: "1rem 0 1rem 0",
+              color: CustomPalette.PRIMARY,
+              width: "7rem",
             }}
           >
-            <Typography
+            Attributes
+          </Typography>
+          <Tooltip
+            title="The list of attributes that were read from the column headers of the data file you selected at the beginning of schema creation."
+            placement="right"
+            arrow
+          >
+            <HelpOutlineIcon sx={{ fontSize: 15 }} />
+          </Tooltip>
+        </Box>
+        <Attributes />
+        <Box sx={{ display: "flex", justifyContent: 'space-between' }}>
+          <Typography
+            sx={{
+              fontSize: 20,
+              fontWeight: "bold",
+              textAlign: "left",
+              margin: "1rem 0 1rem 0",
+              color: CustomPalette.PRIMARY,
+            }}
+          >
+            Schema Description
+          </Typography>
+          <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
+            <Box
               sx={{
-                fontSize: 20,
-                fontWeight: "bold",
-                textAlign: "left",
-                margin: "1rem 0 1rem 0",
-                color: CustomPalette.PRIMARY,
-                width: "7rem",
+                alignSelf: "flex-end",
+                position: "absolute",
+                zIndex: "1000",
+                // top: -300,
+                top: 70,
+                width: "100%",
               }}
             >
-              Attributes
-            </Typography>
-            <Tooltip
-              title="The list of attributes that were read from the column headers of the data file you selected at the beginning of schema creation."
-              placement="right"
-              arrow
-            >
-              <HelpOutlineIcon sx={{ fontSize: 15 }} />
-            </Tooltip>
-          </Box>
-          <Attributes />
-          <Box sx={{ display: "flex", justifyContent: 'space-between' }}>
-            <Typography
+              {showLanguages && (
+                <LanguageSelection
+                  setShowLanguages={setShowLanguages}
+                  setEditingLanguage={setEditingLanguage}
+                  setShowIsoInput={setShowIsoInput}
+                />
+              )}
+            </Box>
+            <Box
               sx={{
-                fontSize: 20,
-                fontWeight: "bold",
-                textAlign: "left",
-                margin: "1rem 0 1rem 0",
-                color: CustomPalette.PRIMARY,
+                display: "flex",
+                alignItems: "center",
+                color: CustomPalette.GREY_600,
               }}
             >
-              Schema Description
-            </Typography>
-            <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
-              <Box
-                sx={{
-                  alignSelf: "flex-end",
-                  position: "absolute",
-                  zIndex: "1000",
-                  // top: -300,
-                  top: 70,
-                  width: "100%",
-                }}
+              <Tooltip
+                title="Add another language to your schema. Without changing the basic structure of your schema, you can ensure it can be shared and used in different languages."
+                placement="left"
+                arrow
               >
-                {showLanguages && (
-                  <LanguageSelection
-                    setShowLanguages={setShowLanguages}
-                    setEditingLanguage={setEditingLanguage}
-                    setShowIsoInput={setShowIsoInput}
-                  />
-                )}
-              </Box>
-              <Box
+                <HelpOutlineIcon sx={{ fontSize: 15 }} />
+              </Tooltip>
+              <Button
+                color="button"
+                onClick={() => setShowLanguages(!showLanguages)}
+                variant="contained"
                 sx={{
                   display: "flex",
-                  alignItems: "center",
-                  color: CustomPalette.GREY_600,
+                  justifyContent: "space-between",
+                  width: "11rem",
+                  m: 2,
                 }}
               >
-                <Tooltip
-                  title="Add another language to your schema. Without changing the basic structure of your schema, you can ensure it can be shared and used in different languages."
-                  placement="left"
-                  arrow
-                >
-                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                </Tooltip>
-                <Button
-                  color="button"
-                  onClick={() => setShowLanguages(!showLanguages)}
-                  variant="contained"
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "11rem",
-                    m: 2,
-                  }}
-                >
-                  Add Language
-                  {showLanguages === true ? (
-                    <RemoveCircleIcon />
-                  ) : (
-                    <AddCircleIcon />
-                  )}
-                </Button>
-              </Box>
+                Add Language
+                {showLanguages === true ? (
+                  <RemoveCircleIcon />
+                ) : (
+                  <AddCircleIcon />
+                )}
+              </Button>
             </Box>
           </Box>
-          <Description
-            setShowIsoInput={setShowIsoInput}
-            setEditingLanguage={setEditingLanguage}
-          />
         </Box>
-
+        <Description
+          setShowIsoInput={setShowIsoInput}
+          setEditingLanguage={setEditingLanguage}
+        />
       </Box>
-    </Box>
+    </BackNextSkeleton>
   );
 }

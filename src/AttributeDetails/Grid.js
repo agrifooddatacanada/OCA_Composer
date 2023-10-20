@@ -9,7 +9,8 @@ import { AgGridReact } from "ag-grid-react";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { Tooltip, Box, FormControl, Select, MenuItem } from "@mui/material";
+import { Tooltip, MenuItem, Box } from "@mui/material";
+import { DropdownMenuList } from "../components/DropdownMenuCell";
 
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
@@ -17,6 +18,22 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 
 import TypeTooltip from "./TypeTooltip";
+import CellHeader from "../components/CellHeader";
+import { flexCenter, preWrapWordBreak } from "../constants/styles";
+
+//styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
+const gridStyle = `
+  .ag-cell {
+    line-height: 1.5
+  }
+  .ag-select-list {
+    height: 90px;
+    overflow-y: auto;
+  }
+  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
+    height: 100%;
+  }
+  `;
 
 export default function Grid({
   gridRef,
@@ -34,20 +51,6 @@ export default function Grid({
   const canDrag = useRef(true);
 
   const { attributeRowData, setAttributeRowData } = useContext(Context);
-
-  //styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
-  const gridStyle = `
-  .ag-cell {
-    line-height: 1.5
-  }
-  .ag-select-list {
-    height: 90px;
-    overflow-y: auto;
-  }
-  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
-    height: 100%;
-  }
-  `;
 
   //Renderers define input cells, Headers define grid header cells
   //.stopEditing() needs to run whenever the grid refreshes, or the current table state won't be saved. Adding/Deleting/Navigation
@@ -69,6 +72,8 @@ export default function Grid({
           { attribute: node.data.Attribute, column: colId },
         ]);
       } else {
+
+        // TODO: savedEntryCodes has the entries, might need to erase the entries when the checkbox is unchecked
         setSelectedCells((prevSelectedCells) =>
           prevSelectedCells.filter(
             (cell) =>
@@ -110,42 +115,34 @@ export default function Grid({
     }, []);
 
     return (
-      <div className="ag-cell-label-container">
-        <div
-          className="ag-header-cell-label"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          Flagged
-          <input
-            type="checkbox"
-            ref={inputRef}
-            onChange={handleCheckboxChange}
-          />
-          <Tooltip
-            title={
-              <>
-                <div>
-                  If the attribute could be considered Personally Identifiable
-                  Information (PII) you can flag the attribute here. This will
-                  be documented in the schema and downstream users of your
-                  schema will understand they need to take care of the data that
-                  has been flagged.
-                </div>
-                <br />
-                <div>
-                  Examples of PII include names, locations, postal codes,
-                  telephone numbers, identifying genetic data, race, gender,
-                  ethnicity, etc.
-                </div>
-              </>
-            }
-            placement="top"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </div>
-      </div>
+      <CellHeader
+        headerText={
+          <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center' }}>
+            Sensitive {' '}
+            <input
+              type="checkbox"
+              ref={inputRef}
+              onChange={handleCheckboxChange}
+            />
+          </Box>
+        }
+        helpText={
+          <>
+            <div>
+              If the attribute could be considered Personally Identifiable
+              Information (PII) you can flag the attribute here. This will
+              be documented in the schema and downstream users of your
+              schema will understand they need to take care of the data that
+              has been flagged.
+            </div>
+            <br />
+            <div>
+              Examples of PII include names, locations, postal codes,
+              telephone numbers, identifying genetic data, race, gender,
+              ethnicity, etc.
+            </div>
+          </>
+        } />
     );
   };
 
@@ -236,61 +233,6 @@ export default function Grid({
     );
   };
 
-  const AttributeHeader = () => {
-    return (
-      <div className="ag-cell-label-container">
-        <div
-          className="ag-header-cell-label"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          Attribute
-          <Tooltip
-            title="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
-            placement="top"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </div>
-      </div>
-    );
-  };
-
-  const UnitHeader = () => {
-    return (
-      <div className="ag-cell-label-container">
-        <div
-          className="ag-header-cell-label"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          Unit
-          <Tooltip
-            title="The units of each attribute (or leave blank if the attribute is not a measurement and has no units)."
-            placement="top"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </div>
-      </div>
-    );
-  };
-
-  const TypeHeader = () => {
-    return (
-      <div className="ag-cell-label-container">
-        <div
-          className="ag-header-cell-label"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          Type
-          <Tooltip title={<TypeTooltip />} placement="right" arrow>
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </div>
-      </div>
-    );
-  };
 
   //AG grid's built-in drop-down menu had functionality issues (single click cannot open the menu)
   //Using AG grid's custom cell editor component had similar issues.
@@ -370,40 +312,16 @@ export default function Grid({
     };
 
     return (
-      <Box
-        sx={{
-          height: "105%",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <FormControl
-          fullWidth
-          variant="standard"
-          sx={{
-            height: "100%",
-          }}
-          onKeyDown={handleKeyDown}
-        >
-          <Select
-            id="select-drop"
-            value={type || ""}
-            label="Type"
-            onChange={handleChange}
-            sx={{
-              height: "100%",
-              fontSize: "small",
-            }}
-            ref={dropRefs.current[index]}
-            onClick={handleClick}
-            open={isDropdownOpen}
-            onClose={() => setIsDropdownOpen(false)}
-            onOpen={() => setIsDropdownOpen(true)}
-          >
-            {typesDisplay}
-          </Select>
-        </FormControl>
-      </Box>
+      <DropdownMenuList
+        handleKeyDown={handleKeyDown}
+        type={type}
+        handleChange={handleChange}
+        dropRefs={dropRefs.current[index]}
+        handleClick={handleClick}
+        isDropdownOpen={isDropdownOpen}
+        setIsDropdownOpen={setIsDropdownOpen}
+        typesDisplay={typesDisplay}
+      />
     );
   };
 
@@ -413,22 +331,19 @@ export default function Grid({
         field: "Drag",
         headerName: "",
         width: 40,
-        cellStyle: (params) => ({
+        cellStyle: () => ({
           display: "flex",
         }),
-        rowDrag: (params) => canDrag.current,
+        rowDrag: () => canDrag.current,
       },
       {
         field: "Attribute",
-        headerComponent: AttributeHeader,
+        headerComponent: () => <CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
         editable: true,
         autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+        cellStyle: () => ({
+          ...preWrapWordBreak,
+          ...flexCenter
         }),
         width: 150,
       },
@@ -437,28 +352,21 @@ export default function Grid({
         headerComponent: FlaggedHeader,
         cellRenderer: CheckboxRenderer,
         checkboxSelection: false,
-        cellStyle: (params) => ({
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }),
+        cellStyle: () => flexCenter,
       },
       {
         field: "Unit",
         editable: true,
-        headerComponent: UnitHeader,
+        headerComponent: () => <CellHeader headerText='Unit' helpText='The units of each attribute (or leave blank if the attribute is not a measurement and has no units).' />,
         autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+        cellStyle: () => ({
+          ...preWrapWordBreak,
+          ...flexCenter
         }),
       },
       {
         field: "Type",
-        headerComponent: TypeHeader,
+        headerComponent: () => <CellHeader headerText='Type' helpText={<TypeTooltip />} />,
         cellRenderer: TypeRenderer,
         cellRendererParams: (params) => ({
           data: params.data,
@@ -470,11 +378,7 @@ export default function Grid({
         headerComponent: ListHeader,
         cellRenderer: CheckboxRenderer,
         checkboxSelection: false,
-        cellStyle: (params) => ({
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }),
+        cellStyle: () => flexCenter,
         width: 100,
       },
       {
@@ -482,11 +386,7 @@ export default function Grid({
         headerName: "",
         cellRenderer: DeleteRenderer,
         cellRendererParams: (params) => ({ data: params.data }),
-        cellStyle: (params) => ({
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }),
+        cellStyle: () => flexCenter,
         width: 60,
       },
     ]);

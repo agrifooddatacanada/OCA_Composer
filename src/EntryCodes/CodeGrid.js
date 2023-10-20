@@ -21,6 +21,7 @@ import { CustomPalette } from "../constants/customPalette";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import { preWrapWordBreak } from "../constants/styles";
 
 export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable }) {
   const { languages, setEntryCodeRowData } = useContext(Context);
@@ -179,10 +180,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
         editable: true,
         headerComponent: () => LanguageHeader(language),
         autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-        }),
+        cellStyle: () => preWrapWordBreak,
       };
     });
     return [
@@ -191,10 +189,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
         editable: true,
         headerComponent: CodeHeader,
         autoHeight: true,
-        cellStyle: (params) => ({
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-        }),
+        cellStyle: () => preWrapWordBreak,
       },
       ...languageHeaders,
     ];
