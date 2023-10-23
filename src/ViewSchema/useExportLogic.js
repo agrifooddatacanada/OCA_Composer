@@ -411,6 +411,11 @@ const useExportLogic = () => {
             allowBlank: true,
             formulae: [menuList],
           };
+          let entryString = '';
+          for (const entry of savedEntryCodes[item]) {
+            entryString += `|${entry.Code}`;
+          }
+          entryCodesCell.value = entryString.slice(1);
         }
 
         const conformanceCell = worksheetMain.getCell(index + 4, 9);
@@ -515,6 +520,11 @@ const useExportLogic = () => {
               allowBlank: true,
               formulae: [`options!A${optionsIndex}:${columnToLetter(savedEntryCodes[item].length)}${optionsIndex}`],
             };
+            let entryString = '';
+            for (const entry of savedEntryCodes[item]) {
+              entryString += `|${entry.Code}:${entry[language.language]}`;
+            }
+            entryCodesCell.value = entryString.slice(1);
           }
 
           const descriptionCell = worksheetLanguage.getCell(index + 4, 6);
