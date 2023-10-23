@@ -84,8 +84,15 @@ const useZipParser = () => {
     const classificationFromJson = root?.['classification'];
     const indexOfRDF = classificationFromJson?.indexOf('RDF');
     if (indexOfRDF !== -1 && !isNaN(classificationFromJson?.[indexOfRDF + 5])) {
+      let divisionCode = classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5);
+
+      // Division 20 is named differently in the codeToDivision object
+      if (divisionCode === 'RDF20') {
+        divisionCode = 'RDF20-21';
+      }
+
       setDivisionGroup({
-        division: codeToDivision?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5)],
+        division: codeToDivision?.[divisionCode || ''],
         group: codeToGroup?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 6)],
       });
     } else if (indexOfRDF !== -1 && classificationFromJson?.[indexOfRDF + 4] && !isNaN(classificationFromJson?.[indexOfRDF + 4])) {
