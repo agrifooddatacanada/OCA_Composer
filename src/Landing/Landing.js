@@ -7,6 +7,11 @@ import AccordionList from './AccordionList';
 import { useLocation } from 'react-router-dom';
 import { Context } from '../App';
 
+
+
+
+
+
 const Landing = () => {
   const path = useLocation();
   const { setCurrentPage } = useContext(Context);
