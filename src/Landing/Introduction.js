@@ -3,6 +3,7 @@ import React from 'react';
 
 const Introduction = () => {
   const isMobile = useMediaQuery('(max-width: 736px)'); // Adjust the screen width as needed
+  const width = isMobile ? "500" : "800";
 
   return (
     <Box
@@ -51,7 +52,7 @@ const Introduction = () => {
         </Typography>
       </Box>
       <iframe
-        width="600"
+        width = {width}
         height="315"
         src="https://www.youtube.com/embed/r8VIIBWmL_k"
         title="YouTube video player"
