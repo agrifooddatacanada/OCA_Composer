@@ -6,12 +6,15 @@ import logo from '../assets/agri-logo.png';
 import logoWhite from '../assets/agri-logo-white.png';
 import { useLocation } from 'react-router-dom';
 import HeaderWrapper from "./HeaderWrapper";
+import { useMediaQuery} from '@mui/material'
 
 export default function Header({ currentPage }) {
   const [header, setHeader] = useState(currentPage);
   const [toolTipText, setToolTipText] = useState("");
   const [helpLink, setHelpLink] = useState("");
   const location = useLocation();
+  // Detecting mobile screens with 'isMobile'
+  const isMobile = useMediaQuery('max-width:736px');
 
   //Sets headers and tooltip Text based on current page
   useEffect(() => {
@@ -86,16 +89,16 @@ export default function Header({ currentPage }) {
           {currentPage === "Landing" ?
             <Typography
               sx={{
-                fontSize: 40,
+                fontSize: isMobile ? 20 : 40 , //Adjusting Font size
                 fontWeight: "bold",
                 color: 'white',
-                alignSelf: "center",
+                alignSelf: 'center',
               }}
             >
               Semantic Engine
             </Typography>
             : <>
-              <img src={logo} style={{ width: '150px', marginRight: '20px' }} alt="Logo" />
+              <img src={logo} style={{ width: isMobile ? '100px' : '150px', marginRight: '20px'}} alt="Logo" /> 
               <Typography
                 sx={{
                   fontSize: 25,
