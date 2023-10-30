@@ -645,9 +645,6 @@ export function generateDataEntry(acceptedFiles) {
         a.download = "data_entry";
         a.click();
       });
-
-
-
     };
 
     reader.readAsArrayBuffer(acceptedFiles[0]);
