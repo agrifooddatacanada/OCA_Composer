@@ -4,7 +4,7 @@ import UseASchemaAccordionItem from './UseASchemaAccordionItem';
 import UseASchemaWithDataAccordionItem from './UseASchemaWithDataAccordionItem';
 import SchemaAccordionItem from './SchemaAccordionItem';
 import WriteASchemaAccordionItem from './WriteASchemaAccordionItem';
-import FindASchemaAccordionItem from './FindASchemaAccordionItem';
+// import FindASchemaAccordionItem from './FindASchemaAccordionItem';
 import StoreASchemaAccordionItem from './StoreASchemaAccordionItem';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 import { CustomPalette } from '../constants/customPalette';
@@ -14,6 +14,7 @@ import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
+import { generateDataEntry } from './generateDataEntry';
 
 const AccordionList = () => {
   const navigate = useNavigate();
@@ -113,20 +114,20 @@ const AccordionList = () => {
               variant="contained"
               color="navButton"
               onClick={() => toTextFile(zipToReadme)}
-              sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px', marginBottom: '20px' }}
+              sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
               disabled={disableButtonCheck}
             >
               Generate Readme
             </Button>
-            {/* <Button
+            <Button
               variant="contained"
               color="navButton"
-              onClick={}
+              onClick={() => generateDataEntry(rawFile)}
               sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px', marginBottom: '20px' }}
               disabled={disableButtonCheck}
             >
               Generate Data Entry Excel
-            </Button> */}
+            </Button>
           </Box>
         </Box>
       </Box>
