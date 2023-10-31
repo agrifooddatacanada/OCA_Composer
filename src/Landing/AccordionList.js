@@ -4,7 +4,7 @@ import UseASchemaAccordionItem from './UseASchemaAccordionItem';
 import UseASchemaWithDataAccordionItem from './UseASchemaWithDataAccordionItem';
 import SchemaAccordionItem from './SchemaAccordionItem';
 import WriteASchemaAccordionItem from './WriteASchemaAccordionItem';
-import FindASchemaAccordionItem from './FindASchemaAccordionItem';
+// import FindASchemaAccordionItem from './FindASchemaAccordionItem';
 import StoreASchemaAccordionItem from './StoreASchemaAccordionItem';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 import { CustomPalette } from '../constants/customPalette';
@@ -14,6 +14,7 @@ import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
+import { generateDataEntry } from './generateDataEntry';
 
 
 
@@ -56,7 +57,7 @@ const AccordionList = () => {
   const disableButtonCheck = rawFile.length === 0 || loading === true;
 
 
- 
+
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginRight: 1, marginLeft: 1, marginBottom: 10 }}>
@@ -69,8 +70,8 @@ const AccordionList = () => {
           <UseASchemaAccordionItem />
           <UseASchemaWithDataAccordionItem disableButtonCheck={disableButtonCheck} handleExport={handleExport} />
         </Box>
-        
-        <Box sx={{ flex: '1', backgroundColor: '#ffefea', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', marginTop: 5, marginRight: 10 , marginLeft: 10}}>
+
+        <Box sx={{ flex: '1', backgroundColor: '#ffefea', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', marginTop: 5, marginRight: 10, marginLeft: 10 }}>
           <Typography sx={{ fontSize: '23px', fontWeight: '400', textAlign: 'center', width: '100%', marginTop: 2 }}>Quick Links</Typography>
           <CustomAnchorLink text="Write a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 0, marginTop: 2 }} onClick={navigateToStartPage} />
           <CustomAnchorLink text="Find a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 0, marginTop: 2 }} onClick={navigateToStartPage} />
@@ -107,10 +108,19 @@ const AccordionList = () => {
               variant="contained"
               color="navButton"
               onClick={() => toTextFile(zipToReadme)}
-              sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px', marginBottom: '20px' }}
+              sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
               disabled={disableButtonCheck}
             >
               Generate Readme
+            </Button>
+            <Button
+              variant="contained"
+              color="navButton"
+              onClick={() => generateDataEntry(rawFile, setLoading)}
+              sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px', marginBottom: '20px' }}
+              disabled={disableButtonCheck}
+            >
+              Generate Data Entry Excel
             </Button>
           </Box>
         </Box>
