@@ -2,6 +2,10 @@ import React from 'react';
 import { CustomPalette } from '../constants/customPalette';
 import { Box, Stack } from '@mui/material';
 
+
+
+
+//const isMobile = useMediaQuery('max-width:600px');
 const HeaderWrapper = ({ headerColor, leftItem, rightItem }) => {
   return (
     <Stack

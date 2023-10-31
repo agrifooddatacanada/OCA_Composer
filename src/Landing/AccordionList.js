@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Typography, isMuiElement } from '@mui/material';
 import React, { useContext } from 'react';
 import UseASchemaAccordionItem from './UseASchemaAccordionItem';
 import UseASchemaWithDataAccordionItem from './UseASchemaWithDataAccordionItem';
@@ -15,6 +15,9 @@ import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
 import { generateDataEntry } from './generateDataEntry';
+
+
+
 
 const AccordionList = () => {
   const navigate = useNavigate();
@@ -53,24 +56,26 @@ const AccordionList = () => {
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
 
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', maxWidth: '1500px', gap: 8, marginRight: 2, marginLeft: 2, marginBottom: 10 }}>
-      <Box sx={{ maxWidth: '500px', minWidth: '300px', width: "100%" }}>
-        <SchemaAccordionItem />
-        <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
-        {/* <FindASchemaAccordionItem /> */}
-        <StoreASchemaAccordionItem />
-        <UseASchemaAccordionItem />
-        <UseASchemaWithDataAccordionItem disableButtonCheck={disableButtonCheck} handleExport={handleExport} />
-      </Box>
-      {/* Added marginTop since the Quick Link is short */}
-      <Box sx={{ maxWidth: '500px', minWidth: '300px', width: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', marginTop: '40px' }}>
-        <Box sx={{ width: '100%', border: `1px solid ${CustomPalette.PRIMARY}`, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', backgroundColor: '#ffefea' }}>
-          <Typography sx={{ fontSize: '23px', fontWeight: '400', textAlign: 'center', width: '100%', marginTop: 2 }}>Quick Links</Typography>
-          <CustomAnchorLink text="Write a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 5, marginTop: 2 }} onClick={navigateToStartPage} />
-          {/* <CustomAnchorLink text="Find a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 5, marginTop: 2 }} onClick={navigateToStartPage} /> */}
-          {/* <CustomAnchorLink link="https://www.semanticengine.org/#/develop" text="Parse a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 5, marginTop: 2 }} /> */}
 
+
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginRight: 1, marginLeft: 1, marginBottom: 10 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {/* Accordion Items (Position may change based on screen size) */}
+        <Box sx={{ flex: '1', maxWidth: '500px', minWidth: '300px', width: "100%" }}>
+          <SchemaAccordionItem />
+          <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
+          <StoreASchemaAccordionItem />
+          <UseASchemaAccordionItem />
+          <UseASchemaWithDataAccordionItem disableButtonCheck={disableButtonCheck} handleExport={handleExport} />
+        </Box>
+
+        <Box sx={{ flex: '1', backgroundColor: '#ffefea', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', marginTop: 5, marginRight: 10, marginLeft: 10 }}>
+          <Typography sx={{ fontSize: '23px', fontWeight: '400', textAlign: 'center', width: '100%', marginTop: 2 }}>Quick Links</Typography>
+          <CustomAnchorLink text="Write a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 0, marginTop: 2 }} onClick={navigateToStartPage} />
+          <CustomAnchorLink text="Find a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 0, marginTop: 2 }} onClick={navigateToStartPage} />
+          <CustomAnchorLink link="https://www.semanticengine.org/#/develop" text="Parse a schema" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY, marginLeft: 0, marginTop: 2 }} />
           <Drop
             setFile={setRawFile}
             setLoading={setLoading}
@@ -80,17 +85,7 @@ const AccordionList = () => {
             setDropMessage={setDropMessage}
             version={1}
           />
-
           <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-            {/* <Button
-              variant="contained"
-              color="navButton"
-              onClick={() => { }}
-              sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
-              disabled={disableButtonCheck}
-            >
-              Validate Schema
-            </Button> */}
             <Button
               variant="contained"
               color="navButton"
@@ -109,7 +104,6 @@ const AccordionList = () => {
             >
               Edit Schema
             </Button>
-            {/* Added marginBottom */}
             <Button
               variant="contained"
               color="navButton"
@@ -131,8 +125,17 @@ const AccordionList = () => {
           </Box>
         </Box>
       </Box>
-    </Box >
+    </Box>
   );
 };
 
 export default AccordionList;
+
+
+
+
+
+
+
+
+
