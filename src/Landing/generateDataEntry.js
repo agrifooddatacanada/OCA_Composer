@@ -12,20 +12,9 @@ function WorkbookError(message) {
 WorkbookError.prototype = Object.create(Error.prototype);
 WorkbookError.prototype.constructor = WorkbookError;
 
-export function generateDataEntry(acceptedFiles) {
-  //// Step 1: Unzip the OCA bundle
-  // const zip = new AdmZip(path);
-  // const zipEntries = zip.getEntries();
-
-  // // Step 2: Read JSON Files
-  // zipEntries.forEach((entry) => {
-  //   if (entry.name.endsWith('.json')) {
-  //     const data = JSON.parse(entry.getData().toString('utf8'));
-  //     jsonData.push(data);
-  //   };
-  // });
-
+export function generateDataEntry(acceptedFiles, setLoading) {
   try {
+    setLoading(true);
     const reader = new FileReader();
 
     reader.onload = async (e) => {
@@ -645,14 +634,13 @@ export function generateDataEntry(acceptedFiles) {
         a.download = "data_entry";
         a.click();
       });
+
+      setLoading(false);
     };
 
     reader.readAsArrayBuffer(acceptedFiles[0]);
 
-    setTimeout(() => {
-
-    }, 900);
   } catch (error) {
-    console.log('error', error);
+    setLoading(false);
   }
 }
