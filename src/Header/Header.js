@@ -14,7 +14,9 @@ export default function Header({ currentPage }) {
   const [helpLink, setHelpLink] = useState("");
   const location = useLocation();
   // Detecting mobile screens with 'isMobile'
+
   const isMobile = useMediaQuery('(max-width:736px)');
+
 
   //Sets headers and tooltip Text based on current page
   useEffect(() => {
