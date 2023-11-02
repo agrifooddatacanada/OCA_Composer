@@ -30,7 +30,7 @@ const Landing = () => {
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', backgroundColor: '#ffefea', width: '100%' }}>
         <QuickStart />
       </Box>
-      <Box sx={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '30px' }}>
+      <Box sx={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '30px'}}>
         <AccordionList />
       </Box>
     </Box >

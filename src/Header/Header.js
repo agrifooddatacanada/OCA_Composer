@@ -14,7 +14,9 @@ export default function Header({ currentPage }) {
   const [helpLink, setHelpLink] = useState("");
   const location = useLocation();
   // Detecting mobile screens with 'isMobile'
-  const isMobile = useMediaQuery('max-width:736px');
+
+  const isMobile = useMediaQuery('(max-width:736px)');
+
 
   //Sets headers and tooltip Text based on current page
   useEffect(() => {
@@ -89,7 +91,7 @@ export default function Header({ currentPage }) {
           {currentPage === "Landing" ?
             <Typography
               sx={{
-                fontSize: isMobile ? 20 : 40 , //Adjusting Font size
+                fontSize: isMobile ? 30 : 40 , //Adjusting Font size
                 fontWeight: "bold",
                 color: 'white',
                 alignSelf: 'center',
