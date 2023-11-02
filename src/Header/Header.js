@@ -89,7 +89,7 @@ export default function Header({ currentPage }) {
           {currentPage === "Landing" ?
             <Typography
               sx={{
-                fontSize: isMobile ? 20 : 40 , //Adjusting Font size
+                fontSize: isMobile ? 30 : 40 , //Adjusting Font size
                 fontWeight: "bold",
                 color: 'white',
                 alignSelf: 'center',
