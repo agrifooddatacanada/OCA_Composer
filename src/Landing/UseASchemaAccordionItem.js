@@ -9,6 +9,11 @@ import { useNavigate } from 'react-router-dom';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 
+//Edit: import libraries
+// import { Validator, OCABox } from 'oca.js'; // Import oca.js modules
+// import unzip from 'unzipper'; // Import unzipper for extracting ZIP files
+
+
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
   const { zipToReadme } = useContext(Context);
@@ -35,6 +40,8 @@ const UseASchemaAccordionItem = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
+  
+
 
   return (
     <AccordionItemWrapper>
@@ -74,7 +81,7 @@ const UseASchemaAccordionItem = () => {
           {/* <Button
             variant="contained"
             color="navButton"
-            onClick={() => { }}
+            onClick={() => {}}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
             disabled={disableButtonCheck}
           >

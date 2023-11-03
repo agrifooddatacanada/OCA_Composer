@@ -15,11 +15,17 @@ import SchemaMetadataHelp from "./UsersHelp/Schema_Metadata_Help";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
 import OverlaysHelp from "./UsersHelp/Overlays_Help";
-import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
-import Landing from "./Landing/Landing";
 import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
 import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
-import GuidanceForDesigningDataSets from "./Landing/HelpDesigningDatasets";
+import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
+import Landing from "./Landing/Landing";
+import GuidanceForDesigningDataSets from "./Landing/help_designing_datasets";
+import ReactGA from 'react-ga';
+
+
+//Initializing react-ga with your Google Analytics tracking ID
+ReactGA.initialize('TrackingID') //Replace 'TrackingID' with actual tracking ID
+
 
 export const Context = createContext();
 
@@ -90,6 +96,17 @@ function App() {
       setHistory(prev => [...prev, currentPage]);
     }
   }, [currentPage]);
+
+
+
+//Measuring page views
+  useEffect(() => { 
+    ReactGA.pageview(location.pathname);  
+  }, [location]);
+
+
+
+
 
   //Create Attributes List from File Data
   useEffect(() => {
@@ -264,6 +281,7 @@ function App() {
               <Header currentPage={currentPage} />
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/help_designing_datasets" element={<GuidanceForDesigningDataSets />} />
                 <Route path="/start" element={<Home currentPage={currentPage} setCurrentPage={setCurrentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
                 <Route path="/help_designing_datasets" element={<GuidanceForDesigningDataSets />} />
                 <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
@@ -291,3 +309,6 @@ function App() {
 }
 
 export default App;
+
+
+

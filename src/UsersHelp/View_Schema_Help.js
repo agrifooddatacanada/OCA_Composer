@@ -14,7 +14,7 @@ const ViewSchemaHelp = () => {
       </TypographyTag>
       <br />
       <TypographyTag>
-        To back and edit any of the entries use the back button to go through the schema writer and make your necessary changes.
+      To back and edit any of the entries use the back button to go through the schema writer and make your necessary changes.
       </TypographyTag>
       <br />
       <TypographyTag>

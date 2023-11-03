@@ -4,6 +4,7 @@ import { CustomPalette } from '../constants/customPalette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionItemWrapper from './AccordionItemWrapper';
 import CustomAnchorLink from '../components/CustomAnchorLink';
+import GuidanceForDesigningDataSets from './help_designing_datasets';
 
 const WriteASchemaAccordionItem = ({ navigateToStartPage }) => {
   return (

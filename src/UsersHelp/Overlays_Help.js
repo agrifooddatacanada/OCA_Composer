@@ -1,6 +1,7 @@
 import React from 'react';
 import HelpPageContainer from '../components/HelpPageContainer';
 import HelpPageH2Title from '../components/HelpPageH2Title';
+import HelpPageH3Title from '../components/HelpPageH3Title';
 import TypographyTag from '../components/TypographyTag';
 
 const OverlaysHelp = () => {
@@ -21,6 +22,10 @@ const OverlaysHelp = () => {
         <br></br>
         <br></br>
       </TypographyTag>
+      
+
+
+
     </HelpPageContainer>
   );
 };
