@@ -19,14 +19,13 @@ import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
 import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
 import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
 import Landing from "./Landing/Landing";
-<<<<<<< HEAD
-import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
-import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
-import GuidanceForDesigningDataSets from "./Landing/HelpDesigningDatasets";
-=======
 import GuidanceForDesigningDataSets from "./Landing/help_designing_datasets";
+import ReactGA from 'react-ga';
 
->>>>>>> 1cd2492dee88b7a9ffcfde37727b6322925ddfa6
+
+//Initializing react-ga with your Google Analytics tracking ID
+ReactGA.initialize('TrackingID') //Replace 'TrackingID' with actual tracking ID
+
 
 export const Context = createContext();
 
@@ -97,6 +96,17 @@ function App() {
       setHistory(prev => [...prev, currentPage]);
     }
   }, [currentPage]);
+
+
+
+//Measuring page views
+  useEffect(() => { 
+    ReactGA.pageview(location.pathname);  
+  }, [location]);
+
+
+
+
 
   //Create Attributes List from File Data
   useEffect(() => {
@@ -299,3 +309,6 @@ function App() {
 }
 
 export default App;
+
+
+
