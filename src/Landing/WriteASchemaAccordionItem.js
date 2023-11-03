@@ -4,6 +4,7 @@ import { CustomPalette } from '../constants/customPalette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionItemWrapper from './AccordionItemWrapper';
 import CustomAnchorLink from '../components/CustomAnchorLink';
+import GuidanceForDesigningDataSets from './help_designing_datasets';
 
 const WriteASchemaAccordionItem = ({ navigateToStartPage }) => {
   return (
@@ -21,8 +22,13 @@ const WriteASchemaAccordionItem = ({ navigateToStartPage }) => {
           Using our <CustomAnchorLink text="schema writer" onClick={navigateToStartPage} /> you can easily create human- and machine-readable versions of your schema.
         </Typography>
         <Typography sx={{ marginTop: '20px', marginBottom: '20px' }}>
+<<<<<<< HEAD
           You will either be documenting an existing dataset or you will start with an idea of what columns or variables you will be collecting for your dataset.
 
+=======
+          You will either be documenting an existing dataset or you will start with an idea of what columns or variables you will be collecting for your dataset. 
+          
+>>>>>>> 1cd2492dee88b7a9ffcfde37727b6322925ddfa6
           <CustomAnchorLink link='help_designing_datasets' text="Learn more about how to design a dataset" />.
         </Typography>
 

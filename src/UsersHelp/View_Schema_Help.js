@@ -9,16 +9,25 @@ const ViewSchemaHelp = () => {
     <HelpPageContainer>
       <HelpPageH2Title text="View Schema" />
       <br />
+<<<<<<< HEAD
       <TypographyTag>
         This is a summary of the schema you have been creating. You can tab through multiple languages (if you have more than one) to see all the schema information for each language.
+=======
+      <TypographyTag> 
+      This is a summary of the schema you have been creating. You can tab through multiple languages (if you have more than one) to see all the schema information for each language.
+>>>>>>> 1cd2492dee88b7a9ffcfde37727b6322925ddfa6
       </TypographyTag>
       <br />
       <TypographyTag>
-        To back and edit any of the entries use the back button to go through the schema writer and make your necessary changes.
+      To back and edit any of the entries use the back button to go through the schema writer and make your necessary changes.
       </TypographyTag>
       <br />
       <TypographyTag>
+<<<<<<< HEAD
         When you Finish and Export your schema you will create two files. The first will be the machine-readable .zip version of your schema. The second will be the human-readable .txt version of your schema. We suggest you keep these two files together so that both machines and humans can understand your schema.
+=======
+      When you Finish and Export your schema you will create two files. The first will be the machine-readable .zip version of your schema. The second will be the human-readable .txt version of your schema. We suggest you keep these two files together so that both machines and humans can understand your schema.
+>>>>>>> 1cd2492dee88b7a9ffcfde37727b6322925ddfa6
       </TypographyTag>
       <br />
       <HelpPageH2Title text="More information about OCA" />
@@ -26,12 +35,20 @@ const ViewSchemaHelp = () => {
       <HelpPageH3Title text="OCA is expressed in JSON" />
       <br />
       <TypographyTag>
+<<<<<<< HEAD
         Overlays Capture Architecture is a machine-readable way to encode a schema expressed in the JSON scripting language. You can view the JSON file contents (within the .zip file) using a text editor such as Notepad in Windows but since JSON files do not usually contain line breaks it is easier to read using a dedicated JSON viewer.      </TypographyTag>
+=======
+      Overlays Capture Architecture is a machine-readable way to encode a schema expressed in the JSON scripting language. You can view the JSON file contents (within the .zip file) using a text editor such as Notepad in Windows but since JSON files do not usually contain line breaks it is easier to read using a dedicated JSON viewer.      </TypographyTag>
+>>>>>>> 1cd2492dee88b7a9ffcfde37727b6322925ddfa6
       <br />
       <HelpPageH3Title text="Advantages of OCA" />
       <br />
       <TypographyTag>
+<<<<<<< HEAD
         The advantage of OCA schemas is that they are modular. You can start with a very simple design, and because of the OCA layered architecture you can add more functionality to the schema later. The simplest OCA schema has a Capture Base (CB) which defines the basic structure of the data, and some additional overlays (OL) that help the user understand the data. OCA schemas are also shareable and machine-readable. You can publish your OCA schema with an identifier and others can reference and extend your work.      </TypographyTag>
+=======
+      The advantage of OCA schemas is that they are modular. You can start with a very simple design, and because of the OCA layered architecture you can add more functionality to the schema later. The simplest OCA schema has a Capture Base (CB) which defines the basic structure of the data, and some additional overlays (OL) that help the user understand the data. OCA schemas are also shareable and machine-readable. You can publish your OCA schema with an identifier and others can reference and extend your work.      </TypographyTag>
+>>>>>>> 1cd2492dee88b7a9ffcfde37727b6322925ddfa6
     </HelpPageContainer>
   );
 };

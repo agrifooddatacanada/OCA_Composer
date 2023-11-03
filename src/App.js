@@ -15,11 +15,18 @@ import SchemaMetadataHelp from "./UsersHelp/Schema_Metadata_Help";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
 import OverlaysHelp from "./UsersHelp/Overlays_Help";
+import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
+import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
 import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
 import Landing from "./Landing/Landing";
+<<<<<<< HEAD
 import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
 import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
 import GuidanceForDesigningDataSets from "./Landing/HelpDesigningDatasets";
+=======
+import GuidanceForDesigningDataSets from "./Landing/help_designing_datasets";
+
+>>>>>>> 1cd2492dee88b7a9ffcfde37727b6322925ddfa6
 
 export const Context = createContext();
 
@@ -264,6 +271,7 @@ function App() {
               <Header currentPage={currentPage} />
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/help_designing_datasets" element={<GuidanceForDesigningDataSets />} />
                 <Route path="/start" element={<Home currentPage={currentPage} setCurrentPage={setCurrentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
                 <Route path="/help_designing_datasets" element={<GuidanceForDesigningDataSets />} />
                 <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
