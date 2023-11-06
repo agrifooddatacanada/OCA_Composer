@@ -20,8 +20,13 @@ import Landing from "./Landing/Landing";
 import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
 import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
 import GuidanceForDesigningDataSets from "./Landing/HelpDesigningDatasets";
+import ReactGA from 'react-ga';
 
 export const Context = createContext();
+
+//Initializing react-ga with google analytics ID
+ReactGA.initialize('TRACKINGID') //Replace TRACKINGID with actual ID
+
 
 const items = {
   "Character Encoding": { feature: "Character Encoding", selected: false },
@@ -90,6 +95,12 @@ function App() {
       setHistory(prev => [...prev, currentPage]);
     }
   }, [currentPage]);
+
+  //Measuring page views
+  useEffect(() => { 
+    ReactGA.pageview(location.pathname);  
+  }, [location]);
+
 
   //Create Attributes List from File Data
   useEffect(() => {
