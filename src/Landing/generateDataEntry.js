@@ -92,23 +92,21 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
       const sheet1 = workbook.addWorksheet('Schema Description');
 
+      const shift = 20;
+
       try {
-        sheet1.getRow(1).height = 35;
-        sheet1.getColumn(1).width = 13;
-        sheet1.getCell(1, 1).value = 'CB: Classification';
-        formatHeader1(sheet1.getCell(1, 1));
 
-        sheet1.getColumn(2).width = 17;
-        sheet1.getCell(1, 2).value = 'CB: Attribute Name';
-        formatHeader1(sheet1.getCell(1, 2));
+        sheet1.getColumn(1).width = 17;
+        sheet1.getCell(shift + 1, 1).value = 'Attribute Name';
+        formatHeader1(sheet1.getCell(shift + 1, 1));
 
-        sheet1.getColumn(3).width = 12.5;
-        sheet1.getCell(1, 3).value = 'CB: Attribute Type';
-        formatHeader1(sheet1.getCell(1, 3));
+        sheet1.getColumn(2).width = 12.5;
+        sheet1.getCell(shift + 1, 2).value = 'Attribute Type';
+        formatHeader1(sheet1.getCell(shift + 1, 2));
 
-        sheet1.getColumn(4).width = 17;
-        sheet1.getCell(1, 4).value = 'CB: Flagged Attribute';
-        formatHeader2(sheet1.getCell(1, 4));
+        sheet1.getColumn(3).width = 17;
+        sheet1.getCell(shift + 1, 3).value = 'Sensitive';
+        formatHeader2(sheet1.getCell(shift + 1, 3));
 
       } catch (error) {
         throw new WorkbookError('.. Error in formatting sheet1 capture base header ...');
@@ -125,26 +123,24 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           Object.entries(overlay.attributes).forEach(([attrName, attrType], index) => {
             const attrIndex = index + 2;
             attributesIndex[[attrName, attrType]] = attrIndex;
-            sheet1.getCell(attrIndex, 1).value = overlay.classification;
-            formatAttr2(sheet1.getCell(attrIndex, 1));
-
+      
             if (attrIndex !== undefined) {
-              sheet1.getCell(attrIndex, 2).value = attrName;
-              formatAttr2(sheet1.getCell(attrIndex, 2));
+              sheet1.getCell(shift + attrIndex, 1).value = attrName;
+              formatAttr2(sheet1.getCell(shift + attrIndex, 1));
             } else {
               throw new WorkbookError('.. Error check the attribute name ...');
             }
 
             if (attrIndex !== undefined) {
-              sheet1.getCell(attrIndex, 3).value = attrType;
-              formatAttr2(sheet1.getCell(attrIndex, 3));
+              sheet1.getCell(shift + attrIndex, 2).value = attrType;
+              formatAttr2(sheet1.getCell(shift + attrIndex, 2));
             } else {
               throw new WorkbookError('.. Error check the attribute type ...');
             }
 
             const isFlagged = overlay.flagged_attributes.includes(attrName);
-            sheet1.getCell(attrIndex, 4).value = isFlagged ? "Y" : "";
-            formatAttr2(sheet1.getCell(attrIndex, 4));
+            sheet1.getCell(shift + attrIndex, 3).value = isFlagged ? "Y" : "";
+            formatAttr2(sheet1.getCell(shift + attrIndex, 3));
           });
 
           // sheet 3
@@ -161,13 +157,13 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           }
 
           try {
-            for (let i = 0; i < attributeNames.length; i++) {
-              const letter = String.fromCharCode(65 + i);
+            for (let col = 0; col < attributeNames.length; col++) {
+              const letter = String.fromCharCode(65 + col);
 
-              for (let r = 1; r <= 1000; r++) {
-                const formula = `IF(ISBLANK('Data Entry'!$${letter}$${r + 1}), "", 'Data Entry'!$${letter}$${r + 1})`;
+              for (let row = 1; row <= 1000; row++) {
+                const formula = `IF(ISBLANK('Data Entry'!$${letter}$${row + 1}), "", 'Data Entry'!$${letter}$${row + 1})`;
 
-                const cell = sheet3.getCell(r + 1, i + 1);
+                const cell = sheet3.getCell(row + 1, col + 1);
                 cell.value = {
                   formula: formula,
                 };
@@ -178,34 +174,33 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           }
 
           const numColumns = attributeNames.length;
-          const columnWidth = 12;
+          const columnWidth = 15;
 
-          for (let i = 0; i < numColumns; i++) {
-            sheet2.getColumn(i + 1).width = columnWidth;
+          for (let col = 0; col < numColumns; col++) {
+            sheet2.getColumn(col + 1).width = columnWidth;
           }
 
-          for (let i = 0; i < numColumns; i++) {
-            sheet3.getColumn(i + 1).width = columnWidth;
+          for (let col = 0; col < numColumns; col++) {
+            sheet3.getColumn(col + 1).width = columnWidth;
           }
         }
       });
 
       let skipped = 0;
-      let lang = [];;
+      let lang = [];
       const lookupEntries = {};
 
       jsonData.forEach((overlay, i) => {
         if (overlay.type && overlay.type.includes('/character_encoding/')) {
-
           try {
 
             sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(1, i + 4 - skipped).value = 'OL: Character Encoding';
-            formatHeader2(sheet1.getCell(1, i + 4 - skipped));
+            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Character Encoding';
+            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(row, i + 4 - skipped).value = null;
-              formatAttr2(sheet1.getCell(row, i + 4 - skipped));
+              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
+              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
             }
 
             for (let [attrName, encoding] of Object.entries(overlay.attribute_character_encoding)) {
@@ -215,7 +210,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                 const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
                 const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
                 if (rowIndex) {
-                  sheet1.getCell(rowIndex, i + 4 - skipped).value = encoding;
+                  sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = encoding;
                 }
               }
             }
@@ -227,12 +222,12 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           try {
 
             sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(1, i + 4 - skipped).value = 'OL: Cardinality';
-            formatHeader2(sheet1.getCell(1, i + 4 - skipped));
+            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Cardinality';
+            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(row, i + 4 - skipped).value = null;
-              formatAttr2(sheet1.getCell(row, i + 4 - skipped));
+              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
+              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
             }
 
             for (let [attrName, cardinality] of Object.entries(overlay.attribute_cardinality)) {
@@ -241,7 +236,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
               const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
               const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
               if (rowIndex) {
-                sheet1.getCell(rowIndex, i + 4 - skipped).value = cardinality;
+                sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = cardinality;
               }
             }
 
@@ -249,24 +244,31 @@ export function generateDataEntry(acceptedFiles, setLoading) {
             throw new WorkbookError('.. Error in formatting cardinality column (header and rows) ...');
           }
         } else if (overlay.type && overlay.type.includes('/conformance/')) {
+
           try {
 
             sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(1, i + 4 - skipped).value = 'OL: Conformance';
-            formatHeader2(sheet1.getCell(1, i + 4 - skipped));
+            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Required';
+            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(row, i + 4 - skipped).value = null;
-              formatAttr2(sheet1.getCell(row, i + 4 - skipped));
+              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
+              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
             }
 
             for (let [attrName, conformance] of Object.entries(overlay.attribute_conformance)) {
 
+              if (conformance === 'M') {
+                conformance = 'Y';
+              } else if (conformance === 'O') {
+                conformance = ' ';
+              }
+              
               const attrKeys = Object.keys(attributesIndex);
               const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
               const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
               if (rowIndex) {
-                sheet1.getCell(rowIndex, i + 4 - skipped).value = conformance;
+                sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = conformance;
               }
             }
 
@@ -277,18 +279,18 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           try {
 
             sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(1, i + 4 - skipped).value = 'OL: Conditional [Condition]';
-            formatHeader2(sheet1.getCell(1, i + 4 - skipped));
+            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Conditional [Condition]';
+            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
 
             sheet1.getColumn(i + 5 - skipped).width = 15;
-            sheet1.getCell(1, i + 5 - skipped).value = 'OL: Conditional [Dependecies]';
-            formatHeader2(sheet1.getCell(1, i + 5 - skipped));
+            sheet1.getCell(shift + 1, i + 5 - skipped).value = 'Conditional [Dependecies]';
+            formatHeader2(sheet1.getCell(shift + 1, i + 5 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(row, i + 4 - skipped).value = null;
-              sheet1.getCell(row, i + 5 - skipped).value = null;
-              formatAttr2(sheet1.getCell(row, i + 4 - skipped));
-              formatAttr2(sheet1.getCell(row, i + 5 - skipped));
+              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
+              sheet1.getCell(shift + row, i + 5 - skipped).value = null;
+              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
+              formatAttr2(sheet1.getCell(shift + row, i + 5 - skipped));
             }
 
             for (let [attrName, condition] of Object.entries(overlay.attribute_conditions)) {
@@ -297,7 +299,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
               const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
               const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
               if (rowIndex) {
-                sheet1.getCell(rowIndex, i + 4 - skipped).value = condition;
+                sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = condition;
               }
             }
 
@@ -307,7 +309,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
               const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
               const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
               if (rowIndex) {
-                sheet1.getCell(rowIndex, i + 5 - skipped).value = dependencies.join(",");
+                sheet1.getCell(shift + rowIndex, i + 5 - skipped).value = dependencies.join(",");
               }
             }
 
@@ -321,12 +323,12 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           try {
 
             sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(1, i + 4 - skipped).value = 'OL: Format';
-            formatHeader2(sheet1.getCell(1, i + 4 - skipped));
+            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'OL: Format';
+            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(row, i + 4 - skipped).value = null;
-              formatAttr2(sheet1.getCell(row, i + 4 - skipped));
+              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
+              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
             }
 
             for (let [attrName, format] of Object.entries(overlay.attribute_formats)) {
@@ -336,7 +338,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
               const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
 
               if (rowIndex) {
-                sheet1.getCell(rowIndex, i + 4 - skipped).value = format;
+                sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = format;
               }
 
               const attrTypeFromAttrKeys = attrKeys.map(key => key.split(','));
@@ -350,10 +352,10 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                   const col_i = attributesIndex[[attrName, attrTypeObject.type]] - 1;
                   const letter = String.fromCharCode(65 + col_i - 1);
 
-                  for (let r = 1; r <= 1000; r++) {
-                    sheet2.getCell(r + 1, col_i).value = null;
-                    sheet2.getCell(r + 1, col_i).numFmt = format_attr.numFmt;
-                    sheet3.getCell(r + 1, col_i).numFmt = format_attr.numFmt;
+                  for (let row = 1; row <= 1000; row++) {
+                    sheet2.getCell(row + 1, col_i).value = null;
+                    sheet2.getCell(row + 1, col_i).numFmt = format_attr.numFmt;
+                    sheet3.getCell(row + 1, col_i).numFmt = format_attr.numFmt;
 
                   }
                 }
@@ -368,12 +370,12 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
           try {
             sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(1, i + 4 - skipped).value = 'OL: Entry Code';
-            formatHeader2(sheet1.getCell(1, i + 4 - skipped));
+            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Entry Code';
+            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(row, i + 4 - skipped).value = null;
-              formatAttr2(sheet1.getCell(row, i + 4 - skipped));
+              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
+              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
             }
 
 
@@ -385,7 +387,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                 const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
                 const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
                 if (rowIndex) {
-                  sheet1.getCell(rowIndex, i + 4 - skipped).value = joinedCodes;
+                  sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = joinedCodes;
                 }
               }
 
@@ -410,12 +412,12 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           if (o) {
             try {
               sheet1.getColumn(i + 4 - skipped).width = 17;
-              sheet1.getCell(1, i + 4 - skipped).value = 'OL: Label';
-              formatHeader2(sheet1.getCell(1, i + 4 - skipped));
+              sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Label';
+              formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
 
               for (let row = 2; row <= attributeNames.length + 1; row++) {
-                sheet1.getCell(row, i + 4 - skipped).value = null;
-                formatAttr2(sheet1.getCell(row, i + 4 - skipped));
+                sheet1.getCell(shift + row, i + 4 - skipped).value = null;
+                formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
               }
 
               for (let [attrName, label] of Object.entries(attr_labels)) {
@@ -424,7 +426,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                 const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
                 const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
                 if (rowIndex) {
-                  sheet1.getCell(rowIndex, i + 4 - skipped).value = label;
+                  sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = label;
                 }
 
                 const labelValue = Object.values(attr_labels);
@@ -457,12 +459,12 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           if (o) {
             try {
               sheet1.getColumn(i + 4 - skipped).width = 20;
-              sheet1.getCell(1, i + 4 - skipped).value = 'OL: Entry';
-              formatHeader2(sheet1.getCell(1, i + 4 - skipped));
+              sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Entry';
+              formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
 
               for (let row = 2; row <= attributeNames.length + 1; row++) {
-                sheet1.getCell(row, i + 4 - skipped).value = null;
-                formatAttr2(sheet1.getCell(row, i + 4 - skipped));
+                sheet1.getCell(shift + row, i + 4 - skipped).value = null;
+                formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
               }
 
               for (let [attrName, entries] of Object.entries(attr_labels)) {
@@ -481,7 +483,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
                   const formattedEntryString = formattedEntries.join('|');
                   if (rowIndex) {
-                    sheet1.getCell(rowIndex, i + 4 - skipped).value = formattedEntryString;
+                    sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = formattedEntryString;
                   }
                 }
               }
@@ -511,12 +513,12 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           if (o) {
             try {
               sheet1.getColumn(i + 4 - skipped).width = 20;
-              sheet1.getCell(1, i + 4 - skipped).value = 'OL: Information';
-              formatHeader2(sheet1.getCell(1, i + 4 - skipped));
+              sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Information';
+              formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
 
               for (let row = 2; row <= attributeNames.length + 1; row++) {
-                sheet1.getCell(row, i + 4 - skipped).value = null;
-                formatAttr2(sheet1.getCell(row, i + 4 - skipped));
+                sheet1.getCell(shift + row, i + 4 - skipped).value = null;
+                formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
               }
 
               for (let [attrName, info] of Object.entries(attr_labels)) {
@@ -524,7 +526,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                 const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
                 const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
                 if (rowIndex) {
-                  sheet1.getCell(rowIndex, i + 4 - skipped).value = info;
+                  sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = info;
                 }
               }
 
@@ -540,7 +542,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
       // lookup table
       const lookUpTable = new Map();
-      let lookUpStart = attributeNames.length + 6;
+      let lookUpStart = shift + attributeNames.length + 6;
 
       sheet1.getCell(lookUpStart, 1).value = 'Lookup tables';
       formatLookupHeader(sheet1.getCell(lookUpStart, 1));
@@ -622,6 +624,22 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           };
         }
       }
+
+      const shape = sheet1.addShape('text', {
+        x: 1,
+        y: 1,
+        width: 100,
+        height: 50,
+        font: {
+          name: 'Arial',
+          size: 12,
+          bold: true,
+          italic: true,
+        },
+      });
+
+      shape.text = "This workbook has been prefilled with information to help users enter data. The prefilled information comes from a specific schema on my sheet.";
+
 
 
       workbook.xlsx.writeBuffer().then((buffer) => {
