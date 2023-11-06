@@ -44,12 +44,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         cell.border = { bottom: { style: 'thin' }, right: { style: 'thin' } };
       };
 
-      function formatAttr1(cell) {
-        cell.font = { size: 10 };
-        cell.alignment = { vertical: 'top', wrapText: true };
-      };
-
-      function formatAttr2(cell) {
+      function formatAttr(cell) {
         cell.font = { size: 10 };
         cell.alignment = { vertical: 'top', wrapText: true };
         cell.border = { right: { style: 'thin' } };
@@ -126,21 +121,21 @@ export function generateDataEntry(acceptedFiles, setLoading) {
       
             if (attrIndex !== undefined) {
               sheet1.getCell(shift + attrIndex, 1).value = attrName;
-              formatAttr2(sheet1.getCell(shift + attrIndex, 1));
+              formatAttr(sheet1.getCell(shift + attrIndex, 1));
             } else {
               throw new WorkbookError('.. Error check the attribute name ...');
             }
 
             if (attrIndex !== undefined) {
               sheet1.getCell(shift + attrIndex, 2).value = attrType;
-              formatAttr2(sheet1.getCell(shift + attrIndex, 2));
+              formatAttr(sheet1.getCell(shift + attrIndex, 2));
             } else {
               throw new WorkbookError('.. Error check the attribute type ...');
             }
 
             const isFlagged = overlay.flagged_attributes.includes(attrName);
             sheet1.getCell(shift + attrIndex, 3).value = isFlagged ? "Y" : "";
-            formatAttr2(sheet1.getCell(shift + attrIndex, 3));
+            formatAttr(sheet1.getCell(shift + attrIndex, 3));
           });
 
           // sheet 3
@@ -200,7 +195,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
               sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
+              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
             }
 
             for (let [attrName, encoding] of Object.entries(overlay.attribute_character_encoding)) {
@@ -227,7 +222,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
               sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
+              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
             }
 
             for (let [attrName, cardinality] of Object.entries(overlay.attribute_cardinality)) {
@@ -253,7 +248,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
               sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
+              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
             }
 
             for (let [attrName, conformance] of Object.entries(overlay.attribute_conformance)) {
@@ -289,8 +284,8 @@ export function generateDataEntry(acceptedFiles, setLoading) {
             for (let row = 2; row <= attributeNames.length + 1; row++) {
               sheet1.getCell(shift + row, i + 4 - skipped).value = null;
               sheet1.getCell(shift + row, i + 5 - skipped).value = null;
-              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
-              formatAttr2(sheet1.getCell(shift + row, i + 5 - skipped));
+              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
+              formatAttr(sheet1.getCell(shift + row, i + 5 - skipped));
             }
 
             for (let [attrName, condition] of Object.entries(overlay.attribute_conditions)) {
@@ -328,7 +323,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
               sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
+              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
             }
 
             for (let [attrName, format] of Object.entries(overlay.attribute_formats)) {
@@ -375,7 +370,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
               sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-              formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
+              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
             }
 
 
@@ -417,7 +412,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
               for (let row = 2; row <= attributeNames.length + 1; row++) {
                 sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-                formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
+                formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
               }
 
               for (let [attrName, label] of Object.entries(attr_labels)) {
@@ -464,7 +459,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
               for (let row = 2; row <= attributeNames.length + 1; row++) {
                 sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-                formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
+                formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
               }
 
               for (let [attrName, entries] of Object.entries(attr_labels)) {
@@ -518,7 +513,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
               for (let row = 2; row <= attributeNames.length + 1; row++) {
                 sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-                formatAttr2(sheet1.getCell(shift + row, i + 4 - skipped));
+                formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
               }
 
               for (let [attrName, info] of Object.entries(attr_labels)) {
@@ -624,23 +619,6 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           };
         }
       }
-
-      const shape = sheet1.addShape('text', {
-        x: 1,
-        y: 1,
-        width: 100,
-        height: 50,
-        font: {
-          name: 'Arial',
-          size: 12,
-          bold: true,
-          italic: true,
-        },
-      });
-
-      shape.text = "This workbook has been prefilled with information to help users enter data. The prefilled information comes from a specific schema on my sheet.";
-
-
 
       workbook.xlsx.writeBuffer().then((buffer) => {
         const blob = new Blob([buffer], {
