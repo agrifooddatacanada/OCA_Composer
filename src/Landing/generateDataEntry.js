@@ -32,6 +32,11 @@ export function generateDataEntry(acceptedFiles, setLoading) {
       const workbook = new ExcelJS.Workbook();
 
       // Step 4: Format function
+      function formatFirstPage(cell) {
+        cell.font = { size: 10, bold: true };
+        cell.alignment = { vertical: 'top', wrapText: false };
+      };
+
       function formatHeader1(cell) {
         cell.font = { size: 10, bold: true };
         cell.alignment = { vertical: 'top', wrapText: true };
@@ -87,6 +92,15 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
       const sheet1 = workbook.addWorksheet('Schema Description');
 
+      // first page
+      sheet1.getRow(2).values = ['This is an Excel workbook for data entry.'];
+      formatFirstPage(sheet1.getCell(2, 1));
+      sheet1.getRow(3).values = ['This workbook has been prefilled with information to help users enter data. The prefilled information comes from a specific schema.'];
+      
+
+
+
+      // workbook start
       const shift = 20;
 
       try {
