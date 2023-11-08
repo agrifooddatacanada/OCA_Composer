@@ -98,8 +98,8 @@ function App() {
 
   //Measuring page views
   useEffect(() => { 
-    ReactGA.pageview(location.pathname);  
-  }, [location]);
+    ReactGA.pageview();  
+  }, []);
 
 
   //Create Attributes List from File Data
