@@ -2,6 +2,7 @@
 import ExcelJS from 'exceljs';
 import JSZip from 'jszip';
 
+
 // Custom error-handling function
 function WorkbookError(message) {
   this.name = 'WorkbookError';
@@ -31,10 +32,20 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
       const workbook = new ExcelJS.Workbook();
 
-      // Step 4: Format function
+      // Step 3: Format function
       function formatFirstPage(cell) {
         cell.font = { size: 10, bold: true };
         cell.alignment = { vertical: 'top', wrapText: false };
+      };
+
+      function formatHyperlink(cell) {
+        cell.style = {
+          font: {
+            bold: true,
+            color: { argb: '1395CE' },
+            underline: true
+          }
+        };
       };
 
       function formatHeader1(cell) {
@@ -42,7 +53,6 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         cell.alignment = { vertical: 'top', wrapText: true };
         cell.border = { bottom: { style: 'thin' } };
       };
-
       function formatHeader2(cell) {
         cell.font = { size: 10, bold: true };
         cell.alignment = { vertical: 'top', wrapText: true };
@@ -92,16 +102,73 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
       const sheet1 = workbook.addWorksheet('Schema Description');
 
+
+      let schemaTitle = " ", schemaDescription = null, schemaLanguage = null, schemaClassification = null;
+      const schemaSAID = "unavailable";
+
+      jsonData.forEach((overlay) => {
+        if (overlay.type && overlay.type.includes('/meta/')) {
+
+          schemaDescription = overlay.description;
+          schemaLanguage = overlay.language;
+  
+        };
+
+        if (overlay.type && overlay.type.includes('/capture_base/')) {
+
+          schemaClassification = overlay.classification;
+
+        };
+
+      });
+
       // first page
       sheet1.getRow(2).values = ['This is an Excel workbook for data entry.'];
       formatFirstPage(sheet1.getCell(2, 1));
       sheet1.getRow(3).values = ['This workbook has been prefilled with information to help users enter data. The prefilled information comes from a specific schema.'];
+      sheet1.getCell(5, 2).value = `schema title: ${schemaTitle}`;
+      sheet1.getCell(6, 2).value = `schema description: ${schemaDescription}`;
+      sheet1.getCell(7, 2).value = `schema language: ${schemaLanguage}`;
+      sheet1.getCell(8, 2).value = `schema SAID: ${schemaSAID}`;
+      sheet1.getCell(9, 2).value = `schema classification: ${schemaClassification}`;
+      sheet1.getRow(11).values = ["How to use this workbook: Enter your data in 'Data Entry' while referencing 'Schema Description' for guidance. 'Schema conformant data' contains data that conforms to the schema specification."]
+      sheet1.getCell(13, 2).value = "Schema sheet"; 
+      formatFirstPage(sheet1.getCell(13, 2));
+      sheet1.getCell(13, 3).value = "Description";
+      formatFirstPage(sheet1.getCell(13, 3));
+      sheet1.getCell(14, 2).value = "Schema Description";
+      sheet1.getCell(14, 3).value = "A schema describes a dataset, and 'Schema Description' includes helpful information from the schema. Here users can find relevant information to help with their data entry.";
+      sheet1.getCell(15, 2).value = "Data Entry";
+      sheet1.getCell(15, 3).value = "The' Data Entry' sheet is where a user enters data.";
+      sheet1.getCell(16, 2).value = "Schema conformant data";
+      sheet1.getCell(16, 3).value = "'Schema conformant data', contains the same information from Data Entry but may replace entries with the appropriate codes that are part of the schema the data entry sheet is derived from.";
+      sheet1.getRow(18).values = ["Information about the schemas"];
+
+      const ocaREf_cell = sheet1.getCell(19, 2);
+      ocaREf_cell.value = {
+        text: "A schema describes structures and rules of a dataset. The schema source used to create this Excel Workbook is described in the language of Overlays Capture Architecture (OCA, reference: https://doi.org/10.5281/zenodo.7707367)",
+        hyperlink: "https://doi.org/10.5281/zenodo.7707367",
+      }
+      sheet1.mergeCells('B19:O19');
+      formatHyperlink(ocaREf_cell);
+
+      const semantic_cell = sheet1.getCell(20, 2);
+      semantic_cell.value = {
+        text: "Write your own schema in OCA at https://semanticengine.org",
+        hyperlink: "https://semanticengine.org",
+      }
+      sheet1.mergeCells('B20:E20');
+      formatHyperlink(semantic_cell);
+
+      // sheet1.getCell(20, 2).value = "A schema describes structures and rules of a dataset. The schema source used to create this Excel Workbook is described in the language of Overlays Capture Architecture (OCA, reference: https://doi.org/10.5281/zenodo.7707367)";
+      // sheet1.getCell(21, 2).value = "Write your own schema in OCA at https://semanticengine.org";
+  
+
       
 
 
-
       // workbook start
-      const shift = 20;
+      const shift = 25;
 
       try {
 
@@ -109,7 +176,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         sheet1.getCell(shift + 1, 1).value = 'Attribute Name';
         formatHeader1(sheet1.getCell(shift + 1, 1));
 
-        sheet1.getColumn(2).width = 12.5;
+        sheet1.getColumn(2).width = 24;
         sheet1.getCell(shift + 1, 2).value = 'Attribute Type';
         formatHeader1(sheet1.getCell(shift + 1, 2));
 
@@ -203,13 +270,13 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         if (overlay.type && overlay.type.includes('/character_encoding/')) {
           try {
 
-            sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Character Encoding';
-            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
+            sheet1.getColumn(i + 3 - skipped).width = 15;
+            sheet1.getCell(shift + 1, i + 3 - skipped).value = 'Character Encoding';
+            formatHeader2(sheet1.getCell(shift + 1, i + 3 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
+              sheet1.getCell(shift + row, i + 3 - skipped).value = null;
+              formatAttr(sheet1.getCell(shift + row, i + 3 - skipped));
             }
 
             for (let [attrName, encoding] of Object.entries(overlay.attribute_character_encoding)) {
@@ -219,7 +286,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                 const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
                 const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
                 if (rowIndex) {
-                  sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = encoding;
+                  sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = encoding;
                 }
               }
             }
@@ -230,13 +297,13 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         } else if (overlay.type && overlay.type.includes('/cardinality/')) {
           try {
 
-            sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Cardinality';
-            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
+            sheet1.getColumn(i + 3 - skipped).width = 15;
+            sheet1.getCell(shift + 1, i + 3 - skipped).value = 'Cardinality';
+            formatHeader2(sheet1.getCell(shift + 1, i + 3 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
+              sheet1.getCell(shift + row, i + 3 - skipped).value = null;
+              formatAttr(sheet1.getCell(shift + row, i + 3 - skipped));
             }
 
             for (let [attrName, cardinality] of Object.entries(overlay.attribute_cardinality)) {
@@ -245,7 +312,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
               const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
               const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
               if (rowIndex) {
-                sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = cardinality;
+                sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = cardinality;
               }
             }
 
@@ -256,13 +323,13 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
           try {
 
-            sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Required';
-            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
+            sheet1.getColumn(i + 3 - skipped).width = 15;
+            sheet1.getCell(shift + 1, i + 3 - skipped).value = 'Required';
+            formatHeader2(sheet1.getCell(shift + 1, i + 3 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
+              sheet1.getCell(shift + row, i + 3 - skipped).value = null;
+              formatAttr(sheet1.getCell(shift + row, i + 3 - skipped));
             }
 
             for (let [attrName, conformance] of Object.entries(overlay.attribute_conformance)) {
@@ -277,7 +344,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
               const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
               const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
               if (rowIndex) {
-                sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = conformance;
+                sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = conformance;
               }
             }
 
@@ -287,18 +354,18 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         } else if (overlay.type && overlay.type.includes('/conditional/')) {
           try {
 
-            sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Conditional [Condition]';
-            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
+            sheet1.getColumn(i + 3 - skipped).width = 15;
+            sheet1.getCell(shift + 1, i + 3 - skipped).value = 'Conditional [Condition]';
+            formatHeader2(sheet1.getCell(shift + 1, i + 3 - skipped));
 
             sheet1.getColumn(i + 5 - skipped).width = 15;
             sheet1.getCell(shift + 1, i + 5 - skipped).value = 'Conditional [Dependecies]';
             formatHeader2(sheet1.getCell(shift + 1, i + 5 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
+              sheet1.getCell(shift + row, i + 3 - skipped).value = null;
               sheet1.getCell(shift + row, i + 5 - skipped).value = null;
-              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
+              formatAttr(sheet1.getCell(shift + row, i + 3 - skipped));
               formatAttr(sheet1.getCell(shift + row, i + 5 - skipped));
             }
 
@@ -308,7 +375,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
               const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
               const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
               if (rowIndex) {
-                sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = condition;
+                sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = condition;
               }
             }
 
@@ -331,13 +398,13 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         } else if (overlay.type && overlay.type.includes('/format/')) {
           try {
 
-            sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'OL: Format';
-            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
+            sheet1.getColumn(i + 3 - skipped).width = 15;
+            sheet1.getCell(shift + 1, i + 3 - skipped).value = 'OL: Format';
+            formatHeader2(sheet1.getCell(shift + 1, i + 3 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
+              sheet1.getCell(shift + row, i + 3 - skipped).value = null;
+              formatAttr(sheet1.getCell(shift + row, i + 3 - skipped));
             }
 
             for (let [attrName, format] of Object.entries(overlay.attribute_formats)) {
@@ -347,7 +414,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
               const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
 
               if (rowIndex) {
-                sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = format;
+                sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = format;
               }
 
               const attrTypeFromAttrKeys = attrKeys.map(key => key.split(','));
@@ -378,13 +445,13 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         } else if (overlay.type && overlay.type.includes('/entry_code/')) {
 
           try {
-            sheet1.getColumn(i + 4 - skipped).width = 15;
-            sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Entry Code';
-            formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
+            sheet1.getColumn(i + 3 - skipped).width = 15;
+            sheet1.getCell(shift + 1, i + 3 - skipped).value = 'Entry Code';
+            formatHeader2(sheet1.getCell(shift + 1, i + 3 - skipped));
 
             for (let row = 2; row <= attributeNames.length + 1; row++) {
-              sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-              formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
+              sheet1.getCell(shift + row, i + 3 - skipped).value = null;
+              formatAttr(sheet1.getCell(shift + row, i + 3 - skipped));
             }
 
 
@@ -396,7 +463,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                 const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
                 const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
                 if (rowIndex) {
-                  sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = joinedCodes;
+                  sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = joinedCodes;
                 }
               }
 
@@ -420,13 +487,13 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
           if (o) {
             try {
-              sheet1.getColumn(i + 4 - skipped).width = 17;
-              sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Label';
-              formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
+              sheet1.getColumn(i + 3 - skipped).width = 17;
+              sheet1.getCell(shift + 1, i + 3 - skipped).value = 'Label';
+              formatHeader2(sheet1.getCell(shift + 1, i + 3 - skipped));
 
               for (let row = 2; row <= attributeNames.length + 1; row++) {
-                sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-                formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
+                sheet1.getCell(shift + row, i + 3 - skipped).value = null;
+                formatAttr(sheet1.getCell(shift + row, i + 3 - skipped));
               }
 
               for (let [attrName, label] of Object.entries(attr_labels)) {
@@ -435,7 +502,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                 const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
                 const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
                 if (rowIndex) {
-                  sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = label;
+                  sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = label;
                 }
 
                 const labelValue = Object.values(attr_labels);
@@ -467,13 +534,13 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
           if (o) {
             try {
-              sheet1.getColumn(i + 4 - skipped).width = 20;
-              sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Entry';
-              formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
+              sheet1.getColumn(i + 3 - skipped).width = 20;
+              sheet1.getCell(shift + 1, i + 3 - skipped).value = 'Entry';
+              formatHeader2(sheet1.getCell(shift + 1, i + 3 - skipped));
 
               for (let row = 2; row <= attributeNames.length + 1; row++) {
-                sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-                formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
+                sheet1.getCell(shift + row, i + 3 - skipped).value = null;
+                formatAttr(sheet1.getCell(shift + row, i + 3 - skipped));
               }
 
               for (let [attrName, entries] of Object.entries(attr_labels)) {
@@ -492,7 +559,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
                   const formattedEntryString = formattedEntries.join('|');
                   if (rowIndex) {
-                    sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = formattedEntryString;
+                    sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = formattedEntryString;
                   }
                 }
               }
@@ -521,13 +588,13 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
           if (o) {
             try {
-              sheet1.getColumn(i + 4 - skipped).width = 20;
-              sheet1.getCell(shift + 1, i + 4 - skipped).value = 'Information';
-              formatHeader2(sheet1.getCell(shift + 1, i + 4 - skipped));
+              sheet1.getColumn(i + 3 - skipped).width = 20;
+              sheet1.getCell(shift + 1, i + 3 - skipped).value = 'Information';
+              formatHeader2(sheet1.getCell(shift + 1, i + 3 - skipped));
 
               for (let row = 2; row <= attributeNames.length + 1; row++) {
-                sheet1.getCell(shift + row, i + 4 - skipped).value = null;
-                formatAttr(sheet1.getCell(shift + row, i + 4 - skipped));
+                sheet1.getCell(shift + row, i + 3 - skipped).value = null;
+                formatAttr(sheet1.getCell(shift + row, i + 3 - skipped));
               }
 
               for (let [attrName, info] of Object.entries(attr_labels)) {
@@ -535,7 +602,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                 const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
                 const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
                 if (rowIndex) {
-                  sheet1.getCell(shift + rowIndex, i + 4 - skipped).value = info;
+                  sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = info;
                 }
               }
 
