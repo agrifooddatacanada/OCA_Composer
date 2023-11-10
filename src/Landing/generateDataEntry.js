@@ -155,7 +155,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         text: "A schema describes structures and rules of a dataset. The schema source used to create this Excel Workbook is described in the language of Overlays Capture Architecture (OCA, reference: https://doi.org/10.5281/zenodo.7707367)",
         hyperlink: "https://doi.org/10.5281/zenodo.7707367",
       }
-      sheet1.mergeCells('B19:O19');
+      sheet1.mergeCells('B19:M19');
       formatHyperlink(ocaREf_cell);
 
       const semantic_cell = sheet1.getCell(20, 2);
