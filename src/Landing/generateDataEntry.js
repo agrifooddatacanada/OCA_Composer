@@ -163,7 +163,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         text: "Write your own schema in OCA at https://semanticengine.org",
         hyperlink: "https://semanticengine.org",
       }
-      sheet1.mergeCells('B20:E20');
+      sheet1.mergeCells('B20:D20');
       formatHyperlink(semantic_cell);
  
       // Step 6: start the workbook
