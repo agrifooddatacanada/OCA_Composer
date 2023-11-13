@@ -141,7 +141,7 @@ const AccordionList = () => {
             }}
             onClick={navigateToStartPage}
           />
-          <CustomAnchorLink
+          {/* <CustomAnchorLink
             link='https://www.semanticengine.org/#/develop'
             text='Parse a schema'
             overrideStyle={{
@@ -151,7 +151,7 @@ const AccordionList = () => {
               marginLeft: 0,
               marginTop: 2,
             }}
-          />
+          /> */}
           <Drop
             setFile={setRawFile}
             setLoading={setLoading}
