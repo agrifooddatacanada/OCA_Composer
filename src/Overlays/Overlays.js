@@ -1,36 +1,52 @@
 import { Box, Button, List, ListItemButton, ListItemText } from '@mui/material';
 import { CustomPalette } from '../constants/customPalette';
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { useContext, useState } from 'react';
 import { Context } from '../App';
 import { getListOfSelectedOverlays } from '../constants/getListOfSelectedOverlays';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import DeleteConfirmation from './DeleteConfirmation';
 
-const Overlays = ({
-  pageBack,
-  pageForward,
-}) => {
-  const { setCurrentPage, characterEncodingRowData, setCharacterEncodingRowData, overlay, setOverlay, setSelectedOverlay } = useContext(Context);
+const Overlays = ({ pageBack, pageForward }) => {
+  const {
+    setCurrentPage,
+    characterEncodingRowData,
+    setCharacterEncodingRowData,
+    overlay,
+    setOverlay,
+    setSelectedOverlay,
+  } = useContext(Context);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedItemToDelete, setSelectedItemToDelete] = useState('');
 
   const addToSelected = (item) => {
-    setOverlay(prev => ({ ...prev, [item]: { ...prev[item], selected: true } }));
+    setOverlay((prev) => ({
+      ...prev,
+      [item]: { ...prev[item], selected: true },
+    }));
     setSelectedOverlay(item);
     if (item === 'Character Encoding') {
       setCurrentPage('CharacterEncoding');
-    } else {
+    } else if (item === 'Make selected entries required') {
       setCurrentPage('RequiredEntries');
+    } else {
+      setCurrentPage('FormatRules');
     }
   };
 
   // Convert overlay into a list of features
-  const { selectedFeatures, unselectedFeatures } = getListOfSelectedOverlays(overlay);
+  const { selectedFeatures, unselectedFeatures } =
+    getListOfSelectedOverlays(overlay);
 
   const removeFromSelected = () => {
-    setOverlay(prev => ({ ...prev, [selectedItemToDelete]: { ...prev[selectedItemToDelete], selected: false } }));
+    setOverlay((prev) => ({
+      ...prev,
+      [selectedItemToDelete]: {
+        ...prev[selectedItemToDelete],
+        selected: false,
+      },
+    }));
 
     // Delete attribute from characterEncodingRowData
     const newCharacterEncodingRowData = characterEncodingRowData.map((row) => {
@@ -45,13 +61,20 @@ const Overlays = ({
     setSelectedOverlay(overlayName);
     if (overlayName === 'Character Encoding') {
       setCurrentPage('CharacterEncoding');
-    } else {
+    } else if (overlayName === 'Make selected entries required') {
       setCurrentPage('RequiredEntries');
+    } else {
+      setCurrentPage('FormatRules');
     }
   };
 
   return (
-    <BackNextSkeleton isBack pageBack={pageBack} isForward pageForward={pageForward}>
+    <BackNextSkeleton
+      isBack
+      pageBack={pageBack}
+      isForward
+      pageForward={pageForward}
+    >
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={removeFromSelected}
@@ -60,21 +83,30 @@ const Overlays = ({
       )}
       <Box
         sx={{
-          margin: "2rem",
-          gap: "3rem",
-          display: "flex",
-          flexDirection: "column",
+          margin: '2rem',
+          gap: '3rem',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 1,
+          }}
+        >
           Add schema feature
-          <Box style={{
-            width: '350px',
-            height: '300px',
-            overflowY: 'auto',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-          }}>
+          <Box
+            style={{
+              width: '350px',
+              height: '300px',
+              overflowY: 'auto',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+            }}
+          >
             <List>
               {unselectedFeatures.map((text, _) => (
                 <ListItemButton key={text} onClick={() => addToSelected(text)}>
@@ -85,24 +117,49 @@ const Overlays = ({
             </List>
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 1,
+          }}
+        >
           Added schema feature
-          <Box style={{
-            width: '350px',
-            height: '300px',
-            overflowY: 'auto',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-          }}>
+          <Box
+            style={{
+              width: '350px',
+              height: '300px',
+              overflowY: 'auto',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+            }}
+          >
             <List>
               {selectedFeatures.map((text, index) => (
-                <Box key={index} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                  <ListItemText primary={text} sx={{ display: 'flex', paddingLeft: '1rem' }} />
-                  <DeleteForeverIcon sx={{ cursor: 'pointer', color: CustomPalette.PRIMARY }} onClick={() => {
-                    setSelectedItemToDelete(text);
-                    setShowDeleteConfirmation(true);
-                  }} />
-                  <Button sx={{ color: CustomPalette.PRIMARY }} onClick={() => handleEditOverlay(text)}>
+                <Box
+                  key={index}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  <ListItemText
+                    primary={text}
+                    sx={{ display: 'flex', paddingLeft: '1rem' }}
+                  />
+                  <DeleteForeverIcon
+                    sx={{ cursor: 'pointer', color: CustomPalette.PRIMARY }}
+                    onClick={() => {
+                      setSelectedItemToDelete(text);
+                      setShowDeleteConfirmation(true);
+                    }}
+                  />
+                  <Button
+                    sx={{ color: CustomPalette.PRIMARY }}
+                    onClick={() => handleEditOverlay(text)}
+                  >
                     Edit
                   </Button>
                 </Box>
@@ -112,7 +169,6 @@ const Overlays = ({
         </Box>
       </Box>
     </BackNextSkeleton>
-
   );
 };
 
