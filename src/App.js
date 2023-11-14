@@ -25,7 +25,7 @@ import ReactGA from 'react-ga';
 export const Context = createContext();
 
 //Initializing react-ga with google analytics ID
-ReactGA.initialize('TRACKINGID') //Replace TRACKINGID with actual ID
+ReactGA.initialize('G-NN8Y6766KG') //Replace TRACKINGID with actual ID
 
 
 const items = {
