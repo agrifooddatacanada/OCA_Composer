@@ -1,26 +1,25 @@
-import { Box, Button } from '@mui/material';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { Box } from '@mui/material';
+import React, { useContext, useMemo, useRef, useState } from 'react';
 import { Context } from '../App';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-theme-balham.css';
-import useCharacterEncodingType from './useCharacterEncodingType';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import CellHeader from '../components/CellHeader';
 import { gridStyles, preWrapWordBreak } from '../constants/styles';
-import { CustomPalette } from '../constants/customPalette';
 import { greyCellStyle } from '../constants/styles';
 import TypeTooltip from '../AttributeDetails/TypeTooltip';
+import useFormatTextType from './useFormatTextType';
 
 const FormatRules = () => {
-  const { characterEncodingRowData, setCurrentPage, setSelectedOverlay } =
+  const { attributeRowData, setCurrentPage, setSelectedOverlay, formatRuleRowData } =
     useContext(Context);
-  const [columnDefs, setColumnDefs] = useState([]);
-  const gridRef = useRef();
-  const { handleSave, applyAllFunc, CharacterEncodingTypeRenderer } =
-    useCharacterEncodingType(gridRef);
 
-  useEffect(() => {
-    setColumnDefs([
+  const gridRef = useRef();
+  const { handleSave, FormatRuleTypeRenderer, buttonArray } =
+    useFormatTextType(gridRef);
+
+  const columnDefs = useMemo(() => {
+    return [
       {
         field: 'Attribute',
         editable: false,
@@ -49,14 +48,14 @@ const FormatRules = () => {
         headerComponent: () => (
           <CellHeader headerText='Format Rule' helpText='Placeholder text' />
         ),
-        cellRenderer: CharacterEncodingTypeRenderer,
+        cellRenderer: FormatRuleTypeRenderer,
         cellRendererParams: (params) => ({
           attr: params.data.Attribute,
         }),
         width: 200,
       },
-    ]);
-  }, []);
+    ];
+  }, [formatRuleRowData]);
 
   const handleForward = () => {
     handleSave();
@@ -79,32 +78,28 @@ const FormatRules = () => {
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
-              rowData={characterEncodingRowData}
+              rowData={attributeRowData}
               columnDefs={columnDefs}
               domLayout='autoHeight'
             />
           </Box>
           <Box
-            sx={{
-              width: 70,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
             }}
           >
-            <Box sx={{ height: '2.2rem' }} key={0}></Box>
-            <Button
-              color='navButton'
+            <Box
               sx={{
-                ml: 1,
-                width: 100,
-                height: '1.7rem',
-                color: CustomPalette.PRIMARY,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-around",
               }}
-              onClick={applyAllFunc}
             >
-              Apply All
-            </Button>
+              {buttonArray}
+            </Box>
           </Box>
         </Box>
       </Box>

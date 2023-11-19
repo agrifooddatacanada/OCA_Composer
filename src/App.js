@@ -20,7 +20,8 @@ import Landing from './Landing/Landing';
 import CharacterEncodingHelp from './UsersHelp/Character_encoding_help';
 import RequiredEntryHelp from './UsersHelp/Required_Entry_help';
 import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
-import ReactGA from 'react-ga';
+import ReactGA, { set } from 'react-ga';
+import FormatTextHelp from './UsersHelp/Format_Text_Help';
 
 export const Context = createContext();
 
@@ -54,6 +55,7 @@ function App() {
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
+  console.log('attributesList', attributesList);
   const [currentPage, setCurrentPage] = useState('Landing');
   const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
@@ -75,8 +77,10 @@ function App() {
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
+  console.log('formatRuleRowData', formatRuleRowData);
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
+  console.log('selectedOverlay', selectedOverlay);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -120,6 +124,7 @@ function App() {
   useEffect(() => {
     const newAttributesArray = [];
     const newCharacterEncodingArray = [];
+    const newFormatRuleArray = [];
     if (attributesList.length > 0) {
       const { selectedFeatures } = getListOfSelectedOverlays(overlay);
 
@@ -151,9 +156,22 @@ function App() {
           });
           newCharacterEncodingArray.push(newCharacterEncodingRow);
         }
+
+        const formatRuleObject = formatRuleRowData.find(
+          (obj) => obj.Attribute === item
+        );
+        if (formatRuleObject) {
+          newFormatRuleArray.push(formatRuleObject);
+        } else {
+          newFormatRuleArray.push({
+            Attribute: item,
+            FormatText: '',
+          });
+        }
       });
       setAttributeRowData(newAttributesArray);
       setCharacterEncodingRowData(newCharacterEncodingArray);
+      setFormatRuleRowData(newFormatRuleArray);
     }
   }, [attributesList]);
 
@@ -267,6 +285,8 @@ function App() {
             setIsZip,
             characterEncodingRowData,
             setCharacterEncodingRowData,
+            formatRuleRowData,
+            setFormatRuleRowData,
             overlay,
             setOverlay,
             selectedOverlay,
@@ -336,6 +356,10 @@ function App() {
                 <Route
                   path='/required_entry_help'
                   element={<RequiredEntryHelp />}
+                />
+                <Route
+                  path='/format_text_help'
+                  element={<FormatTextHelp />}
                 />
                 <Route path='*' element={<Navigate to='/' />} />
               </Routes>

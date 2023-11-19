@@ -83,7 +83,7 @@ export default function Header({ currentPage }) {
       case 'FormatRules':
         setHeader('Add Format Rules for Data Entry');
         setToolTipText('Placeholder text');
-        setHelpLink('/format_rules_help');
+        setHelpLink('/format_text_help');
         break;
       default:
         setHeader('');

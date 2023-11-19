@@ -24,6 +24,7 @@ const useCharacterEncodingType = (gridRef) => {
         newTypesObjetRef[item.Attribute] = item[selectedOverlay];
       }
     });
+
     typesObjectRef.current = newTypesObjetRef;
   }, [characterEncodingRowData, selectedOverlay]);
 
