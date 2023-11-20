@@ -43,7 +43,8 @@ const useExportLogic = () => {
     overlay,
     setZipToReadme,
     setIsZip,
-    setRawFile
+    setRawFile,
+    formatRuleRowData
   } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
 
@@ -394,6 +395,13 @@ const useExportLogic = () => {
           };
         }
 
+        // Add format rules here
+        const formatCell = worksheetMain.getCell(index + 4, 7);
+        if (overlay["Add format rule for data"].selected) {
+          if (formatRuleRowData[index].FormatText !== "") {
+            formatCell.value = formatRuleRowData[index].FormatText;
+          }
+        }
 
         const entryCodesCell = worksheetMain.getCell(index + 4, 8);
 
