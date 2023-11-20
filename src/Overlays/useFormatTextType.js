@@ -176,16 +176,16 @@ const useFormatTextType = (gridRef) => {
       selectedOption = formatCodeBinary;
     }
 
-    const [type, setType] = useState(selectedOption[0]);
+    const [type, setType] = useState(typesObjectRef.current[attributeName]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const index = formatRuleRowData.findIndex(
       (item) => item.Attribute === attributeName
     );
 
-    useEffect(() => {
-      setType(typesObjectRef.current[attributeName]);
-    }, [attributeName]);
+    // useEffect(() => {
+    //   setType(typesObjectRef.current[attributeName]);
+    // }, [attributeName]);
 
     const handleChange = (e) => {
       setType(e.target.value);
