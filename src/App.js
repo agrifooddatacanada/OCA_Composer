@@ -1,45 +1,52 @@
-import "./App.css";
-import { Box, ThemeProvider } from "@mui/material";
-import { CustomTheme } from "./constants/theme";
-import { useState } from "react";
-import { useEffect, createContext } from "react";
-import Home from "./Home";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import AddEntryCodesHelp from "./UsersHelp/Add_Entry_Codes_Help";
-import Header from "./Header/Header";
-import Footer from "./Footer/Footer";
-import AttributeDetailsHelp from "./UsersHelp/Attribute_Details_Help";
-import CreatingOCASchemaHelp from "./UsersHelp/Creating_OCA_Schema_Help";
-import LanguageAttributeHelp from "./UsersHelp/Language_Attribute_Help";
-import SchemaMetadataHelp from "./UsersHelp/Schema_Metadata_Help";
-import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
-import ViewSchemaHelp from "./UsersHelp/View_Schema_Help";
-import OverlaysHelp from "./UsersHelp/Overlays_Help";
-import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
-import Landing from "./Landing/Landing";
-import CharacterEncodingHelp from "./UsersHelp/Character_encoding_help";
-import RequiredEntryHelp from "./UsersHelp/Required_Entry_help";
-import GuidanceForDesigningDataSets from "./Landing/HelpDesigningDatasets";
+import './App.css';
+import { Box, ThemeProvider } from '@mui/material';
+import { CustomTheme } from './constants/theme';
+import { useState } from 'react';
+import { useEffect, createContext } from 'react';
+import Home from './Home';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import AddEntryCodesHelp from './UsersHelp/Add_Entry_Codes_Help';
+import Header from './Header/Header';
+import Footer from './Footer/Footer';
+import AttributeDetailsHelp from './UsersHelp/Attribute_Details_Help';
+import CreatingOCASchemaHelp from './UsersHelp/Creating_OCA_Schema_Help';
+import LanguageAttributeHelp from './UsersHelp/Language_Attribute_Help';
+import SchemaMetadataHelp from './UsersHelp/Schema_Metadata_Help';
+import StartSchemaHelp from './UsersHelp/Start_Schema_Help';
+import ViewSchemaHelp from './UsersHelp/View_Schema_Help';
+import OverlaysHelp from './UsersHelp/Overlays_Help';
+import { getListOfSelectedOverlays } from './constants/getListOfSelectedOverlays';
+import Landing from './Landing/Landing';
+import CharacterEncodingHelp from './UsersHelp/Character_encoding_help';
+import RequiredEntryHelp from './UsersHelp/Required_Entry_help';
+import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
 import ReactGA from 'react-ga';
+import FormatTextHelp from './UsersHelp/Format_Text_Help';
 
 export const Context = createContext();
 
-//Initializing react-ga with google analytics ID
-ReactGA.initialize('G-NN8Y6766KG') //Replace TRACKINGID with actual ID
 
+ReactGA.initialize('G-NN8Y6766KG');
 
 const items = {
-  "Character Encoding": { feature: "Character Encoding", selected: false },
-  "Make selected entries required": { feature: "Make selected entries required", selected: false },
+  'Character Encoding': { feature: 'Character Encoding', selected: false },
+  'Make selected entries required': {
+    feature: 'Make selected entries required',
+    selected: false,
+  },
+  'Add format rule for data': {
+    feature: 'Add format rule for data',
+    selected: false,
+  },
 };
 
 export const pagesArray = [
-  "Start",
-  "Metadata",
-  "Details",
-  "LanguageDetails",
-  "Overlays",
-  "View",
+  'Start',
+  'Metadata',
+  'Details',
+  'LanguageDetails',
+  'Overlays',
+  'View',
 ];
 
 function App() {
@@ -48,16 +55,16 @@ function App() {
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
-  const [currentPage, setCurrentPage] = useState("Landing");
+  const [currentPage, setCurrentPage] = useState('Landing');
   const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
-    English: { name: "", description: "" },
+    English: { name: '', description: '' },
   });
   const [divisionGroup, setDivisionGroup] = useState({
     division: '',
     group: '',
   });
-  const [languages, setLanguages] = useState(["English"]);
+  const [languages, setLanguages] = useState(['English']);
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
@@ -68,16 +75,16 @@ function App() {
 
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
+  const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
-
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
     if (currentIndex >= 0 && currentIndex < pagesArray.length - 1) {
       let newPage = pagesArray[(currentIndex += 1)];
       setCurrentPage(newPage);
-      setHistory(prev => [...prev, newPage]);
+      setHistory((prev) => [...prev, newPage]);
     }
   };
 
@@ -86,21 +93,20 @@ function App() {
     if (currentIndex > 0 && currentIndex < pagesArray.length) {
       let newPage = pagesArray[(currentIndex -= 1)];
       setCurrentPage(newPage);
-      setHistory(prev => prev.slice(0, prev.length - 1));
+      setHistory((prev) => prev.slice(0, prev.length - 1));
     }
   };
 
   useEffect(() => {
     if (history[history.length - 1] !== currentPage) {
-      setHistory(prev => [...prev, currentPage]);
+      setHistory((prev) => [...prev, currentPage]);
     }
   }, [currentPage]);
 
   //Measuring page views
-  useEffect(() => { 
-    ReactGA.pageview();  
+  useEffect(() => {
+    ReactGA.pageview();
   }, []);
-
 
   //Create Attributes List from File Data
   useEffect(() => {
@@ -115,6 +121,7 @@ function App() {
   useEffect(() => {
     const newAttributesArray = [];
     const newCharacterEncodingArray = [];
+    const newFormatRuleArray = [];
     if (attributesList.length > 0) {
       const { selectedFeatures } = getListOfSelectedOverlays(overlay);
 
@@ -128,8 +135,8 @@ function App() {
           newAttributesArray.push({
             Attribute: item,
             Flagged: false,
-            Unit: "",
-            Type: "",
+            Unit: '',
+            Type: '',
             List: false,
           });
         }
@@ -141,14 +148,27 @@ function App() {
           newCharacterEncodingArray.push(characterEncodingObject);
         } else {
           const newCharacterEncodingRow = { Attribute: item };
-          selectedFeatures.forEach(feature => {
-            newCharacterEncodingRow[feature] = "";
+          selectedFeatures.forEach((feature) => {
+            newCharacterEncodingRow[feature] = '';
           });
           newCharacterEncodingArray.push(newCharacterEncodingRow);
+        }
+
+        const formatRuleObject = formatRuleRowData.find(
+          (obj) => obj.Attribute === item
+        );
+        if (formatRuleObject) {
+          newFormatRuleArray.push(formatRuleObject);
+        } else {
+          newFormatRuleArray.push({
+            Attribute: item,
+            FormatText: '',
+          });
         }
       });
       setAttributeRowData(newAttributesArray);
       setCharacterEncodingRowData(newCharacterEncodingArray);
+      setFormatRuleRowData(newFormatRuleArray);
     }
   }, [attributesList]);
 
@@ -159,9 +179,9 @@ function App() {
   ) {
     const newEntryCodesArray = [];
 
-    const newEntryCodeRow = { Code: "" };
+    const newEntryCodeRow = { Code: '' };
     languages.forEach((lang) => {
-      newEntryCodeRow[lang] = "";
+      newEntryCodeRow[lang] = '';
     });
 
     if (attributesWithLists.length > 0) {
@@ -208,7 +228,7 @@ function App() {
   //Re-set all fields when fileData updates
   useEffect(() => {
     setSchemaDescription({
-      English: { name: "", description: "" },
+      English: { name: '', description: '' },
     });
 
     setDivisionGroup({
@@ -216,7 +236,7 @@ function App() {
       group: '',
     });
 
-    setLanguages(["English"]);
+    setLanguages(['English']);
     setAttributeRowData([]);
     setEntryCodeRowData([]);
     setAttributesWithLists([]);
@@ -227,7 +247,7 @@ function App() {
   }, [fileData]);
 
   return (
-    <div className="App">
+    <div className='App'>
       <ThemeProvider theme={CustomTheme}>
         <Context.Provider
           value={{
@@ -262,6 +282,8 @@ function App() {
             setIsZip,
             characterEncodingRowData,
             setCharacterEncodingRowData,
+            formatRuleRowData,
+            setFormatRuleRowData,
             overlay,
             setOverlay,
             selectedOverlay,
@@ -270,27 +292,73 @@ function App() {
             setZipToReadme,
           }}
         >
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <Box
+            sx={{
+              minHeight: '100vh',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
             <BrowserRouter>
               <Header currentPage={currentPage} />
               <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/start" element={<Home currentPage={currentPage} setCurrentPage={setCurrentPage} pageForward={pageForward} pageBack={pageBack} showIntroCard={showIntroCard} setShowIntroCard={setShowIntroCard} />} />
-                <Route path="/help_designing_datasets" element={<GuidanceForDesigningDataSets />} />
-                <Route path="/add_entry_codes_help" element={<AddEntryCodesHelp />} />
-                <Route path="/attribute_details_help" element={<AttributeDetailsHelp />} />
-                <Route path="/creating_oca_schema_help" element={<CreatingOCASchemaHelp />} />
-                <Route path="/language_attribute_help" element={<LanguageAttributeHelp />} />
-                <Route path="/schema_metadata_help" element={<SchemaMetadataHelp />} />
-                <Route path="/start_schema_help" element={<StartSchemaHelp />} />
-                <Route path="/view_schema_help" element={<ViewSchemaHelp />} />
-                <Route path="/overlays_help" element={<OverlaysHelp />} />
-                <Route path="/character_encoding_help" element={<CharacterEncodingHelp />} />
-                <Route path="/required_entry_help" element={<RequiredEntryHelp />} />
+                <Route path='/' element={<Landing />} />
                 <Route
-                  path="*"
-                  element={<Navigate to="/" />}
+                  path='/start'
+                  element={
+                    <Home
+                      currentPage={currentPage}
+                      setCurrentPage={setCurrentPage}
+                      pageForward={pageForward}
+                      pageBack={pageBack}
+                      showIntroCard={showIntroCard}
+                      setShowIntroCard={setShowIntroCard}
+                    />
+                  }
                 />
+                <Route
+                  path='/help_designing_datasets'
+                  element={<GuidanceForDesigningDataSets />}
+                />
+                <Route
+                  path='/add_entry_codes_help'
+                  element={<AddEntryCodesHelp />}
+                />
+                <Route
+                  path='/attribute_details_help'
+                  element={<AttributeDetailsHelp />}
+                />
+                <Route
+                  path='/creating_oca_schema_help'
+                  element={<CreatingOCASchemaHelp />}
+                />
+                <Route
+                  path='/language_attribute_help'
+                  element={<LanguageAttributeHelp />}
+                />
+                <Route
+                  path='/schema_metadata_help'
+                  element={<SchemaMetadataHelp />}
+                />
+                <Route
+                  path='/start_schema_help'
+                  element={<StartSchemaHelp />}
+                />
+                <Route path='/view_schema_help' element={<ViewSchemaHelp />} />
+                <Route path='/overlays_help' element={<OverlaysHelp />} />
+                <Route
+                  path='/character_encoding_help'
+                  element={<CharacterEncodingHelp />}
+                />
+                <Route
+                  path='/required_entry_help'
+                  element={<RequiredEntryHelp />}
+                />
+                <Route
+                  path='/format_text_help'
+                  element={<FormatTextHelp />}
+                />
+                <Route path='*' element={<Navigate to='/' />} />
               </Routes>
             </BrowserRouter>
             <Footer currentPage={currentPage} />
