@@ -20,7 +20,7 @@ import Landing from './Landing/Landing';
 import CharacterEncodingHelp from './UsersHelp/Character_encoding_help';
 import RequiredEntryHelp from './UsersHelp/Required_Entry_help';
 import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
-import ReactGA, { set } from 'react-ga';
+import ReactGA from 'react-ga';
 import FormatTextHelp from './UsersHelp/Format_Text_Help';
 
 export const Context = createContext();
@@ -55,7 +55,6 @@ function App() {
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
-  console.log('attributesList', attributesList);
   const [currentPage, setCurrentPage] = useState('Landing');
   const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
@@ -77,10 +76,8 @@ function App() {
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
-  console.log('formatRuleRowData', formatRuleRowData);
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
-  console.log('selectedOverlay', selectedOverlay);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);

@@ -3,7 +3,7 @@ import { Context } from "../App";
 import { Box, MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+// import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { CustomPalette } from "../constants/customPalette";
 
 const formatCodeText = [
@@ -100,15 +100,11 @@ const useFormatTextType = (gridRef) => {
   }, [attributesList, formatRuleRowData]);
 
   useEffect(() => {
-    console.log('firsttttt');
-    console.log('typeObjectReference', typesObjectRef.current);
     if (formatRuleRowData.length > 0) {
       const newButtonArray = [];
       boxRefs.current = [];
       newButtonArray.push(<Box sx={{ height: "2.2rem" }} key={0}></Box>);
-      console.log('formatRuleRowData', formatRuleRowData);
       formatRuleRowData.forEach((item, index) => {
-        console.log('item', item);
         const ref = createRef();
         boxRefs.current.push(ref);
         newButtonArray.push(
@@ -149,24 +145,22 @@ const useFormatTextType = (gridRef) => {
   }, [formatRuleRowData]);
 
   const handleDeleteRow = (index) => {
-    console.log('index', index);
     const newFormatRuleRowData = [...formatRuleRowData];
-    console.log('newFormatRuleRowData', newFormatRuleRowData);
     newFormatRuleRowData[index].FormatText = '';
     setFormatRuleRowData(newFormatRuleRowData);
   };
 
   const handleSave = () => {
     gridRef.current.api.stopEditing();
-    const attributeWithCharacterEncoding = typesObjectRef.current;
-    const newFormatTextRowData = [];
-    formatRuleRowData.forEach((item) => {
-      newFormatTextRowData.push({
-        ...item,
-        FormatText: attributeWithCharacterEncoding[item.Attribute] || '',
-      });
-    });
-    setFormatRuleRowData(newFormatTextRowData);
+    // const attributeWithCharacterEncoding = typesObjectRef.current;
+    // const newFormatTextRowData = [];
+    // formatRuleRowData.forEach((item) => {
+    //   newFormatTextRowData.push({
+    //     ...item,
+    //     FormatText: attributeWithCharacterEncoding[item.Attribute] || '',
+    //   });
+    // });
+    // setFormatRuleRowData(newFormatTextRowData);
   };
 
 
