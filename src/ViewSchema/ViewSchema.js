@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function ViewSchema({ pageBack }) {
   const navigate = useNavigate();
-  const { languages, attributeRowData, lanAttributeRowData, isZip, setIsZip, characterEncodingRowData, setCurrentPage, history, setHistory } = useContext(Context);
+  const { languages, attributeRowData, lanAttributeRowData, isZip, setIsZip, characterEncodingRowData, setCurrentPage, history, setHistory, formatRuleRowData } = useContext(Context);
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
@@ -165,6 +165,11 @@ export default function ViewSchema({ pageBack }) {
       const attrWithOverlay = characterEncodingRowData.find((row) => row.Attribute === attributeName);
       if (attrWithOverlay) {
         Object.assign(dataObject, attrWithOverlay);
+      }
+
+      const attrWithFormatRule = formatRuleRowData.find((row) => row.Attribute === attributeName);
+      if (attrWithFormatRule['FormatText'] !== '') {
+        dataObject['Add format rule for data'] = attrWithFormatRule['FormatText'];
       }
 
       newDisplayArray.push(dataObject);

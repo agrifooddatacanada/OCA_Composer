@@ -95,7 +95,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
           headerComponent: () => {
             return (
               <span style={{ margin: "auto" }}>
-                {feature === 'Make selected entries required' ? 'Required Entry' : feature}
+                {feature === 'Make selected entries required' ? 'Required Entry' : feature === 'Add format rule for data' ? "Format Rules" : feature}
               </span>
             );
           },
