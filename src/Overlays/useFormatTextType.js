@@ -190,7 +190,6 @@ const useFormatTextType = (gridRef) => {
     const handleChange = (e) => {
       setType(e.target.value);
       typesObjectRef.current = { ...typesObjectRef.current, [attributeName]: e.target.value };
-      // refresh state -> refaxtor this
       const newFormatTextRowData = [];
       formatRuleRowData.forEach((item) => {
         newFormatTextRowData.push({
