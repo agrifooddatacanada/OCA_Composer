@@ -25,8 +25,8 @@ import FormatTextHelp from './UsersHelp/Format_Text_Help';
 
 export const Context = createContext();
 
-//Initializing react-ga with google analytics ID
-ReactGA.initialize('TRACKINGID'); //Replace TRACKINGID with actual ID
+
+ReactGA.initialize('G-NN8Y6766KG');
 
 const items = {
   'Character Encoding': { feature: 'Character Encoding', selected: false },
