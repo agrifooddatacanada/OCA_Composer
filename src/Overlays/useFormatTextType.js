@@ -166,14 +166,16 @@ const useFormatTextType = (gridRef) => {
 
   const FormatRuleTypeRenderer = (props) => {
     const attributeName = props.attr;
+    const attributeType = props.data.Type;
     let selectedOption = formatCodeText;
-    if (attributeName.includes("Date")) {
+    if (attributeType.includes("Date")) {
       selectedOption = formatCodeDate;
-    } else if (attributeName.includes("Numeric")) {
+    } else if (attributeType.includes("Numeric")) {
       selectedOption = formatCodeNumeric;
-    } else if (attributeName.includes("Binary")) {
+    } else if (attributeType.includes("Binary")) {
       selectedOption = formatCodeBinary;
     }
+
     const [type, setType] = useState(selectedOption[0]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
