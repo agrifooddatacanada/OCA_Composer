@@ -167,13 +167,15 @@ const useFormatTextType = (gridRef) => {
   const FormatRuleTypeRenderer = (props) => {
     const attributeName = props.attr;
     const attributeType = props.data.Type;
-    let selectedOption = formatCodeText;
+    let selectedOption = [];
     if (attributeType.includes("Date")) {
       selectedOption = formatCodeDate;
     } else if (attributeType.includes("Numeric")) {
       selectedOption = formatCodeNumeric;
     } else if (attributeType.includes("Binary")) {
       selectedOption = formatCodeBinary;
+    } else if (attributeType.includes("Text")) {
+      selectedOption = formatCodeText;
     }
 
     const [type, setType] = useState(typesObjectRef.current[attributeName]);
@@ -224,16 +226,22 @@ const useFormatTextType = (gridRef) => {
     ));
 
     return (
-      <DropdownMenuList
-        handleKeyDown={handleKeyDown}
-        type={type}
-        handleChange={handleChange}
-        dropRefs={dropRefs.current[index]}
-        handleClick={handleClick}
-        isDropdownOpen={isDropdownOpen}
-        setIsDropdownOpen={setIsDropdownOpen}
-        typesDisplay={typesDisplay}
-      />
+      <>
+        {
+          selectedOption.length > 0 ?
+            <DropdownMenuList
+              handleKeyDown={handleKeyDown}
+              type={type}
+              handleChange={handleChange}
+              dropRefs={dropRefs.current[index]}
+              handleClick={handleClick}
+              isDropdownOpen={isDropdownOpen}
+              setIsDropdownOpen={setIsDropdownOpen}
+              typesDisplay={typesDisplay}
+            /> :
+            <></>
+        }
+      </>
     );
   };
 
