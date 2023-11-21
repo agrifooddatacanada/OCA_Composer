@@ -22,6 +22,22 @@ const formatCodeText = [
   "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}"
 ];
 
+const formatCodeTextDescription = {
+  "": "",
+  "^[A-Z]*$": "Entries of any length with only capital letters",
+  "^[A-Za-z]{1,50}$": "Capital or lower case letters only, at least 1 character, and 50 characters max",
+  "^[A-Za-z]{0,50}$": "Capital or lower case letters only, 50 characters max",
+  "^.{0,50}$": "Short text, 50 characters max",
+  "^.{0,250}$": "Short text, 250 characters max",
+  "^.{0,800}$": "long text, 800 characters max",
+  "^.{0,4000}$": "long text, 4000 characters max",
+  "^[A-Z][0-9][A-Z]\\s[0-9][A-Z][0-9]$": "Canadian postal codes (A1A 1A1)",
+  "^\\d{5,6}(?:[-\\s]\\d{4})?$": "Zip code",
+  "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+": "Email address",
+  "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}": "URL",
+  "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}": "Phone number"
+};
+
 const formatCodeNumeric = [
   "^[-+]?\\d*\\.?\\d+$",
   "^(0?(\\.\\d+)?|1(\\.0+)?)$",
@@ -29,6 +45,14 @@ const formatCodeNumeric = [
   "^-?[0-9]+$",
   "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$"
 ];
+
+const formatCodeNumericDescription = {
+  "^[-+]?\\d*\\.?\\d+$": "any integer or decimal number, may begin with + or -",
+  "^(0?(\\.\\d+)?|1(\\.0+)?)$": "decimal numbers between 0 and 1, inclusive",
+  "^[0-9]*[1-9][0-9]*$": "positive integers",
+  "^-?[0-9]+$": "any integer",
+  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$": "any number between 0 and 100, inclusive"
+};
 
 const formatCodeDate = [
   "YYYY-MM-DD",
@@ -42,6 +66,16 @@ const formatCodeDate = [
   "YYYY-DDD",
   "YYYYDDD"
 ];
+
+const formatCodeDateDescription = {
+  "YYYY-MM-DD": "year month day",
+  "YYYYMMDD": "year month day",
+  "YYYY-MM": "year month",
+  "YYYY-Www": "year week (e.g. W01)",
+  "YYYYWww": "year week (e.g. W01)",
+  "YYYY-DDD": "Ordinal date (day number from beginning of the year)",
+  "YYYYDDD": "Ordinal date (day number from beginning of the year)"
+};
 
 const formatCodeBinary = [
   "application/epub+zip",
@@ -76,6 +110,40 @@ const formatCodeBinary = [
   "video/mp4",
   "video/raw"
 ];
+
+const formatCodeBinaryDescription = {
+  "application/epub+zip": "Electronic publication (EPUB)",
+  "application/gzip": "GZip Compressed Archive",
+  "application/json": "JSON format (.json)",
+  "application/ld+json": "JSON-LD format",
+  "application/msword": "Microsoft word",
+  "application/octet-stream": ".bin data",
+  "application/pdf": "Adobe Portable Document Format (PDF)",
+  "application/vnd.ms-excel": "Microsoft Excel (.xls)",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "Microsoft Excel (OpenXML) (.xlsx)",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "Microsoft Word (OpenXML)",
+  "application/x-csh": "C-shell script",
+  "application/xhtml+xml": "HXTML (.xhtml)",
+  "application/zip": "ZIP archive (.zip)",
+  "audio/aac": "AAC audio (.aac)",
+  "audio/mpeg": "mpeg audio (.mp3)",
+  "audio/ogg": "ogg audio",
+  "audio/wav": "Waveform audio format (.wav)",
+  "image/bmp": "Windows Bitmap graphics",
+  "image/gif": "Graphics Interchange Format (GIF)",
+  "image/jpg": "JPEG images",
+  "image/png": "Portable Network Graphics images (.png)",
+  "image/svg+xml": "Scalable Vector Graphics (SVG)",
+  "image/tiff": "Tagged Image File Format (TIFF)",
+  "text/calendar": "iCalendar format",
+  "text/csv": "comma-separated values (CSV)",
+  "text/javascript": "JavaScript (.js)",
+  "text/markdown": "markdown text",
+  "text/plain": "Plain text (.txt)",
+  "text/xml": "Microsoft Word (OpenXML) (.docx)",
+  "video/mp4": "MP4 video",
+  "video/raw": "raw video"
+};
 
 const useFormatTextType = (gridRef) => {
   const { attributesList, formatRuleRowData, setFormatRuleRowData } = useContext(Context);
@@ -190,6 +258,7 @@ const useFormatTextType = (gridRef) => {
     // }, [attributeName]);
 
     const handleChange = (e) => {
+      console.log('e.target.value', e.target.value);
       setType(e.target.value);
       typesObjectRef.current = { ...typesObjectRef.current, [attributeName]: e.target.value };
       const newFormatTextRowData = [];
@@ -215,15 +284,19 @@ const useFormatTextType = (gridRef) => {
       }
     };
 
-    const typesDisplay = selectedOption.map((value, index) => (
-      <MenuItem
-        key={index + "_" + value}
-        value={value}
-        sx={{ border: "none", height: "2rem", fontSize: "small" }}
-      >
-        {value}
-      </MenuItem>
-    ));
+    const typesDisplay = selectedOption.map((value, index) => {
+      const description = attributeType.includes("Date") ? formatCodeDateDescription[value] : attributeType.includes("Numeric") ? formatCodeNumericDescription[value] : attributeType.includes("Binary") ? formatCodeBinaryDescription[value] : attributeType.includes("Text") ? formatCodeTextDescription[value] : "";
+
+      return (
+        <MenuItem
+          key={index + "_" + value}
+          value={value}
+          sx={{ border: "none", height: "2rem", fontSize: "small" }}
+        >
+          <strong>{value}</strong> {description && <span> : {description}</span>}
+        </MenuItem>
+      );
+    });
 
     return (
       <>

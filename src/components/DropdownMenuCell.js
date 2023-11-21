@@ -41,6 +41,7 @@ export const DropdownMenuList = ({
           open={isDropdownOpen}
           onClose={() => setIsDropdownOpen(false)}
           onOpen={() => setIsDropdownOpen(true)}
+          renderValue={(value) => value}
         >
           {typesDisplay}
         </Select>
