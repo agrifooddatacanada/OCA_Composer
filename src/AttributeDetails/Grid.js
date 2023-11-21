@@ -252,13 +252,13 @@ export default function Grid({
       "Boolean",
       "DateTime",
       "Numeric",
-      "Reference",
+      // "Reference",
       "Text",
       "Array[Binary]",
       "Array[Boolean]",
       "Array[DateTime]",
       "Array[Numeric]",
-      "Array[Reference]",
+      // "Array[Reference]",
       "Array[Text]",
     ];
 

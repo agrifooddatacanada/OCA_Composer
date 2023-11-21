@@ -358,7 +358,8 @@ const useExportLogic = () => {
           type: "list",
           allowBlank: true,
           formulae: [
-            '"Binary,Boolean,DateTime,Numeric,Reference,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Reference],Array[Text]"',
+            // '"Binary,Boolean,DateTime,Numeric,Reference,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Reference],Array[Text]"',
+            '"Binary,Boolean,DateTime,Numeric,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Text]"',
           ],
         };
 
@@ -441,13 +442,13 @@ const useExportLogic = () => {
           worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
         }
 
-        const referenceCell = worksheetMain.getCell(index + 4, 11);
-        if (
-          typeCell.value === "Reference" ||
-          typeCell.value === "Array[Reference]"
-        ) {
-          referenceCell.value = "Reference SAI";
-        }
+        // const referenceCell = worksheetMain.getCell(index + 4, 11);
+        // if (
+        //   typeCell.value === "Reference" ||
+        //   typeCell.value === "Array[Reference]"
+        // ) {
+        //   referenceCell.value = "Reference SAI";
+        // }
       });
       worksheetMain.columns = allColumns;
     } catch (error) {
