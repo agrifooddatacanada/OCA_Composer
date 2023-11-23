@@ -258,7 +258,6 @@ const useFormatTextType = (gridRef) => {
     // }, [attributeName]);
 
     const handleChange = (e) => {
-      console.log('e.target.value', e.target.value);
       setType(e.target.value);
       typesObjectRef.current = { ...typesObjectRef.current, [attributeName]: e.target.value };
       const newFormatTextRowData = [];

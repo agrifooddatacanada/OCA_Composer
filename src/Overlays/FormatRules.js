@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Link } from '@mui/material';
 import React, { useContext, useMemo, useRef, useState } from 'react';
 import { Context } from '../App';
 import { AgGridReact } from 'ag-grid-react';
@@ -101,6 +101,19 @@ const FormatRules = () => {
               {buttonArray}
             </Box>
           </Box>
+        </Box>
+        <Box>
+          Email {' '}
+          <Link
+            to='#'
+            onClick={(e) => {
+              window.location.href = `mailto:adc@uoguelph.ca`;
+              e.preventDefault();
+            }}
+          >
+            adc@uoguelph.ca
+          </Link>{' '}
+          to request a new format rule to be added to the list.
         </Box>
       </Box>
     </BackNextSkeleton>

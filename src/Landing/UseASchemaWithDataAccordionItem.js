@@ -4,8 +4,21 @@ import { CustomPalette } from '../constants/customPalette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionItemWrapper from './AccordionItemWrapper';
 import CustomAnchorLink from '../components/CustomAnchorLink';
+import Drop from '../StartSchema/Drop';
+import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
+import { generateDataEntry } from './generateDataEntry';
 
 const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) => {
+  const {
+    rawFile,
+    setRawFile,
+    setLoading,
+    loading,
+    dropDisabled,
+    dropMessage,
+    setDropMessage,
+  } = useHandleAllDrop();
+
   return (
     <AccordionItemWrapper>
       <AccordionSummary
@@ -21,21 +34,29 @@ const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) =
           With your machine-readable .zip schema bundle you can begin to use it in your workflows.
         </Typography>
         <Typography sx={{ marginTop: '20px' }}>
-          {/* For example, using a schema as a template, generate an Excel sheet prepared for data entry. Or  */}
-          If you have a  python workflow you can incorporate data validation using data rules of the schema.
+          For example, using a schema as a template, generate an Excel sheet prepared for data entry. Or if you have a  python workflow you can incorporate data validation using data rules of the schema.
         </Typography>
 
-        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          {/* <Button
+        <Drop
+          setFile={setRawFile}
+          setLoading={setLoading}
+          loading={loading}
+          dropDisabled={dropDisabled}
+          dropMessage={dropMessage}
+          setDropMessage={setDropMessage}
+          version={1}
+        />
+
+        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
+          <Button
             variant="contained"
             color="navButton"
-            onClick={}
+            onClick={() => generateDataEntry(rawFile, setLoading)}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '20px', marginBottom: '20px' }}
-            disabled={true}
-          // disabled={disableButtonCheck}
+            disabled={disableButtonCheck}
           >
             Generate Data Entry Excel
-          </Button> */}
+          </Button>
           <CustomAnchorLink link='https://github.com/agrifooddatacanada/OCA_data_set_validator' text="Validate data against a schema" overrideStyle={{ marginTop: 2 }} />
         </Box>
       </AccordionDetails>
