@@ -380,20 +380,9 @@ const useExportLogic = () => {
           formulae: ['"Y"'],
         };
 
-        // Default certain attributes to utf-8 or base64
         const encodingCell = worksheetMain.getCell(index + 4, 6);
-        if (characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
+        if (overlay["Character Encoding"].selected && characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
           encodingCell.value = characterEncodingRowData[index]['Character Encoding'];
-        } else {
-          encodingCell.value = {
-            formula: `IF(OR(C${index + 4}="Binary", C${index + 4
-              }="Array[Binary]"), "base64", "utf-8")`,
-
-            result:
-              typeCell.value === "Binary" || typeCell.value === "Array[Binary]"
-                ? "base64"
-                : "utf-8",
-          };
         }
 
         // Add format rules here
@@ -575,25 +564,25 @@ const useExportLogic = () => {
     ////////CREATE WORKBOOK AND EXPORT
     const workbookName = `OCA_Template_${new Date().toISOString()}.xlsx`;
 
-    // try {
-    //   workbook.xlsx.writeBuffer().then((buffer) => {
-    //     const blob = new Blob([buffer], {
-    //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    //     });
-    //     const url = window.URL.createObjectURL(blob);
-    //     const a = document.createElement("a");
-    //     a.href = url;
-    //     a.download = workbookName;
-    //     a.click();
-    //   });
-    //   setShowLink(true);
-    //   setExportDisabled(true);
-    //   setTimeout(() => {
-    //     setExportDisabled(false);
-    //   }, 3000);
-    // } catch (error) {
-    //   console.error(error);
-    // }
+    try {
+      workbook.xlsx.writeBuffer().then((buffer) => {
+        const blob = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = workbookName;
+        a.click();
+      });
+      // setShowLink(true);
+      setExportDisabled(true);
+      setTimeout(() => {
+        setExportDisabled(false);
+      }, 3000);
+    } catch (error) {
+      console.error(error);
+    }
 
     return { workbook, workbookName };
   };
@@ -678,17 +667,17 @@ const useExportLogic = () => {
   const handleExport = async (onlyReadme = false) => {
     setExportDisabled(true);
     const { workbook, workbookName } = handleOCAExport(OCADataArray);
-    const fileName = await sendFileToAPI(workbook, workbookName);
-    const downloadUrl = `${zipUrl}/${fileName}`;
-    const response = await fetch(downloadUrl);
-    if (response.ok) {
-      if (onlyReadme) {
-        downloadReadMe(response);
-      } else {
-        downloadReadMe(response);
-        downloadZip(downloadUrl, fileName);
-      }
-    }
+    // const fileName = await sendFileToAPI(workbook, workbookName);
+    // const downloadUrl = `${zipUrl}/${fileName}`;
+    // const response = await fetch(downloadUrl);
+    // if (response.ok) {
+    //   if (onlyReadme) {
+    //     downloadReadMe(response);
+    //   } else {
+    //     downloadReadMe(response);
+    //     downloadZip(downloadUrl, fileName);
+    //   }
+    // }
     setTimeout(() => {
       setExportDisabled(false);
     }, 3000);
