@@ -9,14 +9,41 @@ import { gridStyles, preWrapWordBreak } from '../constants/styles';
 import { greyCellStyle } from '../constants/styles';
 import TypeTooltip from '../AttributeDetails/TypeTooltip';
 import useFormatTextType from './useFormatTextType';
+import DeleteConfirmation from './DeleteConfirmation';
 
 const FormatRules = () => {
-  const { attributeRowData, setCurrentPage, setSelectedOverlay, formatRuleRowData } =
-    useContext(Context);
-
+  const {
+    attributeRowData,
+    setCurrentPage,
+    setSelectedOverlay,
+    formatRuleRowData,
+    characterEncodingRowData,
+    setCharacterEncodingRowData,
+    setOverlay,
+  } = useContext(Context);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const gridRef = useRef();
   const { handleSave, FormatRuleTypeRenderer, buttonArray } =
     useFormatTextType(gridRef);
+
+  const handleDeleteCurrentOverlay = () => {
+    setOverlay((prev) => ({
+      ...prev,
+      "Add format rule for data": {
+        ...prev["Add format rule for data"],
+        selected: false,
+      },
+    }));
+
+    // Delete attribute from characterEncodingRowData
+    const newCharacterEncodingRowData = characterEncodingRowData.map((row) => {
+      delete row['Add format rule for data'];
+      return row;
+    });
+    setCharacterEncodingRowData(newCharacterEncodingRowData);
+    setSelectedOverlay('');
+    setCurrentPage('Overlays');
+  };
 
   const columnDefs = useMemo(() => {
     return [
@@ -64,7 +91,13 @@ const FormatRules = () => {
   };
 
   return (
-    <BackNextSkeleton isForward pageForward={handleForward}>
+    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)}>
+      {showDeleteConfirmation && (
+        <DeleteConfirmation
+          removeFromSelected={handleDeleteCurrentOverlay}
+          closeModal={() => setShowDeleteConfirmation(false)}
+        />
+      )}
       <Box
         sx={{
           margin: '2rem',
