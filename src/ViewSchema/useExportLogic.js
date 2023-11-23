@@ -564,25 +564,25 @@ const useExportLogic = () => {
     ////////CREATE WORKBOOK AND EXPORT
     const workbookName = `OCA_Template_${new Date().toISOString()}.xlsx`;
 
-    try {
-      workbook.xlsx.writeBuffer().then((buffer) => {
-        const blob = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = workbookName;
-        a.click();
-      });
-      // setShowLink(true);
-      setExportDisabled(true);
-      setTimeout(() => {
-        setExportDisabled(false);
-      }, 3000);
-    } catch (error) {
-      console.error(error);
-    }
+    // try {
+    //   workbook.xlsx.writeBuffer().then((buffer) => {
+    //     const blob = new Blob([buffer], {
+    //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    //     });
+    //     const url = window.URL.createObjectURL(blob);
+    //     const a = document.createElement("a");
+    //     a.href = url;
+    //     a.download = workbookName;
+    //     a.click();
+    //   });
+    //   // setShowLink(true);
+    //   setExportDisabled(true);
+    //   setTimeout(() => {
+    //     setExportDisabled(false);
+    //   }, 3000);
+    // } catch (error) {
+    //   console.error(error);
+    // }
 
     return { workbook, workbookName };
   };
@@ -667,17 +667,17 @@ const useExportLogic = () => {
   const handleExport = async (onlyReadme = false) => {
     setExportDisabled(true);
     const { workbook, workbookName } = handleOCAExport(OCADataArray);
-    // const fileName = await sendFileToAPI(workbook, workbookName);
-    // const downloadUrl = `${zipUrl}/${fileName}`;
-    // const response = await fetch(downloadUrl);
-    // if (response.ok) {
-    //   if (onlyReadme) {
-    //     downloadReadMe(response);
-    //   } else {
-    //     downloadReadMe(response);
-    //     downloadZip(downloadUrl, fileName);
-    //   }
-    // }
+    const fileName = await sendFileToAPI(workbook, workbookName);
+    const downloadUrl = `${zipUrl}/${fileName}`;
+    const response = await fetch(downloadUrl);
+    if (response.ok) {
+      if (onlyReadme) {
+        downloadReadMe(response);
+      } else {
+        downloadReadMe(response);
+        downloadZip(downloadUrl, fileName);
+      }
+    }
     setTimeout(() => {
       setExportDisabled(false);
     }, 3000);
