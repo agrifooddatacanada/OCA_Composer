@@ -51,6 +51,7 @@ export const pagesArray = [
 
 function App() {
   const [isZip, setIsZip] = useState(false);
+  const [isZipEdited, setIsZipEdited] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
@@ -290,6 +291,8 @@ function App() {
             setSelectedOverlay,
             zipToReadme,
             setZipToReadme,
+            isZipEdited,
+            setIsZipEdited,
           }}
         >
           <Box

@@ -5,9 +5,18 @@ import { Box } from '@mui/material';
 import { flexCenter, gridStyles, preWrapWordBreak } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
 import CellHeader from '../components/CellHeader';
+import DeleteConfirmation from './DeleteConfirmation';
 
 const RequiredEntries = () => {
-  const { attributesList, characterEncodingRowData, setCurrentPage, setSelectedOverlay } = useContext(Context);
+  const {
+    attributesList,
+    characterEncodingRowData,
+    setCurrentPage,
+    setSelectedOverlay,
+    setCharacterEncodingRowData,
+    setOverlay,
+  } = useContext(Context);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
   const gridRef = useRef();
 
@@ -88,8 +97,33 @@ const RequiredEntries = () => {
     setCurrentPage('Overlays');
   };
 
+  const handleDeleteCurrentOverlay = () => {
+    setOverlay((prev) => ({
+      ...prev,
+      "Make selected entries required": {
+        ...prev["Make selected entries required"],
+        selected: false,
+      },
+    }));
+
+    // Delete attribute from characterEncodingRowData
+    const newCharacterEncodingRowData = characterEncodingRowData.map((row) => {
+      delete row['Make selected entries required'];
+      return row;
+    });
+    setCharacterEncodingRowData(newCharacterEncodingRowData);
+    setSelectedOverlay('');
+    setCurrentPage('Overlays');
+  };
+
   return (
-    <BackNextSkeleton isForward pageForward={handleForward}>
+    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
+      {showDeleteConfirmation && (
+        <DeleteConfirmation
+          removeFromSelected={handleDeleteCurrentOverlay}
+          closeModal={() => setShowDeleteConfirmation(false)}
+        />
+      )}
       <Box
         sx={{
           margin: "2rem",
