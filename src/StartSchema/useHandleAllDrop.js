@@ -333,7 +333,6 @@ const useHandleAllDrop = () => {
         const root = metadataJson.root;
         allJSONFiles.push(loadMetadataFile);
 
-
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
           const content = await zip.files[file + '.json'].async("text");
@@ -400,6 +399,103 @@ const useHandleAllDrop = () => {
     }
   }, []);
 
+  const handleJsonDrop = useCallback((acceptedFiles) => {
+    try {
+      setLoading(true);
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        const jsonFile = JSON.parse(e.target.result);
+
+        const languageList = [];
+        const informationList = [];
+        const labelList = [];
+        const metaList = [];
+        const entryList = [];
+        const allJSONFiles = [];
+        let loadRoot = undefined;
+        let entryCodeSummary = {};
+        let conformance = undefined;
+        let characterEncoding = undefined;
+        let loadUnits = undefined;
+
+
+        // load up metadata file in OCA bundle
+        if (jsonFile?.overlays?.meta) {
+          metaList.push(...jsonFile.overlays.meta);
+          languageList.push(...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2)));
+
+          // ONLY for README
+          const readmeMeta = jsonFile.overlays.meta.map((meta) => {
+            return JSON.stringify(meta);
+          });
+          allJSONFiles.push(...readmeMeta);
+        }
+
+        if (jsonFile?.overlays?.information) {
+          informationList.push(...jsonFile.overlays.information);
+
+          // ONLY for README
+          const readmeInformation = jsonFile.overlays.information.map((information) => {
+            return JSON.stringify(information);
+          });
+          allJSONFiles.push(...readmeInformation);
+        }
+
+        if (jsonFile?.overlays?.label) {
+          labelList.push(...jsonFile.overlays.label);
+
+          // ONLY for README
+          const readmeLabel = jsonFile.overlays.label.map((label) => {
+            return JSON.stringify(label);
+          });
+          allJSONFiles.push(...readmeLabel);
+        }
+
+        if (jsonFile?.['capture_base']) {
+          loadRoot = { ...jsonFile['capture_base'] };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(loadRoot));
+        }
+
+        if (jsonFile?.overlays?.unit) {
+          loadUnits = { ...jsonFile.overlays.unit };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(loadUnits));
+        }
+
+        if (jsonFile?.overlays?.characterEncoding) {
+          characterEncoding = { ...jsonFile.overlays.characterEncoding };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(characterEncoding));
+        }
+
+        processLanguages(languageList);
+        processMetadata(metaList);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding);
+        setZipToReadme(allJSONFiles);
+      };
+
+      reader.readAsText(acceptedFiles[0]);
+
+      setTimeout(() => {
+        setDropDisabled(true);
+        setDropMessage({ message: "", type: "" });
+        setLoading(false);
+        setSwitchToLastPage(true);
+      }, 900);
+    } catch (error) {
+      setDropMessage({ message: messages.uploadFail, type: "error" });
+      setLoading(false);
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, []);
+
   useEffect(() => {
     if (rawFile.length > 0 && rawFile[0].size > 1000000) {
       setDropMessage({
@@ -417,6 +513,9 @@ const useHandleAllDrop = () => {
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
       setIsZip(true);
       handleZipDrop(rawFile);
+    } else if (rawFile.length > 0 && rawFile[0].path.includes(".json")) {
+      setIsZip(true);
+      handleJsonDrop(rawFile);
     } else if (rawFile.length > 0) {
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);

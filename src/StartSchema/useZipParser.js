@@ -18,21 +18,23 @@ const useZipParser = () => {
   } = useContext(Context);
 
   const processLanguages = (languages) => {
+    console.log('languages', languages);
     const newLanguages = languages.map((language) => {
-      if (!codesToLanguages[language]) {
+      if (!codesToLanguages?.[language]) {
         const randomString = 'lang_' + language;
         codesToLanguages[language] = randomString;
         languageCodesObject[randomString] = language;
       }
       return codesToLanguages[language];
     });
+    console.log('newLanguages', newLanguages);
     setLanguages(newLanguages);
   };
 
   const processMetadata = (metadata) => {
     const newMetadata = {};
     for (const { language, name, description } of metadata) {
-      newMetadata[codesToLanguages[language]] = { name, description };
+      newMetadata[codesToLanguages[language.slice(0, 2)]] = { name, description };
     }
     setSchemaDescription(newMetadata);
   };
@@ -105,19 +107,20 @@ const useZipParser = () => {
     // meta data: label and description
     const languageDescriptionMap = {};
     for (const { language, attribute_information } of description) {
-      languageDescriptionMap[language] = attribute_information;
+      languageDescriptionMap[language.slice(0, 2)] = attribute_information;
     }
 
     for (const { language, attribute_labels } of labels) {
+      const langShort = language.slice(0, 2);
       Object.keys(attribute_labels).forEach((key) => attrList.add(key));
-      newLangAttributeRowData[codesToLanguages[language]] = [];
+      newLangAttributeRowData[codesToLanguages[langShort]] = [];
 
       for (const [key, value] of Object.entries(attribute_labels)) {
-        newLangAttributeRowData[codesToLanguages[language]].push({
+        newLangAttributeRowData[codesToLanguages[langShort]].push({
           Attribute: key,
-          Description: languageDescriptionMap[language][key],
+          Description: languageDescriptionMap[langShort][key],
           Label: value,
-          List: attributeListStringMap[key + '_' + language] || "Not a List"
+          List: attributeListStringMap[key + '_' + langShort] || "Not a List"
         });
       }
     }
