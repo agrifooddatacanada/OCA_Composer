@@ -378,7 +378,7 @@ const useHandleAllDrop = () => {
 
         processLanguages(languageList);
         processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList);
         setZipToReadme(allJSONFiles);
       };
 
@@ -406,7 +406,7 @@ const useHandleAllDrop = () => {
 
       reader.onload = async (e) => {
         const jsonFile = JSON.parse(e.target.result);
-
+        console.log('jsonFile', jsonFile);
         const languageList = [];
         const informationList = [];
         const labelList = [];
@@ -472,7 +472,22 @@ const useHandleAllDrop = () => {
           allJSONFiles.push(JSON.stringify(characterEncoding));
         }
 
-        // DID NOT INCLUDE ENTRY CODES YET
+        if (jsonFile?.overlays?.entry_code) {
+          entryCodeSummary = { ...jsonFile.overlays.entry_code };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(entryCodeSummary));
+        }
+
+        if (jsonFile?.overlays?.entry) {
+          entryList.push(...jsonFile.overlays.entry);
+
+          // ONLY for README
+          const readmeEntry = jsonFile.overlays.entry.map((entry) => {
+            return JSON.stringify(entry);
+          });
+          allJSONFiles.push(...readmeEntry);
+        }
 
         processLanguages(languageList);
         processMetadata(metaList);
