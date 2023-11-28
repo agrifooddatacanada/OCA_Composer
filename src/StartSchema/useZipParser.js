@@ -18,7 +18,6 @@ const useZipParser = () => {
   } = useContext(Context);
 
   const processLanguages = (languages) => {
-    console.log('languages', languages);
     const newLanguages = languages.map((language) => {
       if (!codesToLanguages?.[language]) {
         const randomString = 'lang_' + language;
@@ -27,7 +26,6 @@ const useZipParser = () => {
       }
       return codesToLanguages[language];
     });
-    console.log('newLanguages', newLanguages);
     setLanguages(newLanguages);
   };
 
@@ -39,9 +37,8 @@ const useZipParser = () => {
     setSchemaDescription(newMetadata);
   };
 
-  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding) => {
+  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding, languageList) => {
     const newSavedEntryCodes = {};
-    const attrList = new Set();
     const newLangAttributeRowData = {};
     const newAttributeRowData = [];
     const newCharacterEncodingRowData = [];
@@ -110,24 +107,32 @@ const useZipParser = () => {
       languageDescriptionMap[language.slice(0, 2)] = attribute_information;
     }
 
-    for (const { language, attribute_labels } of labels) {
-      const langShort = language.slice(0, 2);
-      Object.keys(attribute_labels).forEach((key) => attrList.add(key));
-      newLangAttributeRowData[codesToLanguages[langShort]] = [];
+    const attributeList = Object.keys(root?.['attributes'] || {});
+    for (const lang of languageList) {
+      const label = labels.find((label) => label.language.slice(0, 2) === lang);
+      newLangAttributeRowData[codesToLanguages[lang]] = [];
 
-      for (const [key, value] of Object.entries(attribute_labels)) {
-        newLangAttributeRowData[codesToLanguages[langShort]].push({
-          Attribute: key,
-          Description: languageDescriptionMap[langShort][key],
-          Label: value,
-          List: attributeListStringMap[key + '_' + langShort] || "Not a List"
-        });
+      for (const attr of attributeList) {
+        if (label && label?.attribute_labels?.hasOwnProperty(attr)) {
+          newLangAttributeRowData[codesToLanguages[lang]].push({
+            Attribute: attr,
+            Description: languageDescriptionMap[lang][attr],
+            Label: label.attribute_labels[attr],
+            List: attributeListStringMap[attr + '_' + lang] || "Not a List"
+          });
+        } else {
+          newLangAttributeRowData[codesToLanguages[lang]].push({
+            Attribute: attr,
+            Description: languageDescriptionMap?.[lang]?.[attr] || '',
+            Label: '',
+            List: attributeListStringMap?.[attr + '_' + lang] || "Not a List"
+          });
+        }
       }
     }
 
     // Parse attributes details such as type and unit + Parsing conformance and character encoding to characterEncodingRowData
-    const uniqueAttrList = [...attrList];
-    uniqueAttrList.forEach((item) => {
+    attributeList.forEach((item) => {
       newAttributeRowData.push({
         Attribute: item,
         Flagged: false,
@@ -163,7 +168,7 @@ const useZipParser = () => {
 
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setLanAttributeRowData(newLangAttributeRowData);
-    setAttributesList(uniqueAttrList);
+    setAttributesList(attributeList);
     setAttributeRowData(newAttributeRowData);
   };
 

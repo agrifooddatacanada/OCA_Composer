@@ -419,7 +419,6 @@ const useHandleAllDrop = () => {
         let characterEncoding = undefined;
         let loadUnits = undefined;
 
-
         // load up metadata file in OCA bundle
         if (jsonFile?.overlays?.meta) {
           metaList.push(...jsonFile.overlays.meta);
@@ -473,9 +472,11 @@ const useHandleAllDrop = () => {
           allJSONFiles.push(JSON.stringify(characterEncoding));
         }
 
+        // DID NOT INCLUDE ENTRY CODES YET
+
         processLanguages(languageList);
         processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList);
         setZipToReadme(allJSONFiles);
       };
 

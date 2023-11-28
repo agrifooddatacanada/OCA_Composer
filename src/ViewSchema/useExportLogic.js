@@ -67,8 +67,8 @@ const useExportLogic = () => {
     const rowObject = {};
 
     rowObject.Language = language;
-    rowObject.Name = schemaDescription[language].name;
-    rowObject.Description = schemaDescription[language].description;
+    rowObject.Name = schemaDescription?.[language]?.name;
+    rowObject.Description = schemaDescription?.[language]?.description;
     OCADescriptionData.push(rowObject);
   });
   OCADataArray.push(OCADescriptionData);
@@ -76,6 +76,7 @@ const useExportLogic = () => {
   //CAPTURE ATTRIBUTE SHEET DATA
   languages.forEach((language) => {
     const rowData = [];
+
     attributesList.forEach((item, index) => {
       const rowObject = {};
       rowObject.Attribute = item;
