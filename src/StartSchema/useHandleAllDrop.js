@@ -465,6 +465,13 @@ const useHandleAllDrop = () => {
           allJSONFiles.push(JSON.stringify(loadUnits));
         }
 
+        if (jsonFile?.overlays?.conformance) {
+          conformance = { ...jsonFile.overlays.conformance };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(conformance));
+        }
+
         if (jsonFile?.overlays?.characterEncoding) {
           characterEncoding = { ...jsonFile.overlays.characterEncoding };
 

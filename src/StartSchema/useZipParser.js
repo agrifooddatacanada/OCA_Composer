@@ -153,12 +153,12 @@ const useZipParser = () => {
 
       const newRowForCharacterEncoding = { Attribute: item };
       if (conformance) {
-        newRowForCharacterEncoding['Make entries required'] = conformance?.['attribute_conformance']?.[item] === "M";
+        newRowForCharacterEncoding['Make selected entries required'] = conformance?.['attribute_conformance']?.[item] === "M";
 
         setOverlay(prev => ({
           ...prev,
-          "Make entries required": {
-            ...prev["Make entries required"],
+          "Make selected entries required": {
+            ...prev["Make selected entries required"],
             selected: true
           }
         }));
