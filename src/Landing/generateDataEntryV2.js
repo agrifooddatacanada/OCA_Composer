@@ -19,7 +19,7 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
     reader.onload = async (e) => {
       const originJsonData = [];
       const json = JSON.parse(e.target.result);;
-      console.log('json', json);
+      // console.log('json', json);
 
       try {
         if (json.hasOwnProperty('capture_base')) {
@@ -28,7 +28,7 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
         if (json.hasOwnProperty('overlays')) {
           const overlays = json.overlays;
           for (const o in overlays) {
-            if (overlays[o].length != undefined & overlays[o].length > 0) {
+            if (overlays[o].length !== undefined & overlays[o].length > 0) {
               for (const oo in overlays[o]) {
                 originJsonData.push(overlays[o][oo]);
               };
