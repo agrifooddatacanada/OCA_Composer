@@ -37,16 +37,13 @@ const useZipParser = () => {
     setSchemaDescription(newMetadata);
   };
 
-  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding, languageList) => {
+  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding, languageList, formatRules) => {
     const newSavedEntryCodes = {};
     const newLangAttributeRowData = {};
     const newAttributeRowData = [];
     const newCharacterEncodingRowData = [];
     const attributeListStringMap = {};
     let attributesWithListType = [];
-
-    // console.log('entryCodes', entryCodes);
-    // console.log('entries', entries);
 
     // Parse entry codes for list type attributes
     if (entries.length > 0) {
@@ -81,9 +78,6 @@ const useZipParser = () => {
           newSavedEntryCodes[attrWithList] = (newSavedEntryCodes[attrWithList] || []).concat(newEntryCodeValueRowsForAttribute);
         }
       }
-
-      // console.log('attributesWithListType', attributesWithListType);
-      // console.log('newSavedEntryCodes', newSavedEntryCodes);
 
       setAttributesWithLists(attributesWithListType);
       setSavedEntryCodes(newSavedEntryCodes);
@@ -152,6 +146,7 @@ const useZipParser = () => {
       });
 
       const newRowForCharacterEncoding = { Attribute: item };
+
       if (conformance) {
         newRowForCharacterEncoding['Make selected entries required'] = conformance?.['attribute_conformance']?.[item] === "M";
 

@@ -18,8 +18,7 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
 
     reader.onload = async (e) => {
       const originJsonData = [];
-      const json = JSON.parse(e.target.result);;
-      // console.log('json', json);
+      const json = JSON.parse(e.target.result);
 
       try {
         if (json.hasOwnProperty('capture_base')) {

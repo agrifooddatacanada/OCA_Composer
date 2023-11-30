@@ -326,6 +326,7 @@ const useHandleAllDrop = () => {
         let conformance = undefined;
         let characterEncoding = undefined;
         let loadUnits = undefined;
+        let formatRules = undefined;
 
         // load up metadata file in OCA bundle
         const loadMetadataFile = await zip.files["meta.json"].async("text");
@@ -378,7 +379,7 @@ const useHandleAllDrop = () => {
 
         processLanguages(languageList);
         processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules);
         setZipToReadme(allJSONFiles);
       };
 
@@ -418,6 +419,7 @@ const useHandleAllDrop = () => {
         let conformance = undefined;
         let characterEncoding = undefined;
         let loadUnits = undefined;
+        let formatRules = undefined;
 
         // load up metadata file in OCA bundle
         if (jsonFile?.overlays?.meta) {
@@ -472,8 +474,8 @@ const useHandleAllDrop = () => {
           allJSONFiles.push(JSON.stringify(conformance));
         }
 
-        if (jsonFile?.overlays?.characterEncoding) {
-          characterEncoding = { ...jsonFile.overlays.characterEncoding };
+        if (jsonFile?.overlays?.['character_encoding']) {
+          characterEncoding = { ...jsonFile.overlays['character_encoding'] };
 
           // ONLY for README
           allJSONFiles.push(JSON.stringify(characterEncoding));
@@ -484,6 +486,13 @@ const useHandleAllDrop = () => {
 
           // ONLY for README
           allJSONFiles.push(JSON.stringify(entryCodeSummary));
+        }
+
+        if (jsonFile?.overlays?.['format']) {
+          formatRules = { ...jsonFile.overlays['format'] };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(formatRules));
         }
 
         if (jsonFile?.overlays?.entry) {
@@ -498,7 +507,7 @@ const useHandleAllDrop = () => {
 
         processLanguages(languageList);
         processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules);
         setZipToReadme(allJSONFiles);
       };
 

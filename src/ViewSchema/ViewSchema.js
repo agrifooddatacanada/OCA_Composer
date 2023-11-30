@@ -142,6 +142,7 @@ export default function ViewSchema({ pageBack }) {
       });
 
       const codesObject = {};
+
       lanAttributeKeys.forEach((item) => {
         const list = lanAttributeRowData[item].find(
           (i) => i.Attribute === attributeName
@@ -157,7 +158,6 @@ export default function ViewSchema({ pageBack }) {
       dataObject.Flagged = attributeRowData[index].Flagged;
       dataObject.Unit = attributeRowData[index].Unit;
       dataObject.Type = attributeRowData[index].Type;
-      dataObject.List = attributeRowData[index].List;
       dataObject.Label = labelObject;
       dataObject.Description = descriptionObject;
       dataObject.List = codesObject;

@@ -76,7 +76,9 @@ function App() {
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
+  console.log('formatRuleRowData', formatRuleRowData);
   const [overlay, setOverlay] = useState(items);
+  console.log('overlay', overlay);
   const [selectedOverlay, setSelectedOverlay] = useState('');
 
   const pageForward = () => {

@@ -323,7 +323,6 @@ const useExportLogic = () => {
       };
     } catch (error) {
       console.error(error);
-      console.log('Error creating "Start Here" page');
     }
 
     //////CREATE 'MAIN' WORKSHEET
@@ -548,7 +547,6 @@ const useExportLogic = () => {
       });
     } catch (error) {
       console.error(error);
-      console.log('Error creating "Language" worksheets');
     }
 
     //////CREATE DATA WORKSHEET FOR ENTRY_CODE DROPDOWN MENUS
