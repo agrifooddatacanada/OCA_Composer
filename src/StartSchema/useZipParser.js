@@ -14,7 +14,8 @@ const useZipParser = () => {
     setAttributesWithLists,
     setSavedEntryCodes,
     setCharacterEncodingRowData,
-    setOverlay
+    setOverlay,
+    setFormatRuleRowData
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -42,6 +43,7 @@ const useZipParser = () => {
     const newLangAttributeRowData = {};
     const newAttributeRowData = [];
     const newCharacterEncodingRowData = [];
+    const newFormatRuleRowData = [];
     const attributeListStringMap = {};
     let attributesWithListType = [];
 
@@ -146,10 +148,10 @@ const useZipParser = () => {
       });
 
       const newRowForCharacterEncoding = { Attribute: item };
+      const newFormatRuleData = { Attribute: item };
 
       if (conformance) {
         newRowForCharacterEncoding['Make selected entries required'] = conformance?.['attribute_conformance']?.[item] === "M";
-
         setOverlay(prev => ({
           ...prev,
           "Make selected entries required": {
@@ -158,6 +160,7 @@ const useZipParser = () => {
           }
         }));
       }
+
       if (characterEncoding) {
         newRowForCharacterEncoding['Character Encoding'] = characterEncoding?.['attribute_character_encoding']?.[item] || characterEncoding?.['default_character_encoding'];
         setOverlay(prev => ({
@@ -168,9 +171,24 @@ const useZipParser = () => {
           }
         }));
       }
+
+
+      if (formatRules) {
+        // newRowForCharacterEncoding['Format Rules'] = formatRules?.['attribute_format_rules']?.[item] || formatRules?.['default_format_rules'];
+        newFormatRuleData['FormatText'] = formatRules?.['attribute_formats']?.[item] || '';
+        setOverlay(prev => ({
+          ...prev,
+          "Add format rule for data": {
+            ...prev["Add format rule for data"],
+            selected: true
+          }
+        }));
+      }
+      newFormatRuleRowData.push(newFormatRuleData);
       newCharacterEncodingRowData.push(newRowForCharacterEncoding);
     });
 
+    setFormatRuleRowData(newFormatRuleRowData);
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setLanAttributeRowData(newLangAttributeRowData);
     setAttributesList(attributeList);
