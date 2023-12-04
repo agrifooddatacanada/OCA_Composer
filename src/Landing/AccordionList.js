@@ -14,7 +14,7 @@ import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
-import { generateDataEntry } from './generateDataEntry';
+import { generateDataEntryV2 } from './generateDataEntryV2';
 
 const AccordionList = () => {
   const isMobile = useMediaQuery('(max-width: 736px)');
@@ -218,7 +218,7 @@ const AccordionList = () => {
             <Button
               variant='contained'
               color='navButton'
-              onClick={() => generateDataEntry(rawFile, setLoading)}
+              onClick={() => generateDataEntryV2(rawFile, setLoading)}
               sx={{
                 backgroundColor: CustomPalette.PRIMARY,
                 ':hover': { backgroundColor: CustomPalette.SECONDARY },

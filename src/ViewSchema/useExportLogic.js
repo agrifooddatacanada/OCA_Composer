@@ -67,8 +67,8 @@ const useExportLogic = () => {
     const rowObject = {};
 
     rowObject.Language = language;
-    rowObject.Name = schemaDescription[language].name;
-    rowObject.Description = schemaDescription[language].description;
+    rowObject.Name = schemaDescription?.[language]?.name;
+    rowObject.Description = schemaDescription?.[language]?.description;
     OCADescriptionData.push(rowObject);
   });
   OCADataArray.push(OCADescriptionData);
@@ -76,6 +76,7 @@ const useExportLogic = () => {
   //CAPTURE ATTRIBUTE SHEET DATA
   languages.forEach((language) => {
     const rowData = [];
+
     attributesList.forEach((item, index) => {
       const rowObject = {};
       rowObject.Attribute = item;
@@ -322,7 +323,6 @@ const useExportLogic = () => {
       };
     } catch (error) {
       console.error(error);
-      console.log('Error creating "Start Here" page');
     }
 
     //////CREATE 'MAIN' WORKSHEET
@@ -536,7 +536,6 @@ const useExportLogic = () => {
       });
     } catch (error) {
       console.error(error);
-      console.log('Error creating "Language" worksheets');
     }
 
     //////CREATE DATA WORKSHEET FOR ENTRY_CODE DROPDOWN MENUS

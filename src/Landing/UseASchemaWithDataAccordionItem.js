@@ -6,7 +6,7 @@ import AccordionItemWrapper from './AccordionItemWrapper';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 import Drop from '../StartSchema/Drop';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
-import { generateDataEntry } from './generateDataEntry';
+import { generateDataEntryV2 } from './generateDataEntryV2';
 
 const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) => {
   const {
@@ -31,7 +31,7 @@ const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) =
 
       <AccordionDetails sx={{ textAlign: 'start' }}>
         <Typography>
-          With your machine-readable .zip schema bundle you can begin to use it in your workflows.
+          With your machine-readable .json schema bundle you can begin to use it in your workflows.
         </Typography>
         <Typography sx={{ marginTop: '20px' }}>
           For example, using a schema as a template, generate an Excel sheet prepared for data entry. Or if you have a  python workflow you can incorporate data validation using data rules of the schema.
@@ -51,7 +51,7 @@ const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) =
           <Button
             variant="contained"
             color="navButton"
-            onClick={() => generateDataEntry(rawFile, setLoading)}
+            onClick={() => generateDataEntryV2(rawFile, setLoading)}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '20px', marginBottom: '20px' }}
             disabled={disableButtonCheck}
           >

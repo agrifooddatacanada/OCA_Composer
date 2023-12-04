@@ -309,81 +309,208 @@ const useHandleAllDrop = () => {
   }, [processExcelFile]);
 
 
-  const handleZipDrop = useCallback((acceptedFiles) => {
+  // const handleZipDrop = useCallback((acceptedFiles) => {
+  //   try {
+  //     setLoading(true);
+  //     const reader = new FileReader();
+
+  //     reader.onload = async (e) => {
+  //       const zip = await JSZip.loadAsync(e.target.result);
+  //       const languageList = [];
+  //       const informationList = [];
+  //       const labelList = [];
+  //       const metaList = [];
+  //       const entryList = [];
+  //       const allJSONFiles = [];
+  //       let entryCodeSummary = {};
+  //       let conformance = undefined;
+  //       let characterEncoding = undefined;
+  //       let loadUnits = undefined;
+  //       let formatRules = undefined;
+
+  //       // load up metadata file in OCA bundle
+  //       const loadMetadataFile = await zip.files["meta.json"].async("text");
+  //       const metadataJson = JSON.parse(loadMetadataFile);
+  //       const root = metadataJson.root;
+  //       allJSONFiles.push(loadMetadataFile);
+
+  //       // loop through all files in OCA bundle
+  //       for (const [key, file] of Object.entries(metadataJson.files[root])) {
+  //         const content = await zip.files[file + '.json'].async("text");
+
+  //         if (key.includes("meta")) {
+  //           metaList.push(JSON.parse(content));
+  //           languageList.push(key.substring(6, 8));
+  //         }
+
+  //         if (key.includes("information")) {
+  //           informationList.push(JSON.parse(content));
+  //         }
+
+  //         if (key.includes("label")) {
+  //           labelList.push(JSON.parse(content));
+  //         }
+
+  //         if (key.includes("entry (")) {
+  //           entryList.push(JSON.parse(content));
+  //         }
+
+  //         if (key.includes("entry_code")) {
+  //           entryCodeSummary = JSON.parse(content);
+  //         }
+
+  //         if (key.includes("conformance")) {
+  //           conformance = JSON.parse(content);
+  //         }
+
+  //         if (key.includes("character_encoding")) {
+  //           characterEncoding = JSON.parse(content);
+  //         }
+
+  //         if (key.includes("unit")) {
+  //           loadUnits = JSON.parse(content);
+  //         }
+
+  //         allJSONFiles.push(content);
+  //       }
+
+  //       const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
+  //       allJSONFiles.push(loadRoot);
+
+  //       processLanguages(languageList);
+  //       processMetadata(metaList);
+  //       processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules);
+  //       setZipToReadme(allJSONFiles);
+  //     };
+
+  //     reader.readAsArrayBuffer(acceptedFiles[0]);
+
+  //     setTimeout(() => {
+  //       setDropDisabled(true);
+  //       setDropMessage({ message: "", type: "" });
+  //       setLoading(false);
+  //       setSwitchToLastPage(true);
+  //     }, 900);
+  //   } catch (error) {
+  //     setDropMessage({ message: messages.uploadFail, type: "error" });
+  //     setLoading(false);
+  //     setTimeout(() => {
+  //       setDropMessage({ message: "", type: "" });
+  //     }, [2500]);
+  //   }
+  // }, []);
+
+  const handleJsonDrop = useCallback((acceptedFiles) => {
     try {
       setLoading(true);
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const zip = await JSZip.loadAsync(e.target.result);
+        const jsonFile = JSON.parse(e.target.result);
         const languageList = [];
         const informationList = [];
         const labelList = [];
         const metaList = [];
         const entryList = [];
         const allJSONFiles = [];
+        let loadRoot = undefined;
         let entryCodeSummary = {};
         let conformance = undefined;
         let characterEncoding = undefined;
         let loadUnits = undefined;
+        let formatRules = undefined;
 
         // load up metadata file in OCA bundle
-        const loadMetadataFile = await zip.files["meta.json"].async("text");
-        const metadataJson = JSON.parse(loadMetadataFile);
-        const root = metadataJson.root;
-        allJSONFiles.push(loadMetadataFile);
+        if (jsonFile?.overlays?.meta) {
+          metaList.push(...jsonFile.overlays.meta);
+          languageList.push(...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2)));
 
-
-        // loop through all files in OCA bundle
-        for (const [key, file] of Object.entries(metadataJson.files[root])) {
-          const content = await zip.files[file + '.json'].async("text");
-
-          if (key.includes("meta")) {
-            metaList.push(JSON.parse(content));
-            languageList.push(key.substring(6, 8));
-          }
-
-          if (key.includes("information")) {
-            informationList.push(JSON.parse(content));
-          }
-
-          if (key.includes("label")) {
-            labelList.push(JSON.parse(content));
-          }
-
-          if (key.includes("entry (")) {
-            entryList.push(JSON.parse(content));
-          }
-
-          if (key.includes("entry_code")) {
-            entryCodeSummary = JSON.parse(content);
-          }
-
-          if (key.includes("conformance")) {
-            conformance = JSON.parse(content);
-          }
-
-          if (key.includes("character_encoding")) {
-            characterEncoding = JSON.parse(content);
-          }
-
-          if (key.includes("unit")) {
-            loadUnits = JSON.parse(content);
-          }
-
-          allJSONFiles.push(content);
+          // ONLY for README
+          const readmeMeta = jsonFile.overlays.meta.map((meta) => {
+            return JSON.stringify(meta);
+          });
+          allJSONFiles.push(...readmeMeta);
         }
 
-        const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
-        allJSONFiles.push(loadRoot);
+        if (jsonFile?.overlays?.information) {
+          informationList.push(...jsonFile.overlays.information);
+
+          // ONLY for README
+          const readmeInformation = jsonFile.overlays.information.map((information) => {
+            return JSON.stringify(information);
+          });
+          allJSONFiles.push(...readmeInformation);
+        }
+
+        if (jsonFile?.overlays?.label) {
+          labelList.push(...jsonFile.overlays.label);
+
+          // ONLY for README
+          const readmeLabel = jsonFile.overlays.label.map((label) => {
+            return JSON.stringify(label);
+          });
+          allJSONFiles.push(...readmeLabel);
+        }
+
+        if (jsonFile?.['capture_base']) {
+          loadRoot = { ...jsonFile['capture_base'] };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(loadRoot));
+        }
+
+        if (jsonFile?.overlays?.unit) {
+          loadUnits = { ...jsonFile.overlays.unit };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(loadUnits));
+        }
+
+        if (jsonFile?.overlays?.conformance) {
+          conformance = { ...jsonFile.overlays.conformance };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(conformance));
+        }
+
+        if (jsonFile?.overlays?.['character_encoding']) {
+          characterEncoding = { ...jsonFile.overlays['character_encoding'] };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(characterEncoding));
+        }
+
+        if (jsonFile?.overlays?.entry_code) {
+          entryCodeSummary = { ...jsonFile.overlays.entry_code };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(entryCodeSummary));
+        }
+
+        if (jsonFile?.overlays?.['format']) {
+          formatRules = { ...jsonFile.overlays['format'] };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(formatRules));
+        }
+
+        if (jsonFile?.overlays?.entry) {
+          entryList.push(...jsonFile.overlays.entry);
+
+          // ONLY for README
+          const readmeEntry = jsonFile.overlays.entry.map((entry) => {
+            return JSON.stringify(entry);
+          });
+          allJSONFiles.push(...readmeEntry);
+        }
 
         processLanguages(languageList);
         processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules);
         setZipToReadme(allJSONFiles);
       };
 
-      reader.readAsArrayBuffer(acceptedFiles[0]);
+      reader.readAsText(acceptedFiles[0]);
 
       setTimeout(() => {
         setDropDisabled(true);
@@ -414,9 +541,14 @@ const useHandleAllDrop = () => {
       processCSVFile(rawFile[0]);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".xls")) {
       handleExcelDrop(rawFile);
-    } else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
+    }
+    // else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
+    //   setIsZip(true);
+    //   handleZipDrop(rawFile);
+    // } 
+    else if (rawFile.length > 0 && rawFile[0].path.includes(".json")) {
       setIsZip(true);
-      handleZipDrop(rawFile);
+      handleJsonDrop(rawFile);
     } else if (rawFile.length > 0) {
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
@@ -424,7 +556,13 @@ const useHandleAllDrop = () => {
         setDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [rawFile, handleExcelDrop, handleZipDrop, processCSVFile, setFileData]);
+  }, [
+    rawFile,
+    handleExcelDrop,
+    // handleZipDrop, 
+    processCSVFile,
+    setFileData
+  ]);
 
 
   useEffect(() => {
