@@ -31,7 +31,7 @@ const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) =
 
       <AccordionDetails sx={{ textAlign: 'start' }}>
         <Typography>
-          With your machine-readable .zip schema bundle you can begin to use it in your workflows.
+          With your machine-readable .json schema bundle you can begin to use it in your workflows.
         </Typography>
         <Typography sx={{ marginTop: '20px' }}>
           For example, using a schema as a template, generate an Excel sheet prepared for data entry. Or if you have a  python workflow you can incorporate data validation using data rules of the schema.
