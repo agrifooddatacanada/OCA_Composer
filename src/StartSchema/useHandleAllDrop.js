@@ -407,7 +407,6 @@ const useHandleAllDrop = () => {
 
       reader.onload = async (e) => {
         const jsonFile = JSON.parse(e.target.result);
-        console.log('jsonFile', jsonFile);
         const languageList = [];
         const informationList = [];
         const labelList = [];
