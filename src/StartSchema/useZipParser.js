@@ -55,7 +55,7 @@ const useZipParser = () => {
         const newEntryCodeValueRowsForAttribute = [];
         const entryCodesForAttribute = entryCodes['attribute_entry_codes'][attrWithList];
         if (typeof entryCodesForAttribute === 'string') {
-          // Don't know what to do yet
+          // Possibly send to an API to get the entry codes 
         } else {
           for (const entryCode of entryCodesForAttribute) {
             const entryCodeValueEntity = {
