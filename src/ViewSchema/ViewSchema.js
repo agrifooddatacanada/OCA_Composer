@@ -12,10 +12,11 @@ import LinkCard from "./LinkCard";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import useExportLogic from "./useExportLogic";
 import { useNavigate } from "react-router-dom";
+import { set } from "react-ga";
 
 export default function ViewSchema({ pageBack }) {
   const navigate = useNavigate();
-  const { languages, attributeRowData, lanAttributeRowData, isZip, setIsZip, characterEncodingRowData, setCurrentPage, history, setHistory, formatRuleRowData } = useContext(Context);
+  const { languages, attributeRowData, lanAttributeRowData, isZip, isZipEdited, setIsZipEdited, characterEncodingRowData, setCurrentPage, history, setHistory, formatRuleRowData } = useContext(Context);
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
@@ -212,38 +213,42 @@ export default function ViewSchema({ pageBack }) {
             <ArrowBackIosIcon /> Back
           </Button>
           <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-            <Button
-              color="button"
-              variant='contained'
-              onClick={() => {
-                setCurrentPage("Metadata");
-                setIsZip(false);
-              }}
-              sx={{
-                alignSelf: "flex-end",
-                display: "flex",
-                justifyContent: "space-around",
-                padding: "0.5rem 1rem",
-              }}
-            >
-              Edit Schema
-            </Button>
-            {!isZip ? (
-              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-                <Button
-                  color="button"
-                  variant='contained'
-                  onClick={() => handleExport(true)}
-                  sx={{
-                    alignSelf: "flex-end",
-                    display: "flex",
-                    justifyContent: "space-around",
-                    padding: "0.5rem 1rem",
-                  }}
-                  disabled={exportDisabled}
-                >
-                  Download ReadMe
-                </Button>
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+              {isZip && (
+                <>
+                  <Button
+                    color="button"
+                    variant='contained'
+                    onClick={() => {
+                      setCurrentPage("Metadata");
+                      setIsZipEdited(true);
+                    }}
+                    sx={{
+                      alignSelf: "flex-end",
+                      display: "flex",
+                      justifyContent: "space-around",
+                      padding: "0.5rem 1rem",
+                    }}
+                  >
+                    Edit Schema
+                  </Button>
+                  <Button
+                    color="button"
+                    variant='contained'
+                    onClick={() => handleExport(true)}
+                    sx={{
+                      alignSelf: "flex-end",
+                      display: "flex",
+                      justifyContent: "space-around",
+                      padding: "0.5rem 1rem",
+                    }}
+                    disabled={exportDisabled}
+                  >
+                    Download ReadMe
+                  </Button>
+                </>
+              )}
+              {!isZip || (isZip && isZipEdited) ? (
                 <Box
                   sx={{
                     display: "flex",
@@ -276,8 +281,10 @@ export default function ViewSchema({ pageBack }) {
                     </Tooltip>
                   </Box>
                 </Box>
-              </Box>
-            ) : <></>}
+              ) :
+                <></>
+              }
+            </Box>
 
           </Box>
 
