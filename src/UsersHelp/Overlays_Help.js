@@ -17,6 +17,8 @@ const OverlaysHelp = () => {
         <u1>
           <li>Character Encoding</li>
           <li>Make Required Entries</li>
+          <li>Cardinality</li>
+          
         </u1>
         <br></br>
         <br></br>

@@ -1,6 +1,7 @@
 import React from 'react';
 import HelpPageContainer from '../components/HelpPageContainer';
 import HelpPageH2Title from '../components/HelpPageH2Title';
+import HelpPageH3Title from '../components/HelpPageH3Title';
 import TypographyTag from '../components/TypographyTag';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 
@@ -8,19 +9,22 @@ const AttributeDetailsHelp = () => {
   return (
     <HelpPageContainer>
       <HelpPageH2Title text="Attribute Details" />
+
+      <div style={{ textAlign: 'center' }}>
+        <TypographyTag>
+          On the attribute details page you can edit properties of each attribute present in your schema.
+        </TypographyTag>
+      </div>
+
       <br />
-      <TypographyTag>
-        On the attribute details page you can edit properties of each attribute present in your schema.
-      </TypographyTag>
-      <br />
-      <HelpPageH2Title text="Attribute Name" />
-      <br />
+      <HelpPageH3Title text="Attribute Name" />
+      
       <TypographyTag>
         You can edit each attribute name, and reorder the attributes.
       </TypographyTag>
       <br />
-      <HelpPageH2Title text="Sensitive" />
-      <br />
+      <HelpPageH3Title text="Sensitive" />
+    
       <TypographyTag>
         Sensitive attributes are where you can specify Sensitive Attribute for sensitive data (e.g. names of people, government identification, birth date etc.). Marking an entry with a check will allow you to flag any attributes where identifying information about entities may be captured.
       </TypographyTag>
@@ -33,14 +37,14 @@ const AttributeDetailsHelp = () => {
         For help evaluating which attributes can be sensitive you can read advice in the <CustomAnchorLink link='https://docs.kantarainitiative.org/Blinding-Identity-Taxonomy-Report-Version-1.0.html' text="Blinding Identity Taxonomy" /> report by the Kantara Initiative.
       </TypographyTag>
       <br />
-      <HelpPageH2Title text="Unit" />
-      <br />
+      <HelpPageH3Title text="Unit" />
+      
       <TypographyTag>
         Units are where you can describe the units for each attribute if needed.
       </TypographyTag>
       <br />
-      <HelpPageH2Title text="Type" />
-      <br />
+      <HelpPageH3Title text="Type" />
+      
       <TypographyTag type='li'>
         Text: text, from single letter entries to fields of unstructured text.
       </TypographyTag>
@@ -63,8 +67,8 @@ const AttributeDetailsHelp = () => {
         Array [attribute type]: a data type that defines a structure that holds several data items or elements of the same data type.
       </TypographyTag>
       <br />
-      <HelpPageH2Title text="List" />
-      <br />
+      <HelpPageH3Title text="List" />
+      
       <TypographyTag>
         A list is a very useful feature that allows the schema author to limit the data that can be entered for a specific attribute. Select this option if you would like to create a list of acceptable entries that the user will be able to select from.
       </TypographyTag>
