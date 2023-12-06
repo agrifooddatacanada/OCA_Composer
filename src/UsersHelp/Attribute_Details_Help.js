@@ -28,14 +28,15 @@ const AttributeDetailsHelp = () => {
       <TypographyTag>
         Sensitive attributes are where you can specify Sensitive Attribute for sensitive data (e.g. names of people, government identification, birth date etc.). Marking an entry with a check will allow you to flag any attributes where identifying information about entities may be captured.
       </TypographyTag>
-      <br />
-      <TypographyTag>
+      <br/>
+      <TypographyTag type='li'>
         Flagging an attribute acts as an alert to data users to treat the data as high-risk throughout the data lifecycle and encrypted or removed at any stage.
       </TypographyTag>
-      <br />
-      <TypographyTag>
+      <TypographyTag type='li' >
         For help evaluating which attributes can be sensitive you can read advice in the <CustomAnchorLink link='https://docs.kantarainitiative.org/Blinding-Identity-Taxonomy-Report-Version-1.0.html' text="Blinding Identity Taxonomy" /> report by the Kantara Initiative.
       </TypographyTag>
+
+
       <br />
       <HelpPageH3Title text="Unit" />
       
@@ -45,8 +46,9 @@ const AttributeDetailsHelp = () => {
       <br />
       <HelpPageH3Title text="Type" />
       
+        
       <TypographyTag type='li'>
-        Text: text, from single letter entries to fields of unstructured text.
+        Text: text, from single letter entries to fields of unstructured text
       </TypographyTag>
       <TypographyTag type='li'>
         Numeric: numbers
@@ -55,16 +57,19 @@ const AttributeDetailsHelp = () => {
         Reference: A SAID identifier
       </TypographyTag>
       <TypographyTag type='li'>
-        Boolean: a data type where the data only has two possible variables: true or false.
+        Boolean: a data type where the data only has two possible variables: true or false
       </TypographyTag>
       <TypographyTag type='li'>
         Binary: a data type that defines a binary code signal
       </TypographyTag>
       <TypographyTag type='li'>
-        DateTime: a data type that defines dates. Common formats include dates (e.g., YYYY-MM-DD), times (e.g., hh:mm:ss), dates and times concatenated (e.g., YYYY-MM-DDThh:mm:ss.sss+zz:zz), and durations (e.g., PnYnMnD).
+        DateTime: a data type that defines dates. Common formats include dates (e.g., YYYY-MM-DD),<br />
+        &nbsp;&nbsp;&nbsp;times (e.g., hh:mm:ss), dates and times concatenated (e.g., YYYY-MM-DDThh:mm:ss.sss+zz:zz),<br />
+        &nbsp;&nbsp;&nbsp;and durations (e.g., PnYnMnD)
       </TypographyTag>
+
       <TypographyTag type='li'>
-        Array [attribute type]: a data type that defines a structure that holds several data items or elements of the same data type.
+        Array [attribute type]: a data type that defines a structure that holds several data items or elements of the same data type
       </TypographyTag>
       <br />
       <HelpPageH3Title text="List" />
