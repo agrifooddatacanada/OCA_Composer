@@ -12,10 +12,11 @@ import LinkCard from "./LinkCard";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import useExportLogic from "./useExportLogic";
 import { useNavigate } from "react-router-dom";
+import { set } from "react-ga";
 
 export default function ViewSchema({ pageBack }) {
   const navigate = useNavigate();
-  const { languages, attributeRowData, lanAttributeRowData, isZip, setIsZip, characterEncodingRowData, setCurrentPage, history, setHistory } = useContext(Context);
+  const { languages, attributeRowData, lanAttributeRowData, isZip, isZipEdited, setIsZipEdited, characterEncodingRowData, setCurrentPage, history, setHistory, formatRuleRowData } = useContext(Context);
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
@@ -142,6 +143,7 @@ export default function ViewSchema({ pageBack }) {
       });
 
       const codesObject = {};
+
       lanAttributeKeys.forEach((item) => {
         const list = lanAttributeRowData[item].find(
           (i) => i.Attribute === attributeName
@@ -157,7 +159,6 @@ export default function ViewSchema({ pageBack }) {
       dataObject.Flagged = attributeRowData[index].Flagged;
       dataObject.Unit = attributeRowData[index].Unit;
       dataObject.Type = attributeRowData[index].Type;
-      dataObject.List = attributeRowData[index].List;
       dataObject.Label = labelObject;
       dataObject.Description = descriptionObject;
       dataObject.List = codesObject;
@@ -165,6 +166,11 @@ export default function ViewSchema({ pageBack }) {
       const attrWithOverlay = characterEncodingRowData.find((row) => row.Attribute === attributeName);
       if (attrWithOverlay) {
         Object.assign(dataObject, attrWithOverlay);
+      }
+
+      const attrWithFormatRule = formatRuleRowData.find((row) => row.Attribute === attributeName);
+      if (attrWithFormatRule['FormatText'] !== '') {
+        dataObject['Add format rule for data'] = attrWithFormatRule['FormatText'];
       }
 
       newDisplayArray.push(dataObject);
@@ -207,38 +213,42 @@ export default function ViewSchema({ pageBack }) {
             <ArrowBackIosIcon /> Back
           </Button>
           <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-            <Button
-              color="button"
-              variant='contained'
-              onClick={() => {
-                setCurrentPage("Metadata");
-                setIsZip(false);
-              }}
-              sx={{
-                alignSelf: "flex-end",
-                display: "flex",
-                justifyContent: "space-around",
-                padding: "0.5rem 1rem",
-              }}
-            >
-              Edit Schema
-            </Button>
-            {!isZip ? (
-              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-                <Button
-                  color="button"
-                  variant='contained'
-                  onClick={() => handleExport(true)}
-                  sx={{
-                    alignSelf: "flex-end",
-                    display: "flex",
-                    justifyContent: "space-around",
-                    padding: "0.5rem 1rem",
-                  }}
-                  disabled={exportDisabled}
-                >
-                  Download ReadMe
-                </Button>
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+              {isZip && (
+                <>
+                  <Button
+                    color="button"
+                    variant='contained'
+                    onClick={() => {
+                      setCurrentPage("Metadata");
+                      setIsZipEdited(true);
+                    }}
+                    sx={{
+                      alignSelf: "flex-end",
+                      display: "flex",
+                      justifyContent: "space-around",
+                      padding: "0.5rem 1rem",
+                    }}
+                  >
+                    Edit Schema
+                  </Button>
+                  <Button
+                    color="button"
+                    variant='contained'
+                    onClick={() => handleExport(true)}
+                    sx={{
+                      alignSelf: "flex-end",
+                      display: "flex",
+                      justifyContent: "space-around",
+                      padding: "0.5rem 1rem",
+                    }}
+                    disabled={exportDisabled}
+                  >
+                    Download ReadMe
+                  </Button>
+                </>
+              )}
+              {!isZip || (isZip && isZipEdited) ? (
                 <Box
                   sx={{
                     display: "flex",
@@ -263,7 +273,7 @@ export default function ViewSchema({ pageBack }) {
                   </Button>
                   <Box sx={{ marginLeft: "1rem" }}>
                     <Tooltip
-                      title="Export your schema in a .zip machine-readable version and a txt human-readable format using all the information that has been provided here."
+                      title="Export your schema in a .json machine-readable version and a txt human-readable format using all the information that has been provided here."
                       placement="left"
                       arrow
                     >
@@ -271,8 +281,10 @@ export default function ViewSchema({ pageBack }) {
                     </Tooltip>
                   </Box>
                 </Box>
-              </Box>
-            ) : <></>}
+              ) :
+                <></>
+              }
+            </Box>
 
           </Box>
 

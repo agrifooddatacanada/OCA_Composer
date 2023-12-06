@@ -8,10 +8,18 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
+import DeleteConfirmation from "./DeleteConfirmation";
 
 const CharacterEncoding = () => {
-  const { characterEncodingRowData, setCurrentPage, setSelectedOverlay } = useContext(Context);
+  const {
+    characterEncodingRowData,
+    setCurrentPage,
+    setSelectedOverlay,
+    setCharacterEncodingRowData,
+    setOverlay,
+  } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const gridRef = useRef();
   const { handleSave, applyAllFunc, CharacterEncodingTypeRenderer } = useCharacterEncodingType(gridRef);
 
@@ -43,8 +51,33 @@ const CharacterEncoding = () => {
     setCurrentPage('Overlays');
   };
 
+  const handleDeleteCurrentOverlay = () => {
+    setOverlay((prev) => ({
+      ...prev,
+      "Character Encoding": {
+        ...prev["Character Encoding"],
+        selected: false,
+      },
+    }));
+
+    // Delete attribute from characterEncodingRowData
+    const newCharacterEncodingRowData = characterEncodingRowData.map((row) => {
+      delete row['Character Encoding'];
+      return row;
+    });
+    setCharacterEncodingRowData(newCharacterEncodingRowData);
+    setSelectedOverlay('');
+    setCurrentPage('Overlays');
+  };
+
   return (
-    <BackNextSkeleton isForward pageForward={handleForward}>
+    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
+      {showDeleteConfirmation && (
+        <DeleteConfirmation
+          removeFromSelected={handleDeleteCurrentOverlay}
+          closeModal={() => setShowDeleteConfirmation(false)}
+        />
+      )}
       <Box
         sx={{
           margin: "2rem",

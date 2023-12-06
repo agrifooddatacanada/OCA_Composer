@@ -43,7 +43,8 @@ const useExportLogic = () => {
     overlay,
     setZipToReadme,
     setIsZip,
-    setRawFile
+    setRawFile,
+    formatRuleRowData
   } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
 
@@ -66,8 +67,8 @@ const useExportLogic = () => {
     const rowObject = {};
 
     rowObject.Language = language;
-    rowObject.Name = schemaDescription[language].name;
-    rowObject.Description = schemaDescription[language].description;
+    rowObject.Name = schemaDescription?.[language]?.name;
+    rowObject.Description = schemaDescription?.[language]?.description;
     OCADescriptionData.push(rowObject);
   });
   OCADataArray.push(OCADescriptionData);
@@ -75,6 +76,7 @@ const useExportLogic = () => {
   //CAPTURE ATTRIBUTE SHEET DATA
   languages.forEach((language) => {
     const rowData = [];
+
     attributesList.forEach((item, index) => {
       const rowObject = {};
       rowObject.Attribute = item;
@@ -321,7 +323,6 @@ const useExportLogic = () => {
       };
     } catch (error) {
       console.error(error);
-      console.log('Error creating "Start Here" page');
     }
 
     //////CREATE 'MAIN' WORKSHEET
@@ -357,7 +358,8 @@ const useExportLogic = () => {
           type: "list",
           allowBlank: true,
           formulae: [
-            '"Binary,Boolean,DateTime,Numeric,Reference,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Reference],Array[Text]"',
+            // '"Binary,Boolean,DateTime,Numeric,Reference,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Reference],Array[Text]"',
+            '"Binary,Boolean,DateTime,Numeric,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Text]"',
           ],
         };
 
@@ -378,22 +380,18 @@ const useExportLogic = () => {
           formulae: ['"Y"'],
         };
 
-        // Default certain attributes to utf-8 or base64
         const encodingCell = worksheetMain.getCell(index + 4, 6);
-        if (characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
+        if (overlay["Character Encoding"].selected && characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
           encodingCell.value = characterEncodingRowData[index]['Character Encoding'];
-        } else {
-          encodingCell.value = {
-            formula: `IF(OR(C${index + 4}="Binary", C${index + 4
-              }="Array[Binary]"), "base64", "utf-8")`,
-
-            result:
-              typeCell.value === "Binary" || typeCell.value === "Array[Binary]"
-                ? "base64"
-                : "utf-8",
-          };
         }
 
+        // Add format rules here
+        const formatCell = worksheetMain.getCell(index + 4, 7);
+        if (overlay["Add format rule for data"].selected) {
+          if (formatRuleRowData[index].FormatText !== "") {
+            formatCell.value = formatRuleRowData[index].FormatText;
+          }
+        }
 
         const entryCodesCell = worksheetMain.getCell(index + 4, 8);
 
@@ -433,13 +431,13 @@ const useExportLogic = () => {
           worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
         }
 
-        const referenceCell = worksheetMain.getCell(index + 4, 11);
-        if (
-          typeCell.value === "Reference" ||
-          typeCell.value === "Array[Reference]"
-        ) {
-          referenceCell.value = "Reference SAI";
-        }
+        // const referenceCell = worksheetMain.getCell(index + 4, 11);
+        // if (
+        //   typeCell.value === "Reference" ||
+        //   typeCell.value === "Array[Reference]"
+        // ) {
+        //   referenceCell.value = "Reference SAI";
+        // }
       });
       worksheetMain.columns = allColumns;
     } catch (error) {
@@ -538,7 +536,6 @@ const useExportLogic = () => {
       });
     } catch (error) {
       console.error(error);
-      console.log('Error creating "Language" worksheets');
     }
 
     //////CREATE DATA WORKSHEET FOR ENTRY_CODE DROPDOWN MENUS
@@ -577,7 +574,7 @@ const useExportLogic = () => {
     //     a.download = workbookName;
     //     a.click();
     //   });
-    //   setShowLink(true);
+    //   // setShowLink(true);
     //   setExportDisabled(true);
     //   setTimeout(() => {
     //     setExportDisabled(false);

@@ -48,7 +48,7 @@ const UseASchemaAccordionItem = () => {
 
       <AccordionDetails sx={{ textAlign: 'start' }}>
         <Typography>
-          When you have a .zip schema bundle you can upload and then:
+          When you have a .json schema bundle you can upload and then:
         </Typography>
         {/* <Typography>
           <strong>Validate</strong> the schema to ensure it is well-formed.
@@ -57,7 +57,7 @@ const UseASchemaAccordionItem = () => {
           <strong>View</strong> the schema and <strong>Edit</strong> the schema if needed.
         </Typography>
         <Typography>
-          The .zip schema bundle is machine-readable; <strong>generate</strong> the Readme to create a human-readable simple text version.
+          The .json schema bundle is machine-readable; <strong>generate</strong> the Readme to create a human-readable simple text version.
         </Typography>
 
         <Drop

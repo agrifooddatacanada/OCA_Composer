@@ -17,7 +17,8 @@ export default function Drop({
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: {
       "application/vnd.ms-excel": version === 1 ? [] : [".csv", ".xls", ".xlsx"],
-      "application/zip": ['.zip'],
+      // "application/zip": ['.zip'],
+      "application/json": [".json"]
     },
     maxSize: 10485760,
     onDropRejected: (file) => {
