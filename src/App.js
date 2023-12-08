@@ -104,7 +104,7 @@ function App() {
     }
   }, [currentPage]);
 
-  //Measuring page views
+
   useEffect(() => {
     ReactGA.pageview();
   }, []);

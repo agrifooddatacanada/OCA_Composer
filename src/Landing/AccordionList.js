@@ -130,17 +130,7 @@ const AccordionList = () => {
             }}
             onClick={navigateToStartPage}
           />
-          {/* <CustomAnchorLink
-            text='Find a schema'
-            overrideStyle={{
-              fontSize: '20px',
-              fontWeight: '500',
-              color: CustomPalette.PRIMARY,
-              marginLeft: 0,
-              marginTop: 2,
-            }}
-            onClick={navigateToStartPage}
-          /> */}
+
           {/* <CustomAnchorLink
             link='https://www.semanticengine.org/#/develop'
             text='Parse a schema'
@@ -218,7 +208,11 @@ const AccordionList = () => {
             <Button
               variant='contained'
               color='navButton'
+
+              
+
               onClick={() => generateDataEntryV2(rawFile, setLoading)}
+
               sx={{
                 backgroundColor: CustomPalette.PRIMARY,
                 ':hover': { backgroundColor: CustomPalette.SECONDARY },
