@@ -209,7 +209,7 @@ const AccordionList = () => {
               variant='contained'
               color='navButton'
 
-              onClick={() => generateDataEntry(rawFile, setLoading)}
+              
 
               onClick={() => generateDataEntryV2(rawFile, setLoading)}
 
