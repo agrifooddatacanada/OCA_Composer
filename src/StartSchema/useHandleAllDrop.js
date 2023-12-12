@@ -309,96 +309,100 @@ const useHandleAllDrop = () => {
   }, [processExcelFile]);
 
 
-  // const handleZipDrop = useCallback((acceptedFiles) => {
-  //   try {
-  //     setLoading(true);
-  //     const reader = new FileReader();
+  const handleZipDrop = useCallback((acceptedFiles) => {
+    try {
+      setLoading(true);
+      const reader = new FileReader();
 
-  //     reader.onload = async (e) => {
-  //       const zip = await JSZip.loadAsync(e.target.result);
-  //       const languageList = [];
-  //       const informationList = [];
-  //       const labelList = [];
-  //       const metaList = [];
-  //       const entryList = [];
-  //       const allJSONFiles = [];
-  //       let entryCodeSummary = {};
-  //       let conformance = undefined;
-  //       let characterEncoding = undefined;
-  //       let loadUnits = undefined;
-  //       let formatRules = undefined;
+      reader.onload = async (e) => {
+        const zip = await JSZip.loadAsync(e.target.result);
+        const languageList = [];
+        const informationList = [];
+        const labelList = [];
+        const metaList = [];
+        const entryList = [];
+        const allJSONFiles = [];
+        let entryCodeSummary = {};
+        let conformance = undefined;
+        let characterEncoding = undefined;
+        let loadUnits = undefined;
+        let formatRules = undefined;
 
-  //       // load up metadata file in OCA bundle
-  //       const loadMetadataFile = await zip.files["meta.json"].async("text");
-  //       const metadataJson = JSON.parse(loadMetadataFile);
-  //       const root = metadataJson.root;
-  //       allJSONFiles.push(loadMetadataFile);
+        // load up metadata file in OCA bundle
+        const loadMetadataFile = await zip.files["meta.json"].async("text");
+        const metadataJson = JSON.parse(loadMetadataFile);
+        const root = metadataJson.root;
+        allJSONFiles.push(loadMetadataFile);
 
-  //       // loop through all files in OCA bundle
-  //       for (const [key, file] of Object.entries(metadataJson.files[root])) {
-  //         const content = await zip.files[file + '.json'].async("text");
+        // loop through all files in OCA bundle
+        for (const [key, file] of Object.entries(metadataJson.files[root])) {
+          const content = await zip.files[file + '.json'].async("text");
 
-  //         if (key.includes("meta")) {
-  //           metaList.push(JSON.parse(content));
-  //           languageList.push(key.substring(6, 8));
-  //         }
+          if (key.includes("meta")) {
+            metaList.push(JSON.parse(content));
+            languageList.push(key.substring(6, 8));
+          }
 
-  //         if (key.includes("information")) {
-  //           informationList.push(JSON.parse(content));
-  //         }
+          if (key.includes("information")) {
+            informationList.push(JSON.parse(content));
+          } else if (key.includes("format")) {
+            // Format word is inside Information word, so we need to check if it is a format or information
+            formatRules = JSON.parse(content);
+          }
 
-  //         if (key.includes("label")) {
-  //           labelList.push(JSON.parse(content));
-  //         }
 
-  //         if (key.includes("entry (")) {
-  //           entryList.push(JSON.parse(content));
-  //         }
+          if (key.includes("label")) {
+            labelList.push(JSON.parse(content));
+          }
 
-  //         if (key.includes("entry_code")) {
-  //           entryCodeSummary = JSON.parse(content);
-  //         }
+          if (key.includes("entry (")) {
+            entryList.push(JSON.parse(content));
+          }
 
-  //         if (key.includes("conformance")) {
-  //           conformance = JSON.parse(content);
-  //         }
+          if (key.includes("entry_code")) {
+            entryCodeSummary = JSON.parse(content);
+          }
 
-  //         if (key.includes("character_encoding")) {
-  //           characterEncoding = JSON.parse(content);
-  //         }
+          if (key.includes("conformance")) {
+            conformance = JSON.parse(content);
+          }
 
-  //         if (key.includes("unit")) {
-  //           loadUnits = JSON.parse(content);
-  //         }
+          if (key.includes("character_encoding")) {
+            characterEncoding = JSON.parse(content);
+          }
 
-  //         allJSONFiles.push(content);
-  //       }
+          if (key.includes("unit")) {
+            loadUnits = JSON.parse(content);
+          }
 
-  //       const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
-  //       allJSONFiles.push(loadRoot);
+          allJSONFiles.push(content);
+        }
 
-  //       processLanguages(languageList);
-  //       processMetadata(metaList);
-  //       processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules);
-  //       setZipToReadme(allJSONFiles);
-  //     };
+        const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
+        allJSONFiles.push(loadRoot);
 
-  //     reader.readAsArrayBuffer(acceptedFiles[0]);
+        processLanguages(languageList);
+        processMetadata(metaList);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules);
+        setZipToReadme(allJSONFiles);
+      };
 
-  //     setTimeout(() => {
-  //       setDropDisabled(true);
-  //       setDropMessage({ message: "", type: "" });
-  //       setLoading(false);
-  //       setSwitchToLastPage(true);
-  //     }, 900);
-  //   } catch (error) {
-  //     setDropMessage({ message: messages.uploadFail, type: "error" });
-  //     setLoading(false);
-  //     setTimeout(() => {
-  //       setDropMessage({ message: "", type: "" });
-  //     }, [2500]);
-  //   }
-  // }, []);
+      reader.readAsArrayBuffer(acceptedFiles[0]);
+
+      setTimeout(() => {
+        setDropDisabled(true);
+        setDropMessage({ message: "", type: "" });
+        setLoading(false);
+        setSwitchToLastPage(true);
+      }, 900);
+    } catch (error) {
+      setDropMessage({ message: messages.uploadFail, type: "error" });
+      setLoading(false);
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, []);
 
   const handleJsonDrop = useCallback((acceptedFiles) => {
     try {
@@ -541,11 +545,10 @@ const useHandleAllDrop = () => {
       processCSVFile(rawFile[0]);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".xls")) {
       handleExcelDrop(rawFile);
+    } else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
+      setIsZip(true);
+      handleZipDrop(rawFile);
     }
-    // else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
-    //   setIsZip(true);
-    //   handleZipDrop(rawFile);
-    // } 
     else if (rawFile.length > 0 && rawFile[0].path.includes(".json")) {
       setIsZip(true);
       handleJsonDrop(rawFile);
@@ -559,7 +562,7 @@ const useHandleAllDrop = () => {
   }, [
     rawFile,
     handleExcelDrop,
-    // handleZipDrop, 
+    handleZipDrop,
     processCSVFile,
     setFileData
   ]);
