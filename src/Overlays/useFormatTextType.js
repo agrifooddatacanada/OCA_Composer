@@ -39,6 +39,7 @@ const formatCodeTextDescription = {
 };
 
 const formatCodeNumeric = [
+  "",
   "^[-+]?\\d*\\.?\\d+$",
   "^(0?(\\.\\d+)?|1(\\.0+)?)$",
   "^[0-9]*[1-9][0-9]*$",
@@ -47,6 +48,7 @@ const formatCodeNumeric = [
 ];
 
 const formatCodeNumericDescription = {
+  "": "",
   "^[-+]?\\d*\\.?\\d+$": "any integer or decimal number, may begin with + or -",
   "^(0?(\\.\\d+)?|1(\\.0+)?)$": "decimal numbers between 0 and 1, inclusive",
   "^[0-9]*[1-9][0-9]*$": "positive integers",
@@ -55,6 +57,7 @@ const formatCodeNumericDescription = {
 };
 
 const formatCodeDate = [
+  "",
   "YYYY-MM-DD",
   "YYYYMMDD",
   "YYYY-MM",
@@ -68,6 +71,7 @@ const formatCodeDate = [
 ];
 
 const formatCodeDateDescription = {
+  "": "",
   "YYYY-MM-DD": "year month day",
   "YYYYMMDD": "year month day",
   "YYYY-MM": "year month",
@@ -78,6 +82,7 @@ const formatCodeDateDescription = {
 };
 
 const formatCodeBinary = [
+  "",
   "application/epub+zip",
   "application/gzip",
   "application/json",
@@ -112,6 +117,7 @@ const formatCodeBinary = [
 ];
 
 const formatCodeBinaryDescription = {
+  "": "",
   "application/epub+zip": "Electronic publication (EPUB)",
   "application/gzip": "GZip Compressed Archive",
   "application/json": "JSON format (.json)",
@@ -206,7 +212,9 @@ const useFormatTextType = (gridRef) => {
               />
             </Box>)
         );
-
+        if (formatRuleRowData.length === 1) {
+          newButtonArray.push(<Box sx={{ height: "2.2rem" }} key={index + 2}></Box>);
+        }
       });
       setButtonArray(newButtonArray);
     }
