@@ -530,8 +530,13 @@ const useExportLogic = () => {
         });
 
         // Somehow semantic engine needs this when there are less than 3 attributes 
-        if (attributesList.length < 3) {
-          worksheetLanguage.getCell(6, 3).value = "";
+        if (attributesList.length < 4) {
+          const numberOfRowAdditions = 4 - attributesList.length;
+          for (let i = 0; i < numberOfRowAdditions; i++) {
+            worksheetLanguage.getCell(7 - i, 3).value = "";
+            worksheetLanguage.getCell(7 - i, 4).value = "";
+            worksheetLanguage.getCell(7 - i, 6).value = "";
+          }
         }
       });
     } catch (error) {
