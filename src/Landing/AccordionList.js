@@ -130,7 +130,7 @@ const AccordionList = () => {
             }}
             onClick={navigateToStartPage}
           />
-          <CustomAnchorLink
+          {/* <CustomAnchorLink
             text='Find a schema'
             overrideStyle={{
               fontSize: '20px',
@@ -140,7 +140,7 @@ const AccordionList = () => {
               marginTop: 2,
             }}
             onClick={navigateToStartPage}
-          />
+          /> */}
           {/* <CustomAnchorLink
             link='https://www.semanticengine.org/#/develop'
             text='Parse a schema'
