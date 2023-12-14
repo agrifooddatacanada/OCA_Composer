@@ -114,6 +114,7 @@ const FormatRules = () => {
               rowData={attributeRowData}
               columnDefs={columnDefs}
               domLayout='autoHeight'
+              suppressHorizontalScroll={true}
             />
           </Box>
           <Box
