@@ -18,6 +18,8 @@ const useHandleAllDrop = () => {
     setZipToReadme,
     rawFile,
     setRawFile,
+    showDeprecationCard,
+    setShowDeprecationCard
   } = useContext(Context);
   const {
     processLanguages,
@@ -546,6 +548,9 @@ const useHandleAllDrop = () => {
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".xls")) {
       handleExcelDrop(rawFile);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
+      if (showDeprecationCard === null) {
+        setShowDeprecationCard(true);
+      }
       setIsZip(true);
       handleZipDrop(rawFile);
     }

@@ -12,11 +12,11 @@ import LinkCard from "./LinkCard";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import useExportLogic from "./useExportLogic";
 import { useNavigate } from "react-router-dom";
-import { set } from "react-ga";
+import DepreciatedWarningCard from "../Landing/DepreciatedWarningCard";
 
 export default function ViewSchema({ pageBack }) {
   const navigate = useNavigate();
-  const { languages, attributeRowData, lanAttributeRowData, isZip, isZipEdited, setIsZipEdited, characterEncodingRowData, setCurrentPage, history, setHistory, formatRuleRowData } = useContext(Context);
+  const { languages, attributeRowData, lanAttributeRowData, isZip, isZipEdited, setIsZipEdited, characterEncodingRowData, setCurrentPage, history, setHistory, formatRuleRowData, showDeprecationCard } = useContext(Context);
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
@@ -431,6 +431,7 @@ export default function ViewSchema({ pageBack }) {
             Clear All Data and Restart
           </Button>
         </Box>
+        {showDeprecationCard && isZip && <DepreciatedWarningCard />}
       </Box>
     </Box >
   );

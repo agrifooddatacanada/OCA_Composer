@@ -72,6 +72,7 @@ function App() {
   const [attributesWithLists, setAttributesWithLists] = useState([]);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
   const [showIntroCard, setShowIntroCard] = useState(true);
+  const [showDeprecationCard, setShowDeprecationCard] = useState(null);
   const [customIsos, setCustomIsos] = useState({});
 
   // Use for Overlays
@@ -293,6 +294,8 @@ function App() {
             setZipToReadme,
             isZipEdited,
             setIsZipEdited,
+            showDeprecationCard,
+            setShowDeprecationCard
           }}
         >
           <Box
