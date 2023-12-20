@@ -30,6 +30,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage('CharacterEncoding');
     } else if (item === 'Make selected entries required') {
       setCurrentPage('RequiredEntries');
+    } else if (item === 'Cardinality') {
+      setCurrentPage('Cardinality');
     } else {
       setCurrentPage('FormatRules');
     }
@@ -63,6 +65,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage('CharacterEncoding');
     } else if (overlayName === 'Make selected entries required') {
       setCurrentPage('RequiredEntries');
+    } else if (overlayName === 'Cardinality') {
+      setCurrentPage('Cardinality');
     } else {
       setCurrentPage('FormatRules');
     }
