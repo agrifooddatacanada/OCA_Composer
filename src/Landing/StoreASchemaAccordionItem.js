@@ -32,7 +32,7 @@ const StoreASchemaAccordionItem = () => {
         <Typography sx={{ marginTop: '20px', marginBottom: '20px' }}>
           Store the .json machine-readable version and the .txt human-readable version together for best usability.
         </Typography>
-        <CustomAnchorLink link='https://agrifooddatacanada.github.io/OCA_training_pathway/deposit_schema.html' text="Read more about storage" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY }} />
+        <CustomAnchorLink link='/help_storage' text="Read more about storage" overrideStyle={{ fontSize: '20px', fontWeight: '500', color: CustomPalette.PRIMARY }} />
       </AccordionDetails>
     </AccordionItemWrapper>
   );
