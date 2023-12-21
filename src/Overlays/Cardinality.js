@@ -212,14 +212,14 @@ const Cardinality = () => {
     {
       headerName: 'Attribute',
       field: 'Attribute',
-      width: 120,
+      width: 160,
       autoHeight: true,
       cellStyle: () => preWrapWordBreak,
     },
     {
       headerName: 'Label',
       field: 'Label',
-      width: 120,
+      width: 200,
       autoHeight: true,
       cellStyle: () => preWrapWordBreak,
     },
@@ -250,7 +250,7 @@ const Cardinality = () => {
           width: '100%'
         }}
       >
-        <Box className="ag-theme-balham" sx={{ width: '50%', height: '100%', maxWidth: '460px' }}>
+        <Box className="ag-theme-balham" sx={{ width: '50%', height: '100%', maxWidth: '580px' }}>
           <style>{gridStyles}</style>
           <AgGridReact rowData={cardinalityData} columnDefs={columnDefs} gridOptions={gridOptions} />
         </Box>
@@ -321,11 +321,12 @@ const Cardinality = () => {
                   ':hover': { backgroundColor: CustomPalette.SECONDARY },
                   width: '100%',
                   maxWidth: '100px',
-                  marginTop: '30px',
+                  marginTop: '35px',
                 }}
               >
                 Apply
               </Button>
+              <Typography style={{ marginTop: '20px', color: 'red' }}>NOTE: Please leave blank to not specify a min or max value</Typography>
             </>
           )}
         </Box>
