@@ -14,8 +14,8 @@ const Cardinality = () => {
     setCurrentPage,
     setSelectedOverlay,
     lanAttributeRowData,
-    setGridData,
-    gridData
+    setCardinalityData,
+    cardinalityData
   } = useContext(Context);
 
   const [selectedCellData, setSelectedCellData] = useState(null);
@@ -27,7 +27,6 @@ const Cardinality = () => {
   const [max, setMax] = useState('');
   const [test, setTest] = useState(false);
 
-
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [valuesApplied, setValuesApplied] = useState(false);
@@ -37,11 +36,9 @@ const Cardinality = () => {
     setCurrentPage('Overlays');
   };
 
-
   const handleCellClick = (params) => {
     if (params.colDef.field === 'EntryLimit') {
       const entryLimit = params.data.EntryLimit;
-
 
       if (entryLimit !== null && entryLimit !== undefined) {
         if (entryLimit.includes('-')) {
@@ -75,11 +72,8 @@ const Cardinality = () => {
         setExact('');
         setTest(false);
       }
-
-
     }
   };
-
 
   const handleClearValues = () => {
     setExactValue('');
@@ -87,7 +81,6 @@ const Cardinality = () => {
     setMaxValue('');
 
   };
-
 
   const trashCanbutton = (params) => {
 
@@ -108,9 +101,6 @@ const Cardinality = () => {
 
   };
 
-
-
-
   const handleValueChange = (value, type) => {
     switch (type) {
       case 'exact':
@@ -128,10 +118,6 @@ const Cardinality = () => {
         break;
     }
   };
-
-
-
-
 
   const handleApplyValues = () => {
     if (selectedCellData) {
@@ -155,7 +141,7 @@ const Cardinality = () => {
       }
 
 
-      setGridData((prevGridData) => {
+      setCardinalityData((prevGridData) => {
         const updatedData = [...prevGridData];
         const index = updatedData.findIndex(
           (item) => item.Attribute === selectedCellData.Attribute
@@ -200,15 +186,12 @@ const Cardinality = () => {
     }
   };
 
-
   const isNotInteger = (value) => {
     const stringValue = value;
     const num = +stringValue;
     console.log(num);
     return Number.isInteger(num);
   };
-
-
 
   useEffect(() => {
     const flattenedData = Object.values(lanAttributeRowData).flatMap((languageData) =>
@@ -218,13 +201,12 @@ const Cardinality = () => {
         EntryLimit: row.EntryLimit,
       }))
     );
-    setGridData(flattenedData);
+    setCardinalityData(flattenedData);
   }, [lanAttributeRowData]);
 
   const gridOptions = {
     domLayout: 'autoHeight',
   };
-
 
   const columnDefs = [
     {
@@ -239,6 +221,7 @@ const Cardinality = () => {
       field: 'Label',
       width: 120,
       autoHeight: true,
+      cellStyle: () => preWrapWordBreak,
     },
     {
       headerName: 'Entry Limit',
@@ -255,9 +238,6 @@ const Cardinality = () => {
     },
   ];
 
-
-
-
   return (
     <BackNextSkeleton isForward pageForward={handleForward}>
       <Box
@@ -266,13 +246,13 @@ const Cardinality = () => {
           gap: '3rem',
           display: 'flex',
           flexDirection: 'row',
+          justifyContent: 'center',
           width: '100%'
-
         }}
       >
-        <Box className="ag-theme-balham" sx={{ flex: 1, height: '100%', width: '100%' }}>
+        <Box className="ag-theme-balham" sx={{ width: '50%', height: '100%', maxWidth: '460px' }}>
           <style>{gridStyles}</style>
-          <AgGridReact rowData={gridData} columnDefs={columnDefs} gridOptions={gridOptions} />
+          <AgGridReact rowData={cardinalityData} columnDefs={columnDefs} gridOptions={gridOptions} />
         </Box>
 
         <Divider orientation="vertical" flexItem />
@@ -280,6 +260,7 @@ const Cardinality = () => {
         <Box
           style={{
             width: '50%',
+            maxWidth: '660px',
             height: '300px',
             border: '1px solid #ccc',
             borderRadius: '4px',
@@ -328,9 +309,23 @@ const Cardinality = () => {
                 />
               </Box>
 
-              <Box sx={{ marginTop: '10px', position: 'relative' }}>
+              {/* <Box sx={{ marginTop: '10px', position: 'relative' }}>
                 <button onClick={handleApplyValues}>Apply</button>
-              </Box>
+              </Box> */}
+              <Button
+                variant='contained'
+                color='navButton'
+                onClick={handleApplyValues}
+                sx={{
+                  backgroundColor: CustomPalette.PRIMARY,
+                  ':hover': { backgroundColor: CustomPalette.SECONDARY },
+                  width: '100%',
+                  maxWidth: '100px',
+                  marginTop: '30px',
+                }}
+              >
+                Apply
+              </Button>
             </>
           )}
         </Box>

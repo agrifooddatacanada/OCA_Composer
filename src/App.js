@@ -82,7 +82,7 @@ function App() {
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
 
-  const [gridData, setGridData] = useState([]);
+  const [cardinalityData, setCardinalityData] = useState([]);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -299,8 +299,8 @@ function App() {
             setIsZipEdited,
             showDeprecationCard,
             setShowDeprecationCard,
-            gridData,
-            setGridData
+            cardinalityData,
+            setCardinalityData
           }}
         >
           <Box
