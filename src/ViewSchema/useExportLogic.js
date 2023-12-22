@@ -420,7 +420,6 @@ const useExportLogic = () => {
         }
 
         if (overlay["Cardinality"].selected) {
-          console.log('cardinalityData', cardinalityData);
           if (cardinalityData[index]['EntryLimit'] && cardinalityData[index]['EntryLimit'] !== "") {
             worksheetMain.getCell(index + 4, 9).value = cardinalityData[index]['EntryLimit'];
           }
