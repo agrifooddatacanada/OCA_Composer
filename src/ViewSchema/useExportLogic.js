@@ -44,7 +44,8 @@ const useExportLogic = () => {
     setZipToReadme,
     setIsZip,
     setRawFile,
-    formatRuleRowData
+    formatRuleRowData,
+    cardinalityData
   } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
 
@@ -337,6 +338,7 @@ const useExportLogic = () => {
         "OL-CH: Character Encoding",
         "OL-FT: Format",
         "OL-EC: Entry Code",
+        "OL-CR: Cardinality",
         "OL-CN: Conformance",
         "OL-UT: Unit",
         "CB-RS: Reference",
@@ -374,6 +376,7 @@ const useExportLogic = () => {
         if (dataArray[1]?.[index]?.Flagged && dataArray[1]?.[index]?.Flagged !== '') {
           flaggedCell.value = dataArray[1][index].Flagged;
         }
+
         flaggedCell.dataValidation = {
           type: "list",
           allowBlank: true,
@@ -416,7 +419,14 @@ const useExportLogic = () => {
           entryCodesCell.value = entryString.slice(1);
         }
 
-        const conformanceCell = worksheetMain.getCell(index + 4, 9);
+        if (overlay["Cardinality"].selected) {
+          console.log('cardinalityData', cardinalityData);
+          if (cardinalityData[index]['EntryLimit'] && cardinalityData[index]['EntryLimit'] !== "") {
+            worksheetMain.getCell(index + 4, 9).value = cardinalityData[index]['EntryLimit'];
+          }
+        }
+
+        const conformanceCell = worksheetMain.getCell(index + 4, 10);
         conformanceCell.dataValidation = {
           type: "list",
           allowBlank: true,
@@ -428,7 +438,7 @@ const useExportLogic = () => {
         }
 
         if (dataArray[1]?.[index] && dataArray[1][index].Unit && dataArray[1][index].Unit !== '') {
-          worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
+          worksheetMain.getCell(index + 4, 11).value = dataArray[1][index].Unit;
         }
 
         // const referenceCell = worksheetMain.getCell(index + 4, 11);

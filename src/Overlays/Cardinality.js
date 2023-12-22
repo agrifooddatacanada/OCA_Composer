@@ -25,11 +25,9 @@ const Cardinality = () => {
   const [exact, setExact] = useState('');
   const [min, setMin] = useState('');
   const [max, setMax] = useState('');
-  const [test, setTest] = useState(false);
 
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
-  const [valuesApplied, setValuesApplied] = useState(false);
 
   const handleForward = () => {
     setSelectedOverlay('');
@@ -37,52 +35,63 @@ const Cardinality = () => {
   };
 
   const handleCellClick = (params) => {
-    if (params.colDef.field === 'EntryLimit') {
-      const entryLimit = params.data.EntryLimit;
+    if (params.colDef.field === 'EntryLimit' || params.colDef.field === 'Attribute' || params.colDef.field === 'Label') {
+      const entryLimit = params?.data.EntryLimit;
 
       if (entryLimit !== null && entryLimit !== undefined) {
         if (entryLimit.includes('-')) {
           const [MIN, MAX] = entryLimit.split('-').map((value) => value.trim());
-          setSelectedCellData(params.data);
+          setSelectedCellData(params?.data);
           setExactValue('');
           setMinValue(MIN);
           setMaxValue(MAX);
           setMin(MIN);
           setMax(MAX);
           setExact('');
-          setTest(true);
+          // setTest(true);
 
         } else {
-          setSelectedCellData(params.data);
+          setSelectedCellData(params?.data);
           setExactValue(entryLimit);
           setMinValue('');
           setMaxValue('');
           setMin('');
           setMax('');
           setExact(entryLimit);
-          setTest(true);
         }
       } else {
-        setSelectedCellData(params.data);
+        setSelectedCellData(params?.data);
         setExactValue('');
         setMinValue('');
         setMaxValue('');
         setMin('');
         setMax('');
         setExact('');
-        setTest(false);
       }
     }
   };
 
-  const handleClearValues = () => {
+  const handleClearValues = (params) => {
+    setCardinalityData((prevGridData) => {
+      const updatedData = [...prevGridData];
+      const index = updatedData.findIndex(
+        (item) => item.Attribute === params?.data?.Attribute
+      );
+      if (index !== -1) {
+        updatedData[index] = {
+          ...updatedData[index],
+          EntryLimit: '',
+        };
+      }
+      return updatedData;
+    });
     setExactValue('');
     setMinValue('');
     setMaxValue('');
 
   };
 
-  const trashCanbutton = (params) => {
+  const trashCanButton = (params) => {
 
     return (
       <IconButton
@@ -92,7 +101,7 @@ const Cardinality = () => {
           transition: "all 0.2s ease-in-out",
         }}
         onClick={() => {
-          handleClearValues();
+          handleClearValues(params);
         }}
       >
         <DeleteOutlineIcon />
@@ -121,21 +130,27 @@ const Cardinality = () => {
 
   const handleApplyValues = () => {
     if (selectedCellData) {
-      if (minValue !== '' && maxValue !== '' && parseFloat(minValue) >= parseFloat(maxValue)) {
-        setDialogMessage('The minimum value must be less than the maximum value');
-        setOpenDialog(true);
-        return;
-      }
+      try {
+        if (minValue !== '' && maxValue !== '' && parseFloat(minValue) >= parseFloat(maxValue)) {
+          setDialogMessage('The minimum value must be less than the maximum value');
+          setOpenDialog(true);
+          return;
+        }
 
-      if (exactValue < 0 || minValue < 0 || maxValue < 0) {
-        setDialogMessage('All entries must be positive integers');
-        setOpenDialog(true);
-        return;
-      }
+        if (exactValue < 0 || minValue < 0 || maxValue < 0) {
+          setDialogMessage('All entries must be positive integers');
+          setOpenDialog(true);
+          return;
+        }
 
-      if (isNotInteger(exactValue) === false || isNotInteger(minValue) === false || isNotInteger(maxValue) === false) {
-        console.log(exactValue);
-        console.log(isNotInteger(exactValue));
+        if (isNotInteger(exactValue) === false || isNotInteger(minValue) === false || isNotInteger(maxValue) === false) {
+          setDialogMessage('All entries must be positive integers');
+          setOpenDialog(true);
+          return;
+        }
+
+      } catch (error) {
+        setDialogMessage('All entries must be valid integers');
         setOpenDialog(true);
         return;
       }
@@ -167,7 +182,7 @@ const Cardinality = () => {
       setMin(minValue);
       setMax(maxValue);
       setExact(exactValue);
-      setTest(true);
+      // setTest(true);
 
 
       if (minValue !== '' && maxValue !== '') {
@@ -189,19 +204,33 @@ const Cardinality = () => {
   const isNotInteger = (value) => {
     const stringValue = value;
     const num = +stringValue;
-    console.log(num);
     return Number.isInteger(num);
   };
 
   useEffect(() => {
-    const flattenedData = Object.values(lanAttributeRowData).flatMap((languageData) =>
-      languageData.map((row) => ({
-        Attribute: row.Attribute,
-        Label: row.Label,
-        EntryLimit: row.EntryLimit,
-      }))
-    );
-    setCardinalityData(flattenedData);
+    // const flattenedData = Object.values(lanAttributeRowData).flatMap((languageData) =>
+    //   languageData.map((row) => ({
+    //     Attribute: row.Attribute,
+    //     Label: row.Label,
+    //     EntryLimit: row.EntryLimit,
+    //   }))
+    // );
+    const firstLanguage = Object.keys(lanAttributeRowData)?.[0];
+    const cardinalityDataCopy = [];
+
+    if (cardinalityData.length > 0) {
+      for (const item of lanAttributeRowData?.[firstLanguage]) {
+        const entity = cardinalityData?.find((row) => row.Attribute === item.Attribute);
+        if (!entity) {
+          cardinalityDataCopy.push({ ...item });
+        } else {
+          cardinalityDataCopy.push({ ...entity });
+        }
+      }
+    } else {
+      cardinalityDataCopy.push(...lanAttributeRowData?.[firstLanguage]);
+    }
+    setCardinalityData(cardinalityDataCopy);
   }, [lanAttributeRowData]);
 
   const gridOptions = {
@@ -233,10 +262,15 @@ const Cardinality = () => {
     {
       headerName: '',
       field: 'Delete',
-      cellRendererFramework: trashCanbutton,
+      cellRendererFramework: trashCanButton,
       width: 100,
     },
   ];
+
+  const onCellClick = (params) => {
+    params.node.setSelected(true);
+    handleCellClick(params);
+  };
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward}>
@@ -252,7 +286,7 @@ const Cardinality = () => {
       >
         <Box className="ag-theme-balham" sx={{ width: '50%', height: '100%', maxWidth: '580px' }}>
           <style>{gridStyles}</style>
-          <AgGridReact rowData={cardinalityData} columnDefs={columnDefs} gridOptions={gridOptions} />
+          <AgGridReact onCellClicked={onCellClick} rowData={cardinalityData} columnDefs={columnDefs} gridOptions={gridOptions} />
         </Box>
 
         <Divider orientation="vertical" flexItem />
@@ -273,7 +307,6 @@ const Cardinality = () => {
               <TextField
                 label="Exact"
                 variant="outlined"
-                halfWidth
                 value={exactValue}
                 onChange={(e) => handleValueChange(e.target.value, 'exact')}
                 style={{
