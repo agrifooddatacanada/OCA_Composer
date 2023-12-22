@@ -85,6 +85,13 @@ export default function Header({ currentPage }) {
         setToolTipText('Placeholder text');
         setHelpLink('/format_text_help');
         break;
+      case 'Cardinality':
+        setHeader('Add Entry Limit Rules for Data Entry');
+        setToolTipText(
+          ''
+        );
+        setHelpLink('/required_entry_help');
+        break;
       default:
         setHeader('');
         setHelpLink('');

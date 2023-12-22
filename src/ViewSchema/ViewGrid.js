@@ -21,7 +21,7 @@ const gridStyles = `
 
 
 export default function ViewGrid({ displayArray, currentLanguage }) {
-  const { overlay } = useContext(Context);
+  const { overlay, cardinalityData } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
 
@@ -116,15 +116,20 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
 
   useEffect(() => {
     const newRowData = JSON.parse(JSON.stringify(displayArray));
+    const newCardinalityData = JSON.parse(JSON.stringify(cardinalityData));
 
-    newRowData.forEach((item) => {
+    newRowData.forEach((item, index) => {
       item.Description = item.Description[currentLanguage];
       item.Label = item.Label[currentLanguage];
       item.List = item.List[currentLanguage];
+
+      if (newCardinalityData[index] && newCardinalityData[index].EntryLimit) {
+        item.Cardinality = newCardinalityData[index].EntryLimit;
+      }
     });
 
     setRowData(newRowData);
-  }, [displayArray, currentLanguage]);
+  }, [displayArray, cardinalityData, currentLanguage]);
 
   return (
     <div className="ag-theme-balham" style={{ width: '100%' }}>

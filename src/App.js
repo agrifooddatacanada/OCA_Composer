@@ -38,6 +38,7 @@ const items = {
     feature: 'Add format rule for data',
     selected: false,
   },
+  "Cardinality": { feature: "Cardinality", selected: false }
 };
 
 export const pagesArray = [
@@ -80,6 +81,8 @@ function App() {
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
+
+  const [cardinalityData, setCardinalityData] = useState([]);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -295,7 +298,9 @@ function App() {
             isZipEdited,
             setIsZipEdited,
             showDeprecationCard,
-            setShowDeprecationCard
+            setShowDeprecationCard,
+            cardinalityData,
+            setCardinalityData
           }}
         >
           <Box
