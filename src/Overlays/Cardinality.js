@@ -88,7 +88,9 @@ const Cardinality = () => {
     setExactValue('');
     setMinValue('');
     setMaxValue('');
-
+    setMin('');
+    setMax('');
+    setExact('');
   };
 
   const trashCanButton = (params) => {
@@ -313,6 +315,7 @@ const Cardinality = () => {
                   marginBottom: '10px',
                   backgroundColor: min || max ? '#f2f2f2' : 'white',
                 }}
+                disabled={min || max}
               />
 
               <Typography variant="h6" align="center" style={{ marginBottom: '10px' }}>
@@ -329,6 +332,7 @@ const Cardinality = () => {
                   style={{
                     backgroundColor: exact ? '#f2f2f2' : 'white',
                   }}
+                  disabled={exact}
                 />
                 <TextField
                   label="Maximum"
@@ -339,6 +343,7 @@ const Cardinality = () => {
                   style={{
                     backgroundColor: exact ? '#f2f2f2' : 'white',
                   }}
+                  disabled={exact}
                 />
               </Box>
 
