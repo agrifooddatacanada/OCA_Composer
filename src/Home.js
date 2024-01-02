@@ -13,6 +13,7 @@ import RequiredEntries from './Overlays/RequiredEntries';
 import FormatRules from './Overlays/FormatRules';
 import { pagesArray } from './App';
 import { useEffect, useMemo } from 'react';
+import Cardinality from './Overlays/Cardinality';
 
 const Home = ({
   currentPage,
@@ -31,6 +32,7 @@ const Home = ({
       'CharacterEncoding',
       'RequiredEntries',
       'FormatRules',
+      'Cardinality'
     ];
   }, []);
 
@@ -69,6 +71,7 @@ const Home = ({
       {currentPage === 'CharacterEncoding' && <CharacterEncoding />}
       {currentPage === 'RequiredEntries' && <RequiredEntries />}
       {currentPage === 'FormatRules' && <FormatRules />}
+      {currentPage === "Cardinality" && <Cardinality />}
     </Box>
   );
 };
