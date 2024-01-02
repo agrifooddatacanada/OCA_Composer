@@ -22,6 +22,7 @@ import RequiredEntryHelp from './UsersHelp/Required_Entry_help';
 import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
 import ReactGA from 'react-ga';
 import FormatTextHelp from './UsersHelp/Format_Text_Help';
+import HelpStorage from './Landing/HelpStorage';
 
 export const Context = createContext();
 
@@ -330,6 +331,10 @@ function App() {
                 <Route
                   path='/help_designing_datasets'
                   element={<GuidanceForDesigningDataSets />}
+                />
+                <Route
+                  path='/help_storage'
+                  element={<HelpStorage />}
                 />
                 <Route
                   path='/add_entry_codes_help'

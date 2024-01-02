@@ -35,40 +35,39 @@ const Cardinality = () => {
   };
 
   const handleCellClick = (params) => {
-    if (params.colDef.field === 'EntryLimit' || params.colDef.field === 'Attribute' || params.colDef.field === 'Label') {
-      const entryLimit = params?.data.EntryLimit;
+    const entryLimit = params?.data.EntryLimit;
 
-      if (entryLimit !== null && entryLimit !== undefined) {
-        if (entryLimit.includes('-')) {
-          const [MIN, MAX] = entryLimit.split('-').map((value) => value.trim());
-          setSelectedCellData(params?.data);
-          setExactValue('');
-          setMinValue(MIN);
-          setMaxValue(MAX);
-          setMin(MIN);
-          setMax(MAX);
-          setExact('');
-          // setTest(true);
-
-        } else {
-          setSelectedCellData(params?.data);
-          setExactValue(entryLimit);
-          setMinValue('');
-          setMaxValue('');
-          setMin('');
-          setMax('');
-          setExact(entryLimit);
-        }
-      } else {
+    if (entryLimit !== null && entryLimit !== undefined && params.colDef.field !== 'Delete') {
+      if (entryLimit.includes('-')) {
+        const [MIN, MAX] = entryLimit.split('-').map((value) => value.trim());
         setSelectedCellData(params?.data);
         setExactValue('');
+        setMinValue(MIN);
+        setMaxValue(MAX);
+        setMin(MIN);
+        setMax(MAX);
+        setExact('');
+        // setTest(true);
+
+      } else {
+        setSelectedCellData(params?.data);
+        setExactValue(entryLimit);
         setMinValue('');
         setMaxValue('');
         setMin('');
         setMax('');
-        setExact('');
+        setExact(entryLimit);
       }
+    } else {
+      setSelectedCellData(params?.data);
+      setExactValue('');
+      setMinValue('');
+      setMaxValue('');
+      setMin('');
+      setMax('');
+      setExact('');
     }
+
   };
 
   const handleClearValues = (params) => {
@@ -88,7 +87,9 @@ const Cardinality = () => {
     setExactValue('');
     setMinValue('');
     setMaxValue('');
-
+    setMin('');
+    setMax('');
+    setExact('');
   };
 
   const trashCanButton = (params) => {
@@ -113,7 +114,7 @@ const Cardinality = () => {
   const handleValueChange = (value, type) => {
     switch (type) {
       case 'exact':
-        setExactValue(value || '0');
+        setExactValue(value || '');
 
         break;
       case 'min':
@@ -313,6 +314,7 @@ const Cardinality = () => {
                   marginBottom: '10px',
                   backgroundColor: min || max ? '#f2f2f2' : 'white',
                 }}
+                disabled={min || max}
               />
 
               <Typography variant="h6" align="center" style={{ marginBottom: '10px' }}>
@@ -329,6 +331,7 @@ const Cardinality = () => {
                   style={{
                     backgroundColor: exact ? '#f2f2f2' : 'white',
                   }}
+                  disabled={exact}
                 />
                 <TextField
                   label="Maximum"
@@ -339,6 +342,7 @@ const Cardinality = () => {
                   style={{
                     backgroundColor: exact ? '#f2f2f2' : 'white',
                   }}
+                  disabled={exact}
                 />
               </Box>
 
