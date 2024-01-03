@@ -139,16 +139,16 @@ const useZipParser = () => {
     }
 
     // Parse cardinality
-    const firstLanguage = Object.keys(newLangAttributeRowData)?.[0];
-    const cardinalityDataToParse = [];
-    for (const item of newLangAttributeRowData?.[firstLanguage]) {
-      const cardinality = cardinalityData?.['attribute_cardinality']?.[item.Attribute];
-      cardinalityDataToParse.push({
-        ...item,
-        EntryLimit: cardinality
-      });
-    }
     if (cardinalityData) {
+      const firstLanguage = Object.keys(newLangAttributeRowData)?.[0];
+      const cardinalityDataToParse = [];
+      for (const item of newLangAttributeRowData?.[firstLanguage]) {
+        const cardinality = cardinalityData?.['attribute_cardinality']?.[item.Attribute];
+        cardinalityDataToParse.push({
+          ...item,
+          EntryLimit: cardinality
+        });
+      }
       setOverlay(prev => ({
         ...prev,
         "Cardinality": {
