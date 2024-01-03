@@ -15,7 +15,8 @@ const useZipParser = () => {
     setSavedEntryCodes,
     setCharacterEncodingRowData,
     setOverlay,
-    setFormatRuleRowData
+    setFormatRuleRowData,
+    setCardinalityData
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -38,7 +39,7 @@ const useZipParser = () => {
     setSchemaDescription(newMetadata);
   };
 
-  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding, languageList, formatRules) => {
+  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding, languageList, formatRules, cardinalityData) => {
     const newSavedEntryCodes = {};
     const newLangAttributeRowData = {};
     const newAttributeRowData = [];
@@ -135,6 +136,27 @@ const useZipParser = () => {
           });
         }
       }
+    }
+
+    // Parse cardinality
+    const firstLanguage = Object.keys(newLangAttributeRowData)?.[0];
+    const cardinalityDataToParse = [];
+    for (const item of newLangAttributeRowData?.[firstLanguage]) {
+      const cardinality = cardinalityData?.['attribute_cardinality']?.[item.Attribute];
+      cardinalityDataToParse.push({
+        ...item,
+        EntryLimit: cardinality
+      });
+    }
+    if (cardinalityData) {
+      setOverlay(prev => ({
+        ...prev,
+        "Cardinality": {
+          ...prev["Cardinality"],
+          selected: true
+        }
+      }));
+      setCardinalityData(cardinalityDataToParse);
     }
 
     // Parse attributes details such as type and unit + Parsing conformance and character encoding to characterEncodingRowData
