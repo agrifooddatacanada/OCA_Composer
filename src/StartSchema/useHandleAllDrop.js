@@ -329,6 +329,7 @@ const useHandleAllDrop = () => {
         let characterEncoding = undefined;
         let loadUnits = undefined;
         let formatRules = undefined;
+        let cardinalityData = undefined;
 
         // load up metadata file in OCA bundle
         const loadMetadataFile = await zip.files["meta.json"].async("text");
@@ -377,6 +378,10 @@ const useHandleAllDrop = () => {
             loadUnits = JSON.parse(content);
           }
 
+          if (key.includes("cardinality")) {
+            cardinalityData = JSON.parse(content);
+          }
+
           allJSONFiles.push(content);
         }
 
@@ -385,7 +390,7 @@ const useHandleAllDrop = () => {
 
         processLanguages(languageList);
         processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData);
         setZipToReadme(allJSONFiles);
       };
 
@@ -425,6 +430,7 @@ const useHandleAllDrop = () => {
         let characterEncoding = undefined;
         let loadUnits = undefined;
         let formatRules = undefined;
+        let cardinalityData = undefined;
 
         // load up metadata file in OCA bundle
         if (jsonFile?.overlays?.meta) {
@@ -512,7 +518,7 @@ const useHandleAllDrop = () => {
 
         processLanguages(languageList);
         processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData);
         setZipToReadme(allJSONFiles);
       };
 
