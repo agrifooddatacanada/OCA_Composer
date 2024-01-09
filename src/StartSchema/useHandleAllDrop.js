@@ -412,7 +412,7 @@ const useHandleAllDrop = () => {
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const jsonFile = JSON.parse(e.target.result);
+        const jsonFile = JSON.parse(e.target.result)?.['bundle'];
         const languageList = [];
         const informationList = [];
         const labelList = [];
@@ -508,6 +508,10 @@ const useHandleAllDrop = () => {
             return JSON.stringify(entry);
           });
           allJSONFiles.push(...readmeEntry);
+        }
+
+        if (!languageList || languageList.length === 0) {
+          throw new Error('No language found in the JSON file');
         }
 
         processLanguages(languageList);
