@@ -11,6 +11,11 @@ import TypeTooltip from '../AttributeDetails/TypeTooltip';
 import useFormatTextType from './useFormatTextType';
 import DeleteConfirmation from './DeleteConfirmation';
 
+const allowOverflowStyle = {
+  ...preWrapWordBreak,
+  overflow: 'auto',
+};
+
 const FormatRules = () => {
   const {
     attributeRowData,
@@ -51,8 +56,7 @@ const FormatRules = () => {
         field: 'Attribute',
         editable: false,
         width: 180,
-        autoHeight: true,
-        cellStyle: () => preWrapWordBreak,
+        cellStyle: () => allowOverflowStyle,
         headerComponent: () => (
           <CellHeader
             headerText='Attribute'
@@ -115,6 +119,7 @@ const FormatRules = () => {
               columnDefs={columnDefs}
               domLayout='autoHeight'
               suppressHorizontalScroll={true}
+              rowHeight={50}
             />
           </Box>
           <Box
@@ -129,7 +134,7 @@ const FormatRules = () => {
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                justifyContent: "space-around",
+
               }}
             >
               {buttonArray}

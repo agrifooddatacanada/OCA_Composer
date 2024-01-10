@@ -188,6 +188,11 @@ const useFormatTextType = (gridRef) => {
               ref={ref}
               sx={{
                 ml: 1,
+                height: '50px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
               }}
             >
               <DeleteOutlineIcon
@@ -202,6 +207,7 @@ const useFormatTextType = (gridRef) => {
               ref={ref}
               sx={{
                 ml: 1,
+                height: '50px',
               }}
             >
               <DeleteOutlineIcon
