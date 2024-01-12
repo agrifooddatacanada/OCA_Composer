@@ -21,6 +21,7 @@ export const TrashCanButton = memo(
           pr: 1,
           color: CustomPalette.GREY_600,
           transition: "all 0.2s ease-in-out",
+          display: props.node.data?.FormatText === "" ? "none" : "block",
         }}
         onClick={onClick}
       >
@@ -52,6 +53,7 @@ export const FormatRuleTypeRenderer = memo(
         FormatText: e.target.value,
       });
       setIsDropdownOpen(false);
+      props.onRefresh();
     };
 
     const handleClick = () => {

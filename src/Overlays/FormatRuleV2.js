@@ -92,6 +92,11 @@ const FormatRulesV2 = () => {
         ),
         cellRendererFramework: FormatRuleTypeRenderer,
         width: 200,
+        cellRendererParams: (params) => ({
+          onRefresh: () => {
+            gridRef.current.api.redrawRows({ rowNodes: [params.node] });
+          }
+        }),
       },
       {
         headerName: '',
