@@ -169,7 +169,7 @@ export default function ViewSchema({ pageBack }) {
       }
 
       const attrWithFormatRule = formatRuleRowData.find((row) => row.Attribute === attributeName);
-      if (attrWithFormatRule['FormatText'] !== '') {
+      if (attrWithFormatRule?.['FormatText'] && attrWithFormatRule['FormatText'] !== '') {
         dataObject['Add format rule for data'] = attrWithFormatRule['FormatText'];
       }
 

@@ -8,23 +8,26 @@ import CellHeader from '../components/CellHeader';
 import { gridStyles, preWrapWordBreak } from '../constants/styles';
 import { greyCellStyle } from '../constants/styles';
 import TypeTooltip from '../AttributeDetails/TypeTooltip';
-import useFormatTextType from './useFormatTextType';
 import DeleteConfirmation from './DeleteConfirmation';
+import { FormatRuleTypeRenderer, TrashCanButton } from './FormatRuleCellRender';
 
-const FormatRules = () => {
+const allowOverflowStyle = {
+  ...preWrapWordBreak,
+  overflow: 'auto',
+};
+
+const FormatRulesV2 = () => {
   const {
-    attributeRowData,
     setCurrentPage,
     setSelectedOverlay,
     formatRuleRowData,
     characterEncodingRowData,
     setCharacterEncodingRowData,
     setOverlay,
+    setFormatRuleRowData
   } = useContext(Context);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const gridRef = useRef();
-  const { handleSave, FormatRuleTypeRenderer, buttonArray } =
-    useFormatTextType(gridRef);
 
   const handleDeleteCurrentOverlay = () => {
     setOverlay((prev) => ({
@@ -40,9 +43,22 @@ const FormatRules = () => {
       delete row['Add format rule for data'];
       return row;
     });
+
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setSelectedOverlay('');
     setCurrentPage('Overlays');
+  };
+
+  const handleForward = () => {
+    handleSave();
+    setSelectedOverlay('');
+    setCurrentPage('Overlays');
+  };
+
+  const handleSave = () => {
+    gridRef.current.api.stopEditing();
+    const attributeWithCharacterEncoding = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+    setFormatRuleRowData(attributeWithCharacterEncoding);
   };
 
   const columnDefs = useMemo(() => {
@@ -51,8 +67,7 @@ const FormatRules = () => {
         field: 'Attribute',
         editable: false,
         width: 180,
-        autoHeight: true,
-        cellStyle: () => preWrapWordBreak,
+        cellStyle: () => allowOverflowStyle,
         headerComponent: () => (
           <CellHeader
             headerText='Attribute'
@@ -75,20 +90,27 @@ const FormatRules = () => {
         headerComponent: () => (
           <CellHeader headerText='Format Rule' helpText='Placeholder text' />
         ),
-        cellRenderer: FormatRuleTypeRenderer,
-        cellRendererParams: (params) => ({
-          attr: params.data.Attribute,
-        }),
+        cellRendererFramework: FormatRuleTypeRenderer,
         width: 200,
+        cellRendererParams: (params) => ({
+          onRefresh: () => {
+            gridRef.current.api.redrawRows({ rowNodes: [params.node] });
+          }
+        }),
       },
+      {
+        headerName: '',
+        field: 'Delete',
+        cellRendererFramework: TrashCanButton,
+        width: 60,
+        cellRendererParams: (params) => ({
+          onRefresh: () => {
+            gridRef.current.api.redrawRows({ rowNodes: [params.node] });
+          }
+        }),
+      }
     ];
-  }, [formatRuleRowData]);
-
-  const handleForward = () => {
-    handleSave();
-    setSelectedOverlay('');
-    setCurrentPage('Overlays');
-  };
+  }, []);
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
@@ -106,35 +128,16 @@ const FormatRules = () => {
           flexDirection: 'column',
         }}
       >
-        <Box style={{ display: 'flex' }}>
-          <Box className='ag-theme-balham' sx={{ width: 530 }}>
-            <style>{gridStyles}</style>
-            <AgGridReact
-              ref={gridRef}
-              rowData={attributeRowData}
-              columnDefs={columnDefs}
-              domLayout='autoHeight'
-              suppressHorizontalScroll={true}
-            />
-          </Box>
-          <Box
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-end",
-            }}
-          >
-            <Box
-              sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-around",
-              }}
-            >
-              {buttonArray}
-            </Box>
-          </Box>
+        <Box className='ag-theme-balham' sx={{ width: 590 }}>
+          <style>{gridStyles}</style>
+          <AgGridReact
+            ref={gridRef}
+            rowData={formatRuleRowData}
+            columnDefs={columnDefs}
+            domLayout='autoHeight'
+            suppressHorizontalScroll={true}
+            rowHeight={50}
+          />
         </Box>
         <Box>
           Email {' '}
@@ -154,4 +157,4 @@ const FormatRules = () => {
   );
 };
 
-export default FormatRules;
+export default FormatRulesV2;

@@ -4,7 +4,6 @@ export const DropdownMenuList = ({
   handleKeyDown,
   type,
   handleChange,
-  dropRefs,
   handleClick,
   isDropdownOpen,
   setIsDropdownOpen,
@@ -36,7 +35,6 @@ export const DropdownMenuList = ({
             height: "100%",
             fontSize: "small",
           }}
-          ref={dropRefs}
           onClick={handleClick}
           open={isDropdownOpen}
           onClose={() => setIsDropdownOpen(false)}

@@ -170,7 +170,6 @@ const useZipParser = () => {
       });
 
       const newRowForCharacterEncoding = { Attribute: item };
-      const newFormatRuleData = { Attribute: item };
 
       if (conformance) {
         newRowForCharacterEncoding['Make selected entries required'] = conformance?.['attribute_conformance']?.[item] === "M";
@@ -194,10 +193,14 @@ const useZipParser = () => {
         }));
       }
 
+      newCharacterEncodingRowData.push(newRowForCharacterEncoding);
+    });
 
-      if (formatRules) {
-        // newRowForCharacterEncoding['Format Rules'] = formatRules?.['attribute_format_rules']?.[item] || formatRules?.['default_format_rules'];
-        newFormatRuleData['FormatText'] = formatRules?.['attribute_formats']?.[item] || '';
+    if (formatRules) {
+      newAttributeRowData.forEach((item) => {
+        const newFormatRuleData = { Attribute: item?.Attribute, Type: item?.Type };
+
+        newFormatRuleData['FormatText'] = formatRules?.['attribute_formats']?.[item.Attribute] || '';
         setOverlay(prev => ({
           ...prev,
           "Add format rule for data": {
@@ -205,10 +208,10 @@ const useZipParser = () => {
             selected: true
           }
         }));
-      }
-      newFormatRuleRowData.push(newFormatRuleData);
-      newCharacterEncodingRowData.push(newRowForCharacterEncoding);
-    });
+
+        newFormatRuleRowData.push(newFormatRuleData);
+      });
+    }
 
     setFormatRuleRowData(newFormatRuleRowData);
     setCharacterEncodingRowData(newCharacterEncodingRowData);

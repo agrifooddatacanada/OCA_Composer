@@ -10,10 +10,10 @@ import CreateManually from './CreateManually/CreateManually';
 import Overlays from './Overlays/Overlays';
 import CharacterEncoding from './Overlays/CharacterEncoding';
 import RequiredEntries from './Overlays/RequiredEntries';
-import FormatRules from './Overlays/FormatRules';
 import { pagesArray } from './App';
 import { useEffect, useMemo } from 'react';
 import Cardinality from './Overlays/Cardinality';
+import FormatRulesV2 from './Overlays/FormatRuleV2';
 
 const Home = ({
   currentPage,
@@ -70,7 +70,7 @@ const Home = ({
       )}
       {currentPage === 'CharacterEncoding' && <CharacterEncoding />}
       {currentPage === 'RequiredEntries' && <RequiredEntries />}
-      {currentPage === 'FormatRules' && <FormatRules />}
+      {currentPage === 'FormatRules' && <FormatRulesV2 />}
       {currentPage === "Cardinality" && <Cardinality />}
     </Box>
   );
