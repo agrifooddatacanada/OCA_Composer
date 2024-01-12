@@ -127,7 +127,6 @@ function App() {
   useEffect(() => {
     const newAttributesArray = [];
     const newCharacterEncodingArray = [];
-    const newFormatRuleArray = [];
     if (attributesList.length > 0) {
       const { selectedFeatures } = getListOfSelectedOverlays(overlay);
 
@@ -159,24 +158,32 @@ function App() {
           });
           newCharacterEncodingArray.push(newCharacterEncodingRow);
         }
-
-        const formatRuleObject = formatRuleRowData.find(
-          (obj) => obj.Attribute === item
-        );
-        if (formatRuleObject) {
-          newFormatRuleArray.push(formatRuleObject);
-        } else {
-          newFormatRuleArray.push({
-            Attribute: item,
-            FormatText: '',
-          });
-        }
       });
       setAttributeRowData(newAttributesArray);
       setCharacterEncodingRowData(newCharacterEncodingArray);
-      setFormatRuleRowData(newFormatRuleArray);
     }
   }, [attributesList]);
+
+  useEffect(() => {
+    const newFormatRuleArray = [];
+    attributeRowData.forEach((item) => {
+      const formatRuleObject = formatRuleRowData.find(
+        (obj) => obj.Attribute === item.Attribute
+      );
+
+      if (formatRuleObject && formatRuleObject.Type === item.Type) {
+        newFormatRuleArray.push(formatRuleObject);
+
+      } else {
+        newFormatRuleArray.push({
+          Attribute: item.Attribute,
+          Type: item.Type,
+          FormatText: '',
+        });
+      }
+    });
+    setFormatRuleRowData(newFormatRuleArray);
+  }, [attributeRowData]);
 
   function createEntryCodeRowData(
     languages,
