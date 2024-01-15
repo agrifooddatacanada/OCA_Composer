@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect, useContext, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { Context } from "../App";
 import { greyCellStyle } from "../constants/styles";
@@ -20,7 +20,7 @@ const gridStyles = `
 `;
 
 
-export default function ViewGrid({ displayArray, currentLanguage }) {
+export default function ViewGrid({ displayArray, currentLanguage, setLoading }) {
   const { overlay, cardinalityData } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
@@ -131,6 +131,10 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
     setRowData(newRowData);
   }, [displayArray, cardinalityData, currentLanguage]);
 
+  const onGridReady = useCallback(() => {
+    setLoading(false);
+  }, []);
+
   return (
     <div className="ag-theme-balham" style={{ width: '100%' }}>
       <style>{gridStyles}</style>
@@ -139,6 +143,7 @@ export default function ViewGrid({ displayArray, currentLanguage }) {
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         domLayout="autoHeight"
+        onGridReady={onGridReady}
       />
     </div>
   );

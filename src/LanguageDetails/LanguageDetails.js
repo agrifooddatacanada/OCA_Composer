@@ -7,6 +7,7 @@ import { CustomPalette } from "../constants/customPalette";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import Loading from "../components/Loading";
 
 export default function LanguageDetails({ pageBack, pageForward }) {
   const {
@@ -18,7 +19,7 @@ export default function LanguageDetails({ pageBack, pageForward }) {
   } = useContext(Context);
 
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
-
+  const [loading, setLoading] = useState(true);
   const gridRef = useRef();
   const refContainer = useRef();
   const entryCodesRef = useRef();
@@ -142,6 +143,7 @@ export default function LanguageDetails({ pageBack, pageForward }) {
 
   return (
     <BackNextSkeleton isBack pageBack={handlePageBack} isForward pageForward={pageForwardSave}>
+      {loading && lanAttributeRowData[languages[0]].length > 40 && <Loading />}
       <Box
         sx={{
           margin: "2rem",
@@ -180,7 +182,7 @@ export default function LanguageDetails({ pageBack, pageForward }) {
           </Tooltip>
         </Box>
         <div ref={refContainer}>
-          <LanGrid gridRef={gridRef} currentLanguage={currentLanguage} />
+          <LanGrid gridRef={gridRef} currentLanguage={currentLanguage} setLoading={setLoading} />
         </div>
       </Box>
     </BackNextSkeleton>
