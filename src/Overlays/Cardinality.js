@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback, useMemo, useRef, memo, forwardRef } from 'react';
 import { Context } from '../App';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { Box, Divider, TextField, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'; // Import necessary components for the dialog/pop-up
@@ -8,92 +8,15 @@ import 'ag-grid-community/styles/ag-theme-balham.css';
 import { gridStyles, preWrapWordBreak } from '../constants/styles';
 import { CustomPalette } from "../constants/customPalette";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import Loading from '../components/Loading';
+import DeleteConfirmation from './DeleteConfirmation';
 
-const Cardinality = () => {
-  const {
-    setCurrentPage,
-    setSelectedOverlay,
-    lanAttributeRowData,
-    setCardinalityData,
-    cardinalityData
-  } = useContext(Context);
+const gridOptions = {
+  domLayout: 'autoHeight',
+};
 
-  const [selectedCellData, setSelectedCellData] = useState(null);
-  const [exactValue, setExactValue] = useState('');
-  const [minValue, setMinValue] = useState('');
-  const [maxValue, setMaxValue] = useState('');
-  const [exact, setExact] = useState('');
-  const [min, setMin] = useState('');
-  const [max, setMax] = useState('');
-
-  const [openDialog, setOpenDialog] = useState(false);
-  const [dialogMessage, setDialogMessage] = useState('');
-
-  const handleForward = () => {
-    setSelectedOverlay('');
-    setCurrentPage('Overlays');
-  };
-
-  const handleCellClick = (params) => {
-    const entryLimit = params?.data.EntryLimit;
-
-    if (entryLimit !== null && entryLimit !== undefined && params.colDef.field !== 'Delete') {
-      if (entryLimit.includes('-')) {
-        const [MIN, MAX] = entryLimit.split('-').map((value) => value.trim());
-        setSelectedCellData(params?.data);
-        setExactValue('');
-        setMinValue(MIN);
-        setMaxValue(MAX);
-        setMin(MIN);
-        setMax(MAX);
-        setExact('');
-        // setTest(true);
-
-      } else {
-        setSelectedCellData(params?.data);
-        setExactValue(entryLimit);
-        setMinValue('');
-        setMaxValue('');
-        setMin('');
-        setMax('');
-        setExact(entryLimit);
-      }
-    } else {
-      setSelectedCellData(params?.data);
-      setExactValue('');
-      setMinValue('');
-      setMaxValue('');
-      setMin('');
-      setMax('');
-      setExact('');
-    }
-
-  };
-
-  const handleClearValues = (params) => {
-    setCardinalityData((prevGridData) => {
-      const updatedData = [...prevGridData];
-      const index = updatedData.findIndex(
-        (item) => item.Attribute === params?.data?.Attribute
-      );
-      if (index !== -1) {
-        updatedData[index] = {
-          ...updatedData[index],
-          EntryLimit: '',
-        };
-      }
-      return updatedData;
-    });
-    setExactValue('');
-    setMinValue('');
-    setMaxValue('');
-    setMin('');
-    setMax('');
-    setExact('');
-  };
-
-  const trashCanButton = (params) => {
-
+const TrashCanButton = memo(
+  forwardRef((props, ref) => {
     return (
       <IconButton
         sx={{
@@ -101,25 +24,89 @@ const Cardinality = () => {
           color: CustomPalette.GREY_600,
           transition: "all 0.2s ease-in-out",
         }}
-        onClick={() => {
-          handleClearValues(params);
-        }}
+        disabled={props.node.data?.EntryLimit === ''}
+        onClick={() => props?.handleDeleteRow()}
       >
         <DeleteOutlineIcon />
       </IconButton>
     );
+  }));
 
-  };
+const Cardinality = () => {
+  const {
+    setCurrentPage,
+    setSelectedOverlay,
+    lanAttributeRowData,
+    setCardinalityData,
+    cardinalityData,
+    setOverlay
+  } = useContext(Context);
+  const cardinalityRef = useRef();
+  const [loading, setLoading] = useState(true);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [selectedCellData, setSelectedCellData] = useState(null);
+  const [exactValue, setExactValue] = useState('');
+  const [minValue, setMinValue] = useState('');
+  const [maxValue, setMaxValue] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
 
-  const handleValueChange = (value, type) => {
+  const handleSave = useCallback(() => {
+    cardinalityRef.current.api.stopEditing();
+    const newCardinalityData = cardinalityRef.current.api.getRenderedNodes()?.map(node => node?.data);
+    setCardinalityData(newCardinalityData);
+  }, [setCardinalityData]);
+
+  const handleForward = useCallback(() => {
+    handleSave();
+    setSelectedOverlay('');
+    setCurrentPage('Overlays');
+  }, [handleSave, setCurrentPage, setSelectedOverlay]);
+
+  const handleCellClick = useCallback((params) => {
+    const entryLimit = params?.data.EntryLimit;
+    const selectedDataToSave = { ...params?.data, rowIndex: params?.rowIndex };
+
+    if (entryLimit !== null && entryLimit !== undefined && params.colDef.field !== 'Delete') {
+      if (entryLimit.includes('-')) {
+        const [MIN, MAX] = entryLimit.split('-').map((value) => value.trim());
+        setSelectedCellData(selectedDataToSave);
+        setExactValue('');
+        setMinValue(MIN);
+        setMaxValue(MAX);
+      } else {
+        setSelectedCellData(selectedDataToSave);
+        setExactValue(entryLimit);
+        setMinValue('');
+        setMaxValue('');
+      }
+    } else {
+      setSelectedCellData(selectedDataToSave);
+      setExactValue('');
+      setMinValue('');
+      setMaxValue('');
+    }
+  }, []);
+
+  const handleDeleteRow = useCallback((params) => {
+    setSelectedCellData({ ...params?.data, rowIndex: params?.rowIndex });
+    params.node.updateData({
+      ...params.node.data,
+      EntryLimit: '',
+    });
+    cardinalityRef.current.api.redrawRows({ rowNodes: [params.node] });
+    setExactValue('');
+    setMinValue('');
+    setMaxValue('');
+  }, []);
+
+  const handleValueChange = useCallback((value, type) => {
     switch (type) {
       case 'exact':
         setExactValue(value || '');
-
         break;
       case 'min':
         setMinValue(value);
-
         break;
       case 'max':
         setMaxValue(value);
@@ -127,9 +114,15 @@ const Cardinality = () => {
       default:
         break;
     }
-  };
+  }, []);
 
-  const handleApplyValues = () => {
+  const isNotInteger = useCallback((value) => {
+    const stringValue = value;
+    const num = +stringValue;
+    return Number.isInteger(num);
+  }, []);
+
+  const handleApplyValues = useCallback(() => {
     if (selectedCellData) {
       try {
         if (minValue !== '' && maxValue !== '' && parseFloat(minValue) >= parseFloat(maxValue)) {
@@ -156,89 +149,29 @@ const Cardinality = () => {
         return;
       }
 
-
-      setCardinalityData((prevGridData) => {
-        const updatedData = [...prevGridData];
-        const index = updatedData.findIndex(
-          (item) => item.Attribute === selectedCellData.Attribute
-        );
-        if (index !== -1) {
-          let entryLimitValue = '';
-          if (minValue && maxValue) {
-            entryLimitValue = `${minValue}-${maxValue}`;
-          } else if (minValue) {
-            entryLimitValue = `${minValue}-`;
-          } else if (maxValue) {
-            entryLimitValue = `-${maxValue}`;
-          } else {
-            entryLimitValue = exactValue || '0'; // Set '0' if all fields are empty
-          }
-          updatedData[index] = {
-            ...updatedData[index],
-            EntryLimit: entryLimitValue,
-          };
-        }
-        return updatedData;
-      });
-      setMin(minValue);
-      setMax(maxValue);
-      setExact(exactValue);
-      // setTest(true);
-
-
+      const getRowToUpdate = cardinalityRef.current.api.getRowNode(selectedCellData.rowIndex);
+      getRowToUpdate.setData({ ...selectedCellData, EntryLimit: exactValue || `${minValue}-${maxValue}` });
       if (minValue !== '' && maxValue !== '') {
         setExactValue('');
-        setExact('');
       } else if (minValue === '' && maxValue === '' && exactValue === '') {
         setExactValue('0');
-        setExact('0');
       } else if (minValue === '' && maxValue === '' && exactValue !== '') {
         setMinValue('');
         setMaxValue('');
-        setMin('');
-        setMax('');
       }
-
     }
-  };
+  }, [exactValue, isNotInteger, maxValue, minValue, selectedCellData]);
 
-  const isNotInteger = (value) => {
-    const stringValue = value;
-    const num = +stringValue;
-    return Number.isInteger(num);
-  };
+  const onCellClick = useCallback((params) => {
+    params.node.setSelected(true);
+    handleCellClick(params);
+  }, [handleCellClick]);
 
-  useEffect(() => {
-    // const flattenedData = Object.values(lanAttributeRowData).flatMap((languageData) =>
-    //   languageData.map((row) => ({
-    //     Attribute: row.Attribute,
-    //     Label: row.Label,
-    //     EntryLimit: row.EntryLimit,
-    //   }))
-    // );
-    const firstLanguage = Object.keys(lanAttributeRowData)?.[0];
-    const cardinalityDataCopy = [];
+  const onGridReady = useCallback(() => {
+    setLoading(false);
+  }, []);
 
-    if (cardinalityData.length > 0) {
-      for (const item of lanAttributeRowData?.[firstLanguage]) {
-        const entity = cardinalityData?.find((row) => row.Attribute === item.Attribute);
-        if (!entity) {
-          cardinalityDataCopy.push({ ...item });
-        } else {
-          cardinalityDataCopy.push({ ...entity });
-        }
-      }
-    } else {
-      cardinalityDataCopy.push(...lanAttributeRowData?.[firstLanguage]);
-    }
-    setCardinalityData(cardinalityDataCopy);
-  }, [lanAttributeRowData]);
-
-  const gridOptions = {
-    domLayout: 'autoHeight',
-  };
-
-  const columnDefs = [
+  const columnDefs = useMemo(() => [
     {
       headerName: 'Attribute',
       field: 'Attribute',
@@ -263,18 +196,68 @@ const Cardinality = () => {
     {
       headerName: '',
       field: 'Delete',
-      cellRendererFramework: trashCanButton,
+      cellRendererFramework: TrashCanButton,
+      cellRendererParams: (params) => ({
+        handleDeleteRow: () => handleDeleteRow(params)
+      }),
       width: 100,
     },
-  ];
+  ], [handleCellClick, handleDeleteRow]);
 
-  const onCellClick = (params) => {
-    params.node.setSelected(true);
-    handleCellClick(params);
+  const handleDeleteCurrentOverlay = () => {
+    setOverlay((prev) => ({
+      ...prev,
+      "Cardinality": {
+        ...prev["Cardinality"],
+        selected: false,
+      },
+    }));
+
+    const newCardinalityData = cardinalityData.map((row) => ({
+      ...row,
+      EntryLimit: '',
+    }));
+
+    setCardinalityData(newCardinalityData);
+    setSelectedOverlay('');
+    setCurrentPage('Overlays');
   };
 
+  useEffect(() => {
+    // const flattenedData = Object.values(lanAttributeRowData).flatMap((languageData) =>
+    //   languageData.map((row) => ({
+    //     Attribute: row.Attribute,
+    //     Label: row.Label,
+    //     EntryLimit: row.EntryLimit,
+    //   }))
+    // );
+    const firstLanguage = Object.keys(lanAttributeRowData)?.[0];
+    const cardinalityDataCopy = [];
+
+    for (const item of lanAttributeRowData?.[firstLanguage]) {
+      const entity = cardinalityData?.find((row) => row.Attribute === item.Attribute);
+      if (!entity) {
+        cardinalityDataCopy.push({
+          Attribute: item?.Attribute,
+          Label: item?.Label,
+          EntryLimit: '',
+        });
+      } else {
+        cardinalityDataCopy.push({ ...entity });
+      }
+    }
+    setCardinalityData(cardinalityDataCopy);
+  }, [lanAttributeRowData]);
+
   return (
-    <BackNextSkeleton isForward pageForward={handleForward}>
+    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
+      {loading && cardinalityData.length > 40 && <Loading />}
+      {showDeleteConfirmation && (
+        <DeleteConfirmation
+          removeFromSelected={handleDeleteCurrentOverlay}
+          closeModal={() => setShowDeleteConfirmation(false)}
+        />
+      )}
       <Box
         sx={{
           margin: '2rem',
@@ -287,20 +270,20 @@ const Cardinality = () => {
       >
         <Box className="ag-theme-balham" sx={{ width: '50%', height: '100%', maxWidth: '580px' }}>
           <style>{gridStyles}</style>
-          <AgGridReact onCellClicked={onCellClick} rowData={cardinalityData} columnDefs={columnDefs} gridOptions={gridOptions} />
+          <AgGridReact ref={cardinalityRef} onCellClicked={onCellClick} rowData={cardinalityData} columnDefs={columnDefs} gridOptions={gridOptions} onGridReady={onGridReady} />
         </Box>
-
         <Divider orientation="vertical" flexItem />
-
         <Box
-          style={{
+          sx={{
             width: '50%',
             maxWidth: '660px',
             height: '300px',
             border: '1px solid #ccc',
             borderRadius: '4px',
             padding: '10px',
-            position: 'relative',
+            position: 'sticky',
+            top: '2rem',
+            alignSelf: 'flex-start',
           }}
         >
           {selectedCellData && (
@@ -312,15 +295,13 @@ const Cardinality = () => {
                 onChange={(e) => handleValueChange(e.target.value, 'exact')}
                 style={{
                   marginBottom: '10px',
-                  backgroundColor: min || max ? '#f2f2f2' : 'white',
+                  backgroundColor: minValue || maxValue ? '#f2f2f2' : 'white',
                 }}
-                disabled={min || max}
+                disabled={minValue || maxValue}
               />
-
               <Typography variant="h6" align="center" style={{ marginBottom: '10px' }}>
                 or
               </Typography>
-
               <Box sx={{ display: 'flex', gap: '10px' }}>
                 <TextField
                   label="Minimum"
@@ -329,9 +310,9 @@ const Cardinality = () => {
                   value={minValue}
                   onChange={(e) => handleValueChange(e.target.value, 'min')}
                   style={{
-                    backgroundColor: exact ? '#f2f2f2' : 'white',
+                    backgroundColor: exactValue ? '#f2f2f2' : 'white',
                   }}
-                  disabled={exact}
+                  disabled={exactValue}
                 />
                 <TextField
                   label="Maximum"
@@ -340,15 +321,11 @@ const Cardinality = () => {
                   value={maxValue}
                   onChange={(e) => handleValueChange(e.target.value, 'max')}
                   style={{
-                    backgroundColor: exact ? '#f2f2f2' : 'white',
+                    backgroundColor: exactValue ? '#f2f2f2' : 'white',
                   }}
-                  disabled={exact}
+                  disabled={exactValue}
                 />
               </Box>
-
-              {/* <Box sx={{ marginTop: '10px', position: 'relative' }}>
-                <button onClick={handleApplyValues}>Apply</button>
-              </Box> */}
               <Button
                 variant='contained'
                 color='navButton'
@@ -375,7 +352,7 @@ const Cardinality = () => {
           <Typography>{dialogMessage}</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => { setOpenDialog(false); handleClearValues(); }}>OK</Button>
+          <Button onClick={() => setOpenDialog(false)}>OK</Button>
         </DialogActions>
       </Dialog>
 
