@@ -1,5 +1,5 @@
 import { Box, Link } from '@mui/material';
-import React, { useContext, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { Context } from '../App';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-theme-balham.css';
@@ -10,6 +10,7 @@ import { greyCellStyle } from '../constants/styles';
 import TypeTooltip from '../AttributeDetails/TypeTooltip';
 import DeleteConfirmation from './DeleteConfirmation';
 import { FormatRuleTypeRenderer, TrashCanButton } from './FormatRuleCellRender';
+import Loading from '../components/Loading';
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -27,6 +28,7 @@ const FormatRulesV2 = () => {
     setFormatRuleRowData
   } = useContext(Context);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [loading, setLoading] = useState(true);
   const gridRef = useRef();
 
   const handleDeleteCurrentOverlay = () => {
@@ -112,8 +114,13 @@ const FormatRulesV2 = () => {
     ];
   }, []);
 
+  const onGridReady = useCallback(() => {
+    setLoading(false);
+  }, []);
+
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
+      {loading && formatRuleRowData.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={handleDeleteCurrentOverlay}
@@ -137,6 +144,7 @@ const FormatRulesV2 = () => {
             domLayout='autoHeight'
             suppressHorizontalScroll={true}
             rowHeight={50}
+            onGridReady={onGridReady}
           />
         </Box>
         <Box>

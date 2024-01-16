@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useImperativeHandle, forwardRef } from "react";
+import React, { useState, useEffect, useContext, useImperativeHandle, forwardRef, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { Context } from "../App";
 import CellHeader from "../components/CellHeader";
@@ -49,7 +49,7 @@ const TextareaCellEditor = forwardRef((props, ref) => {
   );
 });
 
-export default function LanGrid({ gridRef, currentLanguage }) {
+export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const {
     attributesList,
     lanAttributeRowData,
@@ -198,6 +198,10 @@ export default function LanGrid({ gridRef, currentLanguage }) {
     }
   };
 
+  const onGridReady = useCallback(() => {
+    setLoading(false);
+  }, []);
+
   return (
     <div className="ag-theme-balham" style={{ width: 800 }}>
       <style>{gridStyles}</style>
@@ -207,6 +211,7 @@ export default function LanGrid({ gridRef, currentLanguage }) {
         columnDefs={columnDefs}
         onCellKeyDown={onCellKeyDown}
         domLayout="autoHeight"
+        onGridReady={onGridReady}
       />
     </div>
   );

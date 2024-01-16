@@ -1,14 +1,15 @@
 import { Box, Button } from "@mui/material";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Context } from "../App";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import useCharacterEncodingType from "./useCharacterEncodingType";
+import useCharacterEncodingType, { CharacterEncodingTypeRenderer } from "./useCharacterEncodingType";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
 import DeleteConfirmation from "./DeleteConfirmation";
+import Loading from "../components/Loading";
 
 const CharacterEncoding = () => {
   const {
@@ -18,13 +19,13 @@ const CharacterEncoding = () => {
     setCharacterEncodingRowData,
     setOverlay,
   } = useContext(Context);
-  const [columnDefs, setColumnDefs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const gridRef = useRef();
-  const { handleSave, applyAllFunc, CharacterEncodingTypeRenderer } = useCharacterEncodingType(gridRef);
+  const { handleSave, applyAllFunc } = useCharacterEncodingType(gridRef);
 
-  useEffect(() => {
-    setColumnDefs([
+  const columnDefs = useMemo(() => {
+    return [
       {
         field: "Attribute",
         editable: false,
@@ -34,24 +35,25 @@ const CharacterEncoding = () => {
         headerComponent: () => <CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
       },
       {
-        field: "CharacterEncoding",
+        field: "Character Encoding",
         headerComponent: () => <CellHeader headerText='Character Encoding' helpText='Character encoding for the attribute. Recommend utf-8 unless you know it must be something else.' />,
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
           attr: params.data.Attribute,
         }),
+        cellEditor: "characterEncodingEditor",
         width: 200,
       },
-    ]);
+    ];
   }, []);
 
-  const handleForward = () => {
+  const handleForward = useCallback(() => {
     handleSave();
     setSelectedOverlay('');
     setCurrentPage('Overlays');
-  };
+  }, [handleSave, setCurrentPage, setSelectedOverlay]);
 
-  const handleDeleteCurrentOverlay = () => {
+  const handleDeleteCurrentOverlay = useCallback(() => {
     setOverlay((prev) => ({
       ...prev,
       "Character Encoding": {
@@ -68,10 +70,15 @@ const CharacterEncoding = () => {
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setSelectedOverlay('');
     setCurrentPage('Overlays');
-  };
+  }, [characterEncodingRowData, setCharacterEncodingRowData, setCurrentPage, setOverlay, setSelectedOverlay]);
+
+  const onGridReady = useCallback(() => {
+    setLoading(false);
+  }, []);
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
+      {loading && characterEncodingRowData.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={handleDeleteCurrentOverlay}
@@ -94,6 +101,7 @@ const CharacterEncoding = () => {
               rowData={characterEncodingRowData}
               columnDefs={columnDefs}
               domLayout="autoHeight"
+              onGridReady={onGridReady}
             />
           </Box>
           <Box

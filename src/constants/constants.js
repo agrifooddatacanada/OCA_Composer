@@ -266,3 +266,11 @@ export const formatCodeBinaryDescription = {
   "video/mp4": "MP4 video",
   "video/raw": "raw video"
 };
+
+export const displayValues = [
+  "",
+  "base64",
+  "utf-8",
+  "iso-8859-1",
+  "UTF-16LE"
+];
