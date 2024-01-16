@@ -47,10 +47,6 @@ const CharacterEncoding = () => {
     ];
   }, []);
 
-  const frameworkComponents = {
-    characterEncodingEditor: CharacterEncodingTypeRenderer,
-  };
-
   const handleForward = useCallback(() => {
     handleSave();
     setSelectedOverlay('');
@@ -106,7 +102,6 @@ const CharacterEncoding = () => {
               columnDefs={columnDefs}
               domLayout="autoHeight"
               onGridReady={onGridReady}
-              frameworkComponents={frameworkComponents}
             />
           </Box>
           <Box
