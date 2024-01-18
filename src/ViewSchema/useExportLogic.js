@@ -681,14 +681,16 @@ const useExportLogic = () => {
     setExportDisabled(true);
     const { workbook, workbookName } = handleOCAExport(OCADataArray);
     const fileName = await sendFileToAPI(workbook, workbookName);
-    const downloadUrl = `${zipUrl}/${fileName}`;
-    const response = await fetch(downloadUrl);
-    if (response.ok) {
-      if (onlyReadme) {
-        downloadReadMe(response);
-      } else {
-        downloadReadMe(response);
-        downloadZip(downloadUrl, fileName);
+    if (fileName) {
+      const downloadUrl = `${zipUrl}/${fileName}`;
+      const response = await fetch(downloadUrl);
+      if (response.ok) {
+        if (onlyReadme) {
+          downloadReadMe(response);
+        } else {
+          downloadReadMe(response);
+          downloadZip(downloadUrl, fileName);
+        }
       }
     }
     setTimeout(() => {
