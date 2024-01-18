@@ -23,6 +23,7 @@ import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
 import ReactGA from 'react-ga';
 import FormatTextHelp from './UsersHelp/Format_Text_Help';
 import HelpStorage from './Landing/HelpStorage';
+import OCADataValidator from './OCADataValidator/OCADataValidator';
 
 export const Context = createContext();
 
@@ -319,7 +320,6 @@ function App() {
             }}
           >
             <BrowserRouter>
-              <Header currentPage={currentPage} />
               <Routes>
                 <Route path='/' element={<Landing />} />
                 <Route
@@ -333,6 +333,12 @@ function App() {
                       showIntroCard={showIntroCard}
                       setShowIntroCard={setShowIntroCard}
                     />
+                  }
+                />
+                <Route
+                  path='/oca-data-validator'
+                  element={
+                    <OCADataValidator />
                   }
                 />
                 <Route
@@ -384,7 +390,6 @@ function App() {
                 <Route path='*' element={<Navigate to='/' />} />
               </Routes>
             </BrowserRouter>
-            <Footer currentPage={currentPage} />
           </Box>
         </Context.Provider>
       </ThemeProvider>

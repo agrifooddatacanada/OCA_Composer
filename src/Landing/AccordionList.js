@@ -15,6 +15,7 @@ import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
 import { generateDataEntryV2 } from './generateDataEntryV2';
+import OCADataValidatorItem from './OCADataValidatorItem';
 
 const AccordionList = () => {
   const isMobile = useMediaQuery('(max-width: 736px)');
@@ -93,6 +94,7 @@ const AccordionList = () => {
             disableButtonCheck={disableButtonCheck}
             handleExport={handleExport}
           />
+          <OCADataValidatorItem />
         </Box>
 
         <Box
@@ -208,11 +210,7 @@ const AccordionList = () => {
             <Button
               variant='contained'
               color='navButton'
-
-              
-
               onClick={() => generateDataEntryV2(rawFile, setLoading)}
-
               sx={{
                 backgroundColor: CustomPalette.PRIMARY,
                 ':hover': { backgroundColor: CustomPalette.SECONDARY },

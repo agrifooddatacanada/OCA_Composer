@@ -6,7 +6,6 @@ import logo from '../assets/agri-logo.png';
 import logoWhite from '../assets/agri-logo-white.png';
 import { useLocation } from 'react-router-dom';
 import HeaderWrapper from './HeaderWrapper';
-import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 
 export default function Header({ currentPage }) {
@@ -90,7 +89,7 @@ export default function Header({ currentPage }) {
         setToolTipText(
           ''
         );
-        setHelpLink('/required_entry_help');
+        setHelpLink('');
         break;
       default:
         setHeader('');
