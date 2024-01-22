@@ -251,7 +251,7 @@ const Cardinality = () => {
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
-      {loading && cardinalityData.length > 40 && <Loading />}
+      {loading && cardinalityData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={handleDeleteCurrentOverlay}
