@@ -12,7 +12,8 @@ export default function Drop({
   dropDisabled,
   dropMessage,
   setDropMessage,
-  version
+  version,
+  description
 }) {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -106,6 +107,7 @@ export default function Drop({
           handleHoverLeave={handleHoverLeave}
           handleDragOver={handleDragOver}
           handleDragLeave={handleDragLeave}
+          description={description}
         />
       }</>
   );

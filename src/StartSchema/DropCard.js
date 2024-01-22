@@ -13,7 +13,21 @@ import LoopIcon from "@mui/icons-material/Loop";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
-export default function DropCard({ loading, dropDisabled, dropMessage, spinningAnimation, downloadIconColor, getRootProps, getInputProps, hover, handleHover, handleHoverLeave, handleDragOver, handleDragLeave }) {
+export default function DropCard({
+  loading,
+  dropDisabled,
+  dropMessage,
+  spinningAnimation,
+  downloadIconColor,
+  getRootProps,
+  getInputProps,
+  hover,
+  handleHover,
+  handleHoverLeave,
+  handleDragOver,
+  handleDragLeave,
+  description = "Click here to select a spreadsheet or drag and drop one here",
+}) {
   return (
     <section
       className="container"
@@ -127,7 +141,7 @@ export default function DropCard({ loading, dropDisabled, dropMessage, spinningA
                 gutterBottom
               >
                 {dropDisabled === false ? (
-                  "Click here to select a spreadsheet or drag and drop one here"
+                  description
                 ) : (
                   <>
                     Use the buttons below to add a <strong>new</strong> file or{" "}

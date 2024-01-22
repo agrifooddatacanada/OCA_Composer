@@ -6,8 +6,6 @@ import { useEffect, createContext } from 'react';
 import Home from './Home';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AddEntryCodesHelp from './UsersHelp/Add_Entry_Codes_Help';
-import Header from './Header/Header';
-import Footer from './Footer/Footer';
 import AttributeDetailsHelp from './UsersHelp/Attribute_Details_Help';
 import CreatingOCASchemaHelp from './UsersHelp/Creating_OCA_Schema_Help';
 import LanguageAttributeHelp from './UsersHelp/Language_Attribute_Help';
@@ -60,6 +58,7 @@ function App() {
   const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
   const [currentPage, setCurrentPage] = useState('Landing');
+  const [currentDataValidatorPage, setCurrentDataValidatorPage] = useState('StartDataValidator');
   const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: '', description: '' },
@@ -309,7 +308,8 @@ function App() {
             showDeprecationCard,
             setShowDeprecationCard,
             cardinalityData,
-            setCardinalityData
+            setCardinalityData,
+            setCurrentDataValidatorPage
           }}
         >
           <Box
@@ -338,7 +338,7 @@ function App() {
                 <Route
                   path='/oca-data-validator'
                   element={
-                    <OCADataValidator />
+                    <OCADataValidator currentDataValidatorPage={currentDataValidatorPage} />
                   }
                 />
                 <Route
