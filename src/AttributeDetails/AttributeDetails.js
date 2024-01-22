@@ -187,7 +187,7 @@ export default function AttributeDetails({ pageBack, pageForward }) {
 
   return (
     <BackNextSkeleton isBack pageBack={pageBackSave} isForward pageForward={pageForwardSave}>
-      {loading && attributeRowData.length > 40 && <Loading />}
+      {loading && attributeRowData?.length > 40 && <Loading />}
       {showCard && (
         <NavigationCard
           fieldArray={fieldArray}

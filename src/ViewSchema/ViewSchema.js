@@ -215,7 +215,7 @@ export default function ViewSchema({ pageBack }) {
         marginTop: 2,
       }}
     >
-      {loading && attributeRowData.length > 40 && <Loading />}
+      {loading && attributeRowData?.length > 40 && <Loading />}
       <Box sx={{
         display: "flex",
         justifyContent: "space-between",

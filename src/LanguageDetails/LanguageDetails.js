@@ -143,7 +143,7 @@ export default function LanguageDetails({ pageBack, pageForward }) {
 
   return (
     <BackNextSkeleton isBack pageBack={handlePageBack} isForward pageForward={pageForwardSave}>
-      {loading && lanAttributeRowData[languages[0]].length > 40 && <Loading />}
+      {loading && lanAttributeRowData[languages[0]]?.length > 40 && <Loading />}
       <Box
         sx={{
           margin: "2rem",

@@ -78,7 +78,7 @@ const CharacterEncoding = () => {
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
-      {loading && characterEncodingRowData.length > 40 && <Loading />}
+      {loading && characterEncodingRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={handleDeleteCurrentOverlay}

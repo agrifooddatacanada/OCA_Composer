@@ -120,7 +120,7 @@ const FormatRulesV2 = () => {
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
-      {loading && formatRuleRowData.length > 40 && <Loading />}
+      {loading && formatRuleRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={handleDeleteCurrentOverlay}
