@@ -82,8 +82,17 @@ function App() {
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
-
   const [cardinalityData, setCardinalityData] = useState([]);
+
+  // Use for OCA Validator
+  const [jsonRawFile, setJsonRawFile] = useState([]);
+  const [jsonLoading, setJsonLoading] = useState(false);
+  const [jsonDropDisabled, setJsonDropDisabled] = useState(false);
+  const [jsonIsParsed, setJsonIsParsed] = useState(false);
+  const [datasetRawFile, setDatasetRawFile] = useState([]);
+  const [datasetLoading, setDatasetLoading] = useState(false);
+  const [datasetDropDisabled, setDatasetDropDisabled] = useState(false);
+  const [datasetIsParsed, setDatasetIsParsed] = useState(false);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -101,6 +110,10 @@ function App() {
       setCurrentPage(newPage);
       setHistory((prev) => prev.slice(0, prev.length - 1));
     }
+  };
+
+  const backToOCADataValidatorUploadPage = () => {
+    setCurrentDataValidatorPage('StartDataValidator');
   };
 
   useEffect(() => {
@@ -257,7 +270,7 @@ function App() {
     setLanAttributeRowData({});
     setIsZip(false);
     setZipToReadme([]);
-  }, [fileData]);
+  }, [fileData, jsonRawFile]);
 
   return (
     <div className='App'>
@@ -309,7 +322,23 @@ function App() {
             setShowDeprecationCard,
             cardinalityData,
             setCardinalityData,
-            setCurrentDataValidatorPage
+            setCurrentDataValidatorPage,
+            jsonLoading,
+            setJsonLoading,
+            jsonDropDisabled,
+            setJsonDropDisabled,
+            datasetLoading,
+            setDatasetLoading,
+            datasetDropDisabled,
+            setDatasetDropDisabled,
+            jsonRawFile,
+            setJsonRawFile,
+            datasetRawFile,
+            setDatasetRawFile,
+            jsonIsParsed,
+            setJsonIsParsed,
+            datasetIsParsed,
+            setDatasetIsParsed,
           }}
         >
           <Box
@@ -338,7 +367,7 @@ function App() {
                 <Route
                   path='/oca-data-validator'
                   element={
-                    <OCADataValidator currentDataValidatorPage={currentDataValidatorPage} />
+                    <OCADataValidator currentDataValidatorPage={currentDataValidatorPage} backToOCADataValidatorUploadPage={backToOCADataValidatorUploadPage} />
                   }
                 />
                 <Route

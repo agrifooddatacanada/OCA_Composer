@@ -1,6 +1,8 @@
 import Drop from "../StartSchema/Drop";
 import { useHandleJsonDrop } from "./useHandleJsonDrop";
 import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
+import { Box, Button } from "@mui/material";
+import { datasetUploadDescription, datasetUploadTooltip, jsonUploadDescription, jsonUploadTooltip } from "../constants/constants";
 
 const OCADataValidatorMain = () => {
   const {
@@ -11,9 +13,10 @@ const OCADataValidatorMain = () => {
     jsonDropDisabled,
     setJsonDropDisabled,
     jsonDropMessage,
-    setJsonDropMessage
+    setJsonDropMessage,
+    setCurrentDataValidatorPage
   } = useHandleJsonDrop();
-
+  console.log('jsonRawFile', jsonRawFile);
   const {
     datasetRawFile,
     setDatasetRawFile,
@@ -24,9 +27,17 @@ const OCADataValidatorMain = () => {
     datasetDropMessage,
     setDatasetDropMessage
   } = useHandleDatasetDrop();
-
+  console.log('datasetRawFile', datasetRawFile);
   return (
-    <>
+    <Box sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 1,
+
+    }}>
+      <Box sx={{ height: '3rem' }} />
       <Drop
         setFile={setJsonRawFile}
         setLoading={setJsonLoading}
@@ -34,8 +45,33 @@ const OCADataValidatorMain = () => {
         dropDisabled={jsonDropDisabled}
         dropMessage={jsonDropMessage}
         setDropMessage={setJsonDropMessage}
-        description="Click here to select an OCA schema or drag and drop one here"
+        description={jsonUploadDescription}
+        tipDescription={jsonUploadTooltip}
       />
+      <Box display="flex">
+        <Button
+          variant="contained"
+          color="button"
+          onClick={() => {
+            setJsonDropDisabled(false);
+            setJsonRawFile([]);
+          }}
+          sx={{ width: 170, mr: 2 }}
+          disabled={jsonRawFile.length === 0}
+        >
+          Clear Schema File
+        </Button>
+        <Button
+          variant="contained"
+          color="button"
+          sx={{ width: 170, ml: 2 }}
+          onClick={() => setCurrentDataValidatorPage("SchemaViewDataValidator")}
+          disabled={jsonRawFile.length === 0}
+        >
+          View Schema
+        </Button>
+      </Box>
+      <Box sx={{ height: '2rem' }} />
       <Drop
         setFile={setDatasetRawFile}
         setLoading={setDatasetLoading}
@@ -43,9 +79,35 @@ const OCADataValidatorMain = () => {
         dropDisabled={datasetDropDisabled}
         dropMessage={datasetDropMessage}
         setDropMessage={setDatasetDropMessage}
-        description="Click here to select an Excel or CSV dataset or drag and drop one here"
+        description={datasetUploadDescription}
+        tipDescription={datasetUploadTooltip}
       />
-    </>
+      <Box display="flex">
+        <Button
+          variant="contained"
+          color="button"
+          onClick={() => {
+            setDatasetDropDisabled(false);
+            setDatasetRawFile([]);
+          }}
+          sx={{ width: 170, mr: 2 }}
+          disabled={datasetRawFile.length === 0}
+        >
+          Clear Dataset File
+        </Button>
+        <Button
+          variant="contained"
+          color="button"
+          sx={{ width: 170, ml: 2 }}
+          onClick={() => { }}
+          disabled={datasetRawFile.length === 0}
+        >
+          View Schema
+        </Button>
+      </Box>
+
+      <Box sx={{ height: '3rem' }} />
+    </Box>
   );
 };
 

@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import DepreciatedWarningCard from "../Landing/DepreciatedWarningCard";
 import Loading from "../components/Loading";
 
-export default function ViewSchema({ pageBack }) {
+export default function ViewSchema({ pageBack, isExport = true }) {
   const navigate = useNavigate();
   const {
     languages,
@@ -263,7 +263,7 @@ export default function ViewSchema({ pageBack }) {
                 </Button>
               </>
             )}
-            {!isZip || (isZip && isZipEdited) ? (
+            {isExport && (!isZip || (isZip && isZipEdited)) ? (
               <Box
                 sx={{
                   display: "flex",

@@ -84,7 +84,7 @@ const useExportLogic = () => {
       rowObject.Flagged = attributeRowData[index].Flagged ? "Y" : "";
       rowObject.Unit = attributeRowData[index].Unit;
       rowObject.Type = attributeRowData[index].Type;
-      rowObject.Label = lanAttributeRowData[language][index].Label;
+      rowObject.Label = lanAttributeRowData[language][index]?.Label;
       rowObject.Description = lanAttributeRowData[language][index].Description;
       rowObject.List = lanAttributeRowData[language][index].List;
       rowObject.Language = language;
