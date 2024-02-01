@@ -15,6 +15,9 @@ export const useHandleJsonDrop = () => {
     setJsonRawFile,
     jsonIsParsed,
     setJsonIsParsed,
+    setDatasetLoading,
+    setDatasetDropDisabled,
+    datasetRawFile
   } = useContext(Context);
   const {
     processLanguages,
@@ -23,6 +26,12 @@ export const useHandleJsonDrop = () => {
   } = useZipParser();
 
   const [jsonDropMessage, setJsonDropMessage] = useState({ message: "", type: "" });
+
+  const overallLoading = () => {
+    setJsonLoading(true);
+    setDatasetLoading(true);
+    setDatasetDropDisabled(true);
+  };
 
   const handleJsonDrop = useCallback((acceptedFiles) => {
     try {
@@ -146,6 +155,10 @@ export const useHandleJsonDrop = () => {
           setJsonDropDisabled(true);
           setJsonDropMessage({ message: "", type: "" });
           setJsonLoading(false);
+          setDatasetLoading(false);
+          if (datasetRawFile.length === 0) {
+            setDatasetDropDisabled(false);
+          }
           if (!jsonIsParsed) {
             setJsonIsParsed(true);
             setCurrentDataValidatorPage("SchemaViewDataValidator");
@@ -155,6 +168,10 @@ export const useHandleJsonDrop = () => {
     } catch (error) {
       setJsonDropMessage({ message: messages.uploadFail, type: "error" });
       setJsonLoading(false);
+      setDatasetLoading(false);
+      if (datasetRawFile.length === 0) {
+        setDatasetDropDisabled(false);
+      }
       setTimeout(() => {
         setJsonDropMessage({ message: "", type: "" });
       }, [2500]);
@@ -177,7 +194,7 @@ export const useHandleJsonDrop = () => {
     jsonRawFile,
     setJsonRawFile,
     jsonLoading,
-    setJsonLoading,
+    overallLoading,
     jsonDropDisabled,
     setJsonDropDisabled,
     jsonDropMessage,

@@ -14,9 +14,20 @@ export const useHandleDatasetDrop = () => {
     setCurrentDataValidatorPage,
     datasetIsParsed,
     setDatasetIsParsed,
+    setDatasetRowData,
+    setDatasetHeaders,
+    setJsonLoading,
+    setJsonDropDisabled,
+    jsonRawFile
   } = useContext(Context);
 
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
+
+  const datasetLoadingState = () => {
+    setDatasetLoading(true);
+    setJsonLoading(true);
+    setJsonDropDisabled(true);
+  };
 
   const processCSVFile = useCallback((file) => {
     try {
@@ -32,7 +43,8 @@ export const useHandleDatasetDrop = () => {
         },
         complete: function(results) {
           console.log('results', results);
-
+          setDatasetRowData(results.data);
+          setDatasetHeaders(results.meta.fields);
           // if (!results.data[0] && !results.meta.fields) {
           //   setDatasetDropMessage({
           //     message: messages.noDataUploadFail,
@@ -173,6 +185,10 @@ export const useHandleDatasetDrop = () => {
             setDatasetDropDisabled(true);
             setDatasetDropMessage({ message: "", type: "" });
             setDatasetLoading(false);
+            setJsonLoading(false);
+            if (jsonRawFile.length === 0) {
+              setJsonDropDisabled(false);
+            }
             if (!datasetIsParsed) {
               setDatasetIsParsed(true);
               setCurrentDataValidatorPage("DatasetViewDataValidator");
@@ -183,6 +199,10 @@ export const useHandleDatasetDrop = () => {
     } catch {
       setDatasetDropMessage({ message: messages.parseUploadFail, type: "error" });
       setDatasetLoading(false);
+      setJsonLoading(false);
+      if (jsonRawFile.length === 0) {
+        setJsonDropDisabled(false);
+      }
       setTimeout(() => {
         setDatasetDropMessage({ message: "", type: "" });
       }, [2500]);
@@ -205,7 +225,7 @@ export const useHandleDatasetDrop = () => {
     datasetRawFile,
     setDatasetRawFile,
     datasetLoading,
-    setDatasetLoading,
+    datasetLoadingState,
     datasetDropDisabled,
     setDatasetDropDisabled,
     datasetDropMessage,

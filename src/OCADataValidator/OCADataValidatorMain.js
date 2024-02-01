@@ -3,13 +3,14 @@ import { useHandleJsonDrop } from "./useHandleJsonDrop";
 import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
 import { Box, Button } from "@mui/material";
 import { datasetUploadDescription, datasetUploadTooltip, jsonUploadDescription, jsonUploadTooltip } from "../constants/constants";
+import BackNextSkeleton from "../components/BackNextSkeleton";
 
 const OCADataValidatorMain = () => {
   const {
     jsonRawFile,
     setJsonRawFile,
     jsonLoading,
-    setJsonLoading,
+    overallLoading,
     jsonDropDisabled,
     setJsonDropDisabled,
     jsonDropMessage,
@@ -21,7 +22,7 @@ const OCADataValidatorMain = () => {
     datasetRawFile,
     setDatasetRawFile,
     datasetLoading,
-    setDatasetLoading,
+    datasetLoadingState,
     datasetDropDisabled,
     setDatasetDropDisabled,
     datasetDropMessage,
@@ -29,85 +30,87 @@ const OCADataValidatorMain = () => {
   } = useHandleDatasetDrop();
   console.log('datasetRawFile', datasetRawFile);
   return (
-    <Box sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flex: 1,
+    <>
+      <BackNextSkeleton isForward={jsonRawFile.length > 0 && datasetRawFile.length > 0} pageForward={() => setCurrentDataValidatorPage('AttributeMatchDataValidator')} />
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+      }}>
+        <Box sx={{ height: '3rem' }} />
+        <Drop
+          setFile={setJsonRawFile}
+          setLoading={overallLoading}
+          loading={jsonLoading}
+          dropDisabled={jsonDropDisabled}
+          dropMessage={jsonDropMessage}
+          setDropMessage={setJsonDropMessage}
+          description={jsonUploadDescription}
+          tipDescription={jsonUploadTooltip}
+        />
+        <Box display="flex">
+          <Button
+            variant="contained"
+            color="button"
+            onClick={() => {
+              setJsonDropDisabled(false);
+              setJsonRawFile([]);
+            }}
+            sx={{ width: 170, mr: 2 }}
+            disabled={jsonRawFile.length === 0}
+          >
+            Clear Schema File
+          </Button>
+          <Button
+            variant="contained"
+            color="button"
+            sx={{ width: 170, ml: 2 }}
+            onClick={() => setCurrentDataValidatorPage("SchemaViewDataValidator")}
+            disabled={jsonRawFile.length === 0}
+          >
+            View Schema
+          </Button>
+        </Box>
+        <Box sx={{ height: '2rem' }} />
+        <Drop
+          setFile={setDatasetRawFile}
+          setLoading={datasetLoadingState}
+          loading={datasetLoading}
+          dropDisabled={datasetDropDisabled}
+          dropMessage={datasetDropMessage}
+          setDropMessage={setDatasetDropMessage}
+          description={datasetUploadDescription}
+          tipDescription={datasetUploadTooltip}
+        />
+        <Box display="flex">
+          <Button
+            variant="contained"
+            color="button"
+            onClick={() => {
+              setDatasetDropDisabled(false);
+              setDatasetRawFile([]);
+            }}
+            sx={{ width: 170, mr: 2 }}
+            disabled={datasetRawFile.length === 0}
+          >
+            Clear Dataset File
+          </Button>
+          <Button
+            variant="contained"
+            color="button"
+            sx={{ width: 170, ml: 2 }}
+            onClick={() => setCurrentDataValidatorPage("DatasetViewDataValidator")}
+            disabled={datasetRawFile.length === 0}
+          >
+            View Schema
+          </Button>
+        </Box>
 
-    }}>
-      <Box sx={{ height: '3rem' }} />
-      <Drop
-        setFile={setJsonRawFile}
-        setLoading={setJsonLoading}
-        loading={jsonLoading}
-        dropDisabled={jsonDropDisabled}
-        dropMessage={jsonDropMessage}
-        setDropMessage={setJsonDropMessage}
-        description={jsonUploadDescription}
-        tipDescription={jsonUploadTooltip}
-      />
-      <Box display="flex">
-        <Button
-          variant="contained"
-          color="button"
-          onClick={() => {
-            setJsonDropDisabled(false);
-            setJsonRawFile([]);
-          }}
-          sx={{ width: 170, mr: 2 }}
-          disabled={jsonRawFile.length === 0}
-        >
-          Clear Schema File
-        </Button>
-        <Button
-          variant="contained"
-          color="button"
-          sx={{ width: 170, ml: 2 }}
-          onClick={() => setCurrentDataValidatorPage("SchemaViewDataValidator")}
-          disabled={jsonRawFile.length === 0}
-        >
-          View Schema
-        </Button>
+        <Box sx={{ height: '3rem' }} />
       </Box>
-      <Box sx={{ height: '2rem' }} />
-      <Drop
-        setFile={setDatasetRawFile}
-        setLoading={setDatasetLoading}
-        loading={datasetLoading}
-        dropDisabled={datasetDropDisabled}
-        dropMessage={datasetDropMessage}
-        setDropMessage={setDatasetDropMessage}
-        description={datasetUploadDescription}
-        tipDescription={datasetUploadTooltip}
-      />
-      <Box display="flex">
-        <Button
-          variant="contained"
-          color="button"
-          onClick={() => {
-            setDatasetDropDisabled(false);
-            setDatasetRawFile([]);
-          }}
-          sx={{ width: 170, mr: 2 }}
-          disabled={datasetRawFile.length === 0}
-        >
-          Clear Dataset File
-        </Button>
-        <Button
-          variant="contained"
-          color="button"
-          sx={{ width: 170, ml: 2 }}
-          onClick={() => { }}
-          disabled={datasetRawFile.length === 0}
-        >
-          View Schema
-        </Button>
-      </Box>
-
-      <Box sx={{ height: '3rem' }} />
-    </Box>
+    </>
   );
 };
 

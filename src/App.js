@@ -93,6 +93,11 @@ function App() {
   const [datasetLoading, setDatasetLoading] = useState(false);
   const [datasetDropDisabled, setDatasetDropDisabled] = useState(false);
   const [datasetIsParsed, setDatasetIsParsed] = useState(false);
+  const [datasetRowData, setDatasetRowData] = useState([]);
+  const [datasetHeaders, setDatasetHeaders] = useState([]);
+  const [matchingRowData, setMatchingRowData] = useState([]);
+
+  console.log('matchingRowData', matchingRowData);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -197,6 +202,24 @@ function App() {
     });
     setFormatRuleRowData(newFormatRuleArray);
   }, [attributeRowData]);
+
+  useEffect(() => {
+    if (jsonRawFile.length > 0) {
+      console.log('lanAttributeRowData', lanAttributeRowData);
+      const newMatchingRowData = [];
+      attributesList.forEach((item, index) => {
+        const newObj = {
+          Attribute: item,
+          Dataset: ''
+        };
+        languages.forEach((lang) => {
+          newObj[lang] = lanAttributeRowData?.[lang][index].Label;
+        });
+        newMatchingRowData.push(newObj);
+      });
+      setMatchingRowData(newMatchingRowData);
+    }
+  }, [jsonRawFile, lanAttributeRowData]);
 
   function createEntryCodeRowData(
     languages,
@@ -339,6 +362,11 @@ function App() {
             setJsonIsParsed,
             datasetIsParsed,
             setDatasetIsParsed,
+            datasetRowData,
+            setDatasetRowData,
+            datasetHeaders,
+            setDatasetHeaders,
+            matchingRowData
           }}
         >
           <Box
