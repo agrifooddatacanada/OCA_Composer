@@ -184,6 +184,10 @@ export const useHandleJsonDrop = () => {
     } else if (jsonRawFile && jsonRawFile.length > 0) {
       setJsonDropMessage({ message: messages.uploadFail, type: "error" });
       setJsonLoading(false);
+      setDatasetLoading(false);
+      if (datasetRawFile.length === 0) {
+        setDatasetDropDisabled(false);
+      }
       setTimeout(() => {
         setJsonDropMessage({ message: "", type: "" });
       }, [2500]);

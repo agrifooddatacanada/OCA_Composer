@@ -17,7 +17,7 @@ const OCADataValidatorMain = () => {
     setJsonDropMessage,
     setCurrentDataValidatorPage
   } = useHandleJsonDrop();
-  console.log('jsonRawFile', jsonRawFile);
+
   const {
     datasetRawFile,
     setDatasetRawFile,
@@ -28,7 +28,7 @@ const OCADataValidatorMain = () => {
     datasetDropMessage,
     setDatasetDropMessage
   } = useHandleDatasetDrop();
-  console.log('datasetRawFile', datasetRawFile);
+
   return (
     <>
       <BackNextSkeleton isForward={jsonRawFile.length > 0 && datasetRawFile.length > 0} pageForward={() => setCurrentDataValidatorPage('AttributeMatchDataValidator')} />

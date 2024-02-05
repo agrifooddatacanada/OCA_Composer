@@ -3,6 +3,7 @@ import Header from "../Header/Header";
 import ViewSchema from "../ViewSchema/ViewSchema";
 import AttributeMatch from "./AttributeMatch";
 import DatasetView from "./DatasetView";
+import OCADataValidatorCheck from "./OCADataValidatorCheck";
 import OCADataValidatorMain from "./OCADataValidatorMain";
 
 
@@ -16,6 +17,7 @@ const OCADataValidator = ({ currentDataValidatorPage, backToOCADataValidatorUplo
       {currentDataValidatorPage === 'SchemaViewDataValidator' && <ViewSchema pageBack={backToOCADataValidatorUploadPage} isExport={false} />}
       {currentDataValidatorPage === 'DatasetViewDataValidator' && <DatasetView />}
       {currentDataValidatorPage === 'AttributeMatchDataValidator' && <AttributeMatch />}
+      {currentDataValidatorPage === 'OCADataValidatorCheck' && <OCADataValidatorCheck />}
       <Footer currentPage={currentDataValidatorPage} />
     </>
   );

@@ -42,7 +42,6 @@ export const useHandleDatasetDrop = () => {
           return `header_empty_placeholder_${index}`;
         },
         complete: function(results) {
-          console.log('results', results);
           setDatasetRowData(results.data);
           setDatasetHeaders(results.meta.fields);
           // if (!results.data[0] && !results.meta.fields) {
@@ -215,6 +214,10 @@ export const useHandleDatasetDrop = () => {
     } else if (datasetRawFile && datasetRawFile.length > 0) {
       setDatasetDropMessage({ message: messages.uploadFail, type: "error" });
       setDatasetLoading(false);
+      setJsonLoading(false);
+      if (jsonRawFile.length === 0) {
+        setJsonDropDisabled(false);
+      }
       setTimeout(() => {
         setDatasetDropMessage({ message: "", type: "" });
       }, [2500]);

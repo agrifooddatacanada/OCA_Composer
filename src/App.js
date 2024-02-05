@@ -96,8 +96,7 @@ function App() {
   const [datasetRowData, setDatasetRowData] = useState([]);
   const [datasetHeaders, setDatasetHeaders] = useState([]);
   const [matchingRowData, setMatchingRowData] = useState([]);
-
-  console.log('matchingRowData', matchingRowData);
+  const [firstTimeMatching, setFirstTimeMatching] = useState(true);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -205,7 +204,6 @@ function App() {
 
   useEffect(() => {
     if (jsonRawFile.length > 0) {
-      console.log('lanAttributeRowData', lanAttributeRowData);
       const newMatchingRowData = [];
       attributesList.forEach((item, index) => {
         const newObj = {
@@ -366,7 +364,10 @@ function App() {
             setDatasetRowData,
             datasetHeaders,
             setDatasetHeaders,
-            matchingRowData
+            matchingRowData,
+            setMatchingRowData,
+            firstTimeMatching,
+            setFirstTimeMatching,
           }}
         >
           <Box
