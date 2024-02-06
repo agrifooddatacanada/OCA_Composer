@@ -1,11 +1,21 @@
-import React, { useContext } from 'react';
-import { Context } from '../App';
+import React from 'react';
+import BackNextSkeleton from '../components/BackNextSkeleton';
+import { Box } from '@mui/material';
+
 
 const OCADataValidatorCheck = () => {
-  // const { matchingRowData } = useContext(Context);
-  // console.log('matchingRowData', matchingRowData);
+
   return (
-    <div>OCADataValidatorCheck</div>
+    <>
+      <BackNextSkeleton isBack pageBack={() => { }} isForward pageForward={() => { }} />
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+      }}>
+        hi
+      </Box>
+    </>
   );
 };
 
