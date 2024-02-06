@@ -62,7 +62,6 @@ export const DataHeaderRenderer = memo(
 
 const AttributeMatch = () => {
   const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, datasetHeaders, firstTimeMatching, setFirstTimeMatching } = useContext(Context);
-  console.log('matchingRowData', matchingRowData);
   const [type, setType] = useState(languages[0] || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -130,7 +129,7 @@ const AttributeMatch = () => {
           }
         }
       }
-      console.log('newMatchingRowData', newMatchingRowData);
+
       setFirstTimeMatching(false);
       setMatchingRowData(newMatchingRowData);
     } else {

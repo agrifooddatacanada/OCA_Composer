@@ -211,7 +211,7 @@ function App() {
           Dataset: ''
         };
         languages.forEach((lang) => {
-          newObj[lang] = lanAttributeRowData?.[lang][index].Label;
+          newObj[lang] = lanAttributeRowData?.[lang]?.[index]?.Label;
         });
         newMatchingRowData.push(newObj);
       });
