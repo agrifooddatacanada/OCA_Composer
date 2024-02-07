@@ -15,7 +15,8 @@ const OCADataValidatorMain = () => {
     setJsonDropDisabled,
     jsonDropMessage,
     setJsonDropMessage,
-    setCurrentDataValidatorPage
+    setCurrentDataValidatorPage,
+    setJsonIsParsed
   } = useHandleJsonDrop();
 
   const {
@@ -26,7 +27,8 @@ const OCADataValidatorMain = () => {
     datasetDropDisabled,
     setDatasetDropDisabled,
     datasetDropMessage,
-    setDatasetDropMessage
+    setDatasetDropMessage,
+    setDatasetIsParsed
   } = useHandleDatasetDrop();
 
   return (
@@ -55,6 +57,7 @@ const OCADataValidatorMain = () => {
             variant="contained"
             color="button"
             onClick={() => {
+              setJsonIsParsed(false);
               setJsonDropDisabled(false);
               setJsonRawFile([]);
             }}
@@ -89,6 +92,7 @@ const OCADataValidatorMain = () => {
             variant="contained"
             color="button"
             onClick={() => {
+              setDatasetIsParsed(false);
               setDatasetDropDisabled(false);
               setDatasetRawFile([]);
             }}

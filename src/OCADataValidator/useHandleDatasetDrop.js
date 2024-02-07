@@ -206,7 +206,7 @@ export const useHandleDatasetDrop = () => {
         setDatasetDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [setDatasetRawFile]);
+  }, [setDatasetRawFile, datasetIsParsed]);
 
   useEffect(() => {
     if (datasetRawFile && datasetRawFile.length > 0 && datasetRawFile[0].path.includes(".csv")) {
@@ -232,6 +232,7 @@ export const useHandleDatasetDrop = () => {
     datasetDropDisabled,
     setDatasetDropDisabled,
     datasetDropMessage,
-    setDatasetDropMessage
+    setDatasetDropMessage,
+    setDatasetIsParsed
   };
 };

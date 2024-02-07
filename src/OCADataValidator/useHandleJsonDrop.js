@@ -175,7 +175,7 @@ export const useHandleJsonDrop = () => {
         setJsonDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, []);
+  }, [datasetRawFile.length, jsonIsParsed]);
 
   useEffect(() => {
     if (jsonRawFile && jsonRawFile.length > 0 && jsonRawFile[0].path.includes(".json")) {
@@ -202,6 +202,7 @@ export const useHandleJsonDrop = () => {
     setJsonDropDisabled,
     jsonDropMessage,
     setJsonDropMessage,
-    setCurrentDataValidatorPage
+    setCurrentDataValidatorPage,
+    setJsonIsParsed
   };
 };

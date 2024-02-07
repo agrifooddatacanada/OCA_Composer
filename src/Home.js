@@ -67,7 +67,7 @@ const Home = ({
         {currentPage === 'LanguageDetails' && (
           <LanguageDetails pageBack={pageBack} pageForward={pageForward} />
         )}
-        {currentPage === 'View' && <ViewSchema pageBack={pageBack} />}
+        {currentPage === 'View' && <ViewSchema pageBack={pageBack} addClearButton />}
         {currentPage === 'Create' && <CreateManually />}
         {currentPage === 'Overlays' && (
           <Overlays pageBack={pageBack} pageForward={pageForward} />

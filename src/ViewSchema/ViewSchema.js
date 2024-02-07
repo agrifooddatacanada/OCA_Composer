@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import DepreciatedWarningCard from "../Landing/DepreciatedWarningCard";
 import Loading from "../components/Loading";
 
-export default function ViewSchema({ pageBack, isExport = true }) {
+export default function ViewSchema({ pageBack, isExport = true, addClearButton }) {
   const navigate = useNavigate();
   const {
     languages,
@@ -424,29 +424,30 @@ export default function ViewSchema({ pageBack, isExport = true }) {
           setLoading={setLoading}
         />
       </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-        }}
-      >
-        <Button
-          color="warning"
-          variant="outlined"
-          onClick={resetToDefaults}
+      {addClearButton &&
+        <Box
           sx={{
-            alignSelf: "flex-end",
-            width: "20rem",
             display: "flex",
-            justifyContent: "space-around",
-            p: 1,
-            mb: 5,
+            flexDirection: "column",
+            alignItems: "flex-end",
           }}
         >
-          Clear All Data and Restart
-        </Button>
-      </Box>
+          <Button
+            color="warning"
+            variant="outlined"
+            onClick={resetToDefaults}
+            sx={{
+              alignSelf: "flex-end",
+              width: "20rem",
+              display: "flex",
+              justifyContent: "space-around",
+              p: 1,
+              mb: 5,
+            }}
+          >
+            Clear All Data and Restart
+          </Button>
+        </Box>}
       {showDeprecationCard && isZip && <DepreciatedWarningCard />}
     </Box>
 
