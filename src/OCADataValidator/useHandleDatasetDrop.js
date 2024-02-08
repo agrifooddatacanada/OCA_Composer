@@ -18,7 +18,8 @@ export const useHandleDatasetDrop = () => {
     setDatasetHeaders,
     setJsonLoading,
     setJsonDropDisabled,
-    jsonRawFile
+    jsonRawFile,
+    setMatchingRowData
   } = useContext(Context);
 
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
@@ -28,6 +29,13 @@ export const useHandleDatasetDrop = () => {
     setJsonLoading(true);
     setJsonDropDisabled(true);
   };
+
+  const handleClearDataset = useCallback(() => {
+    setDatasetIsParsed(false);
+    setDatasetDropDisabled(false);
+    setDatasetRawFile([]);
+    setMatchingRowData([]);
+  }, []);
 
   const processCSVFile = useCallback((file) => {
     try {
@@ -44,118 +52,6 @@ export const useHandleDatasetDrop = () => {
         complete: function(results) {
           setDatasetRowData(results.data);
           setDatasetHeaders(results.meta.fields);
-          // if (!results.data[0] && !results.meta.fields) {
-          //   setDatasetDropMessage({
-          //     message: messages.noDataUploadFail,
-          //     type: "error",
-          //   });
-          //   setDatasetLoading(false);
-          //   setTimeout(() => {
-          //     setDatasetDropMessage({ message: "", type: "" });
-          //   }, [2500]);
-
-          //   return;
-          // }
-
-          // const findLongest = (arr1, arr2) => {
-          //   const result = arr1.length > arr2.length ? arr1 : arr2;
-          //   return result;
-          // };
-
-          // let rowsArray;
-
-          // //in some cases, results.data[0] is undefined, and headers are usually (but not always) present in results.meta.fields
-          // if (results.data[0]) {
-          //   rowsArray = findLongest(
-          //     results.meta.fields,
-          //     Object.keys(results.data[0])
-          //   );
-          // } else {
-          //   rowsArray = results.meta.fields;
-          // }
-
-          // if (!results.data[0]) {
-          //   let allBlank = true;
-          //   rowsArray.forEach((value) => {
-          //     if (
-          //       !value.includes("header_empty_placeholder_") &&
-          //       !value.includes("__parsed_extra")
-          //     ) {
-          //       allBlank = false;
-          //     }
-          //   });
-          //   if (allBlank === true) {
-          //     setDatasetDropMessage({
-          //       message: messages.noDataUploadFail,
-          //       type: "error",
-          //     });
-          //     setDatasetLoading(false);
-          //     setTimeout(() => {
-          //       setDatasetDropMessage({ message: "", type: "" });
-          //     }, [2500]);
-
-          //     return;
-          //   }
-          // }
-
-          // ///create dataArray structure: [[attribute name, [table values]], [attribute name, [table values]], [attribute name, [table values]]]
-
-          // const dataArray = [];
-          // let blanks = false;
-          // rowsArray.forEach((value, index) => {
-          //   const noSpacesAttribute = removeSpacesFromString(value);
-          //   const valuesArray = [];
-          //   let emptyCounter = 0;
-          //   results.data.forEach((val) => {
-          //     valuesArray.push(val[value]);
-          //     if (!val[value]) {
-          //       emptyCounter++;
-          //     }
-          //   });
-
-          //   const createBlankValue = () => {
-          //     blanks = true;
-          //     return "";
-          //   };
-
-          //   if (valuesArray.length > 0) {
-          //     if (valuesArray.length !== emptyCounter) {
-          //       if (
-          //         !noSpacesAttribute.includes("header_empty_placeholder_")
-          //       ) {
-          //         let newValue;
-          //         noSpacesAttribute.includes("__parsed_extra")
-          //           ? (newValue = createBlankValue())
-          //           : (newValue = noSpacesAttribute);
-
-          //         dataArray.push([newValue, valuesArray]);
-          //       } else {
-          //         dataArray.push(["", valuesArray]);
-          //         blanks = true;
-          //       }
-          //     } else {
-          //       if (
-          //         !noSpacesAttribute.includes("header_empty_placeholder_")
-          //       ) {
-          //         dataArray.push([noSpacesAttribute, valuesArray]);
-          //       }
-          //     }
-          //   } else {
-          //     if (!noSpacesAttribute.includes("header_empty_placeholder_")) {
-          //       let newValue;
-          //       noSpacesAttribute.includes("__parsed_extra")
-          //         ? (newValue = createBlankValue())
-          //         : (newValue = noSpacesAttribute);
-
-          //       dataArray.push([newValue, []]);
-          //     } else {
-          //       dataArray.push(["", valuesArray]);
-          //       blanks = true;
-          //     }
-          //   }
-          // });
-
-          // setDatasetRawFile(dataArray);
           setDatasetLoading(false);
           setDatasetDropDisabled(true);
 
@@ -164,22 +60,6 @@ export const useHandleDatasetDrop = () => {
             type: "success",
           });
 
-          // if (blanks) {
-          //   setTimeout(() => {
-          //     setDatasetDropMessage({
-          //       message: messages.blankEntries,
-          //       type: "info",
-          //     });
-          //   }, [500]);
-
-          //   setTimeout(() => {
-          //     setDatasetDropMessage({ message: "", type: "" });
-          //   }, [3500]);
-          // } else {
-          //   setTimeout(() => {
-          //     setDatasetDropMessage({ message: "", type: "" });
-          //   }, [2500]);
-          // }
           setTimeout(() => {
             setDatasetDropDisabled(true);
             setDatasetDropMessage({ message: "", type: "" });
@@ -209,9 +89,9 @@ export const useHandleDatasetDrop = () => {
   }, [setDatasetRawFile, datasetIsParsed]);
 
   useEffect(() => {
-    if (datasetRawFile && datasetRawFile.length > 0 && datasetRawFile[0].path.includes(".csv")) {
+    if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && datasetRawFile[0].path.includes(".csv")) {
       processCSVFile(datasetRawFile[0]);
-    } else if (datasetRawFile && datasetRawFile.length > 0) {
+    } else if (datasetRawFile && !datasetIsParsed && datasetRawFile.length > 0) {
       setDatasetDropMessage({ message: messages.uploadFail, type: "error" });
       setDatasetLoading(false);
       setJsonLoading(false);
@@ -230,9 +110,8 @@ export const useHandleDatasetDrop = () => {
     datasetLoading,
     datasetLoadingState,
     datasetDropDisabled,
-    setDatasetDropDisabled,
     datasetDropMessage,
     setDatasetDropMessage,
-    setDatasetIsParsed
+    handleClearDataset
   };
 };

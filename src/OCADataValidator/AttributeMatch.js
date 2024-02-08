@@ -61,7 +61,8 @@ export const DataHeaderRenderer = memo(
 );
 
 const AttributeMatch = () => {
-  const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, datasetHeaders, firstTimeMatching, setFirstTimeMatching } = useContext(Context);
+  const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, datasetHeaders, firstTimeMatchingRef } = useContext(Context);
+  console.log('matchingRowData inside AttributeMatch', matchingRowData);
   const [type, setType] = useState(languages[0] || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -78,6 +79,7 @@ const AttributeMatch = () => {
   }, []);
 
   const changeDataFromTable = useCallback((e, params) => {
+    firstTimeMatchingRef.current = false;
     let saveNode = undefined;
     for (const node of gridRef.current?.api?.rowModel?.rowsToDisplay) {
       if (node.data.Dataset === e.target.value) {
@@ -115,7 +117,7 @@ const AttributeMatch = () => {
 
   useEffect(() => {
     const unassignedVariables = [...datasetHeaders];
-    if (firstTimeMatching) {
+    if (firstTimeMatchingRef.current) {
       let newMatchingRowData = [];
       if (matchingRowData && matchingRowData?.length > 0) {
         for (const node of matchingRowData) {
@@ -130,7 +132,6 @@ const AttributeMatch = () => {
         }
       }
 
-      setFirstTimeMatching(false);
       setMatchingRowData(newMatchingRowData);
     } else {
       for (const node of matchingRowData) {
@@ -142,7 +143,7 @@ const AttributeMatch = () => {
     }
 
     setItems(unassignedVariables);
-  }, [datasetHeaders, matchingRowData]);
+  }, [datasetHeaders]);
 
   useEffect(() => {
     const columnDefs = [
@@ -179,7 +180,10 @@ const AttributeMatch = () => {
 
   return (
     <>
-      <BackNextSkeleton isBack pageBack={() => setCurrentDataValidatorPage('StartDataValidator')} isForward pageForward={handleSavePage} />
+      <BackNextSkeleton isBack pageBack={() => {
+        setMatchingRowData(gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data));
+        setCurrentDataValidatorPage('StartDataValidator');
+      }} isForward pageForward={handleSavePage} />
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',

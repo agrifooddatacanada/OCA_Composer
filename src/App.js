@@ -1,7 +1,7 @@
 import './App.css';
 import { Box, ThemeProvider } from '@mui/material';
 import { CustomTheme } from './constants/theme';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useEffect, createContext } from 'react';
 import Home from './Home';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -96,7 +96,9 @@ function App() {
   const [datasetRowData, setDatasetRowData] = useState([]);
   const [datasetHeaders, setDatasetHeaders] = useState([]);
   const [matchingRowData, setMatchingRowData] = useState([]);
-  const [firstTimeMatching, setFirstTimeMatching] = useState(true);
+  console.log('matchingRowData inside App', matchingRowData);
+  // const [firstTimeMatching, setFirstTimeMatching] = useState(true);
+  const firstTimeMatchingRef = useRef(true);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -205,11 +207,19 @@ function App() {
   useEffect(() => {
     if (jsonRawFile.length > 0) {
       const newMatchingRowData = [];
+      console.log('HEREEEE');
       attributesList.forEach((item, index) => {
+        // if matchingRowData has data, use it
+        const matchingRow = matchingRowData.find(
+          (obj) => obj.Attribute === item
+        );
         const newObj = {
           Attribute: item,
           Dataset: ''
         };
+        if (matchingRow) {
+          newObj['Dataset'] = matchingRow['Dataset'];
+        }
         languages.forEach((lang) => {
           newObj[lang] = lanAttributeRowData?.[lang]?.[index]?.Label;
         });
@@ -217,7 +227,7 @@ function App() {
       });
       setMatchingRowData(newMatchingRowData);
     }
-  }, [jsonRawFile, lanAttributeRowData]);
+  }, [datasetRawFile, jsonRawFile]);
 
   function createEntryCodeRowData(
     languages,
@@ -366,8 +376,9 @@ function App() {
             setDatasetHeaders,
             matchingRowData,
             setMatchingRowData,
-            firstTimeMatching,
-            setFirstTimeMatching,
+            // firstTimeMatching,
+            // setFirstTimeMatching,
+            firstTimeMatchingRef
           }}
         >
           <Box

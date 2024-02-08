@@ -17,7 +17,8 @@ export const useHandleJsonDrop = () => {
     setJsonIsParsed,
     setDatasetLoading,
     setDatasetDropDisabled,
-    datasetRawFile
+    datasetRawFile,
+    setMatchingRowData
   } = useContext(Context);
   const {
     processLanguages,
@@ -27,11 +28,18 @@ export const useHandleJsonDrop = () => {
 
   const [jsonDropMessage, setJsonDropMessage] = useState({ message: "", type: "" });
 
-  const overallLoading = () => {
+  const overallLoading = useCallback(() => {
     setJsonLoading(true);
     setDatasetLoading(true);
     setDatasetDropDisabled(true);
-  };
+  }, [setDatasetDropDisabled, setDatasetLoading, setJsonLoading]);
+
+  const handleClearJSON = useCallback(() => {
+    setJsonIsParsed(false);
+    setJsonDropDisabled(false);
+    setJsonRawFile([]);
+    setMatchingRowData([]);
+  }, []);
 
   const handleJsonDrop = useCallback((acceptedFiles) => {
     try {
@@ -199,10 +207,9 @@ export const useHandleJsonDrop = () => {
     jsonLoading,
     overallLoading,
     jsonDropDisabled,
-    setJsonDropDisabled,
     jsonDropMessage,
     setJsonDropMessage,
     setCurrentDataValidatorPage,
-    setJsonIsParsed
+    handleClearJSON
   };
 };

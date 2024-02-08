@@ -1,9 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { Box } from '@mui/material';
 import { Context } from '../App';
 import { AgGridReact } from 'ag-grid-react';
-import { gridStyles, preWrapWordBreak } from '../constants/styles';
+import { gridStyles } from '../constants/styles';
+
 
 const DatasetView = () => {
   const gridRef = useRef(null);
@@ -11,9 +12,18 @@ const DatasetView = () => {
     setCurrentDataValidatorPage,
     datasetRowData,
     datasetHeaders,
+    setDatasetRowData
   } = useContext(Context);
+
   const [columnDefs, setColumnDefs] = useState([]);
   const [tableLength, setTableLength] = useState(0);
+
+  const defaultColDef = useMemo(() => {
+    return {
+      editable: true,
+      cellDataType: false,
+    };
+  }, []);
 
   useEffect(() => {
     const titles = [];
@@ -22,9 +32,9 @@ const DatasetView = () => {
       titles.push({
         headerName: header,
         field: header,
-        cellStyle: preWrapWordBreak,
         width: 100,
         resizable: true,
+        editable: true,
       });
       newTableLength += 100;
     });
@@ -34,7 +44,10 @@ const DatasetView = () => {
 
   return (
     <>
-      <BackNextSkeleton isBack pageBack={() => setCurrentDataValidatorPage('StartDataValidator')} />
+      <BackNextSkeleton isBack pageBack={() => {
+        setDatasetRowData(gridRef.current.api.getRenderedNodes()?.map(node => node?.data));
+        setCurrentDataValidatorPage('StartDataValidator');
+      }} />
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -48,13 +61,10 @@ const DatasetView = () => {
             ref={gridRef}
             rowData={datasetRowData}
             columnDefs={columnDefs}
-            // defaultColDef={defaultColDef}
             domLayout="autoHeight"
-          // onCellKeyDown={onCellKeyDown}
-          // onCellClicked={() => setChosenTable(index)}
+            defaultColDef={defaultColDef}
           />
         </div>
-
       </Box>
     </>
   );
