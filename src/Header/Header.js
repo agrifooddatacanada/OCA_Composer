@@ -91,6 +91,41 @@ export default function Header({ currentPage }) {
         );
         setHelpLink('');
         break;
+      case 'StartDataValidator':
+        setHeader('Upload Schema and Dataset');
+        setToolTipText(
+          ''
+        );
+        setHelpLink('');
+        break;
+      case 'SchemaViewDataValidator':
+        setHeader('Preview Schema');
+        setToolTipText(
+          ''
+        );
+        setHelpLink('');
+        break;
+      case 'DatasetViewDataValidator':
+        setHeader('Preview Dataset');
+        setToolTipText(
+          ''
+        );
+        setHelpLink('');
+        break;
+      case 'AttributeMatchDataValidator':
+        setHeader('Matching Attributes');
+        setToolTipText(
+          ''
+        );
+        setHelpLink('');
+        break;
+      case 'OCADataValidatorCheck':
+        setHeader('Data Validator');
+        setToolTipText(
+          ''
+        );
+        setHelpLink('');
+        break;
       default:
         setHeader('');
         setHelpLink('');

@@ -62,7 +62,6 @@ export const DataHeaderRenderer = memo(
 
 const AttributeMatch = () => {
   const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, datasetHeaders, firstTimeMatchingRef } = useContext(Context);
-  console.log('matchingRowData inside AttributeMatch', matchingRowData);
   const [type, setType] = useState(languages[0] || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);

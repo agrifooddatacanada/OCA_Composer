@@ -51,7 +51,11 @@ to {
 }
 }
 
-
+.ag-center-cols-container .cell-fail {
+  text-align: center;
+  font-weight: bold;
+  background-color: #f44336 !important;
+}
 
 
 

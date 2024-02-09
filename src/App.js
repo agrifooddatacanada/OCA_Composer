@@ -79,10 +79,13 @@ function App() {
 
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
+  console.log('characterEncodingRowData', characterEncodingRowData);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
+  console.log('formatRuleRowData', formatRuleRowData);
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
   const [cardinalityData, setCardinalityData] = useState([]);
+  console.log('cardinalityData', cardinalityData);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -96,8 +99,7 @@ function App() {
   const [datasetRowData, setDatasetRowData] = useState([]);
   const [datasetHeaders, setDatasetHeaders] = useState([]);
   const [matchingRowData, setMatchingRowData] = useState([]);
-  console.log('matchingRowData inside App', matchingRowData);
-  // const [firstTimeMatching, setFirstTimeMatching] = useState(true);
+  console.log('matchingRowData', matchingRowData);
   const firstTimeMatchingRef = useRef(true);
 
   const pageForward = () => {
@@ -207,7 +209,6 @@ function App() {
   useEffect(() => {
     if (jsonRawFile.length > 0) {
       const newMatchingRowData = [];
-      console.log('HEREEEE');
       attributesList.forEach((item, index) => {
         // if matchingRowData has data, use it
         const matchingRow = matchingRowData.find(
