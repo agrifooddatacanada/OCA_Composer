@@ -90,7 +90,7 @@ const FormatRulesV2 = () => {
       {
         field: 'FormatRule',
         headerComponent: () => (
-          <CellHeader headerText='Format Rule' helpText='Placeholder text' />
+          <CellHeader headerText='Format Rule' helpText='Select the formatting rule that applies to data for each attribute.' />
         ),
         cellRendererFramework: FormatRuleTypeRenderer,
         width: 200,

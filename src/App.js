@@ -23,6 +23,7 @@ import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
 import ReactGA from 'react-ga';
 import FormatTextHelp from './UsersHelp/Format_Text_Help';
 import HelpStorage from './Landing/HelpStorage';
+import CardinalityHelp from './UsersHelp/Cardinality_Help';
 
 export const Context = createContext();
 
@@ -380,6 +381,10 @@ function App() {
                 <Route
                   path='/format_text_help'
                   element={<FormatTextHelp />}
+                />
+                <Route
+                  path='/cardinality_help'
+                  element={<CardinalityHelp />}
                 />
                 <Route path='*' element={<Navigate to='/' />} />
               </Routes>

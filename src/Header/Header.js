@@ -90,7 +90,7 @@ export default function Header({ currentPage }) {
         setToolTipText(
           ''
         );
-        setHelpLink('/required_entry_help');
+        setHelpLink('/cardinality_help');
         break;
       default:
         setHeader('');

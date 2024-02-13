@@ -22,7 +22,6 @@ export default function TypeTooltip() {
   const listArray = [
     { name: "Text", content: "text" },
     { name: "Numeric", content: "numbers" },
-    { name: "Reference", content: "a Self Addressing Identifier (SAID)" },
     {
       name: "Boolean",
       content:

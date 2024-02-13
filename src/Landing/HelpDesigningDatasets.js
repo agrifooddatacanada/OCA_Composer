@@ -94,7 +94,7 @@ const GuidanceForDesigningDataSets = () => {
         In a long dataset, there are fewer columns, and the data is organized with multiple rows for each unique combination of variables. Typically, you have columns for "variable," "value," and potentially other categorical identifiers.
         <br></br>
         <strong>Structure: </strong>
-        It is more compact and vertically oriented, making it easier to work with when you have a large number of variables or need to perform complex data transformations..
+        It is more compact and vertically oriented, making it easier to work with when you have a large number of variables or need to perform complex data transformations.
         <br></br>
         <strong>Use Cases: </strong>
         Long datasets are well-suited for storing and analyzing data with multiple measurements or observations over time or across different categories. They facilitate advanced statistical analyses like regression and mixed-effects modeling. In Excel you can use pivot tables to view summary statistics of long datasets.

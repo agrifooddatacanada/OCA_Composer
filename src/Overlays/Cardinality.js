@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect, useCallback, useMemo, useRef, memo, forwardRef } from 'react';
 import { Context } from '../App';
 import BackNextSkeleton from '../components/BackNextSkeleton';
-import { Box, Divider, TextField, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'; // Import necessary components for the dialog/pop-up
+import { Box, Divider, TextField, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, Tooltip } from '@mui/material'; // Import necessary components for the dialog/pop-up
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-balham.css';
@@ -10,6 +10,8 @@ import { CustomPalette } from "../constants/customPalette";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import Loading from '../components/Loading';
 import DeleteConfirmation from './DeleteConfirmation';
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import CellHeader from '../components/CellHeader';
 
 const gridOptions = {
   domLayout: 'autoHeight',
@@ -178,6 +180,7 @@ const Cardinality = () => {
       width: 160,
       autoHeight: true,
       cellStyle: () => preWrapWordBreak,
+      headerComponent: () => <CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
     },
     {
       headerName: 'Label',
@@ -185,6 +188,7 @@ const Cardinality = () => {
       width: 200,
       autoHeight: true,
       cellStyle: () => preWrapWordBreak,
+      headerComponent: () => <CellHeader headerText='Label' helpText='This is the language specific label for an attribute.' />,
     },
     {
       headerName: 'Entry Limit',
@@ -192,15 +196,17 @@ const Cardinality = () => {
       width: 120,
       autoHeight: true,
       onCellClicked: handleCellClick,
+      headerComponent: () => <CellHeader headerText='Entry Limit' helpText='Applies only to array DatatTypes. Describes the number of occurrences of an element.' />,
     },
     {
-      headerName: '',
+      headerName: 'Garbage',
       field: 'Delete',
       cellRendererFramework: TrashCanButton,
       cellRendererParams: (params) => ({
         handleDeleteRow: () => handleDeleteRow(params)
       }),
       width: 100,
+      headerComponent: () => <CellHeader headerText='Garbage' helpText='Remove the Entry Limit rule.' />,
     },
   ], [handleCellClick, handleDeleteRow]);
 
@@ -269,6 +275,10 @@ const Cardinality = () => {
         }}
       >
         <Box className="ag-theme-balham" sx={{ width: '50%', height: '100%', maxWidth: '580px' }}>
+          <Typography sx={{
+            textAlign: 'start',
+            marginBottom: '14px',
+          }}>Entry limits can only be created for attributes with an array DataType.</Typography>
           <style>{gridStyles}</style>
           <AgGridReact ref={cardinalityRef} onCellClicked={onCellClick} rowData={cardinalityData} columnDefs={columnDefs} gridOptions={gridOptions} onGridReady={onGridReady} />
         </Box>
@@ -288,17 +298,27 @@ const Cardinality = () => {
         >
           {selectedCellData && (
             <>
-              <TextField
-                label="Exact"
-                variant="outlined"
-                value={exactValue}
-                onChange={(e) => handleValueChange(e.target.value, 'exact')}
-                style={{
-                  marginBottom: '10px',
-                  backgroundColor: minValue || maxValue ? '#f2f2f2' : 'white',
-                }}
-                disabled={minValue || maxValue}
-              />
+              <Box>
+
+                <TextField
+                  label="Exact"
+                  variant="outlined"
+                  value={exactValue}
+                  onChange={(e) => handleValueChange(e.target.value, 'exact')}
+                  style={{
+                    marginBottom: '10px',
+                    backgroundColor: minValue || maxValue ? '#f2f2f2' : 'white',
+                  }}
+                  disabled={minValue || maxValue}
+                />
+                <Tooltip
+                  title="For each attribute you can specify the exact, minimum or maximum (or both minimum and maximum) number of entries allowed in a data record. Data types should be arrays to accept more than one entry."
+                  placement="top"
+                  arrow
+                >
+                  <HelpOutlineIcon sx={{ fontSize: 18, color: "#ccc", marginLeft: '10px', marginTop: '5px' }} />
+                </Tooltip>
+              </Box>
               <Typography variant="h6" align="center" style={{ marginBottom: '10px' }}>
                 or
               </Typography>

@@ -46,7 +46,7 @@ const RequiredEntries = () => {
             />
           </Box>
         }
-        helpText='Required entries' />
+        helpText='Check for each attribute where the data entry cannot be left empty in a dataset.' />
     );
   };
 

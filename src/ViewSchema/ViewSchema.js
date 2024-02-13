@@ -288,7 +288,7 @@ export default function ViewSchema({ pageBack }) {
                 </Button>
                 <Box sx={{ marginLeft: "1rem" }}>
                   <Tooltip
-                    title="Export your schema in a .json machine-readable version and a txt human-readable format using all the information that has been provided here."
+                    title="Export your schema in a machine-readable .json versoin and a human-readable .txt format using all the information that has been provided here."
                     placement="left"
                     arrow
                   >
