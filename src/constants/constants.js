@@ -272,5 +272,5 @@ export const displayValues = [
   "base64",
   "utf-8",
   "iso-8859-1",
-  "UTF-16LE"
+  // "UTF-16LE"
 ];
