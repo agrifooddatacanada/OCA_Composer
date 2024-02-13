@@ -163,7 +163,7 @@ const useZipParser = () => {
     attributeList.forEach((item) => {
       newAttributeRowData.push({
         Attribute: item,
-        Flagged: false,
+        Flagged: root?.['flagged_attributes']?.includes(item),
         List: attributesWithListType.includes(item),
         Type: root?.['attributes']?.[item],
         Unit: units?.['attribute_units']?.[item]

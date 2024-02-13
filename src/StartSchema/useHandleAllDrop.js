@@ -16,6 +16,7 @@ const useHandleAllDrop = () => {
     setAttributesList,
     setIsZip,
     setZipToReadme,
+    setJsonToReadme,
     rawFile,
     setRawFile,
     showDeprecationCard,
@@ -323,7 +324,7 @@ const useHandleAllDrop = () => {
         const labelList = [];
         const metaList = [];
         const entryList = [];
-        const allJSONFiles = [];
+        const allZipFiles = [];
         let entryCodeSummary = {};
         let conformance = undefined;
         let characterEncoding = undefined;
@@ -335,7 +336,7 @@ const useHandleAllDrop = () => {
         const loadMetadataFile = await zip.files["meta.json"].async("text");
         const metadataJson = JSON.parse(loadMetadataFile);
         const root = metadataJson.root;
-        allJSONFiles.push(loadMetadataFile);
+        allZipFiles.push(loadMetadataFile);
 
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
@@ -382,16 +383,16 @@ const useHandleAllDrop = () => {
             cardinalityData = JSON.parse(content);
           }
 
-          allJSONFiles.push(content);
+          allZipFiles.push(content);
         }
 
         const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
-        allJSONFiles.push(loadRoot);
+        allZipFiles.push(loadRoot);
 
         processLanguages(languageList);
         processMetadata(metaList);
         processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData);
-        setZipToReadme(allJSONFiles);
+        setZipToReadme(allZipFiles);
       };
 
       reader.readAsArrayBuffer(acceptedFiles[0]);
@@ -450,7 +451,7 @@ const useHandleAllDrop = () => {
     const labelList = [];
     const metaList = [];
     const entryList = [];
-    const allJSONFiles = [];
+    // const allJSONFiles = undefined;
     let loadRoot = undefined;
     let entryCodeSummary = {};
     let conformance = undefined;
@@ -464,83 +465,83 @@ const useHandleAllDrop = () => {
       metaList.push(...jsonFile.overlays.meta);
       languageList.push(...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2)));
 
-      // ONLY for README
-      const readmeMeta = jsonFile.overlays.meta.map((meta) => {
-        return JSON.stringify(meta);
-      });
-      allJSONFiles.push(...readmeMeta);
+      // // ONLY for README
+      // const readmeMeta = jsonFile.overlays.meta.map((meta) => {
+      //   return JSON.stringify(meta);
+      // });
+      // allJSONFiles.push(...readmeMeta);
     }
 
     if (jsonFile?.overlays?.information) {
       informationList.push(...jsonFile.overlays.information);
 
-      // ONLY for README
-      const readmeInformation = jsonFile.overlays.information.map((information) => {
-        return JSON.stringify(information);
-      });
-      allJSONFiles.push(...readmeInformation);
+      // // ONLY for README
+      // const readmeInformation = jsonFile.overlays.information.map((information) => {
+      //   return JSON.stringify(information);
+      // });
+      // allJSONFiles.push(...readmeInformation);
     }
 
     if (jsonFile?.overlays?.label) {
       labelList.push(...jsonFile.overlays.label);
 
-      // ONLY for README
-      const readmeLabel = jsonFile.overlays.label.map((label) => {
-        return JSON.stringify(label);
-      });
-      allJSONFiles.push(...readmeLabel);
+      // // ONLY for README
+      // const readmeLabel = jsonFile.overlays.label.map((label) => {
+      //   return JSON.stringify(label);
+      // });
+      // allJSONFiles.push(...readmeLabel);
     }
 
     if (jsonFile?.['capture_base']) {
       loadRoot = { ...jsonFile['capture_base'] };
 
-      // ONLY for README
-      allJSONFiles.push(JSON.stringify(loadRoot));
+      // // ONLY for README
+      // allJSONFiles.push(JSON.stringify(loadRoot));
     }
 
     if (jsonFile?.overlays?.unit) {
       loadUnits = { ...jsonFile.overlays.unit };
 
-      // ONLY for README
-      allJSONFiles.push(JSON.stringify(loadUnits));
+      // // ONLY for README
+      // allJSONFiles.push(JSON.stringify(loadUnits));
     }
 
     if (jsonFile?.overlays?.conformance) {
       conformance = { ...jsonFile.overlays.conformance };
 
-      // ONLY for README
-      allJSONFiles.push(JSON.stringify(conformance));
+      // // ONLY for README
+      // allJSONFiles.push(JSON.stringify(conformance));
     }
 
     if (jsonFile?.overlays?.['character_encoding']) {
       characterEncoding = { ...jsonFile.overlays['character_encoding'] };
 
-      // ONLY for README
-      allJSONFiles.push(JSON.stringify(characterEncoding));
+      // // ONLY for README
+      // allJSONFiles.push(JSON.stringify(characterEncoding));
     }
 
     if (jsonFile?.overlays?.entry_code) {
       entryCodeSummary = { ...jsonFile.overlays.entry_code };
 
-      // ONLY for README
-      allJSONFiles.push(JSON.stringify(entryCodeSummary));
+      // // ONLY for README
+      // allJSONFiles.push(JSON.stringify(entryCodeSummary));
     }
 
     if (jsonFile?.overlays?.['format']) {
       formatRules = { ...jsonFile.overlays['format'] };
 
-      // ONLY for README
-      allJSONFiles.push(JSON.stringify(formatRules));
+      // // ONLY for README
+      // allJSONFiles.push(JSON.stringify(formatRules));
     }
 
     if (jsonFile?.overlays?.entry) {
       entryList.push(...jsonFile.overlays.entry);
 
-      // ONLY for README
-      const readmeEntry = jsonFile.overlays.entry.map((entry) => {
-        return JSON.stringify(entry);
-      });
-      allJSONFiles.push(...readmeEntry);
+      // // ONLY for README
+      // const readmeEntry = jsonFile.overlays.entry.map((entry) => {
+      //   return JSON.stringify(entry);
+      // });
+      // allJSONFiles.push(...readmeEntry);
     }
 
     if (!languageList || languageList.length === 0) {
@@ -550,7 +551,7 @@ const useHandleAllDrop = () => {
     processLanguages(languageList);
     processMetadata(metaList);
     processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData);
-    setZipToReadme(allJSONFiles);
+    setJsonToReadme(jsonFile);
   }, [processLabelsDescriptionRootUnitsEntries, processLanguages, processMetadata, setZipToReadme]);
 
   useEffect(() => {

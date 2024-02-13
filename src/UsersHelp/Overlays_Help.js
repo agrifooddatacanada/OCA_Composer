@@ -19,7 +19,7 @@ const OverlaysHelp = () => {
           <li><strong>Character Encoding: </strong> Document the character encoding of the data for each attribute.</li>
           <li><strong>Required Entries: </strong> Specify if the dataset has attributes where data is required.</li>
           <li><strong>Format Rules: </strong> Specify the formatting rule that applies to data for each attribute.</li>
-          <li><strong>Cardinality: </strong> Specify the exact, minimum or maximum (or both minimum and maximum) number of entries allowed in a data record for each attribute.</li>
+          {/* <li><strong>Cardinality: </strong> Specify the exact, minimum or maximum (or both minimum and maximum) number of entries allowed in a data record for each attribute.</li> */}
 
         </u1>
         <br></br>

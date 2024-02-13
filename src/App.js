@@ -40,7 +40,7 @@ const items = {
     feature: 'Add format rule for data',
     selected: false,
   },
-  "Cardinality": { feature: "Cardinality", selected: false }
+  // "Cardinality": { feature: "Cardinality", selected: false }
 };
 
 export const pagesArray = [
@@ -56,6 +56,7 @@ function App() {
   const [isZip, setIsZip] = useState(false);
   const [isZipEdited, setIsZipEdited] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
+  const [jsonToReadme, setJsonToReadme] = useState({});
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
@@ -304,6 +305,8 @@ function App() {
             setSelectedOverlay,
             zipToReadme,
             setZipToReadme,
+            jsonToReadme,
+            setJsonToReadme,
             isZipEdited,
             setIsZipEdited,
             showDeprecationCard,
