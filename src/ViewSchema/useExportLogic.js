@@ -383,13 +383,13 @@ const useExportLogic = () => {
         };
 
         const encodingCell = worksheetMain.getCell(index + 4, 6);
-        if (overlay["Character Encoding"].selected && characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
+        if (overlay?.["Character Encoding"]?.selected && characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
           encodingCell.value = characterEncodingRowData[index]['Character Encoding'];
         }
 
         // Add format rules here
         const formatCell = worksheetMain.getCell(index + 4, 7);
-        if (overlay["Add format rule for data"].selected) {
+        if (overlay?.["Add format rule for data"]?.selected) {
           if (formatRuleRowData[index].FormatText !== "") {
             formatCell.value = formatRuleRowData[index].FormatText;
           }
@@ -418,7 +418,7 @@ const useExportLogic = () => {
           entryCodesCell.value = entryString.slice(1);
         }
 
-        if (overlay["Cardinality"].selected) {
+        if (overlay?.["Cardinality"]?.selected) {
           if (cardinalityData[index]['EntryLimit'] && cardinalityData[index]['EntryLimit'] !== "") {
             worksheetMain.getCell(index + 4, 9).value = cardinalityData[index]['EntryLimit'];
           }
@@ -431,7 +431,7 @@ const useExportLogic = () => {
           formulae: ['"M,O"'],
         };
 
-        if (overlay["Make selected entries required"].selected) {
+        if (overlay?.["Make selected entries required"]?.selected) {
           conformanceCell.value = characterEncodingRowData[index]['Make selected entries required'] ? "M" : "O";
         }
 
