@@ -3,7 +3,7 @@ import { Context } from "../App";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
 import { divisionCodes, groupCodes } from "../constants/constants";
-import useGenerateReadMe from "./useGenerateReadMe";
+import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 const ExcelJS = require("exceljs");
 
 const zipUrl = "https://adc-oca-json-bundle-api.azurewebsites.net";
@@ -40,13 +40,13 @@ const useExportLogic = () => {
     customIsos,
     characterEncodingRowData,
     overlay,
-    setZipToReadme,
+    setJsonToReadme,
     setIsZip,
     setRawFile,
     formatRuleRowData,
     cardinalityData
   } = useContext(Context);
-  const { toTextFile } = useGenerateReadMe();
+  const { jsonToTextFile } = useGenerateReadMeV2();
 
   const classificationCode = useMemo(() => {
     if (groupCodes[divisionGroup.group]) {
@@ -646,21 +646,8 @@ const useExportLogic = () => {
   };
 
   const downloadReadMeV2 = async (data) => {
-    const allJSONFiles = [];
-    allJSONFiles.push(JSON.stringify(data?.capture_base));
-
-    for (const value of Object.values(data?.overlays)) {
-      if (Array.isArray(value)) {
-        value.forEach((item) => {
-          allJSONFiles.push(JSON.stringify(item));
-        });
-      } else {
-        allJSONFiles.push(JSON.stringify(value));
-      }
-    }
-
-    setZipToReadme(allJSONFiles);
-    toTextFile(allJSONFiles);
+    setJsonToReadme(data);
+    jsonToTextFile(data);
   };
 
   const downloadJSON = async (data) => {
