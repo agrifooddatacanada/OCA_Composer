@@ -4,10 +4,9 @@ import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
 import { divisionCodes, groupCodes } from "../constants/constants";
 import useGenerateReadMe from "./useGenerateReadMe";
-import JSZip from "jszip";
 const ExcelJS = require("exceljs");
 
-const zipUrl = "https://tool.oca.argo.colossi.network";
+const zipUrl = "https://adc-oca-json-bundle-api.azurewebsites.net";
 
 function columnToLetter(column) {
   var temp, letter = '';
@@ -553,26 +552,26 @@ const useExportLogic = () => {
     }
 
     //////CREATE DATA WORKSHEET FOR ENTRY_CODE DROPDOWN MENUS
-    try {
-      const entryCodeOptionWorksheet = workbook.addWorksheet("options", { state: 'hidden' });
-      attributesList.forEach((item, index) => {
-        const codesArray = savedEntryCodes[item];
-        if (codesArray) {
-          let columnCounter = 1;
-          for (const entryCodeOption of codesArray) {
-            let languageCounter = 1;
-            for (const lang of languagesWithCode) {
-              entryCodeOptionWorksheet.getCell(2 * index + languageCounter, columnCounter).value = entryCodeOption[lang.language];
-              languageCounter++;
-            }
-            columnCounter++;
-          }
-        }
+    // try {
+    //   const entryCodeOptionWorksheet = workbook.addWorksheet("options", { state: 'hidden' });
+    //   attributesList.forEach((item, index) => {
+    //     const codesArray = savedEntryCodes[item];
+    //     if (codesArray) {
+    //       let columnCounter = 1;
+    //       for (const entryCodeOption of codesArray) {
+    //         let languageCounter = 1;
+    //         for (const lang of languagesWithCode) {
+    //           entryCodeOptionWorksheet.getCell(2 * index + languageCounter, columnCounter).value = entryCodeOption[lang.language];
+    //           languageCounter++;
+    //         }
+    //         columnCounter++;
+    //       }
+    //     }
 
-      });
-    } catch (error) {
-      console.error(error);
-    }
+    //   });
+    // } catch (error) {
+    //   console.error(error);
+    // }
 
     ////////CREATE WORKBOOK AND EXPORT
     const workbookName = `OCA_Template_${new Date().toISOString()}.xlsx`;
@@ -618,7 +617,7 @@ const useExportLogic = () => {
     setRawFile([]);
   };
 
-  const sendFileToAPI = async (workbook, workbookName) => {
+  const sendFileToETJSONAPI = async (workbook, workbookName) => {
     try {
       const buffer = await workbook.xlsx.writeBuffer();
 
@@ -627,16 +626,16 @@ const useExportLogic = () => {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      formData.append("file", file, workbookName);
+      formData.append("excelFile", file, workbookName);
 
-      const response = await fetch(`${zipUrl}/`, {
+      const response = await fetch(`${zipUrl}/ocajsonbundle`, {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
         const data = await response.json();
-        return data.filename;
+        return { data, status: response?.ok };
       } else {
         throw new Error("Error sending file to API");
       }
@@ -646,60 +645,54 @@ const useExportLogic = () => {
     }
   };
 
-  const downloadReadMe = async (responseData) => {
+  const downloadReadMeV2 = async (data) => {
     const allJSONFiles = [];
-    const blob = await responseData.blob();
-    const zipData = await JSZip.loadAsync(blob);
-    const loadMetadataFile = await zipData.files["meta.json"].async("text");
-    const metadataJson = JSON.parse(loadMetadataFile);
-    const root = metadataJson.root;
-    allJSONFiles.push(loadMetadataFile);
+    allJSONFiles.push(JSON.stringify(data?.capture_base));
 
-    for (const file of Object.values(metadataJson.files[root])) {
-      const content = await zipData.files[file + '.json'].async("text");
-      allJSONFiles.push(content);
+    for (const value of Object.values(data?.overlays)) {
+      if (Array.isArray(value)) {
+        value.forEach((item) => {
+          allJSONFiles.push(JSON.stringify(item));
+        });
+      } else {
+        allJSONFiles.push(JSON.stringify(value));
+      }
     }
-    const loadRoot = await zipData.files[metadataJson.root + '.json'].async("text");
-    allJSONFiles.push(loadRoot);
 
     setZipToReadme(allJSONFiles);
     toTextFile(allJSONFiles);
   };
 
-  const downloadZip = async (downloadUrl, zipFileName) => {
-    const a = document.createElement("a");
-    a.href = downloadUrl;
-    a.download = zipFileName;
-    a.style.display = "none";
+  const downloadJSON = async (data) => {
+    let contentType = "application/json;charset=utf-8;";
+    var a = document.createElement('a');
+    a.download = "oca_bundle.json";
+    a.href = 'data:' + contentType + ',' + encodeURIComponent(JSON.stringify(data));
+    a.target = '_blank';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   };
 
 
-  const handleExport = async (onlyReadme = false) => {
+  const handleExportV2 = async (onlyReadme = false) => {
     setExportDisabled(true);
     const { workbook, workbookName } = handleOCAExport(OCADataArray);
-    const fileName = await sendFileToAPI(workbook, workbookName);
-    if (fileName) {
-      const downloadUrl = `${zipUrl}/${fileName}`;
-      const response = await fetch(downloadUrl);
-      if (response.ok) {
-        if (onlyReadme) {
-          downloadReadMe(response);
-        } else {
-          downloadReadMe(response);
-          downloadZip(downloadUrl, fileName);
-        }
+    const { data, status } = await sendFileToETJSONAPI(workbook, workbookName);
+    if (status) {
+      downloadReadMeV2(data?.schema?.[0]);
+      if (!onlyReadme) {
+        downloadJSON(data);
       }
     }
+
     setTimeout(() => {
       setExportDisabled(false);
     }, 3000);
   };
 
   return {
-    handleExport,
+    handleExport: handleExportV2,
     exportDisabled,
     resetToDefaults
   };
