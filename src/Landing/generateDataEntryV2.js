@@ -20,7 +20,6 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
     reader.onload = async (e) => {
       const originJsonData = [];
       const rawJson = JSON.parse(e.target.result);
-      console.log('rawJson:', rawJson);
       let json = rawJson?.['schema']?.[0] ? rawJson?.['schema']?.[0] : rawJson?.['bundle'] ? rawJson?.['bundle'] : rawJson;
 
       try {
