@@ -1,5 +1,6 @@
 
 import ExcelJS from 'exceljs';
+import { json } from 'react-router-dom';
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -19,7 +20,9 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
     reader.onload = async (e) => {
       const originJsonData = [];
       const rawJson = JSON.parse(e.target.result);
-      const json = rawJson?.['schema']?.[0];
+      console.log('rawJson:', rawJson);
+      let json = rawJson?.['schema']?.[0] ? rawJson?.['schema']?.[0] : rawJson?.['bundle'] ? rawJson?.['bundle'] : rawJson;
+
       try {
         if (json.hasOwnProperty('capture_base')) {
           originJsonData.push(json.capture_base);
