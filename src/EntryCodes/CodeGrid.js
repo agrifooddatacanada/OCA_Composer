@@ -8,75 +8,200 @@ import React, {
 } from "react";
 import { Context } from "../App";
 import { AgGridReact } from "ag-grid-react";
-
 import { Box } from "@mui/system";
 import { Button, Tooltip, Typography } from "@mui/material";
-
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-
 import { CustomPalette } from "../constants/customPalette";
-
+import { preWrapWordBreak } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import { preWrapWordBreak } from "../constants/styles";
+
+//Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
+const gridStyle = `
+.ag-center-cols-clipper {
+  min-height: unset !important;
+}
+
+.ag-theme-alpine .ag-cell {
+  border-right: 1px solid ${CustomPalette.GREY_300};
+}
+
+.ag-cell-value {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ag-header-cell-label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.ag-header-cell {
+  border: 0.5px solid ${CustomPalette.GREY_300};}
+}
+
+.ag-cell {
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ag-cell, .ag-full-width-row .ag-cell-wrapper.ag-row-group {
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
+  height: 100%
+}
+`;
+
+const CodeHeader = () => {
+  return (
+    <div className="ag-cell-label-container">
+      <Tooltip
+        title="The entry choices for the schema. These will be what is recorded in the dataset and so can be simple entry codes."
+        placement="top"
+        arrow
+      >
+        <HelpOutlineIcon sx={{ fontSize: 15 }} />
+      </Tooltip>
+      <div className="ag-header-cell-label">Entry Code</div>
+    </div>
+  );
+};
+
+const LanguageHeader = (languages, language) => {
+  return (
+    <div className="ag-cell-label-container">
+      {language === languages[0] && (
+        <Tooltip
+          title="A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes."
+          placement="top"
+          arrow
+        >
+          <HelpOutlineIcon sx={{ fontSize: 15 }} />
+        </Tooltip>
+      )}
+      <div className="ag-header-cell-label">
+        <Typography
+          noWrap={true}
+          variant="subtitle2"
+          sx={{ textTransform: "capitalize" }}
+        >
+          {language}
+        </Typography>
+      </div>
+    </div>
+  );
+};
 
 export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable }) {
   const { languages, setEntryCodeRowData } = useContext(Context);
   const { entryCodeRowData } = useContext(Context);
-
+  console.log('entryCodeRowData', entryCodeRowData);
   const [buttonArray, setButtonArray] = useState([]);
   const [gridWidth, setGridWidth] = useState(500);
   const [hoveredRowIndex, setHoveredRowIndex] = useState(-1);
-
   const refContainer = useRef(null);
+  const boxRefs = useRef([]);
+  const buttonRef = useRef();
 
-  //Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
+  const handleDeleteRow = useCallback((elementIndex) => {
+    codeRefs.current.forEach((grid) => {
+      grid.current.api.stopEditing();
+    });
 
-  const gridStyle = `
-  .ag-center-cols-clipper {
-    min-height: unset !important;
-  }
-  
-  .ag-theme-alpine .ag-cell {
-    border-right: 1px solid ${CustomPalette.GREY_300};
-  }
-  
-  .ag-cell-value {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .ag-header-cell-label {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .ag-header-cell {
-    border: 0.5px solid ${CustomPalette.GREY_300};}
-  }
+    const newEntryCodeRowData = JSON.parse(
+      JSON.stringify(entryCodeRowData[index])
+    );
+    newEntryCodeRowData.splice(elementIndex, 1);
+    setEntryCodeRowData((prevState) => {
+      const newState = [...prevState];
+      newState[index] = newEntryCodeRowData;
+      return newState;
+    });
+  }, [codeRefs, entryCodeRowData, index, setEntryCodeRowData]);
 
-  .ag-cell {
-    line-height: 1.6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  const handleAddRow = useCallback(() => {
+    codeRefs.current.forEach((grid) => {
+      grid.current.api.stopEditing();
+    });
 
-  .ag-cell, .ag-full-width-row .ag-cell-wrapper.ag-row-group {
-    line-height: 1.6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+    const newEntryCodeRow = { Code: "" };
+    languages.forEach((lang) => {
+      newEntryCodeRow[lang] = "";
+    });
 
-  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
-    height: 100%
-  }
-  `;
+    const newRowData = [...entryCodeRowData[index], { ...newEntryCodeRow }];
+    setEntryCodeRowData((prevState) => {
+      const newState = [...prevState];
+      newState[index] = newRowData;
+      return newState;
+    });
+  }, [codeRefs, entryCodeRowData, index, languages, setEntryCodeRowData]);
+
+  const columnDefs = useMemo(() => {
+    const languageHeaders = languages.map((language) => {
+      return {
+        field: language,
+        editable: true,
+        headerComponent: () => LanguageHeader(languages, language),
+        autoHeight: true,
+        cellStyle: () => preWrapWordBreak,
+      };
+    });
+    return [
+      {
+        field: "Code",
+        editable: true,
+        headerComponent: CodeHeader,
+        autoHeight: true,
+        cellStyle: () => preWrapWordBreak,
+      },
+      ...languageHeaders,
+    ];
+  }, [languages, entryCodeRowData, index]);
+
+  const defaultColDef = useMemo(() => ({
+    width: 200,
+    tabToNextCell: true,
+    cellStyle: (params) => {
+      if (params.node.rowIndex === hoveredRowIndex) {
+        return { backgroundColor: CustomPalette.PINK_200 };
+      } else {
+        return { backgroundColor: "white" };
+      }
+    },
+  }), [hoveredRowIndex]);
+
+  //Creates "add-by-tab" behaviour
+  const onCellKeyDown = useCallback(
+    (e) => {
+      const keyPressed = e.event.code;
+
+      const isLastRow = e.node.lastChild;
+      const isLastColumn = e.column.colId === languages[languages.length - 1];
+      if (keyPressed === "Tab") {
+        if (isLastRow && isLastColumn) {
+          buttonRef.current.click();
+          setTimeout(() => {
+            const api = e.api;
+            const editingRowIndex = e.rowIndex;
+            api.setFocusedCell(editingRowIndex + 1, "Code");
+          }, 0);
+        }
+      }
+    },
+    [languages]
+  );
 
   //Sets grid width based on number of Languages
   useEffect(() => {
@@ -100,119 +225,9 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
     }
   }, [languages]);
 
-  const handleDeleteRow = (elementIndex) => {
-    codeRefs.current.forEach((grid) => {
-      grid.current.api.stopEditing();
-    });
-
-    const newEntryCodeRowData = JSON.parse(
-      JSON.stringify(entryCodeRowData[index])
-    );
-    newEntryCodeRowData.splice(elementIndex, 1);
-    setEntryCodeRowData((prevState) => {
-      const newState = [...prevState];
-      newState[index] = newEntryCodeRowData;
-      return newState;
-    });
-  };
-
-  const handleAddRow = () => {
-    codeRefs.current.forEach((grid) => {
-      grid.current.api.stopEditing();
-    });
-    const newEntryCodeRow = { Code: "" };
-    languages.forEach((lang) => {
-      newEntryCodeRow[lang] = "";
-    });
-
-    const newRowData = [...entryCodeRowData[index], { ...newEntryCodeRow }];
-    setEntryCodeRowData((prevState) => {
-      const newState = [...prevState];
-      newState[index] = newRowData;
-      return newState;
-    });
-  };
-
-  const CodeHeader = () => {
-    return (
-      <div className="ag-cell-label-container">
-        <Tooltip
-          title="The entry choices for the schema. These will be what is recorded in the dataset and so can be simple entry codes."
-          placement="top"
-          arrow
-        >
-          <HelpOutlineIcon sx={{ fontSize: 15 }} />
-        </Tooltip>
-        <div className="ag-header-cell-label">Entry Code</div>
-      </div>
-    );
-  };
-
-  const LanguageHeader = (language) => {
-    return (
-      <div className="ag-cell-label-container">
-        {language === languages[0] && (
-          <Tooltip
-            title="A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes."
-            placement="top"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        )}
-        <div className="ag-header-cell-label">
-          <Typography
-            noWrap={true}
-            variant="subtitle2"
-            sx={{ textTransform: "capitalize" }}
-          >
-            {language}
-          </Typography>
-        </div>
-      </div>
-    );
-  };
-
-  const columnDefs = useMemo(() => {
-    const languageHeaders = languages.map((language) => {
-      return {
-        field: language,
-        editable: true,
-        headerComponent: () => LanguageHeader(language),
-        autoHeight: true,
-        cellStyle: () => preWrapWordBreak,
-      };
-    });
-    return [
-      {
-        field: "Code",
-        editable: true,
-        headerComponent: CodeHeader,
-        autoHeight: true,
-        cellStyle: () => preWrapWordBreak,
-      },
-      ...languageHeaders,
-    ];
-  }, [languages, entryCodeRowData, index]);
-
-  const defaultColDef = {
-    width: 200,
-    tabToNextCell: true,
-    cellStyle: (params) => {
-      if (params.node.rowIndex === hoveredRowIndex) {
-        return { backgroundColor: CustomPalette.PINK_200 };
-      } else {
-        return { backgroundColor: "white" };
-      }
-    },
-  };
-
   //Because grid width varies dependent on number of languages, delete icons float outside of the grid component, and are linked by index
   //There is an empty box at the top to make the icons line up correctly
   //Hover effect helps with clarity since the delete icons are floating beside
-
-  const boxRefs = useRef([]);
-
   useEffect(() => {
     if (entryCodeRowData[index].length > 0) {
       const newButtonArray = [];
@@ -270,28 +285,6 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
       document.removeEventListener("mousemove", handleMousemove);
     };
   }, []);
-
-  //Creates "add-by-tab" behaviour
-  const buttonRef = useRef();
-  const onCellKeyDown = useCallback(
-    (e) => {
-      const keyPressed = e.event.code;
-
-      const isLastRow = e.node.lastChild;
-      const isLastColumn = e.column.colId === languages[languages.length - 1];
-      if (keyPressed === "Tab") {
-        if (isLastRow && isLastColumn) {
-          buttonRef.current.click();
-          setTimeout(() => {
-            const api = e.api;
-            const editingRowIndex = e.rowIndex;
-            api.setFocusedCell(editingRowIndex + 1, "Code");
-          }, 0);
-        }
-      }
-    },
-    [languages]
-  );
 
   //Stops grid editing on all other grid components - not just current grid
   useEffect(() => {

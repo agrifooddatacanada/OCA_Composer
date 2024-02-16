@@ -9,6 +9,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 export default function EntryCodes() {
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
+  console.log('selectedAttributesList', selectedAttributesList);
   const [errorMessage, setErrorMessage] = useState("");
   const {
     attributeRowData,
