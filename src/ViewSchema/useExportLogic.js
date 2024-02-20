@@ -3,10 +3,13 @@ import { Context } from "../App";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
 import { divisionCodes, groupCodes } from "../constants/constants";
-import useGenerateReadMeV2 from "./useGenerateReadMeV2";
+// import useGenerateReadMeV2 from "./useGenerateReadMeV2";
+import JSZip from "jszip";
+import useGenerateReadMe from "./useGenerateReadMe";
 const ExcelJS = require("exceljs");
 
-const zipUrl = "https://adc-oca-json-bundle-api.azurewebsites.net";
+// const zipUrl = "https://adc-oca-json-bundle-api.azurewebsites.net";
+const zipUrl = "https://tool.oca.argo.colossi.network";
 
 function columnToLetter(column) {
   var temp, letter = '';
@@ -40,13 +43,15 @@ const useExportLogic = () => {
     customIsos,
     characterEncodingRowData,
     overlay,
-    setJsonToReadme,
+    // setJsonToReadme,
     setIsZip,
     setRawFile,
     formatRuleRowData,
-    cardinalityData
+    cardinalityData,
+    setZipToReadme,
   } = useContext(Context);
-  const { jsonToTextFile } = useGenerateReadMeV2();
+  // const { jsonToTextFile } = useGenerateReadMeV2();
+  const { toTextFile } = useGenerateReadMe();
 
   const classificationCode = useMemo(() => {
     if (groupCodes[divisionGroup.group]) {
@@ -617,7 +622,51 @@ const useExportLogic = () => {
     setRawFile([]);
   };
 
-  const sendFileToETJSONAPI = async (workbook, workbookName) => {
+  // const sendFileToETJSONAPI = async (workbook, workbookName) => {
+  //   try {
+  //     const buffer = await workbook.xlsx.writeBuffer();
+
+  //     const formData = new FormData();
+  //     const file = new Blob([buffer], {
+  //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //     });
+
+  //     formData.append("excelFile", file, workbookName);
+
+  //     const response = await fetch(`${zipUrl}/ocajsonbundle`, {
+  //       method: "POST",
+  //       body: formData,
+  //     });
+
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       return { data, status: response?.ok };
+  //     } else {
+  //       throw new Error("Error sending file to API");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error sending file to API:", error);
+  //     return;
+  //   }
+  // };
+
+  // const downloadReadMeV2 = async (data) => {
+  //   setJsonToReadme(data);
+  //   jsonToTextFile(data);
+  // };
+
+  // const downloadJSON = async (data) => {
+  //   let contentType = "application/json;charset=utf-8;";
+  //   var a = document.createElement('a');
+  //   a.download = "oca_bundle.json";
+  //   a.href = 'data:' + contentType + ',' + encodeURIComponent(JSON.stringify(data));
+  //   a.target = '_blank';
+  //   document.body.appendChild(a);
+  //   a.click();
+  //   document.body.removeChild(a);
+  // };
+
+  const sendFileToAPI = async (workbook, workbookName) => {
     try {
       const buffer = await workbook.xlsx.writeBuffer();
 
@@ -626,16 +675,16 @@ const useExportLogic = () => {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      formData.append("excelFile", file, workbookName);
+      formData.append("file", file, workbookName);
 
-      const response = await fetch(`${zipUrl}/ocajsonbundle`, {
+      const response = await fetch(`${zipUrl}/`, {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
         const data = await response.json();
-        return { data, status: response?.ok };
+        return data.filename;
       } else {
         throw new Error("Error sending file to API");
       }
@@ -645,17 +694,31 @@ const useExportLogic = () => {
     }
   };
 
-  const downloadReadMeV2 = async (data) => {
-    setJsonToReadme(data);
-    jsonToTextFile(data);
+  const downloadReadMe = async (responseData) => {
+    const allJSONFiles = [];
+    const blob = await responseData.blob();
+    const zipData = await JSZip.loadAsync(blob);
+    const loadMetadataFile = await zipData.files["meta.json"].async("text");
+    const metadataJson = JSON.parse(loadMetadataFile);
+    const root = metadataJson.root;
+    allJSONFiles.push(loadMetadataFile);
+
+    for (const file of Object.values(metadataJson.files[root])) {
+      const content = await zipData.files[file + '.json'].async("text");
+      allJSONFiles.push(content);
+    }
+    const loadRoot = await zipData.files[metadataJson.root + '.json'].async("text");
+    allJSONFiles.push(loadRoot);
+
+    setZipToReadme(allJSONFiles);
+    toTextFile(allJSONFiles);
   };
 
-  const downloadJSON = async (data) => {
-    let contentType = "application/json;charset=utf-8;";
-    var a = document.createElement('a');
-    a.download = "oca_bundle.json";
-    a.href = 'data:' + contentType + ',' + encodeURIComponent(JSON.stringify(data));
-    a.target = '_blank';
+  const downloadZip = async (downloadUrl, zipFileName) => {
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = zipFileName;
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -665,13 +728,24 @@ const useExportLogic = () => {
   const handleExportV2 = async (onlyReadme = false) => {
     setExportDisabled(true);
     const { workbook, workbookName } = handleOCAExport(OCADataArray);
-    const { data, status } = await sendFileToETJSONAPI(workbook, workbookName);
-    if (status) {
-      downloadReadMeV2(data?.schema?.[0]);
-      if (!onlyReadme) {
-        downloadJSON(data);
+    const fileName = await sendFileToAPI(workbook, workbookName);
+    const downloadUrl = `${zipUrl}/${fileName}`;
+    const response = await fetch(downloadUrl);
+    if (response.ok) {
+      if (onlyReadme) {
+        downloadReadMe(response);
+      } else {
+        downloadReadMe(response);
+        downloadZip(downloadUrl, fileName);
       }
     }
+    // const { data, status } = await sendFileToETJSONAPI(workbook, workbookName);
+    // if (status) {
+    //   downloadReadMeV2(data?.schema?.[0]);
+    //   if (!onlyReadme) {
+    //     downloadJSON(data);
+    //   }
+    // }
 
     setTimeout(() => {
       setExportDisabled(false);
