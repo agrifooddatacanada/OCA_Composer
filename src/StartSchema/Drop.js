@@ -12,14 +12,32 @@ export default function Drop({
   dropDisabled,
   dropMessage,
   setDropMessage,
-  version
+  version = 0,
+  description,
+  tipDescription
 }) {
+  const acceptFormat = useMemo(() => {
+    if (version === 0) {
+      return {
+        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
+        "application/zip": ['.zip'],
+        "application/json": [".json"]
+      };
+    } else if (version === 1) {
+      return {
+        "application/vnd.ms-excel": [],
+        "application/zip": ['.zip'],
+        "application/json": [".json"]
+      };
+    } else if (version === 2) {
+      return {
+        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"]
+      };
+    }
+  }, [version]);
+
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
-    accept: {
-      "application/vnd.ms-excel": version === 1 ? [] : [".csv", ".xls", ".xlsx"],
-      "application/zip": ['.zip'],
-      "application/json": [".json"]
-    },
+    accept: acceptFormat,
     maxSize: 10485760,
     onDropRejected: (file) => {
       if (file[0].errors[0].code === "file-too-large") {
@@ -106,6 +124,8 @@ export default function Drop({
           handleHoverLeave={handleHoverLeave}
           handleDragOver={handleDragOver}
           handleDragLeave={handleDragLeave}
+          description={description}
+          tipDescription={tipDescription}
         />
       }</>
   );

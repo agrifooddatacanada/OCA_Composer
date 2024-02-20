@@ -6,10 +6,14 @@ import SingleTable from "./SingleTable";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 
+const errorMessages = {
+  fieldEmpty: "Please fill out all fields",
+  quoteMisuse: "Fields cannot contain quotes or commas",
+};
+
 export default function EntryCodes() {
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
-  console.log('selectedAttributesList', selectedAttributesList);
   const [errorMessage, setErrorMessage] = useState("");
   const {
     attributeRowData,
@@ -20,14 +24,9 @@ export default function EntryCodes() {
     languages,
   } = useContext(Context);
   const [chosenTable, setChosenTable] = useState(0);
-
   const codeRefs = useRef();
   const entryCodeData = useRef();
-
-  const errorMessages = {
-    fieldEmpty: "Please fill out all fields",
-    quoteMisuse: "Fields cannot contain quotes or commas",
-  };
+  const pageForwardDisabledRef = useRef(false);
 
   //Create codeRefs so there can be multiple grids on the page
   useEffect(() => {
@@ -74,10 +73,7 @@ export default function EntryCodes() {
     setCurrentPage("Details");
   };
 
-  const pageForwardDisabledRef = useRef(false);
-
   //Quotes, commas and blanks in these fields cause issues with the excel export (they interfere with the drop-down menu formatting)
-
   const pageForwardSave = () => {
     pageForwardDisabledRef.current = false;
     handleSave();
