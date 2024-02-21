@@ -256,12 +256,12 @@ export default function Grid({
       "Numeric",
       // "Reference",
       "Text",
-      // "Array[Binary]",
-      // "Array[Boolean]",
-      // "Array[DateTime]",
-      // "Array[Numeric]",
+      "Array[Binary]",
+      "Array[Boolean]",
+      "Array[DateTime]",
+      "Array[Numeric]",
       // "Array[Reference]",
-      // "Array[Text]",
+      "Array[Text]",
     ];
 
     const attributeName = props.data.Attribute;

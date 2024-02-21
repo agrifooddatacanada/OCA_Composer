@@ -65,9 +65,9 @@ const AttributeDetailsHelp = () => {
         &nbsp;&nbsp;&nbsp;and durations (e.g., PnYnMnD)
       </TypographyTag>
 
-      {/* <TypographyTag type='li'>
+      <TypographyTag type='li'>
         Array [attribute type]: a data type that defines a structure that holds several data items or elements of the same data type
-      </TypographyTag> */}
+      </TypographyTag>
       <br />
       <HelpPageH3Title text="List" />
 

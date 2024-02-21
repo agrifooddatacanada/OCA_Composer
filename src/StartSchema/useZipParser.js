@@ -138,27 +138,6 @@ const useZipParser = () => {
       }
     }
 
-    // Parse cardinality
-    if (cardinalityData) {
-      const firstLanguage = Object.keys(newLangAttributeRowData)?.[0];
-      const cardinalityDataToParse = [];
-      for (const item of newLangAttributeRowData?.[firstLanguage]) {
-        const cardinality = cardinalityData?.['attribute_cardinality']?.[item.Attribute];
-        cardinalityDataToParse.push({
-          ...item,
-          EntryLimit: cardinality
-        });
-      }
-      setOverlay(prev => ({
-        ...prev,
-        "Cardinality": {
-          ...prev["Cardinality"],
-          selected: true
-        }
-      }));
-      setCardinalityData(cardinalityDataToParse);
-    }
-
     // Parse attributes details such as type and unit + Parsing conformance and character encoding to characterEncodingRowData
     attributeList.forEach((item) => {
       newAttributeRowData.push({
@@ -211,6 +190,29 @@ const useZipParser = () => {
 
         newFormatRuleRowData.push(newFormatRuleData);
       });
+    }
+
+    // Parse cardinality
+    if (cardinalityData) {
+      const firstLanguage = Object.keys(newLangAttributeRowData)?.[0];
+      const cardinalityDataToParse = [];
+      for (const item of newLangAttributeRowData?.[firstLanguage]) {
+        const cardinality = cardinalityData?.['attribute_cardinality']?.[item.Attribute];
+        const attributeType = newAttributeRowData?.find((row) => row?.Attribute === item?.Attribute)?.Type;
+        cardinalityDataToParse.push({
+          ...item,
+          EntryLimit: cardinality,
+          Type: attributeType
+        });
+      }
+      setOverlay(prev => ({
+        ...prev,
+        "Cardinality": {
+          ...prev["Cardinality"],
+          selected: true
+        }
+      }));
+      setCardinalityData(cardinalityDataToParse);
     }
 
     setFormatRuleRowData(newFormatRuleRowData);

@@ -40,7 +40,7 @@ const items = {
     feature: 'Add format rule for data',
     selected: false,
   },
-  // "Cardinality": { feature: "Cardinality", selected: false }
+  "Cardinality": { feature: "Cardinality", selected: false }
 };
 
 export const pagesArray = [
