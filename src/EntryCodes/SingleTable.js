@@ -1,16 +1,12 @@
-import React, { useCallback, useContext } from "react";
+import React, { useContext } from "react";
 import { Box, Typography } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import CodeGrid from "./CodeGrid";
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { Context } from "../App";
 
-export default function SingleTable({ attribute, index, codeRefs, chosenTable, setChosenTable }) {
-  const { setCurrentPage, setChosenEntryCodeIndex } = useContext(Context);
-  const handleUpload = useCallback(() => {
-    setChosenEntryCodeIndex(index);
-    setCurrentPage("UploadEntryCodes");
-  }, []);
+export default function SingleTable({ attribute, index, codeRefs, chosenTable, setChosenTable, setShowCard }) {
+  const { setChosenEntryCodeIndex } = useContext(Context);
 
   return (
     <Box
@@ -47,7 +43,11 @@ export default function SingleTable({ attribute, index, codeRefs, chosenTable, s
               cursor: "pointer",
             }
           }}
-          onClick={handleUpload}
+          // onClick={handleUpload}
+          onClick={() => {
+            setChosenEntryCodeIndex(index);
+            setShowCard(true);
+          }}
         />
       </Box>
       <CodeGrid index={index} codeRefs={codeRefs} chosenTable={chosenTable} setChosenTable={setChosenTable} />
