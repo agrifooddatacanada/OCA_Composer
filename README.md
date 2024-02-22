@@ -10,6 +10,9 @@ You can learn more about schemas and see an implementation of OCA Composer live 
 
 The OCA Composer is written in React and deployed to a virtual machine which serves the web app to users. The OCA Composer app takes the user inputs and generates two types of files - the OCA File and the OCA Excel Template. Both of these files can be interpreted by parsers to generate the OCA Schema Bundle which is a single JSON file that contains the contents of the schema. Currently in this implementation only the OCA Excel Template is used and parsed to generate the OCA Schema Bundle. In the future, the OCA File will be directly consumed by an OCA Repository.
 
+## Data uploading and OCA Composer
+OCA Composer lets users upload a copy of a dataset which is stored in the users local environment, but OCA Composer only uses this to access the first row of the first sheet (if Excel) for attribute names. The data itself is not used further by OCA Composer and does not leave the users computer.
+
 ## Consuming OCA Schema Bundle - Readme and Data entry Excel
 
 The JSON schema bundle can be consumed by several tools within the ADC/OCA ecosystem.
