@@ -28,7 +28,8 @@ import CardinalityHelp from './UsersHelp/Cardinality_Help';
 export const Context = createContext();
 
 
-ReactGA.initialize('G-NN8Y6766KG');
+//Initializing react-ga with google analytics ID
+ReactGA.initialize('G-NN8Y6766KG'); //Replace TRACKINGID with actual ID
 
 const items = {
   'Character Encoding': { feature: 'Character Encoding', selected: false },
@@ -87,6 +88,11 @@ function App() {
 
   const [cardinalityData, setCardinalityData] = useState([]);
 
+  // Entry Code upload
+  const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
+  const [tempEntryCodeRowData, setTempEntryCodeRowData] = useState([]);
+  const [chosenEntryCodeIndex, setChosenEntryCodeIndex] = useState(-1);
+
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
     if (currentIndex >= 0 && currentIndex < pagesArray.length - 1) {
@@ -111,10 +117,11 @@ function App() {
     }
   }, [currentPage]);
 
-
+  //Measuring page views
   useEffect(() => {
     ReactGA.pageview();
   }, []);
+
 
   //Create Attributes List from File Data
   useEffect(() => {
@@ -312,7 +319,13 @@ function App() {
             showDeprecationCard,
             setShowDeprecationCard,
             cardinalityData,
-            setCardinalityData
+            setCardinalityData,
+            entryCodeHeaders,
+            setEntryCodeHeaders,
+            tempEntryCodeRowData,
+            setTempEntryCodeRowData,
+            chosenEntryCodeIndex,
+            setChosenEntryCodeIndex,
           }}
         >
           <Box

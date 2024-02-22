@@ -203,7 +203,6 @@ export default function ViewSchema({ pageBack }) {
   };
 
   return (
-
     <Box
       sx={{
         display: "flex",
