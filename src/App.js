@@ -28,7 +28,8 @@ import CardinalityHelp from './UsersHelp/Cardinality_Help';
 export const Context = createContext();
 
 
-ReactGA.initialize('G-NN8Y6766KG');
+//Initializing react-ga with google analytics ID
+ReactGA.initialize('G-NN8Y6766KG'); //Replace TRACKINGID with actual ID
 
 const items = {
   'Character Encoding': { feature: 'Character Encoding', selected: false },
@@ -116,10 +117,11 @@ function App() {
     }
   }, [currentPage]);
 
-
+  //Measuring page views
   useEffect(() => {
     ReactGA.pageview();
   }, []);
+
 
   //Create Attributes List from File Data
   useEffect(() => {
