@@ -43,7 +43,6 @@ export default function SingleTable({ attribute, index, codeRefs, chosenTable, s
               cursor: "pointer",
             }
           }}
-          // onClick={handleUpload}
           onClick={() => {
             setChosenEntryCodeIndex(index);
             setShowCard(true);

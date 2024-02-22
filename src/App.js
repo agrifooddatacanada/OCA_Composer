@@ -72,8 +72,11 @@ function App() {
   const [languages, setLanguages] = useState(['English']);
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
+  console.log('entryCodeRowData', entryCodeRowData);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
+  console.log('savedEntryCodes', savedEntryCodes);
   const [attributesWithLists, setAttributesWithLists] = useState([]);
+  console.log('attributesWithLists', attributesWithLists);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [showDeprecationCard, setShowDeprecationCard] = useState(null);
@@ -91,6 +94,8 @@ function App() {
   const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
   const [tempEntryCodeRowData, setTempEntryCodeRowData] = useState([]);
   const [chosenEntryCodeIndex, setChosenEntryCodeIndex] = useState(-1);
+  const [tempEntryCodeSummary, setTempEntryCodeSummary] = useState(undefined);
+  const [tempEntryList, setTempEntryList] = useState([]);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -324,6 +329,10 @@ function App() {
             setTempEntryCodeRowData,
             chosenEntryCodeIndex,
             setChosenEntryCodeIndex,
+            tempEntryCodeSummary,
+            setTempEntryCodeSummary,
+            tempEntryList,
+            setTempEntryList,
           }}
         >
           <Box

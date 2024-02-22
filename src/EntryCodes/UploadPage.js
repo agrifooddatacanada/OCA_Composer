@@ -23,7 +23,8 @@ const UploadPage = () => {
     handleSave,
     gridRef,
     setCurrentPage,
-    setChosenEntryCodeIndex
+    setChosenEntryCodeIndex,
+    fileType
   } = useHandleEntryCodeDrop();
 
   return (
@@ -50,7 +51,6 @@ const UploadPage = () => {
           dropDisabled={dropDisabled}
           dropMessage={dropMessage}
           setDropMessage={setDropMessage}
-          version={2}
           tipDescription={null}
         />
         <Box display="flex">
@@ -64,16 +64,20 @@ const UploadPage = () => {
             Clear Entry Code File
           </Button>
         </Box>
-        {rawFile?.length > 0 ? (
+        {rawFile?.length > 0 && fileType === 'csvORxls' ? (
           <Typography variant="h4" style={{ marginTop: "60px", color: CustomPalette.PRIMARY }}>
             Preview of the data
+          </Typography>
+        ) : fileType === 'json' ? (
+          <Typography variant="h4" style={{ marginTop: "60px", color: "Gray" }}>
+            Please continue to the next page
           </Typography>
         ) : (
           <Typography variant="h4" style={{ marginTop: "60px", color: "Gray" }}>
             No table to display
           </Typography>
         )}
-        {rawFile?.length > 0 &&
+        {rawFile?.length > 0 && fileType === 'csvORxls' &&
           <div className="ag-theme-balham" style={{ width: tableLength, maxWidth: '90%', marginTop: "30px" }}>
             <style>{gridStyles}</style>
             <AgGridReact
