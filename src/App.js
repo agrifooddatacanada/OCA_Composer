@@ -87,6 +87,11 @@ function App() {
 
   const [cardinalityData, setCardinalityData] = useState([]);
 
+  // Entry Code upload
+  const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
+  const [tempEntryCodeRowData, setTempEntryCodeRowData] = useState([]);
+  const [chosenEntryCodeIndex, setChosenEntryCodeIndex] = useState(-1);
+
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
     if (currentIndex >= 0 && currentIndex < pagesArray.length - 1) {
@@ -312,7 +317,13 @@ function App() {
             showDeprecationCard,
             setShowDeprecationCard,
             cardinalityData,
-            setCardinalityData
+            setCardinalityData,
+            entryCodeHeaders,
+            setEntryCodeHeaders,
+            tempEntryCodeRowData,
+            setTempEntryCodeRowData,
+            chosenEntryCodeIndex,
+            setChosenEntryCodeIndex,
           }}
         >
           <Box

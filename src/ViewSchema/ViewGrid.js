@@ -19,21 +19,30 @@ const gridStyles = `
 }
 `;
 
+const defaultColDef = {
+  width: 120,
+  editable: false,
+  cellStyle: () => greyCellStyle
+};
+
+const CheckboxRenderer = ({ value }) => {
+  const inputRef = useRef();
+
+  useEffect(() => {
+    inputRef.current.checked = value;
+  }, [value]);
+
+  return <input type="checkbox" ref={inputRef} disabled />;
+};
 
 export default function ViewGrid({ displayArray, currentLanguage, setLoading }) {
   const { overlay, cardinalityData } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
 
-  const CheckboxRenderer = ({ value }) => {
-    const inputRef = useRef();
-
-    useEffect(() => {
-      inputRef.current.checked = value;
-    }, [value]);
-
-    return <input type="checkbox" ref={inputRef} disabled />;
-  };
+  const onGridReady = useCallback(() => {
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     const getColumns = () => {
@@ -41,31 +50,26 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
         {
           field: "Attribute",
           autoHeight: true,
-          cellStyle: () => greyCellStyle,
         },
         {
           field: "Flagged",
           width: 78,
           headerComponent: () => <CellHeader headerText='Sensitive' />,
           cellRenderer: CheckboxRenderer,
-          cellStyle: () => greyCellStyle
         },
         {
           field: "Unit",
           width: 90,
           autoHeight: true,
-          cellStyle: () => greyCellStyle,
         },
         {
           field: "Type",
           autoHeight: true,
-          cellStyle: () => greyCellStyle,
         },
         {
           field: "Label",
           autoHeight: true,
           width: 170,
-          cellStyle: () => greyCellStyle,
           headerComponent: () => <CellHeader headerText='Label' constraint='max 50 chars' />
 
         },
@@ -74,14 +78,12 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           flex: 1,
           minWidth: 350,
           autoHeight: true,
-          cellStyle: () => greyCellStyle,
           headerComponent: () => <CellHeader headerText='Description' constraint='max 200 chars' />
         },
         {
           field: "List",
           width: 173,
           autoHeight: true,
-          cellStyle: () => greyCellStyle,
         },
       ];
 
@@ -91,7 +93,6 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           field: feature,
           width: 160,
           autoHeight: true,
-          cellStyle: () => greyCellStyle,
           headerComponent: () => {
             return (
               <span style={{ margin: "auto" }}>
@@ -109,11 +110,6 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
     setColumnDefs(getColumns());
   }, [overlay]);
 
-  const defaultColDef = {
-    width: 120,
-    editable: false,
-  };
-
   useEffect(() => {
     const newRowData = JSON.parse(JSON.stringify(displayArray));
     const newCardinalityData = JSON.parse(JSON.stringify(cardinalityData));
@@ -130,10 +126,6 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
 
     setRowData(newRowData);
   }, [displayArray, cardinalityData, currentLanguage]);
-
-  const onGridReady = useCallback(() => {
-    setLoading(false);
-  }, []);
 
   return (
     <div className="ag-theme-balham" style={{ width: '100%' }}>

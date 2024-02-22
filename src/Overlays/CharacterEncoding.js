@@ -41,7 +41,6 @@ const CharacterEncoding = () => {
         cellRendererParams: (params) => ({
           attr: params.data.Attribute,
         }),
-        cellEditor: "characterEncodingEditor",
         width: 200,
       },
     ];
