@@ -14,7 +14,7 @@ import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
-import { generateDataEntryV2 } from './generateDataEntryV2';
+import { generateDataEntry } from './generateDataEntry';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 
 const AccordionList = () => {
@@ -216,7 +216,7 @@ const AccordionList = () => {
             <Button
               variant='contained'
               color='navButton'
-              onClick={() => generateDataEntryV2(rawFile, setLoading)}
+              onClick={() => generateDataEntry(rawFile, setLoading)}
               sx={{
                 backgroundColor: CustomPalette.PRIMARY,
                 ':hover': { backgroundColor: CustomPalette.SECONDARY },
