@@ -27,8 +27,8 @@ import CardinalityHelp from './UsersHelp/Cardinality_Help';
 
 export const Context = createContext();
 
-
-ReactGA.initialize('G-NN8Y6766KG');
+//Initializing react-ga with google analytics ID
+ReactGA.initialize('G-NN8Y6766KG'); //Replace TRACKINGID with actual ID
 
 const items = {
   'Character Encoding': { feature: 'Character Encoding', selected: false },
@@ -116,7 +116,7 @@ function App() {
     }
   }, [currentPage]);
 
-
+  //Measuring page views
   useEffect(() => {
     ReactGA.pageview();
   }, []);
@@ -180,7 +180,6 @@ function App() {
 
       if (formatRuleObject && formatRuleObject.Type === item.Type) {
         newFormatRuleArray.push(formatRuleObject);
-
       } else {
         newFormatRuleArray.push({
           Attribute: item.Attribute,
@@ -354,10 +353,7 @@ function App() {
                   path='/help_designing_datasets'
                   element={<GuidanceForDesigningDataSets />}
                 />
-                <Route
-                  path='/help_storage'
-                  element={<HelpStorage />}
-                />
+                <Route path='/help_storage' element={<HelpStorage />} />
                 <Route
                   path='/add_entry_codes_help'
                   element={<AddEntryCodesHelp />}
@@ -392,14 +388,8 @@ function App() {
                   path='/required_entry_help'
                   element={<RequiredEntryHelp />}
                 />
-                <Route
-                  path='/format_text_help'
-                  element={<FormatTextHelp />}
-                />
-                <Route
-                  path='/cardinality_help'
-                  element={<CardinalityHelp />}
-                />
+                <Route path='/format_text_help' element={<FormatTextHelp />} />
+                <Route path='/cardinality_help' element={<CardinalityHelp />} />
                 <Route path='*' element={<Navigate to='/' />} />
               </Routes>
             </BrowserRouter>
