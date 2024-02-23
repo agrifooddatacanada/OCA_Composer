@@ -34,7 +34,7 @@ const Landing = () => {
       <Box sx={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '30px' }}>
         <AccordionList />
       </Box>
-      {showDeprecationCard && <DepreciatedWarningCard />}
+      {/* {showDeprecationCard && <DepreciatedWarningCard />} */}
     </Box >
   );
 };
