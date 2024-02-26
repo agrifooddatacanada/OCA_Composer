@@ -21,10 +21,6 @@ The JSON schema bundle can be consumed by several tools within the ADC/OCA ecosy
 - [OCA Readme](https://github.com/agrifooddatacanada/OCA_README) consumes the JSON schema bundle and creates a human-readable plain text schema document.
 - [Data Entry Excel]() consumes the JSON schema bundle and creates an Excel sheet for data entry based on the information provided for in the schema.
 
-## Development Status
-
-This code is created with support by [Agri-food Data Canada](https://agrifooddatacanada.ca/), funded by [CFREF](https://www.cfref-apogee.gc.ca/) through the [Food from Thought grant](https://foodfromthought.ca/) held at the [University of Guelph](https://www.uoguelph.ca/). Currently, we do not provide any warranty of any kind regarding the accuracy, security, completeness or reliability of this code or any of its parts.
-
 ## Running the app locally
 
 You can clone the project using the git command-line interface or you can download the entire project as a zip using GitHub's user-interface. In the project directory, you can run:
@@ -46,3 +42,8 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+## Development Status
+
+This code is created with support by [Agri-food Data Canada](https://agrifooddatacanada.ca/), funded by [CFREF](https://www.cfref-apogee.gc.ca/) through the [Food from Thought grant](https://foodfromthought.ca/) held at the [University of Guelph](https://www.uoguelph.ca/). Currently, we do not provide any warranty of any kind regarding the accuracy, security, completeness or reliability of this code or any of its parts.
+
