@@ -15,16 +15,9 @@ export function generateDataEntry(acceptedFiles, setLoading) {
   try {
     setLoading(true);
 
-    const file = acceptedFiles[0];
-    console.log('File:', file);
-
-
     const reader = new FileReader();
 
     reader.onload = async (e) => {
-
-      console.log('Contents of e.target.result:', e.target.result);
-
       const originJsonData = [];
       const zip = await JSZip.loadAsync(e.target.result);
 
