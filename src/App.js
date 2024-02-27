@@ -72,11 +72,8 @@ function App() {
   const [languages, setLanguages] = useState(['English']);
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
-  console.log('entryCodeRowData', entryCodeRowData);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
-  console.log('savedEntryCodes', savedEntryCodes);
   const [attributesWithLists, setAttributesWithLists] = useState([]);
-  console.log('attributesWithLists', attributesWithLists);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [showDeprecationCard, setShowDeprecationCard] = useState(null);

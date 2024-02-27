@@ -182,9 +182,7 @@ const MatchingEntryCodeHeader = () => {
     <>
       <BackNextSkeleton
         isBack
-        pageBack={() => {
-          setCurrentPage('UploadEntryCodes');
-        }}
+        pageBack={() => setCurrentPage('UploadEntryCodes')}
         isForward
         pageForward={handleSave} />
       <Box sx={{
