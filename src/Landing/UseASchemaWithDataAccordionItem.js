@@ -13,6 +13,7 @@ import CustomAnchorLink from '../components/CustomAnchorLink';
 import Drop from '../StartSchema/Drop';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import { generateDataEntry } from './generateDataEntry';
+import { generateDataEntryV2 } from './generateDataEntryV2';
 
 const UseASchemaWithDataAccordionItem = ({
   disableButtonCheck,
@@ -76,7 +77,13 @@ const UseASchemaWithDataAccordionItem = ({
           <Button
             variant='contained'
             color='navButton'
-            onClick={() => generateDataEntry(rawFile, setLoading)}
+            onClick={() => {
+              if (rawFile?.[0]?.type === 'application/zip') {
+                generateDataEntry(rawFile, setLoading);
+              } else if (rawFile?.[0]?.type === 'application/json') {
+                generateDataEntryV2(rawFile, setLoading);
+              }
+            }}
             sx={{
               backgroundColor: CustomPalette.PRIMARY,
               ':hover': { backgroundColor: CustomPalette.SECONDARY },
