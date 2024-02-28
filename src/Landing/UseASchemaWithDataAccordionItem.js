@@ -2,7 +2,6 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
   Typography,
 } from '@mui/material';
 import React from 'react';
@@ -12,8 +11,6 @@ import AccordionItemWrapper from './AccordionItemWrapper';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 import Drop from '../StartSchema/Drop';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
-import { generateDataEntry } from './generateDataEntry';
-import { generateDataEntryV2 } from './generateDataEntryV2';
 import GenerateDataEntryExcel from './GenerateDataEntryExcel';
 
 const UseASchemaWithDataAccordionItem = ({
