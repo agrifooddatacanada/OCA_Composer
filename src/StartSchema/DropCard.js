@@ -12,7 +12,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import LoopIcon from "@mui/icons-material/Loop";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { defaultTooltip, defaultUploadedDescription } from "../constants/constants";
+import { defaultNoteDescription, defaultTooltip, defaultUploadedDescription } from "../constants/constants";
 
 export default function DropCard({
   loading,
@@ -28,7 +28,8 @@ export default function DropCard({
   handleDragOver,
   handleDragLeave,
   description = defaultUploadedDescription,
-  tipDescription = defaultTooltip
+  tipDescription = defaultTooltip,
+  noteDescription = defaultNoteDescription,
 }) {
   return (
     <section
@@ -136,8 +137,7 @@ export default function DropCard({
                 )}
               </Typography>
               <Typography sx={{ fontSize: 12, color: CustomPalette.GREY_600 }}>
-                Note: None of this data will be uploaded to a server and all
-                processing happens on device.
+                {noteDescription}
               </Typography>
             </CardContent>
           </Card>

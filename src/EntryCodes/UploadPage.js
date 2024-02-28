@@ -6,6 +6,7 @@ import useHandleEntryCodeDrop from './useHandleEntryCodeDrop';
 import { gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
 import { CustomPalette } from '../constants/customPalette';
+import csvFileExample from '../assets/csv_example.png';
 
 const UploadPage = () => {
   const {
@@ -52,6 +53,8 @@ const UploadPage = () => {
           setDropMessage={setDropMessage}
           version={2}
           tipDescription={null}
+          description="Click here to select a .csv or drag and drop one here"
+          noteDescription="Note: Your .csv file contains a list of entry codes. You can also include language labels for each entry code in adjacent columns"
         />
         <Box display="flex">
           <Button
@@ -69,9 +72,12 @@ const UploadPage = () => {
             Preview of the data
           </Typography>
         ) : (
-          <Typography variant="h4" style={{ marginTop: "60px", color: "Gray" }}>
-            No table to display
-          </Typography>
+          <>
+            <Typography variant="h5" style={{ marginTop: "50px" }}>
+              CSV Example:
+            </Typography>
+            <img src={csvFileExample} alt="CSV example" style={{ marginTop: "10px", marginBottom: "30px", height: "300px" }} />
+          </>
         )}
         {rawFile?.length > 0 &&
           <div className="ag-theme-balham" style={{ width: tableLength, maxWidth: '90%', marginTop: "30px" }}>
