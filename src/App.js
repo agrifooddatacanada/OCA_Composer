@@ -28,7 +28,7 @@ import CardinalityHelp from './UsersHelp/Cardinality_Help';
 export const Context = createContext();
 
 //Initializing react-ga with google analytics ID
-ReactGA.initialize('G-NN8Y6766KG'); //Replace TRACKINGID with actual ID
+ReactGA.initialize(process.env.REACT_APP_GA_ID);
 
 const items = {
   'Character Encoding': { feature: 'Character Encoding', selected: false },
