@@ -141,7 +141,7 @@ const MatchingJSONEntryCodeHeader = () => {
   };
 
   useEffect(() => {
-    const attrList = Object.keys(tempEntryCodeSummary?.['attribute_entry_codes']);
+    const attrList = Object.keys(tempEntryCodeSummary?.['attribute_entry_codes'] || {});
     const matchingValues = [];
     languages.forEach(lang => {
       matchingValues.push({
@@ -162,41 +162,51 @@ const MatchingJSONEntryCodeHeader = () => {
         pageBack={() => {
           setCurrentPage('UploadEntryCodes');
         }}
-        isForward
+        isForward={attributeList?.length > 0}
         pageForward={handleSave} />
-      <Box
-        sx={{
-          margin: '2rem',
-          gap: '3rem',
+      {attributeList?.length > 0 ?
+        <Box
+          sx={{
+            margin: '2rem',
+            gap: '3rem',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            width: '100%',
+          }}
+        >
+          <FormControl variant="standard" sx={{ minWidth: 120, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            <Typography variant="body2">Please choose the correct attribute from the uploaded schema: {' '}</Typography>
+            <Select
+              value={attrValue}
+              onChange={(e) => setAttrValue(e.target.value)}
+              displayEmpty
+              sx={{
+                minWidth: '100px'
+              }}
+            >
+              {attributeListDropdown}
+            </Select>
+          </FormControl>
+          <div className="ag-theme-balham" style={{ width: '400px' }}>
+            <style>{gridStyles}</style>
+            <AgGridReact
+              ref={gridRef}
+              rowData={matchingLanguages}
+              columnDefs={columnDefs}
+              domLayout="autoHeight"
+            />
+          </div>
+        </Box> :
+        <Box sx={{
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'center',
           justifyContent: 'center',
-          width: '100%',
-        }}
-      >
-        <FormControl variant="standard" sx={{ minWidth: 120, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          <Typography variant="body2">Please choose the correct attribute from the uploaded schema: {' '}</Typography>
-          <Select
-            value={attrValue}
-            onChange={(e) => setAttrValue(e.target.value)}
-            displayEmpty
-            sx={{
-              minWidth: '100px'
-            }}
-          >
-            {attributeListDropdown}
-          </Select>
-        </FormControl>
-        <div className="ag-theme-balham" style={{ width: '400px' }}>
-          <style>{gridStyles}</style>
-          <AgGridReact
-            ref={gridRef}
-            rowData={matchingLanguages}
-            columnDefs={columnDefs}
-            domLayout="autoHeight"
-          />
-        </div>
-      </Box>
+          flex: 1,
+        }}>
+          <Typography variant="h5">No matching attributes found for the selected schema</Typography>
+        </Box>}
     </>
   );
 };
