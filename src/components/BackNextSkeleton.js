@@ -3,7 +3,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CustomPalette } from "../constants/customPalette";
 
-const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children }) => {
+const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back' }) => {
   return (
     <Box>
       <Box
@@ -30,7 +30,7 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
             sx={{ textAlign: "left", alignSelf: "flex-start" }}
             onClick={pageBack}
           >
-            <ArrowBackIosIcon /> Back
+            <ArrowBackIosIcon /> {backText}
           </Button> : <Box />}
           <Box sx={{ alignSelf: "flex-end" }}>
             {isForward && <Button

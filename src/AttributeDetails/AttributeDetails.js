@@ -9,6 +9,7 @@ import {
   removeSpacesFromArrayOfObjects,
 } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import Loading from "../components/Loading";
 
 export default function AttributeDetails({ pageBack, pageForward }) {
   const {
@@ -26,12 +27,15 @@ export default function AttributeDetails({ pageBack, pageForward }) {
   const [addByTab, setAddByTab] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [fieldArray, setFieldArray] = useState(["Type"]);
+  const [loading, setLoading] = useState(true);
   const navigationSafe = useRef();
   const gridRef = useRef();
   const refContainer = useRef();
   const entryCodesRef = useRef();
   const typeBlanksRef = useRef();
   const typesObjectRef = useRef({});
+  const addButton1 = useRef();
+  const addButton2 = useRef();
 
   useEffect(() => {
     const newTypesObjetRef = {};
@@ -181,10 +185,9 @@ export default function AttributeDetails({ pageBack, pageForward }) {
     navigationSafe.current === true && pageBack();
   };
 
-  const addButton1 = useRef();
-  const addButton2 = useRef();
   return (
     <BackNextSkeleton isBack pageBack={pageBackSave} isForward pageForward={pageForwardSave}>
+      {loading && attributeRowData?.length > 40 && <Loading />}
       {showCard && (
         <NavigationCard
           fieldArray={fieldArray}
@@ -220,6 +223,7 @@ export default function AttributeDetails({ pageBack, pageForward }) {
           setCanDelete={setCanDelete}
           setAddByTab={setAddByTab}
           typesObjectRef={typesObjectRef}
+          setLoading={setLoading}
         />
       </div>
       <AddAttribute

@@ -43,7 +43,8 @@ export default function Grid({
   canDelete,
   setCanDelete,
   setAddByTab,
-  typesObjectRef
+  typesObjectRef,
+  setLoading
 }) {
   const { attributesList, setAttributesList } = useContext(Context);
   const [selectedCells, setSelectedCells] = useState([]);
@@ -196,6 +197,7 @@ export default function Grid({
       </div>
     );
   };
+
   const DeleteRenderer = ({ data }) => {
     const handleDeleteClick = () => {
       gridRef.current.api.stopEditing();
@@ -252,14 +254,14 @@ export default function Grid({
       "Boolean",
       "DateTime",
       "Numeric",
-      "Reference",
+      // "Reference",
       "Text",
-      "Array[Binary]",
-      "Array[Boolean]",
-      "Array[DateTime]",
-      "Array[Numeric]",
-      "Array[Reference]",
-      "Array[Text]",
+      // "Array[Binary]",
+      // "Array[Boolean]",
+      // "Array[DateTime]",
+      // "Array[Numeric]",
+      // "Array[Reference]",
+      // "Array[Text]",
     ];
 
     const attributeName = props.data.Attribute;
@@ -703,6 +705,10 @@ export default function Grid({
     }
   };
 
+  const onGridReady = useCallback(() => {
+    setLoading(false);
+  }, []);
+
   return (
     <div style={{ margin: "2rem" }}>
       <div className="ag-theme-balham" style={{ width: 752 }}>
@@ -722,6 +728,7 @@ export default function Grid({
           onCellValueChanged={(e) => handleCellValueChanged(e)}
           onRowDragLeave={(e) => onRowDragLeave(e)}
           rowDragManaged={rowDragManaged}
+          onGridReady={onGridReady}
         />
       </div>
     </div>

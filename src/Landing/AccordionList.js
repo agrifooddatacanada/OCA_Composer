@@ -14,13 +14,15 @@ import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
-import { generateDataEntry } from './generateDataEntry';
+import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
+import GenerateDataEntryExcel from './GenerateDataEntryExcel';
 
 const AccordionList = () => {
   const isMobile = useMediaQuery('(max-width: 736px)');
   const navigate = useNavigate();
-  const { zipToReadme } = useContext(Context);
+  const { zipToReadme, jsonToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
+  const { jsonToTextFile } = useGenerateReadMeV2();
   const {
     rawFile,
     setRawFile,
@@ -32,6 +34,7 @@ const AccordionList = () => {
     setCurrentPage,
     setIsZip,
   } = useHandleAllDrop();
+
   const { handleExport, resetToDefaults } = useExportLogic();
 
   const navigateToStartPage = () => {
@@ -130,17 +133,7 @@ const AccordionList = () => {
             }}
             onClick={navigateToStartPage}
           />
-          {/* <CustomAnchorLink
-            text='Find a schema'
-            overrideStyle={{
-              fontSize: '20px',
-              fontWeight: '500',
-              color: CustomPalette.PRIMARY,
-              marginLeft: 0,
-              marginTop: 2,
-            }}
-            onClick={navigateToStartPage}
-          /> */}
+
           {/* <CustomAnchorLink
             link='https://www.semanticengine.org/#/develop'
             text='Parse a schema'
@@ -203,7 +196,13 @@ const AccordionList = () => {
             <Button
               variant='contained'
               color='navButton'
-              onClick={() => toTextFile(zipToReadme)}
+              onClick={() => {
+                if (zipToReadme.length > 0) {
+                  toTextFile(zipToReadme);
+                } else {
+                  jsonToTextFile(jsonToReadme);
+                }
+              }}
               sx={{
                 backgroundColor: CustomPalette.PRIMARY,
                 ':hover': { backgroundColor: CustomPalette.SECONDARY },
@@ -215,22 +214,11 @@ const AccordionList = () => {
             >
               Generate Readme
             </Button>
-            <Button
-              variant='contained'
-              color='navButton'
-              onClick={() => generateDataEntry(rawFile, setLoading)}
-              sx={{
-                backgroundColor: CustomPalette.PRIMARY,
-                ':hover': { backgroundColor: CustomPalette.SECONDARY },
-                width: '100%',
-                maxWidth: '300px',
-                marginTop: '30px',
-                marginBottom: '20px',
-              }}
-              disabled={disableButtonCheck}
-            >
-              Generate Data Entry Excel
-            </Button>
+            <GenerateDataEntryExcel
+              rawFile={rawFile}
+              setLoading={setLoading}
+              disableButtonCheck={disableButtonCheck}
+            />
           </Box>
         </Box>
       </Box>

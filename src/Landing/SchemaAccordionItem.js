@@ -8,11 +8,11 @@ import CustomAnchorLink from '../components/CustomAnchorLink';
 const SchemaAccordionItem = () => {
 
   const downloadChickenZipExample = () => {
-    const zipFilePath = 'chicken_example.zip';
+    const zipFilePath = 'chicken_example.json';
 
     const link = document.createElement('a');
     link.href = zipFilePath;
-    link.download = 'chicken_example.zip';
+    link.download = 'chicken_example.json';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

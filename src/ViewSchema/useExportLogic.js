@@ -3,10 +3,12 @@ import { Context } from "../App";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
 import { divisionCodes, groupCodes } from "../constants/constants";
-import useGenerateReadMe from "./useGenerateReadMe";
+// import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 import JSZip from "jszip";
+import useGenerateReadMe from "./useGenerateReadMe";
 const ExcelJS = require("exceljs");
 
+// const zipUrl = "https://adc-oca-json-bundle-api.azurewebsites.net";
 const zipUrl = "https://tool.oca.argo.colossi.network";
 
 function columnToLetter(column) {
@@ -41,10 +43,14 @@ const useExportLogic = () => {
     customIsos,
     characterEncodingRowData,
     overlay,
-    setZipToReadme,
+    // setJsonToReadme,
     setIsZip,
-    setRawFile
+    setRawFile,
+    formatRuleRowData,
+    cardinalityData,
+    setZipToReadme,
   } = useContext(Context);
+  // const { jsonToTextFile } = useGenerateReadMeV2();
   const { toTextFile } = useGenerateReadMe();
 
   const classificationCode = useMemo(() => {
@@ -66,8 +72,8 @@ const useExportLogic = () => {
     const rowObject = {};
 
     rowObject.Language = language;
-    rowObject.Name = schemaDescription[language].name;
-    rowObject.Description = schemaDescription[language].description;
+    rowObject.Name = schemaDescription?.[language]?.name;
+    rowObject.Description = schemaDescription?.[language]?.description;
     OCADescriptionData.push(rowObject);
   });
   OCADataArray.push(OCADescriptionData);
@@ -75,6 +81,7 @@ const useExportLogic = () => {
   //CAPTURE ATTRIBUTE SHEET DATA
   languages.forEach((language) => {
     const rowData = [];
+
     attributesList.forEach((item, index) => {
       const rowObject = {};
       rowObject.Attribute = item;
@@ -321,7 +328,6 @@ const useExportLogic = () => {
       };
     } catch (error) {
       console.error(error);
-      console.log('Error creating "Start Here" page');
     }
 
     //////CREATE 'MAIN' WORKSHEET
@@ -336,6 +342,7 @@ const useExportLogic = () => {
         "OL-CH: Character Encoding",
         "OL-FT: Format",
         "OL-EC: Entry Code",
+        "OL-CR: Cardinality",
         "OL-CN: Conformance",
         "OL-UT: Unit",
         "CB-RS: Reference",
@@ -357,7 +364,8 @@ const useExportLogic = () => {
           type: "list",
           allowBlank: true,
           formulae: [
-            '"Binary,Boolean,DateTime,Numeric,Reference,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Reference],Array[Text]"',
+            // '"Binary,Boolean,DateTime,Numeric,Reference,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Reference],Array[Text]"',
+            '"Binary,Boolean,DateTime,Numeric,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Text]"',
           ],
         };
 
@@ -372,28 +380,25 @@ const useExportLogic = () => {
         if (dataArray[1]?.[index]?.Flagged && dataArray[1]?.[index]?.Flagged !== '') {
           flaggedCell.value = dataArray[1][index].Flagged;
         }
+
         flaggedCell.dataValidation = {
           type: "list",
           allowBlank: true,
           formulae: ['"Y"'],
         };
 
-        // Default certain attributes to utf-8 or base64
         const encodingCell = worksheetMain.getCell(index + 4, 6);
-        if (characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
+        if (overlay?.["Character Encoding"]?.selected && characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
           encodingCell.value = characterEncodingRowData[index]['Character Encoding'];
-        } else {
-          encodingCell.value = {
-            formula: `IF(OR(C${index + 4}="Binary", C${index + 4
-              }="Array[Binary]"), "base64", "utf-8")`,
-
-            result:
-              typeCell.value === "Binary" || typeCell.value === "Array[Binary]"
-                ? "base64"
-                : "utf-8",
-          };
         }
 
+        // Add format rules here
+        const formatCell = worksheetMain.getCell(index + 4, 7);
+        if (overlay?.["Add format rule for data"]?.selected) {
+          if (formatRuleRowData[index].FormatText !== "") {
+            formatCell.value = formatRuleRowData[index].FormatText;
+          }
+        }
 
         const entryCodesCell = worksheetMain.getCell(index + 4, 8);
 
@@ -418,28 +423,34 @@ const useExportLogic = () => {
           entryCodesCell.value = entryString.slice(1);
         }
 
-        const conformanceCell = worksheetMain.getCell(index + 4, 9);
+        if (overlay?.["Cardinality"]?.selected) {
+          if (cardinalityData[index]['EntryLimit'] && cardinalityData[index]['EntryLimit'] !== "") {
+            worksheetMain.getCell(index + 4, 9).value = cardinalityData[index]['EntryLimit'];
+          }
+        }
+
+        const conformanceCell = worksheetMain.getCell(index + 4, 10);
         conformanceCell.dataValidation = {
           type: "list",
           allowBlank: true,
           formulae: ['"M,O"'],
         };
 
-        if (overlay["Make selected entries required"].selected) {
+        if (overlay?.["Make selected entries required"]?.selected) {
           conformanceCell.value = characterEncodingRowData[index]['Make selected entries required'] ? "M" : "O";
         }
 
         if (dataArray[1]?.[index] && dataArray[1][index].Unit && dataArray[1][index].Unit !== '') {
-          worksheetMain.getCell(index + 4, 10).value = dataArray[1][index].Unit;
+          worksheetMain.getCell(index + 4, 11).value = dataArray[1][index].Unit;
         }
 
-        const referenceCell = worksheetMain.getCell(index + 4, 11);
-        if (
-          typeCell.value === "Reference" ||
-          typeCell.value === "Array[Reference]"
-        ) {
-          referenceCell.value = "Reference SAI";
-        }
+        // const referenceCell = worksheetMain.getCell(index + 4, 11);
+        // if (
+        //   typeCell.value === "Reference" ||
+        //   typeCell.value === "Array[Reference]"
+        // ) {
+        //   referenceCell.value = "Reference SAI";
+        // }
       });
       worksheetMain.columns = allColumns;
     } catch (error) {
@@ -532,36 +543,40 @@ const useExportLogic = () => {
         });
 
         // Somehow semantic engine needs this when there are less than 3 attributes 
-        if (attributesList.length < 3) {
-          worksheetLanguage.getCell(6, 3).value = "";
+        if (attributesList.length < 4) {
+          const numberOfRowAdditions = 4 - attributesList.length;
+          for (let i = 0; i < numberOfRowAdditions; i++) {
+            worksheetLanguage.getCell(7 - i, 3).value = "";
+            worksheetLanguage.getCell(7 - i, 4).value = "";
+            worksheetLanguage.getCell(7 - i, 6).value = "";
+          }
         }
       });
     } catch (error) {
       console.error(error);
-      console.log('Error creating "Language" worksheets');
     }
 
     //////CREATE DATA WORKSHEET FOR ENTRY_CODE DROPDOWN MENUS
-    try {
-      const entryCodeOptionWorksheet = workbook.addWorksheet("options", { state: 'hidden' });
-      attributesList.forEach((item, index) => {
-        const codesArray = savedEntryCodes[item];
-        if (codesArray) {
-          let columnCounter = 1;
-          for (const entryCodeOption of codesArray) {
-            let languageCounter = 1;
-            for (const lang of languagesWithCode) {
-              entryCodeOptionWorksheet.getCell(2 * index + languageCounter, columnCounter).value = entryCodeOption[lang.language];
-              languageCounter++;
-            }
-            columnCounter++;
-          }
-        }
+    // try {
+    //   const entryCodeOptionWorksheet = workbook.addWorksheet("options", { state: 'hidden' });
+    //   attributesList.forEach((item, index) => {
+    //     const codesArray = savedEntryCodes[item];
+    //     if (codesArray) {
+    //       let columnCounter = 1;
+    //       for (const entryCodeOption of codesArray) {
+    //         let languageCounter = 1;
+    //         for (const lang of languagesWithCode) {
+    //           entryCodeOptionWorksheet.getCell(2 * index + languageCounter, columnCounter).value = entryCodeOption[lang.language];
+    //           languageCounter++;
+    //         }
+    //         columnCounter++;
+    //       }
+    //     }
 
-      });
-    } catch (error) {
-      console.error(error);
-    }
+    //   });
+    // } catch (error) {
+    //   console.error(error);
+    // }
 
     ////////CREATE WORKBOOK AND EXPORT
     const workbookName = `OCA_Template_${new Date().toISOString()}.xlsx`;
@@ -577,7 +592,7 @@ const useExportLogic = () => {
     //     a.download = workbookName;
     //     a.click();
     //   });
-    //   setShowLink(true);
+    //   // setShowLink(true);
     //   setExportDisabled(true);
     //   setTimeout(() => {
     //     setExportDisabled(false);
@@ -606,6 +621,50 @@ const useExportLogic = () => {
     setFileData([]);
     setRawFile([]);
   };
+
+  // const sendFileToETJSONAPI = async (workbook, workbookName) => {
+  //   try {
+  //     const buffer = await workbook.xlsx.writeBuffer();
+
+  //     const formData = new FormData();
+  //     const file = new Blob([buffer], {
+  //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //     });
+
+  //     formData.append("excelFile", file, workbookName);
+
+  //     const response = await fetch(`${zipUrl}/ocajsonbundle`, {
+  //       method: "POST",
+  //       body: formData,
+  //     });
+
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       return { data, status: response?.ok };
+  //     } else {
+  //       throw new Error("Error sending file to API");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error sending file to API:", error);
+  //     return;
+  //   }
+  // };
+
+  // const downloadReadMeV2 = async (data) => {
+  //   setJsonToReadme(data);
+  //   jsonToTextFile(data);
+  // };
+
+  // const downloadJSON = async (data) => {
+  //   let contentType = "application/json;charset=utf-8;";
+  //   var a = document.createElement('a');
+  //   a.download = "oca_bundle.json";
+  //   a.href = 'data:' + contentType + ',' + encodeURIComponent(JSON.stringify(data));
+  //   a.target = '_blank';
+  //   document.body.appendChild(a);
+  //   a.click();
+  //   document.body.removeChild(a);
+  // };
 
   const sendFileToAPI = async (workbook, workbookName) => {
     try {
@@ -666,7 +725,7 @@ const useExportLogic = () => {
   };
 
 
-  const handleExport = async (onlyReadme = false) => {
+  const handleExportV2 = async (onlyReadme = false) => {
     setExportDisabled(true);
     const { workbook, workbookName } = handleOCAExport(OCADataArray);
     const fileName = await sendFileToAPI(workbook, workbookName);
@@ -680,13 +739,21 @@ const useExportLogic = () => {
         downloadZip(downloadUrl, fileName);
       }
     }
+    // const { data, status } = await sendFileToETJSONAPI(workbook, workbookName);
+    // if (status) {
+    //   downloadReadMeV2(data?.schema?.[0]);
+    //   if (!onlyReadme) {
+    //     downloadJSON(data);
+    //   }
+    // }
+
     setTimeout(() => {
       setExportDisabled(false);
     }, 3000);
   };
 
   return {
-    handleExport,
+    handleExport: handleExportV2,
     exportDisabled,
     resetToDefaults
   };

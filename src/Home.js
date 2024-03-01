@@ -1,25 +1,49 @@
-import "./App.css";
-import { Box } from "@mui/material";
-import StartSchema from "./StartSchema/StartSchema";
-import SchemaMetadata from "./SchemaMetadata/SchemaMetadata";
-import AttributeDetails from "./AttributeDetails/AttributeDetails";
-import EntryCodes from "./EntryCodes/EntryCodes";
-import LanguageDetails from "./LanguageDetails/LanguageDetails";
-import ViewSchema from "./ViewSchema/ViewSchema";
-import CreateManually from "./CreateManually/CreateManually";
-import Overlays from "./Overlays/Overlays";
-import CharacterEncoding from "./Overlays/CharacterEncoding";
-import RequiredEntries from "./Overlays/RequiredEntries";
-import { pagesArray } from "./App";
-import { useEffect, useMemo } from "react";
+import './App.css';
+import { Box } from '@mui/material';
+import StartSchema from './StartSchema/StartSchema';
+import SchemaMetadata from './SchemaMetadata/SchemaMetadata';
+import AttributeDetails from './AttributeDetails/AttributeDetails';
+import EntryCodes from './EntryCodes/EntryCodes';
+import LanguageDetails from './LanguageDetails/LanguageDetails';
+import ViewSchema from './ViewSchema/ViewSchema';
+import CreateManually from './CreateManually/CreateManually';
+import Overlays from './Overlays/Overlays';
+import CharacterEncoding from './Overlays/CharacterEncoding';
+import RequiredEntries from './Overlays/RequiredEntries';
+import { pagesArray } from './App';
+import { useEffect, useMemo } from 'react';
+import Cardinality from './Overlays/Cardinality';
+import FormatRulesV2 from './Overlays/FormatRuleV2';
+import UploadPage from './EntryCodes/UploadPage';
+import MatchingEntryCodeHeader from './EntryCodes/MatchingEntryCodeHeader';
 
-const Home = ({ currentPage, setCurrentPage, pageForward, pageBack, showIntroCard, setShowIntroCard }) => {
+const Home = ({
+  currentPage,
+  setCurrentPage,
+  pageForward,
+  pageBack,
+  showIntroCard,
+  setShowIntroCard,
+}) => {
+
+  // Add new page to this page -> add to this list
   const allowedPages = useMemo(() => {
-    return [...pagesArray, "Codes", "Create", "Overlays", "CharacterEncoding", "RequiredEntries"];
+    return [
+      ...pagesArray,
+      'Codes',
+      'Create',
+      'Overlays',
+      'CharacterEncoding',
+      'RequiredEntries',
+      'FormatRules',
+      'Cardinality',
+      'UploadEntryCodes',
+      'MatchingEntryCodes'
+    ];
   }, []);
 
   if (!allowedPages.includes(currentPage)) {
-    setCurrentPage("Start");
+    setCurrentPage('Start');
   }
 
   useEffect(() => {
@@ -28,10 +52,8 @@ const Home = ({ currentPage, setCurrentPage, pageForward, pageBack, showIntroCar
 
   return (
     <Box sx={{ flex: 1 }}>
-      {currentPage === "Start" && (
-        <StartSchema pageForward={pageForward} />
-      )}
-      {currentPage === "Metadata" && (
+      {currentPage === 'Start' && <StartSchema pageForward={pageForward} />}
+      {currentPage === 'Metadata' && (
         <SchemaMetadata
           pageBack={pageBack}
           pageForward={pageForward}
@@ -39,19 +61,25 @@ const Home = ({ currentPage, setCurrentPage, pageForward, pageBack, showIntroCar
           setShowIntroCard={setShowIntroCard}
         />
       )}
-      {currentPage === "Details" && (
+      {currentPage === 'Details' && (
         <AttributeDetails pageBack={pageBack} pageForward={pageForward} />
       )}
-      {currentPage === "Codes" && <EntryCodes />}
+      {currentPage === 'Codes' && <EntryCodes />}
 
-      {currentPage === "LanguageDetails" && (
+      {currentPage === 'LanguageDetails' && (
         <LanguageDetails pageBack={pageBack} pageForward={pageForward} />
       )}
-      {currentPage === "View" && <ViewSchema pageBack={pageBack} />}
-      {currentPage === "Create" && <CreateManually />}
-      {currentPage === "Overlays" && <Overlays pageBack={pageBack} pageForward={pageForward} />}
-      {currentPage === "CharacterEncoding" && <CharacterEncoding />}
-      {currentPage === "RequiredEntries" && <RequiredEntries />}
+      {currentPage === 'View' && <ViewSchema pageBack={pageBack} />}
+      {currentPage === 'Create' && <CreateManually />}
+      {currentPage === 'Overlays' && (
+        <Overlays pageBack={pageBack} pageForward={pageForward} />
+      )}
+      {currentPage === 'CharacterEncoding' && <CharacterEncoding />}
+      {currentPage === 'RequiredEntries' && <RequiredEntries />}
+      {currentPage === 'FormatRules' && <FormatRulesV2 />}
+      {currentPage === "Cardinality" && <Cardinality />}
+      {currentPage === "UploadEntryCodes" && <UploadPage />}
+      {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
     </Box>
   );
 };

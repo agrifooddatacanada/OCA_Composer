@@ -12,7 +12,7 @@ export const messages = {
   tooLargeUploadFail:
     "File is too large. Please upload a file smaller than 10 MB.",
   wrongTypeUploadFail:
-    "Invalid file type. Please upload a .csv, .xls, or .xlsx file.",
+    "Invalid file type. Please upload a .csv file.",
   fileRejectedFail: "File rejected. Please try again or create manually.",
   blankEntries:
     "Uploaded file contains blank entries. They will need to be deleted or updated on a future page.",

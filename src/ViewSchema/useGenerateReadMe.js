@@ -56,7 +56,7 @@ const useGenerateReadMe = () => {
         if (key === "type") {
           const split_type = value.split("/");
           Layer_name = split_type.slice(-2).join("/");
-        } else if (key === "digest") {
+        } else if (key === "d") {
           SAID = value;
         } else if (key !== "capture_base" && value != null) {
           if (Object.keys(value).length !== 0 || (Array.isArray(value) && value.length !== 0)) {

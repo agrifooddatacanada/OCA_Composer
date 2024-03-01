@@ -2,6 +2,7 @@ import React from 'react';
 import HelpPageContainer from '../components/HelpPageContainer';
 import HelpPageH2Title from '../components/HelpPageH2Title';
 import TypographyTag from '../components/TypographyTag';
+import HelpPageH3Title from '../components/HelpPageH3Title';
 
 const OverlaysHelp = () => {
   return (
@@ -13,10 +14,13 @@ const OverlaysHelp = () => {
         The following list includes the additional overlays that may be added manually to the schema.
         <br></br>
         <br></br>
-        <b>Overlays:</b>
+        <HelpPageH3Title text='Overlays:' />
         <u1>
-          <li>Character Encoding</li>
-          <li>Make Required Entries</li>
+          <li><strong>Character Encoding: </strong> Document the character encoding of the data for each attribute.</li>
+          <li><strong>Required Entries: </strong> Specify if the dataset has attributes where data is required.</li>
+          <li><strong>Format Rules: </strong> Specify the formatting rule that applies to data for each attribute.</li>
+          {/* <li><strong>Cardinality: </strong> Specify the exact, minimum or maximum (or both minimum and maximum) number of entries allowed in a data record for each attribute.</li> */}
+
         </u1>
         <br></br>
         <br></br>

@@ -52,7 +52,7 @@ const LandingDropZone = ({ loading, dropDisabled, dropMessage, spinningAnimation
               }}
             />
           ) : (
-            <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>Upload schema bundle (.zip)
+            <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>Upload schema bundle (.zip OR .json)
               Or drag and drop one
             </Typography>
           )}

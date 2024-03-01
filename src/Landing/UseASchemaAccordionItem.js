@@ -8,11 +8,13 @@ import { Context } from '../App';
 import { useNavigate } from 'react-router-dom';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
+import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
-  const { zipToReadme } = useContext(Context);
+  const { zipToReadme, jsonToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
+  const { jsonToTextFile } = useGenerateReadMeV2();
   const {
     rawFile,
     setRawFile,
@@ -48,7 +50,7 @@ const UseASchemaAccordionItem = () => {
 
       <AccordionDetails sx={{ textAlign: 'start' }}>
         <Typography>
-          When you have a .zip schema bundle you can upload and then:
+          When you have a .json schema bundle you can upload and then:
         </Typography>
         {/* <Typography>
           <strong>Validate</strong> the schema to ensure it is well-formed.
@@ -57,7 +59,7 @@ const UseASchemaAccordionItem = () => {
           <strong>View</strong> the schema and <strong>Edit</strong> the schema if needed.
         </Typography>
         <Typography>
-          The .zip schema bundle is machine-readable; <strong>generate</strong> the Readme to create a human-readable simple text version.
+          The .json schema bundle is machine-readable; <strong>generate</strong> the Readme to create a human-readable simple text version.
         </Typography>
 
         <Drop
@@ -101,7 +103,13 @@ const UseASchemaAccordionItem = () => {
           <Button
             variant="contained"
             color="navButton"
-            onClick={() => toTextFile(zipToReadme)}
+            onClick={() => {
+              if (zipToReadme.length > 0) {
+                toTextFile(zipToReadme);
+              } else {
+                jsonToTextFile(jsonToReadme);
+              }
+            }}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
             disabled={disableButtonCheck}
           >

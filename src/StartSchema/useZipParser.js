@@ -14,12 +14,14 @@ const useZipParser = () => {
     setAttributesWithLists,
     setSavedEntryCodes,
     setCharacterEncodingRowData,
-    setOverlay
+    setOverlay,
+    setFormatRuleRowData,
+    setCardinalityData
   } = useContext(Context);
 
   const processLanguages = (languages) => {
     const newLanguages = languages.map((language) => {
-      if (!codesToLanguages[language]) {
+      if (!codesToLanguages?.[language]) {
         const randomString = 'lang_' + language;
         codesToLanguages[language] = randomString;
         languageCodesObject[randomString] = language;
@@ -32,17 +34,17 @@ const useZipParser = () => {
   const processMetadata = (metadata) => {
     const newMetadata = {};
     for (const { language, name, description } of metadata) {
-      newMetadata[codesToLanguages[language]] = { name, description };
+      newMetadata[codesToLanguages[language.slice(0, 2)]] = { name, description };
     }
     setSchemaDescription(newMetadata);
   };
 
-  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding) => {
+  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding, languageList, formatRules, cardinalityData) => {
     const newSavedEntryCodes = {};
-    const attrList = new Set();
     const newLangAttributeRowData = {};
     const newAttributeRowData = [];
     const newCharacterEncodingRowData = [];
+    const newFormatRuleRowData = [];
     const attributeListStringMap = {};
     let attributesWithListType = [];
 
@@ -53,29 +55,33 @@ const useZipParser = () => {
       for (const attrWithList of attributesWithListType) {
         const newEntryCodeValueRowsForAttribute = [];
         const entryCodesForAttribute = entryCodes['attribute_entry_codes'][attrWithList];
+        if (typeof entryCodesForAttribute === 'string') {
+          // Possibly send to an API to get the entry codes 
+        } else {
+          for (const entryCode of entryCodesForAttribute) {
+            const entryCodeValueEntity = {
+              Code: entryCode
+            };
 
-        for (const entryCode of entryCodesForAttribute) {
-          const entryCodeValueEntity = {
-            Code: entryCode
-          };
+            for (let i = 0; i < entries.length; i++) {
+              const keyName = attrWithList + '_' + entries[i].language.slice(0, 2);
+              const entryCodeValue = entries[i]['attribute_entries'][attrWithList][entryCode];
 
-          for (let i = 0; i < entries.length; i++) {
-            const keyName = attrWithList + '_' + entries[i].language;
-            const entryCodeValue = entries[i]['attribute_entries'][attrWithList][entryCode];
+              if (attributeListStringMap[keyName]) {
+                attributeListStringMap[keyName] += (' | ' + entryCodeValue);
+              } else {
+                attributeListStringMap[keyName] = entryCodeValue;
+              }
 
-            if (attributeListStringMap[keyName]) {
-              attributeListStringMap[keyName] += (' | ' + entryCodeValue);
-            } else {
-              attributeListStringMap[keyName] = entryCodeValue;
+              entryCodeValueEntity[codesToLanguages[entries[i].language.slice(0, 2)]] = entryCodeValue;
             }
-
-            entryCodeValueEntity[codesToLanguages[entries[i].language]] = entryCodeValue;
+            newEntryCodeValueRowsForAttribute.push(entryCodeValueEntity);
           }
-          newEntryCodeValueRowsForAttribute.push(entryCodeValueEntity);
-        }
 
-        newSavedEntryCodes[attrWithList] = (newSavedEntryCodes[attrWithList] || []).concat(newEntryCodeValueRowsForAttribute);
+          newSavedEntryCodes[attrWithList] = (newSavedEntryCodes[attrWithList] || []).concat(newEntryCodeValueRowsForAttribute);
+        }
       }
+
       setAttributesWithLists(attributesWithListType);
       setSavedEntryCodes(newSavedEntryCodes);
     }
@@ -105,46 +111,77 @@ const useZipParser = () => {
     // meta data: label and description
     const languageDescriptionMap = {};
     for (const { language, attribute_information } of description) {
-      languageDescriptionMap[language] = attribute_information;
+      languageDescriptionMap[language.slice(0, 2)] = attribute_information;
     }
 
-    for (const { language, attribute_labels } of labels) {
-      Object.keys(attribute_labels).forEach((key) => attrList.add(key));
-      newLangAttributeRowData[codesToLanguages[language]] = [];
+    const attributeList = Object.keys(root?.['attributes'] || {});
+    for (const lang of languageList) {
+      const label = labels.find((label) => label.language.slice(0, 2) === lang);
+      newLangAttributeRowData[codesToLanguages[lang]] = [];
 
-      for (const [key, value] of Object.entries(attribute_labels)) {
-        newLangAttributeRowData[codesToLanguages[language]].push({
-          Attribute: key,
-          Description: languageDescriptionMap[language][key],
-          Label: value,
-          List: attributeListStringMap[key + '_' + language] || "Not a List"
-        });
+      for (const attr of attributeList) {
+        if (label && label?.attribute_labels?.hasOwnProperty(attr)) {
+          newLangAttributeRowData[codesToLanguages[lang]].push({
+            Attribute: attr,
+            Description: languageDescriptionMap[lang][attr],
+            Label: label.attribute_labels[attr],
+            List: attributeListStringMap[attr + '_' + lang] || "Not a List"
+          });
+        } else {
+          newLangAttributeRowData[codesToLanguages[lang]].push({
+            Attribute: attr,
+            Description: languageDescriptionMap?.[lang]?.[attr] || '',
+            Label: '',
+            List: attributeListStringMap?.[attr + '_' + lang] || "Not a List"
+          });
+        }
       }
     }
 
+    // Parse cardinality
+    if (cardinalityData) {
+      const firstLanguage = Object.keys(newLangAttributeRowData)?.[0];
+      const cardinalityDataToParse = [];
+      for (const item of newLangAttributeRowData?.[firstLanguage]) {
+        const cardinality = cardinalityData?.['attribute_cardinality']?.[item.Attribute];
+        cardinalityDataToParse.push({
+          ...item,
+          EntryLimit: cardinality
+        });
+      }
+      setOverlay(prev => ({
+        ...prev,
+        "Cardinality": {
+          ...prev["Cardinality"],
+          selected: true
+        }
+      }));
+      setCardinalityData(cardinalityDataToParse);
+    }
+
     // Parse attributes details such as type and unit + Parsing conformance and character encoding to characterEncodingRowData
-    const uniqueAttrList = [...attrList];
-    uniqueAttrList.forEach((item) => {
+    attributeList.forEach((item) => {
       newAttributeRowData.push({
         Attribute: item,
-        Flagged: false,
+        Flagged: root?.['flagged_attributes']?.includes(item),
         List: attributesWithListType.includes(item),
         Type: root?.['attributes']?.[item],
         Unit: units?.['attribute_units']?.[item]
       });
 
       const newRowForCharacterEncoding = { Attribute: item };
-      if (conformance) {
-        newRowForCharacterEncoding['Make entries required'] = conformance?.['attribute_conformance']?.[item] === "M";
 
+      if (conformance) {
+        newRowForCharacterEncoding['Make selected entries required'] = conformance?.['attribute_conformance']?.[item] === "M";
         setOverlay(prev => ({
           ...prev,
-          "Make entries required": {
-            ...prev["Make entries required"],
+          "Make selected entries required": {
+            ...prev["Make selected entries required"],
             selected: true
           }
         }));
       }
+
       if (characterEncoding) {
         newRowForCharacterEncoding['Character Encoding'] = characterEncoding?.['attribute_character_encoding']?.[item] || characterEncoding?.['default_character_encoding'];
         setOverlay(prev => ({
@@ -155,12 +192,31 @@ const useZipParser = () => {
           }
         }));
       }
+
       newCharacterEncodingRowData.push(newRowForCharacterEncoding);
     });
 
+    if (formatRules) {
+      newAttributeRowData.forEach((item) => {
+        const newFormatRuleData = { Attribute: item?.Attribute, Type: item?.Type };
+
+        newFormatRuleData['FormatText'] = formatRules?.['attribute_formats']?.[item.Attribute] || '';
+        setOverlay(prev => ({
+          ...prev,
+          "Add format rule for data": {
+            ...prev["Add format rule for data"],
+            selected: true
+          }
+        }));
+
+        newFormatRuleRowData.push(newFormatRuleData);
+      });
+    }
+
+    setFormatRuleRowData(newFormatRuleRowData);
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setLanAttributeRowData(newLangAttributeRowData);
-    setAttributesList(uniqueAttrList);
+    setAttributesList(attributeList);
     setAttributeRowData(newAttributeRowData);
   };
 
