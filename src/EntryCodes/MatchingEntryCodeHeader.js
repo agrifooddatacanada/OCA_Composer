@@ -69,13 +69,12 @@ const MatchingEntryCodeHeader = () => {
     const assignedData = [];
     const matchingEntryCodeMap = {};
     for (const ec of currentData) {
-      matchingEntryCodeMap[ec.matchingDataHeader] = ec.lang;
+      matchingEntryCodeMap[ec.matchingDataHeader] = ec.matchingDataHeader in matchingEntryCodeMap ? [...matchingEntryCodeMap[ec.matchingDataHeader], ec.lang] : [ec.lang];
       if (ec?.matchingDataHeader !== '') {
         assignedData.push(ec.matchingDataHeader);
       }
     }
     const newRowData = [];
-
     for (const row of tempEntryCodeRowData) {
       let hasItem = false;
       for (const assign of assignedData) {
@@ -87,7 +86,9 @@ const MatchingEntryCodeHeader = () => {
       if (hasItem) {
         const newRow = {};
         for (const assign of assignedData) {
-          newRow[matchingEntryCodeMap[assign]] = row[assign];
+          for (const lang of matchingEntryCodeMap[assign]) {
+            newRow[lang] = row[assign];
+          }
         }
         for (const lang of newLanguages) {
           if (!(lang in newRow)) {
@@ -144,20 +145,11 @@ const MatchingEntryCodeHeader = () => {
   }, []);
 
   const changeDataFromTable = useCallback((e, params) => {
-    let saveNode = undefined;
-    for (const node of gridRef.current?.api?.rowModel?.rowsToDisplay) {
-      if (node.data.matchingDataHeader === e.target.value) {
-        saveNode = node;
-        node.data.matchingDataHeader = '';
-        break;
-      }
-    }
     params.node.updateData({
       ...params.node.data,
       matchingDataHeader: e.target.value,
     });
-    gridRef.current?.api?.redrawRows({ rowNodes: [saveNode, params.node] });
-  }, [gridRef]);
+  }, []);
 
   useEffect(() => {
     const unassignedVariables = [...entryCodeHeaders];
