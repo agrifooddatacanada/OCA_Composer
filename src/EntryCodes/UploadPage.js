@@ -96,9 +96,12 @@ const UploadPage = () => {
               Please continue to the next page
             </Typography>
           ) : (
-            <Typography variant="h4" style={{ marginTop: "60px", color: "Gray" }}>
-              No table to display
-            </Typography>
+            <>
+              <Typography variant="h5" style={{ marginTop: "50px" }}>
+                CSV Example:
+              </Typography>
+              <img src={csvFileExample} alt="CSV example" style={{ marginTop: "10px", marginBottom: "30px", height: "300px" }} />
+            </>
           )}
           {rawFile?.length > 0 && fileType === 'csvORxls' &&
             <div className="ag-theme-balham" style={{ width: tableLength, maxWidth: '90%', marginTop: "30px" }}>
