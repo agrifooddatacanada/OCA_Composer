@@ -182,6 +182,7 @@ const MatchingEntryCodeHeader = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        marginTop: 2,
         flex: 1,
       }}>
         <div className="ag-theme-balham" style={{ width: '400px' }}>

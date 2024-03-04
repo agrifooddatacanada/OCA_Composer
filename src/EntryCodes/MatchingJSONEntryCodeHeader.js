@@ -60,7 +60,7 @@ export const DataHeaderRenderer = memo(
 );
 
 const MatchingJSONEntryCodeHeader = () => {
-  const { tempEntryCodeSummary, tempEntryList, languages, setCurrentPage, setEntryCodeRowData, chosenEntryCodeIndex } = useContext(Context);
+  const { tempEntryCodeSummary, tempEntryList, languages, setCurrentPage, setEntryCodeRowData, chosenEntryCodeIndex, attributeRowData } = useContext(Context);
   const [languageList, setLanguageList] = useState([]);
   const [attributeList, setAttributeList] = useState([]);
   const [matchingLanguages, setMatchingLanguages] = useState([]);
@@ -140,19 +140,40 @@ const MatchingJSONEntryCodeHeader = () => {
     }
   };
 
+  const matchingFunction = useCallback((unassignedVar, attr) => {
+    for (let i = 0; i < unassignedVar.length; i++) {
+      if (unassignedVar[i].toLowerCase() === attr.toLowerCase()) {
+        return i;
+      }
+    }
+    for (let i = 0; i < unassignedVar.length; i++) {
+      if (unassignedVar[i].toLowerCase().includes(attr.toLowerCase())) {
+        return i;
+      }
+    }
+    return -1;
+  }, []);
+
   useEffect(() => {
     const attrList = Object.keys(tempEntryCodeSummary?.['attribute_entry_codes'] || {});
+    const chosenAttribute = attributeRowData.filter(
+      (item) => item.List === true
+    ).filter((_, index) => index === chosenEntryCodeIndex)?.[0]?.['Attribute'] || '';
     const matchingValues = [];
+    const tempLanguagesList = tempEntryList.map((entry) => entry?.language);
     languages.forEach(lang => {
+      // const matchingIndex = matchingFunction(tempLanguagesList, lang);
       matchingValues.push({
         lang,
+        // matchingDataHeader: matchingIndex !== -1 ? tempLanguagesList[matchingIndex] : ''
         matchingDataHeader: ''
       });
     });
+    const matchingIndex = matchingFunction(attrList, chosenAttribute);
     setMatchingLanguages(matchingValues);
     setAttributeList(attrList);
-    setAttrValue(attrList[0]);
-    setLanguageList(tempEntryList.map((entry) => entry?.language));
+    setAttrValue(matchingIndex !== -1 ? attrList[matchingIndex] : attrList[0]);
+    setLanguageList(tempLanguagesList);
   }, []);
 
   return (
@@ -167,7 +188,9 @@ const MatchingJSONEntryCodeHeader = () => {
       {attributeList?.length > 0 ?
         <Box
           sx={{
-            margin: '2rem',
+            // margin: '2rem',
+            marginLeft: 11,
+            marginTop: 2,
             gap: '3rem',
             display: 'flex',
             flexDirection: 'column',
@@ -176,7 +199,7 @@ const MatchingJSONEntryCodeHeader = () => {
           }}
         >
           <FormControl variant="standard" sx={{ minWidth: 120, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-            <Typography variant="body2">Please choose the correct attribute from the uploaded schema: {' '}</Typography>
+            <Typography>Please choose the correct attribute from the uploaded schema: {' '}</Typography>
             <Select
               value={attrValue}
               onChange={(e) => setAttrValue(e.target.value)}

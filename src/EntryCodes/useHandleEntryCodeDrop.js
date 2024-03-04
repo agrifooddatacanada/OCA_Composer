@@ -202,7 +202,7 @@ const useHandleEntryCodeDrop = () => {
   useEffect(() => {
     const filteredAttributes = attributeRowData.filter(
       (item) => item.List === true
-    );
+    ).filter((_, index) => index !== chosenEntryCodeIndex);
     const attributeArray = filteredAttributes.map((item) => item.Attribute);
     setSelectedAttributesList(attributeArray);
   }, [attributeRowData]);

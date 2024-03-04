@@ -44,9 +44,9 @@ const UploadPage = () => {
         isForward={(selectionValue === "Copy from other entry codes" && selectedAttrToCopy !== "") || (selectionValue === "Upload" && rawFile?.length > 0)}
         pageForward={handleSave} />
       <FormControl variant="standard" sx={{
-        minWidth: 120, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', pr: 10, pl: 10,
+        minWidth: 120, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', pr: 10, pl: 11, marginTop: 2,
       }}>
-        <Typography variant="body2">Please choose the type: &nbsp;</Typography>
+        <Typography>Please choose the type: &nbsp;</Typography>
         <Select
           value={selectionValue}
           onChange={(e) => setSelectionValue(e.target.value)}
@@ -114,9 +114,9 @@ const UploadPage = () => {
         </Box>)
         : (
           <FormControl variant="standard" sx={{
-            minWidth: 120, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', pr: 10, pl: 10,
+            minWidth: 120, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', pr: 10, pl: 11, marginTop: 2,
           }}>
-            <Typography variant="body2">Copy entry codes from: &nbsp;</Typography>
+            <Typography>Copy entry codes from: &nbsp;</Typography>
             <Select
               value={selectedAttrToCopy}
               onChange={(e) => setSelectedAttrToCopy(e.target.value)}
