@@ -14,6 +14,10 @@ const languageList = [
   "German",
   "Japanese",
   "Italian",
+  "Cree",
+  "Ojibway",
+  "Inupiaq",
+  "Inuktitut"
 ];
 
 const languageEntryErrors = {

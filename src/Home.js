@@ -14,9 +14,6 @@ import { pagesArray } from './App';
 import { useEffect, useMemo } from 'react';
 import Cardinality from './Overlays/Cardinality';
 import FormatRulesV2 from './Overlays/FormatRuleV2';
-import UploadPage from './EntryCodes/UploadPage';
-import MatchingEntryCodeHeader from './EntryCodes/MatchingEntryCodeHeader';
-import MatchingJSONEntryCodeHeader from './EntryCodes/MatchingJSONEntryCodeHeader';
 
 const Home = ({
   currentPage,
@@ -37,10 +34,7 @@ const Home = ({
       'CharacterEncoding',
       'RequiredEntries',
       'FormatRules',
-      'Cardinality',
-      'UploadEntryCodes',
-      'MatchingEntryCodes',
-      'MatchingJSONEntryCodes'
+      'Cardinality'
     ];
   }, []);
 
@@ -80,9 +74,6 @@ const Home = ({
       {currentPage === 'RequiredEntries' && <RequiredEntries />}
       {currentPage === 'FormatRules' && <FormatRulesV2 />}
       {currentPage === "Cardinality" && <Cardinality />}
-      {currentPage === "UploadEntryCodes" && <UploadPage />}
-      {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
-      {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
     </Box>
   );
 };

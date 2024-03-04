@@ -8,6 +8,11 @@ import { useLocation } from 'react-router-dom';
 import { Context } from '../App';
 import DepreciatedWarningCard from './DepreciatedWarningCard';
 
+
+
+
+
+
 const Landing = () => {
   const path = useLocation();
   const { setCurrentPage, showDeprecationCard } = useContext(Context);
@@ -29,7 +34,7 @@ const Landing = () => {
       <Box sx={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '30px' }}>
         <AccordionList />
       </Box>
-      {showDeprecationCard && <DepreciatedWarningCard />}
+      {/* {showDeprecationCard && <DepreciatedWarningCard />} */}
     </Box >
   );
 };

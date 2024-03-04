@@ -75,6 +75,7 @@ const MatchingEntryCodeHeader = () => {
       }
     }
     const newRowData = [];
+
     for (const row of tempEntryCodeRowData) {
       let hasItem = false;
       for (const assign of assignedData) {

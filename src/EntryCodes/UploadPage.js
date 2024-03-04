@@ -6,6 +6,7 @@ import useHandleEntryCodeDrop from './useHandleEntryCodeDrop';
 import { gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
 import { CustomPalette } from '../constants/customPalette';
+import csvFileExample from '../assets/csv_example.png';
 
 const UploadPage = () => {
   const {

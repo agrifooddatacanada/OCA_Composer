@@ -229,7 +229,8 @@ const useHandleEntryCodeDrop = () => {
     userSelectionListDropdown,
     attributeListDropdown,
     selectedAttrToCopy,
-    setSelectedAttrToCopy
+    setSelectedAttrToCopy,
+    entryCodeHeaders,
   };
 };
 
