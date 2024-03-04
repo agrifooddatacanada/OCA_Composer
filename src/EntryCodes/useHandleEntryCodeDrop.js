@@ -17,6 +17,7 @@ const useHandleEntryCodeDrop = () => {
     setTempEntryCodeSummary,
     setTempEntryList,
     attributeRowData,
+    entryCodeRowData,
     setEntryCodeRowData,
     chosenEntryCodeIndex
   } = useContext(Context);
@@ -202,7 +203,9 @@ const useHandleEntryCodeDrop = () => {
   useEffect(() => {
     const filteredAttributes = attributeRowData.filter(
       (item) => item.List === true
-    ).filter((_, index) => index !== chosenEntryCodeIndex);
+    ).filter((_, index) => {
+      return index !== chosenEntryCodeIndex && entryCodeRowData[index]?.[0]?.Code !== '';
+    });
     const attributeArray = filteredAttributes.map((item) => item.Attribute);
     setSelectedAttributesList(attributeArray);
   }, [attributeRowData]);

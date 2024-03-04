@@ -199,7 +199,7 @@ const MatchingJSONEntryCodeHeader = () => {
           }}
         >
           <FormControl variant="standard" sx={{ minWidth: 120, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-            <Typography>Please choose the correct attribute from the uploaded schema: {' '}</Typography>
+            <Typography>Please choose the source attribute to import from: {' '}</Typography>
             <Select
               value={attrValue}
               onChange={(e) => setAttrValue(e.target.value)}
