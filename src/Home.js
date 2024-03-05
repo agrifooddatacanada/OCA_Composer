@@ -16,6 +16,7 @@ import Cardinality from './Overlays/Cardinality';
 import FormatRulesV2 from './Overlays/FormatRuleV2';
 import UploadPage from './EntryCodes/UploadPage';
 import MatchingEntryCodeHeader from './EntryCodes/MatchingEntryCodeHeader';
+import MatchingJSONEntryCodeHeader from './EntryCodes/MatchingJSONEntryCodeHeader';
 
 const Home = ({
   currentPage,
@@ -38,7 +39,8 @@ const Home = ({
       'FormatRules',
       'Cardinality',
       'UploadEntryCodes',
-      'MatchingEntryCodes'
+      'MatchingEntryCodes',
+      'MatchingJSONEntryCodes'
     ];
   }, []);
 
@@ -80,6 +82,7 @@ const Home = ({
       {currentPage === "Cardinality" && <Cardinality />}
       {currentPage === "UploadEntryCodes" && <UploadPage />}
       {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
+      {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
     </Box>
   );
 };

@@ -91,6 +91,8 @@ function App() {
   const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
   const [tempEntryCodeRowData, setTempEntryCodeRowData] = useState([]);
   const [chosenEntryCodeIndex, setChosenEntryCodeIndex] = useState(-1);
+  const [tempEntryCodeSummary, setTempEntryCodeSummary] = useState(undefined);
+  const [tempEntryList, setTempEntryList] = useState([]);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -323,6 +325,10 @@ function App() {
             setTempEntryCodeRowData,
             chosenEntryCodeIndex,
             setChosenEntryCodeIndex,
+            tempEntryCodeSummary,
+            setTempEntryCodeSummary,
+            tempEntryList,
+            setTempEntryList,
           }}
         >
           <Box
