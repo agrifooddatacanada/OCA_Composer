@@ -92,18 +92,18 @@ export default function EntryCodes() {
                 setErrorMessage("");
               }, [2000]);
             }
-            if (
-              value.includes("'") ||
-              value.includes('"') ||
-              value.includes("`") ||
-              value.includes(",")
-            ) {
-              pageForwardDisabledRef.current = true;
-              setErrorMessage(errorMessages.quoteMisuse);
-              setTimeout(() => {
-                setErrorMessage("");
-              }, [2000]);
-            }
+            // if (
+            //   value.includes("'") ||
+            //   value.includes('"') ||
+            //   value.includes("`") ||
+            //   value.includes(",")
+            // ) {
+            //   pageForwardDisabledRef.current = true;
+            //   setErrorMessage(errorMessages.quoteMisuse);
+            //   setTimeout(() => {
+            //     setErrorMessage("");
+            //   }, [2000]);
+            // }
           });
         });
       });
