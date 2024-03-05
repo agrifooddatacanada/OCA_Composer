@@ -119,6 +119,8 @@ function App() {
   //Measuring page views
   useEffect(() => {
     ReactGA.pageview();
+    console.log(process.env);
+    console.log(process.env.REACT_APP_GA_ID);
   }, []);
 
   //Create Attributes List from File Data
