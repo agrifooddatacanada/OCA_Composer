@@ -32,6 +32,7 @@ const useHandleEntryCodeDrop = () => {
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [selectedAttrToCopy, setSelectedAttrToCopy] = useState('');
   const gridRef = useRef(null);
+  const unfilteredAttrRef = useRef([]);
 
   const setLoadingState = () => {
     setLoading(true);
@@ -141,7 +142,7 @@ const useHandleEntryCodeDrop = () => {
         setCurrentPage("MatchingJSONEntryCodes");
       }
     } else {
-      const fromIndex = selectedAttributesList.indexOf(selectedAttrToCopy);
+      const fromIndex = unfilteredAttrRef.current.indexOf(selectedAttrToCopy);
       setEntryCodeRowData(prev => {
         const newObj = [...prev];
         newObj[chosenEntryCodeIndex] = newObj[fromIndex];
@@ -201,12 +202,14 @@ const useHandleEntryCodeDrop = () => {
   }, [entryCodeHeaders]);
 
   useEffect(() => {
-    const filteredAttributes = attributeRowData.filter(
+    const unfilteredAttributes = attributeRowData.filter(
       (item) => item.List === true
-    ).filter((_, index) => {
+    );
+    const filteredAttributes = unfilteredAttributes.filter((_, index) => {
       return index !== chosenEntryCodeIndex && entryCodeRowData[index]?.[0]?.Code !== '';
     });
     const attributeArray = filteredAttributes.map((item) => item.Attribute);
+    unfilteredAttrRef.current = unfilteredAttributes.map((item) => item.Attribute);
     setSelectedAttributesList(attributeArray);
   }, [attributeRowData]);
 
