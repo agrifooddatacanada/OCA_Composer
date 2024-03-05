@@ -10,7 +10,9 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
       variant='contained'
       color='navButton'
       onClick={() => {
+        console.log('onClick');
         if (rawFile?.[0]?.type === 'application/zip') {
+          console.log('generateDataEntry zip');
           generateDataEntry(rawFile, setLoading);
         } else if (rawFile?.[0]?.type === 'application/json') {
           generateDataEntryV2(rawFile, setLoading);
