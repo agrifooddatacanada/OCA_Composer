@@ -11,11 +11,14 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
       color='navButton'
       onClick={() => {
         console.log('onClick');
-        if (rawFile?.[0]?.type === 'application/zip') {
+        console.log('rawFile', rawFile);
+        console.log('rawFile?.[0]', rawFile?.[0]);
+        console.log('rawFile?.[0]?.type', rawFile?.[0]?.type);
+        if (rawFile?.[0]?.type === 'application/json') {
+          generateDataEntryV2(rawFile, setLoading);
+        } else {
           console.log('generateDataEntry zip');
           generateDataEntry(rawFile, setLoading);
-        } else if (rawFile?.[0]?.type === 'application/json') {
-          generateDataEntryV2(rawFile, setLoading);
         }
       }}
       sx={{
