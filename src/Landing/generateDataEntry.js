@@ -13,17 +13,14 @@ WorkbookError.prototype.constructor = WorkbookError;
 
 export function generateDataEntry(acceptedFiles, setLoading) {
   try {
-    console.log('start parsing the file ...');
     setLoading(true);
 
     const reader = new FileReader();
 
     reader.onload = async (e) => {
-      console.log('Enter parsing the file ...');
       const originJsonData = [];
       const zip = await JSZip.loadAsync(e.target.result);
 
-      console.log('before for loop ...');
       for (const file of Object.values(zip.files)) {
         const loadData = await file.async("text");
         const parsedData = JSON.parse(loadData);
@@ -753,8 +750,6 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         }
       };
 
-      console.log('before writing the buffer ...');
-
       workbook.xlsx.writeBuffer().then((buffer) => {
         const blob = new Blob([buffer], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -769,11 +764,9 @@ export function generateDataEntry(acceptedFiles, setLoading) {
       setLoading(false);
     };
 
-    console.log('before reading the array buffer ...');
     reader.readAsArrayBuffer(acceptedFiles[0]);
 
   } catch (error) {
-    console.log('Error in generating the data entry excel: ');
     setLoading(false);
   }
 }
