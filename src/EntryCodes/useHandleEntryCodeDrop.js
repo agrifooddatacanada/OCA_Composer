@@ -3,6 +3,7 @@ import { messages } from '../constants/messages';
 import Papa from "papaparse";
 import { Context } from '../App';
 import { MenuItem } from '@mui/material';
+import JSZip from 'jszip';
 
 const userSelectionDropdown = ['Copy from other entry codes', 'Upload'];
 
@@ -132,13 +133,61 @@ const useHandleEntryCodeDrop = () => {
     }
   }, [handleBundleJSONDrop]);
 
+  const processZipFile = useCallback((acceptedFiles) => {
+    try {
+      setLoading(true);
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const zip = await JSZip.loadAsync(e.target.result);
+
+        const entryList = [];
+        let entryCodeSummary = {};
+
+        // load up metadata file in OCA bundle
+        const loadMetadataFile = await zip.files["meta.json"].async("text");
+        const metadataJson = JSON.parse(loadMetadataFile);
+        const root = metadataJson.root;
+
+        // loop through all files in OCA bundle
+        for (const [key, file] of Object.entries(metadataJson.files[root])) {
+          const content = await zip.files[file + '.json'].async("text");
+
+          if (key.includes("entry (")) {
+            entryList.push(JSON.parse(content));
+          }
+
+          if (key.includes("entry_code")) {
+            entryCodeSummary = JSON.parse(content);
+          }
+        }
+
+        setTempEntryCodeSummary(entryCodeSummary);
+        setTempEntryList(entryList);
+      };
+
+      reader.readAsArrayBuffer(acceptedFiles);
+
+      setTimeout(() => {
+        setDropDisabled(true);
+        setDropMessage({ message: "", type: "" });
+        setLoading(false);
+      }, 900);
+    } catch (error) {
+      setDropMessage({ message: messages.uploadFail, type: "error" });
+      setLoading(false);
+      setTimeout(() => {
+        setDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, []);
+
 
   const handleSave = () => {
     if (selectionValue === "Upload") {
       if (fileType === "csvORxls") {
         setTempEntryCodeRowData(gridRef.current.api.getRenderedNodes()?.map(node => node?.data));
         setCurrentPage("MatchingEntryCodes");
-      } else if (fileType === "json") {
+      } else if (fileType === "json" || fileType === "zip") {
         setCurrentPage("MatchingJSONEntryCodes");
       }
     } else {
@@ -175,6 +224,9 @@ const useHandleEntryCodeDrop = () => {
     } else if (rawFile && rawFile.length > 0 && rawFile[0].path.includes(".json")) {
       setFileType("json");
       processJSONFile(rawFile[0]);
+    } else if (rawFile && rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
+      setFileType("zip");
+      processZipFile(rawFile[0]);
     } else if (rawFile && rawFile.length > 0) {
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
