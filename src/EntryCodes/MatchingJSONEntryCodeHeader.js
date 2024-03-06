@@ -228,7 +228,7 @@ const MatchingJSONEntryCodeHeader = () => {
           justifyContent: 'center',
           flex: 1,
         }}>
-          <Typography variant="h5">No matching attributes found for the selected schema</Typography>
+          <Typography variant="h5">No entry codes in this schema</Typography>
         </Box>}
     </>
   );
