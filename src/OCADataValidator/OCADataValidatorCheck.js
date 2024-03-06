@@ -1,16 +1,17 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import BackNextSkeleton from '../components/BackNextSkeleton';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
 import '../App.css';
 import { Context } from '../App';
+import { set } from 'react-ga';
 
 const CustomTooltip = (props) => {
-  const data = useMemo(
-    () => props.api.getDisplayedRowAtIndex(props.rowIndex).data,
-    []
-  );
+  // const data = useMemo(
+  //   () => props.api.getDisplayedRowAtIndex(props.rowIndex).data,
+  //   []
+  // );
 
   return (
     <div className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '10px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
@@ -31,7 +32,8 @@ const CustomTooltip = (props) => {
 const OCADataValidatorCheck = () => {
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
-  const { matchingRowData, datasetRowData } = useContext(Context);
+  const { matchingRowData, datasetRowData, setCurrentDataValidatorPage } = useContext(Context);
+  const [revalidateData, setRevalidateData] = useState(false);
   console.log('matchingRowData', matchingRowData);
   console.log('datasetRowData', datasetRowData);
   // const columnDefs = useMemo(() => {
@@ -110,23 +112,37 @@ const OCADataValidatorCheck = () => {
 
   return (
     <>
-      <BackNextSkeleton isBack pageBack={() => { }} isForward pageForward={() => { }} />
+      <BackNextSkeleton isBack pageBack={() => { setCurrentDataValidatorPage('AttributeMatchDataValidator'); }} isForward pageForward={() => { }} />
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
       }}>
-        <Button
-          color='button'
-          variant='contained'
-          target='_blank'
-          style={{ marginLeft: "2rem", marginTop: "2rem", width: '120px', }}
-
-          onClick={() => { }
-          }
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+          }}
         >
-          Validate
-        </Button>
+          <Button
+            color='button'
+            variant='contained'
+            target='_blank'
+            style={{ marginLeft: "2rem", marginTop: "2rem", width: '120px', }}
+
+            onClick={() => { setRevalidateData(false); }}
+          >
+            Validate
+          </Button>
+          {revalidateData &&
+            <Typography sx={{
+              marginLeft: "2rem",
+              marginTop: "2.3rem",
+              color: 'red',
+              fontWeight: 'bold',
+            }}>Please re-validate the data!</Typography>}
+        </Box>
+
         <div style={{ margin: "2rem" }}>
           <div
             className="ag-theme-balham"
@@ -138,6 +154,7 @@ const OCADataValidatorCheck = () => {
               defaultColDef={defaultColDef}
               tooltipShowDelay={0}
               tooltipHideDelay={2000}
+              onCellValueChanged={() => setRevalidateData(true)}
               domLayout="autoHeight"
             // onGridReady={onGridReady}
             />
