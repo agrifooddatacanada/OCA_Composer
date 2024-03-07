@@ -8,11 +8,6 @@ import { useLocation } from 'react-router-dom';
 import { Context } from '../App';
 import DepreciatedWarningCard from './DepreciatedWarningCard';
 
-
-
-
-
-
 const Landing = () => {
   const path = useLocation();
   const { setCurrentPage, showDeprecationCard } = useContext(Context);
