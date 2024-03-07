@@ -34,6 +34,7 @@ const AccordionList = () => {
     setCurrentPage,
     setIsZip,
   } = useHandleAllDrop();
+
   const { handleExport, resetToDefaults } = useExportLogic();
 
   const navigateToStartPage = () => {
@@ -216,11 +217,7 @@ const AccordionList = () => {
             <Button
               variant='contained'
               color='navButton'
-
-
-
               onClick={() => generateDataEntryV2(rawFile, setLoading)}
-
               sx={{
                 backgroundColor: CustomPalette.PRIMARY,
                 ':hover': { backgroundColor: CustomPalette.SECONDARY },

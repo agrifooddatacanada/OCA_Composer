@@ -310,3 +310,5 @@ export const datasetUploadTooltip = (
     dataset should be in table format as an Excel or .csv format
   </div>
 );
+
+export const defaultNoteDescription = 'Note: None of this data will be uploaded to a server and all processing happens on device.';

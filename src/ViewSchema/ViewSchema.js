@@ -446,7 +446,7 @@ export default function ViewSchema({ pageBack }) {
           Clear All Data and Restart
         </Button>
       </Box>
-      {showDeprecationCard && isZip && <DepreciatedWarningCard />}
+      {/* {showDeprecationCard && isZip && <DepreciatedWarningCard />} */}
     </Box>
 
   );

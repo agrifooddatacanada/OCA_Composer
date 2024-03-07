@@ -27,9 +27,8 @@ import CardinalityHelp from './UsersHelp/Cardinality_Help';
 
 export const Context = createContext();
 
-
 //Initializing react-ga with google analytics ID
-ReactGA.initialize('G-NN8Y6766KG'); //Replace TRACKINGID with actual ID
+ReactGA.initialize(process.env.REACT_APP_GA_ID);
 
 const items = {
   'Character Encoding': { feature: 'Character Encoding', selected: false },
@@ -92,6 +91,8 @@ function App() {
   const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
   const [tempEntryCodeRowData, setTempEntryCodeRowData] = useState([]);
   const [chosenEntryCodeIndex, setChosenEntryCodeIndex] = useState(-1);
+  const [tempEntryCodeSummary, setTempEntryCodeSummary] = useState(undefined);
+  const [tempEntryList, setTempEntryList] = useState([]);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -182,7 +183,6 @@ function App() {
 
       if (formatRuleObject && formatRuleObject.Type === item.Type) {
         newFormatRuleArray.push(formatRuleObject);
-
       } else {
         newFormatRuleArray.push({
           Attribute: item.Attribute,
@@ -326,6 +326,10 @@ function App() {
             setTempEntryCodeRowData,
             chosenEntryCodeIndex,
             setChosenEntryCodeIndex,
+            tempEntryCodeSummary,
+            setTempEntryCodeSummary,
+            tempEntryList,
+            setTempEntryList,
           }}
         >
           <Box
@@ -356,10 +360,7 @@ function App() {
                   path='/help_designing_datasets'
                   element={<GuidanceForDesigningDataSets />}
                 />
-                <Route
-                  path='/help_storage'
-                  element={<HelpStorage />}
-                />
+                <Route path='/help_storage' element={<HelpStorage />} />
                 <Route
                   path='/add_entry_codes_help'
                   element={<AddEntryCodesHelp />}
@@ -394,14 +395,8 @@ function App() {
                   path='/required_entry_help'
                   element={<RequiredEntryHelp />}
                 />
-                <Route
-                  path='/format_text_help'
-                  element={<FormatTextHelp />}
-                />
-                <Route
-                  path='/cardinality_help'
-                  element={<CardinalityHelp />}
-                />
+                <Route path='/format_text_help' element={<FormatTextHelp />} />
+                <Route path='/cardinality_help' element={<CardinalityHelp />} />
                 <Route path='*' element={<Navigate to='/' />} />
               </Routes>
             </BrowserRouter>
