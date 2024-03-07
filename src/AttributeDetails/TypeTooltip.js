@@ -36,11 +36,11 @@ export default function TypeTooltip() {
       content:
         "a data type that defines dates. Common formats include dates (e.g., YYYY-MM-DD), times (e.g., hh:mm:ss), dates and times concatenated (e.g., YYYY-MM-DDThh:mm:ss.sss+zz:zz), and durations (e.g., PnYnMnD)",
     },
-    // {
-    //   name: "Array [attribute type]",
-    //   content:
-    //     "a data type that defines a structure that holds several data items or elements of the same data type",
-    // },
+    {
+      name: "Array [attribute type]",
+      content:
+        "a data type that defines a structure that holds several data items or elements of the same data type",
+    },
   ];
 
   const tooltipDisplay = listArray.map((item) => {
