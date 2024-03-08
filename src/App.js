@@ -120,7 +120,7 @@ function App() {
 
   //Measuring page views
   useEffect(() => {
-    ReactGA.pageview();
+    ReactGA.pageview('/');
   }, []);
 
 
