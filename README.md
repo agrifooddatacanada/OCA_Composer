@@ -19,7 +19,7 @@ OCA Composer lets users upload a copy of a dataset which is stored in the users 
 The JSON schema bundle can be consumed by several tools within the ADC/OCA ecosystem.
 
 - [OCA Readme](https://github.com/agrifooddatacanada/OCA_README) consumes the JSON schema bundle and creates a human-readable plain text schema document.
-- [Data Entry Excel]() consumes the JSON schema bundle and creates an Excel sheet for data entry based on the information provided for in the schema.
+- [Data Entry Excel](https://github.com/agrifooddatacanada/data-entry-xls) consumes the JSON schema bundle and creates an Excel sheet for data entry based on the information provided for in the schema.
 
 ## Running the app locally
 
