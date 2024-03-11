@@ -15,6 +15,7 @@ import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
 import { generateDataEntryV2 } from './generateDataEntryV2';
+import { generateDataEntry } from './generateDataEntry';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 
 const AccordionList = () => {
@@ -217,7 +218,13 @@ const AccordionList = () => {
             <Button
               variant='contained'
               color='navButton'
-              onClick={() => generateDataEntryV2(rawFile, setLoading)}
+              onClick={() => {
+                if (rawFile?.[0]?.type?.includes('zip')) {
+                  generateDataEntry(rawFile, setLoading);
+                } else if (rawFile?.[0]?.type?.includes('json')) {
+                  generateDataEntryV2(rawFile, setLoading);
+                }
+              }}
               sx={{
                 backgroundColor: CustomPalette.PRIMARY,
                 ':hover': { backgroundColor: CustomPalette.SECONDARY },
