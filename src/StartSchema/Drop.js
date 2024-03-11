@@ -29,6 +29,12 @@ export default function Drop({
         "application/zip": ['.zip'],
         "application/json": [".json"]
       };
+    } else if (version === 2) {
+      return {
+        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
+        "application/zip": [],
+        "application/json": []
+      };
     }
   }, [version]);
 

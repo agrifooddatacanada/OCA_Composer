@@ -79,13 +79,10 @@ function App() {
 
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
-  console.log('characterEncodingRowData', characterEncodingRowData);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
-  console.log('formatRuleRowData', formatRuleRowData);
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
   const [cardinalityData, setCardinalityData] = useState([]);
-  console.log('cardinalityData', cardinalityData);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -97,9 +94,9 @@ function App() {
   const [datasetDropDisabled, setDatasetDropDisabled] = useState(false);
   const [datasetIsParsed, setDatasetIsParsed] = useState(false);
   const [datasetRowData, setDatasetRowData] = useState([]);
-  const [datasetHeaders, setDatasetHeaders] = useState([]);
+  const [dataEntryHeaders, setDataEntryHeaders] = useState([]);
+  const [dataSchemaHeaders, setDataSchemaHeaders] = useState([]);
   const [matchingRowData, setMatchingRowData] = useState([]);
-  console.log('matchingRowData', matchingRowData);
   const firstTimeMatchingRef = useRef(true);
 
   const pageForward = () => {
@@ -373,8 +370,10 @@ function App() {
             setDatasetIsParsed,
             datasetRowData,
             setDatasetRowData,
-            datasetHeaders,
-            setDatasetHeaders,
+            dataEntryHeaders,
+            setDataEntryHeaders,
+            dataSchemaHeaders,
+            setDataSchemaHeaders,
             matchingRowData,
             setMatchingRowData,
             // firstTimeMatching,

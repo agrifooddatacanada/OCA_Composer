@@ -96,7 +96,6 @@ const useHandleAllDrop = () => {
         dataArray.push([noSpacesValue, []]);
       }
     });
-
     setFileData(dataArray);
     setLoading(false);
     setDropDisabled(true);

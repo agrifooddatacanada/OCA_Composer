@@ -2,6 +2,8 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 import { Context } from '../App';
 import Papa from "papaparse";
 import { messages } from '../constants/messages';
+import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
 
 export const useHandleDatasetDrop = () => {
   const {
@@ -15,7 +17,7 @@ export const useHandleDatasetDrop = () => {
     datasetIsParsed,
     setDatasetIsParsed,
     setDatasetRowData,
-    setDatasetHeaders,
+    setDataEntryHeaders,
     setJsonLoading,
     setJsonDropDisabled,
     jsonRawFile,
@@ -51,7 +53,7 @@ export const useHandleDatasetDrop = () => {
         },
         complete: function(results) {
           setDatasetRowData(results.data);
-          setDatasetHeaders(results.meta.fields);
+          setDataEntryHeaders(results.meta.fields);
           setDatasetLoading(false);
           setDatasetDropDisabled(true);
 
@@ -86,11 +88,137 @@ export const useHandleDatasetDrop = () => {
         setDatasetDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [setDatasetRawFile, datasetIsParsed]);
+  }, [datasetIsParsed]);
+
+  const handleExcelDrop = useCallback((acceptedFiles) => {
+    try {
+      const reader = new FileReader();
+      const rABS = !!reader.readAsBinaryString; // converts object to boolean
+      reader.onabort = () => console.log("file reading was aborted");
+      reader.onerror = () => console.log("file reading has failed");
+      reader.onload = (e) => {
+        const bstr = e.target.result;
+        const workbook = XLSX.read(bstr, {
+          type: rABS ? "binary" : "array",
+        });
+
+        processExcelFile(workbook);
+
+        setDatasetLoading(false);
+        setDatasetDropDisabled(true);
+
+        setDatasetDropMessage({
+          message: messages.successfulUpload,
+          type: "success",
+        });
+
+        setTimeout(() => {
+          setDatasetDropDisabled(true);
+          setDatasetDropMessage({ message: "", type: "" });
+          setDatasetLoading(false);
+          setJsonLoading(false);
+          if (jsonRawFile.length === 0) {
+            setJsonDropDisabled(false);
+          }
+          if (!datasetIsParsed) {
+            setDatasetIsParsed(true);
+            setCurrentDataValidatorPage("DatasetViewDataValidator");
+          }
+        }, 900);
+      };
+      if (rABS) reader.readAsBinaryString(acceptedFiles);
+      else reader.readAsArrayBuffer(acceptedFiles);
+
+    } catch (error) {
+      setDatasetDropMessage({ message: messages.parseUploadFail, type: "error" });
+      setDatasetLoading(false);
+      setJsonLoading(false);
+      if (jsonRawFile.length === 0) {
+        setJsonDropDisabled(false);
+      }
+      setTimeout(() => {
+        setDatasetDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, []);
+
+  const copyFirstWorksheet = async (workbook) => {
+    const firstSheetName = "Schema Description";
+    const worksheet = workbook?.Sheets?.[firstSheetName];
+    const newWorkbook = new ExcelJS.Workbook();
+    const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
+
+    // Copy all cells from the original worksheet to the new worksheet
+    Object.keys(worksheet).forEach((cell) => {
+      if (!worksheet[cell]?.v || cell === '!ref') return;
+      newWorksheet.getCell(cell).value = worksheet[cell]?.v;
+    });
+
+    return newWorkbook;
+  };
+
+  const processExcelFile = useCallback(async (workbook) => {
+    // const newWorkbook = await copyFirstWorksheet(workbook);
+    const dataEntryName = "Data Entry";
+    const schemaConformantDataName = "Schema conformant data";
+
+    const jsonFromExcel = XLSX.utils.sheet_to_json(
+      workbook.Sheets[dataEntryName],
+      {
+        raw: false,
+        header: 1,
+        defval: "",
+      }
+    );
+
+    const jsonSchemaFromExcel = XLSX.utils.sheet_to_json(
+      workbook.Sheets[schemaConformantDataName],
+      {
+        raw: false,
+        header: 1,
+        defval: "",
+      }
+    );
+
+    const dataEntryExcelRowData = [];
+
+    if (jsonFromExcel[0].length > 0) {
+      for (let i = 1; i < jsonFromExcel.length; i++) {
+        const objData = {};
+        for (const headerIndex in jsonFromExcel[0]) {
+          if (jsonFromExcel[i]?.[headerIndex]) {
+            objData[jsonFromExcel[0][headerIndex]] = jsonFromExcel[i]?.[headerIndex];
+          }
+        }
+        dataEntryExcelRowData.push(objData);
+      }
+    }
+
+    const schemaConformantRowData = [];
+
+    if (jsonSchemaFromExcel[0].length > 0) {
+      for (let i = 1; i < jsonSchemaFromExcel.length; i++) {
+        const objData = {};
+        for (const headerIndex in jsonSchemaFromExcel[0]) {
+          if (jsonSchemaFromExcel[i]?.[headerIndex]) {
+            objData[jsonSchemaFromExcel[0][headerIndex]] = jsonSchemaFromExcel[i]?.[headerIndex];
+          }
+        }
+        schemaConformantRowData.push(objData);
+      }
+    }
+
+    console.log('dataEntryExcelHeader', jsonFromExcel[0]);
+    console.log('dataEntryExcelRowData', dataEntryExcelRowData);
+    console.log('schemaConformantRowData', schemaConformantRowData);
+    console.log('schemaConformantHeader', jsonSchemaFromExcel[0]);
+  }, []);
 
   useEffect(() => {
     if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && datasetRawFile[0].path.includes(".csv")) {
       processCSVFile(datasetRawFile[0]);
+    } else if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && (datasetRawFile[0].path.includes(".xls") || datasetRawFile[0].path.includes(".xlsx"))) {
+      handleExcelDrop(datasetRawFile[0]);
     } else if (datasetRawFile && !datasetIsParsed && datasetRawFile.length > 0) {
       setDatasetDropMessage({ message: messages.uploadFail, type: "error" });
       setDatasetLoading(false);

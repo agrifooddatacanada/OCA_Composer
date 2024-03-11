@@ -11,7 +11,7 @@ const DatasetView = () => {
   const {
     setCurrentDataValidatorPage,
     datasetRowData,
-    datasetHeaders,
+    dataEntryHeaders,
     setDatasetRowData
   } = useContext(Context);
 
@@ -28,7 +28,7 @@ const DatasetView = () => {
   useEffect(() => {
     const titles = [];
     let newTableLength = 0;
-    datasetHeaders.forEach((header) => {
+    dataEntryHeaders.forEach((header) => {
       titles.push({
         headerName: header,
         field: header,
@@ -40,7 +40,7 @@ const DatasetView = () => {
     });
     setTableLength(newTableLength);
     setColumnDefs(titles);
-  }, [datasetHeaders]);
+  }, [dataEntryHeaders]);
 
   return (
     <>

@@ -80,6 +80,7 @@ const OCADataValidatorMain = () => {
           setDropMessage={setDatasetDropMessage}
           description={datasetUploadDescription}
           tipDescription={datasetUploadTooltip}
+          version={2}
         />
         <Box display="flex">
           <Button

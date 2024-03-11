@@ -1,11 +1,10 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { Box, Button, Typography } from '@mui/material';
 import { gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
 import '../App.css';
 import { Context } from '../App';
-import { set } from 'react-ga';
 
 const CustomTooltip = (props) => {
   // const data = useMemo(
@@ -28,14 +27,28 @@ const CustomTooltip = (props) => {
   );
 };
 
+const DataCellRenderer = (props) => {
+
+  const handleChange = (e) => {
+    props.node.updateData({
+      ...props.node.data,
+      // FormatText: e.target.value,
+    });
+  };
+
+  return (
+    <Box onChange={handleChange}>{props.value.slice(1)}</Box>
+  );
+};
+
 
 const OCADataValidatorCheck = () => {
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const { matchingRowData, datasetRowData, setCurrentDataValidatorPage } = useContext(Context);
   const [revalidateData, setRevalidateData] = useState(false);
-  console.log('matchingRowData', matchingRowData);
-  console.log('datasetRowData', datasetRowData);
+  const gridRef = useRef();
+
   // const columnDefs = useMemo(() => {
   //   return [
   //     {
@@ -96,8 +109,8 @@ const OCADataValidatorCheck = () => {
           minWidth: 150,
           tooltipField: row.Attribute === "d" ? row.Dataset : '',
           tooltipComponentParams: { color: '#F88379' },
+          cellRenderer: DataCellRenderer,
           cellStyle: (params) => {
-            console.log('params', params.data);
             if (params.data?.["animal_id"] === "3140" && row.Attribute === "d") {
               return { backgroundColor: "#ffd7e9" };
             }
@@ -110,9 +123,13 @@ const OCADataValidatorCheck = () => {
     setRowData(datasetRowData);
   }, []);
 
+  const handleSave = () => {
+    console.log('gridRef.current.api.getRenderedNodes()?.map(node => node?.data)', gridRef.current.api.getRenderedNodes()?.map(node => node?.data));
+  };
+
   return (
     <>
-      <BackNextSkeleton isBack pageBack={() => { setCurrentDataValidatorPage('AttributeMatchDataValidator'); }} isForward pageForward={() => { }} />
+      <BackNextSkeleton isBack pageBack={() => { setCurrentDataValidatorPage('AttributeMatchDataValidator'); }} isForward pageForward={() => handleSave()} />
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -149,12 +166,24 @@ const OCADataValidatorCheck = () => {
           >
             <style>{gridStyles}</style>
             <AgGridReact
+              ref={gridRef}
               rowData={rowData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               tooltipShowDelay={0}
               tooltipHideDelay={2000}
-              onCellValueChanged={() => setRevalidateData(true)}
+              onCellValueChanged={(e) => {
+                console.log('e', e.node.updateData(
+                  {
+                    ...e.data,
+                    [e.colDef.field]: e.newValue,
+                  }
+                ));
+                console.log('e.data', e.data);
+                console.log('e.colDef.field', e.colDef.field);
+                console.log('e.newValue', e.newValue);
+                setRevalidateData(true);
+              }}
               domLayout="autoHeight"
             // onGridReady={onGridReady}
             />
