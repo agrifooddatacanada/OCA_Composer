@@ -12,12 +12,12 @@ const DatasetView = () => {
   const schemaGridRef = useRef(null);
   const {
     setCurrentDataValidatorPage,
-    datasetRowData,
-    dataEntryHeaders,
-    setDataEntryHeadersV2,
-    dataSchemaHeaders,
-    dataSchemaRowData,
-    setDataSchemaRowData
+    dataEntryDataRowData,
+    dataEntryDataHeader,
+    setDataEntryDataRowData,
+    schemaDataConformantHeader,
+    schemaDataConformantRowData,
+    setSchemaDataConformantRowData
   } = useContext(Context);
 
   const [columnDefs, setColumnDefs] = useState([]);
@@ -35,7 +35,7 @@ const DatasetView = () => {
   useEffect(() => {
     const titles = [];
     let newTableLength = 0;
-    dataEntryHeaders.forEach((header) => {
+    dataEntryDataHeader.forEach((header) => {
       titles.push({
         headerName: header,
         field: header,
@@ -48,7 +48,7 @@ const DatasetView = () => {
 
     const schemaTitles = [];
     let newSchemaTableLength = 0;
-    dataSchemaHeaders.forEach((header) => {
+    schemaDataConformantHeader.forEach((header) => {
       schemaTitles.push({
         headerName: header,
         field: header,
@@ -63,13 +63,13 @@ const DatasetView = () => {
     setSchemaColumnDefs(schemaTitles);
     setTableLength(newTableLength);
     setColumnDefs(titles);
-  }, [dataEntryHeaders, dataSchemaHeaders]);
+  }, [dataEntryDataHeader, schemaDataConformantHeader]);
 
   return (
     <>
       <BackNextSkeleton isBack pageBack={() => {
-        setDataEntryHeadersV2(gridRef.current?.api.getRenderedNodes()?.map(node => node?.data));
-        setDataSchemaRowData(schemaGridRef.current?.api.getRenderedNodes()?.map(node => node?.data));
+        setDataEntryDataRowData(gridRef.current?.api.getRenderedNodes()?.map(node => node?.data));
+        setSchemaDataConformantRowData(schemaGridRef.current?.api.getRenderedNodes()?.map(node => node?.data));
         setCurrentDataValidatorPage('StartDataValidator');
       }} />
       <Box sx={{
@@ -80,12 +80,12 @@ const DatasetView = () => {
         flex: 1,
       }}>
         <Typography variant="h5" sx={{ mb: 2, color: CustomPalette.PRIMARY, fontWeight: 500 }}>Data Entry</Typography>
-        {dataEntryHeaders.length > 0 ?
+        {dataEntryDataHeader.length > 0 ?
           <div className="ag-theme-balham" style={{ width: tableLength, maxWidth: '90%' }}>
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
-              rowData={datasetRowData}
+              rowData={dataEntryDataRowData}
               columnDefs={columnDefs}
               domLayout="autoHeight"
               defaultColDef={defaultColDef}
@@ -93,12 +93,12 @@ const DatasetView = () => {
           </div>
           : <Typography>No Data Entry</Typography>}
         <Typography variant="h5" sx={{ mb: 2, mt: 6, color: CustomPalette.PRIMARY, fontWeight: 500 }}>Schema Data</Typography>
-        {dataSchemaHeaders.length > 0 ?
+        {schemaDataConformantHeader.length > 0 ?
           <div className="ag-theme-balham" style={{ width: schemaTableLength, maxWidth: '90%' }}>
             <style>{gridStyles}</style>
             <AgGridReact
               ref={schemaGridRef}
-              rowData={dataSchemaRowData}
+              rowData={schemaDataConformantRowData}
               columnDefs={schemaColumnDefs}
               domLayout="autoHeight"
               defaultColDef={defaultColDef}

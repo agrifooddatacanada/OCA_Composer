@@ -61,7 +61,7 @@ export const DataHeaderRenderer = memo(
 );
 
 const AttributeMatch = () => {
-  const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, dataEntryHeaders, firstTimeMatchingRef } = useContext(Context);
+  const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, dataEntryDataHeader, firstTimeMatchingRef } = useContext(Context);
   const [type, setType] = useState(languages[0] || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -115,7 +115,7 @@ const AttributeMatch = () => {
   }, []);
 
   useEffect(() => {
-    const unassignedVariables = [...dataEntryHeaders];
+    const unassignedVariables = [...dataEntryDataHeader];
     if (firstTimeMatchingRef.current) {
       let newMatchingRowData = [];
       if (matchingRowData && matchingRowData?.length > 0) {
@@ -142,7 +142,7 @@ const AttributeMatch = () => {
     }
 
     setItems(unassignedVariables);
-  }, [dataEntryHeaders]);
+  }, [dataEntryDataHeader]);
 
   useEffect(() => {
     const columnDefs = [
@@ -164,7 +164,7 @@ const AttributeMatch = () => {
         field: "Dataset",
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
-          dataHeaders: dataEntryHeaders,
+          dataHeaders: dataEntryDataHeader,
           onRefresh: () => {
             gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
           },

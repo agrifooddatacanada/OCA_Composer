@@ -15,14 +15,14 @@ export const useHandleDatasetDrop = () => {
     setCurrentDataValidatorPage,
     datasetIsParsed,
     setDatasetIsParsed,
-    setDataEntryHeadersV2,
-    setDataEntryHeaders,
+    setDataEntryDataRowData,
+    setDataEntryDataHeader,
     setJsonLoading,
     setJsonDropDisabled,
     jsonRawFile,
     setMatchingRowData,
-    setDataSchemaHeaders,
-    setDataSchemaRowData,
+    setSchemaDataConformantHeader,
+    setSchemaDataConformantRowData,
     setOgWorkbook
   } = useContext(Context);
 
@@ -39,10 +39,10 @@ export const useHandleDatasetDrop = () => {
     setDatasetDropDisabled(false);
     setDatasetRawFile([]);
     setMatchingRowData([]);
-    setDataEntryHeadersV2([]);
-    setDataEntryHeaders([]);
-    setDataSchemaHeaders([]);
-    setDataSchemaRowData([]);
+    setDataEntryDataRowData([]);
+    setDataEntryDataHeader([]);
+    setSchemaDataConformantHeader([]);
+    setSchemaDataConformantRowData([]);
   }, []);
 
   const processCSVFile = useCallback((file) => {
@@ -58,8 +58,8 @@ export const useHandleDatasetDrop = () => {
           return `header_empty_placeholder_${index}`;
         },
         complete: function(results) {
-          setDataEntryHeadersV2(results.data);
-          setDataEntryHeaders(results.meta.fields);
+          setDataEntryDataRowData(results.data);
+          setDataEntryDataHeader(results.meta.fields);
           setDatasetLoading(false);
           setDatasetDropDisabled(true);
 
@@ -202,10 +202,10 @@ export const useHandleDatasetDrop = () => {
       }
     }
 
-    setDataEntryHeaders(jsonFromExcel[0]);
-    setDataEntryHeadersV2(dataEntryExcelRowData);
-    setDataSchemaHeaders(jsonSchemaFromExcel[0]);
-    setDataSchemaRowData(schemaConformantRowData);
+    setDataEntryDataHeader(jsonFromExcel[0]);
+    setDataEntryDataRowData(dataEntryExcelRowData);
+    setSchemaDataConformantHeader(jsonSchemaFromExcel[0]);
+    setSchemaDataConformantRowData(schemaConformantRowData);
   }, []);
 
   useEffect(() => {

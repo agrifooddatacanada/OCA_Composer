@@ -93,10 +93,10 @@ function App() {
   const [datasetLoading, setDatasetLoading] = useState(false);
   const [datasetDropDisabled, setDatasetDropDisabled] = useState(false);
   const [datasetIsParsed, setDatasetIsParsed] = useState(false);
-  const [datasetRowData, setDataEntryHeadersV2] = useState([]);
-  const [dataEntryHeaders, setDataEntryHeaders] = useState([]);
-  const [dataSchemaHeaders, setDataSchemaHeaders] = useState([]);
-  const [dataSchemaRowData, setDataSchemaRowData] = useState([]);
+  const [dataEntryDataRowData, setDataEntryDataRowData] = useState([]);
+  const [dataEntryDataHeader, setDataEntryDataHeader] = useState([]);
+  const [schemaDataConformantHeader, setSchemaDataConformantHeader] = useState([]);
+  const [schemaDataConformantRowData, setSchemaDataConformantRowData] = useState([]);
   const [matchingRowData, setMatchingRowData] = useState([]);
   const firstTimeMatchingRef = useRef(true);
   const [ogWorkbook, setOgWorkbook] = useState(null);
@@ -370,19 +370,19 @@ function App() {
             setJsonIsParsed,
             datasetIsParsed,
             setDatasetIsParsed,
-            datasetRowData,
-            setDataEntryHeadersV2,
-            dataEntryHeaders,
-            setDataEntryHeaders,
-            dataSchemaHeaders,
-            setDataSchemaHeaders,
+            dataEntryDataRowData,
+            setDataEntryDataRowData,
+            dataEntryDataHeader,
+            setDataEntryDataHeader,
+            schemaDataConformantHeader,
+            setSchemaDataConformantHeader,
             matchingRowData,
             setMatchingRowData,
             // firstTimeMatching,
             // setFirstTimeMatching,
             firstTimeMatchingRef,
-            dataSchemaRowData,
-            setDataSchemaRowData,
+            schemaDataConformantRowData,
+            setSchemaDataConformantRowData,
             ogWorkbook,
             setOgWorkbook,
           }}

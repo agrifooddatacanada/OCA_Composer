@@ -39,13 +39,17 @@ const OCADataValidatorCheck = () => {
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const {
-    dataSchemaRowData,
-    dataSchemaHeaders,
+    schemaDataConformantRowData,
+    schemaDataConformantHeader,
+    dataEntryDataRowData,
+    dataEntryDataHeader,
     setCurrentDataValidatorPage,
     ogWorkbook
   } = useContext(Context);
-  console.log('dataSchemaRowData', dataSchemaRowData);
-  console.log('dataSchemaHeaders', dataSchemaHeaders);
+  console.log('schemaDataConformantRowData', schemaDataConformantRowData);
+  console.log('schemaDataConformantHeader', schemaDataConformantHeader);
+  console.log('dataEntryDataRowData', dataEntryDataRowData);
+  console.log('dataEntryDataHeader', dataEntryDataHeader);
   const [revalidateData, setRevalidateData] = useState(false);
   const gridRef = useRef();
 
@@ -62,7 +66,7 @@ const OCADataValidatorCheck = () => {
   useEffect(() => {
     const columns = [];
 
-    dataSchemaHeaders.forEach((header) => {
+    schemaDataConformantHeader.forEach((header) => {
       columns.push(
         {
           headerName: header,
@@ -81,12 +85,12 @@ const OCADataValidatorCheck = () => {
     });
 
     const tempError = [
-      { [dataSchemaHeaders[0]]: ['Format Error 1', 'Entry Error 2'], [dataSchemaHeaders[1]]: ['AAA Error 1', 'EEEE Error 4', 'BBBB Error 5'], [dataSchemaHeaders[2]]: ['Error 1', ' Format Error 2'], [dataSchemaHeaders[3]]: ['Error 123'] },
-      { [dataSchemaHeaders[2]]: ['Error 1', ' Format Error 2'], [dataSchemaHeaders[3]]: ['Error 1', 'Format Error 4', 'AAA Error 5'] },
+      { [schemaDataConformantHeader[0]]: ['Format Error 1', 'Entry Error 2'], [schemaDataConformantHeader[1]]: ['AAA Error 1', 'EEEE Error 4', 'BBBB Error 5'], [schemaDataConformantHeader[2]]: ['Error 1', ' Format Error 2'], [schemaDataConformantHeader[3]]: ['Error 123'] },
+      { [schemaDataConformantHeader[2]]: ['Error 1', ' Format Error 2'], [schemaDataConformantHeader[3]]: ['Error 1', 'Format Error 4', 'AAA Error 5'] },
     ];
 
     const newDataSetRowData = [];
-    dataSchemaRowData.forEach((row, index) => {
+    schemaDataConformantRowData.forEach((row, index) => {
       newDataSetRowData.push({
         ...row,
         error: tempError?.[index] || {},
@@ -97,8 +101,12 @@ const OCADataValidatorCheck = () => {
     setRowData(newDataSetRowData);
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log('gridRef.current.api.getRenderedNodes()?.map(node => node?.data)', gridRef.current.api.getRenderedNodes()?.map(node => node?.data));
+    const workbook = await generateDataEntryExcel();
+    if (workbook !== null) {
+      downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
+    }
   };
 
   const handleValidate = () => {
@@ -107,9 +115,69 @@ const OCADataValidatorCheck = () => {
   };
 
   const generateDataEntryExcel = async () => {
-    const newWorkbook = await copyFirstWorksheet(ogWorkbook);
+    try {
+      const newWorkbook = await copyFirstWorksheet(ogWorkbook);
 
+      const dataEntryWorksheet = newWorkbook.addWorksheet("Data Entry");
+      makeHeaderRow(dataEntryDataHeader, dataEntryWorksheet, 20);
+      dataEntryDataRowData.forEach((row, index) => {
+        dataEntryDataHeader.forEach((header, headerIndex) => {
+          dataEntryWorksheet.getCell(index + 2, headerIndex + 1).value = isNaN(row[header]) ? row[header] : Number(row[header]);
+        });
+      });
 
+      const schemaConformantDataNameWorksheet = newWorkbook.addWorksheet("Schema conformant data");
+      makeHeaderRow(schemaDataConformantHeader, schemaConformantDataNameWorksheet, 20);
+      const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+      newData.forEach((row, index) => {
+        schemaDataConformantHeader.forEach((header, headerIndex) => {
+          schemaConformantDataNameWorksheet.getCell(index + 2, headerIndex + 1).value = isNaN(row[header]) ? row[header] : Number(row[header]);
+        });
+      });
+
+      return newWorkbook;
+    } catch (error) {
+      console.log('error', error);
+      return null;
+    }
+  };
+
+  const prepareExcelFile = async (workbook) => {
+    const buffer = await workbook.xlsx.writeBuffer();
+    const file = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+  };
+
+  const downloadExcelFile = (workbook, fileName) => {
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "fileName.xlsx";
+      a.click();
+    });
+  };
+
+  const makeHeaderRow = (rowHeadersArray, worksheetName, columnWidth) => {
+    const defaultColumnStyle = {
+      alignment: {
+        wrapText: true,
+      },
+    };
+    const allColumns = [];
+    rowHeadersArray.forEach((item, index) => {
+      allColumns.push({ width: columnWidth, style: defaultColumnStyle });
+      worksheetName.getCell(1, index + 1).value = item;
+      worksheetName.getCell(1, index + 1).style = {
+        wrapText: true,
+        ...defaultColumnStyle,
+      };
+    });
+    return allColumns;
   };
 
   const copyFirstWorksheet = async (workbook) => {
@@ -118,7 +186,6 @@ const OCADataValidatorCheck = () => {
     const newWorkbook = new ExcelJS.Workbook();
     const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
 
-    // Copy all cells from the original worksheet to the new worksheet
     Object.keys(worksheet).forEach((cell) => {
       if (!worksheet[cell]?.v || cell === '!ref') return;
       newWorksheet.getCell(cell).value = worksheet[cell]?.v;
@@ -129,7 +196,7 @@ const OCADataValidatorCheck = () => {
 
   return (
     <>
-      <BackNextSkeleton isBack pageBack={() => { setCurrentDataValidatorPage('StartDataValidator'); }} isForward pageForward={() => handleSave()} />
+      <BackNextSkeleton isBack pageBack={() => { setCurrentDataValidatorPage('StartDataValidator'); }} isForward pageForward={handleSave} />
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -243,7 +310,7 @@ export default OCADataValidatorCheck;
 // const OCADataValidatorCheck = () => {
 //   const [rowData, setRowData] = useState([]);
 //   const [columnDefs, setColumnDefs] = useState([]);
-//   const { matchingRowData, datasetRowData, setCurrentDataValidatorPage } = useContext(Context);
+//   const { matchingRowData, dataEntryDataRowData, setCurrentDataValidatorPage } = useContext(Context);
 //   const [revalidateData, setRevalidateData] = useState(false);
 //   const gridRef = useRef();
 
@@ -318,7 +385,7 @@ export default OCADataValidatorCheck;
 
 //     });
 //     setColumnDefs(columns);
-//     setRowData(datasetRowData);
+//     setRowData(dataEntryDataRowData);
 //   }, []);
 
 //   const handleSave = () => {
