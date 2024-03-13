@@ -31,7 +31,10 @@ const OCADataValidatorMain = () => {
 
   return (
     <>
-      <BackNextSkeleton isForward={jsonRawFile.length > 0 && datasetRawFile.length > 0} pageForward={() => setCurrentDataValidatorPage('AttributeMatchDataValidator')} />
+      <BackNextSkeleton isForward={jsonRawFile.length > 0 && datasetRawFile.length > 0} pageForward={() =>
+        // setCurrentDataValidatorPage('AttributeMatchDataValidator')
+        setCurrentDataValidatorPage('OCADataValidatorCheck')
+      } />
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',

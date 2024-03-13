@@ -93,11 +93,13 @@ function App() {
   const [datasetLoading, setDatasetLoading] = useState(false);
   const [datasetDropDisabled, setDatasetDropDisabled] = useState(false);
   const [datasetIsParsed, setDatasetIsParsed] = useState(false);
-  const [datasetRowData, setDatasetRowData] = useState([]);
+  const [datasetRowData, setDataEntryHeadersV2] = useState([]);
   const [dataEntryHeaders, setDataEntryHeaders] = useState([]);
   const [dataSchemaHeaders, setDataSchemaHeaders] = useState([]);
+  const [dataSchemaRowData, setDataSchemaRowData] = useState([]);
   const [matchingRowData, setMatchingRowData] = useState([]);
   const firstTimeMatchingRef = useRef(true);
+  const [ogWorkbook, setOgWorkbook] = useState(null);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -369,7 +371,7 @@ function App() {
             datasetIsParsed,
             setDatasetIsParsed,
             datasetRowData,
-            setDatasetRowData,
+            setDataEntryHeadersV2,
             dataEntryHeaders,
             setDataEntryHeaders,
             dataSchemaHeaders,
@@ -378,7 +380,11 @@ function App() {
             setMatchingRowData,
             // firstTimeMatching,
             // setFirstTimeMatching,
-            firstTimeMatchingRef
+            firstTimeMatchingRef,
+            dataSchemaRowData,
+            setDataSchemaRowData,
+            ogWorkbook,
+            setOgWorkbook,
           }}
         >
           <Box

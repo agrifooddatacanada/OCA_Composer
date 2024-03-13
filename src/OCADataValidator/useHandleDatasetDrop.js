@@ -3,7 +3,6 @@ import { Context } from '../App';
 import Papa from "papaparse";
 import { messages } from '../constants/messages';
 import * as XLSX from "xlsx";
-import ExcelJS from 'exceljs';
 
 export const useHandleDatasetDrop = () => {
   const {
@@ -16,12 +15,15 @@ export const useHandleDatasetDrop = () => {
     setCurrentDataValidatorPage,
     datasetIsParsed,
     setDatasetIsParsed,
-    setDatasetRowData,
+    setDataEntryHeadersV2,
     setDataEntryHeaders,
     setJsonLoading,
     setJsonDropDisabled,
     jsonRawFile,
-    setMatchingRowData
+    setMatchingRowData,
+    setDataSchemaHeaders,
+    setDataSchemaRowData,
+    setOgWorkbook
   } = useContext(Context);
 
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
@@ -37,6 +39,10 @@ export const useHandleDatasetDrop = () => {
     setDatasetDropDisabled(false);
     setDatasetRawFile([]);
     setMatchingRowData([]);
+    setDataEntryHeadersV2([]);
+    setDataEntryHeaders([]);
+    setDataSchemaHeaders([]);
+    setDataSchemaRowData([]);
   }, []);
 
   const processCSVFile = useCallback((file) => {
@@ -52,7 +58,7 @@ export const useHandleDatasetDrop = () => {
           return `header_empty_placeholder_${index}`;
         },
         complete: function(results) {
-          setDatasetRowData(results.data);
+          setDataEntryHeadersV2(results.data);
           setDataEntryHeaders(results.meta.fields);
           setDatasetLoading(false);
           setDatasetDropDisabled(true);
@@ -70,6 +76,7 @@ export const useHandleDatasetDrop = () => {
             if (jsonRawFile.length === 0) {
               setJsonDropDisabled(false);
             }
+
             if (!datasetIsParsed) {
               setDatasetIsParsed(true);
               setCurrentDataValidatorPage("DatasetViewDataValidator");
@@ -103,6 +110,7 @@ export const useHandleDatasetDrop = () => {
         });
 
         processExcelFile(workbook);
+        setOgWorkbook(workbook);
 
         setDatasetLoading(false);
         setDatasetDropDisabled(true);
@@ -120,6 +128,7 @@ export const useHandleDatasetDrop = () => {
           if (jsonRawFile.length === 0) {
             setJsonDropDisabled(false);
           }
+
           if (!datasetIsParsed) {
             setDatasetIsParsed(true);
             setCurrentDataValidatorPage("DatasetViewDataValidator");
@@ -140,22 +149,7 @@ export const useHandleDatasetDrop = () => {
         setDatasetDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, []);
-
-  const copyFirstWorksheet = async (workbook) => {
-    const firstSheetName = "Schema Description";
-    const worksheet = workbook?.Sheets?.[firstSheetName];
-    const newWorkbook = new ExcelJS.Workbook();
-    const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
-
-    // Copy all cells from the original worksheet to the new worksheet
-    Object.keys(worksheet).forEach((cell) => {
-      if (!worksheet[cell]?.v || cell === '!ref') return;
-      newWorksheet.getCell(cell).value = worksheet[cell]?.v;
-    });
-
-    return newWorkbook;
-  };
+  }, [datasetIsParsed]);
 
   const processExcelFile = useCallback(async (workbook) => {
     // const newWorkbook = await copyFirstWorksheet(workbook);
@@ -208,10 +202,10 @@ export const useHandleDatasetDrop = () => {
       }
     }
 
-    console.log('dataEntryExcelHeader', jsonFromExcel[0]);
-    console.log('dataEntryExcelRowData', dataEntryExcelRowData);
-    console.log('schemaConformantRowData', schemaConformantRowData);
-    console.log('schemaConformantHeader', jsonSchemaFromExcel[0]);
+    setDataEntryHeaders(jsonFromExcel[0]);
+    setDataEntryHeadersV2(dataEntryExcelRowData);
+    setDataSchemaHeaders(jsonSchemaFromExcel[0]);
+    setDataSchemaRowData(schemaConformantRowData);
   }, []);
 
   useEffect(() => {
