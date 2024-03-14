@@ -18,7 +18,8 @@ export const useHandleJsonDrop = () => {
     setDatasetLoading,
     setDatasetDropDisabled,
     datasetRawFile,
-    setMatchingRowData
+    setMatchingRowData,
+    setJsonParsedFile
   } = useContext(Context);
   const {
     processLanguages,
@@ -48,6 +49,7 @@ export const useHandleJsonDrop = () => {
 
       reader.onload = async (e) => {
         const jsonFile = JSON.parse(e.target.result)?.['bundle'];
+        setJsonParsedFile(jsonFile);
         const languageList = [];
         const informationList = [];
         const labelList = [];

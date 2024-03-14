@@ -6,6 +6,8 @@ import { AgGridReact } from 'ag-grid-react';
 import '../App.css';
 import { Context } from '../App';
 import ExcelJS from 'exceljs';
+import OCABundle from './validator';
+import OCADataSet from './utils/files';
 
 const CustomTooltip = (props) => {
   // const data = useMemo(
@@ -36,20 +38,17 @@ const CustomTooltip = (props) => {
 };
 
 const OCADataValidatorCheck = () => {
-  const [rowData, setRowData] = useState([]);
-  const [columnDefs, setColumnDefs] = useState([]);
   const {
     schemaDataConformantRowData,
     schemaDataConformantHeader,
     dataEntryDataRowData,
     dataEntryDataHeader,
     setCurrentDataValidatorPage,
-    ogWorkbook
+    ogWorkbook,
+    jsonParsedFile
   } = useContext(Context);
-  console.log('schemaDataConformantRowData', schemaDataConformantRowData);
-  console.log('schemaDataConformantHeader', schemaDataConformantHeader);
-  console.log('dataEntryDataRowData', dataEntryDataRowData);
-  console.log('dataEntryDataHeader', dataEntryDataHeader);
+  const [rowData, setRowData] = useState([]);
+  const [columnDefs, setColumnDefs] = useState([]);
   const [revalidateData, setRevalidateData] = useState(false);
   const gridRef = useRef();
 
@@ -109,9 +108,29 @@ const OCADataValidatorCheck = () => {
     }
   };
 
-  const handleValidate = () => {
+  const handleValidate = async () => {
+    gridRef.current.api.showLoadingOverlay();
     setRevalidateData(false);
-    generateDataEntryExcel();
+    const bundle = new OCABundle();
+    await bundle.loadedBundle(jsonParsedFile);
+    const newWorkbook = await generateDataEntryExcel();
+    newWorkbook.xlsx.writeBuffer().then((buffer) => {
+      const file = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataset = await OCADataSet.readExcel(e.target.result);
+        const validate = bundle.validate(dataset);
+        console.log('validate', validate);
+        console.log('second');
+        //set Timeout at least 1.5 seconds
+        setTimeout(() => {
+          gridRef.current.api.hideOverlay();
+        }, 800);
+      };
+      reader.readAsArrayBuffer(file);
+    });
   };
 
   const generateDataEntryExcel = async () => {
@@ -140,13 +159,6 @@ const OCADataValidatorCheck = () => {
       console.log('error', error);
       return null;
     }
-  };
-
-  const prepareExcelFile = async (workbook) => {
-    const buffer = await workbook.xlsx.writeBuffer();
-    const file = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
   };
 
   const downloadExcelFile = (workbook, fileName) => {
@@ -236,6 +248,9 @@ const OCADataValidatorCheck = () => {
               rowData={rowData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
+              overlayLoadingTemplate={
+                '<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
+              }
               tooltipShowDelay={0}
               tooltipHideDelay={2000}
               onCellValueChanged={(e) => {
@@ -254,6 +269,7 @@ const OCADataValidatorCheck = () => {
         </div>
       </Box >
     </>
+
   );
 };
 
