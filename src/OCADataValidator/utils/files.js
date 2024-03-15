@@ -48,12 +48,10 @@ export default class OCADataSet {
   };
 
   // Processing excel files.
-  // static async readExcel(fileContent) {
   static async readExcel(fileContent) {
     return new Promise((resolve, reject) => {
       try {
         const workbook = XLSX.readFile(fileContent);
-
         const sheetName = 'Schema conformant data';
         const worksheet = workbook.Sheets[sheetName];
         const range = XLSX.utils.decode_range(worksheet['!ref']);

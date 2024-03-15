@@ -10,27 +10,18 @@ import OCABundle from './validator';
 import OCADataSet from './utils/files';
 
 const CustomTooltip = (props) => {
-  // const data = useMemo(
-  //   () => props.api.getDisplayedRowAtIndex(props.rowIndex).data,
-  //   []
-  // );
+  const error = props.data?.error?.[props.colDef.field] || "";
 
-  const error = props.data?.error?.[props.colDef.field] || [];
   return (
     <>
       {error.length > 0 ?
         (<div className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '10px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
           <p style={{ marginBottom: '5px' }}>
-            <span style={{ fontWeight: 'bold' }}>Error(s)</span>
+            <span style={{ fontWeight: 'bold' }}>Error</span>
           </p>
-          {error.map((err, index) => {
-            return (
-              <p key={index + err} style={{ marginBottom: '5px', textAlign: 'left' }}>
-                <span style={{ fontWeight: 'bold' }}>Error {index + 1}: </span><span>{err}</span>
-              </p>
-            );
-
-          })}
+          <p style={{ marginBottom: '5px', textAlign: 'left' }}>
+            {error}
+          </p>
         </div>)
         : <p></p>}
     </>
@@ -61,6 +52,12 @@ const OCADataValidatorCheck = () => {
     };
   }, []);
 
+  const cellStyle = (params) => {
+    const error = params.data?.error?.[params.colDef.field] || [];
+    if (error.length > 0) {
+      return { backgroundColor: "#ffd7e9" };
+    }
+  };
 
   useEffect(() => {
     const columns = [];
@@ -73,31 +70,13 @@ const OCADataValidatorCheck = () => {
           minWidth: 150,
           tooltipField: header,
           tooltipComponentParams: { color: '#F88379' },
-          cellStyle: (params) => {
-            const error = params.data?.error?.[params.colDef.field] || [];
-            if (error.length > 0) {
-              return { backgroundColor: "#ffd7e9" };
-            }
-          }
+          cellStyle
         }
       );
     });
 
-    const tempError = [
-      { [schemaDataConformantHeader[0]]: ['Format Error 1', 'Entry Error 2'], [schemaDataConformantHeader[1]]: ['AAA Error 1', 'EEEE Error 4', 'BBBB Error 5'], [schemaDataConformantHeader[2]]: ['Error 1', ' Format Error 2'], [schemaDataConformantHeader[3]]: ['Error 123'] },
-      { [schemaDataConformantHeader[2]]: ['Error 1', ' Format Error 2'], [schemaDataConformantHeader[3]]: ['Error 1', 'Format Error 4', 'AAA Error 5'] },
-    ];
-
-    const newDataSetRowData = [];
-    schemaDataConformantRowData.forEach((row, index) => {
-      newDataSetRowData.push({
-        ...row,
-        error: tempError?.[index] || {},
-      });
-    });
-
     setColumnDefs(columns);
-    setRowData(newDataSetRowData);
+    setRowData(schemaDataConformantRowData);
   }, []);
 
   const handleSave = async () => {
@@ -122,8 +101,42 @@ const OCADataValidatorCheck = () => {
       reader.onload = async (e) => {
         const dataset = await OCADataSet.readExcel(e.target.result);
         const validate = bundle.validate(dataset);
+        console.log('validate?.errCollection', validate?.errCollection);
         console.log('validate', validate);
-        console.log('second');
+        console.log('validate?.unmachedAttrs', validate?.unmachedAttrs);
+
+        setRowData((prev) => {
+          return prev.map((row, index) => {
+            return {
+              ...row,
+              error: validate?.errCollection?.[index] || {},
+            };
+          });
+        });
+        setColumnDefs((prev) => {
+          const copy = [];
+          console.log('validate?.unmachedAttrs', validate?.unmachedAttrs.size);
+          if (validate?.unmachedAttrs?.size > 0) {
+            prev.forEach((header) => {
+              console.log('header', header);
+              if (validate?.unmachedAttrs?.has(header.headerName)) {
+                copy.push({
+                  ...header,
+                  cellStyle: () => {
+                    return { backgroundColor: "#ededed" };
+                  }
+                });
+                console.log('copy1', copy);
+              } else {
+                console.log('copy2', copy);
+                copy.push(header);
+              }
+            });
+          }
+          console.log('prev', prev);
+          console.log('copy3', copy);
+          return copy;
+        });
         //set Timeout at least 1.5 seconds
         setTimeout(() => {
           gridRef.current.api.hideOverlay();
@@ -218,25 +231,40 @@ const OCADataValidatorCheck = () => {
           sx={{
             display: 'flex',
             flexDirection: 'row',
+            alignContent: 'space-between'
           }}
         >
-          <Button
-            color='button'
-            variant='contained'
-            target='_blank'
-            style={{ marginLeft: "2rem", marginTop: "2rem", width: '120px' }}
-            onClick={handleValidate}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              flex: 1,
+            }}
           >
-            Validate
-          </Button>
-          {revalidateData &&
-            <Typography sx={{
-              marginLeft: "2rem",
-              marginTop: "2.3rem",
-              color: 'red',
-              fontWeight: 'bold',
-            }}>Please re-validate the data!</Typography>}
+            <Button
+              color='button'
+              variant='contained'
+              target='_blank'
+              style={{ marginLeft: "2rem", marginTop: "2rem", width: '120px' }}
+              onClick={handleValidate}
+            >
+              Validate
+            </Button>
+            {revalidateData &&
+              <Typography sx={{
+                marginLeft: "2rem",
+                marginTop: "2.3rem",
+                color: 'red',
+                fontWeight: 'bold',
+              }}>Please re-validate the data!</Typography>}
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginTop: "2.3rem", marginRight: "2rem" }}>
+            <div style={{ width: '20px', height: '20px', backgroundColor: "#ededed", marginRight: '15px' }}></div>
+            <span>Unmatched Attributes</span>
+          </Box>
+
         </Box>
+
 
         <div style={{ margin: "2rem" }}>
           <div

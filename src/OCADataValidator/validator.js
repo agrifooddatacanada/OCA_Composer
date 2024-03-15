@@ -25,7 +25,7 @@ const OVERLAYS_KEY = 'overlays';
 // Error messages. For text notices only.
 const ATTR_UNMATCH_MSG = 'Unmatched attribute (attribute not found in the OCA Bundle).';
 const ATTR_MISSING_MSG = 'Missing attribute (attribute not found in the data set).';
-const MISSING_MSG = 'Missing mandatory attribute (check for other missing entries before continuing).';
+const MISSING_MSG = 'Missing an entry for a mandatory attribute (check for other missing entries before continuing).';
 const NOT_AN_ARRAY_MSG = 'Valid array required.';
 const FORMAT_ERR_MSG = 'Format mismatch.';
 const EC_FORMAT_ERR_MSG = 'Entry code format mismatch (manually fix the attribute format).';
@@ -65,7 +65,6 @@ export default class OCABundle {
   async loadedBundle(bundle) {
     try {
       // const bundle = await OCABundle.readJSON(file);
-
       this.captureBase = bundle[CB_KEY];
       this.overlays = bundle[OVERLAYS_KEY];
       this.overlays_dict = bundle[CB_KEY];
@@ -81,21 +80,21 @@ export default class OCABundle {
     return this;
   };
 
-  // static async readJSON (file) {
-  //     return new Promise((resolve, reject) => {
-  //         fs.readFile(file, 'utf8', (err, data) => {
-  //             if (err) {
-  //                 reject(err);
-  //                 return;
-  //             }
-  //             try {
-  //                 const bundle = JSON.parse(data);
-  //                 resolve(bundle);
-  //             } catch (error) {
-  //                 reject(error);
-  //             }
-  //         });
+  // static async readJSON(file) {
+  //   return new Promise((resolve, reject) => {
+  //     fs.readFile(file, 'utf8', (err, data) => {
+  //       if (err) {
+  //         reject(err);
+  //         return;
+  //       }
+  //       try {
+  //         const bundle = JSON.parse(data);
+  //         resolve(bundle);
+  //       } catch (error) {
+  //         reject(error);
+  //       }
   //     });
+  //   });
   // };
 
   getOverlay(overlay) {
@@ -186,7 +185,7 @@ export default class OCABundle {
       const attrConformance = this.getAttributeConformance(attr);
 
       try {
-        // check if the attr is missing in the dataset then add the missing message. and continue to the next attribute.
+        // Verifying the missing data entries for a mandatory (required) attributes.
         for (let i = 0; i < dataset[attr].length; i++) {
           let dataEntry = String(dataset[attr][i]);
           if ((dataEntry === undefined || dataEntry === null || dataEntry === '') && attrConformance === 'M') {
@@ -195,6 +194,7 @@ export default class OCABundle {
           } else if ((dataEntry === undefined || dataEntry === null || dataEntry === '') && attrConformance === 'O') {
             dataEntry = '';
           }
+          // Verifying data types for entries to match the attribute's.
           if (attrType.includes('Array')) {
             let dataArr;
             try {
@@ -216,18 +216,16 @@ export default class OCABundle {
               }
             }
           } else if (!matchFormat(attrType, attrFormat, dataEntry)) {
-            if (this.getEntryCodes().length > 0) {
-              rslt.errs[attr][i] = `${EC_FORMAT_ERR_MSG} Supported format for entry code is: ${attrFormat}.`;
+            if (dataEntry === '' && attrConformance === 'O') {
+              continue;
             } else {
-              // Non-array attributes and other format mismatches.
               rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`;
             }
-          } else {
-            ;
           }
         }
       } catch (error) {
-        continue;
+        ;
+        // throw error;
         // console.log("Error in validateFormat:")
         // console.error(error);
       }
@@ -238,14 +236,12 @@ export default class OCABundle {
   validateEntryCodes(dataset) {
     const rslt = new OCADataSetErr().entryCodeErr;
     const attrEntryCodes = this.getEntryCodes();
-
     for (const attr in attrEntryCodes) {
       rslt.errs[attr] = {};
-
       for (let i = 0; i < dataset[attr].length; i++) {
-        const dataEntry = dataset[attr][i];
-        if (!attrEntryCodes[attr].includes(dataEntry)) {
-          rslt.errs[attr][i] = `${EC_ERR_MSG} Entry codes allowed: ${attrEntryCodes}`;
+        let dataEntry = dataset[attr][i];
+        if (!attrEntryCodes[attr].includes(dataEntry) && dataEntry !== '' && dataEntry !== undefined) {
+          rslt.errs[attr][i] = `${EC_ERR_MSG} Entry codes allowed: [${Object.values(attrEntryCodes)}]`;
         }
       }
     }
