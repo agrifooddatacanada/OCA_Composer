@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { Context } from '../App';
-import Papa from "papaparse";
+// import Papa from "papaparse";
 import { messages } from '../constants/messages';
 import * as XLSX from "xlsx";
 
@@ -15,8 +15,6 @@ export const useHandleDatasetDrop = () => {
     setCurrentDataValidatorPage,
     datasetIsParsed,
     setDatasetIsParsed,
-    setDataEntryDataRowData,
-    setDataEntryDataHeader,
     setJsonLoading,
     setJsonDropDisabled,
     jsonRawFile,
@@ -39,63 +37,61 @@ export const useHandleDatasetDrop = () => {
     setDatasetDropDisabled(false);
     setDatasetRawFile([]);
     setMatchingRowData([]);
-    setDataEntryDataRowData([]);
-    setDataEntryDataHeader([]);
     setSchemaDataConformantHeader([]);
     setSchemaDataConformantRowData([]);
   }, []);
 
-  const processCSVFile = useCallback((file) => {
-    try {
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: "greedy",
-        transformHeader: function(header, index) {
-          if (header !== "") {
-            return header;
-          }
-          //without this, papaparse will save blank headers as "", "_1", "_2", etc.
-          return `header_empty_placeholder_${index}`;
-        },
-        complete: function(results) {
-          setDataEntryDataRowData(results.data);
-          setDataEntryDataHeader(results.meta.fields);
-          setDatasetLoading(false);
-          setDatasetDropDisabled(true);
+  // const processCSVFile = useCallback((file) => {
+  //   try {
+  //     Papa.parse(file, {
+  //       header: true,
+  //       skipEmptyLines: "greedy",
+  //       transformHeader: function(header, index) {
+  //         if (header !== "") {
+  //           return header;
+  //         }
+  //         //without this, papaparse will save blank headers as "", "_1", "_2", etc.
+  //         return `header_empty_placeholder_${index}`;
+  //       },
+  //       complete: function(results) {
+  //         setDataEntryDataRowData(results.data);
+  //         setDataEntryDataHeader(results.meta.fields);
+  //         setDatasetLoading(false);
+  //         setDatasetDropDisabled(true);
 
-          setDatasetDropMessage({
-            message: messages.successfulUpload,
-            type: "success",
-          });
+  //         setDatasetDropMessage({
+  //           message: messages.successfulUpload,
+  //           type: "success",
+  //         });
 
-          setTimeout(() => {
-            setDatasetDropDisabled(true);
-            setDatasetDropMessage({ message: "", type: "" });
-            setDatasetLoading(false);
-            setJsonLoading(false);
-            if (jsonRawFile.length === 0) {
-              setJsonDropDisabled(false);
-            }
+  //         setTimeout(() => {
+  //           setDatasetDropDisabled(true);
+  //           setDatasetDropMessage({ message: "", type: "" });
+  //           setDatasetLoading(false);
+  //           setJsonLoading(false);
+  //           if (jsonRawFile.length === 0) {
+  //             setJsonDropDisabled(false);
+  //           }
 
-            if (!datasetIsParsed) {
-              setDatasetIsParsed(true);
-              setCurrentDataValidatorPage("DatasetViewDataValidator");
-            }
-          }, 900);
-        },
-      });
-    } catch {
-      setDatasetDropMessage({ message: messages.parseUploadFail, type: "error" });
-      setDatasetLoading(false);
-      setJsonLoading(false);
-      if (jsonRawFile.length === 0) {
-        setJsonDropDisabled(false);
-      }
-      setTimeout(() => {
-        setDatasetDropMessage({ message: "", type: "" });
-      }, [2500]);
-    }
-  }, [datasetIsParsed]);
+  //           if (!datasetIsParsed) {
+  //             setDatasetIsParsed(true);
+  //             setCurrentDataValidatorPage("DatasetViewDataValidator");
+  //           }
+  //         }, 900);
+  //       },
+  //     });
+  //   } catch {
+  //     setDatasetDropMessage({ message: messages.parseUploadFail, type: "error" });
+  //     setDatasetLoading(false);
+  //     setJsonLoading(false);
+  //     if (jsonRawFile.length === 0) {
+  //       setJsonDropDisabled(false);
+  //     }
+  //     setTimeout(() => {
+  //       setDatasetDropMessage({ message: "", type: "" });
+  //     }, [2500]);
+  //   }
+  // }, [datasetIsParsed]);
 
   const handleExcelDrop = useCallback((acceptedFiles) => {
     try {
@@ -152,18 +148,7 @@ export const useHandleDatasetDrop = () => {
   }, [datasetIsParsed]);
 
   const processExcelFile = useCallback(async (workbook) => {
-    // const newWorkbook = await copyFirstWorksheet(workbook);
-    const dataEntryName = "Data Entry";
     const schemaConformantDataName = "Schema conformant data";
-
-    const jsonFromExcel = XLSX.utils.sheet_to_json(
-      workbook.Sheets[dataEntryName],
-      {
-        raw: false,
-        header: 1,
-        defval: "",
-      }
-    );
 
     const jsonSchemaFromExcel = XLSX.utils.sheet_to_json(
       workbook.Sheets[schemaConformantDataName],
@@ -174,23 +159,9 @@ export const useHandleDatasetDrop = () => {
       }
     );
 
-    const dataEntryExcelRowData = [];
-
-    if (jsonFromExcel[0].length > 0) {
-      for (let i = 1; i < jsonFromExcel.length; i++) {
-        const objData = {};
-        for (const headerIndex in jsonFromExcel[0]) {
-          if (jsonFromExcel[i]?.[headerIndex]) {
-            objData[jsonFromExcel[0][headerIndex]] = jsonFromExcel[i]?.[headerIndex];
-          }
-        }
-        dataEntryExcelRowData.push(objData);
-      }
-    }
-
     const schemaConformantRowData = [];
 
-    if (jsonSchemaFromExcel[0].length > 0) {
+    if (jsonSchemaFromExcel?.[0] && jsonSchemaFromExcel?.[0]?.length > 0) {
       for (let i = 1; i < jsonSchemaFromExcel.length; i++) {
         const objData = {};
         for (const headerIndex in jsonSchemaFromExcel[0]) {
@@ -202,15 +173,13 @@ export const useHandleDatasetDrop = () => {
       }
     }
 
-    setDataEntryDataHeader(jsonFromExcel[0]);
-    setDataEntryDataRowData(dataEntryExcelRowData);
     setSchemaDataConformantHeader(jsonSchemaFromExcel[0]);
     setSchemaDataConformantRowData(schemaConformantRowData);
   }, []);
 
   useEffect(() => {
     if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && datasetRawFile[0].path.includes(".csv")) {
-      processCSVFile(datasetRawFile[0]);
+      // processCSVFile(datasetRawFile[0]);
     } else if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && (datasetRawFile[0].path.includes(".xls") || datasetRawFile[0].path.includes(".xlsx"))) {
       handleExcelDrop(datasetRawFile[0]);
     } else if (datasetRawFile && !datasetIsParsed && datasetRawFile.length > 0) {
@@ -224,7 +193,7 @@ export const useHandleDatasetDrop = () => {
         setDatasetDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [processCSVFile, datasetRawFile]);
+  }, [datasetRawFile]);
 
   return {
     datasetRawFile,

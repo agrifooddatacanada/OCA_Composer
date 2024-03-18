@@ -8,20 +8,14 @@ import { CustomPalette } from '../constants/customPalette';
 
 
 const DatasetView = () => {
-  const gridRef = useRef(null);
   const schemaGridRef = useRef(null);
   const {
     setCurrentDataValidatorPage,
-    dataEntryDataRowData,
-    dataEntryDataHeader,
-    setDataEntryDataRowData,
     schemaDataConformantHeader,
     schemaDataConformantRowData,
     setSchemaDataConformantRowData
   } = useContext(Context);
 
-  const [columnDefs, setColumnDefs] = useState([]);
-  const [tableLength, setTableLength] = useState(0);
   const [schemaColumnDefs, setSchemaColumnDefs] = useState([]);
   const [schemaTableLength, setSchemaTableLength] = useState(0);
 
@@ -33,42 +27,29 @@ const DatasetView = () => {
   }, []);
 
   useEffect(() => {
-    const titles = [];
-    let newTableLength = 0;
-    dataEntryDataHeader.forEach((header) => {
-      titles.push({
-        headerName: header,
-        field: header,
-        width: 100,
-        resizable: true,
-        editable: true,
-      });
-      newTableLength += 100;
-    });
-
     const schemaTitles = [];
     let newSchemaTableLength = 0;
-    schemaDataConformantHeader.forEach((header) => {
-      schemaTitles.push({
-        headerName: header,
-        field: header,
-        width: 100,
-        resizable: true,
-        editable: true,
+
+    if (schemaDataConformantHeader && schemaDataConformantHeader?.length > 0) {
+      schemaDataConformantHeader.forEach((header) => {
+        schemaTitles.push({
+          headerName: header,
+          field: header,
+          width: 100,
+          resizable: true,
+          editable: true,
+        });
+        newSchemaTableLength += 100;
       });
-      newSchemaTableLength += 100;
-    });
+    }
 
     setSchemaTableLength(newSchemaTableLength);
     setSchemaColumnDefs(schemaTitles);
-    setTableLength(newTableLength);
-    setColumnDefs(titles);
-  }, [dataEntryDataHeader, schemaDataConformantHeader]);
+  }, [schemaDataConformantHeader]);
 
   return (
     <>
       <BackNextSkeleton isBack pageBack={() => {
-        setDataEntryDataRowData(gridRef.current?.api.getRenderedNodes()?.map(node => node?.data));
         setSchemaDataConformantRowData(schemaGridRef.current?.api.getRenderedNodes()?.map(node => node?.data));
         setCurrentDataValidatorPage('StartDataValidator');
       }} />
@@ -79,21 +60,8 @@ const DatasetView = () => {
         justifyContent: 'center',
         flex: 1,
       }}>
-        <Typography variant="h5" sx={{ mb: 2, color: CustomPalette.PRIMARY, fontWeight: 500 }}>Data Entry</Typography>
-        {dataEntryDataHeader.length > 0 ?
-          <div className="ag-theme-balham" style={{ width: tableLength, maxWidth: '90%' }}>
-            <style>{gridStyles}</style>
-            <AgGridReact
-              ref={gridRef}
-              rowData={dataEntryDataRowData}
-              columnDefs={columnDefs}
-              domLayout="autoHeight"
-              defaultColDef={defaultColDef}
-            />
-          </div>
-          : <Typography>No Data Entry</Typography>}
         <Typography variant="h5" sx={{ mb: 2, mt: 6, color: CustomPalette.PRIMARY, fontWeight: 500 }}>Schema Data</Typography>
-        {schemaDataConformantHeader.length > 0 ?
+        {schemaDataConformantHeader && schemaDataConformantHeader?.length > 0 ?
           <div className="ag-theme-balham" style={{ width: schemaTableLength, maxWidth: '90%' }}>
             <style>{gridStyles}</style>
             <AgGridReact

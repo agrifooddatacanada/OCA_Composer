@@ -52,6 +52,7 @@ const OCADataValidatorMain = () => {
           setDropMessage={setJsonDropMessage}
           description={jsonUploadDescription}
           tipDescription={jsonUploadTooltip}
+          version={3}
         />
         <Box display="flex">
           <Button
@@ -83,7 +84,7 @@ const OCADataValidatorMain = () => {
           setDropMessage={setDatasetDropMessage}
           description={datasetUploadDescription}
           tipDescription={datasetUploadTooltip}
-          version={2}
+          version={4}
         />
         <Box display="flex">
           <Button

@@ -45,6 +45,7 @@ const UseASchemaWithDataAccordionItem = ({ disableButtonCheck, handleExport }) =
           dropMessage={dropMessage}
           setDropMessage={setDropMessage}
           version={1}
+          interfaceType={1}
         />
 
         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>

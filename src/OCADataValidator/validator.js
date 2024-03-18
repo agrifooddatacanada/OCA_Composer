@@ -224,10 +224,7 @@ export default class OCABundle {
           }
         }
       } catch (error) {
-        ;
-        // throw error;
-        // console.log("Error in validateFormat:")
-        // console.error(error);
+        console.error(error);
       }
     }
     return rslt.errs;
@@ -251,7 +248,6 @@ export default class OCABundle {
   flaggedAlarm() {
     const flagged = [];
     if (Object.keys(this.captureBase).includes(FLAG_KEY) && this.captureBase.flagged_attributes.length > 0) {
-      // console.log("Contains flagged data. Please check the following attribute(s):")
       for (const attr in this.captureBase.flagged_attributes) {
         flagged.push(attr);
       }

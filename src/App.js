@@ -94,8 +94,6 @@ function App() {
   const [datasetLoading, setDatasetLoading] = useState(false);
   const [datasetDropDisabled, setDatasetDropDisabled] = useState(false);
   const [datasetIsParsed, setDatasetIsParsed] = useState(false);
-  const [dataEntryDataRowData, setDataEntryDataRowData] = useState([]);
-  const [dataEntryDataHeader, setDataEntryDataHeader] = useState([]);
   const [schemaDataConformantHeader, setSchemaDataConformantHeader] = useState([]);
   const [schemaDataConformantRowData, setSchemaDataConformantRowData] = useState([]);
   const [matchingRowData, setMatchingRowData] = useState([]);
@@ -371,10 +369,6 @@ function App() {
             setJsonIsParsed,
             datasetIsParsed,
             setDatasetIsParsed,
-            dataEntryDataRowData,
-            setDataEntryDataRowData,
-            dataEntryDataHeader,
-            setDataEntryDataHeader,
             schemaDataConformantHeader,
             setSchemaDataConformantHeader,
             matchingRowData,
