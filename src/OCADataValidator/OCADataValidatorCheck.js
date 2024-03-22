@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
@@ -8,6 +8,11 @@ import ExcelJS from 'exceljs';
 import OCABundle from './validator';
 import OCADataSet from './utils/files';
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import Languages from "./Languages";
+import MultipleSelectPlaceholder from './MultiSelectErrors';
+import CellHeader from '../components/CellHeader';
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import ExportButton from './ExportButton';
 
 const CustomTooltip = (props) => {
   const error = props.data?.error?.[props.colDef.field] || "";
@@ -15,30 +20,66 @@ const CustomTooltip = (props) => {
   return (
     <>
       {error.length > 0 ?
-        (<div className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '10px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
-          <p style={{ marginBottom: '5px' }}>
-            <span style={{ fontWeight: 'bold' }}>Error</span>
-          </p>
-          <p style={{ marginBottom: '5px', textAlign: 'left' }}>
+        (<Box className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+          <Typography sx={{ marginBottom: '5px', fontWeight: 'bold', fontSize: '18px' }}>
+            Error:
+          </Typography>
+          <Typography>
             {error}
-          </p>
-        </div>)
+          </Typography>
+        </Box>)
         : <p></p>}
     </>
+  );
+};
+
+const flaggedHeader = (props, labelDescription) => {
+  const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
+
+  return (
+    <CellHeader
+      headerText={
+        <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center' }}>
+          {props?.displayName || ''} {' '}
+        </Box>
+      }
+      helpText={
+        value ?
+          (<Box sx={{
+            padding: '10px',
+          }}>
+            <Typography sx={{ fontWeight: 'bold' }}>Label:</Typography>
+            <Typography>
+              {value?.Label || ''}
+            </Typography>
+            <br />
+            <Typography sx={{ fontWeight: 'bold' }}>Description:</Typography>
+            <Typography>
+              {value?.Description || ''}
+            </Typography>
+          </Box>) : ''
+      } />
   );
 };
 
 const OCADataValidatorCheck = () => {
   const {
     schemaDataConformantRowData,
+    setSchemaDataConformantRowData,
     schemaDataConformantHeader,
     setCurrentDataValidatorPage,
     ogWorkbook,
-    jsonParsedFile
+    jsonParsedFile,
+    languages,
+    lanAttributeRowData
   } = useContext(Context);
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const [revalidateData, setRevalidateData] = useState(false);
+  const [type, setType] = useState(languages[0] || "");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [errorName, setErrorNameList] = useState([]);
+  const [firstValidate, setFirstValidate] = useState(false);
   const gridRef = useRef();
 
   const defaultColDef = useMemo(() => {
@@ -47,40 +88,11 @@ const OCADataValidatorCheck = () => {
       flex: 1,
       minWidth: 100,
       tooltipComponent: CustomTooltip,
+      headerComponent: (params) => flaggedHeader(params, lanAttributeRowData[type]),
     };
-  }, []);
-
-  const cellStyle = (params) => {
-    const error = params.data?.error?.[params.colDef.field] || [];
-    if (error.length > 0) {
-      return { backgroundColor: "#ffd7e9" };
-    }
-  };
-
-  useEffect(() => {
-    const columns = [];
-
-    if (schemaDataConformantHeader && schemaDataConformantHeader?.length > 0) {
-      schemaDataConformantHeader.forEach((header) => {
-        columns.push(
-          {
-            headerName: header,
-            field: header,
-            minWidth: 150,
-            tooltipField: header,
-            tooltipComponentParams: { color: '#F88379' },
-            cellStyle
-          }
-        );
-      });
-    }
-
-    setColumnDefs(columns);
-    setRowData(schemaDataConformantRowData);
-  }, []);
+  }, [lanAttributeRowData, type]);
 
   const handleSave = async () => {
-    console.log('gridRef.current.api.getRenderedNodes()?.map(node => node?.data)', gridRef.current.api.getRenderedNodes()?.map(node => node?.data));
     const workbook = await generateDataEntryExcel();
     if (workbook !== null) {
       downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
@@ -90,6 +102,7 @@ const OCADataValidatorCheck = () => {
   const handleValidate = async () => {
     gridRef.current.api.showLoadingOverlay();
     setRevalidateData(false);
+    setFirstValidate(true);
     const bundle = new OCABundle();
     await bundle.loadedBundle(jsonParsedFile);
     const newWorkbook = await generateDataEntryExcel();
@@ -101,7 +114,6 @@ const OCADataValidatorCheck = () => {
       reader.onload = async (e) => {
         const dataset = await OCADataSet.readExcel(e.target.result);
         const validate = bundle.validate(dataset);
-
         setRowData((prev) => {
           return prev.map((row, index) => {
             return {
@@ -123,7 +135,10 @@ const OCADataValidatorCheck = () => {
                   }
                 });
               } else {
-                copy.push(header);
+                copy.push({
+                  ...header,
+                  cellStyle
+                });
               }
             });
           }
@@ -211,9 +226,88 @@ const OCADataValidatorCheck = () => {
     return newWorkbook;
   };
 
+  const cellStyle = (params) => {
+    const error = params.data?.error?.[params.colDef.field];
+
+    if (params.data?.error && error?.length > 0) {
+      return { backgroundColor: "#ffd7e9" };
+    } else if (params.data?.error) {
+      return { backgroundColor: "#d2f8d2" };
+    }
+  };
+
+  const handleChange = useCallback((e) => {
+    setType(e.target.value);
+    setIsDropdownOpen(false);
+  }, []);
+
+  const handleAddRow = () => {
+    const newRow = {};
+    schemaDataConformantHeader.forEach((header) => {
+      newRow[header] = "";
+    });
+
+    setRowData((prev) => [...prev, newRow]);
+  };
+
+  const onCellValueChanged = (e) => {
+    e.node.updateData(
+      {
+        ...e.data,
+        [e.colDef.field]: e.newValue,
+      }
+    );
+
+    if (e.oldValue !== e.newValue) {
+      var column = e.column.colDef.field;
+      e.column.colDef.cellStyle = { 'background-color': 'none' };
+      e.api.refreshCells({
+        force: true,
+        columns: [column],
+        rowNodes: [e.node]
+      });
+    }
+
+    setRevalidateData(true);
+  };
+
+  useEffect(() => {
+    const columns = [];
+
+    if (schemaDataConformantHeader && schemaDataConformantHeader?.length > 0) {
+      schemaDataConformantHeader.forEach((header) => {
+        columns.push(
+          {
+            headerName: header,
+            field: header,
+            minWidth: 150,
+            tooltipComponentParams: { color: '#F88379' },
+            tooltipValueGetter: (params) => ({ value: params.value }),
+          }
+        );
+      });
+    }
+
+    setColumnDefs(columns);
+    setRowData(schemaDataConformantRowData);
+  }, []);
+
+  const rowDataFilter = errorName.length > 0 ? rowData.filter((row) => {
+    for (const error of errorName) {
+      if (row?.error) {
+        const errorValues = Object.values(row?.error);
+        for (const ind of errorValues) {
+          if (ind.toLowerCase().includes(error.toLowerCase())) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }) : rowData;
+
   return (
     <>
-      {/* <BackNextSkeleton isBack pageBack={() => { setCurrentDataValidatorPage('StartDataValidator'); }} isForward pageForward={handleSave} /> */}
       <Box>
         <Box
           sx={{
@@ -222,7 +316,7 @@ const OCADataValidatorCheck = () => {
             alignItems: "center",
             justifyContent: "space-between",
             margin: "auto",
-            pr: 10,
+            marginRight: '2rem',
             pl: 10,
             marginTop: 2,
           }}
@@ -237,24 +331,43 @@ const OCADataValidatorCheck = () => {
             <Button
               color="navButton"
               sx={{ textAlign: "left", alignSelf: "flex-start" }}
-              onClick={() => setCurrentDataValidatorPage('StartDataValidator')}
+              onClick={() => {
+                setSchemaDataConformantRowData(gridRef.current.api.getRenderedNodes()?.map(node => node?.data));
+                setCurrentDataValidatorPage('StartDataValidator');
+              }}
             >
               <ArrowBackIosIcon /> Back
             </Button>
-            <Button
-              color="button"
-              variant='contained'
-              onClick={handleSave}
-              sx={{
-                alignSelf: "flex-end",
-                display: "flex",
-                justifyContent: "space-around",
-                padding: "0.5rem 1rem",
-              }}
-            // disabled={exportDisabled}
-            >
-              Export Validate Data
-            </Button>
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'row',
+            }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  paddingRight: "20px",
+                  alignItems: 'center',
+                }}
+              >
+                {revalidateData &&
+                  <Typography sx={{
+                    marginRight: "20px",
+                    color: 'red',
+                    fontWeight: 'bold',
+                  }}>Please re-validate the data!</Typography>}
+                <Button
+                  color='button'
+                  variant='contained'
+                  target='_blank'
+                  style={{ width: '120px', height: '40px' }}
+                  onClick={handleValidate}
+                >
+                  Validate
+                </Button>
+              </Box>
+              <ExportButton handleSave={handleSave} />
+            </Box>
           </Box>
         </Box>
       </Box>
@@ -270,37 +383,48 @@ const OCADataValidatorCheck = () => {
             alignContent: 'space-between'
           }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              flex: 1,
-            }}
-          >
-            <Button
-              color='button'
-              variant='contained'
-              target='_blank'
-              style={{ marginLeft: "2rem", marginTop: "2rem", width: '120px' }}
-              onClick={handleValidate}
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            marginTop: "2rem",
+            gap: "10px",
+            flex: 1,
+          }}>
+
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                paddingLeft: "2rem",
+                gap: "10px",
+              }}
             >
-              Validate
-            </Button>
-            {revalidateData &&
-              <Typography sx={{
-                marginLeft: "2rem",
-                marginTop: "2.3rem",
-                color: 'red',
-                fontWeight: 'bold',
-              }}>Please re-validate the data!</Typography>}
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', marginTop: "2.3rem", marginRight: "2rem" }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: "#ededed", marginRight: '15px' }}></div>
-            <span>Unmatched Attributes</span>
+              <Languages type={type} handleChange={handleChange} handleClick={() => { }} isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} languages={languages} />
+              <MultipleSelectPlaceholder errorName={errorName} setErrorNameList={setErrorNameList} disabled={!firstValidate} />
+            </Box>
+
           </Box>
 
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            marginTop: "2rem",
+            gap: "10px",
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
+              <div style={{ width: '20px', height: '20px', backgroundColor: "#d2f8d2", marginRight: '15px' }}></div>
+              <span>Pass Verification</span>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
+              <div style={{ width: '20px', height: '20px', backgroundColor: "#ffd7e9", marginRight: '15px' }}></div>
+              <span>Fail Verification</span>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
+              <div style={{ width: '20px', height: '20px', backgroundColor: "#ededed", marginRight: '15px' }}></div>
+              <span>Unmatched Attributes</span>
+            </Box>
+          </Box>
         </Box>
-
 
         <div style={{ margin: "2rem" }}>
           <div
@@ -309,7 +433,7 @@ const OCADataValidatorCheck = () => {
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
-              rowData={rowData}
+              rowData={rowDataFilter}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               overlayLoadingTemplate={
@@ -317,19 +441,34 @@ const OCADataValidatorCheck = () => {
               }
               tooltipShowDelay={0}
               tooltipHideDelay={2000}
-              onCellValueChanged={(e) => {
-                e.node.updateData(
-                  {
-                    ...e.data,
-                    [e.colDef.field]: e.newValue,
-                  }
-                );
-                setRevalidateData(true);
-              }}
+              onCellValueChanged={onCellValueChanged}
               domLayout="autoHeight"
               suppressRowHoverHighlight={true}
             />
           </div>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            marginTop: '2rem',
+          }}>
+            <Button
+              onClick={handleAddRow}
+              color="button"
+              variant="contained"
+              sx={{
+                alignSelf: "flex-end",
+                width: "9rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-around",
+              }}
+
+            >
+              Add row <AddCircleIcon />
+            </Button>
+          </Box>
+
         </div>
       </Box >
     </>

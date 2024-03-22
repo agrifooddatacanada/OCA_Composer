@@ -151,6 +151,8 @@ export const useHandleJsonDrop = () => {
         if (!languageList || languageList.length === 0) {
           throw new Error('No language found in the JSON file');
         }
+
+        console.log('firstttttt');
         processLanguages(languageList);
         processMetadata(metaList);
         processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData);

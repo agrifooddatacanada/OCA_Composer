@@ -50,7 +50,16 @@ const DatasetView = () => {
   return (
     <>
       <BackNextSkeleton isBack pageBack={() => {
-        setSchemaDataConformantRowData(schemaGridRef.current?.api.getRenderedNodes()?.map(node => node?.data));
+        setSchemaDataConformantRowData(schemaGridRef.current?.api.getRenderedNodes()?.map(node => {
+          const existingKeys = Object.keys(node?.data);
+          const newData = { ...node?.data };
+          schemaDataConformantHeader.forEach(header => {
+            if (!existingKeys.includes(header)) {
+              newData[header] = '';
+            }
+          });
+          return newData;
+        }));
         setCurrentDataValidatorPage('StartDataValidator');
       }} />
       <Box sx={{

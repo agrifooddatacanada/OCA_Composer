@@ -86,6 +86,7 @@ function App() {
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
+  console.log('jsonRawFile', jsonRawFile);
   const [jsonParsedFile, setJsonParsedFile] = useState(undefined);
   const [jsonLoading, setJsonLoading] = useState(false);
   const [jsonDropDisabled, setJsonDropDisabled] = useState(false);
@@ -206,8 +207,11 @@ function App() {
 
   useEffect(() => {
     if (jsonRawFile.length > 0) {
+      console.log('hereee');
       const newMatchingRowData = [];
+      console.log('attributesList', attributesList);
       attributesList.forEach((item, index) => {
+        console.log('item', item);
         // if matchingRowData has data, use it
         const matchingRow = matchingRowData.find(
           (obj) => obj.Attribute === item
@@ -226,7 +230,7 @@ function App() {
       });
       setMatchingRowData(newMatchingRowData);
     }
-  }, [datasetRawFile, jsonRawFile]);
+  }, [datasetRawFile, jsonRawFile, attributesList]);
 
   function createEntryCodeRowData(
     languages,
@@ -373,8 +377,6 @@ function App() {
             setSchemaDataConformantHeader,
             matchingRowData,
             setMatchingRowData,
-            // firstTimeMatching,
-            // setFirstTimeMatching,
             firstTimeMatchingRef,
             schemaDataConformantRowData,
             setSchemaDataConformantRowData,

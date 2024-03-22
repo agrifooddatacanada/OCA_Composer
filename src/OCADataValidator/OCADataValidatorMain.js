@@ -32,8 +32,8 @@ const OCADataValidatorMain = () => {
   return (
     <>
       <BackNextSkeleton isForward={jsonRawFile.length > 0 && datasetRawFile.length > 0} pageForward={() =>
-        // setCurrentDataValidatorPage('AttributeMatchDataValidator')
-        setCurrentDataValidatorPage('OCADataValidatorCheck')
+        setCurrentDataValidatorPage('AttributeMatchDataValidator')
+        // setCurrentDataValidatorPage('OCADataValidatorCheck')
       } />
       <Box sx={{
         display: 'flex',
@@ -84,7 +84,7 @@ const OCADataValidatorMain = () => {
           setDropMessage={setDatasetDropMessage}
           description={datasetUploadDescription}
           tipDescription={datasetUploadTooltip}
-          version={4}
+          version={2}
         />
         <Box display="flex">
           <Button

@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { Context } from '../App';
-// import Papa from "papaparse";
+import Papa from "papaparse";
 import { messages } from '../constants/messages';
 import * as XLSX from "xlsx";
 
@@ -41,57 +41,60 @@ export const useHandleDatasetDrop = () => {
     setSchemaDataConformantRowData([]);
   }, []);
 
-  // const processCSVFile = useCallback((file) => {
-  //   try {
-  //     Papa.parse(file, {
-  //       header: true,
-  //       skipEmptyLines: "greedy",
-  //       transformHeader: function(header, index) {
-  //         if (header !== "") {
-  //           return header;
-  //         }
-  //         //without this, papaparse will save blank headers as "", "_1", "_2", etc.
-  //         return `header_empty_placeholder_${index}`;
-  //       },
-  //       complete: function(results) {
-  //         setDataEntryDataRowData(results.data);
-  //         setDataEntryDataHeader(results.meta.fields);
-  //         setDatasetLoading(false);
-  //         setDatasetDropDisabled(true);
+  const processCSVFile = useCallback((file) => {
+    try {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: "greedy",
+        transformHeader: function(header, index) {
+          if (header !== "") {
+            return header;
+          }
+          //without this, papaparse will save blank headers as "", "_1", "_2", etc.
+          return `header_empty_placeholder_${index}`;
+        },
+        complete: function(results) {
+          // setDataEntryDataRowData(results.data);
+          // setDataEntryDataHeader(results.meta.fields);
+          setSchemaDataConformantHeader(results.meta.fields);
+          setSchemaDataConformantRowData(results.data);
 
-  //         setDatasetDropMessage({
-  //           message: messages.successfulUpload,
-  //           type: "success",
-  //         });
+          setDatasetLoading(false);
+          setDatasetDropDisabled(true);
 
-  //         setTimeout(() => {
-  //           setDatasetDropDisabled(true);
-  //           setDatasetDropMessage({ message: "", type: "" });
-  //           setDatasetLoading(false);
-  //           setJsonLoading(false);
-  //           if (jsonRawFile.length === 0) {
-  //             setJsonDropDisabled(false);
-  //           }
+          setDatasetDropMessage({
+            message: messages.successfulUpload,
+            type: "success",
+          });
 
-  //           if (!datasetIsParsed) {
-  //             setDatasetIsParsed(true);
-  //             setCurrentDataValidatorPage("DatasetViewDataValidator");
-  //           }
-  //         }, 900);
-  //       },
-  //     });
-  //   } catch {
-  //     setDatasetDropMessage({ message: messages.parseUploadFail, type: "error" });
-  //     setDatasetLoading(false);
-  //     setJsonLoading(false);
-  //     if (jsonRawFile.length === 0) {
-  //       setJsonDropDisabled(false);
-  //     }
-  //     setTimeout(() => {
-  //       setDatasetDropMessage({ message: "", type: "" });
-  //     }, [2500]);
-  //   }
-  // }, [datasetIsParsed]);
+          setTimeout(() => {
+            setDatasetDropDisabled(true);
+            setDatasetDropMessage({ message: "", type: "" });
+            setDatasetLoading(false);
+            setJsonLoading(false);
+            if (jsonRawFile.length === 0) {
+              setJsonDropDisabled(false);
+            }
+
+            if (!datasetIsParsed) {
+              setDatasetIsParsed(true);
+              setCurrentDataValidatorPage("DatasetViewDataValidator");
+            }
+          }, 900);
+        },
+      });
+    } catch {
+      setDatasetDropMessage({ message: messages.parseUploadFail, type: "error" });
+      setDatasetLoading(false);
+      setJsonLoading(false);
+      if (jsonRawFile.length === 0) {
+        setJsonDropDisabled(false);
+      }
+      setTimeout(() => {
+        setDatasetDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, [datasetIsParsed]);
 
   const handleExcelDrop = useCallback((acceptedFiles) => {
     try {
@@ -149,6 +152,32 @@ export const useHandleDatasetDrop = () => {
 
   const processExcelFile = useCallback(async (workbook) => {
     const schemaConformantDataName = "Schema conformant data";
+    const worksheet = workbook.Sheets[schemaConformantDataName];
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+
+    // Find the last row index.
+    let lastRowIndex = range.s.r;
+    let reachAValue = false;
+    for (let row = range.e.r; row >= range.s.r; row--) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = { c: col, r: row };
+        const cellRef = XLSX.utils.encode_cell(cellAddress);
+        const cell = worksheet[cellRef];
+        if (cell && cell.v !== undefined && cell.v !== '') {
+          lastRowIndex = row;
+          reachAValue = true;
+          break;
+        }
+      }
+      if (reachAValue) {
+        break;
+      }
+    }
+
+    const rangeToParse = {
+      s: { r: range.s.r, c: range.s.c }, // Start from the first row and first column
+      e: { r: lastRowIndex, c: range.e.c } // End at the fifth row or the last row of the sheet, whichever comes first
+    };
 
     const jsonSchemaFromExcel = XLSX.utils.sheet_to_json(
       workbook.Sheets[schemaConformantDataName],
@@ -156,9 +185,9 @@ export const useHandleDatasetDrop = () => {
         raw: false,
         header: 1,
         defval: "",
+        range: rangeToParse
       }
     );
-
     const schemaConformantRowData = [];
 
     if (jsonSchemaFromExcel?.[0] && jsonSchemaFromExcel?.[0]?.length > 0) {
@@ -179,7 +208,7 @@ export const useHandleDatasetDrop = () => {
 
   useEffect(() => {
     if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && datasetRawFile[0].path.includes(".csv")) {
-      // processCSVFile(datasetRawFile[0]);
+      processCSVFile(datasetRawFile[0]);
     } else if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && (datasetRawFile[0].path.includes(".xls") || datasetRawFile[0].path.includes(".xlsx"))) {
       handleExcelDrop(datasetRawFile[0]);
     } else if (datasetRawFile && !datasetIsParsed && datasetRawFile.length > 0) {

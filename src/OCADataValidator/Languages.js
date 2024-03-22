@@ -14,7 +14,7 @@ const Languages = ({
     <MenuItem
       key={index + "_" + value}
       value={value}
-      sx={{ border: "none", height: "2rem", fontSize: "small" }}
+      sx={{ border: "none", height: "2rem" }}
     >
       {value}
     </MenuItem>
@@ -23,11 +23,13 @@ const Languages = ({
     <Box sx={{
       alignContent: 'start',
       display: 'flex',
+      height: "wrap-content",
     }}>
       <Box sx={{
-        paddingTop: '5px',
         color: CustomPalette.PRIMARY,
         fontWeight: 'bold',
+        alignSelf: 'center',
+        textAlign: 'center',
       }}>Language: &nbsp;&nbsp;</Box>
       {" "}
       <Box>
