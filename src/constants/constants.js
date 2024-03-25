@@ -160,7 +160,9 @@ export const formatCodeNumeric = [
   "^(0?(\\.\\d+)?|1(\\.0+)?)$",
   "^[0-9]*[1-9][0-9]*$",
   "^-?[0-9]+$",
-  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$"
+  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$",
+  "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$",
+  "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$"
 ];
 
 export const formatCodeNumericDescription = {
@@ -169,7 +171,9 @@ export const formatCodeNumericDescription = {
   "^(0?(\\.\\d+)?|1(\\.0+)?)$": "decimal numbers between 0 and 1, inclusive",
   "^[0-9]*[1-9][0-9]*$": "positive integers",
   "^-?[0-9]+$": "any integer",
-  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$": "any number between 0 and 100, inclusive"
+  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$": "any number between 0 and 100, inclusive",
+  "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$": "Latitude in formats S30°15'45.678\" or N12°30.999\"",
+  "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$": "Longitude in formats E30°15'45.678\" or W90°00.000\""
 };
 
 export const formatCodeDate = [
