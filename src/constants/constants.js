@@ -160,7 +160,9 @@ export const formatCodeNumeric = [
   "^(0?(\\.\\d+)?|1(\\.0+)?)$",
   "^[0-9]*[1-9][0-9]*$",
   "^-?[0-9]+$",
-  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$"
+  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$",
+  "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$",
+  "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$"
 ];
 
 export const formatCodeNumericDescription = {
@@ -169,33 +171,87 @@ export const formatCodeNumericDescription = {
   "^(0?(\\.\\d+)?|1(\\.0+)?)$": "decimal numbers between 0 and 1, inclusive",
   "^[0-9]*[1-9][0-9]*$": "positive integers",
   "^-?[0-9]+$": "any integer",
-  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$": "any number between 0 and 100, inclusive"
+  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$": "any number between 0 and 100, inclusive",
+  "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$": "Latitude in formats S30°15'45.678\" or N12°30.999\"",
+  "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$": "Longitude in formats E30°15'45.678\" or W90°00.000\""
 };
 
 export const formatCodeDate = [
   "",
-  "YYYY-MM-DD",
-  "YYYYMMDD",
-  "YYYY-MM",
-  "YYYY-Www",
-  "YYYYWww",
-  "YYYY-MM-DDThh:mm:ssZ",
-  "hh:mm:ss",
-  "PnYnMnD",
-  "YYYY-DDD",
-  "YYYYDDD"
+  "^(?:(?:19|20)\\d{2})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2]\\d|3[0-1])$",
+  "^(?:(?:19|20)[0-9]{2})(?:0[1-9]|1[012])(?:0[1-9]|[12][0-9]|3[01])$",
+  "^(?:(?:19|20)[0-9]{2})-(?:0[1-9]|1[012])(?:-(?:0[1-9]|[12][0-9]|3[01]))?$",
+  "^(?:(?:19|20)\\d{2})-W(?:0[1-9]|[1-4][0-9]|5[0-3])$",
+  "^(?:(?:19|20)\\d{2})W(?:0[1-9]|[1-4][0-9]|5[0-3])$",
+  "^(?:(?:19|20)\\d{2})-(?:0[1-9]|[1-2]\\d{2}|3[0-5]\\d|36[0-6])$",
+  "^(?:(?:19|20)\\d{2})(?:0[1-9]|[1-2]\\d{2}|3[0-5]\\d|36[0-6])$",
+  "^(?:19|20)\\d{2}$",
+  "^(0[1-9]|1[0-2])$",
+  "^(0[1-9]|[1-2][0-9]|3[01])$",
+  "^(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])Z$",
+  "^(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])(?:+-:[0-5][0-9])$",
+  "^P\\d+D$",
+  "^PT(?:\\d{1,2}H)?(?:\\d{2}M)?$",
+  "(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0,2])\\/(19|20)\\d{2}$",
+  "^(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0-2])\\\\d{2}$",
+  "^(0[1-9]|1[0-2])\\/(0[1-9]|[12][0-9]|3[01])\\/(19|20)\\d{2}$",
+  "^(0[1-9]|[12]\\d|3[01])(0[1-9]|1[0-2])(19|20)\\d{2}$",
+  "^(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])(19|20)\\d{2}$",
+  "^(19|20)\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])$",
+  "^(12|0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM|am|pm)$",
+  "^([01][0-9]|2[0-3]):[0-5][0-9]$"
 ];
 
 export const formatCodeDateDescription = {
   "": "",
-  "YYYY-MM-DD": "year month day",
-  "YYYYMMDD": "year month day",
-  "YYYY-MM": "year month",
-  "YYYY-Www": "year week (e.g. W01)",
-  "YYYYWww": "year week (e.g. W01)",
-  "YYYY-DDD": "Ordinal date (day number from beginning of the year)",
-  "YYYYDDD": "Ordinal date (day number from beginning of the year)"
+  "^(?:(?:19|20)\\d{2})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2]\\d|3[0-1])$": "ISO: YYYY-MM-DD: year month day",
+  "^(?:(?:19|20)[0-9]{2})(?:0[1-9]|1[012])(?:0[1-9]|[12][0-9]|3[01])$": "ISO: YYYYMMDD: year month day",
+  "^(?:(?:19|20)[0-9]{2})-(?:0[1-9]|1[012])(?:-(?:0[1-9]|[12][0-9]|3[01]))?$": "ISO: YYYY-MM: year month",
+  "^(?:(?:19|20)\\d{2})-W(?:0[1-9]|[1-4][0-9]|5[0-3])$": "ISO: YYYY-Www: year week (e.g. W01)",
+  "^(?:(?:19|20)\\d{2})W(?:0[1-9]|[1-4][0-9]|5[0-3])$": "ISO: YYYYWww: year week (e.g. W01)",
+  "^(?:(?:19|20)\\d{2})-(?:0[1-9]|[1-2]\\d{2}|3[0-5]\\d|36[0-6])$": "ISO: YYYY-DDD: Ordinal date (day number from the year)",
+  "^(?:(?:19|20)\\d{2})(?:0[1-9]|[1-2]\\d{2}|3[0-5]\\d|36[0-6])$": "ISO: YYYYDDD: Ordinal date (day number from the year)",
+  "^(?:19|20)\\d{2}$": "ISO: YYYY: year",
+  "^(0[1-9]|1[0-2])$": "ISO: MM: month",
+  "^(0[1-9]|[1-2][0-9]|3[01])$": "ISO: DD: day",
+  "^(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])Z$": "ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC)",
+  "^(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])(?:+-:[0-5][0-9])$": "ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: Date and Time Combined (with Timezone Offset)",
+  "^P\\d+D$": "ISO: PnD: accumulated days (n days)",
+  "^PT(?:\\d{1,2}H)?(?:\\d{2}M)?$": "ISO: PTnHmM: accumulated hours and minutes (n hours, m minutes)",
+  "(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0,2])\\/(19|20)\\d{2}$": "DD/MM/YYYY: day, month, year",
+  "^(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0-2])\\\\d{2}$": "DD/MM/YY: day, month, year",
+  "^(0[1-9]|1[0-2])\\/(0[1-9]|[12][0-9]|3[01])\\/(19|20)\\d{2}$": "MM/DD/YYYY: month, day, year",
+  "^(0[1-9]|[12]\\d|3[01])(0[1-9]|1[0-2])(19|20)\\d{2}$": "DDMMYYYY: day, month, year",
+  "^(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])(19|20)\\d{2}$": "MMDDYYYY: month, day, year",
+  "^(19|20)\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])$": "YYYYMMDD: year, month, day",
+  "^(12|0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM|am|pm)$": "H:MM or HH:MM: hour, minutes AM/PM",
+  "^([01][0-9]|2[0-3]):[0-5][0-9]$": "HH:MM: hour, minutes in 24 hour notation"
 };
+
+// export const formatCodeDate = [
+//   "",
+//   "YYYY-MM-DD",
+//   "YYYYMMDD",
+//   "YYYY-MM",
+//   "YYYY-Www",
+//   "YYYYWww",
+//   "YYYY-MM-DDThh:mm:ssZ",
+//   "hh:mm:ss",
+//   "PnYnMnD",
+//   "YYYY-DDD",
+//   "YYYYDDD"
+// ];
+
+// export const formatCodeDateDescription = {
+//   "": "",
+//   "YYYY-MM-DD": "year month day",
+//   "YYYYMMDD": "year month day",
+//   "YYYY-MM": "year month",
+//   "YYYY-Www": "year week (e.g. W01)",
+//   "YYYYWww": "year week (e.g. W01)",
+//   "YYYY-DDD": "Ordinal date (day number from beginning of the year)",
+//   "YYYYDDD": "Ordinal date (day number from beginning of the year)"
+// };
 
 export const formatCodeBinary = [
   "",

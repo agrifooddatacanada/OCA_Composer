@@ -253,28 +253,26 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
           const attrLength = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).length;
           const labelsLength = Object.keys(jsonData.find(o => o.type && o.type.includes('/label/')).attribute_labels).length;
 
-          if (labelsLength !== attrLength) {
+          if (labelsLength === attrLength) {
+            const labelValues = Object.values(jsonData.find(o => o.type && o.type.includes('/label/')).attribute_labels);
             const attrKeys = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
-            sheet2.getRow(1).values = attrKeys;
-
-            // format using the formatDataHeader function
-            attrKeys.forEach((_attrName, index) => {
+            const labelsFilled = labelValues.map((label, index) => label ? label : attrKeys[index]);
+            sheet2.getRow(1).values = labelsFilled;
+            labelsFilled.forEach((_label, index) => {
               const cell = sheet2.getCell(1, index + 1);
               formatDataHeader(cell);
             });
-          };
+          }
         } else {
-          sheet2.getRow(1).values = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
-          Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).forEach((_attrName, index) => {
-            const cell = sheet2.getCell(1, index + 1);
-            formatDataHeader(cell);
-          });
-        };
+              sheet2.getRow(1).values = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
+              Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).forEach((_attrName, index) => {
+                  const cell = sheet2.getCell(1, index + 1);
+                  formatDataHeader(cell);
+              });
+          };
       } catch (error) {
-        throw new WorkbookError('.. Error assigning head names to sheet2 (Data Entry) ...');
+          throw new WorkbookError('.. Error assigning head names to sheet2 (Data Entry) ...');
       };
-
-
 
       const sheet3 = workbook.addWorksheet('Schema conformant data');
 
@@ -562,14 +560,6 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
                 if (rowIndex) {
                   sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = label;
                 };
-
-                const labelValue = Object.values(attr_labels);
-                sheet2.getRow(1).values = labelValue;
-
-                labelValue.forEach((_label, index) => {
-                  const cell = sheet2.getCell(1, index + 1);
-                  formatDataHeader(cell);
-                });
               };
             } catch (error) {
               throw new WorkbookError('.. Error in formatting labels code column (header and rows) ...');
