@@ -5,7 +5,7 @@ BEGIN_REFERENCE_MATERIAL
 OCA_READ_ME/1.0
 This is a human-readable schema, based on the OCA schema standard.
 
-Reference for Overlays Capture Architecture (OCA): 
+Reference for Overlays Capture Architecture (OCA):
 https://doi.org/10.5281/zenodo.7707467
 
 Reference for OCA_READ_ME/1.0:
@@ -56,7 +56,7 @@ const useGenerateReadMe = () => {
         if (key === "type") {
           const split_type = value.split("/");
           Layer_name = split_type.slice(-2).join("/");
-        } else if (key === "d") {
+        } else if (key === "digest") {
           SAID = value;
         } else if (key !== "capture_base" && value != null) {
           if (Object.keys(value).length !== 0 || (Array.isArray(value) && value.length !== 0)) {
@@ -98,12 +98,17 @@ const useGenerateReadMe = () => {
       readmeText,
       "BEGIN_OCA_MANIFEST\n",
       "**********************************************************************\n",
-      "Bundle SAID: unavailable\n\n"
+      "Bundle SAID/digest: unavailable\n\n"
     );
 
     // the OCA manifest (all the overlay hashes (SAIDs))
     const manifest_string = JSON.stringify(manifest, null, 0);
-    const cleaned_manifest = manifest_string.replace(/[[\]{}]/g, '').replace(/\n/g, '').replace(/,/g, ',\n').replace(/:/g, ' SAID: ');
+    const cleaned_manifest = manifest_string.replace(/[[\]{}]/g, '')
+      .replace(/\n/g, '')
+      .replace(/,/g, ',\n')
+      .replace(/:/g, ' SAID/digest: ')
+      .replace(/(")(?=[^:]*:)/g, '')
+
     textFile.push(
       cleaned_manifest,
       "\n",
@@ -153,7 +158,7 @@ const useGenerateReadMe = () => {
         delete variable["attributes"];
       }
 
-      // handling indentation 
+      // handling indentation
       const text = JSON.stringify(variable, null, 3);
       const cleaned_text = text.replace(/^ {3}/mg, '').replace(/[{}"]/g, '');
 
@@ -168,9 +173,10 @@ const useGenerateReadMe = () => {
         }
       });
 
-      // adding overaly name to the textFile 
+      // adding overaly name to the textFile
       const text_with_schema_attributes = result.replace(/Schema attribute:/g, '\nSchema attribute: ' + variable.Layer_name);
-      let text_with_schema_layer_name = text_with_schema_attributes.replace(/Layer_name:/g, 'Layer name:');
+      const text_with_schema_attributes_digest = text_with_schema_attributes.replace(/SAID:/g, 'SAID/digest:');
+      let text_with_schema_layer_name = text_with_schema_attributes_digest.replace(/Layer_name:/g, 'Layer name:');
 
 
       // assembling the OCA readme and chaning the schema attribute to data type
