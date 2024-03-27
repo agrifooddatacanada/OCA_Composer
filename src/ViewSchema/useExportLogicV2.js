@@ -278,7 +278,7 @@ const useExportLogicV2 = () => {
     buildBodyText += buildLabelText(data);
     buildBodyText += buildInformationText(data);
     buildBodyText += buildEntryCodeText();
-    buildBodyText += buildUnitsText(data);
+    // buildBodyText += buildUnitsText(data);
     buildBodyText += buildCharacterEncodingText(data);
 
     return buildBodyText;
