@@ -17,6 +17,7 @@ import useExportLogic from '../ViewSchema/useExportLogic';
 import { generateDataEntryV2 } from './generateDataEntryV2';
 import { generateDataEntry } from './generateDataEntry';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
+import useExportLogicV2 from '../ViewSchema/useExportLogicV2';
 
 const AccordionList = () => {
   const isMobile = useMediaQuery('(max-width: 736px)');
@@ -37,6 +38,7 @@ const AccordionList = () => {
   } = useHandleAllDrop();
 
   const { handleExport, resetToDefaults } = useExportLogic();
+  // const { exportData } = useExportLogicV2();
 
   const navigateToStartPage = () => {
     resetToDefaults();
@@ -95,7 +97,10 @@ const AccordionList = () => {
           <UseASchemaAccordionItem />
           <UseASchemaWithDataAccordionItem
             disableButtonCheck={disableButtonCheck}
-            handleExport={handleExport}
+            handleExport={() => {
+              handleExport();
+              // exportData();
+            }}
           />
         </Box>
 

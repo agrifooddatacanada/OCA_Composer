@@ -14,6 +14,9 @@ import useExportLogic from "./useExportLogic";
 import { useNavigate } from "react-router-dom";
 import DepreciatedWarningCard from "../Landing/DepreciatedWarningCard";
 import Loading from "../components/Loading";
+import useExportLogicV2 from "./useExportLogicV2";
+
+const currentEnv = process.env.REACT_APP_ENV;
 
 export default function ViewSchema({ pageBack }) {
   const navigate = useNavigate();
@@ -35,6 +38,7 @@ export default function ViewSchema({ pageBack }) {
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
   const { handleExport, resetToDefaults, exportDisabled } = useExportLogic();
+  const { exportData } = useExportLogicV2();
   const [loading, setLoading] = useState(true);
 
   //Formats language buttons in a way that can handle many languages cleanly
@@ -273,7 +277,12 @@ export default function ViewSchema({ pageBack }) {
                 <Button
                   color="button"
                   variant="contained"
-                  onClick={() => handleExport(false)}
+                  onClick={() => {
+                    handleExport(false);
+                    if (currentEnv === "DEV") {
+                      exportData();
+                    }
+                  }}
                   sx={{
                     alignSelf: "flex-end",
                     width: "12rem",
