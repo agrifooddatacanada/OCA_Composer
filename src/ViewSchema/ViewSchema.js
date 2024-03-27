@@ -278,10 +278,10 @@ export default function ViewSchema({ pageBack }) {
                   color="button"
                   variant="contained"
                   onClick={() => {
-                    handleExport(false);
                     if (currentEnv === "DEV") {
                       exportData();
                     }
+                    handleExport(false);
                   }}
                   sx={{
                     alignSelf: "flex-end",
