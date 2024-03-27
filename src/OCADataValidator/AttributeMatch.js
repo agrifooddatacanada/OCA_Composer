@@ -61,7 +61,7 @@ export const DataHeaderRenderer = memo(
 );
 
 const AttributeMatch = () => {
-  const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, schemaDataConformantHeader, firstTimeMatchingRef } = useContext(Context);
+  const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, schemaDataConformantHeader, firstTimeMatchingRef, setSchemaDataConformantRowData, setSchemaDataConformantHeader } = useContext(Context);
   const [type, setType] = useState(languages[0] || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -71,10 +71,6 @@ const AttributeMatch = () => {
   const handleChange = useCallback((e) => {
     setType(e.target.value);
     setIsDropdownOpen(false);
-  }, []);
-
-  const handleClick = useCallback(() => {
-    setIsDropdownOpen((prev) => !prev);
   }, []);
 
   const changeDataFromTable = useCallback((e, params) => {
@@ -96,7 +92,31 @@ const AttributeMatch = () => {
   }, [gridRef, setItems]);
 
   const handleSavePage = useCallback(() => {
-    setMatchingRowData(gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data));
+    const data = gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data);
+    const mappingFromAttrToDataset = {};
+    for (const node of data) {
+      mappingFromAttrToDataset[node['Dataset']] = node['Attribute'];
+    }
+    setMatchingRowData(data);
+    setSchemaDataConformantRowData(prev => {
+      const newData = [];
+      for (const node of prev) {
+        const newRow = {};
+        for (const [key, value] of Object.entries(node)) {
+          if (key in mappingFromAttrToDataset) {
+            newRow[mappingFromAttrToDataset[key]] = value;
+          } else {
+            newRow[key] = value;
+          }
+        }
+        newData.push(newRow);
+      }
+      return newData;
+    });
+    setSchemaDataConformantHeader(prev => {
+      const newHeader = prev.map((header) => mappingFromAttrToDataset[header] || header);
+      return newHeader;
+    });
     setCurrentDataValidatorPage('OCADataValidatorCheck');
   }, [gridRef, setMatchingRowData, setCurrentDataValidatorPage]);
 

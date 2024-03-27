@@ -6,12 +6,12 @@ import TypographyTag from '../components/TypographyTag';
 
 
 const CharacterEncodingHelp = () => {
-    return (
-      <HelpPageContainer>
-        <HelpPageH2Title text="Overlays - Character Encoding" />
-        <br />
-        <HelpPageH3Title text = "Character Enconding" />
-        <TypographyTag>
+  return (
+    <HelpPageContainer>
+      <HelpPageH2Title text="Overlays - Character Encoding" />
+      <br />
+      <HelpPageH3Title text="Character Enconding" />
+      <TypographyTag>
         Character Encoding is an optional overlay for your schema where you can specify what character encoding is used by the associated datasets.
         <br></br>
         <br></br>
@@ -33,9 +33,9 @@ const CharacterEncodingHelp = () => {
         If you would like a character encoding to be added to the choices, email us at adc@uoguelph.ca
         <br></br>
         <br></br>
-        </TypographyTag>
-      </HelpPageContainer>
-    );
-  };
-  
-  export default CharacterEncodingHelp;
+      </TypographyTag>
+    </HelpPageContainer>
+  );
+};
+
+export default CharacterEncodingHelp;

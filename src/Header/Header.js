@@ -135,10 +135,10 @@ export default function Header({ currentPage }) {
   return (
     <HeaderWrapper
       isMobile={isMobile}
-      headerColor={currentPage === 'Landing' && CustomPalette.PRIMARY}
+      headerColor={(currentPage === 'Landing' || currentPage === "StartDataValidator") && CustomPalette.PRIMARY}
       leftItem={
         <>
-          {currentPage === 'Landing' ? (
+          {(currentPage === 'Landing' || currentPage === "StartDataValidator") ? (
             <Typography
               sx={{
                 fontSize: isMobile ? 18 : 40,
@@ -190,7 +190,7 @@ export default function Header({ currentPage }) {
       }
       rightItem={
         <>
-          {currentPage === 'Landing' ? (
+          {(currentPage === 'Landing' || currentPage === "StartDataValidator") ? (
             <img
               src={logoWhite}
               style={{

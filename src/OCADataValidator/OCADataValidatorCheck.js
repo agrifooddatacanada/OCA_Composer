@@ -73,6 +73,7 @@ const OCADataValidatorCheck = () => {
     languages,
     lanAttributeRowData
   } = useContext(Context);
+
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const [revalidateData, setRevalidateData] = useState(false);

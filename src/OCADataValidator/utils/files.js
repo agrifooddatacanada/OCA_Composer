@@ -56,31 +56,38 @@ export default class OCADataSet {
         const worksheet = workbook.Sheets[sheetName];
         const range = XLSX.utils.decode_range(worksheet['!ref']);
 
-        let lastRowIndex = range.s.r;
-
-        // Find the last row index.
-        for (let row = range.s.r; row <= range.e.r; row++) {
-          // let isRowEmpty = true;
+        // Find the last row index containing data.
+        let lastRowIndex = null;
+        for (let row = range.e.r; row >= range.s.r; row--) {
+          let isRowEmpty = true;
           for (let col = range.s.c; col <= range.e.c; col++) {
             const cellAddress = { c: col, r: row };
             const cellRef = XLSX.utils.encode_cell(cellAddress);
             const cell = worksheet[cellRef];
             if (cell && cell.v !== undefined && cell.v !== '') {
-              // isRowEmpty = false;
-              lastRowIndex = row;
+              isRowEmpty = false;
+              // lastRowIndex = row;
               break;
             }
           }
+          if (!isRowEmpty) {
+            lastRowIndex = row;
+            break;
+          }
+        }
+
+        const dataset = [];
+        for (let row = range.s.r; row <= lastRowIndex; row++) {
+          const rowData = [];
+          for (let col = range.s.c; col <= range.e.c; col++) {
+            const cellAddress = { c: col, r: row };
+            const cellRef = XLSX.utils.encode_cell(cellAddress);
+            const cell = worksheet[cellRef];
+            rowData.push(cell ? cell.v : '');
+          }
+          dataset.push(rowData);
         }
         // Convert the worksheet to a JSON object.
-        const dataset = XLSX.utils.sheet_to_json(worksheet, {
-          range: 0,
-          header: 1,
-          blankrows: true,
-          raw: false,
-          defval: ''
-        });
-
         const result = {};
         for (let col = 0; col < dataset[0].length; col++) {
           const columnName = dataset[0][col];

@@ -28,7 +28,7 @@ const ATTR_MISSING_MSG = 'Missing attribute (attribute not found in the data set
 const MISSING_MSG = 'Missing an entry for a mandatory attribute (check for other missing entries before continuing).';
 const NOT_AN_ARRAY_MSG = 'Valid array required.';
 const FORMAT_ERR_MSG = 'Format mismatch.';
-const EC_FORMAT_ERR_MSG = 'Entry code format mismatch (manually fix the attribute format).';
+// const EC_FORMAT_ERR_MSG = 'Entry code format mismatch (manually fix the attribute format).';
 const EC_ERR_MSG = 'One of the entry codes required.';
 // const CHE_ERR_MSG = 'Character encoding mismatch.';
 
@@ -236,7 +236,7 @@ export default class OCABundle {
     for (const attr in attrEntryCodes) {
       rslt.errs[attr] = {};
       for (let i = 0; i < dataset[attr].length; i++) {
-        let dataEntry = dataset[attr][i];
+        const dataEntry = dataset[attr][i];
         if (!attrEntryCodes[attr].includes(dataEntry) && dataEntry !== '' && dataEntry !== undefined) {
           rslt.errs[attr][i] = `${EC_ERR_MSG} Entry codes allowed: [${Object.values(attrEntryCodes)}]`;
         }

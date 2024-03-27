@@ -113,9 +113,8 @@ const useZipParser = () => {
     for (const { language, attribute_information } of description) {
       languageDescriptionMap[language.slice(0, 2)] = attribute_information;
     }
-    console.log('root', root);
+
     const attributeList = Object.keys(root?.['attributes'] || {});
-    console.log('attributeList', attributeList);
     for (const lang of languageList) {
       const label = labels.find((label) => label.language.slice(0, 2) === lang);
       newLangAttributeRowData[codesToLanguages[lang]] = [];
