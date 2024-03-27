@@ -76,7 +76,7 @@ export const FormatRuleTypeRenderer = memo(
           value={value}
           sx={{ border: "none", height: "2rem", fontSize: "small" }}
         >
-          <strong>{value}</strong> {description && <span> : {description}</span>}
+          {description && <span>{description}</span>}
         </MenuItem>
       );
     });
