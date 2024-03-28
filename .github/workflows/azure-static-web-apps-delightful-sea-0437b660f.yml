@@ -34,6 +34,7 @@ jobs:
           output_location: 'build' # Built app content directory - optional
         env:
           REACT_APP_GA_ID: ${{ secrets.REACT_APP_GA_ID_PROD }}
+          REACT_APP_ENV: ${{ secrets.REACT_APP_ENV_PROD }}
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
