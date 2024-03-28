@@ -10,7 +10,7 @@ You can learn more about schemas and see an implementation of OCA Composer live 
 
 [![DOI](https://zenodo.org/badge/651166216.svg)](https://zenodo.org/doi/10.5281/zenodo.10883562)
 
-While OCA Composer is under continuous release, you can cite a version 1.0.0 release using our DOI 10.5281/zenodo.10883563. 
+While OCA Composer is under continuous delivery, you can cite a version 1.0.0 release using our DOI 10.5281/zenodo.10883563. 
 
 ## OCA Composer outputs
 
