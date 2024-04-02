@@ -61,7 +61,7 @@ export const DataHeaderRenderer = memo(
 );
 
 const AttributeMatch = () => {
-  const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, schemaDataConformantHeader, firstTimeMatchingRef, setSchemaDataConformantRowData, setSchemaDataConformantHeader } = useContext(Context);
+  const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, schemaDataConformantHeader, firstTimeMatchingRef, setSchemaDataConformantRowData, setSchemaDataConformantHeader, ogSchemaDataConformantHeaderRef } = useContext(Context);
   const [type, setType] = useState(languages[0] || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -135,7 +135,7 @@ const AttributeMatch = () => {
   }, []);
 
   useEffect(() => {
-    const unassignedVariables = [...schemaDataConformantHeader];
+    const unassignedVariables = [...ogSchemaDataConformantHeaderRef.current];
     if (firstTimeMatchingRef.current) {
       let newMatchingRowData = [];
       if (matchingRowData && matchingRowData?.length > 0) {

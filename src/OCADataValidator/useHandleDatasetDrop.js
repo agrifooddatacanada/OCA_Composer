@@ -37,6 +37,7 @@ export const useHandleDatasetDrop = () => {
     setDatasetDropDisabled(false);
     setDatasetRawFile([]);
     setMatchingRowData([]);
+    setOgWorkbook(null);
     setSchemaDataConformantHeader([]);
     setSchemaDataConformantRowData([]);
   }, []);
@@ -54,8 +55,6 @@ export const useHandleDatasetDrop = () => {
           return `header_empty_placeholder_${index}`;
         },
         complete: function(results) {
-          // setDataEntryDataRowData(results.data);
-          // setDataEntryDataHeader(results.meta.fields);
           setSchemaDataConformantHeader(results.meta.fields);
           setSchemaDataConformantRowData(results.data);
 
@@ -175,8 +174,8 @@ export const useHandleDatasetDrop = () => {
     }
 
     const rangeToParse = {
-      s: { r: range.s.r, c: range.s.c }, // Start from the first row and first column
-      e: { r: lastRowIndex, c: range.e.c } // End at the fifth row or the last row of the sheet, whichever comes first
+      s: { r: range.s.r, c: range.s.c },
+      e: { r: lastRowIndex, c: range.e.c }
     };
 
     const jsonSchemaFromExcel = XLSX.utils.sheet_to_json(

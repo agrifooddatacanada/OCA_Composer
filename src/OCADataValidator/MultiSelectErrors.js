@@ -3,7 +3,6 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import { useState } from 'react';
 import { Box } from '@mui/material';
 import { CustomPalette } from '../constants/customPalette';
 

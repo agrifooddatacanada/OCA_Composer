@@ -100,6 +100,8 @@ function App() {
   const firstTimeMatchingRef = useRef(true);
   const [ogWorkbook, setOgWorkbook] = useState(null);
 
+  const ogSchemaDataConformantHeaderRef = useRef([]);
+
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
     if (currentIndex >= 0 && currentIndex < pagesArray.length - 1) {
@@ -121,6 +123,14 @@ function App() {
   const backToOCADataValidatorUploadPage = () => {
     setCurrentDataValidatorPage('StartDataValidator');
   };
+
+  useEffect(() => {
+    if (ogSchemaDataConformantHeaderRef.current.length === 0 && schemaDataConformantHeader.length > 0) {
+      ogSchemaDataConformantHeaderRef.current = schemaDataConformantHeader;
+    } else if (schemaDataConformantHeader.length === 0) {
+      ogSchemaDataConformantHeaderRef.current = [];
+    }
+  }, [schemaDataConformantHeader]);
 
   useEffect(() => {
     if (history[history.length - 1] !== currentPage) {
@@ -380,6 +390,7 @@ function App() {
             setOgWorkbook,
             jsonParsedFile,
             setJsonParsedFile,
+            ogSchemaDataConformantHeaderRef
           }}
         >
           <Box

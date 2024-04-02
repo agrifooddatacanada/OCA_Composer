@@ -1,7 +1,7 @@
 import Drop from "../StartSchema/Drop";
 import { useHandleJsonDrop } from "./useHandleJsonDrop";
 import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
-import { Box, Button, Link, Typography, useMediaQuery } from "@mui/material";
+import { Box, Button, Typography, useMediaQuery } from "@mui/material";
 import { datasetUploadDescription, datasetUploadTooltip, jsonUploadDescription, jsonUploadTooltip } from "../constants/constants";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { CustomPalette } from "../constants/customPalette";
@@ -67,10 +67,14 @@ const OCADataValidatorMain = () => {
           />
         </Box>
       </Box>
-      <BackNextSkeleton isForward={jsonRawFile.length > 0 && datasetRawFile.length > 0} pageForward={() =>
-        setCurrentDataValidatorPage('AttributeMatchDataValidator')
-        // setCurrentDataValidatorPage('OCADataValidatorCheck')
-      } />
+      <BackNextSkeleton isForward={jsonRawFile.length > 0} pageForward={() => {
+        if (datasetRawFile.length > 0) {
+          setCurrentDataValidatorPage('AttributeMatchDataValidator');
+        } else {
+          setCurrentDataValidatorPage('CreateANewDatasetDataValidator');
+        }
+
+      }} />
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',

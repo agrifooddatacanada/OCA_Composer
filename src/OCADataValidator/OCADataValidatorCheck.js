@@ -14,6 +14,12 @@ import CellHeader from '../components/CellHeader';
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ExportButton from './ExportButton';
 
+const convertToCSV = (data) => {
+  // Create a CSV string from the data array
+  const csv = data.map(row => Object.values(row).join(',')).join('\n');
+  return csv;
+};
+
 const CustomTooltip = (props) => {
   const error = props.data?.error?.[props.colDef.field] || "";
 
@@ -71,7 +77,9 @@ const OCADataValidatorCheck = () => {
     ogWorkbook,
     jsonParsedFile,
     languages,
-    lanAttributeRowData
+    lanAttributeRowData,
+    matchingRowData,
+    datasetRawFile
   } = useContext(Context);
 
   const [rowData, setRowData] = useState([]);
@@ -93,11 +101,39 @@ const OCADataValidatorCheck = () => {
     };
   }, [lanAttributeRowData, type]);
 
-  const handleSave = async () => {
-    const workbook = await generateDataEntryExcel();
-    if (workbook !== null) {
-      downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
+  const handleSave = async (ogHeader = false) => {
+    if (ogWorkbook !== null) {
+      const workbook = await generateDataEntryExcel(ogHeader);
+      if (workbook !== null) {
+        downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
+      }
+    } else {
+      const newCSV = await generateCSVFile(ogHeader);
+      if (newCSV !== null) {
+        downloadCSVFile(newCSV, 'DataEntryCSV.csv');
+      }
     }
+  };
+
+  const generateCSVFile = async (ogHeader) => {
+    const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+
+    const newHeader = [];
+
+    const mappingFromAttrToDataset = {};
+    for (const node of matchingRowData) {
+      mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
+    }
+    schemaDataConformantHeader.forEach((header) => {
+      if (ogHeader) {
+        newHeader.push(mappingFromAttrToDataset[header] || header);
+      } else {
+        newHeader.push(header);
+      }
+    });
+
+    const headerToString = newHeader.join(',') + '\n';
+    return headerToString + convertToCSV(newData);
   };
 
   const handleValidate = async () => {
@@ -106,55 +142,113 @@ const OCADataValidatorCheck = () => {
     setFirstValidate(true);
     const bundle = new OCABundle();
     await bundle.loadedBundle(jsonParsedFile);
-    const newWorkbook = await generateDataEntryExcel();
-    newWorkbook.xlsx.writeBuffer().then((buffer) => {
-      const file = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const dataset = await OCADataSet.readExcel(e.target.result);
-        const validate = bundle.validate(dataset);
-        setRowData((prev) => {
-          return prev.map((row, index) => {
-            return {
-              ...row,
-              error: validate?.errCollection?.[index] || {},
-            };
-          });
-        });
-        setColumnDefs((prev) => {
-          const copy = [];
+    const newData = gridRef.current?.api.getRenderedNodes()?.map(node => node?.data);
 
-          if (validate?.unmachedAttrs?.size > 0) {
-            prev.forEach((header) => {
-              if (validate?.unmachedAttrs?.has(header.headerName)) {
-                copy.push({
-                  ...header,
-                  cellStyle: () => {
-                    return { backgroundColor: "#ededed" };
-                  }
-                });
-              } else {
-                copy.push({
-                  ...header,
-                  cellStyle
-                });
-              }
-            });
-          }
-          return copy;
+    if (ogWorkbook !== null) {
+      const newWorkbook = await generateDataEntryExcel();
+      newWorkbook.xlsx.writeBuffer().then((buffer) => {
+        const file = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         });
-        //set Timeout at least 1.5 seconds
-        setTimeout(() => {
-          gridRef.current.api.hideOverlay();
-        }, 800);
-      };
-      reader.readAsArrayBuffer(file);
-    });
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const dataset = await OCADataSet.readExcel(e.target.result);
+          const validate = bundle.validate(dataset);
+
+          setRowData((prev) => {
+            return prev.map((row, index) => {
+              const data = newData[index];
+              return {
+                ...data,
+                error: validate?.errCollection?.[index] || {},
+              };
+            });
+          });
+          setColumnDefs((prev) => {
+            const copy = [];
+
+            if (validate?.unmachedAttrs?.size > 0) {
+              prev.forEach((header) => {
+                if (validate?.unmachedAttrs?.has(header.headerName)) {
+                  copy.push({
+                    ...header,
+                    cellStyle: () => {
+                      return { backgroundColor: "#ededed" };
+                    }
+                  });
+                } else {
+                  copy.push({
+                    ...header,
+                    cellStyle
+                  });
+                }
+              });
+            }
+            return copy;
+          });
+          //set Timeout at least 1.5 seconds
+          setTimeout(() => {
+            gridRef.current.api.hideOverlay();
+          }, 800);
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    } else {
+      const prepareInput = {};
+      schemaDataConformantHeader.forEach((header) => {
+        for (const row of newData) {
+          if (header in row) {
+            prepareInput[header] = header in prepareInput ? [...prepareInput[header], row[header]] : [row[header]];
+          }
+        }
+      });
+
+      const validate = bundle.validate(prepareInput);
+      setRowData((prev) => {
+
+        return prev.map((row, index) => {
+          const data = newData[index];
+          return {
+            ...data,
+            error: validate?.errCollection?.[index] || {},
+          };
+        });
+      });
+
+      setColumnDefs((prev) => {
+        const copy = [];
+
+        if (validate?.unmachedAttrs?.size > 0) {
+          prev.forEach((header) => {
+            if (validate?.unmachedAttrs?.has(header.headerName)) {
+              copy.push({
+                ...header,
+                cellStyle: () => {
+                  return { backgroundColor: "#ededed" };
+                }
+              });
+            } else {
+              copy.push({
+                ...header,
+                cellStyle
+              });
+            }
+          });
+        } else {
+          prev.forEach((header) => {
+            copy.push({
+              ...header,
+              cellStyle
+            });
+          });
+        }
+        return copy;
+      });
+    }
+
   };
 
-  const generateDataEntryExcel = async () => {
+  const generateDataEntryExcel = async (ogHeader = false) => {
     try {
       const newWorkbook = await copyFirstTwoWorksheets(ogWorkbook);
 
@@ -166,6 +260,15 @@ const OCADataValidatorCheck = () => {
           schemaConformantDataNameWorksheet.getCell(index + 2, headerIndex + 1).value = isNaN(row[header]) ? row[header] : Number(row[header]);
         });
       });
+
+      if (ogHeader) {
+        const mappingFromAttrToDataset = {};
+        for (const node of matchingRowData) {
+          mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
+        }
+        const newHeader = schemaDataConformantHeader.map((header) => mappingFromAttrToDataset[header] || header);
+        makeHeaderRow(newHeader, schemaConformantDataNameWorksheet, 20);
+      }
 
       return newWorkbook;
     } catch (error) {
@@ -185,6 +288,24 @@ const OCADataValidatorCheck = () => {
       a.download = "DataEntryExcel.xlsx";
       a.click();
     });
+  };
+
+  const downloadCSVFile = (csvData, fileName) => {
+    const blob = new Blob([csvData], { type: 'text/csv' });
+
+    // Create a temporary URL for the Blob
+    const url = URL.createObjectURL(blob);
+
+    // Create a temporary <a> element to trigger the download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName || 'export.csv'; // Default filename is 'export.csv'
+    document.body.appendChild(a);
+    a.click();
+
+    // Clean up
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const makeHeaderRow = (rowHeadersArray, worksheetName, columnWidth) => {
@@ -334,7 +455,11 @@ const OCADataValidatorCheck = () => {
               sx={{ textAlign: "left", alignSelf: "flex-start" }}
               onClick={() => {
                 setSchemaDataConformantRowData(gridRef.current.api.getRenderedNodes()?.map(node => node?.data));
-                setCurrentDataValidatorPage('StartDataValidator');
+                if (datasetRawFile.length > 0) {
+                  setCurrentDataValidatorPage('AttributeMatchDataValidator');
+                } else {
+                  setCurrentDataValidatorPage('CreateANewDatasetDataValidator');
+                }
               }}
             >
               <ArrowBackIosIcon /> Back
@@ -391,7 +516,6 @@ const OCADataValidatorCheck = () => {
             gap: "10px",
             flex: 1,
           }}>
-
             <Box
               sx={{
                 display: 'flex',
@@ -403,7 +527,6 @@ const OCADataValidatorCheck = () => {
               <Languages type={type} handleChange={handleChange} handleClick={() => { }} isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} languages={languages} />
               <MultipleSelectPlaceholder errorName={errorName} setErrorNameList={setErrorNameList} disabled={!firstValidate} />
             </Box>
-
           </Box>
 
           <Box sx={{
@@ -464,7 +587,6 @@ const OCADataValidatorCheck = () => {
                 alignItems: "center",
                 justifyContent: "space-around",
               }}
-
             >
               Add row <AddCircleIcon />
             </Button>
