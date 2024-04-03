@@ -204,8 +204,8 @@ const OCADataValidatorCheck = () => {
       });
 
       const validate = bundle.validate(prepareInput);
-      setRowData((prev) => {
 
+      setRowData((prev) => {
         return prev.map((row, index) => {
           const data = newData[index];
           return {

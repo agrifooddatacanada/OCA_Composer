@@ -11,6 +11,7 @@ const CreateANewDataset = () => {
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const gridRef = createRef();
+  const [schemaTableLength, setSchemaTableLength] = useState(0);
 
   const defaultColDef = useMemo(() => {
     return {
@@ -40,8 +41,12 @@ const CreateANewDataset = () => {
   };
 
   useEffect(() => {
+    let newSchemaTableLength = 0;
     setSchemaDataConformantHeader(attributesList);
-    setColumnDefs(attributesList.map(attribute => ({ headerName: attribute, field: attribute })));
+    setColumnDefs(attributesList.map(attribute => {
+      newSchemaTableLength += 150;
+      return ({ headerName: attribute, field: attribute, width: 150 });
+    }));
     setRowData(prev => {
       const newRow = {};
       if (schemaDataConformantRowData.length === 0) {
@@ -50,6 +55,7 @@ const CreateANewDataset = () => {
       }
       return schemaDataConformantRowData;
     });
+    setSchemaTableLength(newSchemaTableLength);
   }, [attributesList]);
 
   return (
@@ -67,41 +73,52 @@ const CreateANewDataset = () => {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
+        alignItems: 'center',
       }}>
-        <Box sx={{ margin: "2rem" }}>
-          <div className="ag-theme-balham" style={{ width: '100%' }}>
-            <style>{gridStyles}</style>
-            <AgGridReact
-              ref={gridRef}
-              rowData={rowData}
-              columnDefs={columnDefs}
-              domLayout="autoHeight"
-              defaultColDef={defaultColDef}
-              onCellValueChanged={onCellValueChanged}
-            />
-          </div>
-          <Box sx={{
+        <Box
+          sx={{
             display: 'flex',
             flexDirection: 'row',
-            justifyContent: 'flex-end',
-            marginTop: '2rem',
+            alignItems: 'start',
+            justifyContent: 'start',
+            flex: 1,
           }}>
-            <Button
-              onClick={handleAddRow}
-              color="button"
-              variant="contained"
-              sx={{
-                alignSelf: "flex-end",
-                width: "9rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-around",
-              }}
-            >
-              Add row <AddCircleIcon />
-            </Button>
+          <Box sx={{ margin: "2rem" }}>
+            <div className="ag-theme-balham" style={{ width: schemaTableLength }}>
+              <style>{gridStyles}</style>
+              <AgGridReact
+                ref={gridRef}
+                rowData={rowData}
+                columnDefs={columnDefs}
+                domLayout="autoHeight"
+                defaultColDef={defaultColDef}
+                onCellValueChanged={onCellValueChanged}
+              />
+            </div>
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              marginTop: '2rem',
+            }}>
+              <Button
+                onClick={handleAddRow}
+                color="button"
+                variant="contained"
+                sx={{
+                  alignSelf: "flex-end",
+                  width: "9rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-around",
+                }}
+              >
+                Add row <AddCircleIcon />
+              </Button>
+            </Box>
           </Box>
         </Box>
+
       </Box>
     </>
   );
