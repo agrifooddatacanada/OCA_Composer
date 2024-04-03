@@ -123,7 +123,7 @@ const useZipParser = () => {
         if (label && label?.attribute_labels?.hasOwnProperty(attr)) {
           newLangAttributeRowData[codesToLanguages[lang]].push({
             Attribute: attr,
-            Description: languageDescriptionMap[lang][attr],
+            Description: languageDescriptionMap?.[lang]?.[attr] || '',
             Label: label.attribute_labels[attr],
             List: attributeListStringMap[attr + '_' + lang] || "Not a List"
           });

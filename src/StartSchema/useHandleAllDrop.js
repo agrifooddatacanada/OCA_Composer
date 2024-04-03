@@ -464,85 +464,48 @@ const useHandleAllDrop = () => {
     if (jsonFile?.overlays?.meta) {
       metaList.push(...jsonFile.overlays.meta);
       languageList.push(...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2)));
-
-      // // ONLY for README
-      // const readmeMeta = jsonFile.overlays.meta.map((meta) => {
-      //   return JSON.stringify(meta);
-      // });
-      // allJSONFiles.push(...readmeMeta);
     }
 
     if (jsonFile?.overlays?.information) {
       informationList.push(...jsonFile.overlays.information);
-
-      // // ONLY for README
-      // const readmeInformation = jsonFile.overlays.information.map((information) => {
-      //   return JSON.stringify(information);
-      // });
-      // allJSONFiles.push(...readmeInformation);
     }
 
     if (jsonFile?.overlays?.label) {
       labelList.push(...jsonFile.overlays.label);
-
-      // // ONLY for README
-      // const readmeLabel = jsonFile.overlays.label.map((label) => {
-      //   return JSON.stringify(label);
-      // });
-      // allJSONFiles.push(...readmeLabel);
     }
 
     if (jsonFile?.['capture_base']) {
       loadRoot = { ...jsonFile['capture_base'] };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(loadRoot));
     }
 
     if (jsonFile?.overlays?.unit) {
       loadUnits = { ...jsonFile.overlays.unit };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(loadUnits));
     }
 
     if (jsonFile?.overlays?.conformance) {
       conformance = { ...jsonFile.overlays.conformance };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(conformance));
     }
 
     if (jsonFile?.overlays?.['character_encoding']) {
       characterEncoding = { ...jsonFile.overlays['character_encoding'] };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(characterEncoding));
     }
 
     if (jsonFile?.overlays?.entry_code) {
       entryCodeSummary = { ...jsonFile.overlays.entry_code };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(entryCodeSummary));
     }
 
     if (jsonFile?.overlays?.['format']) {
       formatRules = { ...jsonFile.overlays['format'] };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(formatRules));
     }
 
     if (jsonFile?.overlays?.entry) {
       entryList.push(...jsonFile.overlays.entry);
-
-      // // ONLY for README
-      // const readmeEntry = jsonFile.overlays.entry.map((entry) => {
-      //   return JSON.stringify(entry);
-      // });
-      // allJSONFiles.push(...readmeEntry);
     }
+
+    if (jsonFile?.overlays?.cardinality) {
+      cardinalityData = { ...jsonFile.overlays.cardinality };
+    }
+
 
     if (!languageList || languageList.length === 0) {
       throw new Error('No language found in the JSON file');
