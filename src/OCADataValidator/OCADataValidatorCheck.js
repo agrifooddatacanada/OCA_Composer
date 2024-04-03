@@ -257,7 +257,7 @@ const OCADataValidatorCheck = () => {
       const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
       newData.forEach((row, index) => {
         schemaDataConformantHeader.forEach((header, headerIndex) => {
-          schemaConformantDataNameWorksheet.getCell(index + 2, headerIndex + 1).value = isNaN(row[header]) ? row[header] : Number(row[header]);
+          schemaConformantDataNameWorksheet.getCell(index + 2, headerIndex + 1).value = row[header] === '' || isNaN(row[header]) ? row[header] : Number(row[header]);
         });
       });
 

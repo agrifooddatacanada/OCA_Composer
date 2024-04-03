@@ -42,8 +42,23 @@ const ExportButton = ({ handleSave }) => {
           'aria-labelledby': 'basic-button',
         }}
       >
-        <MenuItem sx={{ color: CustomPalette.PRIMARY }} onClick={() => handleSave(true)}>Keep original data column headers</MenuItem>
-        <MenuItem sx={{ color: CustomPalette.PRIMARY }} onClick={() => handleSave(false)}>Change to Schema column headers</MenuItem>
+        <MenuItem
+          sx={{ color: CustomPalette.PRIMARY }}
+          onClick={() => {
+            handleClose();
+            handleSave(true);
+          }}
+        >
+          Keep original data column headers
+        </MenuItem>
+        <MenuItem
+          sx={{ color: CustomPalette.PRIMARY }}
+          onClick={() => {
+            handleClose();
+            handleSave(false);
+          }}>
+          Change to Schema column headers
+        </MenuItem>
       </Menu>
     </>
   );

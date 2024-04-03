@@ -125,7 +125,7 @@ function App() {
   };
 
   useEffect(() => {
-    if (ogSchemaDataConformantHeaderRef.current.length === 0 && schemaDataConformantHeader.length > 0) {
+    if (datasetRawFile.length > 0 && ogSchemaDataConformantHeaderRef.current.length === 0 && schemaDataConformantHeader.length > 0) {
       ogSchemaDataConformantHeaderRef.current = schemaDataConformantHeader;
     } else if (schemaDataConformantHeader.length === 0) {
       ogSchemaDataConformantHeaderRef.current = [];
