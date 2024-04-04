@@ -4,7 +4,7 @@ import { Box } from "@mui/system";
 import { Button, Typography, Tooltip } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import DepreciatedWarningCard from "../Landing/DepreciatedWarningCard";
 import Loading from "../components/Loading";
 
-export default function ViewSchema({ pageBack, isExport = true, addClearButton }) {
+export default function ViewSchema({ pageBack, isExport = true, addClearButton, pageForward }) {
   const navigate = useNavigate();
   const {
     languages,
@@ -218,91 +218,102 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton }
       {loading && attributeRowData.length > 40 && <Loading />}
       <Box sx={{
         display: "flex",
-        justifyContent: "space-between",
+        justifyContent: pageForward ? "flex-end" : "space-between",
       }}>
-        <Button
-          color="navButton"
-          sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
-          onClick={moveBackward}
-        >
-          <ArrowBackIosIcon /> Back
-        </Button>
-        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-            {isZip && (
-              <>
-                <Button
-                  color="button"
-                  variant='contained'
-                  onClick={() => {
-                    setCurrentPage("Metadata");
-                    setIsZipEdited(true);
-                  }}
-                  sx={{
-                    alignSelf: "flex-end",
-                    display: "flex",
-                    justifyContent: "space-around",
-                    padding: "0.5rem 1rem",
-                  }}
-                >
-                  Edit Schema
-                </Button>
-                <Button
-                  color="button"
-                  variant='contained'
-                  onClick={() => handleExport(true)}
-                  sx={{
-                    alignSelf: "flex-end",
-                    display: "flex",
-                    justifyContent: "space-around",
-                    padding: "0.5rem 1rem",
-                  }}
-                  disabled={exportDisabled}
-                >
-                  Download ReadMe
-                </Button>
-              </>
-            )}
-            {isExport && (!isZip || (isZip && isZipEdited)) ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: CustomPalette.GREY_600,
-                }}
-              >
-                <Button
-                  color="button"
-                  variant="contained"
-                  onClick={() => handleExport(false)}
-                  sx={{
-                    alignSelf: "flex-end",
-                    width: "12rem",
-                    display: "flex",
-                    justifyContent: "space-around",
-                    p: 1,
-                  }}
-                  disabled={exportDisabled}
-                >
-                  Finish and Export <CheckCircleIcon />
-                </Button>
-                <Box sx={{ marginLeft: "1rem" }}>
-                  <Tooltip
-                    title="Export your schema in a .json machine-readable version and a txt human-readable format using all the information that has been provided here."
-                    placement="left"
-                    arrow
+        {pageForward ?
+          <Button
+            color="navButton"
+            onClick={pageForward}
+            sx={{ color: CustomPalette.PRIMARY }}
+          >
+            Next <ArrowForwardIosIcon />
+          </Button>
+
+          : <>
+            <Button
+              color="navButton"
+              sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
+              onClick={moveBackward}
+            >
+              <ArrowBackIosIcon /> Back
+            </Button>
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+                {isZip && (
+                  <>
+                    <Button
+                      color="button"
+                      variant='contained'
+                      onClick={() => {
+                        setCurrentPage("Metadata");
+                        setIsZipEdited(true);
+                      }}
+                      sx={{
+                        alignSelf: "flex-end",
+                        display: "flex",
+                        justifyContent: "space-around",
+                        padding: "0.5rem 1rem",
+                      }}
+                    >
+                      Edit Schema
+                    </Button>
+                    <Button
+                      color="button"
+                      variant='contained'
+                      onClick={() => handleExport(true)}
+                      sx={{
+                        alignSelf: "flex-end",
+                        display: "flex",
+                        justifyContent: "space-around",
+                        padding: "0.5rem 1rem",
+                      }}
+                      disabled={exportDisabled}
+                    >
+                      Download ReadMe
+                    </Button>
+                  </>
+                )}
+                {isExport && (!isZip || (isZip && isZipEdited)) ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: CustomPalette.GREY_600,
+                    }}
                   >
-                    <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                  </Tooltip>
-                </Box>
+                    <Button
+                      color="button"
+                      variant="contained"
+                      onClick={() => handleExport(false)}
+                      sx={{
+                        alignSelf: "flex-end",
+                        width: "12rem",
+                        display: "flex",
+                        justifyContent: "space-around",
+                        p: 1,
+                      }}
+                      disabled={exportDisabled}
+                    >
+                      Finish and Export <CheckCircleIcon />
+                    </Button>
+                    <Box sx={{ marginLeft: "1rem" }}>
+                      <Tooltip
+                        title="Export your schema in a .json machine-readable version and a txt human-readable format using all the information that has been provided here."
+                        placement="left"
+                        arrow
+                      >
+                        <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                      </Tooltip>
+                    </Box>
+                  </Box>
+                ) :
+                  <></>
+                }
               </Box>
-            ) :
-              <></>
-            }
-          </Box>
 
-        </Box>
-
+            </Box>
+          </>
+        }
       </Box>
       {showLink && <LinkCard setShowLink={setShowLink} />}
       <Box

@@ -49,7 +49,7 @@ const DatasetView = () => {
 
   return (
     <>
-      <BackNextSkeleton isBack pageBack={() => {
+      <BackNextSkeleton isForward pageForward={() => {
         setSchemaDataConformantRowData(schemaGridRef.current?.api.getRenderedNodes()?.map(node => {
           const existingKeys = Object.keys(node?.data);
           const newData = { ...node?.data };

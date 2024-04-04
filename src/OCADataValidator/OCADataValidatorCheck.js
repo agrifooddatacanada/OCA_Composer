@@ -39,8 +39,9 @@ const CustomTooltip = (props) => {
   );
 };
 
-const flaggedHeader = (props, labelDescription) => {
+const flaggedHeader = (props, labelDescription, formatRuleRowData) => {
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
+  const formatRule = formatRuleRowData.find((item) => item?.Attribute === props?.displayName);
 
   return (
     <CellHeader
@@ -63,6 +64,16 @@ const flaggedHeader = (props, labelDescription) => {
             <Typography>
               {value?.Description || ''}
             </Typography>
+            <br />
+            <Typography sx={{ fontWeight: 'bold' }}>Type:</Typography>
+            <Typography>
+              {formatRule?.Type || ''}
+            </Typography>
+            <br />
+            <Typography sx={{ fontWeight: 'bold' }}>Format:</Typography>
+            <Typography>
+              {formatRule?.FormatText || ''}
+            </Typography>
           </Box>) : ''
       } />
   );
@@ -79,8 +90,11 @@ const OCADataValidatorCheck = () => {
     languages,
     lanAttributeRowData,
     matchingRowData,
-    datasetRawFile
+    datasetRawFile,
+    formatRuleRowData,
+    cardinalityData
   } = useContext(Context);
+  console.log('cardinalityData', cardinalityData);
 
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -97,7 +111,7 @@ const OCADataValidatorCheck = () => {
       flex: 1,
       minWidth: 100,
       tooltipComponent: CustomTooltip,
-      headerComponent: (params) => flaggedHeader(params, lanAttributeRowData[type]),
+      headerComponent: (params) => flaggedHeader(params, lanAttributeRowData[type], formatRuleRowData),
     };
   }, [lanAttributeRowData, type]);
 
