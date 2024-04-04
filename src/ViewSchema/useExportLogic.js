@@ -359,7 +359,8 @@ const useExportLogic = () => {
           result: attributeCell.value === "" ? "" : classificationCode,
         };
         const typeCell = worksheetMain.getCell(index + 4, 3);
-        typeCell.value = dataArray[1][index].Type;
+        const value = dataArray[1][index].Type;
+        typeCell.value = Array.isArray(value) ? `Array[${value[0]}]` : value;
         typeCell.dataValidation = {
           type: "list",
           allowBlank: true,
@@ -369,7 +370,7 @@ const useExportLogic = () => {
           ],
         };
 
-        //typeCellAuto content is currently identical to the typeCell - the two cells should be linked on the Excel sheet, though, and not just here
+        // typeCellAuto content is currently identical to the typeCell - the two cells should be linked on the Excel sheet, though, and not just here;
         const typeCellAuto = worksheetMain.getCell(index + 4, 4);
         typeCellAuto.value = {
           formula: `IF(ISBLANK(C${index + 4}), "", C${index + 4})`,
@@ -557,26 +558,25 @@ const useExportLogic = () => {
     }
 
     //////CREATE DATA WORKSHEET FOR ENTRY_CODE DROPDOWN MENUS
-    // try {
-    //   const entryCodeOptionWorksheet = workbook.addWorksheet("options", { state: 'hidden' });
-    //   attributesList.forEach((item, index) => {
-    //     const codesArray = savedEntryCodes[item];
-    //     if (codesArray) {
-    //       let columnCounter = 1;
-    //       for (const entryCodeOption of codesArray) {
-    //         let languageCounter = 1;
-    //         for (const lang of languagesWithCode) {
-    //           entryCodeOptionWorksheet.getCell(2 * index + languageCounter, columnCounter).value = entryCodeOption[lang.language];
-    //           languageCounter++;
-    //         }
-    //         columnCounter++;
-    //       }
-    //     }
-
-    //   });
-    // } catch (error) {
-    //   console.error(error);
-    // }
+    try {
+      const entryCodeOptionWorksheet = workbook.addWorksheet("options", { state: 'hidden' });
+      attributesList.forEach((item, index) => {
+        const codesArray = savedEntryCodes[item];
+        if (codesArray) {
+          let columnCounter = 1;
+          for (const entryCodeOption of codesArray) {
+            let languageCounter = 1;
+            for (const lang of languagesWithCode) {
+              entryCodeOptionWorksheet.getCell(2 * index + languageCounter, columnCounter).value = entryCodeOption[lang.language];
+              languageCounter++;
+            }
+            columnCounter++;
+          }
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
 
     ////////CREATE WORKBOOK AND EXPORT
     const workbookName = `OCA_Template_${new Date().toISOString()}.xlsx`;
