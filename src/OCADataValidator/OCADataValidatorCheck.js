@@ -15,7 +15,6 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ExportButton from './ExportButton';
 
 const convertToCSV = (data) => {
-  // Create a CSV string from the data array
   const csv = data.map(row => Object.values(row).join(',')).join('\n');
   return csv;
 };
@@ -39,9 +38,11 @@ const CustomTooltip = (props) => {
   );
 };
 
-const flaggedHeader = (props, labelDescription, formatRuleRowData) => {
+const flaggedHeader = (props, labelDescription, formatRuleRowData, characterEncodingRowData, cardinalityData) => {
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
   const formatRule = formatRuleRowData.find((item) => item?.Attribute === props?.displayName);
+  const characterEncoding = characterEncodingRowData.find((item) => item?.Attribute === props?.displayName);
+  const cardinality = cardinalityData.find((item) => item?.Attribute === props?.displayName);
 
   return (
     <CellHeader
@@ -55,25 +56,71 @@ const flaggedHeader = (props, labelDescription, formatRuleRowData) => {
           (<Box sx={{
             padding: '10px',
           }}>
-            <Typography sx={{ fontWeight: 'bold' }}>Label:</Typography>
-            <Typography>
-              {value?.Label || ''}
-            </Typography>
-            <br />
-            <Typography sx={{ fontWeight: 'bold' }}>Description:</Typography>
-            <Typography>
-              {value?.Description || ''}
-            </Typography>
-            <br />
-            <Typography sx={{ fontWeight: 'bold' }}>Type:</Typography>
-            <Typography>
-              {formatRule?.Type || ''}
-            </Typography>
-            <br />
-            <Typography sx={{ fontWeight: 'bold' }}>Format:</Typography>
-            <Typography>
-              {formatRule?.FormatText || ''}
-            </Typography>
+            {value &&
+              <>
+                {"Label" in value && value?.Label && value?.Label !== "" &&
+                  <>
+                    <Typography sx={{ fontWeight: 'bold' }}>Label:</Typography>
+                    <Typography>
+                      {value?.Label}
+                    </Typography>
+                  </>}
+                {"Description" in value && value?.Description && value?.Description !== "" &&
+                  <>
+                    <br />
+                    <Typography sx={{ fontWeight: 'bold' }}>Description:</Typography>
+                    <Typography>
+                      {value?.Description}
+                    </Typography>
+                  </>}
+              </>}
+            {formatRule &&
+              <>
+                {"Type" in formatRule && formatRule?.Type && formatRule?.Type !== "" &&
+                  <>
+                    <br />
+                    <Typography sx={{ fontWeight: 'bold' }}>Type:</Typography>
+                    <Typography>
+                      {formatRule?.Type}
+                    </Typography>
+                  </>}
+                {"FormatText" in formatRule && formatRule?.FormatText && formatRule?.FormatText !== "" &&
+                  <>
+                    <br />
+                    <Typography sx={{ fontWeight: 'bold' }}>Format:</Typography>
+                    <Typography>
+                      {formatRule?.FormatText || ''}
+                    </Typography>
+                  </>}
+              </>}
+            {characterEncoding &&
+              <>
+                {'Make selected entries required' in characterEncoding &&
+                  <>
+                    <br />
+                    <Typography sx={{ fontWeight: 'bold' }}>Required:</Typography>
+                    <Typography>
+                      {characterEncoding?.['Make selected entries required']?.toString() || ''}
+                    </Typography>
+                  </>}
+                {'Character Encoding' in characterEncoding && characterEncoding?.['Character Encoding'] && characterEncoding?.['Character Encoding'] !== "" &&
+                  <>
+                    <br />
+                    <Typography sx={{ fontWeight: 'bold' }}>Character Encoding:</Typography>
+                    <Typography>
+                      {characterEncoding?.['Character Encoding']}
+                    </Typography>
+                  </>}
+
+              </>}
+            {cardinality && "EntryLimit" in cardinality && cardinality?.EntryLimit && cardinality?.EntryLimit !== "" &&
+              <>
+                <br />
+                <Typography sx={{ fontWeight: 'bold' }}>Cardinality:</Typography>
+                <Typography>
+                  {cardinality?.EntryLimit}
+                </Typography>
+              </>}
           </Box>) : ''
       } />
   );
@@ -92,9 +139,9 @@ const OCADataValidatorCheck = () => {
     matchingRowData,
     datasetRawFile,
     formatRuleRowData,
-    cardinalityData
+    cardinalityData,
+    characterEncodingRowData
   } = useContext(Context);
-  console.log('cardinalityData', cardinalityData);
 
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -111,7 +158,7 @@ const OCADataValidatorCheck = () => {
       flex: 1,
       minWidth: 100,
       tooltipComponent: CustomTooltip,
-      headerComponent: (params) => flaggedHeader(params, lanAttributeRowData[type], formatRuleRowData),
+      headerComponent: (params) => flaggedHeader(params, lanAttributeRowData[type], formatRuleRowData, characterEncodingRowData, cardinalityData),
     };
   }, [lanAttributeRowData, type]);
 

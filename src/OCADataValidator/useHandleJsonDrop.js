@@ -148,6 +148,13 @@ export const useHandleJsonDrop = () => {
           allJSONFiles.push(...readmeEntry);
         }
 
+        if (jsonFile?.overlays?.['cardinality']) {
+          cardinalityData = { ...jsonFile.overlays['cardinality'] };
+
+          // ONLY for README
+          allJSONFiles.push(JSON.stringify(cardinalityData));
+        }
+
         if (!languageList || languageList.length === 0) {
           throw new Error('No language found in the JSON file');
         }
