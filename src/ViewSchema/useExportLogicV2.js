@@ -16,6 +16,7 @@ const useExportLogicV2 = () => {
     customIsos,
     characterEncodingRowData,
     overlay,
+    cardinalityData
   } = useContext(Context);
 
   //CAPTURE SHEET DESCRIPTIONS DATA
@@ -267,6 +268,29 @@ const useExportLogicV2 = () => {
     return buildText;
   };
 
+  const buildCardinalityText = () => {
+    let buildText = "# Add cardinality overlay\n";
+    let isAdd = false;
+    let buildNewText = '';
+
+    if (cardinalityData.length > 0) {
+      buildText += "ADD CARDINALITY ATTRS";
+      cardinalityData.forEach((item, _) => {
+        if (item['EntryLimit'] && item['EntryLimit'] !== '') {
+          isAdd = true;
+          buildNewText += ` ${item['Attribute']}="${item['EntryLimit']}"`;
+        }
+      });
+    }
+
+    if (isAdd) {
+      buildText += buildNewText;
+      buildText += "\n";
+    }
+
+    return buildText;
+  };
+
   const buildOCAText = (data) => {
     let buildBodyText = "";
 
@@ -278,6 +302,7 @@ const useExportLogicV2 = () => {
     buildBodyText += buildLabelText(data);
     buildBodyText += buildInformationText(data);
     buildBodyText += buildEntryCodeText();
+    buildBodyText += buildCardinalityText();
     // buildBodyText += buildUnitsText(data);
     buildBodyText += buildCharacterEncodingText(data);
 
