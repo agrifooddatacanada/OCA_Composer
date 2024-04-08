@@ -270,23 +270,27 @@ const useExportLogicV2 = () => {
 
   const buildCardinalityText = () => {
     let buildText = "# Add cardinality overlay\n";
-    let isAdd = false;
-    let buildNewText = '';
 
-    if (cardinalityData.length > 0) {
-      buildText += "ADD CARDINALITY ATTRS";
-      cardinalityData.forEach((item, _) => {
-        if (item['EntryLimit'] && item['EntryLimit'] !== '') {
-          isAdd = true;
-          buildNewText += ` ${item['Attribute']}="${item['EntryLimit']}"`;
-        }
-      });
+    if (overlay["Cardinality"].selected) {
+      let isAdd = false;
+      let buildNewText = '';
+
+      if (cardinalityData.length > 0) {
+        cardinalityData.forEach((item, _) => {
+          if (item['EntryLimit'] && item['EntryLimit'] !== '') {
+            isAdd = true;
+            buildNewText += ` ${item['Attribute']}="${item['EntryLimit']}"`;
+          }
+        });
+      }
+
+      if (isAdd) {
+        buildText += "ADD CARDINALITY ATTRS";
+        buildText += buildNewText;
+        buildText += "\n";
+      }
     }
 
-    if (isAdd) {
-      buildText += buildNewText;
-      buildText += "\n";
-    }
 
     return buildText;
   };
