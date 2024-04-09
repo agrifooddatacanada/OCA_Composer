@@ -13,6 +13,7 @@ import MultipleSelectPlaceholder from './MultiSelectErrors';
 import CellHeader from '../components/CellHeader';
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ExportButton from './ExportButton';
+import { formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from '../constants/constants';
 
 const convertToCSV = (data) => {
   const csv = data.map(row => Object.values(row).join(',')).join('\n');
@@ -41,6 +42,18 @@ const CustomTooltip = (props) => {
 const flaggedHeader = (props, labelDescription, formatRuleRowData, characterEncodingRowData, cardinalityData) => {
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
   const formatRule = formatRuleRowData.find((item) => item?.Attribute === props?.displayName);
+  const attributeType = formatRule.Type;
+  let selectedOption = [];
+  if (attributeType.includes("Date")) {
+    selectedOption = formatCodeDateDescription;
+  } else if (attributeType.includes("Numeric")) {
+    selectedOption = formatCodeNumericDescription;
+  } else if (attributeType.includes("Binary")) {
+    selectedOption = formatCodeBinaryDescription;
+  } else if (attributeType.includes("Text")) {
+    selectedOption = formatCodeTextDescription;
+  }
+
   const characterEncoding = characterEncodingRowData.find((item) => item?.Attribute === props?.displayName);
   const cardinality = cardinalityData.find((item) => item?.Attribute === props?.displayName);
 
@@ -88,8 +101,22 @@ const flaggedHeader = (props, labelDescription, formatRuleRowData, characterEnco
                   <>
                     <br />
                     <Typography sx={{ fontWeight: 'bold' }}>Format:</Typography>
+                    <Typography >
+                      <span style={{
+                        fontWeight: '500',
+                      }}>- RegEx: </span> {formatRule?.FormatText || ''}
+                    </Typography>
                     <Typography>
-                      {formatRule?.FormatText || ''}
+                      <>
+                        {formatRule?.FormatText in selectedOption &&
+                          <>
+                            <span style={{
+                              fontWeight: '500',
+                            }}>- Description: </span>
+                            {selectedOption[formatRule?.FormatText]}
+                          </>
+                        }
+                      </>
                     </Typography>
                   </>}
               </>}
