@@ -124,7 +124,7 @@ export default function Header({ currentPage }) {
         setToolTipText(
           ''
         );
-        setHelpLink('');
+        setHelpLink('/cardinality_help');
         break;
       default:
         setHeader('');

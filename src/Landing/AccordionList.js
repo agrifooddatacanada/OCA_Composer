@@ -16,12 +16,16 @@ import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
 import { generateDataEntryV2 } from './generateDataEntryV2';
 import OCADataValidatorItem from './OCADataValidatorItem';
+import { generateDataEntry } from './generateDataEntry';
+import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
+import useExportLogicV2 from '../ViewSchema/useExportLogicV2';
 
 const AccordionList = () => {
   const isMobile = useMediaQuery('(max-width: 736px)');
   const navigate = useNavigate();
-  const { zipToReadme } = useContext(Context);
+  const { zipToReadme, jsonToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
+  const { jsonToTextFile } = useGenerateReadMeV2();
   const {
     rawFile,
     setRawFile,
@@ -33,7 +37,9 @@ const AccordionList = () => {
     setCurrentPage,
     setIsZip,
   } = useHandleAllDrop();
+
   const { handleExport, resetToDefaults } = useExportLogic();
+  // const { exportData } = useExportLogicV2();
 
   const navigateToStartPage = () => {
     resetToDefaults();
@@ -92,7 +98,10 @@ const AccordionList = () => {
           <UseASchemaAccordionItem />
           <UseASchemaWithDataAccordionItem
             disableButtonCheck={disableButtonCheck}
-            handleExport={handleExport}
+            handleExport={() => {
+              handleExport();
+              // exportData();
+            }}
           />
           <OCADataValidatorItem />
         </Box>
@@ -196,7 +205,13 @@ const AccordionList = () => {
             <Button
               variant='contained'
               color='navButton'
-              onClick={() => toTextFile(zipToReadme)}
+              onClick={() => {
+                if (zipToReadme.length > 0) {
+                  toTextFile(zipToReadme);
+                } else {
+                  jsonToTextFile(jsonToReadme);
+                }
+              }}
               sx={{
                 backgroundColor: CustomPalette.PRIMARY,
                 ':hover': { backgroundColor: CustomPalette.SECONDARY },
@@ -211,7 +226,13 @@ const AccordionList = () => {
             <Button
               variant='contained'
               color='navButton'
-              onClick={() => generateDataEntryV2(rawFile, setLoading)}
+              onClick={() => {
+                if (rawFile?.[0]?.type?.includes('zip')) {
+                  generateDataEntry(rawFile, setLoading);
+                } else if (rawFile?.[0]?.type?.includes('json')) {
+                  generateDataEntryV2(rawFile, setLoading);
+                }
+              }}
               sx={{
                 backgroundColor: CustomPalette.PRIMARY,
                 ':hover': { backgroundColor: CustomPalette.SECONDARY },

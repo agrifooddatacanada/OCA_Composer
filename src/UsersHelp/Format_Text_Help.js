@@ -3,6 +3,7 @@ import HelpPageContainer from '../components/HelpPageContainer';
 import HelpPageH2Title from '../components/HelpPageH2Title';
 import TypographyTag from '../components/TypographyTag';
 import CustomAnchorLink from '../components/CustomAnchorLink';
+import HelpPageH3Title from '../components/HelpPageH3Title';
 
 const FormatTextHelp = () => {
   return (
@@ -16,13 +17,13 @@ const FormatTextHelp = () => {
         The rules for what are acceptable data are called the format rules. In the semantic engine, users can select rules from a list for each of their datatypes.
       </TypographyTag>
       <br />
-      <HelpPageH2Title text="Boolean" />
+      <HelpPageH3Title text="Boolean" />
       <br />
       <TypographyTag>
         Boolean data is a data type that represents two possible values: true or false.
       </TypographyTag>
       <br />
-      <HelpPageH2Title text="DateTime" />
+      <HelpPageH3Title text="DateTime" />
       <br />
       <TypographyTag>
         The Semantic Engine and underlying OCA schema standard support the ISO standard for DateTime datatypes. <CustomAnchorLink link='https://www.iso.org/standard/40874.html' text="ISO 8601" /> specifies an international format of date and time data. You could find a summary of the standard by Markus Kuhn <CustomAnchorLink link='https://www.cl.cam.ac.uk/~mgk25/iso-time.html' text="here" />.
@@ -93,7 +94,7 @@ const FormatTextHelp = () => {
         </tbody>
       </table>
       <br />
-      <HelpPageH2Title text="Numeric" />
+      <HelpPageH3Title text="Numeric" />
       <br />
       <TypographyTag>
         The format rules for numbers are expressed in the language of RegEx (regular expression). A regular expression, or shortened as "RegEx", is a powerful way to search and filter strings. You could build a search pattern using character literals, operators, or constructs to match specific types of characters in a string. The OCA uses the Rust regex flavour, with the full documentation that could be found <CustomAnchorLink link='https://www.cl.cam.ac.uk/~mgk25/iso-time.html' text="here" />.
@@ -103,13 +104,13 @@ const FormatTextHelp = () => {
         It is not necessary for schema creators to understand RegEx as the Semantic Engine provides a list of common RegEx rules to select from. If you want to add a rule to the list contact us at adc@uoguelph.ca
       </TypographyTag>
       <br />
-      <HelpPageH2Title text="Text" />
+      <HelpPageH3Title text="Text" />
       <br />
       <TypographyTag>
         Similar to the Numeric datatype, the format rules for text are expressed as regular expressions. And similar to Numeric, the Semantic Engine provides a list of common RegEx rules to select from.
       </TypographyTag>
       <br />
-      <HelpPageH2Title text="Arrays" />
+      <HelpPageH3Title text="Arrays" />
       <br />
       <TypographyTag>
         For data entries that are arrays the format rules apply to the individual elements of the array. For example, the format rule for a single text entry is the same format rule used for an array of the same text entries.

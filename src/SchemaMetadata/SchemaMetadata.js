@@ -138,7 +138,7 @@ export default function SchemaMetadata({
             Attributes
           </Typography>
           <Tooltip
-            title="The list of attributes that were read from the column headers of the data file you selected at the beginning of schema creation."
+            title="The list of attributes correspond to the column headers of a datafile."
             placement="right"
             arrow
           >

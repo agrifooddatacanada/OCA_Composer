@@ -18,17 +18,17 @@ const AttributeDetailsHelp = () => {
 
       <br />
       <HelpPageH3Title text="Attribute Name" />
-      
+
       <TypographyTag>
         You can edit each attribute name, and reorder the attributes.
       </TypographyTag>
       <br />
       <HelpPageH3Title text="Sensitive" />
-    
+
       <TypographyTag>
         Sensitive attributes are where you can specify Sensitive Attribute for sensitive data (e.g. names of people, government identification, birth date etc.). Marking an entry with a check will allow you to flag any attributes where identifying information about entities may be captured.
       </TypographyTag>
-      <br/>
+      <br />
       <TypographyTag type='li'>
         Flagging an attribute acts as an alert to data users to treat the data as high-risk throughout the data lifecycle and encrypted or removed at any stage.
       </TypographyTag>
@@ -39,22 +39,19 @@ const AttributeDetailsHelp = () => {
 
       <br />
       <HelpPageH3Title text="Unit" />
-      
+
       <TypographyTag>
         Units are where you can describe the units for each attribute if needed.
       </TypographyTag>
       <br />
       <HelpPageH3Title text="Type" />
-      
-        
+
+
       <TypographyTag type='li'>
         Text: text, from single letter entries to fields of unstructured text
       </TypographyTag>
       <TypographyTag type='li'>
         Numeric: numbers
-      </TypographyTag>
-      <TypographyTag type='li'>
-        Reference: A SAID identifier
       </TypographyTag>
       <TypographyTag type='li'>
         Boolean: a data type where the data only has two possible variables: true or false
@@ -73,7 +70,7 @@ const AttributeDetailsHelp = () => {
       </TypographyTag>
       <br />
       <HelpPageH3Title text="List" />
-      
+
       <TypographyTag>
         A list is a very useful feature that allows the schema author to limit the data that can be entered for a specific attribute. Select this option if you would like to create a list of acceptable entries that the user will be able to select from.
       </TypographyTag>

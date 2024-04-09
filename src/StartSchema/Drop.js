@@ -16,6 +16,7 @@ export default function Drop({
   description,
   tipDescription,
   interfaceType = 0,
+  noteDescription
 }) {
   const acceptFormat = useMemo(() => {
     if (version === 0) {
@@ -134,6 +135,7 @@ export default function Drop({
           handleDragLeave={handleDragLeave}
           description={description}
           tipDescription={tipDescription}
+          noteDescription={noteDescription}
         />
       }</>
   );

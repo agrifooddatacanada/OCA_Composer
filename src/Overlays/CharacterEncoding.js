@@ -36,12 +36,11 @@ const CharacterEncoding = () => {
       },
       {
         field: "Character Encoding",
-        headerComponent: () => <CellHeader headerText='Character Encoding' helpText='Character encoding for the attribute. Recommend utf-8 unless you know it must be something else.' />,
+        headerComponent: () => <CellHeader headerText='Character Encoding' helpText='Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here.' />,
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
           attr: params.data.Attribute,
         }),
-        cellEditor: "characterEncodingEditor",
         width: 200,
       },
     ];
@@ -78,7 +77,7 @@ const CharacterEncoding = () => {
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
-      {loading && characterEncodingRowData.length > 40 && <Loading />}
+      {loading && characterEncodingRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={handleDeleteCurrentOverlay}

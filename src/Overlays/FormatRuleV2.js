@@ -90,7 +90,7 @@ const FormatRulesV2 = () => {
       {
         field: 'FormatRule',
         headerComponent: () => (
-          <CellHeader headerText='Format Rule' helpText='Placeholder text' />
+          <CellHeader headerText='Format Rule' helpText='Select the formatting rule that applies to data for each attribute.' />
         ),
         cellRendererFramework: FormatRuleTypeRenderer,
         width: 200,
@@ -120,7 +120,7 @@ const FormatRulesV2 = () => {
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
-      {loading && formatRuleRowData.length > 40 && <Loading />}
+      {loading && formatRuleRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={handleDeleteCurrentOverlay}
@@ -133,6 +133,7 @@ const FormatRulesV2 = () => {
           gap: '3rem',
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'center',
         }}
       >
         <Box className='ag-theme-balham' sx={{ width: 590 }}>
@@ -147,8 +148,29 @@ const FormatRulesV2 = () => {
             onGridReady={onGridReady}
           />
         </Box>
-        <Box>
-          Email {' '}
+        <Box sx={{
+          width: '80%',
+        }}>
+          All format rules are documented in the {' '}
+          <Link
+            to='#'
+            onClick={(e) => {
+              window.location.href = `https://github.com/agrifooddatacanada/format_options`;
+              e.preventDefault();
+            }}
+          >
+            format GitHub repository
+          </Link>.{' '}Request a new format to be added by {' '}
+          <Link
+            to='#'
+            onClick={(e) => {
+              window.location.href = `https://github.com/agrifooddatacanada/format_options/issues`;
+              e.preventDefault();
+            }}
+          >
+            raising an issue in the repository
+          </Link>
+          {' '} or email us at {' '}
           <Link
             to='#'
             onClick={(e) => {
@@ -157,8 +179,7 @@ const FormatRulesV2 = () => {
             }}
           >
             adc@uoguelph.ca
-          </Link>{' '}
-          to request a new format rule to be added to the list.
+          </Link>.
         </Box>
       </Box>
     </BackNextSkeleton>

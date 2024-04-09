@@ -14,6 +14,9 @@ import useExportLogic from "./useExportLogic";
 import { useNavigate } from "react-router-dom";
 import DepreciatedWarningCard from "../Landing/DepreciatedWarningCard";
 import Loading from "../components/Loading";
+import useExportLogicV2 from "./useExportLogicV2";
+
+const currentEnv = process.env.REACT_APP_ENV;
 
 export default function ViewSchema({ pageBack, isExport = true, addClearButton, pageForward }) {
   const navigate = useNavigate();
@@ -35,6 +38,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
   const { handleExport, resetToDefaults, exportDisabled } = useExportLogic();
+  const { exportData } = useExportLogicV2();
   const [loading, setLoading] = useState(true);
 
   //Formats language buttons in a way that can handle many languages cleanly
@@ -203,7 +207,6 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
   };
 
   return (
-
     <Box
       sx={{
         display: "flex",
@@ -215,7 +218,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
         marginTop: 2,
       }}
     >
-      {loading && attributeRowData.length > 40 && <Loading />}
+      {loading && attributeRowData?.length > 40 && <Loading />}
       <Box sx={{
         display: "flex",
         justifyContent: pageForward ? "flex-end" : "space-between",

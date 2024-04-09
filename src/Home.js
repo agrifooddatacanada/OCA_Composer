@@ -16,6 +16,9 @@ import Cardinality from './Overlays/Cardinality';
 import FormatRulesV2 from './Overlays/FormatRuleV2';
 import Header from './Header/Header';
 import Footer from './Footer/Footer';
+import UploadPage from './EntryCodes/UploadPage';
+import MatchingEntryCodeHeader from './EntryCodes/MatchingEntryCodeHeader';
+import MatchingJSONEntryCodeHeader from './EntryCodes/MatchingJSONEntryCodeHeader';
 
 const Home = ({
   currentPage,
@@ -25,6 +28,8 @@ const Home = ({
   showIntroCard,
   setShowIntroCard,
 }) => {
+
+  // Add new page to this page -> add to this list
   const allowedPages = useMemo(() => {
     return [
       ...pagesArray,
@@ -34,7 +39,10 @@ const Home = ({
       'CharacterEncoding',
       'RequiredEntries',
       'FormatRules',
-      'Cardinality'
+      'Cardinality',
+      'UploadEntryCodes',
+      'MatchingEntryCodes',
+      'MatchingJSONEntryCodes'
     ];
   }, []);
 
@@ -76,10 +84,12 @@ const Home = ({
         {currentPage === 'RequiredEntries' && <RequiredEntries />}
         {currentPage === 'FormatRules' && <FormatRulesV2 />}
         {currentPage === "Cardinality" && <Cardinality />}
+        {currentPage === "UploadEntryCodes" && <UploadPage />}
+        {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
+        {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
       </Box>
       <Footer currentPage={currentPage} />
     </>
-
   );
 };
 

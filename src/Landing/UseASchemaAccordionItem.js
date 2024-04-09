@@ -8,11 +8,13 @@ import { Context } from '../App';
 import { useNavigate } from 'react-router-dom';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
+import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
-  const { zipToReadme } = useContext(Context);
+  const { zipToReadme, jsonToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
+  const { jsonToTextFile } = useGenerateReadMeV2();
   const {
     rawFile,
     setRawFile,
@@ -102,7 +104,13 @@ const UseASchemaAccordionItem = () => {
           <Button
             variant="contained"
             color="navButton"
-            onClick={() => toTextFile(zipToReadme)}
+            onClick={() => {
+              if (zipToReadme.length > 0) {
+                toTextFile(zipToReadme);
+              } else {
+                jsonToTextFile(jsonToReadme);
+              }
+            }}
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
             disabled={disableButtonCheck}
           >

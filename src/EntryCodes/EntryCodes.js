@@ -5,6 +5,12 @@ import { Context } from "../App";
 import SingleTable from "./SingleTable";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
+
+const errorMessages = {
+  fieldEmpty: "Please fill out all fields",
+  quoteMisuse: "Fields cannot contain quotes or commas",
+};
 
 export default function EntryCodes() {
   const [selectedAttributes, setSelectedAttributes] = useState({});
@@ -19,14 +25,10 @@ export default function EntryCodes() {
     languages,
   } = useContext(Context);
   const [chosenTable, setChosenTable] = useState(0);
-
   const codeRefs = useRef();
   const entryCodeData = useRef();
-
-  const errorMessages = {
-    fieldEmpty: "Please fill out all fields",
-    quoteMisuse: "Fields cannot contain quotes or commas",
-  };
+  const pageForwardDisabledRef = useRef(false);
+  const [showWarning, setShowWarning] = useState(false);
 
   //Create codeRefs so there can be multiple grids on the page
   useEffect(() => {
@@ -73,10 +75,7 @@ export default function EntryCodes() {
     setCurrentPage("Details");
   };
 
-  const pageForwardDisabledRef = useRef(false);
-
   //Quotes, commas and blanks in these fields cause issues with the excel export (they interfere with the drop-down menu formatting)
-
   const pageForwardSave = () => {
     pageForwardDisabledRef.current = false;
     handleSave();
@@ -93,18 +92,18 @@ export default function EntryCodes() {
                 setErrorMessage("");
               }, [2000]);
             }
-            if (
-              value.includes("'") ||
-              value.includes('"') ||
-              value.includes("`") ||
-              value.includes(",")
-            ) {
-              pageForwardDisabledRef.current = true;
-              setErrorMessage(errorMessages.quoteMisuse);
-              setTimeout(() => {
-                setErrorMessage("");
-              }, [2000]);
-            }
+            // if (
+            //   value.includes("'") ||
+            //   value.includes('"') ||
+            //   value.includes("`") ||
+            //   value.includes(",")
+            // ) {
+            //   pageForwardDisabledRef.current = true;
+            //   setErrorMessage(errorMessages.quoteMisuse);
+            //   setTimeout(() => {
+            //     setErrorMessage("");
+            //   }, [2000]);
+            // }
           });
         });
       });
@@ -134,12 +133,21 @@ export default function EntryCodes() {
         codeRefs={codeRefs}
         chosenTable={chosenTable}
         setChosenTable={setChosenTable}
+        setShowCard={setShowWarning}
       />
     );
   });
 
   return (
     <BackNextSkeleton isBack pageBack={pageBackSave} isForward pageForward={pageForwardSave} errorMessage={errorMessage}>
+      {showWarning &&
+        <WarningEntryCodeDelete
+          title="Warning"
+          fieldArray={["Your current entry codes for this attribute will be overwritten."]}
+          setShowCard={setShowWarning}
+          handleForward={() => setCurrentPage("UploadEntryCodes")}
+        />
+      }
       <Box sx={{ width: "90%", margin: "auto" }}>
         <Typography
           sx={{
