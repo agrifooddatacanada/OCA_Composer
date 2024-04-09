@@ -287,7 +287,12 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
                     <Button
                       color="button"
                       variant="contained"
-                      onClick={() => handleExport(false)}
+                      onClick={() => {
+                        if (currentEnv === "DEV") {
+                          exportData();
+                        }
+                        handleExport(false);
+                      }}
                       sx={{
                         alignSelf: "flex-end",
                         width: "12rem",
@@ -445,7 +450,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
             flexDirection: "column",
             alignItems: "flex-end",
           }}
-        >
+        >;
           <Button
             color="warning"
             variant="outlined"
@@ -461,9 +466,9 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
           >
             Clear All Data and Restart
           </Button>
-        </Box>}
-      {showDeprecationCard && isZip && <DepreciatedWarningCard />}
-    </Box>
+        </Box >}
+      {/* {showDeprecationCard && isZip && <DepreciatedWarningCard />} */}
+    </Box >
 
   );
 }
