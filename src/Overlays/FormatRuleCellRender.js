@@ -3,7 +3,7 @@ import { IconButton, MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { CustomPalette } from "../constants/customPalette";
-import { formatCodeBinary, formatCodeBinaryDescription, formatCodeDate, formatCodeDateDescription, formatCodeNumeric, formatCodeNumericDescription, formatCodeText, formatCodeTextDescription } from "../constants/constants";
+import { descriptionToFormatCodeBinary, descriptionToFormatCodeDate, descriptionToFormatCodeNumeric, descriptionToFormatCodeText, formatCodeBinary, formatCodeBinaryDescription, formatCodeDate, formatCodeDateDescription, formatCodeNumeric, formatCodeNumericDescription, formatCodeText, formatCodeTextDescription } from "../constants/constants";
 
 export const TrashCanButton = memo(
   forwardRef((props, ref) => {
@@ -50,7 +50,7 @@ export const FormatRuleTypeRenderer = memo(
     const handleChange = (e) => {
       props.node.updateData({
         ...props.node.data,
-        FormatText: e.target.value,
+        FormatText: findCode(e.target.value),
       });
       setIsDropdownOpen(false);
       props.onRefresh();
@@ -67,16 +67,22 @@ export const FormatRuleTypeRenderer = memo(
       }
     };
 
-    const typesDisplay = selectedOption.map((value, index) => {
-      const description = attributeType.includes("Date") ? formatCodeDateDescription[value] : attributeType.includes("Numeric") ? formatCodeNumericDescription[value] : attributeType.includes("Binary") ? formatCodeBinaryDescription[value] : attributeType.includes("Text") ? formatCodeTextDescription[value] : "";
+    const findCode = (value) => {
+      return attributeType.includes("Date") ? descriptionToFormatCodeDate[value] : attributeType.includes("Numeric") ? descriptionToFormatCodeNumeric[value] : attributeType.includes("Binary") ? descriptionToFormatCodeBinary[value] : attributeType.includes("Text") ? descriptionToFormatCodeText[value] : "";
+    };
 
+    const findDescription = (value) => {
+      return attributeType.includes("Date") ? formatCodeDateDescription[value] : attributeType.includes("Numeric") ? formatCodeNumericDescription[value] : attributeType.includes("Binary") ? formatCodeBinaryDescription[value] : attributeType.includes("Text") ? formatCodeTextDescription[value] : "";
+    };
+
+    const typesDisplay = selectedOption.map((value, index) => {
       return (
         <MenuItem
           key={index + "_" + value}
           value={value}
           sx={{ border: "none", height: "2rem", fontSize: "small" }}
         >
-          {description && <span>{description}</span>}
+          {value && <span>{value}</span>}
         </MenuItem>
       );
     });
@@ -87,7 +93,7 @@ export const FormatRuleTypeRenderer = memo(
           selectedOption.length > 0 ?
             <DropdownMenuList
               handleKeyDown={handleKeyDown}
-              type={props.node.data.FormatText}
+              type={findDescription(props.node.data.FormatText)}
               handleChange={handleChange}
               handleClick={handleClick}
               isDropdownOpen={isDropdownOpen}

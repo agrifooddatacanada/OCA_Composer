@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import DepreciatedWarningCard from "../Landing/DepreciatedWarningCard";
 import Loading from "../components/Loading";
 import useExportLogicV2 from "./useExportLogicV2";
+import { formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from "../constants/constants";
 
 const currentEnv = process.env.REACT_APP_ENV;
 
@@ -188,7 +189,10 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
 
       const attrWithFormatRule = formatRuleRowData.find((row) => row.Attribute === attributeName);
       if (attrWithFormatRule?.['FormatText'] && attrWithFormatRule['FormatText'] !== '') {
-        dataObject['Add format rule for data'] = attrWithFormatRule['FormatText'];
+        const attributeType = attrWithFormatRule.Type;
+        const value = attrWithFormatRule['FormatText'];
+        const desc = attributeType.includes("Date") ? formatCodeDateDescription[value] : attributeType.includes("Numeric") ? formatCodeNumericDescription[value] : attributeType.includes("Binary") ? formatCodeBinaryDescription[value] : attributeType.includes("Text") ? formatCodeTextDescription[value] : "";
+        dataObject['Add format rule for data'] = desc;
       }
 
       newDisplayArray.push(dataObject);
