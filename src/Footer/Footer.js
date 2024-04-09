@@ -25,7 +25,7 @@ export default function Footer({ currentPage }) {
             cursor: 'pointer'
           }}
         >
-          {currentPage === 'Landing' ?
+          {(currentPage === 'Landing' || currentPage === "StartDataValidator") ?
             <>
               <img src={logoAgri} style={{ height: '80px' }} alt="Agri Logo" onClick={() => window.open('https://agrifooddatacanada.ca/', '_blank')} />
             </>

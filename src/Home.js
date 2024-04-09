@@ -14,6 +14,8 @@ import { pagesArray } from './App';
 import { useEffect, useMemo } from 'react';
 import Cardinality from './Overlays/Cardinality';
 import FormatRulesV2 from './Overlays/FormatRuleV2';
+import Header from './Header/Header';
+import Footer from './Footer/Footer';
 import UploadPage from './EntryCodes/UploadPage';
 import MatchingEntryCodeHeader from './EntryCodes/MatchingEntryCodeHeader';
 import MatchingJSONEntryCodeHeader from './EntryCodes/MatchingJSONEntryCodeHeader';
@@ -53,37 +55,41 @@ const Home = ({
   }, []);
 
   return (
-    <Box sx={{ flex: 1 }}>
-      {currentPage === 'Start' && <StartSchema pageForward={pageForward} />}
-      {currentPage === 'Metadata' && (
-        <SchemaMetadata
-          pageBack={pageBack}
-          pageForward={pageForward}
-          showIntroCard={showIntroCard}
-          setShowIntroCard={setShowIntroCard}
-        />
-      )}
-      {currentPage === 'Details' && (
-        <AttributeDetails pageBack={pageBack} pageForward={pageForward} />
-      )}
-      {currentPage === 'Codes' && <EntryCodes />}
+    <>
+      <Header currentPage={currentPage} />
+      <Box sx={{ flex: 1 }}>
+        {currentPage === 'Start' && <StartSchema pageForward={pageForward} />}
+        {currentPage === 'Metadata' && (
+          <SchemaMetadata
+            pageBack={pageBack}
+            pageForward={pageForward}
+            showIntroCard={showIntroCard}
+            setShowIntroCard={setShowIntroCard}
+          />
+        )}
+        {currentPage === 'Details' && (
+          <AttributeDetails pageBack={pageBack} pageForward={pageForward} />
+        )}
+        {currentPage === 'Codes' && <EntryCodes />}
 
-      {currentPage === 'LanguageDetails' && (
-        <LanguageDetails pageBack={pageBack} pageForward={pageForward} />
-      )}
-      {currentPage === 'View' && <ViewSchema pageBack={pageBack} />}
-      {currentPage === 'Create' && <CreateManually />}
-      {currentPage === 'Overlays' && (
-        <Overlays pageBack={pageBack} pageForward={pageForward} />
-      )}
-      {currentPage === 'CharacterEncoding' && <CharacterEncoding />}
-      {currentPage === 'RequiredEntries' && <RequiredEntries />}
-      {currentPage === 'FormatRules' && <FormatRulesV2 />}
-      {currentPage === "Cardinality" && <Cardinality />}
-      {currentPage === "UploadEntryCodes" && <UploadPage />}
-      {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
-      {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
-    </Box>
+        {currentPage === 'LanguageDetails' && (
+          <LanguageDetails pageBack={pageBack} pageForward={pageForward} />
+        )}
+        {currentPage === 'View' && <ViewSchema pageBack={pageBack} addClearButton />}
+        {currentPage === 'Create' && <CreateManually />}
+        {currentPage === 'Overlays' && (
+          <Overlays pageBack={pageBack} pageForward={pageForward} />
+        )}
+        {currentPage === 'CharacterEncoding' && <CharacterEncoding />}
+        {currentPage === 'RequiredEntries' && <RequiredEntries />}
+        {currentPage === 'FormatRules' && <FormatRulesV2 />}
+        {currentPage === "Cardinality" && <Cardinality />}
+        {currentPage === "UploadEntryCodes" && <UploadPage />}
+        {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
+        {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
+      </Box>
+      <Footer currentPage={currentPage} />
+    </>
   );
 };
 

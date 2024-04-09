@@ -6,7 +6,6 @@ import logo from '../assets/agri-logo.png';
 import logoWhite from '../assets/agri-logo-white.png';
 import { useLocation } from 'react-router-dom';
 import HeaderWrapper from './HeaderWrapper';
-import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 
 export default function Header({ currentPage }) {
@@ -90,6 +89,41 @@ export default function Header({ currentPage }) {
         setToolTipText(
           ''
         );
+        setHelpLink('');
+        break;
+      case 'StartDataValidator':
+        setHeader('Upload Schema and Dataset');
+        setToolTipText(
+          ''
+        );
+        setHelpLink('');
+        break;
+      case 'SchemaViewDataValidator':
+        setHeader('Preview Schema');
+        setToolTipText(
+          ''
+        );
+        setHelpLink('');
+        break;
+      case 'DatasetViewDataValidator':
+        setHeader('Preview Dataset');
+        setToolTipText(
+          ''
+        );
+        setHelpLink('');
+        break;
+      case 'AttributeMatchDataValidator':
+        setHeader('Matching Attributes');
+        setToolTipText(
+          ''
+        );
+        setHelpLink('');
+        break;
+      case 'OCADataValidatorCheck':
+        setHeader('Data Validator');
+        setToolTipText(
+          ''
+        );
         setHelpLink('/cardinality_help');
         break;
       default:
@@ -101,10 +135,10 @@ export default function Header({ currentPage }) {
   return (
     <HeaderWrapper
       isMobile={isMobile}
-      headerColor={currentPage === 'Landing' && CustomPalette.PRIMARY}
+      headerColor={(currentPage === 'Landing' || currentPage === "StartDataValidator") && CustomPalette.PRIMARY}
       leftItem={
         <>
-          {currentPage === 'Landing' ? (
+          {(currentPage === 'Landing' || currentPage === "StartDataValidator") ? (
             <Typography
               sx={{
                 fontSize: isMobile ? 18 : 40,
@@ -156,7 +190,7 @@ export default function Header({ currentPage }) {
       }
       rightItem={
         <>
-          {currentPage === 'Landing' ? (
+          {(currentPage === 'Landing' || currentPage === "StartDataValidator") ? (
             <img
               src={logoWhite}
               style={{

@@ -50,6 +50,12 @@ body {
   }
 }
 
+.ag-center-cols-container .cell-fail {
+  text-align: center;
+  font-weight: bold;
+  background-color: #f44336 !important;
+}
+
 .ag-center-cols-container .rag-grey-outer {
   background-color: #ecf0f1;
 }

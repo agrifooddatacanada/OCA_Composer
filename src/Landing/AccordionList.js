@@ -15,6 +15,7 @@ import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
 import { generateDataEntryV2 } from './generateDataEntryV2';
+import OCADataValidatorItem from './OCADataValidatorItem';
 import { generateDataEntry } from './generateDataEntry';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 import useExportLogicV2 from '../ViewSchema/useExportLogicV2';
@@ -102,6 +103,7 @@ const AccordionList = () => {
               // exportData();
             }}
           />
+          <OCADataValidatorItem />
         </Box>
 
         <Box
@@ -159,6 +161,7 @@ const AccordionList = () => {
             dropMessage={dropMessage}
             setDropMessage={setDropMessage}
             version={1}
+            interfaceType={1}
           />
           <Box
             sx={{

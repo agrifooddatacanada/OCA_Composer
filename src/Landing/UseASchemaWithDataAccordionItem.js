@@ -60,6 +60,7 @@ const UseASchemaWithDataAccordionItem = ({
           dropMessage={dropMessage}
           setDropMessage={setDropMessage}
           version={1}
+          interfaceType={1}
         />
 
         <Box

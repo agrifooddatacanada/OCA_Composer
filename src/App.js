@@ -1,13 +1,11 @@
 import './App.css';
 import { Box, ThemeProvider } from '@mui/material';
 import { CustomTheme } from './constants/theme';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useEffect, createContext } from 'react';
 import Home from './Home';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AddEntryCodesHelp from './UsersHelp/Add_Entry_Codes_Help';
-import Header from './Header/Header';
-import Footer from './Footer/Footer';
 import AttributeDetailsHelp from './UsersHelp/Attribute_Details_Help';
 import CreatingOCASchemaHelp from './UsersHelp/Creating_OCA_Schema_Help';
 import LanguageAttributeHelp from './UsersHelp/Language_Attribute_Help';
@@ -23,6 +21,7 @@ import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
 import ReactGA from 'react-ga';
 import FormatTextHelp from './UsersHelp/Format_Text_Help';
 import HelpStorage from './Landing/HelpStorage';
+import OCADataValidator from './OCADataValidator/OCADataValidator';
 import CardinalityHelp from './UsersHelp/Cardinality_Help';
 
 export const Context = createContext();
@@ -61,6 +60,7 @@ function App() {
   const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
   const [currentPage, setCurrentPage] = useState('Landing');
+  const [currentDataValidatorPage, setCurrentDataValidatorPage] = useState('StartDataValidator');
   const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: '', description: '' },
@@ -84,9 +84,25 @@ function App() {
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(items);
   const [selectedOverlay, setSelectedOverlay] = useState('');
-
   const [cardinalityData, setCardinalityData] = useState([]);
 
+  // Use for OCA Validator
+  const [jsonRawFile, setJsonRawFile] = useState([]);
+  const [jsonParsedFile, setJsonParsedFile] = useState(undefined);
+  const [jsonLoading, setJsonLoading] = useState(false);
+  const [jsonDropDisabled, setJsonDropDisabled] = useState(false);
+  const [jsonIsParsed, setJsonIsParsed] = useState(false);
+  const [datasetRawFile, setDatasetRawFile] = useState([]);
+  const [datasetLoading, setDatasetLoading] = useState(false);
+  const [datasetDropDisabled, setDatasetDropDisabled] = useState(false);
+  const [datasetIsParsed, setDatasetIsParsed] = useState(false);
+  const [schemaDataConformantHeader, setSchemaDataConformantHeader] = useState([]);
+  const [schemaDataConformantRowData, setSchemaDataConformantRowData] = useState([]);
+  const [matchingRowData, setMatchingRowData] = useState([]);
+  const firstTimeMatchingRef = useRef(true);
+  const [ogWorkbook, setOgWorkbook] = useState(null);
+
+  const ogSchemaDataConformantHeaderRef = useRef([]);
   // Entry Code upload
   const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
   const [tempEntryCodeRowData, setTempEntryCodeRowData] = useState([]);
@@ -111,6 +127,18 @@ function App() {
       setHistory((prev) => prev.slice(0, prev.length - 1));
     }
   };
+
+  const backToOCADataValidatorUploadPage = () => {
+    setCurrentDataValidatorPage('StartDataValidator');
+  };
+
+  useEffect(() => {
+    if (datasetRawFile.length > 0 && ogSchemaDataConformantHeaderRef.current.length === 0 && schemaDataConformantHeader.length > 0) {
+      ogSchemaDataConformantHeaderRef.current = schemaDataConformantHeader;
+    } else if (schemaDataConformantHeader.length === 0) {
+      ogSchemaDataConformantHeaderRef.current = [];
+    }
+  }, [schemaDataConformantHeader]);
 
   useEffect(() => {
     if (history[history.length - 1] !== currentPage) {
@@ -194,6 +222,30 @@ function App() {
     setFormatRuleRowData(newFormatRuleArray);
   }, [attributeRowData]);
 
+  useEffect(() => {
+    if (jsonRawFile.length > 0) {
+      const newMatchingRowData = [];
+      attributesList.forEach((item, index) => {
+        // if matchingRowData has data, use it
+        const matchingRow = matchingRowData.find(
+          (obj) => obj.Attribute === item
+        );
+        const newObj = {
+          Attribute: item,
+          Dataset: ''
+        };
+        if (matchingRow) {
+          newObj['Dataset'] = matchingRow['Dataset'];
+        }
+        languages.forEach((lang) => {
+          newObj[lang] = lanAttributeRowData?.[lang]?.[index]?.Label;
+        });
+        newMatchingRowData.push(newObj);
+      });
+      setMatchingRowData(newMatchingRowData);
+    }
+  }, [datasetRawFile, jsonRawFile, attributesList]);
+
   function createEntryCodeRowData(
     languages,
     attributesWithLists,
@@ -266,7 +318,7 @@ function App() {
     setLanAttributeRowData({});
     setIsZip(false);
     setZipToReadme([]);
-  }, [fileData]);
+  }, [fileData, jsonRawFile]);
 
   return (
     <div className='App'>
@@ -320,6 +372,35 @@ function App() {
             setShowDeprecationCard,
             cardinalityData,
             setCardinalityData,
+            setCurrentDataValidatorPage,
+            jsonLoading,
+            setJsonLoading,
+            jsonDropDisabled,
+            setJsonDropDisabled,
+            datasetLoading,
+            setDatasetLoading,
+            datasetDropDisabled,
+            setDatasetDropDisabled,
+            jsonRawFile,
+            setJsonRawFile,
+            datasetRawFile,
+            setDatasetRawFile,
+            jsonIsParsed,
+            setJsonIsParsed,
+            datasetIsParsed,
+            setDatasetIsParsed,
+            schemaDataConformantHeader,
+            setSchemaDataConformantHeader,
+            matchingRowData,
+            setMatchingRowData,
+            firstTimeMatchingRef,
+            schemaDataConformantRowData,
+            setSchemaDataConformantRowData,
+            ogWorkbook,
+            setOgWorkbook,
+            jsonParsedFile,
+            setJsonParsedFile,
+            ogSchemaDataConformantHeaderRef,
             entryCodeHeaders,
             setEntryCodeHeaders,
             tempEntryCodeRowData,
@@ -340,7 +421,6 @@ function App() {
             }}
           >
             <BrowserRouter>
-              <Header currentPage={currentPage} />
               <Routes>
                 <Route path='/' element={<Landing />} />
                 <Route
@@ -354,6 +434,12 @@ function App() {
                       showIntroCard={showIntroCard}
                       setShowIntroCard={setShowIntroCard}
                     />
+                  }
+                />
+                <Route
+                  path='/oca-data-validator'
+                  element={
+                    <OCADataValidator currentDataValidatorPage={currentDataValidatorPage} backToOCADataValidatorUploadPage={backToOCADataValidatorUploadPage} />
                   }
                 />
                 <Route
@@ -400,7 +486,6 @@ function App() {
                 <Route path='*' element={<Navigate to='/' />} />
               </Routes>
             </BrowserRouter>
-            <Footer currentPage={currentPage} />
           </Box>
         </Context.Provider>
       </ThemeProvider>
