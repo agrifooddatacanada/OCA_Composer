@@ -42,15 +42,15 @@ const CustomTooltip = (props) => {
 const flaggedHeader = (props, labelDescription, formatRuleRowData, characterEncodingRowData, cardinalityData) => {
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
   const formatRule = formatRuleRowData.find((item) => item?.Attribute === props?.displayName);
-  const attributeType = formatRule.Type;
+  const attributeType = formatRule?.Type;
   let selectedOption = [];
-  if (attributeType.includes("Date")) {
+  if (attributeType?.includes("Date")) {
     selectedOption = formatCodeDateDescription;
-  } else if (attributeType.includes("Numeric")) {
+  } else if (attributeType?.includes("Numeric")) {
     selectedOption = formatCodeNumericDescription;
-  } else if (attributeType.includes("Binary")) {
+  } else if (attributeType?.includes("Binary")) {
     selectedOption = formatCodeBinaryDescription;
-  } else if (attributeType.includes("Text")) {
+  } else if (attributeType?.includes("Text")) {
     selectedOption = formatCodeTextDescription;
   }
 
@@ -204,8 +204,11 @@ const OCADataValidatorCheck = () => {
   };
 
   const generateCSVFile = async (ogHeader) => {
-    const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
-
+    const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
+      const newObject = { ...node?.data };
+      delete newObject['error'];
+      return newObject;
+    });
     const newHeader = [];
 
     const mappingFromAttrToDataset = {};
