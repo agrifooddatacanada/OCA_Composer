@@ -103,7 +103,7 @@ const AccordionList = () => {
               // exportData();
             }}
           />
-          <OCADataValidatorItem />
+          {/* <OCADataValidatorItem /> */}
         </Box>
 
         <Box

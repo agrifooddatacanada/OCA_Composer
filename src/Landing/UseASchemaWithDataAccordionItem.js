@@ -43,13 +43,10 @@ const UseASchemaWithDataAccordionItem = ({
 
       <AccordionDetails sx={{ textAlign: 'start' }}>
         <Typography>
-          With your machine-readable .json schema bundle you can begin to use it
-          in your workflows.
+          Use your machine-readable schema bundle to help you collect schema conformant data, or to verify that data you have collected follows the rules in the schema. Verifying data is an important step in your analysis.
         </Typography>
-        <Typography sx={{ marginTop: '20px' }}>
-          For example, using a schema as a template, generate an Excel sheet
-          prepared for data entry. Or if you have a python workflow you can
-          incorporate data validation using data rules of the schema.
+        <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
+          Enter data with Excel
         </Typography>
 
         <Drop
@@ -78,12 +75,43 @@ const UseASchemaWithDataAccordionItem = ({
             setLoading={setLoading}
             disableButtonCheck={disableButtonCheck}
           />
-          <CustomAnchorLink
-            link='https://github.com/agrifooddatacanada/OCA_data_set_validator'
+          {/* <CustomAnchorLink
+            link='/oca-data-validator'
             text='Validate data against a schema'
             overrideStyle={{ marginTop: 2 }}
-          />
+          /> */}
         </Box>
+        <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
+          Enter data in your browser
+        </Typography>
+        <Typography>
+          Go to our
+          {' '}
+          <CustomAnchorLink link="/oca-data-validator" text="Data Entry tool" />
+          {' '}
+          to enter data via a web-browser based table. You can download and save your work to your computer when you are finished.
+        </Typography>
+
+        <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
+          Verify data in your python code
+        </Typography>
+        <Typography>
+          Visit our
+          {' '}
+          <CustomAnchorLink link="https://github.com/agrifooddatacanada/OCA_data_set_validator" text="GitHub repository" />
+          {' '}
+          to find a python package that you can use to include data verification in your workflow.
+        </Typography>
+
+        <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
+          Verify data in your browser
+        </Typography>
+        <Typography>
+          Our {' '}
+          <CustomAnchorLink link="/oca-data-validator" text="Data Entry tool" />
+          {' '}
+          also supports data verification. Upload a schema and a dataset and you can verify your dataset against the data rules in the schema.
+        </Typography>
       </AccordionDetails>
     </AccordionItemWrapper>
   );
