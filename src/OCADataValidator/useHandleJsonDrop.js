@@ -48,7 +48,20 @@ export const useHandleJsonDrop = () => {
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const jsonFile = JSON.parse(e.target.result)?.['bundle'];
+        const rawParse = JSON.parse(e.target.result);
+        let jsonFile = null;
+        if (rawParse?.['bundle']) {
+          jsonFile = rawParse?.['bundle'];
+        } else if (rawParse?.['schema']?.[0]) {
+          jsonFile = rawParse?.['schema']?.[0];
+        } else {
+          jsonFile = rawParse;
+        }
+
+        if (!jsonFile) {
+          throw new Error('No JSON file found');
+        }
+
         setJsonParsedFile(jsonFile);
         const languageList = [];
         const informationList = [];

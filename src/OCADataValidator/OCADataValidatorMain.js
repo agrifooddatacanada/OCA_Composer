@@ -49,9 +49,8 @@ const OCADataValidatorMain = () => {
           }}
         >
           <Box sx={{ width: isMobile ? '100%' : '50%' }}>
-            <Typography variant="h6" sx={{ textAlign: 'left', color: "white" }}>Data entry and verification</Typography>
-            <Box sx={{ marginTop: 5 }}>
-              <Typography variant="h6" sx={{ textAlign: 'left', color: "white" }}>Improve your data</Typography>
+            <Box>
+              <Typography variant="h6" sx={{ textAlign: 'left', color: "white", fontSize: isMobile ? '2rem' : '2.2rem', }}>Improve your data</Typography>
               <Typography sx={{ textAlign: 'left', color: "white" }}>Enter data according to rules in a schema.</Typography>
               <Typography sx={{ textAlign: 'left', color: "white" }}>Check your existing data against rules in a schema.</Typography>
             </Box>
@@ -71,7 +70,7 @@ const OCADataValidatorMain = () => {
         if (datasetRawFile.length > 0) {
           setCurrentDataValidatorPage('AttributeMatchDataValidator');
         } else {
-          setCurrentDataValidatorPage('CreateANewDatasetDataValidator');
+          setCurrentDataValidatorPage('OCADataValidatorCheck');
         }
 
       }} />

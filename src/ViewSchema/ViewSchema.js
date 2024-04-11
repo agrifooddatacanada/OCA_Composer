@@ -35,6 +35,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
     formatRuleRowData,
     showDeprecationCard
   } = useContext(Context);
+
   const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
@@ -189,10 +190,14 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
 
       const attrWithFormatRule = formatRuleRowData.find((row) => row.Attribute === attributeName);
       if (attrWithFormatRule?.['FormatText'] && attrWithFormatRule['FormatText'] !== '') {
-        const attributeType = attrWithFormatRule.Type;
-        const value = attrWithFormatRule['FormatText'];
+        const attributeType = attrWithFormatRule?.Type;
+        const value = attrWithFormatRule?.['FormatText'];
         const desc = attributeType.includes("Date") ? formatCodeDateDescription[value] : attributeType.includes("Numeric") ? formatCodeNumericDescription[value] : attributeType.includes("Binary") ? formatCodeBinaryDescription[value] : attributeType.includes("Text") ? formatCodeTextDescription[value] : "";
-        dataObject['Add format rule for data'] = desc;
+        if (desc) {
+          dataObject['Add format rule for data'] = desc;
+        } else {
+          dataObject['Add format rule for data'] = value;
+        }
       }
 
       newDisplayArray.push(dataObject);

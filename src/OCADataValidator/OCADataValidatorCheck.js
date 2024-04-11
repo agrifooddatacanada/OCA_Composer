@@ -167,7 +167,9 @@ const OCADataValidatorCheck = () => {
     datasetRawFile,
     formatRuleRowData,
     cardinalityData,
-    characterEncodingRowData
+    characterEncodingRowData,
+    attributesList,
+    setSchemaDataConformantHeader
   } = useContext(Context);
 
   const [rowData, setRowData] = useState([]);
@@ -460,7 +462,9 @@ const OCADataValidatorCheck = () => {
       newRow[header] = "";
     });
 
-    setRowData((prev) => [...prev, newRow]);
+    const currentData = gridRef.current.api.getRenderedNodes().map((node) => node.data);
+
+    setRowData((prev) => [...currentData, newRow]);
   };
 
   const onCellValueChanged = (e) => {
@@ -486,9 +490,13 @@ const OCADataValidatorCheck = () => {
 
   useEffect(() => {
     const columns = [];
+    const variableToCheck = datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
+    if (datasetRawFile.length === 0) {
+      setSchemaDataConformantHeader(attributesList);
+    }
 
-    if (schemaDataConformantHeader && schemaDataConformantHeader?.length > 0) {
-      schemaDataConformantHeader.forEach((header) => {
+    if (variableToCheck && variableToCheck?.length > 0) {
+      variableToCheck.forEach((header) => {
         columns.push(
           {
             headerName: header,
@@ -549,7 +557,7 @@ const OCADataValidatorCheck = () => {
                 if (datasetRawFile.length > 0) {
                   setCurrentDataValidatorPage('AttributeMatchDataValidator');
                 } else {
-                  setCurrentDataValidatorPage('CreateANewDatasetDataValidator');
+                  setCurrentDataValidatorPage('StartDataValidator');
                 }
               }}
             >

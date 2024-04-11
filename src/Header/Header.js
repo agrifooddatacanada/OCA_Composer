@@ -139,16 +139,20 @@ export default function Header({ currentPage }) {
       leftItem={
         <>
           {(currentPage === 'Landing' || currentPage === "StartDataValidator") ? (
-            <Typography
-              sx={{
-                fontSize: isMobile ? 18 : 40,
-                fontWeight: 'bold',
-                color: 'white',
-                alignSelf: 'center',
-              }}
-            >
-              Semantic Engine
-            </Typography>
+            <Box sx={{ flex: 'column' }}>
+              <Typography
+                sx={{
+                  fontSize: isMobile ? 18 : 40,
+                  fontWeight: 'bold',
+                  color: 'white',
+                  alignSelf: 'start',
+                  textAlign: 'left'
+                }}
+              >
+                Semantic Engine
+              </Typography>
+              {currentPage === "StartDataValidator" && <Typography variant="h5" sx={{ textAlign: 'left', color: "white", marginTop: '-5px' }}>Data entry and verification</Typography>}
+            </Box>
           ) : (
             <>
               <img

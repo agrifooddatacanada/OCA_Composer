@@ -17,7 +17,7 @@ const OCADataValidator = ({ currentDataValidatorPage, backToOCADataValidatorUplo
       }
       {currentDataValidatorPage === 'SchemaViewDataValidator' && <ViewSchema pageForward={backToOCADataValidatorUploadPage} isExport={false} />}
       {currentDataValidatorPage === 'DatasetViewDataValidator' && <DatasetView />}
-      {currentDataValidatorPage === 'CreateANewDatasetDataValidator' && <CreateANewDataset />}
+      {/* {currentDataValidatorPage === 'CreateANewDatasetDataValidator' && <CreateANewDataset />} */}
       {currentDataValidatorPage === 'AttributeMatchDataValidator' && <AttributeMatch />}
       {currentDataValidatorPage === 'OCADataValidatorCheck' && <OCADataValidatorCheck />}
       <Footer currentPage={currentDataValidatorPage} />
