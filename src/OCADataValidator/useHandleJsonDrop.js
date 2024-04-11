@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { messages } from "../constants/messages";
 import { Context } from "../App";
 import useZipParser from "../StartSchema/useZipParser";
+import JSZip from "jszip";
 
 export const useHandleJsonDrop = () => {
   const {
@@ -208,9 +209,123 @@ export const useHandleJsonDrop = () => {
     }
   }, [datasetRawFile.length, jsonIsParsed]);
 
+  const handleZipDrop = useCallback((acceptedFiles) => {
+    try {
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        const zip = await JSZip.loadAsync(e.target.result);
+        const languageList = [];
+        const informationList = [];
+        const labelList = [];
+        const metaList = [];
+        const entryList = [];
+        const allZipFiles = [];
+        let entryCodeSummary = {};
+        let conformance = undefined;
+        let characterEncoding = undefined;
+        let loadUnits = undefined;
+        let formatRules = undefined;
+        let cardinalityData = undefined;
+
+        // load up metadata file in OCA bundle
+        const loadMetadataFile = await zip.files["meta.json"].async("text");
+        const metadataJson = JSON.parse(loadMetadataFile);
+        const root = metadataJson.root;
+        allZipFiles.push(loadMetadataFile);
+
+        // loop through all files in OCA bundle
+        for (const [key, file] of Object.entries(metadataJson.files[root])) {
+          const content = await zip.files[file + '.json'].async("text");
+
+          if (key.includes("meta")) {
+            metaList.push(JSON.parse(content));
+            languageList.push(key.substring(6, 8));
+          }
+
+          if (key.includes("information")) {
+            informationList.push(JSON.parse(content));
+          } else if (key.includes("format")) {
+            // Format word is inside Information word, so we need to check if it is a format or information
+            formatRules = JSON.parse(content);
+          }
+
+
+          if (key.includes("label")) {
+            labelList.push(JSON.parse(content));
+          }
+
+          if (key.includes("entry (")) {
+            entryList.push(JSON.parse(content));
+          }
+
+          if (key.includes("entry_code")) {
+            entryCodeSummary = JSON.parse(content);
+          }
+
+          if (key.includes("conformance")) {
+            conformance = JSON.parse(content);
+          }
+
+          if (key.includes("character_encoding")) {
+            characterEncoding = JSON.parse(content);
+          }
+
+          if (key.includes("unit")) {
+            loadUnits = JSON.parse(content);
+          }
+
+          if (key.includes("cardinality")) {
+            cardinalityData = JSON.parse(content);
+          }
+
+          allZipFiles.push(content);
+        }
+
+        const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
+        allZipFiles.push(loadRoot);
+
+        processLanguages(languageList);
+        processMetadata(metaList);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData);
+        setZipToReadme(allZipFiles);
+      };
+
+      reader.readAsArrayBuffer(acceptedFiles[0]);
+
+      reader.onloadend = () => {
+        setTimeout(() => {
+          setJsonDropDisabled(true);
+          setJsonDropMessage({ message: "", type: "" });
+          setJsonLoading(false);
+          setDatasetLoading(false);
+          if (datasetRawFile.length === 0) {
+            setDatasetDropDisabled(false);
+          }
+          if (!jsonIsParsed) {
+            setJsonIsParsed(true);
+            setCurrentDataValidatorPage("SchemaViewDataValidator");
+          }
+        }, 900);
+      };
+    } catch (error) {
+      setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+      setJsonLoading(false);
+      setDatasetLoading(false);
+      if (datasetRawFile.length === 0) {
+        setDatasetDropDisabled(false);
+      }
+      setTimeout(() => {
+        setJsonDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, []);
+
   useEffect(() => {
     if (jsonRawFile && jsonRawFile.length > 0 && jsonRawFile[0].path.includes(".json")) {
       handleJsonDrop(jsonRawFile);
+    } else if (jsonRawFile && jsonRawFile.length > 0 && jsonRawFile[0].path.includes(".zip")) {
+      handleZipDrop(jsonRawFile);
     } else if (jsonRawFile && jsonRawFile.length > 0) {
       setJsonDropMessage({ message: messages.uploadFail, type: "error" });
       setJsonLoading(false);

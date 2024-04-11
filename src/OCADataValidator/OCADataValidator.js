@@ -1,4 +1,3 @@
-import { Box, Typography } from "@mui/material";
 import Footer from "../Footer/Footer";
 import Header from "../Header/Header";
 import ViewSchema from "../ViewSchema/ViewSchema";
@@ -6,7 +5,6 @@ import AttributeMatch from "./AttributeMatch";
 import DatasetView from "./DatasetView";
 import OCADataValidatorCheck from "./OCADataValidatorCheck";
 import OCADataValidatorMain from "./OCADataValidatorMain";
-import CreateANewDataset from "./CreateANewDataset";
 
 const OCADataValidator = ({ currentDataValidatorPage, backToOCADataValidatorUploadPage }) => {
   return (
