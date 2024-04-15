@@ -10,7 +10,7 @@ const LearnAboutDataVerification = () => {
   return (
     <>
       <Header currentPage="Landing" />
-      <Box sx={{ fontFamily: 'roboto', fontWeight: ' 400', fontSize: '1rem', textAlign: 'left', padding: '1.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
+      <Box sx={{ fontFamily: 'roboto', fontWeight: ' 400', fontSize: '1rem', textAlign: 'left', padding: '1.5rem', paddingLeft: '3rem', paddingRight: '3rem', display: 'flex', flex: 1, flexDirection: "column", }}>
         <HelpPageH3Title text="Data Verification" />
         <br />
         <TypographyTag>

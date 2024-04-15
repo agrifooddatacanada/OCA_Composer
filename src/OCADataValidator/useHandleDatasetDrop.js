@@ -21,7 +21,8 @@ export const useHandleDatasetDrop = () => {
     setMatchingRowData,
     setSchemaDataConformantHeader,
     setSchemaDataConformantRowData,
-    setOgWorkbook
+    setOgWorkbook,
+    firstTimeMatchingRef
   } = useContext(Context);
 
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
@@ -40,6 +41,7 @@ export const useHandleDatasetDrop = () => {
     setOgWorkbook(null);
     setSchemaDataConformantHeader([]);
     setSchemaDataConformantRowData([]);
+    firstTimeMatchingRef.current = true;
   }, []);
 
   const processCSVFile = useCallback((file) => {
