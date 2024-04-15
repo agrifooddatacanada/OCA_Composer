@@ -157,7 +157,7 @@ export const useHandleDatasetDrop = () => {
   }, [datasetIsParsed]);
 
   const processExcelFile = useCallback(async (workbook) => {
-    const schemaConformantDataName = "Schema conformant data";
+    const schemaConformantDataName = "Schema Conformant Data";
     const worksheet = workbook.Sheets[schemaConformantDataName];
 
     if (!worksheet) {

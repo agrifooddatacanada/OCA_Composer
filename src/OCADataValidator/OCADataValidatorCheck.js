@@ -27,12 +27,12 @@ const CustomTooltip = (props) => {
   return (
     <>
       {error.length > 0 ?
-        (<Box className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
-          <Typography sx={{ marginBottom: '5px', fontWeight: 'bold', fontSize: '18px' }}>
+        (<Box className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', width: '100%', minWidth: '200px', maxWidth: '600px', maxHeight: '200px', overflow: 'hidden' }}>
+          <Typography sx={{ marginBottom: '5px', fontWeight: 'bold', fontSize: '18px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             Error:
           </Typography>
-          <Typography>
-            {error}
+          <Typography style={{ wordWrap: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {error.toString()}
           </Typography>
         </Box>)
         : <p></p>}
@@ -414,7 +414,7 @@ const OCADataValidatorCheck = () => {
     try {
       const newWorkbook = await copyFirstTwoWorksheets(ogWorkbook);
 
-      const schemaConformantDataNameWorksheet = newWorkbook.addWorksheet("Schema conformant data");
+      const schemaConformantDataNameWorksheet = newWorkbook.addWorksheet("Schema Conformant Data");
       makeHeaderRow(schemaDataConformantHeader, schemaConformantDataNameWorksheet, 20);
       const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
       newData.forEach((row, index) => {
