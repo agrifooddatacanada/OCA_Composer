@@ -1,5 +1,5 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Box, Button, MenuItem, Typography } from '@mui/material';
 import { gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
 import '../App.css';
@@ -14,6 +14,7 @@ import CellHeader from '../components/CellHeader';
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ExportButton from './ExportButton';
 import { formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from '../constants/constants';
+import { DropdownMenuList } from '../components/DropdownMenuCell';
 
 const convertToCSV = (data) => {
   const csv = data.map(row => Object.values(row).join(',')).join('\n');
@@ -153,6 +154,67 @@ const flaggedHeader = (props, labelDescription, formatRuleRowData, characterEnco
   );
 };
 
+const EntryCodeDropdownSelector = memo(
+  forwardRef((props, ref) => {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const columnHeader = props.colDef.field;
+    const listItemObjectDisplay = props.dataHeaders?.[columnHeader].reduce((acc, item) => {
+      acc[item['Code']] = item[props.lang];
+      return acc;
+    }, {});
+    const listItems = Object.keys(listItemObjectDisplay);
+
+    const handleChange = (e) => {
+      props.node.updateData({
+        ...props.data,
+        [columnHeader]: e.target.value,
+      });
+      props.setRevalidateData(true);
+      setIsDropdownOpen(false);
+    };
+
+    const handleClick = () => {
+      setIsDropdownOpen(!isDropdownOpen);
+    };
+
+    const handleKeyDown = (e) => {
+      const keyPressed = e.key;
+      if (keyPressed === "Delete" || keyPressed === "Backspace") {
+      }
+    };
+
+    const typesDisplay = listItems.map((value, index) => {
+      return (
+        <MenuItem
+          key={index + "_" + value}
+          value={value}
+          sx={{ border: "none", height: "2rem", fontSize: "small" }}
+        >
+          {value}: {listItemObjectDisplay[value] || ''}
+        </MenuItem>
+      );
+    });
+
+    return (
+      <>
+        {
+          listItems.length > 0 ?
+            <DropdownMenuList
+              handleKeyDown={handleKeyDown}
+              type={props.node.data?.[columnHeader]}
+              handleChange={handleChange}
+              handleClick={handleClick}
+              isDropdownOpen={isDropdownOpen}
+              setIsDropdownOpen={setIsDropdownOpen}
+              typesDisplay={typesDisplay}
+            /> :
+            <></>
+        }
+      </>
+    );
+  })
+);
+
 const OCADataValidatorCheck = () => {
   const {
     schemaDataConformantRowData,
@@ -169,18 +231,18 @@ const OCADataValidatorCheck = () => {
     cardinalityData,
     characterEncodingRowData,
     attributesList,
-    setSchemaDataConformantHeader
+    setSchemaDataConformantHeader,
+    savedEntryCodes
   } = useContext(Context);
 
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const [revalidateData, setRevalidateData] = useState(false);
-  const [type, setType] = useState(languages[0] || "");
+  const langRef = useRef(languages[0]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [errorName, setErrorNameList] = useState([]);
   const [firstValidate, setFirstValidate] = useState(false);
   const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
-
   const gridRef = useRef();
 
   const defaultColDef = useMemo(() => {
@@ -189,9 +251,14 @@ const OCADataValidatorCheck = () => {
       flex: 1,
       minWidth: 100,
       tooltipComponent: CustomTooltip,
-      headerComponent: (params) => flaggedHeader(params, lanAttributeRowData[type], formatRuleRowData, characterEncodingRowData, cardinalityData),
+      headerComponent: (params) => flaggedHeader(params, lanAttributeRowData[langRef.current], formatRuleRowData, characterEncodingRowData, cardinalityData),
+      cellRendererParams: () => ({
+        dataHeaders: savedEntryCodes,
+        lang: langRef.current,
+        setRevalidateData,
+      }),
     };
-  }, [lanAttributeRowData, type]);
+  }, [lanAttributeRowData, langRef.current]);
 
   const handleSave = async (ogHeader = false) => {
     if (ogWorkbook !== null) {
@@ -232,6 +299,7 @@ const OCADataValidatorCheck = () => {
   };
 
   const handleValidate = async () => {
+    gridRef.current.api.stopEditing();
     gridRef.current.api.showLoadingOverlay();
     setRevalidateData(false);
     setFirstValidate(true);
@@ -281,7 +349,6 @@ const OCADataValidatorCheck = () => {
             }
             return copy;
           });
-          //set Timeout at least 1.5 seconds
           setTimeout(() => {
             gridRef.current.api.hideOverlay();
           }, 800);
@@ -454,7 +521,7 @@ const OCADataValidatorCheck = () => {
   };
 
   const handleChange = useCallback((e) => {
-    setType(e.target.value);
+    langRef.current = e.target.value;
     setIsDropdownOpen(false);
   }, []);
 
@@ -493,6 +560,37 @@ const OCADataValidatorCheck = () => {
     setRevalidateData(true);
   };
 
+  const handleMoveBack = () => {
+    const currentData = gridRef.current.api.getRenderedNodes()?.map((node) => node.data);
+
+    if (datasetRawFile.length > 0) {
+      const mappingFromAttrToDataset = {};
+      for (const node of matchingRowData) {
+        mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
+      }
+
+      const newData = [];
+      for (const node of currentData) {
+        const newRow = {};
+        for (const [key, value] of Object.entries(node)) {
+          if (key in mappingFromAttrToDataset) {
+            newRow[mappingFromAttrToDataset[key]] = value;
+          } else {
+            newRow[key] = value;
+          }
+        }
+        newData.push(newRow);
+      }
+
+      setSchemaDataConformantHeader(prev => prev.map((header) => mappingFromAttrToDataset[header] || header));
+      setSchemaDataConformantRowData(newData);
+      setCurrentDataValidatorPage('AttributeMatchDataValidator');
+    } else {
+      setSchemaDataConformantRowData(currentData);
+      setCurrentDataValidatorPage('StartDataValidator');
+    }
+  };
+
   useEffect(() => {
     const columns = [];
     const variableToCheck = datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
@@ -509,6 +607,7 @@ const OCADataValidatorCheck = () => {
             minWidth: 150,
             tooltipComponentParams: { color: '#F88379' },
             tooltipValueGetter: (params) => ({ value: params.value }),
+            cellRendererFramework: header in savedEntryCodes ? EntryCodeDropdownSelector : undefined,
           }
         );
       });
@@ -565,36 +664,7 @@ const OCADataValidatorCheck = () => {
             <Button
               color="navButton"
               sx={{ textAlign: "left", alignSelf: "flex-start" }}
-              onClick={() => {
-                const currentData = gridRef.current.api.getRenderedNodes()?.map((node) => node.data);
-
-                if (datasetRawFile.length > 0) {
-                  const mappingFromAttrToDataset = {};
-                  for (const node of matchingRowData) {
-                    mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
-                  }
-
-                  const newData = [];
-                  for (const node of currentData) {
-                    const newRow = {};
-                    for (const [key, value] of Object.entries(node)) {
-                      if (key in mappingFromAttrToDataset) {
-                        newRow[mappingFromAttrToDataset[key]] = value;
-                      } else {
-                        newRow[key] = value;
-                      }
-                    }
-                    newData.push(newRow);
-                  }
-
-                  setSchemaDataConformantHeader(prev => prev.map((header) => mappingFromAttrToDataset[header] || header));
-                  setSchemaDataConformantRowData(newData);
-                  setCurrentDataValidatorPage('AttributeMatchDataValidator');
-                } else {
-                  setSchemaDataConformantRowData(currentData);
-                  setCurrentDataValidatorPage('StartDataValidator');
-                }
-              }}
+              onClick={handleMoveBack}
             >
               <ArrowBackIosIcon /> Back
             </Button>
@@ -659,7 +729,7 @@ const OCADataValidatorCheck = () => {
                 gap: "10px",
               }}
             >
-              <Languages type={type} handleChange={handleChange} handleClick={() => { }} isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} languages={languages} />
+              <Languages type={langRef.current} handleChange={handleChange} handleClick={() => { }} isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} languages={languages} />
               <MultipleSelectPlaceholder errorName={errorName} setErrorNameList={setErrorNameList} disabled={!firstValidate} />
             </Box>
           </Box>

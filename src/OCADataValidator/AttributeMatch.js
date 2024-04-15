@@ -190,9 +190,6 @@ const AttributeMatch = () => {
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
           dataHeaders: ogSchemaDataConformantHeaderRef.current,
-          onRefresh: () => {
-            gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
-          },
           changeDataFromTable: (e) => changeDataFromTable(e, params)
         }),
         resizable: true,
