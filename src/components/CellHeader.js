@@ -4,7 +4,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 const CellHeader = ({ headerText, constraint, helpText }) => {
   return (
     <>
-      <span style={{ margin: "auto" }}>
+      <span style={{ margin: "auto", textOverflow: 'ellipsis', overflow: 'hidden' }}>
         {headerText}{" "}
         {constraint && <span style={{ fontSize: "10px" }}>({constraint})</span>}
       </span>
@@ -13,7 +13,7 @@ const CellHeader = ({ headerText, constraint, helpText }) => {
         placement="top"
         arrow
       >
-        <HelpOutlineIcon sx={{ fontSize: 15 }} />
+        <HelpOutlineIcon sx={{ fontSize: 15, marginLeft: '3px' }} />
       </Tooltip>}
     </>
   );

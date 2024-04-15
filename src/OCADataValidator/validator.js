@@ -131,8 +131,11 @@ export default class OCABundle {
   };
 
   getAttributeConformance(attrName) {
-    if (this.overlays[CONF_KEY][ATTR_CONF_KEY][attrName] !== undefined) {
-      return this.overlays[CONF_KEY][ATTR_CONF_KEY][attrName];
+    const confKey = this.overlays[CONF_KEY];
+    const attrConfKey = confKey && confKey[ATTR_CONF_KEY];
+
+    if (attrConfKey && attrConfKey[attrName] !== undefined) {
+      return attrConfKey[attrName];
     } else {
       return 'O';
     }

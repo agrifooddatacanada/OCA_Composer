@@ -31,7 +31,7 @@ const ExportButton = ({ handleSave }) => {
         }}
       // disabled={exportDisabled}
       >
-        Export Validate Data
+        Export Verified Data
       </Button>
       <Menu
         id="basic-menu"

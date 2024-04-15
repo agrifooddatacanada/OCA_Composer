@@ -179,6 +179,8 @@ const OCADataValidatorCheck = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [errorName, setErrorNameList] = useState([]);
   const [firstValidate, setFirstValidate] = useState(false);
+  const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
+
   const gridRef = useRef();
 
   const defaultColDef = useMemo(() => {
@@ -457,6 +459,9 @@ const OCADataValidatorCheck = () => {
   }, []);
 
   const handleAddRow = () => {
+    if (isValidateButtonEnabled) {
+      setIsValidateButtonEnabled(false);
+    }
     const newRow = {};
     schemaDataConformantHeader.forEach((header) => {
       newRow[header] = "";
@@ -513,6 +518,14 @@ const OCADataValidatorCheck = () => {
     setRowData(schemaDataConformantRowData);
   }, []);
 
+  useEffect(() => {
+    if (rowData && rowData.length === 0) {
+      setIsValidateButtonEnabled(true);
+    } else if (isValidateButtonEnabled && rowData && rowData.length > 0) {
+      setIsValidateButtonEnabled(false);
+    }
+  }, [rowData]);
+
   const rowDataFilter = errorName.length > 0 ? rowData.filter((row) => {
     for (const error of errorName) {
       if (row?.error) {
@@ -553,10 +566,32 @@ const OCADataValidatorCheck = () => {
               color="navButton"
               sx={{ textAlign: "left", alignSelf: "flex-start" }}
               onClick={() => {
-                setSchemaDataConformantRowData(gridRef.current.api.getRenderedNodes()?.map(node => node?.data));
+                const currentData = gridRef.current.api.getRenderedNodes()?.map((node) => node.data);
+
                 if (datasetRawFile.length > 0) {
+                  const mappingFromAttrToDataset = {};
+                  for (const node of matchingRowData) {
+                    mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
+                  }
+
+                  const newData = [];
+                  for (const node of currentData) {
+                    const newRow = {};
+                    for (const [key, value] of Object.entries(node)) {
+                      if (key in mappingFromAttrToDataset) {
+                        newRow[mappingFromAttrToDataset[key]] = value;
+                      } else {
+                        newRow[key] = value;
+                      }
+                    }
+                    newData.push(newRow);
+                  }
+
+                  setSchemaDataConformantHeader(prev => prev.map((header) => mappingFromAttrToDataset[header] || header));
+                  setSchemaDataConformantRowData(newData);
                   setCurrentDataValidatorPage('AttributeMatchDataValidator');
                 } else {
+                  setSchemaDataConformantRowData(currentData);
                   setCurrentDataValidatorPage('StartDataValidator');
                 }
               }}
@@ -580,15 +615,16 @@ const OCADataValidatorCheck = () => {
                     marginRight: "20px",
                     color: 'red',
                     fontWeight: 'bold',
-                  }}>Please re-validate the data!</Typography>}
+                  }}>Please re-verify the data!</Typography>}
                 <Button
                   color='button'
                   variant='contained'
                   target='_blank'
                   style={{ width: '120px', height: '40px' }}
                   onClick={handleValidate}
+                  disabled={isValidateButtonEnabled}
                 >
-                  Validate
+                  Verify
                 </Button>
               </Box>
               <ExportButton handleSave={handleSave} />

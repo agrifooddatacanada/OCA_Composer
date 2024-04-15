@@ -23,6 +23,8 @@ import FormatTextHelp from './UsersHelp/Format_Text_Help';
 import HelpStorage from './Landing/HelpStorage';
 import OCADataValidator from './OCADataValidator/OCADataValidator';
 import CardinalityHelp from './UsersHelp/Cardinality_Help';
+import LearnAboutSchemaRule from './OCADataValidator/LearnAboutSchemaRule';
+import LearnAboutDataVerification from './OCADataValidator/LearnAboutDataVerification';
 
 export const Context = createContext();
 
@@ -470,6 +472,14 @@ function App() {
                 <Route
                   path='/start_schema_help'
                   element={<StartSchemaHelp />}
+                />
+                <Route
+                  path='/learn_schema_rule'
+                  element={<LearnAboutSchemaRule />}
+                />
+                <Route
+                  path='/learn_data_verification'
+                  element={<LearnAboutDataVerification />}
                 />
                 <Route path='/view_schema_help' element={<ViewSchemaHelp />} />
                 <Route path='/overlays_help' element={<OverlaysHelp />} />
