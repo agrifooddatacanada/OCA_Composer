@@ -98,18 +98,22 @@ export const useHandleDatasetDrop = () => {
   }, [datasetIsParsed]);
 
   const handleExcelDrop = useCallback((acceptedFiles) => {
-    try {
-      const reader = new FileReader();
-      const rABS = !!reader.readAsBinaryString; // converts object to boolean
-      reader.onabort = () => console.log("file reading was aborted");
-      reader.onerror = () => console.log("file reading has failed");
-      reader.onload = (e) => {
+
+    const reader = new FileReader();
+    const rABS = !!reader.readAsBinaryString; // converts object to boolean
+    reader.onabort = () => console.log("file reading was aborted");
+    reader.onerror = () => console.log("file reading has failed");
+    reader.onload = async (e) => {
+      try {
         const bstr = e.target.result;
         const workbook = XLSX.read(bstr, {
           type: rABS ? "binary" : "array",
         });
 
-        processExcelFile(workbook);
+        const res = await processExcelFile(workbook);
+        if (!res) {
+          throw new Error("File does not contain the Schema conformant data sheet.");
+        }
         setOgWorkbook(workbook);
 
         setDatasetLoading(false);
@@ -134,26 +138,33 @@ export const useHandleDatasetDrop = () => {
             setCurrentDataValidatorPage("DatasetViewDataValidator");
           }
         }, 900);
-      };
-      if (rABS) reader.readAsBinaryString(acceptedFiles);
-      else reader.readAsArrayBuffer(acceptedFiles);
-
-    } catch (error) {
-      setDatasetDropMessage({ message: messages.parseUploadFail, type: "error" });
-      setDatasetLoading(false);
-      setJsonLoading(false);
-      if (jsonRawFile.length === 0) {
-        setJsonDropDisabled(false);
+      } catch (error) {
+        setDatasetDropMessage({ message: error.message ? error.message : messages.parseUploadFail, type: "error" });
+        setDatasetLoading(false);
+        setJsonLoading(false);
+        if (jsonRawFile.length === 0) {
+          setJsonDropDisabled(false);
+        }
+        setTimeout(() => {
+          setDatasetDropMessage({ message: "", type: "" });
+        }, [2500]);
       }
-      setTimeout(() => {
-        setDatasetDropMessage({ message: "", type: "" });
-      }, [2500]);
-    }
+
+    };
+
+    if (rABS) reader.readAsBinaryString(acceptedFiles);
+    else reader.readAsArrayBuffer(acceptedFiles);
   }, [datasetIsParsed]);
 
   const processExcelFile = useCallback(async (workbook) => {
     const schemaConformantDataName = "Schema conformant data";
     const worksheet = workbook.Sheets[schemaConformantDataName];
+
+    if (!worksheet) {
+      handleClearDataset();
+      return;
+    }
+
     const range = XLSX.utils.decode_range(worksheet['!ref']);
 
     // Find the last row index.
@@ -205,6 +216,7 @@ export const useHandleDatasetDrop = () => {
 
     setSchemaDataConformantHeader(jsonSchemaFromExcel[0]);
     setSchemaDataConformantRowData(schemaConformantRowData);
+    return true;
   }, []);
 
   useEffect(() => {
