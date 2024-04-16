@@ -52,9 +52,6 @@ const UseASchemaAccordionItem = () => {
         <Typography>
           When you have a schema bundle you can upload and then:
         </Typography>
-        {/* <Typography>
-          <strong>Validate</strong> the schema to ensure it is well-formed.
-        </Typography> */}
         <Typography>
           <strong>View</strong> the schema and <strong>Edit</strong> the schema if needed.
         </Typography>
@@ -74,15 +71,6 @@ const UseASchemaAccordionItem = () => {
         />
 
         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          {/* <Button
-            variant="contained"
-            color="navButton"
-            onClick={() => { }}
-            sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
-            disabled={disableButtonCheck}
-          >
-            Validate Schema
-          </Button> */}
           <Button
             variant="contained"
             color="navButton"
