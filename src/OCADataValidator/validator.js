@@ -123,16 +123,21 @@ export default class OCABundle {
   };
 
   getAttributeFormat(attrName) {
-    if (this.overlays[FORMAT_KEY][ATTR_FORMAT_KEY][attrName] !== undefined) {
-      return this.overlays[FORMAT_KEY][ATTR_FORMAT_KEY][attrName];
-    } else {
-      return null;
+    const formatKey = this.overlays[FORMAT_KEY];
+    const attrFormatKey = formatKey && formatKey[ATTR_FORMAT_KEY];
+
+    if (attrFormatKey && attrFormatKey[attrName] !== undefined) {
+      return attrFormatKey[attrName];
     }
+    return null;
   };
 
   getAttributeConformance(attrName) {
-    if (this.overlays[CONF_KEY][ATTR_CONF_KEY][attrName] !== undefined) {
-      return this.overlays[CONF_KEY][ATTR_CONF_KEY][attrName];
+    const confKey = this.overlays[CONF_KEY];
+    const attrConfKey = confKey && confKey[ATTR_CONF_KEY];
+
+    if (attrConfKey && attrConfKey[attrName] !== undefined) {
+      return attrConfKey[attrName];
     } else {
       return 'O';
     }
@@ -188,10 +193,7 @@ export default class OCABundle {
         // Verifying the missing data entries for a mandatory (required) attributes.
         for (let i = 0; i < dataset[attr].length; i++) {
           let dataEntry = String(dataset[attr][i]);
-          if ((dataEntry === undefined || dataEntry === null || dataEntry === '') && attrConformance === 'M') {
-            rslt.errs[attr][i] = MISSING_MSG;
-            // break;
-          } else if ((dataEntry === undefined || dataEntry === null || dataEntry === '') && attrConformance === 'O') {
+          if ((dataEntry === undefined || dataEntry === null || dataEntry === '') && attrConformance === 'O') {
             dataEntry = '';
           }
           // Verifying data types for entries to match the attribute's.
@@ -218,6 +220,8 @@ export default class OCABundle {
           } else if (!matchFormat(attrType, attrFormat, dataEntry)) {
             if (dataEntry === '' && attrConformance === 'O') {
               continue;
+            } else if (dataEntry === '' && attrConformance === 'M') {
+              rslt.errs[attr][i] = `${MISSING_MSG} Supported format: ${attrFormat}.`;
             } else {
               rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`;
             }

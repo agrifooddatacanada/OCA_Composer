@@ -52,7 +52,7 @@ export default class OCADataSet {
     return new Promise((resolve, reject) => {
       try {
         const workbook = XLSX.readFile(fileContent);
-        const sheetName = 'Schema conformant data';
+        const sheetName = 'Schema Conformant Data';
         const worksheet = workbook.Sheets[sheetName];
         const range = XLSX.utils.decode_range(worksheet['!ref']);
 

@@ -148,10 +148,10 @@ export const formatCodeTextDescription = Object.entries(descriptionToFormatCodeT
 export const descriptionToFormatCodeNumeric = {
   "": "",
   "any integer or decimal number, may begin with + or -": "^[-+]?\\d*\\.?\\d+$",
-  "decimal numbers between 0 and 1, inclusive": "^(0?(\\.\\d+)?|1(\\.0+)?)$",
-  "positive integers": "^[0-9]*[1-9][0-9]*$",
+  // "decimal numbers between 0 and 1, inclusive": "^(0?(\\.\\d+)?|1(\\.0+)?)$",
+  // "positive integers": "^[0-9]*[1-9][0-9]*$",
   "any integer": "^-?[0-9]+$",
-  "any number between 0 and 100, inclusive": "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$",
+  // "any number between 0 and 100, inclusive": "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$",
   "Latitude in formats S30°15'45.678\" or N12°30.999\"": "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$",
   "Longitude in formats E30°15'45.678\" or W90°00.000\"": "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$"
 };

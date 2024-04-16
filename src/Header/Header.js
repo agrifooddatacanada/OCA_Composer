@@ -4,7 +4,7 @@ import { CustomPalette } from '../constants/customPalette';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import logo from '../assets/agri-logo.png';
 import logoWhite from '../assets/agri-logo-white.png';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import HeaderWrapper from './HeaderWrapper';
 import { useMediaQuery } from '@mui/material';
 
@@ -140,17 +140,20 @@ export default function Header({ currentPage }) {
         <>
           {(currentPage === 'Landing' || currentPage === "StartDataValidator") ? (
             <Box sx={{ flex: 'column' }}>
-              <Typography
-                sx={{
-                  fontSize: isMobile ? 18 : 40,
-                  fontWeight: 'bold',
-                  color: 'white',
-                  alignSelf: 'start',
-                  textAlign: 'left'
-                }}
-              >
-                Semantic Engine
-              </Typography>
+              <Link to="/" style={{ textDecoration: 'none' }}>
+                <Typography
+                  sx={{
+                    fontSize: isMobile ? 18 : 40,
+                    fontWeight: 'bold',
+                    color: 'white',
+                    alignSelf: 'start',
+                    textAlign: 'left',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Semantic Engine
+                </Typography>
+              </Link>
               {currentPage === "StartDataValidator" && <Typography variant="h5" sx={{ textAlign: 'left', color: "white", marginTop: '-5px' }}>Data entry and verification</Typography>}
             </Box>
           ) : (
@@ -160,8 +163,10 @@ export default function Header({ currentPage }) {
                 style={{
                   width: isMobile ? '100px' : '150px',
                   marginRight: '20px',
+                  cursor: 'pointer'
                 }}
                 alt='Logo'
+                onClick={() => window.open('https://agrifooddatacanada.ca/', '_blank')}
               />
               <Typography
                 sx={{
@@ -201,8 +206,10 @@ export default function Header({ currentPage }) {
                 width: isMobile ? 'auto' : '250px',
                 height: isMobile ? '70px' : 'auto',
                 marginRight: isMobile ? 'unset' : '20px',
+                cursor: 'pointer' // Add cursor pointer to indicate it's clickable
               }}
               alt='Logo'
+              onClick={() => window.open('https://agrifooddatacanada.ca/', '_blank')}
             />
           ) : (
             <>

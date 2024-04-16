@@ -75,11 +75,6 @@ const UseASchemaWithDataAccordionItem = ({
             setLoading={setLoading}
             disableButtonCheck={disableButtonCheck}
           />
-          {/* <CustomAnchorLink
-            link='/oca-data-validator'
-            text='Validate data against a schema'
-            overrideStyle={{ marginTop: 2 }}
-          /> */}
         </Box>
         <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
           Enter data in your browser

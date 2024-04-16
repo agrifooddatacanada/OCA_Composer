@@ -1,7 +1,7 @@
 import Drop from "../StartSchema/Drop";
 import { useHandleJsonDrop } from "./useHandleJsonDrop";
 import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
-import { Box, Button, Typography, useMediaQuery } from "@mui/material";
+import { Box, Button, Link, Typography, useMediaQuery } from "@mui/material";
 import { datasetUploadDescription, datasetUploadTooltip, jsonUploadDescription, jsonUploadTooltip } from "../constants/constants";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { CustomPalette } from "../constants/customPalette";
@@ -48,14 +48,41 @@ const OCADataValidatorMain = () => {
             color: 'white',
           }}
         >
-          <Box sx={{ width: isMobile ? '100%' : '50%' }}>
-            <Box>
+          <Box sx={{ width: isMobile ? '100%' : '50%', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{
+              marginBottom: 5,
+            }}>
               <Typography variant="h6" sx={{ textAlign: 'left', color: "white", fontSize: isMobile ? '2rem' : '2.2rem', }}>Improve your data</Typography>
               <Typography sx={{ textAlign: 'left', color: "white" }}>Enter data according to rules in a schema.</Typography>
               <Typography sx={{ textAlign: 'left', color: "white" }}>Check your existing data against rules in a schema.</Typography>
             </Box>
-            <Typography variant="h6" sx={{ textAlign: 'left', color: "white", marginTop: 5 }}>Learn about schemas and schema rules -{">"}</Typography>
-            <Typography variant="h6" sx={{ textAlign: 'left', color: "white" }}>Learn about data verification -{">"}</Typography>
+            <Link
+              href='/learn_schema_rule'
+              sx={{
+                fontSize: '1.1rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                color: 'white',
+                textDecoration: 'none',
+                textAlign: 'left',
+              }}
+            >
+              Learn about schemas and schema rules -{">"}
+            </Link>
+            <Link
+              href='/learn_data_verification'
+              sx={{
+                fontSize: '1.1rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                color: 'white',
+                textDecoration: 'none',
+                textAlign: 'left',
+                marginTop: 1,
+              }}
+            >
+              Learn about data verification -{">"}
+            </Link>
           </Box>
           <img
             src={placeholderExample}

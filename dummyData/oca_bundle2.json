@@ -39,7 +39,7 @@
         "attribute_formats": {
           "Age": "[0-9]{3}",
           "BreastWt": "[A-Z0-9]{9}",
-          "Breed": "[A-Z]{15}",
+          "Breed": "[A-Z]{1}",
           "Farm": "[A-Z0-9]{9}",
           "Glucose": "[A-Z0-9]{9}",
           "Lipase": "[A-Z0-9]{9}",

@@ -20,7 +20,8 @@ export const useHandleJsonDrop = () => {
     setDatasetDropDisabled,
     datasetRawFile,
     setMatchingRowData,
-    setJsonParsedFile
+    setJsonParsedFile,
+    firstTimeMatchingRef
   } = useContext(Context);
   const {
     processLanguages,
@@ -41,6 +42,7 @@ export const useHandleJsonDrop = () => {
     setJsonDropDisabled(false);
     setJsonRawFile([]);
     setMatchingRowData([]);
+    firstTimeMatchingRef.current = true;
   }, []);
 
   const handleJsonDrop = useCallback((acceptedFiles) => {

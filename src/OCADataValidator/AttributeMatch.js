@@ -76,6 +76,7 @@ const AttributeMatch = () => {
   const changeDataFromTable = useCallback((e, params) => {
     firstTimeMatchingRef.current = false;
     let saveNode = undefined;
+
     for (const node of gridRef.current?.api?.rowModel?.rowsToDisplay) {
       if (node.data.Dataset === e.target.value) {
         saveNode = node;
@@ -88,15 +89,21 @@ const AttributeMatch = () => {
       Dataset: e.target.value,
     });
     gridRef.current?.api?.redrawRows({ rowNodes: [saveNode, params.node] });
-    setItems((prev) => prev.filter((item) => item !== e.target.value));
+
+    const currentData = gridRef.current?.api?.rowModel?.rowsToDisplay.map((node) => node.data.Dataset);
+    currentData.push(e.target.value);
+    const unassignedVariables = ogSchemaDataConformantHeaderRef.current.filter((item) => !currentData.includes(item));
+    setItems(unassignedVariables);
   }, [gridRef, setItems]);
 
   const handleSavePage = useCallback(() => {
     const data = gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data);
+
     const mappingFromAttrToDataset = {};
     for (const node of data) {
       mappingFromAttrToDataset[node['Dataset']] = node['Attribute'];
     }
+
     setMatchingRowData(data);
     setSchemaDataConformantRowData(prev => {
       const newData = [];
@@ -111,12 +118,10 @@ const AttributeMatch = () => {
         }
         newData.push(newRow);
       }
+
       return newData;
     });
-    setSchemaDataConformantHeader(prev => {
-      const newHeader = prev.map((header) => mappingFromAttrToDataset[header] || header);
-      return newHeader;
-    });
+    setSchemaDataConformantHeader(ogSchemaDataConformantHeaderRef.current.map((header) => mappingFromAttrToDataset[header] || header));
     setCurrentDataValidatorPage('OCADataValidatorCheck');
   }, [gridRef, setMatchingRowData, setCurrentDataValidatorPage]);
 
@@ -184,10 +189,7 @@ const AttributeMatch = () => {
         field: "Dataset",
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
-          dataHeaders: schemaDataConformantHeader,
-          onRefresh: () => {
-            gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
-          },
+          dataHeaders: ogSchemaDataConformantHeaderRef.current,
           changeDataFromTable: (e) => changeDataFromTable(e, params)
         }),
         resizable: true,
