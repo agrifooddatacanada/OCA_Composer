@@ -169,6 +169,7 @@ const EntryCodeDropdownSelector = memo(
         ...props.data,
         [columnHeader]: e.target.value,
       });
+      props.onRefresh();
       props.setRevalidateData(true);
       setIsDropdownOpen(false);
     };
@@ -190,7 +191,7 @@ const EntryCodeDropdownSelector = memo(
           value={value}
           sx={{ border: "none", height: "2rem", fontSize: "small" }}
         >
-          {value}: {listItemObjectDisplay[value] || ''}
+          <strong>{value}</strong>: {listItemObjectDisplay[value] || ''}
         </MenuItem>
       );
     });
@@ -252,10 +253,13 @@ const OCADataValidatorCheck = () => {
       minWidth: 100,
       tooltipComponent: CustomTooltip,
       headerComponent: (params) => flaggedHeader(params, lanAttributeRowData[langRef.current], formatRuleRowData, characterEncodingRowData, cardinalityData),
-      cellRendererParams: () => ({
+      cellRendererParams: (params) => ({
         dataHeaders: savedEntryCodes,
         lang: langRef.current,
         setRevalidateData,
+        onRefresh: () => {
+          gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
+        },
       }),
     };
   }, [lanAttributeRowData, langRef.current]);
