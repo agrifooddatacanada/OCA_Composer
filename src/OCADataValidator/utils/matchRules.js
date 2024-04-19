@@ -69,7 +69,7 @@ function matchRegex(pattern, dataStr) {
 
 function matchBoolean(dataStr) {
   // Idealy only "true" and "false" would pass.
-  return dataStr in [
+  return [
     'True',
     'true',
     'TRUE',
@@ -82,7 +82,7 @@ function matchBoolean(dataStr) {
     'F',
     '0',
     '0.0'
-  ];
+  ].includes(dataStr);
 };
 
 export function matchFormat(attrType, pattern, dataStr) {

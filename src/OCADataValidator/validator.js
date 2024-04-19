@@ -26,17 +26,17 @@ const OVERLAYS_KEY = 'overlays';
 const ATTR_UNMATCH_MSG = 'Unmatched attribute (attribute not found in the OCA Bundle).';
 const ATTR_MISSING_MSG = 'Missing attribute (attribute not found in the data set).';
 const MISSING_MSG = 'Missing an entry for a mandatory attribute (check for other missing entries before continuing).';
-const NOT_AN_ARRAY_MSG = 'Valid array required.';
+// const NOT_AN_ARRAY_MSG = 'Valid array required.';
 const FORMAT_ERR_MSG = 'Format mismatch.';
 // const EC_FORMAT_ERR_MSG = 'Entry code format mismatch (manually fix the attribute format).';
-const EC_ERR_MSG = 'One of the entry codes required.';
+const EC_ERR_MSG = 'One of the entry codes is required.';
 // const CHE_ERR_MSG = 'Character encoding mismatch.';
 
 export default class OCABundle {
   constructor() {
     this.captureBase = null;
     this.overlays = {};
-    this.overlays_dict = {};
+    // this.overlays_dict = {};
   };
 
   /** Activate this code when reading file is in the browser.
@@ -67,11 +67,11 @@ export default class OCABundle {
       // const bundle = await OCABundle.readJSON(file);
       this.captureBase = bundle[CB_KEY];
       this.overlays = bundle[OVERLAYS_KEY];
-      this.overlays_dict = bundle[CB_KEY];
+      // this.overlays_dict = bundle[CB_KEY];
 
-      for (const overlay in this.overlays) {
-        this.overlays_dict[overlay] = this.overlays[overlay];
-      }
+      // for (const overlay in this.overlays) {
+      //     this.overlays_dict[overlay] = this.overlays[overlay];
+      // }
     } catch (error) {
       console.error('Error loading bundle:', error);
       throw error;
@@ -101,7 +101,7 @@ export default class OCABundle {
     if (Object.keys(this.overlays).includes(overlay)) {
       return this.overlays[overlay];
     } else {
-      console.error('Overlay not found:', overlay);
+      console.error('overlay not found:', overlay);
     }
   };
 
@@ -152,7 +152,6 @@ export default class OCABundle {
   };
 
   // The start validation methods...
-
   /**
    * Validates all attributes for existence in the OCA Bundle.
    * @param {*} dataset - The dataset to is the instance of the OCADataSet class (xlsx or csv file).
@@ -198,37 +197,55 @@ export default class OCABundle {
           }
           // Verifying data types for entries to match the attribute's.
           if (attrType.includes('Array')) {
-            let dataArr;
-            try {
-              dataArr = JSON.parse(dataEntry);
-            } catch (error) {
-              // Not a valid JSON format string.
-              rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
-              continue;
-            };
-            if (!Array.isArray(dataEntry)) {
-              // Not a valid JSON array.
-              rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
-              continue;
-            };
-            for (let j = 0; j < dataArr.length; j++) {
-              if (!matchFormat(attrType, attrFormat, String(dataArr[j]))) {
-                rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`;
-                break;
-              }
-            }
+            continue;
+
+            // Todo: Implement array data type validation.
+            // let dataArr;
+            // try {
+            //     const arrRegex = /^\[.*\]$/;
+
+            //     if (!arrRegex.test(dataEntry)) {
+            //         rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
+            //         continue;
+            //     }
+            //     // if (arrRegex.test(dataEntry)) {
+            //     //     dataArr = JSON.parse(dataEntry); // Convert a string to an array.
+            //     // } else {
+            //     //     rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
+            //     //     continue;
+            //     // }
+            // } catch (error) {
+            //     // Not a valid JSON format string.
+            //     rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
+            //     continue;
+            // };
+            // if (!Array.isArray(dataEntry)) {
+            //     // Not a valid JSON array.
+            //     rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
+            //     continue;
+            // };
+            // for (let j = 0; j < dataArr.length; j++) {
+            //     if (!matchFormat(attrType, attrFormat, String(dataArr[j]))) {
+            //         rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`;
+            //         break;
+            //     }n
+            // }
           } else if (!matchFormat(attrType, attrFormat, dataEntry)) {
             if (dataEntry === '' && attrConformance === 'O') {
               continue;
             } else if (dataEntry === '' && attrConformance === 'M') {
               rslt.errs[attr][i] = `${MISSING_MSG} Supported format: ${attrFormat}.`;
             } else {
-              rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`;
+              if (attrType.includes('Boolean')) {
+                rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']`;
+              } else {
+                rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`;
+              }
             }
           }
         }
       } catch (error) {
-        console.error(error);
+        ;
       }
     }
     return rslt.errs;
