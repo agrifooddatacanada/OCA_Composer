@@ -340,46 +340,47 @@ const useHandleAllDrop = () => {
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
           const content = await zip.files[file + '.json'].async("text");
+          const parsedData = JSON.parse(content);
 
           if (key.includes("meta")) {
-            metaList.push(JSON.parse(content));
+            metaList.push(parsedData);
             languageList.push(key.substring(6, 8));
           }
 
           if (key.includes("information")) {
-            informationList.push(JSON.parse(content));
+            informationList.push(parsedData);
           } else if (key.includes("format")) {
             // Format word is inside Information word, so we need to check if it is a format or information
-            formatRules = JSON.parse(content);
+            formatRules = parsedData;
           }
 
 
           if (key.includes("label")) {
-            labelList.push(JSON.parse(content));
+            labelList.push(parsedData);
           }
 
           if (key.includes("entry (")) {
-            entryList.push(JSON.parse(content));
+            entryList.push(parsedData);
           }
 
           if (key.includes("entry_code")) {
-            entryCodeSummary = JSON.parse(content);
+            entryCodeSummary = parsedData;
           }
 
           if (key.includes("conformance")) {
-            conformance = JSON.parse(content);
+            conformance = parsedData;
           }
 
           if (key.includes("character_encoding")) {
-            characterEncoding = JSON.parse(content);
+            characterEncoding = parsedData;
           }
 
           if (key.includes("unit")) {
-            loadUnits = JSON.parse(content);
+            loadUnits = parsedData;
           }
 
           if (key.includes("cardinality")) {
-            cardinalityData = JSON.parse(content);
+            cardinalityData = parsedData;
           }
 
           allZipFiles.push(content);

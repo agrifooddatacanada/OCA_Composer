@@ -4,6 +4,8 @@ import { Context } from "../App";
 import useZipParser from "../StartSchema/useZipParser";
 import JSZip from "jszip";
 
+const neededOverlays = ['format', 'character_encoding', 'conformance', 'entry_code'];
+
 export const useHandleJsonDrop = () => {
   const {
     setCurrentDataValidatorPage,
@@ -229,6 +231,7 @@ export const useHandleJsonDrop = () => {
         let loadUnits = undefined;
         let formatRules = undefined;
         let cardinalityData = undefined;
+        const bundleForValidator = { overlays: {} };
 
         // load up metadata file in OCA bundle
         const loadMetadataFile = await zip.files["meta.json"].async("text");
@@ -239,54 +242,64 @@ export const useHandleJsonDrop = () => {
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
           const content = await zip.files[file + '.json'].async("text");
+          const parsedContent = JSON.parse(content);
+
+          if ('type' in parsedContent && neededOverlays.includes(parsedContent['type'].split('/')[2])) {
+            bundleForValidator.overlays[parsedContent['type'].split('/')[2]] = parsedContent;
+          }
 
           if (key.includes("meta")) {
-            metaList.push(JSON.parse(content));
+            metaList.push(parsedContent);
             languageList.push(key.substring(6, 8));
           }
 
           if (key.includes("information")) {
-            informationList.push(JSON.parse(content));
+            informationList.push(parsedContent);
           } else if (key.includes("format")) {
             // Format word is inside Information word, so we need to check if it is a format or information
-            formatRules = JSON.parse(content);
+            formatRules = parsedContent;
           }
 
 
           if (key.includes("label")) {
-            labelList.push(JSON.parse(content));
+            labelList.push(parsedContent);
           }
 
           if (key.includes("entry (")) {
-            entryList.push(JSON.parse(content));
+            entryList.push(parsedContent);
           }
 
           if (key.includes("entry_code")) {
-            entryCodeSummary = JSON.parse(content);
+            entryCodeSummary = parsedContent;
           }
 
           if (key.includes("conformance")) {
-            conformance = JSON.parse(content);
+            conformance = parsedContent;
           }
 
           if (key.includes("character_encoding")) {
-            characterEncoding = JSON.parse(content);
+            characterEncoding = parsedContent;
           }
 
           if (key.includes("unit")) {
-            loadUnits = JSON.parse(content);
+            loadUnits = parsedContent;
           }
 
           if (key.includes("cardinality")) {
-            cardinalityData = JSON.parse(content);
+            cardinalityData = parsedContent;
           }
 
           allZipFiles.push(content);
         }
 
         const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
+        const parsedRoot = JSON.parse(loadRoot);
+        if ('type' in parsedRoot && parsedRoot['type'].split('/')[1] === 'capture_base') {
+          bundleForValidator['capture_base'] = parsedRoot;
+        }
         allZipFiles.push(loadRoot);
 
+        setJsonParsedFile(bundleForValidator);
         processLanguages(languageList);
         processMetadata(metaList);
         processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData);

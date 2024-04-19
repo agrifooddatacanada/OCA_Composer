@@ -120,7 +120,7 @@ const OCADataValidatorMain = () => {
             setDropMessage={setJsonDropMessage}
             description={jsonUploadDescription}
             tipDescription={jsonUploadTooltip}
-            version={3}
+            version={1}
           />
         </Box>
 
