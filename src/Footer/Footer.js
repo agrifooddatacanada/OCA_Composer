@@ -27,12 +27,12 @@ export default function Footer({ currentPage }) {
         >
           {(currentPage === 'Landing' || currentPage === "StartDataValidator") ?
             <>
-              <img src={logoAgri} style={{ height: '80px' }} alt="Agri Logo" onClick={() => window.open('https://agrifooddatacanada.ca/', '_blank')} />
+              <img src={logoAgri} style={{ height: '80px' }} alt="Agri Logo" onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')} />
             </>
             : <>
-              <img src={logoUoG} style={{ height: '60px' }} alt="University of Guelph Logo" onClick={() => window.open('https://www.uoguelph.ca/', '_blank')} />
-              <img src={logoAgri} style={{ height: '60px' }} alt="Agri Logo" onClick={() => window.open('https://agrifooddatacanada.ca/', '_blank')} />
-              <img src={logoSE} style={{ height: '60px' }} alt="Semantic Engine Logo" onClick={() => window.open('https://www.semanticengine.org/#/', '_blank')} />
+              <img src={logoUoG} style={{ height: '60px' }} alt="University of Guelph Logo" onClick={() => (window.location.href = 'https://www.uoguelph.ca/')} />
+              <img src={logoAgri} style={{ height: '60px' }} alt="Agri Logo" onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')} />
+              <img src={logoSE} style={{ height: '60px' }} alt="Semantic Engine Logo" onClick={() => (window.location.href = '/')} />
             </>}
         </Stack>
       </Stack >

@@ -166,7 +166,7 @@ export default function Header({ currentPage }) {
                   cursor: 'pointer'
                 }}
                 alt='Logo'
-                onClick={() => window.open('https://agrifooddatacanada.ca/', '_blank')}
+                onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
               />
               <Typography
                 sx={{
@@ -209,7 +209,7 @@ export default function Header({ currentPage }) {
                 cursor: 'pointer' // Add cursor pointer to indicate it's clickable
               }}
               alt='Logo'
-              onClick={() => window.open('https://agrifooddatacanada.ca/', '_blank')}
+              onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
             />
           ) : (
             <>
