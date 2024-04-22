@@ -239,16 +239,16 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           const attrLength = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).length;
           const labelsLength = Object.keys(jsonData.find(o => o.type && o.type.includes('/label/')).attribute_labels).length;
 
-          if (labelsLength !== attrLength) {
+          if (labelsLength === attrLength) {
+            const labelValues = Object.values(jsonData.find(o => o.type && o.type.includes('/label/')).attribute_labels);
             const attrKeys = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
-            sheet2.getRow(1).values = attrKeys;
-
-            // format using the formatDataHeader function
-            attrKeys.forEach((_attrName, index) => {
+            const labelsFilled = labelValues.map((label, index) => label ? label : attrKeys[index]);
+            sheet2.getRow(1).values = labelsFilled;
+            labelsFilled.forEach((_label, index) => {
               const cell = sheet2.getCell(1, index + 1);
               formatDataHeader(cell);
             });
-          };
+          }
         } else {
           sheet2.getRow(1).values = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
           Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).forEach((_attrName, index) => {
@@ -259,8 +259,6 @@ export function generateDataEntry(acceptedFiles, setLoading) {
       } catch (error) {
         throw new WorkbookError('.. Error assigning head names to sheet2 (Data Entry) ...');
       };
-
-
 
       const sheet3 = workbook.addWorksheet('Schema conformant data');
 
@@ -548,14 +546,6 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                 if (rowIndex) {
                   sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = label;
                 };
-
-                const labelValue = Object.values(attr_labels);
-                sheet2.getRow(1).values = labelValue;
-
-                labelValue.forEach((_label, index) => {
-                  const cell = sheet2.getCell(1, index + 1);
-                  formatDataHeader(cell);
-                });
               };
             } catch (error) {
               throw new WorkbookError('.. Error in formatting labels code column (header and rows) ...');
@@ -743,7 +733,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           const col_i = attrNameFromAttrKeys.indexOf(attrName) + 1;
           const letter = String.fromCharCode(65 + col_i - 1);
           sheet2.getCell(row, col_i).dataValidation = validationRule;
-          const formula = `IF(ISBLANK('Data Entry'!$${letter}$${row}), "", VLOOKUP('Data Entry'!$${letter}$${row}, 'Schema Description'!$A$${start}:$B$${end}, 2))`;
+          const formula = `IF(ISBLANK('Data Entry'!$${letter}$${row}), "", VLOOKUP(TEXT('Data Entry'!$${letter}$${row}, "0"), 'Schema Description'!$A$${start}:$B$${end}, 2))`;
           sheet3.getCell(row, col_i).value = {
             formula: formula,
           };

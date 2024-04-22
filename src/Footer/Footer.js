@@ -5,6 +5,10 @@ import logoAgri from '../assets/agri-logo.png';
 import logoSE from '../assets/se-logo.png';
 
 export default function Footer({ currentPage }) {
+  const handleLogoClick = (url) => {
+    window.location.href = url;
+  };
+
   return (
     <>
       <Divider orientation="horizontal" flexItem />
@@ -27,16 +31,15 @@ export default function Footer({ currentPage }) {
         >
           {currentPage === 'Landing' ?
             <>
-              <img src={logoAgri} style={{ height: '80px' }} alt="Agri Logo" onClick={() => window.open('https://agrifooddatacanada.ca/', '_blank')} />
+              <img src={logoAgri} style={{ height: '80px' }} alt="Agri Logo" onClick={() => handleLogoClick('https://agrifooddatacanada.ca/')} />
             </>
             : <>
-              <img src={logoUoG} style={{ height: '60px' }} alt="University of Guelph Logo" onClick={() => window.open('https://www.uoguelph.ca/', '_blank')} />
-              <img src={logoAgri} style={{ height: '60px' }} alt="Agri Logo" onClick={() => window.open('https://agrifooddatacanada.ca/', '_blank')} />
-              <img src={logoSE} style={{ height: '60px' }} alt="Semantic Engine Logo" onClick={() => window.open('https://www.semanticengine.org/#/', '_blank')} />
+              <img src={logoUoG} style={{ height: '60px' }} alt="University of Guelph Logo" onClick={() => handleLogoClick('https://www.uoguelph.ca/')} />
+              <img src={logoAgri} style={{ height: '60px' }} alt="Agri Logo" onClick={() => handleLogoClick('https://agrifooddatacanada.ca/')} />
+              <img src={logoSE} style={{ height: '60px' }} alt="Semantic Engine Logo" onClick={() => handleLogoClick('/')} />
             </>}
         </Stack>
       </Stack >
     </>
   );
 };
-

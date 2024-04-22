@@ -111,7 +111,9 @@ export default function Header({ currentPage }) {
                 fontWeight: 'bold',
                 color: 'white',
                 alignSelf: 'center',
+                cursor: 'pointer',
               }}
+              onClick={() => (window.location.href = '/')}
             >
               Semantic Engine
             </Typography>
@@ -122,8 +124,10 @@ export default function Header({ currentPage }) {
                 style={{
                   width: isMobile ? '100px' : '150px',
                   marginRight: '20px',
+                  cursor: 'pointer',
                 }}
                 alt='Logo'
+                onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
               />
               <Typography
                 sx={{
@@ -163,8 +167,10 @@ export default function Header({ currentPage }) {
                 width: isMobile ? 'auto' : '250px',
                 height: isMobile ? '70px' : 'auto',
                 marginRight: isMobile ? 'unset' : '20px',
+                cursor: 'pointer',
               }}
               alt='Logo'
+              onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
             />
           ) : (
             <>

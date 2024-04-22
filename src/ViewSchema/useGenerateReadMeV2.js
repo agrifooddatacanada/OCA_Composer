@@ -37,7 +37,7 @@ const useGenerateReadMeV2 = () => {
       readmeText,
       "BEGIN_OCA_MANIFEST\n",
       "******************************************************************\n",
-      "Bundle SAID: ", bundle_said, "\n\n",
+      "Bundle SAID/digest: ", bundle_said, "\n\n",
     );
 
     const overlay_saids = {};
@@ -52,13 +52,14 @@ const useGenerateReadMeV2 = () => {
         const schema_attributes = json_bundle.capture_base.attributes;
         overlay_saids['capture_base'] = said;
         overlay_texts['capture_base'] = `Layer name: ${layer_name}\n` +
-          `SAID: ${said}\n` +
+          `SAID/digest: ${said}\n` +
           `Classification: ${classification}\n` +
           `\n` +
-          `Schema attributes: ${layer_name}\n` +
+          `Schema attributes: data type` +
           `${Object.entries(schema_attributes)
             .map(([key, value]) => `    ${key}: ${value}`)
-            .join('\n')}\n` + `\n`;
+            .join('\n')}\n` +
+          `\n`;
 
         // implement flagged attributes
       } catch (err) {
@@ -76,7 +77,7 @@ const useGenerateReadMeV2 = () => {
           const description = overlay.description;
           overlay_saids[`meta_${lang}`] = said;
           metas_overlays_txt.push(`Layer name: ${layer_name}\n` +
-            `SAID: ${said}\n` +
+            `SAID/digest: ${said}\n` +
             `Language: ${lang}\n` +
             `Description: ${description}\n` +
             `\n`);
@@ -97,12 +98,13 @@ const useGenerateReadMeV2 = () => {
           const schema_attributes = overlay.attribute_labels;
           overlay_saids[`label_${lang}`] = said;
           labels_overlays_txt.push(`Layer name: ${layer_name}\n` +
-            `SAID: ${said}\n` +
+            `SAID/digest: ${said}\n` +
             `Language: ${lang}\n` +
             `Schema attributes: ${layer_name}\n` +
             `${Object.entries(schema_attributes)
               .map(([key, value]) => `    ${key}: ${value}`)
-              .join('\n')}\n` + `\n`);
+              .join('\n')}\n` +
+            `\n`);
         };
         overlay_texts['label'] = labels_overlays_txt.join('');
       } catch (err) {
@@ -120,12 +122,13 @@ const useGenerateReadMeV2 = () => {
           const schema_attributes = overlay.attribute_information;
           overlay_saids[`information_${lang}`] = said;
           information_overlays_txt.push(`Layer name: ${layer_name}\n` +
-            `SAID: ${said}\n` +
+            `SAID/digest: ${said}\n` +
             `Language: ${lang}\n` +
             `Schema attributes: ${layer_name}\n` +
             `${Object.entries(schema_attributes)
               .map(([key, value]) => `    ${key}: ${value}`)
-              .join('\n')}\n` + `\n`);
+              .join('\n')}\n` +
+            `\n`);
         };
         overlay_texts['information'] = information_overlays_txt.join('');
 
@@ -143,13 +146,14 @@ const useGenerateReadMeV2 = () => {
         const schema_attributes = json_bundle.overlays.unit.attribute_units;
         overlay_saids['unit'] = said;
         overlay_texts['unit'] = `Layer name: ${layer_name}\n` +
-          `SAID: ${said}\n` +
+          `SAID/digest: ${said}\n` +
           `Measurement system: ${measurement_system}\n` +
           `\n` +
           `Schema attributes: ${layer_name}\n` +
           `${Object.entries(schema_attributes)
             .map(([key, value]) => `    ${key}: ${value}`)
-            .join('\n')}\n` + `\n`;
+            .join('\n')}\n` +
+          `\n`;
       } catch (err) {
         throw err;
       };
@@ -162,12 +166,13 @@ const useGenerateReadMeV2 = () => {
         const layer_name = json_bundle.overlays.conformance.type.split("spec/overlays/")[1];
         overlay_saids['conformance'] = said;
         overlay_texts['conformance'] = `Layer name: ${layer_name}\n` +
-          `SAID: ${said}\n` +
+          `SAID/digest: ${said}\n` +
           `\n` +
           `Schema attributes: ${layer_name}\n` +
           `${Object.entries(schema_attributes)
             .map(([key, value]) => `    ${key}: ${value}`)
-            .join('\n')}\n` + `\n`;
+            .join('\n')}\n` +
+          `\n`;
 
       } catch (err) {
         throw err;
@@ -181,12 +186,13 @@ const useGenerateReadMeV2 = () => {
         const schema_attributes = json_bundle.overlays.character_encoding.attribute_character_encoding;
         overlay_saids['character_encoding'] = said;
         overlay_texts['character_encoding'] = `Layer name: ${layer_name}\n` +
-          `SAID: ${said}\n` +
+          `SAID/digest: ${said}\n` +
           `\n` +
           `Schema attributes: ${layer_name}\n` +
           `${Object.entries(schema_attributes)
             .map(([key, value]) => `    ${key}: ${value}`)
-            .join('\n')}\n` + `\n`;
+            .join('\n')}\n` +
+          `\n`;
 
       } catch (err) {
         throw err;
@@ -200,12 +206,13 @@ const useGenerateReadMeV2 = () => {
         const schema_attributes = json_bundle.overlays.format.attribute_formats;
         overlay_saids['format'] = said;
         overlay_texts['format'] = `Layer name: ${layer_name}\n` +
-          `SAID: ${said}\n` +
+          `SAID/digest: ${said}\n` +
           `\n` +
           `Schema attributes: ${layer_name}\n` +
           `${Object.entries(schema_attributes)
             .map(([key, value]) => `    ${key}: ${value}`)
-            .join('\n')}\n` + `\n`;
+            .join('\n')}\n` +
+          `\n`;
 
       } catch (err) {
         throw err;
@@ -219,12 +226,13 @@ const useGenerateReadMeV2 = () => {
         const schema_attributes = json_bundle.overlays.entry_code.attribute_entry_codes;
         overlay_saids['entry_code'] = said;
         overlay_texts['entry_code'] = `Layer name: ${layer_name}\n` +
-          `SAID: ${said}\n` +
+          `SAID/digest: ${said}\n` +
           `\n` +
           `Schema attributes: ${layer_name}\n` +
           `${Object.entries(schema_attributes)
             .map(([key, value]) => `    ${key}: [${value}]`)
-            .join('\n')}\n` + `\n`;
+            .join('\n')}\n` +
+          `\n`;
       } catch (err) {
         throw err;
       };
@@ -240,7 +248,7 @@ const useGenerateReadMeV2 = () => {
           const schema_attributes = overlay.attribute_entries;
           overlay_saids[`entry_${lang}`] = said;
           entry_overlays_txt.push(`Layer name: ${layer_name}\n` +
-            `SAID: ${said}\n` +
+            `SAID/digest: ${said}\n` +
             `Schema attributes: ${layer_name}\n` +
             `${Object.entries(schema_attributes)
               .map(([key, value]) => {
@@ -263,19 +271,19 @@ const useGenerateReadMeV2 = () => {
     try {
       for (const [key, value] of Object.entries(overlay_saids)) {
         if (key === 'capture_base') {
-          const capture_base_text = `capture_base: "${value}"\n`;
+          const capture_base_text = `capture_base SAID/digest: "${value}"\n`;
           manifest.push(capture_base_text);
         };
         if (key.includes('meta')) {
-          const meta_text = `meta (${key.split("_")[1]}): "${value}"\n`;
+          const meta_text = `meta (${key.split("_")[1]}) SAID/digest: "${value}"\n`;
           manifest.push(meta_text);
         };
         if (key.includes('label')) {
-          const label_text = `label (${key.split("_")[1]}): "${value}"\n`;
+          const label_text = `label (${key.split("_")[1]}) SAID/digest: "${value}"\n`;
           manifest.push(label_text);
         };
         if (key.includes('information')) {
-          const information_text = `information (${key.split("_")[1]}): "${value}"\n`;
+          const information_text = `information (${key.split("_")[1]}) SAID/digest: "${value}"\n`;
           manifest.push(information_text);
         };
         if (key === 'unit') {
@@ -283,23 +291,23 @@ const useGenerateReadMeV2 = () => {
           manifest.push(unit_text);
         };
         if (key === 'conformance') {
-          const conformance_text = `conformance: "${value}"\n`;
+          const conformance_text = `conformance SAID/digest: "${value}"\n`;
           manifest.push(conformance_text);
         };
         if (key === 'character_encoding') {
-          const character_encoding_text = `character_encoding: "${value}"\n`;
+          const character_encoding_text = `character_encoding SAID/digest: "${value}"\n`;
           manifest.push(character_encoding_text);
         };
         if (key === 'format') {
-          const format_text = `format: "${value}"\n`;
+          const format_text = `format SAID/digest: "${value}"\n`;
           manifest.push(format_text);
         };
         if (key === 'entry_code') {
-          const entry_code_text = `entry_code: "${value}"\n`;
+          const entry_code_text = `entry_code SAID/digest: "${value}"\n`;
           manifest.push(entry_code_text);
         };
         if (key.includes('entry') && key !== 'entry_code') {
-          const entry_text = `entry (${key.split("_")[1]}): "${value}"\n`;
+          const entry_text = `entry (${key.split("_")[1]}) SAID/digest: "${value}"\n`;
           manifest.push(entry_text);
         };
       };

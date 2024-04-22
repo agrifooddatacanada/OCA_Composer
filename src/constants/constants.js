@@ -122,150 +122,122 @@ export const codeToGroup = {
   "RDF605": "Other humanities"
 };
 
-export const formatCodeText = [
-  "",
-  "^[A-Z]*$",
-  "^[A-Za-z]{1,50}$",
-  "^[A-Za-z]{0,50}$",
-  "^.{0,50}$",
-  "^.{0,250}$",
-  "^.{0,800}$",
-  "^.{0,4000}$",
-  "^[A-Z][0-9][A-Z]\\s[0-9][A-Z][0-9]$",
-  "^\\d{5,6}(?:[-\\s]\\d{4})?$",
-  "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+",
-  "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
-  "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}"
-];
-
-export const formatCodeTextDescription = {
+export const descriptionToFormatCodeText = {
   "": "",
-  "^[A-Z]*$": "Entries of any length with only capital letters",
-  "^[A-Za-z]{1,50}$": "Capital or lower case letters only, at least 1 character, and 50 characters max",
-  "^[A-Za-z]{0,50}$": "Capital or lower case letters only, 50 characters max",
-  "^.{0,50}$": "Short text, 50 characters max",
-  "^.{0,250}$": "Short text, 250 characters max",
-  "^.{0,800}$": "long text, 800 characters max",
-  "^.{0,4000}$": "long text, 4000 characters max",
-  "^[A-Z][0-9][A-Z]\\s[0-9][A-Z][0-9]$": "Canadian postal codes (A1A 1A1)",
-  "^\\d{5,6}(?:[-\\s]\\d{4})?$": "Zip code",
-  "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+": "Email address",
-  "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}": "URL",
-  "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}": "Phone number"
+  "Entries of any length with only capital letters": "^[A-Z]*$",
+  "Capital or lower case letters only, at least 1 character, and 50 characters max": "^[A-Za-z]{1,50}$",
+  "Capital or lower case letters only, 50 characters max": "^[A-Za-z]{0,50}$",
+  "Short text, 50 characters max": "^.{0,50}$",
+  "Short text, 250 characters max": "^.{0,250}$",
+  "long text, 800 characters max": "^.{0,800}$",
+  "long text, 4000 characters max": "^.{0,4000}$",
+  "Canadian postal codes (A1A 1A1)": "^[A-Z][0-9][A-Z]\\s[0-9][A-Z][0-9]$",
+  "Zip code": "^\\d{5,6}(?:[-\\s]\\d{4})?$",
+  "Email address": "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+",
+  "URL": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
+  "Phone number": "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}"
 };
 
-export const formatCodeNumeric = [
-  "",
-  "^[-+]?\\d*\\.?\\d+$",
-  "^(0?(\\.\\d+)?|1(\\.0+)?)$",
-  "^[0-9]*[1-9][0-9]*$",
-  "^-?[0-9]+$",
-  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$"
-];
+export const formatCodeText = Object.keys(descriptionToFormatCodeText);
 
-export const formatCodeNumericDescription = {
+export const formatCodeTextDescription = Object.entries(descriptionToFormatCodeText).reduce((acc, [key, value]) => {
+  acc[value] = key;
+  return acc;
+}, {});
+
+export const descriptionToFormatCodeNumeric = {
   "": "",
-  "^[-+]?\\d*\\.?\\d+$": "any integer or decimal number, may begin with + or -",
-  "^(0?(\\.\\d+)?|1(\\.0+)?)$": "decimal numbers between 0 and 1, inclusive",
-  "^[0-9]*[1-9][0-9]*$": "positive integers",
-  "^-?[0-9]+$": "any integer",
-  "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$": "any number between 0 and 100, inclusive"
+  "any integer or decimal number, may begin with + or -": "^[-+]?\\d*\\.?\\d+$",
+  // "decimal numbers between 0 and 1, inclusive": "^(0?(\\.\\d+)?|1(\\.0+)?)$",
+  // "positive integers": "^[0-9]*[1-9][0-9]*$",
+  "any integer": "^-?[0-9]+$",
+  // "any number between 0 and 100, inclusive": "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$",
+  "Latitude in formats S30°15'45.678\" or N12°30.999\"": "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$",
+  "Longitude in formats E30°15'45.678\" or W90°00.000\"": "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$"
 };
 
-export const formatCodeDate = [
-  "",
-  "YYYY-MM-DD",
-  "YYYYMMDD",
-  "YYYY-MM",
-  "YYYY-Www",
-  "YYYYWww",
-  "YYYY-MM-DDThh:mm:ssZ",
-  "hh:mm:ss",
-  "PnYnMnD",
-  "YYYY-DDD",
-  "YYYYDDD"
-];
+export const formatCodeNumeric = Object.keys(descriptionToFormatCodeNumeric);
 
-export const formatCodeDateDescription = {
+export const formatCodeNumericDescription = Object.entries(descriptionToFormatCodeNumeric).reduce((acc, [key, value]) => {
+  acc[value] = key;
+  return acc;
+}, {});
+
+export const descriptionToFormatCodeDate = {
   "": "",
-  "YYYY-MM-DD": "year month day",
-  "YYYYMMDD": "year month day",
-  "YYYY-MM": "year month",
-  "YYYY-Www": "year week (e.g. W01)",
-  "YYYYWww": "year week (e.g. W01)",
-  "YYYY-DDD": "Ordinal date (day number from beginning of the year)",
-  "YYYYDDD": "Ordinal date (day number from beginning of the year)"
+  "ISO: YYYY-MM-DD: year month day": "^(?:(?:19|20)\\d{2})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2]\\d|3[0-1])$",
+  "ISO: YYYYMMDD: year month day": "^(?:(?:19|20)[0-9]{2})(?:0[1-9]|1[012])(?:0[1-9]|[12][0-9]|3[01])$",
+  "ISO: YYYY-MM: year month": "^(?:(?:19|20)[0-9]{2})-(?:0[1-9]|1[012])(?:-(?:0[1-9]|[12][0-9]|3[01]))?$",
+  "ISO: YYYY-Www: year week (e.g. W01)": "^(?:(?:19|20)\\d{2})-W(?:0[1-9]|[1-4][0-9]|5[0-3])$",
+  "ISO: YYYYWww: year week (e.g. W01)": "^(?:(?:19|20)\\d{2})W(?:0[1-9]|[1-4][0-9]|5[0-3])$",
+  "ISO: YYYY-DDD: Ordinal date (day number from the year)": "^(?:(?:19|20)\\d{2})-(?:0[1-9]|[1-2]\\d{2}|3[0-5]\\d|36[0-6])$",
+  "ISO: YYYYDDD: Ordinal date (day number from the year)": "^(?:(?:19|20)\\d{2})(?:0[1-9]|[1-2]\\d{2}|3[0-5]\\d|36[0-6])$",
+  "ISO: YYYY: year": "^(?:19|20)\\d{2}$",
+  "ISO: MM: month": "^(0[1-9]|1[0-2])$",
+  "ISO: DD: day": "^(0[1-9]|[1-2][0-9]|3[01])$",
+  "ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC)": "^(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])Z$",
+  "ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: Date and Time Combined (with Timezone Offset)": "^(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])(?:+-:[0-5][0-9])$",
+  "ISO: PnD: accumulated days (n days)": "^P\\d+D$",
+  "ISO: PTnHmM: accumulated hours and minutes (n hours, m minutes)": "^PT(?:\\d{1,2}H)?(?:\\d{2}M)?$",
+  "DD/MM/YYYY: day, month, year": "(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0,2])\\/(19|20)\\d{2}$",
+  "DD/MM/YY: day, month, year": "^(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0-2])\\\\d{2}$",
+  "MM/DD/YYYY: month, day, year": "^(0[1-9]|1[0-2])\\/(0[1-9]|[12][0-9]|3[01])\\/(19|20)\\d{2}$",
+  "DDMMYYYY: day, month, year": "^(0[1-9]|[12]\\d|3[01])(0[1-9]|1[0-2])(19|20)\\d{2}$",
+  "MMDDYYYY: month, day, year": "^(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])(19|20)\\d{2}$",
+  "YYYYMMDD: year, month, day": "^(19|20)\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])$",
+  "H:MM or HH:MM: hour, minutes AM/PM": "^(12|0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM|am|pm)$",
+  "HH:MM: hour, minutes in 24 hour notation": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
 };
 
-export const formatCodeBinary = [
-  "",
-  "application/epub+zip",
-  "application/gzip",
-  "application/json",
-  "application/ld+json",
-  "application/msword",
-  "application/octet-stream",
-  "application/pdf",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/x-csh",
-  "application/xhtml+xml",
-  "application/zip",
-  "audio/aac",
-  "audio/mpeg",
-  "audio/ogg",
-  "audio/wav",
-  "image/bmp",
-  "image/gif",
-  "image/jpg",
-  "image/png",
-  "image/svg+xml",
-  "image/tiff",
-  "text/calendar",
-  "text/csv",
-  "text/javascript",
-  "text/markdown",
-  "text/plain",
-  "text/xml",
-  "video/mp4",
-  "video/raw"
-];
+export const formatCodeDate = Object.keys(descriptionToFormatCodeDate);
 
-export const formatCodeBinaryDescription = {
+export const formatCodeDateDescription = Object.entries(descriptionToFormatCodeDate).reduce((acc, [key, value]) => {
+  acc[value] = key;
+  return acc;
+}, {});
+
+export const descriptionToFormatCodeBinary = {
   "": "",
-  "application/epub+zip": "Electronic publication (EPUB)",
-  "application/gzip": "GZip Compressed Archive",
-  "application/json": "JSON format (.json)",
-  "application/ld+json": "JSON-LD format",
-  "application/msword": "Microsoft word",
-  "application/octet-stream": ".bin data",
-  "application/pdf": "Adobe Portable Document Format (PDF)",
-  "application/vnd.ms-excel": "Microsoft Excel (.xls)",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "Microsoft Excel (OpenXML) (.xlsx)",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "Microsoft Word (OpenXML)",
-  "application/x-csh": "C-shell script",
-  "application/xhtml+xml": "HXTML (.xhtml)",
-  "application/zip": "ZIP archive (.zip)",
-  "audio/aac": "AAC audio (.aac)",
-  "audio/mpeg": "mpeg audio (.mp3)",
-  "audio/ogg": "ogg audio",
-  "audio/wav": "Waveform audio format (.wav)",
-  "image/bmp": "Windows Bitmap graphics",
-  "image/gif": "Graphics Interchange Format (GIF)",
-  "image/jpg": "JPEG images",
-  "image/png": "Portable Network Graphics images (.png)",
-  "image/svg+xml": "Scalable Vector Graphics (SVG)",
-  "image/tiff": "Tagged Image File Format (TIFF)",
-  "text/calendar": "iCalendar format",
-  "text/csv": "comma-separated values (CSV)",
-  "text/javascript": "JavaScript (.js)",
-  "text/markdown": "markdown text",
-  "text/plain": "Plain text (.txt)",
-  "text/xml": "Microsoft Word (OpenXML) (.docx)",
-  "video/mp4": "MP4 video",
-  "video/raw": "raw video"
+  "Electronic publication (EPUB)": "application/epub+zip",
+  "GZip Compressed Archive": "application/gzip",
+  "JSON format (.json)": "application/json",
+  "JSON-LD format": "application/ld+json",
+  "Microsoft word": "application/msword",
+  ".bin data": "application/octet-stream",
+  "Adobe Portable Document Format (PDF)": "application/pdf",
+  "Microsoft Excel (.xls)": "application/vnd.ms-excel",
+  "Microsoft Excel (OpenXML) (.xlsx)": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "Microsoft Word (OpenXML)": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "C-shell script": "application/x-csh",
+  "HXTML (.xhtml)": "application/xhtml+xml",
+  "ZIP archive (.zip)": "application/zip",
+  "AAC audio (.aac)": "audio/aac",
+  "mpeg audio (.mp3)": "audio/mpeg",
+  "ogg audio": "audio/ogg",
+  "Waveform audio format (.wav)": "audio/wav",
+  "Windows Bitmap graphics": "image/bmp",
+  "Graphics Interchange Format (GIF)": "image/gif",
+  "JPEG images": "image/jpg",
+  "Portable Network Graphics images (.png)": "image/png",
+  "Scalable Vector Graphics (SVG)": "image/svg+xml",
+  "Tagged Image File Format (TIFF)": "image/tiff",
+  "iCalendar format": "text/calendar",
+  "comma-separated values (CSV)": "text/csv",
+  "JavaScript (.js)": "text/javascript",
+  "markdown text": "text/markdown",
+  "Plain text (.txt)": "text/plain",
+  "Microsoft Word (OpenXML) (.docx)": "text/xml",
+  "MP4 video": "video/mp4",
+  "raw video": "video/raw"
 };
+
+export const formatCodeBinary = Object.keys(descriptionToFormatCodeBinary);
+
+export const formatCodeBinaryDescription = Object.entries(descriptionToFormatCodeBinary).reduce((acc, [key, value]) => {
+  acc[value] = key;
+  return acc;
+}, {});
+
 
 export const displayValues = [
   "",
