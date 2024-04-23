@@ -733,7 +733,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           const col_i = attrNameFromAttrKeys.indexOf(attrName) + 1;
           const letter = String.fromCharCode(65 + col_i - 1);
           sheet2.getCell(row, col_i).dataValidation = validationRule;
-          const formula = `IF(ISBLANK('Data Entry'!$${letter}$${row}), "", VLOOKUP('Data Entry'!$${letter}$${row}, 'Schema Description'!$A$${start}:$B$${end}, 2))`;
+          const formula = `IF(ISBLANK('Data Entry'!$${letter}$${row}), "", VLOOKUP(TEXT('Data Entry'!$${letter}$${row}, "0"), 'Schema Description'!$A$${start}:$B$${end}, 2))`;
           sheet3.getCell(row, col_i).value = {
             formula: formula,
           };
