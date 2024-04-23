@@ -245,6 +245,7 @@ const OCADataValidatorCheck = () => {
   const [firstValidate, setFirstValidate] = useState(false);
   const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
   const gridRef = useRef();
+  const validateBeforeOnChangeRef = useRef(false);
 
   const defaultColDef = useMemo(() => {
     return {
@@ -303,6 +304,7 @@ const OCADataValidatorCheck = () => {
   };
 
   const handleValidate = async () => {
+    validateBeforeOnChangeRef.current = true;
     gridRef.current.api.stopEditing();
     gridRef.current.api.showLoadingOverlay();
     setRevalidateData(false);
@@ -411,7 +413,6 @@ const OCADataValidatorCheck = () => {
         return copy;
       });
     }
-
   };
 
   const generateDataEntryExcel = async (ogHeader = false) => {
@@ -544,6 +545,11 @@ const OCADataValidatorCheck = () => {
   };
 
   const onCellValueChanged = (e) => {
+    if (validateBeforeOnChangeRef.current) {
+      validateBeforeOnChangeRef.current = false;
+      return;
+    }
+
     e.node.updateData(
       {
         ...e.data,
