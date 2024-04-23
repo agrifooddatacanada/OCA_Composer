@@ -15,6 +15,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ExportButton from './ExportButton';
 import { formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from '../constants/constants';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
+import WarningPopup from './WarningPopup';
 
 const convertToCSV = (data) => {
   const csv = data.map(row => Object.values(row).join(',')).join('\n');
@@ -216,7 +217,7 @@ const EntryCodeDropdownSelector = memo(
   })
 );
 
-const OCADataValidatorCheck = () => {
+const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeDisplayWarning }) => {
   const {
     schemaDataConformantRowData,
     setSchemaDataConformantRowData,
@@ -233,7 +234,8 @@ const OCADataValidatorCheck = () => {
     characterEncodingRowData,
     attributesList,
     setSchemaDataConformantHeader,
-    savedEntryCodes
+    savedEntryCodes,
+    attributeRowData
   } = useContext(Context);
 
   const [rowData, setRowData] = useState([]);
@@ -244,6 +246,7 @@ const OCADataValidatorCheck = () => {
   const [errorName, setErrorNameList] = useState([]);
   const [firstValidate, setFirstValidate] = useState(false);
   const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
+
   const gridRef = useRef();
 
   const defaultColDef = useMemo(() => {
@@ -595,6 +598,11 @@ const OCADataValidatorCheck = () => {
     }
   };
 
+  const handleDismissWarning = useCallback(() => {
+    setShowWarningCard(false);
+    firstTimeDisplayWarning.current = false;
+  }, [firstTimeDisplayWarning, setShowWarningCard]);
+
   useEffect(() => {
     const columns = [];
     const variableToCheck = datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
@@ -803,6 +811,7 @@ const OCADataValidatorCheck = () => {
 
         </div>
       </Box >
+      {showWarningCard && <WarningPopup action={handleDismissWarning} />}
     </>
 
   );

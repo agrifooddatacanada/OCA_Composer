@@ -6,7 +6,7 @@ import JSZip from "jszip";
 
 const neededOverlays = ['format', 'character_encoding', 'conformance', 'entry_code'];
 
-export const useHandleJsonDrop = () => {
+export const useHandleJsonDrop = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const {
     setCurrentDataValidatorPage,
     setZipToReadme,
@@ -45,6 +45,7 @@ export const useHandleJsonDrop = () => {
     setJsonRawFile([]);
     setMatchingRowData([]);
     firstTimeMatchingRef.current = true;
+    firstTimeDisplayWarning.current = true;
   }, []);
 
   const handleJsonDrop = useCallback((acceptedFiles) => {

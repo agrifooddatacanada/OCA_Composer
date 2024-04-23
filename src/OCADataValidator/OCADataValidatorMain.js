@@ -7,7 +7,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { CustomPalette } from "../constants/customPalette";
 import placeholderExample from '../assets/placeholder.png';
 
-const OCADataValidatorMain = () => {
+const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const isMobile = useMediaQuery('(max-width: 936px)');
 
   const {
@@ -20,7 +20,7 @@ const OCADataValidatorMain = () => {
     setJsonDropMessage,
     setCurrentDataValidatorPage,
     handleClearJSON
-  } = useHandleJsonDrop();
+  } = useHandleJsonDrop(setShowWarningCard, firstTimeDisplayWarning);
 
   const {
     datasetRawFile,
