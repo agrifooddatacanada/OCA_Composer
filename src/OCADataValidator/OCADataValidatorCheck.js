@@ -811,7 +811,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
         </div>
       </Box >
-      {showWarningCard && <WarningPopup action={handleDismissWarning} />}
+      {firstTimeDisplayWarning.current && showWarningCard && <WarningPopup action={handleDismissWarning} />}
     </>
 
   );

@@ -6,7 +6,7 @@ import JSZip from "jszip";
 
 const neededOverlays = ['format', 'character_encoding', 'conformance', 'entry_code'];
 
-export const useHandleJsonDrop = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
+export const useHandleJsonDrop = (setShowWarningCard, firstTimeDisplayWarning) => {
   const {
     setCurrentDataValidatorPage,
     setZipToReadme,
@@ -46,6 +46,7 @@ export const useHandleJsonDrop = ({ setShowWarningCard, firstTimeDisplayWarning 
     setMatchingRowData([]);
     firstTimeMatchingRef.current = true;
     firstTimeDisplayWarning.current = true;
+    setShowWarningCard(false);
   }, []);
 
   const handleJsonDrop = useCallback((acceptedFiles) => {
@@ -116,6 +117,9 @@ export const useHandleJsonDrop = ({ setShowWarningCard, firstTimeDisplayWarning 
         }
 
         if (jsonFile?.['capture_base']) {
+          if (jsonFile?.['capture_base']?.['flagged_attributes']?.length > 0) {
+            setShowWarningCard(true);
+          }
           loadRoot = { ...jsonFile['capture_base'] };
 
           // ONLY for README
@@ -295,6 +299,9 @@ export const useHandleJsonDrop = ({ setShowWarningCard, firstTimeDisplayWarning 
 
         const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
         const parsedRoot = JSON.parse(loadRoot);
+        if (parsedRoot?.['flagged_attributes']?.length > 0) {
+          setShowWarningCard(true);
+        }
         if ('type' in parsedRoot && parsedRoot['type'].split('/')[1] === 'capture_base') {
           bundleForValidator['capture_base'] = parsedRoot;
         }

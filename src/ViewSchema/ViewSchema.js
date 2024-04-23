@@ -199,7 +199,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
           dataObject['Add format rule for data'] = value;
         }
       }
-      console.log('dataObject', dataObject);
+
       newDisplayArray.push(dataObject);
     });
     setDisplayArray(newDisplayArray);
