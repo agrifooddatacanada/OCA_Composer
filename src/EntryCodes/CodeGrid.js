@@ -104,8 +104,7 @@ const LanguageHeader = (languages, language) => {
 };
 
 export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable }) {
-  const { languages, setEntryCodeRowData } = useContext(Context);
-  const { entryCodeRowData } = useContext(Context);
+  const { languages, setEntryCodeRowData, entryCodeRowData } = useContext(Context);
   const [buttonArray, setButtonArray] = useState([]);
   const [gridWidth, setGridWidth] = useState(500);
   const [hoveredRowIndex, setHoveredRowIndex] = useState(-1);
