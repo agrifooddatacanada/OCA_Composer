@@ -66,7 +66,7 @@ export default function EntryCodes() {
       newEntryCodeObject[item] = newEntryCodeArray;
     });
 
-    setSavedEntryCodes(newEntryCodeObject);
+    // setSavedEntryCodes(newEntryCodeObject);
     entryCodeData.current = newEntryCodeObject;
   };
 

@@ -194,7 +194,7 @@ const useHandleEntryCodeDrop = () => {
       const fromIndex = unfilteredAttrRef.current.indexOf(selectedAttrToCopy);
       setEntryCodeRowData(prev => {
         const newObj = [...prev];
-        newObj[chosenEntryCodeIndex] = newObj[fromIndex];
+        newObj[chosenEntryCodeIndex] = newObj[fromIndex].map(obj => ({ ...obj }));
         return newObj;
       });
       setCurrentPage("Codes");
