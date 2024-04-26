@@ -8,10 +8,10 @@ const QuickStart = () => {
         Quick-start (with Quick Links):
       </Typography>
       <Typography sx={{ fontWeight: '600', marginTop: 1 }}>
-        1. Write your schema and generate the schema .json bundle and a simple .txt Readme.
+        1. Write your schema and generate the schema bundle and a simple .txt Readme.
       </Typography>
       <Typography sx={{ fontWeight: '600' }}>
-        2. Use your .json schema here to view, and generate an Excel sheet for data input aligned with your schema.
+        2. Use your schema bundle here to view, and generate an Excel sheet for data input aligned with your schema.
       </Typography>
       <Typography sx={{ fontWeight: '600' }}>
         3. Store your schema files with your data, put them in a repository, or collaborate by sharing them with others.

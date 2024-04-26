@@ -43,7 +43,7 @@ const UseASchemaWithDataAccordionItem = ({
 
       <AccordionDetails sx={{ textAlign: 'start' }}>
         <Typography>
-          With your machine-readable .json schema bundle you can begin to use it
+          With your machine-readable schema bundle you can begin to use it
           in your workflows.
         </Typography>
         <Typography sx={{ marginTop: '20px' }}>
