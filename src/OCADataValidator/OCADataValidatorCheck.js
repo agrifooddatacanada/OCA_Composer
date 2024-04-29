@@ -24,10 +24,11 @@ const convertToCSV = (data) => {
 
 const CustomTooltip = (props) => {
   const error = props.data?.error?.[props.colDef.field] || "";
+  const dataLength = props.api.getRenderedNodes().length;
 
   return (
     <>
-      {error.length > 0 ?
+      {dataLength > 4 && error.length > 0 ?
         (<Box className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', width: '100%', minWidth: '200px', maxWidth: '600px', maxHeight: '200px', overflow: 'hidden' }}>
           <Typography sx={{ marginBottom: '5px', fontWeight: 'bold', fontSize: '18px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             Error:
@@ -36,7 +37,18 @@ const CustomTooltip = (props) => {
             {error.toString()}
           </Typography>
         </Box>)
-        : <p></p>}
+        : dataLength > 0 && error.length > 0 ?
+          (
+            <Box className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '5px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', width: '100%', minWidth: '200px', maxWidth: '600px', maxHeight: '200px', overflow: 'hidden' }}>
+              <Typography sx={{ marginBottom: '5px', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '14px' }}>
+                Error: <span style={{ wordWrap: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'normal' }}>
+                  {error.toString()}
+                </span>
+              </Typography>
+
+            </Box>
+          ) :
+          <p></p>}
     </>
   );
 };
@@ -609,6 +621,38 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     firstTimeDisplayWarning.current = false;
   }, [firstTimeDisplayWarning, setShowWarningCard]);
 
+  const onCellKeyDown = useCallback(
+    (e) => {
+      const keyPressed = e.event.code;
+
+      const isLastRow = e.node.lastChild;
+      if (keyPressed === "Enter") {
+        if (isLastRow) {
+          handleAddRow();
+        }
+        setTimeout(() => {
+          const api = e.api;
+          const editingRowIndex = e.rowIndex;
+          api.setFocusedCell(editingRowIndex + 1, e.column);
+        }, 0);
+      }
+
+      if (keyPressed === "Tab") {
+        const allColumns = e.columnApi.getAllColumns();
+        const isLastColumn = e.column === allColumns.slice(-1)[0];
+        if (isLastColumn && isLastRow) {
+          handleAddRow();
+          setTimeout(() => {
+            const api = e.api;
+            const editingRowIndex = e.rowIndex;
+            api.setFocusedCell(editingRowIndex + 1, allColumns[0]);
+          }, 0);
+        }
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     const columns = [];
     const variableToCheck = datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
@@ -788,9 +832,11 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
               }
               tooltipShowDelay={0}
               tooltipHideDelay={2000}
+              tooltipMouseTrack={true}
               onCellValueChanged={onCellValueChanged}
               domLayout="autoHeight"
               suppressRowHoverHighlight={true}
+              onCellKeyDown={onCellKeyDown}
             />
           </div>
           <Box sx={{
