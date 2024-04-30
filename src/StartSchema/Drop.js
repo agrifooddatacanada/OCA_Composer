@@ -42,6 +42,12 @@ export default function Drop({
       return {
         "application/vnd.ms-excel": [".xls", ".xlsx"],
       };
+    } else if (version === 5) {
+      return {
+        "application/vnd.ms-excel": [".csv"],
+        "application/zip": ['.zip'],
+        "application/json": [".json"]
+      };
     }
   }, [version]);
 

@@ -250,17 +250,17 @@ export function generateDataEntry(acceptedFiles, setLoading) {
             });
           }
         } else {
-              sheet2.getRow(1).values = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
-              Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).forEach((_attrName, index) => {
-                  const cell = sheet2.getCell(1, index + 1);
-                  formatDataHeader(cell);
-              });
-          };
+          sheet2.getRow(1).values = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
+          Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).forEach((_attrName, index) => {
+            const cell = sheet2.getCell(1, index + 1);
+            formatDataHeader(cell);
+          });
+        };
       } catch (error) {
-          throw new WorkbookError('.. Error assigning head names to sheet2 (Data Entry) ...');
+        throw new WorkbookError('.. Error assigning head names to sheet2 (Data Entry) ...');
       };
 
-      const sheet3 = workbook.addWorksheet('Schema conformant data');
+      const sheet3 = workbook.addWorksheet('Schema Conformant Data');
 
       const attributesIndex = {};
       let attributeNames = null;
