@@ -18,7 +18,14 @@ import { DropdownMenuList } from '../components/DropdownMenuCell';
 import WarningPopup from './WarningPopup';
 
 const convertToCSV = (data) => {
-  const csv = data.map(row => Object.values(row).join(',')).join('\n');
+  const csv = data.map(row => {
+    return Object.values(row).map(value => {
+      if (/,|"/.test(value)) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    }).join(',');
+  }).join('\n');
   return csv;
 };
 
