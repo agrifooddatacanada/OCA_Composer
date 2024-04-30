@@ -6,13 +6,12 @@ import Introduction from './Introduction';
 import AccordionList from './AccordionList';
 import { useLocation } from 'react-router-dom';
 import { Context } from '../App';
-import DepreciatedWarningCard from './DepreciatedWarningCard';
 import Footer from '../Footer/Footer';
 import Header from '../Header/Header';
 
 const Landing = () => {
   const path = useLocation();
-  const { setCurrentPage, showDeprecationCard } = useContext(Context);
+  const { setCurrentPage } = useContext(Context);
 
   useEffect(() => {
     if (path.pathname === '/') {
@@ -33,7 +32,6 @@ const Landing = () => {
         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '30px' }}>
           <AccordionList />
         </Box>
-        {showDeprecationCard && <DepreciatedWarningCard />}
       </Box >
       <Footer currentPage="Landing" />
     </>

@@ -270,7 +270,7 @@ export const displayValues = [
   "base64",
   "utf-8",
   "iso-8859-1",
-  "UTF-16LE"
+  // "UTF-16LE"
 ];
 
 export const defaultUploadedDescription = "Click here to select a spreadsheet or drag and drop one here";
