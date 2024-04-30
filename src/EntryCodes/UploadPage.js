@@ -77,6 +77,7 @@ const UploadPage = () => {
             tipDescription={null}
             description="Click here to select a .csv file or schema bundle, or drag and drop one here."
             noteDescription="Note: Your .csv file contains a list of entry codes. You can also include language labels for each entry code in adjacent columns"
+            version={5}
           />
           <Box display="flex">
             <Button

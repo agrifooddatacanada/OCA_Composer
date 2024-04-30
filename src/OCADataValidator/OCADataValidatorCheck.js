@@ -242,7 +242,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     attributesList,
     setSchemaDataConformantHeader,
     savedEntryCodes,
-    attributeRowData
   } = useContext(Context);
 
   const [rowData, setRowData] = useState([]);
@@ -346,23 +345,22 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
           setColumnDefs((prev) => {
             const copy = [];
 
-            if (validate?.unmachedAttrs?.size > 0) {
-              prev.forEach((header) => {
-                if (validate?.unmachedAttrs?.has(header.headerName)) {
-                  copy.push({
-                    ...header,
-                    cellStyle: () => {
-                      return { backgroundColor: "#ededed" };
-                    }
-                  });
-                } else {
-                  copy.push({
-                    ...header,
-                    cellStyle
-                  });
-                }
-              });
-            }
+            prev.forEach((header) => {
+              if (validate?.unmachedAttrs?.has(header.headerName)) {
+                copy.push({
+                  ...header,
+                  cellStyle: () => {
+                    return { backgroundColor: "#ededed" };
+                  }
+                });
+              } else {
+                copy.push({
+                  ...header,
+                  cellStyle
+                });
+              }
+            });
+
             return copy;
           });
           setTimeout(() => {
