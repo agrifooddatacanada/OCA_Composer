@@ -66,8 +66,32 @@ export default function EntryCodes() {
       newEntryCodeObject[item] = newEntryCodeArray;
     });
 
-    setSavedEntryCodes(newEntryCodeObject);
-    entryCodeData.current = newEntryCodeObject;
+    // setSavedEntryCodes(newEntryCodeObject);
+    const values = Object.values(newEntryCodeObject);
+    values.forEach((item) => {
+      item.forEach((obj) => {
+        const values = Object.values(obj);
+        values.forEach((value) => {
+          if (!value) {
+            pageForwardDisabledRef.current = true;
+            setErrorMessage(errorMessages.fieldEmpty);
+            setTimeout(() => {
+              setErrorMessage("");
+            }, [2000]);
+          }
+        });
+      });
+    });
+
+    const keys = Object.keys(newEntryCodeObject);
+    const newEntryCodesObject = {};
+    keys.forEach((item) => {
+      newEntryCodesObject[item] = removeSpacesFromArrayOfObjects(
+        newEntryCodeObject[item]
+      );
+    });
+
+    setSavedEntryCodes(newEntryCodesObject);
   };
 
   const pageBackSave = () => {
@@ -79,46 +103,6 @@ export default function EntryCodes() {
   const pageForwardSave = () => {
     pageForwardDisabledRef.current = false;
     handleSave();
-    if (entryCodeData.current) {
-      const values = Object.values(entryCodeData.current);
-      values.forEach((item) => {
-        item.forEach((obj) => {
-          const values = Object.values(obj);
-          values.forEach((value) => {
-            if (!value) {
-              pageForwardDisabledRef.current = true;
-              setErrorMessage(errorMessages.fieldEmpty);
-              setTimeout(() => {
-                setErrorMessage("");
-              }, [2000]);
-            }
-            // if (
-            //   value.includes("'") ||
-            //   value.includes('"') ||
-            //   value.includes("`") ||
-            //   value.includes(",")
-            // ) {
-            //   pageForwardDisabledRef.current = true;
-            //   setErrorMessage(errorMessages.quoteMisuse);
-            //   setTimeout(() => {
-            //     setErrorMessage("");
-            //   }, [2000]);
-            // }
-          });
-        });
-      });
-
-      const keys = Object.keys(entryCodeData.current);
-      const newEntryCodesObject = {};
-      keys.forEach((item) => {
-        newEntryCodesObject[item] = removeSpacesFromArrayOfObjects(
-          entryCodeData.current[item]
-        );
-      });
-
-      setSavedEntryCodes(newEntryCodesObject);
-    }
-
     if (!pageForwardDisabledRef.current) {
       setCurrentPage("LanguageDetails");
     }
