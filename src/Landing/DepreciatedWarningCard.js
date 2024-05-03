@@ -80,7 +80,7 @@ export default function DepreciatedWarningCard() {
             }
           }}
         >
-          close and don't show again
+          Close and Don't Show Again
           <CloseIcon fontSize="small" />
         </Button>
       </Box>
