@@ -120,7 +120,7 @@ export default function Header({ currentPage }) {
         setHelpLink('');
         break;
       case 'OCADataValidatorCheck':
-        setHeader('Data Validator');
+        setHeader('Data Verifier');
         setToolTipText(
           ''
         );

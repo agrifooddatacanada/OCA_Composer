@@ -457,7 +457,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
             flexDirection: "column",
             alignItems: "flex-end",
           }}
-        >;
+        >
           <Button
             color="warning"
             variant="outlined"
