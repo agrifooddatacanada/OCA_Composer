@@ -219,7 +219,7 @@ export default class OCABundle {
 
       try {
         // Verifying the missing data entries for a mandatory (required) attributes.
-        for (let i = 0; i < dataset[attr].length; i++) {
+        for (let i = 0; i < dataset[attr]?.length; i++) {
           let dataEntry = String(dataset[attr][i]);
           if ((dataEntry === undefined || dataEntry === null || dataEntry === '') && attrConformance === 'O') {
             dataEntry = '';
@@ -289,7 +289,7 @@ export default class OCABundle {
     const attrEntryCodes = this.getEntryCodes();
     for (const attr in attrEntryCodes) {
       rslt.errs[attr] = {};
-      for (let i = 0; i < dataset[attr].length; i++) {
+      for (let i = 0; i < dataset[attr]?.length; i++) {
         const dataEntry = dataset[attr][i];
         if (!attrEntryCodes[attr].includes(dataEntry) && dataEntry !== '' && dataEntry !== undefined) {
           rslt.errs[attr][i] = { EC: `${EC_ERR_MSG} Entry codes allowed: [${Object.values(attrEntryCodes)}]` };
@@ -304,7 +304,7 @@ export default class OCABundle {
     for (const attr in this.getAttributes()) {
       rslt.errs[attr] = {};
       const attrChe = this.getCharacterEncoding(attr);
-      for (let i = 0; i < dataset[attr].length; i++) {
+      for (let i = 0; i < dataset[attr]?.length; i++) {
         const dataEntry = dataset[attr][i];
         // console.log('initial', dataEntry);
         if (!matchCharacterEncoding(dataEntry, attrChe)) {
