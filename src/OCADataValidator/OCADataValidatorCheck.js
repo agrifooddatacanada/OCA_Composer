@@ -628,6 +628,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const onCellKeyDown = useCallback(
     (e) => {
+      validateBeforeOnChangeRef.current = false;
       const keyPressed = e.event.code;
 
       const isLastRow = e.node.lastChild;
