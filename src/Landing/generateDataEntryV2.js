@@ -1,4 +1,3 @@
-
 import ExcelJS from 'exceljs';
 
 // Custom error-handling function
@@ -167,6 +166,16 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
         cell.alignment = { vertical: 'top', wrapText: true };
       };
 
+      function getColumnLetter(columnNumber) {
+        let columnLetter = '';
+        while (columnNumber > 0) {
+          let remainder = (columnNumber - 1) % 26;
+          columnLetter = String.fromCharCode(65 + remainder) + columnLetter;
+          columnNumber = Math.floor((columnNumber - 1) / 26);
+        }
+        return columnLetter;
+      }
+
       /// Creating first sheet
       const sheet1 = workbook.addWorksheet('Schema Description');
 
@@ -264,17 +273,17 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
             });
           }
         } else {
-              sheet2.getRow(1).values = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
-              Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).forEach((_attrName, index) => {
-                  const cell = sheet2.getCell(1, index + 1);
-                  formatDataHeader(cell);
-              });
-          };
+          sheet2.getRow(1).values = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
+          Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).forEach((_attrName, index) => {
+            const cell = sheet2.getCell(1, index + 1);
+            formatDataHeader(cell);
+          });
+        };
       } catch (error) {
-          throw new WorkbookError('.. Error assigning head names to sheet2 (Data Entry) ...');
+        throw new WorkbookError('.. Error assigning head names to sheet2 (Data Entry) ...');
       };
 
-      const sheet3 = workbook.addWorksheet('Schema conformant data');
+      const sheet3 = workbook.addWorksheet('Schema Conformant Data');
 
       const attributesIndex = {};
       let attributeNames = null;
@@ -319,13 +328,13 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
           };
 
           try {
-            for (let col = 0; col < attributeNames.length; col++) {
-              const letter = String.fromCharCode(65 + col);
+            for (let col = 1; col < attributeNames.length; col++) {
+              const letter = getColumnLetter(col);
 
               for (let row = 1; row <= 1000; row++) {
                 const formula = `IF(ISBLANK('Data Entry'!$${letter}$${row + 1}), "", 'Data Entry'!$${letter}$${row + 1})`;
 
-                const cell = sheet3.getCell(row + 1, col + 1);
+                const cell = sheet3.getCell(row + 1, col);
                 cell.value = {
                   formula: formula,
                 };
@@ -715,29 +724,28 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
         };
       };
       // transform lookupEntries to fit the data validation rule
-      const transformedEntries = {};
+      // const transformedEntries = {};
 
-      for (const [key, values] of Object.entries(lookupEntries)) {
-        const keys = Object.keys(values);
-        const valueList = Object.values(values);
+      // for (const [key, values] of Object.entries(lookupEntries)) {
+      //   const keys = Object.keys(values);
+      //   const valueList = Object.values(values);
 
-        transformedEntries[key] = [keys, valueList];
-      };
+      //   transformedEntries[key] = [keys, valueList];
+      // };
 
       for (const [attrName, [start, end]] of lookUpTable) {
-        let listEntries = null;
+        // let listEntries = null;
 
-        for (const [key, [, valueList]] of Object.entries(transformedEntries)) {
-          if (key === attrName) {
-            listEntries = ['"' + valueList.join(',') + '"'];
-          };
-        };
+        // for (const [key, [, valueList]] of Object.entries(transformedEntries)) {
+        //   if (key === attrName) {
+        //     listEntries = ['"' + valueList.join(',') + '"'];
+        //   };
+        // };
 
         const validationRule = {
           type: 'list',
           showDropDown: true,
-          // formula1: `='Schema Description'!$A$${start}:$A$${end}`,
-          formulae: listEntries,
+          formulae: [`'Schema Description'!$A$${start}:$A$${end}`],
           showErrorMessage: true,
         };
 
@@ -745,9 +753,10 @@ export function generateDataEntryV2(acceptedFiles, setLoading) {
           const attrKeys = Object.keys(attributesIndex);
           const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
           const col_i = attrNameFromAttrKeys.indexOf(attrName) + 1;
-          const letter = String.fromCharCode(65 + col_i - 1);
+          const letter = getColumnLetter(col_i);
           sheet2.getCell(row, col_i).dataValidation = validationRule;
           const formula = `IF(ISBLANK('Data Entry'!$${letter}$${row}), "", VLOOKUP(TEXT('Data Entry'!$${letter}$${row}, "0"), 'Schema Description'!$A$${start}:$B$${end}, 2))`;
+
           sheet3.getCell(row, col_i).value = {
             formula: formula,
           };
