@@ -3,7 +3,7 @@ import { Box } from "@mui/system";
 import { Typography } from "@mui/material";
 import { Context } from "../App";
 import SingleTable from "./SingleTable";
-import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
+import { removeSpacesAndColonFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 
@@ -85,7 +85,7 @@ export default function EntryCodes() {
     const keys = Object.keys(newEntryCodeObject);
     const newEntryCodesObject = {};
     keys.forEach((item) => {
-      newEntryCodesObject[item] = removeSpacesFromArrayOfObjects(
+      newEntryCodesObject[item] = removeSpacesAndColonFromArrayOfObjects(
         newEntryCodeObject[item]
       );
     });
