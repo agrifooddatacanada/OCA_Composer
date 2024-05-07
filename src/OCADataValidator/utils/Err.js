@@ -2,32 +2,29 @@
 const ATTR_UNMATCH_MSG = 'Unmatched attribute (attribute not found in the OCA Bundle).';
 const ATTR_MISSING_MSG = 'Missing attribute (attribute not found in the data set).';
 
-// Missing or misnamed attributes
+// Base error class for FormatErr and EntryCodeErr.
+class BaseErr {
+  constructor() {
+    this.errs = {};
+  }
+};
+
 class AttributeErr {
   constructor() {
     this.errs = [];
   }
 };
 
-// Attribute type or attribute format errors
-class FormatErr {
-  constructor() {
-    this.errs = {};
-  }
-};
-
-// Not matching any of the entry codes
-class EntryCodeErr {
-  constructor() {
-    this.errs = {};
-  }
-};
+class FormatErr extends BaseErr { }
+class EntryCodeErr extends BaseErr { }
+class CharacterEcodeErr extends BaseErr { }
 
 export default class OCADataSetErr {
   constructor() {
     this.attErr = new AttributeErr();
-    this.formatErr = new FormatErr();
-    this.entryCodeErr = new EntryCodeErr();
+    this.formatErr = this.createErrInstance(FormatErr);
+    this.entryCodeErr = this.createErrInstance(EntryCodeErr);
+    this.characterEcodeErr = this.createErrInstance(CharacterEcodeErr);
 
     this.missingAttrs = new Set();
     this.unmachedAttrs = new Set();
@@ -35,9 +32,12 @@ export default class OCADataSetErr {
     this.errCols = new Set();
     this.errRows = new Set();
 
-    // store all errors in a collection...
     this.errCollection = {};
   };
+
+  createErrInstance(ErrClass) {
+    return new ErrClass();
+  }
 
   /**
    * @returns {string} - This method returns the first column with errors if it exist else null.
@@ -46,16 +46,14 @@ export default class OCADataSetErr {
     this.updateErr();
     if (this.errCols.size > 0) {
       const firstErrCol = [...this.errCols].sort()[0];
-      // console.log(`The first problematic column is ${firstErrCol}`);
       return firstErrCol;
     } else {
-      // console.log("No error was found");
       return null;
     }
   };
 
   /**
-   * @returns {object} - This method returns the object that consits of att_missing, att_unmatch attributes, errRows, and errCols errors.
+   * @returns {object} - This method returns the object that consits of attr_missing, attr_unmatch attributes, errRows, and errCols errors.
    */
   updateErr() {
     for (const i of this.attErr.errs) {
@@ -68,9 +66,9 @@ export default class OCADataSetErr {
 
     for (const i in this.formatErr.errs) {
       for (const j in this.formatErr.errs[i]) {
-        this.errRows.add(j); // problematic row
+        this.errRows.add(j);
         if (Object.keys(this.formatErr.errs).includes(i)) {
-          this.errCols.add(i); // problematic column
+          this.errCols.add(i);
         }
       }
     }
@@ -83,17 +81,21 @@ export default class OCADataSetErr {
       }
     }
 
-    // getting all errors in a collection...
+    for (const i in this.characterEcodeErr.errs) {
+      for (const j in this.characterEcodeErr.errs[i]) {
+        this.errRows.add(j);
+        if (Object.keys(this.characterEcodeErr.errs).includes(i)) {
+          this.errCols.add(i);
+        }
+      }
+    }
     this.getAllErrs();
 
     return this;
   };
 
-  // Returns the error detail Array for missing or unmatched attributes.
   getAttErr() { return this.attErr.errs; };
-  // Returns the error detail object for format values.
   getFormatErr() { return this.formatErr.errs; };
-  // Returns the error detail object for entry code values.
   getEntryCodeErr() { return this.entryCodeErr.errs; };
 
   /**
@@ -101,26 +103,20 @@ export default class OCADataSetErr {
    * @param {*} attrName - The attribute name (column name).
    * @returns {Set} - This method returns a set of rows with errors if exist else null.
    */
-  getErrCol(attrName) {
+  static getErrCol(attrName) {
     this.errRows.clear();
     if (!Array.from(this.errCols).includes(attrName)) {
-      // console.log("No error was found.");
       return null;
     } else {
       if (Object.keys(this.getFormatErr()).includes(attrName)) {
-        // console.log("Format error(s) would occur in the following row(s):");
         for (const row in this.getFormatErr()[attrName]) {
-          // console.log(`row", ${row}, ":", ${this.getFormatErr()[attrName][row]}`)
           this.errRows.add(row);
         }
       } else {
-        // console.log("No format error was found in the column.")
         return null;
       }
       if (attrName in Object.keys(this.getEntryCodeErr())) {
-        // console.log("Entry code error(s) would occur in the following row(s):");
         for (const row in this.getEntryCodeErr()[attrName]) {
-          // console.log(`row", ${row}, ":", ${this.getEntryCodeErr()[attrName][row]}`)
           this.errRows.add(row);
         }
       } else {
@@ -130,29 +126,50 @@ export default class OCADataSetErr {
     return this.errRows;
   };
 
-  getAllErrs() {
-    const rowsErros = Array.from(this.errRows);
-    for (const row of rowsErros) {
-      this.errCollection[row] = {};
-
-      // Add the attribute error if it exists.
-      for (const col in this.formatErr.errs) {
-        if (Object.keys(this.formatErr.errs[col]).includes(row)) {
-          Object.assign(this.errCollection[row], { [col]: this.formatErr.errs[col][row] });
-        }
-
-        // Only add the entry code error if it exists.
-        if (Object.keys(this.entryCodeErr.errs).includes(col)) {
-          if (Object.keys(this.entryCodeErr.errs[col]).includes(row)) {
-            const entrycodeError = this.entryCodeErr?.errs?.[col] ?? null;
-            Object.assign(this.errCollection[row], { [col]: entrycodeError[row] });
+  rowErrorsForErrCollection(errObject, row) {
+    const outputErrCollection = {};
+    for (const col in errObject) {
+      if (errObject[col][row] !== undefined) {
+        const error = errObject[col][row] ?? null;
+        if (error) {
+          if (col in outputErrCollection) {
+            const existingErrors = outputErrCollection[col];
+            outputErrCollection[col] = [...existingErrors, error];
           } else {
-            ;
+            outputErrCollection[col] = [error];
           }
         }
       }
     }
-
-    return this.errCollection;
+    return outputErrCollection;
   }
+
+  mergeErrors(...errors) {
+    const mergedErrors = {};
+
+    for (const errorSet of errors) {
+      if (Object.keys(errorSet).length === 0) {
+        continue;
+      }
+      for (const [columnName, rowsErrs] of Object.entries(errorSet)) {
+        if (!mergedErrors[columnName]) {
+          mergedErrors[columnName] = [...rowsErrs];
+        } else {
+          mergedErrors[columnName] = [...mergedErrors[columnName], ...rowsErrs];
+        }
+      }
+    }
+    return mergedErrors;
+  }
+
+  getAllErrs() {
+    const rowsErros = Array.from(this.errRows);
+    for (const row of rowsErros) {
+      const formatError = this.rowErrorsForErrCollection(this.formatErr.errs, row);
+      const entryCodeError = this.rowErrorsForErrCollection(this.entryCodeErr.errs, row);
+      const characterEncodingError = this.rowErrorsForErrCollection(this.characterEcodeErr.errs, row);
+      const mergedErrors = this.mergeErrors(formatError, entryCodeError, characterEncodingError);
+      this.errCollection[row] = mergedErrors;
+    }
+  };
 };
