@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Tooltip, Button, Box } from '@mui/material';
+import { Typography, Tooltip, Button, Box, MenuItem, Menu, Fade } from '@mui/material';
 import { CustomPalette } from '../constants/customPalette';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import logo from '../assets/agri-logo.png';
@@ -7,6 +7,7 @@ import logoWhite from '../assets/agri-logo-white.png';
 import { Link, useLocation } from 'react-router-dom';
 import HeaderWrapper from './HeaderWrapper';
 import { useMediaQuery } from '@mui/material';
+import i18next from 'i18next';
 
 export default function Header({ currentPage }) {
   const [header, setHeader] = useState(currentPage);
@@ -15,6 +16,17 @@ export default function Header({ currentPage }) {
   const location = useLocation();
   // Detecting mobile screens with 'isMobile'
   const isMobile = useMediaQuery('(max-width:736px)');
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
+
+  useEffect(() => {
+    setSelectedLanguage(i18next.language);
+  }, []);
+
+  const changeLanguage = (event) => {
+    const lng = event.target.value;
+    setSelectedLanguage(lng);
+    i18next.changeLanguage(lng);
+  };
 
   //Sets headers and tooltip Text based on current page
   useEffect(() => {
@@ -220,7 +232,7 @@ export default function Header({ currentPage }) {
                   target='_blank'
                   sx={{
                     m: 2,
-                    mr: 5,
+                    mr: 2,
                     p: 1,
                     width: '15rem',
                   }}
@@ -235,7 +247,13 @@ export default function Header({ currentPage }) {
                   Help with this page
                 </Button>
               )}
-              <Box sx={{ color: CustomPalette.PRIMARY }}>En</Box>
+              {/* <Box sx={{ color: CustomPalette.PRIMARY }}>En</Box> */}
+              <div>
+                <select id="language-select" style={{ border: 'none', fontSize: '20px', color: CustomPalette.PRIMARY }} value={selectedLanguage} onChange={changeLanguage}>
+                  <option value="en">EN</option>
+                  <option value="fr">FR</option>
+                </select>
+              </div>
             </>
           )}
         </>

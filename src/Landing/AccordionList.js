@@ -15,13 +15,13 @@ import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
 import { generateDataEntryV2 } from './generateDataEntryV2';
-import OCADataValidatorItem from './OCADataValidatorItem';
 import { generateDataEntry } from './generateDataEntry';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
-import useExportLogicV2 from '../ViewSchema/useExportLogicV2';
+import { useTranslation } from 'react-i18next';
 
 const AccordionList = () => {
   const isMobile = useMediaQuery('(max-width: 736px)');
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
@@ -128,7 +128,7 @@ const AccordionList = () => {
               marginTop: 2,
             }}
           >
-            Quick Links
+            {t('Quick Links')}
           </Typography>
           <CustomAnchorLink
             text='Write a schema'

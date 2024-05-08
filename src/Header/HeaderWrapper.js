@@ -21,7 +21,7 @@ const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem }) => {
       <Stack
         direction='row'
         sx={{
-          width: isMobile ? 'fit-content' : 250,
+          width: isMobile ? 'fit-content' : 300,
           alignItems: 'center',
           justifyContent: 'flex-end',
         }}
