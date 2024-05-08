@@ -13,7 +13,7 @@ import MultipleSelectPlaceholder from './MultiSelectErrors';
 import CellHeader from '../components/CellHeader';
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ExportButton from './ExportButton';
-import { formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from '../constants/constants';
+import { errorCode, formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from '../constants/constants';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
 import WarningPopup from './WarningPopup';
 
@@ -38,11 +38,11 @@ const CustomTooltip = (props) => {
       {dataLength > 4 && error.length > 0 ?
         (<Box className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', width: '100%', minWidth: '200px', maxWidth: '600px', maxHeight: '200px', overflow: 'hidden' }}>
           <Typography sx={{ marginBottom: '5px', fontWeight: 'bold', fontSize: '18px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            Error:
+            Error ({error.length}):
           </Typography>
           {error.map((err, index) => (
-            <Typography key={index} style={{ wordWrap: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {Object.values(err)?.[0]}
+            <Typography key={index} style={{ wordWrap: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'left' }}>
+              {index + 1}. {err.detail}
             </Typography>
           ))}
         </Box>)
@@ -50,8 +50,8 @@ const CustomTooltip = (props) => {
           (
             <Box className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '5px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', width: '100%', minWidth: '200px', maxWidth: '600px', maxHeight: '200px', overflow: 'hidden' }}>
               <Typography sx={{ marginBottom: '5px', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '14px' }}>
-                Error: <span style={{ wordWrap: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'normal' }}>
-                  {Object.values(error[0])?.[0]}
+                Error ({error.length}): <span style={{ wordWrap: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'normal' }}>
+                  {error[0].detail}
                 </span>
               </Typography>
 
@@ -327,7 +327,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   };
 
   const handleValidate = async () => {
-    console.log("run handleValidate");
+    validateBeforeOnChangeRef.current = true;
     gridRef.current.api.stopEditing();
     gridRef.current.api.showLoadingOverlay();
     setRevalidateData(false);
@@ -346,7 +346,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         reader.onload = async (e) => {
           const dataset = await OCADataSet.readExcel(e.target.result);
           const validate = bundle.validate(dataset);
-          console.log('validate', validate);
 
           setRowData((prev) => {
             return prev.map((row, index) => {
@@ -395,7 +394,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       });
 
       const validate = bundle.validate(prepareInput);
-      console.log('validate', validate);
       setRowData((prev) => {
         return prev.map((row, index) => {
           const data = newData[index];
@@ -568,7 +566,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   };
 
   const onCellValueChanged = (e) => {
-    console.log("run onCellValueChanged");
     if (validateBeforeOnChangeRef.current) {
       validateBeforeOnChangeRef.current = false;
       return;
@@ -632,6 +629,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const onCellKeyDown = useCallback(
     (e) => {
+      validateBeforeOnChangeRef.current = false;
       const keyPressed = e.event.code;
 
       const isLastRow = e.node.lastChild;
@@ -699,9 +697,11 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   const rowDataFilter = errorName.length > 0 ? rowData.filter((row) => {
     for (const error of errorName) {
       if (row?.error) {
+        const errCode = errorCode?.[error];
         const errorValues = Object.values(row?.error);
-        for (const ind of errorValues) {
-          if (ind.toLowerCase().includes(error.toLowerCase())) {
+        for (const err of errorValues) {
+          const errs = err.map((item) => item?.type);
+          if (errs?.includes(errCode)) {
             return true;
           }
         }

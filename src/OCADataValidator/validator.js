@@ -263,15 +263,15 @@ export default class OCABundle {
             if (dataEntry === '' && attrConformance === 'O') {
               continue;
             } else if (dataEntry === '' && attrConformance === 'M') {
-              rslt.errs[attr][i] = { FE: `${MISSING_MSG} Supported format: ${attrFormat}.` };
+              rslt.errs[attr][i] = { type: 'FE', detail: `${MISSING_MSG} Supported format: ${attrFormat}.` };
             } else {
               if (attrType.includes('Boolean')) {
-                rslt.errs[attr][i] = { FE: `${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']` };
+                rslt.errs[attr][i] = { type: 'FE', detail: `${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']` };
               } else {
                 if (attrFormat == null) {
-                  rslt.errs[attr][i] = { FE: `${FORMAT_ERR_MSG} Supported format: ${attrType}.` };
+                  rslt.errs[attr][i] = { type: 'FE', detail: `${FORMAT_ERR_MSG} Supported format: ${attrType}.` };
                 } else {
-                  rslt.errs[attr][i] = { FE: `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.` };
+                  rslt.errs[attr][i] = { type: 'FE', detail: `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.` };
                 }
               }
             }
@@ -292,7 +292,7 @@ export default class OCABundle {
       for (let i = 0; i < dataset[attr]?.length; i++) {
         const dataEntry = dataset[attr][i];
         if (!attrEntryCodes[attr].includes(dataEntry) && dataEntry !== '' && dataEntry !== undefined) {
-          rslt.errs[attr][i] = { EC: `${EC_ERR_MSG} Entry codes allowed: [${Object.values(attrEntryCodes)}]` };
+          rslt.errs[attr][i] = { type: 'EC', detail: `${EC_ERR_MSG} Entry codes allowed: [${Object.values(attrEntryCodes)}]` };
         }
       }
     }
@@ -308,7 +308,7 @@ export default class OCABundle {
         const dataEntry = dataset[attr][i];
         // console.log('initial', dataEntry);
         if (!matchCharacterEncoding(dataEntry, attrChe)) {
-          rslt.errs[attr][i] = { CHE: CHE_ERR_MSG };
+          rslt.errs[attr][i] = { type: 'CHE', detail: CHE_ERR_MSG };
         }
       }
     }
