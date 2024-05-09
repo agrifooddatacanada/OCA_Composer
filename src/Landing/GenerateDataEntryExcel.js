@@ -3,8 +3,11 @@ import React from 'react';
 import { generateDataEntry } from './generateDataEntry';
 import { generateDataEntryV2 } from './generateDataEntryV2';
 import { CustomPalette } from '../constants/customPalette';
+import { useTranslation } from 'react-i18next';
 
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
+  const { t } = useTranslation();
+
   return (
     <Button
       variant='contained'
@@ -26,7 +29,7 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
       }}
       disabled={disableButtonCheck}
     >
-      Generate Data Entry Excel
+      {t('Generate Data Entry Excel')}
     </Button>
   );
 };
