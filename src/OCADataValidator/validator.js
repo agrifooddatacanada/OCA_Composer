@@ -1,6 +1,7 @@
 // import fs from 'fs';
 import OCADataSetErr from './utils/Err';
-import { matchFormat } from './utils/matchRules';
+import { matchFormat, matchCharacterEncoding } from './utils/matchRules';
+
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
 const OCA_VERSION = '1.0';
@@ -15,10 +16,10 @@ const CONF_KEY = 'conformance';
 const ATTR_CONF_KEY = 'attribute_conformance';
 const EC_KEY = 'entry_code';
 const ATTR_EC_KEY = 'attribute_entry_codes';
-// const CHE_KEY = 'character_encoding';
-// const ATTR_CHE_KEY = 'attribute_character_encoding';
-// const DEFAULT_ATTR_CHE_KEY = 'default_character_encoding';
-// const DEFAULT_ENCODING = 'utf-8';
+const CHE_KEY = 'character_encoding';
+const ATTR_CHE_KEY = 'attribute_character_encoding';
+const DEFAULT_ATTR_CHE_KEY = 'default_character_encoding';
+const DEFAULT_ENCODING = 'utf-8';
 const FLAG_KEY = 'flagged_attributes';
 const OVERLAYS_KEY = 'overlays';
 
@@ -28,9 +29,9 @@ const ATTR_MISSING_MSG = 'Missing attribute (attribute not found in the data set
 const MISSING_MSG = 'Missing an entry for a mandatory attribute (check for other missing entries before continuing).';
 // const NOT_AN_ARRAY_MSG = 'Valid array required.';
 const FORMAT_ERR_MSG = 'Format mismatch.';
-// const EC_FORMAT_ERR_MSG = 'Entry code format mismatch (manually fix the attribute format).';
+const EC_FORMAT_ERR_MSG = 'Entry code format mismatch (manually fix the attribute format).';
 const EC_ERR_MSG = 'One of the entry codes is required.';
-// const CHE_ERR_MSG = 'Character encoding mismatch.';
+const CHE_ERR_MSG = 'Character encoding mismatch.';
 
 export default class OCABundle {
   constructor() {
@@ -38,28 +39,6 @@ export default class OCABundle {
     this.overlays = {};
     // this.overlays_dict = {};
   };
-
-  /** Activate this code when reading file is in the browser.
-   * static async readBundle(file) {
-      return new Promise((resolve, reject) => {
-
-          const reader = new FileReader();
-
-          reader.onload = () => {
-              try {
-                  const bundle = JSON.parse(reader.result);
-                  resolve(bundle);
-              } catch (error) {
-                  reject(error);
-              }
-          };
-
-          reader.onerror = reject;
-
-          reader.readAsText(file);
-      });
-  }
-  */
 
   // Load the OCA bundle from a JSON file.
   async loadedBundle(bundle) {
@@ -97,7 +76,45 @@ export default class OCABundle {
   //   });
   // };
 
-  getOverlay(overlay) {
+  // Construct the OCA bundle from a zip file.
+  // Overlays of interest: (format, character encoding, conformance, entry codes).
+  // static async readZip(file) {
+  //   return new Promise((resolve, reject) => {
+  //     try {
+  //       const zip = new AdmZip(file);
+  //       const zipOverlays = zip.getEntries();
+  //       const bundle = {};
+  //       const overlaysObjectFromZip = {};
+  //       const neededOverlays = [FORMAT_KEY, CHE_KEY, CONF_KEY, EC_KEY];
+
+  //       // Grab the capture base from the zip file.
+  //       for (const zipOverlay of zipOverlays) {
+  //         if (zipOverlay.entryName.includes('.json')) {
+  //           const overlay = JSON.parse(zip.readAsText(zipOverlay));
+  //           if (TYPE_KEY in overlay && overlay[TYPE_KEY].split('/')[1] === 'capture_base') {
+  //             bundle[CB_KEY] = overlay;
+  //           }
+  //         }
+  //       }
+
+  //       for (const zipOverlay of zipOverlays) {
+  //         if (zipOverlay.entryName.includes('.json')) {
+  //           const overlay = JSON.parse(zip.readAsText(zipOverlay));
+  //           if (TYPE_KEY in overlay && neededOverlays.includes(overlay[TYPE_KEY].split('/')[2])) {
+  //             overlaysObjectFromZip[overlay[TYPE_KEY].split('/')[2]] = overlay;
+  //           }
+  //         }
+  //       }
+
+  //       bundle.overlays = overlaysObjectFromZip;
+  //       resolve(bundle);
+  //     } catch (error) {
+  //       reject(error);
+  //     }
+  //   });
+  // };
+
+  static getOverlay(overlay) {
     if (Object.keys(this.overlays).includes(overlay)) {
       return this.overlays[overlay];
     } else {
@@ -105,7 +122,7 @@ export default class OCABundle {
     }
   };
 
-  getOverlayVersion(overlay) {
+  static getOverlayVersion(overlay) {
     const overlays = this.getOverlay(overlay);
     if (overlays.length >= 1) {
       return overlays[0][TYPE_KEY].split('/').pop();
@@ -151,6 +168,18 @@ export default class OCABundle {
     }
   };
 
+  getCharacterEncoding(attrName) {
+    const cheKey = this.overlays[CHE_KEY];
+    const attrCheKey = cheKey && cheKey[ATTR_CHE_KEY];
+    const defaultCheKey = cheKey && cheKey[DEFAULT_ATTR_CHE_KEY];
+
+    if (attrCheKey && attrCheKey[attrName] !== undefined) {
+      return attrCheKey[attrName];
+    } else {
+      return defaultCheKey || DEFAULT_ENCODING;
+    }
+  };
+
   // The start validation methods...
   /**
    * Validates all attributes for existence in the OCA Bundle.
@@ -190,7 +219,7 @@ export default class OCABundle {
 
       try {
         // Verifying the missing data entries for a mandatory (required) attributes.
-        for (let i = 0; i < dataset[attr].length; i++) {
+        for (let i = 0; i < dataset[attr]?.length; i++) {
           let dataEntry = String(dataset[attr][i]);
           if ((dataEntry === undefined || dataEntry === null || dataEntry === '') && attrConformance === 'O') {
             dataEntry = '';
@@ -234,12 +263,16 @@ export default class OCABundle {
             if (dataEntry === '' && attrConformance === 'O') {
               continue;
             } else if (dataEntry === '' && attrConformance === 'M') {
-              rslt.errs[attr][i] = `${MISSING_MSG} Supported format: ${attrFormat}.`;
+              rslt.errs[attr][i] = { type: 'FE', detail: `${MISSING_MSG} Supported format: ${attrFormat}.` };
             } else {
               if (attrType.includes('Boolean')) {
-                rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']`;
+                rslt.errs[attr][i] = { type: 'FE', detail: `${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']` };
               } else {
-                rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`;
+                if (attrFormat == null) {
+                  rslt.errs[attr][i] = { type: 'FE', detail: `${FORMAT_ERR_MSG} Supported format: ${attrType}.` };
+                } else {
+                  rslt.errs[attr][i] = { type: 'FE', detail: `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.` };
+                }
               }
             }
           }
@@ -256,15 +289,31 @@ export default class OCABundle {
     const attrEntryCodes = this.getEntryCodes();
     for (const attr in attrEntryCodes) {
       rslt.errs[attr] = {};
-      for (let i = 0; i < dataset[attr].length; i++) {
+      for (let i = 0; i < dataset[attr]?.length; i++) {
         const dataEntry = dataset[attr][i];
         if (!attrEntryCodes[attr].includes(dataEntry) && dataEntry !== '' && dataEntry !== undefined) {
-          rslt.errs[attr][i] = `${EC_ERR_MSG} Entry codes allowed: [${Object.values(attrEntryCodes)}]`;
+          rslt.errs[attr][i] = { type: 'EC', detail: `${EC_ERR_MSG} Entry codes allowed: [${Object.values(attrEntryCodes)}]` };
         }
       }
     }
     return rslt.errs;
   };
+
+  validateCharacterEncoding(dataset) {
+    const rslt = new OCADataSetErr().characterEcodeErr;
+    for (const attr in this.getAttributes()) {
+      rslt.errs[attr] = {};
+      const attrChe = this.getCharacterEncoding(attr);
+      for (let i = 0; i < dataset[attr]?.length; i++) {
+        const dataEntry = dataset[attr][i];
+        // console.log('initial', dataEntry);
+        if (!matchCharacterEncoding(dataEntry, attrChe)) {
+          rslt.errs[attr][i] = { type: 'CHE', detail: CHE_ERR_MSG };
+        }
+      }
+    }
+    return rslt.errs;
+  }
 
   flaggedAlarm() {
     const flagged = [];
@@ -273,7 +322,7 @@ export default class OCABundle {
         flagged.push(attr);
       }
     }
-    // return this.captureBase.flagged_attributes;
+
     return flagged;
   };
 
@@ -302,6 +351,7 @@ export default class OCABundle {
     rslt.attErr.errs = this.validateAttribute(dataset);
     rslt.formatErr.errs = this.validateFormat(dataset);
     rslt.entryCodeErr.errs = this.validateEntryCodes(dataset);
+    rslt.characterEcodeErr.errs = this.validateCharacterEncoding(dataset);
     return rslt.updateErr();
   }
 };

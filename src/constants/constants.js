@@ -310,3 +310,10 @@ export const datasetUploadTooltip = (
 );
 
 export const defaultNoteDescription = 'Note: None of this data will be uploaded to a server and all processing happens on device.';
+
+export const errorCode = {
+  'Format': "FE",
+  'Entry Codes': "EC",
+  'Character Encoding': "CHE",
+  'Data Type': "DT"
+};

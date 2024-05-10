@@ -36,16 +36,16 @@ export default class OCADataSet {
    *
    */
 
-  static getFileType(fileName) {
-    const ext = fileName.split('.').pop().toLowerCase();
-    if (ext === 'xlsx' || ext === 'xls') {
-      return 'xlsx';
-    } else if (ext === 'csv') {
-      return 'csv';
-    } else {
-      throw new Error('Invalid file type');
-    }
-  };
+  // static getFileType(fileName) {
+  //   const ext = fileName.split('.').pop().toLowerCase();
+  //   if (ext === 'xlsx' || ext === 'xls') {
+  //     return 'xlsx';
+  //   } else if (ext === 'csv') {
+  //     return 'csv';
+  //   } else {
+  //     throw new Error('Invalid file type');
+  //   }
+  // };
 
   // Processing excel files.
   static async readExcel(fileContent) {
