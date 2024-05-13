@@ -26,7 +26,6 @@ export default function EntryCodes() {
   } = useContext(Context);
   const [chosenTable, setChosenTable] = useState(0);
   const codeRefs = useRef();
-  const entryCodeData = useRef();
   const pageForwardDisabledRef = useRef(false);
   const [showWarning, setShowWarning] = useState(false);
 

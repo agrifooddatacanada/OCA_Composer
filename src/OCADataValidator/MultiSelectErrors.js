@@ -20,6 +20,7 @@ const MenuProps = {
 const names = [
   'Format',
   'Entry Codes',
+  'Character Encoding',
   'Data Type',
 ];
 
