@@ -243,34 +243,6 @@ export function generateDataEntry(acceptedFiles, setLoading) {
       };
 
       const sheet2 = workbook.addWorksheet('Data Entry');
-      try {
-        const labelOverlay = jsonData.find(o => o.type && o.type.includes('/label/'));
-        if (labelOverlay) {
-          const attrLength = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).length;
-          const labelsLength = Object.keys(jsonData.find(o => o.type && o.type.includes('/label/')).attribute_labels).length;
-
-          if (labelsLength === attrLength) {
-            const labelValues = Object.values(jsonData.find(o => o.type && o.type.includes('/label/')).attribute_labels);
-            const attrKeys = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
-            const labelsFilled = labelValues.map((label, index) => label ? label : attrKeys[index]);
-            sheet2.getRow(1).values = labelsFilled;
-            labelsFilled.forEach((_label, index) => {
-              const cell = sheet2.getCell(1, index + 1);
-              formatDataHeader(cell);
-            });
-          }
-        } else {
-          sheet2.getRow(1).values = Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes);
-          Object.keys(jsonData.find(o => o.type && o.type.includes('/capture_base/')).attributes).forEach((_attrName, index) => {
-            const cell = sheet2.getCell(1, index + 1);
-            formatDataHeader(cell);
-          });
-        };
-      } catch (error) {
-        throw new WorkbookError('.. Error assigning head names to sheet2 (Data Entry) ...');
-      };
-
-      const sheet3 = workbook.addWorksheet('Schema Conformant Data');
 
       const attributesIndex = {};
       let attributeNames = null;
@@ -301,45 +273,15 @@ export function generateDataEntry(acceptedFiles, setLoading) {
 
           });
 
-          // sheet 3
+          // Step 6.1: Data Entry sheet
           attributeNames = Object.keys(overlay.attributes);
-
-          try {
-            sheet3.getRow(1).values = attributeNames;
-            attributeNames.forEach((_attrName, index) => {
-              const cell = sheet3.getCell(1, index + 1);
-              formatDataHeader(cell);
-            });
-          } catch (error) {
-            throw new WorkbookError('.. Error in formatting sheet3 data header ...');
-          };
-
-          try {
-            for (let col = 1; col < attributeNames.length; col++) {
-              const letter = getColumnLetter(col);
-
-              for (let row = 1; row <= 1000; row++) {
-                const formula = `IF(ISBLANK('Data Entry'!$${letter}$${row + 1}), "", 'Data Entry'!$${letter}$${row + 1})`;
-
-                const cell = sheet3.getCell(row + 1, col);
-                cell.value = {
-                  formula: formula,
-                };
-              }
-            };
-          } catch (error) {
-            throw new WorkbookError('.. Error in creating the formulae sheet3 data ...');
-          };
-
           const numColumns = attributeNames.length;
           const columnWidth = 15;
-
+          sheet2.getRow(1).values = attributeNames;
           for (let col = 0; col < numColumns; col++) {
+            const cell = sheet2.getCell(1, col + 1);
             sheet2.getColumn(col + 1).width = columnWidth;
-          };
-
-          for (let col = 0; col < numColumns; col++) {
-            sheet3.getColumn(col + 1).width = columnWidth;
+            formatDataHeader(cell);
           };
         };
       });
@@ -497,7 +439,6 @@ export function generateDataEntry(acceptedFiles, setLoading) {
                   for (let row = 1; row <= 1000; row++) {
                     sheet2.getCell(row + 1, col_i).value = null;
                     sheet2.getCell(row + 1, col_i).numFmt = format_attr.numFmt;
-                    sheet3.getCell(row + 1, col_i).numFmt = format_attr.numFmt;
                   };
                 };
               };
@@ -601,7 +542,6 @@ export function generateDataEntry(acceptedFiles, setLoading) {
               };
             } catch (error) {
               throw new WorkbookError('.. Error in formatting entry column (header and rows) ...', error.message);
-              // console.error('Error in formatting entry column (header and rows):', error.message);
             };
 
           } else {
@@ -709,29 +649,13 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           formatLookupValue(sheet1.getCell(i, 2));
         };
       };
-      // transform lookupEntries to fit the data validation rule
-      // const transformedEntries = {};
-
-      // for (const [key, values] of Object.entries(lookupEntries)) {
-      //   const keys = Object.keys(values);
-      //   const valueList = Object.values(values);
-
-      //   transformedEntries[key] = [keys, valueList];
-      // };
 
       for (const [attrName, [start, end]] of lookUpTable) {
-        // let listEntries = null;
-
-        // for (const [key, [, valueList]] of Object.entries(transformedEntries)) {
-        //   if (key === attrName) {
-        //     listEntries = ['"' + valueList.join(',') + '"'];
-        //   };
-        // };
 
         const validationRule = {
           type: 'list',
           showDropDown: true,
-          formulae: [`'Schema Description'!$A$${start}:$A$${end}`],
+          formulae: [`'Schema Description'!$B$${start}:$B$${end}`],
           showErrorMessage: true,
         };
 
@@ -739,13 +663,8 @@ export function generateDataEntry(acceptedFiles, setLoading) {
           const attrKeys = Object.keys(attributesIndex);
           const attrNameFromAttrKeys = attrKeys.map(key => key.split(',')[0]);
           const col_i = attrNameFromAttrKeys.indexOf(attrName) + 1;
-          const letter = getColumnLetter(col_i);
+          // const letter = getColumnLetter(col_i);
           sheet2.getCell(row, col_i).dataValidation = validationRule;
-          const formula = `IF(ISBLANK('Data Entry'!$${letter}$${row}), "", VLOOKUP(TEXT('Data Entry'!$${letter}$${row}, "0"), 'Schema Description'!$A$${start}:$B$${end}, 2))`;
-
-          sheet3.getCell(row, col_i).value = {
-            formula: formula,
-          };
         }
       };
 
