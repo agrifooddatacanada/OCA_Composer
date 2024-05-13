@@ -18,7 +18,7 @@ import Landing from './Landing/Landing';
 import CharacterEncodingHelp from './UsersHelp/Character_encoding_help';
 import RequiredEntryHelp from './UsersHelp/Required_Entry_help';
 import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
-import ReactGA from 'react-ga';
+import ReactGA from 'react-ga4';
 import FormatTextHelp from './UsersHelp/Format_Text_Help';
 import HelpStorage from './Landing/HelpStorage';
 import OCADataValidator from './OCADataValidator/OCADataValidator';
@@ -149,9 +149,9 @@ function App() {
 
   //Measuring page views
   useEffect(() => {
-    ReactGA.pageview('/');
+    // Track the initial page view
+    ReactGA.send({ hitType: "pageview", page: window.location.pathname });
   }, []);
-
 
   //Create Attributes List from File Data
   useEffect(() => {
