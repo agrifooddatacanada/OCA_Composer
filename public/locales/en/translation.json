@@ -55,5 +55,12 @@
   "to find a python package that you can use to include data verification in your workflow": "to find a python package that you can use to include data verification in your workflow.",
   "Verify data in your browser": "Verify data in your browser",
   "Our": "Our",
-  "also supports data verification. Upload a schema and a dataset and you can verify your dataset against the data rules in the schema": "also supports data verification. Upload a schema and a dataset and you can verify your dataset against the data rules in the schema."
+  "also supports data verification. Upload a schema and a dataset and you can verify your dataset against the data rules in the schema": "also supports data verification. Upload a schema and a dataset and you can verify your dataset against the data rules in the schema.",
+  "Welcome to Agri-food Data Canada's schema writer...": "Welcome to Agri-food Data Canada's schema writer for helping researchers write better, machine-actionable, context for their research data.",
+  "Next": "Next",
+  "New File": "New File",
+  "Create Manually": "Create Manually",
+  "Briefly, schemas describe the attributes (variable names/column headers) of...": "Briefly, schemas describe the attributes (variable names/column headers) of your dataset and help make your data more useful (more FAIR). Using the Agri-food Data Canada schema editor, you can write a schema for your data sets. Using the language of Overlays Capture Architecture (OCA) you can easily write human- and machine-actionable descriptions of your data which you can store with your data, share with your data or deposit with your data. If your schema is of general interest you can also deposit it to be cited as an independent research object, contributing to data standardization and interoperability.",
+  "To learn more about schemas and the OCA schema specification": "To learn more about schemas and the OCA schema specification",
+  "read our introduction on the ADC webpage": "read our introduction on the ADC webpage."
 }

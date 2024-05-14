@@ -55,5 +55,12 @@
   "to find a python package that you can use to include data verification in your workflow": "pour trouver un package Python que vous pouvez utiliser pour inclure la vérification des données dans votre flux de travail.",
   "Verify data in your browser": "Vérifiez les données dans votre navigateur",
   "Our": "Notre",
-  "also supports data verification. Upload a schema and a dataset and you can verify your dataset against the data rules in the schema": "prend également en charge la vérification des données. Téléchargez un schéma et un ensemble de données et vous pourrez vérifier votre ensemble de données par rapport aux règles de données du schéma."
+  "also supports data verification. Upload a schema and a dataset and you can verify your dataset against the data rules in the schema": "prend également en charge la vérification des données. Téléchargez un schéma et un ensemble de données et vous pourrez vérifier votre ensemble de données par rapport aux règles de données du schéma.",
+  "Welcome to Agri-food Data Canada's schema writer...": "Bienvenue au rédacteur de schémas de Données agroalimentaires Canada pour aider les chercheurs à rédiger un contexte meilleur et exploitable par machine pour leurs données de recherche.",
+  "Next": "Avant",
+  "New File": "Nouveau fichier",
+  "Create Manually": "Créer manuellement",
+  "Briefly, schemas describe the attributes (variable names/column headers) of...": "En bref, les schémas décrivent les attributs (noms de variables/en-têtes de colonnes) de votre ensemble de données et contribuent à rendre vos données plus utiles (plus ÉQUITABLES). À l'aide de l'éditeur de schéma de Données agroalimentaires Canada, vous pouvez rédiger un schéma pour vos ensembles de données. En utilisant le langage d'Overlays Capture Architecture (OCA), vous pouvez facilement rédiger des descriptions exploitables par l'homme et la machine de vos données que vous pouvez stocker avec vos données, partager avec vos données ou déposer avec vos données. Si votre schéma présente un intérêt général vous pouvez également le déposer pour être cité comme objet de recherche indépendant, contribuant ainsi à la standardisation et à l'interopérabilité des données.",
+  "To learn more about schemas and the OCA schema specification": "Pour en savoir plus sur les schémas et la spécification du schéma OCA",
+  "read our introduction on the ADC webpage": "lisez notre introduction sur la page Web de l’ADC."
 }

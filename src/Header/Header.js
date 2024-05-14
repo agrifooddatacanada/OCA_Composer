@@ -8,8 +8,10 @@ import { Link, useLocation } from 'react-router-dom';
 import HeaderWrapper from './HeaderWrapper';
 import { useMediaQuery } from '@mui/material';
 import i18next from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 export default function Header({ currentPage }) {
+  const { t } = useTranslation();
   const [header, setHeader] = useState(currentPage);
   const [toolTipText, setToolTipText] = useState('');
   const [helpLink, setHelpLink] = useState('');
@@ -101,7 +103,7 @@ export default function Header({ currentPage }) {
         setToolTipText(
           ''
         );
-        setHelpLink('');
+        setHelpLink('/cardinality_help');
         break;
       case 'StartDataValidator':
         setHeader('Upload Schema and Dataset');
