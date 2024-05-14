@@ -290,7 +290,7 @@ export default class OCABundle {
     for (const attr in attrEntryCodes) {
       rslt.errs[attr] = {};
       for (let i = 0; i < dataset[attr]?.length; i++) {
-        const dataEntry = dataset[attr][i];
+        const dataEntry = String(dataset[attr][i]);
         if (!attrEntryCodes[attr].includes(dataEntry) && dataEntry !== '' && dataEntry !== undefined) {
           rslt.errs[attr][i] = { type: 'EC', detail: `${EC_ERR_MSG} Entry codes allowed: [${Object.values(attrEntryCodes)}]` };
         }
