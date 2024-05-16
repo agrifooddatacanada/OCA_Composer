@@ -3,8 +3,10 @@ import { Box, Button, ListItem, Typography, List } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import { CustomPalette } from "../constants/customPalette";
+import { useTranslation } from "react-i18next";
 
 export default function IntroCard({ setShowIntroCard }) {
+  const { t } = useTranslation();
   const appearAnimation =
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
   return (
@@ -60,10 +62,10 @@ export default function IntroCard({ setShowIntroCard }) {
           />
         </Box>
         <Typography variant="h5" sx={{ p: 1 }}>
-          This program lets you create OCA schema templates.
+          {t('This program lets you create OCA schema templates')}
         </Typography>
         <Typography variant="h6" sx={{ p: 1 }}>
-          <strong>A well formed template MUST include:</strong>
+          <strong>{t('A well formed template MUST include')}</strong>
         </Typography>
         <List
           sx={{
@@ -76,11 +78,10 @@ export default function IntroCard({ setShowIntroCard }) {
           }}
         >
           <ListItem variant="body1" sx={{ p: 1, fontSize: 18 }}>
-            a complete <strong>schema description</strong> in at least one
-            language
+            {t('a complete')} <strong>{t('schema description')}</strong> {t('in at least one language')}
           </ListItem>
           <ListItem variant="body1" sx={{ p: 1, fontSize: 18 }}>
-            <strong>data types</strong> for every attribute
+            <strong>{t('data types')}</strong> {t('for every attribute')}
           </ListItem>
         </List>
         <Button
@@ -99,7 +100,7 @@ export default function IntroCard({ setShowIntroCard }) {
             }
           }}
         >
-          close and don't show again
+          {t("close and don't show again")}
           <CloseIcon fontSize="small" />
         </Button>
       </Box>

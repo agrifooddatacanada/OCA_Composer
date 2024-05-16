@@ -7,6 +7,7 @@ import { Context } from "../App";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { languageCodesObject } from "../constants/isoCodes";
 import Classification from "./Classification";
+import { useTranslation } from "react-i18next";
 
 export default function SchemaInput({
   language,
@@ -14,7 +15,7 @@ export default function SchemaInput({
   setEditingLanguage,
   index
 }) {
-
+  const { t } = useTranslation();
   const {
     schemaDescription,
     setSchemaDescription,
@@ -168,11 +169,11 @@ export default function SchemaInput({
               color: CustomPalette.BLACK,
             }}
           >
-            Name of Schema
+            {t('Name of Schema')}
           </Typography>
           {language === languages[0] && (
             <Tooltip
-              title="The name of the schema. It is recommended to use a more general name rather than one that identifies a specific dataset or experiment."
+              title={t("The name of the schema. It is recommended to use a more general...")}
               placement="right"
               arrow
             >
@@ -210,11 +211,11 @@ export default function SchemaInput({
               width: "6rem",
             }}
           >
-            Description
+            {t('Description')}
           </Typography>
           {language === languages[0] && (
             <Tooltip
-              title="The description of the schema that will help yourself and others determine what kind of data the schema describes."
+              title={t('The description of the schema that will help yourself...')}
               placement="right"
               arrow
             >
