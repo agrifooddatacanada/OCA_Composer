@@ -34,107 +34,107 @@ export default function Header({ currentPage }) {
   useEffect(() => {
     switch (currentPage) {
       case 'Start':
-        setHeader('Start Creating an OCA Schema');
+        setHeader(t('Start Creating an OCA Schema'));
         setToolTipText('');
         setHelpLink('https://agrifooddatacanada.ca/semantic-engine/');
         break;
       case 'Metadata':
-        setHeader('Schema Metadata');
+        setHeader(t('Schema Metadata'));
         setToolTipText(
-          'This page is where you can write the metadata describing the schema you are writing. Metadata helps people find, understand, and use your schema. If you name and describe your schema descriptions in general terms, it will be easier for you and others to reuse the schema for different datasets. This will help with ensuring your data is more interoperable.'
+          t('This page is where you can write the metadata describing...')
         );
         setHelpLink('/schema_metadata_help');
         break;
       case 'Details':
-        setHeader('Attribute Details');
+        setHeader(t('Attribute Details'));
         setToolTipText(
-          'Each column of your dataset is an attribute in your schema. Here you can add more details about each attribute to help people understand and use your dataset.'
+          t('Each column of your dataset is an attribute in your schema...')
         );
         setHelpLink('/attribute_details_help');
         break;
       case 'Codes':
-        setHeader('Add Entry Codes');
+        setHeader(t('Add Entry Codes'));
         setToolTipText(
-          'Entry codes are options you want available to users as a list of choices for a specific attribute. For example, to limit gender entry to one of three choices you can use entry codes M, F, and X. Then for the English entries you can enter Male, Female and Other. If you have another language such as French, you could use Masculin, Féminin, and Autre as labels for the entry code.'
+          t('Entry codes are options you want available to users as a...')
         );
         setHelpLink('/add_entry_codes_help');
         break;
       case 'LanguageDetails':
-        setHeader('Language Dependent Attribute Details');
+        setHeader(t('Language Dependent Attribute Details'));
         setToolTipText(
-          'You can add details in each language to help users of your schema. By having languages separate from the underlying structure it means you can share your schema in multiple languages.'
+          t('You can add details in each language to help users...')
         );
         setHelpLink('/language_attribute_help');
         break;
       case 'View':
-        setHeader('Review Schema');
+        setHeader(t('Review Schema'));
         setToolTipText(
-          'Before finishing your schema you can preview the final contents on this page.'
+          t('Before finishing your schema you can preview the final contents on this page')
         );
         setHelpLink('/view_schema_help');
         break;
       case 'Overlays':
-        setHeader('Add Additional Optional Information');
+        setHeader(t('Add Additional Optional Information'));
         // TODO: Add help tooltips
         setToolTipText('');
         setHelpLink('/overlays_help');
         break;
       case 'CharacterEncoding':
-        setHeader('Add Character Encoding');
+        setHeader(t('Add Character Encoding'));
         setToolTipText(
-          'Character encoding of the data source (for each attribute). If you don’t know what the data source uses you can leave this blank. If you are creating a schema for new data a good choice would be UTF-8.'
+          t('Character encoding of the data source (for each attribute)...')
         );
         setHelpLink('/character_encoding_help');
         break;
       case 'RequiredEntries':
-        setHeader('Add Required Entries');
+        setHeader(t('Add Required Entries'));
         setToolTipText(
-          'Specify if the underlying data must have an entry for the specific attribute.'
+          t('Specify if the underlying data must have an entry for the specific attribute')
         );
         setHelpLink('/required_entry_help');
         break;
       case 'FormatRules':
-        setHeader('Add Format Rules for Data Entry');
-        setToolTipText('Placeholder text');
+        setHeader(t('Add Format Rules for Data Entry'));
+        setToolTipText('');
         setHelpLink('/format_text_help');
         break;
       case 'Cardinality':
-        setHeader('Add Entry Limit Rules for Data Entry');
+        setHeader(t('Add Entry Limit Rules for Data Entry'));
         setToolTipText(
           ''
         );
         setHelpLink('/cardinality_help');
         break;
       case 'StartDataValidator':
-        setHeader('Upload Schema and Dataset');
+        setHeader(t('Upload Schema and Dataset'));
         setToolTipText(
           ''
         );
         setHelpLink('');
         break;
       case 'SchemaViewDataValidator':
-        setHeader('Preview Schema');
+        setHeader(t('Preview Schema'));
         setToolTipText(
           ''
         );
         setHelpLink('');
         break;
       case 'DatasetViewDataValidator':
-        setHeader('Preview Dataset');
+        setHeader(t('Preview Dataset'));
         setToolTipText(
           ''
         );
         setHelpLink('');
         break;
       case 'AttributeMatchDataValidator':
-        setHeader('Matching Attributes');
+        setHeader(t('Matching Attributes'));
         setToolTipText(
           ''
         );
         setHelpLink('');
         break;
       case 'OCADataValidatorCheck':
-        setHeader('Data Verifier');
+        setHeader(t('Data Verifier'));
         setToolTipText(
           ''
         );
@@ -144,7 +144,7 @@ export default function Header({ currentPage }) {
         setHeader('');
         setHelpLink('');
     }
-  }, [currentPage]);
+  }, [currentPage, t]);
 
   return (
     <HeaderWrapper
@@ -168,7 +168,7 @@ export default function Header({ currentPage }) {
                   Semantic Engine
                 </Typography>
               </Link>
-              {currentPage === "StartDataValidator" && <Typography variant="h5" sx={{ textAlign: 'left', color: "white", marginTop: '-5px' }}>Data entry and verification</Typography>}
+              {currentPage === "StartDataValidator" && <Typography variant="h5" sx={{ textAlign: 'left', color: "white", marginTop: '-5px' }}>{t('Data entry and verification')}</Typography>}
             </Box>
           ) : (
             <>
@@ -220,7 +220,7 @@ export default function Header({ currentPage }) {
                 width: isMobile ? 'auto' : '250px',
                 height: isMobile ? '70px' : 'auto',
                 marginRight: isMobile ? 'unset' : '20px',
-                cursor: 'pointer' // Add cursor pointer to indicate it's clickable
+                cursor: 'pointer'
               }}
               alt='Logo'
               onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
@@ -246,10 +246,9 @@ export default function Header({ currentPage }) {
                     )
                   }
                 >
-                  Help with this page
+                  {t('Help with this page')}
                 </Button>
               )}
-              {/* <Box sx={{ color: CustomPalette.PRIMARY }}>En</Box> */}
               <div>
                 <select id="language-select" style={{ border: 'none', fontSize: '20px', color: CustomPalette.PRIMARY }} value={selectedLanguage} onChange={changeLanguage}>
                   <option value="en">EN</option>
