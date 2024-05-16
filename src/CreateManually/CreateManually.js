@@ -380,7 +380,7 @@ export default function CreateManually() {
           </Alert>
         )}
         <Button color="button" onClick={() => handleForward()} sx={{ m: "0.4rem" }}>
-          Forward
+          Next
           <ArrowForwardIosIcon />
         </Button>
       </Box>
