@@ -5,6 +5,7 @@ import CellHeader from "../components/CellHeader";
 import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
+import { useTranslation } from "react-i18next";
 
 const textareaStyle = {
   width: '98%',
@@ -50,6 +51,7 @@ const TextareaCellEditor = forwardRef((props, ref) => {
 });
 
 export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
+  const { t } = useTranslation();
   const {
     attributesList,
     lanAttributeRowData,
@@ -149,15 +151,15 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         width: 120,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => (<CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />)
+        headerComponent: () => (<CellHeader headerText={t('Attribute')} helpText={t('This is the name for the attribute and, for example...')} />)
       },
       {
         field: "Label",
         editable: true,
-        width: 180,
+        width: 250,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => <CellHeader headerText='Label' constraint='max 50 chars' helpText='This is the language specific label for an attribute.' />,
+        headerComponent: () => <CellHeader headerText={t('Label')} constraint={t('max 50 chars')} helpText={t('This is the language specific label for an attribute')} />,
         cellEditorParams: {
           maxLength: 50,
         },
@@ -165,14 +167,15 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       {
         field: "Description",
         editable: true,
-        width: 240,
+        width: 260,
         cellEditor: TextareaCellEditor,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => <CellHeader headerText='Description' constraint='max 200 chars' helpText='This is a language specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute.' />
+        headerComponent: () => <CellHeader headerText={t('Description')} constraint={t('max 200 chars')} helpText={t('This is a language specific description of the attribute...')} />
       },
       {
         field: "List",
+        headerName: t('List'),
         editable: false,
         width: 258,
         autoHeight: true,
@@ -185,7 +188,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         },
       },
     ]);
-  }, [attributesList]);
+  }, [attributesList, t]);
 
   const onCellKeyDown = (e) => {
     const keyPressed = e.event.code;
@@ -203,7 +206,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   }, []);
 
   return (
-    <div className="ag-theme-balham" style={{ width: 800 }}>
+    <div className="ag-theme-balham" style={{ width: 890 }}>
       <style>{gridStyles}</style>
       <AgGridReact
         ref={gridRef}

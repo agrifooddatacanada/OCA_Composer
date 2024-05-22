@@ -278,7 +278,7 @@ export default function Grid({
         value={value}
         sx={{ border: "none", height: "2rem", fontSize: "small" }}
       >
-        {value}
+        {t(value)}
       </MenuItem>
     ));
 
