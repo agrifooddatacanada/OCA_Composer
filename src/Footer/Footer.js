@@ -1,6 +1,6 @@
-import { Stack, Divider } from '@mui/material';
+import { Stack, Divider, Box, Typography } from '@mui/material';
 import React from 'react';
-import logoUoG from '../assets/uog-logo.png';
+import ResearchExcellentFund from '../assets/research-excellent-fund.png';
 import logoAgri from '../assets/agri-logo.png';
 import logoSE from '../assets/se-logo.png';
 
@@ -10,32 +10,31 @@ export default function Footer({ currentPage }) {
       <Divider orientation="horizontal" flexItem />
       <Stack
         direction="row"
-        justifyContent="end"
+        justifyContent="space-between"
+        alignItems="stretch"
         sx={{
-          width: "100%",
+          padding: "2rem",
+          height: '100%'
         }}
       >
         <Stack
-          direction="row"
-          sx={{
-            flexDirection: "row",
-            gap: "2rem",
-            justifyContent: "space-between",
-            padding: "2rem",
-            cursor: 'pointer'
-          }}
+          direction="column"
+          sx={{ gap: '0.5rem' }}
         >
-          {(currentPage === 'Landing' || currentPage === "StartDataValidator") ?
-            <>
-              <img src={logoAgri} style={{ height: '80px' }} alt="Agri Logo" onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')} />
-            </>
-            : <>
-              <img src={logoUoG} style={{ height: '60px' }} alt="University of Guelph Logo" onClick={() => (window.location.href = 'https://www.uoguelph.ca/')} />
-              <img src={logoAgri} style={{ height: '60px' }} alt="Agri Logo" onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')} />
-              <img src={logoSE} style={{ height: '60px' }} alt="Semantic Engine Logo" onClick={() => (window.location.href = '/')} />
-            </>}
+          <div>
+            <Typography sx={{ textAlign: 'left' }}>Powered by</Typography>
+            <img src={logoAgri} style={{ height: '60px' }} alt="Agri Logo" onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')} />
+          </div>
+
+          <div>
+            <Typography sx={{ textAlign: 'left' }}>Supported by</Typography>
+            <img src={ResearchExcellentFund} style={{ height: '80px' }} alt="University of Guelph Logo" onClick={() => (window.location.href = 'https://www.uoguelph.ca/')} />
+          </div>
         </Stack>
-      </Stack >
+        <Box sx={{ width: '130px' }}>
+          <img src={logoSE} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: 'contain' }} alt="Semantic Engine Logo" onClick={() => (window.location.href = '/')} />
+        </Box>
+      </Stack>
     </>
   );
 };
