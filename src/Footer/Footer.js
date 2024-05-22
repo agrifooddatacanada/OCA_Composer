@@ -1,8 +1,8 @@
-import { Stack, Divider, Box, Typography } from '@mui/material';
 import React from 'react';
 import ResearchExcellentFund from '../assets/research-excellent-fund.png';
 import logoAgri from '../assets/agri-logo.png';
 import logoSE from '../assets/se-logo.png';
+import { Stack, Divider, Box, Typography } from '@mui/material';
 
 export default function Footer({ currentPage }) {
   return (
@@ -23,12 +23,12 @@ export default function Footer({ currentPage }) {
         >
           <div>
             <Typography sx={{ textAlign: 'left' }}>Powered by</Typography>
-            <img src={logoAgri} style={{ height: '60px' }} alt="Agri Logo" onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')} />
+            <img src={logoAgri} style={{ width: '200px' }} alt="Agri Logo" onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')} />
           </div>
 
           <div>
             <Typography sx={{ textAlign: 'left' }}>Supported by</Typography>
-            <img src={ResearchExcellentFund} style={{ height: '80px' }} alt="University of Guelph Logo" onClick={() => (window.location.href = 'https://www.uoguelph.ca/')} />
+            <img src={ResearchExcellentFund} style={{ height: '120px' }} alt="University of Guelph Logo" onClick={() => (window.location.href = 'https://www.uoguelph.ca/')} />
           </div>
         </Stack>
         <Box sx={{ width: '130px' }}>
@@ -37,5 +37,4 @@ export default function Footer({ currentPage }) {
       </Stack>
     </>
   );
-};
-
+}
