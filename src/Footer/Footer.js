@@ -23,16 +23,18 @@ export default function Footer({ currentPage }) {
         >
           <div>
             <Typography sx={{ textAlign: 'left' }}>Powered by</Typography>
-            <img src={logoAgri} style={{ width: '200px' }} alt="Agri Logo" onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')} />
+            <img src={logoAgri} style={{ width: '200px', cursor: "pointer" }} alt="Agri Logo" onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')} />
           </div>
 
           <div>
             <Typography sx={{ textAlign: 'left' }}>Supported by</Typography>
-            <img src={ResearchExcellentFund} style={{ height: '120px' }} alt="University of Guelph Logo" onClick={() => (window.location.href = 'https://www.uoguelph.ca/')} />
+            <img src={ResearchExcellentFund} style={{ height: '120px' }} alt="University of Guelph Logo"
+            // onClick={() => (window.location.href = 'https://www.uoguelph.ca/')}
+            />
           </div>
         </Stack>
-        <Box sx={{ width: '130px' }}>
-          <img src={logoSE} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: 'contain' }} alt="Semantic Engine Logo" onClick={() => (window.location.href = '/')} />
+        <Box sx={{ width: '150px' }}>
+          <img src={logoSE} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: 'contain', cursor: "pointer" }} alt="Semantic Engine Logo" onClick={() => (window.location.href = '/')} />
         </Box>
       </Stack>
     </>
