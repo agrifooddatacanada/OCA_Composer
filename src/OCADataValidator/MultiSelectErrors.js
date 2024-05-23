@@ -5,6 +5,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { Box } from '@mui/material';
 import { CustomPalette } from '../constants/customPalette';
+import { useTranslation } from 'react-i18next';
 
 const ITEM_HEIGHT = 30;
 const ITEM_PADDING_TOP = 0;
@@ -35,7 +36,7 @@ function getStyles(name, errorName, theme) {
 
 export default function MultipleSelectPlaceholder({ errorName, setErrorNameList, disabled }) {
   const theme = useTheme();
-
+  const { t } = useTranslation();
   const handleChange = (event) => {
     const {
       target: { value },
@@ -56,7 +57,7 @@ export default function MultipleSelectPlaceholder({ errorName, setErrorNameList,
         fontWeight: 'bold',
         alignSelf: 'center',
         textAlign: 'center',
-      }}>View only row with errors: &nbsp;&nbsp;</Box>
+      }}>{t('View only row with errors:')} &nbsp;&nbsp;</Box>
       <FormControl sx={{ width: 200 }} size="small" disabled={disabled}>
         <Select
           multiple
@@ -66,7 +67,7 @@ export default function MultipleSelectPlaceholder({ errorName, setErrorNameList,
           input={<OutlinedInput />}
           renderValue={(selected) => {
             if (selected.length === 0) {
-              return <em>Select Errors</em>;
+              return <em>{t('Select Errors')}</em>;
             }
 
             return selected.join(', ');
@@ -80,7 +81,7 @@ export default function MultipleSelectPlaceholder({ errorName, setErrorNameList,
               value={name}
               style={getStyles(name, errorName, theme)}
             >
-              {name}
+              {t(name)}
             </MenuItem>
           ))}
         </Select>

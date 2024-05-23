@@ -16,6 +16,7 @@ import ExportButton from './ExportButton';
 import { errorCode, formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from '../constants/constants';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
 import WarningPopup from './WarningPopup';
+import { useTranslation } from 'react-i18next';
 
 const convertToCSV = (data) => {
   const csv = data.map(row => {
@@ -239,6 +240,7 @@ const EntryCodeDropdownSelector = memo(
 );
 
 const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeDisplayWarning }) => {
+  const { t } = useTranslation();
   const {
     schemaDataConformantRowData,
     setSchemaDataConformantRowData,
@@ -737,7 +739,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
               sx={{ textAlign: "left", alignSelf: "flex-start" }}
               onClick={handleMoveBack}
             >
-              <ArrowBackIosIcon /> Back
+              <ArrowBackIosIcon /> {t('Back')}
             </Button>
             <Box sx={{
               display: 'flex',
@@ -765,7 +767,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
                   onClick={handleValidate}
                   disabled={isValidateButtonEnabled}
                 >
-                  Verify
+                  {t('Verify')}
                 </Button>
               </Box>
               <ExportButton handleSave={handleSave} />
@@ -813,15 +815,15 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
               <div style={{ width: '20px', height: '20px', backgroundColor: "#d2f8d2", marginRight: '15px' }}></div>
-              <span>Pass Verification</span>
+              <span>{t('Pass Verification')}</span>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
               <div style={{ width: '20px', height: '20px', backgroundColor: "#ffd7e9", marginRight: '15px' }}></div>
-              <span>Fail Verification</span>
+              <span>{t('Fail Verification')}</span>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
               <div style={{ width: '20px', height: '20px', backgroundColor: "#ededed", marginRight: '15px' }}></div>
-              <span>Unmatched Attributes</span>
+              <span>{t('Unmatched Attributes')}</span>
             </Box>
           </Box>
         </Box>
@@ -860,13 +862,13 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
               variant="contained"
               sx={{
                 alignSelf: "flex-end",
-                width: "9rem",
+                width: "13rem",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-around",
               }}
             >
-              Add row <AddCircleIcon />
+              {t('Add row')} <AddCircleIcon />
             </Button>
           </Box>
 

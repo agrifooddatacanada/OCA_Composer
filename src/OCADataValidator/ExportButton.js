@@ -1,8 +1,10 @@
 import { Button, Menu, MenuItem } from '@mui/material';
 import React from 'react';
 import { CustomPalette } from '../constants/customPalette';
+import { useTranslation } from 'react-i18next';
 
 const ExportButton = ({ handleSave }) => {
+  const { t } = useTranslation();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
 
@@ -31,7 +33,7 @@ const ExportButton = ({ handleSave }) => {
         }}
       // disabled={exportDisabled}
       >
-        Export Verified Data
+        {t('Export Verified Data')}
       </Button>
       <Menu
         id="basic-menu"
@@ -49,7 +51,7 @@ const ExportButton = ({ handleSave }) => {
             handleSave(true);
           }}
         >
-          Keep original data column headers
+          {t('Keep original data column headers')}
         </MenuItem>
         <MenuItem
           sx={{ color: CustomPalette.PRIMARY }}
@@ -57,7 +59,7 @@ const ExportButton = ({ handleSave }) => {
             handleClose();
             handleSave(false);
           }}>
-          Change to Schema column headers
+          {t('Change to Schema column headers')}
         </MenuItem>
       </Menu>
     </>

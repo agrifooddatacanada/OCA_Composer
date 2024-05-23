@@ -11,6 +11,7 @@ import TypeTooltip from '../AttributeDetails/TypeTooltip';
 import DeleteConfirmation from './DeleteConfirmation';
 import { FormatRuleTypeRenderer, TrashCanButton } from './FormatRuleCellRender';
 import Loading from '../components/Loading';
+import { useTranslation } from 'react-i18next';
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -18,6 +19,7 @@ const allowOverflowStyle = {
 };
 
 const FormatRulesV2 = () => {
+  const { t } = useTranslation();
   const {
     setCurrentPage,
     setSelectedOverlay,
@@ -72,8 +74,8 @@ const FormatRulesV2 = () => {
         cellStyle: () => allowOverflowStyle,
         headerComponent: () => (
           <CellHeader
-            headerText='Attribute'
-            helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.'
+            headerText={t('Attributes')}
+            helpText={t('This is the name for the attribute and, for example...')}
           />
         ),
       },
@@ -84,13 +86,13 @@ const FormatRulesV2 = () => {
         autoHeight: true,
         cellStyle: () => greyCellStyle,
         headerComponent: () => (
-          <CellHeader headerText='Type' helpText={<TypeTooltip />} />
+          <CellHeader headerText={t('Type')} helpText={<TypeTooltip />} />
         ),
       },
       {
         field: 'FormatRule',
         headerComponent: () => (
-          <CellHeader headerText='Format Rule' helpText='Select the formatting rule that applies to data for each attribute.' />
+          <CellHeader headerText={t('Format Rule')} helpText={t('Select the formatting rule that applies to data for each attribute')} />
         ),
         cellRendererFramework: FormatRuleTypeRenderer,
         width: 200,
@@ -151,7 +153,7 @@ const FormatRulesV2 = () => {
         <Box sx={{
           width: '80%',
         }}>
-          All format rules are documented in the {' '}
+          {t('All format rules are documented in the')} {' '}
           <Link
             to='#'
             onClick={(e) => {
@@ -159,8 +161,8 @@ const FormatRulesV2 = () => {
               e.preventDefault();
             }}
           >
-            format GitHub repository
-          </Link>.{' '}Request a new format to be added by {' '}
+            {t('format GitHub repository')}
+          </Link>.{' '}{t('Request a new format to be added by')} {' '}
           <Link
             to='#'
             onClick={(e) => {
@@ -168,9 +170,9 @@ const FormatRulesV2 = () => {
               e.preventDefault();
             }}
           >
-            raising an issue in the repository
+            {t('raising an issue in the repository')}
           </Link>
-          {' '} or email us at {' '}
+          {' '} {t('or email us at')} {' '}
           <Link
             to='#'
             onClick={(e) => {

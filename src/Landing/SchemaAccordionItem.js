@@ -4,8 +4,10 @@ import { CustomPalette } from '../constants/customPalette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionItemWrapper from './AccordionItemWrapper';
 import CustomAnchorLink from '../components/CustomAnchorLink';
+import { useTranslation } from 'react-i18next';
 
 const SchemaAccordionItem = () => {
+  const { t } = useTranslation();
 
   const downloadChickenZipExample = () => {
     const zipFilePath = 'chicken_example.json';
@@ -25,22 +27,22 @@ const SchemaAccordionItem = () => {
         aria-controls="panel1a-content"
         id="panel1a-header"
       >
-        <Typography sx={{ fontSize: '20px', fontWeight: '500' }}>What is a Schema</Typography>
+        <Typography sx={{ fontSize: '20px', fontWeight: '500' }}>{t('What is a Schema')}</Typography>
       </AccordionSummary>
 
       <AccordionDetails sx={{ textAlign: 'start' }}>
         <Typography>
-          Schemas are an important piece of data documentation. Schemas work together with a dataset and describe data features such as column names, units, and descriptions etc.
+          {t('Schemas are an important piece of data documentation. Schemas work...')}
         </Typography>
         <Typography sx={{ marginTop: '20px' }}>
-          Using the tools of the Semantic Engine you can write human- and machine-readable schemas.
+          {t('Using the tools of the Semantic Engine you can write human- and machine-readable schemas')}
         </Typography>
-        <Link href="https://agrifooddatacanada.ca/semantic-engine/" sx={{ color: CustomPalette.PRIMARY, fontWeight: '700', cursor: 'pointer', textDecoration: 'none' }}>Learn more-{'>'}</Link>
+        <Link href="https://agrifooddatacanada.ca/semantic-engine/" sx={{ color: CustomPalette.PRIMARY, fontWeight: '700', cursor: 'pointer', textDecoration: 'none' }}>{t('Learn more')}-{'>'}</Link>
         <Typography sx={{ marginTop: '20px', fontSize: '20px', fontWeight: '700' }}>
-          Example schema
+          {t('Example schema')}
         </Typography>
         <Typography>
-          Download an <CustomAnchorLink link='' text="Example schema" onClick={downloadChickenZipExample} /> and use it to test schema tools such as viewing, editing, and creating a Data Entry Excel.
+          {t('Download an')} <CustomAnchorLink link='' text={t('Example schema')} onClick={downloadChickenZipExample} /> {t('and use it to test schema tools such as viewing, editing, and creating a Data Entry Excel')}
         </Typography>
 
       </AccordionDetails>

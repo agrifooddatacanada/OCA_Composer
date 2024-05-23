@@ -6,10 +6,11 @@ import { datasetUploadDescription, datasetUploadTooltip, jsonUploadDescription, 
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { CustomPalette } from "../constants/customPalette";
 import placeholderExample from '../assets/placeholder.png';
+import { useTranslation } from "react-i18next";
 
 const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const isMobile = useMediaQuery('(max-width: 936px)');
-
+  const { t } = useTranslation();
   const {
     jsonRawFile,
     setJsonRawFile,
@@ -52,9 +53,9 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             <Box sx={{
               marginBottom: 5,
             }}>
-              <Typography variant="h6" sx={{ textAlign: 'left', color: "white", fontSize: isMobile ? '2rem' : '2.2rem', }}>Improve your data</Typography>
-              <Typography sx={{ textAlign: 'left', color: "white" }}>Enter data according to rules in a schema.</Typography>
-              <Typography sx={{ textAlign: 'left', color: "white" }}>Check your existing data against rules in a schema.</Typography>
+              <Typography variant="h6" sx={{ textAlign: 'left', color: "white", fontSize: isMobile ? '2rem' : '2.2rem', }}>{t('Improve your data')}</Typography>
+              <Typography sx={{ textAlign: 'left', color: "white" }}>{t('Enter data according to rules in a schema')}</Typography>
+              <Typography sx={{ textAlign: 'left', color: "white" }}>{t('Check your existing data against rules in a schema')}</Typography>
             </Box>
             <Link
               href='/learn_schema_rule'
@@ -67,7 +68,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
                 textAlign: 'left',
               }}
             >
-              Learn about schemas and schema rules -{">"}
+              {t('Learn about schemas and schema rules')} -{">"}
             </Link>
             <Link
               href='/learn_data_verification'
@@ -81,7 +82,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
                 marginTop: 1,
               }}
             >
-              Learn about data verification -{">"}
+              {t('Learn about data verification')} -{">"}
             </Link>
           </Box>
           <img
@@ -110,7 +111,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
       }}>
         <Box sx={{ height: '3rem' }} />
         <Box>
-          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>Add schema</Typography>
+          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Add schema')}</Typography>
           <Drop
             setFile={setJsonRawFile}
             setLoading={overallLoading}
@@ -129,19 +130,19 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             variant="contained"
             color="button"
             onClick={handleClearJSON}
-            sx={{ width: 170, mr: 2 }}
+            sx={{ width: 190, mr: 2 }}
             disabled={jsonRawFile.length === 0}
           >
-            Clear Schema File
+            {t('Clear Schema File')}
           </Button>
           <Button
             variant="contained"
             color="button"
-            sx={{ width: 170, ml: 2 }}
+            sx={{ width: 190, ml: 2 }}
             onClick={() => setCurrentDataValidatorPage("SchemaViewDataValidator")}
             disabled={jsonRawFile.length === 0}
           >
-            View Schema
+            {t('View Schema')}
           </Button>
         </Box>
         {/* <Box sx={{
@@ -162,7 +163,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
         </Box> */}
         <Box sx={{ height: '4rem' }} />
         <Box>
-          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>Optional: Add Data</Typography>
+          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Optional: Add Data')}</Typography>
           <Drop
             setFile={setDatasetRawFile}
             setLoading={datasetLoadingState}
@@ -181,19 +182,19 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             variant="contained"
             color="button"
             onClick={handleClearDataset}
-            sx={{ width: 170, mr: 2 }}
+            sx={{ width: 190, mr: 2 }}
             disabled={datasetRawFile.length === 0}
           >
-            Clear Dataset File
+            {t('Clear Dataset File')}
           </Button>
           <Button
             variant="contained"
             color="button"
-            sx={{ width: 170, ml: 2 }}
+            sx={{ width: 200, ml: 2 }}
             onClick={() => setCurrentDataValidatorPage("DatasetViewDataValidator")}
             disabled={datasetRawFile.length === 0}
           >
-            View Data
+            {t('View Data')}
           </Button>
         </Box>
 

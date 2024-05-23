@@ -7,8 +7,10 @@ import { CustomPalette } from '../constants/customPalette';
 import { classification } from '../constants/constants';
 import { Context } from '../App';
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { useTranslation } from 'react-i18next';
 
 const Classification = () => {
+  const { t } = useTranslation();
   const {
     divisionGroup,
     setDivisionGroup
@@ -48,12 +50,12 @@ const Classification = () => {
             fontSize: 15,
             fontWeight: "bold",
             textAlign: "left",
-            width: "10rem",
+            width: "12rem",
             color: CustomPalette.BLACK,
           }}
-        >Schema Classification</Typography>
+        >{t('Schema Classification')}</Typography>
         <Tooltip
-          title="Select the division and group that best reflects how you would classify your schema."
+          title={t("Select the division and group that best reflects how you would classify your schema")}
           placement="right"
           arrow
         >
@@ -62,7 +64,7 @@ const Classification = () => {
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
         <FormControl variant="standard" sx={{ minWidth: 120, width: '45%' }}>
-          <Typography variant="body2">Divisions</Typography>
+          <Typography variant="body2">{t('Divisions')}</Typography>
           <Select
             value={divisionGroup.division}
             onChange={(e) => setDivisionGroup(prev => ({ ...prev, division: e.target.value }))}
@@ -72,7 +74,7 @@ const Classification = () => {
           </Select>
         </FormControl>
         <FormControl variant="standard" sx={{ minWidth: 120, width: '45%', marginBottom: '0.5rem' }}>
-          <Typography variant="body2">Groups</Typography>
+          <Typography variant="body2">{t('Groups')}</Typography>
           <Select
             value={divisionGroup.group}
             onChange={(e) => setDivisionGroup(prev => ({ ...prev, group: e.target.value }))}

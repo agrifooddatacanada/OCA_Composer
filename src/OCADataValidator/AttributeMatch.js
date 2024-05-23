@@ -7,6 +7,7 @@ import { gridStyles } from "../constants/styles";
 import { AgGridReact } from "ag-grid-react";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
+import { useTranslation } from "react-i18next";
 
 export const DataHeaderRenderer = memo(
   forwardRef((props, ref) => {
@@ -61,6 +62,7 @@ export const DataHeaderRenderer = memo(
 );
 
 const AttributeMatch = () => {
+  const { t } = useTranslation();
   const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, schemaDataConformantHeader, firstTimeMatchingRef, setSchemaDataConformantRowData, setSchemaDataConformantHeader, ogSchemaDataConformantHeaderRef } = useContext(Context);
   const [type, setType] = useState(languages[0] || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -172,20 +174,20 @@ const AttributeMatch = () => {
   useEffect(() => {
     const columnDefs = [
       {
-        headerName: "Attribute",
+        headerName: t("Attribute"),
         field: "Attribute",
         sortable: true,
         resizable: true,
         flex: 1,
       },
       {
-        headerName: "Label",
+        headerName: t("Label"),
         field: type,
         resizable: true,
         flex: 1,
       },
       {
-        headerName: "Dataset",
+        headerName: t("Dataset"),
         field: "Dataset",
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
@@ -197,7 +199,7 @@ const AttributeMatch = () => {
       },
     ];
     setColumnDefs(columnDefs);
-  }, [type]);
+  }, [type, t]);
 
   return (
     <>
@@ -249,7 +251,7 @@ const AttributeMatch = () => {
           }}>
             {/* Updated to create a box around the header */}
             <Box sx={{ padding: '10px', border: `2px solid ${CustomPalette.GREY_300}`, backgroundColor: CustomPalette.GREY_200 }}>
-              <Typography>Unassigned Variable</Typography>
+              <Typography>{t('Unassigned Variable')}</Typography>
             </Box>
             <Box sx={{
               padding: '10px',
