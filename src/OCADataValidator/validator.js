@@ -29,9 +29,10 @@ const ATTR_MISSING_MSG = 'Missing attribute (attribute not found in the data set
 const MISSING_MSG = 'Missing an entry for a mandatory attribute (check for other missing entries before continuing).';
 // const NOT_AN_ARRAY_MSG = 'Valid array required.';
 const FORMAT_ERR_MSG = 'Format mismatch.';
-const EC_FORMAT_ERR_MSG = 'Entry code format mismatch (manually fix the attribute format).';
+// const EC_FORMAT_ERR_MSG = 'Entry code format mismatch (manually fix the attribute format).';
 const EC_ERR_MSG = 'One of the entry codes is required.';
 const CHE_ERR_MSG = 'Character encoding mismatch.';
+const DATA_TYPE_ERR_MSG = 'Data type mismatch.';
 
 export default class OCABundle {
   constructor() {
@@ -269,7 +270,7 @@ export default class OCABundle {
                 rslt.errs[attr][i] = { type: 'FE', detail: `${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']` };
               } else {
                 if (attrFormat == null) {
-                  rslt.errs[attr][i] = { type: 'FE', detail: `${FORMAT_ERR_MSG} Supported format: ${attrType}.` };
+                  rslt.errs[attr][i] = { type: 'DTE', detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.` };
                 } else {
                   rslt.errs[attr][i] = { type: 'FE', detail: `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.` };
                 }
@@ -290,7 +291,7 @@ export default class OCABundle {
     for (const attr in attrEntryCodes) {
       rslt.errs[attr] = {};
       for (let i = 0; i < dataset[attr]?.length; i++) {
-        const dataEntry = dataset[attr][i];
+        const dataEntry = String(dataset[attr][i]);
         if (!attrEntryCodes[attr].includes(dataEntry) && dataEntry !== '' && dataEntry !== undefined) {
           rslt.errs[attr][i] = { type: 'EC', detail: `${EC_ERR_MSG} Entry codes allowed: [${Object.values(attrEntryCodes)}]` };
         }
@@ -352,6 +353,9 @@ export default class OCABundle {
     rslt.formatErr.errs = this.validateFormat(dataset);
     rslt.entryCodeErr.errs = this.validateEntryCodes(dataset);
     rslt.characterEcodeErr.errs = this.validateCharacterEncoding(dataset);
+
+    console.log('rslt', rslt);
+
     return rslt.updateErr();
   }
 };
