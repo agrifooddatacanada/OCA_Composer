@@ -252,7 +252,7 @@ export default function Header({ currentPage }) {
               <div>
                 <select id="language-select" style={{ border: 'none', fontSize: '20px', color: CustomPalette.PRIMARY }} value={selectedLanguage} onChange={changeLanguage}>
                   <option value="en">EN</option>
-                  <option value="fr">FR</option>
+                  {/* <option value="fr">FR</option> */}
                 </select>
               </div>
             </>
