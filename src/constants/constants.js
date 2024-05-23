@@ -285,5 +285,5 @@ export const errorCode = {
   'Format': "FE",
   'Entry Codes': "EC",
   'Character Encoding': "CHE",
-  'Data Type': "DT"
+  'Data Type': "DTE"
 };
