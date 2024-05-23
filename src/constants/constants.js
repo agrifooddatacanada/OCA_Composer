@@ -280,3 +280,10 @@ export const defaultTooltip = "To make it easier to create a schema you can drag
 export const jsonUploadTooltip = "To make it easier to upload a schema you can drag and drop your existing dataset that you are creating the schema for. This schema should be in JSON format";
 export const datasetUploadTooltip = "To make it easier to upload a dataset you can drag and drop your existing dataset that you are creating the schema for. This dataset should be in table format as an Excel or .csv format";
 export const defaultNoteDescription = 'Note: None of this data will be uploaded to a server and all processing happens on device.';
+
+export const errorCode = {
+  'Format': "FE",
+  'Entry Codes': "EC",
+  'Character Encoding': "CHE",
+  'Data Type': "DT"
+};
