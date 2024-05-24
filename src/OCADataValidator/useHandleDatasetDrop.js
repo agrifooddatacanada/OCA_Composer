@@ -112,7 +112,7 @@ export const useHandleDatasetDrop = () => {
 
         const res = await processExcelFile(workbook);
         if (!res) {
-          throw new Error("File does not contain the Schema conformant data sheet.");
+          throw new Error("File does not contain the Schema Conformant Data sheet.");
         }
         setOgWorkbook(workbook);
 
@@ -157,7 +157,17 @@ export const useHandleDatasetDrop = () => {
   }, [datasetIsParsed]);
 
   const processExcelFile = useCallback(async (workbook) => {
-    const schemaConformantDataName = "Schema Conformant Data";
+
+    let schemaConformantDataName;
+    if (workbook.SheetNames.includes("Schema Conformant Data")) {
+      schemaConformantDataName = "Schema Conformant Data";
+    } else {
+      schemaConformantDataName = "Data Entry";
+    }
+
+    // const schemaConformantDataName = "Schema Conformant Data";
+    // const schemaConformantDataName = "Data Entry";
+
     const worksheet = workbook.Sheets[schemaConformantDataName];
 
     if (!worksheet) {

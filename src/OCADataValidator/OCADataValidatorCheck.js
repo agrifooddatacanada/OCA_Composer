@@ -440,9 +440,15 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const generateDataEntryExcel = async (ogHeader = false) => {
     try {
-      const newWorkbook = await copyFirstTwoWorksheets(ogWorkbook);
+      const newWorkbook = await copySheetsFromDEE(ogWorkbook);
+      let schemaConformantDataNameWorksheet;
 
-      const schemaConformantDataNameWorksheet = newWorkbook.addWorksheet("Schema Conformant Data");
+      if (newWorkbook.worksheets.length < 2) {
+        schemaConformantDataNameWorksheet = newWorkbook.addWorksheet("Data Entry");
+      } else {
+        schemaConformantDataNameWorksheet = newWorkbook.addWorksheet("Schema Conformant Data");
+      }
+
       makeHeaderRow(schemaDataConformantHeader, schemaConformantDataNameWorksheet, 20);
       const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
       newData.forEach((row, index) => {
@@ -452,6 +458,10 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       });
 
       if (ogHeader) {
+
+        console.log('hererrrrr .. ogHeader', ogHeader);
+
+
         const mappingFromAttrToDataset = {};
         for (const node of matchingRowData) {
           mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
@@ -516,20 +526,29 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     return allColumns;
   };
 
-  const copyFirstTwoWorksheets = async (workbook) => {
+  const copySheetsFromDEE = async (workbook) => {
     const firstSheetName = "Schema Description";
     const secondSheetName = "Data Entry";
-    const worksheet = workbook?.Sheets?.[firstSheetName];
-    const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName];
+    const thirdSheetName = "Schema Conformant Data";
+
     const newWorkbook = new ExcelJS.Workbook();
     const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
-    const newDataEntryWorksheet = newWorkbook.addWorksheet(secondSheetName);
+
+    const worksheet = workbook?.Sheets?.[firstSheetName]
+
 
     Object.keys(worksheet).forEach((cell) => {
       if (!worksheet[cell]?.v || cell === '!ref') return;
       newWorksheet.getCell(cell).value = worksheet[cell]?.v;
     });
 
+
+    if (!workbook?.Sheets?.[thirdSheetName]) {
+      return newWorkbook;
+    }
+
+    const newDataEntryWorksheet = newWorkbook.addWorksheet(secondSheetName);
+    const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName]
     Object.keys(dataEntryWorksheet).forEach((cell) => {
       if (!dataEntryWorksheet[cell]?.v || cell === '!ref') return;
       newDataEntryWorksheet.getCell(cell).value = dataEntryWorksheet[cell]?.v;
@@ -770,7 +789,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
                   {t('Verify')}
                 </Button>
               </Box>
-              <ExportButton handleSave={handleSave} />
+              <ExportButton handleSave={handleSave}/>
             </Box>
           </Box>
         </Box>
