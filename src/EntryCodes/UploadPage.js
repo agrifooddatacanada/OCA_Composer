@@ -117,6 +117,7 @@ const UploadPage = () => {
                 columnDefs={columnDefs}
                 domLayout="autoHeight"
                 defaultColDef={columnDefs}
+                suppressFieldDotNotation={true}
               />
             </div>
           }

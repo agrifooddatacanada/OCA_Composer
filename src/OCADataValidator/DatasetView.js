@@ -81,6 +81,7 @@ const DatasetView = () => {
               columnDefs={schemaColumnDefs}
               domLayout="autoHeight"
               defaultColDef={defaultColDef}
+              suppressFieldDotNotation={true}
             />
           </div>
           : <Typography>{t('No Schema Conformant Data')}</Typography>}
