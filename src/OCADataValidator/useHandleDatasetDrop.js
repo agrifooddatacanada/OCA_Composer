@@ -58,7 +58,6 @@ export const useHandleDatasetDrop = () => {
         },
         complete: function(results) {
           setSchemaDataConformantHeader(results.meta.fields);
-          console.log('results.data', results.data);
           setSchemaDataConformantRowData(results.data);
 
           setDatasetLoading(false);
