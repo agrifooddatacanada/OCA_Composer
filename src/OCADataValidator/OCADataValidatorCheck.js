@@ -270,6 +270,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   const gridRef = useRef();
   const validateBeforeOnChangeRef = useRef(false);
 
+  const datasetRawFileType = datasetRawFile[0].type.split("/")[1];
+
   const defaultColDef = useMemo(() => {
     return {
       editable: true,
@@ -288,17 +290,40 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     };
   }, [lanAttributeRowData, langRef.current]);
 
-  const handleSave = async (ogHeader = false) => {
-    if (ogWorkbook !== null) {
-      const workbook = await generateDataEntryExcel(ogHeader);
+  const handleSave = async (ogHeader = false, exportFormat) => {
+    if (ogWorkbook !== null && exportFormat === 'excel') {
+      await handleExelSave();
+    } else if (ogWorkbook !== null && exportFormat === 'csv') {
+      await handleCSVSave(ogHeader);
+    }
+    else {
+      await handleCSVSave(ogHeader);
+    }
+  };
+
+  const handleExelSave = async () => {
+    try {
+      const workbook = await generateDataEntryExcel();
       if (workbook !== null) {
         downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
+      } else {
+        console.error('Failed to generate Excel file');
       }
-    } else {
+    } catch (error) {
+      console.error('Error while generating Excel file', error);
+    }
+  };
+
+  const handleCSVSave = async (ogHeader) => {
+    try {
       const newCSV = await generateCSVFile(ogHeader);
       if (newCSV !== null) {
         downloadCSVFile(newCSV, 'DataEntryCSV.csv');
+      } else {
+        console.error('Failed to generate CSV file');
       }
+    } catch (error) {
+      console.error('Error while generating CSV file', error);
     }
   };
 
@@ -436,37 +461,35 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     }
   };
 
-  const generateDataEntryExcel = async (ogHeader = false) => {
+  const generateDataEntryExcel = async () => {
     try {
       const newWorkbook = await copySheetsFromDEE(ogWorkbook);
-      let schemaConformantDataNameWorksheet;
+      let schemaConformantDataSheet;
 
       if (newWorkbook.worksheets.length < 2) {
-        schemaConformantDataNameWorksheet = newWorkbook.addWorksheet("Data Entry");
+        schemaConformantDataSheet = newWorkbook.addWorksheet("Data Entry");
       } else {
-        schemaConformantDataNameWorksheet = newWorkbook.addWorksheet("Schema Conformant Data");
+        schemaConformantDataSheet = newWorkbook.addWorksheet("Schema Conformant Data");
       }
 
-      makeHeaderRow(schemaDataConformantHeader, schemaConformantDataNameWorksheet, 20);
       const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+
+      const schemaConformantDataHeaders = [];
+      for (const node of matchingRowData) {
+        schemaConformantDataHeaders.push(node['Dataset']);
+      }
+
+      schemaConformantDataHeaders.forEach((header, index) => {
+        schemaConformantDataSheet.getCell(1, index + 1).value = header;
+      });
+
       newData.forEach((row, index) => {
-        schemaDataConformantHeader.forEach((header, headerIndex) => {
-          schemaConformantDataNameWorksheet.getCell(index + 2, headerIndex + 1).value = row[header] === '' || isNaN(row[header]) ? row[header] : Number(row[header]);
+        schemaConformantDataHeaders.forEach((header, headerIndex) => {
+          schemaConformantDataSheet.getCell(index + 2, headerIndex + 1).value = row[header] === '' || isNaN(row[header]) ? row[header] : Number(row[header]);
         });
       });
 
-      if (ogHeader) {
-
-        console.log('hererrrrr .. ogHeader', ogHeader);
-
-
-        const mappingFromAttrToDataset = {};
-        for (const node of matchingRowData) {
-          mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
-        }
-        const newHeader = schemaDataConformantHeader.map((header) => mappingFromAttrToDataset[header] || header);
-        makeHeaderRow(newHeader, schemaConformantDataNameWorksheet, 20);
-      }
+      makeHeaderRow(schemaConformantDataHeaders, schemaConformantDataSheet, 40);
 
       return newWorkbook;
     } catch (error) {
@@ -787,7 +810,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
                   Verify
                 </Button>
               </Box>
-              <ExportButton handleSave={handleSave}/>
+              <ExportButton handleSave={handleSave} inputDataType={datasetRawFileType} />
             </Box>
           </Box>
         </Box>
@@ -820,7 +843,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
               }}
             >
               <Languages type={langRef.current} handleChange={handleChange} handleClick={() => { }} isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} languages={languages} />
-              <MultipleSelectPlaceholder errorName={errorName} setErrorNameList={setErrorNameList} disabled={!firstValidate} />
+              <MultipleSelectPlaceholder errorName={errorName} setErrorNameList={setErrorNameList} disabled={!firstValidate} placeHolder="Select Errors" />
             </Box>
           </Box>
 
