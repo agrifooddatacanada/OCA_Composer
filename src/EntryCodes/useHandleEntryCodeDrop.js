@@ -5,6 +5,7 @@ import { Context } from '../App';
 import { MenuItem } from '@mui/material';
 import JSZip from 'jszip';
 import { useTranslation } from 'react-i18next';
+import { getCurrentData } from '../constants/utils';
 
 const userSelectionDropdown = ['Copy from other entry codes', 'Upload'];
 
@@ -187,7 +188,8 @@ const useHandleEntryCodeDrop = () => {
   const handleSave = () => {
     if (selectionValue === "Upload") {
       if (fileType === "csvORxls") {
-        setTempEntryCodeRowData(gridRef.current.api.getRenderedNodes()?.map(node => node?.data));
+        const currentData = getCurrentData(gridRef.current.api, true);
+        setTempEntryCodeRowData(currentData);
         setCurrentPage("MatchingEntryCodes");
       } else if (fileType === "json" || fileType === "zip") {
         setCurrentPage("MatchingJSONEntryCodes");
