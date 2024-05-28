@@ -456,10 +456,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       });
 
       if (ogHeader) {
-
-        console.log('hererrrrr .. ogHeader', ogHeader);
-
-
         const mappingFromAttrToDataset = {};
         for (const node of matchingRowData) {
           mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];

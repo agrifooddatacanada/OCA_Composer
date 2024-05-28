@@ -165,9 +165,6 @@ export const useHandleDatasetDrop = () => {
       schemaConformantDataName = "Data Entry";
     }
 
-    // const schemaConformantDataName = "Schema Conformant Data";
-    // const schemaConformantDataName = "Data Entry";
-
     const worksheet = workbook.Sheets[schemaConformantDataName];
 
     if (!worksheet) {
