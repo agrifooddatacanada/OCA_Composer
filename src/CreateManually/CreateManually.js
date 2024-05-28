@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { Context } from "../App";
 import { AgGridReact } from "ag-grid-react";
-
+import { useTranslation } from 'react-i18next';
 import { Box } from "@mui/system";
 import { Button, Alert, Typography } from "@mui/material";
 
@@ -22,26 +22,10 @@ import { removeSpacesFromString } from "../constants/removeSpaces";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-export default function CreateManually() {
-  const addRef = useRef();
-  const gridRef = useRef();
-  const refContainer = useRef();
 
-  const { setCurrentPage, setAttributesList, attributesList, setFileData } =
-    useContext(Context);
-
-  const [rowData, setRowData] = useState([{ Name: "" }]);
-  const [addErrorMessage, setAddErrorMessage] = useState("");
-  const [forwardErrorMessage, setForwardErrorMessage] = useState("");
-  const [backErrorMessage, setBackErrorMessage] = useState("");
-  const [canDelete, setCanDelete] = useState(
-    attributesList.length <= 1 ? false : true
-  );
-
-  //!important overrides default grid style that sets the minimum height of the grid container
-  //Without the min-height, it looks awkward when the component is empty or has only a couple attributes
-
-  const gridStyle = `
+//!important overrides default grid style that sets the minimum height of the grid container
+//Without the min-height, it looks awkward when the component is empty or has only a couple attributes
+const gridStyle = `
   .ag-center-cols-clipper {
     min-height: unset !important;
   }
@@ -65,6 +49,23 @@ export default function CreateManually() {
     border: 0.5px solid ${CustomPalette.GREY_300};}
   }
   `;
+
+export default function CreateManually() {
+  const addRef = useRef();
+  const gridRef = useRef();
+  const refContainer = useRef();
+  const { t } = useTranslation();
+
+  const { setCurrentPage, setAttributesList, attributesList, setFileData } =
+    useContext(Context);
+
+  const [rowData, setRowData] = useState([{ Name: "" }]);
+  const [addErrorMessage, setAddErrorMessage] = useState("");
+  const [forwardErrorMessage, setForwardErrorMessage] = useState("");
+  const [backErrorMessage, setBackErrorMessage] = useState("");
+  const [canDelete, setCanDelete] = useState(
+    attributesList.length <= 1 ? false : true
+  );
 
   useEffect(() => {
     const allRowData = [];
@@ -105,7 +106,7 @@ export default function CreateManually() {
 
   const columnDefs = [
     { field: "Drag", headerName: "", width: 50, rowDrag: true },
-    { field: "Name", headerName: "Attribute Name", width: 401, editable: true },
+    { field: "Name", headerName: t('Attribute Name'), width: 470, editable: true },
     {
       field: "Delete",
       headerName: "",
@@ -203,13 +204,13 @@ export default function CreateManually() {
           ) {
             resetFunction();
           } else {
-            errorSettingFunction("Attribute Names cannot be empty");
+            errorSettingFunction(t('Attribute Names cannot be empty'));
             setTimeout(() => {
               errorSettingFunction("");
             }, [2500]);
           }
         } else {
-          errorSettingFunction("Attribute Names cannot be empty");
+          errorSettingFunction(t('Attribute Names cannot be empty'));
           gridRef.current.api.setFocusedCell(errorIndex, "Name");
           setTimeout(() => {
             errorSettingFunction("");
@@ -357,7 +358,7 @@ export default function CreateManually() {
       >
         <Button color="button" onClick={() => handleBack()} sx={{ m: 3 }}>
           <ArrowBackIosIcon />
-          Back
+          {t('Back')}
         </Button>
         {backErrorMessage && (
           <Alert
@@ -380,7 +381,7 @@ export default function CreateManually() {
           </Alert>
         )}
         <Button color="button" onClick={() => handleForward()} sx={{ m: "0.4rem" }}>
-          Forward
+          {t('Next')}
           <ArrowForwardIosIcon />
         </Button>
       </Box>
@@ -393,7 +394,7 @@ export default function CreateManually() {
             p: 0,
           }}
         >
-          Attribute Names
+          {t('Attribute Names')}
         </Typography>
         <Typography
           sx={{
@@ -403,7 +404,7 @@ export default function CreateManually() {
             color: CustomPalette.GREY_800,
           }}
         >
-          Enter the name of each attribute below
+          {t('Enter the name of each attribute below')}
         </Typography>
         <Typography
           sx={{
@@ -413,15 +414,14 @@ export default function CreateManually() {
             fontSize: 14,
           }}
         >
-          This will be the column header in every tabular data set no matter
-          what language.
+          {t('This will be the column header in every tabular data set no matter what language')}
           <br />
-          Every attribute must be unique, and no entries can be left blank.
+          {t('Every attribute must be unique, and no entries can be left blank')}
         </Typography>
       </Box>
       <Box>
         <Box style={{ display: "flex" }}>
-          <Box className="ag-theme-alpine" style={{ width: 503 }} ref={refContainer}>
+          <Box className="ag-theme-alpine" style={{ width: 565 }} ref={refContainer}>
             <style>{gridStyle}</style>
             <AgGridReact
               ref={gridRef}
@@ -445,15 +445,15 @@ export default function CreateManually() {
               color="button"
               variant="contained"
               sx={{
-                width: "9rem",
+                width: "10rem",
                 m: "1rem 3rem 1rem 0",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-around",
+
               }}
               ref={addRef}
             >
-              Add row <AddCircleIcon />
+              {t('Add row')} <AddCircleIcon sx={{ marginLeft: '10px' }} />
             </Button>
 
             {addErrorMessage.length > 0 && (
@@ -466,14 +466,14 @@ export default function CreateManually() {
             onClick={handleClearAll}
             sx={{
               alignSelf: "flex-end",
-              width: "7rem",
+              width: "10rem",
               display: "flex",
               justifyContent: "space-around",
               p: 1,
               mb: 5,
             }}
           >
-            Clear All
+            {t('Clear All')}
           </Button>
         </Box>
       </Box>

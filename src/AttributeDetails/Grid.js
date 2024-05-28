@@ -20,6 +20,7 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import TypeTooltip from "./TypeTooltip";
 import CellHeader from "../components/CellHeader";
 import { flexCenter, preWrapWordBreak } from "../constants/styles";
+import { useTranslation } from "react-i18next";
 
 //styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
 const gridStyle = `
@@ -46,6 +47,7 @@ export default function Grid({
   typesObjectRef,
   setLoading
 }) {
+  const { t } = useTranslation();
   const { attributesList, setAttributesList } = useContext(Context);
   const [selectedCells, setSelectedCells] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -119,7 +121,7 @@ export default function Grid({
       <CellHeader
         headerText={
           <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center' }}>
-            Sensitive {' '}
+            {t('Sensitive')} {' '}
             <input
               type="checkbox"
               ref={inputRef}
@@ -130,17 +132,11 @@ export default function Grid({
         helpText={
           <>
             <div>
-              If the attribute could be considered Personally Identifiable
-              Information (PII) you can flag the attribute here. This will
-              be documented in the schema and downstream users of your
-              schema will understand they need to take care of the data that
-              has been flagged.
+              {t('If the attribute could be considered Personally Identifiable...')}
             </div>
             <br />
             <div>
-              Examples of PII include names, locations, postal codes,
-              telephone numbers, identifying genetic data, race, gender,
-              ethnicity, etc.
+              {t('Examples of PII include names, locations, postal codes...')}
             </div>
           </>
         } />
@@ -180,14 +176,14 @@ export default function Grid({
           className="ag-header-cell-label"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
-          List
+          {t('List')}
           <input
             type="checkbox"
             ref={inputRef}
             onChange={handleCheckboxChange}
           />
           <Tooltip
-            title="Rather than allow free text entry into a record, you may wish to limit entries to one of a few in a list. For example, you may wish to create a list of choices for gender, or for experimental farm name, or for species. You will then be able to create entries for your list that will be part of the schema."
+            title={t("Rather than allow free text entry into a record, you may...")}
             placement="top"
             arrow
           >
@@ -282,7 +278,7 @@ export default function Grid({
         value={value}
         sx={{ border: "none", height: "2rem", fontSize: "small" }}
       >
-        {value}
+        {t(value)}
       </MenuItem>
     ));
 
@@ -340,7 +336,7 @@ export default function Grid({
       },
       {
         field: "Attribute",
-        headerComponent: () => <CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
+        headerComponent: () => <CellHeader headerText={t('Attribute')} helpText={t('This is the name for the attribute and, for example...')} />,
         editable: true,
         autoHeight: true,
         cellStyle: () => ({
@@ -359,7 +355,7 @@ export default function Grid({
       {
         field: "Unit",
         editable: true,
-        headerComponent: () => <CellHeader headerText='Unit' helpText='The units of each attribute (or leave blank if the attribute is not a measurement and has no units).' />,
+        headerComponent: () => <CellHeader headerText={t('Unit')} helpText={t('The units of each attribute (or leave blank if the attribute is...')} />,
         autoHeight: true,
         cellStyle: () => ({
           ...preWrapWordBreak,
@@ -368,7 +364,7 @@ export default function Grid({
       },
       {
         field: "Type",
-        headerComponent: () => <CellHeader headerText='Type' helpText={<TypeTooltip />} />,
+        headerComponent: () => <CellHeader headerText={t('Type')} helpText={<TypeTooltip />} />,
         cellRenderer: TypeRenderer,
         cellRendererParams: (params) => ({
           data: params.data,
@@ -479,14 +475,14 @@ export default function Grid({
               (attribute) => attribute.Attribute === currentAttributeName
             ) !== -1
           ) {
-            setErrorMessage("Please enter a unique attribute name");
+            setErrorMessage(t("Please enter a unique attribute name"));
             setTimeout(() => {
               setErrorMessage("");
             }, [2000]);
             return;
           }
           if (currentAttributeName === "") {
-            setErrorMessage("Please enter a unique attribute name");
+            setErrorMessage(t("Please enter a unique attribute name"));
             setTimeout(() => {
               setErrorMessage("");
             }, [2000]);
@@ -559,7 +555,7 @@ export default function Grid({
                   colKey: tabbingColumns[currentIndex + 1],
                 });
               } else {
-                setErrorMessage("Please enter a unique attribute name");
+                setErrorMessage(t("Please enter a unique attribute name"));
                 setTimeout(() => {
                   setErrorMessage("");
                 }, [2000]);
@@ -591,7 +587,7 @@ export default function Grid({
         }
       }
     },
-    [attributeRowData, attributesList]
+    [attributeRowData, attributesList, t]
   );
 
   //Saves elements in proper order after dragging

@@ -6,8 +6,10 @@ import { flexCenter, gridStyles, preWrapWordBreak } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
 import CellHeader from '../components/CellHeader';
 import DeleteConfirmation from './DeleteConfirmation';
+import { useTranslation } from 'react-i18next';
 
 const RequiredEntries = () => {
+  const { t } = useTranslation();
   const {
     attributesList,
     characterEncodingRowData,
@@ -38,7 +40,7 @@ const RequiredEntries = () => {
       <CellHeader
         headerText={
           <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center' }}>
-            Required entries {' '}
+            {t('Required entries')} {' '}
             <input
               type="checkbox"
               ref={inputRef}
@@ -46,7 +48,7 @@ const RequiredEntries = () => {
             />
           </Box>
         }
-        helpText='Check for each attribute where the data entry cannot be left empty in a dataset.' />
+        helpText={t('Check for each attribute where the data entry cannot be left empty in a dataset')} />
     );
   };
 
@@ -79,7 +81,7 @@ const RequiredEntries = () => {
         width: 180,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => <CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
+        headerComponent: () => <CellHeader headerText={t('Attributes')} helpText={t('This is the name for the attribute and, for example...')} />,
       },
       {
         field: "Make selected entries required",

@@ -15,6 +15,7 @@ import IntroCard from "./IntroCard";
 import IsoCard from "./IsoCard";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function SchemaMetadata({
   pageBack,
@@ -23,6 +24,7 @@ export default function SchemaMetadata({
   setShowIntroCard,
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [showLanguages, setShowLanguages] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [fieldArray, setFieldArray] = useState([]);
@@ -135,10 +137,10 @@ export default function SchemaMetadata({
               width: "7rem",
             }}
           >
-            Attributes
+            {t('Attributes')}
           </Typography>
           <Tooltip
-            title="The list of attributes correspond to the column headers of a datafile."
+            title={t("The list of attributes correspond to the column headers of a data file")}
             placement="right"
             arrow
           >
@@ -156,7 +158,7 @@ export default function SchemaMetadata({
               color: CustomPalette.PRIMARY,
             }}
           >
-            Schema Description
+            {t('Schema Description')}
           </Typography>
           <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
             <Box
@@ -164,7 +166,6 @@ export default function SchemaMetadata({
                 alignSelf: "flex-end",
                 position: "absolute",
                 zIndex: "1000",
-                // top: -300,
                 top: 70,
                 width: "100%",
               }}
@@ -185,7 +186,7 @@ export default function SchemaMetadata({
               }}
             >
               <Tooltip
-                title="Add another language to your schema. Without changing the basic structure of your schema, you can ensure it can be shared and used in different languages."
+                title={t("Add another language to your schema. Without changing the basic structure of your schema...")}
                 placement="left"
                 arrow
               >
@@ -202,7 +203,7 @@ export default function SchemaMetadata({
                   m: 2,
                 }}
               >
-                Add Language
+                {t('Add Language')}
                 {showLanguages === true ? (
                   <RemoveCircleIcon />
                 ) : (

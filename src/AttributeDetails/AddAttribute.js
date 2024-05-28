@@ -9,6 +9,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AddIcon from "@mui/icons-material/Add";
 import { Context } from "../App";
 import { removeSpacesFromString } from "../constants/removeSpaces";
+import { useTranslation } from "react-i18next";
 
 export default function AddAttribute({
   addButton1,
@@ -22,6 +23,7 @@ export default function AddAttribute({
   setAddByTab,
   typesObjectRef,
 }) {
+  const { t } = useTranslation();
   const { setAttributesList, setAttributeRowData } = useContext(Context);
   const [newAttribute, setNewAttribute] = useState("");
 
@@ -72,7 +74,7 @@ export default function AddAttribute({
     if (addByTab) {
       attributeToAdd = "";
       if (duplicates.length > 0) {
-        setErrorMessage("All attribute names must be unique before proceeding");
+        setErrorMessage(t("All attribute names must be unique before proceeding"));
         setTimeout(() => {
           setErrorMessage("");
         }, [2000]);
@@ -86,7 +88,7 @@ export default function AddAttribute({
       (addByTab && !blanks);
     if (isNew) {
       if (duplicates.length > 0) {
-        setErrorMessage("All attribute names must be unique before proceeding");
+        setErrorMessage(t("All attribute names must be unique before proceeding"));
         setTimeout(() => {
           setErrorMessage("");
         }, [2000]);
@@ -109,13 +111,13 @@ export default function AddAttribute({
     } else {
       if (blanks) {
         setErrorMessage(
-          "Attribute names cannot be blank. Please fill out all names before continuing."
+          t("Attribute names cannot be blank. Please fill out all names before continuing")
         );
         setTimeout(() => {
           setErrorMessage("");
         }, [2000]);
       } else {
-        setErrorMessage("Please enter a unique attribute name");
+        setErrorMessage(t("Please enter a unique attribute name"));
         setTimeout(() => {
           setErrorMessage("");
         }, [2000]);
@@ -146,7 +148,7 @@ export default function AddAttribute({
             id="customLanguageField"
             type="text"
             onChange={handleLanguageField}
-            placeholder="New Attribute"
+            placeholder={t("New Attribute")}
             size="small"
             variant="standard"
             inputProps={{
@@ -191,7 +193,7 @@ export default function AddAttribute({
         onClick={handleToggle}
         ref={addButton1}
       >
-        Add Attribute &nbsp;
+        {t('Add Attribute')} &nbsp;
         {showAddAttribute === true ? <RemoveCircleIcon /> : <AddCircleIcon />}
       </Button>
     </Box>

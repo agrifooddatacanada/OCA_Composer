@@ -10,8 +10,10 @@ import {
 } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
+import { useTranslation } from "react-i18next";
 
 export default function AttributeDetails({ pageBack, pageForward }) {
+  const { t } = useTranslation();
   const {
     setAttributesWithLists,
     setCurrentPage,
@@ -72,10 +74,10 @@ export default function AttributeDetails({ pageBack, pageForward }) {
       let blankAttributes = false;
 
       const errorOptions = {
-        duplicates: "Please enter a unique attribute name for each attribute",
-        blankAttribute: "Attribute names cannot be blank",
-        codeInjection: "Attribute names cannot include HTML",
-        blankType: "Please enter a Type for all attributes",
+        duplicates: t("Please enter a unique attribute name for each attribute"),
+        blankAttribute: t("Attribute names cannot be blank"),
+        codeInjection: t("Attribute names cannot include HTML"),
+        blankType: t("Please enter a Type for all attributes"),
       };
       let codeInjection = false;
 

@@ -8,8 +8,10 @@ import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
+import { useTranslation } from "react-i18next";
 
 export default function LanguageDetails({ pageBack, pageForward }) {
+  const { t } = useTranslation();
   const {
     languages,
     lanAttributeRowData,
@@ -167,7 +169,7 @@ export default function LanguageDetails({ pageBack, pageForward }) {
           }}
         >
           <Tooltip
-            title="Toggles between the one or more languages used in the schema."
+            title={t("Toggles between the one or more languages used in the schema")}
             placement="left"
             arrow
             PopperProps={{

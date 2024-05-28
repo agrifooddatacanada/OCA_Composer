@@ -2,12 +2,14 @@ import React from "react";
 import { Box, Button, Typography } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CustomPalette } from "../constants/customPalette";
+import { useTranslation } from "react-i18next";
 
 export default function NavigationCard({
   fieldArray,
   setShowCard,
   handleForward,
 }) {
+  const { t } = useTranslation();
   const arrayDisplay = fieldArray.join(", ");
 
   return (
@@ -52,7 +54,7 @@ export default function NavigationCard({
             }}
           />
           <Typography variant="body1" sx={{ p: 1, fontSize: 20 }}>
-            There are one or more blank entries in the following field(s):
+            {t('There are one or more blank entries in the following field(s)')}
           </Typography>
         </Box>
 
@@ -62,7 +64,7 @@ export default function NavigationCard({
         >
           <em>{arrayDisplay}</em>
         </Typography>
-        <Typography variant="h6">Do you wish to continue?</Typography>
+        <Typography variant="h6">{t('Do you wish to continue?')}</Typography>
         <Box sx={{ alignSelf: "flex-end" }}>
           <Button
             variant="outlined"
@@ -72,7 +74,7 @@ export default function NavigationCard({
             }}
             sx={{ mr: 2, color: CustomPalette.PRIMARY, borderColor: CustomPalette.PRIMARY, ":hover": { borderColor: CustomPalette.SECONDARY, color: CustomPalette.SECONDARY } }}
           >
-            Cancel
+            {t('Cancel')}
           </Button>
           <Button
             variant="contained"
@@ -82,7 +84,7 @@ export default function NavigationCard({
             }}
             sx={{ mr: 2, backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY } }}
           >
-            Continue
+            {t('Continue')}
           </Button>
         </Box>
       </Box>

@@ -2,8 +2,10 @@ import React, { useContext } from "react";
 import { Box } from "@mui/system";
 import { Typography } from "@mui/material";
 import { Context } from "../App";
+import { useTranslation } from "react-i18next";
 
 export default function SchemaDescription({ currentLanguage }) {
+  const { t } = useTranslation();
   const { schemaDescription, divisionGroup } = useContext(Context);
   return (
     <Box>
@@ -15,7 +17,7 @@ export default function SchemaDescription({ currentLanguage }) {
           margin: "1rem 0 0.5rem 0",
         }}
       >
-        Name of Schema
+        {t('Name of Schema')}
       </Typography>
       <Box sx={{
         textAlign: 'left',
@@ -32,7 +34,7 @@ export default function SchemaDescription({ currentLanguage }) {
           margin: "1rem 0 0.5rem 0",
         }}
       >
-        Description
+        {t('Description')}
       </Typography>
       <Box sx={{
         textAlign: 'left',
@@ -48,7 +50,7 @@ export default function SchemaDescription({ currentLanguage }) {
           margin: "1rem 0 0.5rem 0",
         }}
       >
-        Classification
+        {t('Classification')}
       </Typography>
       <Box sx={{
         textAlign: 'left',

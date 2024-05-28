@@ -1,8 +1,11 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import CustomAnchorLink from "../components/CustomAnchorLink";
+import { useTranslation } from "react-i18next";
 
 export default function StartIntro() {
+  const { t } = useTranslation();
+
   return (
     <Box width="80%" margin="auto">
       <Typography
@@ -12,10 +15,10 @@ export default function StartIntro() {
         textAlign={"left"}
       >
         <Box sx={{ m: 2 }}>
-          Briefly, schemas describe the attributes (variable names/column headers) of your dataset and help make your data more useful (more FAIR). Using the Agri-food Data Canada schema editor, you can write a schema for your data sets. Using the language of Overlays Capture Architecture (OCA) you can easily write human- and machine-actionable descriptions of your data which you can store with your data, share with your data or deposit with your data. If your schema is of general interest you can also deposit it to be cited as an independent research object, contributing to data standardization and interoperability.
+          {t('Briefly, schemas describe the attributes (variable names/column headers) of...')}
         </Box>
         <Box sx={{ m: 2 }}>
-          To learn more about schemas and the OCA schema specification <CustomAnchorLink link="https://agrifooddatacanada.ca/semantic-engine/" text="read our introduction on the ADC webpage" />.
+          {t("To learn more about schemas and the OCA schema specification")} <CustomAnchorLink link="https://agrifooddatacanada.ca/semantic-engine/" text={t("read our introduction on the ADC webpage")} />.
         </Box>
       </Typography>
       <br />

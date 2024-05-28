@@ -5,9 +5,11 @@ import { Context } from '../App';
 import { AgGridReact } from 'ag-grid-react';
 import { gridStyles } from '../constants/styles';
 import { CustomPalette } from '../constants/customPalette';
+import { useTranslation } from 'react-i18next';
 
 
 const DatasetView = () => {
+  const { t } = useTranslation();
   const schemaGridRef = useRef(null);
   const {
     setCurrentDataValidatorPage,
@@ -69,7 +71,7 @@ const DatasetView = () => {
         justifyContent: 'center',
         flex: 1,
       }}>
-        <Typography variant="h5" sx={{ mb: 2, mt: 6, color: CustomPalette.PRIMARY, fontWeight: 500 }}>Schema Data</Typography>
+        <Typography variant="h5" sx={{ mb: 2, mt: 6, color: CustomPalette.PRIMARY, fontWeight: 500 }}>{t('Schema Data')}</Typography>
         {schemaDataConformantHeader && schemaDataConformantHeader?.length > 0 ?
           <div className="ag-theme-balham" style={{ width: schemaTableLength, maxWidth: '90%' }}>
             <style>{gridStyles}</style>
@@ -79,9 +81,10 @@ const DatasetView = () => {
               columnDefs={schemaColumnDefs}
               domLayout="autoHeight"
               defaultColDef={defaultColDef}
+              suppressFieldDotNotation={true}
             />
           </div>
-          : <Typography>No Schema Conformant Data</Typography>}
+          : <Typography>{t('No Schema Conformant Data')}</Typography>}
       </Box>
     </>
   );
