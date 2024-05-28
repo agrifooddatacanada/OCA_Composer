@@ -7,17 +7,8 @@ export default class OCADataSet {
     return new Promise((resolve, reject) => {
       try {
         const workbook = XLSX.readFile(fileContent);
-        // const sheetName = 'Schema Conformant Data';
-        // const sheetName = 'Data Entry';
-        // const worksheet = workbook.Sheets[sheetName];
-
-        const dataEntrySheetName = 'Data Entry';
-        const schemaConformantDataName = 'Schema Conformant Data';
-        const sheetNames = workbook.SheetNames;
-
-        const sheetNameToUse = sheetNames.includes(dataEntrySheetName) ? dataEntrySheetName : schemaConformantDataName;
+        const sheetNameToUse = workbook.SheetNames.includes('Schema Conformant Data') ? 'Schema Conformant Data' : 'Data Entry'
         const worksheet = workbook.Sheets[sheetNameToUse];
-
         const range = XLSX.utils.decode_range(worksheet['!ref']);
 
         // Find the last row index containing data.
