@@ -270,7 +270,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   const gridRef = useRef();
   const validateBeforeOnChangeRef = useRef(false);
 
-  const datasetRawFileType = datasetRawFile[0].type.split("/")[1];
+  const datasetRawFileType = datasetRawFile[0]?.name.split('.').pop();
 
   const defaultColDef = useMemo(() => {
     return {
@@ -307,7 +307,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       if (workbook !== null) {
         downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
       } else {
-        console.error('Failed to generate Excel file');
+        throw new Error('Failed to generate Excel file');
       }
     } catch (error) {
       console.error('Error while generating Excel file', error);
@@ -320,7 +320,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       if (newCSV !== null) {
         downloadCSVFile(newCSV, 'DataEntryCSV.csv');
       } else {
-        console.error('Failed to generate CSV file');
+        throw new Error('Failed to generate CSV file');
       }
     } catch (error) {
       console.error('Error while generating CSV file', error);
@@ -369,8 +369,18 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         });
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const dataset = await OCADataSet.readExcel(e.target.result);
-          const validate = bundle.validate(dataset);
+        // const dataset = await OCADataSet.readExcel(e.target.result);
+        const prepareInput = {};
+        schemaDataConformantHeader.forEach((header) => {
+          for (const row of newData) {
+            if (header in row) {
+              prepareInput[header] = header in prepareInput ? [...prepareInput[header], row[header]] : [row[header]];
+            }
+          }
+        });
+
+          // const validate = bundle.validate(dataset);
+          const validate = bundle.validate(prepareInput);
 
           setRowData((prev) => {
             return prev.map((row, index) => {
