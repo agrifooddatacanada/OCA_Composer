@@ -270,7 +270,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   const gridRef = useRef();
   const validateBeforeOnChangeRef = useRef(false);
 
-  const datasetRawFileType = datasetRawFile[0].type.split("/")[1];
+  const datasetRawFileType = datasetRawFile[0]?.name.split('.').pop();
 
   const defaultColDef = useMemo(() => {
     return {
@@ -307,7 +307,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       if (workbook !== null) {
         downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
       } else {
-        console.error('Failed to generate Excel file');
+        throw new Error('Failed to generate Excel file');
       }
     } catch (error) {
       console.error('Error while generating Excel file', error);
@@ -320,7 +320,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       if (newCSV !== null) {
         downloadCSVFile(newCSV, 'DataEntryCSV.csv');
       } else {
-        console.error('Failed to generate CSV file');
+        throw new Error('Failed to generate CSV file');
       }
     } catch (error) {
       console.error('Error while generating CSV file', error);

@@ -48,7 +48,7 @@ export default class OCADataSet {
           const columnName = dataset[0][col];
           result[columnName] = dataset.slice(1, lastRowIndex + 1).map(row => row[col]);
         }
-        resolve(result);
+       resolve(result);
       } catch (error) {
         reject(error);
       }
