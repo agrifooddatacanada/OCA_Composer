@@ -17,6 +17,7 @@ import { errorCode, formatCodeBinaryDescription, formatCodeDateDescription, form
 import { DropdownMenuList } from '../components/DropdownMenuCell';
 import WarningPopup from './WarningPopup';
 import { useTranslation } from 'react-i18next';
+import { getCurrentData } from '../constants/utils';
 
 const convertToCSV = (data) => {
   const csv = data.map(row => {
@@ -32,7 +33,12 @@ const convertToCSV = (data) => {
 
 const CustomTooltip = (props) => {
   const error = props.data?.error?.[props.colDef.field] || [];
-  const dataLength = props.api.getRenderedNodes().length;
+  const [dataLength, setDataLength] = useState(0);
+  useEffect(() => {
+    let tempDataLength = 0;
+    props.api.forEachNode((node) => { tempDataLength += 1; });
+    setDataLength(tempDataLength);
+  }, [props.api]);
 
   return (
     <>
@@ -305,11 +311,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   };
 
   const generateCSVFile = async (ogHeader) => {
-    const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
-      const newObject = { ...node?.data };
-      delete newObject['error'];
-      return newObject;
-    });
+    const newData = getCurrentData(gridRef.current.api, false);
+
     const newHeader = [];
 
     const mappingFromAttrToDataset = {};
@@ -336,7 +339,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     setFirstValidate(true);
     const bundle = new OCABundle();
     await bundle.loadedBundle(jsonParsedFile);
-    const newData = gridRef.current?.api.getRenderedNodes()?.map(node => node?.data);
+    const newData = getCurrentData(gridRef.current.api, true);
 
     if (ogWorkbook !== null) {
       const newWorkbook = await generateDataEntryExcel();
@@ -450,7 +453,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       }
 
       makeHeaderRow(schemaDataConformantHeader, schemaConformantDataNameWorksheet, 20);
-      const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+      const newData = getCurrentData(gridRef.current.api, true);
+
       newData.forEach((row, index) => {
         schemaDataConformantHeader.forEach((header, headerIndex) => {
           schemaConformantDataNameWorksheet.getCell(index + 2, headerIndex + 1).value = row[header] === '' || isNaN(row[header]) ? row[header] : Number(row[header]);
@@ -458,10 +462,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       });
 
       if (ogHeader) {
-
-        console.log('hererrrrr .. ogHeader', ogHeader);
-
-
         const mappingFromAttrToDataset = {};
         for (const node of matchingRowData) {
           mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
@@ -534,7 +534,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     const newWorkbook = new ExcelJS.Workbook();
     const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
 
-    const worksheet = workbook?.Sheets?.[firstSheetName]
+    const worksheet = workbook?.Sheets?.[firstSheetName];
 
 
     Object.keys(worksheet).forEach((cell) => {
@@ -548,7 +548,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     }
 
     const newDataEntryWorksheet = newWorkbook.addWorksheet(secondSheetName);
-    const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName]
+    const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName];
     Object.keys(dataEntryWorksheet).forEach((cell) => {
       if (!dataEntryWorksheet[cell]?.v || cell === '!ref') return;
       newDataEntryWorksheet.getCell(cell).value = dataEntryWorksheet[cell]?.v;
@@ -581,8 +581,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       newRow[header] = "";
     });
 
-    const currentData = gridRef.current.api.getRenderedNodes().map((node) => node.data);
-
+    const currentData = getCurrentData(gridRef.current.api, true);
     setRowData((prev) => [...currentData, newRow]);
   };
 
@@ -613,7 +612,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   };
 
   const handleMoveBack = () => {
-    const currentData = gridRef.current.api.getRenderedNodes()?.map((node) => node.data);
+    const currentData = getCurrentData(gridRef.current.api, true);
 
     if (datasetRawFile.length > 0) {
       const mappingFromAttrToDataset = {};
@@ -715,6 +714,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     }
   }, [rowData]);
 
+
+
   const rowDataFilter = errorName.length > 0 ? rowData.filter((row) => {
     for (const error of errorName) {
       if (row?.error) {
@@ -789,7 +790,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
                   {t('Verify')}
                 </Button>
               </Box>
-              <ExportButton handleSave={handleSave}/>
+              <ExportButton handleSave={handleSave} />
             </Box>
           </Box>
         </Box>
@@ -850,6 +851,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         <div style={{ margin: "2rem" }}>
           <div
             className="ag-theme-balham"
+            style={{ height: "45vh" }}
           >
             <style>{gridStyles}</style>
             <AgGridReact
@@ -861,10 +863,10 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
                 '<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
               }
               tooltipShowDelay={0}
-              tooltipHideDelay={2000}
+              tooltipHideDelay={5000}
               tooltipMouseTrack={true}
+              suppressFieldDotNotation={true}
               onCellValueChanged={onCellValueChanged}
-              domLayout="autoHeight"
               suppressRowHoverHighlight={true}
               onCellKeyDown={onCellKeyDown}
             />

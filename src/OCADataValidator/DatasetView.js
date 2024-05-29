@@ -52,7 +52,8 @@ const DatasetView = () => {
   return (
     <>
       <BackNextSkeleton isForward pageForward={() => {
-        setSchemaDataConformantRowData(schemaGridRef.current?.api.getRenderedNodes()?.map(node => {
+        const result = [];
+        schemaGridRef.current?.api.forEachNode(node => {
           const existingKeys = Object.keys(node?.data);
           const newData = { ...node?.data };
           schemaDataConformantHeader.forEach(header => {
@@ -60,8 +61,10 @@ const DatasetView = () => {
               newData[header] = '';
             }
           });
-          return newData;
-        }));
+          result.push(newData);
+        });
+
+        setSchemaDataConformantRowData(result);
         setCurrentDataValidatorPage('StartDataValidator');
       }} />
       <Box sx={{
@@ -71,15 +74,14 @@ const DatasetView = () => {
         justifyContent: 'center',
         flex: 1,
       }}>
-        <Typography variant="h5" sx={{ mb: 2, mt: 6, color: CustomPalette.PRIMARY, fontWeight: 500 }}>{t('Schema Data')}</Typography>
+        <Typography variant="h5" sx={{ mb: 2, color: CustomPalette.PRIMARY, fontWeight: 500 }}>{t('Schema Data')}</Typography>
         {schemaDataConformantHeader && schemaDataConformantHeader?.length > 0 ?
-          <div className="ag-theme-balham" style={{ width: schemaTableLength, maxWidth: '90%' }}>
+          <div className="ag-theme-balham" style={{ width: schemaTableLength, maxWidth: '90%', height: "45vh" }}>
             <style>{gridStyles}</style>
             <AgGridReact
               ref={schemaGridRef}
               rowData={schemaDataConformantRowData}
               columnDefs={schemaColumnDefs}
-              domLayout="autoHeight"
               defaultColDef={defaultColDef}
               suppressFieldDotNotation={true}
             />

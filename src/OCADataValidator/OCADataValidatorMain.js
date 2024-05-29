@@ -111,7 +111,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
       }}>
         <Box sx={{ height: '3rem' }} />
         <Box>
-          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Add schema')}</Typography>
+          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {t('Add schema')}</Typography>
           <Drop
             setFile={setJsonRawFile}
             setLoading={overallLoading}

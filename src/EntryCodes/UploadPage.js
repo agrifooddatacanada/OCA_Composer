@@ -67,6 +67,7 @@ const UploadPage = () => {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
+          paddingBottom: '3rem',
           flex: 1,
         }}>
           <Drop
@@ -109,13 +110,12 @@ const UploadPage = () => {
             </>
           )}
           {rawFile?.length > 0 && fileType === 'csvORxls' &&
-            <div className="ag-theme-balham" style={{ width: tableLength, maxWidth: '90%', marginTop: "30px" }}>
+            <div className="ag-theme-balham" style={{ width: tableLength, maxWidth: '90%', marginTop: "30px", height: "45vh" }}>
               <style>{gridStyles}</style>
               <AgGridReact
                 ref={gridRef}
                 rowData={tempEntryCodeRowData}
                 columnDefs={columnDefs}
-                domLayout="autoHeight"
                 defaultColDef={columnDefs}
                 suppressFieldDotNotation={true}
               />
