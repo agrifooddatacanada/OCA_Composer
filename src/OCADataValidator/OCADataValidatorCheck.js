@@ -6,7 +6,7 @@ import '../App.css';
 import { Context } from '../App';
 import ExcelJS from 'exceljs';
 import OCABundle from './validator';
-import OCADataSet from './utils/files';
+// import OCADataSet from './utils/files';
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Languages from "./Languages";
 import MultipleSelectPlaceholder from './MultiSelectErrors';
@@ -177,7 +177,7 @@ const flaggedHeader = (props, labelDescription, formatRuleRowData, characterEnco
 };
 
 const EntryCodeDropdownSelector = memo(
-  forwardRef((props, ref) => {
+  forwardRef((props, _ref) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const columnHeader = props.colDef.field;
     const listItemObjectDisplay = props.dataHeaders?.[columnHeader].reduce((acc, item) => {
@@ -361,114 +361,48 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     await bundle.loadedBundle(jsonParsedFile);
     const newData = gridRef.current?.api.getRenderedNodes()?.map(node => node?.data);
 
-    if (ogWorkbook !== null) {
-      const newWorkbook = await generateDataEntryExcel();
-      newWorkbook.xlsx.writeBuffer().then((buffer) => {
-        const file = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-        // const dataset = await OCADataSet.readExcel(e.target.result);
-        const prepareInput = {};
-        schemaDataConformantHeader.forEach((header) => {
-          for (const row of newData) {
-            if (header in row) {
-              prepareInput[header] = header in prepareInput ? [...prepareInput[header], row[header]] : [row[header]];
-            }
-          }
-        });
-
-          // const validate = bundle.validate(dataset);
-          const validate = bundle.validate(prepareInput);
-
-          setRowData((prev) => {
-            return prev.map((row, index) => {
-              const data = newData[index];
-              return {
-                ...data,
-                error: validate?.errCollection?.[index] || {},
-              };
-            });
-          });
-          setColumnDefs((prev) => {
-            const copy = [];
-
-            prev.forEach((header) => {
-              if (validate?.unmachedAttrs?.has(header.headerName)) {
-                copy.push({
-                  ...header,
-                  cellStyle: () => {
-                    return { backgroundColor: "#ededed" };
-                  }
-                });
-              } else {
-                copy.push({
-                  ...header,
-                  cellStyle
-                });
-              }
-            });
-
-            return copy;
-          });
-          setTimeout(() => {
-            gridRef.current.api.hideOverlay();
-          }, 800);
-        };
-        reader.readAsArrayBuffer(file);
-      });
-    } else {
-      const prepareInput = {};
-      schemaDataConformantHeader.forEach((header) => {
-        for (const row of newData) {
-          if (header in row) {
-            prepareInput[header] = header in prepareInput ? [...prepareInput[header], row[header]] : [row[header]];
-          }
+    const prepareInput = {};
+    schemaDataConformantHeader.forEach((header) => {
+      for (const row of newData) {
+        if (header in row) {
+          prepareInput[header] = header in prepareInput ? [...prepareInput[header], row[header]] : [row[header]];
         }
+      }
+    });
+
+    const validate = bundle.validate(prepareInput);
+
+    setRowData((prev) => {
+      return prev.map((_row, index) => {
+        const data = newData[index];
+        return {
+          ...data,
+          error: validate?.errCollection?.[index] || {},
+        };
       });
+    });
 
-      const validate = bundle.validate(prepareInput);
-      setRowData((prev) => {
-        return prev.map((row, index) => {
-          const data = newData[index];
-          return {
-            ...data,
-            error: validate?.errCollection?.[index] || {},
-          };
-        });
-      });
+    setColumnDefs((prev) => {
+      const copy = [];
 
-      setColumnDefs((prev) => {
-        const copy = [];
-
-        if (validate?.unmachedAttrs?.size > 0) {
-          prev.forEach((header) => {
-            if (validate?.unmachedAttrs?.has(header.headerName)) {
-              copy.push({
-                ...header,
-                cellStyle: () => {
-                  return { backgroundColor: "#ededed" };
-                }
-              });
-            } else {
-              copy.push({
-                ...header,
-                cellStyle
-              });
+      prev.forEach((header) => {
+        if (validate?.unmachedAttrs?.has(header.headerName)) {
+          copy.push({
+            ...header,
+            cellStyle: () => {
+              return { backgroundColor: "#ededed" };
             }
           });
         } else {
-          prev.forEach((header) => {
-            copy.push({
-              ...header,
-              cellStyle
-            });
+          copy.push({
+            ...header,
+            cellStyle
           });
         }
-        return copy;
       });
-    }
+
+      return copy;
+    });
   };
 
   const generateDataEntryExcel = async () => {

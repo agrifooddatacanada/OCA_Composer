@@ -11,7 +11,8 @@ function WorkbookError(message) {
 WorkbookError.prototype = Object.create(Error.prototype);
 WorkbookError.prototype.constructor = WorkbookError;
 
-export function generateDataEntry(acceptedFiles, setLoading) {
+export function generateDataEntry(acceptedFiles, setLoading, selectedLang) {
+
   try {
     setLoading(true);
 
@@ -28,7 +29,7 @@ export function generateDataEntry(acceptedFiles, setLoading) {
       };
 
       // Re-organize the json data:
-      const selectedLang = 'en';
+      // const selectedLang = 'en';
       const captureBaseOverlays = [];
       const labelOverlays = [];
       const informationOverlays = [];
