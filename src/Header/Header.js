@@ -214,17 +214,32 @@ export default function Header({ currentPage }) {
       rightItem={
         <>
           {(currentPage === 'Landing' || currentPage === "StartDataValidator") ? (
-            <img
-              src={logoWhite}
-              style={{
-                width: isMobile ? 'auto' : '250px',
-                height: isMobile ? '70px' : 'auto',
-                marginRight: isMobile ? 'unset' : '20px',
-                cursor: 'pointer'
-              }}
-              alt='Logo'
-              onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
-            />
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+
+            }}>
+              <div>
+                <select id="language-select" style={{ border: 'none', fontSize: '25px', color: "white", background: CustomPalette.PRIMARY, marginRight: "2.5rem" }} value={selectedLanguage} onChange={changeLanguage}>
+                  <option value="en">EN</option>
+                  {/* <option value="fr">FR</option> */}
+                </select>
+              </div>
+              <img
+                src={logoWhite}
+                style={{
+                  width: isMobile ? 'auto' : '250px',
+                  height: isMobile ? '70px' : 'auto',
+                  marginRight: isMobile ? 'unset' : '20px',
+                  cursor: 'pointer'
+                }}
+                alt='Logo'
+                onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
+              />
+            </Box>
+
           ) : (
             <>
               {!location.pathname.includes('_help') && helpLink !== '' && (
