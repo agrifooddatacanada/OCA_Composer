@@ -16,6 +16,8 @@ import Loading from "../components/Loading";
 import useExportLogicV2 from "./useExportLogicV2";
 import { formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from "../constants/constants";
 import { useTranslation } from "react-i18next";
+import i18next from "i18next";
+import { codesToLanguages } from "../constants/isoCodes";
 
 const currentEnv = process.env.REACT_APP_ENV;
 
@@ -35,8 +37,13 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
     setHistory,
     formatRuleRowData,
   } = useContext(Context);
-
-  const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
+  const languageIndex = languages.findIndex((item) => codesToLanguages?.[i18next.language] === item);
+  const filteredLanguages = [...languages];
+  if (languageIndex !== -1 && languageIndex !== 0) {
+    const removedLanguage = filteredLanguages.splice(languageIndex, 1);
+    filteredLanguages.unshift(removedLanguage[0]);
+  }
+  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
   const { handleExport, resetToDefaults, exportDisabled } = useExportLogic();
@@ -48,8 +55,8 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
 
   const displayLanguageArray = [];
 
-  for (let i = 0; i < languages.length; i += 7) {
-    const languageRow = languages.slice(i, i + 7).filter(Boolean);
+  for (let i = 0; i < filteredLanguages.length; i += 7) {
+    const languageRow = filteredLanguages.slice(i, i + 7).filter(Boolean);
     displayLanguageArray.push(languageRow);
   }
 
