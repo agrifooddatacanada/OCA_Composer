@@ -1,15 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  Button, Dialog, DialogActions, DialogContent,
-  DialogTitle, MenuItem, Select, FormControl, InputLabel, Box,
+  Button
 } from '@mui/material';
 import { generateDataEntry } from './generateDataEntry';
 import { generateDataEntryV2 } from './generateDataEntryV2';
 import { CustomPalette } from '../constants/customPalette';
 import { useTranslation } from 'react-i18next';
-
-// Todo: Function that gets the languages.
-const languages = ['eng', 'fr'];
 
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
   const { t } = useTranslation();

@@ -41,50 +41,74 @@ export function generateDataEntryV2(acceptedFiles, setLoading, selectedLang) {
       };
 
       // Re-organize the json data:
-      // const selectedLang = 'eng';
+      const defaultLanguage = 'eng';
       const captureBaseOverlays = [];
-      const labelOverlays = [];
+      let labelOverlays = [];
       const informationOverlays = [];
       const unitOverlays = [];
       const conformanceOverlays = [];
-      const entryOverlays = [];
+      let entryOverlays = [];
       const entryCodeOverlays = [];
       const otherOverlays = [];
 
+      // handle multiple languages:
+      function handleMultipleLanguages(overlayName, selectedLangauge, defaultLanguage, toUseOverlay) {
+        const allOverlays = originJsonData.filter(o => o.type && o.type.includes(overlayName));
+
+        if (allOverlays.length !== 0) {
+          let selectedOverlay = false;
+
+          if (selectedLangauge === defaultLanguage) {
+            const defaultLanguageOverlay = allOverlays.find(o => o.language === defaultLanguage);
+            if (defaultLanguageOverlay) {
+              toUseOverlay.push(defaultLanguageOverlay);
+              selectedOverlay = true;
+            }
+          } else {
+            const selectedLanguageOverlay = allOverlays.find(o => o.language === selectedLangauge);
+            if (selectedLanguageOverlay) {
+              toUseOverlay.push(selectedLanguageOverlay);
+              selectedOverlay = true;
+            }
+
+            if (!selectedOverlay) {
+              const defaultLanguageOverlay = allOverlays.find(o => o.language === defaultLanguage);
+              if (defaultLanguageOverlay) {
+                toUseOverlay.push(defaultLanguageOverlay);
+                selectedOverlay = true;
+              }
+            }
+          }
+        }
+        return toUseOverlay;
+      };
+
+      // labels:
+      labelOverlays = handleMultipleLanguages('/label/', selectedLang, defaultLanguage, labelOverlays);
+      entryOverlays = handleMultipleLanguages('/entry/', selectedLang, defaultLanguage, entryOverlays);
 
       for (let i = 0; i < originJsonData.length; i++) {
         const overlay = originJsonData[i];
-
         if (overlay.type && overlay.type.includes('/capture_base/')) {
           captureBaseOverlays.push(overlay);
-        } else if (overlay.type && overlay.type.includes('/label/')) {
-          if (overlay.language === selectedLang) {
-            labelOverlays.push(overlay);
-          } else {
-            continue;
-          };
         } else if (overlay.type && overlay.type.includes('/information/')) {
-          if (overlay.language === selectedLang) {
+          if (overlay.language === defaultLanguage) {
             informationOverlays.push(overlay);
           } else {
             continue;
-          };
+          }
         } else if (overlay.type && overlay.type.includes('/unit/')) {
           if (overlay.measurement_system === 'Metric') {
             unitOverlays.push(overlay);
           } else {
             continue;
-          };
+          }
         } else if (overlay.type && overlay.type.includes('/conformance/')) {
           conformanceOverlays.push(overlay);
-        } else if (overlay.type && overlay.type.includes('/entry/')) {
-          if (overlay.language === selectedLang) {
-            entryOverlays.push(overlay);
-          };
         } else if (overlay.type && overlay.type.includes('/entry_code/')) {
           entryCodeOverlays.push(overlay);
         } else {
-          if (overlay.type && !overlay.type.includes('/meta/')) {
+          if (overlay.type && !overlay.type.includes('/meta/') && !overlay.type.includes('/label/') && !overlay.type.includes('/entry/')) {
             otherOverlays.push(overlay);
           };
         };
@@ -184,7 +208,7 @@ export function generateDataEntryV2(acceptedFiles, setLoading, selectedLang) {
         schemaSAID = null;
 
       try {
-        const metaOverlay = originJsonData.find(o => o.type && o.type.includes('/meta/') && o.language === selectedLang);
+        const metaOverlay = originJsonData.find(o => o.type && o.type.includes('/meta/') && o.language === defaultLanguage);
         schemaName = metaOverlay.name;
         schemaDescription = metaOverlay.description;
         schemaLanguage = metaOverlay.language;
