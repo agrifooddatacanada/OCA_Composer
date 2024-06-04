@@ -1,6 +1,6 @@
 import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, MenuItem, Typography } from '@mui/material';
-import { gridStyles } from '../constants/styles';
+import { Box, Button, IconButton, MenuItem, Typography } from '@mui/material';
+import { greyCellStyle, gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
 import '../App.css';
 import { Context } from '../App';
@@ -18,6 +18,30 @@ import { DropdownMenuList } from '../components/DropdownMenuCell';
 import WarningPopup from './WarningPopup';
 import { useTranslation } from 'react-i18next';
 import { getCurrentData } from '../constants/utils';
+import { CustomPalette } from '../constants/customPalette';
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+
+export const TrashCanButton = memo(
+  forwardRef((props, ref) => {
+    const onClick = useCallback(() => {
+      props.delete();
+    }, [props]);
+
+    return (
+      <IconButton
+        sx={{
+          pr: 1,
+          color: CustomPalette.GREY_600,
+          transition: "all 0.2s ease-in-out",
+          display: props.node.data?.FormatText === "" ? "none" : "block",
+        }}
+        onClick={onClick}
+      >
+        <DeleteOutlineIcon />
+      </IconButton>
+    );
+  })
+);
 
 const convertToCSV = (data) => {
   const csv = data.map(row => {
@@ -688,7 +712,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     }
 
     if (variableToCheck && variableToCheck?.length > 0) {
-      variableToCheck.forEach((header) => {
+      variableToCheck.forEach((header, index) => {
         columns.push(
           {
             headerName: header,
@@ -701,6 +725,25 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         );
       });
     }
+
+    columns.push(
+      {
+        headerName: '',
+        field: 'Delete',
+        cellRendererFramework: TrashCanButton,
+        width: 30,
+        cellRendererParams: (params) => ({
+          delete: () => {
+            gridRef.current.api.applyTransaction({
+              remove: [params.node.data],
+            });
+            gridRef.current.api.redrawRows();
+          }
+        }),
+        pinned: 'right',
+        cellStyle: () => greyCellStyle,
+      }
+    );
 
     setColumnDefs(columns);
     setRowData(schemaDataConformantRowData);
@@ -902,3 +945,11 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 };
 
 export default OCADataValidatorCheck;
+
+
+// const removeRow = () => {
+//   gridRef.current.api.applyTransaction({
+//     remove: [gridRef.current.api.getDisplayedRowAtIndex(0).data, gridRef.current.api.getDisplayedRowAtIndex(1).data],
+//   });
+//   gridRef.current.api.redrawRows();
+// };
