@@ -389,7 +389,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
             const copy = [];
 
             prev.forEach((header) => {
-              if (validate?.unmachedAttrs?.has(header.headerName)) {
+              if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== '') {
                 copy.push({
                   ...header,
                   cellStyle: () => {
@@ -438,7 +438,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
         if (validate?.unmachedAttrs?.size > 0) {
           prev.forEach((header) => {
-            if (validate?.unmachedAttrs?.has(header.headerName)) {
+            if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== '') {
               copy.push({
                 ...header,
                 cellStyle: () => {
@@ -583,8 +583,9 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const cellStyle = (params) => {
     const error = params.data?.error?.[params.colDef.field];
-
-    if (params.data?.error && error?.length > 0) {
+    if (params.colDef.field === "Delete") {
+      return greyCellStyle;
+    } else if (params.data?.error && error?.length > 0) {
       return { backgroundColor: "#ffd7e9" };
     } else if (params.data?.error) {
       return { backgroundColor: "#d2f8d2" };
@@ -728,7 +729,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
     columns.push(
       {
-        headerName: '',
+        headerName: 'Del.',
         field: 'Delete',
         cellRendererFramework: TrashCanButton,
         width: 50,
