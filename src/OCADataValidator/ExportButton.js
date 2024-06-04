@@ -22,7 +22,6 @@ const ExportButton = ({ handleSave, inputDataType }) => {
 
     if (option === 'excel') {
       handleSave(true, 'excel');
-      setAnchorEl(null);
     } else if (option === 'csv') {
       setAdditionalOptionsAnchorEl(anchorEl);
     }
@@ -33,7 +32,6 @@ const ExportButton = ({ handleSave, inputDataType }) => {
 
     if (inputDataType === 'csv') {
       setAdditionalOptionsAnchorEl(event.currentTarget);
-      setAnchorEl(null);
     }
 
     setAnchorEl(event.currentTarget);
@@ -72,7 +70,7 @@ const ExportButton = ({ handleSave, inputDataType }) => {
           padding: "0.5rem 1rem",
         }}
       >
-        Export Data
+        Export Verified Data
       </Button>
       <Menu
         id="basic-menu"
