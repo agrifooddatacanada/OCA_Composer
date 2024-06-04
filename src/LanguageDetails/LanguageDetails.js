@@ -9,6 +9,8 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { useTranslation } from "react-i18next";
+import { codesToLanguages } from "../constants/isoCodes";
+import i18next from "i18next";
 
 export default function LanguageDetails({ pageBack, pageForward }) {
   const { t } = useTranslation();
@@ -19,8 +21,13 @@ export default function LanguageDetails({ pageBack, pageForward }) {
     attributesWithLists,
     setCurrentPage,
   } = useContext(Context);
-
-  const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
+  const languageIndex = languages.findIndex((item) => codesToLanguages?.[i18next.language] === item);
+  const filteredLanguages = [...languages];
+  if (languageIndex !== -1 && languageIndex !== 0) {
+    const removedLanguage = filteredLanguages.splice(languageIndex, 1);
+    filteredLanguages.unshift(removedLanguage[0]);
+  }
+  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
   const refContainer = useRef();
@@ -73,8 +80,8 @@ export default function LanguageDetails({ pageBack, pageForward }) {
 
   const displayLanguageArray = [];
 
-  for (let i = 0; i < languages.length; i += 6) {
-    const languageRow = languages.slice(i, i + 6).filter(Boolean);
+  for (let i = 0; i < filteredLanguages.length; i += 6) {
+    const languageRow = filteredLanguages.slice(i, i + 6).filter(Boolean);
     displayLanguageArray.push(languageRow);
   }
 
@@ -95,7 +102,7 @@ export default function LanguageDetails({ pageBack, pageForward }) {
       } else {
         isFirstButton = index === 0;
       }
-      const isLastButton = language === languages[languages.length - 1];
+      const isLastButton = language === filteredLanguages[languages.length - 1];
 
       let borderRadius = "";
 
