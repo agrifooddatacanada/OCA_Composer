@@ -945,11 +945,3 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 };
 
 export default OCADataValidatorCheck;
-
-
-// const removeRow = () => {
-//   gridRef.current.api.applyTransaction({
-//     remove: [gridRef.current.api.getDisplayedRowAtIndex(0).data, gridRef.current.api.getDisplayedRowAtIndex(1).data],
-//   });
-//   gridRef.current.api.redrawRows();
-// };
