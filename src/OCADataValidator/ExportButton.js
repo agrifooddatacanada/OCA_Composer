@@ -72,7 +72,7 @@ const ExportButton = ({ handleSave, inputDataType }) => {
           padding: "0.5rem 1rem",
         }}
       >
-        Export Data
+        Export Verified Data
       </Button>
       <Menu
         id="basic-menu"
