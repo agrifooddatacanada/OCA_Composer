@@ -731,7 +731,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         headerName: '',
         field: 'Delete',
         cellRendererFramework: TrashCanButton,
-        width: 30,
+        width: 50,
         cellRendererParams: (params) => ({
           delete: () => {
             gridRef.current.api.applyTransaction({
