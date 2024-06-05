@@ -6,7 +6,6 @@ import '../App.css';
 import { Context } from '../App';
 import ExcelJS from 'exceljs';
 import OCABundle from './validator';
-import OCADataSet from './utils/files';
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Languages from "./Languages";
 import MultipleSelectPlaceholder from './MultiSelectErrors';
@@ -16,10 +15,9 @@ import ExportButton from './ExportButton';
 import { errorCode, formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from '../constants/constants';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
 import WarningPopup from './WarningPopup';
-import { useTranslation } from 'react-i18next';
-import { getCurrentData } from '../constants/utils';
 import { CustomPalette } from '../constants/customPalette';
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { getCurrentData } from '../constants/utils';
 
 export const TrashCanButton = memo(
   forwardRef((props, ref) => {
@@ -57,12 +55,7 @@ const convertToCSV = (data) => {
 
 const CustomTooltip = (props) => {
   const error = props.data?.error?.[props.colDef.field] || [];
-  const [dataLength, setDataLength] = useState(0);
-  useEffect(() => {
-    let tempDataLength = 0;
-    props.api.forEachNode((node) => { tempDataLength += 1; });
-    setDataLength(tempDataLength);
-  }, [props.api]);
+  const dataLength = props.api.getRenderedNodes().length;
 
   return (
     <>
@@ -208,7 +201,7 @@ const flaggedHeader = (props, labelDescription, formatRuleRowData, characterEnco
 };
 
 const EntryCodeDropdownSelector = memo(
-  forwardRef((props, ref) => {
+  forwardRef((props, _ref) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const columnHeader = props.colDef.field;
     const listItemObjectDisplay = props.dataHeaders?.[columnHeader].reduce((acc, item) => {
@@ -270,7 +263,6 @@ const EntryCodeDropdownSelector = memo(
 );
 
 const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeDisplayWarning }) => {
-  const { t } = useTranslation();
   const {
     schemaDataConformantRowData,
     setSchemaDataConformantRowData,
@@ -302,6 +294,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   const gridRef = useRef();
   const validateBeforeOnChangeRef = useRef(false);
 
+  const datasetRawFileType = datasetRawFile[0]?.name.split('.').pop();
+
   const defaultColDef = useMemo(() => {
     return {
       editable: true,
@@ -320,23 +314,49 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     };
   }, [lanAttributeRowData, langRef.current]);
 
-  const handleSave = async (ogHeader = false) => {
-    if (ogWorkbook !== null) {
-      const workbook = await generateDataEntryExcel(ogHeader);
+  const handleSave = async (ogHeader = false, exportFormat) => {
+    if (ogWorkbook !== null && exportFormat === 'excel') {
+      await handleExelSave();
+    } else if (ogWorkbook !== null && exportFormat === 'csv') {
+      await handleCSVSave(ogHeader);
+    }
+    else {
+      await handleCSVSave(ogHeader);
+    }
+  };
+
+  const handleExelSave = async () => {
+    try {
+      const workbook = await generateDataEntryExcel();
       if (workbook !== null) {
         downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
+      } else {
+        throw new Error('Failed to generate Excel file');
       }
-    } else {
+    } catch (error) {
+      console.error('Error while generating Excel file', error);
+    }
+  };
+
+  const handleCSVSave = async (ogHeader) => {
+    try {
       const newCSV = await generateCSVFile(ogHeader);
       if (newCSV !== null) {
         downloadCSVFile(newCSV, 'DataEntryCSV.csv');
+      } else {
+        throw new Error('Failed to generate CSV file');
       }
+    } catch (error) {
+      console.error('Error while generating CSV file', error);
     }
   };
 
   const generateCSVFile = async (ogHeader) => {
-    const newData = getCurrentData(gridRef.current.api, false);
-
+    const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
+      const newObject = { ...node?.data };
+      delete newObject['error'];
+      return newObject;
+    });
     const newHeader = [];
 
     const mappingFromAttrToDataset = {};
@@ -365,138 +385,82 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     await bundle.loadedBundle(jsonParsedFile);
     const newData = getCurrentData(gridRef.current.api, true);
 
-    if (ogWorkbook !== null) {
-      const newWorkbook = await generateDataEntryExcel();
-      newWorkbook.xlsx.writeBuffer().then((buffer) => {
-        const file = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const dataset = await OCADataSet.readExcel(e.target.result);
-          const validate = bundle.validate(dataset);
-
-          setRowData((prev) => {
-            return prev.map((row, index) => {
-              const data = newData[index];
-              return {
-                ...data,
-                error: validate?.errCollection?.[index] || {},
-              };
-            });
-          });
-          setColumnDefs((prev) => {
-            const copy = [];
-
-            prev.forEach((header) => {
-              if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== '') {
-                copy.push({
-                  ...header,
-                  cellStyle: () => {
-                    return { backgroundColor: "#ededed" };
-                  }
-                });
-              } else {
-                copy.push({
-                  ...header,
-                  cellStyle
-                });
-              }
-            });
-
-            return copy;
-          });
-          setTimeout(() => {
-            gridRef.current.api.hideOverlay();
-          }, 800);
-        };
-        reader.readAsArrayBuffer(file);
-      });
-    } else {
-      const prepareInput = {};
-      schemaDataConformantHeader.forEach((header) => {
-        for (const row of newData) {
-          if (header in row) {
-            prepareInput[header] = header in prepareInput ? [...prepareInput[header], row[header]] : [row[header]];
-          }
+    const prepareInput = {};
+    schemaDataConformantHeader.forEach((header) => {
+      for (const row of newData) {
+        if (header in row) {
+          prepareInput[header] = header in prepareInput ? [...prepareInput[header], row[header]] : [row[header]];
         }
+      }
+    });
+
+    const validate = bundle.validate(prepareInput);
+
+    setRowData((prev) => {
+      return prev.map((_row, index) => {
+        const data = newData[index];
+        return {
+          ...data,
+          error: validate?.errCollection?.[index] || {},
+        };
       });
+    });
 
-      const validate = bundle.validate(prepareInput);
-      setRowData((prev) => {
-        return prev.map((row, index) => {
-          const data = newData[index];
-          return {
-            ...data,
-            error: validate?.errCollection?.[index] || {},
-          };
-        });
-      });
+    setColumnDefs((prev) => {
+      const copy = [];
 
-      setColumnDefs((prev) => {
-        const copy = [];
-
-        if (validate?.unmachedAttrs?.size > 0) {
-          prev.forEach((header) => {
-            if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== '') {
-              copy.push({
-                ...header,
-                cellStyle: () => {
-                  return { backgroundColor: "#ededed" };
-                }
-              });
-            } else {
-              copy.push({
-                ...header,
-                cellStyle
-              });
+      prev.forEach((header) => {
+        if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== '') {
+          copy.push({
+            ...header,
+            cellStyle: () => {
+              return { backgroundColor: "#ededed" };
             }
           });
         } else {
-          prev.forEach((header) => {
-            copy.push({
-              ...header,
-              cellStyle
-            });
+          copy.push({
+            ...header,
+            cellStyle
           });
         }
-        return copy;
       });
-    }
+
+      return copy;
+    });
   };
 
-  const generateDataEntryExcel = async (ogHeader = false) => {
+  const generateDataEntryExcel = async () => {
     try {
       const newWorkbook = await copySheetsFromDEE(ogWorkbook);
-      let schemaConformantDataNameWorksheet;
+      let schemaConformantDataSheet;
 
       if (newWorkbook.worksheets.length < 2) {
-        schemaConformantDataNameWorksheet = newWorkbook.addWorksheet("Data Entry");
+        schemaConformantDataSheet = newWorkbook.addWorksheet("Data Entry");
       } else {
-        schemaConformantDataNameWorksheet = newWorkbook.addWorksheet("Schema Conformant Data");
+        schemaConformantDataSheet = newWorkbook.addWorksheet("Schema Conformant Data");
       }
 
-      makeHeaderRow(schemaDataConformantHeader, schemaConformantDataNameWorksheet, 20);
-      const newData = getCurrentData(gridRef.current.api, true);
+      const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+
+      const schemaConformantDataHeaders = [];
+      for (const node of matchingRowData) {
+        schemaConformantDataHeaders.push(node['Dataset']);
+      }
+
+      schemaConformantDataHeaders.forEach((header, index) => {
+        schemaConformantDataSheet.getCell(1, index + 1).value = header;
+      });
 
       newData.forEach((row, index) => {
-        schemaDataConformantHeader.forEach((header, headerIndex) => {
-          schemaConformantDataNameWorksheet.getCell(index + 2, headerIndex + 1).value = row[header] === '' || isNaN(row[header]) ? row[header] : Number(row[header]);
+        schemaConformantDataHeaders.forEach((header, headerIndex) => {
+          schemaConformantDataSheet.getCell(index + 2, headerIndex + 1).value = row[header] === '' || isNaN(row[header]) ? row[header] : Number(row[header]);
         });
       });
 
-      if (ogHeader) {
-        const mappingFromAttrToDataset = {};
-        for (const node of matchingRowData) {
-          mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
-        }
-        const newHeader = schemaDataConformantHeader.map((header) => mappingFromAttrToDataset[header] || header);
-        makeHeaderRow(newHeader, schemaConformantDataNameWorksheet, 20);
-      }
+      makeHeaderRow(schemaConformantDataHeaders, schemaConformantDataSheet, 40);
 
       return newWorkbook;
     } catch (error) {
-      console.log('error', error);
       return null;
     }
   };
@@ -606,7 +570,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       newRow[header] = "";
     });
 
-    const currentData = getCurrentData(gridRef.current.api, true);
+    const currentData = gridRef.current.api.getRenderedNodes().map((node) => node.data);
+
     setRowData((prev) => [...currentData, newRow]);
   };
 
@@ -637,7 +602,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   };
 
   const handleMoveBack = () => {
-    const currentData = getCurrentData(gridRef.current.api, true);
+    const currentData = gridRef.current.api.getRenderedNodes()?.map((node) => node.data);
 
     if (datasetRawFile.length > 0) {
       const mappingFromAttrToDataset = {};
@@ -713,7 +678,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     }
 
     if (variableToCheck && variableToCheck?.length > 0) {
-      variableToCheck.forEach((header, index) => {
+      variableToCheck.forEach((header) => {
         columns.push(
           {
             headerName: header,
@@ -758,8 +723,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     }
   }, [rowData]);
 
-
-
   const rowDataFilter = errorName.length > 0 ? rowData.filter((row) => {
     for (const error of errorName) {
       if (row?.error) {
@@ -803,7 +766,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
               sx={{ textAlign: "left", alignSelf: "flex-start" }}
               onClick={handleMoveBack}
             >
-              <ArrowBackIosIcon /> {t('Back')}
+              <ArrowBackIosIcon /> Back
             </Button>
             <Box sx={{
               display: 'flex',
@@ -831,10 +794,10 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
                   onClick={handleValidate}
                   disabled={isValidateButtonEnabled}
                 >
-                  {t('Verify')}
+                  Verify
                 </Button>
               </Box>
-              <ExportButton handleSave={handleSave} />
+              <ExportButton handleSave={handleSave} inputDataType={datasetRawFileType} />
             </Box>
           </Box>
         </Box>
@@ -867,7 +830,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
               }}
             >
               <Languages type={langRef.current} handleChange={handleChange} handleClick={() => { }} isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} languages={languages} />
-              <MultipleSelectPlaceholder errorName={errorName} setErrorNameList={setErrorNameList} disabled={!firstValidate} />
+              <MultipleSelectPlaceholder errorName={errorName} setErrorNameList={setErrorNameList} disabled={!firstValidate} placeHolder="Select Errors" />
             </Box>
           </Box>
 
@@ -879,15 +842,15 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
               <div style={{ width: '20px', height: '20px', backgroundColor: "#d2f8d2", marginRight: '15px' }}></div>
-              <span>{t('Pass Verification')}</span>
+              <span>Pass Verification</span>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
               <div style={{ width: '20px', height: '20px', backgroundColor: "#ffd7e9", marginRight: '15px' }}></div>
-              <span>{t('Fail Verification')}</span>
+              <span>Fail Verification</span>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
               <div style={{ width: '20px', height: '20px', backgroundColor: "#ededed", marginRight: '15px' }}></div>
-              <span>{t('Unmatched Attributes')}</span>
+              <span>Unmatched Attributes</span>
             </Box>
           </Box>
         </Box>
@@ -895,7 +858,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         <div style={{ margin: "2rem" }}>
           <div
             className="ag-theme-balham"
-            style={{ height: "45vh" }}
           >
             <style>{gridStyles}</style>
             <AgGridReact
@@ -907,10 +869,10 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
                 '<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
               }
               tooltipShowDelay={0}
-              tooltipHideDelay={5000}
+              tooltipHideDelay={2000}
               tooltipMouseTrack={true}
-              suppressFieldDotNotation={true}
               onCellValueChanged={onCellValueChanged}
+              domLayout="autoHeight"
               suppressRowHoverHighlight={true}
               onCellKeyDown={onCellKeyDown}
             />
@@ -927,13 +889,13 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
               variant="contained"
               sx={{
                 alignSelf: "flex-end",
-                width: "13rem",
+                width: "9rem",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-around",
               }}
             >
-              {t('Add row')} <AddCircleIcon />
+              Add row <AddCircleIcon />
             </Button>
           </Box>
 
