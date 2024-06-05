@@ -396,9 +396,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
     const validate = bundle.validate(prepareInput);
 
-    setRowData((prev) => {
-      return prev.map((_row, index) => {
-        const data = newData[index];
+    setRowData(() => {
+      return newData.map((data, index) => {
         return {
           ...data,
           error: validate?.errCollection?.[index] || {},
@@ -703,6 +702,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
             gridRef.current.api.applyTransaction({
               remove: [params.node.data],
             });
+            console.log('index', params.node.data);
             gridRef.current.api.redrawRows();
           }
         }),
