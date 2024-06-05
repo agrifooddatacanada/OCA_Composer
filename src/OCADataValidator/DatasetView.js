@@ -1,12 +1,34 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import BackNextSkeleton from '../components/BackNextSkeleton';
-import { Box, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { Context } from '../App';
 import { AgGridReact } from 'ag-grid-react';
-import { gridStyles } from '../constants/styles';
+import { greyCellStyle, gridStyles } from '../constants/styles';
 import { CustomPalette } from '../constants/customPalette';
 import { useTranslation } from 'react-i18next';
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
+export const TrashCanButton = memo(
+  forwardRef((props, ref) => {
+    const onClick = useCallback(() => {
+      props.delete();
+    }, [props]);
+
+    return (
+      <IconButton
+        sx={{
+          pr: 1,
+          color: CustomPalette.GREY_600,
+          transition: "all 0.2s ease-in-out",
+          display: props.node.data?.FormatText === "" ? "none" : "block",
+        }}
+        onClick={onClick}
+      >
+        <DeleteOutlineIcon />
+      </IconButton>
+    );
+  })
+);
 
 const DatasetView = () => {
   const { t } = useTranslation();
@@ -44,6 +66,25 @@ const DatasetView = () => {
         newSchemaTableLength += 100;
       });
     }
+
+    schemaTitles.push(
+      {
+        headerName: '',
+        field: 'Delete',
+        cellRendererFramework: TrashCanButton,
+        width: 50,
+        cellRendererParams: (params) => ({
+          delete: () => {
+            schemaGridRef.current.api.applyTransaction({
+              remove: [params.node.data],
+            });
+            schemaGridRef.current.api.redrawRows();
+          }
+        }),
+        pinned: 'right',
+        cellStyle: () => greyCellStyle,
+      }
+    );
 
     setSchemaTableLength(newSchemaTableLength);
     setSchemaColumnDefs(schemaTitles);

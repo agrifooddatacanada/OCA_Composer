@@ -1,12 +1,11 @@
 import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, MenuItem, Typography } from '@mui/material';
-import { gridStyles } from '../constants/styles';
+import { Box, Button, IconButton, MenuItem, Typography } from '@mui/material';
+import { greyCellStyle, gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
 import '../App.css';
 import { Context } from '../App';
 import ExcelJS from 'exceljs';
 import OCABundle from './validator';
-// import OCADataSet from './utils/files';
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Languages from "./Languages";
 import MultipleSelectPlaceholder from './MultiSelectErrors';
@@ -16,6 +15,31 @@ import ExportButton from './ExportButton';
 import { errorCode, formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from '../constants/constants';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
 import WarningPopup from './WarningPopup';
+import { CustomPalette } from '../constants/customPalette';
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { getCurrentData } from '../constants/utils';
+
+export const TrashCanButton = memo(
+  forwardRef((props, ref) => {
+    const onClick = useCallback(() => {
+      props.delete();
+    }, [props]);
+
+    return (
+      <IconButton
+        sx={{
+          pr: 1,
+          color: CustomPalette.GREY_600,
+          transition: "all 0.2s ease-in-out",
+          display: props.node.data?.FormatText === "" ? "none" : "block",
+        }}
+        onClick={onClick}
+      >
+        <DeleteOutlineIcon />
+      </IconButton>
+    );
+  })
+);
 
 const convertToCSV = (data) => {
   const csv = data.map(row => {
@@ -359,7 +383,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     setFirstValidate(true);
     const bundle = new OCABundle();
     await bundle.loadedBundle(jsonParsedFile);
-    const newData = gridRef.current?.api.getRenderedNodes()?.map(node => node?.data);
+    const newData = getCurrentData(gridRef.current.api, true);
 
     const prepareInput = {};
     schemaDataConformantHeader.forEach((header) => {
@@ -372,9 +396,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
     const validate = bundle.validate(prepareInput);
 
-    setRowData((prev) => {
-      return prev.map((_row, index) => {
-        const data = newData[index];
+    setRowData(() => {
+      return newData.map((data, index) => {
         return {
           ...data,
           error: validate?.errCollection?.[index] || {},
@@ -386,7 +409,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       const copy = [];
 
       prev.forEach((header) => {
-        if (validate?.unmachedAttrs?.has(header.headerName)) {
+        if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== '') {
           copy.push({
             ...header,
             cellStyle: () => {
@@ -498,7 +521,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     const newWorkbook = new ExcelJS.Workbook();
     const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
 
-    const worksheet = workbook?.Sheets?.[firstSheetName]
+    const worksheet = workbook?.Sheets?.[firstSheetName];
 
 
     Object.keys(worksheet).forEach((cell) => {
@@ -512,7 +535,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     }
 
     const newDataEntryWorksheet = newWorkbook.addWorksheet(secondSheetName);
-    const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName]
+    const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName];
     Object.keys(dataEntryWorksheet).forEach((cell) => {
       if (!dataEntryWorksheet[cell]?.v || cell === '!ref') return;
       newDataEntryWorksheet.getCell(cell).value = dataEntryWorksheet[cell]?.v;
@@ -523,8 +546,9 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const cellStyle = (params) => {
     const error = params.data?.error?.[params.colDef.field];
-
-    if (params.data?.error && error?.length > 0) {
+    if (params.colDef.field === "Delete") {
+      return greyCellStyle;
+    } else if (params.data?.error && error?.length > 0) {
       return { backgroundColor: "#ffd7e9" };
     } else if (params.data?.error) {
       return { backgroundColor: "#d2f8d2" };
@@ -666,6 +690,26 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         );
       });
     }
+
+    columns.push(
+      {
+        headerName: 'Del.',
+        field: 'Delete',
+        cellRendererFramework: TrashCanButton,
+        width: 50,
+        cellRendererParams: (params) => ({
+          delete: () => {
+            gridRef.current.api.applyTransaction({
+              remove: [params.node.data],
+            });
+            console.log('index', params.node.data);
+            gridRef.current.api.redrawRows();
+          }
+        }),
+        pinned: 'right',
+        cellStyle: () => greyCellStyle,
+      }
+    );
 
     setColumnDefs(columns);
     setRowData(schemaDataConformantRowData);
