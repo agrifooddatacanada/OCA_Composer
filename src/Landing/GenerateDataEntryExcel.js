@@ -9,8 +9,9 @@ import { CustomPalette } from '../constants/customPalette';
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
-  // Todo: Function that gets the languages the raw file.
-  // Todo: Adjust the dialog to small screen sizes.
+  const appearAnimation =
+    "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
+  // Todo: Implement this function after direction from Carly.
   const languages = ['eng', 'fra'];
 
   const [open, setOpen] = useState(false);
@@ -55,12 +56,17 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
         Generate Data Entry Excel
       </Button>
       <Dialog open={open} onClose={() => handleClose(false)}
+        slotProps={{ backdrop: { sx: { backdropFilter: "blur(5px)", }, },}}
         sx={{
           '& .MuiDialog-paper': {
-            width: '50%',
-            maxWidth: '40%',
-            height: '30%',
-            maxHeight: '50%',
+            position: 'absolute',
+            boxShadow: 20,
+            borderRadius: "0.5rem",
+            backgroundColor: CustomPalette.WHITE,
+            border: "1px solid",
+            borderColor: CustomPalette.RED_100,
+            animation: appearAnimation,
+            left: '50%',
           }
       }}
       >
@@ -88,22 +94,21 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
                 fontSize: 35,
               }}
             />
-            <Typography variant="h5" sx={{ p: 1 }}>
-              Select a language
-            </Typography>
           </Box>
+            <Typography variant="h5" sx={{ p: 3 }}>
+            Select a language
+            </Typography>
         </DialogTitle>
         <DialogContent
           sx={{
             display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center'
+            alignItems: 'center', justifyContent: 'center',
+            fontSize: 20,
           }}
         >
-          <Box sx={{ fontSize: 20, justifyContent: 'center' }}>
-            Labels and Entry overlays will be in the language selected.
-          </Box>
+          <strong>Labels and Entry overlays will be in the language selected.</strong>
           <Box
-            sx={{ marginTop: 2 }}
+            sx={{ marginTop: 3 }}
           >
             <FormControl
               sx={{
@@ -149,7 +154,6 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
           <Button onClick={() => handleClose(false)} sx={{ color: CustomPalette.PRIMARY}} >Cancel</Button>
           <Button onClick={() => handleClose(true)} sx={{ color: CustomPalette.PRIMARY}} >Confirm</Button>
         </DialogActions>
-
       </Dialog>
     </>
   );

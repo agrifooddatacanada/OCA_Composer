@@ -14,9 +14,9 @@ import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
-import OCADataValidatorItem from './OCADataValidatorItem';
+// import OCADataValidatorItem from './OCADataValidatorItem';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
-import useExportLogicV2 from '../ViewSchema/useExportLogicV2';
+// import useExportLogicV2 from '../ViewSchema/useExportLogicV2';
 import GenerateDataEntryExcel from './GenerateDataEntryExcel';
 
 const AccordionList = () => {
