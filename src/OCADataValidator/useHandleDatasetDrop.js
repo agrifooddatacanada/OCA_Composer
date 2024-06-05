@@ -164,7 +164,7 @@ export const useHandleDatasetDrop = () => {
     } else {
       schemaConformantDataName = "Data Entry";
     }
-    
+
     const worksheet = workbook.Sheets[schemaConformantDataName];
 
     if (!worksheet) {

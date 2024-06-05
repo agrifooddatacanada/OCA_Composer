@@ -307,7 +307,6 @@ export default class OCABundle {
       const attrChe = this.getCharacterEncoding(attr);
       for (let i = 0; i < dataset[attr]?.length; i++) {
         const dataEntry = dataset[attr][i];
-        // console.log('initial', dataEntry);
         if (!matchCharacterEncoding(dataEntry, attrChe)) {
           rslt.errs[attr][i] = { type: 'CHE', detail: CHE_ERR_MSG };
         }
@@ -353,9 +352,6 @@ export default class OCABundle {
     rslt.formatErr.errs = this.validateFormat(dataset);
     rslt.entryCodeErr.errs = this.validateEntryCodes(dataset);
     rslt.characterEcodeErr.errs = this.validateCharacterEncoding(dataset);
-
-    console.log('rslt', rslt);
-
     return rslt.updateErr();
   }
 };

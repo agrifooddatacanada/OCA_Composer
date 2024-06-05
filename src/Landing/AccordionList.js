@@ -14,9 +14,10 @@ import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
-import { generateDataEntryV2 } from './generateDataEntryV2';
-import { generateDataEntry } from './generateDataEntry';
+import OCADataValidatorItem from './OCADataValidatorItem';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
+import useExportLogicV2 from '../ViewSchema/useExportLogicV2';
+import GenerateDataEntryExcel from './GenerateDataEntryExcel';
 import { useTranslation } from 'react-i18next';
 
 const AccordionList = () => {
@@ -223,28 +224,7 @@ const AccordionList = () => {
             >
               {t('Generate Readme')}
             </Button>
-            <Button
-              variant='contained'
-              color='navButton'
-              onClick={() => {
-                if (rawFile?.[0]?.type?.includes('zip')) {
-                  generateDataEntry(rawFile, setLoading);
-                } else if (rawFile?.[0]?.type?.includes('json')) {
-                  generateDataEntryV2(rawFile, setLoading);
-                }
-              }}
-              sx={{
-                backgroundColor: CustomPalette.PRIMARY,
-                ':hover': { backgroundColor: CustomPalette.SECONDARY },
-                width: '100%',
-                maxWidth: '300px',
-                marginTop: '30px',
-                marginBottom: '20px',
-              }}
-              disabled={disableButtonCheck}
-            >
-              {t('Generate Data Entry Excel')}
-            </Button>
+            <GenerateDataEntryExcel rawFile={rawFile} setLoading={setLoading} disableButtonCheck={disableButtonCheck}/>
           </Box>
         </Box>
       </Box>

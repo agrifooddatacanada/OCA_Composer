@@ -1,5 +1,7 @@
-import { Button } from '@mui/material';
 import React from 'react';
+import {
+  Button
+} from '@mui/material';
 import { generateDataEntry } from './generateDataEntry';
 import { generateDataEntryV2 } from './generateDataEntryV2';
 import { CustomPalette } from '../constants/customPalette';
