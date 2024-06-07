@@ -702,7 +702,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
             gridRef.current.api.applyTransaction({
               remove: [params.node.data],
             });
-            console.log('index', params.node.data);
             gridRef.current.api.redrawRows();
           }
         }),

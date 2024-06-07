@@ -7,6 +7,8 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { CustomPalette } from "../constants/customPalette";
 import placeholderExample from '../assets/placeholder.png';
 import { useTranslation } from "react-i18next";
+import ExcelSheetSelection from "../components/ExcelSheetSelection";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const isMobile = useMediaQuery('(max-width: 936px)');
@@ -31,7 +33,12 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
     datasetDropDisabled,
     datasetDropMessage,
     setDatasetDropMessage,
-    handleClearDataset
+    handleClearDataset,
+    excelSheetNames,
+    excelSheetChoice,
+    setExcelSheetChoice,
+    handleDataSheetForwards,
+    firstNavigationToDataset
   } = useHandleDatasetDrop();
 
   return (
@@ -163,18 +170,44 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
         </Box> */}
         <Box sx={{ height: '4rem' }} />
         <Box>
-          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Optional: Add Data')}</Typography>
-          <Drop
-            setFile={setDatasetRawFile}
-            setLoading={datasetLoadingState}
-            loading={datasetLoading}
-            dropDisabled={datasetDropDisabled}
-            dropMessage={datasetDropMessage}
-            setDropMessage={setDatasetDropMessage}
-            description={datasetUploadDescription}
-            tipDescription={datasetUploadTooltip}
-            version={2}
-          />
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}>
+            <Typography variant="h6" sx={{ textAlign: 'start', color: "black" }}>{t('Optional: Add Data')}</Typography>
+            {!firstNavigationToDataset && excelSheetChoice !== -1 &&
+              <Button color="button" onClick={handleDataSheetForwards}>
+                {t('Next')}
+                <ArrowForwardIosIcon />
+              </Button>}
+          </Box>
+          {excelSheetNames.length > 0 ? (
+            <Box sx={{
+              marginTop: '1rem',
+              width: '575px',
+            }}>
+              <ExcelSheetSelection chosenValue={excelSheetChoice} choices={excelSheetNames} setChoice={setExcelSheetChoice} />
+            </Box>
+          ) : (
+            <Box sx={{
+              marginTop: '-1rem',
+            }}>
+              <Drop
+                setFile={setDatasetRawFile}
+                setLoading={datasetLoadingState}
+                loading={datasetLoading}
+                dropDisabled={datasetDropDisabled}
+                dropMessage={datasetDropMessage}
+                setDropMessage={setDatasetDropMessage}
+                description={datasetUploadDescription}
+                tipDescription={datasetUploadTooltip}
+                version={2}
+              />
+            </Box>
+
+          )}
+
         </Box>
 
         <Box display="flex">
