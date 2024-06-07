@@ -110,7 +110,7 @@ function App() {
   const [chosenEntryCodeIndex, setChosenEntryCodeIndex] = useState(-1);
   const [tempEntryCodeSummary, setTempEntryCodeSummary] = useState(undefined);
   const [tempEntryList, setTempEntryList] = useState([]);
-
+  const [firstNavigationToDataset, setFirstNavigationToDataset] = useState(false);
   const [excelSheetChoice, setExcelSheetChoice] = useState(-1);
 
   const pageForward = () => {
@@ -414,6 +414,8 @@ function App() {
             setTempEntryList,
             excelSheetChoice,
             setExcelSheetChoice,
+            firstNavigationToDataset,
+            setFirstNavigationToDataset,
           }}
         >
           <Box

@@ -25,12 +25,13 @@ export const useHandleDatasetDrop = () => {
     setOgWorkbook,
     firstTimeMatchingRef,
     excelSheetChoice,
-    setExcelSheetChoice
+    setExcelSheetChoice,
+    firstNavigationToDataset,
+    setFirstNavigationToDataset
   } = useContext(Context);
 
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
   const [excelSheetNames, setExcelSheetNames] = useState([]);
-  const [firstNavigationToDataset, setFirstNavigationToDataset] = useState(false);
 
   const datasetLoadingState = () => {
     setDatasetLoading(true);
@@ -220,9 +221,9 @@ export const useHandleDatasetDrop = () => {
   }, []);
 
   const handleDataSheetForwards = useCallback(() => {
+    setFirstNavigationToDataset(true);
     const index = excelSheetNames.indexOf(excelSheetChoice);
     processExcelFile(ogWorkbook, index);
-    setFirstNavigationToDataset(true);
     if (!datasetIsParsed) {
       setDatasetIsParsed(true);
       setCurrentDataValidatorPage("DatasetViewDataValidator");
