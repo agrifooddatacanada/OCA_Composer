@@ -264,6 +264,7 @@ const EntryCodeDropdownSelector = memo(
 
 const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeDisplayWarning }) => {
   const {
+    excelSheetChoice,
     schemaDataConformantRowData,
     setSchemaDataConformantRowData,
     schemaDataConformantHeader,
@@ -327,7 +328,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const handleExelSave = async () => {
     try {
-      const workbook = await generateDataEntryExcel();
+      const workbook = await generateDataEntryExcel(ogWorkbook);
       if (workbook !== null) {
         downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
       } else {
@@ -428,18 +429,31 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     });
   };
 
-  const generateDataEntryExcel = async () => {
-    try {
-      const newWorkbook = await copySheetsFromDEE(ogWorkbook);
-      let schemaConformantDataSheet;
+  const generateDataEntryExcel = async (ogWorkbook) => {
 
-      if (newWorkbook.worksheets.length < 2) {
-        schemaConformantDataSheet = newWorkbook.addWorksheet("Data Entry");
-      } else {
-        schemaConformantDataSheet = newWorkbook.addWorksheet("Schema Conformant Data");
-      }
+    try {
+      const newWorkbook = new ExcelJS.Workbook();
+      const sheetsToCopy = Object.keys(ogWorkbook.Sheets)
+
+      sheetsToCopy.forEach(async (sheetName) => {
+        const sourceSheet = ogWorkbook.Sheets[sheetName];
+
+        if (sourceSheet) {
+          await copySheets(sourceSheet, newWorkbook, sheetName, excelSheetChoice);
+        } else {
+          console.error('Error while copying sheets from Data Entry Excel');
+        }
+      });
 
       const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+      // let schemaConformantDataSheet;
+
+      // for (const sheet in newWorkbook.worksheets) {
+      //   if (sheet.name === excelSheetChoice) {
+      //     schemaConformantDataSheet = ;
+      //   }
+      // }
+      const schemaConformantDataSheet = newWorkbook.getWorksheet(excelSheetChoice);
 
       const schemaConformantDataHeaders = [];
       for (const node of matchingRowData) {
@@ -462,7 +476,50 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     } catch (error) {
       return null;
     }
+
+      // const schemaConformantDataSheet = newWorkbook.
+
+      // const newWorkbook = await copySheetsFromDEE(ogWorkbook);
+      // let schemaConformantDataSheet;
+
+      // if (newWorkbook.worksheets.length < 2) {
+      //   schemaConformantDataSheet = newWorkbook.addWorksheet("Data Entry");
+      // } else {
+      //   schemaConformantDataSheet = newWorkbook.addWorksheet("Schema Conformant Data");
+      // }
+
+      // const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+
   };
+
+  const copySheets = async (sourceSheet, targetWorkbook, targetSheetName, selectedSheetName) => {
+    try {
+      if (selectedSheetName === undefined) {
+        throw new Error('No Excel sheet selected');
+      }
+      // Todo: copy cell style, column width, row height, and other properties.
+      if (selectedSheetName === targetSheetName) {
+        targetWorkbook.addWorksheet(targetSheetName);
+      } else {
+        const targetSheet = targetWorkbook.addWorksheet(targetSheetName);
+
+        Object.keys(sourceSheet).forEach((cell) => {
+          if (!sourceSheet[cell]?.v || cell === '!ref') return;
+          targetSheet.getCell(cell).value = sourceSheet[cell]?.v;
+      // newWorksheet.getCell(cell).value = worksheet[cell]?.v;
+    });
+        // sourceSheet.eachRow((row, rowNumber) => {
+        //   const targetRow = targetSheet.getRow(rowNumber);
+        //   row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        //     const targetCell = targetRow.getCell(colNumber);
+        //     targetCell.value = cell.value;
+        //   });
+        // });
+      }
+    } catch (error) {
+      console.error('Error while copying sheets from Data Entry Excel', error);
+    }
+  }
 
   const downloadExcelFile = (workbook, fileName) => {
     workbook.xlsx.writeBuffer().then((buffer) => {
@@ -513,36 +570,52 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     return allColumns;
   };
 
-  const copySheetsFromDEE = async (workbook) => {
-    const firstSheetName = "Schema Description";
-    const secondSheetName = "Data Entry";
-    const thirdSheetName = "Schema Conformant Data";
+  // const copySheetsFromDEE = async (workbook) => {
 
-    const newWorkbook = new ExcelJS.Workbook();
-    const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
+  //     const newWorkbook = new ExcelJS.Workbook();
 
-    const worksheet = workbook?.Sheets?.[firstSheetName];
+  //     // copy all sheets from the original workbook to the new workbook and the excelSheetChoice will be blank.
+
+  //   } catch (error) {
+  //     console.error('Error while copying sheets from Data Entry Excel', error);
+  //   }
+
+  //   // use the ogWorkbook to get the sheets order.
+  //   //use excelSheetChoice to make it empty so that it will be replace by the verified data.
+  //     // if (excelSheetChoice.length) {
+  //     //   console.log('excelSheetChoice', excelSheetChoice);
+  //     // }
 
 
-    Object.keys(worksheet).forEach((cell) => {
-      if (!worksheet[cell]?.v || cell === '!ref') return;
-      newWorksheet.getCell(cell).value = worksheet[cell]?.v;
-    });
+  //   const firstSheetName = "Schema Description";
+  //   const secondSheetName = "Data Entry";
+  //   const thirdSheetName = "Schema Conformant Data";
+
+  //   const newWorkbook = new ExcelJS.Workbook();
+  //   const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
+
+  //   const worksheet = workbook?.Sheets?.[firstSheetName];
 
 
-    if (!workbook?.Sheets?.[thirdSheetName]) {
-      return newWorkbook;
-    }
+  //   Object.keys(worksheet).forEach((cell) => {
+  //     if (!worksheet[cell]?.v || cell === '!ref') return;
+  //     newWorksheet.getCell(cell).value = worksheet[cell]?.v;
+  //   });
 
-    const newDataEntryWorksheet = newWorkbook.addWorksheet(secondSheetName);
-    const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName];
-    Object.keys(dataEntryWorksheet).forEach((cell) => {
-      if (!dataEntryWorksheet[cell]?.v || cell === '!ref') return;
-      newDataEntryWorksheet.getCell(cell).value = dataEntryWorksheet[cell]?.v;
-    });
 
-    return newWorkbook;
-  };
+  //   if (!workbook?.Sheets?.[thirdSheetName]) {
+  //     return newWorkbook;
+  //   }
+
+  //   const newDataEntryWorksheet = newWorkbook.addWorksheet(secondSheetName);
+  //   const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName];
+  //   Object.keys(dataEntryWorksheet).forEach((cell) => {
+  //     if (!dataEntryWorksheet[cell]?.v || cell === '!ref') return;
+  //     newDataEntryWorksheet.getCell(cell).value = dataEntryWorksheet[cell]?.v;
+  //   });
+
+  //   return newWorkbook;
+  // };
 
   const cellStyle = (params) => {
     const error = params.data?.error?.[params.colDef.field];
