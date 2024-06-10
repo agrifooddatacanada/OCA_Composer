@@ -33,7 +33,6 @@ const ExportButton = ({ handleSave, inputDataType }) => {
     if (inputDataType === 'csv') {
       setAdditionalOptionsAnchorEl(event.currentTarget);
     }
-
     setAnchorEl(event.currentTarget);
   };
 

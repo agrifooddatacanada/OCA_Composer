@@ -332,7 +332,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       if (workbook !== null) {
         downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
       } else {
-        throw new Error('Failed to generate Excel file');
+        throw new Error('Error while generating Excel file');
       }
     } catch (error) {
       console.error('Error while generating Excel file', error);
@@ -345,7 +345,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       if (newCSV !== null) {
         downloadCSVFile(newCSV, 'DataEntryCSV.csv');
       } else {
-        throw new Error('Failed to generate CSV file');
+        throw new Error('Error while generating CSV file');
       }
     } catch (error) {
       console.error('Error while generating CSV file', error);
@@ -445,29 +445,19 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         }
       });
 
-      const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
-      // let schemaConformantDataSheet;
-
-      // for (const sheet in newWorkbook.worksheets) {
-      //   if (sheet.name === excelSheetChoice) {
-      //     schemaConformantDataSheet = ;
-      //   }
-      // }
-      const schemaConformantDataSheet = newWorkbook.getWorksheet(excelSheetChoice);
-
-      const schemaConformantDataHeaders = [];
-      for (const node of matchingRowData) {
-        schemaConformantDataHeaders.push(node['Dataset']);
-      }
-
-      schemaConformantDataHeaders.forEach((header, index) => {
-        schemaConformantDataSheet.getCell(1, index + 1).value = header;
+      const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
+        const newObject = { ...node?.data };
+        delete newObject['error'];
+        return newObject;
       });
 
-      newData.forEach((row, index) => {
-        schemaConformantDataHeaders.forEach((header, headerIndex) => {
-          schemaConformantDataSheet.getCell(index + 2, headerIndex + 1).value = row[header] === '' || isNaN(row[header]) ? row[header] : Number(row[header]);
-        });
+      const schemaConformantDataSheet = newWorkbook.getWorksheet(excelSheetChoice);
+      const schemaConformantDataHeaders = Array.from(new Set(newData.flatMap(Object.keys)));
+      schemaConformantDataSheet.addRow(schemaConformantDataHeaders);
+
+      newData.forEach(data => {
+          const row = schemaConformantDataHeaders.map(header => data[header] || '');
+          schemaConformantDataSheet.addRow(row);
       });
 
       makeHeaderRow(schemaConformantDataHeaders, schemaConformantDataSheet, 40);
@@ -476,20 +466,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     } catch (error) {
       return null;
     }
-
-      // const schemaConformantDataSheet = newWorkbook.
-
-      // const newWorkbook = await copySheetsFromDEE(ogWorkbook);
-      // let schemaConformantDataSheet;
-
-      // if (newWorkbook.worksheets.length < 2) {
-      //   schemaConformantDataSheet = newWorkbook.addWorksheet("Data Entry");
-      // } else {
-      //   schemaConformantDataSheet = newWorkbook.addWorksheet("Schema Conformant Data");
-      // }
-
-      // const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
-
   };
 
   const copySheets = async (sourceSheet, targetWorkbook, targetSheetName, selectedSheetName) => {
@@ -506,15 +482,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         Object.keys(sourceSheet).forEach((cell) => {
           if (!sourceSheet[cell]?.v || cell === '!ref') return;
           targetSheet.getCell(cell).value = sourceSheet[cell]?.v;
-      // newWorksheet.getCell(cell).value = worksheet[cell]?.v;
-    });
-        // sourceSheet.eachRow((row, rowNumber) => {
-        //   const targetRow = targetSheet.getRow(rowNumber);
-        //   row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-        //     const targetCell = targetRow.getCell(colNumber);
-        //     targetCell.value = cell.value;
-        //   });
-        // });
+        });
       }
     } catch (error) {
       console.error('Error while copying sheets from Data Entry Excel', error);
@@ -569,53 +537,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     });
     return allColumns;
   };
-
-  // const copySheetsFromDEE = async (workbook) => {
-
-  //     const newWorkbook = new ExcelJS.Workbook();
-
-  //     // copy all sheets from the original workbook to the new workbook and the excelSheetChoice will be blank.
-
-  //   } catch (error) {
-  //     console.error('Error while copying sheets from Data Entry Excel', error);
-  //   }
-
-  //   // use the ogWorkbook to get the sheets order.
-  //   //use excelSheetChoice to make it empty so that it will be replace by the verified data.
-  //     // if (excelSheetChoice.length) {
-  //     //   console.log('excelSheetChoice', excelSheetChoice);
-  //     // }
-
-
-  //   const firstSheetName = "Schema Description";
-  //   const secondSheetName = "Data Entry";
-  //   const thirdSheetName = "Schema Conformant Data";
-
-  //   const newWorkbook = new ExcelJS.Workbook();
-  //   const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
-
-  //   const worksheet = workbook?.Sheets?.[firstSheetName];
-
-
-  //   Object.keys(worksheet).forEach((cell) => {
-  //     if (!worksheet[cell]?.v || cell === '!ref') return;
-  //     newWorksheet.getCell(cell).value = worksheet[cell]?.v;
-  //   });
-
-
-  //   if (!workbook?.Sheets?.[thirdSheetName]) {
-  //     return newWorkbook;
-  //   }
-
-  //   const newDataEntryWorksheet = newWorkbook.addWorksheet(secondSheetName);
-  //   const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName];
-  //   Object.keys(dataEntryWorksheet).forEach((cell) => {
-  //     if (!dataEntryWorksheet[cell]?.v || cell === '!ref') return;
-  //     newDataEntryWorksheet.getCell(cell).value = dataEntryWorksheet[cell]?.v;
-  //   });
-
-  //   return newWorkbook;
-  // };
 
   const cellStyle = (params) => {
     const error = params.data?.error?.[params.colDef.field];
