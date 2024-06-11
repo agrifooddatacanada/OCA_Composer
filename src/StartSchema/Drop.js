@@ -48,6 +48,10 @@ export default function Drop({
         "application/zip": ['.zip'],
         "application/json": [".json"]
       };
+    } else if (version === 6) {
+      return {
+        "text/plain": [".txt"],
+      };
     }
   }, [version]);
 

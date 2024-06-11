@@ -25,6 +25,7 @@ import OCADataValidator from './OCADataValidator/OCADataValidator';
 import CardinalityHelp from './UsersHelp/Cardinality_Help';
 import LearnAboutSchemaRule from './OCADataValidator/LearnAboutSchemaRule';
 import LearnAboutDataVerification from './OCADataValidator/LearnAboutDataVerification';
+import OCAMerge from './OCAMerge/OCAMerge';
 
 export const Context = createContext();
 
@@ -63,6 +64,7 @@ function App() {
   const [attributesList, setAttributesList] = useState([]);
   const [currentPage, setCurrentPage] = useState('Landing');
   const [currentDataValidatorPage, setCurrentDataValidatorPage] = useState('StartDataValidator');
+  const [currentOCAMergePage, setCurrentOCAMergePage] = useState('StartOCAMerge');
   const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: '', description: '' },
@@ -112,6 +114,11 @@ function App() {
   const [tempEntryList, setTempEntryList] = useState([]);
 
   const [excelSheetChoice, setExcelSheetChoice] = useState(-1);
+
+  const [OCAFile1Raw, setOCAFile1Raw] = useState("");
+  const [OCAFile2Raw, setOCAFile2Raw] = useState("");
+  const [parsedOCAFile1, setParsedOCAFile1] = useState("");
+  const [parsedOCAFile2, setParsedOCAFile2] = useState("");
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -414,6 +421,15 @@ function App() {
             setTempEntryList,
             excelSheetChoice,
             setExcelSheetChoice,
+            setCurrentOCAMergePage,
+            OCAFile1Raw,
+            setOCAFile1Raw,
+            OCAFile2Raw,
+            setOCAFile2Raw,
+            parsedOCAFile1,
+            setParsedOCAFile1,
+            parsedOCAFile2,
+            setParsedOCAFile2,
           }}
         >
           <Box
@@ -494,6 +510,10 @@ function App() {
                 />
                 <Route path='/format_text_help' element={<FormatTextHelp />} />
                 <Route path='/cardinality_help' element={<CardinalityHelp />} />
+                <Route
+                  path='/oca-merge'
+                  element={<OCAMerge currentOCAMergePage={currentOCAMergePage} />}
+                />
                 <Route path='*' element={<Navigate to='/' />} />
               </Routes>
             </BrowserRouter>

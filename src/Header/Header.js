@@ -149,10 +149,10 @@ export default function Header({ currentPage }) {
   return (
     <HeaderWrapper
       isMobile={isMobile}
-      headerColor={(currentPage === 'Landing' || currentPage === "StartDataValidator") && CustomPalette.PRIMARY}
+      headerColor={(currentPage === 'Landing' || currentPage === "StartDataValidator" || currentPage === "StartOCAMerge") && CustomPalette.PRIMARY}
       leftItem={
         <>
-          {(currentPage === 'Landing' || currentPage === "StartDataValidator") ? (
+          {(currentPage === 'Landing' || currentPage === "StartDataValidator" || currentPage === "StartOCAMerge") ? (
             <Box sx={{ flex: 'column' }}>
               <Link to="/" style={{ textDecoration: 'none' }}>
                 <Typography
