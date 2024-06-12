@@ -275,6 +275,7 @@ export const displayValues = [
 
 export const defaultUploadedDescription = "Click here to select a spreadsheet or drag and drop one here";
 export const jsonUploadDescription = "Click here to select an OCA schema or drag and drop one here";
+export const textUploadDescription = "Click here to select an OCA File (.txt) or drag and drop one here";
 export const datasetUploadDescription = "Click here to select an Excel or CSV dataset or drag and drop one here";
 export const defaultTooltip = "To make it easier to create a schema you can drag and drop your existing dataset that...";
 export const jsonUploadTooltip = "To make it easier to upload a schema you can drag and drop your existing dataset that you are creating the schema for. This schema should be in JSON format";

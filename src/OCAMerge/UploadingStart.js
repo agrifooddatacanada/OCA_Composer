@@ -1,18 +1,16 @@
 import { Box, Button, Typography } from '@mui/material';
 import React from 'react';
-import { CustomPalette } from '../constants/customPalette';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { useTranslation } from 'react-i18next';
 import useHandleOCAFileUpload from './useHandleOCAFileUpload';
 import Drop from '../StartSchema/Drop';
-import { datasetUploadDescription, datasetUploadTooltip, jsonUploadDescription, jsonUploadTooltip } from '../constants/constants';
+import { datasetUploadTooltip, jsonUploadTooltip, textUploadDescription } from '../constants/constants';
 
 const UploadingStart = () => {
   const { t } = useTranslation();
 
   const {
     setCurrentOCAMergePage,
-
     setOCAFile1Raw,
     setOCAFile2Raw,
     OCAFile1Loading,
@@ -55,7 +53,7 @@ const UploadingStart = () => {
             dropDisabled={ocaFile1DropDisabled}
             dropMessage={ocaFile1DropMessage}
             setDropMessage={setOcaFile1DropMessage}
-            description={jsonUploadDescription}
+            description={textUploadDescription}
             tipDescription={jsonUploadTooltip}
             version={6}
           />
@@ -69,7 +67,7 @@ const UploadingStart = () => {
             sx={{ width: 190, mr: 2 }}
             disabled={OCAFile1Raw.length === 0}
           >
-            {t('Clear Schema File')}
+            {t('Clear OCA File')}
           </Button>
         </Box>
         <Box sx={{ height: '4rem' }} />
@@ -82,7 +80,7 @@ const UploadingStart = () => {
             dropDisabled={ocaFile2DropDisabled}
             dropMessage={ocaFile2DropMessage}
             setDropMessage={setOcaFile2DropMessage}
-            description={datasetUploadDescription}
+            description={textUploadDescription}
             tipDescription={datasetUploadTooltip}
             version={6}
           />
@@ -96,7 +94,7 @@ const UploadingStart = () => {
             sx={{ width: 190, mr: 2 }}
             disabled={OCAFile2Raw.length === 0}
           >
-            {t('Clear Dataset File')}
+            {t('Clear OCA File')}
           </Button>
         </Box>
 
