@@ -5,25 +5,14 @@ import { useState } from 'react';
 import { useEffect, createContext } from 'react';
 import Home from './Home';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import AddEntryCodesHelp from './UsersHelp/Add_Entry_Codes_Help';
 import Header from './Header/Header';
 import Footer from './Footer/Footer';
-import AttributeDetailsHelp from './UsersHelp/Attribute_Details_Help';
-import CreatingOCASchemaHelp from './UsersHelp/Creating_OCA_Schema_Help';
-import LanguageAttributeHelp from './UsersHelp/Language_Attribute_Help';
-import SchemaMetadataHelp from './UsersHelp/Schema_Metadata_Help';
 import StartSchemaHelp from './UsersHelp/Start_Schema_Help';
-import ViewSchemaHelp from './UsersHelp/View_Schema_Help';
-import OverlaysHelp from './UsersHelp/Overlays_Help';
 import { getListOfSelectedOverlays } from './constants/getListOfSelectedOverlays';
 import Landing from './Landing/Landing';
-import CharacterEncodingHelp from './UsersHelp/Character_encoding_help';
-import RequiredEntryHelp from './UsersHelp/Required_Entry_help';
 import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
 import ReactGA from 'react-ga';
-import FormatTextHelp from './UsersHelp/Format_Text_Help';
 import HelpStorage from './Landing/HelpStorage';
-import CardinalityHelp from './UsersHelp/Cardinality_Help';
 
 export const Context = createContext();
 
@@ -362,41 +351,9 @@ function App() {
                 />
                 <Route path='/help_storage' element={<HelpStorage />} />
                 <Route
-                  path='/add_entry_codes_help'
-                  element={<AddEntryCodesHelp />}
-                />
-                <Route
-                  path='/attribute_details_help'
-                  element={<AttributeDetailsHelp />}
-                />
-                <Route
-                  path='/creating_oca_schema_help'
-                  element={<CreatingOCASchemaHelp />}
-                />
-                <Route
-                  path='/language_attribute_help'
-                  element={<LanguageAttributeHelp />}
-                />
-                <Route
-                  path='/schema_metadata_help'
-                  element={<SchemaMetadataHelp />}
-                />
-                <Route
                   path='/start_schema_help'
                   element={<StartSchemaHelp />}
                 />
-                <Route path='/view_schema_help' element={<ViewSchemaHelp />} />
-                <Route path='/overlays_help' element={<OverlaysHelp />} />
-                <Route
-                  path='/character_encoding_help'
-                  element={<CharacterEncodingHelp />}
-                />
-                <Route
-                  path='/required_entry_help'
-                  element={<RequiredEntryHelp />}
-                />
-                <Route path='/format_text_help' element={<FormatTextHelp />} />
-                <Route path='/cardinality_help' element={<CardinalityHelp />} />
                 <Route path='*' element={<Navigate to='/' />} />
               </Routes>
             </BrowserRouter>
