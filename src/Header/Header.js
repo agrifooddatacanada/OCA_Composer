@@ -43,67 +43,67 @@ export default function Header({ currentPage }) {
         setToolTipText(
           t('This page is where you can write the metadata describing...')
         );
-        setHelpLink('/schema_metadata_help');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/SchemaMetadata/');
         break;
       case 'Details':
         setHeader(t('Attribute Details'));
         setToolTipText(
           t('Each column of your dataset is an attribute in your schema...')
         );
-        setHelpLink('/attribute_details_help');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/AttributeDetails/');
         break;
       case 'Codes':
         setHeader(t('Add Entry Codes'));
         setToolTipText(
           t('Entry codes are options you want available to users as a...')
         );
-        setHelpLink('/add_entry_codes_help');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/AddEntryCode/');
         break;
       case 'LanguageDetails':
         setHeader(t('Language Dependent Attribute Details'));
         setToolTipText(
           t('You can add details in each language to help users...')
         );
-        setHelpLink('/language_attribute_help');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/LanguageAttribute/');
         break;
       case 'View':
         setHeader(t('Review Schema'));
         setToolTipText(
           t('Before finishing your schema you can preview the final contents on this page')
         );
-        setHelpLink('/view_schema_help');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/ViewSchema/');
         break;
       case 'Overlays':
         setHeader(t('Add Additional Optional Information'));
         // TODO: Add help tooltips
         setToolTipText('');
-        setHelpLink('/overlays_help');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/Overlays/');
         break;
       case 'CharacterEncoding':
         setHeader(t('Add Character Encoding'));
         setToolTipText(
           t('Character encoding of the data source (for each attribute)...')
         );
-        setHelpLink('/character_encoding_help');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/CharacterEncoding/');
         break;
       case 'RequiredEntries':
         setHeader(t('Add Required Entries'));
         setToolTipText(
           t('Specify if the underlying data must have an entry for the specific attribute')
         );
-        setHelpLink('/required_entry_help');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/RequiredEntry/');
         break;
       case 'FormatRules':
         setHeader(t('Add Format Rules for Data Entry'));
         setToolTipText('');
-        setHelpLink('/format_text_help');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/FormatText/');
         break;
       case 'Cardinality':
         setHeader(t('Add Entry Limit Rules for Data Entry'));
         setToolTipText(
           ''
         );
-        setHelpLink('/cardinality_help');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/Cardinality/');
         break;
       case 'StartDataValidator':
         setHeader(t('Upload Schema and Dataset'));
@@ -138,7 +138,7 @@ export default function Header({ currentPage }) {
         setToolTipText(
           ''
         );
-        setHelpLink('/cardinality_help');
+        setHelpLink('');
         break;
       default:
         setHeader('');
