@@ -21,11 +21,17 @@ export const useHandleDatasetDrop = () => {
     setMatchingRowData,
     setSchemaDataConformantHeader,
     setSchemaDataConformantRowData,
+    ogWorkbook,
     setOgWorkbook,
-    firstTimeMatchingRef
+    firstTimeMatchingRef,
+    excelSheetChoice,
+    setExcelSheetChoice,
+    firstNavigationToDataset,
+    setFirstNavigationToDataset
   } = useContext(Context);
 
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
+  const [excelSheetNames, setExcelSheetNames] = useState([]);
 
   const datasetLoadingState = () => {
     setDatasetLoading(true);
@@ -41,6 +47,9 @@ export const useHandleDatasetDrop = () => {
     setOgWorkbook(null);
     setSchemaDataConformantHeader([]);
     setSchemaDataConformantRowData([]);
+    setExcelSheetNames([]);
+    setExcelSheetChoice(-1);
+    setFirstNavigationToDataset(false);
     firstTimeMatchingRef.current = true;
   }, []);
 
@@ -110,32 +119,21 @@ export const useHandleDatasetDrop = () => {
           type: rABS ? "binary" : "array",
         });
 
-        const res = await processExcelFile(workbook);
-        if (!res) {
-          throw new Error("File does not contain the Schema Conformant Data sheet.");
-        }
+        setExcelSheetNames(workbook.SheetNames);
         setOgWorkbook(workbook);
-
         setDatasetLoading(false);
         setDatasetDropDisabled(true);
-
         setDatasetDropMessage({
           message: messages.successfulUpload,
           type: "success",
         });
 
         setTimeout(() => {
-          setDatasetDropDisabled(true);
           setDatasetDropMessage({ message: "", type: "" });
           setDatasetLoading(false);
           setJsonLoading(false);
           if (jsonRawFile.length === 0) {
             setJsonDropDisabled(false);
-          }
-
-          if (!datasetIsParsed) {
-            setDatasetIsParsed(true);
-            setCurrentDataValidatorPage("DatasetViewDataValidator");
           }
         }, 900);
       } catch (error) {
@@ -156,14 +154,10 @@ export const useHandleDatasetDrop = () => {
     else reader.readAsArrayBuffer(acceptedFiles);
   }, [datasetIsParsed]);
 
-  const processExcelFile = useCallback(async (workbook) => {
+  const processExcelFile = useCallback(async (workbook, index) => {
 
     let schemaConformantDataName;
-    if (workbook.SheetNames.includes("Schema Conformant Data")) {
-      schemaConformantDataName = "Schema Conformant Data";
-    } else {
-      schemaConformantDataName = "Data Entry";
-    }
+    schemaConformantDataName = workbook.SheetNames[index];
 
     const worksheet = workbook.Sheets[schemaConformantDataName];
 
@@ -226,6 +220,16 @@ export const useHandleDatasetDrop = () => {
     return true;
   }, []);
 
+  const handleDataSheetForwards = useCallback(() => {
+    setFirstNavigationToDataset(true);
+    const index = excelSheetNames.indexOf(excelSheetChoice);
+    processExcelFile(ogWorkbook, index);
+    if (!datasetIsParsed) {
+      setDatasetIsParsed(true);
+      setCurrentDataValidatorPage("DatasetViewDataValidator");
+    }
+  }, [datasetIsParsed, excelSheetChoice, excelSheetNames, ogWorkbook, processExcelFile, setCurrentDataValidatorPage, setDatasetIsParsed]);
+
   useEffect(() => {
     if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && datasetRawFile[0].path.includes(".csv")) {
       processCSVFile(datasetRawFile[0]);
@@ -252,6 +256,11 @@ export const useHandleDatasetDrop = () => {
     datasetDropDisabled,
     datasetDropMessage,
     setDatasetDropMessage,
-    handleClearDataset
+    handleClearDataset,
+    excelSheetNames,
+    excelSheetChoice,
+    setExcelSheetChoice,
+    handleDataSheetForwards,
+    firstNavigationToDataset
   };
 };

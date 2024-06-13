@@ -41,17 +41,19 @@ export const TrashCanButton = memo(
   })
 );
 
-const convertToCSV = (data) => {
+const convertToCSV = (data, newHeader) => {
   const csv = data.map(row => {
-    return Object.values(row).map(value => {
+    return newHeader.map(headerKey => {
+      let value = row[headerKey] !== undefined ? row[headerKey] : '';
       if (/,|"/.test(value)) {
-        return `"${value.replace(/"/g, '""')}"`;
+        value = `"${value.replace(/"/g, '""')}"`;
       }
       return value;
     }).join(',');
   }).join('\n');
   return csv;
 };
+
 
 const CustomTooltip = (props) => {
   const error = props.data?.error?.[props.colDef.field] || [];
@@ -264,6 +266,7 @@ const EntryCodeDropdownSelector = memo(
 
 const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeDisplayWarning }) => {
   const {
+    excelSheetChoice,
     schemaDataConformantRowData,
     setSchemaDataConformantRowData,
     schemaDataConformantHeader,
@@ -327,11 +330,11 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const handleExelSave = async () => {
     try {
-      const workbook = await generateDataEntryExcel();
+      const workbook = await generateDataEntryExcel(ogWorkbook);
       if (workbook !== null) {
         downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
       } else {
-        throw new Error('Failed to generate Excel file');
+        throw new Error('Error while generating Excel file');
       }
     } catch (error) {
       console.error('Error while generating Excel file', error);
@@ -344,7 +347,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       if (newCSV !== null) {
         downloadCSVFile(newCSV, 'DataEntryCSV.csv');
       } else {
-        throw new Error('Failed to generate CSV file');
+        throw new Error('Error while generating CSV file');
       }
     } catch (error) {
       console.error('Error while generating CSV file', error);
@@ -353,16 +356,26 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const generateCSVFile = async (ogHeader) => {
     const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
-      const newObject = { ...node?.data };
+      let newObject = {};
+      if (ogHeader) {
+        for (const [key, value] of Object.entries(node?.data)) {
+          newObject[matchingRowData.find((item) => item['Attribute'] === key)?.Dataset || key] = value;
+        }
+      } else {
+        newObject = { ...node?.data };
+      }
+
       delete newObject['error'];
       return newObject;
     });
+
     const newHeader = [];
 
     const mappingFromAttrToDataset = {};
     for (const node of matchingRowData) {
       mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
     }
+
     schemaDataConformantHeader.forEach((header) => {
       if (ogHeader) {
         newHeader.push(mappingFromAttrToDataset[header] || header);
@@ -372,7 +385,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     });
 
     const headerToString = newHeader.join(',') + '\n';
-    return headerToString + convertToCSV(newData);
+    return headerToString + convertToCSV(newData, newHeader);
   };
 
   const handleValidate = async () => {
@@ -428,32 +441,35 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     });
   };
 
-  const generateDataEntryExcel = async () => {
+  const generateDataEntryExcel = async (ogWorkbook) => {
+
     try {
-      const newWorkbook = await copySheetsFromDEE(ogWorkbook);
-      let schemaConformantDataSheet;
+      const newWorkbook = new ExcelJS.Workbook();
+      const sheetsToCopy = Object.keys(ogWorkbook.Sheets);
 
-      if (newWorkbook.worksheets.length < 2) {
-        schemaConformantDataSheet = newWorkbook.addWorksheet("Data Entry");
-      } else {
-        schemaConformantDataSheet = newWorkbook.addWorksheet("Schema Conformant Data");
-      }
+      sheetsToCopy.forEach(async (sheetName) => {
+        const sourceSheet = ogWorkbook.Sheets[sheetName];
 
-      const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
-
-      const schemaConformantDataHeaders = [];
-      for (const node of matchingRowData) {
-        schemaConformantDataHeaders.push(node['Dataset']);
-      }
-
-      schemaConformantDataHeaders.forEach((header, index) => {
-        schemaConformantDataSheet.getCell(1, index + 1).value = header;
+        if (sourceSheet) {
+          await copySheets(sourceSheet, newWorkbook, sheetName, excelSheetChoice);
+        } else {
+          console.error('Error while copying sheets from Data Entry Excel');
+        }
       });
 
-      newData.forEach((row, index) => {
-        schemaConformantDataHeaders.forEach((header, headerIndex) => {
-          schemaConformantDataSheet.getCell(index + 2, headerIndex + 1).value = row[header] === '' || isNaN(row[header]) ? row[header] : Number(row[header]);
-        });
+      const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
+        const newObject = { ...node?.data };
+        delete newObject['error'];
+        return newObject;
+      });
+
+      const schemaConformantDataSheet = newWorkbook.getWorksheet(excelSheetChoice);
+      const schemaConformantDataHeaders = Array.from(new Set(newData.flatMap(Object.keys)));
+      schemaConformantDataSheet.addRow(schemaConformantDataHeaders);
+
+      newData.forEach(data => {
+        const row = schemaConformantDataHeaders.map(header => data[header] || '');
+        schemaConformantDataSheet.addRow(row);
       });
 
       makeHeaderRow(schemaConformantDataHeaders, schemaConformantDataSheet, 40);
@@ -461,6 +477,27 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       return newWorkbook;
     } catch (error) {
       return null;
+    }
+  };
+
+  const copySheets = async (sourceSheet, targetWorkbook, targetSheetName, selectedSheetName) => {
+    try {
+      if (selectedSheetName === undefined) {
+        throw new Error('No Excel sheet selected');
+      }
+      // Todo: copy cell style, column width, row height, and other properties.
+      if (selectedSheetName === targetSheetName) {
+        targetWorkbook.addWorksheet(targetSheetName);
+      } else {
+        const targetSheet = targetWorkbook.addWorksheet(targetSheetName);
+
+        Object.keys(sourceSheet).forEach((cell) => {
+          if (!sourceSheet[cell]?.v || cell === '!ref') return;
+          targetSheet.getCell(cell).value = sourceSheet[cell]?.v;
+        });
+      }
+    } catch (error) {
+      console.error('Error while copying sheets from Data Entry Excel', error);
     }
   };
 
@@ -511,37 +548,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       };
     });
     return allColumns;
-  };
-
-  const copySheetsFromDEE = async (workbook) => {
-    const firstSheetName = "Schema Description";
-    const secondSheetName = "Data Entry";
-    const thirdSheetName = "Schema Conformant Data";
-
-    const newWorkbook = new ExcelJS.Workbook();
-    const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
-
-    const worksheet = workbook?.Sheets?.[firstSheetName];
-
-
-    Object.keys(worksheet).forEach((cell) => {
-      if (!worksheet[cell]?.v || cell === '!ref') return;
-      newWorksheet.getCell(cell).value = worksheet[cell]?.v;
-    });
-
-
-    if (!workbook?.Sheets?.[thirdSheetName]) {
-      return newWorkbook;
-    }
-
-    const newDataEntryWorksheet = newWorkbook.addWorksheet(secondSheetName);
-    const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName];
-    Object.keys(dataEntryWorksheet).forEach((cell) => {
-      if (!dataEntryWorksheet[cell]?.v || cell === '!ref') return;
-      newDataEntryWorksheet.getCell(cell).value = dataEntryWorksheet[cell]?.v;
-    });
-
-    return newWorkbook;
   };
 
   const cellStyle = (params) => {
@@ -702,7 +708,6 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
             gridRef.current.api.applyTransaction({
               remove: [params.node.data],
             });
-            console.log('index', params.node.data);
             gridRef.current.api.redrawRows();
           }
         }),
