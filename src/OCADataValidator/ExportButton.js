@@ -81,12 +81,13 @@ const ExportButton = ({ handleSave, inputDataType }) => {
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'center',}}
+          horizontal: 'center',
+        }}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'center',
         }}
-        >
+      >
         {exportOptions.map((option) => (
           <MenuItem
             sx={{ color: CustomPalette.PRIMARY }}
@@ -113,7 +114,7 @@ const ExportButton = ({ handleSave, inputDataType }) => {
               sx={{ color: CustomPalette.PRIMARY }}
               onClick={() => {
                 handleAdditionalOptionsClose();
-                handleSave({ ogHeader: true, exportFormat: 'csv' });
+                handleSave(true, 'csv');
               }}
             >
               Keep original data column headers
@@ -122,7 +123,7 @@ const ExportButton = ({ handleSave, inputDataType }) => {
               sx={{ color: CustomPalette.PRIMARY }}
               onClick={() => {
                 handleAdditionalOptionsClose();
-                handleSave({ ogHeader: false, exportFormat: 'csv' });
+                handleSave(false, 'csv');
               }}
             >
               Change to Schema column headers

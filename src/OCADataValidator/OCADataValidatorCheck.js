@@ -41,17 +41,19 @@ export const TrashCanButton = memo(
   })
 );
 
-const convertToCSV = (data) => {
+const convertToCSV = (data, newHeader) => {
   const csv = data.map(row => {
-    return Object.values(row).map(value => {
+    return newHeader.map(headerKey => {
+      let value = row[headerKey] !== undefined ? row[headerKey] : '';
       if (/,|"/.test(value)) {
-        return `"${value.replace(/"/g, '""')}"`;
+        value = `"${value.replace(/"/g, '""')}"`;
       }
       return value;
     }).join(',');
   }).join('\n');
   return csv;
 };
+
 
 const CustomTooltip = (props) => {
   const error = props.data?.error?.[props.colDef.field] || [];
@@ -354,16 +356,26 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const generateCSVFile = async (ogHeader) => {
     const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
-      const newObject = { ...node?.data };
+      let newObject = {};
+      if (ogHeader) {
+        for (const [key, value] of Object.entries(node?.data)) {
+          newObject[matchingRowData.find((item) => item['Attribute'] === key)?.Dataset || key] = value;
+        }
+      } else {
+        newObject = { ...node?.data };
+      }
+
       delete newObject['error'];
       return newObject;
     });
+
     const newHeader = [];
 
     const mappingFromAttrToDataset = {};
     for (const node of matchingRowData) {
       mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
     }
+
     schemaDataConformantHeader.forEach((header) => {
       if (ogHeader) {
         newHeader.push(mappingFromAttrToDataset[header] || header);
@@ -373,7 +385,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     });
 
     const headerToString = newHeader.join(',') + '\n';
-    return headerToString + convertToCSV(newData);
+    return headerToString + convertToCSV(newData, newHeader);
   };
 
   const handleValidate = async () => {
@@ -433,7 +445,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
     try {
       const newWorkbook = new ExcelJS.Workbook();
-      const sheetsToCopy = Object.keys(ogWorkbook.Sheets)
+      const sheetsToCopy = Object.keys(ogWorkbook.Sheets);
 
       sheetsToCopy.forEach(async (sheetName) => {
         const sourceSheet = ogWorkbook.Sheets[sheetName];
@@ -456,8 +468,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       schemaConformantDataSheet.addRow(schemaConformantDataHeaders);
 
       newData.forEach(data => {
-          const row = schemaConformantDataHeaders.map(header => data[header] || '');
-          schemaConformantDataSheet.addRow(row);
+        const row = schemaConformantDataHeaders.map(header => data[header] || '');
+        schemaConformantDataSheet.addRow(row);
       });
 
       makeHeaderRow(schemaConformantDataHeaders, schemaConformantDataSheet, 40);
@@ -487,7 +499,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     } catch (error) {
       console.error('Error while copying sheets from Data Entry Excel', error);
     }
-  }
+  };
 
   const downloadExcelFile = (workbook, fileName) => {
     workbook.xlsx.writeBuffer().then((buffer) => {
