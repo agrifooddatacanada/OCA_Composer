@@ -1,18 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { CustomPalette } from '../constants/customPalette';
-import { Box, Checkbox, List, ListItem, Typography } from '@mui/material';
+import { Box, Button, Checkbox, List, ListItem, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Context } from '../App';
-
-// const normalizeKeys = (obj) => {
-//   const normalized = {};
-//   for (const key in obj) {
-//     if (obj.hasOwnProperty(key)) {
-//       normalized[key.toLowerCase()] = obj[key];
-//     }
-//   }
-//   return normalized;
-// };
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 const checkIfKeyInList = (key, list) => {
   const lowercaseSearchString = key.toLowerCase();
@@ -49,11 +40,9 @@ const UserSelection = () => {
     });
   };
 
+  const handleExport = () => { };
+
   useEffect(() => {
-    // const normalizedOCAFile1 = normalizeKeys(selectedOverlaysOCAFile1);
-    // const normalizedOCAFile2 = normalizeKeys(selectedOverlaysOCAFile2);
-    // const keysObj1 = Object.keys(normalizedOCAFile1);
-    // const keysObj2 = Object.keys(normalizedOCAFile2);
     const keysObj1 = Object.keys(selectedOverlaysOCAFile1);
     const keysObj2 = Object.keys(selectedOverlaysOCAFile2);
     const uniqueKeys = [...new Set([...keysObj1, ...keysObj2])];
@@ -104,6 +93,28 @@ const UserSelection = () => {
       flex: 1,
       padding: '2rem',
     }}>
+      <Box sx={{
+        display: "flex",
+        justifyContent: "flex-end",
+        width: '100%',
+        marginBottom: '1rem',
+      }}>
+        <Button
+          color="button"
+          variant="contained"
+          onClick={() => handleExport()}
+          sx={{
+            alignSelf: "flex-end",
+            width: "12rem",
+            display: "flex",
+            justifyContent: "space-around",
+            p: 1,
+          }}
+        // disabled={exportDisabled}
+        >
+          {t('Finish and Export')} <CheckCircleIcon />
+        </Button>
+      </Box>
       <Box sx={{ display: 'flex', width: '100%' }}>
         <Box sx={{
           padding: '10px',
@@ -206,118 +217,3 @@ const UserSelection = () => {
 };
 
 export default UserSelection;
-
-// const UserSelection = () => {
-//   const { t } = useTranslation();
-
-//   return (
-//     <Box sx={{
-//       display: 'flex',
-//       flexDirection: 'row',
-//       alignItems: 'center',
-//       justifyContent: 'center',
-//       flex: 1,
-//       padding: '2rem',
-//     }}>
-//       <Box sx={{
-//         width: '100%',
-//         maxWidth: '40%',
-//       }}>
-//         <Box sx={{ padding: '10px' }}>
-//           <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{t('OCA File 1')}</Typography>
-//         </Box>
-//         <Box sx={{
-//           padding: '10px',
-//           borderBottom: `2px solid ${CustomPalette.GREY_300}`,
-//           borderLeft: `2px solid ${CustomPalette.GREY_300}`,
-//           borderRight: `2px solid ${CustomPalette.GREY_300}`,
-//           borderTop: `2px solid ${CustomPalette.GREY_300}`,
-//           display: 'flex',
-//           flexDirection: 'column',
-//           alignItems: 'center',
-
-//         }}>
-//           <List>
-//             {items.map((item, index) => (
-//               <ListItem key={index}>
-//                 <ListItemText primary={item} />
-//               </ListItem>
-//             ))}
-//           </List>
-//         </Box>
-//       </Box >
-
-//       <Box sx={{
-//         width: '100%',
-//         maxWidth: '20%',
-//       }}>
-//         <Box sx={{ padding: '10px' }}>
-//           <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{t('Selection')}</Typography>
-//         </Box>
-//         <Box sx={{
-//           padding: '10px',
-//           display: 'flex',
-//           flexDirection: 'column',
-//           alignItems: 'center',
-//         }}>
-//           <Box sx={{
-//             display: 'flex',
-//             flexDirection: 'row',
-//             width: '100%',
-//             maxWidth: '33%',
-//           }}>
-//             <List>
-//               {items.map((item, index) => (
-//                 <ListItem key={index}>
-//                   <ListItemText primary={item} />
-//                 </ListItem>
-//               ))}
-//             </List>
-//             <List>
-//               {items.map((item, index) => (
-//                 <ListItem key={index}>
-//                   <ListItemText primary={item} />
-//                 </ListItem>
-//               ))}
-//             </List>
-//             <List>
-//               {items.map((item, index) => (
-//                 <ListItem key={index}>
-//                   <ListItemText primary={item} />
-//                 </ListItem>
-//               ))}
-//             </List>
-//           </Box>
-//         </Box>
-//       </Box>
-
-//       <Box sx={{
-//         width: '100%',
-//         maxWidth: '40%',
-//       }}>
-//         <Box sx={{ padding: '10px' }}>
-//           <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{t('OCA File 2')}</Typography>
-//         </Box>
-//         <Box sx={{
-//           padding: '10px',
-//           borderBottom: `2px solid ${CustomPalette.GREY_300}`,
-//           borderLeft: `2px solid ${CustomPalette.GREY_300}`,
-//           borderRight: `2px solid ${CustomPalette.GREY_300}`,
-//           borderTop: `2px solid ${CustomPalette.GREY_300}`,
-//           display: 'flex',
-//           flexDirection: 'column',
-//           alignItems: 'center',
-
-//         }}>
-//           <List>
-//             {items.map((item, index) => (
-//               <ListItem key={index}>
-//                 <ListItemText primary={item} />
-//               </ListItem>
-//             ))}
-//           </List>
-//         </Box>
-//       </Box>
-//     </Box >
-//   );
-// };
