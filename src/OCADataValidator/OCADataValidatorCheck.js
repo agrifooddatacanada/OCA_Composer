@@ -355,7 +355,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   };
 
   const generateCSVFile = async (ogHeader) => {
-    const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
+    const newData = [];
+    gridRef.current.api.forEachNode((node) => {
       let newObject = {};
       if (ogHeader) {
         for (const [key, value] of Object.entries(node?.data)) {
@@ -364,9 +365,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       } else {
         newObject = { ...node?.data };
       }
-
-      delete newObject['error'];
-      return newObject;
+      newData.push(newObject);
     });
 
     const newHeader = [];
@@ -457,11 +456,12 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         }
       });
 
-      const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
-        const newObject = { ...node?.data };
-        delete newObject['error'];
-        return newObject;
-      });
+      // const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
+      //   const newObject = { ...node?.data };
+      //   delete newObject['error'];
+      //   return newObject;
+      // });
+      const newData = getCurrentData(gridRef.current.api, false);
 
       const schemaConformantDataSheet = newWorkbook.getWorksheet(excelSheetChoice);
       const schemaConformantDataHeaders = Array.from(new Set(newData.flatMap(Object.keys)));
@@ -575,7 +575,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       newRow[header] = "";
     });
 
-    const currentData = gridRef.current.api.getRenderedNodes().map((node) => node.data);
+    // const currentData = gridRef.current.api.getRenderedNodes().map((node) => node.data);
+    const currentData = getCurrentData(gridRef.current.api, true);
 
     setRowData((prev) => [...currentData, newRow]);
   };
@@ -607,7 +608,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   };
 
   const handleMoveBack = () => {
-    const currentData = gridRef.current.api.getRenderedNodes()?.map((node) => node.data);
+    const currentData = getCurrentData(gridRef.current.api, true);
 
     if (datasetRawFile.length > 0) {
       const mappingFromAttrToDataset = {};
@@ -863,6 +864,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         <div style={{ margin: "2rem" }}>
           <div
             className="ag-theme-balham"
+            style={{ height: "45vh" }}
           >
             <style>{gridStyles}</style>
             <AgGridReact
@@ -874,12 +876,12 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
                 '<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
               }
               tooltipShowDelay={0}
-              tooltipHideDelay={2000}
+              tooltipHideDelay={5000}
               tooltipMouseTrack={true}
               onCellValueChanged={onCellValueChanged}
-              domLayout="autoHeight"
               suppressRowHoverHighlight={true}
               onCellKeyDown={onCellKeyDown}
+              suppressFieldDotNotation
             />
           </div>
           <Box sx={{
