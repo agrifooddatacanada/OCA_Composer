@@ -102,14 +102,16 @@ function App() {
   const [matchingRowData, setMatchingRowData] = useState([]);
   const firstTimeMatchingRef = useRef(true);
   const [ogWorkbook, setOgWorkbook] = useState(null);
-
   const ogSchemaDataConformantHeaderRef = useRef([]);
+
   // Entry Code upload
   const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
   const [tempEntryCodeRowData, setTempEntryCodeRowData] = useState([]);
   const [chosenEntryCodeIndex, setChosenEntryCodeIndex] = useState(-1);
   const [tempEntryCodeSummary, setTempEntryCodeSummary] = useState(undefined);
   const [tempEntryList, setTempEntryList] = useState([]);
+  const [firstNavigationToDataset, setFirstNavigationToDataset] = useState(false);
+  const [excelSheetChoice, setExcelSheetChoice] = useState(-1);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -410,6 +412,10 @@ function App() {
             setTempEntryCodeSummary,
             tempEntryList,
             setTempEntryList,
+            excelSheetChoice,
+            setExcelSheetChoice,
+            firstNavigationToDataset,
+            setFirstNavigationToDataset,
           }}
         >
           <Box
@@ -447,26 +453,6 @@ function App() {
                 />
                 <Route path='/help_storage' element={<HelpStorage />} />
                 <Route
-                  path='/add_entry_codes_help'
-                  element={<AddEntryCodesHelp />}
-                />
-                <Route
-                  path='/attribute_details_help'
-                  element={<AttributeDetailsHelp />}
-                />
-                <Route
-                  path='/creating_oca_schema_help'
-                  element={<CreatingOCASchemaHelp />}
-                />
-                <Route
-                  path='/language_attribute_help'
-                  element={<LanguageAttributeHelp />}
-                />
-                <Route
-                  path='/schema_metadata_help'
-                  element={<SchemaMetadataHelp />}
-                />
-                <Route
                   path='/start_schema_help'
                   element={<StartSchemaHelp />}
                 />
@@ -478,18 +464,7 @@ function App() {
                   path='/learn_data_verification'
                   element={<LearnAboutDataVerification />}
                 />
-                <Route path='/view_schema_help' element={<ViewSchemaHelp />} />
-                <Route path='/overlays_help' element={<OverlaysHelp />} />
-                <Route
-                  path='/character_encoding_help'
-                  element={<CharacterEncodingHelp />}
-                />
-                <Route
-                  path='/required_entry_help'
-                  element={<RequiredEntryHelp />}
-                />
-                <Route path='/format_text_help' element={<FormatTextHelp />} />
-                <Route path='/cardinality_help' element={<CardinalityHelp />} />
+
                 <Route path='*' element={<Navigate to='/' />} />
               </Routes>
             </BrowserRouter>

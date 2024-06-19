@@ -12,11 +12,13 @@ import CustomAnchorLink from '../components/CustomAnchorLink';
 import Drop from '../StartSchema/Drop';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import GenerateDataEntryExcel from './GenerateDataEntryExcel';
+import { useTranslation } from 'react-i18next';
 
 const UseASchemaWithDataAccordionItem = ({
   disableButtonCheck,
   handleExport,
 }) => {
+  const { t } = useTranslation();
   const {
     rawFile,
     setRawFile,
@@ -37,16 +39,16 @@ const UseASchemaWithDataAccordionItem = ({
         id='panel1a-header'
       >
         <Typography sx={{ fontSize: '20px', fontWeight: '500' }}>
-          Use a Schema with Data
+          {t('Use a Schema with Data')}
         </Typography>
       </AccordionSummary>
 
       <AccordionDetails sx={{ textAlign: 'start' }}>
         <Typography>
-          Use your machine-readable schema bundle to help you collect schema conformant data, or to verify that data you have collected follows the rules in the schema. Verifying data is an important step in your analysis.
+          {t('Use your machine-readable schema bundle to help you collect...')}
         </Typography>
         <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
-          Enter data with Excel
+          {t('Enter data with Excel')}
         </Typography>
 
         <Drop
@@ -77,35 +79,35 @@ const UseASchemaWithDataAccordionItem = ({
           />
         </Box>
         <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
-          Enter data in your browser
+          {t('Enter data in your browser')}
         </Typography>
         <Typography>
-          Go to our
+          {t('Go to our')}
           {' '}
-          <CustomAnchorLink link="/oca-data-validator" text="Data Entry tool" />
+          <CustomAnchorLink link="/oca-data-validator" text={t('Data Entry tool')} />
           {' '}
-          to enter data via a web-browser based table. You can download and save your work to your computer when you are finished.
+          {t('to enter data via a web-browser based table...')}
         </Typography>
 
         <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
-          Verify data in your python code
+          {t('Verify data in your python code')}
         </Typography>
         <Typography>
-          Visit our
+          {t('Visit our')}
           {' '}
-          <CustomAnchorLink link="https://github.com/agrifooddatacanada/OCA_data_set_validator" text="GitHub repository" />
+          <CustomAnchorLink link="https://github.com/agrifooddatacanada/OCA_data_set_validator" text={t('GitHub repository')} />
           {' '}
-          to find a python package that you can use to include data verification in your workflow.
+          {t('to find a python package that you can use to include data verification in your workflow')}
         </Typography>
 
         <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
-          Verify data in your browser
+          {t('Verify data in your browser')}
         </Typography>
         <Typography>
-          Our {' '}
-          <CustomAnchorLink link="/oca-data-validator" text="Data Entry tool" />
+          {t('Our')} {' '}
+          <CustomAnchorLink link="/oca-data-validator" text={t('Data Entry tool')} />
           {' '}
-          also supports data verification. Upload a schema and a dataset and you can verify your dataset against the data rules in the schema.
+          {t('also supports data verification. Upload a schema and a dataset and you can verify your dataset against the data rules in the schema')}
         </Typography>
       </AccordionDetails>
     </AccordionItemWrapper>

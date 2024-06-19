@@ -1,13 +1,37 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import BackNextSkeleton from '../components/BackNextSkeleton';
-import { Box, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { Context } from '../App';
 import { AgGridReact } from 'ag-grid-react';
-import { gridStyles } from '../constants/styles';
+import { greyCellStyle, gridStyles } from '../constants/styles';
 import { CustomPalette } from '../constants/customPalette';
+import { useTranslation } from 'react-i18next';
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
+export const TrashCanButton = memo(
+  forwardRef((props, ref) => {
+    const onClick = useCallback(() => {
+      props.delete();
+    }, [props]);
+
+    return (
+      <IconButton
+        sx={{
+          pr: 1,
+          color: CustomPalette.GREY_600,
+          transition: "all 0.2s ease-in-out",
+          display: props.node.data?.FormatText === "" ? "none" : "block",
+        }}
+        onClick={onClick}
+      >
+        <DeleteOutlineIcon />
+      </IconButton>
+    );
+  })
+);
 
 const DatasetView = () => {
+  const { t } = useTranslation();
   const schemaGridRef = useRef(null);
   const {
     setCurrentDataValidatorPage,
@@ -43,6 +67,25 @@ const DatasetView = () => {
       });
     }
 
+    schemaTitles.push(
+      {
+        headerName: '',
+        field: 'Delete',
+        cellRendererFramework: TrashCanButton,
+        width: 50,
+        cellRendererParams: (params) => ({
+          delete: () => {
+            schemaGridRef.current.api.applyTransaction({
+              remove: [params.node.data],
+            });
+            schemaGridRef.current.api.redrawRows();
+          }
+        }),
+        pinned: 'right',
+        cellStyle: () => greyCellStyle,
+      }
+    );
+
     setSchemaTableLength(newSchemaTableLength);
     setSchemaColumnDefs(schemaTitles);
   }, [schemaDataConformantHeader]);
@@ -50,7 +93,8 @@ const DatasetView = () => {
   return (
     <>
       <BackNextSkeleton isForward pageForward={() => {
-        setSchemaDataConformantRowData(schemaGridRef.current?.api.getRenderedNodes()?.map(node => {
+        const result = [];
+        schemaGridRef.current?.api.forEachNode(node => {
           const existingKeys = Object.keys(node?.data);
           const newData = { ...node?.data };
           schemaDataConformantHeader.forEach(header => {
@@ -58,8 +102,10 @@ const DatasetView = () => {
               newData[header] = '';
             }
           });
-          return newData;
-        }));
+          result.push(newData);
+        });
+
+        setSchemaDataConformantRowData(result);
         setCurrentDataValidatorPage('StartDataValidator');
       }} />
       <Box sx={{
@@ -69,19 +115,19 @@ const DatasetView = () => {
         justifyContent: 'center',
         flex: 1,
       }}>
-        <Typography variant="h5" sx={{ mb: 2, mt: 6, color: CustomPalette.PRIMARY, fontWeight: 500 }}>Schema Data</Typography>
+        <Typography variant="h5" sx={{ mb: 2, color: CustomPalette.PRIMARY, fontWeight: 500 }}>{t('Schema Data')}</Typography>
         {schemaDataConformantHeader && schemaDataConformantHeader?.length > 0 ?
-          <div className="ag-theme-balham" style={{ width: schemaTableLength, maxWidth: '90%' }}>
+          <div className="ag-theme-balham" style={{ width: schemaTableLength, maxWidth: '90%', height: "45vh" }}>
             <style>{gridStyles}</style>
             <AgGridReact
               ref={schemaGridRef}
               rowData={schemaDataConformantRowData}
               columnDefs={schemaColumnDefs}
-              domLayout="autoHeight"
               defaultColDef={defaultColDef}
+              suppressFieldDotNotation={true}
             />
           </div>
-          : <Typography>No Schema Conformant Data</Typography>}
+          : <Typography>{t('No Schema Conformant Data')}</Typography>}
       </Box>
     </>
   );

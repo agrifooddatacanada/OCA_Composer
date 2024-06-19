@@ -15,11 +15,15 @@ import { useNavigate } from "react-router-dom";
 import Loading from "../components/Loading";
 import useExportLogicV2 from "./useExportLogicV2";
 import { formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from "../constants/constants";
+import { useTranslation } from "react-i18next";
+import i18next from "i18next";
+import { codesToLanguages } from "../constants/isoCodes";
 
 const currentEnv = process.env.REACT_APP_ENV;
 
 export default function ViewSchema({ pageBack, isExport = true, addClearButton, pageForward }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     languages,
     attributeRowData,
@@ -33,8 +37,13 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
     setHistory,
     formatRuleRowData,
   } = useContext(Context);
-
-  const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
+  const languageIndex = languages.findIndex((item) => codesToLanguages?.[i18next.language] === item);
+  const filteredLanguages = [...languages];
+  if (languageIndex !== -1 && languageIndex !== 0) {
+    const removedLanguage = filteredLanguages.splice(languageIndex, 1);
+    filteredLanguages.unshift(removedLanguage[0]);
+  }
+  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
   const { handleExport, resetToDefaults, exportDisabled } = useExportLogic();
@@ -46,8 +55,8 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
 
   const displayLanguageArray = [];
 
-  for (let i = 0; i < languages.length; i += 7) {
-    const languageRow = languages.slice(i, i + 7).filter(Boolean);
+  for (let i = 0; i < filteredLanguages.length; i += 7) {
+    const languageRow = filteredLanguages.slice(i, i + 7).filter(Boolean);
     displayLanguageArray.push(languageRow);
   }
 
@@ -236,7 +245,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
             onClick={pageForward}
             sx={{ color: CustomPalette.PRIMARY }}
           >
-            Next <ArrowForwardIosIcon />
+            {t('Next')} <ArrowForwardIosIcon />
           </Button>
 
           : <>
@@ -245,7 +254,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
               sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
               onClick={moveBackward}
             >
-              <ArrowBackIosIcon /> Back
+              <ArrowBackIosIcon /> {t('Back')}
             </Button>
             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
               <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
@@ -265,7 +274,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
                         padding: "0.5rem 1rem",
                       }}
                     >
-                      Edit Schema
+                      {t('Edit Schema')}
                     </Button>
                     <Button
                       color="button"
@@ -279,7 +288,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
                       }}
                       disabled={exportDisabled}
                     >
-                      Download ReadMe
+                      {t('Download ReadMe')}
                     </Button>
                   </>
                 )}
@@ -309,11 +318,11 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
                       }}
                       disabled={exportDisabled}
                     >
-                      Finish and Export <CheckCircleIcon />
+                      {t('Finish and Export')} <CheckCircleIcon />
                     </Button>
                     <Box sx={{ marginLeft: "1rem" }}>
                       <Tooltip
-                        title="Export your schema in a .json machine-readable version and a txt human-readable format using all the information that has been provided here."
+                        title={t('Export your schema in a .json machine-readable version and...')}
                         placement="left"
                         arrow
                       >
@@ -352,11 +361,11 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
               color: CustomPalette.PRIMARY,
             }}
           >
-            Schema Language
+            {t('Schema Language')}
           </Typography>
           <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
             <Tooltip
-              title="Toggles between the one or more languages used in the schema."
+              title={t("Toggles between the one or more languages used in the schema")}
               placement="right"
               arrow
             >
@@ -403,11 +412,11 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
               color: CustomPalette.PRIMARY,
             }}
           >
-            Schema Metadata
+            {t('Schema Metadata')}
           </Typography>
           <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
             <Tooltip
-              title="Language specific information describing general schema information."
+              title={t("Language specific information describing general schema information")}
               placement="right"
               arrow
             >
@@ -432,11 +441,11 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
               color: CustomPalette.PRIMARY,
             }}
           >
-            Schema Details
+            {t('Schema Details')}
           </Typography>
           <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
             <Tooltip
-              title="The details of the schema including attribute names and their features as well as language specific information."
+              title={t("The details of the schema including attribute names and their features as well as language specific information")}
               placement="right"
               arrow
             >
@@ -471,7 +480,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
               mb: 5,
             }}
           >
-            Clear All Data and Restart
+            {t('Clear All Data and Restart')}
           </Button>
         </Box >}
     </Box >

@@ -2,8 +2,10 @@ import { Alert, Box, Button } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CustomPalette } from "../constants/customPalette";
+import { useTranslation } from "react-i18next";
 
 const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back' }) => {
+  const { t } = useTranslation();
   return (
     <Box>
       <Box
@@ -30,7 +32,7 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
             sx={{ textAlign: "left", alignSelf: "flex-start" }}
             onClick={pageBack}
           >
-            <ArrowBackIosIcon /> {backText}
+            <ArrowBackIosIcon /> {t(backText)}
           </Button> : <Box />}
           <Box sx={{ alignSelf: "flex-end" }}>
             {isForward && <Button
@@ -38,7 +40,7 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
               onClick={pageForward}
               sx={{ color: CustomPalette.PRIMARY }}
             >
-              Next <ArrowForwardIosIcon />
+              {t('Next')} <ArrowForwardIosIcon />
             </Button>}
             {errorMessage.length > 0 && (
               <Alert

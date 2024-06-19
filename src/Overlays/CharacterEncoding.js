@@ -10,8 +10,10 @@ import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
+import { useTranslation } from "react-i18next";
 
 const CharacterEncoding = () => {
+  const { t } = useTranslation();
   const {
     characterEncodingRowData,
     setCurrentPage,
@@ -32,11 +34,11 @@ const CharacterEncoding = () => {
         width: 180,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => <CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
+        headerComponent: () => <CellHeader headerText={t("Attributes")} helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
       },
       {
         field: "Character Encoding",
-        headerComponent: () => <CellHeader headerText='Character Encoding' helpText='Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here.' />,
+        headerComponent: () => <CellHeader headerText={t("Character Encoding")} helpText='Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here.' />,
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
           attr: params.data.Attribute,
@@ -44,7 +46,7 @@ const CharacterEncoding = () => {
         width: 200,
       },
     ];
-  }, []);
+  }, [t]);
 
   const handleForward = useCallback(() => {
     handleSave();
@@ -116,13 +118,13 @@ const CharacterEncoding = () => {
               color="navButton"
               sx={{
                 ml: 1,
-                width: 100,
+                width: '130px',
                 height: "1.7rem",
                 color: CustomPalette.PRIMARY,
               }}
               onClick={applyAllFunc}
             >
-              Apply All
+              {t('Apply All')}
             </Button>
           </Box>
         </Box>

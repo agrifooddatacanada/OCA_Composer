@@ -8,11 +8,12 @@ import { generateDataEntry } from './generateDataEntry';
 import { generateDataEntryV2 } from './generateDataEntryV2';
 import { CustomPalette } from '../constants/customPalette';
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { useTranslation } from 'react-i18next';
 
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
+  const { t } = useTranslation();
 
   const { languages } = useContext(Context);
-
   const appearAnimation =
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
 

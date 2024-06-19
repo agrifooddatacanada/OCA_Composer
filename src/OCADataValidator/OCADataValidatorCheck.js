@@ -1,12 +1,11 @@
 import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, MenuItem, Typography } from '@mui/material';
-import { gridStyles } from '../constants/styles';
+import { Box, Button, IconButton, MenuItem, Typography } from '@mui/material';
+import { greyCellStyle, gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
 import '../App.css';
 import { Context } from '../App';
 import ExcelJS from 'exceljs';
 import OCABundle from './validator';
-// import OCADataSet from './utils/files';
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Languages from "./Languages";
 import MultipleSelectPlaceholder from './MultiSelectErrors';
@@ -16,18 +15,45 @@ import ExportButton from './ExportButton';
 import { errorCode, formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from '../constants/constants';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
 import WarningPopup from './WarningPopup';
+import { CustomPalette } from '../constants/customPalette';
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { getCurrentData } from '../constants/utils';
 
-const convertToCSV = (data) => {
+export const TrashCanButton = memo(
+  forwardRef((props, ref) => {
+    const onClick = useCallback(() => {
+      props.delete();
+    }, [props]);
+
+    return (
+      <IconButton
+        sx={{
+          pr: 1,
+          color: CustomPalette.GREY_600,
+          transition: "all 0.2s ease-in-out",
+          display: props.node.data?.FormatText === "" ? "none" : "block",
+        }}
+        onClick={onClick}
+      >
+        <DeleteOutlineIcon />
+      </IconButton>
+    );
+  })
+);
+
+const convertToCSV = (data, newHeader) => {
   const csv = data.map(row => {
-    return Object.values(row).map(value => {
+    return newHeader.map(headerKey => {
+      let value = row[headerKey] !== undefined ? row[headerKey] : '';
       if (/,|"/.test(value)) {
-        return `"${value.replace(/"/g, '""')}"`;
+        value = `"${value.replace(/"/g, '""')}"`;
       }
       return value;
     }).join(',');
   }).join('\n');
   return csv;
 };
+
 
 const CustomTooltip = (props) => {
   const error = props.data?.error?.[props.colDef.field] || [];
@@ -240,6 +266,7 @@ const EntryCodeDropdownSelector = memo(
 
 const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeDisplayWarning }) => {
   const {
+    excelSheetChoice,
     schemaDataConformantRowData,
     setSchemaDataConformantRowData,
     schemaDataConformantHeader,
@@ -303,11 +330,11 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const handleExelSave = async () => {
     try {
-      const workbook = await generateDataEntryExcel();
+      const workbook = await generateDataEntryExcel(ogWorkbook);
       if (workbook !== null) {
         downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
       } else {
-        throw new Error('Failed to generate Excel file');
+        throw new Error('Error while generating Excel file');
       }
     } catch (error) {
       console.error('Error while generating Excel file', error);
@@ -320,7 +347,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       if (newCSV !== null) {
         downloadCSVFile(newCSV, 'DataEntryCSV.csv');
       } else {
-        throw new Error('Failed to generate CSV file');
+        throw new Error('Error while generating CSV file');
       }
     } catch (error) {
       console.error('Error while generating CSV file', error);
@@ -328,17 +355,26 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   };
 
   const generateCSVFile = async (ogHeader) => {
-    const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
-      const newObject = { ...node?.data };
-      delete newObject['error'];
-      return newObject;
+    const newData = [];
+    gridRef.current.api.forEachNode((node) => {
+      let newObject = {};
+      if (ogHeader) {
+        for (const [key, value] of Object.entries(node?.data)) {
+          newObject[matchingRowData.find((item) => item['Attribute'] === key)?.Dataset || key] = value;
+        }
+      } else {
+        newObject = { ...node?.data };
+      }
+      newData.push(newObject);
     });
+
     const newHeader = [];
 
     const mappingFromAttrToDataset = {};
     for (const node of matchingRowData) {
       mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
     }
+
     schemaDataConformantHeader.forEach((header) => {
       if (ogHeader) {
         newHeader.push(mappingFromAttrToDataset[header] || header);
@@ -348,7 +384,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     });
 
     const headerToString = newHeader.join(',') + '\n';
-    return headerToString + convertToCSV(newData);
+    return headerToString + convertToCSV(newData, newHeader);
   };
 
   const handleValidate = async () => {
@@ -359,7 +395,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     setFirstValidate(true);
     const bundle = new OCABundle();
     await bundle.loadedBundle(jsonParsedFile);
-    const newData = gridRef.current?.api.getRenderedNodes()?.map(node => node?.data);
+    const newData = getCurrentData(gridRef.current.api, true);
 
     const prepareInput = {};
     schemaDataConformantHeader.forEach((header) => {
@@ -372,9 +408,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
     const validate = bundle.validate(prepareInput);
 
-    setRowData((prev) => {
-      return prev.map((_row, index) => {
-        const data = newData[index];
+    setRowData(() => {
+      return newData.map((data, index) => {
         return {
           ...data,
           error: validate?.errCollection?.[index] || {},
@@ -386,7 +421,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       const copy = [];
 
       prev.forEach((header) => {
-        if (validate?.unmachedAttrs?.has(header.headerName)) {
+        if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== '') {
           copy.push({
             ...header,
             cellStyle: () => {
@@ -405,40 +440,64 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     });
   };
 
-  const generateDataEntryExcel = async () => {
+  const generateDataEntryExcel = async (ogWorkbook) => {
+
     try {
-      const newWorkbook = await copySheetsFromDEE(ogWorkbook);
-      let schemaConformantDataSheet;
+      const newWorkbook = new ExcelJS.Workbook();
+      const sheetsToCopy = Object.keys(ogWorkbook.Sheets);
 
-      if (newWorkbook.worksheets.length < 2) {
-        schemaConformantDataSheet = newWorkbook.addWorksheet("Data Entry");
-      } else {
-        schemaConformantDataSheet = newWorkbook.addWorksheet("Schema Conformant Data");
-      }
+      sheetsToCopy.forEach(async (sheetName) => {
+        const sourceSheet = ogWorkbook.Sheets[sheetName];
 
-      const newData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
-
-      const schemaConformantDataHeaders = [];
-      for (const node of matchingRowData) {
-        schemaConformantDataHeaders.push(node['Dataset']);
-      }
-
-      schemaConformantDataHeaders.forEach((header, index) => {
-        schemaConformantDataSheet.getCell(1, index + 1).value = header;
+        if (sourceSheet) {
+          await copySheets(sourceSheet, newWorkbook, sheetName, excelSheetChoice);
+        } else {
+          console.error('Error while copying sheets from Data Entry Excel');
+        }
       });
 
-      newData.forEach((row, index) => {
-        schemaConformantDataHeaders.forEach((header, headerIndex) => {
-          schemaConformantDataSheet.getCell(index + 2, headerIndex + 1).value = row[header] === '' || isNaN(row[header]) ? row[header] : Number(row[header]);
-        });
+      // const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
+      //   const newObject = { ...node?.data };
+      //   delete newObject['error'];
+      //   return newObject;
+      // });
+      const newData = getCurrentData(gridRef.current.api, false);
+
+      const schemaConformantDataSheet = newWorkbook.getWorksheet(excelSheetChoice);
+      const schemaConformantDataHeaders = Array.from(new Set(newData.flatMap(Object.keys)));
+      schemaConformantDataSheet.addRow(schemaConformantDataHeaders);
+
+      newData.forEach(data => {
+        const row = schemaConformantDataHeaders.map(header => data[header] || '');
+        schemaConformantDataSheet.addRow(row);
       });
 
       makeHeaderRow(schemaConformantDataHeaders, schemaConformantDataSheet, 40);
 
       return newWorkbook;
     } catch (error) {
-      console.log('error', error);
       return null;
+    }
+  };
+
+  const copySheets = async (sourceSheet, targetWorkbook, targetSheetName, selectedSheetName) => {
+    try {
+      if (selectedSheetName === undefined) {
+        throw new Error('No Excel sheet selected');
+      }
+      // Todo: copy cell style, column width, row height, and other properties.
+      if (selectedSheetName === targetSheetName) {
+        targetWorkbook.addWorksheet(targetSheetName);
+      } else {
+        const targetSheet = targetWorkbook.addWorksheet(targetSheetName);
+
+        Object.keys(sourceSheet).forEach((cell) => {
+          if (!sourceSheet[cell]?.v || cell === '!ref') return;
+          targetSheet.getCell(cell).value = sourceSheet[cell]?.v;
+        });
+      }
+    } catch (error) {
+      console.error('Error while copying sheets from Data Entry Excel', error);
     }
   };
 
@@ -491,41 +550,11 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     return allColumns;
   };
 
-  const copySheetsFromDEE = async (workbook) => {
-    const firstSheetName = "Schema Description";
-    const secondSheetName = "Data Entry";
-    const thirdSheetName = "Schema Conformant Data";
-
-    const newWorkbook = new ExcelJS.Workbook();
-    const newWorksheet = newWorkbook.addWorksheet(firstSheetName);
-
-    const worksheet = workbook?.Sheets?.[firstSheetName]
-
-
-    Object.keys(worksheet).forEach((cell) => {
-      if (!worksheet[cell]?.v || cell === '!ref') return;
-      newWorksheet.getCell(cell).value = worksheet[cell]?.v;
-    });
-
-
-    if (!workbook?.Sheets?.[thirdSheetName]) {
-      return newWorkbook;
-    }
-
-    const newDataEntryWorksheet = newWorkbook.addWorksheet(secondSheetName);
-    const dataEntryWorksheet = workbook?.Sheets?.[secondSheetName]
-    Object.keys(dataEntryWorksheet).forEach((cell) => {
-      if (!dataEntryWorksheet[cell]?.v || cell === '!ref') return;
-      newDataEntryWorksheet.getCell(cell).value = dataEntryWorksheet[cell]?.v;
-    });
-
-    return newWorkbook;
-  };
-
   const cellStyle = (params) => {
     const error = params.data?.error?.[params.colDef.field];
-
-    if (params.data?.error && error?.length > 0) {
+    if (params.colDef.field === "Delete") {
+      return greyCellStyle;
+    } else if (params.data?.error && error?.length > 0) {
       return { backgroundColor: "#ffd7e9" };
     } else if (params.data?.error) {
       return { backgroundColor: "#d2f8d2" };
@@ -546,7 +575,8 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       newRow[header] = "";
     });
 
-    const currentData = gridRef.current.api.getRenderedNodes().map((node) => node.data);
+    // const currentData = gridRef.current.api.getRenderedNodes().map((node) => node.data);
+    const currentData = getCurrentData(gridRef.current.api, true);
 
     setRowData((prev) => [...currentData, newRow]);
   };
@@ -578,7 +608,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   };
 
   const handleMoveBack = () => {
-    const currentData = gridRef.current.api.getRenderedNodes()?.map((node) => node.data);
+    const currentData = getCurrentData(gridRef.current.api, true);
 
     if (datasetRawFile.length > 0) {
       const mappingFromAttrToDataset = {};
@@ -667,6 +697,25 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         );
       });
     }
+
+    columns.push(
+      {
+        headerName: 'Del.',
+        field: 'Delete',
+        cellRendererFramework: TrashCanButton,
+        width: 50,
+        cellRendererParams: (params) => ({
+          delete: () => {
+            gridRef.current.api.applyTransaction({
+              remove: [params.node.data],
+            });
+            gridRef.current.api.redrawRows();
+          }
+        }),
+        pinned: 'right',
+        cellStyle: () => greyCellStyle,
+      }
+    );
 
     setColumnDefs(columns);
     setRowData(schemaDataConformantRowData);
@@ -815,6 +864,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         <div style={{ margin: "2rem" }}>
           <div
             className="ag-theme-balham"
+            style={{ height: "45vh" }}
           >
             <style>{gridStyles}</style>
             <AgGridReact
@@ -826,12 +876,12 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
                 '<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
               }
               tooltipShowDelay={0}
-              tooltipHideDelay={2000}
+              tooltipHideDelay={5000}
               tooltipMouseTrack={true}
               onCellValueChanged={onCellValueChanged}
-              domLayout="autoHeight"
               suppressRowHoverHighlight={true}
               onCellKeyDown={onCellKeyDown}
+              suppressFieldDotNotation
             />
           </div>
           <Box sx={{

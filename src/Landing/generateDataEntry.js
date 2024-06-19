@@ -99,10 +99,12 @@ export function generateDataEntry(acceptedFiles, setLoading, selectedLang) {
           entryCodeOverlays.push(overlay);
         } else {
           if (overlay.type && !overlay.type.includes('/meta/') && !overlay.type.includes('/label/') && !overlay.type.includes('/entry/')){
+          if (overlay.type && !overlay.type.includes('/meta/') && !overlay.type.includes('/label/') && !overlay.type.includes('/entry/')){
             otherOverlays.push(overlay);
           };
         };
       };
+    }
 
       const jsonData = [
         ...captureBaseOverlays,
@@ -198,7 +200,7 @@ export function generateDataEntry(acceptedFiles, setLoading, selectedLang) {
         schemaSAID = null;
 
       try {
-        const metaOverlay = originJsonData.find(o => o.type && o.type.includes('/meta/') && o.language === selectedLang);
+        const metaOverlay = originJsonData.find(o => o.type && o.type.includes('/meta/') && o.language === DEFAULT_LANGUAGE);
         schemaName = metaOverlay.name;
         schemaDescription = metaOverlay.description;
         schemaLanguage = metaOverlay.language;
@@ -300,6 +302,7 @@ export function generateDataEntry(acceptedFiles, setLoading, selectedLang) {
             formatAttr(sheet1.getCell(shift + attrIndex, 3));
 
           });
+    
 
           // Step 6.1: Data Entry sheet
           attributeNames = Object.keys(overlay.attributes);

@@ -3,8 +3,11 @@ import React from 'react';
 import { CustomPalette } from '../constants/customPalette';
 import LoopIcon from "@mui/icons-material/Loop";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { useTranslation } from 'react-i18next';
 
 const LandingDropZone = ({ loading, dropDisabled, dropMessage, spinningAnimation, downloadIconColor, getRootProps, getInputProps, hover, handleHover, handleHoverLeave, handleDragOver, handleDragLeave }) => {
+  const { t } = useTranslation();
+
   return (
     <Box
       sx={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}
@@ -12,7 +15,7 @@ const LandingDropZone = ({ loading, dropDisabled, dropMessage, spinningAnimation
     >
       <input {...getInputProps()} />
       <Card
-        sx={{ border: 1, padding: '8px', paddingLeft: '20px', paddingRight: '20px', height: '60px', width: '300px', marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: '#CDCDCD', alignSelf: 'center', cursor: 'pointer' }}
+        sx={{ border: 1, padding: '8px', paddingLeft: '20px', paddingRight: '20px', height: '80px', width: '300px', marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: '#CDCDCD', alignSelf: 'center', cursor: 'pointer' }}
         onMouseOver={handleHover}
         onMouseLeave={handleHoverLeave}
         onDragOver={handleDragOver}
@@ -52,8 +55,8 @@ const LandingDropZone = ({ loading, dropDisabled, dropMessage, spinningAnimation
               }}
             />
           ) : (
-            <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>Upload schema bundle (.zip OR .json)
-              Or drag and drop one
+            <Typography sx={{ fontSize: '16px', fontWeight: '700' }}>
+              {t('Upload schema bundle (.zip OR .json) Or drag and drop one')}
             </Typography>
           )}
         </CardContent>

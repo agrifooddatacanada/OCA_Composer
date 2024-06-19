@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Button, Typography } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CustomPalette } from "../constants/customPalette";
+import { useTranslation } from "react-i18next";
 
 function WarningEntryCodeDelete({
   title,
@@ -9,6 +10,7 @@ function WarningEntryCodeDelete({
   setShowCard,
   handleForward,
 }) {
+  const { t } = useTranslation();
   const arrayDisplay = fieldArray.join(", ");
 
   return (
@@ -76,7 +78,7 @@ function WarningEntryCodeDelete({
         >
           <em>{arrayDisplay}</em>
         </Typography>
-        <Typography variant="h6">Do you wish to continue?</Typography>
+        <Typography variant="h6">{t('Do you wish to continue?')}</Typography>
         <Box sx={{ alignSelf: "flex-end" }}>
           <Button
             variant="outlined"
@@ -86,7 +88,7 @@ function WarningEntryCodeDelete({
             }}
             sx={{ mr: 2, color: CustomPalette.PRIMARY, borderColor: CustomPalette.PRIMARY, ":hover": { borderColor: CustomPalette.SECONDARY, color: CustomPalette.SECONDARY } }}
           >
-            Cancel
+            {t('Cancel')}
           </Button>
           <Button
             variant="contained"
@@ -96,7 +98,7 @@ function WarningEntryCodeDelete({
             }}
             sx={{ mr: 2, backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY } }}
           >
-            Continue
+            {t('Continue')}
           </Button>
         </Box>
       </Box>

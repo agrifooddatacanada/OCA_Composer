@@ -276,44 +276,14 @@ export const displayValues = [
 export const defaultUploadedDescription = "Click here to select a spreadsheet or drag and drop one here";
 export const jsonUploadDescription = "Click here to select an OCA schema or drag and drop one here";
 export const datasetUploadDescription = "Click here to select an Excel or CSV dataset or drag and drop one here";
-
-export const defaultTooltip = (<>
-  <div>
-    To make it easier to create a schema you can drag and drop your
-    existing dataset that you are creating the schema for. This
-    dataset should be in table format as an Excel or .csv format.
-    The first row must contain the column headers (aka attribute
-    names).
-  </div>
-  <br />
-  <div>
-    Note that no data leaves your device, and no data is uploaded to
-    a server. All the processing to copy the column headers
-    (attribute names) into the draft schema happens on your device.
-  </div>
-</>);
-
-export const jsonUploadTooltip = (
-  <div>
-    To make it easier to upload a schema you can drag and drop your
-    existing dataset that you are creating the schema for. This
-    schema should be in JSON format.
-  </div>
-);
-
-export const datasetUploadTooltip = (
-  <div>
-    To make it easier to upload a dataset you can drag and drop your
-    existing dataset that you are creating the schema for. This
-    dataset should be in table format as an Excel or .csv format
-  </div>
-);
-
+export const defaultTooltip = "To make it easier to create a schema you can drag and drop your existing dataset that...";
+export const jsonUploadTooltip = "To make it easier to upload a schema you can drag and drop your existing dataset that you are creating the schema for. This schema should be in JSON format";
+export const datasetUploadTooltip = "To make it easier to upload a dataset you can drag and drop your existing dataset that you are creating the schema for. This dataset should be in table format as an Excel or .csv format";
 export const defaultNoteDescription = 'Note: None of this data will be uploaded to a server and all processing happens on device.';
 
 export const errorCode = {
   'Format': "FE",
   'Entry Codes': "EC",
   'Character Encoding': "CHE",
-  'Data Type': "DT"
+  'Data Type': "DTE"
 };

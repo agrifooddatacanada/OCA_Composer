@@ -18,6 +18,7 @@ import { CustomPalette } from "../constants/customPalette";
 import { preWrapWordBreak } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import { useTranslation } from "react-i18next";
 
 //Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
 const gridStyle = `
@@ -64,26 +65,28 @@ const gridStyle = `
 `;
 
 const CodeHeader = () => {
+  const { t } = useTranslation();
   return (
     <div className="ag-cell-label-container">
       <Tooltip
-        title="The entry choices for the schema. These will be what is recorded in the dataset and so can be simple entry codes."
+        title={t("The entry choices for the schema. These will be what is recorded in the dataset and so can be simple entry codes")}
         placement="top"
         arrow
       >
         <HelpOutlineIcon sx={{ fontSize: 15 }} />
       </Tooltip>
-      <div className="ag-header-cell-label">Entry Code</div>
+      <div className="ag-header-cell-label">{t('Entry Code')}</div>
     </div>
   );
 };
 
 const LanguageHeader = (languages, language) => {
+  const { t } = useTranslation();
   return (
     <div className="ag-cell-label-container">
       {language === languages[0] && (
         <Tooltip
-          title="A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes."
+          title={t("A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes")}
           placement="top"
           arrow
         >
@@ -104,6 +107,7 @@ const LanguageHeader = (languages, language) => {
 };
 
 export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable }) {
+  const { t } = useTranslation();
   const { languages, setEntryCodeRowData, entryCodeRowData } = useContext(Context);
   const [buttonArray, setButtonArray] = useState([]);
   const [gridWidth, setGridWidth] = useState(500);
@@ -354,7 +358,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
         variant="contained"
         sx={{
           alignSelf: "flex-end",
-          width: "9rem",
+          width: "10rem",
           margin: "1rem 3.3rem 0 0",
           display: "flex",
           alignItems: "center",
@@ -362,7 +366,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
         }}
         ref={buttonRef}
       >
-        Add row <AddCircleIcon />
+        {t('Add row')} <AddCircleIcon />
       </Button>
     </Box>
   );

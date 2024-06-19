@@ -6,6 +6,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { getListOfSelectedOverlays } from "../constants/getListOfSelectedOverlays";
 import CellHeader from "../components/CellHeader";
+import { useTranslation } from "react-i18next";
 
 const gridStyles = `
 .ag-cell {
@@ -36,6 +37,7 @@ const CheckboxRenderer = ({ value }) => {
 };
 
 export default function ViewGrid({ displayArray, currentLanguage, setLoading }) {
+  const { t } = useTranslation();
   const { overlay, cardinalityData } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
@@ -49,28 +51,31 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
       const predefinedColumns = [
         {
           field: "Attribute",
+          headerName: t("Attributes"),
           autoHeight: true,
         },
         {
           field: "Flagged",
           width: 78,
-          headerComponent: () => <CellHeader headerText='Sensitive' />,
+          headerComponent: () => <CellHeader headerText={t('Sensitive')} />,
           cellRenderer: CheckboxRenderer,
         },
         {
           field: "Unit",
+          headerName: t("Unit"),
           width: 90,
           autoHeight: true,
         },
         {
           field: "Type",
+          headerName: t("Type"),
           autoHeight: true,
         },
         {
           field: "Label",
           autoHeight: true,
           width: 170,
-          headerComponent: () => <CellHeader headerText='Label' constraint='max 50 chars' />
+          headerComponent: () => <CellHeader headerText={t("Label")} constraint='max 50 chars' />
 
         },
         {
@@ -78,10 +83,11 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           flex: 1,
           minWidth: 350,
           autoHeight: true,
-          headerComponent: () => <CellHeader headerText='Description' constraint='max 200 chars' />
+          headerComponent: () => <CellHeader headerText={t('Description')} constraint={t('max 200 chars')} />
         },
         {
           field: "List",
+          headerName: t("List"),
           width: 173,
           autoHeight: true,
         },
@@ -96,7 +102,7 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           headerComponent: () => {
             return (
               <span style={{ margin: "auto" }}>
-                {feature === 'Make selected entries required' ? 'Required Entry' : feature === 'Add format rule for data' ? "Format Rules" : feature}
+                {feature === 'Make selected entries required' ? t('Required Entry') : feature === 'Add format rule for data' ? t("Format Rules") : t(feature)}
               </span>
             );
           },

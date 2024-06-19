@@ -18,9 +18,11 @@ import useExportLogic from '../ViewSchema/useExportLogic';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 // import useExportLogicV2 from '../ViewSchema/useExportLogicV2';
 import GenerateDataEntryExcel from './GenerateDataEntryExcel';
+import { useTranslation } from 'react-i18next';
 
 const AccordionList = () => {
   const isMobile = useMediaQuery('(max-width: 736px)');
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
@@ -127,10 +129,10 @@ const AccordionList = () => {
               marginTop: 2,
             }}
           >
-            Quick Links
+            {t('Quick Links')}
           </Typography>
           <CustomAnchorLink
-            text='Write a schema'
+            text={t('Write a Schema')}
             overrideStyle={{
               fontSize: '20px',
               fontWeight: '500',
@@ -184,7 +186,7 @@ const AccordionList = () => {
               }}
               disabled={disableButtonCheck}
             >
-              View Schema
+              {t('View Schema')}
             </Button>
             <Button
               variant='contained'
@@ -199,7 +201,7 @@ const AccordionList = () => {
               }}
               disabled={disableButtonCheck}
             >
-              Edit Schema
+              {t('Edit Schema')}
             </Button>
             <Button
               variant='contained'
@@ -220,7 +222,7 @@ const AccordionList = () => {
               }}
               disabled={disableButtonCheck}
             >
-              Generate Readme
+              {t('Generate Readme')}
             </Button>
             <GenerateDataEntryExcel rawFile={rawFile} setLoading={setLoading} disableButtonCheck={disableButtonCheck}/>
           </Box>
