@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { codesToLanguages } from '../constants/isoCodes';
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -11,6 +12,14 @@ WorkbookError.prototype = Object.create(Error.prototype);
 WorkbookError.prototype.constructor = WorkbookError;
 
 export function generateDataEntryV2(acceptedFiles, setLoading, selectedLang) {
+  const DEFAULT_LANGUAGE = 'eng';
+
+  if (selectedLang === "English") {
+    selectedLang = DEFAULT_LANGUAGE;
+  } else {
+    selectedLang = Object.keys(codesToLanguages).find(key => codesToLanguages[key] === selectedLang);
+  }
+
   try {
     setLoading(true);
     const reader = new FileReader();
@@ -41,40 +50,39 @@ export function generateDataEntryV2(acceptedFiles, setLoading, selectedLang) {
       };
 
       // Re-organize the json data:
-      const defaultLanguage = 'eng';
-      const captureBaseOverlays = [];
+      let entryOverlays = [];
       let labelOverlays = [];
-      const informationOverlays = [];
+      let informationOverlays = [];
+      const captureBaseOverlays = [];
       const unitOverlays = [];
       const conformanceOverlays = [];
-      let entryOverlays = [];
       const entryCodeOverlays = [];
       const otherOverlays = [];
 
       // handle multiple languages:
-      function handleMultipleLanguages(overlayName, selectedLangauge, defaultLanguage, toUseOverlay) {
+      function handleMultipleLanguages(overlayName, selectedLang, DEFAULT_LANGUAGE, toUseOverlay) {
         const allOverlays = originJsonData.filter(o => o.type && o.type.includes(overlayName));
 
         if (allOverlays.length !== 0) {
           let selectedOverlay = false;
 
-          if (selectedLangauge === defaultLanguage) {
-            const defaultLanguageOverlay = allOverlays.find(o => o.language === defaultLanguage);
-            if (defaultLanguageOverlay) {
-              toUseOverlay.push(defaultLanguageOverlay);
+          if (selectedLang === DEFAULT_LANGUAGE) {
+            const DEFAULT_LANGUAGEOverlay = allOverlays.find(o => o.language === DEFAULT_LANGUAGE);
+            if (DEFAULT_LANGUAGEOverlay) {
+              toUseOverlay.push(DEFAULT_LANGUAGEOverlay);
               selectedOverlay = true;
             }
           } else {
-            const selectedLanguageOverlay = allOverlays.find(o => o.language === selectedLangauge);
+            const selectedLanguageOverlay = allOverlays.find(o => o.language.startsWith(selectedLang));
             if (selectedLanguageOverlay) {
               toUseOverlay.push(selectedLanguageOverlay);
               selectedOverlay = true;
             }
 
             if (!selectedOverlay) {
-              const defaultLanguageOverlay = allOverlays.find(o => o.language === defaultLanguage);
-              if (defaultLanguageOverlay) {
-                toUseOverlay.push(defaultLanguageOverlay);
+              const DEFAULT_LANGUAGEOverlay = allOverlays.find(o => o.language === DEFAULT_LANGUAGE);
+              if (DEFAULT_LANGUAGEOverlay) {
+                toUseOverlay.push(DEFAULT_LANGUAGEOverlay);
                 selectedOverlay = true;
               }
             }
@@ -82,21 +90,15 @@ export function generateDataEntryV2(acceptedFiles, setLoading, selectedLang) {
         }
         return toUseOverlay;
       };
-
-      // labels:
-      labelOverlays = handleMultipleLanguages('/label/', selectedLang, defaultLanguage, labelOverlays);
-      entryOverlays = handleMultipleLanguages('/entry/', selectedLang, defaultLanguage, entryOverlays);
+      
+      labelOverlays = handleMultipleLanguages('/label/', selectedLang, DEFAULT_LANGUAGE, labelOverlays);
+      entryOverlays = handleMultipleLanguages('/entry/', selectedLang, DEFAULT_LANGUAGE, entryOverlays);
+      informationOverlays = handleMultipleLanguages('/information/', selectedLang, DEFAULT_LANGUAGE, informationOverlays);
 
       for (let i = 0; i < originJsonData.length; i++) {
         const overlay = originJsonData[i];
         if (overlay.type && overlay.type.includes('/capture_base/')) {
           captureBaseOverlays.push(overlay);
-        } else if (overlay.type && overlay.type.includes('/information/')) {
-          if (overlay.language === defaultLanguage) {
-            informationOverlays.push(overlay);
-          } else {
-            continue;
-          }
         } else if (overlay.type && overlay.type.includes('/unit/')) {
           if (overlay.measurement_system === 'Metric') {
             unitOverlays.push(overlay);
@@ -108,7 +110,8 @@ export function generateDataEntryV2(acceptedFiles, setLoading, selectedLang) {
         } else if (overlay.type && overlay.type.includes('/entry_code/')) {
           entryCodeOverlays.push(overlay);
         } else {
-          if (overlay.type && !overlay.type.includes('/meta/') && !overlay.type.includes('/label/') && !overlay.type.includes('/entry/')) {
+          if (overlay.type && !overlay.type.includes('/meta/') && !overlay.type.includes('/label/') 
+            && !overlay.type.includes('/entry/') && !overlay.type.includes('/information/')) {
             otherOverlays.push(overlay);
           };
         };
@@ -128,7 +131,7 @@ export function generateDataEntryV2(acceptedFiles, setLoading, selectedLang) {
       // Step 3: Create a new Excel workbook
       const workbook = new ExcelJS.Workbook();
 
-      // Step 4: Format function
+      // Step 4: Format functions
       function formatFirstPage(cell) {
         cell.font = { size: 10, bold: true };
         cell.alignment = { vertical: 'top', wrapText: false };
@@ -200,7 +203,7 @@ export function generateDataEntryV2(acceptedFiles, setLoading, selectedLang) {
         return columnLetter;
       }
 
-      /// Creating first sheet
+      
       const sheet1 = workbook.addWorksheet('Schema Description');
 
       let schemaName = null, schemaDescription = null,
@@ -208,7 +211,7 @@ export function generateDataEntryV2(acceptedFiles, setLoading, selectedLang) {
         schemaSAID = null;
 
       try {
-        const metaOverlay = originJsonData.find(o => o.type && o.type.includes('/meta/') && o.language === defaultLanguage);
+        const metaOverlay = originJsonData.find(o => o.type && o.type.includes('/meta/') && o.language.startsWith(selectedLang));
         schemaName = metaOverlay.name;
         schemaDescription = metaOverlay.description;
         schemaLanguage = metaOverlay.language;
@@ -244,7 +247,7 @@ export function generateDataEntryV2(acceptedFiles, setLoading, selectedLang) {
       const ocaREf_cell = sheet1.getCell(19, 2);
       ocaREf_cell.value = {
         text: "A schema describes structures and rules of a dataset. The schema source used to create this Excel Workbook is described in the language of Overlays Capture Architecture (OCA, reference: https://doi.org/10.5281/zenodo.7707367)",
-        hyperlink: "https://doi.org/10.5281/zenodo.7707367",
+        hyperlink: "https://zenodo.org/records/7707467",
       };
 
       sheet1.mergeCells('B19:N19');

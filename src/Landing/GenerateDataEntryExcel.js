@@ -1,4 +1,5 @@
-import React, { useState} from 'react';
+import React, { useState, useContext } from 'react';
+import { Context } from "../App";
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogTitle, MenuItem, Select, FormControl, InputLabel, Box, Typography,
@@ -9,10 +10,11 @@ import { CustomPalette } from '../constants/customPalette';
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
+
+  const { languages } = useContext(Context);
+
   const appearAnimation =
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
-  // Todo: Implement this function after direction from Carly.
-  const languages = ['eng', 'fra'];
 
   const [open, setOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState('');
@@ -95,7 +97,7 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
               }}
             />
           </Box>
-            <Typography variant="h5" sx={{ p: 3 }}>
+            <Typography variant="h5" component="div" sx={{ p: 3 }}>
             Select a language
             </Typography>
         </DialogTitle>
@@ -103,12 +105,13 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
           sx={{
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
-            fontSize: 20,
+            fontSize: 20, textAlign: 'center',
           }}
         >
-          <strong>Labels and Entry overlays will be in the language selected.</strong>
+          <strong>Include information in the language that you select here.</strong>
+          <strong>If not available the system will default to English.</strong>
           <Box
-            sx={{ marginTop: 3 }}
+            sx={{ marginTop: 4 }}
           >
             <FormControl
               sx={{
