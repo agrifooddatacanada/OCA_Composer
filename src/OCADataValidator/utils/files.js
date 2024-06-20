@@ -7,8 +7,9 @@ export default class OCADataSet {
     return new Promise((resolve, reject) => {
       try {
         const workbook = XLSX.readFile(fileContent);
-        const sheetNameToUse = workbook.SheetNames.includes('Schema Conformant Data') ? 'Schema Conformant Data' : 'Data Entry'
+        const sheetNameToUse = workbook.SheetNames.includes('Schema Conformant Data') ? 'Schema Conformant Data' : 'Data Entry';
         const worksheet = workbook.Sheets[sheetNameToUse];
+
         const range = XLSX.utils.decode_range(worksheet['!ref']);
 
         // Find the last row index containing data.
@@ -48,6 +49,7 @@ export default class OCADataSet {
           const columnName = dataset[0][col];
           result[columnName] = dataset.slice(1, lastRowIndex + 1).map(row => row[col]);
         }
+       resolve(result);
        resolve(result);
       } catch (error) {
         reject(error);
