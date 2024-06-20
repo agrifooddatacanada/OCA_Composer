@@ -5,13 +5,12 @@ import {
   DialogTitle, MenuItem, Select, FormControl, InputLabel, Box, Typography,
 } from '@mui/material';
 import { generateDataEntry } from './generateDataEntry';
-import { generateDataEntryV2 } from './generateDataEntryV2';
 import { CustomPalette } from '../constants/customPalette';
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
 
   const { languages } = useContext(Context);
   const appearAnimation =
@@ -27,11 +26,7 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
   const handleClose = (confirm) => {
     setOpen(false);
     if (confirm && selectedLang) {
-      if (rawFile?.[0]?.type?.includes('zip')) {
-        generateDataEntry(rawFile, setLoading, selectedLang);
-      } else if (rawFile?.[0]?.type?.includes('json')) {
-        generateDataEntryV2(rawFile, setLoading, selectedLang);
-      }
+      generateDataEntry(rawFile, setLoading, selectedLang);
     }
     setSelectedLang('');
   };
