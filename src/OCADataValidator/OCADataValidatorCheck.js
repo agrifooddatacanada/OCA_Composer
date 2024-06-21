@@ -20,7 +20,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { getCurrentData } from '../constants/utils';
 
 export const TrashCanButton = memo(
-  forwardRef((props, ref) => {
+  forwardRef((props, _ref) => {
     const onClick = useCallback(() => {
       props.delete();
     }, [props]);
@@ -319,7 +319,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
   const handleSave = async (ogHeader = false, exportFormat) => {
     if (ogWorkbook !== null && exportFormat === 'excel') {
-      await handleExelSave();
+      await handleExcelSave();
     } else if (ogWorkbook !== null && exportFormat === 'csv') {
       await handleCSVSave(ogHeader);
     }
@@ -328,7 +328,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     }
   };
 
-  const handleExelSave = async () => {
+  const handleExcelSave = async () => {
     try {
       const workbook = await generateDataEntryExcel(ogWorkbook);
       if (workbook !== null) {
@@ -440,6 +440,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     });
   };
 
+  // depreciated function for generating Excel file.
   const generateDataEntryExcel = async (ogWorkbook) => {
 
     try {
@@ -455,12 +456,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
           console.error('Error while copying sheets from Data Entry Excel');
         }
       });
-
-      // const newData = gridRef.current.api.getRenderedNodes()?.map(node => {
-      //   const newObject = { ...node?.data };
-      //   delete newObject['error'];
-      //   return newObject;
-      // });
+      
       const newData = getCurrentData(gridRef.current.api, false);
 
       const schemaConformantDataSheet = newWorkbook.getWorksheet(excelSheetChoice);
