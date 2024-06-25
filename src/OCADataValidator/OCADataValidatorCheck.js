@@ -1,23 +1,39 @@
-import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, IconButton, MenuItem, Typography } from '@mui/material';
-import { greyCellStyle, gridStyles } from '../constants/styles';
-import { AgGridReact } from 'ag-grid-react';
-import '../App.css';
-import { Context } from '../App';
-import ExcelJS from 'exceljs';
-import OCABundle from './validator';
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Box, Button, IconButton, MenuItem, Typography } from "@mui/material";
+import { greyCellStyle, gridStyles } from "../constants/styles";
+import { AgGridReact } from "ag-grid-react";
+import "../App.css";
+import { Context } from "../App";
+import ExcelJS from "exceljs";
+import OCABundle from "./validator";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Languages from "./Languages";
-import MultipleSelectPlaceholder from './MultiSelectErrors';
-import CellHeader from '../components/CellHeader';
+import MultipleSelectPlaceholder from "./MultiSelectErrors";
+import CellHeader from "../components/CellHeader";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import ExportButton from './ExportButton';
-import { errorCode, formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from '../constants/constants';
-import { DropdownMenuList } from '../components/DropdownMenuCell';
-import WarningPopup from './WarningPopup';
-import { CustomPalette } from '../constants/customPalette';
+import ExportButton from "./ExportButton";
+import {
+  errorCode,
+  formatCodeBinaryDescription,
+  formatCodeDateDescription,
+  formatCodeNumericDescription,
+  formatCodeTextDescription,
+} from "../constants/constants";
+import { DropdownMenuList } from "../components/DropdownMenuCell";
+import WarningPopup from "./WarningPopup";
+import { CustomPalette } from "../constants/customPalette";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { getCurrentData } from '../constants/utils';
+import { getCurrentData } from "../constants/utils";
+import { createDEE } from "../Landing/createDEE";
 
 export const TrashCanButton = memo(
   forwardRef((props, _ref) => {
@@ -42,18 +58,21 @@ export const TrashCanButton = memo(
 );
 
 const convertToCSV = (data, newHeader) => {
-  const csv = data.map(row => {
-    return newHeader.map(headerKey => {
-      let value = row[headerKey] !== undefined ? row[headerKey] : '';
-      if (/,|"/.test(value)) {
-        value = `"${value.replace(/"/g, '""')}"`;
-      }
-      return value;
-    }).join(',');
-  }).join('\n');
+  const csv = data
+    .map((row) => {
+      return newHeader
+        .map((headerKey) => {
+          let value = row[headerKey] !== undefined ? row[headerKey] : "";
+          if (/,|"/.test(value)) {
+            value = `"${value.replace(/"/g, '""')}"`;
+          }
+          return value;
+        })
+        .join(",");
+    })
+    .join("\n");
   return csv;
 };
-
 
 const CustomTooltip = (props) => {
   const error = props.data?.error?.[props.colDef.field] || [];
@@ -61,36 +80,103 @@ const CustomTooltip = (props) => {
 
   return (
     <>
-      {dataLength > 4 && error.length > 0 ?
-        (<Box className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', width: '100%', minWidth: '200px', maxWidth: '600px', maxHeight: '200px', overflow: 'hidden' }}>
-          <Typography sx={{ marginBottom: '5px', fontWeight: 'bold', fontSize: '18px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      {dataLength > 4 && error.length > 0 ? (
+        <Box
+          className="custom-tooltip"
+          style={{
+            backgroundColor: props.color || "#999",
+            borderRadius: "8px",
+            padding: "15px",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+            width: "100%",
+            minWidth: "200px",
+            maxWidth: "600px",
+            maxHeight: "200px",
+            overflow: "hidden",
+          }}
+        >
+          <Typography
+            sx={{
+              marginBottom: "5px",
+              fontWeight: "bold",
+              fontSize: "18px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             Error ({error.length}):
           </Typography>
           {error.map((err, index) => (
-            <Typography key={index} style={{ wordWrap: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'left' }}>
+            <Typography
+              key={index}
+              style={{
+                wordWrap: "break-word",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                textAlign: "left",
+              }}
+            >
               {index + 1}. {err.detail}
             </Typography>
           ))}
-        </Box>)
-        : dataLength > 0 && error.length > 0 ?
-          (
-            <Box className="custom-tooltip" style={{ backgroundColor: props.color || '#999', borderRadius: '8px', padding: '5px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', width: '100%', minWidth: '200px', maxWidth: '600px', maxHeight: '200px', overflow: 'hidden' }}>
-              <Typography sx={{ marginBottom: '5px', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '14px' }}>
-                Error ({error.length}): <span style={{ wordWrap: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'normal' }}>
-                  {error[0].detail}
-                </span>
-              </Typography>
-
-            </Box>
-          ) :
-          <p></p>}
+        </Box>
+      ) : dataLength > 0 && error.length > 0 ? (
+        <Box
+          className="custom-tooltip"
+          style={{
+            backgroundColor: props.color || "#999",
+            borderRadius: "8px",
+            padding: "5px",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+            width: "100%",
+            minWidth: "200px",
+            maxWidth: "600px",
+            maxHeight: "200px",
+            overflow: "hidden",
+          }}
+        >
+          <Typography
+            sx={{
+              marginBottom: "5px",
+              fontWeight: "bold",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              fontSize: "14px",
+            }}
+          >
+            Error ({error.length}):{" "}
+            <span
+              style={{
+                wordWrap: "break-word",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                fontWeight: "normal",
+              }}
+            >
+              {error[0].detail}
+            </span>
+          </Typography>
+        </Box>
+      ) : (
+        <p></p>
+      )}
     </>
   );
 };
 
-const flaggedHeader = (props, labelDescription, formatRuleRowData, characterEncodingRowData, cardinalityData) => {
-  const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
-  const formatRule = formatRuleRowData.find((item) => item?.Attribute === props?.displayName);
+const flaggedHeader = (
+  props,
+  labelDescription,
+  formatRuleRowData,
+  characterEncodingRowData,
+  cardinalityData
+) => {
+  const value = labelDescription.find(
+    (item) => item?.Attribute === props?.displayName
+  );
+  const formatRule = formatRuleRowData.find(
+    (item) => item?.Attribute === props?.displayName
+  );
   const attributeType = formatRule?.Type;
   let selectedOption = [];
   if (attributeType?.includes("Date")) {
@@ -103,102 +189,145 @@ const flaggedHeader = (props, labelDescription, formatRuleRowData, characterEnco
     selectedOption = formatCodeTextDescription;
   }
 
-  const characterEncoding = characterEncodingRowData.find((item) => item?.Attribute === props?.displayName);
-  const cardinality = cardinalityData.find((item) => item?.Attribute === props?.displayName);
+  const characterEncoding = characterEncodingRowData.find(
+    (item) => item?.Attribute === props?.displayName
+  );
+  const cardinality = cardinalityData.find(
+    (item) => item?.Attribute === props?.displayName
+  );
 
   return (
     <CellHeader
       headerText={
-        <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center' }}>
-          {props?.displayName || ''} {' '}
+        <Box sx={{ display: "flex", direction: "row", alignItems: "center" }}>
+          {props?.displayName || ""}{" "}
         </Box>
       }
       helpText={
-        value ?
-          (<Box sx={{
-            padding: '10px',
-          }}>
-            {value &&
+        value ? (
+          <Box
+            sx={{
+              padding: "10px",
+            }}
+          >
+            {value && (
               <>
-                {"Label" in value && value?.Label && value?.Label !== "" &&
+                {"Label" in value && value?.Label && value?.Label !== "" && (
                   <>
-                    <Typography sx={{ fontWeight: 'bold' }}>Label:</Typography>
-                    <Typography>
-                      {value?.Label}
-                    </Typography>
-                  </>}
-                {"Description" in value && value?.Description && value?.Description !== "" &&
-                  <>
-                    <br />
-                    <Typography sx={{ fontWeight: 'bold' }}>Description:</Typography>
-                    <Typography>
-                      {value?.Description}
-                    </Typography>
-                  </>}
-              </>}
-            {formatRule &&
+                    <Typography sx={{ fontWeight: "bold" }}>Label:</Typography>
+                    <Typography>{value?.Label}</Typography>
+                  </>
+                )}
+                {"Description" in value &&
+                  value?.Description &&
+                  value?.Description !== "" && (
+                    <>
+                      <br />
+                      <Typography sx={{ fontWeight: "bold" }}>
+                        Description:
+                      </Typography>
+                      <Typography>{value?.Description}</Typography>
+                    </>
+                  )}
+              </>
+            )}
+            {formatRule && (
               <>
-                {"Type" in formatRule && formatRule?.Type && formatRule?.Type !== "" &&
-                  <>
-                    <br />
-                    <Typography sx={{ fontWeight: 'bold' }}>Type:</Typography>
-                    <Typography>
-                      {formatRule?.Type}
-                    </Typography>
-                  </>}
-                {"FormatText" in formatRule && formatRule?.FormatText && formatRule?.FormatText !== "" &&
-                  <>
-                    <br />
-                    <Typography sx={{ fontWeight: 'bold' }}>Format:</Typography>
-                    <Typography >
-                      <span style={{
-                        fontWeight: '500',
-                      }}>- RegEx: </span> {formatRule?.FormatText || ''}
-                    </Typography>
-                    <Typography>
-                      <>
-                        {formatRule?.FormatText in selectedOption &&
-                          <>
-                            <span style={{
-                              fontWeight: '500',
-                            }}>- Description: </span>
-                            {selectedOption[formatRule?.FormatText]}
-                          </>
-                        }
-                      </>
-                    </Typography>
-                  </>}
-              </>}
-            {characterEncoding &&
+                {"Type" in formatRule &&
+                  formatRule?.Type &&
+                  formatRule?.Type !== "" && (
+                    <>
+                      <br />
+                      <Typography sx={{ fontWeight: "bold" }}>Type:</Typography>
+                      <Typography>{formatRule?.Type}</Typography>
+                    </>
+                  )}
+                {"FormatText" in formatRule &&
+                  formatRule?.FormatText &&
+                  formatRule?.FormatText !== "" && (
+                    <>
+                      <br />
+                      <Typography sx={{ fontWeight: "bold" }}>
+                        Format:
+                      </Typography>
+                      <Typography>
+                        <span
+                          style={{
+                            fontWeight: "500",
+                          }}
+                        >
+                          - RegEx:{" "}
+                        </span>{" "}
+                        {formatRule?.FormatText || ""}
+                      </Typography>
+                      <Typography>
+                        <>
+                          {formatRule?.FormatText in selectedOption && (
+                            <>
+                              <span
+                                style={{
+                                  fontWeight: "500",
+                                }}
+                              >
+                                - Description:{" "}
+                              </span>
+                              {selectedOption[formatRule?.FormatText]}
+                            </>
+                          )}
+                        </>
+                      </Typography>
+                    </>
+                  )}
+              </>
+            )}
+            {characterEncoding && (
               <>
-                {'Make selected entries required' in characterEncoding &&
+                {"Make selected entries required" in characterEncoding && (
                   <>
                     <br />
-                    <Typography sx={{ fontWeight: 'bold' }}>Required:</Typography>
-                    <Typography>
-                      {characterEncoding?.['Make selected entries required']?.toString() || ''}
+                    <Typography sx={{ fontWeight: "bold" }}>
+                      Required:
                     </Typography>
-                  </>}
-                {'Character Encoding' in characterEncoding && characterEncoding?.['Character Encoding'] && characterEncoding?.['Character Encoding'] !== "" &&
-                  <>
-                    <br />
-                    <Typography sx={{ fontWeight: 'bold' }}>Character Encoding:</Typography>
                     <Typography>
-                      {characterEncoding?.['Character Encoding']}
+                      {characterEncoding?.[
+                        "Make selected entries required"
+                      ]?.toString() || ""}
                     </Typography>
-                  </>}
-
-              </>}
-            {cardinality && "EntryLimit" in cardinality && cardinality?.EntryLimit && cardinality?.EntryLimit !== "" &&
-              <>
-                <br />
-                <Typography sx={{ fontWeight: 'bold' }}>Cardinality:</Typography>
-                <Typography>
-                  {cardinality?.EntryLimit}
-                </Typography>
-              </>}
-          </Box>) : ''
-      } />
+                  </>
+                )}
+                {"Character Encoding" in characterEncoding &&
+                  characterEncoding?.["Character Encoding"] &&
+                  characterEncoding?.["Character Encoding"] !== "" && (
+                    <>
+                      <br />
+                      <Typography sx={{ fontWeight: "bold" }}>
+                        Character Encoding:
+                      </Typography>
+                      <Typography>
+                        {characterEncoding?.["Character Encoding"]}
+                      </Typography>
+                    </>
+                  )}
+              </>
+            )}
+            {cardinality &&
+              "EntryLimit" in cardinality &&
+              cardinality?.EntryLimit &&
+              cardinality?.EntryLimit !== "" && (
+                <>
+                  <br />
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    Cardinality:
+                  </Typography>
+                  <Typography>{cardinality?.EntryLimit}</Typography>
+                </>
+              )}
+          </Box>
+        ) : (
+          ""
+        )
+      }
+    />
   );
 };
 
@@ -206,10 +335,13 @@ const EntryCodeDropdownSelector = memo(
   forwardRef((props, _ref) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const columnHeader = props.colDef.field;
-    const listItemObjectDisplay = props.dataHeaders?.[columnHeader].reduce((acc, item) => {
-      acc[item['Code']] = item[props.lang];
-      return acc;
-    }, {});
+    const listItemObjectDisplay = props.dataHeaders?.[columnHeader].reduce(
+      (acc, item) => {
+        acc[item["Code"]] = item[props.lang];
+        return acc;
+      },
+      {}
+    );
     const listItems = Object.keys(listItemObjectDisplay);
 
     const handleChange = (e) => {
@@ -239,32 +371,36 @@ const EntryCodeDropdownSelector = memo(
           value={value}
           sx={{ border: "none", height: "2rem", fontSize: "small" }}
         >
-          <strong>{value}</strong>: {listItemObjectDisplay[value] || ''}
+          <strong>{value}</strong>: {listItemObjectDisplay[value] || ""}
         </MenuItem>
       );
     });
 
     return (
       <>
-        {
-          listItems.length > 0 ?
-            <DropdownMenuList
-              handleKeyDown={handleKeyDown}
-              type={props.node.data?.[columnHeader]}
-              handleChange={handleChange}
-              handleClick={handleClick}
-              isDropdownOpen={isDropdownOpen}
-              setIsDropdownOpen={setIsDropdownOpen}
-              typesDisplay={typesDisplay}
-            /> :
-            <></>
-        }
+        {listItems.length > 0 ? (
+          <DropdownMenuList
+            handleKeyDown={handleKeyDown}
+            type={props.node.data?.[columnHeader]}
+            handleChange={handleChange}
+            handleClick={handleClick}
+            isDropdownOpen={isDropdownOpen}
+            setIsDropdownOpen={setIsDropdownOpen}
+            typesDisplay={typesDisplay}
+          />
+        ) : (
+          <></>
+        )}
       </>
     );
   })
 );
 
-const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeDisplayWarning }) => {
+const OCADataValidatorCheck = ({
+  showWarningCard,
+  setShowWarningCard,
+  firstTimeDisplayWarning,
+}) => {
   const {
     excelSheetChoice,
     schemaDataConformantRowData,
@@ -277,12 +413,14 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     lanAttributeRowData,
     matchingRowData,
     datasetRawFile,
+    jsonRawFile,
     formatRuleRowData,
     cardinalityData,
     characterEncodingRowData,
     attributesList,
     setSchemaDataConformantHeader,
     savedEntryCodes,
+    targetResult,
   } = useContext(Context);
 
   const [rowData, setRowData] = useState([]);
@@ -297,7 +435,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   const gridRef = useRef();
   const validateBeforeOnChangeRef = useRef(false);
 
-  const datasetRawFileType = datasetRawFile[0]?.name.split('.').pop();
+  const datasetRawFileType = datasetRawFile[0]?.name.split(".").pop();
 
   const defaultColDef = useMemo(() => {
     return {
@@ -305,7 +443,14 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       flex: 1,
       minWidth: 100,
       tooltipComponent: CustomTooltip,
-      headerComponent: (params) => flaggedHeader(params, lanAttributeRowData[langRef.current], formatRuleRowData, characterEncodingRowData, cardinalityData),
+      headerComponent: (params) =>
+        flaggedHeader(
+          params,
+          lanAttributeRowData[langRef.current],
+          formatRuleRowData,
+          characterEncodingRowData,
+          cardinalityData
+        ),
       cellRendererParams: (params) => ({
         dataHeaders: savedEntryCodes,
         lang: langRef.current,
@@ -318,26 +463,28 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
   }, [lanAttributeRowData, langRef.current]);
 
   const handleSave = async (ogHeader = false, exportFormat) => {
-    if (ogWorkbook !== null && exportFormat === 'excel') {
+    if (ogWorkbook !== null && exportFormat === "excel") {
       await handleExcelSave();
-    } else if (ogWorkbook !== null && exportFormat === 'csv') {
+    } else if (ogWorkbook !== null && exportFormat === "csv") {
       await handleCSVSave(ogHeader);
-    }
-    else {
+    } else {
       await handleCSVSave(ogHeader);
     }
   };
 
   const handleExcelSave = async () => {
     try {
-      const workbook = await generateDataEntryExcel(ogWorkbook);
+      const workbook = await generateDataEntryExcel(
+        targetResult,
+        langRef.current
+      );
       if (workbook !== null) {
-        downloadExcelFile(workbook, 'DataEntryExcel.xlsx');
+        downloadExcelFile(workbook, "DataEntryExcel.xlsx");
       } else {
-        throw new Error('Error while generating Excel file');
+        throw new Error("Error while generating Excel file");
       }
     } catch (error) {
-      console.error('Error while generating Excel file', error);
+      console.error("Error while generating Excel file", error);
     }
   };
 
@@ -345,12 +492,13 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     try {
       const newCSV = await generateCSVFile(ogHeader);
       if (newCSV !== null) {
-        downloadCSVFile(newCSV, 'DataEntryCSV.csv');
+        console.log(targetResult);
+        downloadCSVFile(newCSV, "DataEntryCSV.csv");
       } else {
-        throw new Error('Error while generating CSV file');
+        throw new Error("Error while generating CSV file");
       }
     } catch (error) {
-      console.error('Error while generating CSV file', error);
+      console.error("Error while generating CSV file", error);
     }
   };
 
@@ -360,7 +508,10 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       let newObject = {};
       if (ogHeader) {
         for (const [key, value] of Object.entries(node?.data)) {
-          newObject[matchingRowData.find((item) => item['Attribute'] === key)?.Dataset || key] = value;
+          newObject[
+            matchingRowData.find((item) => item["Attribute"] === key)
+              ?.Dataset || key
+          ] = value;
         }
       } else {
         newObject = { ...node?.data };
@@ -372,7 +523,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
 
     const mappingFromAttrToDataset = {};
     for (const node of matchingRowData) {
-      mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
+      mappingFromAttrToDataset[node["Attribute"]] = node["Dataset"];
     }
 
     schemaDataConformantHeader.forEach((header) => {
@@ -383,7 +534,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       }
     });
 
-    const headerToString = newHeader.join(',') + '\n';
+    const headerToString = newHeader.join(",") + "\n";
     return headerToString + convertToCSV(newData, newHeader);
   };
 
@@ -401,7 +552,10 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     schemaDataConformantHeader.forEach((header) => {
       for (const row of newData) {
         if (header in row) {
-          prepareInput[header] = header in prepareInput ? [...prepareInput[header], row[header]] : [row[header]];
+          prepareInput[header] =
+            header in prepareInput
+              ? [...prepareInput[header], row[header]]
+              : [row[header]];
         }
       }
     });
@@ -421,17 +575,20 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       const copy = [];
 
       prev.forEach((header) => {
-        if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== '') {
+        if (
+          validate?.unmachedAttrs?.has(header.headerName) &&
+          header.headerName !== ""
+        ) {
           copy.push({
             ...header,
             cellStyle: () => {
               return { backgroundColor: "#ededed" };
-            }
+            },
           });
         } else {
           copy.push({
             ...header,
-            cellStyle
+            cellStyle,
           });
         }
       });
@@ -440,7 +597,9 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     });
   };
 
-  // depreciated function for generating Excel file.
+  // depreciated functions for generating Excel file -> new solution: generating DEE for verified data.
+
+  /*
   const generateDataEntryExcel = async (ogWorkbook) => {
 
     try {
@@ -475,7 +634,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       return null;
     }
   };
-
+  
   const copySheets = async (sourceSheet, targetWorkbook, targetSheetName, selectedSheetName) => {
     try {
       if (selectedSheetName === undefined) {
@@ -509,17 +668,52 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       a.click();
     });
   };
+  */
+ 
+  const generateDataEntryExcel = async (e, selectedLang) => {
+    try {
+      const workbook = await createDEE(e, selectedLang);
+      const newData = getCurrentData(gridRef.current.api, false);
+      const schemaConformantDataSheet = workbook.getWorksheet("Data Entry");
+      const schemaConformantDataHeaders = Array.from(
+        new Set(newData.flatMap(Object.keys))
+      );
+      schemaConformantDataSheet.addRow(schemaConformantDataHeaders);
+      newData.forEach((data) => {
+        const row = schemaConformantDataHeaders.map(
+          (header) => data[header] || ""
+        );
+        schemaConformantDataSheet.addRow(row);
+      });
+      return workbook;
+    } catch (error) {
+      console.error("Error generating DataEntryExcel file:", error);
+    }
+  };
+
+  const downloadExcelFile = (workbook, fileName) => {
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName || "DataEntryExcel.xlsx";
+      a.click();
+    });
+  };
 
   const downloadCSVFile = (csvData, fileName) => {
-    const blob = new Blob([csvData], { type: 'text/csv' });
+    const blob = new Blob([csvData], { type: "text/csv" });
 
     // Create a temporary URL for the Blob
     const url = URL.createObjectURL(blob);
 
     // Create a temporary <a> element to trigger the download
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = fileName || 'export.csv'; // Default filename is 'export.csv'
+    a.download = fileName || "export.csv"; // Default filename is 'export.csv'
     document.body.appendChild(a);
     a.click();
 
@@ -583,20 +777,18 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
       return;
     }
 
-    e.node.updateData(
-      {
-        ...e.data,
-        [e.colDef.field]: e.newValue,
-      }
-    );
+    e.node.updateData({
+      ...e.data,
+      [e.colDef.field]: e.newValue,
+    });
 
     if (e.oldValue !== e.newValue) {
       var column = e.column.colDef.field;
-      e.column.colDef.cellStyle = { 'background-color': 'none' };
+      e.column.colDef.cellStyle = { "background-color": "none" };
       e.api.refreshCells({
         force: true,
         columns: [column],
-        rowNodes: [e.node]
+        rowNodes: [e.node],
       });
     }
 
@@ -609,7 +801,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     if (datasetRawFile.length > 0) {
       const mappingFromAttrToDataset = {};
       for (const node of matchingRowData) {
-        mappingFromAttrToDataset[node['Attribute']] = node['Dataset'];
+        mappingFromAttrToDataset[node["Attribute"]] = node["Dataset"];
       }
 
       const newData = [];
@@ -625,12 +817,14 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
         newData.push(newRow);
       }
 
-      setSchemaDataConformantHeader(prev => prev.map((header) => mappingFromAttrToDataset[header] || header));
+      setSchemaDataConformantHeader((prev) =>
+        prev.map((header) => mappingFromAttrToDataset[header] || header)
+      );
       setSchemaDataConformantRowData(newData);
-      setCurrentDataValidatorPage('AttributeMatchDataValidator');
+      setCurrentDataValidatorPage("AttributeMatchDataValidator");
     } else {
       setSchemaDataConformantRowData(currentData);
-      setCurrentDataValidatorPage('StartDataValidator');
+      setCurrentDataValidatorPage("StartDataValidator");
     }
   };
 
@@ -639,79 +833,74 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     firstTimeDisplayWarning.current = false;
   }, [firstTimeDisplayWarning, setShowWarningCard]);
 
-  const onCellKeyDown = useCallback(
-    (e) => {
-      validateBeforeOnChangeRef.current = false;
-      const keyPressed = e.event.code;
+  const onCellKeyDown = useCallback((e) => {
+    validateBeforeOnChangeRef.current = false;
+    const keyPressed = e.event.code;
 
-      const isLastRow = e.node.lastChild;
-      if (keyPressed === "Enter") {
-        if (isLastRow) {
-          handleAddRow();
-        }
+    const isLastRow = e.node.lastChild;
+    if (keyPressed === "Enter") {
+      if (isLastRow) {
+        handleAddRow();
+      }
+      setTimeout(() => {
+        const api = e.api;
+        const editingRowIndex = e.rowIndex;
+        api.setFocusedCell(editingRowIndex + 1, e.column);
+      }, 0);
+    }
+
+    if (keyPressed === "Tab") {
+      const allColumns = e.columnApi.getAllColumns();
+      const isLastColumn = e.column === allColumns.slice(-1)[0];
+      if (isLastColumn && isLastRow) {
+        handleAddRow();
         setTimeout(() => {
           const api = e.api;
           const editingRowIndex = e.rowIndex;
-          api.setFocusedCell(editingRowIndex + 1, e.column);
+          api.setFocusedCell(editingRowIndex + 1, allColumns[0]);
         }, 0);
       }
-
-      if (keyPressed === "Tab") {
-        const allColumns = e.columnApi.getAllColumns();
-        const isLastColumn = e.column === allColumns.slice(-1)[0];
-        if (isLastColumn && isLastRow) {
-          handleAddRow();
-          setTimeout(() => {
-            const api = e.api;
-            const editingRowIndex = e.rowIndex;
-            api.setFocusedCell(editingRowIndex + 1, allColumns[0]);
-          }, 0);
-        }
-      }
-    },
-    []
-  );
+    }
+  }, []);
 
   useEffect(() => {
     const columns = [];
-    const variableToCheck = datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
+    const variableToCheck =
+      datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
     if (datasetRawFile.length === 0) {
       setSchemaDataConformantHeader(attributesList);
     }
 
     if (variableToCheck && variableToCheck?.length > 0) {
       variableToCheck.forEach((header) => {
-        columns.push(
-          {
-            headerName: header,
-            field: header,
-            minWidth: 150,
-            tooltipComponentParams: { color: '#F88379' },
-            tooltipValueGetter: (params) => ({ value: params.value }),
-            cellRendererFramework: header in savedEntryCodes ? EntryCodeDropdownSelector : undefined,
-          }
-        );
+        columns.push({
+          headerName: header,
+          field: header,
+          minWidth: 150,
+          tooltipComponentParams: { color: "#F88379" },
+          tooltipValueGetter: (params) => ({ value: params.value }),
+          cellRendererFramework:
+            header in savedEntryCodes ? EntryCodeDropdownSelector : undefined,
+        });
       });
     }
 
-    columns.push(
-      {
-        headerName: 'Del.',
-        field: 'Delete',
-        cellRendererFramework: TrashCanButton,
-        width: 50,
-        cellRendererParams: (params) => ({
-          delete: () => {
-            gridRef.current.api.applyTransaction({
-              remove: [params.node.data],
-            });
-            gridRef.current.api.redrawRows();
-          }
-        }),
-        pinned: 'right',
-        cellStyle: () => greyCellStyle,
-      }
-    );
+    columns.push({
+      headerName: "Del.",
+      field: "Delete",
+      cellRendererFramework: TrashCanButton,
+      width: 50,
+      cellRendererParams: (params) => ({
+        delete: () => {
+          gridRef.current.api.applyTransaction({
+            remove: [params.node.data],
+          });
+          gridRef.current.api.redrawRows();
+        },
+      }),
+      pinned: "right",
+      cellStyle: () => greyCellStyle,
+    });
 
     setColumnDefs(columns);
     setRowData(schemaDataConformantRowData);
@@ -725,21 +914,24 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
     }
   }, [rowData]);
 
-  const rowDataFilter = errorName.length > 0 ? rowData.filter((row) => {
-    for (const error of errorName) {
-      if (row?.error) {
-        const errCode = errorCode?.[error];
-        const errorValues = Object.values(row?.error);
-        for (const err of errorValues) {
-          const errs = err.map((item) => item?.type);
-          if (errs?.includes(errCode)) {
-            return true;
+  const rowDataFilter =
+    errorName.length > 0
+      ? rowData.filter((row) => {
+          for (const error of errorName) {
+            if (row?.error) {
+              const errCode = errorCode?.[error];
+              const errorValues = Object.values(row?.error);
+              for (const err of errorValues) {
+                const errs = err.map((item) => item?.type);
+                if (errs?.includes(errCode)) {
+                  return true;
+                }
+              }
+            }
           }
-        }
-      }
-    }
-    return false;
-  }) : rowData;
+          return false;
+        })
+      : rowData;
 
   return (
     <>
@@ -751,7 +943,7 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
             alignItems: "center",
             justifyContent: "space-between",
             margin: "auto",
-            marginRight: '2rem',
+            marginRight: "2rem",
             pl: 10,
             marginTop: 2,
           }}
@@ -770,98 +962,162 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
             >
               <ArrowBackIosIcon /> Back
             </Button>
-            <Box sx={{
-              display: 'flex',
-              flexDirection: 'row',
-            }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+              }}
+            >
               <Box
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
+                  display: "flex",
+                  flexDirection: "row",
                   paddingRight: "20px",
-                  alignItems: 'center',
+                  alignItems: "center",
                 }}
               >
-                {revalidateData &&
-                  <Typography sx={{
-                    marginRight: "20px",
-                    color: 'red',
-                    fontWeight: 'bold',
-                  }}>Please re-verify the data!</Typography>}
+                {revalidateData && (
+                  <Typography
+                    sx={{
+                      marginRight: "20px",
+                      color: "red",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Please re-verify the data!
+                  </Typography>
+                )}
                 <Button
-                  color='button'
-                  variant='contained'
-                  target='_blank'
-                  style={{ width: '120px', height: '40px' }}
+                  color="button"
+                  variant="contained"
+                  target="_blank"
+                  style={{ width: "120px", height: "40px" }}
                   onClick={handleValidate}
                   disabled={isValidateButtonEnabled}
                 >
                   Verify
                 </Button>
               </Box>
-              <ExportButton handleSave={handleSave} inputDataType={datasetRawFileType} />
+              <ExportButton
+                handleSave={handleSave}
+                inputDataType={datasetRawFileType}
+              />
             </Box>
           </Box>
         </Box>
       </Box>
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        flex: 1,
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+        }}
+      >
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignContent: 'space-between'
+            display: "flex",
+            flexDirection: "row",
+            alignContent: "space-between",
           }}
         >
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            marginTop: "2rem",
-            gap: "10px",
-            flex: 1,
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              marginTop: "2rem",
+              gap: "10px",
+              flex: 1,
+            }}
+          >
             <Box
               sx={{
-                display: 'flex',
-                flexDirection: 'column',
+                display: "flex",
+                flexDirection: "column",
                 paddingLeft: "2rem",
                 gap: "10px",
               }}
             >
-              <Languages type={langRef.current} handleChange={handleChange} handleClick={() => { }} isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} languages={languages} />
-              <MultipleSelectPlaceholder errorName={errorName} setErrorNameList={setErrorNameList} disabled={!firstValidate} placeHolder="Select Errors" />
+              <Languages
+                type={langRef.current}
+                handleChange={handleChange}
+                handleClick={() => {}}
+                isDropdownOpen={isDropdownOpen}
+                setIsDropdownOpen={setIsDropdownOpen}
+                languages={languages}
+              />
+              <MultipleSelectPlaceholder
+                errorName={errorName}
+                setErrorNameList={setErrorNameList}
+                disabled={!firstValidate}
+                placeHolder="Select Errors"
+              />
             </Box>
           </Box>
 
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            marginTop: "2rem",
-            gap: "10px",
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
-              <div style={{ width: '20px', height: '20px', backgroundColor: "#d2f8d2", marginRight: '15px' }}></div>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              marginTop: "2rem",
+              gap: "10px",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                marginRight: "2rem",
+              }}
+            >
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: "#d2f8d2",
+                  marginRight: "15px",
+                }}
+              ></div>
               <span>Pass Verification</span>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
-              <div style={{ width: '20px', height: '20px', backgroundColor: "#ffd7e9", marginRight: '15px' }}></div>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                marginRight: "2rem",
+              }}
+            >
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: "#ffd7e9",
+                  marginRight: "15px",
+                }}
+              ></div>
               <span>Fail Verification</span>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', marginRight: "2rem" }}>
-              <div style={{ width: '20px', height: '20px', backgroundColor: "#ededed", marginRight: '15px' }}></div>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                marginRight: "2rem",
+              }}
+            >
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: "#ededed",
+                  marginRight: "15px",
+                }}
+              ></div>
               <span>Unmatched Attributes</span>
             </Box>
           </Box>
         </Box>
 
         <div style={{ margin: "2rem" }}>
-          <div
-            className="ag-theme-balham"
-            style={{ height: "45vh" }}
-          >
+          <div className="ag-theme-balham" style={{ height: "45vh" }}>
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
@@ -880,12 +1136,14 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
               suppressFieldDotNotation
             />
           </div>
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            marginTop: '2rem',
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              marginTop: "2rem",
+            }}
+          >
             <Button
               onClick={handleAddRow}
               color="button"
@@ -901,12 +1159,12 @@ const OCADataValidatorCheck = ({ showWarningCard, setShowWarningCard, firstTimeD
               Add row <AddCircleIcon />
             </Button>
           </Box>
-
         </div>
-      </Box >
-      {firstTimeDisplayWarning.current && showWarningCard && <WarningPopup action={handleDismissWarning} />}
+      </Box>
+      {firstTimeDisplayWarning.current && showWarningCard && (
+        <WarningPopup action={handleDismissWarning} />
+      )}
     </>
-
   );
 };
 

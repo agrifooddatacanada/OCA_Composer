@@ -29,7 +29,7 @@ import LearnAboutDataVerification from './OCADataValidator/LearnAboutDataVerific
 export const Context = createContext();
 
 //Initializing react-ga with google analytics ID
-ReactGA.initialize(process.env.REACT_APP_GA_ID);
+// ReactGA.initialize(process.env.REACT_APP_GA_ID);
 
 const items = {
   'Character Encoding': { feature: 'Character Encoding', selected: false },
@@ -103,6 +103,7 @@ function App() {
   const firstTimeMatchingRef = useRef(true);
   const [ogWorkbook, setOgWorkbook] = useState(null);
   const ogSchemaDataConformantHeaderRef = useRef([]);
+  const [targetResult, setTargetResult] = useState([]);
 
   // Entry Code upload
   const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
@@ -416,6 +417,8 @@ function App() {
             setExcelSheetChoice,
             firstNavigationToDataset,
             setFirstNavigationToDataset,
+            targetResult,
+            setTargetResult,
           }}
         >
           <Box
