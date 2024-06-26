@@ -13,7 +13,6 @@ import { greyCellStyle, gridStyles } from "../constants/styles";
 import { AgGridReact } from "ag-grid-react";
 import "../App.css";
 import { Context } from "../App";
-import ExcelJS from "exceljs";
 import OCABundle from "./validator";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Languages from "./Languages";
@@ -402,7 +401,6 @@ const OCADataValidatorCheck = ({
   firstTimeDisplayWarning,
 }) => {
   const {
-    excelSheetChoice,
     schemaDataConformantRowData,
     setSchemaDataConformantRowData,
     schemaDataConformantHeader,
@@ -413,7 +411,6 @@ const OCADataValidatorCheck = ({
     lanAttributeRowData,
     matchingRowData,
     datasetRawFile,
-    jsonRawFile,
     formatRuleRowData,
     cardinalityData,
     characterEncodingRowData,
@@ -460,15 +457,23 @@ const OCADataValidatorCheck = ({
         },
       }),
     };
-  }, [lanAttributeRowData, langRef.current]);
+  }, [
+    lanAttributeRowData,
+    cardinalityData,
+    characterEncodingRowData,
+    formatRuleRowData,
+    savedEntryCodes,
+  ]);
 
   const handleSave = async (ogHeader = false, exportFormat) => {
     if (ogWorkbook !== null && exportFormat === "excel") {
       await handleExcelSave();
     } else if (ogWorkbook !== null && exportFormat === "csv") {
       await handleCSVSave(ogHeader);
-    } else {
+    } else if (ogWorkbook === null && exportFormat === "csv") {
       await handleCSVSave(ogHeader);
+    } else {
+      await handleExcelSave();
     }
   };
 
@@ -598,7 +603,6 @@ const OCADataValidatorCheck = ({
   };
 
   // depreciated functions for generating Excel file -> new solution: generating DEE for verified data.
-
   /*
   const generateDataEntryExcel = async (ogWorkbook) => {
 
@@ -669,27 +673,61 @@ const OCADataValidatorCheck = ({
     });
   };
   */
- 
+
   const generateDataEntryExcel = async (e, selectedLang) => {
     try {
       const workbook = await createDEE(e, selectedLang);
       const newData = getCurrentData(gridRef.current.api, false);
-      const schemaConformantDataSheet = workbook.getWorksheet("Data Entry");
       const schemaConformantDataHeaders = Array.from(
         new Set(newData.flatMap(Object.keys))
       );
+
+      workbook.removeWorksheet("Data Entry"); // Delete as you can't add without removing data validation.
+      workbook.addWorksheet("Data Entry");
+
+      const schemaConformantDataSheet = workbook.getWorksheet("Data Entry");
       schemaConformantDataSheet.addRow(schemaConformantDataHeaders);
+      const headerRow = schemaConformantDataSheet.getRow(1);
+      headerRow.eachCell((cell, colNumber) => {
+        if (colNumber <= schemaConformantDataHeaders.length) {
+          formatHeader(cell);
+        }
+      });
+
       newData.forEach((data) => {
         const row = schemaConformantDataHeaders.map(
           (header) => data[header] || ""
         );
-        schemaConformantDataSheet.addRow(row);
+        const addedRow = schemaConformantDataSheet.addRow(row);
+        addedRow.eachCell((cell) => {
+          formatAttr(cell);
+        });
       });
       return workbook;
     } catch (error) {
       console.error("Error generating DataEntryExcel file:", error);
     }
   };
+
+  function formatHeader(cell) {
+    cell.font = { size: 10, bold: true };
+    cell.alignment = { vertical: "top", wrapText: true };
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "E7E6E6" },
+    };
+    cell.border = {
+      top: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    };
+  }
+
+  function formatAttr(cell) {
+    cell.font = { size: 10 };
+    cell.alignment = { vertical: "top", wrapText: true };
+  }
 
   const downloadExcelFile = (workbook, fileName) => {
     workbook.xlsx.writeBuffer().then((buffer) => {
@@ -722,6 +760,7 @@ const OCADataValidatorCheck = ({
     URL.revokeObjectURL(url);
   };
 
+  /*
   const makeHeaderRow = (rowHeadersArray, worksheetName, columnWidth) => {
     const defaultColumnStyle = {
       alignment: {
@@ -739,6 +778,7 @@ const OCADataValidatorCheck = ({
     });
     return allColumns;
   };
+  */
 
   const cellStyle = (params) => {
     const error = params.data?.error?.[params.colDef.field];
@@ -756,7 +796,7 @@ const OCADataValidatorCheck = ({
     setIsDropdownOpen(false);
   }, []);
 
-  const handleAddRow = () => {
+  const handleAddRow = useCallback(() => {
     if (isValidateButtonEnabled) {
       setIsValidateButtonEnabled(false);
     }
@@ -765,11 +805,15 @@ const OCADataValidatorCheck = ({
       newRow[header] = "";
     });
 
-    // const currentData = gridRef.current.api.getRenderedNodes().map((node) => node.data);
     const currentData = getCurrentData(gridRef.current.api, true);
 
     setRowData((prev) => [...currentData, newRow]);
-  };
+  }, [
+    isValidateButtonEnabled,
+    schemaDataConformantHeader,
+    gridRef,
+    setRowData,
+  ]);
 
   const onCellValueChanged = (e) => {
     if (validateBeforeOnChangeRef.current) {
@@ -833,35 +877,38 @@ const OCADataValidatorCheck = ({
     firstTimeDisplayWarning.current = false;
   }, [firstTimeDisplayWarning, setShowWarningCard]);
 
-  const onCellKeyDown = useCallback((e) => {
-    validateBeforeOnChangeRef.current = false;
-    const keyPressed = e.event.code;
+  const onCellKeyDown = useCallback(
+    (e) => {
+      validateBeforeOnChangeRef.current = false;
+      const keyPressed = e.event.code;
 
-    const isLastRow = e.node.lastChild;
-    if (keyPressed === "Enter") {
-      if (isLastRow) {
-        handleAddRow();
-      }
-      setTimeout(() => {
-        const api = e.api;
-        const editingRowIndex = e.rowIndex;
-        api.setFocusedCell(editingRowIndex + 1, e.column);
-      }, 0);
-    }
-
-    if (keyPressed === "Tab") {
-      const allColumns = e.columnApi.getAllColumns();
-      const isLastColumn = e.column === allColumns.slice(-1)[0];
-      if (isLastColumn && isLastRow) {
-        handleAddRow();
+      const isLastRow = e.node.lastChild;
+      if (keyPressed === "Enter") {
+        if (isLastRow) {
+          handleAddRow();
+        }
         setTimeout(() => {
           const api = e.api;
           const editingRowIndex = e.rowIndex;
-          api.setFocusedCell(editingRowIndex + 1, allColumns[0]);
+          api.setFocusedCell(editingRowIndex + 1, e.column);
         }, 0);
       }
-    }
-  }, []);
+
+      if (keyPressed === "Tab") {
+        const allColumns = e.columnApi.getAllColumns();
+        const isLastColumn = e.column === allColumns.slice(-1)[0];
+        if (isLastColumn && isLastRow) {
+          handleAddRow();
+          setTimeout(() => {
+            const api = e.api;
+            const editingRowIndex = e.rowIndex;
+            api.setFocusedCell(editingRowIndex + 1, allColumns[0]);
+          }, 0);
+        }
+      }
+    },
+    [handleAddRow]
+  );
 
   useEffect(() => {
     const columns = [];
@@ -904,7 +951,14 @@ const OCADataValidatorCheck = ({
 
     setColumnDefs(columns);
     setRowData(schemaDataConformantRowData);
-  }, []);
+  }, [
+    datasetRawFile.length,
+    attributesList,
+    schemaDataConformantHeader,
+    schemaDataConformantRowData,
+    setSchemaDataConformantHeader,
+    savedEntryCodes,
+  ]);
 
   useEffect(() => {
     if (rowData && rowData.length === 0) {
@@ -912,7 +966,7 @@ const OCADataValidatorCheck = ({
     } else if (isValidateButtonEnabled && rowData && rowData.length > 0) {
       setIsValidateButtonEnabled(false);
     }
-  }, [rowData]);
+  }, [rowData, isValidateButtonEnabled]);
 
   const rowDataFilter =
     errorName.length > 0
