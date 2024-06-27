@@ -132,6 +132,16 @@
           }
         }
       ],
+      "conformance": {
+        "d": "EKzjcqJuiOKTVeSMRYNZsWnUsmnEiyv-8Uj1knydBfbU",
+        "type": "spec/overlays/conformance/1.0",
+        "capture_base": "EL4q2aahA0RN-ftw97E_fmbVDVTyDbIaQR2B44HGsqFG",
+        "attribute_conformance": {
+          "d": "M",
+          "i": "M",
+          "passed": "M"
+        }
+      },
       "entry_code": {
         "d": "EHZvulY_pJ3W9bfIjdzUuHDf04QQkyvN4Dub2NOMWo1G",
         "type": "spec/overlays/entry_code/1.0",
@@ -153,17 +163,7 @@
             }
           }
         }
-      ],
-      "unit": {
-        "d": "EEqlOD-r3Kr2LIqgCcL-jGZHKbq-a1VyGz2zbUpLxV_e",
-        "type": "spec/overlays/unit/1.0",
-        "capture_base": "EK2EbGdxi56FIUqT42NP2wl31eSCld97wJao9dhkDr9O",
-        "measurement_system": "Metric",
-        "attribute_units": {
-          "BreastWt": "Gram",
-          "LiveWt": "Gram"
-        }
-      }
+      ]
     }
   }
 }

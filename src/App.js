@@ -119,10 +119,8 @@ function App() {
   const [OCAFile2Raw, setOCAFile2Raw] = useState("");
   const [parsedOCAFile1, setParsedOCAFile1] = useState("");
   const [parsedOCAFile2, setParsedOCAFile2] = useState("");
-  const [selectedOverlaysOCAFile1, setSelectedOverlaysOCAFile1] = useState([]);
-  console.log('selectedOverlaysOCAFile1', selectedOverlaysOCAFile1);
-  const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState([]);
-  console.log('selectedOverlaysOCAFile2', selectedOverlaysOCAFile2);
+  const [selectedOverlaysOCAFile1, setSelectedOverlaysOCAFile1] = useState({});
+  const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState({});
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);

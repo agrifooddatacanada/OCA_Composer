@@ -45,7 +45,7 @@ const UploadingStart = () => {
       }}>
         <Box sx={{ height: '3rem' }} />
         <Box>
-          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {t('OCA File 1')}</Typography>
+          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {t('Schema Bundle 1')}</Typography>
           <Drop
             setFile={setOCAFile1Raw}
             setLoading={setOCAFile1Loading}
@@ -55,7 +55,7 @@ const UploadingStart = () => {
             setDropMessage={setOcaFile1DropMessage}
             description={textUploadDescription}
             tipDescription={jsonUploadTooltip}
-            version={6}
+            version={1}
           />
         </Box>
 
@@ -72,7 +72,7 @@ const UploadingStart = () => {
         </Box>
         <Box sx={{ height: '4rem' }} />
         <Box>
-          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {t('OCA File 2')}</Typography>
+          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {t('Schema bundle 2')}</Typography>
           <Drop
             setFile={setOCAFile2Raw}
             setLoading={setOCAFile2Loading}
@@ -82,7 +82,7 @@ const UploadingStart = () => {
             setDropMessage={setOcaFile2DropMessage}
             description={textUploadDescription}
             tipDescription={datasetUploadTooltip}
-            version={6}
+            version={1}
           />
         </Box>
 
