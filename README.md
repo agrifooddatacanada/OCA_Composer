@@ -25,6 +25,10 @@ The JSON schema bundle can be consumed by several tools within the ADC/OCA ecosy
 
 You can clone the project using the git command-line interface or you can download the entire project as a zip using GitHub's user-interface. In the project directory, you can run:
 
+### `npm install`
+
+Install dependencies required to run the app. This command will install all the dependencies listed in the `package.json` file.
+
 ### `npm start`
 
 Runs the app in the development mode.\
