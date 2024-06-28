@@ -32,7 +32,7 @@ import WarningPopup from "./WarningPopup";
 import { CustomPalette } from "../constants/customPalette";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { getCurrentData } from "../constants/utils";
-import { createDEE } from "../Landing/createDEE";
+import { createDataEntryExcel } from "../Landing/createDataEntryExcel";
 
 export const TrashCanButton = memo(
   forwardRef((props, _ref) => {
@@ -602,81 +602,9 @@ const OCADataValidatorCheck = ({
     });
   };
 
-  // depreciated functions for generating Excel file -> new solution: generating DEE for verified data.
-  /*
-  const generateDataEntryExcel = async (ogWorkbook) => {
-
-    try {
-      const newWorkbook = new ExcelJS.Workbook();
-      const sheetsToCopy = Object.keys(ogWorkbook.Sheets);
-
-      sheetsToCopy.forEach(async (sheetName) => {
-        const sourceSheet = ogWorkbook.Sheets[sheetName];
-
-        if (sourceSheet) {
-          await copySheets(sourceSheet, newWorkbook, sheetName, excelSheetChoice);
-        } else {
-          console.error('Error while copying sheets from Data Entry Excel');
-        }
-      });
-      
-      const newData = getCurrentData(gridRef.current.api, false);
-
-      const schemaConformantDataSheet = newWorkbook.getWorksheet(excelSheetChoice);
-      const schemaConformantDataHeaders = Array.from(new Set(newData.flatMap(Object.keys)));
-      schemaConformantDataSheet.addRow(schemaConformantDataHeaders);
-
-      newData.forEach(data => {
-        const row = schemaConformantDataHeaders.map(header => data[header] || '');
-        schemaConformantDataSheet.addRow(row);
-      });
-
-      makeHeaderRow(schemaConformantDataHeaders, schemaConformantDataSheet, 40);
-
-      return newWorkbook;
-    } catch (error) {
-      return null;
-    }
-  };
-  
-  const copySheets = async (sourceSheet, targetWorkbook, targetSheetName, selectedSheetName) => {
-    try {
-      if (selectedSheetName === undefined) {
-        throw new Error('No Excel sheet selected');
-      }
-      // Todo: copy cell style, column width, row height, and other properties.
-      if (selectedSheetName === targetSheetName) {
-        targetWorkbook.addWorksheet(targetSheetName);
-      } else {
-        const targetSheet = targetWorkbook.addWorksheet(targetSheetName);
-
-        Object.keys(sourceSheet).forEach((cell) => {
-          if (!sourceSheet[cell]?.v || cell === '!ref') return;
-          targetSheet.getCell(cell).value = sourceSheet[cell]?.v;
-        });
-      }
-    } catch (error) {
-      console.error('Error while copying sheets from Data Entry Excel', error);
-    }
-  };
-
-  const downloadExcelFile = (workbook, fileName) => {
-    workbook.xlsx.writeBuffer().then((buffer) => {
-      const blob = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "DataEntryExcel.xlsx";
-      a.click();
-    });
-  };
-  */
-
   const generateDataEntryExcel = async (e, selectedLang) => {
     try {
-      const workbook = await createDEE(e, selectedLang);
+      const workbook = await createDataEntryExcel(e, selectedLang);
       const newData = getCurrentData(gridRef.current.api, false);
       const schemaConformantDataHeaders = Array.from(
         new Set(newData.flatMap(Object.keys))
@@ -759,26 +687,6 @@ const OCADataValidatorCheck = ({
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-
-  /*
-  const makeHeaderRow = (rowHeadersArray, worksheetName, columnWidth) => {
-    const defaultColumnStyle = {
-      alignment: {
-        wrapText: true,
-      },
-    };
-    const allColumns = [];
-    rowHeadersArray.forEach((item, index) => {
-      allColumns.push({ width: columnWidth, style: defaultColumnStyle });
-      worksheetName.getCell(1, index + 1).value = item;
-      worksheetName.getCell(1, index + 1).style = {
-        wrapText: true,
-        ...defaultColumnStyle,
-      };
-    });
-    return allColumns;
-  };
-  */
 
   const cellStyle = (params) => {
     const error = params.data?.error?.[params.colDef.field];

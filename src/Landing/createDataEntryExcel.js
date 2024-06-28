@@ -61,7 +61,7 @@ async function readZIP(originJsonData_jsonSaid, e) {
 WorkbookError.prototype = Object.create(Error.prototype);
 WorkbookError.prototype.constructor = WorkbookError;
 
-export async function createDEE(data, selectedLang) {
+export async function createDataEntryExcel(data, selectedLang) {
   const DEFAULT_LANGUAGE = "en";
 
   if (selectedLang === "English") {
@@ -272,17 +272,6 @@ export async function createDEE(data, selectedLang) {
     cell.font = { size: 10 };
     cell.alignment = { vertical: "top", wrapText: true };
   }
-
-  /*function getColumnLetter(columnNumber) {
-        let columnLetter = "";
-        while (columnNumber > 0) {
-          let remainder = (columnNumber - 1) % 26;
-          columnLetter = String.fromCharCode(65 + remainder) + columnLetter;
-          columnNumber = Math.floor((columnNumber - 1) / 26);
-        }
-        return columnLetter;
-      }
-      */
 
   // Create Schema Description sheet
   const sheet1 = workbook.addWorksheet("Schema Description");
@@ -844,7 +833,6 @@ export async function createDEE(data, selectedLang) {
       const attrKeys = Object.keys(attributesIndex);
       const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
       const col_i = attrNameFromAttrKeys.indexOf(attrName) + 1;
-      // const letter = getColumnLetter(col_i);
       sheet2.getCell(row, col_i).dataValidation = validationRule;
     }
   }
