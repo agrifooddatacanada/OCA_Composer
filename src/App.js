@@ -103,6 +103,7 @@ function App() {
   const firstTimeMatchingRef = useRef(true);
   const [ogWorkbook, setOgWorkbook] = useState(null);
   const ogSchemaDataConformantHeaderRef = useRef([]);
+  const [targetResult, setTargetResult] = useState([]);
 
   // Entry Code upload
   const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
@@ -416,6 +417,8 @@ function App() {
             setExcelSheetChoice,
             firstNavigationToDataset,
             setFirstNavigationToDataset,
+            targetResult,
+            setTargetResult,
           }}
         >
           <Box
