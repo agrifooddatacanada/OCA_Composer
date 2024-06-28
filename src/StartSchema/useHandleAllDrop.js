@@ -7,7 +7,7 @@ import { removeSpacesFromString } from "../constants/removeSpaces";
 import { messages } from "../constants/messages";
 import Papa from "papaparse";
 
-const useHandleAllDrop = () => {
+const useHandleAllDrop = (pageForward) => {
   const {
     setFileData,
     fileData,
@@ -20,7 +20,9 @@ const useHandleAllDrop = () => {
     rawFile,
     setRawFile,
     showDeprecationCard,
-    setShowDeprecationCard
+    setShowDeprecationCard,
+    excelSheetChoice,
+    setExcelSheetChoice,
   } = useContext(Context);
   const {
     processLanguages,
@@ -32,11 +34,12 @@ const useHandleAllDrop = () => {
   const [dropDisabled, setDropDisabled] = useState(false);
   const [dropMessage, setDropMessage] = useState({ message: "", type: "" });
   const [switchToLastPage, setSwitchToLastPage] = useState(false);
+  const [excelSheetNames, setExcelSheetNames] = useState([]);
+  const [tempExcel, setTempExcel] = useState(null);
 
   // current fileData structure: [[tableHeading, [tableValues]], [tableHeading, [tableValues]], [tableHeading, [tableValues]], ...etc]
-
-  const processExcelFile = useCallback((workbook) => {
-    const sheet_name_list = workbook.SheetNames[0];
+  const processExcelFile = useCallback((workbook, index = 0) => {
+    const sheet_name_list = workbook.SheetNames[index];
     const jsonFromExcel = XLSX.utils.sheet_to_json(
       workbook.Sheets[sheet_name_list],
       {
@@ -297,7 +300,13 @@ const useHandleAllDrop = () => {
           const workbook = XLSX.read(bstr, {
             type: rABS ? "binary" : "array",
           });
-          processExcelFile(workbook);
+          setTempExcel(workbook);
+          setExcelSheetNames(workbook.SheetNames);
+          setLoading(false);
+          setTimeout(() => {
+            setDropMessage({ message: "", type: "" });
+          }, [2500]);
+
         };
         if (rABS) reader.readAsBinaryString(file);
         else reader.readAsArrayBuffer(file);
@@ -309,7 +318,7 @@ const useHandleAllDrop = () => {
         setDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [processExcelFile]);
+  }, []);
 
 
   const handleZipDrop = useCallback((acceptedFiles) => {
@@ -554,6 +563,14 @@ const useHandleAllDrop = () => {
     setJsonToReadme(jsonFile);
   }, [processLabelsDescriptionRootUnitsEntries, processLanguages, processMetadata, setZipToReadme]);
 
+  const handlePageForward = useCallback(() => {
+    if (excelSheetNames.length > 0) {
+      const index = excelSheetNames.indexOf(excelSheetChoice);
+      processExcelFile(tempExcel, index);
+    }
+    pageForward();
+  }, [excelSheetChoice, excelSheetNames, pageForward, processExcelFile, tempExcel]);
+
   useEffect(() => {
     if (rawFile.length > 0 && rawFile[0].size > 1000000) {
       setDropMessage({
@@ -640,7 +657,12 @@ const useHandleAllDrop = () => {
     setFileData,
     setCurrentPage,
     switchToLastPage,
-    setIsZip
+    setIsZip,
+    excelSheetNames,
+    setExcelSheetChoice,
+    setExcelSheetNames,
+    excelSheetChoice,
+    handlePageForward
   };
 };
 

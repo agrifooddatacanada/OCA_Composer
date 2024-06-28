@@ -83,6 +83,8 @@ function App() {
   const [tempEntryCodeSummary, setTempEntryCodeSummary] = useState(undefined);
   const [tempEntryList, setTempEntryList] = useState([]);
 
+  const [excelSheetChoice, setExcelSheetChoice] = useState(-1);
+
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
     if (currentIndex >= 0 && currentIndex < pagesArray.length - 1) {
@@ -319,6 +321,8 @@ function App() {
             setTempEntryCodeSummary,
             tempEntryList,
             setTempEntryList,
+            excelSheetChoice,
+            setExcelSheetChoice,
           }}
         >
           <Box

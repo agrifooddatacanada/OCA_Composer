@@ -5,6 +5,7 @@ import Drop from "./Drop";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CustomPalette } from "../constants/customPalette";
 import useHandleAllDrop from "./useHandleAllDrop";
+import ExcelSheetSelection from "../components/ExcelSheetSelection";
 
 export default function StartSchema({ pageForward }) {
   const {
@@ -19,8 +20,13 @@ export default function StartSchema({ pageForward }) {
     setDropDisabled,
     setFileData,
     setCurrentPage,
-    switchToLastPage
-  } = useHandleAllDrop();
+    switchToLastPage,
+    excelSheetNames,
+    setExcelSheetChoice,
+    setExcelSheetNames,
+    excelSheetChoice,
+    handlePageForward
+  } = useHandleAllDrop(pageForward);
 
   useEffect(() => {
     if (switchToLastPage) {
@@ -54,26 +60,30 @@ export default function StartSchema({ pageForward }) {
             transform: "translateY(2.5rem)",
           }}
         >
-          {attributesList.length > 0 && (
+          {(attributesList.length > 0 || excelSheetChoice !== -1) && (
             <Button
               variant="text"
               color="navButton"
               sx={{ fontSize: "1.2rem", color: CustomPalette.PRIMARY }}
-              onClick={pageForward}
+              onClick={handlePageForward}
             >
               Next <ArrowForwardIosIcon />
             </Button>
           )}
         </Box>
-        <Drop
-          setFile={setRawFile}
-          setLoading={setLoading}
-          loading={loading}
-          dropDisabled={dropDisabled}
-          dropMessage={dropMessage}
-          setDropMessage={setDropMessage}
-        />
-        {attributesList.length > 0 ? (
+        {excelSheetNames.length > 0 ? (
+          <ExcelSheetSelection chosenValue={excelSheetChoice} choices={excelSheetNames} setChoice={setExcelSheetChoice} />
+        ) : (
+          <Drop
+            setFile={setRawFile}
+            setLoading={setLoading}
+            loading={loading}
+            dropDisabled={dropDisabled}
+            dropMessage={dropMessage}
+            setDropMessage={setDropMessage}
+          />
+        )}
+        {attributesList.length > 0 || excelSheetNames.length > 0 ? (
           <Box display="flex">
             <Button
               variant="contained"
@@ -82,6 +92,8 @@ export default function StartSchema({ pageForward }) {
                 setDropDisabled(false);
                 setFileData([]);
                 setAttributesList([]);
+                setExcelSheetChoice(-1);
+                setExcelSheetNames([]);
               }}
               sx={{ width: 170, mr: 2 }}
             >
