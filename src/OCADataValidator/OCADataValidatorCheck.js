@@ -618,6 +618,7 @@ const OCADataValidatorCheck = ({
       const headerRow = schemaConformantDataSheet.getRow(1);
       headerRow.eachCell((cell, colNumber) => {
         if (colNumber <= schemaConformantDataHeaders.length) {
+          schemaConformantDataSheet.getColumn(colNumber).width = 17;
           formatHeader(cell);
         }
       });
