@@ -224,6 +224,7 @@ export const useHandleDatasetDrop = () => {
     setFirstNavigationToDataset(true);
     const index = excelSheetNames.indexOf(excelSheetChoice);
     processExcelFile(ogWorkbook, index);
+    setDatasetDropDisabled(true);
     if (!datasetIsParsed) {
       setDatasetIsParsed(true);
       setCurrentDataValidatorPage("DatasetViewDataValidator");
