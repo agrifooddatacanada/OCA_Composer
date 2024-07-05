@@ -1,8 +1,10 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useMediaQuery } from "@mui/material";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 
 export default function StartIntro() {
+  const { isMobile } = useMediaQuery('(max-width:736px)');
+
   return (
     <Box width="80%" margin="auto">
       <Typography
@@ -19,7 +21,7 @@ export default function StartIntro() {
         </Box>
       </Typography>
       <br />
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/r8VIIBWmL_k" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
+      <iframe width={isMobile ? '100%' : '560'} height={isMobile ? '200' : '315'} src="https://www.youtube.com/embed/ekMmpx_w45M" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
     </Box>
   );
 }

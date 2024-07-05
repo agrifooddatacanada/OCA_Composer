@@ -22,7 +22,7 @@ export default function Header({ currentPage }) {
       case 'Start':
         setHeader('Start Creating an OCA Schema');
         setToolTipText('');
-        setHelpLink('https://agrifooddatacanada.ca/semantic-engine/');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/CreatingOCASchema/');
         break;
       case 'Metadata':
         setHeader('Schema Metadata');
