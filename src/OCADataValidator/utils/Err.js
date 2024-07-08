@@ -1,4 +1,4 @@
-// Error messages. For text notices only.
+// Error messages
 const ATTR_UNMATCH_MSG = 'Unmatched attribute (attribute not found in the OCA Bundle).';
 const ATTR_MISSING_MSG = 'Missing attribute (attribute not found in the data set).';
 

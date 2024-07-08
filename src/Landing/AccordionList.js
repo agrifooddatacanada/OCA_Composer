@@ -4,7 +4,6 @@ import UseASchemaAccordionItem from './UseASchemaAccordionItem';
 import UseASchemaWithDataAccordionItem from './UseASchemaWithDataAccordionItem';
 import SchemaAccordionItem from './SchemaAccordionItem';
 import WriteASchemaAccordionItem from './WriteASchemaAccordionItem';
-// import FindASchemaAccordionItem from './FindASchemaAccordionItem';
 import StoreASchemaAccordionItem from './StoreASchemaAccordionItem';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 import { CustomPalette } from '../constants/customPalette';
@@ -14,9 +13,7 @@ import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import { Context } from '../App';
 import useExportLogic from '../ViewSchema/useExportLogic';
-import OCADataValidatorItem from './OCADataValidatorItem';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
-import useExportLogicV2 from '../ViewSchema/useExportLogicV2';
 import GenerateDataEntryExcel from './GenerateDataEntryExcel';
 import { useTranslation } from 'react-i18next';
 
@@ -40,7 +37,6 @@ const AccordionList = () => {
   } = useHandleAllDrop();
 
   const { handleExport, resetToDefaults } = useExportLogic();
-  // const { exportData } = useExportLogicV2();
 
   const navigateToStartPage = () => {
     resetToDefaults();
@@ -106,7 +102,6 @@ const AccordionList = () => {
           />
           {/* <OCADataValidatorItem /> */}
         </Box>
-
         <Box
           sx={{
             flex: '1',
@@ -118,6 +113,7 @@ const AccordionList = () => {
             marginTop: 5,
             marginRight: isMobile ? 'unset' : 10,
             marginLeft: isMobile ? 'unset' : 10,
+            height: 'fit-content',
           }}
         >
           <Typography
@@ -142,7 +138,7 @@ const AccordionList = () => {
             }}
             onClick={navigateToStartPage}
           />
-
+          <hr style={{ width: '90%', margin: 'auto', marginTop: '25px', border: `1px solid ${CustomPalette.PRIMARY}` }} />
           {/* <CustomAnchorLink
             link='https://www.semanticengine.org/#/develop'
             text='Parse a schema'

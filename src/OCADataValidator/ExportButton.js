@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  Button, Menu, MenuItem, MenuList, ClickAwayListener
-} from '@mui/material';
-import { CustomPalette } from '../constants/customPalette';
-import { useTranslation } from 'react-i18next';
+  Button,
+  Menu,
+  MenuItem,
+  MenuList,
+  ClickAwayListener,
+} from "@mui/material";
+import { CustomPalette } from "../constants/customPalette";
+import { useTranslation } from "react-i18next";
 
-const exportOptions = ['excel', 'csv'];
+const exportOptions = ["excel", "csv"];
 
-const ExportButton = ({ handleSave, inputDataType }) => {
-
-  const [selectedOption, setSelectedOption] = useState('');
+const ExportButton = ({ handleSave }) => {
+  const [selectedOption, setSelectedOption] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [additionalOptionsAnchorEl, setAdditionalOptionsAnchorEl] = useState(null);
+  const [additionalOptionsAnchorEl, setAdditionalOptionsAnchorEl] =
+    useState(null);
   const open = Boolean(anchorEl);
   const additionalOptionsOpen = Boolean(additionalOptionsAnchorEl);
 
@@ -20,20 +24,15 @@ const ExportButton = ({ handleSave, inputDataType }) => {
   const handleMenuItemClick = (option) => {
     setSelectedOption(option);
 
-    if (option === 'excel') {
-      handleSave(true, 'excel');
-    } else if (option === 'csv') {
+    if (option === "excel") {
+      handleSave(true, "excel");
+    } else if (option === "csv") {
       setAdditionalOptionsAnchorEl(anchorEl);
     }
     setAnchorEl(null);
   };
 
   const handleClick = (event) => {
-
-    if (inputDataType === 'csv') {
-      setAdditionalOptionsAnchorEl(event.currentTarget);
-    }
-
     setAnchorEl(event.currentTarget);
   };
 
@@ -48,7 +47,7 @@ const ExportButton = ({ handleSave, inputDataType }) => {
 
   useEffect(() => {
     if (additionalOptionsAnchorEl) {
-      setSelectedOption('');
+      setSelectedOption("");
       setAnchorEl(null);
     }
   }, [additionalOptionsAnchorEl]);
@@ -57,9 +56,9 @@ const ExportButton = ({ handleSave, inputDataType }) => {
     <>
       <Button
         id="basic-button"
-        aria-controls={open ? 'basic-menu' : undefined}
+        aria-controls={open ? "basic-menu" : undefined}
         aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
+        aria-expanded={open ? "true" : undefined}
         onClick={handleClick}
         color="button"
         variant="contained"
@@ -70,7 +69,7 @@ const ExportButton = ({ handleSave, inputDataType }) => {
           padding: "0.5rem 1rem",
         }}
       >
-        Export Verified Data
+        Export Data
       </Button>
       <Menu
         id="basic-menu"
@@ -78,16 +77,17 @@ const ExportButton = ({ handleSave, inputDataType }) => {
         open={open}
         onClose={handleClose}
         MenuListProps={{
-          'aria-labelledby': 'basic-button',
+          "aria-labelledby": "basic-button",
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',}}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
+          vertical: "top",
+          horizontal: "center",
         }}
-        >
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+      >
         {exportOptions.map((option) => (
           <MenuItem
             sx={{ color: CustomPalette.PRIMARY }}
@@ -95,7 +95,7 @@ const ExportButton = ({ handleSave, inputDataType }) => {
             selected={option === selectedOption}
             onClick={() => handleMenuItemClick(option)}
           >
-            {option === 'excel' ? t('EXCEL') : t('CSV')}
+            {option === "excel" ? t("EXCEL") : t("CSV")}
           </MenuItem>
         ))}
       </Menu>
@@ -105,7 +105,7 @@ const ExportButton = ({ handleSave, inputDataType }) => {
         open={additionalOptionsOpen}
         onClose={handleAdditionalOptionsClose}
         MenuListProps={{
-          'aria-labelledby': 'basic-button',
+          "aria-labelledby": "basic-button",
         }}
       >
         <ClickAwayListener onClickAway={handleAdditionalOptionsClose}>
@@ -114,7 +114,7 @@ const ExportButton = ({ handleSave, inputDataType }) => {
               sx={{ color: CustomPalette.PRIMARY }}
               onClick={() => {
                 handleAdditionalOptionsClose();
-                handleSave({ ogHeader: true, exportFormat: 'csv' });
+                handleSave(true, "csv");
               }}
             >
               Keep original data column headers
@@ -123,7 +123,7 @@ const ExportButton = ({ handleSave, inputDataType }) => {
               sx={{ color: CustomPalette.PRIMARY }}
               onClick={() => {
                 handleAdditionalOptionsClose();
-                handleSave({ ogHeader: false, exportFormat: 'csv' });
+                handleSave(false, "csv");
               }}
             >
               Change to Schema column headers
