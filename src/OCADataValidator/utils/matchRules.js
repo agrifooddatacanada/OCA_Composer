@@ -1,69 +1,8 @@
-/*
-function matchDatetime (pattern, dataStr) {
-    // Converts the ISO 8601 format into JavaScript Date format.
-    function iso2js (isoStr) {
-        const isoConv = {
-            YYYY: 'YYYY',
-            MM: 'MM',
-            DDD: 'DDDD',
-            DD: 'DD',
-            D: 'd',
-            ww: 'WW',
-            '+hh:mm': 'Z',
-            '-hh:mm': 'Z',
-            '+hhmm': 'Z',
-            '-hhmm': 'Z',
-            Z: 'Z',
-            hh: 'HH',
-            mm: 'MM',
-            sss: 'SSS',
-            ss: 'SS'
-        };
-
-        let jsStr = isoStr;
-        for (const i in isoConv) {
-            jsStr = jsStr.replace(i, isoConv[i]);
-        }
-        return jsStr;
-    }
-
-    if (!pattern) {
-        return true;
-    }
-
-    if (pattern.includes('/')) {
-        // Time intervals: <start>/<end>, <start>/<duration>, or <duration>/<end>.
-        // Repeating intervals: R(n)/<interval>.
-        // In both cases, validates two parts separately.
-        if (!dataStr.includes('/')) {
-            return false;
-        } else {
-            return matchDatetime(pattern.split('/')[0], dataStr.split('/')[0]) && matchDatetime(pattern.split('/')[1], dataStr.split('/')[1]);
-        }
-    } else if (pattern[0] === 'P' || pattern[0] === 'R') {
-        // Durations or repeating interval heads.
-        // Match the string with n's replaced with actual numbers.
-        return matchRegex('^' + pattern.replace('n', '[0-9]+') + '$').test(dataStr);
-    } else {
-        pattern = iso2js(pattern);
-        try {
-            const date = new Date(dataStr);
-            if (isNaN(date.getTime())) {
-                return false;
-            }
-        } catch (error) {
-            return false;
-        }
-        return true;
-    }
-};
-*/
-
 function matchDatetime(pattern, dataStr) {
   return matchRegex(pattern, dataStr);
 }
 
-function matchNumeric(pattern, dataStr) {
+export function matchNumeric(pattern, dataStr) {
   if (!pattern) {
     return !isNaN(dataStr);
   } else {
@@ -71,7 +10,7 @@ function matchNumeric(pattern, dataStr) {
   }
 }
 
-function matchRegex(pattern, dataStr) {
+export function matchRegex(pattern, dataStr) {
   if (!pattern) {
     return true;
   }
