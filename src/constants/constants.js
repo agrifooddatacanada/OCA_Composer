@@ -275,6 +275,7 @@ export const displayValues = [
 
 export const defaultUploadedDescription = "Click here to select a spreadsheet or drag and drop one here";
 export const jsonUploadDescription = "Click here to select an OCA schema or drag and drop one here";
+export const textUploadDescription = "Click here to select an OCA File (.txt) or drag and drop one here";
 export const datasetUploadDescription = "Click here to select an Excel or CSV dataset or drag and drop one here";
 export const defaultTooltip = "To make it easier to create a schema you can drag and drop your existing dataset that...";
 export const jsonUploadTooltip = "To make it easier to upload a schema you can drag and drop your existing dataset that you are creating the schema for. This schema should be in JSON format";
@@ -287,3 +288,18 @@ export const errorCode = {
   'Character Encoding': "CHE",
   'Data Type': "DTE"
 };
+
+export const OVERLAYS_WORD = 'overlays';
+export const CAPTURE_BASE = 'capture_base';
+export const CHARACTER_ENCODING = 'character_encoding';
+export const FORMAT = 'format';
+export const META = 'meta';
+export const LABEL = 'label';
+export const INFORMATION = 'information';
+export const ENTRY_CODE = 'entry_code';
+export const ENTRY = 'entry';
+export const UNIT = 'unit';
+export const CONFORMANCE = 'conformance';
+export const CARDINALITY = 'cardinality';
+
+export const overlays = [CHARACTER_ENCODING, FORMAT, META, LABEL, INFORMATION, ENTRY_CODE, ENTRY, UNIT, CONFORMANCE];

@@ -842,22 +842,24 @@ const OCADataValidatorCheck = ({
       });
     }
 
-    columns.push({
-      headerName: "Del.",
-      field: "Delete",
-      cellRendererFramework: TrashCanButton,
-      width: 50,
-      cellRendererParams: (params) => ({
-        delete: () => {
-          gridRef.current.api.applyTransaction({
-            remove: [params.node.data],
-          });
-          gridRef.current.api.redrawRows();
-        },
-      }),
-      pinned: "right",
-      cellStyle: () => greyCellStyle,
-    });
+    columns.push(
+      {
+        headerName: 'Del.',
+        field: 'Delete',
+        cellRendererFramework: TrashCanButton,
+        width: 50,
+        cellRendererParams: (params) => ({
+          delete: () => {
+            gridRef.current.api.applyTransaction({
+              remove: [params.node.data],
+            });
+            gridRef.current.api.redrawRows();
+          }
+        }),
+        pinned: 'right',
+        cellStyle: () => greyCellStyle,
+      }
+    );
 
     setColumnDefs(columns);
     setRowData(schemaDataConformantRowData);
