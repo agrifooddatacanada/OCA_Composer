@@ -165,12 +165,12 @@ export const formatCodeNumericDescription = Object.entries(descriptionToFormatCo
 
 export const descriptionToFormatCodeDate = {
   "ISO: YYYY-MM-DD: year month day": "^(?:(?:19|20)\\d{2})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2]\\d|3[0-1])$",
-  "ISO: YYYYMMDD: year month day": "^(?:(?:19|20)[0-9]{2})(?:0[1-9]|1[012])(?:0[1-9]|[12][0-9]|3[01])$",
-  "ISO: YYYY-MM: year month": "^(?:(?:19|20)[0-9]{2})-(?:0[1-9]|1[012])(?:-(?:0[1-9]|[12][0-9]|3[01]))?$",
+  "ISO: YYYYMMDD: year month day": "^(?:(?:19|20)\\d{2})(?:0[1-9]|1[0-2])(?:0[1-9]|[1-2]\\d|3[0-1])$",
+  "ISO: YYYY-MM: year month": "^(?:(?:19|20)\\d{2})-(?:0[1-9]|1[0-2])$",
   "ISO: YYYY-Www: year week (e.g. W01)": "^(?:(?:19|20)\\d{2})-W(?:0[1-9]|[1-4][0-9]|5[0-3])$",
   "ISO: YYYYWww: year week (e.g. W01)": "^(?:(?:19|20)\\d{2})W(?:0[1-9]|[1-4][0-9]|5[0-3])$",
-  "ISO: YYYY-DDD: Ordinal date (day number from the year)": "^(?:(?:19|20)\\d{2})-(?:0[1-9]|[1-2]\\d{2}|3[0-5]\\d|36[0-6])$",
-  "ISO: YYYYDDD: Ordinal date (day number from the year)": "^(?:(?:19|20)\\d{2})(?:0[1-9]|[1-2]\\d{2}|3[0-5]\\d|36[0-6])$",
+  "ISO: YYYY-DDD: Ordinal date (day number from the year)": "^(19[0-9]{2}|2[0-9]{3})-(00[1-9]|0[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-6])$",
+  "ISO: YYYYDDD: Ordinal date (day number from the year)": "^(19[0-9]{2}|2[0-9]{3})(00[1-9]|0[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-6])$",
   "ISO: YYYY: year": "^(?:19|20)\\d{2}$",
   "ISO: MM: month": "^(0[1-9]|1[0-2])$",
   "ISO: DD: day": "^(0[1-9]|[1-2][0-9]|3[01])$",
@@ -183,8 +183,9 @@ export const descriptionToFormatCodeDate = {
   "DD/MM/YY: day, month, year": "^(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0-2])\\/\\d{2}$",
   "MM/DD/YYYY: month, day, year": "^(0[1-9]|1[0-2])\\/(0[1-9]|[12][0-9]|3[01])\\/(19|20)\\d{2}$",
   "DDMMYYYY: day, month, year": "^(0[1-9]|[12]\\d|3[01])(0[1-9]|1[0-2])(19|20)\\d{2}$",
-  "MMDDYYYY: month, day, year": "^(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])(19|20)\\d{2}$",
+  "MMDDYYYY: month, day, year": "^0?[1-9]|1[0-2](0[1-9]|[12]\d|3[01])(19|20)\d{2}$",
   "YYYYMMDD: year, month, day": "^(19|20)\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])$",
+  "HH:MM:SS: hour, minutes, seconds 12 hour notation AM/PM": "^(0?[1-9]|1[0-2]):[0-5][0-9]:[0-5][0-9] ?[APMapm]{2}$",
   "H:MM or HH:MM: hour, minutes AM/PM": "^(12|0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM|am|pm)$"
 };
 
