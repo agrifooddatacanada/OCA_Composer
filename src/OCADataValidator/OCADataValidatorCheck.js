@@ -33,6 +33,7 @@ import { CustomPalette } from "../constants/customPalette";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { getCurrentData } from "../constants/utils";
 import { createDataEntryExcel } from "../Landing/createDataEntryExcel";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 export const TrashCanButton = memo(
   forwardRef((props, _ref) => {
@@ -497,7 +498,6 @@ const OCADataValidatorCheck = ({
     try {
       const newCSV = await generateCSVFile(ogHeader);
       if (newCSV !== null) {
-        console.log(targetResult);
         downloadCSVFile(newCSV, "DataEntryCSV.csv");
       } else {
         throw new Error("Error while generating CSV file");
@@ -927,6 +927,27 @@ const OCADataValidatorCheck = ({
             >
               <ArrowBackIosIcon /> Back
             </Button>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                backgroundColor: CustomPalette.RED_100,
+                maxWidth: "400px",
+              }}
+            >
+              <ErrorOutlineIcon
+                sx={{
+                  color: CustomPalette.SECONDARY,
+                  p: 0.5,
+                  pl: 0,
+                  fontSize: 25,
+                }}
+              />
+              <p>No data is saved without exporting!</p>
+            </Box>
             <Box
               sx={{
                 display: "flex",

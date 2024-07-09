@@ -131,14 +131,14 @@ export default function Header({ currentPage }) {
         setToolTipText(
           ''
         );
-        setHelpLink('');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/en/MatchAttributes/');
         break;
       case 'OCADataValidatorCheck':
         setHeader(t('Data Verifier'));
         setToolTipText(
           ''
         );
-        setHelpLink('');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/en/DataVerification/');
         break;
       default:
         setHeader('');
