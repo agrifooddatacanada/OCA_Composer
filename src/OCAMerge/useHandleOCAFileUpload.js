@@ -25,87 +25,6 @@ const useHandleOCAFileUpload = () => {
     setParsedOCAFile2("");
   };
 
-  // const processOcaFile = (splittedText) => {
-  //   const result = {};
-  //   splittedText.forEach((line) => {
-  //     if (line !== "") {
-  //       const match = line.match(/ADD\s(.*?)\sATTRS/);
-  //       if (match && match[1] && !(match[1] in result)) {
-  //         // result.push(match[1]);
-  //         result[match[1]] = [line];
-  //       } else if (match && match[1] && match[1] in result) {
-  //         result[match[1]].push(line);
-  //       }
-
-  //       const matchProps = line.match(/ADD\s(.*?)\sPROPS/);
-  //       if (matchProps && matchProps[1] && !(matchProps[1] in result)) {
-  //         // result.push(matchProps[1]);
-  //         result[matchProps[1]] = [line];
-  //       } else if (matchProps && matchProps[1] && matchProps[1] in result) {
-  //         result[matchProps[1]].push(line);
-  //       }
-
-  //       const matchAttribute = line.match(/ADD\sATTRIBUTE/);
-  //       if (matchAttribute && !("ATTRIBUTE" in result)) {
-  //         // result.push("ATTRIBUTE");
-  //         result["ATTRIBUTE"] = [line];
-  //       } else if (matchAttribute && "ATTRIBUTE" in result) {
-  //         result["ATTRIBUTE"].push(line);
-  //       }
-  //     }
-  //   });
-
-  //   return result;
-  // };
-
-  // const processTextFile = (file, fileNumber) => {
-  //   const reader = new FileReader();
-  //   reader.onload = () => {
-  //     const text = reader.result;
-  //     if (fileNumber === 1) {
-  //       setParsedOCAFile1(text);
-  //       const processedData = processOcaFile(text.split("\n"));
-  //       setSelectedOverlaysOCAFile1(processedData);
-  //       setOCAFile1Loading(false);
-  //       setOcaFile1DropDisabled(true);
-  //       setOcaFile1DropMessage({
-  //         message: messages.successfulUpload,
-  //         type: "success",
-  //       });
-
-  //       setTimeout(() => {
-  //         setOcaFile1DropDisabled(true);
-  //         setOcaFile1DropMessage({ message: "", type: "" });
-  //         setOCAFile2Loading(false);
-  //         if (OCAFile2Raw.length === 0) {
-  //           setOcaFile2DropDisabled(false);
-  //         }
-  //       }, 900);
-  //     } else {
-  //       const processedData = processOcaFile(text.split("\n"));
-  //       setSelectedOverlaysOCAFile2(processedData);
-
-  //       setParsedOCAFile2(text);
-  //       setOCAFile2Loading(false);
-  //       setOcaFile2DropDisabled(true);
-
-  //       setOcaFile2DropMessage({
-  //         message: messages.successfulUpload,
-  //         type: "success",
-  //       });
-
-  //       setTimeout(() => {
-  //         setOcaFile2DropMessage({ message: "", type: "" });
-  //         setOCAFile1Loading(false);
-  //         if (OCAFile1Raw.length === 0) {
-  //           setOcaFile1DropDisabled(false);
-  //         }
-  //       }, 900);
-  //     }
-  //   };
-  //   reader.readAsText(file);
-  // };
-
   const processJsonFile = (file, fileNumber) => {
     try {
       const reader = new FileReader();
@@ -284,6 +203,7 @@ const useHandleOCAFileUpload = () => {
       }
 
       if (key.includes(CARDINALITY)) {
+        selectedOverlay[CARDINALITY] = parsedData;
         innerOverlays[CARDINALITY] = parsedData;
       }
     }
