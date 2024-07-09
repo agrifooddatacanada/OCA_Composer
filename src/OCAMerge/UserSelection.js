@@ -4,7 +4,7 @@ import { Box, Button, Checkbox, List, ListItem, Typography } from '@mui/material
 import { useTranslation } from 'react-i18next';
 import { Context } from '../App';
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { CAPTURE_BASE, CHARACTER_ENCODING, CONFORMANCE, ENTRY, ENTRY_CODE, FORMAT, INFORMATION, LABEL, META, UNIT } from '../constants/constants';
+import { CAPTURE_BASE, CARDINALITY, CHARACTER_ENCODING, CONFORMANCE, ENTRY, ENTRY_CODE, FORMAT, INFORMATION, LABEL, META, UNIT } from '../constants/constants';
 import MergeDifferenceModal from './MergeDifferenceModal';
 import JSZip from 'jszip';
 
@@ -45,6 +45,9 @@ const findComparisonObject = (key) => {
       break;
     case CONFORMANCE:
       objKey = 'attribute_conformance';
+      break;
+    case CARDINALITY:
+      objKey = 'attribute_cardinality';
       break;
     default:
       break;
@@ -109,7 +112,7 @@ const UserSelection = () => {
         title: item.key,
         rowData: [classificationObj, ...attributesComparison],
       });
-    } else if (item.key === CHARACTER_ENCODING || item.key.includes(LABEL) || item.key.includes(INFORMATION) || item.key.includes(CONFORMANCE) || item.key.includes(UNIT)) {
+    } else if (item.key === CHARACTER_ENCODING || item.key.includes(LABEL) || item.key.includes(INFORMATION) || item.key.includes(CONFORMANCE) || item.key.includes(UNIT) || item.key.includes(CARDINALITY)) {
       const comparisonObj = findComparisonObject(item.key.split(' - ')?.[0]);
       const uniqueKeys = new Set([
         ...Object.keys(value1?.[comparisonObj] || {}),
@@ -219,6 +222,9 @@ const UserSelection = () => {
       } else if (key === UNIT) {
         exportedFile.push(value);
         metaJSON["files"][rootDigest][UNIT] = value?.digest;
+      } else if (key === CARDINALITY) {
+        exportedFile.push(value);
+        metaJSON["files"][rootDigest][CARDINALITY] = value?.digest;
       } else if (key.includes(INFORMATION) || key.includes(LABEL) || key.includes(META) || key.includes(ENTRY)) {
         exportedFile.push(value);
         const splitKey = key.split(' - ');
