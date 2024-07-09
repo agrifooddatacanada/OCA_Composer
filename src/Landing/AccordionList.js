@@ -16,6 +16,7 @@ import useExportLogic from '../ViewSchema/useExportLogic';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 import GenerateDataEntryExcel from './GenerateDataEntryExcel';
 import { useTranslation } from 'react-i18next';
+import CollaborateOnASchema from './CollaborateOnASchema';
 
 const AccordionList = () => {
   const isMobile = useMediaQuery('(max-width: 736px)');
@@ -89,6 +90,9 @@ const AccordionList = () => {
         >
           <SchemaAccordionItem />
           <WriteASchemaAccordionItem
+            navigateToStartPage={navigateToStartPage}
+          />
+          <CollaborateOnASchema
             navigateToStartPage={navigateToStartPage}
           />
           <StoreASchemaAccordionItem />
@@ -220,7 +224,7 @@ const AccordionList = () => {
             >
               {t('Generate Readme')}
             </Button>
-            <GenerateDataEntryExcel rawFile={rawFile} setLoading={setLoading} disableButtonCheck={disableButtonCheck}/>
+            <GenerateDataEntryExcel rawFile={rawFile} setLoading={setLoading} disableButtonCheck={disableButtonCheck} />
           </Box>
         </Box>
       </Box>
