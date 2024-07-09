@@ -217,7 +217,7 @@ const UserSelection = () => {
         metaJSON["files"][rootDigest][CONFORMANCE] = value?.digest;
       } else if (key === UNIT) {
         exportedFile.push(value);
-        metaJSON["files"][rootDigest][UNIT] = value.digest;
+        metaJSON["files"][rootDigest][UNIT] = value?.digest;
       } else if (key.includes(INFORMATION) || key.includes(LABEL) || key.includes(META)) {
         exportedFile.push(value);
         const splitKey = key.split(' - ');
@@ -227,7 +227,7 @@ const UserSelection = () => {
         } else {
           newKey = splitKey[0];
         }
-        metaJSON["files"][rootDigest][newKey] = value.digest;
+        metaJSON["files"][rootDigest][newKey] = value?.digest;
       }
     });
     exportedFile.push(metaJSON);
@@ -301,9 +301,7 @@ const UserSelection = () => {
 
   useEffect(() => {
     const keysObj1 = Object.keys(selectedOverlaysOCAFile1);
-    console.log('keysObj1', keysObj1);
     const keysObj2 = Object.keys(selectedOverlaysOCAFile2);
-    console.log('keysObj2', keysObj2);
     const uniqueKeys = [...new Set([...keysObj1, ...keysObj2])];
     const temp = [];
 

@@ -14,6 +14,7 @@ import HelpStorage from './Landing/HelpStorage';
 import OCADataValidator from './OCADataValidator/OCADataValidator';
 import LearnAboutSchemaRule from './OCADataValidator/LearnAboutSchemaRule';
 import LearnAboutDataVerification from './OCADataValidator/LearnAboutDataVerification';
+import OCAMerge from './OCAMerge/OCAMerge';
 
 export const Context = createContext();
 
@@ -478,6 +479,10 @@ function App() {
                   element={<LearnAboutDataVerification />}
                 />
                 <Route path='*' element={<Navigate to='/' />} />
+                <Route
+                  path='/oca-merge'
+                  element={<OCAMerge currentOCAMergePage={currentOCAMergePage} />}
+                />
               </Routes>
             </BrowserRouter>
           </Box>
