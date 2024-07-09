@@ -19,7 +19,6 @@ function MergeDifferenceModal({
 }) {
   const { t } = useTranslation();
   const [columnDefs, setColumnDefs] = useState([]);
-  console.log('dataDifference', dataDifference);
 
   const defaultColDef = {
     width: 200,

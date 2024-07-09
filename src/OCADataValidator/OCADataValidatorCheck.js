@@ -498,7 +498,6 @@ const OCADataValidatorCheck = ({
     try {
       const newCSV = await generateCSVFile(ogHeader);
       if (newCSV !== null) {
-        console.log(targetResult);
         downloadCSVFile(newCSV, "DataEntryCSV.csv");
       } else {
         throw new Error("Error while generating CSV file");

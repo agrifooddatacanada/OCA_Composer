@@ -12,7 +12,6 @@ const useHandleOCAFileUpload = () => {
   const [ocaFile1DropMessage, setOcaFile1DropMessage] = useState("");
   const [ocaFile2DropDisabled, setOcaFile2DropDisabled] = useState(false);
   const [ocaFile2DropMessage, setOcaFile2DropMessage] = useState("");
-  console.log('ParsedOCAFile1', parsedOCAFile1);
 
   const handleClearOCAFile1 = () => {
     setOcaFile1DropDisabled(false);
@@ -143,7 +142,6 @@ const useHandleOCAFileUpload = () => {
 
   const processSelectedOverlays = (jsonFile) => {
     const selectedValue = {};
-    console.log(jsonFile, 'jsonFile');
     if (CAPTURE_BASE in jsonFile) {
       selectedValue[CAPTURE_BASE] = jsonFile[CAPTURE_BASE];
     }
@@ -187,9 +185,7 @@ const useHandleOCAFileUpload = () => {
       }, 900);
     } else {
       setParsedOCAFile2(jsonFile);
-      console.log('jsonFile', jsonFile);
       setSelectedOverlaysOCAFile2(selectedValue);
-      console.log('selectedValue', selectedValue);
       setOCAFile2Loading(false);
       setOcaFile2DropDisabled(true);
 
@@ -209,10 +205,6 @@ const useHandleOCAFileUpload = () => {
   };
 
   const processZipFile = async (zip, fileNumber) => {
-    console.log('zip', zip);
-    const languageList = [];
-    const entryList = [];
-    const allZipFiles = [];
     const selectedOverlay = {};
     const ogFile = {};
     const innerOverlays = {};
@@ -292,13 +284,10 @@ const useHandleOCAFileUpload = () => {
       }
 
       if (key.includes(CARDINALITY)) {
-        console.log('cardinality', parsedData);
         innerOverlays[CARDINALITY] = parsedData;
       }
     }
-    console.log('selectedOverlay in hereee', selectedOverlay);
     ogFile[OVERLAYS_WORD] = innerOverlays;
-    console.log('ogFile in hereee', ogFile);
 
     if (fileNumber === 1) {
       setParsedOCAFile1(ogFile);
