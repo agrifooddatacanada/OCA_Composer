@@ -62,6 +62,9 @@ const UserSelection = () => {
     rowData: [],
   });
 
+  const fileName1 = OCAFile1Raw[0].path;
+  const fileName2 = OCAFile2Raw[0].path;
+
   const processComparisonForDifference = (item) => {
     if (item.ocafile1 === "NONE" && item.ocafile2 === "NONE") {
       return;
@@ -185,14 +188,14 @@ const UserSelection = () => {
 
   const preparedZipToExport = () => {
     const exportedFile = [];
-    const rootDigest = "ABCDE";
+    const rootDigest = parsedOCAFile1?.capture_base?.digest;
     const metaJSON = {
       files: {
         [rootDigest]: {}
       },
-      // TODO: add this later
       root: rootDigest
     };
+
     data.forEach(item => {
       const key = item.key;
       let value = null;
@@ -204,13 +207,19 @@ const UserSelection = () => {
       if (key === CHARACTER_ENCODING) {
         exportedFile.push(value);
         metaJSON["files"][rootDigest][CHARACTER_ENCODING] = value?.digest;
+      } else if (key === FORMAT) {
+        exportedFile.push(value);
+        metaJSON["files"][rootDigest][FORMAT] = value?.digest;
+      } else if (key === ENTRY_CODE) {
+        exportedFile.push(value);
+        metaJSON["files"][rootDigest][ENTRY_CODE] = value?.digest;
       } else if (key === CONFORMANCE) {
         exportedFile.push(value);
         metaJSON["files"][rootDigest][CONFORMANCE] = value?.digest;
       } else if (key === UNIT) {
         exportedFile.push(value);
         metaJSON["files"][rootDigest][UNIT] = value?.digest;
-      } else if (key.includes(INFORMATION) || key.includes(LABEL) || key.includes(META)) {
+      } else if (key.includes(INFORMATION) || key.includes(LABEL) || key.includes(META) || key.includes(ENTRY)) {
         exportedFile.push(value);
         const splitKey = key.split(' - ');
         let newKey;
@@ -220,6 +229,8 @@ const UserSelection = () => {
           newKey = splitKey[0];
         }
         metaJSON["files"][rootDigest][newKey] = value?.digest;
+      } else if (key === CAPTURE_BASE) {
+        exportedFile.push(value);
       }
     });
     exportedFile.push(metaJSON);
@@ -374,7 +385,7 @@ const UserSelection = () => {
           alignItems: 'center',
           width: '40%',
         }}>
-          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{t('OCA File 1')}</Typography>
+          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{fileName1.substring(0, fileName1.lastIndexOf('.'))}</Typography>
         </Box>
         <Box sx={{
           padding: '10px',
@@ -392,7 +403,7 @@ const UserSelection = () => {
           alignItems: 'center',
           width: '40%',
         }}>
-          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{t('OCA File 2')}</Typography>
+          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{fileName2.substring(0, fileName2.lastIndexOf('.'))}</Typography>
         </Box>
       </Box>
 

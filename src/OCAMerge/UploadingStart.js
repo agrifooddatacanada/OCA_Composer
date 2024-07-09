@@ -31,6 +31,9 @@ const UploadingStart = () => {
     parsedOCAFile2,
   } = useHandleOCAFileUpload();
 
+  const filePath1 = OCAFile1Raw?.[0]?.path;
+  const filePath2 = OCAFile2Raw?.[0]?.path;
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
       <BackNextSkeleton isForward={parsedOCAFile1 !== "" && parsedOCAFile2 !== ""} pageForward={() => {
@@ -45,7 +48,7 @@ const UploadingStart = () => {
       }}>
         <Box sx={{ height: '3rem' }} />
         <Box>
-          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {t('Schema Bundle 1')}</Typography>
+          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {filePath1 ? filePath1.substring(0, filePath1.lastIndexOf('.')) : t('Schema Bundle 1')}</Typography>
           <Drop
             setFile={setOCAFile1Raw}
             setLoading={setOCAFile1Loading}
@@ -72,7 +75,7 @@ const UploadingStart = () => {
         </Box>
         <Box sx={{ height: '4rem' }} />
         <Box>
-          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {t('Schema bundle 2')}</Typography>
+          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {filePath2 ? filePath2.substring(0, filePath2.lastIndexOf('.')) : t('Schema bundle 2')}</Typography>
           <Drop
             setFile={setOCAFile2Raw}
             setLoading={setOCAFile2Loading}

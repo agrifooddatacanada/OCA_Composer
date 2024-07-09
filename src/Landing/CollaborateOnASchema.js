@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import AccordionItemWrapper from './AccordionItemWrapper';
-import { AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Typography } from '@mui/material';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 import { CustomPalette } from '../constants/customPalette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
