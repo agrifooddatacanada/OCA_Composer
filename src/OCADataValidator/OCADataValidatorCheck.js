@@ -33,6 +33,7 @@ import { CustomPalette } from "../constants/customPalette";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { getCurrentData } from "../constants/utils";
 import { createDataEntryExcel } from "../Landing/createDataEntryExcel";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 export const TrashCanButton = memo(
   forwardRef((props, _ref) => {
@@ -497,7 +498,6 @@ const OCADataValidatorCheck = ({
     try {
       const newCSV = await generateCSVFile(ogHeader);
       if (newCSV !== null) {
-        console.log(targetResult);
         downloadCSVFile(newCSV, "DataEntryCSV.csv");
       } else {
         throw new Error("Error while generating CSV file");
@@ -841,22 +841,24 @@ const OCADataValidatorCheck = ({
       });
     }
 
-    columns.push({
-      headerName: "Del.",
-      field: "Delete",
-      cellRendererFramework: TrashCanButton,
-      width: 50,
-      cellRendererParams: (params) => ({
-        delete: () => {
-          gridRef.current.api.applyTransaction({
-            remove: [params.node.data],
-          });
-          gridRef.current.api.redrawRows();
-        },
-      }),
-      pinned: "right",
-      cellStyle: () => greyCellStyle,
-    });
+    columns.push(
+      {
+        headerName: 'Del.',
+        field: 'Delete',
+        cellRendererFramework: TrashCanButton,
+        width: 50,
+        cellRendererParams: (params) => ({
+          delete: () => {
+            gridRef.current.api.applyTransaction({
+              remove: [params.node.data],
+            });
+            gridRef.current.api.redrawRows();
+          }
+        }),
+        pinned: 'right',
+        cellStyle: () => greyCellStyle,
+      }
+    );
 
     setColumnDefs(columns);
     setRowData(schemaDataConformantRowData);
@@ -880,20 +882,20 @@ const OCADataValidatorCheck = ({
   const rowDataFilter =
     errorName.length > 0
       ? rowData.filter((row) => {
-          for (const error of errorName) {
-            if (row?.error) {
-              const errCode = errorCode?.[error];
-              const errorValues = Object.values(row?.error);
-              for (const err of errorValues) {
-                const errs = err.map((item) => item?.type);
-                if (errs?.includes(errCode)) {
-                  return true;
-                }
+        for (const error of errorName) {
+          if (row?.error) {
+            const errCode = errorCode?.[error];
+            const errorValues = Object.values(row?.error);
+            for (const err of errorValues) {
+              const errs = err.map((item) => item?.type);
+              if (errs?.includes(errCode)) {
+                return true;
               }
             }
           }
-          return false;
-        })
+        }
+        return false;
+      })
       : rowData;
 
   return (
@@ -925,6 +927,27 @@ const OCADataValidatorCheck = ({
             >
               <ArrowBackIosIcon /> Back
             </Button>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                backgroundColor: CustomPalette.RED_100,
+                maxWidth: "400px",
+              }}
+            >
+              <ErrorOutlineIcon
+                sx={{
+                  color: CustomPalette.SECONDARY,
+                  p: 0.5,
+                  pl: 0,
+                  fontSize: 25,
+                }}
+              />
+              <p>No data is saved without exporting!</p>
+            </Box>
             <Box
               sx={{
                 display: "flex",
@@ -1003,7 +1026,7 @@ const OCADataValidatorCheck = ({
               <Languages
                 type={langRef.current}
                 handleChange={handleChange}
-                handleClick={() => {}}
+                handleClick={() => { }}
                 isDropdownOpen={isDropdownOpen}
                 setIsDropdownOpen={setIsDropdownOpen}
                 languages={languages}

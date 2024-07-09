@@ -131,14 +131,14 @@ export default function Header({ currentPage }) {
         setToolTipText(
           ''
         );
-        setHelpLink('');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/en/MatchAttributes/');
         break;
       case 'OCADataValidatorCheck':
         setHeader(t('Data Verifier'));
         setToolTipText(
           ''
         );
-        setHelpLink('');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/en/DataVerification/');
         break;
       default:
         setHeader('');
@@ -149,10 +149,10 @@ export default function Header({ currentPage }) {
   return (
     <HeaderWrapper
       isMobile={isMobile}
-      headerColor={(currentPage === 'Landing' || currentPage === "StartDataValidator") && CustomPalette.PRIMARY}
+      headerColor={(currentPage === 'Landing' || currentPage === "StartDataValidator" || currentPage === "StartOCAMerge") && CustomPalette.PRIMARY}
       leftItem={
         <>
-          {(currentPage === 'Landing' || currentPage === "StartDataValidator") ? (
+          {(currentPage === 'Landing' || currentPage === "StartDataValidator" || currentPage === "StartOCAMerge") ? (
             <Box sx={{ flex: 'column' }}>
               <Link to="/" style={{ textDecoration: 'none' }}>
                 <Typography

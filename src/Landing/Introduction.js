@@ -66,15 +66,24 @@ const Introduction = () => {
           {t('Follow our quick-start to begin writing your own data schemas')}
         </Typography>
       </Box>
-      <iframe
-        width={isMobile ? '100%' : '800'}
-        height={isMobile ? '200' : '315'}
-        src='https://www.youtube.com/embed/r8VIIBWmL_k'
-        title='YouTube video player'
-        frameBorder='0'
-        allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
-        allowFullScreen
-      ></iframe>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <iframe
+          width={isMobile ? '98%' : '560'}
+          height={isMobile ? '260' : '315'}
+          src='https://www.youtube.com/embed/r8VIIBWmL_k'
+          title='YouTube video player'
+          frameBorder='0'
+          allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+          allowFullScreen
+        ></iframe>
+      </Box>
+
     </Box>
   );
 };

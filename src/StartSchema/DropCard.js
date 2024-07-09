@@ -71,7 +71,7 @@ export default function DropCard({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
           >
-            {dropMessage?.message.length > 0 && (
+            {dropMessage?.message?.length > 0 && (
               <Alert
                 severity={dropMessage?.type}
                 style={{
