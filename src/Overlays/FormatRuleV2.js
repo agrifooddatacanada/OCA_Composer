@@ -160,15 +160,25 @@ const FormatRulesV2 = () => {
               window.location.href = `https://github.com/agrifooddatacanada/format_options`;
               e.preventDefault();
             }}
+            sx={{
+              '&:hover': {
+                cursor: 'pointer',
+              },
+            }} 
           >
             {t('format GitHub repository')}
           </Link>.{' '}{t('Request a new format to be added by')} {' '}
           <Link
             to='#'
             onClick={(e) => {
-              window.location.href = `https://github.com/agrifooddatacanada/format_options/issues`;
+              window.location.href = `https://github.com//issues`;
               e.preventDefault();
             }}
+            sx={{
+              '&:hover': {
+                cursor: 'pointer',
+              },
+            }}      
           >
             {t('raising an issue in the repository')}
           </Link>
@@ -179,6 +189,11 @@ const FormatRulesV2 = () => {
               window.location.href = `mailto:adc@uoguelph.ca`;
               e.preventDefault();
             }}
+            sx={{
+              '&:hover': {
+                cursor: 'pointer',
+              },
+            }} 
           >
             adc@uoguelph.ca
           </Link>.

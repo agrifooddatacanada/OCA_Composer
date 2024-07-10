@@ -32,6 +32,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "unittest": "jest tests/",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -52,5 +53,17 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.7",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/preset-env": "^7.24.7",
+    "babel-jest": "^29.7.0",
+    "jest": "^27.5.1"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
   }
 }
