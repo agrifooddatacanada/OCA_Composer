@@ -164,6 +164,7 @@ export const formatCodeNumericDescription = Object.entries(descriptionToFormatCo
 }, {});
 
 export const descriptionToFormatCodeDate = {
+  "": "",
   "ISO: YYYY-MM-DD: year month day": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
   "ISO: YYYYMMDD: year month day": "^(\\d{4})(0[1-9]|1[0-2])(0[1-9]|[1-2]\\d|3[0-1])$",
   "ISO: YYYY-MM: year month": "^(\\d{4})-(0[1-9]|1[0-2])$",
