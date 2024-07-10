@@ -3,7 +3,6 @@ import { messages } from "../constants/messages";
 import { Context } from "../App";
 import useZipParser from "../StartSchema/useZipParser";
 import JSZip from "jszip";
-import { json } from "react-router-dom";
 
 const neededOverlays = [
   "format",

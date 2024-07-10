@@ -5,26 +5,16 @@ import { useRef, useState } from 'react';
 import { useEffect, createContext } from 'react';
 import Home from './Home';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import AddEntryCodesHelp from './UsersHelp/Add_Entry_Codes_Help';
-import AttributeDetailsHelp from './UsersHelp/Attribute_Details_Help';
-import CreatingOCASchemaHelp from './UsersHelp/Creating_OCA_Schema_Help';
-import LanguageAttributeHelp from './UsersHelp/Language_Attribute_Help';
-import SchemaMetadataHelp from './UsersHelp/Schema_Metadata_Help';
 import StartSchemaHelp from './UsersHelp/Start_Schema_Help';
-import ViewSchemaHelp from './UsersHelp/View_Schema_Help';
-import OverlaysHelp from './UsersHelp/Overlays_Help';
 import { getListOfSelectedOverlays } from './constants/getListOfSelectedOverlays';
 import Landing from './Landing/Landing';
-import CharacterEncodingHelp from './UsersHelp/Character_encoding_help';
-import RequiredEntryHelp from './UsersHelp/Required_Entry_help';
 import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
 import ReactGA from 'react-ga4';
-import FormatTextHelp from './UsersHelp/Format_Text_Help';
 import HelpStorage from './Landing/HelpStorage';
 import OCADataValidator from './OCADataValidator/OCADataValidator';
-import CardinalityHelp from './UsersHelp/Cardinality_Help';
 import LearnAboutSchemaRule from './OCADataValidator/LearnAboutSchemaRule';
 import LearnAboutDataVerification from './OCADataValidator/LearnAboutDataVerification';
+import OCAMerge from './OCAMerge/OCAMerge';
 
 export const Context = createContext();
 
@@ -63,6 +53,7 @@ function App() {
   const [attributesList, setAttributesList] = useState([]);
   const [currentPage, setCurrentPage] = useState('Landing');
   const [currentDataValidatorPage, setCurrentDataValidatorPage] = useState('StartDataValidator');
+  const [currentOCAMergePage, setCurrentOCAMergePage] = useState('StartOCAMerge');
   const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: '', description: '' },
@@ -113,6 +104,13 @@ function App() {
   const [tempEntryList, setTempEntryList] = useState([]);
   const [firstNavigationToDataset, setFirstNavigationToDataset] = useState(false);
   const [excelSheetChoice, setExcelSheetChoice] = useState(-1);
+
+  const [OCAFile1Raw, setOCAFile1Raw] = useState("");
+  const [OCAFile2Raw, setOCAFile2Raw] = useState("");
+  const [parsedOCAFile1, setParsedOCAFile1] = useState("");
+  const [parsedOCAFile2, setParsedOCAFile2] = useState("");
+  const [selectedOverlaysOCAFile1, setSelectedOverlaysOCAFile1] = useState({});
+  const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState({});
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -415,6 +413,19 @@ function App() {
             setTempEntryList,
             excelSheetChoice,
             setExcelSheetChoice,
+            setCurrentOCAMergePage,
+            OCAFile1Raw,
+            setOCAFile1Raw,
+            OCAFile2Raw,
+            setOCAFile2Raw,
+            parsedOCAFile1,
+            setParsedOCAFile1,
+            parsedOCAFile2,
+            setParsedOCAFile2,
+            selectedOverlaysOCAFile1,
+            setSelectedOverlaysOCAFile1,
+            selectedOverlaysOCAFile2,
+            setSelectedOverlaysOCAFile2,
             firstNavigationToDataset,
             setFirstNavigationToDataset,
             targetResult,
@@ -467,8 +478,11 @@ function App() {
                   path='/learn_data_verification'
                   element={<LearnAboutDataVerification />}
                 />
-
                 <Route path='*' element={<Navigate to='/' />} />
+                <Route
+                  path='/oca-merge'
+                  element={<OCAMerge currentOCAMergePage={currentOCAMergePage} />}
+                />
               </Routes>
             </BrowserRouter>
           </Box>
