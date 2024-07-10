@@ -66,13 +66,15 @@ const UserSelection = () => {
   });
 
   const fileName1 = OCAFile1Raw[0].path;
+  const fileName1WithoutExt = fileName1.substring(0, fileName1.lastIndexOf('.'));
   const fileName2 = OCAFile2Raw[0].path;
+  const fileName2WithoutExt = fileName2.substring(0, fileName2.lastIndexOf('.'));
 
   const processComparisonForDifference = (item) => {
     if (item.ocafile1 === "NONE" && item.ocafile2 === "NONE") {
       return;
     }
-    // const objKey = item.key.split(' - ')?.[0];
+
     const value1 = selectedOverlaysOCAFile1?.[item.key];
     const value2 = selectedOverlaysOCAFile2?.[item.key];
 
@@ -112,18 +114,41 @@ const UserSelection = () => {
         title: item.key,
         rowData: [classificationObj, ...attributesComparison],
       });
-    } else if (item.key === CHARACTER_ENCODING || item.key.includes(LABEL) || item.key.includes(INFORMATION) || item.key.includes(CONFORMANCE) || item.key.includes(UNIT) || item.key.includes(CARDINALITY)) {
+    } else if (item.key === CHARACTER_ENCODING || item.key.includes(LABEL) || item.key.includes(INFORMATION) || item.key.includes(CONFORMANCE) || item.key.includes(UNIT) || item.key.includes(CARDINALITY) || item.key.includes(FORMAT) || item.key.includes(ENTRY_CODE)) {
       const comparisonObj = findComparisonObject(item.key.split(' - ')?.[0]);
       const uniqueKeys = new Set([
         ...Object.keys(value1?.[comparisonObj] || {}),
         ...Object.keys(value2?.[comparisonObj] || {}),
       ]);
 
-      const attributesComparison = Array.from(uniqueKeys).map(key => ({
-        comparisonValue: key,
-        ocaFile1: value1?.[comparisonObj]?.[key],
-        ocaFile2: value2?.[comparisonObj]?.[key],
-      }));
+      const attributesComparison = Array.from(uniqueKeys).map(key => {
+        return {
+          comparisonValue: key,
+          ocaFile1: value1?.[comparisonObj]?.[key],
+          ocaFile2: value2?.[comparisonObj]?.[key],
+        };
+      });
+
+      setDataDifference({
+        title: item.key,
+        rowData: attributesComparison,
+      });
+    } else if (item.key.includes(ENTRY)) {
+      const comparisonObj = findComparisonObject(item.key.split(' - ')?.[0]);
+      const uniqueKeys = new Set([
+        ...Object.keys(value1?.[comparisonObj] || {}),
+        ...Object.keys(value2?.[comparisonObj] || {}),
+      ]);
+
+      const attributesComparison = Array.from(uniqueKeys).map(key => {
+        const parsedValue1 = value1?.[comparisonObj]?.[key];
+        const parsedValue2 = value2?.[comparisonObj]?.[key];
+        return {
+          comparisonValue: key,
+          ocaFile1: parsedValue1,
+          ocaFile2: parsedValue2,
+        };
+      });
 
       setDataDifference({
         title: item.key,
@@ -360,7 +385,13 @@ const UserSelection = () => {
       flex: 1,
       padding: '2rem',
     }}>
-      {showDifference && <MergeDifferenceModal setShowCard={setShowDifference} dataDifference={dataDifference} />}
+      {showDifference &&
+        <MergeDifferenceModal
+          file1Name={fileName1WithoutExt}
+          file2Name={fileName2WithoutExt}
+          setShowCard={setShowDifference}
+          dataDifference={dataDifference}
+        />}
       <Box sx={{
         display: "flex",
         justifyContent: "flex-end",
@@ -391,7 +422,7 @@ const UserSelection = () => {
           alignItems: 'center',
           width: '40%',
         }}>
-          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{fileName1.substring(0, fileName1.lastIndexOf('.'))}</Typography>
+          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{fileName1WithoutExt}</Typography>
         </Box>
         <Box sx={{
           padding: '10px',
@@ -409,13 +440,13 @@ const UserSelection = () => {
           alignItems: 'center',
           width: '40%',
         }}>
-          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{fileName2.substring(0, fileName2.lastIndexOf('.'))}</Typography>
+          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{fileName2WithoutExt}</Typography>
         </Box>
       </Box>
 
       <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column' }}>
         {data.map((item, index) => (
-          <Box sx={{ display: 'flex', width: '100%' }}>
+          <Box key={index} sx={{ display: 'flex', width: '100%' }}>
             <Box sx={{
               paddingLeft: '10px',
               paddingRight: '10px',
@@ -428,9 +459,13 @@ const UserSelection = () => {
               justifyContent: 'center',
               alignItems: 'center',
               width: '40%',
-
             }}>
-              <Typography sx={{ fontWeight: item?.ocafile1 === "NONE" ? '500' : 'normal', cursor: 'pointer' }} onClick={() => processComparisonForDifference(item)}>{item?.ocafile1}</Typography>
+              <Typography
+                sx={{ fontWeight: item?.ocafile1 === "NONE" ? '500' : 'normal', cursor: 'pointer' }}
+                onClick={() => processComparisonForDifference(item)}
+              >
+                {item?.ocafile1}
+              </Typography>
             </Box>
             <Box sx={{
               display: 'flex',
