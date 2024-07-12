@@ -1,5 +1,5 @@
 import OCADataSetErr from "./utils/Err";
-import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
+import { matchFormat, matchCharacterEncoding, matchRegex } from "./utils/matchRules";
 
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
@@ -29,7 +29,7 @@ const ATTR_MISSING_MSG =
   "Missing attribute (attribute not found in the data set).";
 const MISSING_MSG =
   "Missing an entry for a mandatory attribute (check for other missing entries before continuing).";
-// const NOT_AN_ARRAY_MSG = 'Valid array required.';
+const NOT_AN_ARRAY_MSG = 'Valid array required.';
 const FORMAT_ERR_MSG = "Format mismatch.";
 // const EC_FORMAT_ERR_MSG = 'Entry code format mismatch (manually fix the attribute format).';
 const EC_ERR_MSG = "One of the entry codes is required.";
@@ -168,7 +168,8 @@ export default class OCABundle {
       try {
         // Verifying the missing data entries for a mandatory (required) attributes.
         for (let i = 0; i < dataset[attr]?.length; i++) {
-          let dataEntry = String(dataset[attr][i]);
+          // let dataEntry = String(dataset[attr][i]);
+          let dataEntry = dataset[attr][i];
           if (
             (dataEntry === undefined ||
               dataEntry === null ||
@@ -178,41 +179,39 @@ export default class OCABundle {
             dataEntry = "";
           }
           // Verifying data types for entries to match the attribute's.
-          if (attrType.includes("Array")) {
-            continue;
+          if (Array.isArray(attrType)) {
+            let dataArr;
+            try {
+                const arrRegex = "^\[.*\]$";
 
-            // Todo: Implement array data type validation.
-            // let dataArr;
-            // try {
-            //     const arrRegex = /^\[.*\]$/;
-
-            //     if (!arrRegex.test(dataEntry)) {
-            //         rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
-            //         continue;
-            //     }
-            //     // if (arrRegex.test(dataEntry)) {
-            //     //     dataArr = JSON.parse(dataEntry); // Convert a string to an array.
-            //     // } else {
-            //     //     rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
-            //     //     continue;
-            //     // }
-            // } catch (error) {
-            //     // Not a valid JSON format string.
-            //     rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
-            //     continue;
-            // };
-            // if (!Array.isArray(dataEntry)) {
-            //     // Not a valid JSON array.
-            //     rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
-            //     continue;
-            // };
-            // for (let j = 0; j < dataArr.length; j++) {
-            //     if (!matchFormat(attrType, attrFormat, String(dataArr[j]))) {
-            //         rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`;
-            //         break;
-            //     }n
-            // }
-          } else if (!matchFormat(attrType, attrFormat, dataEntry)) {
+                if (!matchRegex(arrRegex, dataEntry)) {
+                    rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
+                    continue;
+                }
+                
+                // if (arrRegex.test(dataEntry)) {
+                //     dataArr = JSON.parse(dataEntry); // Convert a string to an array.
+                // } else {
+                //     rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
+                //     continue;
+                // }
+            } catch (error) {
+                // Not a valid JSON format string.
+                rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
+                continue;
+            };
+            if (!Array.isArray(dataEntry)) {
+                // Not a valid JSON array.
+                rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
+                continue;
+            };
+            for (let j = 0; j < dataArr.length; j++) {
+                if (!matchFormat(attrType, attrFormat, String(dataArr[j]))) {
+                    rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`;
+                    break;
+                }
+            }
+          } else if (!matchFormat(attrType, attrFormat, String(dataEntry))) {
             if (dataEntry === "" && attrConformance === "O") {
               continue;
             } else if (dataEntry === "" && attrConformance === "M") {
