@@ -1,7 +1,7 @@
-import { matchRegex } from '../src/OCADataValidator/utils/matchRules';
+import { matchDatetime } from '../src/OCADataValidator/utils/matchRules';
 import { descriptionToFormatCodeDate } from '../src/constants/constants';
 
-test('matchRegex (ISO: YYYY-MM-DD: year month day)', () => {
+test('matchDatetime (ISO: YYYY-MM-DD: year month day)', () => {
     const pattern = descriptionToFormatCodeDate['ISO: YYYY-MM-DD: year month day']
     const testDates = [
         "0000-01-01",
@@ -20,15 +20,15 @@ test('matchRegex (ISO: YYYY-MM-DD: year month day)', () => {
       ];
       
       testDates.forEach(date => {
-        expect(matchRegex(pattern, date)).toBeTruthy();
+        expect(matchDatetime(pattern, date)).toBeTruthy();
     });
 
     badTestDates.forEach(date => {
-        expect(matchRegex(pattern, date)).toBeFalsy();
+        expect(matchDatetime(pattern, date)).toBeFalsy();
     });
 });
 
-test('matchRegex (ISO: YYYYMMDD: year month day)', () => {
+test('matchDatetime (ISO: YYYYMMDD: year month day)', () => {
   const pattern = descriptionToFormatCodeDate['ISO: YYYYMMDD: year month day'];
 
   const testDates = [
@@ -48,15 +48,15 @@ test('matchRegex (ISO: YYYYMMDD: year month day)', () => {
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (ISO: YYYY-MM: year month)', () => {
+test('matchDatetime (ISO: YYYY-MM: year month)', () => {
   const pattern = descriptionToFormatCodeDate['ISO: YYYY-MM: year month'];
 
   const testDates = [
@@ -76,16 +76,16 @@ test('matchRegex (ISO: YYYY-MM: year month)', () => {
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
 
-test('matchRegex (ISO: YYYY-Www: year week)', () => {
+test('matchDatetime (ISO: YYYY-Www: year week)', () => {
   const pattern =  descriptionToFormatCodeDate['ISO: YYYY-Www: year week (e.g. W01)'];
 
   const testDates = [
@@ -105,15 +105,15 @@ test('matchRegex (ISO: YYYY-Www: year week)', () => {
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (ISO: YYYYWww: year week)', () => {
+test('matchDatetime (ISO: YYYYWww: year week)', () => {
   const pattern = descriptionToFormatCodeDate['ISO: YYYYWww: year week (e.g. W01)'];
 
   const testDates = [
@@ -133,15 +133,15 @@ test('matchRegex (ISO: YYYYWww: year week)', () => {
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (ISO: YYYY-DDD: Ordinal date (day number from the year))', () => {
+test('matchDatetime (ISO: YYYY-DDD: Ordinal date (day number from the year))', () => {
   const pattern = descriptionToFormatCodeDate['ISO: YYYY-DDD: Ordinal date (day number from the year)'];
   const testDates = [
     "0000-001",
@@ -160,15 +160,15 @@ test('matchRegex (ISO: YYYY-DDD: Ordinal date (day number from the year))', () =
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (ISO: YYYYDDD: Ordinal date (day number from the year))', () => {
+test('matchDatetime (ISO: YYYYDDD: Ordinal date (day number from the year))', () => {
   const pattern = descriptionToFormatCodeDate['ISO: YYYYDDD: Ordinal date (day number from the year)'];
   const testDates = [
     "0000001",
@@ -187,15 +187,15 @@ test('matchRegex (ISO: YYYYDDD: Ordinal date (day number from the year))', () =>
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (ISO: YYYY: year)', () => {
+test('matchDatetime (ISO: YYYY: year)', () => {
   const pattern = descriptionToFormatCodeDate['ISO: YYYY: year'];
   const testYears = [
     "0000",
@@ -214,15 +214,15 @@ test('matchRegex (ISO: YYYY: year)', () => {
   ];
   
   testYears.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestYears.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (ISO: MM: month)', () => {
+test('matchDatetime (ISO: MM: month)', () => {
   const pattern = descriptionToFormatCodeDate['ISO: MM: month'];
   const testMonths = [
     "01",
@@ -241,16 +241,16 @@ test('matchRegex (ISO: MM: month)', () => {
   ];
 
   testMonths.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestMonths.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
 
-test('matchRegex (ISO: DD: day)', () => {
+test('matchDatetime (ISO: DD: day)', () => {
   const pattern = descriptionToFormatCodeDate['ISO: DD: day'];
   const testDays = [
     "01",
@@ -269,15 +269,15 @@ test('matchRegex (ISO: DD: day)', () => {
   ];
 
   testDays.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDays.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC))', () => {
+test('matchDatetime (ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC))', () => {
   const pattern = descriptionToFormatCodeDate['ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC)'];
   const testDates = [
     "0000-01-01T00:00:00Z",
@@ -296,15 +296,15 @@ test('matchRegex (ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC))', () 
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: year month day hour minute second timezone)', () => {
+test('matchDatetime (ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: year month day hour minute second timezone)', () => {
   const pattern = descriptionToFormatCodeDate['ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: Date and Time Combined (with Timezone Offset)'];
   const testDates = [
     "0000-01-01T00:00:00+00:00",
@@ -327,15 +327,15 @@ test('matchRegex (ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: year month day hour minute se
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (ISO: PnYnMnDTnHnMnS: duration)', () => {
+test('matchDatetime (ISO: PnYnMnDTnHnMnS: duration)', () => {
   const pattern = descriptionToFormatCodeDate['ISO: PnYnMnDTnHnMnS :durations e.g. P3Y6M4DT12H30M5S'];
   const testDurations = [
     "P1Y",
@@ -360,15 +360,15 @@ test('matchRegex (ISO: PnYnMnDTnHnMnS: duration)', () => {
   ];
   
   testDurations.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDurations.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test ('matchRegex (ISO: HH:MM: hour, minutes in 24 hour notation)', () => {
+test ('matchDatetime (ISO: HH:MM: hour, minutes in 24 hour notation)', () => {
   const pattern = descriptionToFormatCodeDate['ISO: HH:MM: hour, minutes in 24 hour notation'];
   const testTimes = [
     "00:00",
@@ -387,15 +387,15 @@ test ('matchRegex (ISO: HH:MM: hour, minutes in 24 hour notation)', () => {
   ];
 
   testTimes.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestTimes.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (ISO: HH:MM:SS: hour, minutes, seconds in 24 hour notation)', () => {
+test('matchDatetime (ISO: HH:MM:SS: hour, minutes, seconds in 24 hour notation)', () => {
   const pattern = descriptionToFormatCodeDate['ISO: HH:MM:SS: hour, minutes, seconds in 24 hour notation'];
   const testTimes = [
     "00:00:00",
@@ -415,15 +415,15 @@ test('matchRegex (ISO: HH:MM:SS: hour, minutes, seconds in 24 hour notation)', (
   ];
 
   testTimes.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestTimes.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (DD/MM/YYYY: day, month, year)', () => {
+test('matchDatetime (DD/MM/YYYY: day, month, year)', () => {
   const pattern = descriptionToFormatCodeDate['DD/MM/YYYY: day, month, year'];
   const testDates = [
     "01/01/0000",
@@ -442,15 +442,15 @@ test('matchRegex (DD/MM/YYYY: day, month, year)', () => {
   ];
 
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (DD/MM/YY: day, month, year)', () => {
+test('matchDatetime (DD/MM/YY: day, month, year)', () => {
   const pattern = descriptionToFormatCodeDate['DD/MM/YY: day, month, year'];
   const testDates = [
     "01/01/00",
@@ -469,15 +469,15 @@ test('matchRegex (DD/MM/YY: day, month, year)', () => {
   ];
 
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (MM/DD/YYYY: month, day, year)', () => {
+test('matchDatetime (MM/DD/YYYY: month, day, year)', () => {
   const pattern = descriptionToFormatCodeDate['MM/DD/YYYY: month, day, year'];
   const testDates = [
     "01/01/0000",
@@ -496,15 +496,15 @@ test('matchRegex (MM/DD/YYYY: month, day, year)', () => {
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (DDMMYYYY: day, month, year)', () => {
+test('matchDatetime (DDMMYYYY: day, month, year)', () => {
   const pattern = descriptionToFormatCodeDate['DDMMYYYY: day, month, year'];
   const testDates = [
     "01010000",
@@ -523,15 +523,15 @@ test('matchRegex (DDMMYYYY: day, month, year)', () => {
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (MMDDYYYY: month, day, year)', () => {
+test('matchDatetime (MMDDYYYY: month, day, year)', () => {
   const pattern = descriptionToFormatCodeDate['MMDDYYYY: month, day, year'];
   const testDates = [
     "01010000",
@@ -550,15 +550,15 @@ test('matchRegex (MMDDYYYY: month, day, year)', () => {
   ];
   
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (YYYYMMDD: year, month, day)', () => {
+test('matchDatetime (YYYYMMDD: year, month, day)', () => {
   const pattern = descriptionToFormatCodeDate['YYYYMMDD: year, month, day'];
   const testDates = [
     "00000101",
@@ -577,15 +577,15 @@ test('matchRegex (YYYYMMDD: year, month, day)', () => {
   ];
 
   testDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestDates.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test ('matchRegex (HH:MM:SS: hour, minutes, seconds 12 hour notation AM/PM)', () => {
+test ('matchDatetime (HH:MM:SS: hour, minutes, seconds 12 hour notation AM/PM)', () => {
   const pattern = descriptionToFormatCodeDate['HH:MM:SS: hour, minutes, seconds 12 hour notation AM/PM'];
   const testTimes = [
     "01:00:00 AM",
@@ -604,15 +604,15 @@ test ('matchRegex (HH:MM:SS: hour, minutes, seconds 12 hour notation AM/PM)', ()
   ];
 
   testTimes.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestTimes.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
 
-test('matchRegex (H:MM or HH:MM: hour, minutes AM/PM)', () => {
+test('matchDatetime (H:MM or HH:MM: hour, minutes AM/PM)', () => {
   const pattern = descriptionToFormatCodeDate['H:MM or HH:MM: hour, minutes AM/PM'];
   const testTimes = [
     "1:00 AM",
@@ -631,10 +631,10 @@ test('matchRegex (H:MM or HH:MM: hour, minutes AM/PM)', () => {
   ];
 
   testTimes.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeTruthy();
+    expect(matchDatetime(pattern, date)).toBeTruthy();
   });
 
   badTestTimes.forEach(date => {
-    expect(matchRegex(pattern, date)).toBeFalsy();
+    expect(matchDatetime(pattern, date)).toBeFalsy();
   });
 });
