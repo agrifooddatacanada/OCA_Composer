@@ -1,3 +1,4 @@
+import { type } from "@testing-library/user-event/dist/type";
 import OCADataSetErr from "./utils/Err";
 import { matchFormat, matchCharacterEncoding, matchRegex } from "./utils/matchRules";
 
@@ -168,7 +169,6 @@ export default class OCABundle {
       try {
         // Verifying the missing data entries for a mandatory (required) attributes.
         for (let i = 0; i < dataset[attr]?.length; i++) {
-          // let dataEntry = String(dataset[attr][i]);
           let dataEntry = dataset[attr][i];
           if (
             (dataEntry === undefined ||
@@ -178,43 +178,50 @@ export default class OCABundle {
           ) {
             dataEntry = "";
           }
-          // Verifying data types for entries to match the attribute's.
+          // Verifying the data entries for Array type attributes.
           if (Array.isArray(attrType)) {
-            let dataArr;
+            let dataEntryWithErrors = [];
             try {
-                const arrRegex = "^\[.*\]$";
-
-                if (!matchRegex(arrRegex, dataEntry)) {
-                    rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
+                const dataArr = dataEntry.split(',');
+                for (let j = 0; j < dataArr.length; j++) {
+                  if (!matchFormat(attrType[0], attrFormat, String(dataArr[j]))) {
+                      dataEntryWithErrors.push(dataArr[j]);
+                  }
+                  if (attrConformance === "M" && dataEntryWithErrors.length === 0) {
+                    rslt.errs[attr][i] = {
+                      type: "FE",
+                      detail: `${MISSING_MSG} Supported format: ${attrFormat}.`,
+                    } 
+                  } else if (attrConformance === "O" && dataEntryWithErrors.length === 0) {
                     continue;
+                  } else {
+                    if (attrType[0].includes("Boolean")) {
+                      rslt.errs[attr][i] = {
+                        type: "FE",
+                        detail: `The following entry(ies): [${dataEntryWithErrors}] have a ${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']`,
+                      };
+                    } else if (attrFormat == null) {
+                      rslt.errs[attr][i] = {
+                        type: "DTE",
+                        detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.`,
+                      };
+                    } else {
+                      rslt.errs[attr][i] = {
+                        type: "FE",
+                        detail: `The following entry(ies): [${dataEntryWithErrors}] have a ${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`,
+                      };
+                    }
+                  }          
                 }
-                
-                // if (arrRegex.test(dataEntry)) {
-                //     dataArr = JSON.parse(dataEntry); // Convert a string to an array.
-                // } else {
-                //     rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
-                //     continue;
-                // }
             } catch (error) {
-                // Not a valid JSON format string.
+                // Not a valid Array format string.
                 rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
-                continue;
             };
-            if (!Array.isArray(dataEntry)) {
-                // Not a valid JSON array.
-                rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
-                continue;
-            };
-            for (let j = 0; j < dataArr.length; j++) {
-                if (!matchFormat(attrType, attrFormat, String(dataArr[j]))) {
-                    rslt.errs[attr][i] = `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`;
-                    break;
-                }
-            }
+      
           } else if (!matchFormat(attrType, attrFormat, String(dataEntry))) {
-            if (dataEntry === "" && attrConformance === "O") {
+            if (attrConformance === "O" && dataEntry === "") {
               continue;
-            } else if (dataEntry === "" && attrConformance === "M") {
+            } else if (attrConformance === "M" && dataEntry === "") {
               rslt.errs[attr][i] = {
                 type: "FE",
                 detail: `${MISSING_MSG} Supported format: ${attrFormat}.`,
