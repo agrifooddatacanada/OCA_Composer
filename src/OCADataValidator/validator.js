@@ -1,6 +1,5 @@
-import { type } from "@testing-library/user-event/dist/type";
 import OCADataSetErr from "./utils/Err";
-import { matchFormat, matchCharacterEncoding, matchRegex } from "./utils/matchRules";
+import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
 
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
@@ -30,7 +29,7 @@ const ATTR_MISSING_MSG =
   "Missing attribute (attribute not found in the data set).";
 const MISSING_MSG =
   "Missing an entry for a mandatory attribute (check for other missing entries before continuing).";
-const NOT_AN_ARRAY_MSG = 'Valid array required.';
+const NOT_AN_ARRAY_MSG = "Valid array required.";
 const FORMAT_ERR_MSG = "Format mismatch.";
 // const EC_FORMAT_ERR_MSG = 'Entry code format mismatch (manually fix the attribute format).';
 const EC_ERR_MSG = "One of the entry codes is required.";
@@ -152,6 +151,19 @@ export default class OCABundle {
     return rslt.errs;
   }
 
+  errorForEntryCodesForArrayEntries(
+    dataEntryWithErrors,
+    rslt,
+    attr,
+    i,
+    attrFormat
+  ) {
+    rslt.errs[attr][i] = {
+      type: "FE",
+      detail: `The following entry(ies): [${dataEntryWithErrors}] have ${FORMAT_ERR_MSG} Supported format: ${attrFormat}`,
+    };
+  }
+
   /** Validates all attributes for format values.
    * Also checks for any missing mandatory attributes.
    * @param {*} dataset - The dataset to is the instance of the OCADataSet class (xlsx or csv file).
@@ -165,6 +177,12 @@ export default class OCABundle {
       const attrType = this.getAttributeType(attr);
       const attrFormat = this.getAttributeFormat(attr);
       const attrConformance = this.getAttributeConformance(attr);
+      const attrEntryCodes = this.getEntryCodes()[attr];
+      let hasEntryCodes = false;
+
+      if (Object.keys(this.getEntryCodes()).includes(attr)) {
+        hasEntryCodes = true;
+      }
 
       try {
         // Verifying the missing data entries for a mandatory (required) attributes.
@@ -182,42 +200,84 @@ export default class OCABundle {
           if (Array.isArray(attrType)) {
             let dataEntryWithErrors = [];
             try {
-                const dataArr = dataEntry.split(',');
-                for (let j = 0; j < dataArr.length; j++) {
-                  if (!matchFormat(attrType[0], attrFormat, String(dataArr[j]))) {
-                      dataEntryWithErrors.push(dataArr[j]);
-                  }
-                  if (attrConformance === "M" && dataEntryWithErrors.length === 0) {
+              const dataArr = dataEntry.split(",");
+              for (let j = 0; j < dataArr.length; j++) {
+                if (!matchFormat(attrType[0], attrFormat, String(dataArr[j]))) {
+                  dataEntryWithErrors.push(dataArr[j]);
+                }
+                if (
+                  attrConformance === "M" &&
+                  dataEntryWithErrors.length === 0
+                ) {
+                  if (hasEntryCodes) {
+                    rslt.errs[attr][i] = {
+                      type: "FE",
+                      detail: `${MISSING_MSG} Supported format: ${attrFormat}. And Supported entry codes: ${attrEntryCodes}`,
+                    };
+                  } else {
                     rslt.errs[attr][i] = {
                       type: "FE",
                       detail: `${MISSING_MSG} Supported format: ${attrFormat}.`,
-                    } 
-                  } else if (attrConformance === "O" && dataEntryWithErrors.length === 0) {
-                    continue;
-                  } else {
-                    if (attrType[0].includes("Boolean")) {
+                    };
+                  }
+                } else if (
+                  attrConformance === "O" &&
+                  dataEntryWithErrors.length === 0
+                ) {
+                  continue;
+                } else {
+                  if (attrType[0].includes("Boolean")) {
+                    if (this.getEntryCodes().includes(attr)) {
+                      this.errorForEntryCodesForArrayEntries(
+                        dataEntryWithErrors,
+                        rslt,
+                        attr,
+                        i,
+                        attrFormat
+                      );
+                    } else {
                       rslt.errs[attr][i] = {
                         type: "FE",
-                        detail: `The following entry(ies): [${dataEntryWithErrors}] have a ${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']`,
+                        detail: `The following entry(ies): [${dataEntryWithErrors}] have ${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']`,
                       };
-                    } else if (attrFormat == null) {
+                    }
+                  } else if (attrFormat == null) {
+                    if (hasEntryCodes) {
+                      this.errorForEntryCodesForArrayEntries(
+                        dataEntryWithErrors,
+                        rslt,
+                        attr,
+                        i,
+                        attrFormat
+                      );
+                    } else {
                       rslt.errs[attr][i] = {
                         type: "DTE",
                         detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.`,
                       };
+                    }
+                  } else {
+                    if (hasEntryCodes) {
+                      this.errorForEntryCodesForArrayEntries(
+                        dataEntryWithErrors,
+                        rslt,
+                        attr,
+                        i,
+                        attrFormat
+                      );
                     } else {
                       rslt.errs[attr][i] = {
                         type: "FE",
-                        detail: `The following entry(ies): [${dataEntryWithErrors}] have a ${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`,
+                        detail: `The following entry(ies): [${dataEntryWithErrors}] have ${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`,
                       };
                     }
-                  }          
+                  }
                 }
+              }
             } catch (error) {
-                // Not a valid Array format string.
-                rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
-            };
-      
+              // Not a valid Array format string.
+              rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
+            }
           } else if (!matchFormat(attrType, attrFormat, String(dataEntry))) {
             if (attrConformance === "O" && dataEntry === "") {
               continue;
