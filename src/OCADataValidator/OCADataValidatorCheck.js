@@ -556,7 +556,7 @@ const OCADataValidatorCheck = ({
     gridRef.current.api.showLoadingOverlay();
     setRevalidateData(false);
     setFirstValidate(true);
-    const bundle = new OCABundle();
+    const bundle = new OCABundle(/[,;|]/);
     await bundle.loadedBundle(jsonParsedFile);
     const newData = getCurrentData(gridRef.current.api, true);
 
@@ -984,7 +984,7 @@ const OCADataValidatorCheck = ({
                   color="button"
                   variant="contained"
                   target="_blank"
-                  style={{ width: "120px", height: "40px" }}
+                  style={{ width: "120px", height: "40px", marginTop: "15px" }}
                   onClick={handleValidate}
                   disabled={isValidateButtonEnabled}
                 >
