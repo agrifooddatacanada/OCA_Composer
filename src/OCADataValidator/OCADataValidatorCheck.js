@@ -556,7 +556,7 @@ const OCADataValidatorCheck = ({
     gridRef.current.api.showLoadingOverlay();
     setRevalidateData(false);
     setFirstValidate(true);
-    const bundle = new OCABundle(/[,;|]/);
+    const bundle = new OCABundle();
     await bundle.loadedBundle(jsonParsedFile);
     const newData = getCurrentData(gridRef.current.api, true);
 
