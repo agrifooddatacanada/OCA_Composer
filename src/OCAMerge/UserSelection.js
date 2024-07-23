@@ -294,7 +294,7 @@ const UserSelection = () => {
 
     const link = document.createElement("a");
     link.href = URL.createObjectURL(content);
-    link.download = "data.zip";
+    link.download = "merged_schema.zip";
 
     document.body.appendChild(link);
 
@@ -310,7 +310,7 @@ const UserSelection = () => {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = 'exportedFile.json';
+    a.download = 'merged_schema.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
