@@ -40,7 +40,7 @@ export default class OCABundle {
   constructor() {
     this.captureBase = null;
     this.overlays = {};
-    // this.overlays_dict = {};
+    this.ErrorBuilder = new OCADataSetErr();
   }
 
   // Load the OCA bundle from a JSON file.
@@ -129,7 +129,7 @@ export default class OCABundle {
    * @returns {Array} - An array of unmatched attributes / missing attributes.
    */
   validateAttribute(dataset) {
-    const rslt = new OCADataSetErr().attErr;
+    const rslt = this.ErrorBuilder.attErr;
     for (const attrName of Object.keys(dataset)) {
       if (!Object.keys(this.getAttributes()).includes(attrName)) {
         rslt.errs.push([attrName, ATTR_UNMATCH_MSG]);
@@ -205,7 +205,7 @@ export default class OCABundle {
    * @returns {Object} - An object of format errors. Example: {attr1: {0: "Format mismatch."}, attr2: {1: "Missing mandatory attribute."}}
    */
   validateFormat(dataset) {
-    const rslt = new OCADataSetErr().formatErr;
+    const rslt = this.ErrorBuilder.formatErr;
 
     for (const attr in this.getAttributes()) {
       rslt.errs[attr] = {};
@@ -358,7 +358,7 @@ export default class OCABundle {
   }
 
   validateEntryCodes(dataset) {
-    const rslt = new OCADataSetErr().entryCodeErr;
+    const rslt = this.ErrorBuilder.entryCodeErr;
     const attrEntryCodes = this.getEntryCodes();
     for (const attr in attrEntryCodes) {
       rslt.errs[attr] = {};
@@ -382,7 +382,7 @@ export default class OCABundle {
   }
 
   validateCharacterEncoding(dataset) {
-    const rslt = new OCADataSetErr().characterEcodeErr;
+    const rslt = this.ErrorBuilder.characterEcodeErr;
     for (const attr in this.getAttributes()) {
       rslt.errs[attr] = {};
       const attrChe = this.getCharacterEncoding(attr);
@@ -431,7 +431,7 @@ export default class OCABundle {
   }
 
   validate(dataset) {
-    const rslt = new OCADataSetErr();
+    const rslt = this.ErrorBuilder;
     rslt.attErr.errs = this.validateAttribute(dataset);
     rslt.formatErr.errs = this.validateFormat(dataset);
     rslt.entryCodeErr.errs = this.validateEntryCodes(dataset);
