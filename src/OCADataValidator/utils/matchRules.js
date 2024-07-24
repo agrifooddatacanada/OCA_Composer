@@ -1,13 +1,13 @@
-function matchDatetime(pattern, dataStr) {
+export function matchDatetime(pattern, dataStr) {
   return matchRegex(pattern, dataStr);
 }
 
 export function matchNumeric(pattern, dataStr) {
-  if (!pattern) {
-    return !isNaN(dataStr);
-  } else {
-    return new RegExp(pattern).test(dataStr);
-  }
+    return matchRegex(pattern, dataStr);
+}
+
+export function matchText(pattern, dataStr) {
+  return matchRegex(pattern, dataStr);
 }
 
 export function matchRegex(pattern, dataStr) {
@@ -41,7 +41,7 @@ export function matchFormat(attrType, pattern, dataStr) {
   } else if (attrType.includes("Numeric")) {
     return matchNumeric(pattern, dataStr);
   } else if (attrType.includes("Text")) {
-    return matchRegex(pattern, dataStr);
+    return matchText(pattern, dataStr);
   } else if (attrType.includes("Boolean")) {
     return matchBoolean(dataStr);
   } else {
