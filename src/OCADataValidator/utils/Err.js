@@ -146,7 +146,6 @@ export default class OCADataSetErr {
 
   mergeErrors(...errors) {
     const mergedErrors = {};
-
     for (const errorSet of errors) {
       if (Object.keys(errorSet).length === 0) {
         continue;

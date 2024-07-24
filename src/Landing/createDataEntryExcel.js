@@ -366,6 +366,7 @@ export async function createDataEntryExcel(data, selectedLang) {
 
   const attributesIndex = {};
   let attributeNames = null;
+  const TypesOfLookUpEntries = {};
 
   jsonData.forEach((overlay) => {
     if (overlay.type && overlay.type.includes("/capture_base/")) {
@@ -373,6 +374,7 @@ export async function createDataEntryExcel(data, selectedLang) {
         ([attrName, attrType], index) => {
           const attrIndex = index + 2;
           attributesIndex[[attrName, attrType]] = attrIndex;
+          TypesOfLookUpEntries[attrName] = attrType;
 
           if (attrIndex !== undefined) {
             sheet1.getCell(shift + attrIndex, 1).value = attrName;
@@ -820,20 +822,23 @@ export async function createDataEntryExcel(data, selectedLang) {
       formatLookupValue(sheet1.getCell(i, 2));
     }
   }
-
+  
   for (const [attrName, [start, end]] of lookUpTable) {
-    const validationRule = {
-      type: "list",
-      showDropDown: true,
-      formulae: [`'Schema Description'!$B$${start}:$B$${end}`],
-      showErrorMessage: true,
-    };
-
-    for (let row = 2; row <= 1000; row++) {
-      const attrKeys = Object.keys(attributesIndex);
-      const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-      const col_i = attrNameFromAttrKeys.indexOf(attrName) + 1;
-      sheet2.getCell(row, col_i).dataValidation = validationRule;
+    if (Object.keys(TypesOfLookUpEntries).includes(attrName) && Array.isArray(TypesOfLookUpEntries[attrName])) {
+      continue;
+    } else {
+      const validationRule = {
+        type: "list",
+        showDropDown: true,
+        formulae: [`'Schema Description'!$B$${start}:$B$${end}`],
+        showErrorMessage: true,
+      };
+      for (let row = 2; row <= 1000; row++) {
+        const attrKeys = Object.keys(attributesIndex);
+        const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
+        const col_i = attrNameFromAttrKeys.indexOf(attrName) + 1;
+        sheet2.getCell(row, col_i).dataValidation = validationRule;
+      }
     }
   }
   return workbook;

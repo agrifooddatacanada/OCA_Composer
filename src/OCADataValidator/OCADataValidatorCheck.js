@@ -430,6 +430,13 @@ const OCADataValidatorCheck = ({
   const [firstValidate, setFirstValidate] = useState(false);
   const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
 
+  const SavedEntryCodesWithNoArrayType = Object.keys(savedEntryCodes).filter(
+    (key) => !Array.isArray(jsonParsedFile.capture_base.attributes[key])
+  ).reduce((acc, key) => {
+    acc[key] = savedEntryCodes[key];
+    return acc;
+  }, {});
+
   const gridRef = useRef();
   const validateBeforeOnChangeRef = useRef(false);
 
@@ -836,7 +843,7 @@ const OCADataValidatorCheck = ({
           tooltipComponentParams: { color: "#F88379" },
           tooltipValueGetter: (params) => ({ value: params.value }),
           cellRendererFramework:
-            header in savedEntryCodes ? EntryCodeDropdownSelector : undefined,
+            header in SavedEntryCodesWithNoArrayType ? EntryCodeDropdownSelector : undefined,
         });
       });
     }
@@ -977,7 +984,7 @@ const OCADataValidatorCheck = ({
                   color="button"
                   variant="contained"
                   target="_blank"
-                  style={{ width: "120px", height: "40px" }}
+                  style={{ width: "120px", height: "40px", marginTop: "15px" }}
                   onClick={handleValidate}
                   disabled={isValidateButtonEnabled}
                 >
