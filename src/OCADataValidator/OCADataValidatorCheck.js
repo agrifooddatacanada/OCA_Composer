@@ -906,8 +906,10 @@ const OCADataValidatorCheck = ({
       : rowData;
 
   return (
-    <>
-      <Box>
+    <Box sx={{ overflowX: 'auto' }}>
+      <Box sx={{
+        minWidth: '900px',
+      }}>
         <Box
           sx={{
             display: "flex",
@@ -940,9 +942,10 @@ const OCADataValidatorCheck = ({
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                width: "100%",
                 backgroundColor: CustomPalette.RED_100,
-                maxWidth: "400px",
+                width: "400px",
+                marginLeft: "1rem",
+                marginRight: "1rem",
               }}
             >
               <ErrorOutlineIcon
@@ -1004,6 +1007,7 @@ const OCADataValidatorCheck = ({
           display: "flex",
           flexDirection: "column",
           flex: 1,
+          minWidth: '900px',
         }}
       >
         <Box
@@ -1157,7 +1161,7 @@ const OCADataValidatorCheck = ({
       {firstTimeDisplayWarning.current && showWarningCard && (
         <WarningPopup action={handleDismissWarning} />
       )}
-    </>
+    </Box>
   );
 };
 

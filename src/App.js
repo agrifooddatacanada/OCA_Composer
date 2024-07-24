@@ -461,10 +461,10 @@ function App() {
                     <OCADataValidator currentDataValidatorPage={currentDataValidatorPage} backToOCADataValidatorUploadPage={backToOCADataValidatorUploadPage} />
                   }
                 />
-                <Route
+                {/* <Route
                   path='/help_designing_datasets'
                   element={<GuidanceForDesigningDataSets />}
-                />
+                /> */}
                 <Route path='/help_storage' element={<HelpStorage />} />
                 <Route
                   path='/start_schema_help'
