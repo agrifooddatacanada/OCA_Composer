@@ -23,7 +23,7 @@ const WriteASchemaAccordionItem = ({ navigateToStartPage }) => {
         <Typography sx={{ marginTop: '20px', marginBottom: '20px' }}>
           You will either be documenting an existing dataset or you will start with an idea of what columns or variables you will be collecting for your dataset. {' '}
 
-          <CustomAnchorLink link='help_designing_datasets' text="Learn more about how to design a dataset" />.
+          <CustomAnchorLink link='https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/DesignDataset/' text="Learn more about how to design a dataset" />.
         </Typography>
 
         <Box sx={{ width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
