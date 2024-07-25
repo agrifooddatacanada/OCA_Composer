@@ -8,7 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Box, Button, IconButton, MenuItem, Typography } from "@mui/material";
+import { Box, Button, Drawer, IconButton, MenuItem, Typography } from "@mui/material";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import { AgGridReact } from "ag-grid-react";
 import "../App.css";
@@ -34,6 +34,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { getCurrentData } from "../constants/utils";
 import { createDataEntryExcel } from "../Landing/createDataEntryExcel";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import CustomAnchorLink from "../components/CustomAnchorLink";
+import ViewSchema from "../ViewSchema/ViewSchema";
 
 export const TrashCanButton = memo(
   forwardRef((props, _ref) => {
@@ -429,6 +431,22 @@ const OCADataValidatorCheck = ({
   const [errorName, setErrorNameList] = useState([]);
   const [firstValidate, setFirstValidate] = useState(false);
   const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const toggleDrawer = (newOpen) => () => {
+    setOpen(newOpen);
+  };
+
+  const DrawerList = (
+    <Box
+      sx={{ width: "100%" }}
+      role="presentation"
+      onClick={toggleDrawer(false)}
+    >
+      <h1>Schema Preview</h1>
+      <ViewSchema isPageForward={false} />
+    </Box>
+  );
 
   const SavedEntryCodesWithNoArrayType = Object.keys(savedEntryCodes).filter(
     (key) => !Array.isArray(jsonParsedFile.capture_base.attributes[key])
@@ -1059,6 +1077,7 @@ const OCADataValidatorCheck = ({
               gap: "10px",
             }}
           >
+            <CustomAnchorLink text="Verification Rules" onClick={toggleDrawer(true)} overrideStyle={{ textAlign: "right", marginRight: "2rem" }} />
             <Box
               sx={{
                 display: "flex",
@@ -1161,8 +1180,12 @@ const OCADataValidatorCheck = ({
       {firstTimeDisplayWarning.current && showWarningCard && (
         <WarningPopup action={handleDismissWarning} />
       )}
+      <Drawer open={open} onClose={toggleDrawer(false)}>
+        {DrawerList}
+      </Drawer>
     </Box>
   );
 };
+
 
 export default OCADataValidatorCheck;
