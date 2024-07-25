@@ -95,7 +95,7 @@
   "Preview Schema": "Aperçu du schéma",
   "Preview Dataset": "Aperçu de l'ensemble de données",
   "Matching Attributes": "Attributs correspondants",
-  "Data Verifier": "Vérificateur de données",
+  "Data Entry and VerificationData Verifier": "Vérificateur de données",
   "Data entry and verification": "Saisie et vérification des données",
   "Please enter a unique attribute name for each attribute": "Veuillez saisir un nom d'attribut unique pour chaque attribut",
   "Attribute names cannot be blank": "Les noms d'attribut ne peuvent pas être vides",
