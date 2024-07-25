@@ -443,7 +443,14 @@ const OCADataValidatorCheck = ({
       role="presentation"
       onClick={toggleDrawer(false)}
     >
-      <h1>Schema Preview</h1>
+      <h1
+        style={{
+          textAlign: "center",
+          color: CustomPalette.PRIMARY
+        }}
+      >
+        Schema Preview
+      </h1>
       <ViewSchema isPageForward={false} />
     </Box>
   );

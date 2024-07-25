@@ -2,7 +2,7 @@ import Drop from "../StartSchema/Drop";
 import { useHandleJsonDrop } from "./useHandleJsonDrop";
 import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
 import { Box, Button, Link, Typography, useMediaQuery } from "@mui/material";
-import { datasetUploadDescription, datasetUploadTooltip, jsonUploadDescription, jsonUploadTooltip } from "../constants/constants";
+import { datasetUploadDescription, datasetUploadTooltip, dewcSchemaUploadTooltip, dewvSchemaUploadDescription, jsonUploadDescription } from "../constants/constants";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { CustomPalette } from "../constants/customPalette";
 import placeholderExample from '../assets/placeholder.png';
@@ -101,14 +101,44 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
           />
         </Box>
       </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'end',
+          width: '100%',
+          marginTop: '1.5rem',
+
+        }}
+      >
+        <Button
+          color='button'
+          variant='contained'
+          target='_blank'
+          sx={{
+            mr: 2,
+            p: 1,
+            width: '15rem',
+            marginRight: 10,
+          }}
+          onClick={() =>
+            window.open(
+              "https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/DataVerification/",
+              '_blank',
+              'rel=noopener noreferrer'
+            )
+          }
+        >
+          {t('Help with this page')}
+        </Button>
+      </Box>
       <BackNextSkeleton isForward={jsonRawFile.length > 0} pageForward={() => {
         if (datasetRawFile.length > 0) {
           setCurrentDataValidatorPage('AttributeMatchDataValidator');
         } else {
           setCurrentDataValidatorPage('OCADataValidatorCheck');
         }
-
       }} />
+
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -126,8 +156,8 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             dropDisabled={jsonDropDisabled}
             dropMessage={jsonDropMessage}
             setDropMessage={setJsonDropMessage}
-            description={jsonUploadDescription}
-            tipDescription={jsonUploadTooltip}
+            description={dewvSchemaUploadDescription}
+            tipDescription={dewcSchemaUploadTooltip}
             version={1}
           />
         </Box>
@@ -233,7 +263,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
 
         <Box sx={{ height: '3rem' }} />
       </Box>
-    </Box>
+    </Box >
   );
 };
 
