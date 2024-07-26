@@ -3,7 +3,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
 import { Box, List, ListItem, ListItemText, MenuItem, Typography } from "@mui/material";
 import Languages from "./Languages";
-import { gridStyles } from "../constants/styles";
+import { greyCellStyle, gridStyles } from "../constants/styles";
 import { AgGridReact } from "ag-grid-react";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
@@ -176,15 +176,16 @@ const AttributeMatch = () => {
       {
         headerName: t("Attribute"),
         field: "Attribute",
-        sortable: true,
         resizable: true,
         flex: 1,
+        cellStyle: () => greyCellStyle,
       },
       {
         headerName: t("Label"),
         field: type,
         resizable: true,
         flex: 1,
+        cellStyle: () => greyCellStyle,
       },
       {
         headerName: t("Dataset"),
@@ -246,8 +247,7 @@ const AttributeMatch = () => {
             position: 'sticky',
             top: '0',
             backgroundColor: 'white',
-            zIndex: 1,
-
+            zIndex: 1
           }}>
             {/* Updated to create a box around the header */}
             <Box sx={{ padding: '10px', border: `2px solid ${CustomPalette.GREY_300}`, backgroundColor: CustomPalette.GREY_200 }}>

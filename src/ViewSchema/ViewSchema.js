@@ -21,7 +21,7 @@ import { codesToLanguages } from "../constants/isoCodes";
 
 const currentEnv = process.env.REACT_APP_ENV;
 
-export default function ViewSchema({ pageBack, isExport = true, addClearButton, pageForward }) {
+export default function ViewSchema({ pageBack, isExport = true, addClearButton, pageForward, isPageForward = true }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const {
@@ -239,7 +239,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
         display: "flex",
         justifyContent: pageForward ? "flex-end" : "space-between",
       }}>
-        {pageForward ?
+        {isPageForward && pageForward ?
           <Button
             color="navButton"
             onClick={pageForward}
@@ -247,8 +247,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
           >
             {t('Next')} <ArrowForwardIosIcon />
           </Button>
-
-          : <>
+          : isPageForward ? <>
             <Button
               color="navButton"
               sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
@@ -336,7 +335,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
               </Box>
 
             </Box>
-          </>
+          </> : <></>
         }
       </Box>
       {showLink && <LinkCard setShowLink={setShowLink} />}

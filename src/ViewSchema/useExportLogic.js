@@ -6,6 +6,7 @@ import { divisionCodes, groupCodes } from "../constants/constants";
 // import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 import JSZip from "jszip";
 import useGenerateReadMe from "./useGenerateReadMe";
+import { useNavigate } from "react-router-dom";
 const ExcelJS = require("exceljs");
 
 // const zipUrl = "https://adc-oca-json-bundle-api.azurewebsites.net";
@@ -52,6 +53,7 @@ const useExportLogic = () => {
   } = useContext(Context);
   // const { jsonToTextFile } = useGenerateReadMeV2();
   const { toTextFile } = useGenerateReadMe();
+  const navigate = useNavigate();
 
   const classificationCode = useMemo(() => {
     if (groupCodes[divisionGroup.group]) {
@@ -607,7 +609,6 @@ const useExportLogic = () => {
   const resetToDefaults = () => {
     setFileData([]);
     setAttributesList([]);
-    setCurrentPage("Start");
     setSchemaDescription({
       English: { name: "", description: "" },
     });
@@ -620,6 +621,8 @@ const useExportLogic = () => {
     setIsZip(false);
     setFileData([]);
     setRawFile([]);
+    setCurrentPage("Landing");
+    navigate('/');
   };
 
   // const sendFileToETJSONAPI = async (workbook, workbookName) => {

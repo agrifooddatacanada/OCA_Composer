@@ -25,7 +25,7 @@ const WriteASchemaAccordionItem = ({ navigateToStartPage }) => {
         </Typography>
         <Typography sx={{ marginTop: '20px', marginBottom: '20px' }}>
           {t('You will either be documenting an existing dataset or you will start with...')} {' '}
-          <CustomAnchorLink link='help_designing_datasets' text={t('Learn more about how to design a dataset')} />.
+          <CustomAnchorLink link='https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/DesignDataset/' text={t('Learn more about how to design a dataset')} />.
         </Typography>
 
         <Box sx={{ width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
