@@ -204,14 +204,20 @@ const AttributeMatch = () => {
 
   return (
     <>
-      <BackNextSkeleton isBack pageBack={() => {
-        setMatchingRowData(gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data));
-        setCurrentDataValidatorPage('StartDataValidator');
-      }} isForward pageForward={handleSavePage} />
+      <BackNextSkeleton
+        isBack pageBack={() => {
+          setMatchingRowData(gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data));
+          setCurrentDataValidatorPage('StartDataValidator');
+        }}
+        isForward
+        pageForward={handleSavePage}
+        middleText="You must match your dataset columns (variables) to the attributes in your schema. The verifier attempts to match names automatically. If there are mismatches or unassigned matches you can correct that here."
+      />
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
+        marginTop: '20px',
       }}>
         <Box sx={{
           display: 'flex',
