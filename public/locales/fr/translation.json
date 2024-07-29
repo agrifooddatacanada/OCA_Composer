@@ -172,7 +172,7 @@
   "Add format rule for data": "Ajouter une règle de format pour les données",
   "Cardinality": "Cardinalité",
   "Apply All": "Appliquer tout",
-  "You indicated in the previous step that one or more attributes is a list. Please add entry codes for the same:": "Vous avez indiqué à l'étape précédente qu'un ou plusieurs attributs sont une liste. Veuillez ajouter les codes d'entrée pour le même:",
+  "You indicated in the previous step that one or more attributes is a list. Please add or upload entry codes:": "Vous avez indiqué à l'étape précédente qu'un ou plusieurs attributs sont une liste. Veuillez ajouter les codes d'entrée pour le même:",
   "Entry Code": "Code d'entrée",
   "The entry choices for the schema. These will be what is recorded in the dataset and so can be simple entry codes": "Les choix d’entrée pour le schéma. Ce seront ce qui sera enregistré dans l’ensemble de données et il pourra donc s’agir de simples codes d’entrée.",
   "A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes": "Une étiquette spécifique à la langue, plus longue et plus conviviale, pour chaque code d'entrée. Cette étiquette ne sera pas enregistrée dans l'ensemble de données mais pourra être utilisée au moment de la saisie des données pour aider les utilisateurs à saisir les codes.",

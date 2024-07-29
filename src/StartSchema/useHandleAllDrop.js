@@ -301,6 +301,7 @@ const useHandleAllDrop = (pageForward) => {
           // processExcelFile(workbook);
           setTempExcel(workbook);
           setExcelSheetNames(workbook.SheetNames);
+          setExcelSheetChoice(workbook.SheetNames[0]);
           setLoading(false);
           setTimeout(() => {
             setDropMessage({ message: "", type: "" });
