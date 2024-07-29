@@ -163,10 +163,10 @@ export default class OCABundle {
     const result = [];
     let current = '';
     let insideQuotes = false;
-  
+
     for (let i = 0; i < dataEntry.length; i++) {
       const char = dataEntry[i];
-  
+
       if (char === '"') {
         insideQuotes = !insideQuotes;
       } else if (!insideQuotes && /[,;|]/.test(char)) {
@@ -180,14 +180,14 @@ export default class OCABundle {
     if (current) {
       result.push(current);
     }
-  
+
     return result;
   }
 
   processEntries(dataEntry) {
     const dataArr = this.splitRespectingQuotes(dataEntry);
     let newDataArr = [];
-  
+
     dataArr.forEach(item => {
       if (item.includes(',')) {
         newDataArr = newDataArr.concat(item.split(','));
@@ -195,7 +195,7 @@ export default class OCABundle {
         newDataArr.push(item);
       }
     });
-  
+
     return newDataArr;
   }
 
@@ -234,7 +234,7 @@ export default class OCABundle {
           if (Array.isArray(attrType)) {
             let dataEntryWithErrors = [];
             try {
-              
+
               const dataArr = this.processEntries(dataEntry);
               for (let j = 0; j < dataArr.length; j++) {
                 if (!matchFormat(attrType[0], attrFormat, String(dataArr[j]))) {
@@ -309,7 +309,7 @@ export default class OCABundle {
                         attrEntryCodes
                       );
                     } else {
-                      
+
                       rslt.errs[attr][i] = {
                         type: "FE",
                         detail: `The following entry(ies): [${dataEntryWithErrors}] have, ${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`,
@@ -345,14 +345,14 @@ export default class OCABundle {
                 } else {
                   rslt.errs[attr][i] = {
                     type: "FE",
-                    detail: `${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`,
+                    detail: `${FORMAT_ERR_MSG}`,
                   };
                 }
               }
             }
           }
         }
-      } catch (error) {}
+      } catch (error) { }
     }
     return rslt.errs;
   }
