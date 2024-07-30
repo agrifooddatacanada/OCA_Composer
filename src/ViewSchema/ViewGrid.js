@@ -7,6 +7,7 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import { getListOfSelectedOverlays } from "../constants/getListOfSelectedOverlays";
 import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
+import TypeTooltip from "../AttributeDetails/TypeTooltip";
 
 const gridStyles = `
 .ag-cell {
@@ -53,11 +54,25 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           field: "Attribute",
           headerName: t("Attributes"),
           autoHeight: true,
+          headerComponent: () => <CellHeader headerText={t("Attributes")} helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
         },
         {
           field: "Flagged",
-          width: 78,
-          headerComponent: () => <CellHeader headerText={t('Sensitive')} />,
+          width: 98,
+          headerComponent: () => <CellHeader
+            headerText={t('Sensitive')}
+            helpText={
+              <>
+                <div>
+                  {t('If the attribute could be considered Personally Identifiable...')}
+                </div>
+                <br />
+                <div>
+                  {t('Examples of PII include names, locations, postal codes...')}
+                </div>
+              </>
+            }
+          />,
           cellRenderer: CheckboxRenderer,
         },
         {
@@ -65,17 +80,19 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           headerName: t("Unit"),
           width: 90,
           autoHeight: true,
+          headerComponent: () => <CellHeader headerText={t('Unit')} helpText={t('The units of each attribute (or leave blank if the attribute is...')} />
         },
         {
           field: "Type",
           headerName: t("Type"),
           autoHeight: true,
+          headerComponent: () => <CellHeader headerText={t("Type")} helpText={<TypeTooltip />} />
         },
         {
           field: "Label",
           autoHeight: true,
           width: 170,
-          headerComponent: () => <CellHeader headerText={t("Label")} constraint='max 50 chars' />
+          headerComponent: () => <CellHeader headerText={t("Label")} constraint='max 50 chars' helpText={t('This is the language specific label for an attribute')} />
 
         },
         {
@@ -83,13 +100,14 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           flex: 1,
           minWidth: 350,
           autoHeight: true,
-          headerComponent: () => <CellHeader headerText={t('Description')} constraint={t('max 200 chars')} />
+          headerComponent: () => <CellHeader headerText={t('Description')} constraint={t('max 200 chars')} helpText={t('This is a language specific description of the attribute...')} />
         },
         {
           field: "List",
           headerName: t("List"),
           width: 173,
           autoHeight: true,
+          headerComponent: () => <CellHeader headerText={t("List")} helpText={t("Rather than allow free text entry into a record, you may...")} />
         },
       ];
 
