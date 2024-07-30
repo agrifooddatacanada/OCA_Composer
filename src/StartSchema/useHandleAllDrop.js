@@ -528,7 +528,7 @@ const useHandleAllDrop = (pageForward) => {
   }, [processLabelsDescriptionRootUnitsEntries, processLanguages, processMetadata, setZipToReadme]);
 
   const handlePageForward = useCallback(() => {
-    if (excelSheetNames.length > 0) {
+    if (rawFile[0].path.includes(".xls") || rawFile[0].path.includes(".xlsx")) {
       const index = excelSheetNames.indexOf(excelSheetChoice);
       processExcelFile(tempExcel, index);
     }
