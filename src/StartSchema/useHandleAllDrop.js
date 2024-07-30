@@ -528,8 +528,10 @@ const useHandleAllDrop = (pageForward) => {
   }, [processLabelsDescriptionRootUnitsEntries, processLanguages, processMetadata, setZipToReadme]);
 
   const handlePageForward = useCallback(() => {
-    const index = excelSheetNames.indexOf(excelSheetChoice);
-    processExcelFile(tempExcel, index);
+    if (excelSheetNames.length > 0) {
+      const index = excelSheetNames.indexOf(excelSheetChoice);
+      processExcelFile(tempExcel, index);
+    }
     pageForward();
   }, [excelSheetChoice, excelSheetNames, pageForward, processExcelFile, tempExcel]);
 
