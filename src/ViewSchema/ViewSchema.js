@@ -458,12 +458,46 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
           setLoading={setLoading}
         />
       </Box>
+      {isExport && (!isZip || (isZip && isZipEdited)) ? (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+          }}
+        >
+          <Button
+            color="button"
+            variant="contained"
+            onClick={() => {
+              if (currentEnv === "DEV") {
+                exportData();
+              }
+              handleExport(false);
+            }}
+            sx={{
+              alignSelf: "flex-end",
+              width: "12rem",
+              display: "flex",
+              justifyContent: "space-around",
+              p: 1,
+            }}
+            disabled={exportDisabled}
+          >
+            {t('Finish and Export')} <CheckCircleIcon />
+          </Button>
+        </Box >
+
+      ) :
+        <></>
+      }
       {addClearButton &&
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-end",
+            marginTop: '2rem',
           }}
         >
           <Button

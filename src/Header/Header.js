@@ -124,7 +124,7 @@ export default function Header({ currentPage }) {
         setToolTipText(
           ''
         );
-        setHelpLink('');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/en/PreviewSchema');
         break;
       case 'AttributeMatchDataValidator':
         setHeader(t('Matching Attributes'));
