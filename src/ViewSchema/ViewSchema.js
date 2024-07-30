@@ -383,7 +383,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
             {languageButtonDisplay}
           </Box>
         </Box>
-        <Typography
+        {/* <Typography
           sx={{
             fontSize: 28,
             fontWeight: "bold",
@@ -395,7 +395,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
           }}
         >
           {currentLanguage.replace(/\b\w/g, (match) => match.toUpperCase())}
-        </Typography>
+        </Typography> */}
 
         <Box
           sx={{

@@ -122,7 +122,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
           }}
           onClick={() =>
             window.open(
-              "https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/en/DataVerification",
+              "https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/en/DataEntryVerificationStart",
               '_blank',
               'rel=noopener noreferrer'
             )
