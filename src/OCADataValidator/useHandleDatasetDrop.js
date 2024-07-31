@@ -120,6 +120,7 @@ export const useHandleDatasetDrop = () => {
         });
 
         setExcelSheetNames(workbook.SheetNames);
+        setExcelSheetChoice(workbook.SheetNames[0]);
         setOgWorkbook(workbook);
         setDatasetLoading(false);
         setDatasetDropDisabled(true);

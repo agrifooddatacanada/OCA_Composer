@@ -4,7 +4,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
 
-const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back' }) => {
+const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back', middleText }) => {
   const { t } = useTranslation();
   return (
     <Box>
@@ -34,7 +34,22 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
           >
             <ArrowBackIosIcon /> {t(backText)}
           </Button> : <Box />}
-          <Box sx={{ alignSelf: "flex-end" }}>
+          {middleText && <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: CustomPalette.GREY_200,
+
+              marginLeft: "2rem",
+              marginRight: "2rem",
+              paddingLeft: "1rem",
+              paddingRight: "1rem",
+            }}
+          >
+            <p>{middleText}</p>
+          </Box>}
+          <Box>
             {isForward && <Button
               color="navButton"
               onClick={pageForward}

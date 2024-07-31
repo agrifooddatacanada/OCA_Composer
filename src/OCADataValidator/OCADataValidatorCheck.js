@@ -36,6 +36,7 @@ import { createDataEntryExcel } from "../Landing/createDataEntryExcel";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import ViewSchema from "../ViewSchema/ViewSchema";
+import CloseIcon from '../assets/icon-close.png';
 
 export const TrashCanButton = memo(
   forwardRef((props, _ref) => {
@@ -443,15 +444,38 @@ const OCADataValidatorCheck = ({
       role="presentation"
       onClick={toggleDrawer(false)}
     >
-      <h1
-        style={{
-          textAlign: "center",
-          color: CustomPalette.PRIMARY
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "0 16px",
+          position: "relative"
         }}
       >
-        Schema Preview
-      </h1>
+        <h1
+          style={{
+            textAlign: "center",
+            color: CustomPalette.PRIMARY,
+          }}
+        >
+          Schema Preview
+        </h1>
+        <Box
+          edge="end"
+          sx={{
+            position: "absolute",
+            right: 0,
+            marginRight: "3rem",
+            cursor: "pointer",
+          }}
+        >
+          <img style={{ height: "25px" }} src={CloseIcon} alt="Close" />
+        </Box>
+      </Box>
+
       <ViewSchema isPageForward={false} />
+
     </Box>
   );
 

@@ -174,7 +174,7 @@
   "Add format rule for data": "Add format rule for data",
   "Cardinality": "Cardinality",
   "Apply All": "Apply All",
-  "You indicated in the previous step that one or more attributes is a list. Please add entry codes for the same:": "You indicated in the previous step that one or more attributes is a list. Please add entry codes for the same:",
+  "You indicated in the previous step that one or more attributes is a list. Please add or upload entry codes:": "You indicated in the previous step that one or more attributes is a list. Please add or upload entry codes:",
   "Entry Code": "Entry Code",
   "The entry choices for the schema. These will be what is recorded in the dataset and so can be simple entry codes": "The entry choices for the schema. These will be what is recorded in the dataset and so can be simple entry codes.",
   "A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes": "A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes.",

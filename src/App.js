@@ -8,7 +8,6 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import StartSchemaHelp from './UsersHelp/Start_Schema_Help';
 import { getListOfSelectedOverlays } from './constants/getListOfSelectedOverlays';
 import Landing from './Landing/Landing';
-import GuidanceForDesigningDataSets from './Landing/HelpDesigningDatasets';
 import ReactGA from 'react-ga4';
 import HelpStorage from './Landing/HelpStorage';
 import OCADataValidator from './OCADataValidator/OCADataValidator';

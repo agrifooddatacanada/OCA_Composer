@@ -301,6 +301,7 @@ const useHandleAllDrop = (pageForward) => {
           // processExcelFile(workbook);
           setTempExcel(workbook);
           setExcelSheetNames(workbook.SheetNames);
+          setExcelSheetChoice(workbook.SheetNames[0]);
           setLoading(false);
           setTimeout(() => {
             setDropMessage({ message: "", type: "" });
@@ -527,8 +528,10 @@ const useHandleAllDrop = (pageForward) => {
   }, [processLabelsDescriptionRootUnitsEntries, processLanguages, processMetadata, setZipToReadme]);
 
   const handlePageForward = useCallback(() => {
-    const index = excelSheetNames.indexOf(excelSheetChoice);
-    processExcelFile(tempExcel, index);
+    if (rawFile[0].path.includes(".xls") || rawFile[0].path.includes(".xlsx")) {
+      const index = excelSheetNames.indexOf(excelSheetChoice);
+      processExcelFile(tempExcel, index);
+    }
     pageForward();
   }, [excelSheetChoice, excelSheetNames, pageForward, processExcelFile, tempExcel]);
 

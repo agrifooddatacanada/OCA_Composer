@@ -142,7 +142,7 @@ export default function EntryCodes() {
             width: 500,
           }}
         >
-          {t('You indicated in the previous step that one or more attributes is a list. Please add entry codes for the same:')}
+          {t('You indicated in the previous step that one or more attributes is a list. Please add or upload entry codes:')}
         </Typography>
         {selectedAttributes.length > 0 && allCodesDisplay}
       </Box>
