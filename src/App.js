@@ -79,7 +79,6 @@ function App() {
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
-  console.log('jsonRawFile', jsonRawFile);
   const [jsonParsedFile, setJsonParsedFile] = useState(undefined);
   const [jsonLoading, setJsonLoading] = useState(false);
   const [jsonDropDisabled, setJsonDropDisabled] = useState(false);

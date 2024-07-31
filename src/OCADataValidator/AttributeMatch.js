@@ -63,7 +63,16 @@ export const DataHeaderRenderer = memo(
 
 const AttributeMatch = () => {
   const { t } = useTranslation();
-  const { setCurrentDataValidatorPage, languages, matchingRowData, setMatchingRowData, schemaDataConformantHeader, firstTimeMatchingRef, setSchemaDataConformantRowData, setSchemaDataConformantHeader, ogSchemaDataConformantHeaderRef } = useContext(Context);
+  const {
+    setCurrentDataValidatorPage,
+    languages, matchingRowData,
+    setMatchingRowData,
+    schemaDataConformantHeader,
+    firstTimeMatchingRef,
+    setSchemaDataConformantRowData,
+    setSchemaDataConformantHeader,
+    ogSchemaDataConformantHeaderRef
+  } = useContext(Context);
   const [type, setType] = useState(languages[0] || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -174,30 +183,41 @@ const AttributeMatch = () => {
   useEffect(() => {
     const columnDefs = [
       {
-        headerName: t("Attribute"),
-        field: "Attribute",
-        resizable: true,
-        flex: 1,
-        cellStyle: () => greyCellStyle,
+        headerName: t("Schema Bundle"),
+        children: [
+          {
+            headerName: t("Attribute"),
+            field: "Attribute",
+            resizable: true,
+            flex: 1,
+            cellStyle: () => greyCellStyle,
+          },
+          {
+            headerName: t("Label"),
+            field: type,
+            resizable: true,
+            flex: 1,
+            cellStyle: () => greyCellStyle,
+          },
+        ]
       },
       {
-        headerName: t("Label"),
-        field: type,
-        resizable: true,
-        flex: 1,
-        cellStyle: () => greyCellStyle,
+        headerName: t("Dataset File"),
+        children: [
+          {
+            headerName: t("Dataset"),
+            field: "Dataset",
+            cellRendererFramework: DataHeaderRenderer,
+            cellRendererParams: (params) => ({
+              dataHeaders: ogSchemaDataConformantHeaderRef.current,
+              changeDataFromTable: (e) => changeDataFromTable(e, params)
+            }),
+            resizable: true,
+            flex: 1,
+          },
+        ]
       },
-      {
-        headerName: t("Dataset"),
-        field: "Dataset",
-        cellRendererFramework: DataHeaderRenderer,
-        cellRendererParams: (params) => ({
-          dataHeaders: ogSchemaDataConformantHeaderRef.current,
-          changeDataFromTable: (e) => changeDataFromTable(e, params)
-        }),
-        resizable: true,
-        flex: 1,
-      },
+
     ];
     setColumnDefs(columnDefs);
   }, [type, t]);
