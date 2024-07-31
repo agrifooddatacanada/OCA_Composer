@@ -23,8 +23,8 @@ export default function TypeTooltip() {
   };
 
   const listArray = [
-    { name: t("Text"), content: t("text") },
-    { name: t("Numeric"), content: t("numbers") },
+    { name: t("Text"), content: t("text, mixed text and numbers") },
+    { name: t("Numeric"), content: t("only numbers") },
     {
       name: t("Boolean"),
       content:
