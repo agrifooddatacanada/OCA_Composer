@@ -310,14 +310,14 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
                       }}
                       sx={{
                         alignSelf: "flex-end",
-                        width: "12rem",
+                        width: "13rem",
                         display: "flex",
                         justifyContent: "space-around",
                         p: 1,
                       }}
                       disabled={exportDisabled}
                     >
-                      {t('Finish and Export')} <CheckCircleIcon />
+                      {t('Finish and Download')} <CheckCircleIcon />
                     </Button>
                     <Box sx={{ marginLeft: "1rem" }}>
                       <Tooltip
@@ -477,14 +477,14 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
             }}
             sx={{
               alignSelf: "flex-end",
-              width: "12rem",
+              width: "13rem",
               display: "flex",
               justifyContent: "space-around",
               p: 1,
             }}
             disabled={exportDisabled}
           >
-            {t('Finish and Export')} <CheckCircleIcon />
+            {t('Finish and Download')} <CheckCircleIcon />
           </Button>
         </Box >
 

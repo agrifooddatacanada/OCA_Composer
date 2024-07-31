@@ -37,7 +37,8 @@ const DatasetView = () => {
     setCurrentDataValidatorPage,
     schemaDataConformantHeader,
     schemaDataConformantRowData,
-    setSchemaDataConformantRowData
+    setSchemaDataConformantRowData,
+    jsonRawFile
   } = useContext(Context);
 
   const [schemaColumnDefs, setSchemaColumnDefs] = useState([]);
@@ -92,22 +93,33 @@ const DatasetView = () => {
 
   return (
     <>
-      <BackNextSkeleton isForward pageForward={() => {
-        const result = [];
-        schemaGridRef.current?.api.forEachNode(node => {
-          const existingKeys = Object.keys(node?.data);
-          const newData = { ...node?.data };
-          schemaDataConformantHeader.forEach(header => {
-            if (!existingKeys.includes(header)) {
-              newData[header] = '';
-            }
+      <BackNextSkeleton
+        isBack
+        pageBack={() => {
+          setCurrentDataValidatorPage('StartDataValidator');
+        }}
+        isForward
+        pageForward={() => {
+          const result = [];
+          schemaGridRef.current?.api.forEachNode(node => {
+            const existingKeys = Object.keys(node?.data);
+            const newData = { ...node?.data };
+            schemaDataConformantHeader.forEach(header => {
+              if (!existingKeys.includes(header)) {
+                newData[header] = '';
+              }
+            });
+            result.push(newData);
           });
-          result.push(newData);
-        });
 
-        setSchemaDataConformantRowData(result);
-        setCurrentDataValidatorPage('StartDataValidator');
-      }} />
+          setSchemaDataConformantRowData(result);
+          if (jsonRawFile.length > 0) {
+            setCurrentDataValidatorPage('AttributeMatchDataValidator');
+          } else {
+            setCurrentDataValidatorPage('StartDataValidator');
+          }
+        }}
+      />
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',

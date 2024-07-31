@@ -104,7 +104,7 @@ export const useHandleDatasetDrop = () => {
         setDatasetDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [datasetIsParsed]);
+  }, [datasetIsParsed, jsonRawFile]);
 
   const handleExcelDrop = useCallback((acceptedFiles) => {
 
@@ -122,6 +122,7 @@ export const useHandleDatasetDrop = () => {
         setExcelSheetNames(workbook.SheetNames);
         setExcelSheetChoice(workbook.SheetNames[0]);
         setOgWorkbook(workbook);
+
         setDatasetLoading(false);
         setDatasetDropDisabled(true);
         setDatasetDropMessage({
@@ -153,7 +154,7 @@ export const useHandleDatasetDrop = () => {
 
     if (rABS) reader.readAsBinaryString(acceptedFiles);
     else reader.readAsArrayBuffer(acceptedFiles);
-  }, [datasetIsParsed]);
+  }, [datasetIsParsed, jsonRawFile]);
 
   const processExcelFile = useCallback(async (workbook, index) => {
 
