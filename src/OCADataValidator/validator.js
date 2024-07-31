@@ -231,7 +231,7 @@ export default class OCABundle {
             dataEntry = "";
           }
           // Verifying the data entries for attributes with Array data type.
-          if (Array.isArray(attrType)) {
+          if (attrType.includes("Array") || Array.isArray(attrType)) {
             let dataEntryWithErrors = [];
             try {
 
@@ -361,10 +361,29 @@ export default class OCABundle {
     const rslt = this.ErrorBuilder.entryCodeErr;
     const attrEntryCodes = this.getEntryCodes();
     for (const attr in attrEntryCodes) {
+      const attrType = this.getAttributeType(attr);
       rslt.errs[attr] = {};
       for (let i = 0; i < dataset[attr]?.length; i++) {
-        const dataEntry = String(dataset[attr][i]);
-        if (
+        const dataEntryWithSpaces = String(dataset[attr][i]);
+        const dataEntry = dataEntryWithSpaces.replace(/,\s*/g, ',');
+
+        if (attrType.includes("Array") || Array.isArray(attrType)) {
+          const dataArr = this.processEntries(dataEntry);
+          for (let j = 0; j < dataArr.length; j++) {
+            let nonEntrycodeDataEntries = [];
+            if (
+              !attrEntryCodes[attr].includes(dataArr[j]) &&
+              dataArr[j] !== "" &&
+              dataArr[j] !== undefined
+            ) { nonEntrycodeDataEntries.push(dataArr[j]); }
+          if (nonEntrycodeDataEntries.length > 0) {
+            rslt.errs[attr][i] = {
+              type: "EC",
+              detail: `The following entry(ies): [${nonEntrycodeDataEntries}] are not part of the Entry codes list. Entry codes allowed: [${Object.values(attrEntryCodes[attr])}]`,
+            };
+          }
+        }
+      } else if( !attrType.includes('Array') &&
           !attrEntryCodes[attr].includes(dataEntry) &&
           dataEntry !== "" &&
           dataEntry !== undefined
@@ -375,7 +394,7 @@ export default class OCABundle {
               attrEntryCodes[attr]
             )}]`,
           };
-        }
+        }      
       }
     }
     return rslt.errs;
@@ -406,7 +425,6 @@ export default class OCABundle {
         flagged.push(attr);
       }
     }
-
     return flagged;
   }
 

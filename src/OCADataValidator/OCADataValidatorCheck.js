@@ -479,9 +479,11 @@ const OCADataValidatorCheck = ({
     </Box>
   );
 
-  const SavedEntryCodesWithNoArrayType = Object.keys(savedEntryCodes).filter(
-    (key) => !Array.isArray(jsonParsedFile.capture_base.attributes[key])
-  ).reduce((acc, key) => {
+  const SavedEntryCodesWithNoArrayType = Object.keys(savedEntryCodes).filter((key) => {
+    const attribute = jsonParsedFile.capture_base.attributes[key];
+    return !Array.isArray(attribute) && !attribute.includes('Array');
+
+  }).reduce((acc, key) => {
     acc[key] = savedEntryCodes[key];
     return acc;
   }, {});
