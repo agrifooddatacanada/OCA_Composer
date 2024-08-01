@@ -458,7 +458,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
           setLoading={setLoading}
         />
       </Box>
-      {isExport && (!isZip || (isZip && isZipEdited)) ? (
+      {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) ? (
         <Box
           sx={{
             display: "flex",
