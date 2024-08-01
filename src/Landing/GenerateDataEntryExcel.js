@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { createDataEntryExcel } from "./createDataEntryExcel";
+import { CreateDataEntryExcel } from "./CreateDataEntryExcel";
 
 const downloadDataEntry = (acceptedFiles, setLoading, selectedLang) => {
   let workbook = null;
@@ -25,7 +25,7 @@ const downloadDataEntry = (acceptedFiles, setLoading, selectedLang) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        workbook = await createDataEntryExcel(e, selectedLang);
+        workbook = await CreateDataEntryExcel(e, selectedLang);
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

@@ -1,4 +1,4 @@
-import { matchDatetime } from '../src/OCADataValidator/utils/matchRules';
+import {  matchText } from '../src/OCADataValidator/utils/matchRules';
 import { descriptionToFormatCodeText } from '../src/constants/constants';
 
 test('match Regex (Entries of any length with only capital letters)', () => {
@@ -19,11 +19,11 @@ test('match Regex (Entries of any length with only capital letters)', () => {
     ];
 
     testTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeTruthy();
+        expect(matchText(pattern, text)).toBeTruthy();
     });
 
     badTestTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeFalsy();
+        expect(matchText(pattern, text)).toBeFalsy();
     });
 });
 
@@ -44,11 +44,11 @@ test('match Regex (Capital or lower case letters only, at least 1 character, and
     ];
 
     testTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeTruthy();
+        expect(matchText(pattern, text)).toBeTruthy();
     });
 
     badTestTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeFalsy();
+        expect(matchText(pattern, text)).toBeFalsy();
     });
 });
 
@@ -70,11 +70,11 @@ test('match Regex (Capital or lower case letters only, 50 characters max)', () =
     ];
 
     testTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeTruthy();
+        expect(matchText(pattern, text)).toBeTruthy();
     });
 
     badTestTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeFalsy();
+        expect(matchText(pattern, text)).toBeFalsy();
     });
 });
 
@@ -95,11 +95,11 @@ test('match Regex (Short text, 50 characters max)', () => {
     ];
 
     testTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeTruthy();
+        expect(matchText(pattern, text)).toBeTruthy();
     });
 
     badTestTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeFalsy();
+        expect(matchText(pattern, text)).toBeFalsy();
     });
 });
 
@@ -121,11 +121,11 @@ test('match Regex (Short text, 250 characters max)', () => {
     ];
 
     testTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeTruthy();
+        expect(matchText(pattern, text)).toBeTruthy();
     });
 
     badTestTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeFalsy();
+        expect(matchText(pattern, text)).toBeFalsy();
     });
 });
 
@@ -148,11 +148,11 @@ test('match Regex (long text, 800 characters max)', () => {
     ];
 
     testTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeTruthy();
+        expect(matchText(pattern, text)).toBeTruthy();
     });
 
     badTestTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeFalsy();
+        expect(matchText(pattern, text)).toBeFalsy();
     });
 });
 
@@ -175,11 +175,11 @@ test ('match Regex (Canadian postal codes (A1A 1A1))', () => {
     ];
 
     testTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeTruthy();
+        expect(matchText(pattern, text)).toBeTruthy();
     });
 
     badTestTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeFalsy();
+        expect(matchText(pattern, text)).toBeFalsy();
     });
 });
 
@@ -208,11 +208,11 @@ test ('match Regex (Zip code)', () => {
     ];
 
     testTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeTruthy();
+        expect(matchText(pattern, text)).toBeTruthy();
     });
 
     badTestTexts.forEach((text) => {
-        expect(matchDatetime(pattern, text)).toBeFalsy();
+        expect(matchText(pattern, text)).toBeFalsy();
     });
 });
 
@@ -233,11 +233,11 @@ test ('match Regex (Email address)', () => {
 
 
     TestEmails.forEach((email) => {
-        expect(matchDatetime(pattern, email)).toBeTruthy();
+        expect(matchText(pattern, email)).toBeTruthy();
     });
 
     badTestEmails.forEach((email) => {
-        expect(matchDatetime(pattern, email)).toBeFalsy();
+        expect(matchText(pattern, email)).toBeFalsy();
     });
 });
 
@@ -262,11 +262,11 @@ test ('match Regex (URL)', () => {
     ];
     
     TestURLs.forEach((url) => {
-        expect(matchDatetime(pattern, url)).toBeTruthy();
+        expect(matchText(pattern, url)).toBeTruthy();
     });
 
     badTestURLs.forEach((url) => {
-        expect(matchDatetime(pattern, url)).toBeFalsy();
+        expect(matchText(pattern, url)).toBeFalsy();
     });
 });
 
@@ -316,10 +316,12 @@ test ('match Regex (Phone number)', () => {
     ];
 
     TestPhoneNumbers.forEach((phone) => {
-        expect(matchDatetime(pattern, phone)).toBeTruthy();
+        expect(matchText(pattern, phone)).toBeTruthy();
     });
 
     badTestPhoneNumbers.forEach((phone) => {
-        expect(matchDatetime(pattern, phone)).toBeFalsy
+        expect(matchText(pattern, phone)).toBeFalsy
     });
 });
+
+// Todo: Add test for Lat and Long.

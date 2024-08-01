@@ -29,37 +29,43 @@ export const DataHeaderRenderer = memo(
       }
     };
 
-    const typesDisplay = props?.dataHeaders.map((value, index) => {
-      return (
-        <MenuItem
-          key={index + "_" + value}
-          value={value}
-          sx={{ border: "none", height: "2rem", fontSize: "small" }}
-        >
-          {value}
-        </MenuItem>
-      );
-    });
+    const handleDoubleClick = () => {
+      props.changeDataFromTable({ target: { value: '' } });
+      setIsDropdownOpen(false);
+    };
+
+    const typesDisplay = props?.dataHeaders.map((value, index) => (
+      <MenuItem
+        key={index + "_" + value}
+        value={value}
+        sx={{ border: "none", height: "2rem", fontSize: "small" }}
+        onClick={handleChange}
+        onDoubleClick={handleDoubleClick}
+      >
+        {value}
+      </MenuItem>
+    ));
 
     return (
       <>
-        {
-          props?.dataHeaders.length > 0 ?
-            <DropdownMenuList
-              handleKeyDown={handleKeyDown}
-              type={props.node.data.Dataset}
-              handleChange={handleChange}
-              handleClick={handleClick}
-              isDropdownOpen={isDropdownOpen}
-              setIsDropdownOpen={setIsDropdownOpen}
-              typesDisplay={typesDisplay}
-            /> :
-            <></>
-        }
+        {props?.dataHeaders.length > 0 ? (
+          <DropdownMenuList
+            handleKeyDown={handleKeyDown}
+            type={props.node.data.Dataset}
+            handleChange={handleChange}
+            handleClick={handleClick}
+            isDropdownOpen={isDropdownOpen}
+            setIsDropdownOpen={setIsDropdownOpen}
+            typesDisplay={typesDisplay}
+          />
+        ) : (
+          <></>
+        )}
       </>
     );
   })
 );
+
 
 const AttributeMatch = () => {
   const { t } = useTranslation();
