@@ -172,26 +172,29 @@ export const useHandleDatasetDrop = () => {
 
     // Find the last row index.
     let lastRowIndex = range.s.r;
-    let reachAValue = false;
+    let lastColIndex = range.s.c;
     for (let row = range.e.r; row >= range.s.r; row--) {
-      for (let col = range.s.c; col <= range.e.c; col++) {
+      for (let col = range.e.c; col >= range.s.c; col--) {
         const cellAddress = { c: col, r: row };
         const cellRef = XLSX.utils.encode_cell(cellAddress);
         const cell = worksheet[cellRef];
+
         if (cell && cell.v !== undefined && cell.v !== '') {
-          lastRowIndex = row;
-          reachAValue = true;
-          break;
+          if (row > lastRowIndex) {
+            lastRowIndex = row;
+          }
+
+          if (col > lastColIndex) {
+            lastColIndex = col;
+            break;
+          }
         }
-      }
-      if (reachAValue) {
-        break;
       }
     }
 
     const rangeToParse = {
       s: { r: range.s.r, c: range.s.c },
-      e: { r: lastRowIndex, c: range.e.c }
+      e: { r: lastRowIndex, c: lastColIndex }
     };
 
     const jsonSchemaFromExcel = XLSX.utils.sheet_to_json(
