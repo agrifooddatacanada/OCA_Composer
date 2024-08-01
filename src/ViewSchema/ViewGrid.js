@@ -19,6 +19,21 @@ const gridStyles = `
   justify-content: center;
   align-items: center;
 }
+
+.ag-body-viewport-wrapper.ag-layout-normal {
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0,0,0,.5);
+  box-shadow: 0 0 1px rgba(255,255,255,.5);
+}
 `;
 
 const defaultColDef = {
