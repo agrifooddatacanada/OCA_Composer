@@ -442,7 +442,6 @@ const OCADataValidatorCheck = ({
     <Box
       sx={{ width: "100%" }}
       role="presentation"
-      onClick={toggleDrawer(false)}
     >
       <Box
         sx={{
@@ -469,6 +468,7 @@ const OCADataValidatorCheck = ({
             marginRight: "3rem",
             cursor: "pointer",
           }}
+          onClick={toggleDrawer(false)}
         >
           <img style={{ height: "25px" }} src={CloseIcon} alt="Close" />
         </Box>
@@ -1213,7 +1213,7 @@ const OCADataValidatorCheck = ({
       {firstTimeDisplayWarning.current && showWarningCard && (
         <WarningPopup action={handleDismissWarning} />
       )}
-      <Drawer open={open} onClose={toggleDrawer(false)}>
+      <Drawer open={open}>
         {DrawerList}
       </Drawer>
     </Box>

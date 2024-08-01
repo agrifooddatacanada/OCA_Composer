@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext, useCallback } from "react";
+import React, { useState, useRef, useEffect, useContext, useCallback, memo, forwardRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { Context } from "../App";
 import { greyCellStyle } from "../constants/styles";
@@ -8,6 +8,8 @@ import { getListOfSelectedOverlays } from "../constants/getListOfSelectedOverlay
 import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
+import { MenuItem } from "@mui/material";
+import { DropdownMenuList } from "../components/DropdownMenuCell";
 
 const gridStyles = `
 .ag-cell {
@@ -24,11 +26,13 @@ const gridStyles = `
   overflow-x: scroll;
   overflow-y: scroll;
 }
+
 ::-webkit-scrollbar {
   -webkit-appearance: none;
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-thumb {
   border-radius: 4px;
   background-color: rgba(0,0,0,.5);
@@ -51,6 +55,47 @@ const CheckboxRenderer = ({ value }) => {
 
   return <input type="checkbox" ref={inputRef} disabled />;
 };
+
+export const ListRenderer = memo(
+  forwardRef((props, ref) => {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const handleChange = (e) => {
+      setIsDropdownOpen(false);
+    };
+
+    const handleClick = () => {
+      setIsDropdownOpen(!isDropdownOpen);
+    };
+
+    const typesDisplay = props.data?.List?.split(" | ").map((value, index) => {
+      return (
+        <MenuItem
+          key={index + "_" + value}
+          value={value}
+          sx={{ border: "none", height: "2rem", fontSize: "small" }}
+        >
+          {value}
+        </MenuItem>
+      );
+    });
+
+
+    return (
+      <>
+        <DropdownMenuList
+          handleKeyDown={() => { }}
+          type={props.node.data.List.substring(0, 18)}
+          handleChange={handleChange}
+          handleClick={handleClick}
+          isDropdownOpen={isDropdownOpen}
+          setIsDropdownOpen={setIsDropdownOpen}
+          typesDisplay={typesDisplay}
+        />
+      </>
+    );
+  })
+);
 
 export default function ViewGrid({ displayArray, currentLanguage, setLoading }) {
   const { t } = useTranslation();
@@ -122,7 +167,8 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           headerName: t("List"),
           width: 173,
           autoHeight: true,
-          headerComponent: () => <CellHeader headerText={t("List")} helpText={t("Rather than allow free text entry into a record, you may...")} />
+          headerComponent: () => <CellHeader headerText={t("List")} helpText={t("Rather than allow free text entry into a record, you may...")} />,
+          cellRenderer: ListRenderer
         },
       ];
 
