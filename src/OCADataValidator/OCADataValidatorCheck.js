@@ -1204,6 +1204,9 @@ const OCADataValidatorCheck = ({
               suppressRowHoverHighlight={true}
               onCellKeyDown={onCellKeyDown}
               suppressFieldDotNotation
+              onGridReady={() => {
+                handleValidate();
+              }}
             />
           </div>
           <Box
