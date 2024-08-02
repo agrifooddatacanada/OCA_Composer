@@ -32,7 +32,7 @@ import WarningPopup from "./WarningPopup";
 import { CustomPalette } from "../constants/customPalette";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { getCurrentData } from "../constants/utils";
-import { createDataEntryExcel } from "../Landing/createDataEntryExcel";
+import { CreateDataEntryExcel } from "../Landing/CreateDataEntryExcel";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import ViewSchema from "../ViewSchema/ViewSchema";
@@ -662,16 +662,16 @@ const OCADataValidatorCheck = ({
 
   const generateDataEntryExcel = async (e, selectedLang) => {
     try {
-      const workbook = await createDataEntryExcel(e, selectedLang);
+      const workbook = await CreateDataEntryExcel(e, selectedLang);
       const newData = getCurrentData(gridRef.current.api, false);
       const schemaConformantDataHeaders = Array.from(
         new Set(newData.flatMap(Object.keys))
       );
 
-      workbook.removeWorksheet("Data Entry"); // Delete as you can't add without removing data validation.
-      workbook.addWorksheet("Data Entry");
+      workbook.removeWorksheet("Data"); // Delete as you can't add without removing data validation.
+      workbook.addWorksheet("Data");
 
-      const schemaConformantDataSheet = workbook.getWorksheet("Data Entry");
+      const schemaConformantDataSheet = workbook.getWorksheet("Data");
       schemaConformantDataSheet.addRow(schemaConformantDataHeaders);
       const headerRow = schemaConformantDataSheet.getRow(1);
       headerRow.eachCell((cell, colNumber) => {
@@ -1161,6 +1161,26 @@ const OCADataValidatorCheck = ({
                 }}
               ></div>
               <span>Unmatched Attributes</span>
+              
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                marginRight: "2rem",
+              }}
+            >
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: "#ffffff",
+                  marginRight: "15px",
+                  border: "1px solid #ededed",
+                }}
+              ></div>
+              <span>Unverified Data</span>
+              
             </Box>
           </Box>
         </Box>

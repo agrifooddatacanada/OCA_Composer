@@ -135,7 +135,9 @@ export const descriptionToFormatCodeText = {
   "Zip code": "^\\d{5,6}(?:[-\\s]\\d{4})?$",
   "Email address": "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+",
   "URL": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
-  "Phone number": "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}"
+  "Phone number": "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}",
+  "Latitude in formats S30°15'45.678\" or N12°30.999\"": "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$",
+  "Longitude in formats E30°15'45.678\" or W90°00.000\"": "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$"
 };
 
 export const formatCodeText = Object.keys(descriptionToFormatCodeText);
@@ -152,8 +154,6 @@ export const descriptionToFormatCodeNumeric = {
   // "positive integers": "^[0-9]*[1-9][0-9]*$",
   "any integer": "^-?[0-9]+$",
   // "any number between 0 and 100, inclusive": "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$",
-  "Latitude in formats S30°15'45.678\" or N12°30.999\"": "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$",
-  "Longitude in formats E30°15'45.678\" or W90°00.000\"": "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$"
 };
 
 export const formatCodeNumeric = Object.keys(descriptionToFormatCodeNumeric);
