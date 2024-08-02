@@ -1015,36 +1015,6 @@ const OCADataValidatorCheck = ({
                 flexDirection: "row",
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  paddingRight: "20px",
-                  alignItems: "center",
-                }}
-              >
-                {revalidateData && (
-                  <Typography
-                    sx={{
-                      marginRight: "20px",
-                      color: "red",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Please re-verify the data!
-                  </Typography>
-                )}
-                <Button
-                  color="button"
-                  variant="contained"
-                  target="_blank"
-                  style={{ width: "120px", height: "40px", marginTop: "15px" }}
-                  onClick={handleValidate}
-                  disabled={isValidateButtonEnabled}
-                >
-                  Verify
-                </Button>
-              </Box>
               <ExportButton
                 handleSave={handleSave}
                 inputDataType={datasetRawFileType}
@@ -1099,6 +1069,37 @@ const OCADataValidatorCheck = ({
                 disabled={!firstValidate}
                 placeHolder="Select Errors"
               />
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  paddingRight: "20px",
+                  alignItems: "center",
+                  marginTop: "15px"
+                }}
+              >
+                <Button
+                  color="button"
+                  variant="contained"
+                  target="_blank"
+                  style={{ width: "120px", height: "40px" }}
+                  onClick={handleValidate}
+                  disabled={isValidateButtonEnabled}
+                >
+                  Verify
+                </Button>
+                {revalidateData && (
+                  <Typography
+                    sx={{
+                      marginLeft: "20px",
+                      color: "red",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Please re-verify the data!
+                  </Typography>
+                )}
+              </Box>
             </Box>
           </Box>
 
@@ -1161,7 +1162,7 @@ const OCADataValidatorCheck = ({
                 }}
               ></div>
               <span>Unmatched Attributes</span>
-              
+
             </Box>
             <Box
               sx={{
@@ -1180,7 +1181,7 @@ const OCADataValidatorCheck = ({
                 }}
               ></div>
               <span>Unverified Data</span>
-              
+
             </Box>
           </Box>
         </Box>
