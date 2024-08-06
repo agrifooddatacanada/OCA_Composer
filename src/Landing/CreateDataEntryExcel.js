@@ -171,10 +171,8 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     if (overlay.type && overlay.type.includes("/capture_base/")) {
       captureBaseOverlays.push(overlay);
     } else if (overlay.type && overlay.type.includes("/unit/")) {
-      if (overlay.measurement_system === "Metric") {
+      if (Object.keys(overlay).includes("metric_system")) { // adjust of oca-file & oca-bundle json.
         unitOverlays.push(overlay);
-      } else {
-        continue;
       }
     } else if (overlay.type && overlay.type.includes("/conformance/")) {
       conformanceOverlays.push(overlay);
