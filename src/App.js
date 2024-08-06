@@ -129,10 +129,6 @@ function App() {
     }
   };
 
-  const backToOCADataValidatorUploadPage = () => {
-    setCurrentDataValidatorPage('StartDataValidator');
-  };
-
   useEffect(() => {
     if (datasetRawFile.length > 0 && ogSchemaDataConformantHeaderRef.current.length === 0 && schemaDataConformantHeader.length > 0) {
       ogSchemaDataConformantHeaderRef.current = schemaDataConformantHeader;
@@ -372,6 +368,7 @@ function App() {
             cardinalityData,
             setCardinalityData,
             setCurrentDataValidatorPage,
+            currentDataValidatorPage,
             jsonLoading,
             setJsonLoading,
             jsonDropDisabled,
@@ -457,7 +454,7 @@ function App() {
                 <Route
                   path='/oca-data-validator'
                   element={
-                    <OCADataValidator currentDataValidatorPage={currentDataValidatorPage} backToOCADataValidatorUploadPage={backToOCADataValidatorUploadPage} />
+                    <OCADataValidator />
                   }
                 />
                 {/* <Route
