@@ -21,7 +21,7 @@ import { codesToLanguages } from "../constants/isoCodes";
 
 const currentEnv = process.env.REACT_APP_ENV;
 
-export default function ViewSchema({ pageBack, isExport = true, addClearButton, pageForward, isPageForward = true }) {
+export default function ViewSchema({ pageBack, isExport = true, addClearButton, pageForward, isPageForward = true, isBack = false }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const {
@@ -235,10 +235,20 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
       }}
     >
       {loading && attributeRowData?.length > 40 && <Loading />}
+
       <Box sx={{
         display: "flex",
-        justifyContent: pageForward ? "flex-end" : "space-between",
+        justifyContent: isBack || !pageForward ? "space-between" : "flex-end",
       }}>
+        {isBack && (
+          <Button
+            color="navButton"
+            sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
+            onClick={pageBack}
+          >
+            <ArrowBackIosIcon /> {t('Back')}
+          </Button>
+        )}
         {isPageForward && pageForward ?
           <Button
             color="navButton"
@@ -292,43 +302,45 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
                   </>
                 )}
                 {isExport && (!isZip || (isZip && isZipEdited)) ? (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: CustomPalette.GREY_600,
-                    }}
-                  >
-                    <Button
-                      color="button"
-                      variant="contained"
-                      onClick={() => {
-                        if (currentEnv === "DEV") {
-                          exportData();
-                        }
-                        handleExport(false);
-                      }}
+                  <>
+                    <Box
                       sx={{
-                        alignSelf: "flex-end",
-                        width: "13rem",
                         display: "flex",
-                        justifyContent: "space-around",
-                        p: 1,
+                        alignItems: "center",
+                        color: CustomPalette.GREY_600,
                       }}
-                      disabled={exportDisabled}
                     >
-                      {t('Finish and Download')} <CheckCircleIcon />
-                    </Button>
-                    <Box sx={{ marginLeft: "1rem" }}>
-                      <Tooltip
-                        title={t('Export your schema in a .json machine-readable version and...')}
-                        placement="left"
-                        arrow
+                      <Button
+                        color="button"
+                        variant="contained"
+                        onClick={() => {
+                          if (currentEnv === "DEV") {
+                            exportData();
+                          }
+                          handleExport(false);
+                        }}
+                        sx={{
+                          alignSelf: "flex-end",
+                          width: "13rem",
+                          display: "flex",
+                          justifyContent: "space-around",
+                          p: 1,
+                        }}
+                        disabled={exportDisabled}
                       >
-                        <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                      </Tooltip>
+                        {t('Finish and Download')} <CheckCircleIcon />
+                      </Button>
+                      <Box sx={{ marginLeft: "1rem" }}>
+                        <Tooltip
+                          title={t('Export your schema in a .json machine-readable version and...')}
+                          placement="left"
+                          arrow
+                        >
+                          <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                        </Tooltip>
+                      </Box>
                     </Box>
-                  </Box>
+                  </>
                 ) :
                   <></>
                 }
@@ -350,37 +362,91 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
+            width: "100%",
           }}
         >
-          <Typography
-            sx={{
-              fontSize: 22,
-              fontWeight: "bold",
-              color: CustomPalette.PRIMARY,
-            }}
-          >
-            {t('Schema Language')}
-          </Typography>
-          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
-            <Tooltip
-              title={t("Toggles between the one or more languages used in the schema")}
-              placement="right"
-              arrow
-            >
-              <HelpOutlineIcon sx={{ fontSize: 15 }} />
-            </Tooltip>
-          </Box>
-        </Box>
-        <Box sx={{ mb: 4, width: "70rem" }}>
           <Box
             sx={{
               display: "flex",
-              flexDirection: "column-reverse",
+              flexDirection: "column",
               alignItems: "flex-start",
+              width: "100%",
             }}
           >
-            {languageButtonDisplay}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: 22,
+                  fontWeight: "bold",
+                  color: CustomPalette.PRIMARY,
+                }}
+              >
+                {t('Schema Language')}
+              </Typography>
+              <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
+                <Tooltip
+                  title={t("Toggles between the one or more languages used in the schema")}
+                  placement="right"
+                  arrow
+                >
+                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                </Tooltip>
+              </Box>
+            </Box>
+            <Box sx={{ mb: 4, width: "70rem" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column-reverse",
+                  alignItems: "flex-start",
+                }}
+              >
+                {languageButtonDisplay}
+              </Box>
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              padding: 2,
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              backgroundColor: '#f9f9f9',
+              width: "300px",
+              textAlign: "left",
+              position: "absolute",
+              right: 0,
+              marginRight: "4rem",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: 16,
+                color: '#333',
+              }}
+            >
+              Note: Downloading two files
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: 14,
+                marginTop: 1,
+              }}
+            >
+              1) Schema in .txt format, readable and archivable.
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: 14,
+                marginTop: 1,
+              }}
+            >
+              2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine.
+            </Typography>
           </Box>
         </Box>
         {/* <Typography
