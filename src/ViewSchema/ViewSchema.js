@@ -410,7 +410,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
               </Box>
             </Box>
           </Box>
-          <Box
+          {isPageForward && isExport && <Box
             sx={{
               padding: 2,
               border: '1px solid #ccc',
@@ -447,7 +447,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
             >
               2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine.
             </Typography>
-          </Box>
+          </Box>}
         </Box>
         {/* <Typography
           sx={{
