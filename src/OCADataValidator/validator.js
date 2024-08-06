@@ -362,8 +362,19 @@ export default class OCABundle {
     const attrEntryCodes = this.getEntryCodes();
     for (const attr in attrEntryCodes) {
       const attrType = this.getAttributeType(attr);
+      const attrConformance = this.getAttributeConformance(attr);
+
       rslt.errs[attr] = {};
       for (let i = 0; i < dataset[attr]?.length; i++) {
+        if (attrConformance === "M" && dataset[attr][i] === '') {
+          rslt.errs[attr][i] = {
+            type: "EC",
+            detail: `${MISSING_MSG} Entry codes allowed: [${Object.values(
+              attrEntryCodes[attr]
+            )}]`,
+          };
+        }
+
         const dataEntryWithSpaces = String(dataset[attr][i]);
         const dataEntry = dataEntryWithSpaces.replace(/,\s*/g, ',');
 
@@ -383,7 +394,7 @@ export default class OCABundle {
             };
           }
         }
-      } else if( !attrType.includes('Array') &&
+      } else if(!attrType.includes('Array') &&
           !attrEntryCodes[attr].includes(dataEntry) &&
           dataEntry !== "" &&
           dataEntry !== undefined
