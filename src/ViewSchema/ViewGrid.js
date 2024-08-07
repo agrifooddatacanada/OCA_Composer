@@ -8,7 +8,7 @@ import { getListOfSelectedOverlays } from "../constants/getListOfSelectedOverlay
 import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
-import { MenuItem } from "@mui/material";
+import { Box, MenuItem, Typography } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 
 const gridStyles = `
@@ -68,6 +68,8 @@ export const ListRenderer = memo(
       setIsDropdownOpen(!isDropdownOpen);
     };
 
+    console.log('props.data', props.data);
+
     const typesDisplay = props.data?.List?.split(" | ").map((value, index) => {
       return (
         <MenuItem
@@ -83,15 +85,17 @@ export const ListRenderer = memo(
 
     return (
       <>
-        <DropdownMenuList
-          handleKeyDown={() => { }}
-          type={props.node.data.List.substring(0, 18)}
-          handleChange={handleChange}
-          handleClick={handleClick}
-          isDropdownOpen={isDropdownOpen}
-          setIsDropdownOpen={setIsDropdownOpen}
-          typesDisplay={typesDisplay}
-        />
+        {props.data?.List === 'Not a List' ?
+          (<Box>Not a List </Box>)
+          : <DropdownMenuList
+            handleKeyDown={() => { }}
+            type={props.node.data.List.substring(0, 18)}
+            handleChange={handleChange}
+            handleClick={handleClick}
+            isDropdownOpen={isDropdownOpen}
+            setIsDropdownOpen={setIsDropdownOpen}
+            typesDisplay={typesDisplay}
+          />}
       </>
     );
   })
