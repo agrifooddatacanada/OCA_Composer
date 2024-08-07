@@ -110,6 +110,7 @@ function App() {
   const [parsedOCAFile2, setParsedOCAFile2] = useState("");
   const [selectedOverlaysOCAFile1, setSelectedOverlaysOCAFile1] = useState({});
   const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState({});
+  const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -426,6 +427,8 @@ function App() {
             setFirstNavigationToDataset,
             targetResult,
             setTargetResult,
+            datasetDropMessage,
+            setDatasetDropMessage,
           }}
         >
           <Box

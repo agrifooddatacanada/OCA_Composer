@@ -27,10 +27,11 @@ export const useHandleDatasetDrop = () => {
     excelSheetChoice,
     setExcelSheetChoice,
     firstNavigationToDataset,
-    setFirstNavigationToDataset
+    setFirstNavigationToDataset,
+    datasetDropMessage,
+    setDatasetDropMessage
   } = useContext(Context);
 
-  const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
   const [excelSheetNames, setExcelSheetNames] = useState([]);
 
   const datasetLoadingState = () => {
@@ -267,6 +268,7 @@ export const useHandleDatasetDrop = () => {
     excelSheetChoice,
     setExcelSheetChoice,
     handleDataSheetForwards,
-    firstNavigationToDataset
+    firstNavigationToDataset,
+    setDatasetLoading
   };
 };

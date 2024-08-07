@@ -194,7 +194,7 @@ export default function LanguageDetails({ pageBack, pageForward }) {
               p: 1,
             }}
           >
-            Copy Attributes -{">"} Labels
+            Copy Attribute -{">"} Label
           </Button>
         </Box>
         <Box

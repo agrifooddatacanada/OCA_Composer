@@ -2,32 +2,43 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
   Typography,
 } from '@mui/material';
-import React from 'react';
+import React, { useContext } from 'react';
 import { CustomPalette } from '../constants/customPalette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionItemWrapper from './AccordionItemWrapper';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 import Drop from '../StartSchema/Drop';
-import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import GenerateDataEntryExcel from './GenerateDataEntryExcel';
 import { useTranslation } from 'react-i18next';
+import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
+import { Context } from '../App';
+import { useNavigate } from 'react-router-dom';
 
 const UseASchemaWithDataAccordionItem = ({
   disableButtonCheck,
   handleExport,
 }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { setCurrentDataValidatorPage } = useContext(Context);
   const {
-    rawFile,
-    setRawFile,
-    setLoading,
-    loading,
-    dropDisabled,
-    dropMessage,
-    setDropMessage,
-  } = useHandleAllDrop();
+    jsonRawFile,
+    setJsonRawFile,
+    jsonLoading,
+    overallLoading,
+    jsonDropDisabled,
+    jsonDropMessage,
+    setJsonDropMessage,
+    setJsonLoading
+  } = useHandleJsonDrop();
+
+  const handleMoveToPreviewSchema = () => {
+    navigate('/oca-data-validator');
+    setCurrentDataValidatorPage('SchemaViewDataValidator');
+  };
 
   return (
     <AccordionItemWrapper>
@@ -52,12 +63,12 @@ const UseASchemaWithDataAccordionItem = ({
         </Typography>
 
         <Drop
-          setFile={setRawFile}
-          setLoading={setLoading}
-          loading={loading}
-          dropDisabled={dropDisabled}
-          dropMessage={dropMessage}
-          setDropMessage={setDropMessage}
+          setFile={setJsonRawFile}
+          setLoading={overallLoading}
+          loading={jsonLoading}
+          dropDisabled={jsonDropDisabled}
+          dropMessage={jsonDropMessage}
+          setDropMessage={setJsonDropMessage}
           version={1}
           interfaceType={1}
         />
@@ -73,11 +84,44 @@ const UseASchemaWithDataAccordionItem = ({
           }}
         >
           <GenerateDataEntryExcel
-            rawFile={rawFile}
-            setLoading={setLoading}
-            disableButtonCheck={disableButtonCheck}
+            rawFile={jsonRawFile}
+            setLoading={setJsonLoading}
+            disableButtonCheck={jsonRawFile.length === 0 || jsonLoading}
           />
+          <Button
+            variant="contained"
+            color="navButton"
+            onClick={handleMoveToPreviewSchema}
+            sx={{
+              backgroundColor: CustomPalette.PRIMARY,
+              ":hover": { backgroundColor: CustomPalette.SECONDARY },
+              width: "100%",
+              maxWidth: "300px",
+              marginTop: "20px",
+              marginBottom: "20px",
+            }}
+            disabled={jsonRawFile.length === 0 || jsonLoading}
+          >
+            ENTER DATA IN WEBPAGE
+          </Button>
+          <Button
+            variant="contained"
+            color="navButton"
+            onClick={handleMoveToPreviewSchema}
+            sx={{
+              backgroundColor: CustomPalette.PRIMARY,
+              ":hover": { backgroundColor: CustomPalette.SECONDARY },
+              width: "100%",
+              maxWidth: "300px",
+              marginTop: "20px",
+              marginBottom: "20px",
+            }}
+            disabled={jsonRawFile.length === 0 || jsonLoading}
+          >
+            VERIFY DATA IN WEBPAGE
+          </Button>
         </Box>
+
         <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
           {t('Enter data in your browser')}
         </Typography>

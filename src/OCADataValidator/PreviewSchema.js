@@ -8,6 +8,8 @@ const PreviewSchema = () => {
   const handleForwardPage = () => {
     if (datasetRawFile && datasetRawFile.length > 0) {
       setCurrentDataValidatorPage('AttributeMatchDataValidator');
+    } else {
+      setCurrentDataValidatorPage('OCADataValidatorCheck');
     }
   };
 
@@ -16,7 +18,7 @@ const PreviewSchema = () => {
   };
 
   return (
-    <ViewSchema isBack pageBack={handleBackPage} isPageForward={datasetRawFile.length > 0} pageForward={handleForwardPage} isExport={false} />
+    <ViewSchema isBack pageBack={handleBackPage} pageForward={handleForwardPage} isExport={false} />
   );
 };
 
