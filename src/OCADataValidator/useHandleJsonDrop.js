@@ -439,5 +439,6 @@ export const useHandleJsonDrop = (
     setCurrentDataValidatorPage,
     handleClearJSON,
     targetResult,
+    setJsonLoading
   };
 };

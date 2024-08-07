@@ -21,6 +21,7 @@ export default function LanguageDetails({ pageBack, pageForward }) {
     attributesWithLists,
     setCurrentPage,
   } = useContext(Context);
+
   const languageIndex = languages.findIndex((item) => codesToLanguages?.[i18next.language] === item);
   const filteredLanguages = [...languages];
   if (languageIndex !== -1 && languageIndex !== 0) {
@@ -150,6 +151,20 @@ export default function LanguageDetails({ pageBack, pageForward }) {
     }
   );
 
+  const handleCopy = () => {
+    // in lanAttributeRowData, I want to iteratively go through each language and copy the Atrribute value to the Label value
+    const languages = Object.keys(lanAttributeRowData);
+    const newLanAttributeRowData = JSON.parse(
+      JSON.stringify(lanAttributeRowData)
+    );
+    for (const lang of languages) {
+      newLanAttributeRowData[lang].forEach((item) => {
+        item.Label = item.Attribute;
+      });
+    }
+    setLanAttributeRowData(newLanAttributeRowData);
+  };
+
   return (
     <BackNextSkeleton isBack pageBack={handlePageBack} isForward pageForward={pageForwardSave}>
       {loading && lanAttributeRowData[languages[0]]?.length > 40 && <Loading />}
@@ -158,6 +173,30 @@ export default function LanguageDetails({ pageBack, pageForward }) {
           margin: "2rem",
         }}
       >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "1rem",
+          }}
+        >
+          <Button
+            color="button"
+            variant="contained"
+            onClick={handleCopy}
+            sx={{
+              alignSelf: "flex-end",
+              width: "14rem",
+              display: "flex",
+              justifyContent: "space-around",
+              p: 1,
+            }}
+          >
+            Copy Attribute -{">"} Label
+          </Button>
+        </Box>
         <Box
           sx={{
             display: "flex",
