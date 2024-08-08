@@ -22,7 +22,7 @@ export default function StartIntro() {
           {t("To learn more about schemas and the OCA schema specification")} <CustomAnchorLink link="https://agrifooddatacanada.ca/semantic-engine/" text={t("read our introduction on the ADC webpage")} />
         </Box>
         <Box sx={{ m: 2, textAlign: 'center' }}>
-          {t("Watch our tutorial and see an example schema being created")}
+          {t("Watch or read our tutorial and see an example schema being created")}
         </Box>
       </Typography>
       <br />

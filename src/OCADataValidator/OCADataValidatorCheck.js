@@ -645,7 +645,7 @@ const OCADataValidatorCheck = ({
           copy.push({
             ...header,
             cellStyle: () => {
-              return { backgroundColor: "#ededed" };
+              return { backgroundColor: CustomPalette.GREY_200 };
             },
           });
         } else {
@@ -668,7 +668,7 @@ const OCADataValidatorCheck = ({
         new Set(newData.flatMap(Object.keys))
       );
 
-      workbook.removeWorksheet("Data"); // Delete as you can't add without removing data validation.
+      workbook.removeWorksheet("Data");
       workbook.addWorksheet("Data");
 
       const schemaConformantDataSheet = workbook.getWorksheet("Data");
@@ -881,6 +881,7 @@ const OCADataValidatorCheck = ({
     const columns = [];
     const variableToCheck =
       datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
+    console.log('variableToCheck', variableToCheck);
     if (datasetRawFile.length === 0) {
       setSchemaDataConformantHeader(attributesList);
     }
