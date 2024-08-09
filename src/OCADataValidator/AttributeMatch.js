@@ -8,6 +8,7 @@ import { AgGridReact } from "ag-grid-react";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
+import { set } from "react-ga";
 
 export const DataHeaderRenderer = memo(
   forwardRef((props, ref) => {
@@ -66,7 +67,6 @@ export const DataHeaderRenderer = memo(
   })
 );
 
-
 const AttributeMatch = () => {
   const { t } = useTranslation();
   const {
@@ -77,13 +77,14 @@ const AttributeMatch = () => {
     firstTimeMatchingRef,
     setSchemaDataConformantRowData,
     setSchemaDataConformantHeader,
-    ogSchemaDataConformantHeaderRef
+    ogSchemaDataConformantHeaderRef,
+    notToVerifyAttributes, setNotToVerifyAttributes
   } = useContext(Context);
+
   const [type, setType] = useState(languages[0] || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
   const gridRef = useRef();
-  const [items, setItems] = useState([]);
 
   const handleChange = useCallback((e) => {
     setType(e.target.value);
@@ -110,8 +111,8 @@ const AttributeMatch = () => {
     const currentData = gridRef.current?.api?.rowModel?.rowsToDisplay.map((node) => node.data.Dataset);
     currentData.push(e.target.value);
     const unassignedVariables = ogSchemaDataConformantHeaderRef.current.filter((item) => !currentData.includes(item));
-    setItems(unassignedVariables);
-  }, [gridRef, setItems]);
+    setNotToVerifyAttributes(unassignedVariables);
+  }, [gridRef, setNotToVerifyAttributes]);
 
   const handleSavePage = useCallback(() => {
     const data = gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data);
@@ -182,8 +183,7 @@ const AttributeMatch = () => {
         }
       }
     }
-
-    setItems(unassignedVariables);
+    setNotToVerifyAttributes(unassignedVariables);
   }, [schemaDataConformantHeader]);
 
   useEffect(() => {
@@ -295,7 +295,7 @@ const AttributeMatch = () => {
               alignItems: 'center',
             }}>
               <List>
-                {items.map((item, index) => (
+                {notToVerifyAttributes.map((item, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={item} />
                   </ListItem>

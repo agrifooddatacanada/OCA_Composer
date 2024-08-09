@@ -94,6 +94,8 @@ function App() {
   const [ogWorkbook, setOgWorkbook] = useState(null);
   const ogSchemaDataConformantHeaderRef = useRef([]);
   const [targetResult, setTargetResult] = useState([]);
+  const [notToVerifyAttributes, setNotToVerifyAttributes] = useState([]);
+ 
 
   // Entry Code upload
   const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
@@ -429,6 +431,8 @@ function App() {
             setTargetResult,
             datasetDropMessage,
             setDatasetDropMessage,
+            notToVerifyAttributes,
+            setNotToVerifyAttributes,
           }}
         >
           <Box
