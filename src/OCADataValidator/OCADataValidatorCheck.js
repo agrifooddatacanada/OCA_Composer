@@ -37,6 +37,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import ViewSchema from "../ViewSchema/ViewSchema";
 import CloseIcon from '../assets/icon-close.png';
+import AutoCompleteEditor from "../components/AutoCompleteEditor";
 
 export const TrashCanButton = memo(
   forwardRef((props, _ref) => {
@@ -887,18 +888,39 @@ const OCADataValidatorCheck = ({
 
     if (variableToCheck && variableToCheck?.length > 0) {
       variableToCheck.forEach((header) => {
-        columns.push({
-          headerName: header,
-          field: header,
-          minWidth: 150,
-          tooltipComponentParams: { color: "#F88379" },
-          tooltipValueGetter: (params) => ({ value: params.value }),
-          cellRendererFramework:
-            header in SavedEntryCodesWithNoArrayType ? EntryCodeDropdownSelector : undefined,
-        });
+        if (header in SavedEntryCodesWithNoArrayType && Object.keys(SavedEntryCodesWithNoArrayType[header]).length > 1) {
+          columns.push({
+            headerName: header,
+            field: header,
+            minWidth: 150,
+            cellEditor: AutoCompleteEditor,
+            cellEditorParams: {
+              options: SavedEntryCodesWithNoArrayType[header].map(item => item.Code),
+            },
+          })
+        } else if (header in SavedEntryCodesWithNoArrayType && Object.keys(SavedEntryCodesWithNoArrayType[header]).length  <= 1) {
+          columns.push({
+            headerName: header,
+            field: header,
+            minWidth: 150,
+            tooltipComponentParams: { color: "#F88379" },
+            tooltipValueGetter: (params) => ({ value: params.value }),
+            editable: true,
+            cellRendererFramework: EntryCodeDropdownSelector, 
+          });
+
+        } else {
+          columns.push({
+            headerName: header,
+            field: header,
+            minWidth: 150,
+            tooltipComponentParams: { color: "#F88379" },
+            tooltipValueGetter: (params) => ({ value: params.value }),
+            editable: true,
+          });
+        }
       });
     }
-
     columns.push(
       {
         headerName: 'Del.',
