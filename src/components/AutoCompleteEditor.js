@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
+import React, { forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { styled } from '@mui/material/styles';
@@ -7,74 +7,59 @@ import Popper from '@mui/material/Popper';
 const CustomPopper = styled(Popper)(({ theme }) => ({ width: '100%' }));
 
 const AutoCompleteEditor = forwardRef((props, ref) => {
-const [value, setValue] = useState(props.value || null);
-const [inputValue, setInputValue] = useState();
-const inputRef = useRef(null);
+  const inputRef = useRef(props.value);
 
-useEffect(() => {
-    setValue(props.value);
-}, [props.value]);
+  const onInputChangeHandler = (event, newInputValue) => {
+    inputRef.current.value = newInputValue;
+  };
 
-const onChangeHandler = (event, newValue) => {
-    setValue(newValue);
-};
+  useEffect(() => {
+    inputRef.current.focus();
+  }, []);
 
-const onInputChangeHandler = (event, newInputValue) => {
-    setInputValue(newInputValue);
-};
+  useImperativeHandle(ref, () => ({
+    getValue: () => inputRef.current.value,
+  }));
 
-useImperativeHandle(ref, () => ({
-    getValue: () => value,
-    afterGuiAttached: () => {
-    setValue(props.value);
-    setTimeout(() => {
-        inputRef.current.focus();
-    }, 100);
-    },
-}));
-
-return (
+  return (
     <Autocomplete
-        sx={{ width: '100%' }}
-        freeSolo
-        disableClearable
-        clearOnEscape
-        autoHighlight
-        selectOnFocus
-        clearOnBlur
-        options={props.options}
-        onChange={onChangeHandler}
-        value={value}
-        inputValue={inputValue}
-        onInputChange={onInputChangeHandler}
-        PopperComponent={CustomPopper}
-        renderInput={(params) => (
+      sx={{ width: '100%' }}
+      disableClearable
+      clearOnEscape
+      autoHighlight
+      selectOnFocus
+      clearOnBlur
+      options={props.options}
+      value={props.value}
+      onInputChange={onInputChangeHandler}
+      PopperComponent={CustomPopper}
+      renderInput={(params) => (
         <TextField
-            {...params}
-            inputRef={inputRef}
-            sx={{ 
-            '& .MuiInputBase-input': { 
-                fontSize: '0.80rem',
+          {...params}
+          inputRef={inputRef}
+          sx={{
+            '& .MuiInputBase-input': {
+              fontSize: '0.80rem',
             },
             '& .MuiFormLabel-root': {
-                fontSize: '0.8rem'
+              fontSize: '0.8rem'
             }
-            }}
-            placeholder='Search...'
-            InputProps={{
+          }}
+          placeholder='Search...'
+          InputProps={{
             ...params.InputProps,
             type: 'search',
-            }}
+          }}
         />
-        )}
-        getOptionLabel={(option) => option}
-        renderOption={(props, option) => (
+      )}
+      getOptionLabel={(option) => option}
+      renderOption={(props, option) => (
         <li {...props} style={{ fontSize: '0.8rem' }}>
-            {option}
+          {option}
         </li>
-        )}
+      )}
     />
-);
+  );
 });
 
 export default AutoCompleteEditor;

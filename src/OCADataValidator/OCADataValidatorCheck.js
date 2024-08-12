@@ -423,6 +423,7 @@ const OCADataValidatorCheck = ({
     setSchemaDataConformantHeader,
     savedEntryCodes,
     targetResult,
+    // attributeRowData // Check to see sensitive data
   } = useContext(Context);
 
   const [rowData, setRowData] = useState([]);
@@ -646,7 +647,7 @@ const OCADataValidatorCheck = ({
           copy.push({
             ...header,
             cellStyle: () => {
-              return { backgroundColor: "#ededed" };
+              return { backgroundColor: CustomPalette.GREY_200 };
             },
           });
         } else {
@@ -669,7 +670,7 @@ const OCADataValidatorCheck = ({
         new Set(newData.flatMap(Object.keys))
       );
 
-      workbook.removeWorksheet("Data"); // Delete as you can't add without removing data validation.
+      workbook.removeWorksheet("Data");
       workbook.addWorksheet("Data");
 
       const schemaConformantDataSheet = workbook.getWorksheet("Data");
@@ -880,15 +881,16 @@ const OCADataValidatorCheck = ({
 
   useEffect(() => {
     const columns = [];
+    const LIMIT_ENTRYCODES_LENGTH = 20;
     const variableToCheck =
       datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
     if (datasetRawFile.length === 0) {
       setSchemaDataConformantHeader(attributesList);
     }
 
-    if (variableToCheck && variableToCheck?.length > 0) {
+    if (variableToCheck && variableToCheck?.length > 1) {
       variableToCheck.forEach((header) => {
-        if (header in SavedEntryCodesWithNoArrayType && Object.keys(SavedEntryCodesWithNoArrayType[header]).length > 1) {
+        if (header in SavedEntryCodesWithNoArrayType && Object.keys(SavedEntryCodesWithNoArrayType[header]).length > LIMIT_ENTRYCODES_LENGTH) {
           columns.push({
             headerName: header,
             field: header,
@@ -897,8 +899,9 @@ const OCADataValidatorCheck = ({
             cellEditorParams: {
               options: SavedEntryCodesWithNoArrayType[header].map(item => item.Code),
             },
-          })
-        } else if (header in SavedEntryCodesWithNoArrayType && Object.keys(SavedEntryCodesWithNoArrayType[header]).length  <= 1) {
+            singleClickEdit: true,
+          });
+        } else if (header in SavedEntryCodesWithNoArrayType && Object.keys(SavedEntryCodesWithNoArrayType[header]).length <= LIMIT_ENTRYCODES_LENGTH) {
           columns.push({
             headerName: header,
             field: header,
@@ -906,7 +909,7 @@ const OCADataValidatorCheck = ({
             tooltipComponentParams: { color: "#F88379" },
             tooltipValueGetter: (params) => ({ value: params.value }),
             editable: true,
-            cellRendererFramework: EntryCodeDropdownSelector, 
+            cellRendererFramework: EntryCodeDropdownSelector,
           });
 
         } else {
@@ -921,6 +924,7 @@ const OCADataValidatorCheck = ({
         }
       });
     }
+
     columns.push(
       {
         headerName: 'Del.',
