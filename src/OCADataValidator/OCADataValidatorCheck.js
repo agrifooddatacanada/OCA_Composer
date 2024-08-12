@@ -37,6 +37,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import ViewSchema from "../ViewSchema/ViewSchema";
 import CloseIcon from '../assets/icon-close.png';
+import AutoCompleteEditor from "../components/AutoCompleteEditor";
 
 export const TrashCanButton = memo(
   forwardRef((props, _ref) => {
@@ -422,6 +423,7 @@ const OCADataValidatorCheck = ({
     setSchemaDataConformantHeader,
     savedEntryCodes,
     targetResult,
+    // attributeRowData // Check to see sensitive data
   } = useContext(Context);
 
   const [rowData, setRowData] = useState([]);
@@ -645,7 +647,7 @@ const OCADataValidatorCheck = ({
           copy.push({
             ...header,
             cellStyle: () => {
-              return { backgroundColor: "#ededed" };
+              return { backgroundColor: CustomPalette.GREY_200 };
             },
           });
         } else {
@@ -668,7 +670,7 @@ const OCADataValidatorCheck = ({
         new Set(newData.flatMap(Object.keys))
       );
 
-      workbook.removeWorksheet("Data"); // Delete as you can't add without removing data validation.
+      workbook.removeWorksheet("Data");
       workbook.addWorksheet("Data");
 
       const schemaConformantDataSheet = workbook.getWorksheet("Data");
@@ -879,23 +881,47 @@ const OCADataValidatorCheck = ({
 
   useEffect(() => {
     const columns = [];
+    const LIMIT_ENTRYCODES_LENGTH = 20;
     const variableToCheck =
       datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
     if (datasetRawFile.length === 0) {
       setSchemaDataConformantHeader(attributesList);
     }
 
-    if (variableToCheck && variableToCheck?.length > 0) {
+    if (variableToCheck && variableToCheck?.length > 1) {
       variableToCheck.forEach((header) => {
-        columns.push({
-          headerName: header,
-          field: header,
-          minWidth: 150,
-          tooltipComponentParams: { color: "#F88379" },
-          tooltipValueGetter: (params) => ({ value: params.value }),
-          cellRendererFramework:
-            header in SavedEntryCodesWithNoArrayType ? EntryCodeDropdownSelector : undefined,
-        });
+        if (header in SavedEntryCodesWithNoArrayType && Object.keys(SavedEntryCodesWithNoArrayType[header]).length > LIMIT_ENTRYCODES_LENGTH) {
+          columns.push({
+            headerName: header,
+            field: header,
+            minWidth: 150,
+            cellEditor: AutoCompleteEditor,
+            cellEditorParams: {
+              options: SavedEntryCodesWithNoArrayType[header].map(item => item.Code),
+            },
+            singleClickEdit: true,
+          });
+        } else if (header in SavedEntryCodesWithNoArrayType && Object.keys(SavedEntryCodesWithNoArrayType[header]).length <= LIMIT_ENTRYCODES_LENGTH) {
+          columns.push({
+            headerName: header,
+            field: header,
+            minWidth: 150,
+            tooltipComponentParams: { color: "#F88379" },
+            tooltipValueGetter: (params) => ({ value: params.value }),
+            editable: true,
+            cellRendererFramework: EntryCodeDropdownSelector,
+          });
+
+        } else {
+          columns.push({
+            headerName: header,
+            field: header,
+            minWidth: 150,
+            tooltipComponentParams: { color: "#F88379" },
+            tooltipValueGetter: (params) => ({ value: params.value }),
+            editable: true,
+          });
+        }
       });
     }
 
