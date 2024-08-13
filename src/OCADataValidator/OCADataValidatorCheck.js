@@ -402,7 +402,7 @@ const EntryCodeDropdownSelector = memo(
 
 const OCADataValidatorCheck = ({
   showWarningCard,
-  setShowWarningCard,
+  setShowWarningCard = () => { },
   firstTimeDisplayWarning,
 }) => {
   const {

@@ -12,7 +12,7 @@ const neededOverlays = [
 ];
 
 export const useHandleJsonDrop = (
-  setShowWarningCard,
+  setShowWarningCard = () => { },
   firstTimeDisplayWarning
 ) => {
   const {
