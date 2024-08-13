@@ -423,6 +423,7 @@ const OCADataValidatorCheck = ({
     setSchemaDataConformantHeader,
     savedEntryCodes,
     targetResult,
+    notToVerifyAttributes,
     // attributeRowData // Check to see sensitive data
   } = useContext(Context);
 
@@ -616,7 +617,7 @@ const OCADataValidatorCheck = ({
     const prepareInput = {};
     schemaDataConformantHeader.forEach((header) => {
       for (const row of newData) {
-        if (header in row) {
+        if (header in row && !notToVerifyAttributes.includes(header)) {
           prepareInput[header] =
             header in prepareInput
               ? [...prepareInput[header], row[header]]
@@ -751,7 +752,11 @@ const OCADataValidatorCheck = ({
 
   const cellStyle = (params) => {
     const error = params.data?.error?.[params.colDef.field];
-    if (params.colDef.field === "Delete") {
+    const isNotToVerify = notToVerifyAttributes.includes(params.colDef.field);
+
+    if (isNotToVerify) {
+          return { backgroundColor: "#ededed" };
+    } else if (params.colDef.field === "Delete") {
       return greyCellStyle;
     } else if (params.data?.error && error?.length > 0) {
       return { backgroundColor: "#ffd7e9" };
