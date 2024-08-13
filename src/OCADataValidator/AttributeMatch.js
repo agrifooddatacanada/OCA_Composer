@@ -94,16 +94,18 @@ const AttributeMatch = () => {
     firstTimeMatchingRef.current = false;
     let saveNode = undefined;
 
-    for (const node of gridRef.current?.api?.rowModel?.rowsToDisplay) {
-      if (node.data.Dataset === e.target.value) {
-        saveNode = node;
-        node.data.Dataset = '';
-        break;
+    if (e.target.value !== 0) {
+      for (const node of gridRef.current?.api?.rowModel?.rowsToDisplay) {
+        if (node.data.Dataset === e.target.value) {
+          saveNode = node;
+          node.data.Dataset = '';
+          break;
+        }
       }
     }
     params.node.updateData({
       ...params.node.data,
-      Dataset: e.target.value,
+      Dataset: e.target.value === 0 ? "" : e.target.value,
     });
     gridRef.current?.api?.redrawRows({ rowNodes: [saveNode, params.node] });
 

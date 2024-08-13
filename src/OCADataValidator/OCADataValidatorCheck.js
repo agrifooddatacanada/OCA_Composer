@@ -814,7 +814,7 @@ const OCADataValidatorCheck = ({
     if (datasetRawFile.length > 0) {
       const mappingFromAttrToDataset = {};
       for (const node of matchingRowData) {
-        mappingFromAttrToDataset[node["Attribute"]] = node["Dataset"];
+        mappingFromAttrToDataset[node["Attribute"]] = node["Dataset"] && node["Dataset"] !== "" ? node["Dataset"] : node["Attribute"];
       }
 
       const newData = [];
