@@ -77,7 +77,8 @@ const AttributeMatch = () => {
     firstTimeMatchingRef,
     setSchemaDataConformantRowData,
     setSchemaDataConformantHeader,
-    ogSchemaDataConformantHeaderRef
+    ogSchemaDataConformantHeaderRef,
+    notToVerifyAttributes, setNotToVerifyAttributes
   } = useContext(Context);
   const [type, setType] = useState(languages[0] || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -112,8 +113,8 @@ const AttributeMatch = () => {
     const currentData = gridRef.current?.api?.rowModel?.rowsToDisplay.map((node) => node.data.Dataset);
     currentData.push(e.target.value);
     const unassignedVariables = ogSchemaDataConformantHeaderRef.current.filter((item) => !currentData.includes(item));
-    setItems(unassignedVariables);
-  }, [gridRef, setItems]);
+    setNotToVerifyAttributes(unassignedVariables);
+  }, [gridRef, setNotToVerifyAttributes]);
 
   const handleSavePage = useCallback(() => {
     const data = gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data);
@@ -185,7 +186,7 @@ const AttributeMatch = () => {
       }
     }
 
-    setItems(unassignedVariables);
+    setNotToVerifyAttributes(unassignedVariables);
   }, [schemaDataConformantHeader]);
 
   useEffect(() => {
@@ -297,7 +298,7 @@ const AttributeMatch = () => {
               alignItems: 'center',
             }}>
               <List>
-                {items.map((item, index) => (
+                {notToVerifyAttributes.map((item, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={item} />
                   </ListItem>
