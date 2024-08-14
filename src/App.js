@@ -95,6 +95,7 @@ function App() {
   const ogSchemaDataConformantHeaderRef = useRef([]);
   const [targetResult, setTargetResult] = useState([]);
   const [notToVerifyAttributes, setNotToVerifyAttributes] = useState([]);
+  const [buttonChoiceInLandingPage, setButtonChoiceInLandingPage] = useState('');
 
   // Entry Code upload
   const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
@@ -432,6 +433,8 @@ function App() {
             setDatasetDropMessage,
             notToVerifyAttributes,
             setNotToVerifyAttributes,
+            buttonChoiceInLandingPage,
+            setButtonChoiceInLandingPage
           }}
         >
           <Box

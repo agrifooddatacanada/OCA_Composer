@@ -23,7 +23,7 @@ const UseASchemaWithDataAccordionItem = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setCurrentDataValidatorPage } = useContext(Context);
+  const { setCurrentDataValidatorPage, setButtonChoiceInLandingPage } = useContext(Context);
   const {
     jsonRawFile,
     setJsonRawFile,
@@ -38,6 +38,16 @@ const UseASchemaWithDataAccordionItem = ({
   const handleMoveToPreviewSchema = () => {
     navigate('/oca-data-validator');
     setCurrentDataValidatorPage('SchemaViewDataValidator');
+  };
+
+  const handleVerifyDataInWebPage = () => {
+    setButtonChoiceInLandingPage('VerifyDataInWebPage');
+    handleMoveToPreviewSchema();
+  };
+
+  const handleEnterDataInWebPage = () => {
+    setButtonChoiceInLandingPage('EnterDataInWebPage');
+    handleMoveToPreviewSchema();
   };
 
   return (
@@ -91,7 +101,7 @@ const UseASchemaWithDataAccordionItem = ({
           <Button
             variant="contained"
             color="navButton"
-            onClick={handleMoveToPreviewSchema}
+            onClick={handleEnterDataInWebPage}
             sx={{
               backgroundColor: CustomPalette.PRIMARY,
               ":hover": { backgroundColor: CustomPalette.SECONDARY },
@@ -107,7 +117,7 @@ const UseASchemaWithDataAccordionItem = ({
           <Button
             variant="contained"
             color="navButton"
-            onClick={handleMoveToPreviewSchema}
+            onClick={handleVerifyDataInWebPage}
             sx={{
               backgroundColor: CustomPalette.PRIMARY,
               ":hover": { backgroundColor: CustomPalette.SECONDARY },
