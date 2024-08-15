@@ -34,17 +34,26 @@ export const DataHeaderRenderer = memo(
       setIsDropdownOpen(false);
     };
 
-    const typesDisplay = props?.dataHeaders.map((value, index) => (
+    const typesDisplay = [
       <MenuItem
-        key={index + "_" + value}
-        value={value}
+        key="blank"
+        value=""
         sx={{ border: "none", height: "2rem", fontSize: "small" }}
-        onClick={handleChange}
-        onDoubleClick={handleDoubleClick}
       >
-        {value}
-      </MenuItem>
-    ));
+        {""}
+      </MenuItem>,
+      ...props?.dataHeaders.map((value, index) => (
+        <MenuItem
+          key={index + "_" + value}
+          value={value}
+          sx={{ border: "none", height: "2rem", fontSize: "small" }}
+          onClick={handleChange}
+          onDoubleClick={handleDoubleClick}
+        >
+          {value}
+        </MenuItem>
+      ))
+    ];
 
     return (
       <>
