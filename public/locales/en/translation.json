@@ -44,7 +44,7 @@
   "The schema bundle is machine-readable": "The schema bundle is machine-readable;",
   "generate": "generate",
   "the Readme to create a human-readable simple text version": "the Readme to create a human-readable simple text version.",
-  "Use your machine-readable schema bundle to help you collect...": "Use your machine-readable schema bundle to help you collect schema conformant data, or to verify that data you have collected follows the rules in the schema. Verifying data is an important step in your analysis.",
+  "Use your machine-readable schema bundle to help you collect...": "Use your machine-readable schema bundle to help you collect schema conformant data, or to verify that data you have collected follows the rules in the schema.",
   "Enter data with Excel": "Enter data with Excel",
   "Enter data in your browser": "Enter data in your browser",
   "Go to our": "Go to our",
