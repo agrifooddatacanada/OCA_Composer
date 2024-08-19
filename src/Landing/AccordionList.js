@@ -110,6 +110,7 @@ const AccordionList = () => {
             marginTop: 5,
             marginRight: isMobile ? 'unset' : 10,
             marginLeft: isMobile ? 'unset' : 10,
+            height: 'fit-content',
           }}
         >
           <Typography
