@@ -23,7 +23,16 @@ The JSON schema bundle can be consumed by several tools within the ADC/OCA ecosy
 
 ## Running the app locally
 
-You can clone the project using the git command-line interface or you can download the entire project as a zip using GitHub's user-interface. In the project directory, you can run:
+You can clone the project using the git command-line interface or you can download the entire project as a zip using GitHub's user-interface.
+
+Create a `.env` file in the project root directory and add the following environment variable:
+
+```
+REACT_APP_GA_ID=0
+
+```
+
+In the project directory, you can run:
 
 ### `npm start`
 
@@ -46,4 +55,3 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 ## Development Status
 
 This code is created with support by [Agri-food Data Canada](https://agrifooddatacanada.ca/), funded by [CFREF](https://www.cfref-apogee.gc.ca/) through the [Food from Thought grant](https://foodfromthought.ca/) held at the [University of Guelph](https://www.uoguelph.ca/). Currently, we do not provide any warranty of any kind regarding the accuracy, security, completeness or reliability of this code or any of its parts.
-
