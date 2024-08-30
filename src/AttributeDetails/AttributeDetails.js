@@ -12,7 +12,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { useTranslation } from "react-i18next";
 
-export default function AttributeDetails({ pageBack, pageForward }) {
+export default function AttributeDetails({ pageBack, pageForward, insertStep, removeStep }) {
   const { t } = useTranslation();
   const {
     setAttributesWithLists,
@@ -162,6 +162,9 @@ export default function AttributeDetails({ pageBack, pageForward }) {
       setAttributesWithLists(newAttributesWithLists);
       if (newAttributesWithLists.length > 0) {
         entryCodesRef.current = true;
+        insertStep(2, { label: "Entry Codes", page: "Codes" });
+      } else {
+        removeStep('Entry Codes');
       }
       navigationSafe.current = true;
     }
@@ -241,6 +244,5 @@ export default function AttributeDetails({ pageBack, pageForward }) {
         typesObjectRef={typesObjectRef}
       />
     </BackNextSkeleton>
-
   );
 }
