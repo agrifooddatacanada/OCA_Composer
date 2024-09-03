@@ -11,7 +11,7 @@ import Overlays from './Overlays/Overlays';
 import CharacterEncoding from './Overlays/CharacterEncoding';
 import RequiredEntries from './Overlays/RequiredEntries';
 import { pagesArray } from './App';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Cardinality from './Overlays/Cardinality';
 import FormatRulesV2 from './Overlays/FormatRuleV2';
 import Header from './Header/Header';
@@ -19,6 +19,7 @@ import Footer from './Footer/Footer';
 import UploadPage from './EntryCodes/UploadPage';
 import MatchingEntryCodeHeader from './EntryCodes/MatchingEntryCodeHeader';
 import MatchingJSONEntryCodeHeader from './EntryCodes/MatchingJSONEntryCodeHeader';
+import StepperProgressIndicator from './StepperProgressIndicator/StepperProgressIndicator';
 
 const Home = ({
   currentPage,
@@ -28,6 +29,39 @@ const Home = ({
   showIntroCard,
   setShowIntroCard,
 }) => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [steps, setSteps] = useState([
+    { label: "Schema Metadata", page: "Metadata" },
+    { label: "Attribute Details", page: "Details" },
+    { label: "Language-dependent Attribute Details", page: "LanguageDetails" },
+    { label: "Overlays", page: "Overlays" },
+    { label: "View Schema", page: "View" },
+  ]);
+
+  /**
+   * inserts a step at the specified position
+   * @param {number} position - index at which the step is to be inserted
+   * @param {{label: string, page: string}} step - object containing step label and the step's associated page
+   * @returns 
+   */
+  const insertStep = (position, step) => {
+    // No need to insert the step if it already exists
+    const stepToInsert = steps.find(s => s.label === step.label);
+
+    if (stepToInsert) return;
+    
+    setSteps((currentSteps) => [
+      ...currentSteps.slice(0, position),
+      step,
+      ...currentSteps.slice(position),
+    ]);
+  };
+
+  const removeStep = (stepLabel) => {
+    setSteps((currentSteps) =>
+      currentSteps.filter((step) => step.label !== stepLabel)
+    );
+  };
 
   // Add new page to this page -> add to this list
   const allowedPages = useMemo(() => {
@@ -54,10 +88,20 @@ const Home = ({
     window.scrollTo(0, 0);
   }, []);
 
+  // Sync stepper with the current page
+  useEffect(() => {
+    const stepIndex = steps.findIndex((step) => step.page === currentPage);
+    if (stepIndex === -1) return;
+    setActiveStep(stepIndex);
+  }, [steps, currentPage]);
+
   return (
     <>
       <Header currentPage={currentPage} />
       <Box sx={{ flex: 1 }}>
+        {currentPage !== "Start" && currentPage !== "Create" && (
+          <StepperProgressIndicator steps={steps} activeStep={activeStep} />
+        )}
         {currentPage === 'Start' && <StartSchema pageForward={pageForward} />}
         {currentPage === 'Metadata' && (
           <SchemaMetadata
@@ -68,7 +112,12 @@ const Home = ({
           />
         )}
         {currentPage === 'Details' && (
-          <AttributeDetails pageBack={pageBack} pageForward={pageForward} />
+          <AttributeDetails
+            pageBack={pageBack}
+            pageForward={pageForward}
+            insertStep={insertStep}
+            removeStep={removeStep}
+          />
         )}
         {currentPage === 'Codes' && <EntryCodes />}
 
