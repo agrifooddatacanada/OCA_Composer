@@ -89,7 +89,9 @@ export const useHandleDatasetDrop = () => {
 
             if (!datasetIsParsed) {
               setDatasetIsParsed(true);
-              setCurrentDataValidatorPage("DatasetViewDataValidator");
+              if (jsonRawFile.length > 0) {
+                setCurrentDataValidatorPage("AttributeMatchDataValidator");
+              } 
             }
           }, 900);
         },
@@ -233,7 +235,7 @@ export const useHandleDatasetDrop = () => {
     setDatasetDropDisabled(true);
     if (!datasetIsParsed) {
       setDatasetIsParsed(true);
-      setCurrentDataValidatorPage("DatasetViewDataValidator");
+      setCurrentDataValidatorPage("AttributeMatchDataValidator");
     }
   }, [datasetIsParsed, excelSheetChoice, excelSheetNames, ogWorkbook, processExcelFile, setCurrentDataValidatorPage, setDatasetIsParsed]);
 

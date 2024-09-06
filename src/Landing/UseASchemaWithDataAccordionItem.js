@@ -17,13 +17,10 @@ import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
 import { Context } from '../App';
 import { useNavigate } from 'react-router-dom';
 
-const UseASchemaWithDataAccordionItem = ({
-  disableButtonCheck,
-  handleExport,
-}) => {
+const UseASchemaWithDataAccordionItem = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setCurrentDataValidatorPage, setButtonChoiceInLandingPage } = useContext(Context);
+  const { setCurrentDataValidatorPage } = useContext(Context);
   const {
     jsonRawFile,
     setJsonRawFile,
@@ -40,15 +37,6 @@ const UseASchemaWithDataAccordionItem = ({
     setCurrentDataValidatorPage('SchemaViewDataValidator');
   };
 
-  const handleVerifyDataInWebPage = () => {
-    setButtonChoiceInLandingPage('VerifyDataInWebPage');
-    handleMoveToPreviewSchema();
-  };
-
-  const handleEnterDataInWebPage = () => {
-    setButtonChoiceInLandingPage('EnterDataInWebPage');
-    handleMoveToPreviewSchema();
-  };
 
   return (
     <AccordionItemWrapper>
@@ -98,7 +86,7 @@ const UseASchemaWithDataAccordionItem = ({
           <Button
             variant="contained"
             color="navButton"
-            onClick={handleEnterDataInWebPage}
+            onClick={handleMoveToPreviewSchema}
             sx={{
               backgroundColor: CustomPalette.PRIMARY,
               ":hover": { backgroundColor: CustomPalette.SECONDARY },
@@ -109,23 +97,7 @@ const UseASchemaWithDataAccordionItem = ({
             }}
             disabled={jsonRawFile.length === 0 || jsonLoading}
           >
-            ENTER DATA IN WEBPAGE
-          </Button>
-          <Button
-            variant="contained"
-            color="navButton"
-            onClick={handleVerifyDataInWebPage}
-            sx={{
-              backgroundColor: CustomPalette.PRIMARY,
-              ":hover": { backgroundColor: CustomPalette.SECONDARY },
-              width: "100%",
-              maxWidth: "300px",
-              marginTop: "20px",
-              marginBottom: "20px",
-            }}
-            disabled={jsonRawFile.length === 0 || jsonLoading}
-          >
-            VERIFY DATA IN WEBPAGE
+            {t('Enter/Verify Data in Webpage')}
           </Button>
         </Box>
 

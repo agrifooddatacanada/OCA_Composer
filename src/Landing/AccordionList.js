@@ -37,7 +37,7 @@ const AccordionList = () => {
     setIsZip,
   } = useHandleAllDrop();
 
-  const { handleExport, resetToDefaults } = useExportLogic();
+  const { resetToDefaults } = useExportLogic();
 
   const navigateToStartPage = () => {
     resetToDefaults();
@@ -97,13 +97,7 @@ const AccordionList = () => {
           />
           <StoreASchemaAccordionItem />
           <UseASchemaAccordionItem />
-          <UseASchemaWithDataAccordionItem
-            disableButtonCheck={disableButtonCheck}
-            handleExport={() => {
-              handleExport();
-              // exportData();
-            }}
-          />
+          <UseASchemaWithDataAccordionItem />
           {/* <OCADataValidatorItem /> */}
         </Box>
         <Box
