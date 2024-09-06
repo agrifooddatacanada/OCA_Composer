@@ -49,8 +49,7 @@ export const useHandleJsonDrop = (
   const overallLoading = useCallback(() => {
     setJsonLoading(true);
     setDatasetLoading(true);
-    setDatasetDropDisabled(true);
-  }, [setDatasetDropDisabled, setDatasetLoading, setJsonLoading]);
+  }, [setDatasetLoading, setJsonLoading]);
 
   const handleClearJSON = useCallback(() => {
     setJsonIsParsed(false);

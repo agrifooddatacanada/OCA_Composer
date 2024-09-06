@@ -11,7 +11,7 @@ import StepperProgressIndicator from "../StepperProgressIndicator/StepperProgres
 
 const steps = [
   { label: "Preview Schema", page: "SchemaViewDataValidator" },
-  { label: "Enter Data", page: "StartDataValidator" },
+  { label: "Upload Data", page: "StartDataValidator" },
   { label: "Preview Dataset", page: "DatasetViewDataValidator" },
   { label: "Match Attributes", page: "AttributeMatchDataValidator" },
   { label: "Verify Data", page: "OCADataValidatorCheck" },

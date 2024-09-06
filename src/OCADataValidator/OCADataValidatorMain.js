@@ -205,7 +205,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             justifyContent: 'space-between',
             width: '100%',
           }}>
-            <Typography variant="h6" sx={{ textAlign: 'start', color: "black" }}>{t('Optional: Add Data')}</Typography>
+            <Typography variant="h6" sx={{ textAlign: 'start', color: "black" }}>{t('Optional: Upload Data')}</Typography>
             {!firstNavigationToDataset && excelSheetChoice !== -1 &&
               <Button color="button" onClick={handleDataSheetForwards}>
                 {t('Next')}
@@ -261,9 +261,27 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
           </Button>
         </Box>
 
+        {datasetRawFile.length === 0 && (
+          <Box sx={{width: '100%', maxWidth: 575, marginTop: '3rem', textAlign: 'start'}}>
+            <Typography variant="h6" sx={{textAlign: 'start'}}>{t('Manual Data Entry')}</Typography>
+            <Typography component="p" sx={{marginBottom: '1.5rem', marginTop: '0.3rem'}}>You can choose to enter data manually instead of uploading a dataset.</Typography>
+            <Button
+            variant="contained" 
+            color="button" 
+            sx={{width: 200}} 
+            onClick={() => setCurrentDataValidatorPage('OCADataValidatorCheck')}
+            disabled={jsonRawFile.length === 0}
+            >
+              {t('Enter Data Manually')}
+            </Button>
+          </Box>
+        )}
+
+        
+
         <Box sx={{ height: '3rem' }} />
       </Box>
-    </Box >
+    </Box>
   );
 };
 

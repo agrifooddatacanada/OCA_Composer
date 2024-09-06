@@ -220,7 +220,7 @@
   "Check your existing data against rules in a schema": "Vérifiez vos données existantes par rapport aux règles d'un schéma.",
   "Learn about schemas and schema rules": "En savoir plus sur les schémas et les règles de schéma",
   "Learn about data verification": "En savoir plus sur la vérification des données",
-  "Optional: Add Data": "Facultatif : ajouter des données",
+  "Optional: Upload Data": "Facultatif : télécharger des données",
   "Add schema": "Ajouter un schéma",
   "Clear Schema File": "Effacer le schéma",
   "Clear Dataset File": "Effacer les données",
@@ -258,5 +258,9 @@
   "To make it easier to upload a schema you can drag and drop your existing dataset that you are creating the schema for. This schema should be in JSON format": "Pour faciliter le téléchargement d'un schéma, vous pouvez faire glisser et déposer votre ensemble de données existant pour lequel vous créez le schéma. Ce schéma doit être au format JSON",
   "To make it easier to upload a dataset you can drag and drop your existing dataset that you are creating the schema for. This dataset should be in table format as an Excel or .csv format": "Pour faciliter le téléchargement d'un ensemble de données, vous pouvez glisser-déposer l'ensemble de données existant pour lequel vous créez le schéma. Cet ensemble de données doit être sous forme de tableau au format Excel ou .csv",
   "To make it easier to create a schema you can drag and drop your existing dataset that...": "Pour faciliter la création d'un schéma, vous pouvez faire glisser et déposer votre ensemble de données existant pour lequel vous créez le schéma. Cet ensemble de données doit être sous forme de tableau au format Excel ou .csv. La première ligne doit contenir les en-têtes de colonnes (c'est-à-dire les noms d'attributs). \n \n Notez qu'aucune donnée ne quitte votre appareil et qu'aucune donnée n'est téléchargée sur un serveur. Tout le traitement pour copier les en-têtes de colonnes (noms d'attributs) dans le brouillon de schéma se produit sur votre appareil.",
-  "Required": "Requis"
+  "Required": "Requis",
+  "Enter/Verify Data in Webpage": "Saisir/vérifier les données dans la page Web",
+  "Manual Data Entry": "Saisie manuelle des données",
+  "You can choose to enter data manually instead of uploading a dataset.": "Vous pouvez choisir de saisir les données manuellement au lieu de télécharger un ensemble de données.",
+  "Enter Data Manually": "Saisir les données manuellement"
 }

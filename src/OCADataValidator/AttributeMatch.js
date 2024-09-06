@@ -93,7 +93,6 @@ const AttributeMatch = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
   const gridRef = useRef();
-  const [items, setItems] = useState([]);
 
   const handleChange = useCallback((e) => {
     setType(e.target.value);
@@ -245,7 +244,7 @@ const AttributeMatch = () => {
       <BackNextSkeleton
         isBack pageBack={() => {
           setMatchingRowData(gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data));
-          setCurrentDataValidatorPage('StartDataValidator');
+          setCurrentDataValidatorPage('DatasetViewDataValidator');
         }}
         isForward
         pageForward={handleSavePage}
