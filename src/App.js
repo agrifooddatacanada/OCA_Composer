@@ -14,6 +14,7 @@ import OCADataValidator from './OCADataValidator/OCADataValidator';
 import LearnAboutSchemaRule from './OCADataValidator/LearnAboutSchemaRule';
 import LearnAboutDataVerification from './OCADataValidator/LearnAboutDataVerification';
 import OCAMerge from './OCAMerge/OCAMerge';
+import Tutorial from './Tutorial/Tutorial';
 
 export const Context = createContext();
 
@@ -485,6 +486,7 @@ function App() {
                   path='/oca-merge'
                   element={<OCAMerge currentOCAMergePage={currentOCAMergePage} />}
                 />
+                <Route path='/tutorial' element={<Tutorial />} />
               </Routes>
             </BrowserRouter>
           </Box>

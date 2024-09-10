@@ -4,7 +4,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
 
-const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back', middleText }) => {
+const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back', middleText, nextText = 'Next' }) => {
   const { t } = useTranslation();
   return (
     <Box>
@@ -55,7 +55,7 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
               onClick={pageForward}
               sx={{ color: CustomPalette.PRIMARY }}
             >
-              {t('Next')} <ArrowForwardIosIcon />
+              {t(nextText)} <ArrowForwardIosIcon />
             </Button>}
             {errorMessage.length > 0 && (
               <Alert

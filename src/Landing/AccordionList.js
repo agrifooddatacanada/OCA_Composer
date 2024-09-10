@@ -17,12 +17,21 @@ import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 import GenerateDataEntryExcel from './GenerateDataEntryExcel';
 import { useTranslation } from 'react-i18next';
 import CollaborateOnASchema from './CollaborateOnASchema';
+import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
+
+const buttonStyles = {
+  backgroundColor: CustomPalette.PRIMARY,
+  ":hover": { backgroundColor: CustomPalette.SECONDARY },
+  width: "100%",
+  maxWidth: "300px",
+  marginTop: "30px",
+}
 
 const AccordionList = () => {
   const isMobile = useMediaQuery('(max-width: 736px)');
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme } = useContext(Context);
+  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const {
@@ -36,6 +45,7 @@ const AccordionList = () => {
     setCurrentPage,
     setIsZip,
   } = useHandleAllDrop();
+  const { setJsonRawFile } = useHandleJsonDrop();
 
   const { resetToDefaults } = useExportLogic();
 
@@ -56,6 +66,17 @@ const AccordionList = () => {
     setCurrentPage('View');
     navigate('/start');
   };
+
+  const navigateToPreviewSchema = () => {
+    setIsZip(true);
+    setCurrentDataValidatorPage('SchemaViewDataValidator');
+    navigate('/oca-data-validator');
+  };
+
+  const setFile = (acceptedFiles) => {
+    setRawFile(acceptedFiles);
+    setJsonRawFile(acceptedFiles);
+  }
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
 
@@ -137,19 +158,8 @@ const AccordionList = () => {
             onClick={navigateToStartPage}
           />
           <hr style={{ width: '90%', margin: 'auto', marginTop: '25px', border: `1px solid ${CustomPalette.PRIMARY}` }} />
-          {/* <CustomAnchorLink
-            link='https://www.semanticengine.org/#/develop'
-            text='Parse a schema'
-            overrideStyle={{
-              fontSize: '20px',
-              fontWeight: '500',
-              color: CustomPalette.PRIMARY,
-              marginLeft: 0,
-              marginTop: 2,
-            }}
-          /> */}
           <Drop
-            setFile={setRawFile}
+            setFile={setFile}
             setLoading={setLoading}
             loading={loading}
             dropDisabled={dropDisabled}
@@ -171,13 +181,7 @@ const AccordionList = () => {
               variant='contained'
               color='navButton'
               onClick={navigateToViewPage}
-              sx={{
-                backgroundColor: CustomPalette.PRIMARY,
-                ':hover': { backgroundColor: CustomPalette.SECONDARY },
-                width: '100%',
-                maxWidth: '300px',
-                marginTop: '30px',
-              }}
+              sx={buttonStyles}
               disabled={disableButtonCheck}
             >
               {t('View Schema')}
@@ -186,13 +190,7 @@ const AccordionList = () => {
               variant='contained'
               color='navButton'
               onClick={navigateToMetadataPage}
-              sx={{
-                backgroundColor: CustomPalette.PRIMARY,
-                ':hover': { backgroundColor: CustomPalette.SECONDARY },
-                width: '100%',
-                maxWidth: '300px',
-                marginTop: '30px',
-              }}
+              sx={buttonStyles}
               disabled={disableButtonCheck}
             >
               {t('Edit Schema')}
@@ -207,18 +205,24 @@ const AccordionList = () => {
                   jsonToTextFile(jsonToReadme);
                 }
               }}
-              sx={{
-                backgroundColor: CustomPalette.PRIMARY,
-                ':hover': { backgroundColor: CustomPalette.SECONDARY },
-                width: '100%',
-                maxWidth: '300px',
-                marginTop: '30px',
-              }}
+              sx={buttonStyles}
               disabled={disableButtonCheck}
             >
               {t('Generate Readme')}
             </Button>
             <GenerateDataEntryExcel rawFile={rawFile} setLoading={setLoading} disableButtonCheck={disableButtonCheck} />
+            <Button
+              variant="contained"
+              color="navButton"
+              onClick={navigateToPreviewSchema}
+              sx={{
+                ...buttonStyles,
+                marginBottom: '30px'
+              }}
+              disabled={disableButtonCheck}
+            >
+              {t('Enter/Verify Data in Webpage')}
+            </Button>
           </Box>
         </Box>
       </Box>

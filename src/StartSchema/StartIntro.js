@@ -1,7 +1,8 @@
 import React from "react";
 import { Box, Typography, useMediaQuery } from "@mui/material";
 import CustomAnchorLink from "../components/CustomAnchorLink";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
+import CustomRouterLink from "../components/CustomRouterLink";
 
 export default function StartIntro() {
   const isMobile = useMediaQuery('(max-width: 736px)');
@@ -22,7 +23,11 @@ export default function StartIntro() {
           {t("To learn more about schemas and the OCA schema specification")} <CustomAnchorLink link="https://agrifooddatacanada.ca/semantic-engine/" text={t("read our introduction on the ADC webpage")} />
         </Box>
         <Box sx={{ m: 2, textAlign: 'center' }}>
-          {t("Watch our tutorial and see an example schema being created")}
+          <Trans
+           i18nKey={'Watch our tutorial video on creating a schema. Or read the tutorial instead.'}
+           components={{CustomLink: <CustomRouterLink to='/tutorial' text='read the tutorial' />}}>
+            Watch our tutorial video on creating a schema. Or <CustomRouterLink to='/tutorial' text='read the tutorial' /> instead.
+          </Trans>
         </Box>
       </Typography>
       <br />
