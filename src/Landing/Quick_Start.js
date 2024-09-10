@@ -2,7 +2,8 @@ import { Box, Typography } from '@mui/material';
 import CustomAnchorLink from '../components/CustomAnchorLink';
 import { CustomPalette } from '../constants/customPalette';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import CustomRouterLink from '../components/CustomRouterLink';
 
 const QuickStart = () => {
   const { t } = useTranslation();
@@ -20,7 +21,12 @@ const QuickStart = () => {
               fontWeight: '500',
               color: CustomPalette.PRIMARY,
             }}
-          />
+          /> <Trans
+           i18nKey='Or read the tutorial instead' 
+           components={{CustomLink: <CustomRouterLink to='/tutorial' text='read the tutorial' overrideStyle={{fontWeight: '500', color: CustomPalette.PRIMARY}} /> }} 
+           >
+            Or <CustomRouterLink to='/tutorial' text={'read the tutorial'} overrideStyle={{fontWeight: '500', color: CustomPalette.PRIMARY}}/> instead.
+          </Trans> 
         </Typography>
       <Typography sx={{ fontWeight: '600'}}>
         2. {t('Write your schema and generate the schema bundle and a simple .txt Readme')}

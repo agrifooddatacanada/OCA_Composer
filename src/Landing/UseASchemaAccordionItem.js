@@ -10,6 +10,7 @@ import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 import { useTranslation } from 'react-i18next';
+import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
 
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
@@ -28,6 +29,8 @@ const UseASchemaAccordionItem = () => {
     setCurrentPage,
   } = useHandleAllDrop();
 
+  const { setJsonRawFile } = useHandleJsonDrop();
+
   const navigateToMetadataPage = () => {
     setCurrentPage('Metadata');
     navigate('/start');
@@ -37,6 +40,11 @@ const UseASchemaAccordionItem = () => {
     setCurrentPage('View');
     navigate('/start');
   };
+
+  const setFile = (acceptedFiles) => {
+    setRawFile(acceptedFiles);
+    setJsonRawFile(acceptedFiles);
+  }
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
 
@@ -62,7 +70,7 @@ const UseASchemaAccordionItem = () => {
         </Typography>
 
         <Drop
-          setFile={setRawFile}
+          setFile={setFile}
           setLoading={setLoading}
           loading={loading}
           dropDisabled={dropDisabled}

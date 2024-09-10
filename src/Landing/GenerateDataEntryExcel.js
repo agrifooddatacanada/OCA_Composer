@@ -94,7 +94,6 @@ const GenerateDataEntryExcel = ({
           width: "100%",
           maxWidth: "300px",
           marginTop: "30px",
-          marginBottom: "20px",
         }}
         disabled={disableButtonCheck}
       >

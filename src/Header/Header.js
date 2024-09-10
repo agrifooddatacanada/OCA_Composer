@@ -106,11 +106,11 @@ export default function Header({ currentPage }) {
         setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/Cardinality/');
         break;
       case 'StartDataValidator':
-        setHeader(t('Upload Schema and Dataset'));
+        setHeader(t('Upload Data (optional)'));
         setToolTipText(
           ''
         );
-        setHelpLink('');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/en/DataEntryVerificationStart');
         break;
       case 'SchemaViewDataValidator':
         setHeader(t('Preview Schema'));
@@ -149,10 +149,10 @@ export default function Header({ currentPage }) {
   return (
     <HeaderWrapper
       isMobile={isMobile}
-      headerColor={(currentPage === 'Landing' || currentPage === "StartDataValidator" || currentPage === "StartOCAMerge") && CustomPalette.PRIMARY}
+      headerColor={(currentPage === 'Landing' || currentPage === "StartOCAMerge") && CustomPalette.PRIMARY}
       leftItem={
         <>
-          {(currentPage === 'Landing' || currentPage === "StartDataValidator" || currentPage === "StartOCAMerge") ? (
+          {(currentPage === 'Landing' || currentPage === "StartOCAMerge") ? (
             <Box sx={{ flex: 'column' }}>
               <Link to="/" style={{ textDecoration: 'none' }}>
                 <Typography
@@ -168,7 +168,6 @@ export default function Header({ currentPage }) {
                   Semantic Engine
                 </Typography>
               </Link>
-              {currentPage === "StartDataValidator" && <Typography variant="h5" sx={{ textAlign: 'left', color: "white", marginTop: '-5px' }}>{t('Data entry and verification')}</Typography>}
             </Box>
           ) : (
             <>
@@ -213,7 +212,7 @@ export default function Header({ currentPage }) {
       }
       rightItem={
         <>
-          {(currentPage === 'Landing' || currentPage === "StartDataValidator") ? (
+          {(currentPage === 'Landing') ? (
             <Box sx={{
               display: 'flex',
               flexDirection: 'row',

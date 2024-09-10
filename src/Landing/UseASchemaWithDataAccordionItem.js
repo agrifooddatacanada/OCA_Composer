@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
 import { Context } from '../App';
 import { useNavigate } from 'react-router-dom';
+import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 
 const UseASchemaWithDataAccordionItem = () => {
   const { t } = useTranslation();
@@ -37,6 +38,12 @@ const UseASchemaWithDataAccordionItem = () => {
     setCurrentDataValidatorPage('SchemaViewDataValidator');
   };
 
+  const { setRawFile } = useHandleAllDrop();
+
+  const setFile = (acceptedFiles) => {
+    setRawFile(acceptedFiles);
+    setJsonRawFile(acceptedFiles);
+  }
 
   return (
     <AccordionItemWrapper>
@@ -58,7 +65,7 @@ const UseASchemaWithDataAccordionItem = () => {
         </Typography>
 
         <Drop
-          setFile={setJsonRawFile}
+          setFile={setFile}
           setLoading={overallLoading}
           loading={jsonLoading}
           dropDisabled={jsonDropDisabled}
