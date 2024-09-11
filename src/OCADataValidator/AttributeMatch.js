@@ -168,6 +168,10 @@ const AttributeMatch = () => {
   }, []);
 
   useEffect(() => {
+    if (ogSchemaDataConformantHeaderRef.current.length === 0) {
+      ogSchemaDataConformantHeaderRef.current = schemaDataConformantHeader;
+    }
+    
     const unassignedVariables = [...ogSchemaDataConformantHeaderRef.current];
     if (firstTimeMatchingRef.current) {
       let newMatchingRowData = [];
