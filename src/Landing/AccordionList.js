@@ -158,6 +158,17 @@ const AccordionList = () => {
             onClick={navigateToStartPage}
           />
           <hr style={{ width: '90%', margin: 'auto', marginTop: '25px', border: `1px solid ${CustomPalette.PRIMARY}` }} />
+          {/* <CustomAnchorLink
+            link='https://www.semanticengine.org/#/develop'
+            text='Parse a schema'
+            overrideStyle={{
+              fontSize: '20px',
+              fontWeight: '500',
+              color: CustomPalette.PRIMARY,
+              marginLeft: 0,
+              marginTop: 2,
+            }}
+          /> */}
           <Drop
             setFile={setFile}
             setLoading={setLoading}

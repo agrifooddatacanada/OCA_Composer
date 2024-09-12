@@ -33,7 +33,6 @@ const useHandleAllDrop = (pageForward) => {
   const [dropMessage, setDropMessage] = useState({ message: "", type: "" });
   const [switchToLastPage, setSwitchToLastPage] = useState(false);
   const [excelSheetNames, setExcelSheetNames] = useState([]);
-
   const [tempExcel, setTempExcel] = useState(null);
 
   // current fileData structure: [[tableHeading, [tableValues]], [tableHeading, [tableValues]], [tableHeading, [tableValues]], ...etc]

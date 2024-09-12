@@ -62,6 +62,9 @@ const UseASchemaAccordionItem = () => {
         <Typography>
           {t('When you have a schema bundle you can upload and then')}
         </Typography>
+        {/* <Typography>
+          <strong>Validate</strong> the schema to ensure it is well-formed.
+        </Typography> */}
         <Typography>
           <strong>{t('View')}</strong> {t('the schema and')} <strong>{t('Edit')}</strong> {t('the schema if needed')}
         </Typography>

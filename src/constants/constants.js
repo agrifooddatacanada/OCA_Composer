@@ -154,6 +154,8 @@ export const descriptionToFormatCodeNumeric = {
   // "positive integers": "^[0-9]*[1-9][0-9]*$",
   "any integer": "^-?[0-9]+$",
   // "any number between 0 and 100, inclusive": "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$",
+  "Latitude in formats S30°15'45.678\" or N12°30.999\"": "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$",
+  "Longitude in formats E30°15'45.678\" or W90°00.000\"": "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$"
 };
 
 export const formatCodeNumeric = Object.keys(descriptionToFormatCodeNumeric);
@@ -177,6 +179,7 @@ export const descriptionToFormatCodeDate = {
   "ISO: DD: day": "^(0[1-9]|[1-2][0-9]|3[01])$",
   "ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC)": "^(?:\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])T([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)Z$",
   "ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: Date and Time Combined (with Timezone Offset)": "^(?:\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])T([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)([+-][01]\\d:[0-5]\\d)$",
+  "ISO: PnD: accumulated days (n days)": "^P\\d+D$",
   "ISO: PnYnMnDTnHnMnS :durations e.g. P3Y6M4DT12H30M5S": "^P(?!$)((\\d+Y)|(\\d+\\.\\d+Y))?((\\d+M)|(\\d+\\.\\d+M))?((\\d+W)|(\\d+\\.\\d+W))?((\\d+D)|(\\d+\\.\\d+D))?(T(?=\\d)((\\d+H)|(\\d+\\.\\d+H))?((\\d+M)|(\\d+\\.\\d+M))?(\\d+(\\.\\d+)?S)?)?$",
   "ISO: HH:MM: hour, minutes in 24 hour notation": "^([01]\\d|2[0-3]):([0-5]\\d)$",
   "ISO: HH:MM:SS: hour, minutes, seconds in 24 hour notation": "^([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$",

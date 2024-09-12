@@ -67,6 +67,7 @@ export default function EntryCodes() {
       newEntryCodeObject[item] = newEntryCodeArray;
     });
 
+    // setSavedEntryCodes(newEntryCodeObject);
     const values = Object.values(newEntryCodeObject);
     values.forEach((item) => {
       item.forEach((obj) => {
@@ -103,7 +104,6 @@ export default function EntryCodes() {
   const pageForwardSave = () => {
     pageForwardDisabledRef.current = false;
     handleSave();
-
     if (!pageForwardDisabledRef.current) {
       setCurrentPage("LanguageDetails");
     }

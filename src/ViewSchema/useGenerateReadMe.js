@@ -107,7 +107,7 @@ const useGenerateReadMe = () => {
       .replace(/\n/g, '')
       .replace(/,/g, ',\n')
       .replace(/:/g, ' SAID/digest: ')
-      .replace(/(")(?=[^:]*:)/g, '')
+      .replace(/(")(?=[^:]*:)/g, '');
 
     textFile.push(
       cleaned_manifest,

@@ -10,11 +10,11 @@ const SchemaAccordionItem = () => {
   const { t } = useTranslation();
 
   const downloadChickenZipExample = () => {
-    const zipFilePath = 'chicken_example.json';
+    const zipFilePath = 'chicken_example.zip';
 
     const link = document.createElement('a');
     link.href = zipFilePath;
-    link.download = 'chicken_example.json';
+    link.download = 'chicken_example.zip';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

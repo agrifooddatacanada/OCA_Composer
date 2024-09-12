@@ -83,7 +83,6 @@ const Introduction = () => {
           allowFullScreen
         ></iframe>
       </Box>
-
     </Box>
   );
 };
