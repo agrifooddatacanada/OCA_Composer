@@ -19,8 +19,6 @@ const useHandleAllDrop = (pageForward) => {
     setJsonToReadme,
     rawFile,
     setRawFile,
-    showDeprecationCard,
-    setShowDeprecationCard,
     excelSheetChoice,
     setExcelSheetChoice,
   } = useContext(Context);
@@ -100,7 +98,6 @@ const useHandleAllDrop = (pageForward) => {
         dataArray.push([noSpacesValue, []]);
       }
     });
-
     setFileData(dataArray);
     setLoading(false);
     setDropDisabled(true);
@@ -300,8 +297,10 @@ const useHandleAllDrop = (pageForward) => {
           const workbook = XLSX.read(bstr, {
             type: rABS ? "binary" : "array",
           });
+          // processExcelFile(workbook);
           setTempExcel(workbook);
           setExcelSheetNames(workbook.SheetNames);
+          setExcelSheetChoice(workbook.SheetNames[0]);
           setLoading(false);
           setTimeout(() => {
             setDropMessage({ message: "", type: "" });
@@ -350,46 +349,47 @@ const useHandleAllDrop = (pageForward) => {
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
           const content = await zip.files[file + '.json'].async("text");
+          const parsedData = JSON.parse(content);
 
           if (key.includes("meta")) {
-            metaList.push(JSON.parse(content));
+            metaList.push(parsedData);
             languageList.push(key.substring(6, 8));
           }
 
           if (key.includes("information")) {
-            informationList.push(JSON.parse(content));
+            informationList.push(parsedData);
           } else if (key.includes("format")) {
             // Format word is inside Information word, so we need to check if it is a format or information
-            formatRules = JSON.parse(content);
+            formatRules = parsedData;
           }
 
 
           if (key.includes("label")) {
-            labelList.push(JSON.parse(content));
+            labelList.push(parsedData);
           }
 
           if (key.includes("entry (")) {
-            entryList.push(JSON.parse(content));
+            entryList.push(parsedData);
           }
 
           if (key.includes("entry_code")) {
-            entryCodeSummary = JSON.parse(content);
+            entryCodeSummary = parsedData;
           }
 
           if (key.includes("conformance")) {
-            conformance = JSON.parse(content);
+            conformance = parsedData;
           }
 
           if (key.includes("character_encoding")) {
-            characterEncoding = JSON.parse(content);
+            characterEncoding = parsedData;
           }
 
           if (key.includes("unit")) {
-            loadUnits = JSON.parse(content);
+            loadUnits = parsedData;
           }
 
           if (key.includes("cardinality")) {
-            cardinalityData = JSON.parse(content);
+            cardinalityData = parsedData;
           }
 
           allZipFiles.push(content);
@@ -473,85 +473,48 @@ const useHandleAllDrop = (pageForward) => {
     if (jsonFile?.overlays?.meta) {
       metaList.push(...jsonFile.overlays.meta);
       languageList.push(...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2)));
-
-      // // ONLY for README
-      // const readmeMeta = jsonFile.overlays.meta.map((meta) => {
-      //   return JSON.stringify(meta);
-      // });
-      // allJSONFiles.push(...readmeMeta);
     }
 
     if (jsonFile?.overlays?.information) {
       informationList.push(...jsonFile.overlays.information);
-
-      // // ONLY for README
-      // const readmeInformation = jsonFile.overlays.information.map((information) => {
-      //   return JSON.stringify(information);
-      // });
-      // allJSONFiles.push(...readmeInformation);
     }
 
     if (jsonFile?.overlays?.label) {
       labelList.push(...jsonFile.overlays.label);
-
-      // // ONLY for README
-      // const readmeLabel = jsonFile.overlays.label.map((label) => {
-      //   return JSON.stringify(label);
-      // });
-      // allJSONFiles.push(...readmeLabel);
     }
 
     if (jsonFile?.['capture_base']) {
       loadRoot = { ...jsonFile['capture_base'] };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(loadRoot));
     }
 
     if (jsonFile?.overlays?.unit) {
       loadUnits = { ...jsonFile.overlays.unit };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(loadUnits));
     }
 
     if (jsonFile?.overlays?.conformance) {
       conformance = { ...jsonFile.overlays.conformance };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(conformance));
     }
 
     if (jsonFile?.overlays?.['character_encoding']) {
       characterEncoding = { ...jsonFile.overlays['character_encoding'] };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(characterEncoding));
     }
 
     if (jsonFile?.overlays?.entry_code) {
       entryCodeSummary = { ...jsonFile.overlays.entry_code };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(entryCodeSummary));
     }
 
     if (jsonFile?.overlays?.['format']) {
       formatRules = { ...jsonFile.overlays['format'] };
-
-      // // ONLY for README
-      // allJSONFiles.push(JSON.stringify(formatRules));
     }
 
     if (jsonFile?.overlays?.entry) {
       entryList.push(...jsonFile.overlays.entry);
-
-      // // ONLY for README
-      // const readmeEntry = jsonFile.overlays.entry.map((entry) => {
-      //   return JSON.stringify(entry);
-      // });
-      // allJSONFiles.push(...readmeEntry);
     }
+
+    if (jsonFile?.overlays?.cardinality) {
+      cardinalityData = { ...jsonFile.overlays.cardinality };
+    }
+
 
     if (!languageList || languageList.length === 0) {
       throw new Error('No language found in the JSON file');
@@ -564,7 +527,7 @@ const useHandleAllDrop = (pageForward) => {
   }, [processLabelsDescriptionRootUnitsEntries, processLanguages, processMetadata, setZipToReadme]);
 
   const handlePageForward = useCallback(() => {
-    if (excelSheetNames.length > 0) {
+    if (rawFile[0].path.includes(".xls") || rawFile[0].path.includes(".xlsx")) {
       const index = excelSheetNames.indexOf(excelSheetChoice);
       processExcelFile(tempExcel, index);
     }
@@ -586,9 +549,6 @@ const useHandleAllDrop = (pageForward) => {
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".xls")) {
       handleExcelDrop(rawFile);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
-      if (showDeprecationCard === null) {
-        setShowDeprecationCard(true);
-      }
       setIsZip(true);
       handleZipDrop(rawFile);
     }

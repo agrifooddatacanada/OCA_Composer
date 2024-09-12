@@ -13,6 +13,7 @@ import LoopIcon from "@mui/icons-material/Loop";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { defaultNoteDescription, defaultTooltip, defaultUploadedDescription } from "../constants/constants";
+import { useTranslation } from "react-i18next";
 
 export default function DropCard({
   loading,
@@ -31,6 +32,7 @@ export default function DropCard({
   tipDescription = defaultTooltip,
   noteDescription = defaultNoteDescription,
 }) {
+  const { t } = useTranslation();
   return (
     <section
       className="container"
@@ -48,7 +50,7 @@ export default function DropCard({
             }}
           >
             <Tooltip
-              title={tipDescription}
+              title={<div style={{ whiteSpace: 'pre-line' }}>{t(tipDescription)}</div>}
               arrow
               placement="right"
             >
@@ -69,7 +71,7 @@ export default function DropCard({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
           >
-            {dropMessage?.message.length > 0 && (
+            {dropMessage?.message?.length > 0 && (
               <Alert
                 severity={dropMessage?.type}
                 style={{
@@ -127,17 +129,17 @@ export default function DropCard({
                 }}
                 gutterBottom
               >
-                {dropDisabled === false ? (
-                  description
-                ) : (
-                  <>
-                    Use the buttons below to add a <strong>new</strong> file or{" "}
-                    <strong>edit</strong> the uploaded file.
-                  </>
-                )}
+                {dropDisabled === false ?
+                  t(description)
+                  : (
+                    <>
+                      Use the buttons below to add a <strong>new</strong> file or{" "}
+                      <strong>edit</strong> the uploaded file.
+                    </>
+                  )}
               </Typography>
               <Typography sx={{ fontSize: 12, color: CustomPalette.GREY_600 }}>
-                {noteDescription}
+                {t(noteDescription)}
               </Typography>
             </CardContent>
           </Card>

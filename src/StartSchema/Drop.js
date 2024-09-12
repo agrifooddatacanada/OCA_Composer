@@ -15,6 +15,7 @@ export default function Drop({
   version = 0,
   description,
   tipDescription,
+  interfaceType = 0,
   noteDescription
 }) {
   const acceptFormat = useMemo(() => {
@@ -26,13 +27,30 @@ export default function Drop({
       };
     } else if (version === 1) {
       return {
-        "application/vnd.ms-excel": [],
         "application/zip": ['.zip'],
         "application/json": [".json"]
       };
     } else if (version === 2) {
       return {
-        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"]
+        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
+      };
+    } else if (version === 3) {
+      return {
+        "application/json": [".json"]
+      };
+    } else if (version === 4) {
+      return {
+        "application/vnd.ms-excel": [".xls", ".xlsx"],
+      };
+    } else if (version === 5) {
+      return {
+        "application/vnd.ms-excel": [".csv"],
+        "application/zip": ['.zip'],
+        "application/json": [".json"]
+      };
+    } else if (version === 6) {
+      return {
+        "text/plain": [".txt"],
       };
     }
   }, [version]);
@@ -97,7 +115,7 @@ export default function Drop({
 
   return (
     <>
-      {version === 1 ?
+      {interfaceType === 1 ?
         <LandingDropZone
           dropMessage={dropMessage}
           loading={loading}

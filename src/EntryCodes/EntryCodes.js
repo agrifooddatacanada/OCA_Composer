@@ -3,9 +3,10 @@ import { Box } from "@mui/system";
 import { Typography } from "@mui/material";
 import { Context } from "../App";
 import SingleTable from "./SingleTable";
-import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
+import { removeSpacesAndColonFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
+import { useTranslation } from "react-i18next";
 
 const errorMessages = {
   fieldEmpty: "Please fill out all fields",
@@ -13,6 +14,7 @@ const errorMessages = {
 };
 
 export default function EntryCodes() {
+  const { t } = useTranslation();
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -26,7 +28,6 @@ export default function EntryCodes() {
   } = useContext(Context);
   const [chosenTable, setChosenTable] = useState(0);
   const codeRefs = useRef();
-  const entryCodeData = useRef();
   const pageForwardDisabledRef = useRef(false);
   const [showWarning, setShowWarning] = useState(false);
 
@@ -74,7 +75,7 @@ export default function EntryCodes() {
         values.forEach((value) => {
           if (!value) {
             pageForwardDisabledRef.current = true;
-            setErrorMessage(errorMessages.fieldEmpty);
+            setErrorMessage(t(errorMessages.fieldEmpty));
             setTimeout(() => {
               setErrorMessage("");
             }, [2000]);
@@ -86,7 +87,7 @@ export default function EntryCodes() {
     const keys = Object.keys(newEntryCodeObject);
     const newEntryCodesObject = {};
     keys.forEach((item) => {
-      newEntryCodesObject[item] = removeSpacesFromArrayOfObjects(
+      newEntryCodesObject[item] = removeSpacesAndColonFromArrayOfObjects(
         newEntryCodeObject[item]
       );
     });
@@ -126,8 +127,8 @@ export default function EntryCodes() {
     <BackNextSkeleton isBack pageBack={pageBackSave} isForward pageForward={pageForwardSave} errorMessage={errorMessage}>
       {showWarning &&
         <WarningEntryCodeDelete
-          title="Warning"
-          fieldArray={["Your current entry codes for this attribute will be overwritten."]}
+          title={t("Warning")}
+          fieldArray={[t("Your current entry codes for this attribute will be overwritten")]}
           setShowCard={setShowWarning}
           handleForward={() => setCurrentPage("UploadEntryCodes")}
         />
@@ -141,8 +142,7 @@ export default function EntryCodes() {
             width: 500,
           }}
         >
-          You indicated in the previous step that one or more attributes is a
-          list. Please add entry codes for the same:
+          {t('You indicated in the previous step that one or more attributes is a list. Please add or upload entry codes:')}
         </Typography>
         {selectedAttributes.length > 0 && allCodesDisplay}
       </Box>

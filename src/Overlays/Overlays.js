@@ -7,8 +7,10 @@ import { Context } from '../App';
 import { getListOfSelectedOverlays } from '../constants/getListOfSelectedOverlays';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import DeleteConfirmation from './DeleteConfirmation';
+import { useTranslation } from 'react-i18next';
 
 const Overlays = ({ pageBack, pageForward }) => {
+  const { t } = useTranslation();
   const {
     setCurrentPage,
     characterEncodingRowData,
@@ -101,7 +103,7 @@ const Overlays = ({ pageBack, pageForward }) => {
             gap: 1,
           }}
         >
-          Add schema feature
+          {t('Add schema feature')}
           <Box
             style={{
               width: '350px',
@@ -115,7 +117,7 @@ const Overlays = ({ pageBack, pageForward }) => {
               {unselectedFeatures.map((text, _) => (
                 <ListItemButton key={text} onClick={() => addToSelected(text)}>
                   <AddCircleIcon sx={{ color: CustomPalette.PRIMARY }} />
-                  <ListItemText primary={text} sx={{ marginLeft: 2 }} />
+                  <ListItemText primary={t(text)} sx={{ marginLeft: 2 }} />
                 </ListItemButton>
               ))}
             </List>
@@ -129,7 +131,7 @@ const Overlays = ({ pageBack, pageForward }) => {
             gap: 1,
           }}
         >
-          Added schema feature
+          {t('Added schema feature')}
           <Box
             style={{
               width: '350px',
@@ -139,7 +141,7 @@ const Overlays = ({ pageBack, pageForward }) => {
               borderRadius: '4px',
             }}
           >
-            <List>
+            <List >
               {selectedFeatures.map((text, index) => (
                 <Box
                   key={index}
@@ -150,8 +152,9 @@ const Overlays = ({ pageBack, pageForward }) => {
                   }}
                 >
                   <ListItemText
-                    primary={text}
-                    sx={{ display: 'flex', paddingLeft: '1rem' }}
+                    primary={t(text)}
+                    sx={{ display: 'flex', paddingLeft: '1rem', textAlign: 'left', width: "240px", paddingRight: "1rem" }}
+
                   />
                   <DeleteForeverIcon
                     sx={{ cursor: 'pointer', color: CustomPalette.PRIMARY }}
@@ -164,7 +167,7 @@ const Overlays = ({ pageBack, pageForward }) => {
                     sx={{ color: CustomPalette.PRIMARY }}
                     onClick={() => handleEditOverlay(text)}
                   >
-                    Edit
+                    {t('Edit')}
                   </Button>
                 </Box>
               ))}

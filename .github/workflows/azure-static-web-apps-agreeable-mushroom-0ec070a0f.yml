@@ -18,6 +18,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
+      
+      # Add a step to install dependencies and run unit tests
+      - name: Install Dependencies And Run Unit Tests
+        run: |
+          npm install
+          npm run unittest
+          
       - name: Set environment variable
         run: echo "CI=false" >> $GITHUB_ENV # Add this step to set CI=false
       - name: Build And Deploy
@@ -34,6 +41,7 @@ jobs:
           output_location: 'build' # Built app content directory - optional
         env:
           REACT_APP_GA_ID: ${{ secrets.REACT_APP_GA_ID_DEV }}
+          REACT_APP_ENV: ${{ secrets.REACT_APP_ENV_DEV }}
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:

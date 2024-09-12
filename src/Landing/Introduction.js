@@ -1,8 +1,10 @@
 import { Box, Link, Typography, useMediaQuery } from '@mui/material';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const Introduction = () => {
   const isMobile = useMediaQuery('(max-width: 736px)');
+  const { t } = useTranslation();
 
   return (
     <Box
@@ -26,12 +28,12 @@ const Introduction = () => {
             marginTop: isMobile ? 'unset' : '35px',
           }}
         >
-          Schemas add value to data
+          {t('Schemas add value to data')}
         </Typography>
         <Typography
           sx={{ textAlign: isMobile ? 'center' : 'left', color: '#e6e6e6' }}
         >
-          Make your data more valuable with a data schema
+          {t('Make your data more valuable with a data schema')}
         </Typography>
         <Box
           sx={{
@@ -40,7 +42,7 @@ const Introduction = () => {
             fontSize: '1.1rem',
           }}
         >
-          <Typography>New to Schemas? Watch our video and then</Typography>
+          <Typography>{t('New to Schemas? Watch our video and then')}</Typography>
           <Link
             href='https://agrifooddatacanada.ca/semantic-engine/'
             sx={{
@@ -51,7 +53,7 @@ const Introduction = () => {
               textDecoration: 'none',
             }}
           >
-            Learn more-{'>'}
+            {t('Learn more')}-{'>'}
           </Link>
         </Box>
         <Typography
@@ -61,7 +63,7 @@ const Introduction = () => {
             fontSize: '1.1rem',
           }}
         >
-          Follow our quick-start to begin writing your own data schemas.
+          {t('Follow our quick-start to begin writing your own data schemas')}
         </Typography>
       </Box>
       <Box

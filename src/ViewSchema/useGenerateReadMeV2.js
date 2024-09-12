@@ -1,4 +1,3 @@
-
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL
 ******************************************************************

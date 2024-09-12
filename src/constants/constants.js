@@ -135,7 +135,9 @@ export const descriptionToFormatCodeText = {
   "Zip code": "^\\d{5,6}(?:[-\\s]\\d{4})?$",
   "Email address": "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+",
   "URL": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
-  "Phone number": "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}"
+  "Phone number": "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}",
+  "Latitude in formats S30°15'45.678\" or N12°30.999\"": "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$",
+  "Longitude in formats E30°15'45.678\" or W90°00.000\"": "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$"
 };
 
 export const formatCodeText = Object.keys(descriptionToFormatCodeText);
@@ -165,29 +167,30 @@ export const formatCodeNumericDescription = Object.entries(descriptionToFormatCo
 
 export const descriptionToFormatCodeDate = {
   "": "",
-  "ISO: YYYY-MM-DD: year month day": "^(?:(?:19|20)\\d{2})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2]\\d|3[0-1])$",
-  "ISO: YYYYMMDD: year month day": "^(?:(?:19|20)[0-9]{2})(?:0[1-9]|1[012])(?:0[1-9]|[12][0-9]|3[01])$",
-  "ISO: YYYY-MM: year month": "^(?:(?:19|20)[0-9]{2})-(?:0[1-9]|1[012])(?:-(?:0[1-9]|[12][0-9]|3[01]))?$",
-  "ISO: YYYY-Www: year week (e.g. W01)": "^(?:(?:19|20)\\d{2})-W(?:0[1-9]|[1-4][0-9]|5[0-3])$",
-  "ISO: YYYYWww: year week (e.g. W01)": "^(?:(?:19|20)\\d{2})W(?:0[1-9]|[1-4][0-9]|5[0-3])$",
-  "ISO: YYYY-DDD: Ordinal date (day number from the year)": "^(?:(?:19|20)\\d{2})-(?:0[1-9]|[1-2]\\d{2}|3[0-5]\\d|36[0-6])$",
-  "ISO: YYYYDDD: Ordinal date (day number from the year)": "^(?:(?:19|20)\\d{2})(?:0[1-9]|[1-2]\\d{2}|3[0-5]\\d|36[0-6])$",
-  "ISO: YYYY: year": "^(?:19|20)\\d{2}$",
+  "ISO: YYYY-MM-DD: year month day": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+  "ISO: YYYYMMDD: year month day": "^(\\d{4})(0[1-9]|1[0-2])(0[1-9]|[1-2]\\d|3[0-1])$",
+  "ISO: YYYY-MM: year month": "^(\\d{4})-(0[1-9]|1[0-2])$",
+  "ISO: YYYY-Www: year week (e.g. W01)": "^(?:\\d{4})-W(0[1-9]|[1-4][0-9]|5[0-3])$",
+  "ISO: YYYYWww: year week (e.g. W01)": "^(?:\\d{4})W(0[1-9]|[1-4][0-9]|5[0-3])$",
+  "ISO: YYYY-DDD: Ordinal date (day number from the year)": "^(?:\\d{4})-(00[1-9]|0[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-6])$",
+  "ISO: YYYYDDD: Ordinal date (day number from the year)": "^(?:\\d{4})(00[1-9]|0[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-6])$",
+  "ISO: YYYY: year": "^(\\d{4})$",
   "ISO: MM: month": "^(0[1-9]|1[0-2])$",
   "ISO: DD: day": "^(0[1-9]|[1-2][0-9]|3[01])$",
-  "ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC)": "^(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])Z$",
-  "ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: Date and Time Combined (with Timezone Offset)": "^(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])(?:+-:[0-5][0-9])$",
+  "ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC)": "^(?:\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])T([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)Z$",
+  "ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: Date and Time Combined (with Timezone Offset)": "^(?:\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])T([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)([+-][01]\\d:[0-5]\\d)$",
   "ISO: PnD: accumulated days (n days)": "^P\\d+D$",
-  "ISO: PnYnMnDTnHnMnS :durations e.g. P3Y6M4DT12H30M5S": "^P(?!$)((\\d+Y)|(\\d+.\\d+Y$))?((\\d+M)|(\\d+.\\d+M$))?((\\d+W)|(\\d+.\\d+W$))?((\\d+D)|(\\d+.\\d+D$))?(T(?=\\d)((\\d+H)|(\\d+.\\d+H$))?((\\d+M)|(\\d+.\\d+M$))?(\\d+(.\\d+)?S)?)??$/gm",
-  "ISO: HH:MM: hour, minutes in 24 hour notation": "^([01][0-9]|2[0-3]):[0-5][0-9]$/gm",
-  "ISO: HH:MM:SS: hour, minutes, seconds in 24 hour notation": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/gm",
-  "DD/MM/YYYY: day, month, year": "(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0,2])\\/(19|20)\\d{2}$",
-  "DD/MM/YY: day, month, year": "^(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0-2])\\\\d{2}$",
-  "MM/DD/YYYY: month, day, year": "^(0[1-9]|1[0-2])\\/(0[1-9]|[12][0-9]|3[01])\\/(19|20)\\d{2}$",
-  "DDMMYYYY: day, month, year": "^(0[1-9]|[12]\\d|3[01])(0[1-9]|1[0-2])(19|20)\\d{2}$",
-  "MMDDYYYY: month, day, year": "^(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])(19|20)\\d{2}$",
-  "YYYYMMDD: year, month, day": "^(19|20)\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])$",
-  "H:MM or HH:MM: hour, minutes AM/PM": "^(12|0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM|am|pm)$"
+  "ISO: PnYnMnDTnHnMnS :durations e.g. P3Y6M4DT12H30M5S": "^P(?!$)((\\d+Y)|(\\d+\\.\\d+Y))?((\\d+M)|(\\d+\\.\\d+M))?((\\d+W)|(\\d+\\.\\d+W))?((\\d+D)|(\\d+\\.\\d+D))?(T(?=\\d)((\\d+H)|(\\d+\\.\\d+H))?((\\d+M)|(\\d+\\.\\d+M))?(\\d+(\\.\\d+)?S)?)?$",
+  "ISO: HH:MM: hour, minutes in 24 hour notation": "^([01]\\d|2[0-3]):([0-5]\\d)$",
+  "ISO: HH:MM:SS: hour, minutes, seconds in 24 hour notation": "^([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$",
+  "DD/MM/YYYY: day, month, year": "^(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/\\d{4}$",
+  "DD/MM/YY: day, month, year": "^(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/\\d{2}$",
+  "MM/DD/YYYY: month, day, year": "^(0[1-9]|1[0-2])/(0[1-9]|[12]\\d|3[01])/\\d{4}$",
+  "DDMMYYYY: day, month, year": "^(0[1-9]|[12]\\d|3[01])(0[1-9]|1[0-2])\\d{4}$",
+  "MMDDYYYY: month, day, year": "^(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])\\d{4}$",
+  "YYYYMMDD: year, month, day": "^(\\d{4})(0[1-9]|1[0-2])(0[1-9]|[1-2]\\d|3[0-1])$",
+  "HH:MM:SS: hour, minutes, seconds 12 hour notation AM/PM": "^(0?[1-9]|1[0-2]):[0-5][0-9]:[0-5][0-9] ?[APMapm]{2}$",
+  "H:MM or HH:MM: hour, minutes AM/PM": "^(0?[1-9]|1[0-2]):[0-5][0-9] ?[APMapm]{2}$"
 };
 
 export const formatCodeDate = Object.keys(descriptionToFormatCodeDate);
@@ -250,38 +253,33 @@ export const displayValues = [
 
 export const defaultUploadedDescription = "Click here to select a spreadsheet or drag and drop one here";
 export const jsonUploadDescription = "Click here to select an OCA schema or drag and drop one here";
+export const dewvSchemaUploadDescription = "Click here to select a machine-readable OCA schema bundle or drag and drop one here";
+export const textUploadDescription = "Click here to select an OCA File (.txt) or drag and drop one here";
 export const datasetUploadDescription = "Click here to select an Excel or CSV dataset or drag and drop one here";
-
-export const defaultTooltip = (<>
-  <div>
-    To make it easier to create a schema you can drag and drop your
-    existing dataset that you are creating the schema for. This
-    dataset should be in table format as an Excel or .csv format.
-    The first row must contain the column headers (aka attribute
-    names).
-  </div>
-  <br />
-  <div>
-    Note that no data leaves your device, and no data is uploaded to
-    a server. All the processing to copy the column headers
-    (attribute names) into the draft schema happens on your device.
-  </div>
-</>);
-
-export const jsonUploadTooltip = (
-  <div>
-    To make it easier to upload a schema you can drag and drop your
-    existing dataset that you are creating the schema for. This
-    schema should be in JSON format.
-  </div>
-);
-
-export const datasetUploadTooltip = (
-  <div>
-    To make it easier to upload a dataset you can drag and drop your
-    existing dataset that you are creating the schema for. This
-    dataset should be in table format as an Excel or .csv format
-  </div>
-);
-
+export const defaultTooltip = "To make it easier to create a schema you can drag and drop your existing dataset that...";
+export const jsonUploadTooltip = "To make it easier to upload a schema you can drag and drop your existing dataset that you are creating the schema for. This schema should be in JSON format";
+export const dewcSchemaUploadTooltip = "To make it easier to upload a schema you can drag and drop your existing dataset that you are creating the schema for. This schema should be the machine-readable schema bundle generated from the Semantic Engine.";
+export const datasetUploadTooltip = "To make it easier to upload a dataset you can drag and drop your existing dataset that you are creating the schema for. This dataset should be in table format as an Excel or .csv format";
 export const defaultNoteDescription = 'Note: None of this data will be uploaded to a server and all processing happens on device.';
+
+export const errorCode = {
+  'Format': "FE",
+  'Entry Codes': "EC",
+  'Character Encoding': "CHE",
+  'Data Type': "DTE"
+};
+
+export const OVERLAYS_WORD = 'overlays';
+export const CAPTURE_BASE = 'capture_base';
+export const CHARACTER_ENCODING = 'character_encoding';
+export const FORMAT = 'format';
+export const META = 'meta';
+export const LABEL = 'label';
+export const INFORMATION = 'information';
+export const ENTRY_CODE = 'entry_code';
+export const ENTRY = 'entry';
+export const UNIT = 'unit';
+export const CONFORMANCE = 'conformance';
+export const CARDINALITY = 'cardinality';
+
+export const overlays = [CHARACTER_ENCODING, FORMAT, META, LABEL, INFORMATION, ENTRY_CODE, ENTRY, UNIT, CONFORMANCE];

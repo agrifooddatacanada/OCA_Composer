@@ -13,6 +13,7 @@ import DeleteConfirmation from './DeleteConfirmation';
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CellHeader from '../components/CellHeader';
 import '../App.css';
+import { useTranslation } from 'react-i18next';
 
 const gridOptions = {
   domLayout: 'autoHeight',
@@ -39,6 +40,7 @@ const TrashCanButton = memo(
   }));
 
 const Cardinality = () => {
+  const { t } = useTranslation();
   const {
     setCurrentPage,
     setSelectedOverlay,
@@ -137,25 +139,25 @@ const Cardinality = () => {
     if (selectedCellData) {
       try {
         if (minValue !== '' && maxValue !== '' && parseFloat(minValue) >= parseFloat(maxValue)) {
-          setDialogMessage('The minimum value must be less than the maximum value');
+          setDialogMessage(t('The minimum value must be less than the maximum value'));
           setOpenDialog(true);
           return;
         }
 
         if (exactValue < 0 || minValue < 0 || maxValue < 0) {
-          setDialogMessage('All entries must be positive integers');
+          setDialogMessage(t('All entries must be positive integers'));
           setOpenDialog(true);
           return;
         }
 
         if (isNotInteger(exactValue) === false || isNotInteger(minValue) === false || isNotInteger(maxValue) === false) {
-          setDialogMessage('All entries must be positive integers');
+          setDialogMessage(t('All entries must be positive integers'));
           setOpenDialog(true);
           return;
         }
 
       } catch (error) {
-        setDialogMessage('All entries must be valid integers');
+        setDialogMessage(t('All entries must be valid integers'));
         setOpenDialog(true);
         return;
       }
@@ -171,7 +173,7 @@ const Cardinality = () => {
         setMaxValue('');
       }
     }
-  }, [exactValue, isNotInteger, maxValue, minValue, selectedCellData]);
+  }, [exactValue, isNotInteger, maxValue, minValue, selectedCellData, t]);
 
 
 
@@ -181,27 +183,25 @@ const Cardinality = () => {
 
   const columnDefs = useMemo(() => [
     {
-      headerName: 'Attribute',
       field: 'Attribute',
       width: 160,
       autoHeight: true,
       cellStyle: () => preWrapWordBreak,
-      headerComponent: () => <CellHeader headerText='Attribute' helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
+      headerComponent: () => <CellHeader headerText={t('Attributes')} helpText={t('This is the name for the attribute and, for example...')} />,
     },
     {
-      headerName: 'Label',
       field: 'Label',
       width: 200,
       autoHeight: true,
       cellStyle: () => preWrapWordBreak,
-      headerComponent: () => <CellHeader headerText='Label' helpText='This is the language specific label for an attribute.' />,
+      headerComponent: () => <CellHeader headerText={t('Label')} helpText={t('This is the language specific label for an attribute')} />,
     },
     {
-      headerName: 'Entry Limit',
+      headerName: t('Entry Limit'),
       field: 'EntryLimit',
-      width: 120,
+      width: 140,
       autoHeight: true,
-      headerComponent: () => <CellHeader headerText='Entry Limit' helpText='Applies only to array DatatTypes. Describes the number of occurrences of an element.' />,
+      headerComponent: () => <CellHeader headerText={t('Entry Limit')} helpText={t('Applies only to array DatatTypes. Describes the number of occurrences of an element')} />,
     },
     {
       headerName: 'Garbage',
@@ -211,9 +211,9 @@ const Cardinality = () => {
         handleDeleteRow: () => handleDeleteRow(params)
       }),
       width: 100,
-      headerComponent: () => <CellHeader headerText='Garbage' helpText='Remove the Entry Limit rule.' />,
+      headerComponent: () => <CellHeader headerText={t('Garbage')} helpText={t('Remove the Entry Limit rule')} />,
     },
-  ], [handleCellClick, handleDeleteRow]);
+  ], [handleCellClick, handleDeleteRow, t]);
 
   const handleDeleteCurrentOverlay = () => {
     setOverlay((prev) => ({
@@ -286,11 +286,11 @@ const Cardinality = () => {
           width: '100%'
         }}
       >
-        <Box className="ag-theme-balham" sx={{ width: '50%', height: '100%', maxWidth: '580px' }}>
+        <Box className="ag-theme-balham" sx={{ width: '50%', height: '100%', maxWidth: '600px' }}>
           <Typography sx={{
             textAlign: 'start',
             marginBottom: '14px',
-          }}>Entry limits can only be created for attributes with an array DataType.</Typography>
+          }}>{t('Entry limits can only be created for attributes with an array DataType')}</Typography>
           <style>{gridStyles}</style>
           <AgGridReact ref={cardinalityRef} rowClassRules={rowClassRules} onCellClicked={handleCellClick} rowData={cardinalityData} columnDefs={columnDefs} gridOptions={gridOptions} onGridReady={onGridReady} />
         </Box>
@@ -313,7 +313,7 @@ const Cardinality = () => {
               <Box>
 
                 <TextField
-                  label="Exact"
+                  label={t("Exact")}
                   variant="outlined"
                   value={exactValue}
                   onChange={(e) => handleValueChange(e.target.value, 'exact')}
@@ -324,7 +324,7 @@ const Cardinality = () => {
                   disabled={minValue || maxValue}
                 />
                 <Tooltip
-                  title="For each attribute you can specify the exact, minimum or maximum (or both minimum and maximum) number of entries allowed in a data record. Data types should be arrays to accept more than one entry."
+                  title={t("For each attribute you can specify the exact, minimum or maximum ...")}
                   placement="top"
                   arrow
                 >
@@ -336,7 +336,7 @@ const Cardinality = () => {
               </Typography>
               <Box sx={{ display: 'flex', gap: '10px' }}>
                 <TextField
-                  label="Minimum"
+                  label={t("Minimum")}
                   variant="outlined"
                   fullWidth
                   value={minValue}
@@ -347,7 +347,7 @@ const Cardinality = () => {
                   disabled={exactValue}
                 />
                 <TextField
-                  label="Maximum"
+                  label={t("Maximum")}
                   variant="outlined"
                   fullWidth
                   value={maxValue}
@@ -370,16 +370,16 @@ const Cardinality = () => {
                   marginTop: '35px',
                 }}
               >
-                Apply
+                {t('Apply')}
               </Button>
-              <Typography style={{ marginTop: '20px', color: 'red' }}>NOTE: Please leave blank to not specify a min or max value</Typography>
+              <Typography style={{ marginTop: '20px', color: 'red' }}>{t('NOTE: Please leave blank to not specify a min or max value')}</Typography>
             </>
           )}
         </Box>
       </Box>
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Error</DialogTitle>
+        <DialogTitle>{t('Error')}</DialogTitle>
         <DialogContent>
           <Typography>{dialogMessage}</Typography>
         </DialogContent>

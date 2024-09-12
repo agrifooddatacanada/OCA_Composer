@@ -9,12 +9,15 @@ import { useNavigate } from 'react-router-dom';
 import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
 import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
+import { useTranslation } from 'react-i18next';
+import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
 
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
+  const { t } = useTranslation();
   const {
     rawFile,
     setRawFile,
@@ -26,6 +29,8 @@ const UseASchemaAccordionItem = () => {
     setCurrentPage,
   } = useHandleAllDrop();
 
+  const { setJsonRawFile } = useHandleJsonDrop();
+
   const navigateToMetadataPage = () => {
     setCurrentPage('Metadata');
     navigate('/start');
@@ -36,6 +41,11 @@ const UseASchemaAccordionItem = () => {
     navigate('/start');
   };
 
+  const setFile = (acceptedFiles) => {
+    setRawFile(acceptedFiles);
+    setJsonRawFile(acceptedFiles);
+  }
+
   const disableButtonCheck = rawFile.length === 0 || loading === true;
 
   return (
@@ -45,43 +55,35 @@ const UseASchemaAccordionItem = () => {
         aria-controls="panel1a-content"
         id="panel1a-header"
       >
-        <Typography sx={{ fontSize: '20px', fontWeight: '500' }}>Use a Schema</Typography>
+        <Typography sx={{ fontSize: '20px', fontWeight: '500' }}>{t('Use a Schema')}</Typography>
       </AccordionSummary>
 
       <AccordionDetails sx={{ textAlign: 'start' }}>
         <Typography>
-          When you have a schema bundle you can upload and then:
+          {t('When you have a schema bundle you can upload and then')}
         </Typography>
         {/* <Typography>
           <strong>Validate</strong> the schema to ensure it is well-formed.
         </Typography> */}
         <Typography>
-          <strong>View</strong> the schema and <strong>Edit</strong> the schema if needed.
+          <strong>{t('View')}</strong> {t('the schema and')} <strong>{t('Edit')}</strong> {t('the schema if needed')}
         </Typography>
         <Typography>
-          The schema bundle is machine-readable; <strong>generate</strong> the Readme to create a human-readable simple text version.
+          {t('The schema bundle is machine-readable')} <strong>{t('generate')}</strong> {t('the Readme to create a human-readable simple text version')}
         </Typography>
 
         <Drop
-          setFile={setRawFile}
+          setFile={setFile}
           setLoading={setLoading}
           loading={loading}
           dropDisabled={dropDisabled}
           dropMessage={dropMessage}
           setDropMessage={setDropMessage}
           version={1}
+          interfaceType={1}
         />
 
         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          {/* <Button
-            variant="contained"
-            color="navButton"
-            onClick={() => { }}
-            sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
-            disabled={disableButtonCheck}
-          >
-            Validate Schema
-          </Button> */}
           <Button
             variant="contained"
             color="navButton"
@@ -89,7 +91,7 @@ const UseASchemaAccordionItem = () => {
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
             disabled={disableButtonCheck}
           >
-            View Schema
+            {t('View Schema')}
           </Button>
           <Button
             variant="contained"
@@ -98,7 +100,7 @@ const UseASchemaAccordionItem = () => {
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
             disabled={disableButtonCheck}
           >
-            Edit Schema
+            {t('Edit Schema')}
           </Button>
           <Button
             variant="contained"
@@ -113,7 +115,7 @@ const UseASchemaAccordionItem = () => {
             sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
             disabled={disableButtonCheck}
           >
-            Generate Readme
+            {t('Generate Readme')}
           </Button>
         </Box>
       </AccordionDetails>

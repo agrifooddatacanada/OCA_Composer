@@ -33,6 +33,13 @@ export const gridStyles = `
   justify-content: center;
   align-items: center;
 }
+
+.ag-header-group-cell-label{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
   height: 100%;
 }

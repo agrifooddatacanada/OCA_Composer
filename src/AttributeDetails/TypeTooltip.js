@@ -1,7 +1,10 @@
 import React from "react";
 import { Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 export default function TypeTooltip() {
+  const { t } = useTranslation();
+
   const BulletDot = () => {
     return (
       <div
@@ -20,26 +23,26 @@ export default function TypeTooltip() {
   };
 
   const listArray = [
-    { name: "Text", content: "text" },
-    { name: "Numeric", content: "numbers" },
+    { name: t("Text"), content: t("text, mixed text and numbers") },
+    { name: t("Numeric"), content: t("only numbers") },
     {
-      name: "Boolean",
+      name: t("Boolean"),
       content:
-        "a data type where the data only has two possible variables: true or false",
+        t("a data type where the data only has two possible variables: true or false"),
     },
     {
-      name: "Binary",
-      content: "a data type that defines a binary code signal",
+      name: t("Binary"),
+      content: t("a data type that defines a binary code signal"),
     },
     {
-      name: "DateTime",
+      name: t("DateTime"),
       content:
-        "a data type that defines dates. Common formats include dates (e.g., YYYY-MM-DD), times (e.g., hh:mm:ss), dates and times concatenated (e.g., YYYY-MM-DDThh:mm:ss.sss+zz:zz), and durations (e.g., PnYnMnD)",
+        t("a data type that defines dates. Common formats include dates ..."),
     },
     {
-      name: "Array [attribute type]",
+      name: t("Array [attribute type]"),
       content:
-        "a data type that defines a structure that holds several data items or elements of the same data type",
+        t("a data type that defines a structure that holds several data items or elements of the same data type"),
     },
   ];
 
