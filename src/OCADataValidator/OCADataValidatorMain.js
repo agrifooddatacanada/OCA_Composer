@@ -34,7 +34,12 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
 
   const handleClickNext = () => {
     if (datasetRawFile.length > 0) {
-      setCurrentDataValidatorPage('AttributeMatchDataValidator');
+      // If En excel file is uploaded, it needs to be processed before moving to the next page
+      if (!firstNavigationToDataset && excelSheetChoice !== -1) {
+        handleDataSheetForwards();
+      } else {
+        setCurrentDataValidatorPage('AttributeMatchDataValidator');
+      }
     } else {
       setCurrentDataValidatorPage('OCADataValidatorCheck');
     }
