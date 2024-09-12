@@ -16,7 +16,7 @@ import useExportLogic from '../ViewSchema/useExportLogic';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 import GenerateDataEntryExcel from './GenerateDataEntryExcel';
 import { useTranslation } from 'react-i18next';
-import CollaborateOnASchema from './CollaborateOnASchema';
+// import CollaborateOnASchema from './CollaborateOnASchema';
 import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
 
 const buttonStyles = {
@@ -113,9 +113,9 @@ const AccordionList = () => {
           <WriteASchemaAccordionItem
             navigateToStartPage={navigateToStartPage}
           />
-          <CollaborateOnASchema
+          {/* <CollaborateOnASchema
             navigateToStartPage={navigateToStartPage}
-          />
+          /> */}
           <StoreASchemaAccordionItem />
           <UseASchemaAccordionItem />
           <UseASchemaWithDataAccordionItem />
