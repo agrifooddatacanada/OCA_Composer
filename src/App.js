@@ -114,6 +114,8 @@ function App() {
   const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState({});
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
 
+  const [excelSheetChoice, setExcelSheetChoice] = useState(-1);
+
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
     if (currentIndex >= 0 && currentIndex < pagesArray.length - 1) {
