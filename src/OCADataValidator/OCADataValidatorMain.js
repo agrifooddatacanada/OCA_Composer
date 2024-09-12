@@ -45,6 +45,14 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
     }
   }
 
+  const handleClickViewData = () => {
+    if (!firstNavigationToDataset && excelSheetChoice !== -1) {
+      handleDataSheetForwards('DatasetViewDataValidator');
+    } else {
+      setCurrentDataValidatorPage('DatasetViewDataValidator');
+    }
+  }
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
       <BackNextSkeleton
@@ -71,7 +79,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
           }}>
             <Typography variant="h6" sx={{ textAlign: 'start', color: "black" }}>{t('Optional: Upload Data')}</Typography>
             {!firstNavigationToDataset && excelSheetChoice !== -1 &&
-              <Button color="button" onClick={handleDataSheetForwards}>
+              <Button color="button" onClick={() => handleDataSheetForwards()}>
                 {t('Next')}
                 <ArrowForwardIosIcon />
               </Button>}
@@ -118,7 +126,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             variant="contained"
             color="button"
             sx={{ width: 200, ml: 2 }}
-            onClick={() => setCurrentDataValidatorPage("DatasetViewDataValidator")}
+            onClick={handleClickViewData}
             disabled={datasetRawFile.length === 0}
           >
             {t('View Data')}

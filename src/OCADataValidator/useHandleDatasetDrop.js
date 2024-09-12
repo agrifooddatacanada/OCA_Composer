@@ -228,14 +228,14 @@ export const useHandleDatasetDrop = () => {
     return true;
   }, []);
 
-  const handleDataSheetForwards = useCallback(() => {
+  const handleDataSheetForwards = useCallback((dataValidatorPage = "AttributeMatchDataValidator") => {
     setFirstNavigationToDataset(true);
     const index = excelSheetNames.indexOf(excelSheetChoice);
     processExcelFile(ogWorkbook, index);
     setDatasetDropDisabled(true);
     if (!datasetIsParsed) {
       setDatasetIsParsed(true);
-      setCurrentDataValidatorPage("AttributeMatchDataValidator");
+      setCurrentDataValidatorPage(dataValidatorPage);
     }
   }, [datasetIsParsed, excelSheetChoice, excelSheetNames, ogWorkbook, processExcelFile, setCurrentDataValidatorPage, setDatasetIsParsed]);
 
