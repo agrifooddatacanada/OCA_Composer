@@ -34,6 +34,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage('RequiredEntries');
     } else if (item === 'Cardinality') {
       setCurrentPage('Cardinality');
+    } else if (item === 'Data Standards') {
+      setCurrentPage('DataStandards');
     } else {
       setCurrentPage('FormatRules');
     }
@@ -69,6 +71,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage('RequiredEntries');
     } else if (overlayName === 'Cardinality') {
       setCurrentPage('Cardinality');
+    } else if (overlayName === 'Data Standards') {
+      setCurrentPage('DataStandards');
     } else {
       setCurrentPage('FormatRules');
     }

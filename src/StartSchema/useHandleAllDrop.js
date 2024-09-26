@@ -339,6 +339,7 @@ const useHandleAllDrop = (pageForward) => {
         let loadUnits = undefined;
         let formatRules = undefined;
         let cardinalityData = undefined;
+        let dataStandards = undefined;
 
         // load up metadata file in OCA bundle
         const loadMetadataFile = await zip.files["meta.json"].async("text");
@@ -363,6 +364,9 @@ const useHandleAllDrop = (pageForward) => {
             formatRules = parsedData;
           }
 
+          if (key === 'standard') {
+            dataStandards = parsedData;
+          }
 
           if (key.includes("label")) {
             labelList.push(parsedData);
@@ -400,7 +404,7 @@ const useHandleAllDrop = (pageForward) => {
 
         processLanguages(languageList);
         processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData);
+        processLabelsDescriptionRootUnitsEntries(labelList, informationList, JSON.parse(loadRoot), loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData, dataStandards);
         setZipToReadme(allZipFiles);
       };
 
@@ -468,6 +472,7 @@ const useHandleAllDrop = (pageForward) => {
     let loadUnits = undefined;
     let formatRules = undefined;
     let cardinalityData = undefined;
+    let dataStandards = undefined;
 
     // load up metadata file in OCA bundle
     if (jsonFile?.overlays?.meta) {
@@ -515,6 +520,10 @@ const useHandleAllDrop = (pageForward) => {
       cardinalityData = { ...jsonFile.overlays.cardinality };
     }
 
+    if (jsonFile?.overlays?.standard) {
+      dataStandards = { ...jsonFile.overlays.standard };
+    }
+
 
     if (!languageList || languageList.length === 0) {
       throw new Error('No language found in the JSON file');
@@ -522,7 +531,7 @@ const useHandleAllDrop = (pageForward) => {
 
     processLanguages(languageList);
     processMetadata(metaList);
-    processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData);
+    processLabelsDescriptionRootUnitsEntries(labelList, informationList, loadRoot, loadUnits, entryCodeSummary, entryList, conformance, characterEncoding, languageList, formatRules, cardinalityData, dataStandards);
     setJsonToReadme(jsonFile);
   }, [processLabelsDescriptionRootUnitsEntries, processLanguages, processMetadata, setZipToReadme]);
 

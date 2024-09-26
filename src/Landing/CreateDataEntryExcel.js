@@ -568,6 +568,28 @@ export async function CreateDataEntryExcel(data, selectedLang) {
           ".. Error in formatting format column (header and rows) ..."
         );
       }
+    } else if (overlay.type && overlay.type.includes("/standard/")) {
+      try {
+        sheet1.getColumn(i + 3 - skipped).width = 15;
+        const dataStandardHeaderCell = sheet1.getCell(shift + 1, i + 3 - skipped);
+        dataStandardHeaderCell.value = "Data Standard";
+
+        formatHeader(dataStandardHeaderCell);
+
+        Object.keys(overlay.attribute_standards).forEach((attrName, attrIndex) => {
+          const dataStandard = overlay.attribute_standards[attrName];
+          const rowIndex = attrIndex + 2;
+          const dataStandardCell = sheet1.getCell(shift + rowIndex, i + 3 - skipped);
+          dataStandardCell.value = dataStandard;
+
+          formatAttr(dataStandardCell);
+        });
+      } catch (error) {
+        throw new WorkbookError(
+          ".. Error in formatting data standard column (header and rows) ..."
+        );
+      }
+      
     } else if (overlay.type && overlay.type.includes("/entry_code/")) {
       try {
         sheet1.getColumn(i + 3 - skipped).width = 15;

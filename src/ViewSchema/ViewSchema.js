@@ -36,6 +36,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
     history,
     setHistory,
     formatRuleRowData,
+    dataStandardsRowData
   } = useContext(Context);
   const languageIndex = languages.findIndex((item) => codesToLanguages?.[i18next.language] === item);
   const filteredLanguages = [...languages];
@@ -205,6 +206,12 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
         } else {
           dataObject['Add format rule for data'] = value;
         }
+      }
+
+      // Add data standard information
+      const attrWithDataStandard = dataStandardsRowData.find((row) => row.Attribute === attributeName);
+      if (attrWithDataStandard?.['DataStandard']) {
+        dataObject['Data Standards'] = attrWithDataStandard['DataStandard'];
       }
 
       newDisplayArray.push(dataObject);

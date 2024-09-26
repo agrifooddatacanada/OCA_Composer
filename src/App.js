@@ -21,7 +21,7 @@ export const Context = createContext();
 //Initializing react-ga with google analytics ID
 ReactGA.initialize(process.env.REACT_APP_GA_ID);
 
-const items = {
+const overlayItems = {
   'Character Encoding': { feature: 'Character Encoding', selected: false },
   'Make selected entries required': {
     feature: 'Make selected entries required',
@@ -31,7 +31,8 @@ const items = {
     feature: 'Add format rule for data',
     selected: false,
   },
-  "Cardinality": { feature: "Cardinality", selected: false }
+  "Cardinality": { feature: "Cardinality", selected: false },
+  "Data Standards": { feature: "Data Standards", selected: false }
 };
 
 export const pagesArray = [
@@ -74,9 +75,10 @@ function App() {
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
-  const [overlay, setOverlay] = useState(items);
+  const [overlay, setOverlay] = useState(overlayItems);
   const [selectedOverlay, setSelectedOverlay] = useState('');
   const [cardinalityData, setCardinalityData] = useState([]);
+  const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -223,6 +225,27 @@ function App() {
   }, [attributeRowData]);
 
   useEffect(() => {
+    const newDataStandardsArray = [];
+
+    attributeRowData.forEach(attributeRowItem => {
+      const dataStandardObject = dataStandardsRowData.find(
+        dataStandardRowItem => attributeRowItem.Attribute === dataStandardRowItem.Attribute
+      );
+
+      if (dataStandardObject) {
+        newDataStandardsArray.push(dataStandardObject);
+      } else {
+        newDataStandardsArray.push({
+          Attribute: attributeRowItem.Attribute,
+          DataStandard: ''
+        });
+      }
+    });
+    
+    setDataStandardsRowData(newDataStandardsArray);
+  }, [attributeRowData]);
+
+  useEffect(() => {
     if (jsonRawFile.length > 0) {
       const newMatchingRowData = [];
       attributesList.forEach((item, index) => {
@@ -358,6 +381,8 @@ function App() {
             setCharacterEncodingRowData,
             formatRuleRowData,
             setFormatRuleRowData,
+            dataStandardsRowData,
+            setDataStandardsRowData,
             overlay,
             setOverlay,
             selectedOverlay,
