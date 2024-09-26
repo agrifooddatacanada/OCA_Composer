@@ -249,6 +249,12 @@ export const displayValues = [
   // "UTF-16LE"
 ];
 
+export const dataStandardOptions = [
+  "urn:iso:std:iso:2560:ed-3:v1:en", 
+  "urn:iso:std:iso:14001:ed-3:v1:en",
+  "urn:iso:std:iso:8601:ed-4:v1:en"
+]
+
 export const defaultUploadedDescription = "Click here to select a spreadsheet or drag and drop one here";
 export const jsonUploadDescription = "Click here to select an OCA schema or drag and drop one here";
 export const dewvSchemaUploadDescription = "Click here to select a machine-readable OCA schema bundle or drag and drop one here";

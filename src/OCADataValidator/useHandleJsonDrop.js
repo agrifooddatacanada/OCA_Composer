@@ -99,6 +99,7 @@ export const useHandleJsonDrop = (
           let loadUnits = undefined;
           let formatRules = undefined;
           let cardinalityData = undefined;
+          let dataStandards = undefined;
 
           // load up metadata file in OCA bundle
           if (jsonFile?.overlays?.meta) {
@@ -200,6 +201,13 @@ export const useHandleJsonDrop = (
             allJSONFiles.push(JSON.stringify(cardinalityData));
           }
 
+          if (jsonFile?.overlays?.standard) {
+            dataStandards = { ...jsonFile.overlays.standard };
+
+            // ONLY for README
+            allJSONFiles.push(JSON.stringify(dataStandards));
+          }
+
           if (!languageList || languageList.length === 0) {
             throw new Error("No language found in the JSON file");
           }
@@ -217,7 +225,8 @@ export const useHandleJsonDrop = (
             characterEncoding,
             languageList,
             formatRules,
-            cardinalityData
+            cardinalityData,
+            dataStandards
           );
           setZipToReadme(allJSONFiles);
         };
@@ -273,6 +282,7 @@ export const useHandleJsonDrop = (
         let loadUnits = undefined;
         let formatRules = undefined;
         let cardinalityData = undefined;
+        let dataStandards = undefined;
         const bundleForValidator = { overlays: {} };
 
         // load up metadata file in OCA bundle
@@ -334,6 +344,10 @@ export const useHandleJsonDrop = (
             cardinalityData = parsedContent;
           }
 
+          if (key.includes("standard")) {
+            dataStandards = parsedContent;
+          }
+
           allZipFiles.push(content);
         }
 
@@ -366,7 +380,8 @@ export const useHandleJsonDrop = (
           characterEncoding,
           languageList,
           formatRules,
-          cardinalityData
+          cardinalityData,
+          dataStandards
         );
         setZipToReadme(allZipFiles);
       };

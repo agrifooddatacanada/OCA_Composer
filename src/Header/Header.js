@@ -105,6 +105,11 @@ export default function Header({ currentPage }) {
         );
         setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/Cardinality/');
         break;
+      case 'DataStandards':
+        setHeader(t('Add Data Standards'));
+        setToolTipText('');
+        setHelpLink('');
+        break;
       case 'StartDataValidator':
         setHeader(t('Upload Data (optional)'));
         setToolTipText(
