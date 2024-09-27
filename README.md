@@ -6,6 +6,12 @@
 
 You can learn more about schemas and see an implementation of OCA Composer live at the [Semantic Engine](https://www.semanticengine.org/).
 
+## Cite OCA Composer
+
+[![DOI](https://zenodo.org/badge/651166216.svg)](https://zenodo.org/doi/10.5281/zenodo.10883562)
+
+While OCA Composer is under continuous delivery, you can cite a version 1.0.0 release using our DOI 10.5281/zenodo.10883563. 
+
 ## OCA Composer outputs
 
 The OCA Composer is written in React and deployed to a virtual machine which serves the web app to users. The OCA Composer app takes the user inputs and generates two types of files - the OCA File and the OCA Excel Template. Both of these files can be interpreted by parsers to generate the OCA Schema Bundle which is a single JSON file that contains the contents of the schema. Currently in this implementation only the OCA Excel Template is used and parsed to generate the OCA Schema Bundle. In the future, the OCA File will be directly consumed by an OCA Repository.
