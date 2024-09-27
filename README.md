@@ -14,6 +14,10 @@ The OCA Composer is written in React and deployed to a virtual machine which ser
 
 OCA Composer lets users upload a copy of a dataset which is stored in the users local environment, but OCA Composer only uses this to access the first row of the first sheet (if Excel) for attribute names. The data itself is not used further by OCA Composer and does not leave the users computer.
 
+## OCA Composer Theme Re-Branding
+
+Adjusting the theme of OCA Composer when embedding it...
+
 ## Consuming OCA Schema Bundle - Readme and Data entry Excel
 
 The JSON schema bundle can be consumed by several tools within the ADC/OCA ecosystem.
