@@ -1,7 +1,8 @@
 import React from 'react';
-import ResearchExcellentFund from '../assets/research-excellent-fund.png';
-import logoAgri from '../assets/agri-logo.png';
-import logoSE from '../assets/se-logo.png';
+//import ResearchExcellentFund from '../assets/research-excellent-fund.png';
+//import logoAgri from '../assets/agri-logo.png';
+//import logoSE from '../assets/se-logo.png';
+import { themes } from '../constants/themeConstants';
 import { Stack, Divider, Box, Typography } from '@mui/material';
 
 export default function Footer({ currentPage }) {
@@ -33,9 +34,7 @@ export default function Footer({ currentPage }) {
             />
           </div>
         </Stack>
-        <Box sx={{ width: '150px' }}>
-          <img src={logoSE} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: 'contain', cursor: "pointer" }} alt="Semantic Engine Logo" onClick={() => (window.location.href = '/')} />
-        </Box>
+
       </Stack>
     </>
   );
