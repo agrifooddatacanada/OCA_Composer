@@ -16,7 +16,9 @@ OCA Composer lets users upload a copy of a dataset which is stored in the users 
 
 ## OCA Composer Theme Re-Branding
 
-Adjusting the theme of OCA Composer when embedding it...
+The OCA Composer repository supports whitelabeling, allowing you to customize the theme and branding for different entities. In `src/constants`, the file `themeConstants.js` contains theme configurations for different entities. Here the users can add a new theme object with the specific site attributes, such as colors, logos and URLs. Follow a format like the following:
+
+The components in the repository are already set up to use the theme configurations from `themeConstants.js`. There is no need to change anything else in the components as the theme will be applied automatically based on the provided theme parameters.
 
 ## Consuming OCA Schema Bundle - Readme and Data entry Excel
 
