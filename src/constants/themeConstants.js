@@ -44,7 +44,7 @@ export const themes = {
     },
   },
 
-  BED: { //still in progress
+  /*BED: { //still in progress
     primaryColor: "#121212",
     secondaryColor: "#343434",
     typography: {
@@ -56,6 +56,6 @@ export const themes = {
       dark: "#343434",
       contrastText: CustomPalette.WHITE,
     },
-  },
+  },*/
 
 };
