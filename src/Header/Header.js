@@ -108,7 +108,7 @@ export default function Header({ currentPage }) {
       case 'DataStandards':
         setHeader(t('Add Data Standards'));
         setToolTipText('');
-        setHelpLink('');
+        setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/DataStandards/');
         break;
       case 'StartDataValidator':
         setHeader(t('Upload Data (optional)'));
