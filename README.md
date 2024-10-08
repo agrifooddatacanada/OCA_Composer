@@ -16,9 +16,40 @@ OCA Composer lets users upload a copy of a dataset which is stored in the users 
 
 ## OCA Composer Theme Re-Branding
 
-The OCA Composer repository supports whitelabeling, allowing you to customize the theme and branding for different entities. In `src/constants`, the file `themeConstants.js` contains theme configurations for different entities. Here the users can add a new theme object with the specific site attributes, such as colors, logos and URLs. Follow a format like the following:
+The OCA Composer repository supports whitelabeling, allowing you to customize the theme and branding for different entities. 
+In `src/constants`, the file `themeConstants.js` contains theme configurations for different entities. 
+Here the users can add a new theme object with the specific site attributes, such as colors, logos and URLs. 
 
-The components in the repository are already set up to use the theme configurations from `themeConstants.js`. There is no need to change anything else in the components as the theme will be applied automatically based on the provided theme parameters.
+Follow a format like the following:
+
+```javascript
+// Add your custom theme here
+  yourTheme: {
+    primaryColor: "#000000",
+    secondaryColor: "#111111",
+    logos: {
+      yourLogo: {
+        url: '../assets/your-logo.png',
+        website: "https://yourwebsite.com",
+        alt: "Your Logo",
+        style: { width: '200px', cursor: "pointer" }
+      },
+      // Add more logos as needed
+    },
+    typography: {
+      fontFamily: "Arial, sans-serif",
+    },
+    buttonStyles: {
+      light: "#000000",
+      main: "#1111111",
+      dark: "#abcdef",
+      contrastText: "#FFFFFF",
+    },
+  }
+  ```
+
+The components in the repository are already set up to use the theme configurations from `themeConstants.js`. 
+Except for uploading the necessary logos and graphics that will be used for branding, there is no need to change anything else in the components as the theme will be applied automatically based on the provided theme parameters.
 
 ## Consuming OCA Schema Bundle - Readme and Data entry Excel
 
