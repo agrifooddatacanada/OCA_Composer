@@ -39,26 +39,42 @@ export const themes = {
     typography: {
       fontFamily: "Roboto, sans-serif",
     },
+
     buttonStyles: {
       light: CustomPalette.WHITE,
       main: CustomPalette.PRIMARY,
       dark: CustomPalette.SECONDARY,
       contrastText: CustomPalette.WHITE,
     },
+
   },
 
-  /*BED: { //still in progress
-    primaryColor: "#121212",
-    secondaryColor: "#343434",
+  BED: { //still in progress
+    //primaryColor: "#121212",
+    //secondaryColor: "#343434",
     typography: {
       fontFamily: "Helvetica, sans-serif",
     },
+
+    logos: {
+      UofG_Cornerstone: {
+        url: '../assets/UofG_Cornerstone_wTagline_blk_rgb.png',
+        alt: "University of Guelph Logo",
+        style: { width: '200px', height: '100px', align: 'left' }
+      },
+      ON_POS_LOGO: {
+        url: '../assets/ON_POS_LOGO_RGB.PNG',
+        alt: "Ontario Logo",
+        style: { width: '200px', height: '100px', align: 'right' }
+      },
+    },
+
     buttonStyles: {
-      light: "#121212",
-      main: "#121212",
+      light: "#dc3545",
+      main: "#dc3545",
       dark: "#343434",
       contrastText: CustomPalette.WHITE,
     },
-  },*/
+  },
 
 };
