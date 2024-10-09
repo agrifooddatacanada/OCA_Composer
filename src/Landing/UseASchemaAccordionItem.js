@@ -11,12 +11,14 @@ import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
 import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 import { useTranslation } from 'react-i18next';
 import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
+import useGenerateMarkdownReadMe from '../ViewSchema/useGenerateMarkdownReadMe';
 
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
+  const { generateMarkdownReadMe } = useGenerateMarkdownReadMe()
   const { t } = useTranslation();
   const {
     rawFile,
@@ -47,6 +49,13 @@ const UseASchemaAccordionItem = () => {
   }
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
+
+  const buttonStyles = { 
+    backgroundColor: CustomPalette.PRIMARY, 
+    ":hover": { backgroundColor: CustomPalette.SECONDARY }, 
+    width: '100%', maxWidth: '300px', 
+    marginTop: '30px' 
+  };
 
   return (
     <AccordionItemWrapper>
@@ -88,7 +97,7 @@ const UseASchemaAccordionItem = () => {
             variant="contained"
             color="navButton"
             onClick={navigateToViewPage}
-            sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
+            sx={buttonStyles}
             disabled={disableButtonCheck}
           >
             {t('View Schema')}
@@ -97,7 +106,7 @@ const UseASchemaAccordionItem = () => {
             variant="contained"
             color="navButton"
             onClick={navigateToMetadataPage}
-            sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
+            sx={buttonStyles}
             disabled={disableButtonCheck}
           >
             {t('Edit Schema')}
@@ -112,11 +121,24 @@ const UseASchemaAccordionItem = () => {
                 jsonToTextFile(jsonToReadme);
               }
             }}
-            sx={{ backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY }, width: '100%', maxWidth: '300px', marginTop: '30px' }}
+            sx={buttonStyles}
             disabled={disableButtonCheck}
           >
             {t('Generate Readme')}
           </Button>
+          <Button
+              variant='contained'
+              color='navButton'
+              onClick={() => {
+                if (zipToReadme.length > 0) {
+                  generateMarkdownReadMe(zipToReadme);
+                }
+              }}
+              sx={buttonStyles}
+              disabled={disableButtonCheck}
+            >
+              {t('Generate Markdown Readme')}
+            </Button>
         </Box>
       </AccordionDetails>
     </AccordionItemWrapper>

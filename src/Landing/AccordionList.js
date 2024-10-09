@@ -18,6 +18,7 @@ import GenerateDataEntryExcel from './GenerateDataEntryExcel';
 import { useTranslation } from 'react-i18next';
 // import CollaborateOnASchema from './CollaborateOnASchema';
 import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
+import useGenerateMarkdownReadMe from '../ViewSchema/useGenerateMarkdownReadMe';
 
 const buttonStyles = {
   backgroundColor: CustomPalette.PRIMARY,
@@ -34,6 +35,7 @@ const AccordionList = () => {
   const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
+  const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
   const {
     rawFile,
     setRawFile,
@@ -220,6 +222,19 @@ const AccordionList = () => {
               disabled={disableButtonCheck}
             >
               {t('Generate Readme')}
+            </Button>
+            <Button
+              variant='contained'
+              color='navButton'
+              onClick={() => {
+                if (zipToReadme.length > 0) {
+                  generateMarkdownReadMe(zipToReadme);
+                }
+              }}
+              sx={buttonStyles}
+              disabled={disableButtonCheck}
+            >
+              {t('Generate Markdown Readme')}
             </Button>
             <GenerateDataEntryExcel rawFile={rawFile} setLoading={setLoading} disableButtonCheck={disableButtonCheck} />
             <Button
