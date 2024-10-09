@@ -19,6 +19,7 @@
   "View Schema": "View Schema",
   "Edit Schema": "Edit Schema",
   "Generate Readme": "Generate Readme",
+  "Generate Markdown Readme": "Generate Markdown Readme",
   "Generate Data Entry Excel": "Generate Data Entry Excel",
   "Schemas are an important piece of data documentation. Schemas work...": "Schemas are an important piece of data documentation. Schemas work together with a dataset and describe data features such as column names, units, and descriptions etc.",
   "Using the tools of the Semantic Engine you can write human- and machine-readable schemas": "Using the tools of the Semantic Engine you can write human- and machine-readable schemas.",

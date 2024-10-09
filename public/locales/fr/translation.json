@@ -18,6 +18,7 @@
   "View Schema": "Afficher le schéma",
   "Edit Schema": "Modifier le schéma",
   "Generate Readme": "Générer un fichier Readme",
+  "Generate Markdown Readme": "Générer un fichier Readme Markdown",
   "Generate Data Entry Excel": "Générer Excel de saisie de données",
   "Schemas are an important piece of data documentation. Schemas work...": "Les schémas sont un élément important de la documentation des données. Les schémas fonctionnent avec un ensemble de données et décrivent les caractéristiques des données telles que les noms de colonnes, les unités et les descriptions, etc.",
   "Using the tools of the Semantic Engine you can write human- and machine-readable schemas": "À l'aide des outils du moteur sémantique, vous pouvez écrire des schémas lisibles par l'homme et la machine.",
