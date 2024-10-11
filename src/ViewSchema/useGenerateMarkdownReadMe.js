@@ -41,6 +41,7 @@ const useGenerateMarkdownReadMe = () => {
     const captureBaseOverlay = layers.find((layer) => layer.layerName.includes("capture_base"));
     const attributeNames = Object.keys(captureBaseOverlay.attributes);
     
+    fileContent += generateFrontMatter(metaOverlayCurrentLanguage);
     fileContent += generateSchemaInformation(metaOverlayCurrentLanguage, captureBaseOverlay);
     fileContent += generateSchemaQuickView(layers, attributeNames, currentLanguageCode);
     fileContent += generateInternationalSchemaInformation(layers, languages);
@@ -54,9 +55,20 @@ const useGenerateMarkdownReadMe = () => {
   return { generateMarkdownReadMe };
 }
 
+const generateFrontMatter = (metaOverlay) => {
+  const markdownContent = [
+    "---\n",
+    "layout: default  \n",
+    `title: ${metaOverlay.name}  \n`,
+    "---\n\n"
+  ];
+
+  return markdownContent.join("");
+}
+
 const generateSchemaInformation = (metaOverlay, captureBaseOverlay) => {
   const markdownContent = [
-    "## Schema information\n",
+    "## Schema information\n\n",
     `**Name**: ${metaOverlay.name}  \n`,
     `**Description**: ${metaOverlay.description}  \n`
   ];
@@ -64,6 +76,8 @@ const generateSchemaInformation = (metaOverlay, captureBaseOverlay) => {
   if (captureBaseOverlay.classification) {
     markdownContent.push(`**Classification**: ${captureBaseOverlay.classification}  \n`);
   }
+
+  markdownContent.push("\n");
 
   return markdownContent.join("");
 }
@@ -77,7 +91,7 @@ const generateSchemaQuickView = (layers, attributeNames, currentLanguageCode) =>
   const labelOverlay = layers.find(
     (layer) => layer.layerName.includes("label") && (layer.language === currentLanguageCode || layer.language === DEFAULT_LANGUAGE_CODE)
   );
-  const markdownContent = ["## Schema quick view\n"];
+  const markdownContent = ["## Schema quick view\n\n"];
 
   const columns = ["Attribute", "Label", "Description"];
   const rows = attributeNames.map((attribute) => {
@@ -86,7 +100,7 @@ const generateSchemaQuickView = (layers, attributeNames, currentLanguageCode) =>
     return [attribute, label, description];
   });
 
-  markdownContent.push(generateTable(columns, rows), "\n");
+  markdownContent.push(generateTable(columns, rows), "\n\n");
 
   return markdownContent.join("");
 }
@@ -94,7 +108,7 @@ const generateSchemaQuickView = (layers, attributeNames, currentLanguageCode) =>
 // It can be safe to assume that schema name and description in at least one language exists
 // because a schema bundle cannot be created without a name and description
 const generateInternationalSchemaInformation = (layers, languages) => {
-  const markdownContent = ["## International schema information\n"];
+  const markdownContent = ["## International schema information\n\n"];
   const columns = ["Language", "Name", "Description"];
   const rows = [];
 
@@ -105,13 +119,13 @@ const generateInternationalSchemaInformation = (layers, languages) => {
     rows.push([language, metaOverlay.name, metaOverlay.description]);
   });
 
-  markdownContent.push(generateTable(columns, rows), "\n");
+  markdownContent.push(generateTable(columns, rows), "\n\n");
 
   return markdownContent.join("");
 }
 
 const generateEntryCodeTables = (layers, languages) => {
-  const markdownContent = ["## Selection lists\n"];
+  const markdownContent = ["## Selection lists\n\n"];
   const columns = ["Entry code", "Label"];
 
   languages.forEach((language) => {
@@ -119,12 +133,12 @@ const generateEntryCodeTables = (layers, languages) => {
     const entryOverlay = layers.find((layer) => layer.layerName.includes('entry/') && layer.language === languageCode);
     if (!entryOverlay) return;
 
-    markdownContent.push(`### ${language}\n`);
+    markdownContent.push(`### ${language}\n\n`);
 
     // Generate a table for each attribute with entry codes
     for (const attribute in entryOverlay.attribute_entries) {
       const rows = [];
-      markdownContent.push(`#### ${attribute} entry codes\n`);
+      markdownContent.push(`#### ${attribute} entry codes\n\n`);
       const entryCodeToLabelMap = entryOverlay.attribute_entries[attribute];
 
       for (const entryCode in entryCodeToLabelMap) {
@@ -132,7 +146,7 @@ const generateEntryCodeTables = (layers, languages) => {
         rows.push([entryCode, label]);
       }
 
-      markdownContent.push(generateTable(columns, rows), "\n");
+      markdownContent.push(generateTable(columns, rows), "\n\n");
     }
   });
 
@@ -142,11 +156,11 @@ const generateEntryCodeTables = (layers, languages) => {
 }
 
 const generateExtendedSchemaDetailsTable = (layers, captureBaseOverlay, attributeNames, languages) => {
-  const markdownContent = ["## Schema details\n"];
+  const markdownContent = ["## Schema details\n\n"];
   const columns = ["Attribute", "Sensitive", "Unit", "Type", "Label", "Description", "List", "Character encoding"];
 
   languages.forEach((language) => {
-    markdownContent.push(`### ${language}\n`);
+    markdownContent.push(`### ${language}\n\n`);
     const languageCode = languageCodesObject[language.toLowerCase()];
     const informationOverlay = layers.find((layer) => layer.layerName.includes("information") && layer.language === languageCode);
     const labelOverlay = layers.find((layer) => layer.layerName.includes("label") && layer.language === languageCode);
@@ -227,15 +241,15 @@ const generateExtendedSchemaDetailsTable = (layers, captureBaseOverlay, attribut
       return row;
     });
 
-    markdownContent.push(generateTable(columns, rows), "\n");
+    markdownContent.push(generateTable(columns, rows), "\n\n");
   });
 
   return markdownContent.join("");
 }
 
 function generateSAIDTable(captureBaseSAID, layerToSAIDMap) {
-  const markdownContent = ["## Schema SAIDs\n"];
-  markdownContent.push(`**Capture base**: ${captureBaseSAID}\n`);
+  const markdownContent = ["## Schema SAIDs\n\n"];
+  markdownContent.push(`**Capture base**: ${captureBaseSAID}\n\n`);
 
   const columns = ["Layer", "SAID"];
   const rows = [];
