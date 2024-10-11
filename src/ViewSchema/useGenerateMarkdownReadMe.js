@@ -4,6 +4,7 @@ import { useContext } from "react";
 import { Context } from "../App";
 import i18next from "i18next";
 import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
+import { DEFAULT_LANGUAGE_CODE } from "../constants/constants";
 
 const useGenerateMarkdownReadMe = () => {
   const { languages } = useContext(Context);
@@ -34,23 +35,26 @@ const useGenerateMarkdownReadMe = () => {
       });
     });
 
+    const metaOverlayCurrentLanguage = layers.find(
+      (layer) => layer.layerName.includes("meta") && (layer.language === currentLanguageCode || layer.language === DEFAULT_LANGUAGE_CODE)
+    );
     const captureBaseOverlay = layers.find((layer) => layer.layerName.includes("capture_base"));
     const attributeNames = Object.keys(captureBaseOverlay.attributes);
     
-    fileContent += generateSchemaInformation(layers, captureBaseOverlay, currentLanguageCode);
+    fileContent += generateSchemaInformation(metaOverlayCurrentLanguage, captureBaseOverlay);
     fileContent += generateSchemaQuickView(layers, attributeNames, currentLanguageCode);
     fileContent += generateInternationalSchemaInformation(layers, languages);
     fileContent += generateEntryCodeTables(layers, languages);
     fileContent += generateExtendedSchemaDetailsTable(layers, captureBaseOverlay, attributeNames, languages);
     fileContent += generateSAIDTable(captureBaseSAID, layerToSAIDMap);
 
-    downloadMarkdownFile(fileContent);
+    const fileName = `${metaOverlayCurrentLanguage.name.split(" ")[0]}_OCA_schema.md`;
+    downloadMarkdownFile(fileContent, fileName);
   }
   return { generateMarkdownReadMe };
 }
 
-const generateSchemaInformation = (layers, captureBaseOverlay, currentLanguageCode) => {
-  const metaOverlay = layers.find((layer) => layer.layerName.includes("meta") && layer.language === currentLanguageCode);
+const generateSchemaInformation = (metaOverlay, captureBaseOverlay) => {
   const markdownContent = [
     "## Schema information\n",
     `**Name**: ${metaOverlay.name}  \n`,
@@ -67,8 +71,12 @@ const generateSchemaInformation = (layers, captureBaseOverlay, currentLanguageCo
 const generateSchemaQuickView = (layers, attributeNames, currentLanguageCode) => {
   // Label and information overlays will always exist even if attributes don't have a label and description
   // In case of no label or description, their values will be empty string
-  const informationOverlay = layers.find((layer) => layer.layerName.includes("information") && layer.language === currentLanguageCode);
-  const labelOverlay = layers.find((layer) => layer.layerName.includes("label") && layer.language === currentLanguageCode);
+  const informationOverlay = layers.find(
+    (layer) => layer.layerName.includes("information") && (layer.language === currentLanguageCode || layer.language === DEFAULT_LANGUAGE_CODE)
+  );
+  const labelOverlay = layers.find(
+    (layer) => layer.layerName.includes("label") && (layer.language === currentLanguageCode || layer.language === DEFAULT_LANGUAGE_CODE)
+  );
   const markdownContent = ["## Schema quick view\n"];
 
   const columns = ["Attribute", "Label", "Description"];
@@ -251,14 +259,14 @@ const escapeMarkdownSpecialCharacters = (pattern) => {
   return pattern.replace(/([\\`*_{}[\]()#+\-.!|~])/g, '\\$1');
 }
 
-const downloadMarkdownFile = (markdownContent) => {
+const downloadMarkdownFile = (markdownContent, fileName) => {
 
   const blob = new Blob([markdownContent], { type: "text/markdown" });
   const downloadUrl = URL.createObjectURL(blob);
 
   const link = document.createElement("a");
   link.href = downloadUrl;
-  link.download = "README_OCA_schema.md";
+  link.download = fileName;
   document.body.appendChild(link);
   link.click();
 
