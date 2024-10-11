@@ -1,3 +1,5 @@
+export const DEFAULT_LANGUAGE_CODE = "en";
+
 export const classification = {
   "": [""],
   "Natural sciences": ["Mathematics and statistics", "Computer and information sciences", "Physical sciences", "Chemical sciences", "Earth and related environmental sciences", "Biological sciences", "Other natural sciences"],
