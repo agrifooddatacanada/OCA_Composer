@@ -14,6 +14,43 @@ The OCA Composer is written in React and deployed to a virtual machine which ser
 
 OCA Composer lets users upload a copy of a dataset which is stored in the users local environment, but OCA Composer only uses this to access the first row of the first sheet (if Excel) for attribute names. The data itself is not used further by OCA Composer and does not leave the users computer.
 
+## OCA Composer Theme Re-Branding
+
+The OCA Composer repository supports whitelabeling, allowing you to customize the theme and branding for different entities. 
+In `src/constants`, the file `themeConstants.js` contains theme configurations for different entities. 
+Here the users can add a new theme object with the specific site attributes, such as colors, logos and URLs. 
+
+Follow a format like the following:
+
+```javascript
+// Add your custom theme here
+  yourTheme: {
+    primaryColor: "#000000",
+    secondaryColor: "#111111",
+    logos: {
+      yourLogo: {
+        url: '../assets/your-logo.png',
+        website: "https://yourwebsite.com",
+        alt: "Your Logo",
+        style: { width: '200px', cursor: "pointer" }
+      },
+      // Add more logos as needed
+    },
+    typography: {
+      fontFamily: "Arial, sans-serif",
+    },
+    buttonStyles: {
+      light: "#000000",
+      main: "#1111111",
+      dark: "#abcdef",
+      contrastText: "#FFFFFF",
+    },
+  }
+  ```
+
+The components in the repository are already set up to use the theme configurations from `themeConstants.js`. 
+Except for uploading the necessary logos and graphics that will be used for branding, there is no need to change anything else in the components as the theme will be applied automatically based on the provided theme parameters.
+
 ## Consuming OCA Schema Bundle - Readme and Data entry Excel
 
 The JSON schema bundle can be consumed by several tools within the ADC/OCA ecosystem.
