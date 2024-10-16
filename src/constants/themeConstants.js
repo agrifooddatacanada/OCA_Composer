@@ -50,8 +50,10 @@ export const themes = {
   },
 
   BED: { //still in progress
+
     //primaryColor: "#121212",
     //secondaryColor: "#343434",
+
     typography: {
       fontFamily: "Helvetica, sans-serif",
     },
