@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 // import CollaborateOnASchema from './CollaborateOnASchema';
 import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
 import useGenerateMarkdownReadMe from '../ViewSchema/useGenerateMarkdownReadMe';
+import useGenerateMarkdownReadMeFromJson from '../ViewSchema/useGenerateMarkdownReadMeFromJson';
 
 const buttonStyles = {
   backgroundColor: CustomPalette.PRIMARY,
@@ -36,6 +37,7 @@ const AccordionList = () => {
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
+  const { generateMarkdownReadMeFromJson } = useGenerateMarkdownReadMeFromJson();
   const {
     rawFile,
     setRawFile,
@@ -79,6 +81,17 @@ const AccordionList = () => {
     setRawFile(acceptedFiles);
     setJsonRawFile(acceptedFiles);
   }
+
+  const handleClickMarkdownReadme = () => {
+    const jsonSchemaIsUploaded = Object.keys(jsonToReadme).length > 0;
+    if (jsonSchemaIsUploaded) {
+      generateMarkdownReadMeFromJson(jsonToReadme);
+      return;
+    }
+    if (zipToReadme.length > 0) {
+      generateMarkdownReadMe(zipToReadme);
+    }
+  };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
 
@@ -226,11 +239,7 @@ const AccordionList = () => {
             <Button
               variant='contained'
               color='navButton'
-              onClick={() => {
-                if (zipToReadme.length > 0) {
-                  generateMarkdownReadMe(zipToReadme);
-                }
-              }}
+              onClick={handleClickMarkdownReadme}
               sx={buttonStyles}
               disabled={disableButtonCheck}
             >
