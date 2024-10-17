@@ -210,15 +210,6 @@ export const generateSAIDTable = (captureBaseSAID, layerToSAIDMap) => {
   return markdownContent.join("");
 }
 
-export const getModifiedLayer = (overlay) => {
-  const {capture_base, type, d: digest, ...rest } = overlay;
-  return {
-    layerName: type.split("/").slice(-2).join("/"),
-    digest,
-    ...rest
-  };
-}
-
 export const downloadMarkdownFile = (markdownContent, fileName) => {
   const blob = new Blob([markdownContent], { type: "text/markdown" });
   const downloadUrl = URL.createObjectURL(blob);

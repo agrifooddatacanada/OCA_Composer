@@ -1,5 +1,3 @@
-import { DEFAULT_LANGUAGE_CODE } from "./constants";
-
 export const languageCodesObject = {
   afar: "aa",
   abkhazian: "ab",

@@ -12,7 +12,6 @@ import {
   generateSAIDTable, 
   generateSchemaInformation, 
   generateSchemaQuickView,
-  getModifiedLayer
 } from "./markdownReadmeUtils";
 
 const useGenerateMarkdownReadMeFromJson = () => {
@@ -71,6 +70,15 @@ const useGenerateMarkdownReadMeFromJson = () => {
   }
 
   return { generateMarkdownReadMeFromJson };
+}
+
+const getModifiedLayer = (overlay) => {
+  const {capture_base, type, d: digest, ...rest } = overlay;
+  return {
+    layerName: type.split("/").slice(-2).join("/"),
+    digest,
+    ...rest
+  };
 }
 
 export default useGenerateMarkdownReadMeFromJson;
