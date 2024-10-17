@@ -12,13 +12,15 @@ import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
 import { useTranslation } from 'react-i18next';
 import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
 import useGenerateMarkdownReadMe from '../ViewSchema/useGenerateMarkdownReadMe';
+import useGenerateMarkdownReadMeFromJson from '../ViewSchema/useGenerateMarkdownReadMeFromJson';
 
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
-  const { generateMarkdownReadMe } = useGenerateMarkdownReadMe()
+  const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
+  const { generateMarkdownReadMeFromJson } = useGenerateMarkdownReadMeFromJson();
   const { t } = useTranslation();
   const {
     rawFile,
@@ -49,6 +51,17 @@ const UseASchemaAccordionItem = () => {
   }
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
+
+  const handleClickMarkdownReadme = () => {
+    const jsonSchemaIsUploaded = Object.keys(jsonToReadme).length > 0;
+    if (jsonSchemaIsUploaded) {
+      generateMarkdownReadMeFromJson(jsonToReadme);
+      return;
+    }
+    if (zipToReadme.length > 0) {
+      generateMarkdownReadMe(zipToReadme);
+    }
+  };
 
   const buttonStyles = { 
     backgroundColor: CustomPalette.PRIMARY, 
@@ -129,11 +142,7 @@ const UseASchemaAccordionItem = () => {
           <Button
               variant='contained'
               color='navButton'
-              onClick={() => {
-                if (zipToReadme.length > 0) {
-                  generateMarkdownReadMe(zipToReadme);
-                }
-              }}
+              onClick={handleClickMarkdownReadme}
               sx={buttonStyles}
               disabled={disableButtonCheck}
             >

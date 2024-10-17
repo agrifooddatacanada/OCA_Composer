@@ -1,4 +1,5 @@
 export const DEFAULT_LANGUAGE_CODE = "en";
+export const DEFAULT_THREE_LETTER_LANGUAGE_CODE = "eng";
 
 export const classification = {
   "": [""],
