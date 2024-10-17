@@ -16,6 +16,8 @@ import LearnAboutDataVerification from './OCADataValidator/LearnAboutDataVerific
 import OCAMerge from './OCAMerge/OCAMerge';
 import Tutorial from './Tutorial/Tutorial';
 
+import { environmentConfig } from './components/environmentConfig';
+
 export const Context = createContext();
 
 //Initializing react-ga with google analytics ID
@@ -342,6 +344,24 @@ function App() {
     setIsZip(false);
     setZipToReadme([]);
   }, [fileData, jsonRawFile]);
+
+
+  // Add state for environmental variables
+  const [env, setEnv] = useState(environmentConfig);
+
+  // Function to handle file download
+  const handleDownload = () => {
+    const textData = "sampleText file";
+    const blob = new Blob([textData], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'sample.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <div className='App'>
