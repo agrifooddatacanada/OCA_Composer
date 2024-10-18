@@ -1,20 +1,20 @@
-import './App.css';
-import { Box, ThemeProvider } from '@mui/material';
-import { CustomTheme } from './constants/theme';
-import { useRef, useState } from 'react';
-import { useEffect, createContext } from 'react';
-import Home from './Home';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import StartSchemaHelp from './UsersHelp/Start_Schema_Help';
-import { getListOfSelectedOverlays } from './constants/getListOfSelectedOverlays';
-import Landing from './Landing/Landing';
-import ReactGA from 'react-ga4';
-import HelpStorage from './Landing/HelpStorage';
-import OCADataValidator from './OCADataValidator/OCADataValidator';
-import LearnAboutSchemaRule from './OCADataValidator/LearnAboutSchemaRule';
-import LearnAboutDataVerification from './OCADataValidator/LearnAboutDataVerification';
-import OCAMerge from './OCAMerge/OCAMerge';
-import Tutorial from './Tutorial/Tutorial';
+import "./App.css";
+import { Box, ThemeProvider } from "@mui/material";
+import { CustomTheme } from "./constants/theme";
+import { useRef, useState } from "react";
+import { useEffect, createContext } from "react";
+import Home from "./Home";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
+import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
+import Landing from "./Landing/Landing";
+import ReactGA from "react-ga4";
+import HelpStorage from "./Landing/HelpStorage";
+import OCADataValidator from "./OCADataValidator/OCADataValidator";
+import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
+import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
+import OCAMerge from "./OCAMerge/OCAMerge";
+import Tutorial from "./Tutorial/Tutorial";
 
 export const Context = createContext();
 
@@ -22,25 +22,25 @@ export const Context = createContext();
 ReactGA.initialize(process.env.REACT_APP_GA_ID);
 
 const items = {
-  'Character Encoding': { feature: 'Character Encoding', selected: false },
-  'Make selected entries required': {
-    feature: 'Make selected entries required',
+  "Character Encoding": { feature: "Character Encoding", selected: false },
+  "Make selected entries required": {
+    feature: "Make selected entries required",
     selected: false,
   },
-  'Add format rule for data': {
-    feature: 'Add format rule for data',
+  "Add format rule for data": {
+    feature: "Add format rule for data",
     selected: false,
   },
-  "Cardinality": { feature: "Cardinality", selected: false }
+  Cardinality: { feature: "Cardinality", selected: false },
 };
 
 export const pagesArray = [
-  'Start',
-  'Metadata',
-  'Details',
-  'LanguageDetails',
-  'Overlays',
-  'View',
+  "Start",
+  "Metadata",
+  "Details",
+  "LanguageDetails",
+  "Overlays",
+  "View",
 ];
 
 function App() {
@@ -51,18 +51,20 @@ function App() {
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
-  const [currentPage, setCurrentPage] = useState('Landing');
-  const [currentDataValidatorPage, setCurrentDataValidatorPage] = useState('StartDataValidator');
-  const [currentOCAMergePage, setCurrentOCAMergePage] = useState('StartOCAMerge');
+  const [currentPage, setCurrentPage] = useState("Landing");
+  const [currentDataValidatorPage, setCurrentDataValidatorPage] =
+    useState("StartDataValidator");
+  const [currentOCAMergePage, setCurrentOCAMergePage] =
+    useState("StartOCAMerge");
   const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
-    English: { name: '', description: '' },
+    English: { name: "", description: "" },
   });
   const [divisionGroup, setDivisionGroup] = useState({
-    division: '',
-    group: '',
+    division: "",
+    group: "",
   });
-  const [languages, setLanguages] = useState(['English']);
+  const [languages, setLanguages] = useState(["English"]);
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
@@ -75,7 +77,7 @@ function App() {
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(items);
-  const [selectedOverlay, setSelectedOverlay] = useState('');
+  const [selectedOverlay, setSelectedOverlay] = useState("");
   const [cardinalityData, setCardinalityData] = useState([]);
 
   // Use for OCA Validator
@@ -88,8 +90,11 @@ function App() {
   const [datasetLoading, setDatasetLoading] = useState(false);
   const [datasetDropDisabled, setDatasetDropDisabled] = useState(false);
   const [datasetIsParsed, setDatasetIsParsed] = useState(false);
-  const [schemaDataConformantHeader, setSchemaDataConformantHeader] = useState([]);
-  const [schemaDataConformantRowData, setSchemaDataConformantRowData] = useState([]);
+  const [schemaDataConformantHeader, setSchemaDataConformantHeader] = useState(
+    []
+  );
+  const [schemaDataConformantRowData, setSchemaDataConformantRowData] =
+    useState([]);
   const [matchingRowData, setMatchingRowData] = useState([]);
   const firstTimeMatchingRef = useRef(true);
   const [ogWorkbook, setOgWorkbook] = useState(null);
@@ -103,7 +108,8 @@ function App() {
   const [chosenEntryCodeIndex, setChosenEntryCodeIndex] = useState(-1);
   const [tempEntryCodeSummary, setTempEntryCodeSummary] = useState(undefined);
   const [tempEntryList, setTempEntryList] = useState([]);
-  const [firstNavigationToDataset, setFirstNavigationToDataset] = useState(false);
+  const [firstNavigationToDataset, setFirstNavigationToDataset] =
+    useState(false);
   const [excelSheetChoice, setExcelSheetChoice] = useState(-1);
 
   const [OCAFile1Raw, setOCAFile1Raw] = useState("");
@@ -112,7 +118,10 @@ function App() {
   const [parsedOCAFile2, setParsedOCAFile2] = useState("");
   const [selectedOverlaysOCAFile1, setSelectedOverlaysOCAFile1] = useState({});
   const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState({});
-  const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
+  const [datasetDropMessage, setDatasetDropMessage] = useState({
+    message: "",
+    type: "",
+  });
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -133,7 +142,11 @@ function App() {
   };
 
   useEffect(() => {
-    if (datasetRawFile.length > 0 && ogSchemaDataConformantHeaderRef.current.length === 0 && schemaDataConformantHeader.length > 0) {
+    if (
+      datasetRawFile.length > 0 &&
+      ogSchemaDataConformantHeaderRef.current.length === 0 &&
+      schemaDataConformantHeader.length > 0
+    ) {
       ogSchemaDataConformantHeaderRef.current = schemaDataConformantHeader;
     } else if (schemaDataConformantHeader.length === 0) {
       ogSchemaDataConformantHeaderRef.current = [];
@@ -178,8 +191,8 @@ function App() {
           newAttributesArray.push({
             Attribute: item,
             Flagged: false,
-            Unit: '',
-            Type: '',
+            Unit: "",
+            Type: "",
             List: false,
           });
         }
@@ -192,7 +205,7 @@ function App() {
         } else {
           const newCharacterEncodingRow = { Attribute: item };
           selectedFeatures.forEach((feature) => {
-            newCharacterEncodingRow[feature] = '';
+            newCharacterEncodingRow[feature] = "";
           });
           newCharacterEncodingArray.push(newCharacterEncodingRow);
         }
@@ -215,7 +228,7 @@ function App() {
         newFormatRuleArray.push({
           Attribute: item.Attribute,
           Type: item.Type,
-          FormatText: '',
+          FormatText: "",
         });
       }
     });
@@ -232,10 +245,10 @@ function App() {
         );
         const newObj = {
           Attribute: item,
-          Dataset: ''
+          Dataset: "",
         };
         if (matchingRow) {
-          newObj['Dataset'] = matchingRow['Dataset'];
+          newObj["Dataset"] = matchingRow["Dataset"];
         }
         languages.forEach((lang) => {
           newObj[lang] = lanAttributeRowData?.[lang]?.[index]?.Label;
@@ -253,9 +266,9 @@ function App() {
   ) {
     const newEntryCodesArray = [];
 
-    const newEntryCodeRow = { Code: '' };
+    const newEntryCodeRow = { Code: "" };
     languages.forEach((lang) => {
-      newEntryCodeRow[lang] = '';
+      newEntryCodeRow[lang] = "";
     });
 
     if (attributesWithLists.length > 0) {
@@ -302,15 +315,15 @@ function App() {
   //Re-set all fields when fileData updates
   useEffect(() => {
     setSchemaDescription({
-      English: { name: '', description: '' },
+      English: { name: "", description: "" },
     });
 
     setDivisionGroup({
-      division: '',
-      group: '',
+      division: "",
+      group: "",
     });
 
-    setLanguages(['English']);
+    setLanguages(["English"]);
     setAttributeRowData([]);
     setEntryCodeRowData([]);
     setAttributesWithLists([]);
@@ -321,7 +334,7 @@ function App() {
   }, [fileData, jsonRawFile]);
 
   return (
-    <div className='App'>
+    <div className="App">
       <ThemeProvider theme={CustomTheme}>
         <Context.Provider
           value={{
@@ -432,21 +445,21 @@ function App() {
             datasetDropMessage,
             setDatasetDropMessage,
             notToVerifyAttributes,
-            setNotToVerifyAttributes
+            setNotToVerifyAttributes,
           }}
         >
           <Box
             sx={{
-              minHeight: '100vh',
-              display: 'flex',
-              flexDirection: 'column',
+              minHeight: "100vh",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
             <BrowserRouter>
               <Routes>
-                <Route path='/' element={<Landing />} />
+                <Route path="/" element={<Landing />} />
                 <Route
-                  path='/start'
+                  path="/start"
                   element={
                     <Home
                       currentPage={currentPage}
@@ -459,34 +472,34 @@ function App() {
                   }
                 />
                 <Route
-                  path='/oca-data-validator'
-                  element={
-                    <OCADataValidator />
-                  }
+                  path="/oca-data-validator"
+                  element={<OCADataValidator />}
                 />
                 {/* <Route
                   path='/help_designing_datasets'
                   element={<GuidanceForDesigningDataSets />}
                 /> */}
-                <Route path='/help_storage' element={<HelpStorage />} />
+                <Route path="/help_storage" element={<HelpStorage />} />
                 <Route
-                  path='/start_schema_help'
+                  path="/start_schema_help"
                   element={<StartSchemaHelp />}
                 />
                 <Route
-                  path='/learn_schema_rule'
+                  path="/learn_schema_rule"
                   element={<LearnAboutSchemaRule />}
                 />
                 <Route
-                  path='/learn_data_verification'
+                  path="/learn_data_verification"
                   element={<LearnAboutDataVerification />}
                 />
-                <Route path='*' element={<Navigate to='/' />} />
+                <Route path="*" element={<Navigate to="/" />} />
                 <Route
-                  path='/oca-merge'
-                  element={<OCAMerge currentOCAMergePage={currentOCAMergePage} />}
+                  path="/oca-merge"
+                  element={
+                    <OCAMerge currentOCAMergePage={currentOCAMergePage} />
+                  }
                 />
-                <Route path='/tutorial' element={<Tutorial />} />
+                <Route path="/tutorial" element={<Tutorial />} />
               </Routes>
             </BrowserRouter>
           </Box>

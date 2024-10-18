@@ -162,7 +162,6 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         return columnLetter;
       }
 
-      //   /// Creating first sheet
       const sheet1 = workbook.addWorksheet('Schema Description');
 
       let schemaName = null, schemaDescription = null,
@@ -175,7 +174,6 @@ export function generateDataEntry(acceptedFiles, setLoading) {
         schemaDescription = metaOverlay.description;
         schemaLanguage = metaOverlay.language;
         schemaClassification = jsonData.find(o => o.type && o.type.includes('/capture_base/')).classification;
-        // schemaSAID = json.d;
         schemaSAID = "Unavailable";
 
       } catch (error) {
