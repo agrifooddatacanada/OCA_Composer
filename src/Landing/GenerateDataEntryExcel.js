@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Context } from "../App";
 import {
   Button,
@@ -64,7 +64,12 @@ const GenerateDataEntryExcel = ({
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
 
   const [open, setOpen] = useState(false);
-  const [selectedLang, setSelectedLang] = useState("");
+  const defaultLang = languages.includes("English") ? "English" : languages[0];
+  const [selectedLang, setSelectedLang] = useState(defaultLang);
+
+  useEffect(() => {
+    setSelectedLang(defaultLang);
+  }, [defaultLang]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -75,7 +80,6 @@ const GenerateDataEntryExcel = ({
     if (confirm && selectedLang) {
       downloadDataEntry(rawFile, setLoading, selectedLang);
     }
-    setSelectedLang("");
   };
 
   const handleLangChange = (event) => {
@@ -157,10 +161,12 @@ const GenerateDataEntryExcel = ({
             textAlign: "center",
           }}
         >
-          <strong>
-            Include information in the language that you select here.
-          </strong>
-          <strong>If not available the system will default to English.</strong>
+          <Typography sx={{ fontSize: "20px", fontWeight: "bold" }}>
+            Include information in the language that you select here. <br />
+            If not available the system will default to English or first
+            language in the schema.
+          </Typography>
+          
           <Box sx={{ marginTop: 4 }}>
             <FormControl
               sx={{

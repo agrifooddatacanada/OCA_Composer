@@ -1,4 +1,12 @@
-import React, { useState, useRef, useEffect, useContext, useCallback, memo, forwardRef } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useContext,
+  useCallback,
+  memo,
+  forwardRef,
+} from "react";
 import { AgGridReact } from "ag-grid-react";
 import { Context } from "../App";
 import { greyCellStyle } from "../constants/styles";
@@ -8,7 +16,7 @@ import { getListOfSelectedOverlays } from "../constants/getListOfSelectedOverlay
 import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
-import { Box, MenuItem, Typography } from "@mui/material";
+import { Box, MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 
 const gridStyles = `
@@ -43,7 +51,7 @@ const gridStyles = `
 const defaultColDef = {
   width: 120,
   editable: false,
-  cellStyle: () => greyCellStyle
+  cellStyle: () => greyCellStyle,
 };
 
 const CheckboxRenderer = ({ value }) => {
@@ -68,7 +76,7 @@ export const ListRenderer = memo(
       setIsDropdownOpen(!isDropdownOpen);
     };
 
-    console.log('props.data', props.data);
+    console.log("props.data", props.data);
 
     const typesDisplay = props.data?.List?.split(" | ").map((value, index) => {
       return (
@@ -82,26 +90,31 @@ export const ListRenderer = memo(
       );
     });
 
-
     return (
       <>
-        {props.data?.List === 'Not a List' ?
-          (<Box>Not a List </Box>)
-          : <DropdownMenuList
-            handleKeyDown={() => { }}
+        {props.data?.List === "Not a List" ? (
+          <Box>Not a List </Box>
+        ) : (
+          <DropdownMenuList
+            handleKeyDown={() => {}}
             type={props.node.data.List.substring(0, 18)}
             handleChange={handleChange}
             handleClick={handleClick}
             isDropdownOpen={isDropdownOpen}
             setIsDropdownOpen={setIsDropdownOpen}
             typesDisplay={typesDisplay}
-          />}
+          />
+        )}
       </>
     );
   })
 );
 
-export default function ViewGrid({ displayArray, currentLanguage, setLoading }) {
+export default function ViewGrid({
+  displayArray,
+  currentLanguage,
+  setLoading,
+}) {
   const { t } = useTranslation();
   const { overlay, cardinalityData } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -118,25 +131,36 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           field: "Attribute",
           headerName: t("Attributes"),
           autoHeight: true,
-          headerComponent: () => <CellHeader headerText={t("Attributes")} helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
+          headerComponent: () => (
+            <CellHeader
+              headerText={t("Attributes")}
+              helpText="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
+            />
+          ),
         },
         {
           field: "Flagged",
           width: 98,
-          headerComponent: () => <CellHeader
-            headerText={t('Sensitive')}
-            helpText={
-              <>
-                <div>
-                  {t('If the attribute could be considered Personally Identifiable...')}
-                </div>
-                <br />
-                <div>
-                  {t('Examples of PII include names, locations, postal codes...')}
-                </div>
-              </>
-            }
-          />,
+          headerComponent: () => (
+            <CellHeader
+              headerText={t("Sensitive")}
+              helpText={
+                <>
+                  <div>
+                    {t(
+                      "If the attribute could be considered Personally Identifiable..."
+                    )}
+                  </div>
+                  <br />
+                  <div>
+                    {t(
+                      "Examples of PII include names, locations, postal codes..."
+                    )}
+                  </div>
+                </>
+              }
+            />
+          ),
           cellRenderer: CheckboxRenderer,
         },
         {
@@ -144,35 +168,66 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           headerName: t("Unit"),
           width: 90,
           autoHeight: true,
-          headerComponent: () => <CellHeader headerText={t('Unit')} helpText={t('The units of each attribute (or leave blank if the attribute is...')} />
+          headerComponent: () => (
+            <CellHeader
+              headerText={t("Unit")}
+              helpText={t(
+                "The units of each attribute (or leave blank if the attribute is..."
+              )}
+            />
+          ),
         },
         {
           field: "Type",
           headerName: t("Type"),
           autoHeight: true,
-          headerComponent: () => <CellHeader headerText={t("Type")} helpText={<TypeTooltip />} />
+          headerComponent: () => (
+            <CellHeader headerText={t("Type")} helpText={<TypeTooltip />} />
+          ),
         },
         {
           field: "Label",
           autoHeight: true,
           width: 170,
-          headerComponent: () => <CellHeader headerText={t("Label")} constraint='max 50 chars' helpText={t('This is the language specific label for an attribute')} />
-
+          headerComponent: () => (
+            <CellHeader
+              headerText={t("Label")}
+              constraint="max 50 chars"
+              helpText={t(
+                "This is the language specific label for an attribute"
+              )}
+            />
+          ),
         },
         {
           field: "Description",
           flex: 1,
           minWidth: 350,
           autoHeight: true,
-          headerComponent: () => <CellHeader headerText={t('Description')} constraint={t('max 200 chars')} helpText={t('This is a language specific description of the attribute...')} />
+          headerComponent: () => (
+            <CellHeader
+              headerText={t("Description")}
+              constraint={t("max 200 chars")}
+              helpText={t(
+                "This is a language specific description of the attribute..."
+              )}
+            />
+          ),
         },
         {
           field: "List",
           headerName: t("List"),
           width: 173,
           autoHeight: true,
-          headerComponent: () => <CellHeader headerText={t("List")} helpText={t("Rather than allow free text entry into a record, you may...")} />,
-          cellRenderer: ListRenderer
+          headerComponent: () => (
+            <CellHeader
+              headerText={t("List")}
+              helpText={t(
+                "Rather than allow free text entry into a record, you may..."
+              )}
+            />
+          ),
+          cellRenderer: ListRenderer,
         },
       ];
 
@@ -185,11 +240,18 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
           headerComponent: () => {
             return (
               <span style={{ margin: "auto" }}>
-                {feature === 'Make selected entries required' ? t('Required Entry') : feature === 'Add format rule for data' ? t("Format Rules") : t(feature)}
+                {feature === "Make selected entries required"
+                  ? t("Required Entry")
+                  : feature === "Add format rule for data"
+                  ? t("Format Rules")
+                  : t(feature)}
               </span>
             );
           },
-          cellRenderer: feature === 'Make selected entries required' ? CheckboxRenderer : null,
+          cellRenderer:
+            feature === "Make selected entries required"
+              ? CheckboxRenderer
+              : null,
         });
       });
 
@@ -217,7 +279,7 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
   }, [displayArray, cardinalityData, currentLanguage]);
 
   return (
-    <div className="ag-theme-balham" style={{ width: '100%' }}>
+    <div className="ag-theme-balham" style={{ width: "100%" }}>
       <style>{gridStyles}</style>
       <AgGridReact
         rowData={rowData}
