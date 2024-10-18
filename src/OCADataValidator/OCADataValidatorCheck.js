@@ -714,20 +714,6 @@ const OCADataValidatorCheck = ({
     } catch (error) {
       console.error("Error generating DataEntryExcel file:", error);
     }
-
-    //   newData.forEach((data) => {
-    //     const row = schemaConformantDataHeaders.map(
-    //       (header) => data[header] || ""
-    //     );
-    //     const addedRow = schemaConformantDataSheet.addRow(row);
-    //     addedRow.eachCell((cell) => {
-    //       formatAttr(cell);
-    //     });
-    //   });
-    //   return workbook;
-    // } catch (error) {
-    //   console.error("Error generating DataEntryExcel file:", error);
-    // }
   };
 
   function formatHeader(cell) {
