@@ -8,7 +8,14 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Box, Button, Drawer, IconButton, MenuItem, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Drawer,
+  IconButton,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import { AgGridReact } from "ag-grid-react";
 import "../App.css";
@@ -36,7 +43,7 @@ import { CreateDataEntryExcel } from "../Landing/CreateDataEntryExcel";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import ViewSchema from "../ViewSchema/ViewSchema";
-import CloseIcon from '../assets/icon-close.png';
+import CloseIcon from "../assets/icon-close.png";
 import AutoCompleteEditor from "../components/AutoCompleteEditor";
 
 export const TrashCanButton = memo(
@@ -402,7 +409,7 @@ const EntryCodeDropdownSelector = memo(
 
 const OCADataValidatorCheck = ({
   showWarningCard,
-  setShowWarningCard = () => { },
+  setShowWarningCard = () => {},
   firstTimeDisplayWarning,
 }) => {
   const {
@@ -442,17 +449,14 @@ const OCADataValidatorCheck = ({
   };
 
   const DrawerList = (
-    <Box
-      sx={{ width: "100%" }}
-      role="presentation"
-    >
+    <Box sx={{ width: "100%" }} role="presentation">
       <Box
         sx={{
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           padding: "0 16px",
-          position: "relative"
+          position: "relative",
         }}
       >
         <h1
@@ -478,18 +482,18 @@ const OCADataValidatorCheck = ({
       </Box>
 
       <ViewSchema isPageForward={false} />
-
     </Box>
   );
 
-  const SavedEntryCodesWithNoArrayType = Object.keys(savedEntryCodes).filter((key) => {
-    const attribute = jsonParsedFile.capture_base.attributes[key];
-    return !Array.isArray(attribute) && !attribute.includes('Array');
-
-  }).reduce((acc, key) => {
-    acc[key] = savedEntryCodes[key];
-    return acc;
-  }, {});
+  const SavedEntryCodesWithNoArrayType = Object.keys(savedEntryCodes)
+    .filter((key) => {
+      const attribute = jsonParsedFile.capture_base.attributes[key];
+      return !Array.isArray(attribute) && !attribute.includes("Array");
+    })
+    .reduce((acc, key) => {
+      acc[key] = savedEntryCodes[key];
+      return acc;
+    }, {});
 
   const gridRef = useRef();
   const validateBeforeOnChangeRef = useRef(false);
@@ -685,10 +689,23 @@ const OCADataValidatorCheck = ({
       });
 
       newData.forEach((data) => {
-        const row = schemaConformantDataHeaders.map(
-          (header) => data[header] || ""
-        );
+        const row = schemaConformantDataHeaders.map((header) => {
+          const value = data[header] || "";
+          const isNumeric =
+            jsonParsedFile.capture_base.attributes[header] === "Numeric";
+
+          // Convert string to number if the attribute is marked as Numeric
+          if (isNumeric && typeof value === "string") {
+            const numericValue = parseFloat(value);
+            return isNaN(numericValue) ? "" : numericValue;
+          }
+          return value;
+        });
+
+        // Add the row to the worksheet
         const addedRow = schemaConformantDataSheet.addRow(row);
+
+        // Format each cell in the row
         addedRow.eachCell((cell) => {
           formatAttr(cell);
         });
@@ -755,7 +772,7 @@ const OCADataValidatorCheck = ({
     const isNotToVerify = notToVerifyAttributes.includes(params.colDef.field);
 
     if (isNotToVerify) {
-          return { backgroundColor: "#ededed" };
+      return { backgroundColor: "#ededed" };
     } else if (params.colDef.field === "Delete") {
       return greyCellStyle;
     } else if (params.data?.error && error?.length > 0) {
@@ -819,7 +836,10 @@ const OCADataValidatorCheck = ({
     if (datasetRawFile.length > 0) {
       const mappingFromAttrToDataset = {};
       for (const node of matchingRowData) {
-        mappingFromAttrToDataset[node["Attribute"]] = node["Dataset"] && node["Dataset"] !== "" ? node["Dataset"] : node["Attribute"];
+        mappingFromAttrToDataset[node["Attribute"]] =
+          node["Dataset"] && node["Dataset"] !== ""
+            ? node["Dataset"]
+            : node["Attribute"];
       }
 
       const newData = [];
@@ -895,18 +915,28 @@ const OCADataValidatorCheck = ({
 
     if (variableToCheck && variableToCheck?.length > 1) {
       variableToCheck.forEach((header) => {
-        if (header in SavedEntryCodesWithNoArrayType && Object.keys(SavedEntryCodesWithNoArrayType[header]).length > LIMIT_ENTRYCODES_LENGTH) {
+        if (
+          header in SavedEntryCodesWithNoArrayType &&
+          Object.keys(SavedEntryCodesWithNoArrayType[header]).length >
+            LIMIT_ENTRYCODES_LENGTH
+        ) {
           columns.push({
             headerName: header,
             field: header,
             minWidth: 150,
             cellEditor: AutoCompleteEditor,
             cellEditorParams: {
-              options: SavedEntryCodesWithNoArrayType[header].map(item => item.Code),
+              options: SavedEntryCodesWithNoArrayType[header].map(
+                (item) => item.Code
+              ),
             },
             singleClickEdit: true,
           });
-        } else if (header in SavedEntryCodesWithNoArrayType && Object.keys(SavedEntryCodesWithNoArrayType[header]).length <= LIMIT_ENTRYCODES_LENGTH) {
+        } else if (
+          header in SavedEntryCodesWithNoArrayType &&
+          Object.keys(SavedEntryCodesWithNoArrayType[header]).length <=
+            LIMIT_ENTRYCODES_LENGTH
+        ) {
           columns.push({
             headerName: header,
             field: header,
@@ -916,7 +946,6 @@ const OCADataValidatorCheck = ({
             editable: true,
             cellRendererFramework: EntryCodeDropdownSelector,
           });
-
         } else {
           columns.push({
             headerName: header,
@@ -930,24 +959,22 @@ const OCADataValidatorCheck = ({
       });
     }
 
-    columns.push(
-      {
-        headerName: 'Del.',
-        field: 'Delete',
-        cellRendererFramework: TrashCanButton,
-        width: 50,
-        cellRendererParams: (params) => ({
-          delete: () => {
-            gridRef.current.api.applyTransaction({
-              remove: [params.node.data],
-            });
-            gridRef.current.api.redrawRows();
-          }
-        }),
-        pinned: 'right',
-        cellStyle: () => greyCellStyle,
-      }
-    );
+    columns.push({
+      headerName: "Del.",
+      field: "Delete",
+      cellRendererFramework: TrashCanButton,
+      width: 50,
+      cellRendererParams: (params) => ({
+        delete: () => {
+          gridRef.current.api.applyTransaction({
+            remove: [params.node.data],
+          });
+          gridRef.current.api.redrawRows();
+        },
+      }),
+      pinned: "right",
+      cellStyle: () => greyCellStyle,
+    });
 
     setColumnDefs(columns);
     setRowData(schemaDataConformantRowData);
@@ -971,27 +998,29 @@ const OCADataValidatorCheck = ({
   const rowDataFilter =
     errorName.length > 0
       ? rowData.filter((row) => {
-        for (const error of errorName) {
-          if (row?.error) {
-            const errCode = errorCode?.[error];
-            const errorValues = Object.values(row?.error);
-            for (const err of errorValues) {
-              const errs = err.map((item) => item?.type);
-              if (errs?.includes(errCode)) {
-                return true;
+          for (const error of errorName) {
+            if (row?.error) {
+              const errCode = errorCode?.[error];
+              const errorValues = Object.values(row?.error);
+              for (const err of errorValues) {
+                const errs = err.map((item) => item?.type);
+                if (errs?.includes(errCode)) {
+                  return true;
+                }
               }
             }
           }
-        }
-        return false;
-      })
+          return false;
+        })
       : rowData;
 
   return (
-    <Box sx={{ overflowX: 'auto' }}>
-      <Box sx={{
-        minWidth: '900px',
-      }}>
+    <Box sx={{ overflowX: "auto" }}>
+      <Box
+        sx={{
+          minWidth: "900px",
+        }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -1059,7 +1088,7 @@ const OCADataValidatorCheck = ({
           display: "flex",
           flexDirection: "column",
           flex: 1,
-          minWidth: '900px',
+          minWidth: "900px",
         }}
       >
         <Box
@@ -1089,7 +1118,7 @@ const OCADataValidatorCheck = ({
               <Languages
                 type={langRef.current}
                 handleChange={handleChange}
-                handleClick={() => { }}
+                handleClick={() => {}}
                 isDropdownOpen={isDropdownOpen}
                 setIsDropdownOpen={setIsDropdownOpen}
                 languages={languages}
@@ -1106,7 +1135,7 @@ const OCADataValidatorCheck = ({
                   flexDirection: "row",
                   paddingRight: "20px",
                   alignItems: "center",
-                  marginTop: "15px"
+                  marginTop: "15px",
                 }}
               >
                 <Button
@@ -1142,7 +1171,11 @@ const OCADataValidatorCheck = ({
               gap: "10px",
             }}
           >
-            <CustomAnchorLink text="Verification Rules" onClick={toggleDrawer(true)} overrideStyle={{ textAlign: "right", marginRight: "2rem" }} />
+            <CustomAnchorLink
+              text="Verification Rules"
+              onClick={toggleDrawer(true)}
+              overrideStyle={{ textAlign: "right", marginRight: "2rem" }}
+            />
             <Box
               sx={{
                 display: "flex",
@@ -1193,7 +1226,6 @@ const OCADataValidatorCheck = ({
                 }}
               ></div>
               <span>Unmatched Attributes</span>
-
             </Box>
             <Box
               sx={{
@@ -1212,7 +1244,6 @@ const OCADataValidatorCheck = ({
                 }}
               ></div>
               <span>Unverified Data</span>
-
             </Box>
           </Box>
         </Box>
@@ -1268,12 +1299,9 @@ const OCADataValidatorCheck = ({
       {firstTimeDisplayWarning.current && showWarningCard && (
         <WarningPopup action={handleDismissWarning} />
       )}
-      <Drawer open={open}>
-        {DrawerList}
-      </Drawer>
+      <Drawer open={open}>{DrawerList}</Drawer>
     </Box>
   );
 };
-
 
 export default OCADataValidatorCheck;
