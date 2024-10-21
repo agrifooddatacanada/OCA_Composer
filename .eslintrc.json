@@ -16,7 +16,9 @@
     "object-curly-spacing": ["error", "always"], // Enforce spaces inside braces
     "no-restricted-syntax": 0,
     "camelcase": 0,
-    "no-plusplus": 0
+    "no-plusplus": 0,
+    "react/function-component-definition": 0,
+    "import/no-cycle": 0
     // Additional ESLint rules can be added here
   }
 }
