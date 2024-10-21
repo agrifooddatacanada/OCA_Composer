@@ -1,0 +1,22 @@
+{
+  "extends": ["airbnb", "airbnb/hooks", "prettier"],
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "rules": {
+    "quotes": ["error", "double"], // Quotation style: enforce double quotes
+    "semi": ["error", "always"], // Require semicolons
+    "arrow-parens": ["error", "always"], // Require parentheses around arrow function arguments
+    "indent": ["error", 2], // Enforce 2-space indentation
+    "object-curly-spacing": ["error", "always"], // Enforce spaces inside braces
+    "no-restricted-syntax": 0,
+    "camelcase": 0,
+    "no-plusplus": 0
+    // Additional ESLint rules can be added here
+  }
+}
