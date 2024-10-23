@@ -1,25 +1,24 @@
-import { Box, Button, Typography, useMediaQuery } from '@mui/material';
-import React, { useContext } from 'react';
-import UseASchemaAccordionItem from './UseASchemaAccordionItem';
-import UseASchemaWithDataAccordionItem from './UseASchemaWithDataAccordionItem';
-import SchemaAccordionItem from './SchemaAccordionItem';
-import WriteASchemaAccordionItem from './WriteASchemaAccordionItem';
-import StoreASchemaAccordionItem from './StoreASchemaAccordionItem';
-import CustomAnchorLink from '../components/CustomAnchorLink';
-import { CustomPalette } from '../constants/customPalette';
-import { useNavigate } from 'react-router-dom';
-import Drop from '../StartSchema/Drop';
-import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
-import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
-import { Context } from '../App';
-import useExportLogic from '../ViewSchema/useExportLogic';
-import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
-import GenerateDataEntryExcel from './GenerateDataEntryExcel';
-import { useTranslation } from 'react-i18next';
+import { Box, Button, Typography, useMediaQuery } from "@mui/material";
+import React, { useContext, useState } from "react";
+import UseASchemaAccordionItem from "./UseASchemaAccordionItem";
+import UseASchemaWithDataAccordionItem from "./UseASchemaWithDataAccordionItem";
+import SchemaAccordionItem from "./SchemaAccordionItem";
+import WriteASchemaAccordionItem from "./WriteASchemaAccordionItem";
+import StoreASchemaAccordionItem from "./StoreASchemaAccordionItem";
+import CustomAnchorLink from "../components/CustomAnchorLink";
+import { CustomPalette } from "../constants/customPalette";
+import { useNavigate } from "react-router-dom";
+import Drop from "../StartSchema/Drop";
+import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
+import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
+import { Context } from "../App";
+import useExportLogic from "../ViewSchema/useExportLogic";
+import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
+import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
+import { useTranslation } from "react-i18next";
 // import CollaborateOnASchema from './CollaborateOnASchema';
-import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
-import useGenerateMarkdownReadMe from '../ViewSchema/useGenerateMarkdownReadMe';
-import useGenerateMarkdownReadMeFromJson from '../ViewSchema/useGenerateMarkdownReadMeFromJson';
+import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
+import CatalogueInfoForm from "../CatalogueInfo/CatalogueInfoForm";
 
 const buttonStyles = {
   backgroundColor: CustomPalette.PRIMARY,
@@ -27,17 +26,17 @@ const buttonStyles = {
   width: "100%",
   maxWidth: "300px",
   marginTop: "30px",
-}
+};
 
 const AccordionList = () => {
-  const isMobile = useMediaQuery('(max-width: 736px)');
+  const isMobile = useMediaQuery("(max-width: 736px)");
+  const [catalogueFormIsOpen, setCatalogueFormIsOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage } = useContext(Context);
+  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage } =
+    useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
-  const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
-  const { generateMarkdownReadMeFromJson } = useGenerateMarkdownReadMeFromJson();
   const {
     rawFile,
     setRawFile,
@@ -55,42 +54,31 @@ const AccordionList = () => {
 
   const navigateToStartPage = () => {
     resetToDefaults();
-    setCurrentPage('Start');
-    navigate('/start');
+    setCurrentPage("Start");
+    navigate("/start");
   };
 
   const navigateToMetadataPage = () => {
     setIsZip(false);
-    setCurrentPage('Metadata');
-    navigate('/start');
+    setCurrentPage("Metadata");
+    navigate("/start");
   };
 
   const navigateToViewPage = () => {
     setIsZip(true);
-    setCurrentPage('View');
-    navigate('/start');
+    setCurrentPage("View");
+    navigate("/start");
   };
 
   const navigateToPreviewSchema = () => {
     setIsZip(true);
-    setCurrentDataValidatorPage('SchemaViewDataValidator');
-    navigate('/oca-data-validator');
+    setCurrentDataValidatorPage("SchemaViewDataValidator");
+    navigate("/oca-data-validator");
   };
 
   const setFile = (acceptedFiles) => {
     setRawFile(acceptedFiles);
     setJsonRawFile(acceptedFiles);
-  }
-
-  const handleClickMarkdownReadme = () => {
-    const jsonSchemaIsUploaded = Object.keys(jsonToReadme).length > 0;
-    if (jsonSchemaIsUploaded) {
-      generateMarkdownReadMeFromJson(jsonToReadme);
-      return;
-    }
-    if (zipToReadme.length > 0) {
-      generateMarkdownReadMe(zipToReadme);
-    }
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
@@ -98,30 +86,38 @@ const AccordionList = () => {
   return (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
         gap: 8,
         marginRight: 1,
         marginLeft: 1,
         marginBottom: 10,
       }}
     >
+      {catalogueFormIsOpen && (
+        <CatalogueInfoForm
+          isOpen={catalogueFormIsOpen}
+          jsonData={jsonToReadme}
+          zipData={zipToReadme}
+          handleClose={() => setCatalogueFormIsOpen(false)}
+        />
+      )}
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
+          display: "flex",
+          flexDirection: "row",
+          flexWrap: "wrap",
+          justifyContent: "center",
         }}
       >
         {/* Accordion Items (Position may change based on screen size) */}
         <Box
           sx={{
-            flex: '1',
-            maxWidth: isMobile ? 'unset' : '500px',
-            minWidth: isMobile ? 'unset' : '300px',
-            width: '100%',
+            flex: "1",
+            maxWidth: isMobile ? "unset" : "500px",
+            minWidth: isMobile ? "unset" : "300px",
+            width: "100%",
           }}
         >
           <SchemaAccordionItem />
@@ -138,41 +134,48 @@ const AccordionList = () => {
         </Box>
         <Box
           sx={{
-            flex: '1',
-            backgroundColor: '#ffefea',
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
+            flex: "1",
+            backgroundColor: "#ffefea",
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
             marginTop: 5,
-            marginRight: isMobile ? 'unset' : 10,
-            marginLeft: isMobile ? 'unset' : 10,
-            height: 'fit-content',
+            marginRight: isMobile ? "unset" : 10,
+            marginLeft: isMobile ? "unset" : 10,
+            height: "fit-content",
           }}
         >
           <Typography
             sx={{
-              fontSize: '23px',
-              fontWeight: '400',
-              textAlign: 'center',
-              width: '100%',
+              fontSize: "23px",
+              fontWeight: "400",
+              textAlign: "center",
+              width: "100%",
               marginTop: 2,
             }}
           >
-            {t('Quick Links')}
+            {t("Quick Links")}
           </Typography>
           <CustomAnchorLink
-            text={t('Write a Schema')}
+            text={t("Write a Schema")}
             overrideStyle={{
-              fontSize: '20px',
-              fontWeight: '500',
+              fontSize: "20px",
+              fontWeight: "500",
               color: CustomPalette.PRIMARY,
               marginLeft: 0,
               marginTop: 2,
             }}
             onClick={navigateToStartPage}
           />
-          <hr style={{ width: '90%', margin: 'auto', marginTop: '25px', border: `1px solid ${CustomPalette.PRIMARY}` }} />
+          <hr
+            style={{
+              width: "90%",
+              margin: "auto",
+              marginTop: "25px",
+              border: `1px solid ${CustomPalette.PRIMARY}`,
+            }}
+          />
           {/* <CustomAnchorLink
             link='https://www.semanticengine.org/#/develop'
             text='Parse a schema'
@@ -196,34 +199,34 @@ const AccordionList = () => {
           />
           <Box
             sx={{
-              width: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
             <Button
-              variant='contained'
-              color='navButton'
+              variant="contained"
+              color="navButton"
               onClick={navigateToViewPage}
               sx={buttonStyles}
               disabled={disableButtonCheck}
             >
-              {t('View Schema')}
+              {t("View Schema")}
             </Button>
             <Button
-              variant='contained'
-              color='navButton'
+              variant="contained"
+              color="navButton"
               onClick={navigateToMetadataPage}
               sx={buttonStyles}
               disabled={disableButtonCheck}
             >
-              {t('Edit Schema')}
+              {t("Edit Schema")}
             </Button>
             <Button
-              variant='contained'
-              color='navButton'
+              variant="contained"
+              color="navButton"
               onClick={() => {
                 if (zipToReadme.length > 0) {
                   toTextFile(zipToReadme);
@@ -234,29 +237,33 @@ const AccordionList = () => {
               sx={buttonStyles}
               disabled={disableButtonCheck}
             >
-              {t('Generate Readme')}
+              {t("Generate Readme")}
             </Button>
             <Button
-              variant='contained'
-              color='navButton'
-              onClick={handleClickMarkdownReadme}
+              variant="contained"
+              color="navButton"
+              onClick={() => setCatalogueFormIsOpen(true)}
               sx={buttonStyles}
               disabled={disableButtonCheck}
             >
-              {t('Generate Markdown Readme')}
+              {t("Generate Markdown Readme")}
             </Button>
-            <GenerateDataEntryExcel rawFile={rawFile} setLoading={setLoading} disableButtonCheck={disableButtonCheck} />
+            <GenerateDataEntryExcel
+              rawFile={rawFile}
+              setLoading={setLoading}
+              disableButtonCheck={disableButtonCheck}
+            />
             <Button
               variant="contained"
               color="navButton"
               onClick={navigateToPreviewSchema}
               sx={{
                 ...buttonStyles,
-                marginBottom: '30px'
+                marginBottom: "30px",
               }}
               disabled={disableButtonCheck}
             >
-              {t('Enter/Verify Data in Webpage')}
+              {t("Enter/Verify Data in Webpage")}
             </Button>
           </Box>
         </Box>
