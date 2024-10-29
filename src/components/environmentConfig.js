@@ -1,5 +1,4 @@
-
-export const environVariables = {
+export const environmentConfig = {
     //dewStep: 'previewSchema',                         // dew stages (Preview Schema, Upload Data, etc.)
     uploadSource: ['Local Schema', 'Uploaded Schema'],  // upload source ('local' or 'schema')
     submitButton: true,                                 // submit button display
