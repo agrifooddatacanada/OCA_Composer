@@ -10,16 +10,17 @@ function CustomFormInput({
   type = "text",
   fullWidth = true,
   labelStyles = {},
+  defaultValue = "",
   ...rest
 }) {
   return (
-    <Box sx={{ ":not(:last-of-type)": { marginBottom: "16px" } }}>
+    <Box sx={{ ":not(:last-child)": { marginBottom: "16px" } }}>
       {label && (
         <Typography
           variant="h6"
           component="label"
           htmlFor={name}
-          sx={{ fontSize: 15, ...labelStyles }}
+          sx={{ fontSize: 15, display: "block", marginBottom: "0.35em", ...labelStyles }}
         >
           {label}
         </Typography>
@@ -27,6 +28,7 @@ function CustomFormInput({
       <Controller
         name={name}
         control={control}
+        defaultValue={defaultValue}
         render={({ field, fieldState: { error } }) => (
           <TextField
             {...field}

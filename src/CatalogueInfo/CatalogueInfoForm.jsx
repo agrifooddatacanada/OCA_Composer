@@ -4,54 +4,99 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
+  Typography
 } from "@mui/material";
 import React from "react";
 import { useForm } from "react-hook-form";
-import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
-import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
-import { CustomPalette } from "../constants/customPalette";
 import CustomFormInput from "../components/CustomFormInput";
+import { catalogueInfoFormFields, catalogueScenarios } from "../constants/catalogueInfo";
+import CustomSelect from "../components/CustomSelect";
 
-function CatalogueInfoForm({ isOpen, jsonData, zipData, handleClose }) {
-  const { control, handleSubmit } = useForm({
-    defaultValues: { author: "", researchGroup: "" },
+function CatalogueInfoForm({ catalogueData, isOpen, handleClose, saveToLocalStorage }) {
+  const {
+    control,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors }
+  } = useForm({
+    defaultValues: catalogueData
   });
-  const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
-  const { generateMarkdownReadMeFromJson } =
-    useGenerateMarkdownReadMeFromJson();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    const jsonSchemaIsUploaded = Object.keys(jsonData).length > 0;
-    if (jsonSchemaIsUploaded) {
-      generateMarkdownReadMeFromJson(jsonData);
+  function resetScenarioFormFields(scenario) {
+    if (catalogueData && scenario === catalogueData.scenario) {
+      reset(catalogueData);
       return;
     }
-    if (zipData.length > 0) {
-      generateMarkdownReadMe(zipData);
-    }
+    const formValues = catalogueInfoFormFields[scenario].reduce(
+      (currentFormValues, formField) => {
+        currentFormValues[formField.name] = formField.defaultValue;
+        return currentFormValues;
+      },
+      { scenario }
+    );
+    reset(formValues);
+  }
+
+  const selectedScenario = watch("scenario");
+
+  const onSubmit = (data) => {
+    saveToLocalStorage(data);
   };
 
   return (
     <div>
       <Dialog open={isOpen} onClose={handleClose} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ pb: 0 }}>Catalogue Information</DialogTitle>
+        <Typography sx={{ px: "24px" }}>
+          Include catalogue information in markdown readme
+        </Typography>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
-            <CustomFormInput control={control} label="Author" name="author" />
-            <CustomFormInput
+            <CustomSelect
               control={control}
-              label="Research Group"
-              name="researchGroup"
+              name="scenario"
+              label="Scenario"
+              placeholder="Please select"
+              options={catalogueScenarios}
+              errorMessage={errors.scenario?.message || ""}
+              onChange={(e) => {
+                resetScenarioFormFields(e.target.value);
+              }}
             />
+            {selectedScenario &&
+              catalogueInfoFormFields[selectedScenario].map((formField) => {
+                if (formField.type === "select") {
+                  return (
+                    <CustomSelect
+                      key={formField.name}
+                      control={control}
+                      name={formField.name}
+                      label={formField.label}
+                      placeholder={formField.placeholder}
+                      options={formField.options}
+                      defaultValue={formField.defaultValue}
+                    />
+                  );
+                }
+                return (
+                  <CustomFormInput
+                    key={formField.name}
+                    control={control}
+                    name={formField.name}
+                    label={formField.label}
+                    placeholder={formField.placeholder}
+                    defaultValue={formField.defaultValue}
+                  />
+                );
+              })}
           </DialogContent>
           <DialogActions sx={{ px: "24px", pb: "20px", pt: 0 }}>
             <Button variant="outlined" color="navButton" onClick={handleClose}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" color="navButton">
-              Generate Readme
+              Submit
             </Button>
           </DialogActions>
         </form>

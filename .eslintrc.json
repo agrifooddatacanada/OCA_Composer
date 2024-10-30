@@ -18,7 +18,11 @@
     "camelcase": 0,
     "no-plusplus": 0,
     "react/function-component-definition": 0,
-    "import/no-cycle": 0
+    "react/prop-types": 0,
+    "react/jsx-props-no-spreading": 0,
+    "react/jsx-filename-extension": 0,
+    "import/no-cycle": 0,
+    "no-param-reassign": 0
     // Additional ESLint rules can be added here
   }
 }
