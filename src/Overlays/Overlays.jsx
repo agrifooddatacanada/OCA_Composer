@@ -44,6 +44,11 @@ const Overlays = ({ pageBack, pageForward }) => {
   // Convert overlay into a list of features
   const { selectedFeatures, unselectedFeatures } = getListOfSelectedOverlays(overlay);
 
+  // Exclude data standards for now (temporary)
+  const unselectedFeaturesWithoutDataStandards = unselectedFeatures.filter(
+    (feature) => feature !== "Data Standards",
+  );
+
   const removeFromSelected = () => {
     setOverlay((prev) => ({
       ...prev,
@@ -112,7 +117,7 @@ const Overlays = ({ pageBack, pageForward }) => {
             }}
           >
             <List>
-              {unselectedFeatures.map((text) => (
+              {unselectedFeaturesWithoutDataStandards.map((text) => (
                 <ListItemButton key={text} onClick={() => addToSelected(text)}>
                   <AddCircleIcon sx={{ color: CustomPalette.PRIMARY }} />
                   <ListItemText primary={t(text)} sx={{ marginLeft: 2 }} />
