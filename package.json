@@ -31,7 +31,7 @@
     "xlsx": "^0.18.5"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "craco start",
     "build": "craco build",
     "unittest": "jest tests/",
     "test": "react-scripts test",
