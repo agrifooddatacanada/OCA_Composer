@@ -41,7 +41,9 @@ function CatalogueInfoForm({ catalogueData, isOpen, handleClose, saveToLocalStor
   const selectedScenario = watch("scenario");
 
   const onSubmit = (data) => {
+    if (!selectedScenario) return;
     saveToLocalStorage(data);
+    handleClose();
   };
 
   return (
@@ -95,8 +97,13 @@ function CatalogueInfoForm({ catalogueData, isOpen, handleClose, saveToLocalStor
             <Button variant="outlined" color="navButton" onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" color="navButton">
-              Submit
+            <Button
+              type="submit"
+              variant="contained"
+              color="navButton"
+              disabled={!selectedScenario}
+            >
+              Save
             </Button>
           </DialogActions>
         </form>

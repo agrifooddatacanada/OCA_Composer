@@ -1,6 +1,11 @@
 export const CATALOGUE_INFO_KEY = "catalogueInfo";
 export const catalogueScenarios = ["General", "Data Hub"];
 
+// ICT groups of these scenarios should be included as parent groups in the markdown readme
+export const scenarioParentIctGroupMap = {
+  "Data Hub": true
+};
+
 export const catalogueInfoFormFields = {
   General: [
     {
@@ -38,7 +43,17 @@ export const catalogueInfoFormFields = {
       name: "ictGroup",
       type: "select",
       placeholder: "Please select",
-      options: ["group 1", "group 2", "group 3"],
+      options: [
+        "SOCIAL",
+        "PEAce",
+        "Loop",
+        "GG4GHG",
+        "Cell Cultured Meat",
+        "Activate",
+        "CAT-G",
+        "BENEFIT",
+        "Lactanet"
+      ],
       defaultValue: ""
     }
   ]

@@ -1,18 +1,26 @@
-import { AccordionDetails, AccordionSummary, Box, Button, Typography } from '@mui/material';
-import React, { useContext } from 'react';
-import { CustomPalette } from '../constants/customPalette';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AccordionItemWrapper from './AccordionItemWrapper';
-import Drop from '../StartSchema/Drop';
-import { Context } from '../App';
-import { useNavigate } from 'react-router-dom';
-import useGenerateReadMe from '../ViewSchema/useGenerateReadMe';
-import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
-import useGenerateReadMeV2 from '../ViewSchema/useGenerateReadMeV2';
-import { useTranslation } from 'react-i18next';
-import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
-import useGenerateMarkdownReadMe from '../ViewSchema/useGenerateMarkdownReadMe';
-import useGenerateMarkdownReadMeFromJson from '../ViewSchema/useGenerateMarkdownReadMeFromJson';
+import {
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  Typography
+} from "@mui/material";
+import React, { useContext } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { CustomPalette } from "../constants/customPalette";
+import AccordionItemWrapper from "./AccordionItemWrapper";
+import Drop from "../StartSchema/Drop";
+import { Context } from "../App";
+import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
+import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
+import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
+import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
+import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
+import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
+import useLocalStorage from "../hooks/useLocalStorage";
+import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
@@ -30,68 +38,78 @@ const UseASchemaAccordionItem = () => {
     dropDisabled,
     dropMessage,
     setDropMessage,
-    setCurrentPage,
+    setCurrentPage
   } = useHandleAllDrop();
 
   const { setJsonRawFile } = useHandleJsonDrop();
 
+  const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
+
   const navigateToMetadataPage = () => {
-    setCurrentPage('Metadata');
-    navigate('/start');
+    setCurrentPage("Metadata");
+    navigate("/start");
   };
 
   const navigateToViewPage = () => {
-    setCurrentPage('View');
-    navigate('/start');
+    setCurrentPage("View");
+    navigate("/start");
   };
 
   const setFile = (acceptedFiles) => {
     setRawFile(acceptedFiles);
     setJsonRawFile(acceptedFiles);
-  }
+  };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
 
   const handleClickMarkdownReadme = () => {
     const jsonSchemaIsUploaded = Object.keys(jsonToReadme).length > 0;
+    const catalogueData = getFromLocalStorage();
     if (jsonSchemaIsUploaded) {
-      generateMarkdownReadMeFromJson(jsonToReadme);
+      generateMarkdownReadMeFromJson(jsonToReadme, catalogueData);
       return;
     }
     if (zipToReadme.length > 0) {
-      generateMarkdownReadMe(zipToReadme);
+      generateMarkdownReadMe(zipToReadme, catalogueData);
     }
   };
 
-  const buttonStyles = { 
-    backgroundColor: CustomPalette.PRIMARY, 
-    ":hover": { backgroundColor: CustomPalette.SECONDARY }, 
-    width: '100%', maxWidth: '300px', 
-    marginTop: '30px' 
+  const buttonStyles = {
+    backgroundColor: CustomPalette.PRIMARY,
+    ":hover": { backgroundColor: CustomPalette.SECONDARY },
+    width: "100%",
+    maxWidth: "300px",
+    marginTop: "30px"
   };
 
   return (
     <AccordionItemWrapper>
       <AccordionSummary
-        expandIcon={<ExpandMoreIcon sx={{ color: CustomPalette.PRIMARY, fontSize: 50 }} />}
+        expandIcon={
+          <ExpandMoreIcon sx={{ color: CustomPalette.PRIMARY, fontSize: 50 }} />
+        }
         aria-controls="panel1a-content"
         id="panel1a-header"
       >
-        <Typography sx={{ fontSize: '20px', fontWeight: '500' }}>{t('Use a Schema')}</Typography>
+        <Typography sx={{ fontSize: "20px", fontWeight: "500" }}>
+          {t("Use a Schema")}
+        </Typography>
       </AccordionSummary>
 
-      <AccordionDetails sx={{ textAlign: 'start' }}>
+      <AccordionDetails sx={{ textAlign: "start" }}>
         <Typography>
-          {t('When you have a schema bundle you can upload and then')}
+          {t("When you have a schema bundle you can upload and then")}
         </Typography>
         {/* <Typography>
           <strong>Validate</strong> the schema to ensure it is well-formed.
         </Typography> */}
         <Typography>
-          <strong>{t('View')}</strong> {t('the schema and')} <strong>{t('Edit')}</strong> {t('the schema if needed')}
+          <strong>{t("View")}</strong> {t("the schema and")} <strong>{t("Edit")}</strong>{" "}
+          {t("the schema if needed")}
         </Typography>
         <Typography>
-          {t('The schema bundle is machine-readable')} <strong>{t('generate')}</strong> {t('the Readme to create a human-readable simple text version')}
+          {t("The schema bundle is machine-readable")} <strong>{t("generate")}</strong>{" "}
+          {t("the Readme to create a human-readable simple text version")}
         </Typography>
 
         <Drop
@@ -105,7 +123,15 @@ const UseASchemaAccordionItem = () => {
           interfaceType={1}
         />
 
-        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
           <Button
             variant="contained"
             color="navButton"
@@ -113,7 +139,7 @@ const UseASchemaAccordionItem = () => {
             sx={buttonStyles}
             disabled={disableButtonCheck}
           >
-            {t('View Schema')}
+            {t("View Schema")}
           </Button>
           <Button
             variant="contained"
@@ -122,7 +148,7 @@ const UseASchemaAccordionItem = () => {
             sx={buttonStyles}
             disabled={disableButtonCheck}
           >
-            {t('Edit Schema')}
+            {t("Edit Schema")}
           </Button>
           <Button
             variant="contained"
@@ -137,17 +163,17 @@ const UseASchemaAccordionItem = () => {
             sx={buttonStyles}
             disabled={disableButtonCheck}
           >
-            {t('Generate Readme')}
+            {t("Generate Readme")}
           </Button>
           <Button
-              variant='contained'
-              color='navButton'
-              onClick={handleClickMarkdownReadme}
-              sx={buttonStyles}
-              disabled={disableButtonCheck}
-            >
-              {t('Generate Markdown Readme')}
-            </Button>
+            variant="contained"
+            color="navButton"
+            onClick={handleClickMarkdownReadme}
+            sx={buttonStyles}
+            disabled={disableButtonCheck}
+          >
+            {t("Generate Markdown Readme")}
+          </Button>
         </Box>
       </AccordionDetails>
     </AccordionItemWrapper>

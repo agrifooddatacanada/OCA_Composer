@@ -21,6 +21,8 @@ import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
 import CatalogueInfo from "../CatalogueInfo/CatalogueInfo";
+import useLocalStorage from "../hooks/useLocalStorage";
+import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 
 const buttonStyles = {
   backgroundColor: CustomPalette.PRIMARY,
@@ -54,6 +56,8 @@ const AccordionList = () => {
 
   const { resetToDefaults } = useExportLogic();
 
+  const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
+
   const navigateToStartPage = () => {
     resetToDefaults();
     setCurrentPage("Start");
@@ -85,12 +89,13 @@ const AccordionList = () => {
 
   const handleClickMarkdownReadme = () => {
     const jsonSchemaIsUploaded = Object.keys(jsonToReadme).length > 0;
+    const catalogueData = getFromLocalStorage();
     if (jsonSchemaIsUploaded) {
-      generateMarkdownReadMeFromJson(jsonToReadme);
+      generateMarkdownReadMeFromJson(jsonToReadme, catalogueData);
       return;
     }
     if (zipToReadme.length > 0) {
-      generateMarkdownReadMe(zipToReadme);
+      generateMarkdownReadMe(zipToReadme, catalogueData);
     }
   };
 
@@ -242,7 +247,9 @@ const AccordionList = () => {
             >
               {t("Generate Readme")}
             </Button>
-            <CatalogueInfo />
+            <Box sx={{ marginTop: "30px", width: "100%", maxWidth: "300px" }}>
+              <CatalogueInfo />
+            </Box>
             <Button
               variant="contained"
               color="navButton"
