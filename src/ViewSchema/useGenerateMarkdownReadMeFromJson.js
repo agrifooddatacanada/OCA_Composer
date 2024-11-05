@@ -9,6 +9,7 @@ import {
 import { DEFAULT_THREE_LETTER_LANGUAGE_CODE } from "../constants/constants";
 import {
   downloadMarkdownFile,
+  generateCreationTimestamp,
   generateEntryCodeTables,
   generateExtendedSchemaDetailsTable,
   generateFrontMatter,
@@ -95,6 +96,7 @@ const useGenerateMarkdownReadMeFromJson = () => {
       languageCodeLookupMap: languageNameToAlpha3Codes
     });
     fileContent += generateSAIDTable(captureBaseSAID, layerToSAIDMap);
+    fileContent += generateCreationTimestamp();
 
     const fileName = `${metaOverlayCurrentLanguage.name.split(" ")[0]}_OCA_schema.md`;
     downloadMarkdownFile(fileContent, fileName);

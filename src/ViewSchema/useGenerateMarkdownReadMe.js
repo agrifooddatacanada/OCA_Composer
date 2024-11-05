@@ -7,6 +7,7 @@ import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
 import { DEFAULT_LANGUAGE_CODE } from "../constants/constants";
 import {
   downloadMarkdownFile,
+  generateCreationTimestamp,
   generateEntryCodeTables,
   generateExtendedSchemaDetailsTable,
   generateFrontMatter,
@@ -86,6 +87,7 @@ const useGenerateMarkdownReadMe = () => {
       languageCodeLookupMap: languageCodesObject
     });
     fileContent += generateSAIDTable(captureBaseSAID, layerToSAIDMap);
+    fileContent += generateCreationTimestamp();
 
     const fileName = `${metaOverlayCurrentLanguage.name.split(" ")[0]}_OCA_schema.md`;
     downloadMarkdownFile(fileContent, fileName);

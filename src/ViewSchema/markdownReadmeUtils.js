@@ -285,9 +285,31 @@ export const generateSAIDTable = (captureBaseSAID, layerToSAIDMap) => {
     }
   }
 
-  markdownContent.push(generateTable(columns, rows), "\n");
+  markdownContent.push(generateTable(columns, rows), "\n\n");
 
   return markdownContent.join("");
+};
+
+export const generateCreationTimestamp = () => {
+  const date = new Date();
+
+  const formattedDate = date.toLocaleDateString("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+
+  const formattedTime = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  });
+
+  // YYYY-MM-DD HH:MM:SS
+  const formattedTimestamp = `${formattedDate} ${formattedTime}`;
+
+  return `**Date created**: ${formattedTimestamp}\n\n`;
 };
 
 export const downloadMarkdownFile = (markdownContent, fileName) => {
