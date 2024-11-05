@@ -1,15 +1,44 @@
-export const generateFrontMatter = (metaOverlay) => {
+import {
+  catalogueInfoFormFields,
+  scenarioParentIctGroupMap
+} from "../constants/catalogueInfo";
+
+const generateTable = (columns, rows) => {
+  const header = `| ${columns.join(" | ")} |\n| ${columns.map(() => "---").join(" | ")} |\n`;
+  const body = rows.map((row) => `| ${row.join(" | ")} |`).join("\n");
+  return [header, body].join("");
+};
+
+const escapeMarkdownSpecialCharacters = (pattern) =>
+  pattern.replace(/([\\`*_{}[\]()#+\-.!|~])/g, "\\$1");
+
+export const generateFrontMatter = (metaOverlay, catalogueData) => {
   const markdownContent = [
     "---\n",
     "layout: default  \n",
-    `title: ${metaOverlay.name}  \n`,
-    "---\n\n"
+    `title: ${metaOverlay.name}  \n`
   ];
 
-  return markdownContent.join("");
-}
+  if (catalogueData) {
+    const isParentIctGroup = scenarioParentIctGroupMap[catalogueData.scenario];
+    if (
+      isParentIctGroup &&
+      Object.prototype.hasOwnProperty.call(catalogueData, "ictGroup")
+    ) {
+      markdownContent.push(`parent: ${catalogueData.ictGroup}  \n`);
+    }
+  }
 
-export const generateSchemaInformation = (metaOverlay, captureBaseOverlay) => {
+  markdownContent.push("---\n\n");
+
+  return markdownContent.join("");
+};
+
+export const generateSchemaInformation = (
+  metaOverlay,
+  captureBaseOverlay,
+  catalogueData
+) => {
   const markdownContent = [
     "## Schema information\n\n",
     `**Name**: ${metaOverlay.name}  \n`,
@@ -20,21 +49,35 @@ export const generateSchemaInformation = (metaOverlay, captureBaseOverlay) => {
     markdownContent.push(`**Classification**: ${captureBaseOverlay.classification}  \n`);
   }
 
+  if (catalogueData) {
+    const scenarioFormFields = catalogueInfoFormFields[catalogueData.scenario];
+    scenarioFormFields.forEach((field) => {
+      markdownContent.push(`**${field.label}**: ${catalogueData[field.name]}  \n`);
+    });
+  }
+
   markdownContent.push("\n");
 
   return markdownContent.join("");
-}
+};
 
 export const generateSchemaQuickView = ({
-  layers, attributeNames, currentLanguageCode, defaultLanguageCode
+  layers,
+  attributeNames,
+  currentLanguageCode,
+  defaultLanguageCode
 }) => {
   // Label and information overlays will always exist even if attributes don't have a label and description
   // In case of no label or description, their values will be empty string
   const informationOverlay = layers.find(
-    (layer) => layer.layerName.includes("information") && (layer.language === currentLanguageCode || layer.language === defaultLanguageCode)
+    (layer) =>
+      layer.layerName.includes("information") &&
+      (layer.language === currentLanguageCode || layer.language === defaultLanguageCode)
   );
   const labelOverlay = layers.find(
-    (layer) => layer.layerName.includes("label") && (layer.language === currentLanguageCode || layer.language === defaultLanguageCode)
+    (layer) =>
+      layer.layerName.includes("label") &&
+      (layer.language === currentLanguageCode || layer.language === defaultLanguageCode)
   );
   const markdownContent = ["## Schema quick view\n\n"];
 
@@ -48,18 +91,24 @@ export const generateSchemaQuickView = ({
   markdownContent.push(generateTable(columns, rows), "\n\n");
 
   return markdownContent.join("");
-}
+};
 
 // It can be safe to assume that schema name and description in at least one language exists
 // because a schema bundle cannot be created without a name and description
-export const generateInternationalSchemaInformation = (layers, languages, languageCodeLookupMap) => {
+export const generateInternationalSchemaInformation = (
+  layers,
+  languages,
+  languageCodeLookupMap
+) => {
   const markdownContent = ["## International schema information\n\n"];
   const columns = ["Language", "Name", "Description"];
   const rows = [];
 
   languages.forEach((language) => {
     const languageCode = languageCodeLookupMap[language.toLowerCase()];
-    const metaOverlay = layers.find((layer) => layer.layerName.includes('meta') && layer.language === languageCode);
+    const metaOverlay = layers.find(
+      (layer) => layer.layerName.includes("meta") && layer.language === languageCode
+    );
     if (!metaOverlay) return;
     rows.push([language, metaOverlay.name, metaOverlay.description]);
   });
@@ -67,7 +116,7 @@ export const generateInternationalSchemaInformation = (layers, languages, langua
   markdownContent.push(generateTable(columns, rows), "\n\n");
 
   return markdownContent.join("");
-}
+};
 
 export const generateEntryCodeTables = (layers, languages, languageCodeLookupMap) => {
   const markdownContent = ["## Selection lists\n\n"];
@@ -75,49 +124,83 @@ export const generateEntryCodeTables = (layers, languages, languageCodeLookupMap
 
   languages.forEach((language) => {
     const languageCode = languageCodeLookupMap[language.toLowerCase()];
-    const entryOverlay = layers.find((layer) => layer.layerName.includes('entry/') && layer.language === languageCode);
+    const entryOverlay = layers.find(
+      (layer) => layer.layerName.includes("entry/") && layer.language === languageCode
+    );
     if (!entryOverlay) return;
 
     markdownContent.push(`### ${language}\n\n`);
 
     // Generate a table for each attribute with entry codes
     for (const attribute in entryOverlay.attribute_entries) {
-      const rows = [];
-      markdownContent.push(`#### ${attribute} entry codes\n\n`);
-      const entryCodeToLabelMap = entryOverlay.attribute_entries[attribute];
+      if (
+        Object.prototype.hasOwnProperty.call(entryOverlay.attribute_entries, attribute)
+      ) {
+        const rows = [];
+        markdownContent.push(`#### ${attribute} entry codes\n\n`);
+        const entryCodeToLabelMap = entryOverlay.attribute_entries[attribute];
 
-      for (const entryCode in entryCodeToLabelMap) {
-        const label = entryCodeToLabelMap[entryCode];
-        rows.push([entryCode, label]);
+        for (const entryCode in entryCodeToLabelMap) {
+          if (Object.prototype.hasOwnProperty.call(entryCodeToLabelMap, entryCode)) {
+            const label = entryCodeToLabelMap[entryCode];
+            rows.push([entryCode, label]);
+          }
+        }
+
+        markdownContent.push(generateTable(columns, rows), "\n\n");
       }
-
-      markdownContent.push(generateTable(columns, rows), "\n\n");
     }
   });
 
   const isNoEntryOverlay = markdownContent.length === 1;
 
   return isNoEntryOverlay ? "" : markdownContent.join("");
-}
+};
 
 export const generateExtendedSchemaDetailsTable = ({
-  layers, captureBaseOverlay, attributeNames, languages, languageCodeLookupMap
+  layers,
+  captureBaseOverlay,
+  attributeNames,
+  languages,
+  languageCodeLookupMap
 }) => {
   const markdownContent = ["## Schema details\n\n"];
-  const columns = ["Attribute", "Sensitive", "Unit", "Type", "Label", "Description", "List", "Character encoding"];
+  const columns = [
+    "Attribute",
+    "Sensitive",
+    "Unit",
+    "Type",
+    "Label",
+    "Description",
+    "List",
+    "Character encoding"
+  ];
 
   languages.forEach((language) => {
     markdownContent.push(`### ${language}\n\n`);
     const languageCode = languageCodeLookupMap[language.toLowerCase()];
-    const informationOverlay = layers.find((layer) => layer.layerName.includes("information") && layer.language === languageCode);
-    const labelOverlay = layers.find((layer) => layer.layerName.includes("label") && layer.language === languageCode);
-    const unitOverlay = layers.find((layer) => layer.layerName.includes('unit'));
-    const entryOverlay = layers.find((layer) => layer.layerName.includes('entry/') && layer.language === languageCode);
-    const characterEncodingOverlay = layers.find((layer) => layer.layerName.includes('character_encoding'));
-    const conformanceOverlay = layers.find((layer) => layer.layerName.includes('conformance'));
-    const formatOverlay = layers.find((layer) => layer.layerName.includes('format/'));
-    const cardinalityOverlay = layers.find((layer) => layer.layerName.includes('cardinality/'));
-    const standardOverlay = layers.find((layer) => layer.layerName.includes('standard'));
+    const informationOverlay = layers.find(
+      (layer) =>
+        layer.layerName.includes("information") && layer.language === languageCode
+    );
+    const labelOverlay = layers.find(
+      (layer) => layer.layerName.includes("label") && layer.language === languageCode
+    );
+    const unitOverlay = layers.find((layer) => layer.layerName.includes("unit"));
+    const entryOverlay = layers.find(
+      (layer) => layer.layerName.includes("entry/") && layer.language === languageCode
+    );
+    const characterEncodingOverlay = layers.find((layer) =>
+      layer.layerName.includes("character_encoding")
+    );
+    const conformanceOverlay = layers.find((layer) =>
+      layer.layerName.includes("conformance")
+    );
+    const formatOverlay = layers.find((layer) => layer.layerName.includes("format/"));
+    const cardinalityOverlay = layers.find((layer) =>
+      layer.layerName.includes("cardinality/")
+    );
+    const standardOverlay = layers.find((layer) => layer.layerName.includes("standard"));
 
     if (conformanceOverlay?.attribute_conformance) {
       columns.push("Required entry");
@@ -149,20 +232,15 @@ export const generateExtendedSchemaDetailsTable = ({
 
       // Check if an attribute is a list (has entries and entry codes)
       const entryCodeToLabelMap = entryOverlay?.attribute_entries[attribute];
-      const list = entryCodeToLabelMap ? Object.values(entryCodeToLabelMap).join(", ") : "Not a list";
+      const list = entryCodeToLabelMap
+        ? Object.values(entryCodeToLabelMap).join(", ")
+        : "Not a list";
 
-      const characterEncoding = characterEncodingOverlay.attribute_character_encoding[attribute] 
-        || characterEncodingOverlay.default_character_encoding;
+      const characterEncoding =
+        characterEncodingOverlay.attribute_character_encoding[attribute] ||
+        characterEncodingOverlay.default_character_encoding;
 
-      row.push(
-        isSensitive, 
-        unit, 
-        type, 
-        label, 
-        description, 
-        list, 
-        characterEncoding,
-      );
+      row.push(isSensitive, unit, type, label, description, list, characterEncoding);
 
       if (conformanceOverlay?.attribute_conformance) {
         const isRequired = conformanceOverlay.attribute_conformance[attribute] === "M";
@@ -192,7 +270,7 @@ export const generateExtendedSchemaDetailsTable = ({
   });
 
   return markdownContent.join("");
-}
+};
 
 export const generateSAIDTable = (captureBaseSAID, layerToSAIDMap) => {
   const markdownContent = ["## Schema SAIDs\n\n"];
@@ -202,13 +280,37 @@ export const generateSAIDTable = (captureBaseSAID, layerToSAIDMap) => {
   const rows = [];
 
   for (const layer in layerToSAIDMap) {
-    rows.push([layer, layerToSAIDMap[layer]]);
+    if (Object.prototype.hasOwnProperty.call(layerToSAIDMap, layer)) {
+      rows.push([layer, layerToSAIDMap[layer]]);
+    }
   }
 
-  markdownContent.push(generateTable(columns, rows), "\n");
+  markdownContent.push(generateTable(columns, rows), "\n\n");
 
   return markdownContent.join("");
-}
+};
+
+export const generateCreationTimestamp = () => {
+  const date = new Date();
+
+  const formattedDate = date.toLocaleDateString("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+
+  const formattedTime = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  });
+
+  // YYYY-MM-DD HH:MM:SS
+  const formattedTimestamp = `${formattedDate} ${formattedTime}`;
+
+  return `**Date created**: ${formattedTimestamp}\n\n`;
+};
 
 export const downloadMarkdownFile = (markdownContent, fileName) => {
   const blob = new Blob([markdownContent], { type: "text/markdown" });
@@ -223,14 +325,4 @@ export const downloadMarkdownFile = (markdownContent, fileName) => {
   // cleanup
   document.body.removeChild(link);
   window.URL.revokeObjectURL(downloadUrl);
-}
-
-const generateTable = (columns, rows) => {
-  const header = `| ${columns.join(" | ")} |\n| ${columns.map(() => "---").join(" | ")} |\n`;
-  const body = rows.map(row => `| ${row.join(' | ')} |`).join('\n');
-  return [header, body].join("");
-}
-
-const escapeMarkdownSpecialCharacters = (pattern) => {
-  return pattern.replace(/([\\`*_{}[\]()#+\-.!|~])/g, '\\$1');
-}
+};
