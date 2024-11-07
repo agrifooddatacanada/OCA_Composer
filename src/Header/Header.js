@@ -188,14 +188,14 @@ export default function Header({ currentPage }) {
                 onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
               />*/}
               <img
-                src={logos.agriFoodCanada_logo.url}
+                src={themes.default.logos.agriFoodCanada_logo.url}
                 style={{
                   width: isMobile ? '100px' : '150px',
                   marginRight: '20px',
                   cursor: 'pointer'
                 }}
-                alt={logos.agriFoodCanada_logo.alt}
-                onClick={() => (window.location.href = logos.agriFoodCanada_logo.website)}
+                alt={themes.default.logos.agriFoodCanada_logo.alt}
+                onClick={() => (window.location.href = themes.default.logos.agriFoodCanada_logo.website)}
               />
               <Typography
                 sx={{
@@ -254,15 +254,15 @@ export default function Header({ currentPage }) {
                 onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
               />*/}
               <img
-                src={logos.agriFoodCanada_white_logo.url}
+                src={themes.default.logos.agriFoodCanada_white_logo.url}
                 style={{
                   width: isMobile ? 'auto' : '250px',
                   height: isMobile ? '70px' : 'auto',
                   marginRight: isMobile ? 'unset' : '20px',
                   cursor: 'pointer'
                 }}
-                alt={logos.agriFoodCanada_white_logo.alt}
-                onClick={() => (window.location.href = logos.agriFoodCanada_white_logo.website)}
+                alt={themes.default.logos.agriFoodCanada_white_logo.alt}
+                onClick={() => (window.location.href = themes.logos.agriFoodCanada_white_logo.website)}
               />
             </Box>
 

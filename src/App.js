@@ -16,7 +16,7 @@ import LearnAboutDataVerification from './OCADataValidator/LearnAboutDataVerific
 import OCAMerge from './OCAMerge/OCAMerge';
 import Tutorial from './Tutorial/Tutorial';
 
-import { environmentConfig } from './components/environmentConfig';
+import { environVariables } from './components/environmentConfig';
 
 export const Context = createContext();
 
@@ -347,7 +347,7 @@ function App() {
 
 
   // Add state for environmental variables
-  const [env, setEnv] = useState(environmentConfig);
+  const [env, setEnv] = useState(environVariables);
 
   // Function to handle file download
   const handleDownload = () => {
