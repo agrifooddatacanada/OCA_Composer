@@ -154,8 +154,6 @@ export const descriptionToFormatCodeNumeric = {
   // "positive integers": "^[0-9]*[1-9][0-9]*$",
   "any integer": "^-?[0-9]+$",
   // "any number between 0 and 100, inclusive": "^(100(\\.0+)?|0*([1-9]?\\d(\\.\\d+)?)|0)$",
-  "Latitude in formats S30°15'45.678\" or N12°30.999\"": "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$",
-  "Longitude in formats E30°15'45.678\" or W90°00.000\"": "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$"
 };
 
 export const formatCodeNumeric = Object.keys(descriptionToFormatCodeNumeric);
@@ -250,6 +248,12 @@ export const displayValues = [
   "iso-8859-1",
   // "UTF-16LE"
 ];
+
+export const dataStandardOptions = [
+  "urn:iso:std:iso:2560:ed-3:v1:en", 
+  "urn:iso:std:iso:14001:ed-3:v1:en",
+  "urn:iso:std:iso:8601:ed-4:v1:en"
+]
 
 export const defaultUploadedDescription = "Click here to select a spreadsheet or drag and drop one here";
 export const jsonUploadDescription = "Click here to select an OCA schema or drag and drop one here";

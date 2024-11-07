@@ -263,5 +263,9 @@
   "Upload Data (optional)": "Télécharger des données (facultatif)",
   "Skip Upload Data": "Ignorer les données de téléchargement",
   "Or read the tutorial instead": "Ou <CustomLink>lisez plutôt le tutoriel</CustomLink>",
-  "Watch our tutorial video on creating a schema. Or read the tutorial instead.": "Regardez notre didacticiel vidéo sur la création d'un schéma. Ou <CustomLink>lisez plutôt le tutoriel.</CustomLink>"
+  "Watch our tutorial video on creating a schema. Or read the tutorial instead.": "Regardez notre didacticiel vidéo sur la création d'un schéma. Ou <CustomLink>lisez plutôt le tutoriel.</CustomLink>",
+  "Data Standard": "Norme de données",
+  "Data Standards": "Normes de données",
+  "Add Data Standards": "Ajouter des normes de données",
+  "Remove overlay": "Supprimer la superposition"
 }

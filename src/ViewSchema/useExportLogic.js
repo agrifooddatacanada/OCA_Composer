@@ -48,6 +48,7 @@ const useExportLogic = () => {
     setIsZip,
     setRawFile,
     formatRuleRowData,
+    dataStandardsRowData,
     cardinalityData,
     setZipToReadme,
   } = useContext(Context);
@@ -291,11 +292,11 @@ const useExportLogic = () => {
         currentCell.value = item.text;
       });
 
-      const documentationTitle = worksheet.getCell(documentationStartIndex, 2);
+      const documentationTitle = worksheet.getCell(documentationStartIndex + 1, 2);
       documentationTitle.style.font = { bold: true };
 
       const abbreviationsTitle = worksheet.getCell(
-        30 + documentationStartIndex,
+        31 + documentationStartIndex,
         2
       );
       abbreviationsTitle.style.font = { bold: true };
@@ -310,15 +311,15 @@ const useExportLogic = () => {
         `B${documentationStartIndex + 14}:B${documentationStartIndex + 15}`
       );
       worksheet.mergeCells(
-        `B${documentationStartIndex + 19}:B${documentationStartIndex + 26}`
+        `B${documentationStartIndex + 20}:B${documentationStartIndex + 27}`
       );
 
-      for (let i = 30; i < 42; i++) {
+      for (let i = 31; i < 42; i++) {
         worksheet.mergeCells(
           `B${documentationStartIndex + i}:D${documentationStartIndex + i}`
         );
       }
-      const linkCell = worksheet.getCell(documentationStartIndex + 41, 2);
+      const linkCell = worksheet.getCell(documentationStartIndex + 42, 2);
 
       linkCell.value = {
         text: "© The Human Colossus Foundation 2022. Some rights reserved. This work is available under the CC BY-NC-SA 3.0 IGO licence.",
@@ -335,6 +336,7 @@ const useExportLogic = () => {
     //////CREATE 'MAIN' WORKSHEET
     try {
       const worksheetMain = workbook.addWorksheet("Main");
+      // These headers must match OCA specification (see a template Excel file, https://oca.colossi.network/ecosystem/oca-parser.html)
       const columnHeaders = [
         "CB-CL: Classification",
         "CB-AN: Attribute Name",
@@ -347,6 +349,7 @@ const useExportLogic = () => {
         "OL-CR: Cardinality",
         "OL-CN: Conformance",
         "OL-UT: Unit",
+        "OL-ST: Standard",
         "CB-RS: Reference",
       ];
 
@@ -447,7 +450,11 @@ const useExportLogic = () => {
           worksheetMain.getCell(index + 4, 11).value = dataArray[1][index].Unit;
         }
 
-        // const referenceCell = worksheetMain.getCell(index + 4, 11);
+        if (overlay?.['Data Standards']?.selected && dataStandardsRowData[index]['DataStandard']) {
+          worksheetMain.getCell(index + 4, 12).value = dataStandardsRowData[index]['DataStandard'];
+        }
+
+        // const referenceCell = worksheetMain.getCell(index + 4, 13);
         // if (
         //   typeCell.value === "Reference" ||
         //   typeCell.value === "Array[Reference]"

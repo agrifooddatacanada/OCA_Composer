@@ -20,6 +20,7 @@ import UploadPage from './EntryCodes/UploadPage';
 import MatchingEntryCodeHeader from './EntryCodes/MatchingEntryCodeHeader';
 import MatchingJSONEntryCodeHeader from './EntryCodes/MatchingJSONEntryCodeHeader';
 import StepperProgressIndicator from './StepperProgressIndicator/StepperProgressIndicator';
+import DataStandards from './Overlays/DataStandards';
 
 const Home = ({
   currentPage,
@@ -76,7 +77,8 @@ const Home = ({
       'Cardinality',
       'UploadEntryCodes',
       'MatchingEntryCodes',
-      'MatchingJSONEntryCodes'
+      'MatchingJSONEntryCodes',
+      'DataStandards'
     ];
   }, []);
 
@@ -136,6 +138,7 @@ const Home = ({
         {currentPage === "UploadEntryCodes" && <UploadPage />}
         {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
         {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
+        {currentPage === "DataStandards" && <DataStandards />}
       </Box>
       <Footer currentPage={currentPage} />
     </>

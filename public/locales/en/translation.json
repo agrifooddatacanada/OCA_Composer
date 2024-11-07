@@ -265,5 +265,9 @@
   "Upload Data (optional)": "Upload Data (optional)",
   "Skip Upload Data": "Skip Upload Data",
   "Or read the tutorial instead": "Or <CustomLink>read the tutorial</CustomLink> instead.",
-  "Watch our tutorial video on creating a schema. Or read the tutorial instead.": "Watch our tutorial video on creating a schema. Or <CustomLink>read the tutorial</CustomLink> instead."
+  "Watch our tutorial video on creating a schema. Or read the tutorial instead.": "Watch our tutorial video on creating a schema. Or <CustomLink>read the tutorial</CustomLink> instead.",
+  "Data Standard": "Data Standard",
+  "Data Standards": "Data Standards",
+  "Add Data Standards": "Add Data Standards",
+  "Remove overlay": "Remove overlay"
 }

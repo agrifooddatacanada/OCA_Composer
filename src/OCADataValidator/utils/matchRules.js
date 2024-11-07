@@ -14,7 +14,45 @@ export function matchRegex(pattern, dataStr) {
   if (!pattern) {
     return true;
   }
-  return new RegExp(pattern).test(dataStr);
+
+  const parsedRegex = parseRegexPattern(pattern);
+
+  return new RegExp(parsedRegex.pattern, parsedRegex.flags).test(dataStr);
+}
+
+/**
+ * Parses a regex pattern string to extract the main pattern and its modifiers (flags).
+ *
+ * This function takes into account that some regex pattern strings may contain
+ * modifiers (e.g., "/gm"). It captures the main regex pattern and any associated
+ * flags, while also handling an optional trailing slash at the end of the string.
+ *
+ * @param {string} patternString - The regex pattern string to be parsed. This string can include flags at the end.
+ *
+ * @returns {Object} An object containing:
+ *    - {string} pattern: The extracted regex pattern.
+ *    - {string} flags: The extracted modifiers (flags) for the regex.
+ *
+ * @example
+ * const result = parseRegexPattern("^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/gm");
+ * // Output: { pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$", flags: "gm" }
+ *
+ * @example
+ * const result = parseRegexPattern("invalid pattern");
+ * // Output: { pattern: "", flags: "" }
+ */
+function parseRegexPattern(patternString) {
+  const regex = /^(.*?)(\/)?([gmiuy]*)$/;
+  const match = patternString.match(regex);
+  
+  if (match) {
+      const pattern = match[1].trim();
+      const flags = match[3] || "";
+
+      return { pattern, flags };
+  }
+
+  return { pattern: "", flags: "" }
 }
 
 function matchBoolean(dataStr) {

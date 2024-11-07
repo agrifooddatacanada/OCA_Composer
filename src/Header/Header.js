@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Typography, Tooltip, Button, Box } from '@mui/material';
 import { CustomPalette } from '../constants/customPalette';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import logo from '../assets/agri-logo.png';
-import logoWhite from '../assets/agri-logo-white.png';
+//import logo from '../assets/agri-logo.png';
+//import logoWhite from '../assets/agri-logo-white.png';
 import { Link, useLocation } from 'react-router-dom';
 import HeaderWrapper from './HeaderWrapper';
 import { useMediaQuery } from '@mui/material';
 import i18next from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { themes } from '../constants/themeConstants';
 
 export default function Header({ currentPage }) {
   const { t } = useTranslation();
@@ -105,6 +106,11 @@ export default function Header({ currentPage }) {
         );
         setHelpLink('https://agrifooddatacanada.github.io/OCA_Composer_help_pages/en/Cardinality/');
         break;
+      case 'DataStandards':
+        setHeader(t('Add Data Standards'));
+        setToolTipText('');
+        setHelpLink('');
+        break;
       case 'StartDataValidator':
         setHeader(t('Upload Data (optional)'));
         setToolTipText(
@@ -171,7 +177,7 @@ export default function Header({ currentPage }) {
             </Box>
           ) : (
             <>
-              <img
+              {/*<img
                 src={logo}
                 style={{
                   width: isMobile ? '100px' : '150px',
@@ -180,6 +186,16 @@ export default function Header({ currentPage }) {
                 }}
                 alt='Logo'
                 onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
+              />*/}
+              <img
+                src={themes.default.logos.agriFoodCanada_logo.url}
+                style={{
+                  width: isMobile ? '100px' : '150px',
+                  marginRight: '20px',
+                  cursor: 'pointer'
+                }}
+                alt={themes.default.logos.agriFoodCanada_logo.alt}
+                onClick={() => (window.location.href = themes.default.logos.agriFoodCanada_logo.website)}
               />
               <Typography
                 sx={{
@@ -226,7 +242,7 @@ export default function Header({ currentPage }) {
                   {/* <option value="fr">FR</option> */}
                 </select>
               </div>
-              <img
+              {/*<img
                 src={logoWhite}
                 style={{
                   width: isMobile ? 'auto' : '250px',
@@ -236,6 +252,17 @@ export default function Header({ currentPage }) {
                 }}
                 alt='Logo'
                 onClick={() => (window.location.href = 'https://agrifooddatacanada.ca/')}
+              />*/}
+              <img
+                src={themes.default.logos.agriFoodCanada_white_logo.url}
+                style={{
+                  width: isMobile ? 'auto' : '250px',
+                  height: isMobile ? '70px' : 'auto',
+                  marginRight: isMobile ? 'unset' : '20px',
+                  cursor: 'pointer'
+                }}
+                alt={themes.default.logos.agriFoodCanada_white_logo.alt}
+                onClick={() => (window.location.href = themes.logos.agriFoodCanada_white_logo.website)}
               />
             </Box>
 

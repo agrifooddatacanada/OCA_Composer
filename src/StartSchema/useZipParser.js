@@ -16,6 +16,7 @@ const useZipParser = () => {
     setCharacterEncodingRowData,
     setOverlay,
     setFormatRuleRowData,
+    setDataStandardsRowData,
     setCardinalityData
   } = useContext(Context);
 
@@ -39,12 +40,13 @@ const useZipParser = () => {
     setSchemaDescription(newMetadata);
   };
 
-  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding, languageList, formatRules, cardinalityData) => {
+  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding, languageList, formatRules, cardinalityData, dataStandards) => {
     const newSavedEntryCodes = {};
     const newLangAttributeRowData = {};
     const newAttributeRowData = [];
     const newCharacterEncodingRowData = [];
     const newFormatRuleRowData = [];
+    const newDataStandardsRowData = [];
     const attributeListStringMap = {};
     let attributesWithListType = [];
 
@@ -192,6 +194,24 @@ const useZipParser = () => {
       });
     }
 
+    // Parse data standards (Standard overlay)
+    if (dataStandards) {
+      newAttributeRowData.forEach((row) => {
+        const newRowForDataStandard = { Attribute: row.Attribute };
+        newRowForDataStandard['DataStandard'] = dataStandards?.['attribute_standards']?.[row.Attribute] || '';
+
+        setOverlay(prev => ({
+          ...prev,
+          "Data Standards": {
+            ...prev["Data Standards"],
+            selected: true
+          }
+        }));
+
+        newDataStandardsRowData.push(newRowForDataStandard);
+      });
+    }
+
     // Parse cardinality
     if (cardinalityData) {
       const firstLanguage = Object.keys(newLangAttributeRowData)?.[0];
@@ -216,6 +236,7 @@ const useZipParser = () => {
     }
 
     setFormatRuleRowData(newFormatRuleRowData);
+    setDataStandardsRowData(newDataStandardsRowData);
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setLanAttributeRowData(newLangAttributeRowData);
     setAttributesList(attributeList);
