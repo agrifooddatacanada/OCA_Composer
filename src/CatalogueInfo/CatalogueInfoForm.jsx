@@ -7,12 +7,14 @@ import {
   Typography
 } from "@mui/material";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import CustomFormInput from "../components/CustomFormInput";
 import { catalogueInfoFormFields, catalogueScenarios } from "../constants/catalogueInfo";
 import CustomSelect from "../components/CustomSelect";
 
 function CatalogueInfoForm({ catalogueData, isOpen, handleClose, saveToLocalStorage }) {
+  const { t } = useTranslation();
   const {
     control,
     handleSubmit,
@@ -49,9 +51,9 @@ function CatalogueInfoForm({ catalogueData, isOpen, handleClose, saveToLocalStor
   return (
     <div>
       <Dialog open={isOpen} onClose={handleClose} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ pb: 0 }}>Catalogue Information</DialogTitle>
+        <DialogTitle sx={{ pb: 0 }}>{t("Catalogue Information")}</DialogTitle>
         <Typography sx={{ px: "24px" }}>
-          Include catalogue information in markdown readme
+          {t("Include catalogue information in markdown readme")}
         </Typography>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
@@ -95,7 +97,7 @@ function CatalogueInfoForm({ catalogueData, isOpen, handleClose, saveToLocalStor
           </DialogContent>
           <DialogActions sx={{ px: "24px", pb: "20px", pt: 0 }}>
             <Button variant="outlined" color="navButton" onClick={handleClose}>
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button
               type="submit"
@@ -103,7 +105,7 @@ function CatalogueInfoForm({ catalogueData, isOpen, handleClose, saveToLocalStor
               color="navButton"
               disabled={!selectedScenario}
             >
-              Save
+              {t("Save")}
             </Button>
           </DialogActions>
         </form>
