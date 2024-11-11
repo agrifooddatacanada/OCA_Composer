@@ -7,7 +7,7 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import { CustomPalette } from "../constants/customPalette";
 
-function CatalogueInfo() {
+function CatalogueInfo({ isDisabled }) {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
   const { storedValue, saveToLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
@@ -28,6 +28,7 @@ function CatalogueInfo() {
           size="small"
           variant="contained"
           color="navButton"
+          disabled={isDisabled}
           onClick={() => setIsOpen(true)}
           sx={{ flexGrow: 1 }}
         >

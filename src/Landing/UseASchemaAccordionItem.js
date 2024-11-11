@@ -163,7 +163,7 @@ const UseASchemaAccordionItem = () => {
             sx={buttonStyles}
             disabled={disableButtonCheck}
           >
-            {t("Generate Readme")}
+            {t("Generate Text Readme")}
           </Button>
           <Button
             variant="contained"
