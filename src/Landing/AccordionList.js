@@ -243,20 +243,29 @@ const AccordionList = () => {
               sx={buttonStyles}
               disabled={disableButtonCheck}
             >
-              {t("Generate Readme")}
+              {t("Generate Text Readme")}
             </Button>
-            <Box sx={{ marginTop: "30px", width: "100%", maxWidth: "300px" }}>
-              <CatalogueInfo />
-            </Box>
-            <Button
-              variant="contained"
-              color="navButton"
-              onClick={handleClickMarkdownReadme}
-              sx={buttonStyles}
-              disabled={disableButtonCheck}
+            <Box
+              sx={{
+                padding: "12px",
+                marginTop: "30px",
+                width: "100%",
+                maxWidth: "276px",
+                borderRadius: "4px",
+                border: `1px solid ${CustomPalette.PRIMARY}`
+              }}
             >
-              {t("Generate Markdown Readme")}
-            </Button>
+              <CatalogueInfo isDisabled={disableButtonCheck} />
+              <Button
+                variant="contained"
+                color="navButton"
+                onClick={handleClickMarkdownReadme}
+                sx={{ ...buttonStyles, marginTop: "12px" }}
+                disabled={disableButtonCheck}
+              >
+                {t("Generate Markdown Readme")}
+              </Button>
+            </Box>
             <GenerateDataEntryExcel
               rawFile={rawFile}
               setLoading={setLoading}

@@ -18,7 +18,7 @@
   "Upload schema bundle (.zip OR .json) Or drag and drop one": "Upload schema bundle (.zip OR .json) Or drag and drop one",
   "View Schema": "View Schema",
   "Edit Schema": "Edit Schema",
-  "Generate Readme": "Generate Readme",
+  "Generate Text Readme": "Generate Text Readme",
   "Generate Markdown Readme": "Generate Markdown Readme",
   "Generate Data Entry Excel": "Generate Data Entry Excel",
   "Schemas are an important piece of data documentation. Schemas work...": "Schemas are an important piece of data documentation. Schemas work together with a dataset and describe data features such as column names, units, and descriptions etc.",
@@ -270,5 +270,11 @@
   "Data Standard": "Data Standard",
   "Data Standards": "Data Standards",
   "Add Data Standards": "Add Data Standards",
-  "Remove overlay": "Remove overlay"
+  "Remove overlay": "Remove overlay",
+  "scenario": "scenario",
+  "Update": "Update",
+  "Save": "Save",
+  "Add catalogue information": "Add catalogue information",
+  "Catalogue Information": "Catalogue Information",
+  "Include catalogue information in markdown readme": "Include catalogue information in markdown readme"
 }
