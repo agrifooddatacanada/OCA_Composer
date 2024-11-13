@@ -1,21 +1,14 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  Menu,
-  MenuItem,
-  MenuList,
-  ClickAwayListener,
-} from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
+import { Button, Menu, MenuItem, MenuList, ClickAwayListener } from "@mui/material";
+import { CustomPalette } from "../constants/customPalette";
 
 const exportOptions = ["excel", "csv"];
 
 const ExportButton = ({ handleSave }) => {
   const [selectedOption, setSelectedOption] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [additionalOptionsAnchorEl, setAdditionalOptionsAnchorEl] =
-    useState(null);
+  const [additionalOptionsAnchorEl, setAdditionalOptionsAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const additionalOptionsOpen = Boolean(additionalOptionsAnchorEl);
 
@@ -25,7 +18,7 @@ const ExportButton = ({ handleSave }) => {
     setSelectedOption(option);
 
     if (option === "excel") {
-      handleSave(true, "excel");
+      handleSave("excel", true);
     } else if (option === "csv") {
       setAdditionalOptionsAnchorEl(anchorEl);
     }
@@ -66,7 +59,7 @@ const ExportButton = ({ handleSave }) => {
           alignSelf: "flex-end",
           display: "flex",
           justifyContent: "space-around",
-          padding: "0.5rem 1rem",
+          padding: "0.5rem 1rem"
         }}
       >
         Export Data
@@ -77,15 +70,15 @@ const ExportButton = ({ handleSave }) => {
         open={open}
         onClose={handleClose}
         MenuListProps={{
-          "aria-labelledby": "basic-button",
+          "aria-labelledby": "basic-button"
         }}
         transformOrigin={{
           vertical: "top",
-          horizontal: "center",
+          horizontal: "center"
         }}
         anchorOrigin={{
           vertical: "bottom",
-          horizontal: "center",
+          horizontal: "center"
         }}
       >
         {exportOptions.map((option) => (
@@ -105,7 +98,7 @@ const ExportButton = ({ handleSave }) => {
         open={additionalOptionsOpen}
         onClose={handleAdditionalOptionsClose}
         MenuListProps={{
-          "aria-labelledby": "basic-button",
+          "aria-labelledby": "basic-button"
         }}
       >
         <ClickAwayListener onClickAway={handleAdditionalOptionsClose}>
@@ -114,7 +107,7 @@ const ExportButton = ({ handleSave }) => {
               sx={{ color: CustomPalette.PRIMARY }}
               onClick={() => {
                 handleAdditionalOptionsClose();
-                handleSave(true, "csv");
+                handleSave("csv", true);
               }}
             >
               Keep original data column headers
@@ -123,7 +116,7 @@ const ExportButton = ({ handleSave }) => {
               sx={{ color: CustomPalette.PRIMARY }}
               onClick={() => {
                 handleAdditionalOptionsClose();
-                handleSave(false, "csv");
+                handleSave("csv", false);
               }}
             >
               Change to Schema column headers
