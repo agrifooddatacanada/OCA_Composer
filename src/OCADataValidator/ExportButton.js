@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  Menu,
-  MenuItem,
-  MenuList,
-  ClickAwayListener,
-} from "@mui/material";
+import { Button, Menu, MenuItem, MenuList, ClickAwayListener } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
 
@@ -21,11 +15,30 @@ const ExportButton = ({ handleSave }) => {
 
   const { t } = useTranslation();
 
+  const [isEmbedded, setIsEmbedded] = useState(false);
+  useEffect(() => {
+    setIsEmbedded(window !== window.parent);
+  }, []);
+
   const handleMenuItemClick = (option) => {
     setSelectedOption(option);
 
     if (option === "excel") {
       handleSave(true, "excel");
+      
+      if (isEmbedded) {
+        window.parent.postMessage({
+          type: 'validatedData',
+          format: 'excel',
+          data: validatedData,
+          metadata: {
+            timestamp: new Date().toISOString(),
+            schemaName: currentSchemaName,
+            validationStatus: true
+          }
+        }, '*');
+      }
+
     } else if (option === "csv") {
       setAdditionalOptionsAnchorEl(anchorEl);
     }
@@ -43,6 +56,25 @@ const ExportButton = ({ handleSave }) => {
   const handleAdditionalOptionsClose = () => {
     setAdditionalOptionsAnchorEl(null);
     setAnchorEl(null);
+  };
+
+  const handleCsvExport = (keepOriginalHeaders) => {
+    handleAdditionalOptionsClose();
+    handleSave(keepOriginalHeaders, "csv");
+    
+    if (isEmbedded) {
+      window.parent.postMessage({
+        type: 'validatedData',
+        format: 'csv',
+        keepOriginalHeaders,
+        data: validatedData,
+        metadata: {
+          timestamp: new Date().toISOString(),
+          schemaName: currentSchemaName,
+          validationStatus: true
+        }
+      }, '*');
+    }
   };
 
   useEffect(() => {
@@ -69,7 +101,7 @@ const ExportButton = ({ handleSave }) => {
           padding: "0.5rem 1rem",
         }}
       >
-        Export Data
+        {isEmbedded ? "Save and Send" : "Export Data"}
       </Button>
       <Menu
         id="basic-menu"
@@ -112,19 +144,13 @@ const ExportButton = ({ handleSave }) => {
           <MenuList>
             <MenuItem
               sx={{ color: CustomPalette.PRIMARY }}
-              onClick={() => {
-                handleAdditionalOptionsClose();
-                handleSave(true, "csv");
-              }}
+              onClick={() => handleCsvExport(true)}
             >
               Keep original data column headers
             </MenuItem>
             <MenuItem
               sx={{ color: CustomPalette.PRIMARY }}
-              onClick={() => {
-                handleAdditionalOptionsClose();
-                handleSave(false, "csv");
-              }}
+              onClick={() => handleCsvExport(false)}
             >
               Change to Schema column headers
             </MenuItem>
