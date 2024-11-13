@@ -12,7 +12,6 @@
     "quotes": ["error", "double"], // Quotation style: enforce double quotes
     "semi": ["error", "always"], // Require semicolons
     "arrow-parens": ["error", "always"], // Require parentheses around arrow function arguments
-    "indent": ["error", 2], // Enforce 2-space indentation
     "object-curly-spacing": ["error", "always"], // Enforce spaces inside braces
     "no-restricted-syntax": 0,
     "camelcase": 0,
@@ -21,8 +20,13 @@
     "react/prop-types": 0,
     "react/jsx-props-no-spreading": 0,
     "react/jsx-filename-extension": 0,
+    "react-hooks/exhaustive-deps": 1,
     "import/no-cycle": 0,
-    "no-param-reassign": 0
+    "no-param-reassign": 0,
+    "no-continue": 0,
+    "no-nested-ternary": 0,
+    "no-shadow": 0,
+    "consistent-return": 0
     // Additional ESLint rules can be added here
   }
 }

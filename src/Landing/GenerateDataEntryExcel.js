@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect } from "react";
-import { Context } from "../App";
 import {
   Button,
   Dialog,
@@ -11,13 +10,15 @@ import {
   FormControl,
   InputLabel,
   Box,
-  Typography,
+  Typography
 } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { CustomPalette } from "../constants/customPalette";
+import { Context } from "../App";
 import { CreateDataEntryExcel } from "./CreateDataEntryExcel";
+import { getDescriptiveFileName } from "../constants/utils";
 
-const downloadDataEntry = (acceptedFiles, setLoading, selectedLang) => {
+const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) => {
   let workbook = null;
   try {
     setLoading(true);
@@ -28,12 +29,12 @@ const downloadDataEntry = (acceptedFiles, setLoading, selectedLang) => {
         workbook = await CreateDataEntryExcel(e, selectedLang);
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "data_entry.xlsx";
+        a.download = fileName || "data_entry.xlsx";
         a.click();
       } catch (error) {
         console.error("Error processing file:", error);
@@ -54,12 +55,8 @@ const downloadDataEntry = (acceptedFiles, setLoading, selectedLang) => {
   }
 };
 
-const GenerateDataEntryExcel = ({
-  rawFile,
-  setLoading,
-  disableButtonCheck,
-}) => {
-  const { languages } = useContext(Context);
+const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
+  const { languages, schemaDescription } = useContext(Context);
   const appearAnimation =
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
 
@@ -78,7 +75,8 @@ const GenerateDataEntryExcel = ({
   const handleClose = (confirm) => {
     setOpen(false);
     if (confirm && selectedLang) {
-      downloadDataEntry(rawFile, setLoading, selectedLang);
+      const fileName = getDescriptiveFileName(schemaDescription, "data_entry.xlsx");
+      downloadDataEntry(rawFile, setLoading, selectedLang, fileName);
     }
   };
 
@@ -97,7 +95,7 @@ const GenerateDataEntryExcel = ({
           ":hover": { backgroundColor: CustomPalette.SECONDARY },
           width: "100%",
           maxWidth: "300px",
-          marginTop: "30px",
+          marginTop: "30px"
         }}
         disabled={disableButtonCheck}
       >
@@ -116,8 +114,8 @@ const GenerateDataEntryExcel = ({
             border: "1px solid",
             borderColor: CustomPalette.RED_100,
             animation: appearAnimation,
-            left: "50%",
-          },
+            left: "50%"
+          }
         }}
       >
         <DialogTitle
@@ -125,7 +123,7 @@ const GenerateDataEntryExcel = ({
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: "center"
           }}
         >
           <Box
@@ -135,7 +133,7 @@ const GenerateDataEntryExcel = ({
               alignItems: "center",
               width: "100%",
               backgroundColor: CustomPalette.RED_100,
-              mb: 2,
+              mb: 2
             }}
           >
             <ErrorOutlineIcon
@@ -143,7 +141,7 @@ const GenerateDataEntryExcel = ({
                 color: CustomPalette.SECONDARY,
                 p: 1,
                 pl: 0,
-                fontSize: 35,
+                fontSize: 35
               }}
             />
           </Box>
@@ -158,25 +156,24 @@ const GenerateDataEntryExcel = ({
             alignItems: "center",
             justifyContent: "center",
             fontSize: 20,
-            textAlign: "center",
+            textAlign: "center"
           }}
         >
           <Typography sx={{ fontSize: "20px", fontWeight: "bold" }}>
             Include information in the language that you select here. <br />
-            If not available the system will default to English or first
-            language in the schema.
+            If not available the system will default to English or first language in the
+            schema.
           </Typography>
-          
+
           <Box sx={{ marginTop: 4 }}>
             <FormControl
               sx={{
-                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-                  {
-                    borderColor: CustomPalette.PRIMARY,
-                  },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color: CustomPalette.PRIMARY,
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: CustomPalette.PRIMARY
                 },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: CustomPalette.PRIMARY
+                }
               }}
             >
               <InputLabel
@@ -184,8 +181,8 @@ const GenerateDataEntryExcel = ({
                 sx={{
                   color: "black",
                   "&.MuiInputLabel-shrink": {
-                    color: "black",
-                  },
+                    color: "black"
+                  }
                 }}
               >
                 Language
@@ -200,8 +197,8 @@ const GenerateDataEntryExcel = ({
                     textAlign: "center",
                     justifyContent: "center",
                     flexDirection: "column",
-                    alignItems: "center",
-                  },
+                    alignItems: "center"
+                  }
                 }}
               >
                 {languages.map((lang) => (
@@ -211,7 +208,7 @@ const GenerateDataEntryExcel = ({
                     sx={{
                       justifyContent: "center",
                       flexDirection: "column",
-                      alignItems: "center",
+                      alignItems: "center"
                     }}
                   >
                     {lang}
@@ -228,10 +225,7 @@ const GenerateDataEntryExcel = ({
           >
             Cancel
           </Button>
-          <Button
-            onClick={() => handleClose(true)}
-            sx={{ color: CustomPalette.PRIMARY }}
-          >
+          <Button onClick={() => handleClose(true)} sx={{ color: CustomPalette.PRIMARY }}>
             Confirm
           </Button>
         </DialogActions>

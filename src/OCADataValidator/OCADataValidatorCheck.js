@@ -1,177 +1,164 @@
 import React, {
-  forwardRef,
   memo,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
-  useState,
+  useState
 } from "react";
-import {
-  Box,
-  Button,
-  Drawer,
-  IconButton,
-  MenuItem,
-  Typography,
-} from "@mui/material";
-import { greyCellStyle, gridStyles } from "../constants/styles";
 import { AgGridReact } from "ag-grid-react";
+import { Box, Button, Drawer, IconButton, MenuItem, Typography } from "@mui/material";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { greyCellStyle, gridStyles } from "../constants/styles";
 import "../App.css";
 import { Context } from "../App";
 import OCABundle from "./validator";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Languages from "./Languages";
 import MultipleSelectPlaceholder from "./MultiSelectErrors";
 import CellHeader from "../components/CellHeader";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ExportButton from "./ExportButton";
 import {
   errorCode,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
-  formatCodeTextDescription,
+  formatCodeTextDescription
 } from "../constants/constants";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import WarningPopup from "./WarningPopup";
 import { CustomPalette } from "../constants/customPalette";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { getCurrentData } from "../constants/utils";
+import { getCurrentData, getDescriptiveFileName } from "../constants/utils";
 import { CreateDataEntryExcel } from "../Landing/CreateDataEntryExcel";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import ViewSchema from "../ViewSchema/ViewSchema";
 import CloseIcon from "../assets/icon-close.png";
 import AutoCompleteEditor from "../components/AutoCompleteEditor";
 
-export const TrashCanButton = memo(
-  forwardRef((props, _ref) => {
-    const onClick = useCallback(() => {
-      props.delete();
-    }, [props]);
+export const TrashCanButton = memo((props) => {
+  const onClick = useCallback(() => {
+    props.delete();
+  }, [props]);
 
-    return (
-      <IconButton
-        sx={{
-          pr: 1,
-          color: CustomPalette.GREY_600,
-          transition: "all 0.2s ease-in-out",
-          display: props.node.data?.FormatText === "" ? "none" : "block",
-        }}
-        onClick={onClick}
-      >
-        <DeleteOutlineIcon />
-      </IconButton>
-    );
-  })
-);
+  return (
+    <IconButton
+      sx={{
+        pr: 1,
+        color: CustomPalette.GREY_600,
+        transition: "all 0.2s ease-in-out",
+        display: props.node.data?.FormatText === "" ? "none" : "block"
+      }}
+      onClick={onClick}
+    >
+      <DeleteOutlineIcon />
+    </IconButton>
+  );
+});
 
 const convertToCSV = (data, newHeader) => {
   const csv = data
-    .map((row) => {
-      return newHeader
+    .map((row) =>
+      newHeader
         .map((headerKey) => {
           let value = row[headerKey] !== undefined ? row[headerKey] : "";
           if (/,|"/.test(value)) {
-            value = `"${value.replace(/"/g, '""')}"`;
+            value = `"${value.replace(/"/g, '""')}"`; // eslint-disable-line quotes
           }
           return value;
         })
-        .join(",");
-    })
+        .join(",")
+    )
     .join("\n");
   return csv;
 };
 
 const CustomTooltip = (props) => {
-  const error = props.data?.error?.[props.colDef.field] || [];
-  const dataLength = props.api.getRenderedNodes().length;
+  const { data, colDef, api, color } = props;
+  const error = data?.error?.[colDef.field] || [];
+  const dataLength = api.getRenderedNodes().length;
 
-  return (
-    <>
-      {dataLength > 4 && error.length > 0 ? (
-        <Box
-          className="custom-tooltip"
+  return dataLength > 4 && error.length > 0 ? (
+    <Box
+      className="custom-tooltip"
+      style={{
+        backgroundColor: color || "#999",
+        borderRadius: "8px",
+        padding: "15px",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+        width: "100%",
+        minWidth: "200px",
+        maxWidth: "600px",
+        maxHeight: "200px",
+        overflow: "hidden"
+      }}
+    >
+      <Typography
+        sx={{
+          marginBottom: "5px",
+          fontWeight: "bold",
+          fontSize: "18px",
+          overflow: "hidden",
+          textOverflow: "ellipsis"
+        }}
+      >
+        Error ({error.length}):
+      </Typography>
+      {error.map((err, index) => (
+        <Typography
+          key={err.detail}
           style={{
-            backgroundColor: props.color || "#999",
-            borderRadius: "8px",
-            padding: "15px",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-            width: "100%",
-            minWidth: "200px",
-            maxWidth: "600px",
-            maxHeight: "200px",
+            wordWrap: "break-word",
             overflow: "hidden",
+            textOverflow: "ellipsis",
+            textAlign: "left"
           }}
         >
-          <Typography
-            sx={{
-              marginBottom: "5px",
-              fontWeight: "bold",
-              fontSize: "18px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            Error ({error.length}):
-          </Typography>
-          {error.map((err, index) => (
-            <Typography
-              key={index}
-              style={{
-                wordWrap: "break-word",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                textAlign: "left",
-              }}
-            >
-              {index + 1}. {err.detail}
-            </Typography>
-          ))}
-        </Box>
-      ) : dataLength > 0 && error.length > 0 ? (
-        <Box
-          className="custom-tooltip"
+          {index + 1}. {err.detail}
+        </Typography>
+      ))}
+    </Box>
+  ) : dataLength > 0 && error.length > 0 ? (
+    <Box
+      className="custom-tooltip"
+      style={{
+        backgroundColor: color || "#999",
+        borderRadius: "8px",
+        padding: "5px",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+        width: "100%",
+        minWidth: "200px",
+        maxWidth: "600px",
+        maxHeight: "200px",
+        overflow: "hidden"
+      }}
+    >
+      <Typography
+        sx={{
+          marginBottom: "5px",
+          fontWeight: "bold",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          fontSize: "14px"
+        }}
+      >
+        Error ({error.length}):{" "}
+        <span
           style={{
-            backgroundColor: props.color || "#999",
-            borderRadius: "8px",
-            padding: "5px",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-            width: "100%",
-            minWidth: "200px",
-            maxWidth: "600px",
-            maxHeight: "200px",
+            wordWrap: "break-word",
             overflow: "hidden",
+            textOverflow: "ellipsis",
+            fontWeight: "normal"
           }}
         >
-          <Typography
-            sx={{
-              marginBottom: "5px",
-              fontWeight: "bold",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              fontSize: "14px",
-            }}
-          >
-            Error ({error.length}):{" "}
-            <span
-              style={{
-                wordWrap: "break-word",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                fontWeight: "normal",
-              }}
-            >
-              {error[0].detail}
-            </span>
-          </Typography>
-        </Box>
-      ) : (
-        <p></p>
-      )}
-    </>
+          {error[0].detail}
+        </span>
+      </Typography>
+    </Box>
+  ) : (
+    <p />
   );
 };
 
@@ -182,9 +169,7 @@ const flaggedHeader = (
   characterEncodingRowData,
   cardinalityData
 ) => {
-  const value = labelDescription.find(
-    (item) => item?.Attribute === props?.displayName
-  );
+  const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
   const formatRule = formatRuleRowData.find(
     (item) => item?.Attribute === props?.displayName
   );
@@ -218,7 +203,7 @@ const flaggedHeader = (
         value ? (
           <Box
             sx={{
-              padding: "10px",
+              padding: "10px"
             }}
           >
             {value && (
@@ -234,9 +219,7 @@ const flaggedHeader = (
                   value?.Description !== "" && (
                     <>
                       <br />
-                      <Typography sx={{ fontWeight: "bold" }}>
-                        Description:
-                      </Typography>
+                      <Typography sx={{ fontWeight: "bold" }}>Description:</Typography>
                       <Typography>{value?.Description}</Typography>
                     </>
                   )}
@@ -244,27 +227,23 @@ const flaggedHeader = (
             )}
             {formatRule && (
               <>
-                {"Type" in formatRule &&
-                  formatRule?.Type &&
-                  formatRule?.Type !== "" && (
-                    <>
-                      <br />
-                      <Typography sx={{ fontWeight: "bold" }}>Type:</Typography>
-                      <Typography>{formatRule?.Type}</Typography>
-                    </>
-                  )}
+                {"Type" in formatRule && formatRule?.Type && formatRule?.Type !== "" && (
+                  <>
+                    <br />
+                    <Typography sx={{ fontWeight: "bold" }}>Type:</Typography>
+                    <Typography>{formatRule?.Type}</Typography>
+                  </>
+                )}
                 {"FormatText" in formatRule &&
                   formatRule?.FormatText &&
                   formatRule?.FormatText !== "" && (
                     <>
                       <br />
-                      <Typography sx={{ fontWeight: "bold" }}>
-                        Format:
-                      </Typography>
+                      <Typography sx={{ fontWeight: "bold" }}>Format:</Typography>
                       <Typography>
                         <span
                           style={{
-                            fontWeight: "500",
+                            fontWeight: "500"
                           }}
                         >
                           - RegEx:{" "}
@@ -272,20 +251,18 @@ const flaggedHeader = (
                         {formatRule?.FormatText || ""}
                       </Typography>
                       <Typography>
-                        <>
-                          {formatRule?.FormatText in selectedOption && (
-                            <>
-                              <span
-                                style={{
-                                  fontWeight: "500",
-                                }}
-                              >
-                                - Description:{" "}
-                              </span>
-                              {selectedOption[formatRule?.FormatText]}
-                            </>
-                          )}
-                        </>
+                        {formatRule?.FormatText in selectedOption && (
+                          <>
+                            <span
+                              style={{
+                                fontWeight: "500"
+                              }}
+                            >
+                              - Description:{" "}
+                            </span>
+                            {selectedOption[formatRule?.FormatText]}
+                          </>
+                        )}
                       </Typography>
                     </>
                   )}
@@ -296,9 +273,7 @@ const flaggedHeader = (
                 {"Make selected entries required" in characterEncoding && (
                   <>
                     <br />
-                    <Typography sx={{ fontWeight: "bold" }}>
-                      Required:
-                    </Typography>
+                    <Typography sx={{ fontWeight: "bold" }}>Required:</Typography>
                     <Typography>
                       {characterEncoding?.[
                         "Make selected entries required"
@@ -314,9 +289,7 @@ const flaggedHeader = (
                       <Typography sx={{ fontWeight: "bold" }}>
                         Character Encoding:
                       </Typography>
-                      <Typography>
-                        {characterEncoding?.["Character Encoding"]}
-                      </Typography>
+                      <Typography>{characterEncoding?.["Character Encoding"]}</Typography>
                     </>
                   )}
               </>
@@ -327,9 +300,7 @@ const flaggedHeader = (
               cardinality?.EntryLimit !== "" && (
                 <>
                   <br />
-                  <Typography sx={{ fontWeight: "bold" }}>
-                    Cardinality:
-                  </Typography>
+                  <Typography sx={{ fontWeight: "bold" }}>Cardinality:</Typography>
                   <Typography>{cardinality?.EntryLimit}</Typography>
                 </>
               )}
@@ -342,75 +313,56 @@ const flaggedHeader = (
   );
 };
 
-const EntryCodeDropdownSelector = memo(
-  forwardRef((props, _ref) => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const columnHeader = props.colDef.field;
-    const listItemObjectDisplay = props.dataHeaders?.[columnHeader].reduce(
-      (acc, item) => {
-        acc[item["Code"]] = item[props.lang];
-        return acc;
-      },
-      {}
-    );
-    const listItems = Object.keys(listItemObjectDisplay);
+const EntryCodeDropdownSelector = memo((props) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const columnHeader = props.colDef.field;
+  const listItemObjectDisplay = props.dataHeaders?.[columnHeader].reduce((acc, item) => {
+    acc[item.Code] = item[props.lang];
+    return acc;
+  }, {});
+  const listItems = Object.keys(listItemObjectDisplay);
 
-    const handleChange = (e) => {
-      props.node.updateData({
-        ...props.data,
-        [columnHeader]: e.target.value,
-      });
-      props.onRefresh();
-      props.setRevalidateData(true);
-      setIsDropdownOpen(false);
-    };
-
-    const handleClick = () => {
-      setIsDropdownOpen(!isDropdownOpen);
-    };
-
-    const handleKeyDown = (e) => {
-      const keyPressed = e.key;
-      if (keyPressed === "Delete" || keyPressed === "Backspace") {
-      }
-    };
-
-    const typesDisplay = listItems.map((value, index) => {
-      return (
-        <MenuItem
-          key={index + "_" + value}
-          value={value}
-          sx={{ border: "none", height: "2rem", fontSize: "small" }}
-        >
-          <strong>{value}</strong>: {listItemObjectDisplay[value] || ""}
-        </MenuItem>
-      );
+  const handleChange = (e) => {
+    props.node.updateData({
+      ...props.data,
+      [columnHeader]: e.target.value
     });
+    props.onRefresh();
+    props.setRevalidateData(true);
+    setIsDropdownOpen(false);
+  };
 
-    return (
-      <>
-        {listItems.length > 0 ? (
-          <DropdownMenuList
-            handleKeyDown={handleKeyDown}
-            type={props.node.data?.[columnHeader]}
-            handleChange={handleChange}
-            handleClick={handleClick}
-            isDropdownOpen={isDropdownOpen}
-            setIsDropdownOpen={setIsDropdownOpen}
-            typesDisplay={typesDisplay}
-          />
-        ) : (
-          <></>
-        )}
-      </>
-    );
-  })
-);
+  const handleClick = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const typesDisplay = listItems.map((value) => (
+    <MenuItem
+      key={value}
+      value={value}
+      sx={{ border: "none", height: "2rem", fontSize: "small" }}
+    >
+      <strong>{value}</strong>: {listItemObjectDisplay[value] || ""}
+    </MenuItem>
+  ));
+
+  return listItems.length > 0 ? (
+    <DropdownMenuList
+      handleKeyDown={() => {}}
+      type={props.node.data?.[columnHeader]}
+      handleChange={handleChange}
+      handleClick={handleClick}
+      isDropdownOpen={isDropdownOpen}
+      setIsDropdownOpen={setIsDropdownOpen}
+      typesDisplay={typesDisplay}
+    />
+  ) : null;
+});
 
 const OCADataValidatorCheck = ({
   showWarningCard,
   setShowWarningCard = () => {},
-  firstTimeDisplayWarning,
+  firstTimeDisplayWarning
 }) => {
   const {
     schemaDataConformantRowData,
@@ -431,6 +383,7 @@ const OCADataValidatorCheck = ({
     savedEntryCodes,
     targetResult,
     notToVerifyAttributes,
+    schemaDescription
     // attributeRowData // Check to see sensitive data
   } = useContext(Context);
 
@@ -456,13 +409,13 @@ const OCADataValidatorCheck = ({
           justifyContent: "center",
           alignItems: "center",
           padding: "0 16px",
-          position: "relative",
+          position: "relative"
         }}
       >
         <h1
           style={{
             textAlign: "center",
-            color: CustomPalette.PRIMARY,
+            color: CustomPalette.PRIMARY
           }}
         >
           Schema Preview
@@ -473,7 +426,7 @@ const OCADataValidatorCheck = ({
             position: "absolute",
             right: 0,
             marginRight: "3rem",
-            cursor: "pointer",
+            cursor: "pointer"
           }}
           onClick={toggleDrawer(false)}
         >
@@ -500,8 +453,8 @@ const OCADataValidatorCheck = ({
 
   const datasetRawFileType = datasetRawFile[0]?.name.split(".").pop();
 
-  const defaultColDef = useMemo(() => {
-    return {
+  const defaultColDef = useMemo(
+    () => ({
       editable: true,
       flex: 1,
       minWidth: 100,
@@ -520,57 +473,17 @@ const OCADataValidatorCheck = ({
         setRevalidateData,
         onRefresh: () => {
           gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
-        },
-      }),
-    };
-  }, [
-    lanAttributeRowData,
-    cardinalityData,
-    characterEncodingRowData,
-    formatRuleRowData,
-    savedEntryCodes,
-  ]);
-
-  const handleSave = async (ogHeader = false, exportFormat) => {
-    if (ogWorkbook !== null && exportFormat === "excel") {
-      await handleExcelSave();
-    } else if (ogWorkbook !== null && exportFormat === "csv") {
-      await handleCSVSave(ogHeader);
-    } else if (ogWorkbook === null && exportFormat === "csv") {
-      await handleCSVSave(ogHeader);
-    } else {
-      await handleExcelSave();
-    }
-  };
-
-  const handleExcelSave = async () => {
-    try {
-      const workbook = await generateDataEntryExcel(
-        targetResult,
-        langRef.current
-      );
-      if (workbook !== null) {
-        downloadExcelFile(workbook, "DataEntryExcel.xlsx");
-      } else {
-        throw new Error("Error while generating Excel file");
-      }
-    } catch (error) {
-      console.error("Error while generating Excel file", error);
-    }
-  };
-
-  const handleCSVSave = async (ogHeader) => {
-    try {
-      const newCSV = await generateCSVFile(ogHeader);
-      if (newCSV !== null) {
-        downloadCSVFile(newCSV, "DataEntryCSV.csv");
-      } else {
-        throw new Error("Error while generating CSV file");
-      }
-    } catch (error) {
-      console.error("Error while generating CSV file", error);
-    }
-  };
+        }
+      })
+    }),
+    [
+      lanAttributeRowData,
+      cardinalityData,
+      characterEncodingRowData,
+      formatRuleRowData,
+      savedEntryCodes
+    ]
+  );
 
   const generateCSVFile = async (ogHeader) => {
     const newData = [];
@@ -579,8 +492,7 @@ const OCADataValidatorCheck = ({
       if (ogHeader) {
         for (const [key, value] of Object.entries(node?.data)) {
           newObject[
-            matchingRowData.find((item) => item["Attribute"] === key)
-              ?.Dataset || key
+            matchingRowData.find((item) => item.Attribute === key)?.Dataset || key
           ] = value;
         }
       } else {
@@ -593,7 +505,7 @@ const OCADataValidatorCheck = ({
 
     const mappingFromAttrToDataset = {};
     for (const node of matchingRowData) {
-      mappingFromAttrToDataset[node["Attribute"]] = node["Dataset"];
+      mappingFromAttrToDataset[node.Attribute] = node.Dataset;
     }
 
     schemaDataConformantHeader.forEach((header) => {
@@ -604,8 +516,59 @@ const OCADataValidatorCheck = ({
       }
     });
 
-    const headerToString = newHeader.join(",") + "\n";
+    const headerToString = `${newHeader.join(",")}\n`;
     return headerToString + convertToCSV(newData, newHeader);
+  };
+
+  const downloadCSVFile = (csvData, fileName) => {
+    const blob = new Blob([csvData], { type: "text/csv" });
+
+    // Create a temporary URL for the Blob
+    const url = URL.createObjectURL(blob);
+
+    // Create a temporary <a> element to trigger the download
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName || "export.csv"; // Default filename is 'export.csv'
+    document.body.appendChild(a);
+    a.click();
+
+    // Clean up
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCSVSave = async (ogHeader) => {
+    try {
+      const newCSV = await generateCSVFile(ogHeader);
+      if (newCSV !== null) {
+        const fileName = getDescriptiveFileName(schemaDescription, "DataEntryCSV.csv");
+        downloadCSVFile(newCSV, fileName);
+      } else {
+        throw new Error("Error while generating CSV file");
+      }
+    } catch (error) {
+      console.error("Error while generating CSV file", error);
+    }
+  };
+
+  const cellStyle = (params) => {
+    const error = params.data?.error?.[params.colDef.field];
+    const isNotToVerify = notToVerifyAttributes.includes(params.colDef.field);
+
+    if (isNotToVerify) {
+      return { backgroundColor: "#ededed" };
+    }
+    if (params.colDef.field === "Delete") {
+      return greyCellStyle;
+    }
+    if (params.data?.error && error?.length > 0) {
+      return { backgroundColor: "#ffd7e9" };
+    }
+    if (params.data?.error) {
+      return { backgroundColor: "#d2f8d2" };
+    }
+    return undefined;
   };
 
   const handleValidate = async () => {
@@ -632,33 +595,26 @@ const OCADataValidatorCheck = ({
 
     const validate = bundle.validate(prepareInput);
 
-    setRowData(() => {
-      return newData.map((data, index) => {
-        return {
-          ...data,
-          error: validate?.errCollection?.[index] || {},
-        };
-      });
-    });
+    setRowData(() =>
+      newData.map((data, index) => ({
+        ...data,
+        error: validate?.errCollection?.[index] || {}
+      }))
+    );
 
     setColumnDefs((prev) => {
       const copy = [];
 
       prev.forEach((header) => {
-        if (
-          validate?.unmachedAttrs?.has(header.headerName) &&
-          header.headerName !== ""
-        ) {
+        if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== "") {
           copy.push({
             ...header,
-            cellStyle: () => {
-              return { backgroundColor: CustomPalette.GREY_200 };
-            },
+            cellStyle: () => ({ backgroundColor: CustomPalette.GREY_200 })
           });
         } else {
           copy.push({
             ...header,
-            cellStyle,
+            cellStyle
           });
         }
       });
@@ -666,6 +622,26 @@ const OCADataValidatorCheck = ({
       return copy;
     });
   };
+
+  function formatHeader(cell) {
+    cell.font = { size: 10, bold: true };
+    cell.alignment = { vertical: "top", wrapText: true };
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "E7E6E6" }
+    };
+    cell.border = {
+      top: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" }
+    };
+  }
+
+  function formatAttr(cell) {
+    cell.font = { size: 10 };
+    cell.alignment = { vertical: "top", wrapText: true };
+  }
 
   const generateDataEntryExcel = async (e, selectedLang) => {
     try {
@@ -691,13 +667,12 @@ const OCADataValidatorCheck = ({
       newData.forEach((data) => {
         const row = schemaConformantDataHeaders.map((header) => {
           const value = data[header] || "";
-          const isNumeric =
-            jsonParsedFile.capture_base.attributes[header] === "Numeric";
+          const isNumeric = jsonParsedFile.capture_base.attributes[header] === "Numeric";
 
           // Convert string to number if the attribute is marked as Numeric
           if (isNumeric && typeof value === "string") {
             const numericValue = parseFloat(value);
-            return isNaN(numericValue) ? "" : numericValue;
+            return Number.isNaN(numericValue) ? "" : numericValue;
           }
           return value;
         });
@@ -713,33 +688,14 @@ const OCADataValidatorCheck = ({
       return workbook;
     } catch (error) {
       console.error("Error generating DataEntryExcel file:", error);
+      return null;
     }
   };
-
-  function formatHeader(cell) {
-    cell.font = { size: 10, bold: true };
-    cell.alignment = { vertical: "top", wrapText: true };
-    cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "E7E6E6" },
-    };
-    cell.border = {
-      top: { style: "thin" },
-      bottom: { style: "thin" },
-      right: { style: "thin" },
-    };
-  }
-
-  function formatAttr(cell) {
-    cell.font = { size: 10 };
-    cell.alignment = { vertical: "top", wrapText: true };
-  }
 
   const downloadExcelFile = (workbook, fileName) => {
     workbook.xlsx.writeBuffer().then((buffer) => {
       const blob = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -749,36 +705,29 @@ const OCADataValidatorCheck = ({
     });
   };
 
-  const downloadCSVFile = (csvData, fileName) => {
-    const blob = new Blob([csvData], { type: "text/csv" });
-
-    // Create a temporary URL for the Blob
-    const url = URL.createObjectURL(blob);
-
-    // Create a temporary <a> element to trigger the download
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName || "export.csv"; // Default filename is 'export.csv'
-    document.body.appendChild(a);
-    a.click();
-
-    // Clean up
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleExcelSave = async () => {
+    try {
+      const workbook = await generateDataEntryExcel(targetResult, langRef.current);
+      if (workbook !== null) {
+        const fileName = getDescriptiveFileName(schemaDescription, "DataEntryExcel.xlsx");
+        downloadExcelFile(workbook, fileName);
+      } else {
+        throw new Error("Error while generating Excel file");
+      }
+    } catch (error) {
+      console.error("Error while generating Excel file", error);
+    }
   };
 
-  const cellStyle = (params) => {
-    const error = params.data?.error?.[params.colDef.field];
-    const isNotToVerify = notToVerifyAttributes.includes(params.colDef.field);
-
-    if (isNotToVerify) {
-      return { backgroundColor: "#ededed" };
-    } else if (params.colDef.field === "Delete") {
-      return greyCellStyle;
-    } else if (params.data?.error && error?.length > 0) {
-      return { backgroundColor: "#ffd7e9" };
-    } else if (params.data?.error) {
-      return { backgroundColor: "#d2f8d2" };
+  const handleSave = async (exportFormat, ogHeader = false) => {
+    if (ogWorkbook !== null && exportFormat === "excel") {
+      await handleExcelSave();
+    } else if (ogWorkbook !== null && exportFormat === "csv") {
+      await handleCSVSave(ogHeader);
+    } else if (ogWorkbook === null && exportFormat === "csv") {
+      await handleCSVSave(ogHeader);
+    } else {
+      await handleExcelSave();
     }
   };
 
@@ -798,13 +747,8 @@ const OCADataValidatorCheck = ({
 
     const currentData = getCurrentData(gridRef.current.api, true);
 
-    setRowData((prev) => [...currentData, newRow]);
-  }, [
-    isValidateButtonEnabled,
-    schemaDataConformantHeader,
-    gridRef,
-    setRowData,
-  ]);
+    setRowData([...currentData, newRow]);
+  }, [isValidateButtonEnabled, schemaDataConformantHeader, gridRef, setRowData]);
 
   const onCellValueChanged = (e) => {
     if (validateBeforeOnChangeRef.current) {
@@ -814,16 +758,16 @@ const OCADataValidatorCheck = ({
 
     e.node.updateData({
       ...e.data,
-      [e.colDef.field]: e.newValue,
+      [e.colDef.field]: e.newValue
     });
 
     if (e.oldValue !== e.newValue) {
-      var column = e.column.colDef.field;
+      const column = e.column.colDef.field;
       e.column.colDef.cellStyle = { "background-color": "none" };
       e.api.refreshCells({
         force: true,
         columns: [column],
-        rowNodes: [e.node],
+        rowNodes: [e.node]
       });
     }
 
@@ -836,10 +780,8 @@ const OCADataValidatorCheck = ({
     if (datasetRawFile.length > 0) {
       const mappingFromAttrToDataset = {};
       for (const node of matchingRowData) {
-        mappingFromAttrToDataset[node["Attribute"]] =
-          node["Dataset"] && node["Dataset"] !== ""
-            ? node["Dataset"]
-            : node["Attribute"];
+        mappingFromAttrToDataset[node.Attribute] =
+          node.Dataset && node.Dataset !== "" ? node.Dataset : node.Attribute;
       }
 
       const newData = [];
@@ -882,7 +824,7 @@ const OCADataValidatorCheck = ({
           handleAddRow();
         }
         setTimeout(() => {
-          const api = e.api;
+          const { api } = e;
           const editingRowIndex = e.rowIndex;
           api.setFocusedCell(editingRowIndex + 1, e.column);
         }, 0);
@@ -894,7 +836,7 @@ const OCADataValidatorCheck = ({
         if (isLastColumn && isLastRow) {
           handleAddRow();
           setTimeout(() => {
-            const api = e.api;
+            const { api } = e;
             const editingRowIndex = e.rowIndex;
             api.setFocusedCell(editingRowIndex + 1, allColumns[0]);
           }, 0);
@@ -926,11 +868,9 @@ const OCADataValidatorCheck = ({
             minWidth: 150,
             cellEditor: AutoCompleteEditor,
             cellEditorParams: {
-              options: SavedEntryCodesWithNoArrayType[header].map(
-                (item) => item.Code
-              ),
+              options: SavedEntryCodesWithNoArrayType[header].map((item) => item.Code)
             },
-            singleClickEdit: true,
+            singleClickEdit: true
           });
         } else if (
           header in SavedEntryCodesWithNoArrayType &&
@@ -944,7 +884,7 @@ const OCADataValidatorCheck = ({
             tooltipComponentParams: { color: "#F88379" },
             tooltipValueGetter: (params) => ({ value: params.value }),
             editable: true,
-            cellRendererFramework: EntryCodeDropdownSelector,
+            cellRendererFramework: EntryCodeDropdownSelector
           });
         } else {
           columns.push({
@@ -953,7 +893,7 @@ const OCADataValidatorCheck = ({
             minWidth: 150,
             tooltipComponentParams: { color: "#F88379" },
             tooltipValueGetter: (params) => ({ value: params.value }),
-            editable: true,
+            editable: true
           });
         }
       });
@@ -967,13 +907,13 @@ const OCADataValidatorCheck = ({
       cellRendererParams: (params) => ({
         delete: () => {
           gridRef.current.api.applyTransaction({
-            remove: [params.node.data],
+            remove: [params.node.data]
           });
           gridRef.current.api.redrawRows();
-        },
+        }
       }),
       pinned: "right",
-      cellStyle: () => greyCellStyle,
+      cellStyle: () => greyCellStyle
     });
 
     setColumnDefs(columns);
@@ -984,7 +924,7 @@ const OCADataValidatorCheck = ({
     schemaDataConformantHeader,
     schemaDataConformantRowData,
     setSchemaDataConformantHeader,
-    savedEntryCodes,
+    savedEntryCodes
   ]);
 
   useEffect(() => {
@@ -1018,7 +958,7 @@ const OCADataValidatorCheck = ({
     <Box sx={{ overflowX: "auto" }}>
       <Box
         sx={{
-          minWidth: "900px",
+          minWidth: "900px"
         }}
       >
         <Box
@@ -1030,14 +970,14 @@ const OCADataValidatorCheck = ({
             margin: "auto",
             marginRight: "2rem",
             pl: 10,
-            marginTop: 2,
+            marginTop: 2
           }}
         >
           <Box
             sx={{
               width: "100%",
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "space-between"
             }}
           >
             <Button
@@ -1056,7 +996,7 @@ const OCADataValidatorCheck = ({
                 backgroundColor: CustomPalette.RED_100,
                 width: "400px",
                 marginLeft: "1rem",
-                marginRight: "1rem",
+                marginRight: "1rem"
               }}
             >
               <ErrorOutlineIcon
@@ -1064,7 +1004,7 @@ const OCADataValidatorCheck = ({
                   color: CustomPalette.SECONDARY,
                   p: 0.5,
                   pl: 0,
-                  fontSize: 25,
+                  fontSize: 25
                 }}
               />
               <p>No data is saved without exporting!</p>
@@ -1072,13 +1012,10 @@ const OCADataValidatorCheck = ({
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "row",
+                flexDirection: "row"
               }}
             >
-              <ExportButton
-                handleSave={handleSave}
-                inputDataType={datasetRawFileType}
-              />
+              <ExportButton handleSave={handleSave} inputDataType={datasetRawFileType} />
             </Box>
           </Box>
         </Box>
@@ -1088,14 +1025,14 @@ const OCADataValidatorCheck = ({
           display: "flex",
           flexDirection: "column",
           flex: 1,
-          minWidth: "900px",
+          minWidth: "900px"
         }}
       >
         <Box
           sx={{
             display: "flex",
             flexDirection: "row",
-            alignContent: "space-between",
+            alignContent: "space-between"
           }}
         >
           <Box
@@ -1104,7 +1041,7 @@ const OCADataValidatorCheck = ({
               flexDirection: "column",
               marginTop: "2rem",
               gap: "10px",
-              flex: 1,
+              flex: 1
             }}
           >
             <Box
@@ -1112,7 +1049,7 @@ const OCADataValidatorCheck = ({
                 display: "flex",
                 flexDirection: "column",
                 paddingLeft: "2rem",
-                gap: "10px",
+                gap: "10px"
               }}
             >
               <Languages
@@ -1135,7 +1072,7 @@ const OCADataValidatorCheck = ({
                   flexDirection: "row",
                   paddingRight: "20px",
                   alignItems: "center",
-                  marginTop: "15px",
+                  marginTop: "15px"
                 }}
               >
                 <Button
@@ -1153,7 +1090,7 @@ const OCADataValidatorCheck = ({
                     sx={{
                       marginLeft: "20px",
                       color: "red",
-                      fontWeight: "bold",
+                      fontWeight: "bold"
                     }}
                   >
                     Please re-verify the data!
@@ -1168,7 +1105,7 @@ const OCADataValidatorCheck = ({
               display: "flex",
               flexDirection: "column",
               marginTop: "2rem",
-              gap: "10px",
+              gap: "10px"
             }}
           >
             <CustomAnchorLink
@@ -1180,7 +1117,7 @@ const OCADataValidatorCheck = ({
               sx={{
                 display: "flex",
                 alignItems: "center",
-                marginRight: "2rem",
+                marginRight: "2rem"
               }}
             >
               <div
@@ -1188,16 +1125,16 @@ const OCADataValidatorCheck = ({
                   width: "20px",
                   height: "20px",
                   backgroundColor: "#d2f8d2",
-                  marginRight: "15px",
+                  marginRight: "15px"
                 }}
-              ></div>
+              />
               <span>Pass Verification</span>
             </Box>
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                marginRight: "2rem",
+                marginRight: "2rem"
               }}
             >
               <div
@@ -1205,16 +1142,16 @@ const OCADataValidatorCheck = ({
                   width: "20px",
                   height: "20px",
                   backgroundColor: "#ffd7e9",
-                  marginRight: "15px",
+                  marginRight: "15px"
                 }}
-              ></div>
+              />
               <span>Fail Verification</span>
             </Box>
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                marginRight: "2rem",
+                marginRight: "2rem"
               }}
             >
               <div
@@ -1222,16 +1159,16 @@ const OCADataValidatorCheck = ({
                   width: "20px",
                   height: "20px",
                   backgroundColor: "#ededed",
-                  marginRight: "15px",
+                  marginRight: "15px"
                 }}
-              ></div>
+              />
               <span>Unmatched Attributes</span>
             </Box>
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                marginRight: "2rem",
+                marginRight: "2rem"
               }}
             >
               <div
@@ -1240,9 +1177,9 @@ const OCADataValidatorCheck = ({
                   height: "20px",
                   backgroundColor: "#ffffff",
                   marginRight: "15px",
-                  border: "1px solid #ededed",
+                  border: "1px solid #ededed"
                 }}
-              ></div>
+              />
               <span>Unverified Data</span>
             </Box>
           </Box>
@@ -1256,14 +1193,12 @@ const OCADataValidatorCheck = ({
               rowData={rowDataFilter}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
-              overlayLoadingTemplate={
-                '<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
-              }
+              overlayLoadingTemplate='<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
               tooltipShowDelay={0}
               tooltipHideDelay={5000}
-              tooltipMouseTrack={true}
+              tooltipMouseTrack
               onCellValueChanged={onCellValueChanged}
-              suppressRowHoverHighlight={true}
+              suppressRowHoverHighlight
               onCellKeyDown={onCellKeyDown}
               suppressFieldDotNotation
               onGridReady={() => {
@@ -1276,7 +1211,7 @@ const OCADataValidatorCheck = ({
               display: "flex",
               flexDirection: "row",
               justifyContent: "flex-end",
-              marginTop: "2rem",
+              marginTop: "2rem"
             }}
           >
             <Button
@@ -1288,7 +1223,7 @@ const OCADataValidatorCheck = ({
                 width: "9rem",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-around",
+                justifyContent: "space-around"
               }}
             >
               Add row <AddCircleIcon />
