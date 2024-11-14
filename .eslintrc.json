@@ -26,7 +26,8 @@
     "no-continue": 0,
     "no-nested-ternary": 0,
     "no-shadow": 0,
-    "consistent-return": 0
+    "consistent-return": 0,
+    "jsx-a11y/no-autofocus": 1
     // Additional ESLint rules can be added here
   }
 }
