@@ -1,19 +1,29 @@
-import React, { useState, useEffect, useContext, useImperativeHandle, forwardRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useImperativeHandle,
+  forwardRef,
+  useCallback
+} from "react";
+import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
 import { Context } from "../App";
 import CellHeader from "../components/CellHeader";
 import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import { useTranslation } from "react-i18next";
+import { MAX_ATTR_DESCRIPTION_CHARS, MAX_ATTR_LABEL_CHARS } from "../constants/constants";
 
 const textareaStyle = {
-  width: '98%',
-  height: '100%',
-  resize: 'none',
-  outline: 'none',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
-  fontSize: '12px',
+  width: "98%",
+  height: "100%",
+  resize: "none",
+  outline: "none",
+  fontFamily:
+    // eslint-disable-next-line quotes
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+  fontSize: "12px"
 };
 
 const TextareaCellEditor = forwardRef((props, ref) => {
@@ -23,26 +33,24 @@ const TextareaCellEditor = forwardRef((props, ref) => {
     setValue(props.value);
   }, [props.value]);
 
-  useImperativeHandle(ref, () => {
-    return {
-      getValue() {
-        return value;
-      },
+  useImperativeHandle(ref, () => ({
+    getValue() {
+      return value;
+    },
 
-      isCancelBeforeStart() {
-        return false;
-      },
+    isCancelBeforeStart() {
+      return false;
+    },
 
-      isCancelAfterEnd() {
-        return false;
-      }
-    };
-  });
+    isCancelAfterEnd() {
+      return false;
+    }
+  }));
 
   return (
     <textarea
       autoFocus
-      maxLength={200}
+      maxLength={MAX_ATTR_DESCRIPTION_CHARS}
       style={textareaStyle}
       value={value}
       onChange={(event) => setValue(event.target.value)}
@@ -59,25 +67,21 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     attributeRowData,
     savedEntryCodes,
     attributesWithLists,
-    languages,
+    languages
   } = useContext(Context);
 
-  //Sets Language Dependent Attribute row data
+  // Sets Language Dependent Attribute row data
   useEffect(() => {
-    let newLanAttributeRowData = JSON.parse(
-      JSON.stringify(lanAttributeRowData)
-    );
+    const newLanAttributeRowData = JSON.parse(JSON.stringify(lanAttributeRowData));
     languages.forEach((language) => {
       if (!newLanAttributeRowData[language]) {
         const newLanguageList = [];
         attributesList.forEach((item) => {
-          let listDisplay = attributeRowData.find(
-            (obj) => obj.Attribute === item
-          ).List;
+          let listDisplay = attributeRowData.find((obj) => obj.Attribute === item).List;
           if (!listDisplay) {
             listDisplay = "Not a List";
           } else {
-            let listDisplayArray = [];
+            const listDisplayArray = [];
             savedEntryCodes[item].forEach((i) => {
               listDisplayArray.push(i[language]);
             });
@@ -88,7 +92,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
             Attribute: item,
             Label: "",
             Description: "",
-            List: listDisplay,
+            List: listDisplay
           });
         });
         newLanAttributeRowData[language] = newLanguageList;
@@ -98,18 +102,14 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           let newLabel = "";
           let newDescription = "";
           if (
-            newLanAttributeRowData[language].find(
-              (i) => i.Attribute === item.Attribute
-            )
+            newLanAttributeRowData[language].find((i) => i.Attribute === item.Attribute)
           ) {
             newLabel = newLanAttributeRowData[language].find(
               (i) => i.Attribute === item.Attribute
             ).Label;
           }
           if (
-            newLanAttributeRowData[language].find(
-              (i) => i.Attribute === item.Attribute
-            )
+            newLanAttributeRowData[language].find((i) => i.Attribute === item.Attribute)
           ) {
             newDescription = newLanAttributeRowData[language].find(
               (i) => i.Attribute === item.Attribute
@@ -119,7 +119,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           if (!listDisplay) {
             listDisplay = "Not a List";
           } else {
-            let listDisplayArray = [];
+            const listDisplayArray = [];
             savedEntryCodes[item.Attribute].forEach((i) => {
               listDisplayArray.push(i[language]);
             });
@@ -131,7 +131,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
             Attribute: item.Attribute,
             Label: newLabel,
             Description: newDescription,
-            List: listDisplay,
+            List: listDisplay
           };
           newLanguageList.push(newObj);
         });
@@ -151,7 +151,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         width: 120,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => (<CellHeader headerText={t('Attribute')} helpText={t('This is the name for the attribute and, for example...')} />)
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Attribute"),
+          helpText: t("This is the name for the attribute and, for example...")
+        }
       },
       {
         field: "Label",
@@ -159,10 +163,15 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         width: 250,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => <CellHeader headerText={t('Label')} constraint={t('max 50 chars')} helpText={t('This is the language specific label for an attribute')} />,
-        cellEditorParams: {
-          maxLength: 50,
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Label"),
+          constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
+          helpText: t("This is the language specific label for an attribute")
         },
+        cellEditorParams: {
+          maxLength: MAX_ATTR_LABEL_CHARS
+        }
       },
       {
         field: "Description",
@@ -171,22 +180,28 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         cellEditor: TextareaCellEditor,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => <CellHeader headerText={t('Description')} constraint={t('max 200 chars')} helpText={t('This is a language specific description of the attribute...')} />
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Description"),
+          constraint: t("max description chars", {
+            maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
+          }),
+          helpText: t("This is a language specific description of the attribute...")
+        }
       },
       {
         field: "List",
-        headerName: t('List'),
+        headerName: t("List"),
         editable: false,
         width: 258,
         autoHeight: true,
         cellStyle: (params) => {
           if (attributesWithLists.includes(params.data.Attribute)) {
             return { whiteSpace: "pre-wrap", wordBreak: "break-word" };
-          } else {
-            return greyCellStyle;
           }
-        },
-      },
+          return greyCellStyle;
+        }
+      }
     ]);
   }, [attributesList, t]);
 
@@ -195,7 +210,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     const isLabelRow = e.column.colId === "Label";
 
     if (keyPressed === "Enter" && isLabelRow) {
-      const api = e.api;
+      const { api } = e;
       const editingRowIndex = e.rowIndex;
       api.setFocusedCell(editingRowIndex + 1, "Label");
     }

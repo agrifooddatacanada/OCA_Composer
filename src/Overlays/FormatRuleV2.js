@@ -154,49 +154,11 @@ const FormatRulesV2 = () => {
           width: '80%',
         }}>
           {t('All format rules are documented in the')} {' '}
-          <Link
-            to='#'
-            onClick={(e) => {
-              window.location.href = `https://github.com/agrifooddatacanada/format_options`;
-              e.preventDefault();
-            }}
-            sx={{
-              '&:hover': {
-                cursor: 'pointer',
-              },
-            }} 
-          >
-            {t('format GitHub repository')}
-          </Link>.{' '}{t('Request a new format to be added by')} {' '}
-          <Link
-            to='#'
-            onClick={(e) => {
-              window.location.href = `https://github.com//issues`;
-              e.preventDefault();
-            }}
-            sx={{
-              '&:hover': {
-                cursor: 'pointer',
-              },
-            }}      
-          >
-            {t('raising an issue in the repository')}
-          </Link>
+          <Link href='https://github.com/agrifooddatacanada/format_options' target='_blank' rel='noreferrer'>{t('format GitHub repository')}</Link>
+          .{' '}{t('Request a new format to be added by')} {' '}
+          <Link href='https://github.com/agrifooddatacanada/format_options/issues' rel='noreferrer' target='_blank'>{t('raising an issue in the repository')}</Link>
           {' '} {t('or email us at')} {' '}
-          <Link
-            to='#'
-            onClick={(e) => {
-              window.location.href = `mailto:adc@uoguelph.ca`;
-              e.preventDefault();
-            }}
-            sx={{
-              '&:hover': {
-                cursor: 'pointer',
-              },
-            }} 
-          >
-            adc@uoguelph.ca
-          </Link>.
+          <Link href='mailto:adc@uoguelph.ca'>adc@uoguelph.ca</Link>.
         </Box>
       </Box>
     </BackNextSkeleton>
