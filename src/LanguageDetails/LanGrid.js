@@ -50,7 +50,7 @@ const TextareaCellEditor = forwardRef((props, ref) => {
   return (
     <textarea
       autoFocus
-      maxLength={200}
+      maxLength={MAX_ATTR_DESCRIPTION_CHARS}
       style={textareaStyle}
       value={value}
       onChange={(event) => setValue(event.target.value)}
