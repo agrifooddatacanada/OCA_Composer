@@ -164,11 +164,13 @@ const CustomTooltip = (props) => {
 
 const flaggedHeader = (
   props,
-  labelDescription,
+  lanAttributeRowData,
   formatRuleRowData,
   characterEncodingRowData,
-  cardinalityData
+  cardinalityData,
+  lang
 ) => {
+  const labelDescription = lanAttributeRowData[lang];
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
   const formatRule = formatRuleRowData.find(
     (item) => item?.Attribute === props?.displayName
@@ -462,10 +464,11 @@ const OCADataValidatorCheck = ({
       headerComponent: (params) =>
         flaggedHeader(
           params,
-          lanAttributeRowData[langRef.current],
+          lanAttributeRowData,
           formatRuleRowData,
           characterEncodingRowData,
-          cardinalityData
+          cardinalityData,
+          langRef.current
         ),
       cellRendererParams: (params) => ({
         dataHeaders: savedEntryCodes,
@@ -481,7 +484,8 @@ const OCADataValidatorCheck = ({
       cardinalityData,
       characterEncodingRowData,
       formatRuleRowData,
-      savedEntryCodes
+      savedEntryCodes,
+      langRef.current
     ]
   );
 
