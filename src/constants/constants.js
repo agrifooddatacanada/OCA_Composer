@@ -2,7 +2,7 @@ export const DEFAULT_LANGUAGE_CODE = "en";
 export const DEFAULT_THREE_LETTER_LANGUAGE_CODE = "eng";
 export const DEFAULT_LANGUAGE = "English";
 export const MAX_ATTR_LABEL_CHARS = 250;
-export const MAX_ATTR_DESCRIPTION_CHARS = 200;
+export const MAX_ATTR_DESCRIPTION_CHARS = 250;
 
 export const classification = {
   "": [""],
