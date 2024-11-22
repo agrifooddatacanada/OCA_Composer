@@ -40,7 +40,12 @@ export const generateSchemaInformation = (
   catalogueData
 ) => {
   const markdownContent = [
-    "## Schema information\n\n",
+    "# Schema information\n",
+    "{: .no_toc }\n\n",
+    "## Table of Contents\n",
+    "{: .no_toc .text-delta }\n\n",
+    "1. TOC\n",
+    "{:toc}\n\n",
     `**Name**: ${metaOverlay.name}  \n`,
     `**Description**: ${metaOverlay.description}  \n`
   ];
