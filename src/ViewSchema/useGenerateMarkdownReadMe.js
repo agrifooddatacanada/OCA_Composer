@@ -9,9 +9,10 @@ import {
   downloadMarkdownFile,
   generateCreationTimestamp,
   generateEntryCodeTables,
-  generateExtendedSchemaDetailsTable,
   generateFrontMatter,
   generateInternationalSchemaInformation,
+  generateLanguageIndependentSchemaDetailsTable,
+  generateLanguageSpecificSchemaDetailsTable,
   generateSAIDTable,
   generateSchemaInformation,
   generateSchemaQuickView
@@ -79,9 +80,13 @@ const useGenerateMarkdownReadMe = () => {
       languageCodesObject
     );
     fileContent += generateEntryCodeTables(layers, languages, languageCodesObject);
-    fileContent += generateExtendedSchemaDetailsTable({
+    fileContent += generateLanguageIndependentSchemaDetailsTable({
       layers,
       captureBaseOverlay,
+      attributeNames
+    });
+    fileContent += generateLanguageSpecificSchemaDetailsTable({
+      layers,
       attributeNames,
       languages,
       languageCodeLookupMap: languageCodesObject

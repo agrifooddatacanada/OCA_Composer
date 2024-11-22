@@ -40,7 +40,12 @@ export const generateSchemaInformation = (
   catalogueData
 ) => {
   const markdownContent = [
-    "## Schema information\n\n",
+    "# Schema information\n",
+    "{: .no_toc }\n\n",
+    "## Table of Contents\n",
+    "{: .no_toc .text-delta }\n\n",
+    "1. TOC\n",
+    "{:toc}\n\n",
     `**Name**: ${metaOverlay.name}  \n`,
     `**Description**: ${metaOverlay.description}  \n`
   ];
@@ -157,24 +162,14 @@ export const generateEntryCodeTables = (layers, languages, languageCodeLookupMap
   return isNoEntryOverlay ? "" : markdownContent.join("");
 };
 
-export const generateExtendedSchemaDetailsTable = ({
+export const generateLanguageSpecificSchemaDetailsTable = ({
   layers,
-  captureBaseOverlay,
   attributeNames,
   languages,
   languageCodeLookupMap
 }) => {
-  const markdownContent = ["## Schema details\n\n"];
-  const columns = [
-    "Attribute",
-    "Sensitive",
-    "Unit",
-    "Type",
-    "Label",
-    "Description",
-    "List",
-    "Character encoding"
-  ];
+  const markdownContent = ["## Language-specific schema details\n\n"];
+  const columns = ["Attribute", "Label", "Description", "List"];
 
   languages.forEach((language) => {
     markdownContent.push(`### ${language}\n\n`);
@@ -186,46 +181,12 @@ export const generateExtendedSchemaDetailsTable = ({
     const labelOverlay = layers.find(
       (layer) => layer.layerName.includes("label") && layer.language === languageCode
     );
-    const unitOverlay = layers.find((layer) => layer.layerName.includes("unit"));
     const entryOverlay = layers.find(
       (layer) => layer.layerName.includes("entry/") && layer.language === languageCode
     );
-    const characterEncodingOverlay = layers.find((layer) =>
-      layer.layerName.includes("character_encoding")
-    );
-    const conformanceOverlay = layers.find((layer) =>
-      layer.layerName.includes("conformance")
-    );
-    const formatOverlay = layers.find((layer) => layer.layerName.includes("format/"));
-    const cardinalityOverlay = layers.find((layer) =>
-      layer.layerName.includes("cardinality/")
-    );
-    const standardOverlay = layers.find((layer) => layer.layerName.includes("standard"));
-
-    if (conformanceOverlay?.attribute_conformance) {
-      columns.push("Required entry");
-    }
-
-    if (formatOverlay) {
-      columns.push("Format rule");
-    }
-
-    if (cardinalityOverlay) {
-      columns.push("Cardinality");
-    }
-
-    if (standardOverlay) {
-      columns.push("Data standard");
-    }
 
     const rows = attributeNames.map((attribute) => {
       const row = [attribute];
-
-      const isSensitive = captureBaseOverlay.flagged_attributes.includes(attribute);
-      const unit = unitOverlay?.attribute_units[attribute] || "";
-
-      // Attribute type (a schema bundle must have this information)
-      const type = captureBaseOverlay.attributes[attribute];
 
       const label = labelOverlay.attribute_labels[attribute];
       const description = informationOverlay.attribute_information[attribute];
@@ -236,38 +197,98 @@ export const generateExtendedSchemaDetailsTable = ({
         ? Object.values(entryCodeToLabelMap).join(", ")
         : "Not a list";
 
-      const characterEncoding =
-        characterEncodingOverlay.attribute_character_encoding[attribute] ||
-        characterEncodingOverlay.default_character_encoding;
-
-      row.push(isSensitive, unit, type, label, description, list, characterEncoding);
-
-      if (conformanceOverlay?.attribute_conformance) {
-        const isRequired = conformanceOverlay.attribute_conformance[attribute] === "M";
-        row.push(isRequired);
-      }
-
-      if (formatOverlay) {
-        const format = formatOverlay.attribute_formats[attribute] || "";
-        const escapedFormat = escapeMarkdownSpecialCharacters(format);
-        row.push(escapedFormat);
-      }
-
-      if (cardinalityOverlay) {
-        const cardinality = cardinalityOverlay.attribute_cardinality[attribute] || "";
-        row.push(cardinality);
-      }
-
-      if (standardOverlay) {
-        const standard = standardOverlay.attr_standards[attribute] || "";
-        row.push(standard);
-      }
-
+      row.push(label, description, list);
       return row;
     });
 
     markdownContent.push(generateTable(columns, rows), "\n\n");
   });
+
+  return markdownContent.join("");
+};
+
+export const generateLanguageIndependentSchemaDetailsTable = ({
+  layers,
+  captureBaseOverlay,
+  attributeNames
+}) => {
+  const markdownContent = ["## Language-independent schema details\n\n"];
+  const columns = ["Attribute", "Sensitive", "Unit", "Type", "Character encoding"];
+
+  const unitOverlay = layers.find((layer) => layer.layerName.includes("unit"));
+
+  const characterEncodingOverlay = layers.find((layer) =>
+    layer.layerName.includes("character_encoding")
+  );
+
+  const conformanceOverlay = layers.find((layer) =>
+    layer.layerName.includes("conformance")
+  );
+
+  const formatOverlay = layers.find((layer) => layer.layerName.includes("format/"));
+
+  const cardinalityOverlay = layers.find((layer) =>
+    layer.layerName.includes("cardinality/")
+  );
+
+  const standardOverlay = layers.find((layer) => layer.layerName.includes("standard"));
+
+  if (conformanceOverlay?.attribute_conformance) {
+    columns.push("Required entry");
+  }
+
+  if (formatOverlay) {
+    columns.push("Format rule");
+  }
+
+  if (cardinalityOverlay) {
+    columns.push("Cardinality");
+  }
+
+  if (standardOverlay) {
+    columns.push("Data standard");
+  }
+
+  const rows = attributeNames.map((attribute) => {
+    const row = [attribute];
+
+    const isSensitive = captureBaseOverlay.flagged_attributes.includes(attribute);
+    const unit = unitOverlay?.attribute_units[attribute] || "";
+
+    // Attribute type (a schema bundle must have this information)
+    const type = captureBaseOverlay.attributes[attribute];
+
+    const characterEncoding =
+      characterEncodingOverlay.attribute_character_encoding[attribute] ||
+      characterEncodingOverlay.default_character_encoding;
+
+    row.push(isSensitive, unit, type, characterEncoding);
+
+    if (conformanceOverlay?.attribute_conformance) {
+      const isRequired = conformanceOverlay.attribute_conformance[attribute] === "M";
+      row.push(isRequired);
+    }
+
+    if (formatOverlay) {
+      const format = formatOverlay.attribute_formats[attribute] || "";
+      const escapedFormat = escapeMarkdownSpecialCharacters(format);
+      row.push(escapedFormat);
+    }
+
+    if (cardinalityOverlay) {
+      const cardinality = cardinalityOverlay.attribute_cardinality[attribute] || "";
+      row.push(cardinality);
+    }
+
+    if (standardOverlay) {
+      const standard = standardOverlay.attr_standards[attribute] || "";
+      row.push(standard);
+    }
+
+    return row;
+  });
+
+  markdownContent.push(generateTable(columns, rows), "\n\n");
 
   return markdownContent.join("");
 };
