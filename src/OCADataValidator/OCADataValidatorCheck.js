@@ -7,8 +7,9 @@ import React, {
   useRef,
   useState
 } from "react";
+import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
-import { Box, Button, Drawer, IconButton, MenuItem, Typography } from "@mui/material";
+import { Box, Button, Drawer, IconButton, Typography } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -18,7 +19,7 @@ import "../App.css";
 import { Context } from "../App";
 import OCABundle from "./validator";
 import Languages from "./Languages";
-import MultipleSelectPlaceholder from "./MultiSelectErrors";
+import ErrorFilterSelect from "./ErrorFilterSelect";
 import CellHeader from "../components/CellHeader";
 import ExportButton from "./ExportButton";
 import {
@@ -26,9 +27,10 @@ import {
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
-  formatCodeTextDescription
+  formatCodeTextDescription,
+  SHOW_ALL_DATA,
+  SHOW_ONLY_ROWS_WITH_ERRORS
 } from "../constants/constants";
-import { DropdownMenuList } from "../components/DropdownMenuCell";
 import WarningPopup from "./WarningPopup";
 import { CustomPalette } from "../constants/customPalette";
 import { getCurrentData, getDescriptiveFileName } from "../constants/utils";
@@ -37,6 +39,8 @@ import CustomAnchorLink from "../components/CustomAnchorLink";
 import ViewSchema from "../ViewSchema/ViewSchema";
 import CloseIcon from "../assets/icon-close.png";
 import AutoCompleteEditor from "../components/AutoCompleteEditor";
+import CustomTooltip from "./CustomTooltip";
+import EntryCodeDropdownSelector from "./EntryCodeDropdownSelector";
 
 export const TrashCanButton = memo((props) => {
   const onClick = useCallback(() => {
@@ -73,93 +77,6 @@ const convertToCSV = (data, newHeader) => {
     )
     .join("\n");
   return csv;
-};
-
-const CustomTooltip = (props) => {
-  const { data, colDef, api, color } = props;
-  const error = data?.error?.[colDef.field] || [];
-  const dataLength = api.getRenderedNodes().length;
-
-  return dataLength > 4 && error.length > 0 ? (
-    <Box
-      className="custom-tooltip"
-      style={{
-        backgroundColor: color || "#999",
-        borderRadius: "8px",
-        padding: "15px",
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-        width: "100%",
-        minWidth: "200px",
-        maxWidth: "600px",
-        maxHeight: "200px",
-        overflow: "hidden"
-      }}
-    >
-      <Typography
-        sx={{
-          marginBottom: "5px",
-          fontWeight: "bold",
-          fontSize: "18px",
-          overflow: "hidden",
-          textOverflow: "ellipsis"
-        }}
-      >
-        Error ({error.length}):
-      </Typography>
-      {error.map((err, index) => (
-        <Typography
-          key={err.detail}
-          style={{
-            wordWrap: "break-word",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            textAlign: "left"
-          }}
-        >
-          {index + 1}. {err.detail}
-        </Typography>
-      ))}
-    </Box>
-  ) : dataLength > 0 && error.length > 0 ? (
-    <Box
-      className="custom-tooltip"
-      style={{
-        backgroundColor: color || "#999",
-        borderRadius: "8px",
-        padding: "5px",
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-        width: "100%",
-        minWidth: "200px",
-        maxWidth: "600px",
-        maxHeight: "200px",
-        overflow: "hidden"
-      }}
-    >
-      <Typography
-        sx={{
-          marginBottom: "5px",
-          fontWeight: "bold",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          fontSize: "14px"
-        }}
-      >
-        Error ({error.length}):{" "}
-        <span
-          style={{
-            wordWrap: "break-word",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            fontWeight: "normal"
-          }}
-        >
-          {error[0].detail}
-        </span>
-      </Typography>
-    </Box>
-  ) : (
-    <p />
-  );
 };
 
 const flaggedHeader = (
@@ -315,52 +232,6 @@ const flaggedHeader = (
   );
 };
 
-const EntryCodeDropdownSelector = memo((props) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const columnHeader = props.colDef.field;
-  const listItemObjectDisplay = props.dataHeaders?.[columnHeader].reduce((acc, item) => {
-    acc[item.Code] = item[props.lang];
-    return acc;
-  }, {});
-  const listItems = Object.keys(listItemObjectDisplay);
-
-  const handleChange = (e) => {
-    props.node.updateData({
-      ...props.data,
-      [columnHeader]: e.target.value
-    });
-    props.onRefresh();
-    props.setRevalidateData(true);
-    setIsDropdownOpen(false);
-  };
-
-  const handleClick = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
-  const typesDisplay = listItems.map((value) => (
-    <MenuItem
-      key={value}
-      value={value}
-      sx={{ border: "none", height: "2rem", fontSize: "small" }}
-    >
-      <strong>{value}</strong>: {listItemObjectDisplay[value] || ""}
-    </MenuItem>
-  ));
-
-  return listItems.length > 0 ? (
-    <DropdownMenuList
-      handleKeyDown={() => {}}
-      type={props.node.data?.[columnHeader]}
-      handleChange={handleChange}
-      handleClick={handleClick}
-      isDropdownOpen={isDropdownOpen}
-      setIsDropdownOpen={setIsDropdownOpen}
-      typesDisplay={typesDisplay}
-    />
-  ) : null;
-});
-
 const OCADataValidatorCheck = ({
   showWarningCard,
   setShowWarningCard = () => {},
@@ -389,12 +260,14 @@ const OCADataValidatorCheck = ({
     // attributeRowData // Check to see sensitive data
   } = useContext(Context);
 
+  const { t } = useTranslation();
+
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const [revalidateData, setRevalidateData] = useState(false);
   const langRef = useRef(languages[0]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [errorName, setErrorNameList] = useState([]);
+  const [errorName, setErrorNameList] = useState([SHOW_ALL_DATA]);
   const [firstValidate, setFirstValidate] = useState(false);
   const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -420,7 +293,7 @@ const OCADataValidatorCheck = ({
             color: CustomPalette.PRIMARY
           }}
         >
-          Schema Preview
+          {t("Schema Preview")}
         </h1>
         <Box
           edge="end"
@@ -939,24 +812,22 @@ const OCADataValidatorCheck = ({
     }
   }, [rowData, isValidateButtonEnabled]);
 
-  const rowDataFilter =
-    errorName.length > 0
-      ? rowData.filter((row) => {
-          for (const error of errorName) {
-            if (row?.error) {
-              const errCode = errorCode?.[error];
-              const errorValues = Object.values(row?.error);
-              for (const err of errorValues) {
-                const errs = err.map((item) => item?.type);
-                if (errs?.includes(errCode)) {
-                  return true;
-                }
-              }
-            }
-          }
-          return false;
-        })
-      : rowData;
+  function filterRowData() {
+    if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
+      const selectedErrors = errorName.filter(
+        (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
+      );
+      return rowData.filter((row) => {
+        if (!row?.error) return false;
+        const errorTypes = Object.values(row.error)
+          .flat()
+          .map((err) => err?.type);
+        return selectedErrors.some((error) => errorTypes.includes(errorCode?.[error]));
+      });
+    }
+
+    return rowData;
+  }
 
   return (
     <Box sx={{ overflowX: "auto" }}>
@@ -1064,11 +935,10 @@ const OCADataValidatorCheck = ({
                 setIsDropdownOpen={setIsDropdownOpen}
                 languages={languages}
               />
-              <MultipleSelectPlaceholder
+              <ErrorFilterSelect
                 errorName={errorName}
                 setErrorNameList={setErrorNameList}
                 disabled={!firstValidate}
-                placeHolder="Select Errors"
               />
               <Box
                 sx={{
@@ -1113,7 +983,7 @@ const OCADataValidatorCheck = ({
             }}
           >
             <CustomAnchorLink
-              text="Verification Rules"
+              text={t("Verification Rules")}
               onClick={toggleDrawer(true)}
               overrideStyle={{ textAlign: "right", marginRight: "2rem" }}
             />
@@ -1132,7 +1002,7 @@ const OCADataValidatorCheck = ({
                   marginRight: "15px"
                 }}
               />
-              <span>Pass Verification</span>
+              <span>{t("Pass Verification")}</span>
             </Box>
             <Box
               sx={{
@@ -1149,7 +1019,7 @@ const OCADataValidatorCheck = ({
                   marginRight: "15px"
                 }}
               />
-              <span>Fail Verification</span>
+              <span>{t("Fail Verification")}</span>
             </Box>
             <Box
               sx={{
@@ -1166,7 +1036,7 @@ const OCADataValidatorCheck = ({
                   marginRight: "15px"
                 }}
               />
-              <span>Unmatched Attributes</span>
+              <span>{t("Unmatched Attributes")}</span>
             </Box>
             <Box
               sx={{
@@ -1184,7 +1054,7 @@ const OCADataValidatorCheck = ({
                   border: "1px solid #ededed"
                 }}
               />
-              <span>Unverified Data</span>
+              <span>{t("Unverified Data")}</span>
             </Box>
           </Box>
         </Box>
@@ -1194,7 +1064,7 @@ const OCADataValidatorCheck = ({
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
-              rowData={rowDataFilter}
+              rowData={filterRowData()}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               overlayLoadingTemplate='<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
@@ -1222,6 +1092,7 @@ const OCADataValidatorCheck = ({
               onClick={handleAddRow}
               color="button"
               variant="contained"
+              disabled={!errorName.includes(SHOW_ALL_DATA)}
               sx={{
                 alignSelf: "flex-end",
                 width: "9rem",

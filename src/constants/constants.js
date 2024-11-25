@@ -386,3 +386,6 @@ export const overlays = [
   UNIT,
   CONFORMANCE
 ];
+
+export const SHOW_ALL_DATA = "Show all data";
+export const SHOW_ONLY_ROWS_WITH_ERRORS = "Show only rows with errors";
