@@ -1,47 +1,46 @@
-import './App.css';
-import { Box, ThemeProvider } from '@mui/material';
-import { CustomTheme } from './constants/theme';
-import { useRef, useState } from 'react';
-import { useEffect, createContext } from 'react';
-import Home from './Home';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import StartSchemaHelp from './UsersHelp/Start_Schema_Help';
-import { getListOfSelectedOverlays } from './constants/getListOfSelectedOverlays';
-import Landing from './Landing/Landing';
-import ReactGA from 'react-ga4';
-import HelpStorage from './Landing/HelpStorage';
-import OCADataValidator from './OCADataValidator/OCADataValidator';
-import LearnAboutSchemaRule from './OCADataValidator/LearnAboutSchemaRule';
-import LearnAboutDataVerification from './OCADataValidator/LearnAboutDataVerification';
-import OCAMerge from './OCAMerge/OCAMerge';
-import Tutorial from './Tutorial/Tutorial';
+import React, { useRef, useState, useEffect, createContext } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import ReactGA from "react-ga4";
+import { Box, ThemeProvider } from "@mui/material";
+import "./App.css";
+import { CustomTheme } from "./constants/theme";
+import Home from "./Home";
+import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
+import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
+import Landing from "./Landing/Landing";
+// import HelpStorage from "./Landing/HelpStorage";
+import OCADataValidator from "./OCADataValidator/OCADataValidator";
+import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
+import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
+import OCAMerge from "./OCAMerge/OCAMerge";
+import Tutorial from "./Tutorial/Tutorial";
 
 export const Context = createContext();
 
-//Initializing react-ga with google analytics ID
+// Initializing react-ga with google analytics ID
 ReactGA.initialize(process.env.REACT_APP_GA_ID);
 
 const overlayItems = {
-  'Character Encoding': { feature: 'Character Encoding', selected: false },
-  'Make selected entries required': {
-    feature: 'Make selected entries required',
-    selected: false,
+  "Character Encoding": { feature: "Character Encoding", selected: false },
+  "Make selected entries required": {
+    feature: "Make selected entries required",
+    selected: false
   },
-  'Add format rule for data': {
-    feature: 'Add format rule for data',
-    selected: false,
+  "Add format rule for data": {
+    feature: "Add format rule for data",
+    selected: false
   },
-  "Cardinality": { feature: "Cardinality", selected: false },
+  Cardinality: { feature: "Cardinality", selected: false },
   "Data Standards": { feature: "Data Standards", selected: false }
 };
 
 export const pagesArray = [
-  'Start',
-  'Metadata',
-  'Details',
-  'LanguageDetails',
-  'Overlays',
-  'View',
+  "Start",
+  "Metadata",
+  "Details",
+  "LanguageDetails",
+  "Overlays",
+  "View"
 ];
 
 function App() {
@@ -52,18 +51,19 @@ function App() {
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
   const [attributesList, setAttributesList] = useState([]);
-  const [currentPage, setCurrentPage] = useState('Landing');
-  const [currentDataValidatorPage, setCurrentDataValidatorPage] = useState('StartDataValidator');
-  const [currentOCAMergePage, setCurrentOCAMergePage] = useState('StartOCAMerge');
+  const [currentPage, setCurrentPage] = useState("Landing");
+  const [currentDataValidatorPage, setCurrentDataValidatorPage] =
+    useState("StartDataValidator");
+  const [currentOCAMergePage, setCurrentOCAMergePage] = useState("StartOCAMerge");
   const [history, setHistory] = useState([currentPage]);
   const [schemaDescription, setSchemaDescription] = useState({
-    English: { name: '', description: '' },
+    English: { name: "", description: "" }
   });
   const [divisionGroup, setDivisionGroup] = useState({
-    division: '',
-    group: '',
+    division: "",
+    group: ""
   });
-  const [languages, setLanguages] = useState(['English']);
+  const [languages, setLanguages] = useState(["English"]);
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
@@ -76,7 +76,7 @@ function App() {
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(overlayItems);
-  const [selectedOverlay, setSelectedOverlay] = useState('');
+  const [selectedOverlay, setSelectedOverlay] = useState("");
   const [cardinalityData, setCardinalityData] = useState([]);
   const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
 
@@ -119,7 +119,7 @@ function App() {
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
     if (currentIndex >= 0 && currentIndex < pagesArray.length - 1) {
-      let newPage = pagesArray[(currentIndex += 1)];
+      const newPage = pagesArray[(currentIndex += 1)];
       setCurrentPage(newPage);
       setHistory((prev) => [...prev, newPage]);
     }
@@ -128,14 +128,18 @@ function App() {
   const pageBack = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
     if (currentIndex > 0 && currentIndex < pagesArray.length) {
-      let newPage = pagesArray[(currentIndex -= 1)];
+      const newPage = pagesArray[(currentIndex -= 1)];
       setCurrentPage(newPage);
       setHistory((prev) => prev.slice(0, prev.length - 1));
     }
   };
 
   useEffect(() => {
-    if (datasetRawFile.length > 0 && ogSchemaDataConformantHeaderRef.current.length === 0 && schemaDataConformantHeader.length > 0) {
+    if (
+      datasetRawFile.length > 0 &&
+      ogSchemaDataConformantHeaderRef.current.length === 0 &&
+      schemaDataConformantHeader.length > 0
+    ) {
       ogSchemaDataConformantHeaderRef.current = schemaDataConformantHeader;
     } else if (schemaDataConformantHeader.length === 0) {
       ogSchemaDataConformantHeaderRef.current = [];
@@ -148,13 +152,13 @@ function App() {
     }
   }, [currentPage]);
 
-  //Measuring page views
+  // Measuring page views
   useEffect(() => {
     // Track the initial page view
     ReactGA.send({ hitType: "pageview", page: window.location.pathname });
   }, []);
 
-  //Create Attributes List from File Data
+  // Create Attributes List from File Data
   useEffect(() => {
     const fileAttributes = [];
     fileData.forEach((item) => {
@@ -163,7 +167,7 @@ function App() {
     setAttributesList(fileAttributes);
   }, [fileData]);
 
-  //Create Attribute Row Data object when Attributes List updates
+  // Create Attribute Row Data object when Attributes List updates
   useEffect(() => {
     const newAttributesArray = [];
     const newCharacterEncodingArray = [];
@@ -171,18 +175,16 @@ function App() {
       const { selectedFeatures } = getListOfSelectedOverlays(overlay);
 
       attributesList.forEach((item) => {
-        const attributeObject = attributeRowData.find(
-          (obj) => obj.Attribute === item
-        );
+        const attributeObject = attributeRowData.find((obj) => obj.Attribute === item);
         if (attributeObject) {
           newAttributesArray.push(attributeObject);
         } else {
           newAttributesArray.push({
             Attribute: item,
             Flagged: false,
-            Unit: '',
-            Type: '',
-            List: false,
+            Unit: "",
+            Type: "",
+            List: false
           });
         }
 
@@ -194,7 +196,7 @@ function App() {
         } else {
           const newCharacterEncodingRow = { Attribute: item };
           selectedFeatures.forEach((feature) => {
-            newCharacterEncodingRow[feature] = '';
+            newCharacterEncodingRow[feature] = "";
           });
           newCharacterEncodingArray.push(newCharacterEncodingRow);
         }
@@ -217,7 +219,7 @@ function App() {
         newFormatRuleArray.push({
           Attribute: item.Attribute,
           Type: item.Type,
-          FormatText: '',
+          FormatText: ""
         });
       }
     });
@@ -227,9 +229,10 @@ function App() {
   useEffect(() => {
     const newDataStandardsArray = [];
 
-    attributeRowData.forEach(attributeRowItem => {
+    attributeRowData.forEach((attributeRowItem) => {
       const dataStandardObject = dataStandardsRowData.find(
-        dataStandardRowItem => attributeRowItem.Attribute === dataStandardRowItem.Attribute
+        (dataStandardRowItem) =>
+          attributeRowItem.Attribute === dataStandardRowItem.Attribute
       );
 
       if (dataStandardObject) {
@@ -237,11 +240,11 @@ function App() {
       } else {
         newDataStandardsArray.push({
           Attribute: attributeRowItem.Attribute,
-          DataStandard: ''
+          DataStandard: ""
         });
       }
     });
-    
+
     setDataStandardsRowData(newDataStandardsArray);
   }, [attributeRowData]);
 
@@ -250,15 +253,13 @@ function App() {
       const newMatchingRowData = [];
       attributesList.forEach((item, index) => {
         // if matchingRowData has data, use it
-        const matchingRow = matchingRowData.find(
-          (obj) => obj.Attribute === item
-        );
+        const matchingRow = matchingRowData.find((obj) => obj.Attribute === item);
         const newObj = {
           Attribute: item,
-          Dataset: ''
+          Dataset: ""
         };
         if (matchingRow) {
-          newObj['Dataset'] = matchingRow['Dataset'];
+          newObj.Dataset = matchingRow.Dataset;
         }
         languages.forEach((lang) => {
           newObj[lang] = lanAttributeRowData?.[lang]?.[index]?.Label;
@@ -269,16 +270,12 @@ function App() {
     }
   }, [datasetRawFile, jsonRawFile, attributesList]);
 
-  function createEntryCodeRowData(
-    languages,
-    attributesWithLists,
-    savedEntryCodes
-  ) {
+  function createEntryCodeRowData(languages, attributesWithLists, savedEntryCodes) {
     const newEntryCodesArray = [];
 
-    const newEntryCodeRow = { Code: '' };
+    const newEntryCodeRow = { Code: "" };
     languages.forEach((lang) => {
-      newEntryCodeRow[lang] = '';
+      newEntryCodeRow[lang] = "";
     });
 
     if (attributesWithLists.length > 0) {
@@ -312,7 +309,7 @@ function App() {
     }
   }
 
-  //Re-set Entry Code Row Data when items update
+  // Re-set Entry Code Row Data when items update
   useEffect(() => {
     const newEntryCodesArray = createEntryCodeRowData(
       languages,
@@ -322,18 +319,18 @@ function App() {
     setEntryCodeRowData(newEntryCodesArray);
   }, [languages, attributesWithLists, savedEntryCodes]);
 
-  //Re-set all fields when fileData updates
+  // Re-set all fields when fileData updates
   useEffect(() => {
     setSchemaDescription({
-      English: { name: '', description: '' },
+      English: { name: "", description: "" }
     });
 
     setDivisionGroup({
-      division: '',
-      group: '',
+      division: "",
+      group: ""
     });
 
-    setLanguages(['English']);
+    setLanguages(["English"]);
     setAttributeRowData([]);
     setEntryCodeRowData([]);
     setAttributesWithLists([]);
@@ -344,9 +341,10 @@ function App() {
   }, [fileData, jsonRawFile]);
 
   return (
-    <div className='App'>
+    <div className="App">
       <ThemeProvider theme={CustomTheme}>
         <Context.Provider
+          // eslint-disable-next-line react/jsx-no-constructed-context-values
           value={{
             fileData,
             setFileData,
@@ -462,16 +460,16 @@ function App() {
         >
           <Box
             sx={{
-              minHeight: '100vh',
-              display: 'flex',
-              flexDirection: 'column',
+              minHeight: "100vh",
+              display: "flex",
+              flexDirection: "column"
             }}
           >
             <BrowserRouter>
               <Routes>
-                <Route path='/' element={<Landing />} />
+                <Route path="/" element={<Landing />} />
                 <Route
-                  path='/start'
+                  path="/start"
                   element={
                     <Home
                       currentPage={currentPage}
@@ -483,35 +481,24 @@ function App() {
                     />
                   }
                 />
-                <Route
-                  path='/oca-data-validator'
-                  element={
-                    <OCADataValidator />
-                  }
-                />
+                <Route path="/oca-data-validator" element={<OCADataValidator />} />
                 {/* <Route
                   path='/help_designing_datasets'
                   element={<GuidanceForDesigningDataSets />}
                 /> */}
-                <Route path='/help_storage' element={<HelpStorage />} />
+                {/* <Route path="/help_storage" element={<HelpStorage />} /> */}
+                <Route path="/start_schema_help" element={<StartSchemaHelp />} />
+                <Route path="/learn_schema_rule" element={<LearnAboutSchemaRule />} />
                 <Route
-                  path='/start_schema_help'
-                  element={<StartSchemaHelp />}
-                />
-                <Route
-                  path='/learn_schema_rule'
-                  element={<LearnAboutSchemaRule />}
-                />
-                <Route
-                  path='/learn_data_verification'
+                  path="/learn_data_verification"
                   element={<LearnAboutDataVerification />}
                 />
-                <Route path='*' element={<Navigate to='/' />} />
+                <Route path="*" element={<Navigate to="/" />} />
                 <Route
-                  path='/oca-merge'
+                  path="/oca-merge"
                   element={<OCAMerge currentOCAMergePage={currentOCAMergePage} />}
                 />
-                <Route path='/tutorial' element={<Tutorial />} />
+                <Route path="/tutorial" element={<Tutorial />} />
               </Routes>
             </BrowserRouter>
           </Box>

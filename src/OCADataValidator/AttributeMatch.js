@@ -1,95 +1,102 @@
-import { forwardRef, memo, useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18next from "i18next";
+import { AgGridReact } from "ag-grid-react";
+import { Box, List, ListItem, ListItemText, MenuItem, Typography } from "@mui/material";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
-import { Box, List, ListItem, ListItemText, MenuItem, Typography } from "@mui/material";
 import Languages from "./Languages";
 import { greyCellStyle, gridStyles } from "../constants/styles";
-import { AgGridReact } from "ag-grid-react";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
-import { useTranslation } from "react-i18next";
+import { codesToLanguages } from "../constants/isoCodes";
 
-export const DataHeaderRenderer = memo(
-  forwardRef((props, ref) => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+export const DataHeaderRenderer = memo((props) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    const handleChange = (e) => {
-      props.changeDataFromTable(e);
-      setIsDropdownOpen(false);
-    };
+  const handleChange = (e) => {
+    props.changeDataFromTable(e);
+    setIsDropdownOpen(false);
+  };
 
-    const handleClick = () => {
-      setIsDropdownOpen(!isDropdownOpen);
-    };
+  const handleClick = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
 
-    const handleKeyDown = (e) => {
-      const keyPressed = e.key;
-      if (keyPressed === "Delete" || keyPressed === "Backspace") {
-        // typesObjectRef.current[attributeName] = "";
-      }
-    };
+  const handleKeyDown = (e) => {
+    const keyPressed = e.key;
+    if (keyPressed === "Delete" || keyPressed === "Backspace") {
+      // typesObjectRef.current[attributeName] = "";
+    }
+  };
 
-    const handleDoubleClick = () => {
-      props.changeDataFromTable({ target: { value: '' } });
-      setIsDropdownOpen(false);
-    };
+  const handleDoubleClick = () => {
+    props.changeDataFromTable({ target: { value: "" } });
+    setIsDropdownOpen(false);
+  };
 
-    const typesDisplay = [
-      <MenuItem
-        key="blank"
-        value=""
-        sx={{ border: "none", height: "2rem", fontSize: "small" }}
-      >
-        {""}
-      </MenuItem>,
-      ...props?.dataHeaders.map((value, index) => (
-        <MenuItem
-          key={index + "_" + value}
-          value={value}
-          sx={{ border: "none", height: "2rem", fontSize: "small" }}
-          onClick={handleChange}
-          onDoubleClick={handleDoubleClick}
-        >
-          {value}
-        </MenuItem>
-      ))
-    ];
+  const datasetOptions =
+    props?.dataHeaders?.length > 0
+      ? props?.dataHeaders.map((value) => (
+          <MenuItem
+            key={value}
+            value={value}
+            sx={{ border: "none", height: "2rem", fontSize: "small" }}
+            onClick={handleChange}
+            onDoubleClick={handleDoubleClick}
+          >
+            {value}
+          </MenuItem>
+        ))
+      : [];
 
-    return (
-      <>
-        {props?.dataHeaders.length > 0 ? (
-          <DropdownMenuList
-            handleKeyDown={handleKeyDown}
-            type={props.node.data.Dataset}
-            handleChange={handleChange}
-            handleClick={handleClick}
-            isDropdownOpen={isDropdownOpen}
-            setIsDropdownOpen={setIsDropdownOpen}
-            typesDisplay={typesDisplay}
-          />
-        ) : (
-          <></>
-        )}
-      </>
-    );
-  })
-);
+  const typesDisplay = [
+    <MenuItem
+      key="blank"
+      value=""
+      sx={{ border: "none", height: "2rem", fontSize: "small" }}
+    >
+      {/* eslint-disable-next-line react/jsx-curly-brace-presence */}
+      {""}
+    </MenuItem>,
+    ...datasetOptions
+  ];
 
+  return props?.dataHeaders.length > 0 ? (
+    <DropdownMenuList
+      handleKeyDown={handleKeyDown}
+      type={props.node.data.Dataset}
+      handleChange={handleChange}
+      handleClick={handleClick}
+      isDropdownOpen={isDropdownOpen}
+      setIsDropdownOpen={setIsDropdownOpen}
+      typesDisplay={typesDisplay}
+    />
+  ) : null;
+});
 
 const AttributeMatch = () => {
   const { t } = useTranslation();
   const {
     setCurrentDataValidatorPage,
-    languages, matchingRowData,
+    languages,
+    matchingRowData,
     setMatchingRowData,
     schemaDataConformantHeader,
     firstTimeMatchingRef,
     setSchemaDataConformantRowData,
     setSchemaDataConformantHeader,
     ogSchemaDataConformantHeaderRef,
-    notToVerifyAttributes, setNotToVerifyAttributes
+    notToVerifyAttributes,
+    setNotToVerifyAttributes
   } = useContext(Context);
-  const [type, setType] = useState(languages[0] || "");
+  const [type, setType] = useState(() => {
+    const siteLanguageCode = i18next.language;
+    const siteLanguage = codesToLanguages[siteLanguageCode];
+    return siteLanguage === "English"
+      ? languages[0]
+      : languages.find((language) => language.includes(siteLanguage));
+  });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
   const gridRef = useRef();
@@ -99,41 +106,50 @@ const AttributeMatch = () => {
     setIsDropdownOpen(false);
   }, []);
 
-  const changeDataFromTable = useCallback((e, params) => {
-    firstTimeMatchingRef.current = false;
-    let saveNode = undefined;
+  const changeDataFromTable = useCallback(
+    (e, params) => {
+      firstTimeMatchingRef.current = false;
+      let saveNode;
 
-    if (e.target.value !== 0) {
-      for (const node of gridRef.current?.api?.rowModel?.rowsToDisplay) {
-        if (node.data.Dataset === e.target.value) {
-          saveNode = node;
-          node.data.Dataset = '';
-          break;
+      if (e.target.value !== 0) {
+        if (gridRef.current?.api?.rowModel?.rowsToDisplay) {
+          for (const node of gridRef.current.api.rowModel.rowsToDisplay) {
+            if (node.data.Dataset === e.target.value) {
+              saveNode = node;
+              node.data.Dataset = "";
+              break;
+            }
+          }
         }
       }
-    }
-    params.node.updateData({
-      ...params.node.data,
-      Dataset: e.target.value === 0 ? "" : e.target.value,
-    });
-    gridRef.current?.api?.redrawRows({ rowNodes: [saveNode, params.node] });
+      params.node.updateData({
+        ...params.node.data,
+        Dataset: e.target.value === 0 ? "" : e.target.value
+      });
+      gridRef.current?.api?.redrawRows({ rowNodes: [saveNode, params.node] });
 
-    const currentData = gridRef.current?.api?.rowModel?.rowsToDisplay.map((node) => node.data.Dataset);
-    currentData.push(e.target.value);
-    const unassignedVariables = ogSchemaDataConformantHeaderRef.current.filter((item) => !currentData.includes(item));
-    setNotToVerifyAttributes(unassignedVariables);
-  }, [gridRef, setNotToVerifyAttributes]);
+      const currentData = gridRef.current?.api?.rowModel?.rowsToDisplay.map(
+        (node) => node.data.Dataset
+      );
+      currentData.push(e.target.value);
+      const unassignedVariables = ogSchemaDataConformantHeaderRef.current.filter(
+        (item) => !currentData.includes(item)
+      );
+      setNotToVerifyAttributes(unassignedVariables);
+    },
+    [gridRef, setNotToVerifyAttributes]
+  );
 
   const handleSavePage = useCallback(() => {
     const data = gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data);
 
     const mappingFromAttrToDataset = {};
     for (const node of data) {
-      mappingFromAttrToDataset[node['Dataset']] = node['Attribute'];
+      mappingFromAttrToDataset[node.Dataset] = node.Attribute;
     }
 
     setMatchingRowData(data);
-    setSchemaDataConformantRowData(prev => {
+    setSchemaDataConformantRowData((prev) => {
       const newData = [];
       for (const node of prev) {
         const newRow = {};
@@ -149,8 +165,12 @@ const AttributeMatch = () => {
 
       return newData;
     });
-    setSchemaDataConformantHeader(ogSchemaDataConformantHeaderRef.current.map((header) => mappingFromAttrToDataset[header] || header));
-    setCurrentDataValidatorPage('OCADataValidatorCheck');
+    setSchemaDataConformantHeader(
+      ogSchemaDataConformantHeaderRef.current.map(
+        (header) => mappingFromAttrToDataset[header] || header
+      )
+    );
+    setCurrentDataValidatorPage("OCADataValidatorCheck");
   }, [gridRef, setMatchingRowData, setCurrentDataValidatorPage]);
 
   const matchingFunction = useCallback((unassignedVar, attr) => {
@@ -167,20 +187,31 @@ const AttributeMatch = () => {
     return -1;
   }, []);
 
+  // Change selected language when site language changes
+  useEffect(() => {
+    const siteLanguageCode = i18next.language;
+    const siteLanguage = codesToLanguages[siteLanguageCode];
+    setType(
+      siteLanguage === "English"
+        ? languages[0]
+        : languages.find((language) => language.includes(siteLanguage))
+    );
+  }, [i18next.language]);
+
   useEffect(() => {
     if (ogSchemaDataConformantHeaderRef.current.length === 0) {
       ogSchemaDataConformantHeaderRef.current = schemaDataConformantHeader;
     }
-    
+
     const unassignedVariables = [...ogSchemaDataConformantHeaderRef.current];
     if (firstTimeMatchingRef.current) {
-      let newMatchingRowData = [];
+      const newMatchingRowData = [];
       if (matchingRowData && matchingRowData?.length > 0) {
         for (const node of matchingRowData) {
-          const index = matchingFunction(unassignedVariables, node['Attribute']);
+          const index = matchingFunction(unassignedVariables, node.Attribute);
           newMatchingRowData.push({
             ...node,
-            Dataset: index !== -1 ? unassignedVariables[index] : "",
+            Dataset: index !== -1 ? unassignedVariables[index] : ""
           });
           if (index !== -1) {
             unassignedVariables.splice(index, 1);
@@ -191,7 +222,7 @@ const AttributeMatch = () => {
       setMatchingRowData(newMatchingRowData);
     } else {
       for (const node of matchingRowData) {
-        const index = unassignedVariables.indexOf(node['Dataset']);
+        const index = unassignedVariables.indexOf(node.Dataset);
         if (index !== -1) {
           unassignedVariables.splice(index, 1);
         }
@@ -211,15 +242,15 @@ const AttributeMatch = () => {
             field: "Attribute",
             resizable: true,
             flex: 1,
-            cellStyle: () => greyCellStyle,
+            cellStyle: () => greyCellStyle
           },
           {
             headerName: t("Label"),
             field: type,
             resizable: true,
             flex: 1,
-            cellStyle: () => greyCellStyle,
-          },
+            cellStyle: () => greyCellStyle
+          }
         ]
       },
       {
@@ -234,11 +265,10 @@ const AttributeMatch = () => {
               changeDataFromTable: (e) => changeDataFromTable(e, params)
             }),
             resizable: true,
-            flex: 1,
-          },
+            flex: 1
+          }
         ]
-      },
-
+      }
     ];
     setColumnDefs(columnDefs);
   }, [type, t]);
@@ -246,34 +276,49 @@ const AttributeMatch = () => {
   return (
     <>
       <BackNextSkeleton
-        isBack pageBack={() => {
-          setMatchingRowData(gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data));
-          setCurrentDataValidatorPage('DatasetViewDataValidator');
+        isBack
+        pageBack={() => {
+          setMatchingRowData(
+            gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data)
+          );
+          setCurrentDataValidatorPage("DatasetViewDataValidator");
         }}
         isForward
         pageForward={handleSavePage}
-        middleText="You must match your dataset columns (variables) to the attributes in your schema. The verifier attempts to match names automatically. If there are mismatches or unassigned matches you can correct that here."
+        middleText={t("You must match your dataset columns...")}
       />
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        flex: 1,
-        marginTop: '20px',
-      }}>
-        <Box sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          width: '100%',
-        }}>
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '1% 5%',
-            width: '70%',
-          }}>
-            <Languages type={type} handleChange={handleChange} isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} languages={languages} />
-            <Box sx={{ marginTop: '20px' }}>
-              <div className="ag-theme-balham" style={{ width: '100%' }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          marginTop: "20px"
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            width: "100%"
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              padding: "1% 5%",
+              width: "70%"
+            }}
+          >
+            <Languages
+              type={type}
+              handleChange={handleChange}
+              isDropdownOpen={isDropdownOpen}
+              setIsDropdownOpen={setIsDropdownOpen}
+              languages={languages}
+            />
+            <Box sx={{ marginTop: "20px" }}>
+              <div className="ag-theme-balham" style={{ width: "100%" }}>
                 <style>{gridStyles}</style>
                 <AgGridReact
                   ref={gridRef}
@@ -284,34 +329,44 @@ const AttributeMatch = () => {
               </div>
             </Box>
           </Box>
-          <Box sx={{
-            marginTop: '50px',
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '1% 5%',
-            width: '20%',
-            height: '100%',
-            position: 'sticky',
-            top: '0',
-            backgroundColor: 'white',
-            zIndex: 1
-          }}>
+          <Box
+            sx={{
+              marginTop: "50px",
+              display: "flex",
+              flexDirection: "column",
+              padding: "1% 5%",
+              width: "20%",
+              height: "100%",
+              position: "sticky",
+              top: "0",
+              backgroundColor: "white",
+              zIndex: 1
+            }}
+          >
             {/* Updated to create a box around the header */}
-            <Box sx={{ padding: '10px', border: `2px solid ${CustomPalette.GREY_300}`, backgroundColor: CustomPalette.GREY_200 }}>
-              <Typography>{t('Unassigned Variable')}</Typography>
+            <Box
+              sx={{
+                padding: "10px",
+                border: `2px solid ${CustomPalette.GREY_300}`,
+                backgroundColor: CustomPalette.GREY_200
+              }}
+            >
+              <Typography>{t("Unassigned Variables")}</Typography>
             </Box>
-            <Box sx={{
-              padding: '10px',
-              borderBottom: `2px solid ${CustomPalette.GREY_300}`,
-              borderLeft: `2px solid ${CustomPalette.GREY_300}`,
-              borderRight: `2px solid ${CustomPalette.GREY_300}`,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}>
+            <Box
+              sx={{
+                padding: "10px",
+                borderBottom: `2px solid ${CustomPalette.GREY_300}`,
+                borderLeft: `2px solid ${CustomPalette.GREY_300}`,
+                borderRight: `2px solid ${CustomPalette.GREY_300}`,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center"
+              }}
+            >
               <List>
-                {notToVerifyAttributes.map((item, index) => (
-                  <ListItem key={index}>
+                {notToVerifyAttributes.map((item) => (
+                  <ListItem key={item}>
                     <ListItemText primary={item} />
                   </ListItem>
                 ))}

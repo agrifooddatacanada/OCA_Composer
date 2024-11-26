@@ -1,27 +1,38 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Context } from "../App";
-import { Box } from "@mui/system";
-import { Button, Typography, Tooltip } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import SchemaDescription from "./SchemaDescription";
-import ViewGrid from "./ViewGrid";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import LinkCard from "./LinkCard";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import useExportLogic from "./useExportLogic";
 import { useNavigate } from "react-router-dom";
-import Loading from "../components/Loading";
-import useExportLogicV2 from "./useExportLogicV2";
-import { formatCodeBinaryDescription, formatCodeDateDescription, formatCodeNumericDescription, formatCodeTextDescription } from "../constants/constants";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
+import { Box, Button, Typography, Tooltip } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { Context } from "../App";
+import { CustomPalette } from "../constants/customPalette";
+import SchemaDescription from "./SchemaDescription";
+import ViewGrid from "./ViewGrid";
+import LinkCard from "./LinkCard";
+import useExportLogic from "./useExportLogic";
+import Loading from "../components/Loading";
+import useExportLogicV2 from "./useExportLogicV2";
+import {
+  formatCodeBinaryDescription,
+  formatCodeDateDescription,
+  formatCodeNumericDescription,
+  formatCodeTextDescription
+} from "../constants/constants";
 import { codesToLanguages } from "../constants/isoCodes";
 
 const currentEnv = process.env.REACT_APP_ENV;
 
-export default function ViewSchema({ pageBack, isExport = true, addClearButton, pageForward, isPageForward = true, isBack = false }) {
+export default function ViewSchema({
+  pageBack,
+  isExport = true,
+  addClearButton,
+  pageForward,
+  isPageForward = true,
+  isBack = false
+}) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const {
@@ -38,7 +49,9 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
     formatRuleRowData,
     dataStandardsRowData
   } = useContext(Context);
-  const languageIndex = languages.findIndex((item) => codesToLanguages?.[i18next.language] === item);
+  const languageIndex = languages.findIndex(
+    (item) => codesToLanguages?.[i18next.language] === item
+  );
   const filteredLanguages = [...languages];
   if (languageIndex !== -1 && languageIndex !== 0) {
     const removedLanguage = filteredLanguages.splice(languageIndex, 1);
@@ -51,8 +64,8 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
   const { exportData } = useExportLogicV2();
   const [loading, setLoading] = useState(true);
 
-  //Formats language buttons in a way that can handle many languages cleanly
-  //Minimizes language for cases where it's too long to fit in button size
+  // Formats language buttons in a way that can handle many languages cleanly
+  // Minimizes language for cases where it's too long to fit in button size
 
   const displayLanguageArray = [];
 
@@ -102,18 +115,11 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
         }
       }
 
-      const borderRadius =
-        curveLeftTop +
-        " " +
-        curveRightTop +
-        " " +
-        curveRightBottom +
-        " " +
-        curveLeftBottom;
+      const borderRadius = `${curveLeftTop} ${curveRightTop} ${curveRightBottom} ${curveLeftBottom}`;
 
       let minimizedLanguage = language.slice(0, 9);
       if (minimizedLanguage !== language) {
-        minimizedLanguage = minimizedLanguage + "...";
+        minimizedLanguage += "...";
       }
       return (
         <Button
@@ -131,7 +137,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
             borderRadius,
             minWidth: languages.length < 5 ? "12rem" : "10rem",
             boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.PRIMARY}`,
+            border: `0.5px solid ${CustomPalette.PRIMARY}`
           }}
         >
           <Typography variant="button">{minimizedLanguage}</Typography>
@@ -141,13 +147,11 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
     return languageRowDisplay;
   };
 
-  const languageButtonDisplay = displayLanguageArray.map(
-    (languageSegment, index) => {
-      return <Box key={index}>{createLanguageRow(languageSegment, index)}</Box>;
-    }
-  );
+  const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
+    <Box key={languageSegment.join(",")}>{createLanguageRow(languageSegment, index)}</Box>
+  ));
 
-  //Creates display array with all captured data
+  // Creates display array with all captured data
 
   useEffect(() => {
     const newDisplayArray = [];
@@ -191,27 +195,41 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
       dataObject.Description = descriptionObject;
       dataObject.List = codesObject;
 
-      const attrWithOverlay = characterEncodingRowData.find((row) => row.Attribute === attributeName);
+      const attrWithOverlay = characterEncodingRowData.find(
+        (row) => row.Attribute === attributeName
+      );
       if (attrWithOverlay) {
         Object.assign(dataObject, attrWithOverlay);
       }
 
-      const attrWithFormatRule = formatRuleRowData.find((row) => row.Attribute === attributeName);
-      if (attrWithFormatRule?.['FormatText'] && attrWithFormatRule['FormatText'] !== '') {
+      const attrWithFormatRule = formatRuleRowData.find(
+        (row) => row.Attribute === attributeName
+      );
+      if (attrWithFormatRule?.FormatText && attrWithFormatRule.FormatText !== "") {
         const attributeType = attrWithFormatRule?.Type;
-        const value = attrWithFormatRule?.['FormatText'];
-        const desc = attributeType.includes("Date") ? formatCodeDateDescription[value] : attributeType.includes("Numeric") ? formatCodeNumericDescription[value] : attributeType.includes("Binary") ? formatCodeBinaryDescription[value] : attributeType.includes("Text") ? formatCodeTextDescription[value] : "";
+        const value = attrWithFormatRule?.FormatText;
+        const desc = attributeType.includes("Date")
+          ? formatCodeDateDescription[value]
+          : attributeType.includes("Numeric")
+            ? formatCodeNumericDescription[value]
+            : attributeType.includes("Binary")
+              ? formatCodeBinaryDescription[value]
+              : attributeType.includes("Text")
+                ? formatCodeTextDescription[value]
+                : "";
         if (desc) {
-          dataObject['Add format rule for data'] = desc;
+          dataObject["Add format rule for data"] = desc;
         } else {
-          dataObject['Add format rule for data'] = value;
+          dataObject["Add format rule for data"] = value;
         }
       }
 
       // Add data standard information
-      const attrWithDataStandard = dataStandardsRowData.find((row) => row.Attribute === attributeName);
-      if (attrWithDataStandard?.['DataStandard']) {
-        dataObject['Data Standards'] = attrWithDataStandard['DataStandard'];
+      const attrWithDataStandard = dataStandardsRowData.find(
+        (row) => row.Attribute === attributeName
+      );
+      if (attrWithDataStandard?.DataStandard) {
+        dataObject["Data Standards"] = attrWithDataStandard.DataStandard;
       }
 
       newDisplayArray.push(dataObject);
@@ -221,9 +239,9 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
 
   const moveBackward = () => {
     if (history.length > 1 && history[history.length - 2] === "Landing") {
-      setHistory(prev => prev.slice(0, prev.length - 1));
-      setCurrentPage('Landing');
-      navigate('/');
+      setHistory((prev) => prev.slice(0, prev.length - 1));
+      setCurrentPage("Landing");
+      navigate("/");
     } else {
       pageBack();
     }
@@ -238,47 +256,58 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
         margin: "auto",
         pr: 5,
         pl: 10,
-        marginTop: 2,
+        marginTop: 2
       }}
     >
       {loading && attributeRowData?.length > 40 && <Loading />}
 
-      <Box sx={{
-        display: "flex",
-        justifyContent: isBack || !pageForward ? "space-between" : "flex-end",
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: isBack || !pageForward ? "space-between" : "flex-end"
+        }}
+      >
         {isBack && (
           <Button
             color="navButton"
-            sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
+            sx={{
+              textAlign: "left",
+              alignSelf: "flex-start",
+              color: CustomPalette.PRIMARY
+            }}
             onClick={pageBack}
           >
-            <ArrowBackIosIcon /> {t('Back')}
+            <ArrowBackIosIcon /> {t("Back")}
           </Button>
         )}
-        {isPageForward && pageForward ?
+        {isPageForward && pageForward ? (
           <Button
             color="navButton"
             onClick={pageForward}
             sx={{ color: CustomPalette.PRIMARY }}
           >
-            {t('Next')} <ArrowForwardIosIcon />
+            {t("Next")} <ArrowForwardIosIcon />
           </Button>
-          : isPageForward ? <>
+        ) : isPageForward ? (
+          <>
             <Button
               color="navButton"
-              sx={{ textAlign: "left", alignSelf: "flex-start", color: CustomPalette.PRIMARY }}
+              sx={{
+                textAlign: "left",
+                alignSelf: "flex-start",
+                color: CustomPalette.PRIMARY
+              }}
               onClick={moveBackward}
             >
-              <ArrowBackIosIcon /> {t('Back')}
+              <ArrowBackIosIcon /> {t("Back")}
             </Button>
-            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "row", gap: 3 }}>
                 {isZip && (
                   <>
                     <Button
                       color="button"
-                      variant='contained'
+                      variant="contained"
                       onClick={() => {
                         setCurrentPage("Metadata");
                         setIsZipEdited(true);
@@ -287,75 +316,76 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
                         alignSelf: "flex-end",
                         display: "flex",
                         justifyContent: "space-around",
-                        padding: "0.5rem 1rem",
+                        padding: "0.5rem 1rem"
                       }}
                     >
-                      {t('Edit Schema')}
+                      {t("Edit Schema")}
                     </Button>
                     <Button
                       color="button"
-                      variant='contained'
+                      variant="contained"
                       onClick={() => handleExport(true)}
                       sx={{
                         alignSelf: "flex-end",
                         display: "flex",
                         justifyContent: "space-around",
-                        padding: "0.5rem 1rem",
+                        padding: "0.5rem 1rem"
                       }}
                       disabled={exportDisabled}
                     >
-                      {t('Download ReadMe')}
+                      {t("Download ReadMe")}
                     </Button>
                   </>
                 )}
                 {isExport && (!isZip || (isZip && isZipEdited)) ? (
-                  <>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        color: CustomPalette.GREY_600,
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: CustomPalette.GREY_600
+                    }}
+                  >
+                    <Button
+                      color="button"
+                      variant="contained"
+                      onClick={() => {
+                        if (currentEnv === "DEV") {
+                          exportData();
+                        }
+                        handleExport(false);
                       }}
+                      sx={{
+                        alignSelf: "flex-end",
+                        width: "13rem",
+                        display: "flex",
+                        justifyContent: "space-around",
+                        p: 1
+                      }}
+                      disabled={exportDisabled}
                     >
-                      <Button
-                        color="button"
-                        variant="contained"
-                        onClick={() => {
-                          if (currentEnv === "DEV") {
-                            exportData();
-                          }
-                          handleExport(false);
-                        }}
-                        sx={{
-                          alignSelf: "flex-end",
-                          width: "13rem",
-                          display: "flex",
-                          justifyContent: "space-around",
-                          p: 1,
-                        }}
-                        disabled={exportDisabled}
+                      {t("Finish and Download")} <CheckCircleIcon />
+                    </Button>
+                    <Box sx={{ marginLeft: "1rem" }}>
+                      <Tooltip
+                        title={t(
+                          "Export your schema in a .json machine-readable version and..."
+                        )}
+                        placement="left"
+                        arrow
                       >
-                        {t('Finish and Download')} <CheckCircleIcon />
-                      </Button>
-                      <Box sx={{ marginLeft: "1rem" }}>
-                        <Tooltip
-                          title={t('Export your schema in a .json machine-readable version and...')}
-                          placement="left"
-                          arrow
-                        >
-                          <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                        </Tooltip>
-                      </Box>
+                        <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                      </Tooltip>
                     </Box>
-                  </>
-                ) :
+                  </Box>
+                ) : (
                   <></>
-                }
+                )}
               </Box>
-
             </Box>
-          </> : <></>
-        }
+          </>
+        ) : (
+          <></>
+        )}
       </Box>
       {showLink && <LinkCard setShowLink={setShowLink} />}
       <Box
@@ -363,13 +393,13 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
           display: "flex",
           flexDirection: "column",
           alignItems: "flex-start",
-          margin: "2rem 2rem 4rem 2rem",
+          margin: "2rem 2rem 4rem 2rem"
         }}
       >
         <Box
           sx={{
             display: "flex",
-            width: "100%",
+            width: "100%"
           }}
         >
           <Box
@@ -377,27 +407,29 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
-              width: "100%",
+              width: "100%"
             }}
           >
             <Box
               sx={{
                 display: "flex",
-                alignItems: "center",
+                alignItems: "center"
               }}
             >
               <Typography
                 sx={{
                   fontSize: 22,
                   fontWeight: "bold",
-                  color: CustomPalette.PRIMARY,
+                  color: CustomPalette.PRIMARY
                 }}
               >
-                {t('Schema Language')}
+                {t("Schema Language")}
               </Typography>
               <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
                 <Tooltip
-                  title={t("Toggles between the one or more languages used in the schema")}
+                  title={t(
+                    "Toggles between the one or more languages used in the schema"
+                  )}
                   placement="right"
                   arrow
                 >
@@ -410,51 +442,55 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
                 sx={{
                   display: "flex",
                   flexDirection: "column-reverse",
-                  alignItems: "flex-start",
+                  alignItems: "flex-start"
                 }}
               >
                 {languageButtonDisplay}
               </Box>
             </Box>
           </Box>
-          {isPageForward && isExport && <Box
-            sx={{
-              padding: 2,
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              backgroundColor: '#f9f9f9',
-              width: "300px",
-              textAlign: "left",
-              position: "absolute",
-              right: 0,
-              marginRight: "4rem",
-            }}
-          >
-            <Typography
+          {isPageForward && isExport && (
+            <Box
               sx={{
-                fontSize: 16,
-                color: '#333',
+                padding: 2,
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                backgroundColor: "#f9f9f9",
+                width: "300px",
+                textAlign: "left",
+                position: "absolute",
+                right: 0,
+                marginRight: "4rem"
               }}
             >
-              Note: Downloading two files
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: 14,
-                marginTop: 1,
-              }}
-            >
-              1) Schema in .txt format, readable and archivable.
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: 14,
-                marginTop: 1,
-              }}
-            >
-              2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine.
-            </Typography>
-          </Box>}
+              <Typography
+                sx={{
+                  fontSize: 16,
+                  color: "#333"
+                }}
+              >
+                {t("Note: Downloading two files")}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  marginTop: 1
+                }}
+              >
+                {t("1) Schema in .txt format, readable and archivable.")}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  marginTop: 1
+                }}
+              >
+                {t(
+                  "2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine."
+                )}
+              </Typography>
+            </Box>
+          )}
         </Box>
         {/* <Typography
           sx={{
@@ -474,21 +510,23 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
           sx={{
             display: "flex",
             alignItems: "center",
-            marginTop: 2,
+            marginTop: 2
           }}
         >
           <Typography
             sx={{
               fontSize: 22,
               fontWeight: "bold",
-              color: CustomPalette.PRIMARY,
+              color: CustomPalette.PRIMARY
             }}
           >
-            {t('Schema Metadata')}
+            {t("Schema Metadata")}
           </Typography>
           <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
             <Tooltip
-              title={t("Language specific information describing general schema information")}
+              title={t(
+                "Language specific information describing general schema information"
+              )}
               placement="right"
               arrow
             >
@@ -503,21 +541,23 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
             display: "flex",
             alignItems: "center",
             marginTop: 4,
-            marginBottom: 2,
+            marginBottom: 2
           }}
         >
           <Typography
             sx={{
               fontSize: 22,
               fontWeight: "bold",
-              color: CustomPalette.PRIMARY,
+              color: CustomPalette.PRIMARY
             }}
           >
-            {t('Schema Details')}
+            {t("Schema Details")}
           </Typography>
           <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
             <Tooltip
-              title={t("The details of the schema including attribute names and their features as well as language specific information")}
+              title={t(
+                "The details of the schema including attribute names and their features as well as language specific information"
+              )}
               placement="right"
               arrow
             >
@@ -536,7 +576,7 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
           sx={{
             display: "flex",
             flexDirection: "column",
-            alignItems: "flex-end",
+            alignItems: "flex-end"
           }}
         >
           <Button
@@ -553,24 +593,23 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
               width: "13rem",
               display: "flex",
               justifyContent: "space-around",
-              p: 1,
+              p: 1
             }}
             disabled={exportDisabled}
           >
-            {t('Finish and Download')} <CheckCircleIcon />
+            {t("Finish and Download")} <CheckCircleIcon />
           </Button>
-        </Box >
-
-      ) :
+        </Box>
+      ) : (
         <></>
-      }
-      {addClearButton &&
+      )}
+      {addClearButton && (
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-end",
-            marginTop: '2rem',
+            marginTop: "2rem"
           }}
         >
           <Button
@@ -583,13 +622,13 @@ export default function ViewSchema({ pageBack, isExport = true, addClearButton, 
               display: "flex",
               justifyContent: "space-around",
               p: 1,
-              mb: 5,
+              mb: 5
             }}
           >
-            {t('Clear All Data and Restart')}
+            {t("Clear All Data and Restart")}
           </Button>
-        </Box >}
-    </Box >
-
+        </Box>
+      )}
+    </Box>
   );
 }
