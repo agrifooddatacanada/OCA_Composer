@@ -21,6 +21,7 @@
     "react/jsx-props-no-spreading": 0,
     "react/jsx-filename-extension": 0,
     "react-hooks/exhaustive-deps": 1,
+    "react/jsx-no-useless-fragment": 1,
     "import/no-cycle": 0,
     "no-param-reassign": 0,
     "no-continue": 0,

@@ -18,7 +18,9 @@ export default function Header({ currentPage }) {
   const location = useLocation();
   // Detecting mobile screens with 'isMobile'
   const isMobile = useMediaQuery("(max-width:736px)");
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    i18next.language === "en-US" ? "en" : i18next.language
+  );
 
   useEffect(() => {
     setSelectedLanguage(i18next.language);

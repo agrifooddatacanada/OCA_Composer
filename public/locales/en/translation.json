@@ -290,5 +290,8 @@
   "Save": "Save",
   "Add catalogue information": "Add catalogue information",
   "Catalogue Information": "Catalogue Information",
-  "Include catalogue information in markdown readme": "Include catalogue information in markdown readme"
+  "Include catalogue information in markdown readme": "Include catalogue information in markdown readme",
+  "Note: Downloading two files": "Note: Downloading two files",
+  "1) Schema in .txt format, readable and archivable.": "1) Schema in .txt format, readable and archivable.",
+  "2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine.": "2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine."
 }
