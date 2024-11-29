@@ -52,7 +52,7 @@ export const catalogueInfoFormFields = {
         "Activate",
         "CAT-G",
         "BENEFIT",
-        "Lactanet"
+        "NDGP"
       ],
       defaultValue: ""
     }
