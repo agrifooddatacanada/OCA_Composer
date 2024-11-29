@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import i18next from "i18next";
 import { Box, Typography } from "@mui/material";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import { CustomPalette } from "../constants/customPalette";
@@ -25,7 +26,7 @@ const QuickStart = () => {
         />{" "}
         {t("Or")}{" "}
         <CustomRouterLink
-          to="/tutorial"
+          to={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" ? "en" : i18next.language}/TutorialAll/`}
           text={t("read the tutorial")}
           overrideStyle={{ fontWeight: "500", color: CustomPalette.PRIMARY }}
         />{" "}

@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import i18next from "i18next";
 import { Box, Typography, useMediaQuery } from "@mui/material";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import CustomRouterLink from "../components/CustomRouterLink";
@@ -25,8 +26,11 @@ export default function StartIntro() {
         </Box>
         <Box sx={{ m: 2, textAlign: "center" }}>
           {t("Watch our tutorial video on creating a schema. Or")}{" "}
-          <CustomRouterLink to="/tutorial" text={t("read the tutorial")} /> {t("instead")}
-          .
+          <CustomRouterLink
+            to={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" ? "en" : i18next.language}/TutorialAll/`}
+            text={t("read the tutorial")}
+          />{" "}
+          {t("instead")}.
         </Box>
       </Typography>
       <br />
