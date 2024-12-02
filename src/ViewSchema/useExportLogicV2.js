@@ -19,7 +19,7 @@ const useExportLogicV2 = () => {
     cardinalityData
   } = useContext(Context);
 
-  //CAPTURE SHEET DESCRIPTIONS DATA
+  // CAPTURE SHEET DESCRIPTIONS DATA
   const OCADescriptionData = [];
   const OCADataArray = [];
   const languagesWithCode = [];
@@ -40,21 +40,19 @@ const useExportLogicV2 = () => {
     rowObject.Description = schemaDescription[language].description;
     OCADescriptionData.push(rowObject);
 
-
     const languageObject = {};
     languageObject.language = language;
     languageObject.code =
-      languageCodesObject[language.toLowerCase()] ||
-      customIsos[language.toLowerCase()];
+      languageCodesObject[language.toLowerCase()] || customIsos[language.toLowerCase()];
     if (!languageObject.code) {
       languageObject.code = "unknown";
     }
     if (allLanguageCodes.includes(languageObject.code)) {
       let number = 2;
-      let newCode = languageObject.code + "_" + number;
+      let newCode = `${languageObject.code}_${number}`;
       while (allLanguageCodes.includes(newCode)) {
         number++;
-        newCode = languageObject.code + "_" + number;
+        newCode = `${languageObject.code}_${number}`;
       }
       languageObject.code = newCode;
     }
@@ -63,7 +61,7 @@ const useExportLogicV2 = () => {
   });
   OCADataArray.push(OCADescriptionData);
 
-  //CAPTURE ATTRIBUTE SHEET DATA
+  // CAPTURE ATTRIBUTE SHEET DATA
   languages.forEach((language) => {
     const rowData = [];
     attributesList.forEach((item, index) => {
@@ -105,7 +103,7 @@ const useExportLogicV2 = () => {
   const buildMetaText = () => {
     let buildText = "# Add meta overlay";
 
-    languagesWithCode.forEach((language, _) => {
+    languagesWithCode.forEach((language) => {
       const languageIndex = OCADataArray[0].findIndex(
         (obj) => obj.Language === language.language
       );
@@ -115,21 +113,21 @@ const useExportLogicV2 = () => {
       buildText += ` description="${OCADataArray[0][languageIndex].Description}"`;
     });
 
-    buildText += `\n`;
+    buildText += "\n";
     return buildText;
   };
 
   const buildFormatText = () => {
     let buildText = "# Add Format Overlay\n";
 
-    let tempText = '';
+    let tempText = "";
     formatRuleRowData.forEach((item, index) => {
-      if (item['FormatText']) {
-        tempText += ` ${attributesList[index]}="${item['FormatText']}"`;
+      if (item.FormatText) {
+        tempText += ` ${attributesList[index]}="${item.FormatText}"`;
       }
     });
 
-    if (tempText !== '') {
+    if (tempText !== "") {
       buildText += "ADD Format ATTRS";
       buildText += tempText;
       buildText += "\n";
@@ -140,14 +138,14 @@ const useExportLogicV2 = () => {
 
   const buildConformanceText = () => {
     let buildText = "# Add Conformance Overlay\n";
-    let conformanceText = '';
+    let conformanceText = "";
 
     attributesList.forEach((item, index) => {
       if (overlay["Make selected entries required"].selected) {
-        conformanceText += ` ${item}=${characterEncodingRowData[index]['Make selected entries required'] ? "M" : "O"}`;
+        conformanceText += ` ${item}=${characterEncodingRowData[index]["Make selected entries required"] ? "M" : "O"}`;
       }
     });
-    if (conformanceText !== '') {
+    if (conformanceText !== "") {
       buildText += `ADD CONFORMANCE ATTRS${conformanceText}\n`;
     }
     return buildText;
@@ -156,16 +154,14 @@ const useExportLogicV2 = () => {
   const buildLabelText = (data) => {
     let buildText = "# Add label overlay";
 
-    languagesWithCode.forEach((language, _) => {
+    languagesWithCode.forEach((language) => {
       let labelText = "";
       attributesList.forEach((item, index) => {
         const languageIndex =
           data
             .slice(1)
-            .findIndex(
-              (element) => element[0].Language === language.language
-            ) + 1;
-        if (data[languageIndex][index].Label && data[languageIndex][index].Label !== '') {
+            .findIndex((element) => element[0].Language === language.language) + 1;
+        if (data[languageIndex][index].Label && data[languageIndex][index].Label !== "") {
           labelText += ` ${item}="${data[languageIndex][index].Label}"`;
         }
       });
@@ -174,24 +170,24 @@ const useExportLogicV2 = () => {
       }
     });
 
-    buildText += `\n`;
+    buildText += "\n";
     return buildText;
   };
 
   const buildInformationText = (data) => {
     let buildText = "# Add information overlay";
 
-    languagesWithCode.forEach((language, _) => {
+    languagesWithCode.forEach((language) => {
       let infoText = "";
       attributesList.forEach((item, index) => {
         const languageIndex =
           data
             .slice(1)
-            .findIndex(
-              (element) => element[0].Language === language.language
-            ) + 1;
-        if (data[languageIndex][index].Description && data[languageIndex][index].Description !== '') {
-
+            .findIndex((element) => element[0].Language === language.language) + 1;
+        if (
+          data[languageIndex][index].Description &&
+          data[languageIndex][index].Description !== ""
+        ) {
           infoText += ` ${item}="${data[languageIndex][index].Description}"`;
         }
       });
@@ -200,7 +196,7 @@ const useExportLogicV2 = () => {
       }
     });
 
-    buildText += `\n`;
+    buildText += "\n";
     return buildText;
   };
 
@@ -208,27 +204,27 @@ const useExportLogicV2 = () => {
     let buildText = "# Add entry code overlay\n";
     // buildText += "ADD ENTRY_CODE ATTRS";
 
-    let entryCodesText = '';
-    attributesList.forEach((item, _) => {
-      let entryCodes = '';
+    let entryCodesText = "";
+    attributesList.forEach((item) => {
+      let entryCodes = "";
       if (savedEntryCodes[item]) {
         for (const entry of savedEntryCodes[item]) {
-          entryCodes += (', "' + entry.Code + '"');
+          entryCodes += `, "${entry.Code}"`;
         }
         entryCodesText += ` ${item}=[${entryCodes.slice(2)}]`;
       }
     });
 
-    if (entryCodesText !== '') {
+    if (entryCodesText !== "") {
       buildText += `ADD ENTRY_CODE ATTRS${entryCodesText}\n`;
 
-      languagesWithCode.forEach((language, _) => {
+      languagesWithCode.forEach((language) => {
         buildText += `ADD ENTRY ${language.code} ATTRS`;
-        attributesList.forEach((item, _) => {
+        attributesList.forEach((item) => {
           if (savedEntryCodes[item]) {
-            let entryString = '';
+            let entryString = "";
             for (const entry of savedEntryCodes[item]) {
-              entryString += (', "' + entry.Code + '": "' + entry[language.language] + '"');
+              entryString += `, "${entry.Code}": "${entry[language.language]}"`;
             }
             buildText += ` ${item}={${entryString.slice(2)}}`;
           }
@@ -248,7 +244,7 @@ const useExportLogicV2 = () => {
       buildText += ` ${item}=${data[1][index].Unit}`;
     });
 
-    buildText += `\n`;
+    buildText += "\n";
     return buildText;
   };
 
@@ -257,29 +253,32 @@ const useExportLogicV2 = () => {
     buildText += "ADD CHARACTER_ENCODING ATTRS";
 
     attributesList.forEach((item, index) => {
-      if (characterEncodingRowData?.[index] && characterEncodingRowData?.[index]?.['Character Encoding']) {
-        buildText += ` ${item}="${characterEncodingRowData[index]['Character Encoding']}"`;
+      if (
+        characterEncodingRowData?.[index] &&
+        characterEncodingRowData?.[index]?.["Character Encoding"]
+      ) {
+        buildText += ` ${item}="${characterEncodingRowData[index]["Character Encoding"]}"`;
       } else {
-        buildText += ` ${item}="${(data[1][index].Type === 'Array[Binary]' || data[1][index].Type === 'Binary') ? 'base64' : 'utf-8'}"`;
-      };
+        buildText += ` ${item}="${data[1][index].Type === "Array[Binary]" || data[1][index].Type === "Binary" ? "base64" : "utf-8"}"`;
+      }
     });
 
-    buildText += `\n`;
+    buildText += "\n";
     return buildText;
   };
 
   const buildCardinalityText = () => {
     let buildText = "# Add cardinality overlay\n";
 
-    if (overlay["Cardinality"].selected) {
+    if (overlay.Cardinality.selected) {
       let isAdd = false;
-      let buildNewText = '';
+      let buildNewText = "";
 
       if (cardinalityData.length > 0) {
-        cardinalityData.forEach((item, _) => {
-          if (item['EntryLimit'] && item['EntryLimit'] !== '') {
+        cardinalityData.forEach((item) => {
+          if (item.EntryLimit && item.EntryLimit !== "") {
             isAdd = true;
-            buildNewText += ` ${item['Attribute']}="${item['EntryLimit']}"`;
+            buildNewText += ` ${item.Attribute}="${item.EntryLimit}"`;
           }
         });
       }
@@ -290,7 +289,6 @@ const useExportLogicV2 = () => {
         buildText += "\n";
       }
     }
-
 
     return buildText;
   };
@@ -307,7 +305,7 @@ const useExportLogicV2 = () => {
     buildBodyText += buildInformationText(data);
     buildBodyText += buildEntryCodeText();
     buildBodyText += buildCardinalityText();
-    // buildBodyText += buildUnitsText(data);
+    buildBodyText += buildUnitsText(data);
     buildBodyText += buildCharacterEncodingText(data);
 
     return buildBodyText;
@@ -316,13 +314,13 @@ const useExportLogicV2 = () => {
   const exportData = async () => {
     const data = buildOCAText(OCADataArray);
 
-    const blob = new Blob([data], { type: 'text/plain' });
+    const blob = new Blob([data], { type: "text/plain" });
 
     const url = URL.createObjectURL(blob);
 
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'ocafile.txt';
+    a.download = "ocafile.txt";
     document.body.appendChild(a);
     a.click();
 
