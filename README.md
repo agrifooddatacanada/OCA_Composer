@@ -20,7 +20,7 @@ The OCA Composer repository supports whitelabeling, allowing the user to customi
 
 ### Theme Configuration
 In `src/constants`, the file `themeConstants.js` contains theme configurations for different entities. 
-Here the users can add a new theme object with the specific site attributes, such as colors, logos and URLs. 
+Here, users can add a new theme object with the specific site attributes, such as colors, logos and URLs. 
 
 Follow a format like the following:
 
