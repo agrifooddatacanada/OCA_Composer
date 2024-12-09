@@ -365,17 +365,20 @@ function App() {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      console.log('Received schema data from R Shiny:', event.data);
+      console.log('React: Received message from R Shiny:', {
+        origin: event.origin,
+        data: event.data
+      });
       
-      // update state
-      if (event.data?.data) {
+      if (event.data?.schema && event.data?.data) {
+        console.log('React: Processing schema data');
         setJsonRawFile(event.data.data);
         setJsonIsParsed(true);
       }
     };
 
     window.addEventListener('message', handleMessage);
-    return () => {window.removeEventListener('message', handleMessage);};
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
   return (
