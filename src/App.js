@@ -363,6 +363,24 @@ function App() {
     window.URL.revokeObjectURL(url);
   };
 
+  useEffect(() => {
+    const handleMessage = (event) => {
+      console.log('React: Received message from R Shiny:', {
+        origin: event.origin,
+        data: event.data
+      });
+      
+      if (event.data?.schema && event.data?.data) {
+        console.log('React: Processing schema data');
+        setJsonRawFile(event.data.data);
+        setJsonIsParsed(true);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   return (
     <div className='App'>
       <ThemeProvider theme={CustomTheme}>

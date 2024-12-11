@@ -29,8 +29,7 @@ export const themes = {
       },
       
       omafa_ontario_logo: {
-        // Once the image has been added to assets folder, wrap the path in require() as above
-        url: "/path/to/default_logo3.png",
+        url: require('../assets/OMAFA.PNG'),
         website: "https://www.ontario.ca/page/ministry-agriculture-food-and-agribusiness-and-ministry-rural-affairs",
         alt: "OMAFA Logo",
         style: { height: '120px', marginLeft: '1rem' }
@@ -61,13 +60,13 @@ export const themes = {
 
     logos: {
       UofG_Cornerstone: {
-        url: '../assets/UofG_Cornerstone_wTagline_blk_rgb.png',
+        url: require('../assets/UofG_Cornerstone_wTagline_blk_rgb.png'),
         alt: "University of Guelph Logo",
         style: { width: '200px', height: '100px', align: 'left' }
       },
-      ON_POS_LOGO: {
-        url: '../assets/ON_POS_LOGO_RGB.PNG',
-        alt: "Ontario Logo",
+      OMAFA: {
+        url: require('../assets/OMAFA.PNG'),
+        alt: "OMAFA Ontario Logo",
         style: { width: '200px', height: '100px', align: 'right' }
       },
     },
