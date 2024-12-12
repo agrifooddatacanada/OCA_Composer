@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 const exportOptions = ["excel", "csv"];
 
-const ExportButton = ({ handleSave }) => {
+const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
   const [selectedOption, setSelectedOption] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [additionalOptionsAnchorEl, setAdditionalOptionsAnchorEl] =
@@ -101,7 +101,7 @@ const ExportButton = ({ handleSave }) => {
           padding: "0.5rem 1rem",
         }}
       >
-        {isEmbedded ? "Save and Send" : "Export Data"}
+        {isEmbedded ? "Save & Submit" : "Export Data"}
       </Button>
       <Menu
         id="basic-menu"

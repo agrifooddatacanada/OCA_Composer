@@ -1049,6 +1049,8 @@ const OCADataValidatorCheck = ({
               <ExportButton
                 handleSave={handleSave}
                 inputDataType={datasetRawFileType}
+                validatedData={rowDataFilter}
+                currentSchemaName={jsonParsedFile?.capture_base?.name || ''}
               />
             </Box>
           </Box>
