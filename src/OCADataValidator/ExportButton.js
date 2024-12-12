@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 const exportOptions = ["excel", "csv"];
 
-const ExportButton = ({ handleSave, validateData, currentSchemaName }) => {
+const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
   const [selectedOption, setSelectedOption] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [additionalOptionsAnchorEl, setAdditionalOptionsAnchorEl] =
