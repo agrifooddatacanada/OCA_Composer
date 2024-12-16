@@ -85,23 +85,25 @@ const useExportLogic = () => {
   OCADataArray.push(OCADescriptionData);
 
   // CAPTURE ATTRIBUTE SHEET DATA
-  languages.forEach((language) => {
-    const rowData = [];
+  if (Object.keys(lanAttributeRowData).length > 0) {
+    languages.forEach((language) => {
+      const rowData = [];
 
-    attributesList.forEach((item, index) => {
-      const rowObject = {};
-      rowObject.Attribute = item;
-      rowObject.Flagged = attributeRowData[index]?.Flagged ? "Y" : "";
-      rowObject.Unit = attributeRowData[index]?.Unit;
-      rowObject.Type = attributeRowData[index]?.Type;
-      rowObject.Label = lanAttributeRowData[language][index]?.Label;
-      rowObject.Description = lanAttributeRowData[language][index]?.Description;
-      rowObject.List = lanAttributeRowData[language][index]?.List;
-      rowObject.Language = language;
-      rowData.push(rowObject);
+      attributesList.forEach((item, index) => {
+        const rowObject = {};
+        rowObject.Attribute = item;
+        rowObject.Flagged = attributeRowData[index]?.Flagged ? "Y" : "";
+        rowObject.Unit = attributeRowData[index]?.Unit;
+        rowObject.Type = attributeRowData[index]?.Type;
+        rowObject.Label = lanAttributeRowData[language][index]?.Label;
+        rowObject.Description = lanAttributeRowData[language][index]?.Description;
+        rowObject.List = lanAttributeRowData[language][index]?.List;
+        rowObject.Language = language;
+        rowData.push(rowObject);
+      });
+      OCADataArray.push(rowData);
     });
-    OCADataArray.push(rowData);
-  });
+  }
 
   const handleOCAExport = (dataArray) => {
     const workbook = new ExcelJS.Workbook();
