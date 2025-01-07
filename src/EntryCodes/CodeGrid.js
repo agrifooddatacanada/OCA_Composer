@@ -4,23 +4,22 @@ import React, {
   useMemo,
   useState,
   useRef,
-  useCallback,
+  useCallback
 } from "react";
-import { Context } from "../App";
+import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
-import { Box } from "@mui/system";
-import { Button, Tooltip, Typography } from "@mui/material";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import { Button, Tooltip, Typography, Box } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
 import { preWrapWordBreak } from "../constants/styles";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
-import { useTranslation } from "react-i18next";
 
-//Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
+// Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
 const gridStyle = `
 .ag-center-cols-clipper {
   min-height: unset !important;
@@ -62,6 +61,10 @@ const gridStyle = `
 .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
   height: 100%
 }
+
+.ag-cell .ag-drag-handle {
+  margin-right: 0;
+}
 `;
 
 const CodeHeader = () => {
@@ -69,24 +72,28 @@ const CodeHeader = () => {
   return (
     <div className="ag-cell-label-container">
       <Tooltip
-        title={t("The entry choices for the schema. These will be what is recorded in the dataset and so can be simple entry codes")}
+        title={t(
+          "The entry choices for the schema. These will be what is recorded in the dataset and so can be simple entry codes"
+        )}
         placement="top"
         arrow
       >
         <HelpOutlineIcon sx={{ fontSize: 15 }} />
       </Tooltip>
-      <div className="ag-header-cell-label">{t('Entry Code')}</div>
+      <div className="ag-header-cell-label">{t("Entry Code")}</div>
     </div>
   );
 };
 
-const LanguageHeader = (languages, language) => {
+const LanguageHeader = ({ languages, language }) => {
   const { t } = useTranslation();
   return (
     <div className="ag-cell-label-container">
       {language === languages[0] && (
         <Tooltip
-          title={t("A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes")}
+          title={t(
+            "A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes"
+          )}
           placement="top"
           arrow
         >
@@ -94,11 +101,7 @@ const LanguageHeader = (languages, language) => {
         </Tooltip>
       )}
       <div className="ag-header-cell-label">
-        <Typography
-          noWrap={true}
-          variant="subtitle2"
-          sx={{ textTransform: "capitalize" }}
-        >
+        <Typography noWrap variant="subtitle2" sx={{ textTransform: "capitalize" }}>
           {language}
         </Typography>
       </div>
@@ -116,21 +119,22 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
   const boxRefs = useRef([]);
   const buttonRef = useRef();
 
-  const handleDeleteRow = useCallback((elementIndex) => {
-    codeRefs.current.forEach((grid) => {
-      grid.current.api.stopEditing();
-    });
+  const handleDeleteRow = useCallback(
+    (elementIndex) => {
+      codeRefs.current.forEach((grid) => {
+        grid.current.api.stopEditing();
+      });
 
-    const newEntryCodeRowData = JSON.parse(
-      JSON.stringify(entryCodeRowData[index])
-    );
-    newEntryCodeRowData.splice(elementIndex, 1);
-    setEntryCodeRowData((prevState) => {
-      const newState = [...prevState];
-      newState[index] = newEntryCodeRowData;
-      return newState;
-    });
-  }, [codeRefs, entryCodeRowData, index, setEntryCodeRowData]);
+      const newEntryCodeRowData = JSON.parse(JSON.stringify(entryCodeRowData[index]));
+      newEntryCodeRowData.splice(elementIndex, 1);
+      setEntryCodeRowData((prevState) => {
+        const newState = [...prevState];
+        newState[index] = newEntryCodeRowData;
+        return newState;
+      });
+    },
+    [codeRefs, entryCodeRowData, index, setEntryCodeRowData]
+  );
 
   const handleAddRow = useCallback(() => {
     codeRefs.current.forEach((grid) => {
@@ -150,41 +154,76 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
     });
   }, [codeRefs, entryCodeRowData, index, languages, setEntryCodeRowData]);
 
-  const columnDefs = useMemo(() => {
-    const languageHeaders = languages.map((language) => {
-      return {
-        field: language,
-        editable: true,
-        headerComponent: () => LanguageHeader(languages, language),
-        autoHeight: true,
-        cellStyle: () => preWrapWordBreak,
-      };
+  // Saves elements in proper order after dragging
+  const onRowDragEnd = (event) => {
+    codeRefs.current.forEach((grid) => {
+      grid.current.api.stopEditing();
     });
+
+    const oldEntryCodeIndex = entryCodeRowData[index].findIndex(
+      (item) => item.Code === event.node.data.Code
+    );
+    const newEntryCodeIndex = event.node.rowIndex;
+
+    const newEntryCodeRowData = [...entryCodeRowData[index]];
+
+    const [movedItem] = newEntryCodeRowData.splice(oldEntryCodeIndex, 1);
+    newEntryCodeRowData.splice(newEntryCodeIndex, 0, movedItem);
+
+    setEntryCodeRowData((prevState) => {
+      const newState = [...prevState];
+      newState[index] = newEntryCodeRowData;
+      return newState;
+    });
+  };
+
+  const onRowDragLeave = () => {
+    codeRefs.current.forEach((grid) => {
+      grid.current.api.stopEditing();
+    });
+  };
+
+  const columnDefs = useMemo(() => {
+    const languageHeaders = languages.map((language) => ({
+      field: language,
+      editable: true,
+      headerComponent: () => LanguageHeader({ languages, language }),
+      autoHeight: true,
+      cellStyle: () => preWrapWordBreak
+    }));
     return [
+      {
+        field: "Drag",
+        headerName: "",
+        width: 40,
+        rowDrag: true
+      },
       {
         field: "Code",
         editable: true,
         headerComponent: CodeHeader,
         autoHeight: true,
-        cellStyle: () => preWrapWordBreak,
+        cellStyle: () => preWrapWordBreak
       },
-      ...languageHeaders,
+      ...languageHeaders
     ];
   }, [languages, entryCodeRowData, index]);
 
-  const defaultColDef = useMemo(() => ({
-    width: 200,
-    tabToNextCell: true,
-    cellStyle: (params) => {
-      if (params.node.rowIndex === hoveredRowIndex) {
-        return { backgroundColor: CustomPalette.PINK_200 };
-      } else {
+  const defaultColDef = useMemo(
+    () => ({
+      width: 200,
+      tabToNextCell: true,
+      cellStyle: (params) => {
+        if (params.node.rowIndex === hoveredRowIndex) {
+          return { backgroundColor: CustomPalette.PINK_200 };
+        }
         return { backgroundColor: "white" };
       }
-    },
-  }), [hoveredRowIndex]);
+    }),
+    [hoveredRowIndex]
+  );
 
-  //Creates "add-by-tab" behaviour
+  // Creates "add-by-tab" behaviour
   const onCellKeyDown = useCallback(
     (e) => {
       const keyPressed = e.event.code;
@@ -195,7 +234,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
         if (isLastRow && isLastColumn) {
           buttonRef.current.click();
           setTimeout(() => {
-            const api = e.api;
+            const { api } = e;
             const editingRowIndex = e.rowIndex;
             api.setFocusedCell(editingRowIndex + 1, "Code");
           }, 0);
@@ -205,20 +244,20 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
     [languages]
   );
 
-  //Sets grid width based on number of Languages
+  // Sets grid width based on number of Languages
   useEffect(() => {
     if (languages.length > 3) {
-      setGridWidth(850);
+      setGridWidth(892);
     } else {
       switch (languages.length) {
         case 1:
-          setGridWidth(401);
+          setGridWidth(442);
           break;
         case 2:
-          setGridWidth(601);
+          setGridWidth(642);
           break;
         case 3:
-          setGridWidth(801);
+          setGridWidth(842);
           break;
         default:
           setGridWidth(500);
@@ -227,36 +266,36 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
     }
   }, [languages]);
 
-  //Because grid width varies dependent on number of languages, delete icons float outside of the grid component, and are linked by index
-  //There is an empty box at the top to make the icons line up correctly
-  //Hover effect helps with clarity since the delete icons are floating beside
+  // Because grid width varies dependent on number of languages, delete icons float outside of the grid component, and are linked by index
+  // There is an empty box at the top to make the icons line up correctly
+  // Hover effect helps with clarity since the delete icons are floating beside
   useEffect(() => {
     if (entryCodeRowData[index].length > 0) {
       const newButtonArray = [];
       boxRefs.current = [];
-      newButtonArray.push(<Box sx={{ height: "2.2rem" }} key={0}></Box>);
+      newButtonArray.push(<Box sx={{ height: "2.2rem" }} key={0} />);
       entryCodeRowData[index].forEach((item, index) => {
         const ref = React.createRef();
         boxRefs.current.push(ref);
         newButtonArray.push(
           <Box
-            key={index + 1}
+            key={item.Code}
             ref={ref}
             sx={{
-              ml: 1,
+              ml: 1
             }}
           >
             {hoveredRowIndex === index ? (
               <DeleteForeverIcon
                 onClick={() => handleDeleteRow(index)}
                 sx={{
-                  color: CustomPalette.PRIMARY,
+                  color: CustomPalette.PRIMARY
                 }}
               />
             ) : (
               <DeleteOutlineIcon
                 sx={{
-                  color: CustomPalette.GREY_600,
+                  color: CustomPalette.GREY_600
                 }}
               />
             )}
@@ -288,12 +327,16 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
     };
   }, []);
 
-  //Stops grid editing on all other grid components - not just current grid
+  // Stops grid editing on all other grid components - not just current grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
       const clickedGrid = event.target.closest(".ag-root-wrapper");
 
-      if (!clickedGrid && refContainer.current && !refContainer.current.contains(event.target)) {
+      if (
+        !clickedGrid &&
+        refContainer.current &&
+        !refContainer.current.contains(event.target)
+      ) {
         codeRefs.current.forEach((grid) => {
           grid.current?.api?.stopEditing();
         });
@@ -329,6 +372,9 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
               domLayout="autoHeight"
               onCellKeyDown={onCellKeyDown}
               onCellClicked={() => setChosenTable(index)}
+              onRowDragEnd={onRowDragEnd}
+              onRowDragLeave={onRowDragLeave}
+              rowDragManaged
             />
           </div>
         </Box>
@@ -336,7 +382,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
           style={{
             display: "flex",
             flexDirection: "column",
-            justifyContent: "flex-end",
+            justifyContent: "flex-end"
           }}
         >
           <Box
@@ -344,7 +390,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
               height: "100%",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "space-around",
+              justifyContent: "space-around"
             }}
           >
             {buttonArray}
@@ -362,11 +408,11 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
           margin: "1rem 3.3rem 0 0",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-around",
+          justifyContent: "space-around"
         }}
         ref={buttonRef}
       >
-        {t('Add row')} <AddCircleIcon />
+        {t("Add row")} <AddCircleIcon />
       </Button>
     </Box>
   );

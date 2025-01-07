@@ -238,7 +238,7 @@ const useExportLogicV2 = () => {
 
   const buildUnitsText = (data) => {
     let buildText = "# Add units overlay\n";
-    buildText += "ADD Unit si ATTRS";
+    buildText += "ADD Unit ATTRS";
 
     attributesList.forEach((item, index) => {
       buildText += ` ${item}=${data[1][index].Unit}`;
