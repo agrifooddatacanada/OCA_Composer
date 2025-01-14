@@ -241,7 +241,7 @@ const useExportLogicV2 = () => {
     buildText += "ADD Unit ATTRS";
 
     attributesList.forEach((item, index) => {
-      buildText += ` ${item}=${data[1][index].Unit}`;
+      buildText += ` ${item}="${data[1][index].Unit}"`;
     });
 
     buildText += "\n";
