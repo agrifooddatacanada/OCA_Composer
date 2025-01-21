@@ -6,6 +6,10 @@ import { Context } from "../App";
 import useZipParser from "./useZipParser";
 import { removeSpacesFromString } from "../constants/removeSpaces";
 import { messages } from "../constants/messages";
+import {
+  replaceAttributeCharsInJsonString,
+  replaceAttributeCharsInParsedJson
+} from "../constants/utils";
 
 const useHandleAllDrop = (pageForward) => {
   const {
@@ -340,7 +344,9 @@ const useHandleAllDrop = (pageForward) => {
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
           /* eslint-disable-next-line no-await-in-loop */
           const content = await zip.files[`${file}.json`].async("text");
-          const parsedData = JSON.parse(content);
+          // Sanitize attributes in JSON content; replace disallowed characters in attribute names
+          const convertedContent = replaceAttributeCharsInJsonString(content);
+          const parsedData = JSON.parse(convertedContent);
 
           if (key.includes("meta")) {
             metaList.push(parsedData);
@@ -386,18 +392,19 @@ const useHandleAllDrop = (pageForward) => {
             cardinalityData = parsedData;
           }
 
-          allZipFiles.push(content);
+          allZipFiles.push(convertedContent);
         }
 
         const loadRoot = await zip.files[`${metadataJson.root}.json`].async("text");
-        allZipFiles.push(loadRoot);
+        const convertedLoadRoot = replaceAttributeCharsInJsonString(loadRoot);
+        allZipFiles.push(convertedLoadRoot);
 
         processLanguages(languageList);
         processMetadata(metaList);
         processLabelsDescriptionRootUnitsEntries(
           labelList,
           informationList,
-          JSON.parse(loadRoot),
+          JSON.parse(convertedLoadRoot),
           loadUnits,
           entryCodeSummary,
           entryList,
@@ -535,7 +542,8 @@ const useHandleAllDrop = (pageForward) => {
       reader.onload = async (e) => {
         const jsonFile = JSON.parse(e.target.result);
         if (jsonFile?.bundle) {
-          handleBundleJSONDrop(jsonFile?.bundle);
+          const modifiedJsonFile = replaceAttributeCharsInParsedJson(jsonFile.bundle);
+          handleBundleJSONDrop(modifiedJsonFile);
         } else if (jsonFile?.schema?.[0]) {
           handleBundleJSONDrop(jsonFile?.schema?.[0]);
         } else {
