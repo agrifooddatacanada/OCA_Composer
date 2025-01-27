@@ -238,13 +238,22 @@ const useExportLogicV2 = () => {
 
   const buildUnitsText = (data) => {
     let buildText = "# Add units overlay\n";
-    buildText += "ADD Unit ATTRS";
+    let isAdd = false;
+    let buildNewText = "";
 
     attributesList.forEach((item, index) => {
-      buildText += ` ${item}="${data[1][index].Unit}"`;
+      if (data[1][index].Unit && data[1][index].Unit !== "undefined") {
+        isAdd = true;
+        buildNewText += ` ${item}="${data[1][index].Unit}"`;
+      }
     });
 
-    buildText += "\n";
+    if (isAdd) {
+      buildText += "ADD Unit ATTRS";
+      buildText += buildNewText;
+      buildText += "\n";
+    }
+
     return buildText;
   };
 
