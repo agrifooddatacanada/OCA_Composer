@@ -27,7 +27,7 @@ export default function StartIntro() {
         <Box sx={{ m: 2, textAlign: "center" }}>
           {t("Watch our tutorial video on creating a schema. Or")}{" "}
           <CustomRouterLink
-            to={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" ? "en" : i18next.language}/TutorialAll/`}
+            to={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" || i18next.language === "en-CA" ? "en" : i18next.language}/TutorialAll/`}
             text={t("read the tutorial")}
           />{" "}
           {t("instead")}.
