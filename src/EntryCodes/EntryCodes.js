@@ -1,16 +1,15 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
-import { Box } from "@mui/system";
-import { Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import { Box, Typography } from "@mui/material";
 import { Context } from "../App";
 import SingleTable from "./SingleTable";
 import { removeSpacesAndColonFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
-import { useTranslation } from "react-i18next";
 
 const errorMessages = {
   fieldEmpty: "Please fill out all fields",
-  quoteMisuse: "Fields cannot contain quotes or commas",
+  quoteMisuse: "Fields cannot contain quotes or commas"
 };
 
 export default function EntryCodes() {
@@ -25,24 +24,23 @@ export default function EntryCodes() {
     attributesWithLists,
     setCurrentPage,
     languages,
+    setEntryCodeOrdering
   } = useContext(Context);
   const [chosenTable, setChosenTable] = useState(0);
   const codeRefs = useRef();
   const pageForwardDisabledRef = useRef(false);
   const [showWarning, setShowWarning] = useState(false);
 
-  //Create codeRefs so there can be multiple grids on the page
+  // Create codeRefs so there can be multiple grids on the page
   useEffect(() => {
     if (!codeRefs.current) {
       codeRefs.current = attributesWithLists.map(() => React.createRef());
     }
   }, [attributesWithLists]);
 
-  //Create data object and array for only attributes that have lists
+  // Create data object and array for only attributes that have lists
   useEffect(() => {
-    const filteredAttributes = attributeRowData.filter(
-      (item) => item.List === true
-    );
+    const filteredAttributes = attributeRowData.filter((item) => item.List === true);
     const attributeArray = filteredAttributes.map((item) => item.Attribute);
     setSelectedAttributes(filteredAttributes);
     setSelectedAttributesList(attributeArray);
@@ -57,13 +55,14 @@ export default function EntryCodes() {
     attributesWithLists.forEach((item, index) => {
       const newEntryCodeArray = [];
       entryCodeRowData[index].forEach((obj) => {
-        let newObj = {};
-        newObj["Code"] = obj["Code"];
+        const newObj = {};
+        newObj.Code = obj.Code;
         languages.forEach((language) => {
           newObj[language] = obj[language] || "";
         });
         newEntryCodeArray.push(newObj);
       });
+
       newEntryCodeObject[item] = newEntryCodeArray;
     });
 
@@ -93,6 +92,7 @@ export default function EntryCodes() {
     });
 
     setSavedEntryCodes(newEntryCodesObject);
+    setEntryCodeOrdering(newEntryCodesObject);
   };
 
   const pageBackSave = () => {
@@ -100,7 +100,7 @@ export default function EntryCodes() {
     setCurrentPage("Details");
   };
 
-  //Quotes, commas and blanks in these fields cause issues with the excel export (they interfere with the drop-down menu formatting)
+  // Quotes, commas and blanks in these fields cause issues with the excel export (they interfere with the drop-down menu formatting)
   const pageForwardSave = () => {
     pageForwardDisabledRef.current = false;
     handleSave();
@@ -109,40 +109,48 @@ export default function EntryCodes() {
     }
   };
 
-  const allCodesDisplay = selectedAttributesList.map((item, index) => {
-    return (
-      <SingleTable
-        attribute={selectedAttributes[index]}
-        key={selectedAttributes[index].Attribute}
-        index={index}
-        codeRefs={codeRefs}
-        chosenTable={chosenTable}
-        setChosenTable={setChosenTable}
-        setShowCard={setShowWarning}
-      />
-    );
-  });
+  const allCodesDisplay = selectedAttributesList.map((item, index) => (
+    <SingleTable
+      attribute={selectedAttributes[index]}
+      key={selectedAttributes[index].Attribute}
+      index={index}
+      codeRefs={codeRefs}
+      chosenTable={chosenTable}
+      setChosenTable={setChosenTable}
+      setShowCard={setShowWarning}
+    />
+  ));
 
   return (
-    <BackNextSkeleton isBack pageBack={pageBackSave} isForward pageForward={pageForwardSave} errorMessage={errorMessage}>
-      {showWarning &&
+    <BackNextSkeleton
+      isBack
+      pageBack={pageBackSave}
+      isForward
+      pageForward={pageForwardSave}
+      errorMessage={errorMessage}
+    >
+      {showWarning && (
         <WarningEntryCodeDelete
           title={t("Warning")}
-          fieldArray={[t("Your current entry codes for this attribute will be overwritten")]}
+          fieldArray={[
+            t("Your current entry codes for this attribute will be overwritten")
+          ]}
           setShowCard={setShowWarning}
           handleForward={() => setCurrentPage("UploadEntryCodes")}
         />
-      }
+      )}
       <Box sx={{ width: "90%", margin: "auto" }}>
         <Typography
           sx={{
             fontSize: 15,
             textAlign: "left",
             margin: "1rem 0 1rem 0",
-            width: 500,
+            width: 500
           }}
         >
-          {t('You indicated in the previous step that one or more attributes is a list. Please add or upload entry codes:')}
+          {t(
+            "You indicated in the previous step that one or more attributes is a list. Please add or upload entry codes:"
+          )}
         </Typography>
         {selectedAttributes.length > 0 && allCodesDisplay}
       </Box>
