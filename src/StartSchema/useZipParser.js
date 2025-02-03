@@ -2,6 +2,11 @@ import { useContext } from "react";
 import { Context } from "../App";
 import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
 import { codeToDivision, codeToGroup } from "../constants/constants";
+import {
+  getOrderedAttributeRowData,
+  hasAttributeOrdering,
+  hasEntryCodeOrdering
+} from "../constants/utils";
 
 const useZipParser = () => {
   const {
@@ -17,7 +22,8 @@ const useZipParser = () => {
     setOverlay,
     setFormatRuleRowData,
     setDataStandardsRowData,
-    setCardinalityData
+    setCardinalityData,
+    OCAPackage
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -69,7 +75,17 @@ const useZipParser = () => {
 
       for (const attrWithList of attributesWithListType) {
         const newEntryCodeValueRowsForAttribute = [];
-        const entryCodesForAttribute = entryCodes.attribute_entry_codes[attrWithList];
+        let entryCodesForAttribute;
+
+        if (hasEntryCodeOrdering(OCAPackage)) {
+          entryCodesForAttribute =
+            OCAPackage.extensions[0]?.overlays?.ordering?.entry_code_ordering[
+              attrWithList
+            ].map((entryCode) => entryCode.Code);
+        } else {
+          entryCodesForAttribute = entryCodes.attribute_entry_codes[attrWithList];
+        }
+
         if (typeof entryCodesForAttribute === "string") {
           // Possibly send to an API to get the entry codes
         } else {
@@ -102,7 +118,14 @@ const useZipParser = () => {
       }
 
       setAttributesWithLists(attributesWithListType);
-      setSavedEntryCodes(newSavedEntryCodes);
+
+      if (hasEntryCodeOrdering(OCAPackage)) {
+        setSavedEntryCodes(
+          OCAPackage.extensions[0]?.overlays?.ordering?.entry_code_ordering
+        );
+      } else {
+        setSavedEntryCodes(newSavedEntryCodes);
+      }
     }
 
     // Parse classification
@@ -271,12 +294,24 @@ const useZipParser = () => {
       setCardinalityData(cardinalityDataToParse);
     }
 
+    if (hasAttributeOrdering(OCAPackage)) {
+      const attributeOrdering =
+        OCAPackage.extensions[0].overlays.ordering.attribute_ordering;
+      const orderedAttributeRowData = getOrderedAttributeRowData(
+        newAttributeRowData,
+        attributeOrdering
+      );
+      setAttributeRowData(orderedAttributeRowData);
+      setAttributesList(attributeOrdering);
+    } else {
+      setAttributesList(attributeList);
+      setAttributeRowData(newAttributeRowData);
+    }
+
     setFormatRuleRowData(newFormatRuleRowData);
     setDataStandardsRowData(newDataStandardsRowData);
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setLanAttributeRowData(newLangAttributeRowData);
-    setAttributesList(attributeList);
-    setAttributeRowData(newAttributeRowData);
   };
 
   return {

@@ -23,8 +23,7 @@ export default function EntryCodes() {
     setSavedEntryCodes,
     attributesWithLists,
     setCurrentPage,
-    languages,
-    setEntryCodeOrdering
+    languages
   } = useContext(Context);
   const [chosenTable, setChosenTable] = useState(0);
   const codeRefs = useRef();
@@ -92,7 +91,6 @@ export default function EntryCodes() {
     });
 
     setSavedEntryCodes(newEntryCodesObject);
-    setEntryCodeOrdering(newEntryCodesObject);
   };
 
   const pageBackSave = () => {

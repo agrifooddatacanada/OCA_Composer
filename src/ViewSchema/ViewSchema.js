@@ -22,8 +22,10 @@ import {
   formatCodeTextDescription
 } from "../constants/constants";
 import { codesToLanguages } from "../constants/isoCodes";
+import useGenerateReadMe from "./useGenerateReadMe";
+import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 
-const currentEnv = process.env.REACT_APP_ENV;
+// const currentEnv = process.env.REACT_APP_ENV;
 
 export default function ViewSchema({
   pageBack,
@@ -47,7 +49,9 @@ export default function ViewSchema({
     history,
     setHistory,
     formatRuleRowData,
-    dataStandardsRowData
+    dataStandardsRowData,
+    zipToReadme,
+    jsonToReadme
   } = useContext(Context);
   const languageIndex = languages.findIndex(
     (item) => codesToLanguages?.[i18next.language] === item
@@ -60,9 +64,11 @@ export default function ViewSchema({
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
-  const { handleExport, resetToDefaults, exportDisabled } = useExportLogic();
+  const { resetToDefaults, exportDisabled } = useExportLogic();
   const { exportData } = useExportLogicV2();
   const [loading, setLoading] = useState(true);
+  const { toTextFile } = useGenerateReadMe();
+  const { jsonToTextFile } = useGenerateReadMeV2();
 
   // Formats language buttons in a way that can handle many languages cleanly
   // Minimizes language for cases where it's too long to fit in button size
@@ -247,6 +253,20 @@ export default function ViewSchema({
     }
   };
 
+  const downloadReadMe = () => {
+    if (Object.keys(jsonToReadme).length > 0) {
+      jsonToTextFile(jsonToReadme);
+    } else if (zipToReadme.length > 0) {
+      toTextFile(zipToReadme);
+    }
+  };
+
+  const handleClickDownload = () => {
+    // Download OCA package and OCA file
+    exportData();
+    downloadReadMe();
+  };
+
   return (
     <Box
       sx={{
@@ -324,7 +344,7 @@ export default function ViewSchema({
                     <Button
                       color="button"
                       variant="contained"
-                      onClick={() => handleExport(true)}
+                      onClick={downloadReadMe}
                       sx={{
                         alignSelf: "flex-end",
                         display: "flex",
@@ -348,12 +368,7 @@ export default function ViewSchema({
                     <Button
                       color="button"
                       variant="contained"
-                      onClick={() => {
-                        if (currentEnv === "DEV") {
-                          exportData();
-                        }
-                        handleExport(false);
-                      }}
+                      onClick={handleClickDownload}
                       sx={{
                         alignSelf: "flex-end",
                         width: "13rem",
@@ -582,12 +597,7 @@ export default function ViewSchema({
           <Button
             color="button"
             variant="contained"
-            onClick={() => {
-              if (currentEnv === "DEV") {
-                exportData();
-              }
-              handleExport(false);
-            }}
+            onClick={handleClickDownload}
             sx={{
               alignSelf: "flex-end",
               width: "13rem",

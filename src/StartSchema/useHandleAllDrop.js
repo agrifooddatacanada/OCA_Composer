@@ -24,7 +24,8 @@ const useHandleAllDrop = (pageForward) => {
     rawFile,
     setRawFile,
     excelSheetChoice,
-    setExcelSheetChoice
+    setExcelSheetChoice,
+    setOCAPackage
   } = useContext(Context);
   const { processLanguages, processMetadata, processLabelsDescriptionRootUnitsEntries } =
     useZipParser();
@@ -541,7 +542,14 @@ const useHandleAllDrop = (pageForward) => {
 
       reader.onload = async (e) => {
         const jsonFile = JSON.parse(e.target.result);
-        if (jsonFile?.bundle) {
+        // First check if the json file is an OCA package that has OCA bundle
+        if (jsonFile?.oca_bundle?.bundle) {
+          const modifiedJsonFile = replaceAttributeCharsInParsedJson(
+            jsonFile.oca_bundle.bundle
+          );
+          setOCAPackage(jsonFile);
+          handleBundleJSONDrop(modifiedJsonFile);
+        } else if (jsonFile?.bundle) {
           const modifiedJsonFile = replaceAttributeCharsInParsedJson(jsonFile.bundle);
           handleBundleJSONDrop(modifiedJsonFile);
         } else if (jsonFile?.schema?.[0]) {

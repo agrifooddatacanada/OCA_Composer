@@ -24,8 +24,7 @@ export default function AttributeDetails({
     setCurrentPage,
     attributeRowData,
     setAttributesList,
-    setAttributeRowData,
-    setAttributeOrdering
+    setAttributeRowData
   } = useContext(Context);
   const [errorMessage, setErrorMessage] = useState("");
   const [canDelete, setCanDelete] = useState(attributeRowData.length !== 1);
@@ -156,7 +155,6 @@ export default function AttributeDetails({
       }, [2000]);
     } else {
       setAttributesList(validationResult);
-      setAttributeOrdering(validationResult);
 
       const newAttributesWithLists = [];
       attributeRowData.forEach((item) => {

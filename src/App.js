@@ -117,8 +117,7 @@ function App() {
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
 
   // Ordering extension overlay for OCA package
-  const [attributeOrdering, setAttributeOrdering] = useState([]);
-  const [entryCodeOrdering, setEntryCodeOrdering] = useState({});
+  const [OCAPackage, setOCAPackage] = useState(null);
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -342,6 +341,7 @@ function App() {
     setLanAttributeRowData({});
     setIsZip(false);
     setZipToReadme([]);
+    setOCAPackage(null);
   }, [fileData, jsonRawFile]);
 
   return (
@@ -460,10 +460,8 @@ function App() {
             setDatasetDropMessage,
             notToVerifyAttributes,
             setNotToVerifyAttributes,
-            attributeOrdering,
-            setAttributeOrdering,
-            entryCodeOrdering,
-            setEntryCodeOrdering
+            OCAPackage,
+            setOCAPackage
           }}
         >
           <Box

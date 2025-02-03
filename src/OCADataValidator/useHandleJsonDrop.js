@@ -32,7 +32,8 @@ export const useHandleJsonDrop = (
     setJsonParsedFile,
     firstTimeMatchingRef,
     targetResult,
-    setTargetResult
+    setTargetResult,
+    setOCAPackage
   } = useContext(Context);
   const { processLanguages, processMetadata, processLabelsDescriptionRootUnitsEntries } =
     useZipParser();
@@ -69,7 +70,11 @@ export const useHandleJsonDrop = (
           const jsonString = textDecoder.decode(e.target.result);
           const rawParse = JSON.parse(jsonString);
           let jsonFile = null;
-          if (rawParse?.bundle) {
+          // First check if the json file is an OCA package that has OCA bundle
+          if (rawParse?.oca_bundle?.bundle) {
+            jsonFile = rawParse?.oca_bundle?.bundle;
+            setOCAPackage(rawParse);
+          } else if (rawParse?.bundle) {
             jsonFile = rawParse?.bundle;
           } else if (rawParse?.schema?.[0]) {
             jsonFile = rawParse?.schema?.[0];

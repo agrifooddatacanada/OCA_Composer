@@ -234,10 +234,10 @@ const AccordionList = () => {
               variant="contained"
               color="navButton"
               onClick={() => {
-                if (zipToReadme.length > 0) {
-                  toTextFile(zipToReadme);
-                } else {
+                if (Object.keys(jsonToReadme).length > 0) {
                   jsonToTextFile(jsonToReadme);
+                } else if (zipToReadme.length > 0) {
+                  toTextFile(zipToReadme);
                 }
               }}
               sx={buttonStyles}

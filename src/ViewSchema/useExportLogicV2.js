@@ -23,9 +23,7 @@ const useExportLogicV2 = () => {
     customIsos,
     characterEncodingRowData,
     overlay,
-    cardinalityData,
-    attributeOrdering,
-    entryCodeOrdering
+    cardinalityData
   } = useContext(Context);
 
   // CAPTURE SHEET DESCRIPTIONS DATA
@@ -394,8 +392,8 @@ const useExportLogicV2 = () => {
         {
           ordering_overlay: {
             type: ORDERING,
-            attribute_ordering: attributeOrdering,
-            entry_code_ordering: entryCodeOrdering
+            attribute_ordering: attributesList,
+            entry_code_ordering: savedEntryCodes
           }
         }
       ]
