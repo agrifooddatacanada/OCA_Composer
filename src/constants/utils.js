@@ -228,11 +228,15 @@ export const getOrderedAttributeRowData = (attributeRowData, attributeOrdering) 
 };
 
 export const hasEntryCodeOrdering = (OCAPackage) =>
-  Array.isArray(OCAPackage?.extensions) &&
-  OCAPackage.extensions.length > 0 &&
-  OCAPackage.extensions[0]?.overlays?.ordering?.entry_code_ordering;
+  Boolean(
+    Array.isArray(OCAPackage?.extensions) &&
+      OCAPackage.extensions.length > 0 &&
+      OCAPackage.extensions[0]?.overlays?.ordering?.entry_code_ordering
+  );
 
 export const hasAttributeOrdering = (OCAPackage) =>
-  Array.isArray(OCAPackage?.extensions) &&
-  OCAPackage.extensions.length > 0 &&
-  OCAPackage.extensions[0]?.overlays?.ordering?.attribute_ordering;
+  Boolean(
+    Array.isArray(OCAPackage?.extensions) &&
+      OCAPackage.extensions.length > 0 &&
+      OCAPackage.extensions[0]?.overlays?.ordering?.attribute_ordering
+  );

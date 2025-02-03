@@ -437,7 +437,7 @@ const useHandleAllDrop = (pageForward) => {
   }, []);
 
   const handleBundleJSONDrop = useCallback(
-    (jsonFile) => {
+    (jsonFile, ocaPackageData = null) => {
       const languageList = [];
       const informationList = [];
       const labelList = [];
@@ -523,7 +523,8 @@ const useHandleAllDrop = (pageForward) => {
         languageList,
         formatRules,
         cardinalityData,
-        dataStandards
+        dataStandards,
+        ocaPackageData
       );
       setJsonToReadme(jsonFile);
     },
@@ -544,11 +545,11 @@ const useHandleAllDrop = (pageForward) => {
         const jsonFile = JSON.parse(e.target.result);
         // First check if the json file is an OCA package that has OCA bundle
         if (jsonFile?.oca_bundle?.bundle) {
-          const modifiedJsonFile = replaceAttributeCharsInParsedJson(
+          const modifiedBundle = replaceAttributeCharsInParsedJson(
             jsonFile.oca_bundle.bundle
           );
           setOCAPackage(jsonFile);
-          handleBundleJSONDrop(modifiedJsonFile);
+          handleBundleJSONDrop(modifiedBundle, jsonFile);
         } else if (jsonFile?.bundle) {
           const modifiedJsonFile = replaceAttributeCharsInParsedJson(jsonFile.bundle);
           handleBundleJSONDrop(modifiedJsonFile);
