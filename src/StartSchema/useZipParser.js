@@ -22,8 +22,7 @@ const useZipParser = () => {
     setOverlay,
     setFormatRuleRowData,
     setDataStandardsRowData,
-    setCardinalityData,
-    OCAPackage
+    setCardinalityData
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -58,7 +57,8 @@ const useZipParser = () => {
     languageList,
     formatRules,
     cardinalityData,
-    dataStandards
+    dataStandards,
+    ocaPackageData = null
   ) => {
     const newSavedEntryCodes = {};
     const newLangAttributeRowData = {};
@@ -77,9 +77,9 @@ const useZipParser = () => {
         const newEntryCodeValueRowsForAttribute = [];
         let entryCodesForAttribute;
 
-        if (hasEntryCodeOrdering(OCAPackage)) {
+        if (ocaPackageData && hasEntryCodeOrdering(ocaPackageData)) {
           entryCodesForAttribute =
-            OCAPackage.extensions[0]?.overlays?.ordering?.entry_code_ordering[
+            ocaPackageData.extensions[0]?.overlays?.ordering?.entry_code_ordering[
               attrWithList
             ].map((entryCode) => entryCode.Code);
         } else {
@@ -119,9 +119,9 @@ const useZipParser = () => {
 
       setAttributesWithLists(attributesWithListType);
 
-      if (hasEntryCodeOrdering(OCAPackage)) {
+      if (ocaPackageData && hasEntryCodeOrdering(ocaPackageData)) {
         setSavedEntryCodes(
-          OCAPackage.extensions[0]?.overlays?.ordering?.entry_code_ordering
+          ocaPackageData.extensions[0]?.overlays?.ordering?.entry_code_ordering
         );
       } else {
         setSavedEntryCodes(newSavedEntryCodes);
@@ -294,9 +294,9 @@ const useZipParser = () => {
       setCardinalityData(cardinalityDataToParse);
     }
 
-    if (hasAttributeOrdering(OCAPackage)) {
+    if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {
       const attributeOrdering =
-        OCAPackage.extensions[0].overlays.ordering.attribute_ordering;
+        ocaPackageData.extensions[0].overlays.ordering.attribute_ordering;
       const orderedAttributeRowData = getOrderedAttributeRowData(
         newAttributeRowData,
         attributeOrdering

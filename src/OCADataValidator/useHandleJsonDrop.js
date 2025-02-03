@@ -70,8 +70,10 @@ export const useHandleJsonDrop = (
           const jsonString = textDecoder.decode(e.target.result);
           const rawParse = JSON.parse(jsonString);
           let jsonFile = null;
+          let ocaPackageData = null;
           // First check if the json file is an OCA package that has OCA bundle
           if (rawParse?.oca_bundle?.bundle) {
+            ocaPackageData = rawParse;
             jsonFile = rawParse?.oca_bundle?.bundle;
             setOCAPackage(rawParse);
           } else if (rawParse?.bundle) {
@@ -223,7 +225,8 @@ export const useHandleJsonDrop = (
             languageList,
             formatRules,
             cardinalityData,
-            dataStandards
+            dataStandards,
+            ocaPackageData
           );
           setZipToReadme(allJSONFiles);
         };
