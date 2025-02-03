@@ -389,3 +389,7 @@ export const overlays = [
 
 export const SHOW_ALL_DATA = "Show all data";
 export const SHOW_ONLY_ROWS_WITH_ERRORS = "Show only rows with errors";
+export const OCA_REPOSITORY_API_URL = "https://api.adc.oca-repo.semanticengine.org";
+
+// Extension overlays
+export const ORDERING = "ordering";

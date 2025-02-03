@@ -1,7 +1,14 @@
 import { useContext, useMemo } from "react";
+import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
-import { divisionCodes, groupCodes } from "../constants/constants";
+import {
+  divisionCodes,
+  groupCodes,
+  OCA_REPOSITORY_API_URL,
+  ORDERING
+} from "../constants/constants";
+import { getDescriptiveFileName } from "../constants/utils";
 
 const useExportLogicV2 = () => {
   const {
@@ -320,21 +327,85 @@ const useExportLogicV2 = () => {
     return buildBodyText;
   };
 
+  const downloadJsonFile = (data, fileName) => {
+    const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const fetchOCABundle = async (said) => {
+    const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles/${said}`);
+    const data = await response.json();
+    return data;
+  };
+
+  const generateOCABundle = async (OCAFileData) => {
+    try {
+      const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain"
+        },
+        body: OCAFileData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate OCA bundle: ${response.statusText}`);
+      }
+
+      const { said } = await response.json();
+      const bundle = await fetchOCABundle(said);
+
+      return bundle;
+    } catch (error) {
+      console.error("Error generating OCA bundle from OCA file:", error);
+      throw error;
+    }
+  };
+
   const exportData = async () => {
     const data = buildOCAText(OCADataArray);
-
     const blob = new Blob([data], { type: "text/plain" });
-
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement("a");
+    const descriptiveFileName = getDescriptiveFileName(schemaDescription, "OCA_file.txt");
+
     a.href = url;
-    a.download = "ocafile.txt";
+    a.download = descriptiveFileName;
     document.body.appendChild(a);
     a.click();
 
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    const bundle = await generateOCABundle(data);
+
+    const extension = {
+      extensions: [
+        {
+          ordering_overlay: {
+            type: ORDERING,
+            attribute_ordering: attributesList,
+            entry_code_ordering: savedEntryCodes
+          }
+        }
+      ]
+    };
+
+    const ocaPackageService = new OcaPackage(extension, bundle);
+    const ocaPackage = JSON.parse(ocaPackageService.generateOcaPackage());
+
+    downloadJsonFile(
+      ocaPackage,
+      getDescriptiveFileName(schemaDescription, "OCA_package.json")
+    );
   };
 
   return {

@@ -20,9 +20,11 @@ function readJSON(originJsonData_jsonSaid, e) {
     const rawJson = JSON.parse(jsonString);
     let json = rawJson?.schema?.[0]
       ? rawJson?.schema?.[0]
-      : rawJson?.bundle
-        ? rawJson?.bundle
-        : rawJson;
+      : rawJson?.oca_bundle?.bundle
+        ? rawJson?.oca_bundle?.bundle
+        : rawJson?.bundle
+          ? rawJson?.bundle
+          : rawJson;
     originJsonData_jsonSaid.jsonSaid = json.d;
 
     json = replaceAttributeCharsInParsedJson(json);

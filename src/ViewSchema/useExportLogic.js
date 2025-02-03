@@ -53,7 +53,8 @@ const useExportLogic = () => {
     formatRuleRowData,
     dataStandardsRowData,
     cardinalityData,
-    setZipToReadme
+    setZipToReadme,
+    setOCAPackage
   } = useContext(Context);
   // const { jsonToTextFile } = useGenerateReadMeV2();
   const { toTextFile } = useGenerateReadMe();
@@ -647,6 +648,7 @@ const useExportLogic = () => {
     setIsZip(false);
     setFileData([]);
     setRawFile([]);
+    setOCAPackage(null);
     setCurrentPage("Landing");
     navigate("/");
   };

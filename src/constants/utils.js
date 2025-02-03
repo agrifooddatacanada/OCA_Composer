@@ -217,3 +217,22 @@ export const replaceAttributeCharsInParsedJson = (parsedJson) => {
 
   return modifiedParsedJson;
 };
+
+export const getOrderedAttributeRowData = (attributeRowData, attributeOrdering) => {
+  const orderedAttributeRowData = [];
+  attributeOrdering.forEach((attributeName) => {
+    const row = attributeRowData.find((item) => item.Attribute === attributeName);
+    orderedAttributeRowData.push(row);
+  });
+  return orderedAttributeRowData;
+};
+
+export const hasEntryCodeOrdering = (OCAPackage) =>
+  Array.isArray(OCAPackage?.extensions) &&
+  OCAPackage.extensions.length > 0 &&
+  OCAPackage.extensions[0]?.overlays?.ordering?.entry_code_ordering;
+
+export const hasAttributeOrdering = (OCAPackage) =>
+  Array.isArray(OCAPackage?.extensions) &&
+  OCAPackage.extensions.length > 0 &&
+  OCAPackage.extensions[0]?.overlays?.ordering?.attribute_ordering;
