@@ -240,3 +240,11 @@ export const hasAttributeOrdering = (OCAPackage) =>
       OCAPackage.extensions.length > 0 &&
       OCAPackage.extensions[0]?.overlays?.ordering?.attribute_ordering
   );
+
+export const getTransformedEntryCodes = (entryCodes) => {
+  const transformedEntryCodes = {};
+  Object.entries(entryCodes).forEach(([attribute, codes]) => {
+    transformedEntryCodes[attribute] = codes.map((item) => item.Code);
+  });
+  return transformedEntryCodes;
+};
