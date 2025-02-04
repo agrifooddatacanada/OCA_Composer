@@ -8,7 +8,7 @@ import {
   OCA_REPOSITORY_API_URL,
   ORDERING
 } from "../constants/constants";
-import { getDescriptiveFileName } from "../constants/utils";
+import { getDescriptiveFileName, getTransformedEntryCodes } from "../constants/utils";
 
 const useExportLogicV2 = () => {
   const {
@@ -393,7 +393,7 @@ const useExportLogicV2 = () => {
           ordering_overlay: {
             type: ORDERING,
             attribute_ordering: attributesList,
-            entry_code_ordering: savedEntryCodes
+            entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
           }
         }
       ]

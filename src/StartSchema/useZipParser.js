@@ -81,7 +81,7 @@ const useZipParser = () => {
           entryCodesForAttribute =
             ocaPackageData.extensions[0]?.overlays?.ordering?.entry_code_ordering[
               attrWithList
-            ].map((entryCode) => entryCode.Code);
+            ];
         } else {
           entryCodesForAttribute = entryCodes.attribute_entry_codes[attrWithList];
         }
@@ -118,14 +118,7 @@ const useZipParser = () => {
       }
 
       setAttributesWithLists(attributesWithListType);
-
-      if (ocaPackageData && hasEntryCodeOrdering(ocaPackageData)) {
-        setSavedEntryCodes(
-          ocaPackageData.extensions[0]?.overlays?.ordering?.entry_code_ordering
-        );
-      } else {
-        setSavedEntryCodes(newSavedEntryCodes);
-      }
+      setSavedEntryCodes(newSavedEntryCodes);
     }
 
     // Parse classification
