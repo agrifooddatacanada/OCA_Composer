@@ -1,24 +1,4 @@
-export function matchDatetime(pattern, dataStr) {
-  return matchRegex(pattern, dataStr);
-}
-
-export function matchNumeric(pattern, dataStr) {
-    return matchRegex(pattern, dataStr);
-}
-
-export function matchText(pattern, dataStr) {
-  return matchRegex(pattern, dataStr);
-}
-
-export function matchRegex(pattern, dataStr) {
-  if (!pattern) {
-    return true;
-  }
-
-  const parsedRegex = parseRegexPattern(pattern);
-
-  return new RegExp(parsedRegex.pattern, parsedRegex.flags).test(dataStr);
-}
+import { ALLOWED_BOOLEAN_VALUES } from "../../constants/constants";
 
 /**
  * Parses a regex pattern string to extract the main pattern and its modifiers (flags).
@@ -44,47 +24,58 @@ export function matchRegex(pattern, dataStr) {
 function parseRegexPattern(patternString) {
   const regex = /^(.*?)(\/)?([gmiuy]*)$/;
   const match = patternString.match(regex);
-  
-  if (match) {
-      const pattern = match[1].trim();
-      const flags = match[3] || "";
 
-      return { pattern, flags };
+  if (match) {
+    const pattern = match[1].trim();
+    const flags = match[3] || "";
+
+    return { pattern, flags };
   }
 
-  return { pattern: "", flags: "" }
+  return { pattern: "", flags: "" };
+}
+
+export function matchRegex(pattern, dataStr) {
+  if (!pattern) {
+    return true;
+  }
+
+  const parsedRegex = parseRegexPattern(pattern);
+
+  return new RegExp(parsedRegex.pattern, parsedRegex.flags).test(dataStr);
+}
+
+export function matchDatetime(pattern, dataStr) {
+  return matchRegex(pattern, dataStr);
+}
+
+export function matchNumeric(pattern, dataStr) {
+  return matchRegex(pattern, dataStr);
+}
+
+export function matchText(pattern, dataStr) {
+  return matchRegex(pattern, dataStr);
 }
 
 function matchBoolean(dataStr) {
   // Idealy only "true" and "false" would pass.
-  return [
-    "True",
-    "true",
-    "TRUE",
-    "T",
-    "1",
-    "1.0",
-    "False",
-    "false",
-    "FALSE",
-    "F",
-    "0",
-    "0.0",
-  ].includes(dataStr);
+  return ALLOWED_BOOLEAN_VALUES.includes(dataStr);
 }
 
 export function matchFormat(attrType, pattern, dataStr) {
   if (attrType.includes("DateTime")) {
     return matchDatetime(pattern, dataStr);
-  } else if (attrType.includes("Numeric")) {
-    return matchNumeric(pattern, dataStr);
-  } else if (attrType.includes("Text")) {
-    return matchText(pattern, dataStr);
-  } else if (attrType.includes("Boolean")) {
-    return matchBoolean(dataStr);
-  } else {
-    return true;
   }
+  if (attrType.includes("Numeric")) {
+    return matchNumeric(pattern, dataStr);
+  }
+  if (attrType.includes("Text")) {
+    return matchText(pattern, dataStr);
+  }
+  if (attrType.includes("Boolean")) {
+    return matchBoolean(dataStr);
+  }
+  return true;
 }
 
 function isValidUTF8(dataStr) {
@@ -127,11 +118,12 @@ function isValidISO88591(dataStr) {
 export function matchCharacterEncoding(dataStr, attrCharEncode) {
   if (attrCharEncode === "utf-8") {
     return isValidUTF8(dataStr);
-  } else if (attrCharEncode === "utf-16le") {
-    return isValidUTF16LE(dataStr);
-  } else if (attrCharEncode === "iso-8859-1") {
-    return isValidISO88591(dataStr);
-  } else {
-    return false;
   }
+  if (attrCharEncode === "utf-16le") {
+    return isValidUTF16LE(dataStr);
+  }
+  if (attrCharEncode === "iso-8859-1") {
+    return isValidISO88591(dataStr);
+  }
+  return false;
 }
