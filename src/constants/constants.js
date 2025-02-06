@@ -393,3 +393,30 @@ export const OCA_REPOSITORY_API_URL = "https://api.adc.oca-repo.semanticengine.o
 
 // Extension overlays
 export const ORDERING = "ordering";
+
+export const ALLOWED_BOOLEAN_VALUES = [
+  "True",
+  "true",
+  "TRUE",
+  "T",
+  "1",
+  "1.0",
+  "False",
+  "false",
+  "FALSE",
+  "F",
+  "0",
+  "0.0",
+  "yes",
+  "Yes",
+  "YES",
+  "Y",
+  "no",
+  "No",
+  "NO",
+  "N",
+  "Non",
+  "non",
+  "Oui",
+  "oui"
+];
