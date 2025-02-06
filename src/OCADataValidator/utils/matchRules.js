@@ -62,7 +62,7 @@ function matchBoolean(dataStr) {
   return ALLOWED_BOOLEAN_VALUES.includes(dataStr);
 }
 
-export function matchFormat(attrType, pattern, dataStr) {
+export function matchFormat(attrType, pattern, dataStr, hasEntryCodes) {
   if (attrType.includes("DateTime")) {
     return matchDatetime(pattern, dataStr);
   }
@@ -72,7 +72,8 @@ export function matchFormat(attrType, pattern, dataStr) {
   if (attrType.includes("Text")) {
     return matchText(pattern, dataStr);
   }
-  if (attrType.includes("Boolean")) {
+  // Disable boolean check for entry codes.
+  if (!hasEntryCodes && attrType.includes("Boolean")) {
     return matchBoolean(dataStr);
   }
   return true;

@@ -234,7 +234,9 @@ export default class OCABundle {
             try {
               const dataArr = this.processEntries(dataEntry);
               for (let j = 0; j < dataArr.length; j++) {
-                if (!matchFormat(attrType[0], attrFormat, String(dataArr[j]))) {
+                if (
+                  !matchFormat(attrType[0], attrFormat, String(dataArr[j]), hasEntryCodes)
+                ) {
                   dataEntryWithErrors.push(dataArr[j]);
                 }
                 if (attrConformance === "M" && dataEntryWithErrors.length === 0) {
@@ -307,7 +309,9 @@ export default class OCABundle {
               // Not a valid Array format string.
               rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
             }
-          } else if (!matchFormat(attrType, attrFormat, String(dataEntry))) {
+          } else if (
+            !matchFormat(attrType, attrFormat, String(dataEntry), hasEntryCodes)
+          ) {
             if (attrConformance === "O" && dataEntry === "") {
               continue;
             } else if (attrConformance === "M" && dataEntry === "") {

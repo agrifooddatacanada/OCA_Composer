@@ -416,5 +416,7 @@ export const ALLOWED_BOOLEAN_VALUES = [
   "NO",
   "N",
   "Non",
-  "Oui"
+  "non",
+  "Oui",
+  "oui"
 ];
