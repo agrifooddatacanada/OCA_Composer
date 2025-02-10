@@ -14,17 +14,36 @@ function WorkbookError(message) {
 }
 
 function readJSON(originJsonData_jsonSaid, e) {
+  let isOcaPackage = false;
+  let extensions = null;
+
   try {
     const textDecoder = new TextDecoder("utf-8");
     const jsonString = textDecoder.decode(e.target.result);
     const rawJson = JSON.parse(jsonString);
-    let json = rawJson?.schema?.[0]
-      ? rawJson?.schema?.[0]
-      : rawJson?.oca_bundle?.bundle
-        ? rawJson?.oca_bundle?.bundle
-        : rawJson?.bundle
-          ? rawJson?.bundle
-          : rawJson;
+
+    // check if the json is a valid oca-package or just a normal oca-bundle
+    let json = null;
+    if (rawJson.type && rawJson.type.includes("oca_package")) {
+      isOcaPackage = true;
+      extensions = rawJson.extensions;
+      json = rawJson.oca_bundle.bundle;
+    } else if (rawJson.oca_bundle && rawJson.oca_bundle.bundle) {
+      json = rawJson.oca_bundle.bundle;
+    }
+
+    // const isOcaPackage = rawJson.type.includes("oca_package");
+
+    // console.log("isOcaPackage ... ->", isOcaPackage);
+
+    // let json = rawJson?.schema?.[0]
+    //   ? rawJson?.schema?.[0]
+    //   : rawJson?.oca_bundle?.bundle
+    //     ? rawJson?.oca_bundle?.bundle
+    //     : rawJson?.bundle
+    //       ? rawJson?.bundle
+    //       : rawJson;
+
     originJsonData_jsonSaid.jsonSaid = json.d;
 
     json = replaceAttributeCharsInParsedJson(json);
@@ -49,7 +68,8 @@ function readJSON(originJsonData_jsonSaid, e) {
   } catch (error) {
     throw new WorkbookError(".. Error in reading the json file ...");
   }
-  return originJsonData_jsonSaid;
+  // exports oca_bundle organized, if it is an oca-package, and the extensions
+  return [originJsonData_jsonSaid, isOcaPackage, extensions];
 }
 
 async function readZIP(originJsonData_jsonSaid, e) {
@@ -95,6 +115,20 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   }
 
   const { originJsonData } = originJsonData_jsonSaid;
+
+  // adjusting for oca_package:
+  const inPutJsonResult = readJSON(originJsonData_jsonSaid, data);
+  const isOcaPackage = inPutJsonResult[1];
+  let attribute_ordering_container = null;
+
+  if (isOcaPackage) {
+    const extensions = inPutJsonResult[2];
+    for (const overlay of extensions) {
+      if (overlay.includes("attribute_ordering")) {
+        attribute_ordering_container = overlay.attribute_ordering;
+      }
+    }
+  }
 
   // Re-organize the json data:
   let entryOverlays = [];
@@ -348,10 +382,25 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let attributeNames = null;
   const TypesOfLookUpEntries = {};
 
+  // TODO: add an index i.e., the order from the ordering overlay if the json is an oca-package
   jsonData.forEach((overlay) => {
     if (overlay.type && overlay.type.includes("/capture_base/")) {
       Object.entries(overlay.attributes).forEach(([attrName, attrType], index) => {
-        const attrIndex = index + 2;
+        console.log("index before..... ->", index);
+
+        console.log("ordering overlay ---> ", attribute_ordering_container);
+
+        let attrIndex = index + 2;
+
+        // if (attribute_ordering_container.includes(attrName)) {
+        //   attrIndex = attribute_ordering_container.indexOf(attrName) + 2;
+        // } else {
+        //   attrIndex = index + 2;
+        // }
+
+        console.log("attrIndex after..... ->", attrIndex);
+
+        // const attrIndex = index + 2; // change this index to reflect the order in the ordering overlay from oca-package
         attributesIndex[[attrName, attrType]] = attrIndex;
         TypesOfLookUpEntries[attrName] = attrType;
 
@@ -375,7 +424,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       });
 
       // Step 6.1: Data Entry sheet
-      attributeNames = Object.keys(overlay.attributes);
+      attributeNames = Object.keys(overlay.attributes); // order of attributes from the ordering overlay
       const numColumns = attributeNames.length;
       const columnWidth = 15;
       sheet2.getRow(1).values = attributeNames;
@@ -764,7 +813,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let offset = 0;
 
   for (const [attrName, entries] of Object.entries(lookupEntries)) {
-    sheet1.getCell(lookUpStart + 1 + offset, 1).value = attrName;
+    sheet1.getCell(lookUpStart + 1 + offset, 1).value = attrName; // change the order to reflect the order in the ordering overlay
     formatLookupAttr(sheet1.getCell(lookUpStart + 1 + offset, 1));
 
     const startRow = lookUpStart + 2 + offset;
