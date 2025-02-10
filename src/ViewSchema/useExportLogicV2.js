@@ -10,6 +10,8 @@ import {
 } from "../constants/constants";
 import { getDescriptiveFileName, getTransformedEntryCodes } from "../constants/utils";
 
+const currentEnv = process.env.REACT_APP_ENV;
+
 const useExportLogicV2 = () => {
   const {
     languages,
@@ -406,6 +408,14 @@ const useExportLogicV2 = () => {
       ocaPackage,
       getDescriptiveFileName(schemaDescription, "OCA_package.json")
     );
+
+    // download bundle only on testing.semanticengine.org
+    if (currentEnv === "DEV") {
+      downloadJsonFile(
+        bundle,
+        getDescriptiveFileName(schemaDescription, "OCA_bundle.json")
+      );
+    }
   };
 
   return {
