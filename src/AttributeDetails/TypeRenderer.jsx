@@ -7,19 +7,19 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t } = useTranslation();
   const displayValues = [
-    "",
-    "Binary",
-    "Boolean",
-    "DateTime",
-    "Numeric",
-    // "Reference",
-    "Text",
-    "Array[Binary]",
-    "Array[Boolean]",
-    "Array[DateTime]",
-    "Array[Numeric]",
-    // "Array[Reference]",
-    "Array[Text]"
+    { value: "", label: "" },
+    { value: "Binary", label: "Binaryfile" },
+    { value: "Boolean", label: "Boolean" },
+    { value: "DateTime", label: "DateTime" },
+    { value: "Numeric", label: "Numeric" },
+    // { value: "Reference", label: "Reference" },
+    { value: "Text", label: "Text" },
+    { value: "Array[Binary]", label: "Array[Binaryfile]" },
+    { value: "Array[Boolean]", label: "Array[Boolean]" },
+    { value: "Array[DateTime]", label: "Array[DateTime]" },
+    { value: "Array[Numeric]", label: "Array[Numeric]" },
+    // { value: "Array[Reference]", label: "Array[Reference]" },
+    { value: "Array[Text]", label: "Array[Text]" }
   ];
 
   const attributeName = data.Attribute;
@@ -29,16 +29,16 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs }) => {
 
   const index = attributeRowData.findIndex((item) => item.Attribute === attributeName);
   const [type, setType] = useState(
-    (currentAttribute && currentAttribute.Type) || displayValues[0]
+    (currentAttribute && currentAttribute.Type) || displayValues[0].value
   );
 
   const typesDisplay = displayValues.map((value) => (
     <MenuItem
-      key={value}
-      value={value}
+      key={value.value}
+      value={value.value}
       sx={{ border: "none", height: "2rem", fontSize: "small" }}
     >
-      {t(value)}
+      {t(value.label)}
     </MenuItem>
   ));
 
