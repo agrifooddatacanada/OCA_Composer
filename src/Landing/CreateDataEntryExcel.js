@@ -5,6 +5,7 @@ import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
 } from "../constants/utils";
+// import { overlays } from "../constants/constants";
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -123,9 +124,14 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
   if (isOcaPackage) {
     const extensions = inPutJsonResult[2];
-    for (const overlay of extensions) {
-      if (overlay.includes("attribute_ordering")) {
-        attribute_ordering_container = overlay.attribute_ordering;
+    for (const extension of extensions) {
+      if (Object.keys(extension).includes("overlays")) {
+        for (const overlayKey of Object.keys(extension.overlays)) {
+          if (extension.overlays[overlayKey].type.includes("ordering")) {
+            attribute_ordering_container =
+              extension.overlays[overlayKey].attribute_ordering;
+          }
+        }
       }
     }
   }
@@ -386,21 +392,14 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   jsonData.forEach((overlay) => {
     if (overlay.type && overlay.type.includes("/capture_base/")) {
       Object.entries(overlay.attributes).forEach(([attrName, attrType], index) => {
-        console.log("index before..... ->", index);
+        let attrIndex = null;
 
-        console.log("ordering overlay ---> ", attribute_ordering_container);
+        if (isOcaPackage && attribute_ordering_container.includes(attrName)) {
+          attrIndex = attribute_ordering_container.indexOf(attrName) + 2;
+        } else {
+          attrIndex = index + 2;
+        }
 
-        let attrIndex = index + 2;
-
-        // if (attribute_ordering_container.includes(attrName)) {
-        //   attrIndex = attribute_ordering_container.indexOf(attrName) + 2;
-        // } else {
-        //   attrIndex = index + 2;
-        // }
-
-        console.log("attrIndex after..... ->", attrIndex);
-
-        // const attrIndex = index + 2; // change this index to reflect the order in the ordering overlay from oca-package
         attributesIndex[[attrName, attrType]] = attrIndex;
         TypesOfLookUpEntries[attrName] = attrType;
 
@@ -424,9 +423,17 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       });
 
       // Step 6.1: Data Entry sheet
-      attributeNames = Object.keys(overlay.attributes); // order of attributes from the ordering overlay
+
+      if (isOcaPackage) {
+        attributeNames = attribute_ordering_container;
+      } else {
+        attributeNames = Object.keys(overlay.attributes);
+      }
+
+      // attributeNames = Object.keys(overlay.attributes);
       const numColumns = attributeNames.length;
       const columnWidth = 15;
+
       sheet2.getRow(1).values = attributeNames;
       for (let col = 0; col < numColumns; col++) {
         const cell = sheet2.getCell(1, col + 1);
@@ -681,8 +688,15 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
           for (const [attrName, label] of Object.entries(attr_labels)) {
             const attrKeys = Object.keys(attributesIndex);
-            const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-            const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+            const attrValues = Object.values(attributesIndex);
+
+            const mappingAttrKeysandAttrValues = attrKeys.reduce((acc, key, index) => {
+              acc[key.split(",")[0]] = attrValues[index];
+              return acc;
+            }, {});
+
+            const rowIndex = mappingAttrKeysandAttrValues[attrName];
+
             if (rowIndex) {
               sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = label;
             }
