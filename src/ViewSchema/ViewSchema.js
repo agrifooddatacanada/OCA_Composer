@@ -261,12 +261,6 @@ export default function ViewSchema({
     }
   };
 
-  const handleClickDownload = () => {
-    // Download OCA package and OCA file
-    exportData();
-    downloadReadMe();
-  };
-
   return (
     <Box
       sx={{
@@ -368,7 +362,9 @@ export default function ViewSchema({
                     <Button
                       color="button"
                       variant="contained"
-                      onClick={handleClickDownload}
+                      onClick={() => {
+                        exportData();
+                      }}
                       sx={{
                         alignSelf: "flex-end",
                         width: "13rem",
@@ -597,7 +593,9 @@ export default function ViewSchema({
           <Button
             color="button"
             variant="contained"
-            onClick={handleClickDownload}
+            onClick={() => {
+              exportData();
+            }}
             sx={{
               alignSelf: "flex-end",
               width: "13rem",

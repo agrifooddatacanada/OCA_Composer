@@ -9,6 +9,7 @@ import {
   ORDERING
 } from "../constants/constants";
 import { getDescriptiveFileName, getTransformedEntryCodes } from "../constants/utils";
+import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 
 const useExportLogicV2 = () => {
   const {
@@ -25,6 +26,8 @@ const useExportLogicV2 = () => {
     overlay,
     cardinalityData
   } = useContext(Context);
+
+  const { jsonToTextFile } = useGenerateReadMeV2();
 
   // CAPTURE SHEET DESCRIPTIONS DATA
   const OCADescriptionData = [];
@@ -264,22 +267,27 @@ const useExportLogicV2 = () => {
     return buildText;
   };
 
-  const buildCharacterEncodingText = (data) => {
+  const buildCharacterEncodingText = () => {
     let buildText = "# Add character encoding\n";
-    buildText += "ADD CHARACTER_ENCODING ATTRS";
+    let isAdd = false;
+    let buildNewText = "";
 
     attributesList.forEach((item, index) => {
       if (
         characterEncodingRowData?.[index] &&
         characterEncodingRowData?.[index]?.["Character Encoding"]
       ) {
-        buildText += ` ${item}="${characterEncodingRowData[index]["Character Encoding"]}"`;
-      } else {
-        buildText += ` ${item}="${data[1][index].Type === "Array[Binary]" || data[1][index].Type === "Binary" ? "base64" : "utf-8"}"`;
+        isAdd = true;
+        buildNewText += ` ${item}="${characterEncodingRowData[index]["Character Encoding"]}"`;
       }
     });
 
-    buildText += "\n";
+    if (isAdd) {
+      buildText += "ADD CHARACTER_ENCODING ATTRS";
+      buildText += buildNewText;
+      buildText += "\n";
+    }
+
     return buildText;
   };
 
@@ -322,7 +330,7 @@ const useExportLogicV2 = () => {
     buildBodyText += buildEntryCodeText();
     buildBodyText += buildCardinalityText();
     buildBodyText += buildUnitsText(data);
-    buildBodyText += buildCharacterEncodingText(data);
+    buildBodyText += buildCharacterEncodingText();
 
     return buildBodyText;
   };
@@ -386,6 +394,9 @@ const useExportLogicV2 = () => {
     URL.revokeObjectURL(url);
 
     const bundle = await generateOCABundle(data);
+
+    // Generate and download text readme
+    jsonToTextFile(bundle.bundle);
 
     const extension = {
       extensions: [
