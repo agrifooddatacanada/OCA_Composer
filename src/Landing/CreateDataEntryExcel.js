@@ -5,7 +5,6 @@ import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
 } from "../constants/utils";
-// import { overlays } from "../constants/constants";
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -46,22 +45,20 @@ function readJSON(originJsonData_jsonSaid, e) {
     //       : rawJson;
 
     originJsonData_jsonSaid.jsonSaid = json.d;
-
     json = replaceAttributeCharsInParsedJson(json);
 
     if (Object.prototype.hasOwnProperty.call(json, "capture_base")) {
       originJsonData_jsonSaid.originJsonData.push(json.capture_base);
     }
+
     if (Object.prototype.hasOwnProperty.call(json, "overlays")) {
       const { overlays } = json;
       for (const o in overlays) {
-        if (overlays[o].length !== undefined && overlays[o].length > 0) {
-          for (const oo in overlays[o]) {
-            if (Object.prototype.hasOwnProperty.call(overlays[o], oo)) {
-              originJsonData_jsonSaid.originJsonData.push(overlays[o][oo]);
-            }
+        if (Array.isArray(overlays[o]) && overlays[o].length > 0) {
+          for (const oo of overlays[o]) {
+            originJsonData_jsonSaid.originJsonData.push(oo);
           }
-        } else {
+        } else if (!Array.isArray(overlays[o])) {
           originJsonData_jsonSaid.originJsonData.push(overlays[o]);
         }
       }
@@ -104,21 +101,21 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     );
   }
 
-  const originJsonData_jsonSaid = { originJsonData: [], jsonSaid: "" };
+  let inPutJsonResult = null;
   try {
-    readJSON(originJsonData_jsonSaid, data);
+    inPutJsonResult = readJSON({ originJsonData: [], jsonSaid: "" }, data);
   } catch (jsonError) {
     try {
-      await readZIP(originJsonData_jsonSaid, data);
+      await readZIP({ originJsonData: [], jsonSaid: "" }, data);
     } catch (zipError) {
       console.error("Error reading JSON or ZIP file:", zipError);
     }
   }
 
-  const { originJsonData } = originJsonData_jsonSaid;
+  const { originJsonData } = inPutJsonResult[0];
 
   // adjusting for oca_package:
-  const inPutJsonResult = readJSON(originJsonData_jsonSaid, data);
+  // const inPutJsonResult = readJSON(originJsonData_jsonSaid, data);
   const isOcaPackage = inPutJsonResult[1];
   let attribute_ordering_container = null;
 
@@ -327,7 +324,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     schemaClassification = jsonData.find(
       (o) => o.type && o.type.includes("/capture_base/")
     ).classification;
-    schemaSAID = originJsonData_jsonSaid.jsonSaid;
+    schemaSAID = originJsonData[0].jsonSaid;
   } catch (error) {
     throw new WorkbookError(".. Error in reading the meta overlay ...");
   }
@@ -430,7 +427,6 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         attributeNames = Object.keys(overlay.attributes);
       }
 
-      // attributeNames = Object.keys(overlay.attributes);
       const numColumns = attributeNames.length;
       const columnWidth = 15;
 
@@ -445,6 +441,14 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
   let skipped = 0;
   const lookupEntries = {};
+
+  // mapping with new index from the ordering overlay
+  const attrKeys = Object.keys(attributesIndex);
+  const attrValues = Object.values(attributesIndex);
+  const mappingAttrKeysandAttrValues = attrKeys.reduce((acc, key, index) => {
+    acc[key.split(",")[0]] = attrValues[index];
+    return acc;
+  }, {});
 
   jsonData.forEach((overlay, i) => {
     if (overlay.type && overlay.type.includes("/character_encoding/")) {
@@ -462,9 +466,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
           overlay.attribute_character_encoding
         )) {
           if (typeof encoding === "string") {
-            const attrKeys = Object.keys(attributesIndex);
-            const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-            const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+            const rowIndex = mappingAttrKeysandAttrValues[attrName];
             if (rowIndex) {
               sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = encoding;
             }
@@ -489,9 +491,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         for (const [attrName, cardinality] of Object.entries(
           overlay.attribute_cardinality
         )) {
-          const attrKeys = Object.keys(attributesIndex);
-          const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-          const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+          const rowIndex = mappingAttrKeysandAttrValues[attrName];
           if (rowIndex) {
             sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = cardinality;
           }
@@ -520,10 +520,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
           } else if (conformance === "O") {
             conformance = " ";
           }
-
-          const attrKeys = Object.keys(attributesIndex);
-          const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-          const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+          const rowIndex = mappingAttrKeysandAttrValues[attrName];
           if (rowIndex) {
             sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = conformance;
           }
@@ -553,9 +550,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         for (const [attrName, condition] of Object.entries(
           overlay.attribute_conditions
         )) {
-          const attrKeys = Object.keys(attributesIndex);
-          const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-          const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+          const rowIndex = mappingAttrKeysandAttrValues[attrName];
           if (rowIndex) {
             sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = condition;
           }
@@ -564,9 +559,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         for (const [attrName, dependencies] of Object.entries(
           overlay.attribute_dependencies
         )) {
-          const attrKeys = Object.keys(attributesIndex);
-          const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-          const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+          const rowIndex = mappingAttrKeysandAttrValues[attrName];
           if (rowIndex) {
             sheet1.getCell(shift + rowIndex, i + 5 - skipped).value =
               dependencies.join(",");
@@ -591,9 +584,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         }
 
         for (const [attrName, format] of Object.entries(overlay.attribute_formats)) {
-          const attrKeys = Object.keys(attributesIndex);
-          const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-          const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+          const rowIndex = mappingAttrKeysandAttrValues[attrName];
 
           if (rowIndex) {
             sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = format;
@@ -608,7 +599,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
           for (const attrTypeObject of attrTypeObjects) {
             if (attrTypeObject.attr === attrName && attrTypeObject.type === "DateTime") {
               const format_attr = { numFmt: "yyyy-mm-dd" };
-              const col_i = attributesIndex[[attrName, attrTypeObject.type]] - 1;
+              const col_i = attributesIndex[[attrName, attrTypeObject.type]] - 1; // TODO: test inf the column still works after the manipulation of using ordering overlay
 
               for (let row = 1; row <= 1000; row++) {
                 sheet2.getCell(row + 1, col_i).value = null;
@@ -659,9 +650,8 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         )) {
           if (Array.isArray(entryCode)) {
             const joinedCodes = entryCode.join("|");
-            const attrKeys = Object.keys(attributesIndex);
-            const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-            const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+            const rowIndex = mappingAttrKeysandAttrValues[attrName];
+
             if (rowIndex) {
               sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = joinedCodes;
             }
@@ -687,14 +677,6 @@ export async function CreateDataEntryExcel(data, selectedLang) {
           }
 
           for (const [attrName, label] of Object.entries(attr_labels)) {
-            const attrKeys = Object.keys(attributesIndex);
-            const attrValues = Object.values(attributesIndex);
-
-            const mappingAttrKeysandAttrValues = attrKeys.reduce((acc, key, index) => {
-              acc[key.split(",")[0]] = attrValues[index];
-              return acc;
-            }, {});
-
             const rowIndex = mappingAttrKeysandAttrValues[attrName];
 
             if (rowIndex) {
@@ -726,9 +708,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
           for (const [attrName, entries] of Object.entries(attr_entries)) {
             if (entries !== undefined && entries !== null && entries instanceof Object) {
               lookupEntries[attrName] = entries;
-              const attrKeys = Object.keys(attributesIndex);
-              const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-              const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+              const rowIndex = mappingAttrKeysandAttrValues[attrName];
 
               const formattedEntries = [];
 
@@ -768,9 +748,8 @@ export async function CreateDataEntryExcel(data, selectedLang) {
           }
 
           for (const [attrName, info] of Object.entries(attr_info)) {
-            const attrKeys = Object.keys(attributesIndex);
-            const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-            const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+            const rowIndex = mappingAttrKeysandAttrValues[attrName];
+
             if (rowIndex) {
               sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = info;
             }
@@ -798,9 +777,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
           }
 
           for (const [attrName, unit] of Object.entries(attr_units)) {
-            const attrKeys = Object.keys(attributesIndex);
-            const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-            const rowIndex = attrNameFromAttrKeys.indexOf(attrName) + 2;
+            const rowIndex = mappingAttrKeysandAttrValues[attrName];
             if (rowIndex) {
               sheet1.getCell(shift + rowIndex, i + 3 - skipped).value = unit;
             }
