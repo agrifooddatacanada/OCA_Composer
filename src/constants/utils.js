@@ -117,6 +117,8 @@ export const replaceAttributeCharsInJsonString = (jsonString, parsed = false) =>
     if (parsedJson.type.split("/")[2] === "unit") {
       if (parsedJson.attribute_units) {
         parsedJson.attribute_units = replaceCharsInKeys(parsedJson.attribute_units);
+      } else if (parsedJson.attribute_unit) {
+        parsedJson.attribute_unit = replaceCharsInKeys(parsedJson.attribute_unit);
       }
     }
   }
@@ -212,6 +214,10 @@ export const replaceAttributeCharsInParsedJson = (parsedJson) => {
   if (modifiedParsedJson?.overlays?.unit?.attribute_units) {
     modifiedParsedJson.overlays.unit.attribute_units = replaceCharsInKeys(
       modifiedParsedJson.overlays.unit.attribute_units
+    );
+  } else if (modifiedParsedJson.overlays.unit.attribute_unit) {
+    modifiedParsedJson.overlays.unit.attribute_unit = replaceCharsInKeys(
+      modifiedParsedJson.overlays.unit.attribute_unit
     );
   }
 

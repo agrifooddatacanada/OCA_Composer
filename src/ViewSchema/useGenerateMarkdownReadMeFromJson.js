@@ -15,7 +15,7 @@ import {
   generateInternationalSchemaInformation,
   generateLanguageIndependentSchemaDetailsTable,
   generateLanguageSpecificSchemaDetailsTable,
-  generateSAIDTable,
+  generateSAIDTableForJson,
   generateSchemaInformation,
   generateSchemaQuickView
 } from "./markdownReadmeUtils";
@@ -30,7 +30,9 @@ const getModifiedLayer = (overlay) => {
 };
 
 const useGenerateMarkdownReadMeFromJson = () => {
-  const { languages } = useContext(Context);
+  const { languages, OCAPackage } = useContext(Context);
+  const orderingOverlay = OCAPackage?.extensions?.[0]?.overlays?.ordering;
+  const hasAttributeOrdering = orderingOverlay?.attribute_ordering?.length > 0;
 
   // Ensuring that the currently selected site language is one of the languages of the schema
   const currentLanguageCode = languages.some(
@@ -43,9 +45,12 @@ const useGenerateMarkdownReadMeFromJson = () => {
     let fileContent = "";
     const captureBaseOverlay = schemaData.capture_base;
     const captureBaseSAID = captureBaseOverlay.d;
-    const attributeNames = Object.keys(captureBaseOverlay.attributes);
-    const layerToSAIDMap = {};
+    const attributeNames = hasAttributeOrdering
+      ? orderingOverlay?.attribute_ordering
+      : Object.keys(captureBaseOverlay.attributes);
+
     const layers = [];
+    const layersForSaidTable = [];
 
     for (const overlayName of Object.keys(schemaData.overlays)) {
       const overlay = schemaData.overlays[overlayName];
@@ -53,15 +58,39 @@ const useGenerateMarkdownReadMeFromJson = () => {
         overlay.forEach((langSpecificOverlay) => {
           const modifiedLayer = getModifiedLayer(langSpecificOverlay);
           const layerNameWithoutVersion = `${modifiedLayer.layerName.split("/")[0]}${modifiedLayer.language ? ` (${modifiedLayer.language})` : ""}`;
-          layerToSAIDMap[layerNameWithoutVersion] = modifiedLayer.digest;
+          layersForSaidTable.push({
+            name: layerNameWithoutVersion,
+            digest: modifiedLayer.digest,
+            type: langSpecificOverlay.type
+          });
           layers.push(modifiedLayer);
         });
       } else {
         const modifiedLayer = getModifiedLayer(overlay);
         const layerNameWithoutVersion = `${modifiedLayer.layerName.split("/")[0]}${modifiedLayer.language ? ` (${modifiedLayer.language})` : ""}`;
-        layerToSAIDMap[layerNameWithoutVersion] = modifiedLayer.digest;
+        layersForSaidTable.push({
+          name: layerNameWithoutVersion,
+          digest: modifiedLayer.digest,
+          type: overlay.type
+        });
         layers.push(modifiedLayer);
       }
+    }
+
+    // Include extension overlays if any
+    if (OCAPackage?.extensions?.length > 0) {
+      OCAPackage.extensions.forEach((extension) => {
+        const extensionOverlays = extension.overlays;
+        const overlayNames = Object.keys(extensionOverlays);
+        overlayNames.forEach((overlayName) => {
+          const overlay = extensionOverlays[overlayName];
+          layersForSaidTable.push({
+            name: overlayName,
+            digest: overlay.d,
+            type: overlay.type
+          });
+        });
+      });
     }
 
     const metaOverlayCurrentLanguage = layers.find(
@@ -88,7 +117,12 @@ const useGenerateMarkdownReadMeFromJson = () => {
       languages,
       languageNameToAlpha3Codes
     );
-    fileContent += generateEntryCodeTables(layers, languages, languageNameToAlpha3Codes);
+    fileContent += generateEntryCodeTables(
+      layers,
+      languages,
+      languageNameToAlpha3Codes,
+      orderingOverlay
+    );
     fileContent += generateLanguageIndependentSchemaDetailsTable({
       layers,
       captureBaseOverlay,
@@ -98,9 +132,10 @@ const useGenerateMarkdownReadMeFromJson = () => {
       layers,
       attributeNames,
       languages,
-      languageCodeLookupMap: languageNameToAlpha3Codes
+      languageCodeLookupMap: languageNameToAlpha3Codes,
+      orderingOverlay
     });
-    fileContent += generateSAIDTable(captureBaseSAID, layerToSAIDMap);
+    fileContent += generateSAIDTableForJson(captureBaseSAID, layersForSaidTable);
     fileContent += generateCreationTimestamp();
 
     const fileName = `${metaOverlayCurrentLanguage.name.split(" ")[0]}_OCA_schema.md`;
