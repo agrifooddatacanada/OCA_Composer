@@ -190,7 +190,7 @@ const useZipParser = () => {
         Flagged: root?.flagged_attributes?.includes(item),
         List: attributesWithListType.includes(item),
         Type: root?.attributes?.[item],
-        Unit: units?.attribute_units?.[item]
+        Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
       const newRowForCharacterEncoding = { Attribute: item };

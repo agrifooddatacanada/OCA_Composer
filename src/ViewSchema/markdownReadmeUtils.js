@@ -72,8 +72,6 @@ export const generateSchemaQuickView = ({
   currentLanguageCode,
   defaultLanguageCode
 }) => {
-  // Label and information overlays will always exist even if attributes don't have a label and description
-  // In case of no label or description, their values will be empty string
   const informationOverlay = layers.find(
     (layer) =>
       layer.layerName.includes("information") &&
@@ -88,8 +86,8 @@ export const generateSchemaQuickView = ({
 
   const columns = ["Attribute", "Label", "Description"];
   const rows = attributeNames.map((attribute) => {
-    const label = labelOverlay.attribute_labels[attribute];
-    const description = informationOverlay.attribute_information[attribute];
+    const label = labelOverlay?.attribute_labels?.[attribute] || "";
+    const description = informationOverlay?.attribute_information?.[attribute] || "";
     return [attribute, label, description];
   });
 
@@ -123,7 +121,12 @@ export const generateInternationalSchemaInformation = (
   return markdownContent.join("");
 };
 
-export const generateEntryCodeTables = (layers, languages, languageCodeLookupMap) => {
+export const generateEntryCodeTables = (
+  layers,
+  languages,
+  languageCodeLookupMap,
+  orderingOverlay = null
+) => {
   const markdownContent = ["## Selection lists\n\n"];
   const columns = ["Entry code", "Label"];
 
@@ -144,13 +147,17 @@ export const generateEntryCodeTables = (layers, languages, languageCodeLookupMap
         const rows = [];
         markdownContent.push(`#### ${attribute} entry codes\n\n`);
         const entryCodeToLabelMap = entryOverlay.attribute_entries[attribute];
+        // Use entry code ordering if present
+        const hasEntryCodeOrdering =
+          orderingOverlay?.entry_code_ordering?.[attribute]?.length > 0;
+        const entryCodes = hasEntryCodeOrdering
+          ? orderingOverlay.entry_code_ordering[attribute]
+          : Object.keys(entryCodeToLabelMap);
 
-        for (const entryCode in entryCodeToLabelMap) {
-          if (Object.prototype.hasOwnProperty.call(entryCodeToLabelMap, entryCode)) {
-            const label = entryCodeToLabelMap[entryCode];
-            rows.push([entryCode, label]);
-          }
-        }
+        entryCodes.forEach((entryCode) => {
+          const label = entryCodeToLabelMap[entryCode];
+          rows.push([entryCode, label]);
+        });
 
         markdownContent.push(generateTable(columns, rows), "\n\n");
       }
@@ -166,7 +173,8 @@ export const generateLanguageSpecificSchemaDetailsTable = ({
   layers,
   attributeNames,
   languages,
-  languageCodeLookupMap
+  languageCodeLookupMap,
+  orderingOverlay = null
 }) => {
   const markdownContent = ["## Language-specific schema details\n\n"];
   const columns = ["Attribute", "Label", "Description", "List"];
@@ -192,10 +200,19 @@ export const generateLanguageSpecificSchemaDetailsTable = ({
       const description = informationOverlay?.attribute_information?.[attribute] || "";
 
       // Check if an attribute is a list (has entries and entry codes)
+      // If entry code ordering is present, use it to generate the ordered list of entry code labels
+      const hasEntryCodeOrdering =
+        orderingOverlay?.entry_code_ordering?.[attribute]?.length > 0;
       const entryCodeToLabelMap = entryOverlay?.attribute_entries[attribute];
-      const list = entryCodeToLabelMap
-        ? Object.values(entryCodeToLabelMap).join(", ")
-        : "Not a list";
+      let list = "Not a list";
+
+      if (entryCodeToLabelMap) {
+        list = hasEntryCodeOrdering
+          ? orderingOverlay.entry_code_ordering[attribute]
+              .map((entryCode) => entryCodeToLabelMap[entryCode])
+              .join(", ")
+          : Object.values(entryCodeToLabelMap).join(", ");
+      }
 
       row.push(label, description, list);
       return row;
@@ -297,6 +314,7 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   return markdownContent.join("");
 };
 
+// For ZIP schema bundle
 export const generateSAIDTable = (captureBaseSAID, layerToSAIDMap) => {
   const markdownContent = ["## Schema SAIDs\n\n"];
   markdownContent.push(`**Capture base**: ${captureBaseSAID}\n\n`);
@@ -309,6 +327,23 @@ export const generateSAIDTable = (captureBaseSAID, layerToSAIDMap) => {
       rows.push([layer, layerToSAIDMap[layer]]);
     }
   }
+
+  markdownContent.push(generateTable(columns, rows), "\n\n");
+
+  return markdownContent.join("");
+};
+
+// For JSON schema
+export const generateSAIDTableForJson = (captureBaseSAID, layers) => {
+  const markdownContent = ["## Schema SAIDs\n\n"];
+  markdownContent.push(`**Capture base**: ${captureBaseSAID}\n\n`);
+
+  const columns = ["Layer", "SAID", "Type"];
+  const rows = [];
+
+  layers.forEach((layer) => {
+    rows.push([layer.name, layer.digest, layer.type]);
+  });
 
   markdownContent.push(generateTable(columns, rows), "\n\n");
 
