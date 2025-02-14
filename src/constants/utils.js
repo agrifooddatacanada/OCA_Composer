@@ -215,7 +215,7 @@ export const replaceAttributeCharsInParsedJson = (parsedJson) => {
     modifiedParsedJson.overlays.unit.attribute_units = replaceCharsInKeys(
       modifiedParsedJson.overlays.unit.attribute_units
     );
-  } else if (modifiedParsedJson.overlays.unit.attribute_unit) {
+  } else if (modifiedParsedJson.overlays.unit?.attribute_unit) {
     modifiedParsedJson.overlays.unit.attribute_unit = replaceCharsInKeys(
       modifiedParsedJson.overlays.unit.attribute_unit
     );
