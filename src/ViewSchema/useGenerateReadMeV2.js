@@ -1,6 +1,10 @@
 import { useContext } from "react";
 import { Context } from "../App";
-import { getDescriptiveFileName } from "../constants/utils";
+import {
+  getDescriptiveFileName,
+  getOrderedAttributeMap,
+  getOrderedEntries
+} from "../constants/utils";
 
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL
@@ -27,9 +31,15 @@ END_REFERENCE_MATERIAL\n\n`;
 
 const useGenerateReadMeV2 = () => {
   const { schemaDescription } = useContext(Context);
-  const jsonToTextFile = async (jsonData) => {
+  const jsonToTextFile = async (jsonData, ocaPackage = null) => {
     // Step 1: --- Read json schema bundle
     const json_bundle = jsonData;
+
+    // Check if ordering overlay can be retrieved from oca package
+    const orderingOverlay = ocaPackage?.extensions?.[0]?.overlays?.ordering;
+    const hasAttributeOrdering = orderingOverlay?.attribute_ordering?.length > 0;
+    const hasEntryCodeOrdering =
+      Object.keys(orderingOverlay?.entry_code_ordering || {}).length > 0;
 
     // Step 2: __init__ of OCA ReadMe file
     const text_file = [];
@@ -52,7 +62,13 @@ const useGenerateReadMeV2 = () => {
       const said = json_bundle.capture_base.d;
       const layer_name = json_bundle.capture_base.type.split("spec/")[1];
       const { classification } = json_bundle.capture_base;
-      const schema_attributes = json_bundle.capture_base.attributes;
+      const schema_attributes = hasAttributeOrdering
+        ? getOrderedAttributeMap(
+            orderingOverlay.attribute_ordering,
+            json_bundle.capture_base.attributes
+          )
+        : json_bundle.capture_base.attributes;
+
       overlay_saids.capture_base = said;
       overlay_texts.capture_base =
         `Layer name: ${layer_name}\n` +
@@ -92,7 +108,12 @@ const useGenerateReadMeV2 = () => {
         const said = overlay.d;
         const layer_name = overlay.type.split("spec/overlays/")[1];
         const lang = overlay.language;
-        const schema_attributes = overlay.attribute_labels;
+        const schema_attributes = hasAttributeOrdering
+          ? getOrderedAttributeMap(
+              orderingOverlay.attribute_ordering,
+              overlay.attribute_labels
+            )
+          : overlay.attribute_labels;
         overlay_saids[`label_${lang}`] = said;
         labels_overlays_txt.push(
           `Layer name: ${layer_name}\n` +
@@ -114,7 +135,12 @@ const useGenerateReadMeV2 = () => {
         const said = overlay.d;
         const layer_name = overlay.type.split("spec/overlays/")[1];
         const lang = overlay.language;
-        const schema_attributes = overlay.attribute_information;
+        const schema_attributes = hasAttributeOrdering
+          ? getOrderedAttributeMap(
+              orderingOverlay.attribute_ordering,
+              overlay.attribute_information
+            )
+          : overlay.attribute_information;
         overlay_saids[`information_${lang}`] = said;
         information_overlays_txt.push(
           `Layer name: ${layer_name}\n` +
@@ -134,10 +160,13 @@ const useGenerateReadMeV2 = () => {
       const said = json_bundle.overlays.unit.d;
       const layer_name = json_bundle.overlays.unit.type.split("spec/overlays/")[1];
       const { measurement_system } = json_bundle.overlays.unit;
-      const schema_attributes =
+      const attributeUnits =
         json_bundle.overlays.unit.attribute_units ||
         json_bundle.overlays.unit.attribute_unit ||
         {};
+      const schema_attributes = hasAttributeOrdering
+        ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, attributeUnits)
+        : attributeUnits;
       overlay_saids.unit = said;
       overlay_texts.unit =
         `Layer name: ${layer_name}\n` +
@@ -153,7 +182,12 @@ const useGenerateReadMeV2 = () => {
 
     if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "conformance")) {
       const said = json_bundle.overlays.conformance.d;
-      const schema_attributes = json_bundle.overlays.conformance.attribute_conformance;
+      const schema_attributes = hasAttributeOrdering
+        ? getOrderedAttributeMap(
+            orderingOverlay.attribute_ordering,
+            json_bundle.overlays.conformance.attribute_conformance
+          )
+        : json_bundle.overlays.conformance.attribute_conformance;
       const layer_name = json_bundle.overlays.conformance.type.split("spec/overlays/")[1];
       overlay_saids.conformance = said;
       overlay_texts.conformance =
@@ -173,8 +207,12 @@ const useGenerateReadMeV2 = () => {
       const said = json_bundle.overlays.character_encoding.d;
       const layer_name =
         json_bundle.overlays.character_encoding.type.split("spec/overlays/")[1];
-      const schema_attributes =
-        json_bundle.overlays.character_encoding.attribute_character_encoding;
+      const schema_attributes = hasAttributeOrdering
+        ? getOrderedAttributeMap(
+            orderingOverlay.attribute_ordering,
+            json_bundle.overlays.character_encoding.attribute_character_encoding
+          )
+        : json_bundle.overlays.character_encoding.attribute_character_encoding;
       overlay_saids.character_encoding = said;
       overlay_texts.character_encoding =
         `Layer name: ${layer_name}\n` +
@@ -190,7 +228,12 @@ const useGenerateReadMeV2 = () => {
     if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "format")) {
       const said = json_bundle.overlays.format.d;
       const layer_name = json_bundle.overlays.format.type.split("spec/overlays/")[1];
-      const schema_attributes = json_bundle.overlays.format.attribute_formats;
+      const schema_attributes = hasAttributeOrdering
+        ? getOrderedAttributeMap(
+            orderingOverlay.attribute_ordering,
+            json_bundle.overlays.format.attribute_formats
+          )
+        : json_bundle.overlays.format.attribute_formats;
       overlay_saids.format = said;
       overlay_texts.format =
         `Layer name: ${layer_name}\n` +
@@ -206,7 +249,9 @@ const useGenerateReadMeV2 = () => {
     if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "entry_code")) {
       const said = json_bundle.overlays.entry_code.d;
       const layer_name = json_bundle.overlays.entry_code.type.split("spec/overlays/")[1];
-      const schema_attributes = json_bundle.overlays.entry_code.attribute_entry_codes;
+      const schema_attributes = hasEntryCodeOrdering
+        ? orderingOverlay.entry_code_ordering
+        : json_bundle.overlays.entry_code.attribute_entry_codes;
       overlay_saids.entry_code = said;
       overlay_texts.entry_code =
         `Layer name: ${layer_name}\n` +
@@ -225,7 +270,12 @@ const useGenerateReadMeV2 = () => {
         const said = overlay.d;
         const layer_name = overlay.type.split("spec/overlays/")[1];
         const lang = overlay.language;
-        const schema_attributes = overlay.attribute_entries;
+        const schema_attributes = hasEntryCodeOrdering
+          ? getOrderedEntries(
+              orderingOverlay.entry_code_ordering,
+              overlay.attribute_entries
+            )
+          : overlay.attribute_entries;
         overlay_saids[`entry_${lang}`] = said;
         entry_overlays_txt.push(
           `Layer name: ${layer_name}\n` +
