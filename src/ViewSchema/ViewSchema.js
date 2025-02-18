@@ -51,7 +51,8 @@ export default function ViewSchema({
     formatRuleRowData,
     dataStandardsRowData,
     zipToReadme,
-    jsonToReadme
+    jsonToReadme,
+    OCAPackage
   } = useContext(Context);
   const languageIndex = languages.findIndex(
     (item) => codesToLanguages?.[i18next.language] === item
@@ -255,7 +256,7 @@ export default function ViewSchema({
 
   const downloadReadMe = () => {
     if (Object.keys(jsonToReadme).length > 0) {
-      jsonToTextFile(jsonToReadme);
+      jsonToTextFile(jsonToReadme, OCAPackage);
     } else if (zipToReadme.length > 0) {
       toTextFile(zipToReadme);
     }

@@ -397,9 +397,6 @@ const useExportLogicV2 = () => {
 
     const bundle = await generateOCABundle(data);
 
-    // Generate and download text readme
-    jsonToTextFile(bundle.bundle);
-
     const extension = {
       extensions: [
         {
@@ -414,6 +411,9 @@ const useExportLogicV2 = () => {
 
     const ocaPackageService = new OcaPackage(extension, bundle);
     const ocaPackage = JSON.parse(ocaPackageService.generateOcaPackage());
+
+    // Generate and download text readme
+    jsonToTextFile(bundle.bundle, ocaPackage);
 
     downloadJsonFile(
       ocaPackage,

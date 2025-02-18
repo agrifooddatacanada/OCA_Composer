@@ -254,3 +254,48 @@ export const getTransformedEntryCodes = (entryCodes) => {
   });
   return transformedEntryCodes;
 };
+
+export const getOrderedAttributeMap = (attributeOrdering, attributeMap) => {
+  const orderedAttributeMap = {};
+  attributeOrdering.forEach((attributeName) => {
+    if (Object.prototype.hasOwnProperty.call(attributeMap, attributeName)) {
+      orderedAttributeMap[attributeName] = attributeMap[attributeName];
+    }
+  });
+  return orderedAttributeMap;
+};
+
+/*
+"attribute_entries": {
+  "d_attr": {
+    "A": "10",
+    "B": "20",
+    "C": "30",
+    "D": "40"
+  }
+}
+
+"entry_code_ordering": {
+  "d_attr": [
+    "D",
+    "A",
+    "C",
+    "B"
+  ]
+}
+  */
+export const getOrderedEntries = (entryCodeOrdering, attributeEntries) => {
+  const orderedEntries = {};
+  Object.entries(entryCodeOrdering).forEach(([attribute, entryCodes]) => {
+    if (Object.prototype.hasOwnProperty.call(attributeEntries, attribute)) {
+      const orderedCodeToLabelMap = {};
+      entryCodes.forEach((code) => {
+        if (Object.prototype.hasOwnProperty.call(attributeEntries[attribute], code)) {
+          orderedCodeToLabelMap[code] = attributeEntries[attribute][code];
+        }
+      });
+      orderedEntries[attribute] = orderedCodeToLabelMap;
+    }
+  });
+  return orderedEntries;
+};
