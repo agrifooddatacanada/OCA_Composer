@@ -280,8 +280,7 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
     const type = captureBaseOverlay.attributes[attribute];
 
     const characterEncoding =
-      characterEncodingOverlay.attribute_character_encoding[attribute] ||
-      characterEncodingOverlay.default_character_encoding;
+      characterEncodingOverlay?.attribute_character_encoding?.[attribute] || "";
 
     row.push(isSensitive, unit, type, characterEncoding);
 
