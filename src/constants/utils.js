@@ -22,11 +22,7 @@ export const getDescriptiveFileName = (schemaDescription, commonFileName) => {
 };
 
 // Helper function to replace specified characters in object keys
-export const replaceCharsInKeys = (
-  obj,
-  charsToReplace = [".", ","],
-  replacement = "_"
-) => {
+export const replaceCharsInKeys = (obj, charsToReplace = [","], replacement = "_") => {
   if (!obj) return obj;
 
   const pattern = new RegExp(`[${charsToReplace.join("")}]`, "g");
