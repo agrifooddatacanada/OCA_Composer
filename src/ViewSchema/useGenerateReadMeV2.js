@@ -48,11 +48,14 @@ const useGenerateReadMeV2 = () => {
     text_file.push(
       readmeText,
       "BEGIN_OCA_MANIFEST\n",
-      "******************************************************************\n",
-      "Bundle SAID/digest: ",
-      bundle_said,
-      "\n\n"
+      "******************************************************************\n"
     );
+
+    if (ocaPackage?.type?.includes("oca_package")) {
+      text_file.push(`Package SAID/digest: ${ocaPackage.d}\n`);
+    }
+
+    text_file.push(`Bundle SAID/digest: ${bundle_said}\n\n`);
 
     const overlay_saids = {};
     const overlay_texts = {};
@@ -60,7 +63,7 @@ const useGenerateReadMeV2 = () => {
     // Step 3: --- Converting schema overlays from objects to texts
     if (Object.prototype.hasOwnProperty.call(json_bundle, "capture_base")) {
       const said = json_bundle.capture_base.d;
-      const layer_name = json_bundle.capture_base.type.split("spec/")[1];
+      const layer_name = json_bundle.capture_base.type;
       const { classification } = json_bundle.capture_base;
       const schema_attributes = hasAttributeOrdering
         ? getOrderedAttributeMap(
@@ -69,7 +72,7 @@ const useGenerateReadMeV2 = () => {
           )
         : json_bundle.capture_base.attributes;
 
-      overlay_saids.capture_base = said;
+      overlay_saids[layer_name] = said;
       overlay_texts.capture_base =
         `Layer name: ${layer_name}\n` +
         `SAID/digest: ${said}\n` +
@@ -87,10 +90,10 @@ const useGenerateReadMeV2 = () => {
     if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "meta")) {
       for (const overlay of json_bundle.overlays.meta) {
         const said = overlay.d;
-        const layer_name = overlay.type.split("spec/overlays/")[1];
+        const layer_name = overlay.type;
         const lang = overlay.language;
         const { description } = overlay;
-        overlay_saids[`meta_${lang}`] = said;
+        overlay_saids[`${layer_name} (${lang})`] = said;
         metas_overlays_txt.push(
           `Layer name: ${layer_name}\n` +
             `SAID/digest: ${said}\n` +
@@ -106,7 +109,7 @@ const useGenerateReadMeV2 = () => {
       const labels_overlays_txt = [];
       for (const overlay of json_bundle.overlays.label) {
         const said = overlay.d;
-        const layer_name = overlay.type.split("spec/overlays/")[1];
+        const layer_name = overlay.type;
         const lang = overlay.language;
         const schema_attributes = hasAttributeOrdering
           ? getOrderedAttributeMap(
@@ -114,7 +117,7 @@ const useGenerateReadMeV2 = () => {
               overlay.attribute_labels
             )
           : overlay.attribute_labels;
-        overlay_saids[`label_${lang}`] = said;
+        overlay_saids[`${layer_name} (${lang})`] = said;
         labels_overlays_txt.push(
           `Layer name: ${layer_name}\n` +
             `SAID/digest: ${said}\n` +
@@ -133,7 +136,7 @@ const useGenerateReadMeV2 = () => {
       const information_overlays_txt = [];
       for (const overlay of json_bundle.overlays.information) {
         const said = overlay.d;
-        const layer_name = overlay.type.split("spec/overlays/")[1];
+        const layer_name = overlay.type;
         const lang = overlay.language;
         const schema_attributes = hasAttributeOrdering
           ? getOrderedAttributeMap(
@@ -141,7 +144,7 @@ const useGenerateReadMeV2 = () => {
               overlay.attribute_information
             )
           : overlay.attribute_information;
-        overlay_saids[`information_${lang}`] = said;
+        overlay_saids[`${layer_name} (${lang})`] = said;
         information_overlays_txt.push(
           `Layer name: ${layer_name}\n` +
             `SAID/digest: ${said}\n` +
@@ -158,7 +161,7 @@ const useGenerateReadMeV2 = () => {
 
     if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "unit")) {
       const said = json_bundle.overlays.unit.d;
-      const layer_name = json_bundle.overlays.unit.type.split("spec/overlays/")[1];
+      const layer_name = json_bundle.overlays.unit.type;
       const { measurement_system } = json_bundle.overlays.unit;
       const attributeUnits =
         json_bundle.overlays.unit.attribute_units ||
@@ -167,7 +170,7 @@ const useGenerateReadMeV2 = () => {
       const schema_attributes = hasAttributeOrdering
         ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, attributeUnits)
         : attributeUnits;
-      overlay_saids.unit = said;
+      overlay_saids[layer_name] = said;
       overlay_texts.unit =
         `Layer name: ${layer_name}\n` +
         `SAID/digest: ${said}\n` +
@@ -188,8 +191,8 @@ const useGenerateReadMeV2 = () => {
             json_bundle.overlays.conformance.attribute_conformance
           )
         : json_bundle.overlays.conformance.attribute_conformance;
-      const layer_name = json_bundle.overlays.conformance.type.split("spec/overlays/")[1];
-      overlay_saids.conformance = said;
+      const layer_name = json_bundle.overlays.conformance.type;
+      overlay_saids[layer_name] = said;
       overlay_texts.conformance =
         `Layer name: ${layer_name}\n` +
         `SAID/digest: ${said}\n` +
@@ -205,15 +208,14 @@ const useGenerateReadMeV2 = () => {
       Object.prototype.hasOwnProperty.call(json_bundle.overlays, "character_encoding")
     ) {
       const said = json_bundle.overlays.character_encoding.d;
-      const layer_name =
-        json_bundle.overlays.character_encoding.type.split("spec/overlays/")[1];
+      const layer_name = json_bundle.overlays.character_encoding.type;
       const schema_attributes = hasAttributeOrdering
         ? getOrderedAttributeMap(
             orderingOverlay.attribute_ordering,
             json_bundle.overlays.character_encoding.attribute_character_encoding
           )
         : json_bundle.overlays.character_encoding.attribute_character_encoding;
-      overlay_saids.character_encoding = said;
+      overlay_saids[layer_name] = said;
       overlay_texts.character_encoding =
         `Layer name: ${layer_name}\n` +
         `SAID/digest: ${said}\n` +
@@ -227,14 +229,14 @@ const useGenerateReadMeV2 = () => {
 
     if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "format")) {
       const said = json_bundle.overlays.format.d;
-      const layer_name = json_bundle.overlays.format.type.split("spec/overlays/")[1];
+      const layer_name = json_bundle.overlays.format.type;
       const schema_attributes = hasAttributeOrdering
         ? getOrderedAttributeMap(
             orderingOverlay.attribute_ordering,
             json_bundle.overlays.format.attribute_formats
           )
         : json_bundle.overlays.format.attribute_formats;
-      overlay_saids.format = said;
+      overlay_saids[layer_name] = said;
       overlay_texts.format =
         `Layer name: ${layer_name}\n` +
         `SAID/digest: ${said}\n` +
@@ -248,11 +250,11 @@ const useGenerateReadMeV2 = () => {
 
     if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "entry_code")) {
       const said = json_bundle.overlays.entry_code.d;
-      const layer_name = json_bundle.overlays.entry_code.type.split("spec/overlays/")[1];
+      const layer_name = json_bundle.overlays.entry_code.type;
       const schema_attributes = hasEntryCodeOrdering
         ? orderingOverlay.entry_code_ordering
         : json_bundle.overlays.entry_code.attribute_entry_codes;
-      overlay_saids.entry_code = said;
+      overlay_saids[layer_name] = said;
       overlay_texts.entry_code =
         `Layer name: ${layer_name}\n` +
         `SAID/digest: ${said}\n` +
@@ -268,7 +270,7 @@ const useGenerateReadMeV2 = () => {
       const entry_overlays_txt = [];
       for (const overlay of json_bundle.overlays.entry) {
         const said = overlay.d;
-        const layer_name = overlay.type.split("spec/overlays/")[1];
+        const layer_name = overlay.type;
         const lang = overlay.language;
         const schema_attributes = hasEntryCodeOrdering
           ? getOrderedEntries(
@@ -276,7 +278,7 @@ const useGenerateReadMeV2 = () => {
               overlay.attribute_entries
             )
           : overlay.attribute_entries;
-        overlay_saids[`entry_${lang}`] = said;
+        overlay_saids[`${layer_name} (${lang})`] = said;
         entry_overlays_txt.push(
           `Layer name: ${layer_name}\n` +
             `SAID/digest: ${said}\n` +
@@ -296,47 +298,19 @@ const useGenerateReadMeV2 = () => {
 
     // Step 4: --- Constructing OCA ReadMe file
     const manifest = [];
-    for (const [key, value] of Object.entries(overlay_saids)) {
-      if (key === "capture_base") {
-        const capture_base_text = `capture_base SAID/digest: "${value}"\n`;
-        manifest.push(capture_base_text);
-      }
-      if (key.includes("meta")) {
-        const meta_text = `meta (${key.split("_")[1]}) SAID/digest: "${value}"\n`;
-        manifest.push(meta_text);
-      }
-      if (key.includes("label")) {
-        const label_text = `label (${key.split("_")[1]}) SAID/digest: "${value}"\n`;
-        manifest.push(label_text);
-      }
-      if (key.includes("information")) {
-        const information_text = `information (${key.split("_")[1]}) SAID/digest: "${value}"\n`;
-        manifest.push(information_text);
-      }
-      if (key === "unit") {
-        const unit_text = `unit SAID/digest: "${value}"\n`;
-        manifest.push(unit_text);
-      }
-      if (key === "conformance") {
-        const conformance_text = `conformance SAID/digest: "${value}"\n`;
-        manifest.push(conformance_text);
-      }
-      if (key === "character_encoding") {
-        const character_encoding_text = `character_encoding SAID/digest: "${value}"\n`;
-        manifest.push(character_encoding_text);
-      }
-      if (key === "format") {
-        const format_text = `format SAID/digest: "${value}"\n`;
-        manifest.push(format_text);
-      }
-      if (key === "entry_code") {
-        const entry_code_text = `entry_code SAID/digest: "${value}"\n`;
-        manifest.push(entry_code_text);
-      }
-      if (key.includes("entry") && key !== "entry_code") {
-        const entry_text = `entry (${key.split("_")[1]}) SAID/digest: "${value}"\n`;
-        manifest.push(entry_text);
-      }
+    Object.entries(overlay_saids).forEach(([key, value]) => {
+      manifest.push(`${key} SAID/digest: "${value}"\n`);
+    });
+
+    // Add SAIDs of extension overlays
+    if (ocaPackage?.extensions?.length > 0) {
+      // For now, use the first set of extension overlays (associated with the main/top-level schema bundle)
+      // TODO: Add support for extension overlays of nested schema bundles
+      const { overlays } = ocaPackage.extensions[0];
+      manifest.push("\n");
+      Object.values(overlays).forEach((overlay) => {
+        manifest.push(`${overlay.type} SAID/digest: "${overlay.d}"\n`);
+      });
     }
 
     text_file.push(...manifest);
@@ -406,6 +380,49 @@ const useGenerateReadMeV2 = () => {
     }
 
     text_file.push("END_OCA_BUNDLE\n");
+
+    if (ocaPackage?.extensions?.length > 0) {
+      text_file.push(
+        "\n",
+        "BEGIN_OCA_PACKAGE_EXTENSIONS\n",
+        "******************************************************************\n"
+      );
+
+      ocaPackage.extensions.forEach((extension) => {
+        const extensionOverlays = extension.overlays;
+        if (Object.prototype.hasOwnProperty.call(extensionOverlays, "ordering")) {
+          const orderingOverlay = extensionOverlays.ordering;
+          const entryCodeOrdering = orderingOverlay?.entry_code_ordering || {};
+          const hasAttributeOrdering = orderingOverlay.attribute_ordering?.length > 0;
+          const hasEntryCodeOrdering = Object.keys(entryCodeOrdering).length > 0;
+
+          text_file.push(
+            `Layer name: ${orderingOverlay.type}\n`,
+            `SAID/digest: ${orderingOverlay.d}\n`
+          );
+
+          if (hasAttributeOrdering) {
+            text_file.push(
+              `Attribute ordering: ${orderingOverlay.attribute_ordering.join(", ")}\n`
+            );
+          }
+
+          if (hasEntryCodeOrdering) {
+            text_file.push("Entry code ordering:\n");
+            Object.entries(entryCodeOrdering).forEach(([key, value]) => {
+              text_file.push(`    ${key}: ${value.join(", ")}\n`);
+            });
+          }
+
+          text_file.push(
+            "\n",
+            "******************************************************************\n"
+          );
+        }
+      });
+
+      text_file.push("END_OCA_PACKAGE_EXTENSIONS\n");
+    }
 
     const text = text_file.join("");
     const textBlob = new Blob([text], { type: "text/plain" });
