@@ -16,6 +16,7 @@ function WorkbookError(message) {
 function readJSON(originJsonData_jsonSaid, e) {
   let isOcaPackage = false;
   let extensions = null;
+  let ocaPackageSaid = "";
 
   try {
     const textDecoder = new TextDecoder("utf-8");
@@ -27,6 +28,7 @@ function readJSON(originJsonData_jsonSaid, e) {
     if (rawJson.type && rawJson.type.includes("oca_package")) {
       isOcaPackage = true;
       extensions = rawJson.extensions;
+      ocaPackageSaid = rawJson?.d || "";
       json = rawJson.oca_bundle.bundle;
     } else if (rawJson.oca_bundle && rawJson.oca_bundle.bundle) {
       json = rawJson.oca_bundle.bundle;
@@ -59,7 +61,7 @@ function readJSON(originJsonData_jsonSaid, e) {
     throw new WorkbookError(".. Error in reading the json file ...");
   }
   // exports oca_bundle organized, if it is an oca-package, and the extensions
-  return [originJsonData_jsonSaid, isOcaPackage, extensions];
+  return [originJsonData_jsonSaid, isOcaPackage, extensions, ocaPackageSaid];
 }
 
 async function readZIP(originJsonData_jsonSaid, e) {
@@ -70,12 +72,14 @@ async function readZIP(originJsonData_jsonSaid, e) {
       const loadData = await file.async("text");
       const parsedData = replaceAttributeCharsInJsonString(loadData, true);
       originJsonData_jsonSaid.originJsonData.push(parsedData);
+      if (parsedData.type && parsedData.type.includes("capture_base")) {
+        originJsonData_jsonSaid.jsonSaid = parsedData.digest || "unavailable";
+      }
     }
   } catch (error) {
     throw new WorkbookError(".. Error in reading the zip file ...");
   }
 
-  originJsonData_jsonSaid.jsonSaid = "unavailable";
   // return originJsonData_jsonSaid;
   return [originJsonData_jsonSaid, false, null];
 }
@@ -105,9 +109,10 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     }
   }
 
-  const { originJsonData } = inPutJsonResult[0];
+  const { jsonSaid, originJsonData } = inPutJsonResult[0];
 
   const isOcaPackage = inPutJsonResult[1];
+  const ocaPackageSaid = inPutJsonResult[3];
   let attribute_ordering_container = null;
   let entry_code_ordering = null;
 
@@ -309,7 +314,6 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let schemaDescription = null;
   let schemaLanguage = null;
   let schemaClassification = null;
-  let schemaSAID = null;
 
   try {
     schemaTitle = metaOverlays[0].name;
@@ -318,44 +322,72 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     schemaClassification = jsonData.find(
       (o) => o.type && o.type.includes("/capture_base/")
     ).classification;
-    schemaSAID = originJsonData[0].jsonSaid;
   } catch (error) {
     throw new WorkbookError(".. Error in reading the meta overlay ...");
   }
 
   // Step 5: Schema Description Sheet Content
-  sheet1.getCell(1, 1).value =
+  let introSectionCurrentRow = 1;
+  sheet1.getCell(introSectionCurrentRow, 1).value =
     "This is an Excel workbook for data display and data entry.";
-  formatFirstPage(sheet1.getCell(1, 1));
+  formatFirstPage(sheet1.getCell(introSectionCurrentRow, 1));
+  introSectionCurrentRow++;
 
-  sheet1.getCell(2, 2).value =
+  sheet1.getCell(introSectionCurrentRow, 2).value =
     "This workbook has been prefilled with information to help users use the data. The prefilled information comes from a schema.";
-  sheet1.getCell(3, 2).value =
+  introSectionCurrentRow++;
+
+  sheet1.getCell(introSectionCurrentRow, 2).value =
     "Enter or view your data in 'Data' while referencing 'Schema Description' for guidance.";
+  introSectionCurrentRow += 2;
 
-  sheet1.getCell(5, 1).value = "Schema details:";
-  formatFirstPage(sheet1.getCell(5, 1));
+  sheet1.getCell(introSectionCurrentRow, 1).value = "Schema details:";
+  formatFirstPage(sheet1.getCell(introSectionCurrentRow, 1));
+  introSectionCurrentRow++;
 
-  sheet1.getCell(6, 2).value = `Schema title: ${schemaTitle}`;
-  sheet1.getCell(7, 2).value = `Schema description: ${schemaDescription}`;
-  sheet1.getCell(8, 2).value = `Schema language: ${schemaLanguage}`;
-  sheet1.getCell(9, 2).value = `Schema SAID: ${schemaSAID}`;
-  sheet1.getCell(10, 2).value = `Schema classification: ${schemaClassification}`;
+  sheet1.getCell(introSectionCurrentRow, 2).value = `Schema title: ${schemaTitle}`;
+  introSectionCurrentRow++;
 
-  sheet1.getCell(12, 1).value = "What is a schema?";
-  formatFirstPage(sheet1.getCell(12, 1));
+  sheet1.getCell(introSectionCurrentRow, 2).value =
+    `Schema description: ${schemaDescription}`;
+  introSectionCurrentRow++;
 
-  sheet1.getCell(13, 2).value = "A schema describes structures and rules of a dataset.";
-  sheet1.getCell(14, 2).value =
+  sheet1.getCell(introSectionCurrentRow, 2).value = `Schema language: ${schemaLanguage}`;
+  introSectionCurrentRow++;
+
+  sheet1.getCell(introSectionCurrentRow, 2).value = `Schema SAID: ${jsonSaid}`;
+  introSectionCurrentRow++;
+
+  if (ocaPackageSaid) {
+    sheet1.getCell(introSectionCurrentRow, 2).value = `Package SAID: ${ocaPackageSaid}`;
+    introSectionCurrentRow++;
+  }
+
+  sheet1.getCell(introSectionCurrentRow, 2).value =
+    `Schema classification: ${schemaClassification}`;
+  introSectionCurrentRow += 2;
+
+  sheet1.getCell(introSectionCurrentRow, 1).value = "What is a schema?";
+  formatFirstPage(sheet1.getCell(introSectionCurrentRow, 1));
+  introSectionCurrentRow++;
+
+  sheet1.getCell(introSectionCurrentRow, 2).value =
+    "A schema describes structures and rules of a dataset.";
+  introSectionCurrentRow++;
+
+  sheet1.getCell(introSectionCurrentRow, 2).value =
     "Learn more and write your own schema at https://semanticengine.org";
+  introSectionCurrentRow += 2;
 
-  sheet1.getCell(16, 1).value = "Schema Description:";
-  formatFirstPage(sheet1.getCell(16, 1));
-  sheet1.getCell(17, 2).value =
-    "Here is a table describing of each of the attributes which you will find on the Data sheet. This information has been supplied by your schema.";
+  sheet1.getCell(introSectionCurrentRow, 1).value = "Schema Description:";
+  formatFirstPage(sheet1.getCell(introSectionCurrentRow, 1));
+  introSectionCurrentRow++;
+
+  sheet1.getCell(introSectionCurrentRow, 2).value =
+    "Here is a table describing each of the attributes which you will find on the Data sheet. This information has been supplied by your schema.";
 
   // Step 6: Start the Workbook
-  const shift = 17;
+  const shift = introSectionCurrentRow;
 
   try {
     sheet1.getColumn(1).width = 17;
