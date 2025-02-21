@@ -2,7 +2,14 @@ import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
-import { Box, Button, Typography, Tooltip } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  Tooltip,
+  Checkbox,
+  FormControlLabel
+} from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -65,11 +72,13 @@ export default function ViewSchema({
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
-  const { resetToDefaults, exportDisabled } = useExportLogic();
+  const { resetToDefaults, exportDisabled, handleExport } = useExportLogic();
   const { exportData } = useExportLogicV2();
   const [loading, setLoading] = useState(true);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
+
+  const [shouldDownloadZip, setShouldDownloadZip] = useState(false);
 
   // Formats language buttons in a way that can handle many languages cleanly
   // Minimizes language for cases where it's too long to fit in button size
@@ -262,6 +271,15 @@ export default function ViewSchema({
     }
   };
 
+  const handleClickDownload = () => {
+    // Download OCA package and related files
+    exportData();
+    if (shouldDownloadZip) {
+      // Download legacy .zip bundle
+      handleExport({ onlyZip: true });
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -353,41 +371,52 @@ export default function ViewSchema({
                   </>
                 )}
                 {isExport && (!isZip || (isZip && isZipEdited)) ? (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: CustomPalette.GREY_600
-                    }}
-                  >
-                    <Button
-                      color="button"
-                      variant="contained"
-                      onClick={() => {
-                        exportData();
-                      }}
+                  <Box>
+                    <Box
                       sx={{
-                        alignSelf: "flex-end",
-                        width: "13rem",
                         display: "flex",
-                        justifyContent: "space-around",
-                        p: 1
+                        alignItems: "center",
+                        color: CustomPalette.GREY_600
                       }}
-                      disabled={exportDisabled}
                     >
-                      {t("Finish and Download")} <CheckCircleIcon />
-                    </Button>
-                    <Box sx={{ marginLeft: "1rem" }}>
-                      <Tooltip
-                        title={t(
-                          "Export your schema in a .json machine-readable version and..."
-                        )}
-                        placement="left"
-                        arrow
+                      <Button
+                        color="button"
+                        variant="contained"
+                        onClick={handleClickDownload}
+                        sx={{
+                          alignSelf: "flex-end",
+                          width: "13rem",
+                          display: "flex",
+                          justifyContent: "space-around",
+                          p: 1
+                        }}
+                        disabled={exportDisabled}
                       >
-                        <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                      </Tooltip>
+                        {t("Finish and Download")} <CheckCircleIcon />
+                      </Button>
+                      <Box sx={{ marginLeft: "1rem" }}>
+                        <Tooltip
+                          title={t(
+                            "Export your schema in a .json machine-readable version and..."
+                          )}
+                          placement="left"
+                          arrow
+                        >
+                          <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                        </Tooltip>
+                      </Box>
                     </Box>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={shouldDownloadZip}
+                          onChange={(e) => setShouldDownloadZip(e.target.checked)}
+                          size="small"
+                        />
+                      }
+                      label={t("Download legacy .zip bundle")}
+                      sx={{ marginTop: "4px" }}
+                    />
                   </Box>
                 ) : (
                   <></>
@@ -498,7 +527,7 @@ export default function ViewSchema({
                 }}
               >
                 {t(
-                  "2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine."
+                  "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine."
                 )}
               </Typography>
             </Box>
@@ -584,30 +613,34 @@ export default function ViewSchema({
         />
       </Box>
       {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) ? (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end"
-          }}
-        >
-          <Button
-            color="button"
-            variant="contained"
-            onClick={() => {
-              exportData();
-            }}
-            sx={{
-              alignSelf: "flex-end",
-              width: "13rem",
-              display: "flex",
-              justifyContent: "space-around",
-              p: 1
-            }}
-            disabled={exportDisabled}
-          >
-            {t("Finish and Download")} <CheckCircleIcon />
-          </Button>
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Box>
+            <Button
+              color="button"
+              variant="contained"
+              onClick={handleClickDownload}
+              sx={{
+                width: "13rem",
+                display: "flex",
+                justifyContent: "space-around",
+                p: 1
+              }}
+              disabled={exportDisabled}
+            >
+              {t("Finish and Download")} <CheckCircleIcon />
+            </Button>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={shouldDownloadZip}
+                  onChange={(e) => setShouldDownloadZip(e.target.checked)}
+                  size="small"
+                />
+              }
+              label={t("Download legacy .zip bundle")}
+              sx={{ marginTop: "4px" }}
+            />
+          </Box>
         </Box>
       ) : (
         <></>

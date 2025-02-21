@@ -337,6 +337,19 @@ const useExportLogicV2 = () => {
     return buildBodyText;
   };
 
+  const downloadTextFile = (data, fileName) => {
+    const blob = new Blob([data], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const downloadJsonFile = (data, fileName) => {
     const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -382,19 +395,6 @@ const useExportLogicV2 = () => {
 
   const exportData = async () => {
     const data = buildOCAText(OCADataArray);
-    const blob = new Blob([data], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const descriptiveFileName = getDescriptiveFileName(schemaDescription, "OCA_file.txt");
-
-    a.href = url;
-    a.download = descriptiveFileName;
-    document.body.appendChild(a);
-    a.click();
-
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
     const bundle = await generateOCABundle(data);
 
     const extension = {
@@ -420,7 +420,12 @@ const useExportLogicV2 = () => {
       getDescriptiveFileName(schemaDescription, "OCA_package.json")
     );
 
-    // download bundle only on testing.semanticengine.org
+    // Download OCA file only on testing site
+    if (currentEnv === "DEV") {
+      downloadTextFile(data, getDescriptiveFileName(schemaDescription, "OCA_file.txt"));
+    }
+
+    // Download bundle only on testing site
     if (currentEnv === "DEV") {
       downloadJsonFile(
         bundle,
