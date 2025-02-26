@@ -53,7 +53,8 @@ const useExportLogic = () => {
     formatRuleRowData,
     dataStandardsRowData,
     cardinalityData,
-    setZipToReadme
+    setZipToReadme,
+    setOCAPackage
   } = useContext(Context);
   // const { jsonToTextFile } = useGenerateReadMeV2();
   const { toTextFile } = useGenerateReadMe();
@@ -647,6 +648,7 @@ const useExportLogic = () => {
     setIsZip(false);
     setFileData([]);
     setRawFile([]);
+    setOCAPackage(null);
     setCurrentPage("Landing");
     navigate("/");
   };
@@ -756,7 +758,7 @@ const useExportLogic = () => {
     document.body.removeChild(a);
   };
 
-  const handleExportV2 = async (onlyReadme = false) => {
+  const handleExportV2 = async (downloadOptions = null) => {
     setExportDisabled(true);
     const { workbook, workbookName } = handleOCAExport(OCADataArray);
     const fileName = await sendFileToAPI(workbook, workbookName);
@@ -769,10 +771,12 @@ const useExportLogic = () => {
 
     if (response.ok) {
       const blob = await response.blob();
-      if (onlyReadme) {
+      if (downloadOptions?.onlyReadme) {
         downloadReadMe(blob);
       } else {
-        downloadReadMe(blob);
+        if (!downloadOptions?.onlyZip) {
+          downloadReadMe(blob);
+        }
         // Generating a new blob URL with the same origin so that a custom download name can be given
         const blobUrl = window.URL.createObjectURL(blob);
         downloadZip(blobUrl, descriptiveFileName);

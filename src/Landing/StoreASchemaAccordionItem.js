@@ -47,7 +47,7 @@ const StoreASchemaAccordionItem = () => {
           )}
         </Typography>
         <CustomAnchorLink
-          link={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" ? "en" : i18next.language}/HelpStorage/`}
+          link={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" || i18next.language === "en-CA" ? "en" : i18next.language}/HelpStorage/`}
           text={t("Read more about storage")}
           overrideStyle={{
             fontSize: "20px",

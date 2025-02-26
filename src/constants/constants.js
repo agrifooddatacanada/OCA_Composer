@@ -389,3 +389,34 @@ export const overlays = [
 
 export const SHOW_ALL_DATA = "Show all data";
 export const SHOW_ONLY_ROWS_WITH_ERRORS = "Show only rows with errors";
+export const OCA_REPOSITORY_API_URL = "https://api.adc.oca-repo.semanticengine.org";
+
+// Extension overlays
+export const ORDERING = "ordering";
+
+export const ALLOWED_BOOLEAN_VALUES = [
+  "True",
+  "true",
+  "TRUE",
+  "T",
+  "1",
+  "1.0",
+  "False",
+  "false",
+  "FALSE",
+  "F",
+  "0",
+  "0.0",
+  "yes",
+  "Yes",
+  "YES",
+  "Y",
+  "no",
+  "No",
+  "NO",
+  "N",
+  "Non",
+  "non",
+  "Oui",
+  "oui"
+];
