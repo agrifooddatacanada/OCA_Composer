@@ -297,5 +297,6 @@
   "1) Schema in .txt format, readable and archivable.": "1) Schema in .txt format, readable and archivable.",
   "2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine.": "2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine.",
   "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine.": "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine.",
-  "Download legacy .zip bundle": "Download legacy .zip bundle"
+  "Download legacy .zip bundle": "Download legacy .zip bundle",
+  "Early March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip.": "Early March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip."
 }
