@@ -1,7 +1,12 @@
-import { useContext } from 'react';
-import { Context } from '../App';
-import { codesToLanguages, languageCodesObject } from '../constants/isoCodes';
-import { codeToDivision, codeToGroup } from '../constants/constants';
+import { useContext } from "react";
+import { Context } from "../App";
+import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
+import { codeToDivision, codeToGroup } from "../constants/constants";
+import {
+  getOrderedAttributeRowData,
+  hasAttributeOrdering,
+  hasEntryCodeOrdering
+} from "../constants/utils";
 
 const useZipParser = () => {
   const {
@@ -23,7 +28,7 @@ const useZipParser = () => {
   const processLanguages = (languages) => {
     const newLanguages = languages.map((language) => {
       if (!codesToLanguages?.[language]) {
-        const randomString = 'lang_' + language;
+        const randomString = `lang_${language}`;
         codesToLanguages[language] = randomString;
         languageCodesObject[randomString] = language;
       }
@@ -40,7 +45,21 @@ const useZipParser = () => {
     setSchemaDescription(newMetadata);
   };
 
-  const processLabelsDescriptionRootUnitsEntries = (labels, description, root, units, entryCodes, entries, conformance, characterEncoding, languageList, formatRules, cardinalityData, dataStandards) => {
+  const processLabelsDescriptionRootUnitsEntries = (
+    labels,
+    description,
+    root,
+    units,
+    entryCodes,
+    entries,
+    conformance,
+    characterEncoding,
+    languageList,
+    formatRules,
+    cardinalityData,
+    dataStandards,
+    ocaPackageData = null
+  ) => {
     const newSavedEntryCodes = {};
     const newLangAttributeRowData = {};
     const newAttributeRowData = [];
@@ -52,13 +71,23 @@ const useZipParser = () => {
 
     // Parse entry codes for list type attributes
     if (entries.length > 0) {
-      attributesWithListType = Object.keys(entryCodes['attribute_entry_codes']);
+      attributesWithListType = Object.keys(entryCodes.attribute_entry_codes);
 
       for (const attrWithList of attributesWithListType) {
         const newEntryCodeValueRowsForAttribute = [];
-        const entryCodesForAttribute = entryCodes['attribute_entry_codes'][attrWithList];
-        if (typeof entryCodesForAttribute === 'string') {
-          // Possibly send to an API to get the entry codes 
+        let entryCodesForAttribute;
+
+        if (ocaPackageData && hasEntryCodeOrdering(ocaPackageData)) {
+          entryCodesForAttribute =
+            ocaPackageData.extensions[0]?.overlays?.ordering?.entry_code_ordering[
+              attrWithList
+            ];
+        } else {
+          entryCodesForAttribute = entryCodes.attribute_entry_codes[attrWithList];
+        }
+
+        if (typeof entryCodesForAttribute === "string") {
+          // Possibly send to an API to get the entry codes
         } else {
           for (const entryCode of entryCodesForAttribute) {
             const entryCodeValueEntity = {
@@ -66,21 +95,25 @@ const useZipParser = () => {
             };
 
             for (let i = 0; i < entries.length; i++) {
-              const keyName = attrWithList + '_' + entries[i].language.slice(0, 2);
-              const entryCodeValue = entries[i]['attribute_entries'][attrWithList][entryCode];
+              const keyName = `${attrWithList}_${entries[i].language.slice(0, 2)}`;
+              const entryCodeValue =
+                entries[i].attribute_entries[attrWithList][entryCode];
 
               if (attributeListStringMap[keyName]) {
-                attributeListStringMap[keyName] += (' | ' + entryCodeValue);
+                attributeListStringMap[keyName] += ` | ${entryCodeValue}`;
               } else {
                 attributeListStringMap[keyName] = entryCodeValue;
               }
 
-              entryCodeValueEntity[codesToLanguages[entries[i].language.slice(0, 2)]] = entryCodeValue;
+              entryCodeValueEntity[codesToLanguages[entries[i].language.slice(0, 2)]] =
+                entryCodeValue;
             }
             newEntryCodeValueRowsForAttribute.push(entryCodeValueEntity);
           }
 
-          newSavedEntryCodes[attrWithList] = (newSavedEntryCodes[attrWithList] || []).concat(newEntryCodeValueRowsForAttribute);
+          newSavedEntryCodes[attrWithList] = (
+            newSavedEntryCodes[attrWithList] || []
+          ).concat(newEntryCodeValueRowsForAttribute);
         }
       }
 
@@ -89,24 +122,30 @@ const useZipParser = () => {
     }
 
     // Parse classification
-    const classificationFromJson = root?.['classification'];
-    const indexOfRDF = classificationFromJson?.indexOf('RDF');
-    if (indexOfRDF !== -1 && !isNaN(classificationFromJson?.[indexOfRDF + 5])) {
+    const classificationFromJson = root?.classification;
+    const indexOfRDF = classificationFromJson?.indexOf("RDF");
+    if (indexOfRDF !== -1 && !Number.isNaN(classificationFromJson?.[indexOfRDF + 5])) {
       let divisionCode = classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5);
 
       // Division 20 is named differently in the codeToDivision object
-      if (divisionCode === 'RDF20') {
-        divisionCode = 'RDF20-21';
+      if (divisionCode === "RDF20") {
+        divisionCode = "RDF20-21";
       }
 
       setDivisionGroup({
-        division: codeToDivision?.[divisionCode || ''],
-        group: codeToGroup?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 6)],
+        division: codeToDivision?.[divisionCode || ""],
+        group:
+          codeToGroup?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 6)]
       });
-    } else if (indexOfRDF !== -1 && classificationFromJson?.[indexOfRDF + 4] && !isNaN(classificationFromJson?.[indexOfRDF + 4])) {
+    } else if (
+      indexOfRDF !== -1 &&
+      classificationFromJson?.[indexOfRDF + 4] &&
+      !Number.isNaN(classificationFromJson?.[indexOfRDF + 4])
+    ) {
       setDivisionGroup({
-        division: codeToDivision?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5)],
-        group: '',
+        division:
+          codeToDivision?.[classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5)],
+        group: ""
       });
     }
 
@@ -116,25 +155,29 @@ const useZipParser = () => {
       languageDescriptionMap[language.slice(0, 2)] = attribute_information;
     }
 
-    const attributeList = Object.keys(root?.['attributes'] || {});
+    const attributeList = Object.keys(root?.attributes || {});
     for (const lang of languageList) {
       const label = labels.find((label) => label.language.slice(0, 2) === lang);
       newLangAttributeRowData[codesToLanguages[lang]] = [];
 
       for (const attr of attributeList) {
-        if (label && label?.attribute_labels?.hasOwnProperty(attr)) {
+        if (
+          label &&
+          label.attribute_labels &&
+          Object.prototype.hasOwnProperty.call(label.attribute_labels, attr)
+        ) {
           newLangAttributeRowData[codesToLanguages[lang]].push({
             Attribute: attr,
-            Description: languageDescriptionMap?.[lang]?.[attr] || '',
+            Description: languageDescriptionMap?.[lang]?.[attr] || "",
             Label: label.attribute_labels[attr],
-            List: attributeListStringMap[attr + '_' + lang] || "Not a List"
+            List: attributeListStringMap[`${attr}_${lang}`] || "Not a List"
           });
         } else {
           newLangAttributeRowData[codesToLanguages[lang]].push({
             Attribute: attr,
-            Description: languageDescriptionMap?.[lang]?.[attr] || '',
-            Label: '',
-            List: attributeListStringMap?.[attr + '_' + lang] || "Not a List"
+            Description: languageDescriptionMap?.[lang]?.[attr] || "",
+            Label: "",
+            List: attributeListStringMap?.[`${attr}_${lang}`] || "Not a List"
           });
         }
       }
@@ -144,17 +187,18 @@ const useZipParser = () => {
     attributeList.forEach((item) => {
       newAttributeRowData.push({
         Attribute: item,
-        Flagged: root?.['flagged_attributes']?.includes(item),
+        Flagged: root?.flagged_attributes?.includes(item),
         List: attributesWithListType.includes(item),
-        Type: root?.['attributes']?.[item],
-        Unit: units?.['attribute_units']?.[item]
+        Type: root?.attributes?.[item],
+        Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
       const newRowForCharacterEncoding = { Attribute: item };
 
       if (conformance) {
-        newRowForCharacterEncoding['Make selected entries required'] = conformance?.['attribute_conformance']?.[item] === "M";
-        setOverlay(prev => ({
+        newRowForCharacterEncoding["Make selected entries required"] =
+          conformance?.attribute_conformance?.[item] === "M";
+        setOverlay((prev) => ({
           ...prev,
           "Make selected entries required": {
             ...prev["Make selected entries required"],
@@ -164,8 +208,10 @@ const useZipParser = () => {
       }
 
       if (characterEncoding) {
-        newRowForCharacterEncoding['Character Encoding'] = characterEncoding?.['attribute_character_encoding']?.[item] || characterEncoding?.['default_character_encoding'];
-        setOverlay(prev => ({
+        newRowForCharacterEncoding["Character Encoding"] =
+          characterEncoding?.attribute_character_encoding?.[item] ||
+          characterEncoding?.default_character_encoding;
+        setOverlay((prev) => ({
           ...prev,
           "Character Encoding": {
             ...prev["Character Encoding"],
@@ -181,8 +227,9 @@ const useZipParser = () => {
       newAttributeRowData.forEach((item) => {
         const newFormatRuleData = { Attribute: item?.Attribute, Type: item?.Type };
 
-        newFormatRuleData['FormatText'] = formatRules?.['attribute_formats']?.[item.Attribute] || '';
-        setOverlay(prev => ({
+        newFormatRuleData.FormatText =
+          formatRules?.attribute_formats?.[item.Attribute] || "";
+        setOverlay((prev) => ({
           ...prev,
           "Add format rule for data": {
             ...prev["Add format rule for data"],
@@ -198,9 +245,10 @@ const useZipParser = () => {
     if (dataStandards) {
       newAttributeRowData.forEach((row) => {
         const newRowForDataStandard = { Attribute: row.Attribute };
-        newRowForDataStandard['DataStandard'] = dataStandards?.['attribute_standards']?.[row.Attribute] || '';
+        newRowForDataStandard.DataStandard =
+          dataStandards?.attribute_standards?.[row.Attribute] || "";
 
-        setOverlay(prev => ({
+        setOverlay((prev) => ({
           ...prev,
           "Data Standards": {
             ...prev["Data Standards"],
@@ -216,40 +264,54 @@ const useZipParser = () => {
     if (cardinalityData) {
       const firstLanguage = Object.keys(newLangAttributeRowData)?.[0];
       const cardinalityDataToParse = [];
-      for (const item of newLangAttributeRowData?.[firstLanguage]) {
-        const cardinality = cardinalityData?.['attribute_cardinality']?.[item.Attribute];
-        const attributeType = newAttributeRowData?.find((row) => row?.Attribute === item?.Attribute)?.Type;
-        cardinalityDataToParse.push({
-          ...item,
-          EntryLimit: cardinality,
-          Type: attributeType
-        });
+      if (newLangAttributeRowData?.[firstLanguage]) {
+        for (const item of newLangAttributeRowData[firstLanguage]) {
+          const cardinality = cardinalityData?.attribute_cardinality?.[item.Attribute];
+          const attributeType = newAttributeRowData?.find(
+            (row) => row?.Attribute === item?.Attribute
+          )?.Type;
+          cardinalityDataToParse.push({
+            ...item,
+            EntryLimit: cardinality,
+            Type: attributeType
+          });
+        }
       }
-      setOverlay(prev => ({
+      setOverlay((prev) => ({
         ...prev,
-        "Cardinality": {
-          ...prev["Cardinality"],
+        Cardinality: {
+          ...prev.Cardinality,
           selected: true
         }
       }));
       setCardinalityData(cardinalityDataToParse);
     }
 
+    if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {
+      const attributeOrdering =
+        ocaPackageData.extensions[0].overlays.ordering.attribute_ordering;
+      const orderedAttributeRowData = getOrderedAttributeRowData(
+        newAttributeRowData,
+        attributeOrdering
+      );
+      setAttributeRowData(orderedAttributeRowData);
+      setAttributesList(attributeOrdering);
+    } else {
+      setAttributesList(attributeList);
+      setAttributeRowData(newAttributeRowData);
+    }
+
     setFormatRuleRowData(newFormatRuleRowData);
     setDataStandardsRowData(newDataStandardsRowData);
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setLanAttributeRowData(newLangAttributeRowData);
-    setAttributesList(attributeList);
-    setAttributeRowData(newAttributeRowData);
   };
-
 
   return {
     processLanguages,
     processMetadata,
-    processLabelsDescriptionRootUnitsEntries,
+    processLabelsDescriptionRootUnitsEntries
   };
 };
-
 
 export default useZipParser;

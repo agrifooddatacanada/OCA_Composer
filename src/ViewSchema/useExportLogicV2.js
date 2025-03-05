@@ -1,7 +1,17 @@
 import { useContext, useMemo } from "react";
+import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
-import { divisionCodes, groupCodes } from "../constants/constants";
+import {
+  divisionCodes,
+  groupCodes,
+  OCA_REPOSITORY_API_URL,
+  ORDERING
+} from "../constants/constants";
+import { getDescriptiveFileName, getTransformedEntryCodes } from "../constants/utils";
+import useGenerateReadMeV2 from "./useGenerateReadMeV2";
+
+const currentEnv = process.env.REACT_APP_ENV;
 
 const useExportLogicV2 = () => {
   const {
@@ -18,6 +28,8 @@ const useExportLogicV2 = () => {
     overlay,
     cardinalityData
   } = useContext(Context);
+
+  const { jsonToTextFile } = useGenerateReadMeV2();
 
   // CAPTURE SHEET DESCRIPTIONS DATA
   const OCADescriptionData = [];
@@ -238,32 +250,46 @@ const useExportLogicV2 = () => {
 
   const buildUnitsText = (data) => {
     let buildText = "# Add units overlay\n";
-    buildText += "ADD Unit ATTRS";
+    let isAdd = false;
+    let buildNewText = "";
 
     attributesList.forEach((item, index) => {
-      buildText += ` ${item}=${data[1][index].Unit}`;
+      if (data[1][index].Unit && data[1][index].Unit !== "undefined") {
+        isAdd = true;
+        buildNewText += ` ${item}="${data[1][index].Unit}"`;
+      }
     });
 
-    buildText += "\n";
+    if (isAdd) {
+      buildText += "ADD Unit ATTRS";
+      buildText += buildNewText;
+      buildText += "\n";
+    }
+
     return buildText;
   };
 
-  const buildCharacterEncodingText = (data) => {
+  const buildCharacterEncodingText = () => {
     let buildText = "# Add character encoding\n";
-    buildText += "ADD CHARACTER_ENCODING ATTRS";
+    let isAdd = false;
+    let buildNewText = "";
 
     attributesList.forEach((item, index) => {
       if (
         characterEncodingRowData?.[index] &&
         characterEncodingRowData?.[index]?.["Character Encoding"]
       ) {
-        buildText += ` ${item}="${characterEncodingRowData[index]["Character Encoding"]}"`;
-      } else {
-        buildText += ` ${item}="${data[1][index].Type === "Array[Binary]" || data[1][index].Type === "Binary" ? "base64" : "utf-8"}"`;
+        isAdd = true;
+        buildNewText += ` ${item}="${characterEncodingRowData[index]["Character Encoding"]}"`;
       }
     });
 
-    buildText += "\n";
+    if (isAdd) {
+      buildText += "ADD CHARACTER_ENCODING ATTRS";
+      buildText += buildNewText;
+      buildText += "\n";
+    }
+
     return buildText;
   };
 
@@ -306,26 +332,106 @@ const useExportLogicV2 = () => {
     buildBodyText += buildEntryCodeText();
     buildBodyText += buildCardinalityText();
     buildBodyText += buildUnitsText(data);
-    buildBodyText += buildCharacterEncodingText(data);
+    buildBodyText += buildCharacterEncodingText();
 
     return buildBodyText;
   };
 
-  const exportData = async () => {
-    const data = buildOCAText(OCADataArray);
-
+  const downloadTextFile = (data, fileName) => {
     const blob = new Blob([data], { type: "text/plain" });
-
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement("a");
+
     a.href = url;
-    a.download = "ocafile.txt";
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
-
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const downloadJsonFile = (data, fileName) => {
+    const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const fetchOCABundle = async (said) => {
+    const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles/${said}`);
+    const data = await response.json();
+    return data;
+  };
+
+  const generateOCABundle = async (OCAFileData) => {
+    try {
+      const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain"
+        },
+        body: OCAFileData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate OCA bundle: ${response.statusText}`);
+      }
+
+      const { said } = await response.json();
+      const bundle = await fetchOCABundle(said);
+
+      return bundle;
+    } catch (error) {
+      console.error("Error generating OCA bundle from OCA file:", error);
+      throw error;
+    }
+  };
+
+  const exportData = async () => {
+    const data = buildOCAText(OCADataArray);
+    const bundle = await generateOCABundle(data);
+
+    const extension = {
+      extensions: [
+        {
+          ordering_overlay: {
+            type: ORDERING,
+            attribute_ordering: attributesList,
+            entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
+          }
+        }
+      ]
+    };
+
+    const ocaPackageService = new OcaPackage(extension, bundle);
+    const ocaPackage = JSON.parse(ocaPackageService.generateOcaPackage());
+
+    // Generate and download text readme
+    jsonToTextFile(bundle.bundle, ocaPackage);
+
+    downloadJsonFile(
+      ocaPackage,
+      getDescriptiveFileName(schemaDescription, "OCA_package.json")
+    );
+
+    // Download OCA file only on testing site
+    if (currentEnv === "DEV") {
+      downloadTextFile(data, getDescriptiveFileName(schemaDescription, "OCA_file.txt"));
+    }
+
+    // Download bundle only on testing site
+    if (currentEnv === "DEV") {
+      downloadJsonFile(
+        bundle,
+        getDescriptiveFileName(schemaDescription, "OCA_bundle.json")
+      );
+    }
   };
 
   return {

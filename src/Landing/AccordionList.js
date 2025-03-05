@@ -36,7 +36,8 @@ const AccordionList = () => {
   const isMobile = useMediaQuery("(max-width: 736px)");
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage } = useContext(Context);
+  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, OCAPackage } =
+    useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
@@ -234,10 +235,10 @@ const AccordionList = () => {
               variant="contained"
               color="navButton"
               onClick={() => {
-                if (zipToReadme.length > 0) {
+                if (Object.keys(jsonToReadme).length > 0) {
+                  jsonToTextFile(jsonToReadme, OCAPackage);
+                } else if (zipToReadme.length > 0) {
                   toTextFile(zipToReadme);
-                } else {
-                  jsonToTextFile(jsonToReadme);
                 }
               }}
               sx={buttonStyles}

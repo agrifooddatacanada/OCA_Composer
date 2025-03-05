@@ -19,7 +19,7 @@ export default function Header({ currentPage }) {
   // Detecting mobile screens with 'isMobile'
   const isMobile = useMediaQuery("(max-width:736px)");
   const [selectedLanguage, setSelectedLanguage] = useState(
-    i18next.language === "en-US" ? "en" : i18next.language
+    i18next.language === "en-US" || i18next.language === "en-CA" ? "en" : i18next.language
   );
 
   useEffect(() => {
@@ -39,14 +39,14 @@ export default function Header({ currentPage }) {
         setHeader(t("Start Creating an OCA Schema"));
         setToolTipText("");
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/CreatingOCASchema/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/CreatingOCASchema/`
         );
         break;
       case "Metadata":
         setHeader(t("Schema Metadata"));
         setToolTipText(t("This page is where you can write the metadata describing..."));
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/SchemaMetadata/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/SchemaMetadata/`
         );
         break;
       case "Details":
@@ -55,21 +55,21 @@ export default function Header({ currentPage }) {
           t("Each column of your dataset is an attribute in your schema...")
         );
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/AttributeDetails/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/AttributeDetails/`
         );
         break;
       case "Codes":
         setHeader(t("Add Entry Codes"));
         setToolTipText(t("Entry codes are options you want available to users as a..."));
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/AddEntryCode/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/AddEntryCode/`
         );
         break;
       case "LanguageDetails":
         setHeader(t("Language Dependent Attribute Details"));
         setToolTipText(t("You can add details in each language to help users..."));
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/LanguageAttribute/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/LanguageAttribute/`
         );
         break;
       case "View":
@@ -80,7 +80,7 @@ export default function Header({ currentPage }) {
           )
         );
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/ViewSchema/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/ViewSchema/`
         );
         break;
       case "Overlays":
@@ -88,7 +88,7 @@ export default function Header({ currentPage }) {
         // TODO: Add help tooltips
         setToolTipText("");
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/Overlays/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/Overlays/`
         );
         break;
       case "CharacterEncoding":
@@ -97,7 +97,7 @@ export default function Header({ currentPage }) {
           t("Character encoding of the data source (for each attribute)...")
         );
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/CharacterEncoding/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/CharacterEncoding/`
         );
         break;
       case "RequiredEntries":
@@ -108,35 +108,35 @@ export default function Header({ currentPage }) {
           )
         );
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/RequiredEntry/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/RequiredEntry/`
         );
         break;
       case "FormatRules":
         setHeader(t("Add Format Rules for Data Entry"));
         setToolTipText("");
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/FormatText/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/FormatText/`
         );
         break;
       case "Cardinality":
         setHeader(t("Add Entry Limit Rules for Data Entry"));
         setToolTipText("");
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/Cardinality/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/Cardinality/`
         );
         break;
       case "DataStandards":
         setHeader(t("Add Data Standards"));
         setToolTipText("");
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/DataStandards/`
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/DataStandards/`
         );
         break;
       case "StartDataValidator":
         setHeader(t("Upload Data (optional)"));
         setToolTipText("");
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/DataEntryVerificationStart`
+          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/DataEntryVerificationStart`
         );
         break;
       case "SchemaViewDataValidator":
@@ -148,21 +148,21 @@ export default function Header({ currentPage }) {
         setHeader(t("Preview Dataset"));
         setToolTipText("");
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/PreviewSchema`
+          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/PreviewSchema`
         );
         break;
       case "AttributeMatchDataValidator":
         setHeader(t("Matching Attributes"));
         setToolTipText("");
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/MatchAttributes/`
+          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/MatchAttributes/`
         );
         break;
       case "OCADataValidatorCheck":
         setHeader(t("Data Entry and Verification"));
         setToolTipText("");
         setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" ? "en" : selectedLanguage}/DataVerification/`
+          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/DataVerification/`
         );
         break;
       default:
