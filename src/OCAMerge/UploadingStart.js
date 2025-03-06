@@ -1,10 +1,14 @@
-import { Box, Button, Typography } from '@mui/material';
-import React from 'react';
-import BackNextSkeleton from '../components/BackNextSkeleton';
-import { useTranslation } from 'react-i18next';
-import useHandleOCAFileUpload from './useHandleOCAFileUpload';
-import Drop from '../StartSchema/Drop';
-import { datasetUploadTooltip, jsonUploadTooltip, textUploadDescription } from '../constants/constants';
+import { Box, Button, Typography } from "@mui/material";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import BackNextSkeleton from "../components/BackNextSkeleton";
+import useHandleOCAFileUpload from "./useHandleOCAFileUpload";
+import Drop from "../StartSchema/Drop";
+import {
+  datasetUploadTooltip,
+  jsonUploadTooltip,
+  textUploadDescription
+} from "../constants/constants";
 
 const UploadingStart = () => {
   const { t } = useTranslation();
@@ -28,27 +32,40 @@ const UploadingStart = () => {
     OCAFile2Raw,
     handleClearOCAFile2,
     parsedOCAFile1,
-    parsedOCAFile2,
+    parsedOCAFile2
   } = useHandleOCAFileUpload();
 
   const filePath1 = OCAFile1Raw?.[0]?.path;
   const filePath2 = OCAFile2Raw?.[0]?.path;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-      <BackNextSkeleton isForward={parsedOCAFile1 !== "" && parsedOCAFile2 !== ""} pageForward={() => {
-        setCurrentOCAMergePage('UserSelection');
-      }} />
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
-      }}>
-        <Box sx={{ height: '3rem' }} />
+    <Box sx={{ display: "flex", flexDirection: "column" }}>
+      <BackNextSkeleton
+        isForward={parsedOCAFile1 !== "" && parsedOCAFile2 !== ""}
+        pageForward={() => {
+          setCurrentOCAMergePage("UserSelection");
+        }}
+      />
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          flex: 1
+        }}
+      >
+        <Box sx={{ height: "3rem" }} />
         <Box>
-          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {filePath1 ? filePath1.substring(0, filePath1.lastIndexOf('.')) : t('Schema Bundle 1')}</Typography>
+          <Typography
+            variant="h6"
+            sx={{ textAlign: "start", color: "black", marginBottom: "-1rem" }}
+          >
+            {t("Required")}:{" "}
+            {filePath1
+              ? filePath1.substring(0, filePath1.lastIndexOf("."))
+              : t("Schema Bundle 1")}
+          </Typography>
           <Drop
             setFile={setOCAFile1Raw}
             setLoading={setOCAFile1Loading}
@@ -70,12 +87,20 @@ const UploadingStart = () => {
             sx={{ width: 190, mr: 2 }}
             disabled={OCAFile1Raw.length === 0}
           >
-            {t('Clear OCA File')}
+            {t("Clear OCA File")}
           </Button>
         </Box>
-        <Box sx={{ height: '4rem' }} />
+        <Box sx={{ height: "4rem" }} />
         <Box>
-          <Typography variant="h6" sx={{ textAlign: 'start', color: "black", marginBottom: "-1rem" }}>{t('Required')}: {filePath2 ? filePath2.substring(0, filePath2.lastIndexOf('.')) : t('Schema bundle 2')}</Typography>
+          <Typography
+            variant="h6"
+            sx={{ textAlign: "start", color: "black", marginBottom: "-1rem" }}
+          >
+            {t("Required")}:{" "}
+            {filePath2
+              ? filePath2.substring(0, filePath2.lastIndexOf("."))
+              : t("Schema Bundle 2")}
+          </Typography>
           <Drop
             setFile={setOCAFile2Raw}
             setLoading={setOCAFile2Loading}
@@ -97,11 +122,11 @@ const UploadingStart = () => {
             sx={{ width: 190, mr: 2 }}
             disabled={OCAFile2Raw.length === 0}
           >
-            {t('Clear OCA File')}
+            {t("Clear OCA File")}
           </Button>
         </Box>
 
-        <Box sx={{ height: '3rem' }} />
+        <Box sx={{ height: "3rem" }} />
       </Box>
     </Box>
   );
