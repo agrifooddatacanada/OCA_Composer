@@ -898,10 +898,11 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         formulae: [`'Schema Description'!$B$${start}:$B$${end}`],
         showErrorMessage: true
       };
+      // Get the correct column index from mappingAttrKeysandAttrValues
+      // Subtracting 1 to get the correct column index since we stored indices starting from 2
+      const col_i = mappingAttrKeysandAttrValues[attrName] - 1;
+
       for (let row = 2; row <= 1000; row++) {
-        const attrKeys = Object.keys(attributesIndex);
-        const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-        const col_i = attrNameFromAttrKeys.indexOf(attrName) + 1;
         sheet2.getCell(row, col_i).dataValidation = validationRule;
       }
     }
