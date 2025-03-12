@@ -204,7 +204,7 @@ export const descriptionToFormatCodeText = {
     // eslint-disable-next-line quotes
     `^[EW]\\s?(?:[0-1]?[0-7]?\\d)°\\s?(?:[0-5]?\\d)'?\\s?(?:[0-5]?\\d(?:\\.\\d+)?)"?$`
 };
-// ^[NS](?:(?:[0-8]\\d|90)(?:\\.\\d+)?°|(?:[0-8]\\d|90)°(?:[0-5]\\d(?:\\.\\d+)?'|[0-5]\\d'(?:[0-5]\\d(?:\\.\\d+)?")))$
+
 export const formatCodeText = Object.keys(descriptionToFormatCodeText);
 
 export const formatCodeTextDescription = Object.entries(
