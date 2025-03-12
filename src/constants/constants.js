@@ -197,12 +197,14 @@ export const descriptionToFormatCodeText = {
   "Phone number": "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}",
   // eslint-disable-next-line quotes
   'Latitude in formats S30°15\'45.678" or N12°30.999"':
-    "^[NS]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$",
+    // eslint-disable-next-line quotes
+    `^[NS]\\s?(?:[0-8]?\\d)°\\s?(?:[0-5]?\\d)'?\\s?(?:[0-5]?\\d(?:\\.\\d+)?)"?$`,
   // eslint-disable-next-line quotes
   'Longitude in formats E30°15\'45.678" or W90°00.000"':
-    "^[WE]-?(?:[0-8]?\\d|90)°(?:\\d+(?:\\.\\d+)?)(?:'(\\d+(?:\\.\\d+)?)\")?$"
+    // eslint-disable-next-line quotes
+    `^[EW]\\s?(?:[0-1]?[0-7]?\\d)°\\s?(?:[0-5]?\\d)'?\\s?(?:[0-5]?\\d(?:\\.\\d+)?)"?$`
 };
-
+// ^[NS](?:(?:[0-8]\\d|90)(?:\\.\\d+)?°|(?:[0-8]\\d|90)°(?:[0-5]\\d(?:\\.\\d+)?'|[0-5]\\d'(?:[0-5]\\d(?:\\.\\d+)?")))$
 export const formatCodeText = Object.keys(descriptionToFormatCodeText);
 
 export const formatCodeTextDescription = Object.entries(

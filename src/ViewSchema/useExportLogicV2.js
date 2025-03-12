@@ -135,7 +135,9 @@ const useExportLogicV2 = () => {
     let tempText = "";
     formatRuleRowData.forEach((item, index) => {
       if (item.FormatText) {
-        tempText += ` ${attributesList[index]}="${item.FormatText}"`;
+        // Any " in the format text needs to be escaped for OCA file
+        // eslint-disable-next-line quotes
+        tempText += ` ${attributesList[index]}="${item.FormatText.replace(/"/g, '\\"')}"`;
       }
     });
 
