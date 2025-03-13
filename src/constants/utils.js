@@ -22,20 +22,34 @@ export const getDescriptiveFileName = (schemaDescription, commonFileName) => {
 };
 
 // Helper function to replace specified characters in object keys
-export const replaceCharsInKeys = (obj, charsToReplace = [","], replacement = "_") => {
+export const replaceCharsInKeys = (
+  obj,
+  charsToReplace = [",", " ", "\\", "/", "(", ")", "'"],
+  replacement = "_"
+) => {
   if (!obj) return obj;
 
-  const pattern = new RegExp(`[${charsToReplace.join("")}]`, "g");
+  // Escape backslash to ensure it's treated as a literal backslash
+  const escapedChars = charsToReplace.map((char) => (char === "\\" ? "\\\\" : char));
+  const pattern = new RegExp(`[${escapedChars.join("")}]+`, "g");
+
+  const cleanString = (str) => {
+    // Replace consecutive special chars with a single replacement character
+    let result = str.replace(pattern, replacement);
+    // Remove replacement character from the end if present
+    result = result.replace(new RegExp(`${replacement}+$`), "");
+    return result;
+  };
 
   // If it's an array of strings
   if (Array.isArray(obj)) {
-    return obj.map((item) => item.replace(pattern, replacement));
+    return obj.map(cleanString);
   }
 
   // If it's an object with attribute names as keys
   const converted = {};
   Object.entries(obj).forEach(([key, value]) => {
-    const newKey = key.replace(pattern, replacement);
+    const newKey = cleanString(key);
     converted[newKey] = value;
   });
   return converted;
