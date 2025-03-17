@@ -1,6 +1,6 @@
 import i18next from "i18next";
 import { codesToLanguages } from "./isoCodes";
-import { DEFAULT_LANGUAGE } from "./constants";
+import { DEFAULT_LANGUAGE, DISALLOWED_CHARACTERS } from "./constants";
 
 export const getCurrentData = (currentApi, includedError) => {
   const newData = [];
@@ -24,7 +24,7 @@ export const getDescriptiveFileName = (schemaDescription, commonFileName) => {
 // Helper function to replace specified characters in object keys
 export const replaceCharsInKeys = (
   obj,
-  charsToReplace = [",", " ", "\\", "/", "(", ")", "'"],
+  charsToReplace = DISALLOWED_CHARACTERS,
   replacement = "_"
 ) => {
   if (!obj) return obj;
@@ -53,6 +53,13 @@ export const replaceCharsInKeys = (
     converted[newKey] = value;
   });
   return converted;
+};
+
+export const hasDisallowedChars = (str, charsToCheck = DISALLOWED_CHARACTERS) => {
+  const pattern = new RegExp(
+    `[${charsToCheck.map((char) => (char === "\\" ? "\\\\" : char)).join("")}]`
+  );
+  return pattern.test(str);
 };
 
 // Sanitize attributes in JSON string from ZIP schema upload

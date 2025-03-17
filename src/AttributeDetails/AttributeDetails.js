@@ -11,6 +11,7 @@ import {
 } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
+import { hasDisallowedChars } from "../constants/utils";
 
 export default function AttributeDetails({
   pageBack,
@@ -84,12 +85,21 @@ export default function AttributeDetails({
         duplicates: t("Please enter a unique attribute name for each attribute"),
         blankAttribute: t("Attribute names cannot be blank"),
         codeInjection: t("Attribute names cannot include HTML"),
-        blankType: t("Please enter a Type for all attributes")
+        blankType: t("Please enter a Type for all attributes"),
+        disallowedCharacters: t(
+          "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes"
+        )
       };
       let codeInjection = false;
+      let hasDisallowedCharacters = false;
 
       attributeRowData.forEach((item) => {
         const attributeName = removeSpacesFromString(item.Attribute);
+
+        if (hasDisallowedChars(attributeName)) {
+          hasDisallowedCharacters = true;
+        }
+
         // REVISIT
         if (
           attributeName.includes("/>") ||
@@ -110,6 +120,10 @@ export default function AttributeDetails({
           duplicateAttributes.push(attributeName);
         }
       });
+
+      if (hasDisallowedCharacters) {
+        return errorOptions.disallowedCharacters;
+      }
 
       if (duplicateAttributes.length > 0) {
         return errorOptions.duplicates;
