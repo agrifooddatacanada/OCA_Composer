@@ -422,3 +422,5 @@ export const ALLOWED_BOOLEAN_VALUES = [
   "Oui",
   "oui"
 ];
+
+export const DISALLOWED_CHARACTERS = [",", " ", "\\", "/", "(", ")", "'"];
