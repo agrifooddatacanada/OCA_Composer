@@ -37,7 +37,8 @@ export const generateFrontMatter = (metaOverlay, catalogueData) => {
 export const generateSchemaInformation = (
   metaOverlay,
   captureBaseOverlay,
-  catalogueData
+  catalogueData,
+  ocaPackage = null
 ) => {
   const markdownContent = [
     "# Schema information\n",
@@ -59,6 +60,10 @@ export const generateSchemaInformation = (
     scenarioFormFields.forEach((field) => {
       markdownContent.push(`**${field.label}**: ${catalogueData[field.name]}  \n`);
     });
+  }
+
+  if (ocaPackage?.d) {
+    markdownContent.push(`**Schema package SAID**: ${ocaPackage.d}  \n`);
   }
 
   markdownContent.push("\n");
@@ -333,9 +338,18 @@ export const generateSAIDTable = (captureBaseSAID, layerToSAIDMap) => {
 };
 
 // For JSON schema
-export const generateSAIDTableForJson = (captureBaseSAID, layers) => {
+export const generateSAIDTableForJson = (mainSAIDs, layers) => {
   const markdownContent = ["## Schema SAIDs\n\n"];
-  markdownContent.push(`**Capture base**: ${captureBaseSAID}\n\n`);
+  markdownContent.push(
+    `**Capture base**: ${mainSAIDs.captureBaseSAID}\n`,
+    `**Bundle**: ${mainSAIDs.bundleSAID}\n`
+  );
+
+  if (mainSAIDs.packageSAID) {
+    markdownContent.push(`**Package**: ${mainSAIDs.packageSAID}\n`);
+  }
+
+  markdownContent.push("\n");
 
   const columns = ["Layer", "SAID", "Type"];
   const rows = [];
