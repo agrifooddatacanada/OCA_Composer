@@ -104,7 +104,8 @@ const useGenerateMarkdownReadMeFromJson = () => {
     fileContent += generateSchemaInformation(
       metaOverlayCurrentLanguage,
       captureBaseOverlay,
-      catalogueData
+      catalogueData,
+      OCAPackage
     );
     fileContent += generateSchemaQuickView({
       layers,
@@ -135,7 +136,14 @@ const useGenerateMarkdownReadMeFromJson = () => {
       languageCodeLookupMap: languageNameToAlpha3Codes,
       orderingOverlay
     });
-    fileContent += generateSAIDTableForJson(captureBaseSAID, layersForSaidTable);
+    fileContent += generateSAIDTableForJson(
+      {
+        captureBaseSAID,
+        bundleSAID: schemaData.d,
+        ...(OCAPackage?.d && { packageSAID: OCAPackage.d })
+      },
+      layersForSaidTable
+    );
     fileContent += generateCreationTimestamp();
 
     const fileName = `${metaOverlayCurrentLanguage.name.split(" ")[0]}_OCA_schema.md`;
