@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Context } from "../App";
 import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
-import { codeToDivision, codeToGroup } from "../constants/constants";
+import { ADC, codeToDivision, codeToGroup } from "../constants/constants";
 import {
   getOrderedAttributeRowData,
   hasAttributeOrdering,
@@ -78,10 +78,10 @@ const useZipParser = () => {
         let entryCodesForAttribute;
 
         if (ocaPackageData && hasEntryCodeOrdering(ocaPackageData)) {
+          const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
           entryCodesForAttribute =
-            ocaPackageData.extensions[0]?.overlays?.ordering?.entry_code_ordering[
-              attrWithList
-            ];
+            ocaPackageData.extensions[ADC][captureBaseSaid]?.overlays?.ordering
+              ?.entry_code_ordering[attrWithList];
         } else {
           entryCodesForAttribute = entryCodes.attribute_entry_codes[attrWithList];
         }
@@ -288,8 +288,10 @@ const useZipParser = () => {
     }
 
     if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
       const attributeOrdering =
-        ocaPackageData.extensions[0].overlays.ordering.attribute_ordering;
+        ocaPackageData.extensions[ADC][captureBaseSaid].overlays.ordering
+          .attribute_ordering;
       const orderedAttributeRowData = getOrderedAttributeRowData(
         newAttributeRowData,
         attributeOrdering

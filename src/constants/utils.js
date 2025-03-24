@@ -1,6 +1,6 @@
 import i18next from "i18next";
 import { codesToLanguages } from "./isoCodes";
-import { DEFAULT_LANGUAGE, DISALLOWED_CHARACTERS } from "./constants";
+import { ADC, DEFAULT_LANGUAGE, DISALLOWED_CHARACTERS } from "./constants";
 
 export const getCurrentData = (currentApi, includedError) => {
   const newData = [];
@@ -250,19 +250,25 @@ export const getOrderedAttributeRowData = (attributeRowData, attributeOrdering) 
   return orderedAttributeRowData;
 };
 
-export const hasEntryCodeOrdering = (OCAPackage) =>
-  Boolean(
-    Array.isArray(OCAPackage?.extensions) &&
-      OCAPackage.extensions.length > 0 &&
-      OCAPackage.extensions[0]?.overlays?.ordering?.entry_code_ordering
+export const hasEntryCodeOrdering = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.ordering
+        ?.entry_code_ordering
   );
+};
 
-export const hasAttributeOrdering = (OCAPackage) =>
-  Boolean(
-    Array.isArray(OCAPackage?.extensions) &&
-      OCAPackage.extensions.length > 0 &&
-      OCAPackage.extensions[0]?.overlays?.ordering?.attribute_ordering
+export const hasAttributeOrdering = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.ordering
+        ?.attribute_ordering
   );
+};
 
 export const getTransformedEntryCodes = (entryCodes) => {
   const transformedEntryCodes = {};
