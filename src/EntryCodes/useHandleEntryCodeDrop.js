@@ -13,6 +13,7 @@ import { MenuItem } from "@mui/material";
 import { messages } from "../constants/messages";
 import { Context } from "../App";
 import { getCurrentData } from "../constants/utils";
+import { ADC } from "../constants/constants";
 
 const userSelectionDropdown = ["Copy from other entry codes", "Upload"];
 
@@ -98,7 +99,11 @@ const useHandleEntryCodeDrop = () => {
     const entryList = [];
     let entryCodeSummary = {};
     // Check if entry code ordering can be retrieved from oca package
-    const orderingOverlay = ocaPackageData?.extensions?.[0]?.overlays?.ordering;
+    // For now, use ADC extension overlays for the top-level/main schema bundle
+    const orderingOverlay =
+      ocaPackageData?.extensions?.[ADC]?.[
+        ocaPackageData?.oca_bundle?.bundle?.capture_base?.d
+      ]?.overlays?.ordering;
     const hasEntryCodeOrdering =
       Object.keys(orderingOverlay?.entry_code_ordering || {}).length > 0;
 

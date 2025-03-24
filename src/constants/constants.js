@@ -424,3 +424,4 @@ export const ALLOWED_BOOLEAN_VALUES = [
 ];
 
 export const DISALLOWED_CHARACTERS = [",", " ", "\\", "/", "(", ")", "'"];
+export const ADC = "adc";

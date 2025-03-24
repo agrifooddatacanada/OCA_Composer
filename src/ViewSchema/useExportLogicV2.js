@@ -3,6 +3,7 @@ import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
 import {
+  ADC,
   divisionCodes,
   groupCodes,
   OCA_REPOSITORY_API_URL,
@@ -400,19 +401,23 @@ const useExportLogicV2 = () => {
     const bundle = await generateOCABundle(data);
 
     const extension = {
-      extensions: [
-        {
-          ordering_overlay: {
-            type: ORDERING,
-            attribute_ordering: attributesList,
-            entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
-          }
+      extensions: {
+        [ADC]: {
+          [bundle.bundle.d]: [
+            {
+              ordering_overlay: {
+                type: ORDERING,
+                attribute_ordering: attributesList,
+                entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
+              }
+            }
+          ]
         }
-      ]
+      }
     };
 
     const ocaPackageService = new OcaPackage(extension, bundle);
-    const ocaPackage = JSON.parse(ocaPackageService.generateOcaPackage());
+    const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
 
     // Generate and download text readme
     jsonToTextFile(bundle.bundle, ocaPackage);

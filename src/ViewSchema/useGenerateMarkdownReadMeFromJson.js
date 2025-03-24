@@ -6,7 +6,7 @@ import {
   languageNameToAlpha3Codes,
   toThreeLetterCode
 } from "../constants/isoCodes";
-import { DEFAULT_THREE_LETTER_LANGUAGE_CODE } from "../constants/constants";
+import { ADC, DEFAULT_THREE_LETTER_LANGUAGE_CODE } from "../constants/constants";
 import {
   downloadMarkdownFile,
   generateCreationTimestamp,
@@ -31,7 +31,10 @@ const getModifiedLayer = (overlay) => {
 
 const useGenerateMarkdownReadMeFromJson = () => {
   const { languages, OCAPackage } = useContext(Context);
-  const orderingOverlay = OCAPackage?.extensions?.[0]?.overlays?.ordering;
+  // For now, use ADC extension overlays for the top-level/main schema bundle
+  const orderingOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.ordering;
   const hasAttributeOrdering = orderingOverlay?.attribute_ordering?.length > 0;
 
   // Ensuring that the currently selected site language is one of the languages of the schema
@@ -78,17 +81,18 @@ const useGenerateMarkdownReadMeFromJson = () => {
     }
 
     // Include extension overlays if any
-    if (OCAPackage?.extensions?.length > 0) {
-      OCAPackage.extensions.forEach((extension) => {
-        const extensionOverlays = extension.overlays;
-        const overlayNames = Object.keys(extensionOverlays);
-        overlayNames.forEach((overlayName) => {
-          const overlay = extensionOverlays[overlayName];
-          layersForSaidTable.push({
-            name: overlayName,
-            digest: overlay.d,
-            type: overlay.type
-          });
+    // For now, use ADC extension overlays for the top-level/main schema bundle
+    if (Object.keys(OCAPackage?.extensions || {}).length > 0) {
+      const overlays =
+        OCAPackage.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+          ?.overlays;
+      const overlayNames = Object.keys(overlays);
+      overlayNames.forEach((overlayName) => {
+        const overlay = overlays[overlayName];
+        layersForSaidTable.push({
+          name: overlayName,
+          digest: overlay.d,
+          type: overlay.type
         });
       });
     }
