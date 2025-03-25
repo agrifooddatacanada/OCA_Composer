@@ -227,8 +227,12 @@ const useZipParser = () => {
       newAttributeRowData.forEach((item) => {
         const newFormatRuleData = { Attribute: item?.Attribute, Type: item?.Type };
 
+        // Remove the escape character for " in regex patterns
+        // OCA file requires " to be escaped, that's why the escape character needs to be added when creating OCA file
+        // However, in other situtations, the escape character is not needed
         newFormatRuleData.FormatText =
-          formatRules?.attribute_formats?.[item.Attribute] || "";
+          // eslint-disable-next-line quotes
+          formatRules?.attribute_formats?.[item.Attribute]?.replace(/\\"/g, '"') || "";
         setOverlay((prev) => ({
           ...prev,
           "Add format rule for data": {

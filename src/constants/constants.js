@@ -202,7 +202,7 @@ export const descriptionToFormatCodeText = {
   // eslint-disable-next-line quotes
   'Longitude in formats E30°15\'45.678" or W90°00.000"':
     // eslint-disable-next-line quotes
-    `^[EW]\\s?(?:[0-1]?[0-7]?\\d)°\\s?(?:[0-5]?\\d)'?\\s?(?:[0-5]?\\d(?:\\.\\d+)?)"?$`
+    `^[EW]\\s?(?:1[0-7]\\d|0?\\d{1,2})°\\s?(?:[0-5]?\\d)'?\\s?(?:[0-5]?\\d(?:\\.\\d+)?)"?$`
 };
 
 export const formatCodeText = Object.keys(descriptionToFormatCodeText);
