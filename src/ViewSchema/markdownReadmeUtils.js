@@ -341,15 +341,13 @@ export const generateSAIDTable = (captureBaseSAID, layerToSAIDMap) => {
 export const generateSAIDTableForJson = (mainSAIDs, layers) => {
   const markdownContent = ["## Schema SAIDs\n\n"];
   markdownContent.push(
-    `**Capture base**: ${mainSAIDs.captureBaseSAID}\n`,
-    `**Bundle**: ${mainSAIDs.bundleSAID}\n`
+    `**Capture base**: ${mainSAIDs.captureBaseSAID}\n\n`,
+    `**Bundle**: ${mainSAIDs.bundleSAID}\n\n`
   );
 
   if (mainSAIDs.packageSAID) {
-    markdownContent.push(`**Package**: ${mainSAIDs.packageSAID}\n`);
+    markdownContent.push(`**Package**: ${mainSAIDs.packageSAID}\n\n`);
   }
-
-  markdownContent.push("\n");
 
   const columns = ["Layer", "SAID", "Type"];
   const rows = [];
