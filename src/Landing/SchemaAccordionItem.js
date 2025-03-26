@@ -10,12 +10,12 @@ import CustomAnchorLink from "../components/CustomAnchorLink";
 const SchemaAccordionItem = () => {
   const { t } = useTranslation();
 
-  const downloadChickenZipExample = () => {
-    const zipFilePath = "chicken_example.zip";
+  const downloadExampleSchema = () => {
+    const zipFilePath = "Package_example.json";
 
     const link = document.createElement("a");
     link.href = zipFilePath;
-    link.download = "chicken_example.zip";
+    link.download = "Package_example.json";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -65,7 +65,7 @@ const SchemaAccordionItem = () => {
           <CustomAnchorLink
             link=""
             text={t("Example schema")}
-            onClick={downloadChickenZipExample}
+            onClick={downloadExampleSchema}
           />{" "}
           {t(
             "and use it to test schema tools such as viewing, editing, and creating a Data Entry Excel"
