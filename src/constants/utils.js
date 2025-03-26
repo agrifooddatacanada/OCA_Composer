@@ -1,4 +1,5 @@
 import i18next from "i18next";
+import { v4 as uuidv4 } from "uuid";
 import { codesToLanguages } from "./isoCodes";
 import { ADC, DEFAULT_LANGUAGE, DISALLOWED_CHARACTERS } from "./constants";
 
@@ -6,6 +7,12 @@ export const getCurrentData = (currentApi, includedError) => {
   const newData = [];
   currentApi.forEachNode((node) => {
     const newObject = { ...node?.data };
+
+    // Add a UUID if it doesn't already exist
+    if (!newObject.uuid) {
+      newObject.uuid = uuidv4();
+    }
+
     if (!includedError) {
       delete newObject.error;
     }
