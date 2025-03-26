@@ -1,3 +1,4 @@
+import React from "react";
 import Drop from "../StartSchema/Drop";
 import { useHandleJsonDrop } from "./useHandleJsonDrop";
 import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
@@ -10,7 +11,10 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const { t } = useTranslation();
-  const { jsonRawFile, setCurrentDataValidatorPage } = useHandleJsonDrop(setShowWarningCard, firstTimeDisplayWarning);
+  const { jsonRawFile, setCurrentDataValidatorPage } = useHandleJsonDrop(
+    setShowWarningCard,
+    firstTimeDisplayWarning
+  );
 
   const {
     datasetRawFile,
@@ -29,8 +33,8 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
   } = useHandleDatasetDrop();
 
   const handleClickBack = () => {
-    setCurrentDataValidatorPage('SchemaViewDataValidator')
-  }
+    setCurrentDataValidatorPage("SchemaViewDataValidator");
+  };
 
   const handleClickNext = () => {
     if (datasetRawFile.length > 0) {
@@ -38,63 +42,78 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
       if (!firstNavigationToDataset && excelSheetChoice !== -1) {
         handleDataSheetForwards();
       } else {
-        setCurrentDataValidatorPage('AttributeMatchDataValidator');
+        setCurrentDataValidatorPage("AttributeMatchDataValidator");
       }
     } else {
-      setCurrentDataValidatorPage('OCADataValidatorCheck');
+      setCurrentDataValidatorPage("OCADataValidatorCheck");
     }
-  }
+  };
 
   const handleClickViewData = () => {
     if (!firstNavigationToDataset && excelSheetChoice !== -1) {
-      handleDataSheetForwards('DatasetViewDataValidator');
+      handleDataSheetForwards("DatasetViewDataValidator");
     } else {
-      setCurrentDataValidatorPage('DatasetViewDataValidator');
+      setCurrentDataValidatorPage("DatasetViewDataValidator");
     }
-  }
+  };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ display: "flex", flexDirection: "column" }}>
       <BackNextSkeleton
-       isBack 
-       isForward={jsonRawFile.length > 0} 
-       pageForward={handleClickNext} 
-       pageBack={handleClickBack} 
-       nextText={datasetRawFile.length === 0 ? 'Skip Upload Data' : 'Next'}
+        isBack
+        isForward={jsonRawFile.length > 0}
+        pageForward={handleClickNext}
+        pageBack={handleClickBack}
+        nextText={datasetRawFile.length === 0 ? "Skip Upload Data" : "Next"}
       />
 
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
-      }}>
-        <Box sx={{ height: '3rem' }} />
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          flex: 1
+        }}
+      >
+        <Box sx={{ height: "3rem" }} />
         <Box>
-          <Box sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            width: '100%',
-          }}>
-            <Typography variant="h6" sx={{ textAlign: 'start', color: "black" }}>{t('Optional: Upload Data')}</Typography>
-            {!firstNavigationToDataset && excelSheetChoice !== -1 &&
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              width: "100%"
+            }}
+          >
+            <Typography variant="h6" sx={{ textAlign: "start", color: "black" }}>
+              {t("Optional: Upload Data")}
+            </Typography>
+            {!firstNavigationToDataset && excelSheetChoice !== -1 && (
               <Button color="button" onClick={() => handleDataSheetForwards()}>
-                {t('Next')}
+                {t("Next")}
                 <ArrowForwardIosIcon />
-              </Button>}
+              </Button>
+            )}
           </Box>
           {excelSheetNames.length > 0 ? (
-            <Box sx={{
-              marginTop: '1rem',
-              width: '575px',
-            }}>
-              <ExcelSheetSelection chosenValue={excelSheetChoice} choices={excelSheetNames} setChoice={setExcelSheetChoice} />
+            <Box
+              sx={{
+                marginTop: "1rem",
+                width: "575px"
+              }}
+            >
+              <ExcelSheetSelection
+                chosenValue={excelSheetChoice}
+                choices={excelSheetNames}
+                setChoice={setExcelSheetChoice}
+              />
             </Box>
           ) : (
-            <Box sx={{
-              marginTop: '-1rem',
-            }}>
+            <Box
+              sx={{
+                marginTop: "-1rem"
+              }}
+            >
               <Drop
                 setFile={setDatasetRawFile}
                 setLoading={datasetLoadingState}
@@ -107,9 +126,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
                 version={2}
               />
             </Box>
-
           )}
-
         </Box>
 
         <Box display="flex">
@@ -120,7 +137,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             sx={{ width: 190, mr: 2 }}
             disabled={datasetRawFile.length === 0}
           >
-            {t('Clear Dataset File')}
+            {t("Clear Dataset File")}
           </Button>
           <Button
             variant="contained"
@@ -129,13 +146,15 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             onClick={handleClickViewData}
             disabled={datasetRawFile.length === 0}
           >
-            {t('View Data')}
+            {t("View Data")}
           </Button>
         </Box>
-        <Box sx={{ height: '3rem' }} />
+        <Box sx={{ height: "3rem" }} />
       </Box>
     </Box>
   );
 };
 
 export default OCADataValidatorMain;
+
+

@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState
 } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
 import { Box, Button, Drawer, IconButton, Typography } from "@mui/material";
@@ -22,6 +23,7 @@ import Languages from "./Languages";
 import ErrorFilterSelect from "./ErrorFilterSelect";
 import CellHeader from "../components/CellHeader";
 import ExportButton from "./ExportButton";
+
 import {
   errorCode,
   formatCodeBinaryDescription,
@@ -271,6 +273,7 @@ const OCADataValidatorCheck = ({
   const [firstValidate, setFirstValidate] = useState(false);
   const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [prevalidatedData, setPrevalidateData] = useState([]);
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
@@ -448,14 +451,26 @@ const OCADataValidatorCheck = ({
     return undefined;
   };
 
+  // Initialize the rowData with UUIDs for consitency update the rowData to render
+  useEffect(() => {
+    const initializedData = schemaDataConformantRowData.map((row) => ({
+      ...row,
+      uuid: row.uuid || uuidv4()
+    }));
+    setPrevalidateData(initializedData);
+    setRowData(initializedData);
+  }, []);
+
   const handleValidate = async () => {
     validateBeforeOnChangeRef.current = true;
     gridRef.current.api.stopEditing();
     gridRef.current.api.showLoadingOverlay();
     setRevalidateData(false);
     setFirstValidate(true);
+
     const bundle = new OCABundle();
     await bundle.loadedBundle(jsonParsedFile);
+
     const newData = getCurrentData(gridRef.current.api, true);
 
     const prepareInput = {};
@@ -499,6 +514,42 @@ const OCADataValidatorCheck = ({
       return copy;
     });
   };
+
+  function mergePrevalidatedWithRowData(rowData, prevalidatedData) {
+    const rowDataMap = new Map(rowData.map((row) => [row.uuid, row]));
+
+    const updatedPrevalidatedData = prevalidatedData.map((preRow) => {
+      const matchingRow = rowDataMap.get(preRow.uuid);
+      return matchingRow ? { ...preRow, ...matchingRow } : preRow;
+    });
+
+    const prevalidatedUuids = new Set(prevalidatedData.map((preRow) => preRow.uuid));
+    const newRows = rowData.filter((row) => !prevalidatedUuids.has(row.uuid));
+
+    return [...updatedPrevalidatedData, ...newRows];
+  }
+
+  function filterRowData() {
+    if (errorName.includes(SHOW_ALL_DATA)) {
+      return mergePrevalidatedWithRowData(rowData, prevalidatedData);
+    }
+
+    if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
+      const selectedErrors = errorName.filter(
+        (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
+      );
+
+      return rowData.filter((row) => {
+        if (!row?.error) return false;
+        const errorTypes = Object.values(row.error)
+          .flat()
+          .map((err) => err?.type);
+        return selectedErrors.some((error) => errorTypes.includes(errorCode?.[error]));
+      });
+    }
+
+    return mergePrevalidatedWithRowData(rowData, prevalidatedData);
+  }
 
   function formatHeader(cell) {
     cell.font = { size: 10, bold: true };
@@ -794,7 +845,7 @@ const OCADataValidatorCheck = ({
     });
 
     setColumnDefs(columns);
-    setRowData(schemaDataConformantRowData);
+    // setRowData(schemaDataConformantRowData);
   }, [
     datasetRawFile.length,
     attributesList,
@@ -811,23 +862,6 @@ const OCADataValidatorCheck = ({
       setIsValidateButtonEnabled(false);
     }
   }, [rowData, isValidateButtonEnabled]);
-
-  function filterRowData() {
-    if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
-      const selectedErrors = errorName.filter(
-        (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
-      );
-      return rowData.filter((row) => {
-        if (!row?.error) return false;
-        const errorTypes = Object.values(row.error)
-          .flat()
-          .map((err) => err?.type);
-        return selectedErrors.some((error) => errorTypes.includes(errorCode?.[error]));
-      });
-    }
-
-    return rowData;
-  }
 
   return (
     <Box sx={{ overflowX: "auto" }}>
@@ -939,6 +973,7 @@ const OCADataValidatorCheck = ({
                 errorName={errorName}
                 setErrorNameList={setErrorNameList}
                 disabled={!firstValidate}
+                handleValidate={handleValidate}
               />
               <Box
                 sx={{
