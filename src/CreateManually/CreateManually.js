@@ -416,6 +416,20 @@ export default function CreateManually() {
         <Typography
           sx={{
             mt: 2,
+            mx: "auto",
+            fontWeight: "light",
+            fontStyle: "italic",
+            fontSize: 14,
+            maxWidth: "55ch"
+          }}
+        >
+          {t(
+            "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: ."
+          )}
+        </Typography>
+        <Typography
+          sx={{
+            mt: 2,
             fontWeight: "light",
             fontStyle: "italic",
             fontSize: 14
