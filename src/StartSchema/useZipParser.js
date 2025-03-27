@@ -189,7 +189,9 @@ const useZipParser = () => {
         Attribute: item,
         Flagged: root?.flagged_attributes?.includes(item),
         List: attributesWithListType.includes(item),
-        Type: root?.attributes?.[item],
+        Type: Array.isArray(root?.attributes?.[item])
+          ? `Array[${root?.attributes?.[item][0]}]`
+          : root?.attributes?.[item],
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
