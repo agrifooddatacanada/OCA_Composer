@@ -9,6 +9,7 @@ import { CustomPalette } from "../constants/customPalette";
 import logo from "../assets/agri-logo.png";
 import logoWhite from "../assets/agri-logo-white.png";
 import HeaderWrapper from "./HeaderWrapper";
+import logoSE from "../assets/se-logo.png";
 
 export default function Header({ currentPage }) {
   const { t } = useTranslation();
@@ -198,6 +199,23 @@ export default function Header({ currentPage }) {
           </Box>
         ) : (
           <>
+            <Link
+              to="/"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = "/";
+              }}
+            >
+              <img src={logoSE} alt="Semantic Engine" style={{ maxWidth: "100px" }} />
+            </Link>
+            <div
+              style={{
+                width: "1px",
+                height: "40px",
+                backgroundColor: "#a3a3a3",
+                margin: "0 10px"
+              }}
+            />
             <a
               href="https://agrifooddatacanada.ca/"
               target="_blank"
@@ -295,10 +313,10 @@ export default function Header({ currentPage }) {
                 variant="contained"
                 target="_blank"
                 sx={{
-                  m: 2,
+                  my: 2,
                   mr: 2,
-                  p: 1,
-                  width: "15rem"
+                  py: 1,
+                  px: 5
                 }}
                 onClick={() =>
                   window.open(`${helpLink}`, "_blank", "rel=noopener noreferrer")
