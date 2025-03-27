@@ -296,5 +296,9 @@
   "Note: Downloading two files": "Note: Downloading two files",
   "1) Schema in .txt format, readable and archivable.": "1) Schema in .txt format, readable and archivable.",
   "2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine.": "2) Schema in .zip format. Must be kept zipped. Can be used by computers including tools on the Semantic Engine.",
-  "In March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip.": "In March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip."
+  "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine.": "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine.",
+  "Download legacy .zip bundle": "Download legacy .zip bundle",
+  "In March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip.": "In March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip.",
+  "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes": "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes",
+  "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: .": "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: ."
 }

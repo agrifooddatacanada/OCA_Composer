@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Footer from "../Footer/Footer";
 import Header from "../Header/Header";
 import AttributeMatch from "./AttributeMatch";
@@ -14,7 +14,7 @@ const steps = [
   { label: "Upload Data", page: "StartDataValidator" },
   { label: "Preview Dataset", page: "DatasetViewDataValidator" },
   { label: "Match Attributes", page: "AttributeMatchDataValidator" },
-  { label: "Verify Data", page: "OCADataValidatorCheck" },
+  { label: "Verify Data", page: "OCADataValidatorCheck" }
 ];
 
 const OCADataValidator = () => {
@@ -34,17 +34,29 @@ const OCADataValidator = () => {
     <>
       <Header currentPage={currentDataValidatorPage} />
       <StepperProgressIndicator steps={steps} activeStep={activeStep} />
-      {
-        currentDataValidatorPage === 'StartDataValidator' && <OCADataValidatorMain setShowWarningCard={setShowWarningCard} firstTimeDisplayWarning={firstTimeDisplayWarning} />
-      }
-      {currentDataValidatorPage === 'SchemaViewDataValidator' && <PreviewSchema />}
-      {currentDataValidatorPage === 'DatasetViewDataValidator' && <DatasetView />}
+      {currentDataValidatorPage === "StartDataValidator" && (
+        <OCADataValidatorMain
+          setShowWarningCard={setShowWarningCard}
+          firstTimeDisplayWarning={firstTimeDisplayWarning}
+        />
+      )}
+      {currentDataValidatorPage === "SchemaViewDataValidator" && <PreviewSchema />}
+      {currentDataValidatorPage === "DatasetViewDataValidator" && <DatasetView />}
       {/* {currentDataValidatorPage === 'CreateANewDatasetDataValidator' && <CreateANewDataset />} */}
-      {currentDataValidatorPage === 'AttributeMatchDataValidator' && <AttributeMatch />}
-      {currentDataValidatorPage === 'OCADataValidatorCheck' && <OCADataValidatorCheck showWarningCard={showWarningCard} setShowWarningCard={setShowWarningCard} firstTimeDisplayWarning={firstTimeDisplayWarning} />}
+      {currentDataValidatorPage === "AttributeMatchDataValidator" && <AttributeMatch />}
+      {currentDataValidatorPage === "OCADataValidatorCheck" && (
+        <OCADataValidatorCheck
+          showWarningCard={showWarningCard}
+          setShowWarningCard={setShowWarningCard}
+          firstTimeDisplayWarning={firstTimeDisplayWarning}
+        />
+      )}
       <Footer currentPage={currentDataValidatorPage} />
     </>
   );
 };
 
 export default OCADataValidator;
+
+
+

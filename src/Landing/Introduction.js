@@ -43,7 +43,7 @@ const Introduction = () => {
         >
           <Typography>{t("New to Schemas? Watch our video and then")}</Typography>
           <Link
-            href={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" ? "en" : i18next.language}/WhatSchema/`}
+            href={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" || i18next.language === "en-CA" ? "en" : i18next.language}/WhatSchema/`}
             target="_blank"
             rel="noopener noreferrer"
             sx={{

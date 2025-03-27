@@ -1,4 +1,5 @@
 import React, { useRef, useContext, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert } from "@mui/material";
 import Grid from "./Grid";
 import AddAttribute from "./AddAttribute";
@@ -6,29 +7,32 @@ import NavigationCard from "../constants/NavigationCard";
 import { Context } from "../App";
 import {
   removeSpacesFromString,
-  removeSpacesFromArrayOfObjects,
+  removeSpacesFromArrayOfObjects
 } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
-import { useTranslation } from "react-i18next";
+import { hasDisallowedChars } from "../constants/utils";
 
-export default function AttributeDetails({ pageBack, pageForward, insertStep, removeStep }) {
+export default function AttributeDetails({
+  pageBack,
+  pageForward,
+  insertStep,
+  removeStep
+}) {
   const { t } = useTranslation();
   const {
     setAttributesWithLists,
     setCurrentPage,
     attributeRowData,
     setAttributesList,
-    setAttributeRowData,
+    setAttributeRowData
   } = useContext(Context);
   const [errorMessage, setErrorMessage] = useState("");
-  const [canDelete, setCanDelete] = useState(
-    attributeRowData.length === 1 ? false : true
-  );
+  const [canDelete, setCanDelete] = useState(attributeRowData.length !== 1);
   const [showAddAttribute, setShowAddAttribute] = useState(false);
   const [addByTab, setAddByTab] = useState(false);
   const [showCard, setShowCard] = useState(false);
-  const [fieldArray, setFieldArray] = useState(["Type"]);
+
   const [loading, setLoading] = useState(true);
   const navigationSafe = useRef();
   const gridRef = useRef();
@@ -50,7 +54,11 @@ export default function AttributeDetails({ pageBack, pageForward, insertStep, re
   // Stops grid editing when clicking outside grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
-      if (gridRef.current.api && refContainer.current && !refContainer.current.contains(event.target)) {
+      if (
+        gridRef.current.api &&
+        refContainer.current &&
+        !refContainer.current.contains(event.target)
+      ) {
         gridRef.current.api.stopEditing();
       }
     };
@@ -78,12 +86,21 @@ export default function AttributeDetails({ pageBack, pageForward, insertStep, re
         blankAttribute: t("Attribute names cannot be blank"),
         codeInjection: t("Attribute names cannot include HTML"),
         blankType: t("Please enter a Type for all attributes"),
+        disallowedCharacters: t(
+          "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes"
+        )
       };
       let codeInjection = false;
+      let hasDisallowedCharacters = false;
 
       attributeRowData.forEach((item) => {
-        let attributeName = removeSpacesFromString(item.Attribute);
-        //REVISIT
+        const attributeName = removeSpacesFromString(item.Attribute);
+
+        if (hasDisallowedChars(attributeName)) {
+          hasDisallowedCharacters = true;
+        }
+
+        // REVISIT
         if (
           attributeName.includes("/>") ||
           attributeName.includes("</") ||
@@ -104,6 +121,10 @@ export default function AttributeDetails({ pageBack, pageForward, insertStep, re
         }
       });
 
+      if (hasDisallowedCharacters) {
+        return errorOptions.disallowedCharacters;
+      }
+
       if (duplicateAttributes.length > 0) {
         return errorOptions.duplicates;
       }
@@ -119,14 +140,11 @@ export default function AttributeDetails({ pageBack, pageForward, insertStep, re
       const newAttributeRowData = attributeRowData.map((item, index) => ({
         ...item,
         Attribute:
-          item.Attribute !== allAttributes[index]
-            ? allAttributes[index]
-            : item.Attribute,
+          item.Attribute !== allAttributes[index] ? allAttributes[index] : item.Attribute,
         Type:
-          typesObjectRef.current &&
-            item.Type !== typesObjectRef.current[item.Attribute]
+          typesObjectRef.current && item.Type !== typesObjectRef.current[item.Attribute]
             ? typesObjectRef.current[item.Attribute]
-            : item.Type,
+            : item.Type
       }));
 
       newAttributeRowData.forEach((item) => {
@@ -141,7 +159,7 @@ export default function AttributeDetails({ pageBack, pageForward, insertStep, re
       return allAttributes;
     };
 
-    //validateForward either returns an error message (string) or it removes blanks from (and sets) Attribute Row Data and returns the current array of attributes
+    // validateForward either returns an error message (string) or it removes blanks from (and sets) Attribute Row Data and returns the current array of attributes
     const validationResult = validateForward();
 
     if (typeof validationResult === "string") {
@@ -164,7 +182,7 @@ export default function AttributeDetails({ pageBack, pageForward, insertStep, re
         entryCodesRef.current = true;
         insertStep(2, { label: "Entry Codes", page: "Codes" });
       } else {
-        removeStep('Entry Codes');
+        removeStep("Entry Codes");
       }
       navigationSafe.current = true;
     }
@@ -175,32 +193,35 @@ export default function AttributeDetails({ pageBack, pageForward, insertStep, re
     if (navigationSafe.current === true) {
       if (typeBlanksRef.current === true) {
         setShowCard(true);
+      } else if (entryCodesRef.current) {
+        setCurrentPage("Codes");
       } else {
-        if (entryCodesRef.current) {
-          setCurrentPage("Codes");
-        } else {
-          pageForward();
-        }
+        pageForward();
       }
     }
   };
 
   const pageBackSave = () => {
     handleSave();
-    navigationSafe.current === true && pageBack();
+    if (navigationSafe.current === true) {
+      pageBack();
+    }
   };
 
   return (
-    <BackNextSkeleton isBack pageBack={pageBackSave} isForward pageForward={pageForwardSave}>
+    <BackNextSkeleton
+      isBack
+      pageBack={pageBackSave}
+      isForward
+      pageForward={pageForwardSave}
+    >
       {loading && attributeRowData?.length > 40 && <Loading />}
       {showCard && (
         <NavigationCard
-          fieldArray={fieldArray}
+          fieldArray={["Type"]}
           setShowCard={setShowCard}
           handleForward={
-            entryCodesRef.current
-              ? () => setCurrentPage("Codes")
-              : () => pageForward()
+            entryCodesRef.current ? () => setCurrentPage("Codes") : () => pageForward()
           }
         />
       )}
@@ -212,7 +233,7 @@ export default function AttributeDetails({ pageBack, pageForward, insertStep, re
             top: 10,
             left: 100,
             right: 100,
-            zIndex: 9999,
+            zIndex: 9999
           }}
         >
           {errorMessage}
