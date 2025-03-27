@@ -282,12 +282,15 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
       "";
 
     // Attribute type (a schema bundle must have this information)
-    const type = captureBaseOverlay.attributes[attribute];
+    const attributeType = captureBaseOverlay.attributes[attribute];
+    const formattedType = Array.isArray(attributeType)
+      ? `Array[${attributeType[0]}]`
+      : attributeType;
 
     const characterEncoding =
       characterEncodingOverlay?.attribute_character_encoding?.[attribute] || "";
 
-    row.push(isSensitive, unit, type, characterEncoding);
+    row.push(isSensitive, unit, formattedType, characterEncoding);
 
     if (conformanceOverlay?.attribute_conformance) {
       const isRequired = conformanceOverlay.attribute_conformance[attribute] === "M";

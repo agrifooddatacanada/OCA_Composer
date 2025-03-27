@@ -97,7 +97,10 @@ const useExportLogicV2 = () => {
     buildText += "ADD Attribute";
 
     attributesList.forEach((item, index) => {
-      buildText += ` ${item}=${data[1][index].Type}`;
+      const attributeType = Array.isArray(data[1][index].Type)
+        ? `Array[${data[1][index].Type[0]}]`
+        : data[1][index].Type;
+      buildText += ` ${item}=${attributeType}`;
     });
 
     buildText += "\n";

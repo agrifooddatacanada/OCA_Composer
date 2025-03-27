@@ -82,7 +82,10 @@ const useGenerateReadMeV2 = () => {
         "\n" +
         "Schema attributes: data type\n" +
         `${Object.entries(schema_attributes)
-          .map(([key, value]) => `    ${key}: ${value}`)
+          .map(
+            ([key, value]) =>
+              `    ${key}: ${Array.isArray(value) ? `Array[${value[0]}]` : value}`
+          )
           .join("\n")}\n` +
         "\n";
       // implement flagged attributes
