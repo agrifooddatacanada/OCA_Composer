@@ -37,7 +37,7 @@ export default function StartIntro() {
       <iframe
         width={isMobile ? "100%" : "560"}
         height={isMobile ? "200" : "315"}
-        src="https://www.youtube.com/embed/ekMmpx_w45M"
+        src="https://www.youtube.com/embed/393n05TTyNM?si=oWQIxImRJtYbH9T0"
         title="YouTube video player"
         frameBorder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
