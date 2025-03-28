@@ -17,7 +17,7 @@ const QuickStart = () => {
       <Typography sx={{ fontWeight: "600" }}>
         1.{" "}
         <CustomAnchorLink
-          link="https://www.youtube.com/watch?v=ekMmpx_w45M"
+          link="https://www.youtube.com/watch?v=393n05TTyNM"
           text={t("Watch our tutorial video on creating a schema")}
           overrideStyle={{
             fontWeight: "500",
