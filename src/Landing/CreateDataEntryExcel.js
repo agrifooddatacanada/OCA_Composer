@@ -5,6 +5,7 @@ import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
 } from "../constants/utils";
+import { ADC } from "../constants/constants";
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -39,6 +40,7 @@ function readJSON(originJsonData_jsonSaid, e) {
     }
 
     originJsonData_jsonSaid.jsonSaid = json.d;
+    originJsonData_jsonSaid.captureBaseSAID = json.capture_base.d;
     json = replaceAttributeCharsInParsedJson(json);
 
     if (Object.prototype.hasOwnProperty.call(json, "capture_base")) {
@@ -118,15 +120,13 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
   if (isOcaPackage) {
     const extensions = inPutJsonResult[2];
-    for (const extension of extensions) {
-      if (Object.keys(extension).includes("overlays")) {
-        for (const overlayKey of Object.keys(extension.overlays)) {
-          if (extension.overlays[overlayKey].type.includes("ordering")) {
-            attribute_ordering_container =
-              extension.overlays[overlayKey].attribute_ordering;
-
-            entry_code_ordering = extension.overlays[overlayKey].entry_code_ordering;
-          }
+    if (Object.keys(extensions || {}).length > 0) {
+      // For now, use ADC extension overlays for the top-level/main schema bundle
+      const overlays = extensions?.[ADC]?.[inPutJsonResult[0].captureBaseSAID]?.overlays;
+      for (const overlayKey of Object.keys(overlays || {})) {
+        if (overlays[overlayKey].type.includes("ordering")) {
+          attribute_ordering_container = overlays[overlayKey].attribute_ordering;
+          entry_code_ordering = overlays[overlayKey].entry_code_ordering;
         }
       }
     }
@@ -898,10 +898,11 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         formulae: [`'Schema Description'!$B$${start}:$B$${end}`],
         showErrorMessage: true
       };
+      // Get the correct column index from mappingAttrKeysandAttrValues
+      // Subtracting 1 to get the correct column index since we stored indices starting from 2
+      const col_i = mappingAttrKeysandAttrValues[attrName] - 1;
+
       for (let row = 2; row <= 1000; row++) {
-        const attrKeys = Object.keys(attributesIndex);
-        const attrNameFromAttrKeys = attrKeys.map((key) => key.split(",")[0]);
-        const col_i = attrNameFromAttrKeys.indexOf(attrName) + 1;
         sheet2.getCell(row, col_i).dataValidation = validationRule;
       }
     }

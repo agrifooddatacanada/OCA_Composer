@@ -3,6 +3,7 @@ import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
 import {
+  ADC,
   divisionCodes,
   groupCodes,
   OCA_REPOSITORY_API_URL,
@@ -96,7 +97,10 @@ const useExportLogicV2 = () => {
     buildText += "ADD Attribute";
 
     attributesList.forEach((item, index) => {
-      buildText += ` ${item}=${data[1][index].Type}`;
+      const attributeType = Array.isArray(data[1][index].Type)
+        ? `Array[${data[1][index].Type[0]}]`
+        : data[1][index].Type;
+      buildText += ` ${item}=${attributeType}`;
     });
 
     buildText += "\n";
@@ -135,7 +139,9 @@ const useExportLogicV2 = () => {
     let tempText = "";
     formatRuleRowData.forEach((item, index) => {
       if (item.FormatText) {
-        tempText += ` ${attributesList[index]}="${item.FormatText}"`;
+        // Any " in the format text needs to be escaped for OCA file
+        // eslint-disable-next-line quotes
+        tempText += ` ${attributesList[index]}="${item.FormatText.replace(/"/g, '\\"')}"`;
       }
     });
 
@@ -398,19 +404,23 @@ const useExportLogicV2 = () => {
     const bundle = await generateOCABundle(data);
 
     const extension = {
-      extensions: [
-        {
-          ordering_overlay: {
-            type: ORDERING,
-            attribute_ordering: attributesList,
-            entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
-          }
+      extensions: {
+        [ADC]: {
+          [bundle.bundle.d]: [
+            {
+              ordering_overlay: {
+                type: ORDERING,
+                attribute_ordering: attributesList,
+                entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
+              }
+            }
+          ]
         }
-      ]
+      }
     };
 
     const ocaPackageService = new OcaPackage(extension, bundle);
-    const ocaPackage = JSON.parse(ocaPackageService.generateOcaPackage());
+    const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
 
     // Generate and download text readme
     jsonToTextFile(bundle.bundle, ocaPackage);

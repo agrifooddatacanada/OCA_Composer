@@ -1,16 +1,30 @@
-import { forwardRef, memo, useCallback, useState } from "react";
+import React, { forwardRef, memo, useCallback, useState } from "react";
 import { IconButton, MenuItem } from "@mui/material";
-import { DropdownMenuList } from "../components/DropdownMenuCell";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
-import { descriptionToFormatCodeBinary, descriptionToFormatCodeDate, descriptionToFormatCodeNumeric, descriptionToFormatCodeText, formatCodeBinary, formatCodeBinaryDescription, formatCodeDate, formatCodeDateDescription, formatCodeNumeric, formatCodeNumericDescription, formatCodeText, formatCodeTextDescription } from "../constants/constants";
+import {
+  descriptionToFormatCodeBinary,
+  descriptionToFormatCodeDate,
+  descriptionToFormatCodeNumeric,
+  descriptionToFormatCodeText,
+  formatCodeBinary,
+  formatCodeBinaryDescription,
+  formatCodeDate,
+  formatCodeDateDescription,
+  formatCodeNumeric,
+  formatCodeNumericDescription,
+  formatCodeText,
+  formatCodeTextDescription
+} from "../constants/constants";
 
 export const TrashCanButton = memo(
+  // eslint-disable-next-line no-unused-vars
   forwardRef((props, ref) => {
     const onClick = useCallback(() => {
       props.node.updateData({
         ...props.node.data,
-        FormatText: "",
+        FormatText: ""
       });
       props?.onRefresh();
     }, []);
@@ -21,7 +35,7 @@ export const TrashCanButton = memo(
           pr: 1,
           color: CustomPalette.GREY_600,
           transition: "all 0.2s ease-in-out",
-          display: props.node.data?.FormatText === "" ? "none" : "block",
+          display: props.node.data?.FormatText === "" ? "none" : "block"
         }}
         onClick={onClick}
       >
@@ -32,6 +46,7 @@ export const TrashCanButton = memo(
 );
 
 export const FormatRuleTypeRenderer = memo(
+  // eslint-disable-next-line no-unused-vars
   forwardRef((props, ref) => {
     const attributeType = props.data.Type;
     let selectedOption = [];
@@ -47,10 +62,21 @@ export const FormatRuleTypeRenderer = memo(
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+    const findCode = (value) =>
+      attributeType.includes("Date")
+        ? descriptionToFormatCodeDate[value]
+        : attributeType.includes("Numeric")
+          ? descriptionToFormatCodeNumeric[value]
+          : attributeType.includes("Binary")
+            ? descriptionToFormatCodeBinary[value]
+            : attributeType.includes("Text")
+              ? descriptionToFormatCodeText[value]
+              : "";
+
     const handleChange = (e) => {
       props.node.updateData({
         ...props.node.data,
-        FormatText: findCode(e.target.value),
+        FormatText: findCode(e.target.value)
       });
       setIsDropdownOpen(false);
       props.onRefresh();
@@ -67,42 +93,45 @@ export const FormatRuleTypeRenderer = memo(
       }
     };
 
-    const findCode = (value) => {
-      return attributeType.includes("Date") ? descriptionToFormatCodeDate[value] : attributeType.includes("Numeric") ? descriptionToFormatCodeNumeric[value] : attributeType.includes("Binary") ? descriptionToFormatCodeBinary[value] : attributeType.includes("Text") ? descriptionToFormatCodeText[value] : "";
-    };
-
     const findDescription = (value) => {
-      return attributeType.includes("Date") ? formatCodeDateDescription[value] : attributeType.includes("Numeric") ? formatCodeNumericDescription[value] : attributeType.includes("Binary") ? formatCodeBinaryDescription[value] : attributeType.includes("Text") ? formatCodeTextDescription[value] : "";
+      // Remove the escape character for " in regex patterns
+      // OCA file requires " to be escaped, that's why the escape character needs to be added when creating OCA file
+      // However, in other situtations, the escape character is not needed
+      // eslint-disable-next-line quotes
+      const formattedValue = value?.replace(/\\"/g, '"');
+      return attributeType.includes("Date")
+        ? formatCodeDateDescription[formattedValue]
+        : attributeType.includes("Numeric")
+          ? formatCodeNumericDescription[formattedValue]
+          : attributeType.includes("Binary")
+            ? formatCodeBinaryDescription[formattedValue]
+            : attributeType.includes("Text")
+              ? formatCodeTextDescription[formattedValue]
+              : "";
     };
 
-    const typesDisplay = selectedOption.map((value, index) => {
-      return (
-        <MenuItem
-          key={index + "_" + value}
-          value={value}
-          sx={{ border: "none", height: "2rem", fontSize: "small" }}
-        >
-          {value && <span>{value}</span>}
-        </MenuItem>
-      );
-    });
+    const typesDisplay = selectedOption.map((value) => (
+      <MenuItem
+        key={value}
+        value={value}
+        sx={{ border: "none", height: "2rem", fontSize: "small" }}
+      >
+        {value && <span>{value}</span>}
+      </MenuItem>
+    ));
 
-    return (
-      <>
-        {
-          selectedOption.length > 0 ?
-            <DropdownMenuList
-              handleKeyDown={handleKeyDown}
-              type={findDescription(props.node.data.FormatText)}
-              handleChange={handleChange}
-              handleClick={handleClick}
-              isDropdownOpen={isDropdownOpen}
-              setIsDropdownOpen={setIsDropdownOpen}
-              typesDisplay={typesDisplay}
-            /> :
-            <></>
-        }
-      </>
+    return selectedOption.length > 0 ? (
+      <DropdownMenuList
+        handleKeyDown={handleKeyDown}
+        type={findDescription(props.node.data.FormatText)}
+        handleChange={handleChange}
+        handleClick={handleClick}
+        isDropdownOpen={isDropdownOpen}
+        setIsDropdownOpen={setIsDropdownOpen}
+        typesDisplay={typesDisplay}
+      />
+    ) : (
+      <></>
     );
   })
 );

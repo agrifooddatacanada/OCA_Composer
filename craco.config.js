@@ -18,6 +18,13 @@ module.exports = {
           Buffer: ["buffer", "Buffer"]
         })
       ]);
+
+      webpackConfig.module.rules.push({
+        test: /\.js$/,
+        enforce: "pre",
+        use: ["source-map-loader"],
+        exclude: /node_modules\/oca_package/
+      });
       return webpackConfig;
     }
   }

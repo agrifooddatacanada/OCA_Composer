@@ -477,9 +477,11 @@ export default function Grid({
   const updateSavedEntryCodes = (oldAttributeValue, newAttributeValue) => {
     setSavedEntryCodes((prevData) => {
       const updatedSavedEntryCodes = { ...prevData };
-      updatedSavedEntryCodes[newAttributeValue] =
-        updatedSavedEntryCodes[oldAttributeValue];
-      delete updatedSavedEntryCodes[oldAttributeValue];
+      if (updatedSavedEntryCodes[oldAttributeValue]) {
+        updatedSavedEntryCodes[newAttributeValue] =
+          updatedSavedEntryCodes[oldAttributeValue];
+        delete updatedSavedEntryCodes[oldAttributeValue];
+      }
       return updatedSavedEntryCodes;
     });
   };

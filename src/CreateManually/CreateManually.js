@@ -1,30 +1,24 @@
-import React, {
-  useContext,
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
-} from "react";
-import { Context } from "../App";
+import React, { useContext, useState, useRef, useCallback, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { useTranslation } from 'react-i18next';
-import { Box } from "@mui/system";
-import { Button, Alert, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import { Box, Button, Alert, Typography } from "@mui/material";
 
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
+import { Context } from "../App";
+
 import { CustomPalette } from "../constants/customPalette";
 import { removeSpacesFromString } from "../constants/removeSpaces";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import { hasDisallowedChars } from "../constants/utils";
 
-
-//!important overrides default grid style that sets the minimum height of the grid container
-//Without the min-height, it looks awkward when the component is empty or has only a couple attributes
+// !important overrides default grid style that sets the minimum height of the grid container
+// Without the min-height, it looks awkward when the component is empty or has only a couple attributes
 const gridStyle = `
   .ag-center-cols-clipper {
     min-height: unset !important;
@@ -50,6 +44,20 @@ const gridStyle = `
   }
   `;
 
+const DeleteRenderer = ({ node, canDelete, onDelete }) =>
+  canDelete && (
+    <DeleteOutlineIcon
+      sx={{
+        pr: 1,
+        color: CustomPalette.GREY_600,
+        transition: "all 0.2s ease-in-out"
+      }}
+      onClick={() => {
+        onDelete(node.rowIndex);
+      }}
+    />
+  );
+
 export default function CreateManually() {
   const addRef = useRef();
   const gridRef = useRef();
@@ -63,9 +71,16 @@ export default function CreateManually() {
   const [addErrorMessage, setAddErrorMessage] = useState("");
   const [forwardErrorMessage, setForwardErrorMessage] = useState("");
   const [backErrorMessage, setBackErrorMessage] = useState("");
-  const [canDelete, setCanDelete] = useState(
-    attributesList.length <= 1 ? false : true
-  );
+  const [canDelete, setCanDelete] = useState(attributesList.length > 1);
+
+  const handleDeleteRow = (rowIndex) => {
+    gridRef.current.api.stopEditing();
+    const newRowData = rowData.filter((item, index) => index !== rowIndex);
+    setRowData(newRowData);
+    if (newRowData.length <= 1) {
+      setCanDelete(false);
+    }
+  };
 
   useEffect(() => {
     const allRowData = [];
@@ -80,50 +95,28 @@ export default function CreateManually() {
     setRowData(allRowData);
   }, [attributesList]);
 
-  const DeleteRenderer = (props) => {
-    const handleDeleteRow = () => {
-      const rowIndex = props.node.rowIndex;
-      gridRef.current.api.stopEditing();
-      const newRowData = rowData.filter((item, index) => index !== rowIndex);
-      setRowData(newRowData);
-      if (newRowData.length <= 1) {
-        setCanDelete(false);
-      }
-    };
-    return (
-      canDelete && (
-        <DeleteOutlineIcon
-          sx={{
-            pr: 1,
-            color: CustomPalette.GREY_600,
-            transition: "all 0.2s ease-in-out",
-          }}
-          onClick={handleDeleteRow}
-        />
-      )
-    );
-  };
-
   const columnDefs = [
     { field: "Drag", headerName: "", width: 50, rowDrag: true },
-    { field: "Name", headerName: t('Attribute Name'), width: 470, editable: true },
+    { field: "Name", headerName: t("Attribute Name"), width: 470, editable: true },
     {
       field: "Delete",
       headerName: "",
       cellRenderer: DeleteRenderer,
-      cellRendererParams: (params) => ({ props: params }),
-      width: 50,
-    },
+      cellRendererParams: (params) => ({
+        node: params.node,
+        canDelete,
+        onDelete: handleDeleteRow
+      }),
+      width: 50
+    }
   ];
 
   const defaultColDef = {
-    tabToNextCell: true,
+    tabToNextCell: true
   };
 
   const onRowDragEnd = (event) => {
-    const oldIndex = rowData.findIndex(
-      (item) => item.Name === event.node.data.Name
-    );
+    const oldIndex = rowData.findIndex((item) => item.Name === event.node.data.Name);
     const newIndex = event.node.rowIndex;
 
     gridRef.current.api.stopEditing();
@@ -133,7 +126,7 @@ export default function CreateManually() {
     setRowData(newRowData);
   };
 
-  //creates "Add by tab" behaviour
+  // creates "Add by tab" behaviour
   const onCellKeyDown = useCallback((e) => {
     const keyPressed = e.event.code;
 
@@ -142,12 +135,12 @@ export default function CreateManually() {
       if (isLastRow) {
         addRef.current.click();
         setTimeout(() => {
-          const api = e.api;
+          const { api } = e;
           const editingRowIndex = e.rowIndex;
           api.setFocusedCell(editingRowIndex + 1, "Name");
         }, 0);
       } else {
-        const api = e.api;
+        const { api } = e;
         const editingRowIndex = e.rowIndex;
         api.setFocusedCell(editingRowIndex + 1, "Name");
       }
@@ -166,8 +159,15 @@ export default function CreateManually() {
     let spacesCounter = 0;
     let errorIndex = 0;
     let codeInjection = false;
+    let hasDisallowedCharacters = false;
     gridRef.current.props.rowData.forEach((row, index) => {
       const attributeName = removeSpacesFromString(row.Name);
+
+      if (hasDisallowedChars(attributeName)) {
+        hasDisallowedCharacters = true;
+        errorIndex = index;
+      }
+
       if (
         attributeName.includes("/>") ||
         attributeName.includes("</") ||
@@ -187,6 +187,20 @@ export default function CreateManually() {
         allAttributes.push(attributeName);
       }
     });
+
+    if (hasDisallowedCharacters) {
+      errorSettingFunction(
+        t(
+          "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes"
+        )
+      );
+      gridRef.current.api.setFocusedCell(errorIndex, "Name");
+      setTimeout(() => {
+        errorSettingFunction("");
+      }, [2500]);
+      return;
+    }
+
     if (codeInjection) {
       errorSettingFunction("Attribute name cannot include HTML");
       setTimeout(() => {
@@ -197,27 +211,21 @@ export default function CreateManually() {
     if (duplicates.length === 0) {
       if (spacesCounter > 0) {
         if (resetFunction) {
-          if (
-            spacesCounter === 1 &&
-            errorIndex === 0 &&
-            allAttributes.length === 0
-          ) {
+          if (spacesCounter === 1 && errorIndex === 0 && allAttributes.length === 0) {
             resetFunction();
           } else {
-            errorSettingFunction(t('Attribute Names cannot be empty'));
+            errorSettingFunction(t("Attribute Names cannot be empty"));
             setTimeout(() => {
               errorSettingFunction("");
             }, [2500]);
           }
         } else {
-          errorSettingFunction(t('Attribute Names cannot be empty'));
+          errorSettingFunction(t("Attribute Names cannot be empty"));
           gridRef.current.api.setFocusedCell(errorIndex, "Name");
           setTimeout(() => {
             errorSettingFunction("");
           }, [2500]);
         }
-
-        return;
       } else {
         successFunction(allAttributes);
       }
@@ -230,7 +238,7 @@ export default function CreateManually() {
     }
   };
 
-  const addRowSuccess = (attributes) => {
+  const addRowSuccess = () => {
     const newRow = { Name: "" };
     setCanDelete(true);
     setRowData((prevState) => [...prevState, newRow]);
@@ -273,7 +281,11 @@ export default function CreateManually() {
   // Stops grid editing when clicking outside grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
-      if (gridRef.current.api && refContainer.current && !refContainer.current.contains(event.target)) {
+      if (
+        gridRef.current.api &&
+        refContainer.current &&
+        !refContainer.current.contains(event.target)
+      ) {
         gridRef.current.api.stopEditing();
       }
     };
@@ -285,9 +297,9 @@ export default function CreateManually() {
     };
   }, [gridRef, refContainer]);
 
-  //Drops element when item is taken off grid
-  //Prevents error where when element comes back onto grid, the index isn't saved correctly onRowDragEnd
-  const onRowDragLeave = (event) => {
+  // Drops element when item is taken off grid
+  // Prevents error where when element comes back onto grid, the index isn't saved correctly onRowDragEnd
+  const onRowDragLeave = () => {
     const newRowData = JSON.parse(JSON.stringify(rowData));
     setRowData(newRowData);
     const onMouseUpEvent = new MouseEvent("mouseup");
@@ -296,17 +308,15 @@ export default function CreateManually() {
 
   const savedAttributeName = useRef("");
 
-  //Handles 'attribute' column updates
-  //To prevent row dragging bugs, attribute names can't be blank or duplicates
-  //When the value is updated to handle duplicates, this function runs again
+  // Handles 'attribute' column updates
+  // To prevent row dragging bugs, attribute names can't be blank or duplicates
+  // When the value is updated to handle duplicates, this function runs again
 
   const handleCellValueChanged = (e) => {
     const currentIndex = e.rowIndex;
-    const allAttributeNames = gridRef.current.props.rowData.map(
-      (item) => item.Name
-    );
+    const allAttributeNames = gridRef.current.props.rowData.map((item) => item.Name);
     if (e.newValue) {
-      //Renames duplicate values to <value>_(number)
+      // Renames duplicate values to <value>_(number)
       const findMultipleOccurrences = (array, value) => {
         const occurrences = array.filter((item) => item === value);
         return occurrences.length > 1;
@@ -327,13 +337,13 @@ export default function CreateManually() {
         rowNode.setDataValue("Name", valueToAdd);
       }
     } else {
-      //Re-save blank attribute as previous attribute
+      // Re-save blank attribute as previous attribute
       const rowNode = gridRef.current.api.getRowNode(currentIndex);
       rowNode.setDataValue("Name", e.oldValue);
 
       e.api.startEditingCell({
         rowIndex: e.rowIndex,
-        colKey: "Name",
+        colKey: "Name"
       });
     }
   };
@@ -345,7 +355,7 @@ export default function CreateManually() {
         flexDirection: "column",
         alignItems: "center",
         width: "80%",
-        margin: "auto",
+        margin: "auto"
       }}
     >
       <Box
@@ -353,12 +363,12 @@ export default function CreateManually() {
           alignSelf: "flex-start",
           display: "flex",
           justifyContent: "space-between",
-          width: "100%",
+          width: "100%"
         }}
       >
         <Button color="button" onClick={() => handleBack()} sx={{ m: 3 }}>
           <ArrowBackIosIcon />
-          {t('Back')}
+          {t("Back")}
         </Button>
         {backErrorMessage && (
           <Alert
@@ -373,15 +383,12 @@ export default function CreateManually() {
           </Alert>
         )}
         {forwardErrorMessage.length > 0 && (
-          <Alert
-            severity="error"
-            sx={{ display: "flex", alignItems: "center" }}
-          >
+          <Alert severity="error" sx={{ display: "flex", alignItems: "center" }}>
             {forwardErrorMessage}
           </Alert>
         )}
         <Button color="button" onClick={() => handleForward()} sx={{ m: "0.4rem" }}>
-          {t('Next')}
+          {t("Next")}
           <ArrowForwardIosIcon />
         </Button>
       </Box>
@@ -391,32 +398,48 @@ export default function CreateManually() {
             fontSize: 35,
             fontWeight: "bold",
             color: CustomPalette.PRIMARY,
-            p: 0,
+            p: 0
           }}
         >
-          {t('Attribute Names')}
+          {t("Attribute Names")}
         </Typography>
         <Typography
           sx={{
             mt: -0.5,
             fontWeight: "bold",
             fontSize: 20,
-            color: CustomPalette.GREY_800,
+            color: CustomPalette.GREY_800
           }}
         >
-          {t('Enter the name of each attribute below')}
+          {t("Enter the name of each attribute below")}
+        </Typography>
+        <Typography
+          sx={{
+            mt: 2,
+            mx: "auto",
+            fontWeight: "light",
+            fontStyle: "italic",
+            fontSize: 14,
+            maxWidth: "55ch"
+          }}
+        >
+          {t(
+            "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: ."
+          )}
         </Typography>
         <Typography
           sx={{
             mt: 2,
             fontWeight: "light",
             fontStyle: "italic",
-            fontSize: 14,
+            fontSize: 14
           }}
         >
-          {t('This will be the column header in every tabular data set no matter what language')}
+          {t(
+            "This will be the column header in every tabular data set no matter what language"
+          )}
           <br />
-          {t('Every attribute must be unique, and no entries can be left blank')}
+          {t("Every attribute must be unique, and no entries can be left blank")}
         </Typography>
       </Box>
       <Box>
@@ -429,8 +452,8 @@ export default function CreateManually() {
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               domLayout="autoHeight"
-              rowDragManaged={true}
-              animateRows={true}
+              rowDragManaged
+              animateRows
               onRowDragEnd={(e) => onRowDragEnd(e)}
               onCellKeyDown={onCellKeyDown}
               onRowDragLeave={(e) => onRowDragLeave(e)}
@@ -448,16 +471,17 @@ export default function CreateManually() {
                 width: "10rem",
                 m: "1rem 3rem 1rem 0",
                 display: "flex",
-                alignItems: "center",
-
+                alignItems: "center"
               }}
               ref={addRef}
             >
-              {t('Add row')} <AddCircleIcon sx={{ marginLeft: '10px' }} />
+              {t("Add row")} <AddCircleIcon sx={{ marginLeft: "10px" }} />
             </Button>
 
             {addErrorMessage.length > 0 && (
-              <Alert severity="error">{addErrorMessage}</Alert>
+              <Alert severity="error" sx={{ maxWidth: "42ch" }}>
+                {addErrorMessage}
+              </Alert>
             )}
           </Box>
           <Button
@@ -470,10 +494,10 @@ export default function CreateManually() {
               display: "flex",
               justifyContent: "space-around",
               p: 1,
-              mb: 5,
+              mb: 5
             }}
           >
-            {t('Clear All')}
+            {t("Clear All")}
           </Button>
         </Box>
       </Box>

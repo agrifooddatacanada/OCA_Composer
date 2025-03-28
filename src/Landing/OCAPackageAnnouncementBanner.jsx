@@ -15,7 +15,7 @@ const OCAPackageAnnouncementBanner = () => {
     >
       <Typography>
         {t(
-          "Early March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip."
+          "In March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip."
         )}{" "}
         <Link
           href={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" || i18next.language === "en-CA" ? "en" : i18next.language}/ChangeLog/`}

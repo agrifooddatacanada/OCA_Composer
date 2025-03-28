@@ -1,11 +1,18 @@
 import i18next from "i18next";
+import { v4 as uuidv4 } from "uuid";
 import { codesToLanguages } from "./isoCodes";
-import { DEFAULT_LANGUAGE } from "./constants";
+import { ADC, DEFAULT_LANGUAGE, DISALLOWED_CHARACTERS } from "./constants";
 
 export const getCurrentData = (currentApi, includedError) => {
   const newData = [];
   currentApi.forEachNode((node) => {
     const newObject = { ...node?.data };
+
+    // Add a UUID if it doesn't already exist
+    if (!newObject.uuid) {
+      newObject.uuid = uuidv4();
+    }
+
     if (!includedError) {
       delete newObject.error;
     }
@@ -22,23 +29,44 @@ export const getDescriptiveFileName = (schemaDescription, commonFileName) => {
 };
 
 // Helper function to replace specified characters in object keys
-export const replaceCharsInKeys = (obj, charsToReplace = [","], replacement = "_") => {
+export const replaceCharsInKeys = (
+  obj,
+  charsToReplace = DISALLOWED_CHARACTERS,
+  replacement = "_"
+) => {
   if (!obj) return obj;
 
-  const pattern = new RegExp(`[${charsToReplace.join("")}]`, "g");
+  // Escape backslash to ensure it's treated as a literal backslash
+  const escapedChars = charsToReplace.map((char) => (char === "\\" ? "\\\\" : char));
+  const pattern = new RegExp(`[${escapedChars.join("")}]+`, "g");
+
+  const cleanString = (str) => {
+    // Replace consecutive special chars with a single replacement character
+    let result = str.replace(pattern, replacement);
+    // Remove replacement character from the end if present
+    result = result.replace(new RegExp(`${replacement}+$`), "");
+    return result;
+  };
 
   // If it's an array of strings
   if (Array.isArray(obj)) {
-    return obj.map((item) => item.replace(pattern, replacement));
+    return obj.map(cleanString);
   }
 
   // If it's an object with attribute names as keys
   const converted = {};
   Object.entries(obj).forEach(([key, value]) => {
-    const newKey = key.replace(pattern, replacement);
+    const newKey = cleanString(key);
     converted[newKey] = value;
   });
   return converted;
+};
+
+export const hasDisallowedChars = (str, charsToCheck = DISALLOWED_CHARACTERS) => {
+  const pattern = new RegExp(
+    `[${charsToCheck.map((char) => (char === "\\" ? "\\\\" : char)).join("")}]`
+  );
+  return pattern.test(str);
 };
 
 // Sanitize attributes in JSON string from ZIP schema upload
@@ -229,19 +257,25 @@ export const getOrderedAttributeRowData = (attributeRowData, attributeOrdering) 
   return orderedAttributeRowData;
 };
 
-export const hasEntryCodeOrdering = (OCAPackage) =>
-  Boolean(
-    Array.isArray(OCAPackage?.extensions) &&
-      OCAPackage.extensions.length > 0 &&
-      OCAPackage.extensions[0]?.overlays?.ordering?.entry_code_ordering
+export const hasEntryCodeOrdering = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.ordering
+        ?.entry_code_ordering
   );
+};
 
-export const hasAttributeOrdering = (OCAPackage) =>
-  Boolean(
-    Array.isArray(OCAPackage?.extensions) &&
-      OCAPackage.extensions.length > 0 &&
-      OCAPackage.extensions[0]?.overlays?.ordering?.attribute_ordering
+export const hasAttributeOrdering = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.ordering
+        ?.attribute_ordering
   );
+};
 
 export const getTransformedEntryCodes = (entryCodes) => {
   const transformedEntryCodes = {};

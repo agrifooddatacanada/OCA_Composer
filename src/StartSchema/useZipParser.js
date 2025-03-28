@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Context } from "../App";
 import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
-import { codeToDivision, codeToGroup } from "../constants/constants";
+import { ADC, codeToDivision, codeToGroup } from "../constants/constants";
 import {
   getOrderedAttributeRowData,
   hasAttributeOrdering,
@@ -78,10 +78,10 @@ const useZipParser = () => {
         let entryCodesForAttribute;
 
         if (ocaPackageData && hasEntryCodeOrdering(ocaPackageData)) {
+          const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
           entryCodesForAttribute =
-            ocaPackageData.extensions[0]?.overlays?.ordering?.entry_code_ordering[
-              attrWithList
-            ];
+            ocaPackageData.extensions[ADC][captureBaseSaid]?.overlays?.ordering
+              ?.entry_code_ordering[attrWithList];
         } else {
           entryCodesForAttribute = entryCodes.attribute_entry_codes[attrWithList];
         }
@@ -189,7 +189,9 @@ const useZipParser = () => {
         Attribute: item,
         Flagged: root?.flagged_attributes?.includes(item),
         List: attributesWithListType.includes(item),
-        Type: root?.attributes?.[item],
+        Type: Array.isArray(root?.attributes?.[item])
+          ? `Array[${root?.attributes?.[item][0]}]`
+          : root?.attributes?.[item],
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
@@ -227,8 +229,12 @@ const useZipParser = () => {
       newAttributeRowData.forEach((item) => {
         const newFormatRuleData = { Attribute: item?.Attribute, Type: item?.Type };
 
+        // Remove the escape character for " in regex patterns
+        // OCA file requires " to be escaped, that's why the escape character needs to be added when creating OCA file
+        // However, in other situtations, the escape character is not needed
         newFormatRuleData.FormatText =
-          formatRules?.attribute_formats?.[item.Attribute] || "";
+          // eslint-disable-next-line quotes
+          formatRules?.attribute_formats?.[item.Attribute]?.replace(/\\"/g, '"') || "";
         setOverlay((prev) => ({
           ...prev,
           "Add format rule for data": {
@@ -288,8 +294,10 @@ const useZipParser = () => {
     }
 
     if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
       const attributeOrdering =
-        ocaPackageData.extensions[0].overlays.ordering.attribute_ordering;
+        ocaPackageData.extensions[ADC][captureBaseSaid].overlays.ordering
+          .attribute_ordering;
       const orderedAttributeRowData = getOrderedAttributeRowData(
         newAttributeRowData,
         attributeOrdering

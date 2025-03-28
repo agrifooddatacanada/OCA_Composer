@@ -5,6 +5,7 @@ import {
   getOrderedAttributeMap,
   getOrderedEntries
 } from "../constants/utils";
+import { ADC } from "../constants/constants";
 
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL
@@ -36,7 +37,8 @@ const useGenerateReadMeV2 = () => {
     const json_bundle = jsonData;
 
     // Check if ordering overlay can be retrieved from oca package
-    const orderingOverlay = ocaPackage?.extensions?.[0]?.overlays?.ordering;
+    const orderingOverlay =
+      ocaPackage?.extensions?.[ADC]?.[json_bundle.capture_base.d]?.overlays?.ordering;
     const hasAttributeOrdering = orderingOverlay?.attribute_ordering?.length > 0;
     const hasEntryCodeOrdering =
       Object.keys(orderingOverlay?.entry_code_ordering || {}).length > 0;
@@ -80,7 +82,10 @@ const useGenerateReadMeV2 = () => {
         "\n" +
         "Schema attributes: data type\n" +
         `${Object.entries(schema_attributes)
-          .map(([key, value]) => `    ${key}: ${value}`)
+          .map(
+            ([key, value]) =>
+              `    ${key}: ${Array.isArray(value) ? `Array[${value[0]}]` : value}`
+          )
           .join("\n")}\n` +
         "\n";
       // implement flagged attributes
@@ -303,10 +308,11 @@ const useGenerateReadMeV2 = () => {
     });
 
     // Add SAIDs of extension overlays
-    if (ocaPackage?.extensions?.length > 0) {
-      // For now, use the first set of extension overlays (associated with the main/top-level schema bundle)
+    if (Object.keys(ocaPackage?.extensions || {}).length > 0) {
+      // For now, use the first set of ADC community extension overlays (associated with the main/top-level schema bundle)
       // TODO: Add support for extension overlays of nested schema bundles
-      const { overlays } = ocaPackage.extensions[0];
+      const overlays =
+        ocaPackage.extensions?.[ADC]?.[json_bundle.capture_base.d]?.overlays;
       manifest.push("\n");
       Object.values(overlays).forEach((overlay) => {
         manifest.push(`${overlay.type} SAID/digest: "${overlay.d}"\n`);
@@ -381,45 +387,46 @@ const useGenerateReadMeV2 = () => {
 
     text_file.push("END_OCA_BUNDLE\n");
 
-    if (ocaPackage?.extensions?.length > 0) {
+    if (Object.keys(ocaPackage?.extensions || {}).length > 0) {
       text_file.push(
         "\n",
         "BEGIN_OCA_PACKAGE_EXTENSIONS\n",
         "******************************************************************\n"
       );
 
-      ocaPackage.extensions.forEach((extension) => {
-        const extensionOverlays = extension.overlays;
-        if (Object.prototype.hasOwnProperty.call(extensionOverlays, "ordering")) {
-          const orderingOverlay = extensionOverlays.ordering;
-          const entryCodeOrdering = orderingOverlay?.entry_code_ordering || {};
-          const hasAttributeOrdering = orderingOverlay.attribute_ordering?.length > 0;
-          const hasEntryCodeOrdering = Object.keys(entryCodeOrdering).length > 0;
+      // For now, use the first set of ADC community extension overlays (associated with the main/top-level schema bundle)
+      // TODO: Add support for extension overlays of nested schema bundle
+      const extensionOverlays =
+        ocaPackage.extensions[ADC][json_bundle.capture_base.d].overlays;
+      if (Object.prototype.hasOwnProperty.call(extensionOverlays, "ordering")) {
+        const orderingOverlay = extensionOverlays.ordering;
+        const entryCodeOrdering = orderingOverlay?.entry_code_ordering || {};
+        const hasAttributeOrdering = orderingOverlay.attribute_ordering?.length > 0;
+        const hasEntryCodeOrdering = Object.keys(entryCodeOrdering).length > 0;
 
+        text_file.push(
+          `Layer name: ${orderingOverlay.type}\n`,
+          `SAID/digest: ${orderingOverlay.d}\n`
+        );
+
+        if (hasAttributeOrdering) {
           text_file.push(
-            `Layer name: ${orderingOverlay.type}\n`,
-            `SAID/digest: ${orderingOverlay.d}\n`
-          );
-
-          if (hasAttributeOrdering) {
-            text_file.push(
-              `Attribute ordering: ${orderingOverlay.attribute_ordering.join(", ")}\n`
-            );
-          }
-
-          if (hasEntryCodeOrdering) {
-            text_file.push("Entry code ordering:\n");
-            Object.entries(entryCodeOrdering).forEach(([key, value]) => {
-              text_file.push(`    ${key}: ${value.join(", ")}\n`);
-            });
-          }
-
-          text_file.push(
-            "\n",
-            "******************************************************************\n"
+            `Attribute ordering: ${orderingOverlay.attribute_ordering.join(", ")}\n`
           );
         }
-      });
+
+        if (hasEntryCodeOrdering) {
+          text_file.push("Entry code ordering:\n");
+          Object.entries(entryCodeOrdering).forEach(([key, value]) => {
+            text_file.push(`    ${key}: ${value.join(", ")}\n`);
+          });
+        }
+
+        text_file.push(
+          "\n",
+          "******************************************************************\n"
+        );
+      }
 
       text_file.push("END_OCA_PACKAGE_EXTENSIONS\n");
     }
