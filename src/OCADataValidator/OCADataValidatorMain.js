@@ -1,13 +1,13 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
+import { Box, Button, Typography } from "@mui/material";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Drop from "../StartSchema/Drop";
 import { useHandleJsonDrop } from "./useHandleJsonDrop";
 import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
-import { Box, Button, Typography } from "@mui/material";
 import { datasetUploadDescription, datasetUploadTooltip } from "../constants/constants";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { useTranslation } from "react-i18next";
 import ExcelSheetSelection from "../components/ExcelSheetSelection";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const { t } = useTranslation();
@@ -156,5 +156,3 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
 };
 
 export default OCADataValidatorMain;
-
-

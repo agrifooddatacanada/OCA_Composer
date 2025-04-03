@@ -1,7 +1,12 @@
 import i18next from "i18next";
 import { v4 as uuidv4 } from "uuid";
-import { codesToLanguages } from "./isoCodes";
-import { ADC, DEFAULT_LANGUAGE, DISALLOWED_CHARACTERS } from "./constants";
+import { codesToLanguages, alpha3CodesToTwoLetterCodes } from "./isoCodes";
+import {
+  ADC,
+  DEFAULT_LANGUAGE,
+  DISALLOWED_CHARACTERS,
+  OCA_REPOSITORY_API_URL
+} from "./constants";
 
 export const getCurrentData = (currentApi, includedError) => {
   const newData = [];
@@ -328,4 +333,181 @@ export const getOrderedEntries = (entryCodeOrdering, attributeEntries) => {
     }
   });
   return orderedEntries;
+};
+
+const fetchOCABundle = async (said) => {
+  const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles/${said}`);
+  const data = await response.json();
+  return data;
+};
+
+export const generateOCABundle = async (OCAFileData) => {
+  try {
+    const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain"
+      },
+      body: OCAFileData
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to generate OCA bundle: ${response.statusText}`);
+    }
+
+    const { said } = await response.json();
+    const bundle = await fetchOCABundle(said);
+
+    return bundle;
+  } catch (error) {
+    console.error("Error generating OCA bundle from OCA file:", error);
+    throw error;
+  }
+};
+
+export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
+  const attributes = Object.keys(coreOverlays.capture_base.attributes);
+  const attributeTypeMap = coreOverlays.capture_base.attributes;
+  let fileContent = "# Add attributes (capture base) \n";
+  fileContent += "ADD ATTRIBUTE";
+
+  attributes.forEach((attribute) => {
+    const attributeType = Array.isArray(attributeTypeMap[attribute])
+      ? `Array[${attributeTypeMap[attribute][0]}]`
+      : attributeTypeMap[attribute];
+    fileContent += ` ${attribute}=${attributeType}`;
+  });
+
+  fileContent += "\n";
+
+  // Classification
+  fileContent += "# Add classification\n";
+  if (coreOverlays.capture_base.classification) {
+    fileContent += `ADD CLASSIFICATION ${coreOverlays.capture_base.classification}`;
+    fileContent += "\n";
+  }
+
+  // Meta overlay
+  fileContent += "# Add meta overlay";
+  coreOverlays.meta.forEach((item) => {
+    fileContent += `\nADD META ${alpha3CodesToTwoLetterCodes[item.language]} PROPS name="${item.name}" description="${item.description}"`;
+  });
+  fileContent += "\n";
+
+  // Format overlay
+  fileContent += "# Add format overlay\n";
+  if (coreOverlays.format) {
+    fileContent += "ADD FORMAT ATTRS";
+    Object.keys(coreOverlays.format.attribute_formats).forEach((attribute) => {
+      fileContent += ` ${attribute}="${coreOverlays.format.attribute_formats[attribute]}"`;
+    });
+    fileContent += "\n";
+  }
+
+  // Conformance overlay
+  fileContent += "# Add conformance overlay\n";
+  if (coreOverlays.conformance) {
+    fileContent += "ADD CONFORMANCE ATTRS";
+    Object.keys(coreOverlays.conformance.attribute_conformance).forEach((attribute) => {
+      fileContent += ` ${attribute}="${coreOverlays.conformance.attribute_conformance[attribute]}"`;
+    });
+    fileContent += "\n";
+  }
+
+  // Label overlay
+  fileContent += "# Add label overlay";
+  if (coreOverlays.label) {
+    coreOverlays.label.forEach((item) => {
+      fileContent += `\nADD LABEL ${alpha3CodesToTwoLetterCodes[item.language]} ATTRS`;
+      Object.keys(item.attribute_labels).forEach((attribute) => {
+        fileContent += ` ${attribute}="${item.attribute_labels[attribute]}"`;
+      });
+    });
+  }
+  fileContent += "\n";
+
+  // Information overlay
+  fileContent += "# Add information overlay";
+  if (coreOverlays.information) {
+    coreOverlays.information.forEach((item) => {
+      fileContent += `\nADD INFORMATION ${alpha3CodesToTwoLetterCodes[item.language]} ATTRS`;
+      Object.keys(item.attribute_information).forEach((attribute) => {
+        fileContent += ` ${attribute}="${item.attribute_information[attribute]}"`;
+      });
+    });
+  }
+  fileContent += "\n";
+
+  // Entry code and entry overlay
+  fileContent += "# Add entry code overlay\n";
+  if (coreOverlays.entry_code) {
+    fileContent += "ADD ENTRY_CODE ATTRS";
+    const entryCodes = coreOverlays.entry_code.attribute_entry_codes;
+    Object.keys(entryCodes).forEach((attribute) => {
+      const codesInQuotes = entryCodes[attribute].map((code) => `"${code}"`);
+      fileContent += ` ${attribute}=[${codesInQuotes.join(", ")}]`;
+    });
+    fileContent += "\n";
+
+    if (coreOverlays.entry) {
+      coreOverlays.entry.forEach((item) => {
+        fileContent += `ADD ENTRY ${alpha3CodesToTwoLetterCodes[item.language]} ATTRS`;
+        Object.keys(item.attribute_entries).forEach((attribute) => {
+          const entries = item.attribute_entries[attribute];
+          const entriesText = Object.keys(entries)
+            .map((code) => `"${code}": "${entries[code]}"`)
+            .join(", ");
+          fileContent += ` ${attribute}={${entriesText}}`;
+        });
+        fileContent += "\n";
+      });
+    }
+  }
+
+  // Cardinality overlay
+  fileContent += "# Add cardinality overlay\n";
+  if (coreOverlays.cardinality) {
+    fileContent += "ADD CARDINALITY ATTRS";
+    Object.keys(coreOverlays.cardinality.attribute_cardinality).forEach((attribute) => {
+      fileContent += ` ${attribute}="${coreOverlays.cardinality.attribute_cardinality[attribute]}"`;
+    });
+    fileContent += "\n";
+  }
+
+  // Unit overlay
+  fileContent += "# Add units overlay\n";
+  if (coreOverlays.unit) {
+    fileContent += "ADD UNIT ATTRS";
+    Object.keys(coreOverlays.unit.attribute_unit).forEach((attribute) => {
+      fileContent += ` ${attribute}="${coreOverlays.unit.attribute_unit[attribute]}"`;
+    });
+    fileContent += "\n";
+  }
+
+  // Character encoding overlay
+  fileContent += "# Add character encoding overlay\n";
+  if (coreOverlays.character_encoding) {
+    fileContent += "ADD CHARACTER_ENCODING ATTRS";
+    Object.keys(coreOverlays.character_encoding.attribute_character_encoding).forEach(
+      (attribute) => {
+        fileContent += ` ${attribute}="${coreOverlays.character_encoding.attribute_character_encoding[attribute]}"`;
+      }
+    );
+    fileContent += "\n";
+  }
+
+  return fileContent;
+};
+
+export const downloadJsonFile = (data, fileName) => {
+  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };

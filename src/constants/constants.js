@@ -377,6 +377,9 @@ export const UNIT = "unit";
 export const CONFORMANCE = "conformance";
 export const CARDINALITY = "cardinality";
 
+// Extension overlays
+export const ORDERING = "ordering";
+
 export const overlays = [
   CHARACTER_ENCODING,
   FORMAT,
@@ -389,12 +392,11 @@ export const overlays = [
   CONFORMANCE
 ];
 
+export const extensionOverlays = [ORDERING];
+
 export const SHOW_ALL_DATA = "Show all data";
 export const SHOW_ONLY_ROWS_WITH_ERRORS = "Show only rows with errors";
 export const OCA_REPOSITORY_API_URL = "https://api.adc.oca-repo.semanticengine.org";
-
-// Extension overlays
-export const ORDERING = "ordering";
 
 export const ALLOWED_BOOLEAN_VALUES = [
   "True",

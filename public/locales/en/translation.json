@@ -300,5 +300,12 @@
   "Download legacy .zip bundle": "Download legacy .zip bundle",
   "In March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip.": "In March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip.",
   "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes": "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes",
-  "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: .": "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: ."
+  "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: .": "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: .",
+  "Clear OCA File": "Clear OCA File",
+  "Click here to select an OCA File (.txt) or drag and drop one here": "Click here to select an OCA File (.txt) or drag and drop one here",
+  "Schema Bundle 1": "Schema Bundle 1",
+  "Schema Bundle 2": "Schema Bundle 2",
+  "Capture base (attribute names and their datatypes) of the two schemas must be the same": "Capture base (attribute names and their datatypes) of the two schemas must be the same",
+  "Close": "Close",
+  "Selection": "Selection"
 }

@@ -1,11 +1,39 @@
-import { useContext, useEffect, useState } from 'react';
-import { Context } from '../App';
-import { messages } from '../constants/messages';
-import { CAPTURE_BASE, CARDINALITY, CHARACTER_ENCODING, CONFORMANCE, ENTRY, ENTRY_CODE, FORMAT, INFORMATION, LABEL, META, OVERLAYS_WORD, UNIT, overlays } from '../constants/constants';
-import JSZip from 'jszip';
+import { useContext, useEffect, useState } from "react";
+import JSZip from "jszip";
+import { Context } from "../App";
+import { messages } from "../constants/messages";
+import {
+  ADC,
+  CAPTURE_BASE,
+  CARDINALITY,
+  CHARACTER_ENCODING,
+  CONFORMANCE,
+  ENTRY,
+  ENTRY_CODE,
+  FORMAT,
+  INFORMATION,
+  LABEL,
+  META,
+  OVERLAYS_WORD,
+  UNIT,
+  overlays
+} from "../constants/constants";
+import { replaceAttributeCharsInParsedJson } from "../constants/utils";
 
 const useHandleOCAFileUpload = () => {
-  const { setCurrentOCAMergePage, OCAFile1Raw, setOCAFile1Raw, OCAFile2Raw, setOCAFile2Raw, parsedOCAFile1, setParsedOCAFile1, parsedOCAFile2, setParsedOCAFile2, setSelectedOverlaysOCAFile1, setSelectedOverlaysOCAFile2 } = useContext(Context);
+  const {
+    setCurrentOCAMergePage,
+    OCAFile1Raw,
+    setOCAFile1Raw,
+    OCAFile2Raw,
+    setOCAFile2Raw,
+    parsedOCAFile1,
+    setParsedOCAFile1,
+    parsedOCAFile2,
+    setParsedOCAFile2,
+    setSelectedOverlaysOCAFile1,
+    setSelectedOverlaysOCAFile2
+  } = useContext(Context);
   const [OCAFile1Loading, setOCAFile1Loading] = useState(false);
   const [OCAFile2Loading, setOCAFile2Loading] = useState(false);
   const [ocaFile1DropDisabled, setOcaFile1DropDisabled] = useState(false);
@@ -25,52 +53,18 @@ const useHandleOCAFileUpload = () => {
     setParsedOCAFile2("");
   };
 
-  const processJsonFile = (file, fileNumber) => {
-    try {
-      const reader = new FileReader();
-
-      reader.onload = async (e) => {
-        const jsonFile = JSON.parse(e.target.result);
-        if (jsonFile?.['bundle']) {
-          handleBundleJSONDrop(jsonFile?.['bundle'], fileNumber);
-        } else if (jsonFile?.['schema']?.[0]) {
-          handleBundleJSONDrop(jsonFile?.['schema']?.[0], fileNumber);
-        } else {
-          handleBundleJSONDrop(jsonFile, fileNumber);
-        }
-      };
-
-      reader.readAsText(file);
-
-    } catch (error) {
-      if (fileNumber === 1) {
-        setOcaFile1DropDisabled({ message: messages.uploadFail, type: "error" });
-        setOCAFile1Loading(false);
-        setTimeout(() => {
-          setOcaFile1DropMessage({ message: "", type: "" });
-        }, [2500]);
-      } else {
-        setOcaFile2DropDisabled({ message: messages.uploadFail, type: "error" });
-        setOCAFile2Loading(false);
-        setTimeout(() => {
-          setOcaFile2DropMessage({ message: "", type: "" });
-        }, [2500]);
-      }
-    }
-  };
-
-  const processSelectedOverlays = (jsonFile) => {
+  const processSelectedOverlays = (jsonFile, extensionOverlays = {}) => {
     const selectedValue = {};
     if (CAPTURE_BASE in jsonFile) {
       selectedValue[CAPTURE_BASE] = jsonFile[CAPTURE_BASE];
     }
 
-    const jsonOverlays = jsonFile['overlays'];
+    const jsonOverlays = jsonFile.overlays;
     for (const overlay of overlays) {
       if (overlay in jsonOverlays) {
         if (Array.isArray(jsonOverlays[overlay])) {
           for (const item of jsonOverlays[overlay]) {
-            selectedValue[overlay + ' - ' + item?.language] = { ...item };
+            selectedValue[`${overlay} - ${item?.language}`] = { ...item };
           }
         } else {
           selectedValue[overlay] = jsonOverlays[overlay];
@@ -78,11 +72,22 @@ const useHandleOCAFileUpload = () => {
       }
     }
 
+    Object.keys(extensionOverlays).forEach((key) => {
+      const overlay = extensionOverlays[key];
+      if (Array.isArray(overlay)) {
+        for (const item of overlay) {
+          selectedValue[`${key} - ${item?.language}`] = { ...item };
+        }
+      } else {
+        selectedValue[key] = overlay;
+      }
+    });
+
     return selectedValue;
   };
 
-  const handleBundleJSONDrop = (jsonFile, fileNumber) => {
-    const selectedValue = processSelectedOverlays(jsonFile);
+  const handleBundleJSONDrop = (jsonFile, fileNumber, extensionOverlays = {}) => {
+    const selectedValue = processSelectedOverlays(jsonFile, extensionOverlays);
 
     if (fileNumber === 1) {
       setParsedOCAFile1(jsonFile);
@@ -91,7 +96,7 @@ const useHandleOCAFileUpload = () => {
       setOcaFile1DropDisabled(true);
       setOcaFile1DropMessage({
         message: messages.successfulUpload,
-        type: "success",
+        type: "success"
       });
 
       setTimeout(() => {
@@ -110,7 +115,7 @@ const useHandleOCAFileUpload = () => {
 
       setOcaFile2DropMessage({
         message: messages.successfulUpload,
-        type: "success",
+        type: "success"
       });
 
       setTimeout(() => {
@@ -123,6 +128,57 @@ const useHandleOCAFileUpload = () => {
     }
   };
 
+  const processJsonFile = (file, fileNumber) => {
+    try {
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        const jsonFile = JSON.parse(e.target.result);
+        // If the file is an OCA package
+        if (jsonFile?.oca_bundle?.bundle) {
+          const modifiedBundle = replaceAttributeCharsInParsedJson(
+            jsonFile.oca_bundle.bundle
+          );
+          const captureBaseSaid = jsonFile?.oca_bundle?.bundle?.capture_base?.d;
+
+          const hasExtensionOverlays = Object.keys(jsonFile?.extensions || {}).length > 0;
+
+          if (hasExtensionOverlays) {
+            handleBundleJSONDrop(
+              modifiedBundle,
+              fileNumber,
+              jsonFile.extensions?.[ADC]?.[captureBaseSaid]?.overlays
+            );
+          } else {
+            handleBundleJSONDrop(modifiedBundle, fileNumber);
+          }
+        } else if (jsonFile?.bundle) {
+          handleBundleJSONDrop(jsonFile.bundle, fileNumber);
+        } else if (jsonFile?.schema?.[0]) {
+          handleBundleJSONDrop(jsonFile.schema[0], fileNumber);
+        } else {
+          handleBundleJSONDrop(jsonFile, fileNumber);
+        }
+      };
+
+      reader.readAsText(file);
+    } catch (error) {
+      if (fileNumber === 1) {
+        setOcaFile1DropDisabled({ message: messages.uploadFail, type: "error" });
+        setOCAFile1Loading(false);
+        setTimeout(() => {
+          setOcaFile1DropMessage({ message: "", type: "" });
+        }, [2500]);
+      } else {
+        setOcaFile2DropDisabled({ message: messages.uploadFail, type: "error" });
+        setOCAFile2Loading(false);
+        setTimeout(() => {
+          setOcaFile2DropMessage({ message: "", type: "" });
+        }, [2500]);
+      }
+    }
+  };
+
   const processZipFile = async (zip, fileNumber) => {
     const selectedOverlay = {};
     const ogFile = {};
@@ -131,20 +187,21 @@ const useHandleOCAFileUpload = () => {
     const loadMetadataFile = await zip.files["meta.json"].async("text");
     const metadataJson = JSON.parse(loadMetadataFile);
 
-    const root = metadataJson.root;
-    const loadRoot = await zip.files[metadataJson.root + '.json'].async("text");
+    const { root } = metadataJson;
+    const loadRoot = await zip.files[`${root}.json`].async("text");
     selectedOverlay[CAPTURE_BASE] = JSON.parse(loadRoot);
     ogFile[CAPTURE_BASE] = JSON.parse(loadRoot);
 
     for (const [key, file] of Object.entries(metadataJson.files[root])) {
-      const content = await zip.files[file + '.json'].async("text");
+      // eslint-disable-next-line no-await-in-loop
+      const content = await zip.files[`${file}.json`].async("text");
       const parsedData = JSON.parse(content);
 
       if (key.includes(META)) {
         const languageMatch = key.match(/\(([^)]+)\)/);
         let objectKey = META;
         if (languageMatch) {
-          objectKey = META + " - " + languageMatch[1];
+          objectKey = `${META} - ${languageMatch[1]}`;
         }
         selectedOverlay[objectKey] = parsedData;
         innerOverlays[META] = (innerOverlays[META] || []).concat([parsedData]);
@@ -154,21 +211,22 @@ const useHandleOCAFileUpload = () => {
         const languageMatch = key.match(/\(([^)]+)\)/);
         let objectKey = INFORMATION;
         if (languageMatch) {
-          objectKey = INFORMATION + " - " + languageMatch[1];
+          objectKey = `${INFORMATION} - ${languageMatch[1]}`;
         }
         selectedOverlay[objectKey] = parsedData;
-        innerOverlays[INFORMATION] = (innerOverlays[INFORMATION] || []).concat([parsedData]);
+        innerOverlays[INFORMATION] = (innerOverlays[INFORMATION] || []).concat([
+          parsedData
+        ]);
       } else if (key.includes(FORMAT)) {
         selectedOverlay[FORMAT] = parsedData;
         innerOverlays[FORMAT] = parsedData;
       }
 
-
       if (key.includes(LABEL)) {
         const languageMatch = key.match(/\(([^)]+)\)/);
         let objectKey = LABEL;
         if (languageMatch) {
-          objectKey = LABEL + " - " + languageMatch[1];
+          objectKey = `${LABEL} - ${languageMatch[1]}`;
         }
         selectedOverlay[objectKey] = parsedData;
         innerOverlays[LABEL] = (innerOverlays[LABEL] || []).concat([parsedData]);
@@ -181,7 +239,7 @@ const useHandleOCAFileUpload = () => {
         const languageMatch = key.match(/\(([^)]+)\)/);
         let objectKey = ENTRY;
         if (languageMatch) {
-          objectKey = ENTRY + " - " + languageMatch[1];
+          objectKey = `${ENTRY} - ${languageMatch[1]}`;
         }
         selectedOverlay[objectKey] = parsedData;
         innerOverlays[ENTRY] = (innerOverlays[ENTRY] || []).concat([parsedData]);
@@ -217,7 +275,7 @@ const useHandleOCAFileUpload = () => {
       setOcaFile1DropDisabled(true);
       setOcaFile1DropMessage({
         message: messages.successfulUpload,
-        type: "success",
+        type: "success"
       });
 
       setTimeout(() => {
@@ -235,7 +293,7 @@ const useHandleOCAFileUpload = () => {
       setOcaFile2DropDisabled(true);
       setOcaFile2DropMessage({
         message: messages.successfulUpload,
-        type: "success",
+        type: "success"
       });
 
       setTimeout(() => {
@@ -258,7 +316,6 @@ const useHandleOCAFileUpload = () => {
       };
 
       reader.readAsArrayBuffer(file);
-
     } catch (error) {
       if (fileNumber === 1) {
         setOcaFile1DropDisabled(false);
@@ -274,20 +331,38 @@ const useHandleOCAFileUpload = () => {
         setTimeout(() => {
           setOcaFile2DropMessage({ message: "", type: "" });
         });
-
       }
     }
   };
 
-
   useEffect(() => {
-    if (OCAFile1Raw && OCAFile1Raw.length > 0 && OCAFile1Raw[0].path.includes(".json") && parsedOCAFile1 === "") {
+    if (
+      OCAFile1Raw &&
+      OCAFile1Raw.length > 0 &&
+      OCAFile1Raw[0].path.includes(".json") &&
+      parsedOCAFile1 === ""
+    ) {
       processJsonFile(OCAFile1Raw[0], 1);
-    } else if (OCAFile2Raw && OCAFile2Raw.length > 0 && OCAFile2Raw[0].path.includes(".json") && parsedOCAFile2 === "") {
+    } else if (
+      OCAFile2Raw &&
+      OCAFile2Raw.length > 0 &&
+      OCAFile2Raw[0].path.includes(".json") &&
+      parsedOCAFile2 === ""
+    ) {
       processJsonFile(OCAFile2Raw[0], 2);
-    } else if (OCAFile1Raw && OCAFile1Raw.length > 0 && OCAFile1Raw[0].path.includes(".zip") && parsedOCAFile1 === "") {
+    } else if (
+      OCAFile1Raw &&
+      OCAFile1Raw.length > 0 &&
+      OCAFile1Raw[0].path.includes(".zip") &&
+      parsedOCAFile1 === ""
+    ) {
       processZipBundleFile(OCAFile1Raw[0], 1);
-    } else if (OCAFile2Raw && OCAFile2Raw.length > 0 && OCAFile2Raw[0].path.includes(".zip") && parsedOCAFile2 === "") {
+    } else if (
+      OCAFile2Raw &&
+      OCAFile2Raw.length > 0 &&
+      OCAFile2Raw[0].path.includes(".zip") &&
+      parsedOCAFile2 === ""
+    ) {
       processZipBundleFile(OCAFile2Raw[0], 2);
     } else if (OCAFile2Raw && OCAFile2Raw.length > 0 && parsedOCAFile2 === "") {
       setOcaFile2DropMessage({ message: messages.uploadFail, type: "error" });
@@ -331,7 +406,7 @@ const useHandleOCAFileUpload = () => {
     handleClearOCAFile1,
     handleClearOCAFile2,
     parsedOCAFile1,
-    parsedOCAFile2,
+    parsedOCAFile2
   };
 };
 
