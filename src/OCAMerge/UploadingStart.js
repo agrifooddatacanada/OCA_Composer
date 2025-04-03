@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Alert, Box, Button, Typography } from "@mui/material";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import BackNextSkeleton from "../components/BackNextSkeleton";
@@ -38,10 +38,20 @@ const UploadingStart = () => {
   const filePath1 = OCAFile1Raw?.[0]?.path;
   const filePath2 = OCAFile2Raw?.[0]?.path;
 
+  const hasIncompatibleCaptureBase =
+    parsedOCAFile1 !== "" &&
+    parsedOCAFile2 !== "" &&
+    parsedOCAFile1.capture_base.d !== parsedOCAFile2.capture_base.d;
+
+  const canProceedToMerging =
+    parsedOCAFile1 !== "" &&
+    parsedOCAFile2 !== "" &&
+    parsedOCAFile1.capture_base.d === parsedOCAFile2.capture_base.d;
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <BackNextSkeleton
-        isForward={parsedOCAFile1 !== "" && parsedOCAFile2 !== ""}
+        isForward={canProceedToMerging}
         pageForward={() => {
           setCurrentOCAMergePage("UserSelection");
         }}
@@ -90,7 +100,15 @@ const UploadingStart = () => {
             {t("Clear OCA File")}
           </Button>
         </Box>
-        <Box sx={{ height: "4rem" }} />
+        <Box sx={{ mt: "3rem" }}>
+          {hasIncompatibleCaptureBase && (
+            <Alert severity="error" sx={{ mb: "3rem" }}>
+              {t(
+                "Capture base (attribute names and their datatypes) of the two schemas must be the same"
+              )}
+            </Alert>
+          )}
+        </Box>
         <Box>
           <Typography
             variant="h6"

@@ -2,14 +2,12 @@ import { useContext, useMemo } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
+import { ADC, divisionCodes, groupCodes, ORDERING } from "../constants/constants";
 import {
-  ADC,
-  divisionCodes,
-  groupCodes,
-  OCA_REPOSITORY_API_URL,
-  ORDERING
-} from "../constants/constants";
-import { getDescriptiveFileName, getTransformedEntryCodes } from "../constants/utils";
+  generateOCABundle,
+  getDescriptiveFileName,
+  getTransformedEntryCodes
+} from "../constants/utils";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 
 const currentEnv = process.env.REACT_APP_ENV;
@@ -367,36 +365,6 @@ const useExportLogicV2 = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
-
-  const fetchOCABundle = async (said) => {
-    const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles/${said}`);
-    const data = await response.json();
-    return data;
-  };
-
-  const generateOCABundle = async (OCAFileData) => {
-    try {
-      const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain"
-        },
-        body: OCAFileData
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to generate OCA bundle: ${response.statusText}`);
-      }
-
-      const { said } = await response.json();
-      const bundle = await fetchOCABundle(said);
-
-      return bundle;
-    } catch (error) {
-      console.error("Error generating OCA bundle from OCA file:", error);
-      throw error;
-    }
   };
 
   const exportData = async () => {

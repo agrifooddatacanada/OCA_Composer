@@ -303,5 +303,8 @@
   "Clear OCA File": "Effacer le fichier OCA",
   "Click here to select an OCA File (.txt) or drag and drop one here": "Cliquez ici pour sélectionner un fichier OCA (.txt) ou faites-en un glisser-déposer ici",
   "Schema Bundle 1": "Ensemble de schémas 1",
-  "Schema Bundle 2": "Ensemble de schémas 2"
+  "Schema Bundle 2": "Ensemble de schémas 2",
+  "Capture base (attribute names and their datatypes) of the two schemas must be the same": "La base de capture (noms d'attributs et leurs types de données) des deux schémas doit être la même",
+  "Close": "Fermer",
+  "Selection": "Sélection"
 }

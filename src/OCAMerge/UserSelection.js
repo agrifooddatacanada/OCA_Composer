@@ -3,9 +3,11 @@ import { useTranslation } from "react-i18next";
 import JSZip from "jszip";
 import { Box, Button, Checkbox, List, ListItem, Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { OcaPackage } from "oca_package";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import {
+  ADC,
   CAPTURE_BASE,
   CARDINALITY,
   CHARACTER_ENCODING,
@@ -16,9 +18,12 @@ import {
   INFORMATION,
   LABEL,
   META,
+  ORDERING,
   UNIT
 } from "../constants/constants";
 import MergeDifferenceModal from "./MergeDifferenceModal";
+import { generateOCABundle, generateOCAFileFromMergedOverlays } from "../constants/utils";
+import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 
 const checkIfKeyInList = (key, list) => {
   const lowercaseSearchString = key.toLowerCase();
@@ -41,7 +46,7 @@ const findComparisonObject = (key) => {
       objKey = "attribute_formats";
       break;
     case UNIT:
-      objKey = "attribute_units";
+      objKey = "attribute_unit";
       break;
     case ENTRY_CODE:
       objKey = "attribute_entry_codes";
@@ -82,6 +87,8 @@ const UserSelection = () => {
     title: "",
     rowData: []
   });
+
+  const { jsonToTextFile } = useGenerateReadMeV2();
 
   const fileName1 = OCAFile1Raw[0].path;
   const fileName1WithoutExt = fileName1.substring(0, fileName1.lastIndexOf("."));
@@ -143,15 +150,25 @@ const UserSelection = () => {
       item.key.includes(ENTRY_CODE)
     ) {
       const comparisonObj = findComparisonObject(item.key.split(" - ")?.[0]);
+      let overlayData1 = null;
+      let overlayData2 = null;
+      if (item.key.includes(UNIT)) {
+        // In case of zip bundle, the unit is in attribute_units
+        overlayData1 = value1?.[comparisonObj] || value1?.attribute_units || {};
+        overlayData2 = value2?.[comparisonObj] || value2?.attribute_units || {};
+      } else {
+        overlayData1 = value1?.[comparisonObj] || {};
+        overlayData2 = value2?.[comparisonObj] || {};
+      }
       const uniqueKeys = new Set([
-        ...Object.keys(value1?.[comparisonObj] || {}),
-        ...Object.keys(value2?.[comparisonObj] || {})
+        ...Object.keys(overlayData1),
+        ...Object.keys(overlayData2)
       ]);
 
       const attributesComparison = Array.from(uniqueKeys).map((key) => ({
         comparisonValue: key,
-        ocaFile1: value1?.[comparisonObj]?.[key],
-        ocaFile2: value2?.[comparisonObj]?.[key]
+        ocaFile1: overlayData1?.[key],
+        ocaFile2: overlayData2?.[key]
       }));
 
       setDataDifference({
@@ -179,6 +196,30 @@ const UserSelection = () => {
         title: item.key,
         rowData: attributesComparison
       });
+    } else if (item.key.includes(ORDERING)) {
+      const attributeOrderingComparison = {
+        comparisonValue: "attribute_ordering",
+        ocaFile1: value1?.attribute_ordering,
+        ocaFile2: value2?.attribute_ordering
+      };
+
+      const uniqueEntryKeys = new Set([
+        ...Object.keys(value1?.entry_code_ordering || {}),
+        ...Object.keys(value2?.entry_code_ordering || {})
+      ]);
+
+      const entryCodeOrderingComparisons = Array.from(uniqueEntryKeys).map((key) => ({
+        comparisonValue: `entry_code_ordering - ${key}`,
+        ocaFile1: value1?.entry_code_ordering?.[key],
+        ocaFile2: value2?.entry_code_ordering?.[key]
+      }));
+
+      setDataDifference({
+        title: item.key,
+        rowData: [attributeOrderingComparison, ...entryCodeOrderingComparisons]
+      });
+
+      setShowDifference(true);
     }
 
     setShowDifference(true);
@@ -201,12 +242,10 @@ const UserSelection = () => {
     });
   };
 
-  const preparedJSONToExport = () => {
-    const exportedFile = {
-      d: parsedOCAFile1.d,
-      v: parsedOCAFile1.v
-    };
-    const overlays = {};
+  const getMergedOverlaysForJSONExport = () => {
+    const coreOverlays = {};
+    const extensionOverlays = {};
+
     data.forEach((item) => {
       const { key } = item;
       let value = null;
@@ -217,10 +256,11 @@ const UserSelection = () => {
       }
 
       if (value && key === CAPTURE_BASE) {
-        exportedFile[key] = value;
+        coreOverlays[key] = value;
       }
 
       const overlayKey = key.split(" - ")?.[0];
+      // Non-language specific overlays
       if (
         overlayKey === CHARACTER_ENCODING ||
         overlayKey === FORMAT ||
@@ -229,24 +269,75 @@ const UserSelection = () => {
         overlayKey === UNIT
       ) {
         if (value) {
-          overlays[overlayKey] = value;
+          coreOverlays[overlayKey] = value;
         }
+        // Language specific overlays
       } else if (
         overlayKey === META ||
         overlayKey === LABEL ||
         overlayKey === INFORMATION ||
         overlayKey === ENTRY
       ) {
-        if (value && overlayKey in overlays) {
-          overlays[overlayKey].push(value);
+        if (value && overlayKey in coreOverlays) {
+          coreOverlays[overlayKey].push(value);
         } else if (value) {
-          overlays[overlayKey] = [value];
+          coreOverlays[overlayKey] = [value];
+        }
+        // OCA package extension overlays
+      } else if (key === ORDERING) {
+        if (value) {
+          extensionOverlays[overlayKey] = value;
         }
       }
-
-      exportedFile.overlays = overlays;
     });
-    return exportedFile;
+
+    return { coreOverlays, extensionOverlays };
+  };
+
+  const exportToJsonFile = (data) => {
+    const jsonString = JSON.stringify(data);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "merged_schema.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportOcaPackage = async () => {
+    const mergedOverlays = getMergedOverlaysForJSONExport();
+    const ocaFileContent = generateOCAFileFromMergedOverlays(mergedOverlays.coreOverlays);
+    const bundle = await generateOCABundle(ocaFileContent);
+
+    // For now, we only have ADC community ordering extension overlay for top-level/main schema bundle
+    const extension = {
+      extensions: {
+        [ADC]: {
+          [bundle.bundle.d]: [
+            {
+              ordering_overlay: {
+                type: ORDERING,
+                attribute_ordering:
+                  mergedOverlays.extensionOverlays?.[ORDERING]?.attribute_ordering || [],
+                entry_code_ordering:
+                  mergedOverlays.extensionOverlays?.[ORDERING]?.entry_code_ordering || {}
+              }
+            }
+          ]
+        }
+      }
+    };
+
+    const ocaPackageService = new OcaPackage(extension, bundle);
+    const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
+
+    jsonToTextFile(bundle.bundle, ocaPackage);
+
+    exportToJsonFile(ocaPackage);
   };
 
   const preparedZipToExport = () => {
@@ -333,27 +424,11 @@ const UserSelection = () => {
     document.body.removeChild(link);
   };
 
-  const exportToJsonFile = (data) => {
-    const jsonString = JSON.stringify(data);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "merged_schema.json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
   const handleExport = () => {
-    let exportedFile;
     if (OCAFile1Raw[0].path.includes(".json") || OCAFile2Raw[0].path.includes(".json")) {
-      exportedFile = preparedJSONToExport();
-      exportToJsonFile(exportedFile);
+      handleExportOcaPackage();
     } else {
-      exportedFile = preparedZipToExport();
+      const exportedFile = preparedZipToExport();
       exportZipFile(exportedFile);
     }
   };
@@ -364,6 +439,20 @@ const UserSelection = () => {
       const value1 = selectedOverlaysOCAFile1[key];
       const value2 = selectedOverlaysOCAFile2[key];
       return value1?.description === value2?.description && value1?.name === value2?.name;
+    }
+    if (key.includes(ORDERING)) {
+      const value1 = selectedOverlaysOCAFile1[key];
+      const value2 = selectedOverlaysOCAFile2[key];
+
+      const attributeOrderingEqual =
+        JSON.stringify(value1?.attribute_ordering) ===
+        JSON.stringify(value2?.attribute_ordering);
+
+      const entryCodeOrderingEqual =
+        JSON.stringify(value1?.entry_code_ordering) ===
+        JSON.stringify(value2?.entry_code_ordering);
+
+      return attributeOrderingEqual && entryCodeOrderingEqual;
     }
     const objKey = findComparisonObject(splitKey);
     const value1 = selectedOverlaysOCAFile1[key]?.[objKey];
@@ -448,7 +537,7 @@ const UserSelection = () => {
         <Button
           color="button"
           variant="contained"
-          onClick={() => handleExport()}
+          onClick={handleExport}
           sx={{
             alignSelf: "flex-end",
             width: "12rem",

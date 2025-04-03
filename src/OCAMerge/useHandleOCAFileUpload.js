@@ -3,6 +3,7 @@ import JSZip from "jszip";
 import { Context } from "../App";
 import { messages } from "../constants/messages";
 import {
+  ADC,
   CAPTURE_BASE,
   CARDINALITY,
   CHARACTER_ENCODING,
@@ -52,7 +53,7 @@ const useHandleOCAFileUpload = () => {
     setParsedOCAFile2("");
   };
 
-  const processSelectedOverlays = (jsonFile) => {
+  const processSelectedOverlays = (jsonFile, extensionOverlays = {}) => {
     const selectedValue = {};
     if (CAPTURE_BASE in jsonFile) {
       selectedValue[CAPTURE_BASE] = jsonFile[CAPTURE_BASE];
@@ -71,11 +72,22 @@ const useHandleOCAFileUpload = () => {
       }
     }
 
+    Object.keys(extensionOverlays).forEach((key) => {
+      const overlay = extensionOverlays[key];
+      if (Array.isArray(overlay)) {
+        for (const item of overlay) {
+          selectedValue[`${key} - ${item?.language}`] = { ...item };
+        }
+      } else {
+        selectedValue[key] = overlay;
+      }
+    });
+
     return selectedValue;
   };
 
-  const handleBundleJSONDrop = (jsonFile, fileNumber) => {
-    const selectedValue = processSelectedOverlays(jsonFile);
+  const handleBundleJSONDrop = (jsonFile, fileNumber, extensionOverlays = {}) => {
+    const selectedValue = processSelectedOverlays(jsonFile, extensionOverlays);
 
     if (fileNumber === 1) {
       setParsedOCAFile1(jsonFile);
@@ -122,11 +134,24 @@ const useHandleOCAFileUpload = () => {
 
       reader.onload = async (e) => {
         const jsonFile = JSON.parse(e.target.result);
+        // If the file is an OCA package
         if (jsonFile?.oca_bundle?.bundle) {
           const modifiedBundle = replaceAttributeCharsInParsedJson(
             jsonFile.oca_bundle.bundle
           );
-          handleBundleJSONDrop(modifiedBundle, fileNumber);
+          const captureBaseSaid = jsonFile?.oca_bundle?.bundle?.capture_base?.d;
+
+          const hasExtensionOverlays = Object.keys(jsonFile?.extensions || {}).length > 0;
+
+          if (hasExtensionOverlays) {
+            handleBundleJSONDrop(
+              modifiedBundle,
+              fileNumber,
+              jsonFile.extensions?.[ADC]?.[captureBaseSaid]?.overlays
+            );
+          } else {
+            handleBundleJSONDrop(modifiedBundle, fileNumber);
+          }
         } else if (jsonFile?.bundle) {
           handleBundleJSONDrop(jsonFile.bundle, fileNumber);
         } else if (jsonFile?.schema?.[0]) {
