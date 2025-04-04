@@ -8,7 +8,6 @@ import AccordionList from "./AccordionList";
 import { Context } from "../App";
 import Footer from "../Footer/Footer";
 import Header from "../Header/Header";
-import OCAPackageAnnouncementBanner from "./OCAPackageAnnouncementBanner";
 
 const Landing = () => {
   const path = useLocation();
@@ -22,7 +21,6 @@ const Landing = () => {
 
   return (
     <>
-      <OCAPackageAnnouncementBanner />
       <Header currentPage="Landing" />
       <Box
         sx={{
