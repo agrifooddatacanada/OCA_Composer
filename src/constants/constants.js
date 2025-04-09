@@ -349,7 +349,7 @@ export const jsonUploadDescription =
 export const dewvSchemaUploadDescription =
   "Click here to select a machine-readable OCA schema bundle or drag and drop one here";
 export const textUploadDescription =
-  "Click here to select an OCA File (.txt) or drag and drop one here";
+  "Click here to select schema bundle (.zip OR .json) or drag and drop one here";
 export const datasetUploadDescription =
   "Click here to select an Excel or CSV dataset or drag and drop one here";
 export const defaultTooltip =

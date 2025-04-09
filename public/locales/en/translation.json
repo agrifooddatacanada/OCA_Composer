@@ -307,5 +307,6 @@
   "Schema Bundle 2": "Schema Bundle 2",
   "Capture base (attribute names and their datatypes) of the two schemas must be the same": "Capture base (attribute names and their datatypes) of the two schemas must be the same",
   "Close": "Close",
-  "Selection": "Selection"
+  "Selection": "Selection",
+  "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Click here to select schema bundle (.zip OR .json) or drag and drop one here"
 }
