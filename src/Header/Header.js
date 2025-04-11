@@ -301,7 +301,7 @@ export default function Header({ currentPage }) {
             </div>
             <a
               // href="https://agrifooddatacanada.ca/"
-              href={themes.logos.agriFoodCanada_white_logo.website}
+              href={themes.default.logos.agriFoodCanada_white_logo.url}
               target="_blank"
               rel="noopener noreferrer"
             >
