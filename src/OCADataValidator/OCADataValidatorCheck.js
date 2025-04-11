@@ -863,6 +863,25 @@ const OCADataValidatorCheck = ({
     }
   }, [rowData, isValidateButtonEnabled]);
 
+  const rowDataFilter =
+    errorName.length > 0
+      ? rowData.filter((row) => {
+          for (const error of errorName) {
+            if (row?.error) {
+              const errCode = errorCode?.[error];
+              const errorValues = Object.values(row?.error);
+              for (const err of errorValues) {
+                const errs = err.map((item) => item?.type);
+                if (errs?.includes(errCode)) {
+                  return true;
+                }
+              }
+            }
+          }
+          return false;
+        })
+      : rowData;
+
   return (
     <Box sx={{ overflowX: "auto" }}>
       <Box
@@ -924,7 +943,13 @@ const OCADataValidatorCheck = ({
                 flexDirection: "row"
               }}
             >
-              <ExportButton handleSave={handleSave} inputDataType={datasetRawFileType} />
+              {/* <ExportButton handleSave={handleSave} inputDataType={datasetRawFileType} /> */}
+              <ExportButton
+                handleSave={handleSave}
+                inputDataType={datasetRawFileType}
+                validatedData={rowDataFilter}
+                currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
+              />
             </Box>
           </Box>
         </Box>

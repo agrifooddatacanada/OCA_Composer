@@ -15,6 +15,8 @@ import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerific
 import OCAMerge from "./OCAMerge/OCAMerge";
 // import Tutorial from "./Tutorial/Tutorial";
 
+// import { environVariables } from "./components/environmentConfig";
+
 export const Context = createContext();
 
 // Initializing react-ga with google analytics ID
@@ -343,6 +345,41 @@ function App() {
     setZipToReadme([]);
     setOCAPackage(null);
   }, [fileData, jsonRawFile]);
+
+  // Add state for environmental variables
+  // const [env, setEnv] = useState(environVariables);
+
+  // Function to handle file download
+  // const handleDownload = () => {
+  //   const textData = "sampleText file";
+  //   const blob = new Blob([textData], { type: "text/plain" });
+  //   const url = window.URL.createObjectURL(blob);
+  //   const link = document.createElement("a");
+  //   link.href = url;
+  //   link.download = "sample.txt";
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  //   window.URL.revokeObjectURL(url);
+  // };
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      console.log("React: Received message from R Shiny:", {
+        origin: event.origin,
+        data: event.data
+      });
+
+      if (event.data?.schema && event.data?.data) {
+        console.log("React: Processing schema data");
+        setJsonRawFile(event.data.data);
+        setJsonIsParsed(true);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
 
   return (
     <div className="App">

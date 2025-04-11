@@ -6,10 +6,11 @@ import { Typography, Tooltip, Button, Box, useMediaQuery } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 import { CustomPalette } from "../constants/customPalette";
-import logo from "../assets/agri-logo.png";
-import logoWhite from "../assets/agri-logo-white.png";
+// import logo from "../assets/agri-logo.png";
+// import logoWhite from "../assets/agri-logo-white.png";
 import HeaderWrapper from "./HeaderWrapper";
 import logoSE from "../assets/se-logo.png";
+import { themes } from "../constants/themeConstants";
 
 export default function Header({ currentPage }) {
   const { t } = useTranslation();
@@ -217,11 +218,12 @@ export default function Header({ currentPage }) {
               }}
             />
             <a
-              href="https://agrifooddatacanada.ca/"
+              // href="https://agrifooddatacanada.ca/"
+              href={themes.default.logos.agriFoodCanada_logo.website}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <img
+              {/* <img
                 src={logo}
                 style={{
                   display: "block",
@@ -230,6 +232,16 @@ export default function Header({ currentPage }) {
                   cursor: "pointer"
                 }}
                 alt="Agri-food Data Canada"
+              /> */}
+              <img
+                src={themes.default.logos.agriFoodCanada_logo.url}
+                style={{
+                  display: "block",
+                  width: isMobile ? "100px" : "150px",
+                  marginRight: "20px",
+                  cursor: "pointer"
+                }}
+                alt={themes.default.logos.agriFoodCanada_logo.alt}
               />
             </a>
             <Typography
@@ -288,11 +300,12 @@ export default function Header({ currentPage }) {
               </select>
             </div>
             <a
-              href="https://agrifooddatacanada.ca/"
+              // href="https://agrifooddatacanada.ca/"
+              href={themes.logos.agriFoodCanada_white_logo.website}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <img
+              {/* <img
                 src={logoWhite}
                 style={{
                   display: "block",
@@ -302,6 +315,17 @@ export default function Header({ currentPage }) {
                   cursor: "pointer"
                 }}
                 alt="Agri-food Data Canada"
+              /> */}
+              <img
+                src={themes.default.logos.agriFoodCanada_white_logo.url}
+                style={{
+                  display: "block",
+                  width: isMobile ? "auto" : "250px",
+                  height: isMobile ? "70px" : "auto",
+                  marginRight: isMobile ? "unset" : "20px",
+                  cursor: "pointer"
+                }}
+                alt={themes.default.logos.agriFoodCanada_white_logo.alt}
               />
             </a>
           </Box>
