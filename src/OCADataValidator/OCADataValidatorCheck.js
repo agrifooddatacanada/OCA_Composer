@@ -263,7 +263,7 @@ const OCADataValidatorCheck = ({
   const { t } = useTranslation();
 
   const [rowData, setRowData] = useState([]);
-  const [initialRowData, setInitialRowData] = useState(null);
+  const [initialRowData, setInitialRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const [revalidateData, setRevalidateData] = useState(false);
   const langRef = useRef(languages[0]);
@@ -481,6 +481,7 @@ const OCADataValidatorCheck = ({
       error: validate?.errCollection?.[index] || {}
     }));
 
+    // rowdata to store the state of errors per row
     setRowData(updatedRowData);
 
     // Update `initialRowData` using `originalIndex`
@@ -638,6 +639,10 @@ const OCADataValidatorCheck = ({
     });
 
     const currentData = getCurrentData(gridRef.current.api, true);
+
+    const newRowIndex = currentData.length;
+    newRow.originalIndex = newRowIndex;
+    gridRef.current.api.applyTransaction({ add: [newRow] });
 
     setRowData([...currentData, newRow]);
   }, [isValidateButtonEnabled, schemaDataConformantHeader, gridRef, setRowData]);
@@ -798,9 +803,25 @@ const OCADataValidatorCheck = ({
       width: 50,
       cellRendererParams: (params) => ({
         delete: () => {
+          const deletedNode = params.node.data;
+
           gridRef.current.api.applyTransaction({
-            remove: [params.node.data]
+            remove: [deletedNode]
           });
+
+          // Recompute the indices of `initialRowData`
+          setInitialRowData((prevInitialRowData) => {
+            const updatedRowData = prevInitialRowData.filter(
+              (row) => row.originalIndex !== deletedNode.originalIndex
+            );
+
+            // Recompute the `originalIndex` for the remaining rows
+            return updatedRowData.map((row, index) => ({
+              ...row,
+              originalIndex: index
+            }));
+          });
+
           gridRef.current.api.redrawRows();
         }
       }),
