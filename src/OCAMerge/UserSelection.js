@@ -594,7 +594,10 @@ const UserSelection = () => {
 
       <Box sx={{ display: "flex", width: "100%", flexDirection: "column" }}>
         {data.map((item, index) => (
-          <Box key={item.key} sx={{ display: "flex", width: "100%" }}>
+          <Box
+            key={item.key}
+            sx={{ display: item.key === CAPTURE_BASE ? "none" : "flex", width: "100%" }}
+          >
             <Box
               sx={{
                 paddingLeft: "10px",
@@ -603,7 +606,8 @@ const UserSelection = () => {
                   index === data.length - 1 && `2px solid ${CustomPalette.GREY_300}`,
                 borderLeft: `2px solid ${CustomPalette.GREY_300}`,
                 borderRight: `2px solid ${CustomPalette.GREY_300}`,
-                borderTop: index === 0 && `2px solid ${CustomPalette.GREY_300}`,
+                // Checking if index is 1 since we're hiding the first row (capture base)
+                borderTop: index === 1 && `2px solid ${CustomPalette.GREY_300}`,
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
@@ -683,7 +687,8 @@ const UserSelection = () => {
                   index === data.length - 1 && `2px solid ${CustomPalette.GREY_300}`,
                 borderLeft: `2px solid ${CustomPalette.GREY_300}`,
                 borderRight: `2px solid ${CustomPalette.GREY_300}`,
-                borderTop: index === 0 && `2px solid ${CustomPalette.GREY_300}`,
+                // Checking if index is 1 since we're hiding the first row (capture base)
+                borderTop: index === 1 && `2px solid ${CustomPalette.GREY_300}`,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
