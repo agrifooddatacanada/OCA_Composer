@@ -161,6 +161,11 @@ const useZipParser = () => {
       newLangAttributeRowData[codesToLanguages[lang]] = [];
 
       for (const attr of attributeList) {
+        // Removing any escape characters for " and '
+        const formattedDescription = languageDescriptionMap?.[lang]?.[attr]
+          ? // eslint-disable-next-line quotes
+            languageDescriptionMap[lang][attr].replace(/\\"/g, '"').replace(/\\'/g, "'")
+          : "";
         if (
           label &&
           label.attribute_labels &&
@@ -168,14 +173,14 @@ const useZipParser = () => {
         ) {
           newLangAttributeRowData[codesToLanguages[lang]].push({
             Attribute: attr,
-            Description: languageDescriptionMap?.[lang]?.[attr] || "",
+            Description: formattedDescription,
             Label: label.attribute_labels[attr],
             List: attributeListStringMap[`${attr}_${lang}`] || "Not a List"
           });
         } else {
           newLangAttributeRowData[codesToLanguages[lang]].push({
             Attribute: attr,
-            Description: languageDescriptionMap?.[lang]?.[attr] || "",
+            Description: formattedDescription,
             Label: "",
             List: attributeListStringMap?.[`${attr}_${lang}`] || "Not a List"
           });

@@ -204,7 +204,12 @@ const useExportLogicV2 = () => {
           data[languageIndex][index].Description &&
           data[languageIndex][index].Description !== ""
         ) {
-          infoText += ` ${item}="${data[languageIndex][index].Description}"`;
+          // Need to escape " and ' for OCA file
+          const parsedDescription = data[languageIndex][index].Description
+            // eslint-disable-next-line quotes
+            .replace(/"/g, '\\"')
+            .replace(/'/g, "\\'");
+          infoText += ` ${item}="${parsedDescription}"`;
         }
       });
       if (infoText !== "") {
