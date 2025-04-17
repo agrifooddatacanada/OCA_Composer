@@ -68,12 +68,18 @@
     "@babel/core": "^7.24.7",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@babel/preset-env": "^7.24.7",
+    "@babel/preset-react": "^7.26.3",
+    "@babel/preset-typescript": "^7.27.0",
     "@craco/craco": "^7.1.0",
     "@eslint/js": "^9.12.0",
-    "babel-jest": "^29.7.0",
+    "@types/jest": "^27.5.2",
+    "@typescript-eslint/eslint-plugin": "^8.30.1",
+    "@typescript-eslint/parser": "^8.30.1",
+    "babel-jest": "^27.5.1",
     "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^4.3.2",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsx-a11y": "^6.10.0",
     "eslint-plugin-react": "^7.37.1",
@@ -82,7 +88,8 @@
     "husky": "^8.0.0",
     "jest": "^27.5.1",
     "lint-staged": "^15.2.10",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "ts-jest": "^27.1.5"
   },
   "jest": {
     "transform": {

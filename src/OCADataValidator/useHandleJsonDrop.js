@@ -3,6 +3,10 @@ import { messages } from "../constants/messages";
 import { Context } from "../App";
 import useZipParser from "../StartSchema/useZipParser";
 import JSZip from "jszip";
+import yaml from "js-yaml";
+import { validateForOCATranslation } from "../SchemaTranslator";
+import { mapLinkMLToOCABundle } from "../SchemaTranslator";
+import { transformToPackage } from "../SchemaTranslator";
 
 const neededOverlays = [
   "format",
@@ -416,6 +420,224 @@ export const useHandleJsonDrop = (
     }
   }, []);
 
+  const handleYamlDrop = useCallback((acceptedFiles) => {
+    try {
+      setJsonLoading(true);
+      console.log("🔵 Starting YAML processing:", acceptedFiles);
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        setTargetResult(e);
+        const textDecoder = new TextDecoder("utf-8");
+        const yamlString = textDecoder.decode(e.target.result);
+        console.log("🔵 YAML content:", yamlString.substring(0, 200) + "...");
+        
+        try {
+          // Parse YAML content
+          const linkmlSchema = yaml.load(yamlString);
+          console.log("🔵 Parsed LinkML schema:", linkmlSchema);
+          
+          // Validate the LinkML schema
+          validateForOCATranslation(linkmlSchema);
+          console.log("🔵 LinkML validation passed");
+          
+          // Convert LinkML to OCA bundle
+          const bundle = mapLinkMLToOCABundle(linkmlSchema);
+          console.log("🔵 Converted to OCA bundle:", bundle);
+          
+          // Create OCA package
+          const ocaPackage = transformToPackage(bundle);
+          console.log("🔵 Created OCA package:", ocaPackage);
+          
+          // Extract the bundle for processing
+          const jsonFile = ocaPackage.oca_bundle.bundle;
+          console.log("🔵 Final JSON file to be processed:", jsonFile);
+          
+          setJsonParsedFile(jsonFile);
+          const languageList = [];
+          const informationList = [];
+          const labelList = [];
+          const metaList = [];
+          const entryList = [];
+          const allJSONFiles = [];
+          let loadRoot = undefined;
+          let entryCodeSummary = {};
+          let conformance = undefined;
+          let characterEncoding = undefined;
+          let loadUnits = undefined;
+          let formatRules = undefined;
+          let cardinalityData = undefined;
+
+          // load up metadata file in OCA bundle
+          if (jsonFile?.overlays?.meta) {
+            metaList.push(...jsonFile.overlays.meta);
+            languageList.push(
+              ...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2))
+            );
+
+            // ONLY for README
+            const readmeMeta = jsonFile.overlays.meta.map((meta) => {
+              return JSON.stringify(meta);
+            });
+            allJSONFiles.push(...readmeMeta);
+          }
+
+          if (jsonFile?.overlays?.information) {
+            informationList.push(...jsonFile.overlays.information);
+
+            // ONLY for README
+            const readmeInformation = jsonFile.overlays.information.map(
+              (information) => {
+                return JSON.stringify(information);
+              }
+            );
+            allJSONFiles.push(...readmeInformation);
+          }
+
+          if (jsonFile?.overlays?.label) {
+            labelList.push(...jsonFile.overlays.label);
+
+            // ONLY for README
+            const readmeLabel = jsonFile.overlays.label.map((label) => {
+              return JSON.stringify(label);
+            });
+            allJSONFiles.push(...readmeLabel);
+          }
+
+          if (jsonFile?.["capture_base"]) {
+            if (
+              jsonFile?.["capture_base"]?.["flagged_attributes"]?.length > 0
+            ) {
+              setShowWarningCard(true);
+            }
+            loadRoot = { ...jsonFile["capture_base"] };
+
+            // ONLY for README
+            allJSONFiles.push(JSON.stringify(loadRoot));
+          }
+
+          if (jsonFile?.overlays?.unit) {
+            loadUnits = { ...jsonFile.overlays.unit };
+
+            // ONLY for README
+            allJSONFiles.push(JSON.stringify(loadUnits));
+          }
+
+          if (jsonFile?.overlays?.conformance) {
+            conformance = { ...jsonFile.overlays.conformance };
+
+            // ONLY for README
+            allJSONFiles.push(JSON.stringify(conformance));
+          }
+
+          if (jsonFile?.overlays?.["character_encoding"]) {
+            characterEncoding = { ...jsonFile.overlays["character_encoding"] };
+
+            // ONLY for README
+            allJSONFiles.push(JSON.stringify(characterEncoding));
+          }
+
+          if (jsonFile?.overlays?.entry_code) {
+            entryCodeSummary = { ...jsonFile.overlays.entry_code };
+
+            // ONLY for README
+            allJSONFiles.push(JSON.stringify(entryCodeSummary));
+          }
+
+          if (jsonFile?.overlays?.["format"]) {
+            formatRules = { ...jsonFile.overlays["format"] };
+
+            // ONLY for README
+            allJSONFiles.push(JSON.stringify(formatRules));
+          }
+
+          if (jsonFile?.overlays?.entry) {
+            entryList.push(...jsonFile.overlays.entry);
+
+            // ONLY for README
+            const readmeEntry = jsonFile.overlays.entry.map((entry) => {
+              return JSON.stringify(entry);
+            });
+            allJSONFiles.push(...readmeEntry);
+          }
+
+          if (jsonFile?.overlays?.["cardinality"]) {
+            cardinalityData = { ...jsonFile.overlays["cardinality"] };
+
+            // ONLY for README
+            allJSONFiles.push(JSON.stringify(cardinalityData));
+          }
+
+          if (!languageList || languageList.length === 0) {
+            console.log("🔵 No language found, defaulting to English");
+            languageList.push("en");
+          }
+
+          if (!labelList || labelList.length === 0) {
+            console.warn("🔴 No labels found in the YAML file");
+          }
+
+          if (!entryList || entryList.length === 0) {
+            console.warn("🔴 No entries found in the YAML file");
+          }
+
+          if (!metaList || metaList.length === 0) {
+            console.warn("🔴 No metadata found in the YAML file");
+          }
+
+          processLanguages(languageList);
+          processMetadata(metaList);
+          processLabelsDescriptionRootUnitsEntries(
+            labelList,
+            informationList,
+            loadRoot,
+            loadUnits,
+            entryCodeSummary,
+            entryList,
+            conformance,
+            characterEncoding,
+            languageList,
+            formatRules,
+            cardinalityData
+          );
+          setZipToReadme(allJSONFiles);
+          
+        } catch (error) {
+          console.error("🔴 Error processing YAML:", error);
+          throw new Error("Invalid YAML file or conversion failed: " + error.message);
+        }
+      };
+
+      reader.readAsArrayBuffer(acceptedFiles[0]);
+
+      reader.onloadend = () => {
+        setTimeout(() => {
+          setJsonDropDisabled(true);
+          setJsonDropMessage({ message: "", type: "" });
+          setJsonLoading(false);
+          setDatasetLoading(false);
+          if (datasetRawFile.length === 0) {
+            setDatasetDropDisabled(false);
+          }
+          if (!jsonIsParsed) {
+            setJsonIsParsed(true);
+            setCurrentDataValidatorPage("SchemaViewDataValidator");
+          }
+        }, 900);
+      };
+    } catch (error) {
+      setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+      setJsonLoading(false);
+      setDatasetLoading(false);
+      if (datasetRawFile.length === 0) {
+        setDatasetDropDisabled(false);
+      }
+      setTimeout(() => {
+        setJsonDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, [datasetRawFile.length, jsonIsParsed]);
+
   useEffect(() => {
     if (
       jsonRawFile &&
@@ -429,6 +651,12 @@ export const useHandleJsonDrop = (
       jsonRawFile[0].path.includes(".zip")
     ) {
       handleZipDrop(jsonRawFile);
+    } else if (
+      jsonRawFile &&
+      jsonRawFile.length > 0 &&
+      (jsonRawFile[0].path.includes(".yaml") || jsonRawFile[0].path.includes(".yml"))
+    ) {
+      handleYamlDrop(jsonRawFile);
     } else if (jsonRawFile && jsonRawFile.length > 0) {
       setJsonDropMessage({ message: messages.uploadFail, type: "error" });
       setJsonLoading(false);

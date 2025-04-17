@@ -1,0 +1,7 @@
+{
+    "capture_base": "ESlpOFIwkd9e1tExaSpupiCIQn86Bq9vnv3yT1CCm52Y",
+    "digest": "EY9aJfeuB_nDGSQ3dKUkIX1V__aYZg0t1u-NoFv4yJS0",
+    "type": "spec/overlays/character_encoding/1.0",
+    "default_character_encoding": "utf-8",
+    "attribute_character_encoding": {}
+}

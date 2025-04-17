@@ -1,0 +1,193 @@
+{
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "bundle": {
+      "capture_base": {
+        "type": "spec/capture_base/1.0",
+        "language": "en",
+        "attributes": {
+          "site": "Text",
+          "latitude": "Numeric",
+          "longitude": "Numeric",
+          "distance_from_m7": "Numeric",
+          "waterbody": "Text",
+          "date": "Text",
+          "year": "Numeric",
+          "mean_temp_year": "Numeric",
+          "avg_discharge": "Numeric",
+          "species": "Text",
+          "sex": "Text",
+          "length": "Numeric",
+          "weight": "Numeric",
+          "age": "Numeric",
+          "gonad_weight": "Numeric",
+          "liver_weight": "Numeric"
+        },
+        "flagged_attributes": [
+          "latitude",
+          "longitude",
+          "sex",
+          "weight",
+          "age"
+        ]
+      },
+      "overlays": {
+        "information": [
+          {
+            "type": "spec/overlays/information/1.0",
+            "capture_base": "",
+            "language": "en",
+            "attribute_information": {
+              "site": "Site from which the observations were collected",
+              "latitude": "Latitude of the site",
+              "longitude": "Longitude of the site",
+              "distance_from_m7": "Distance from the most norther site, M7",
+              "waterbody": "The body of water the site belongs to",
+              "date": "Date of the sample",
+              "year": "Year the sample was collected in",
+              "mean_temp_year": "Average water temperature averaged across years",
+              "avg_discharge": "Average river discharge",
+              "species": "Species of the sample",
+              "sex": "Sex of the sample",
+              "length": "Observed length in cm.",
+              "weight": "Observed weight in grams.",
+              "age": "Estimated age in years.",
+              "gonad_weight": "Observed gonad weight in grams.",
+              "liver_weight": "Observed liver weight in grams."
+            }
+          }
+        ],
+        "label": [
+          {
+            "type": "spec/overlays/label/1.0",
+            "capture_base": "",
+            "language": "en",
+            "attribute_labels": {
+              "distance_from_m7": "Distance from Site M7",
+              "mean_temp_year": "Mean water temperature grouped by year",
+              "avg_discharge": "Average discharge"
+            }
+          }
+        ],
+        "unit": [
+          {
+            "type": "spec/overlays/unit/1.0",
+            "capture_base": "",
+            "language": "en",
+            "attribute_units": {
+              "distance_from_m7": "km",
+              "mean_temp_year": "celsius",
+              "avg_discharge": "m2/sec",
+              "length": "cm",
+              "weight": "cm",
+              "age": "year",
+              "gonad_weight": "g",
+              "liver_weight": "g"
+            }
+          }
+        ],
+        "meta": [
+          {
+            "type": "spec/overlays/meta/1.0",
+            "capture_base": "",
+            "language": "en",
+            "name": "trout",
+            "description": "A schema to represent trout-related biological and environmental data."
+          }
+        ],
+        "entry_code": [
+          {
+            "type": "spec/overlays/entry_code/1.0",
+            "capture_base": "",
+            "language": "en",
+            "attribute_entry_codes": {
+              "site": [
+                "AR DS Bitumount",
+                "AR DS CNRL",
+                "AR DS M0",
+                "AR DS M3",
+                "AR DS M4",
+                "AR DS Suncor",
+                "AR M2",
+                "AR M7",
+                "AR M8",
+                "AR M9",
+                "AR US Bitumount",
+                "AR US CNRL",
+                "AR US M0",
+                "AR US M4",
+                "AR US Suncor",
+                "Fort Vermillion",
+                "PR Dunvegan",
+                "PR Pulp Mill",
+                "PR Shaftesbury",
+                "PR Waste Water Plant"
+              ],
+              "waterbody": [
+                "Athabasca River",
+                "Peace River"
+              ],
+              "species": [
+                "Trout Perch (TRPR)"
+              ],
+              "sex": [
+                "M",
+                "F",
+                "IM",
+                "IF",
+                "I"
+              ]
+            }
+          }
+        ],
+        "entry": [
+          {
+            "type": "spec/overlays/entry/1.0",
+            "capture_base": "",
+            "language": "en",
+            "attribute_entries": {
+              "site": {
+                "AR DS Bitumount": "Athabasca River, Downstream Bitumount site",
+                "AR DS CNRL": "Athabasca River, Downstream central site",
+                "AR DS M0": "Athabasca River, Downstream site M0",
+                "AR DS M3": "Athabasca River, Downstream site M3",
+                "AR DS M4": "Athabasca River, Downstream site M4",
+                "AR DS Suncor": "Athabasca River, Downstream Suncore site",
+                "AR M2": "Athabasca River site M2",
+                "AR M7": "Athabasca River site M7",
+                "AR M8": "Athabasca River site M8",
+                "AR M9": "Athabasca River site M9",
+                "AR US Bitumount": "Athabasca River, Upstream Bitumount site",
+                "AR US CNRL": "Athabasca River, Upstream central site",
+                "AR US M0": "Athabasca River, Upstream site M0",
+                "AR US M4": "Athabasca River, Upstream site M4",
+                "AR US Suncor": "Athabasca River, Upstream Suncore site",
+                "Fort Vermillion": "Fort Vermillion site",
+                "PR Dunvegan": "Peace River, Dunvegan site",
+                "PR Pulp Mill": "Peace River, Pulp Mill site",
+                "PR Shaftesbury": "Peace River, Shaftesbury site",
+                "PR Waste Water Plant": "Peace River, Waste Water plant site"
+              },
+              "waterbody": {
+                "Athabasca River": "Athabasca River in Alberta, Canada",
+                "Peace River": "Peace River in Alberta, Canada"
+              },
+              "species": {
+                "Trout Perch (TRPR)": "Percopsis omiscomaycus"
+              },
+              "sex": {
+                "M": "Male",
+                "F": "Female",
+                "IM": "Immature Male",
+                "IF": "Immature Female",
+                "I": "Immature Unknown"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "dependencies": [],
+  "extensions": []
+}

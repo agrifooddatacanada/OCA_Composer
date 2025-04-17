@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+      "target": "es6",                    // Set the JavaScript target version (ES6 is a common choice)
+      "module": "commonjs",               // Use CommonJS modules (for Node.js)
+      "moduleResolution": "node",         // Resolve modules using Node.js-style resolution
+      "strict": true,                     // Enable all strict type-checking options
+      "esModuleInterop": true,            // Allow importing CommonJS modules with ES6-style imports
+      "skipLibCheck": true,               // Skip type checking of declaration files (can improve build time)
+      "forceConsistentCasingInFileNames": true, // Ensure consistent casing for file names
+      "baseUrl": ".",                     // Base directory for resolving non-relative module imports
+      "paths": {
+        "*": ["node_modules/*", "src/*"]  // Map imports to the `src` directory (if you have it)
+      }
+    },
+    "include": [
+      "src/**/*"                          // Include all files in the `src` folder (modify as needed)
+    ],
+    "exclude": [
+      "node_modules",                     // Exclude the `node_modules` folder
+      "**/*.spec.js"
+    ]
+  }
+  

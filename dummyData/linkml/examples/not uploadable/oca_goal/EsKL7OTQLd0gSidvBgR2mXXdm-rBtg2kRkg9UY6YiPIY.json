@@ -1,0 +1,18 @@
+{
+    "capture_base": "ESlpOFIwkd9e1tExaSpupiCIQn86Bq9vnv3yT1CCm52Y",
+    "digest": "EsKL7OTQLd0gSidvBgR2mXXdm-rBtg2kRkg9UY6YiPIY",
+    "type": "spec/overlays/unit/1.0",
+    "metric_system": "",
+    "attribute_units": {
+        "Age": "Year",
+        "Avg.Discharge": "m^2/sec",
+        "Date": "Date",
+        "Distance.From.M7": "Km",
+        "Gonad.Weight": "g",
+        "Length": "cm",
+        "Liver.Weight": "g",
+        "Mean.Temp.Year": "Celsius",
+        "Weight": "cm",
+        "Year": "Date"
+    }
+}

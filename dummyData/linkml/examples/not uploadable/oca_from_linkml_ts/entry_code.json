@@ -1,0 +1,43 @@
+{
+  "capture_base": "EAiw6dLb8BnAxpJNQY8PNWQ8MlfvC0LExEwLMejqvsKc",
+  "digest": "EjT6QcCfaxUkwt-fNPJbSP3Xd9Pps21jEHdwE00H-cxU",
+  "type": "spec/overlays/entry_code/1.0",
+  "attribute_entry_codes": {
+    "GenderEnum": [
+      "M",
+      "F",
+      "IM",
+      "IF",
+      "I"
+    ],
+    "SiteEnum": [
+      "AR DS Bitumount",
+      "AR DS CNRL",
+      "AR DS M0",
+      "AR DS M3",
+      "AR DS M4",
+      "AR DS Suncor",
+      "AR M2",
+      "AR M7",
+      "AR M8",
+      "AR M9",
+      "AR US Bitumount",
+      "AR US CNRL",
+      "AR US M0",
+      "AR US M4",
+      "AR US Suncor",
+      "Fort Vermillion",
+      "PR Dunvegan",
+      "PR Pulp Mill",
+      "PR Shaftesbury",
+      "PR Waste Water Plant"
+    ],
+    "SpeciesEnum": [
+      "Trout Perch (TRPR)"
+    ],
+    "WaterbodyEnum": [
+      "Athabasca River",
+      "Peace River"
+    ]
+  }
+}

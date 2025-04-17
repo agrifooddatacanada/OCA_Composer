@@ -1,0 +1,61 @@
+LinkML part to OCA part (type/overlay i.e. file in bundle: e.g. "spec/overlays/entry/1.0"):
+
+## In order of OCA spec: https://oca.colossi.network/specification/
+## Capture Base
+range (slot) -> attributes (capture_base)
+flagged (annotations) (slot) [our custom annotation] -> flagged_attributes (capture_base)
+
+## Semantic Overlays
+#### Character Encoding Overlay
+###### There is no encoding in LinkML (we assume utf-8 as that is the OCA default)
+-> default_character_encoding (character_encoding)
+-> attr_character_encoding (character_encoding)
+#### Format, Information, Label
+pattern (slot) -> attribute_formats (format) 
+description (slot) -> attribute_information (information)
+title (slot) -> attribute_labels (label)
+#### Meta Overlay
+name (schema metadata) -> name (meta)
+description (schema metadata) -> description (meta)
+#### Standard Overlay
+###### Closest thing to standards overlay in LinkML would be URI's
+prefixes (schema metadata) with class_uri (class) or slot_uri (slot) -> attr_standards (standard) 
+
+## Inputs Overlays
+#### Cardinality Overlay
+parameterized array with cardinality constraint (https://linkml.io/linkml/schemas/arrays.html) -> attr_cardinality (cardinality)
+#### Conditional Overlay
+??? -> e.g. "idCardNumber":"${0}=='ID_CARD'",
+#### Conformance Overlay
+required (slot) -> attribute_conformance (conformance) [M for Mandatory, O for optional]
+#### Entry Code, Entry, Unit Overlay
+values (enum) -> attribute_entry_codes (entry_code)
+description (enum) -> attribute_entries (entry)
+ucum_code (unit(slot)) -> attribute_units (unit)
+
+## Transformation Overlays
+#### Mapping 
+###### mapping is for consolidating or eliminating redundant columns
+aliases? (slot) -> attribute_mapping (mapping)
+#### Entry Code Mapping
+??? -> attr_entry_codes_mapping (entry_code_mapping)
+#### Subset
+??? -> attributes (subset)
+#### Unit Mapping
+##### Redundant given Input Unit Overlay? 
+
+## Presentation Overlays
+#### IGNORE
+
+## NOTES 
+
+## On LinkML aliases vs. title
+aliases can be an array; not meant to be the sole label
+"In practice, aliases are used to help interpret the model, not as an equivalent name for a class or slot name. Downstream tooling could use these aliases to help users query the model for example, but the LinkML tooling does not consider aliases and element names interchangeable."
+
+## On LinkML units
+Better to be "embedding the unit in the name of the slot as well", but that is not done in this example.
+
+## On validation
+LinkML schema passes on linkml-lint schema.yam --validate-only 
+Without only, linter warns on the enum i.e. entries for not being in standard_naming

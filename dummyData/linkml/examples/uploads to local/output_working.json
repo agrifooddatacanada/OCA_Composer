@@ -1,0 +1,29 @@
+{
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "bundle": {
+      "capture_base": {
+        "type": "spec/capture_base/1.0",
+        "attributes": {
+          "site": "SiteEnum",
+          "latitude": "float",
+          "longitude": "float"
+        },
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "meta": [
+          {
+            "type": "spec/meta/1.0",
+            "capture_base": "EIWetiMASdYLay1G_RuuCWuhUXPCitYooZJVVyLNdfPl",
+            "language": "en",
+            "description": "A schema to represent trout-related biological and environmental data.",
+            "name": "trout"
+          }
+        ]
+      }
+    }
+  },
+  "dependencies": [],
+  "extensions": []
+}

@@ -1,0 +1,24 @@
+{
+    "capture_base": "ESlpOFIwkd9e1tExaSpupiCIQn86Bq9vnv3yT1CCm52Y",
+    "digest": "EMakLgnmFLXFhj4dvVRoVdTHWfhbDMG0AErBfxeVh0wc",
+    "type": "spec/overlays/information/1.0",
+    "language": "en",
+    "attribute_information": {
+        "Age": "Estimated age",
+        "Avg.Discharge": "Average river discharge",
+        "Date": "Date of the sample",
+        "Distance.From.M7": "Distance from the most norther site, M7",
+        "Gonad.Weight": "Observed gonad weight",
+        "Latitude": "Latitude of the site",
+        "Length": "Observed length",
+        "Liver.Weight": "Observed liver weight",
+        "Longitude": "Longitude of the site",
+        "Mean.Temp.Year": "Average water temperature averaged across years",
+        "Sex": "Sex of the sample",
+        "Site": "Site from which the observations were collected",
+        "Species": "Species of the sample",
+        "Waterbody": "The body of water the site belongs to",
+        "Weight": "Observed weight",
+        "Year": "Year the sample was collected in"
+    }
+}
