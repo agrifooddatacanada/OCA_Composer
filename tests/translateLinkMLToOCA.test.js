@@ -25,7 +25,7 @@ describe("translateLinkMLToOCA", () => {
       mean_temp_year: "celsius",
       avg_discharge: "m2/sec",
       length: "cm",
-      weight: "cm",
+      weight: "g",
       age: "year",
       gonad_weight: "g",
       liver_weight: "g",
