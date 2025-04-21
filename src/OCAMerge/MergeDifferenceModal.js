@@ -72,13 +72,25 @@ function MergeDifferenceModal({ file1Name, file2Name, setShowCard, dataDifferenc
     columnDefs.push({
       field: "ocaFile1",
       headerName: file1Name,
-      cellStyle: () => preWrapWordBreak,
+      cellStyle: (params) => ({
+        ...preWrapWordBreak,
+        backgroundColor:
+          JSON.stringify(params.data.ocaFile1) !== JSON.stringify(params.data.ocaFile2)
+            ? CustomPalette.PINK_400
+            : "inherit"
+      }),
       autoHeight: true
     });
     columnDefs.push({
       field: "ocaFile2",
       headerName: file2Name,
-      cellStyle: () => preWrapWordBreak,
+      cellStyle: (params) => ({
+        ...preWrapWordBreak,
+        backgroundColor:
+          JSON.stringify(params.data.ocaFile1) !== JSON.stringify(params.data.ocaFile2)
+            ? CustomPalette.PINK_400
+            : "inherit"
+      }),
       autoHeight: true
     });
     setIsLoading(false);
