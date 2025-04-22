@@ -17,7 +17,7 @@ const QuickStart = () => {
       <Typography sx={{ fontWeight: "600" }}>
         1.{" "}
         <CustomAnchorLink
-          link="https://www.youtube.com/watch?v=ekMmpx_w45M"
+          link="https://www.youtube.com/watch?v=393n05TTyNM"
           text={t("Watch our tutorial video on creating a schema")}
           overrideStyle={{
             fontWeight: "500",
@@ -26,7 +26,7 @@ const QuickStart = () => {
         />{" "}
         {t("Or")}{" "}
         <CustomRouterLink
-          to={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" ? "en" : i18next.language}/TutorialAll/`}
+          to={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" || i18next.language === "en-CA" ? "en" : i18next.language}/TutorialAll/`}
           text={t("read the tutorial")}
           overrideStyle={{ fontWeight: "500", color: CustomPalette.PRIMARY }}
         />{" "}

@@ -1,5 +1,6 @@
 import OCADataSetErr from "./utils/Err";
 import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
+import { ALLOWED_BOOLEAN_VALUES } from "../constants/constants";
 
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
@@ -23,10 +24,8 @@ const FLAG_KEY = "flagged_attributes";
 const OVERLAYS_KEY = "overlays";
 
 // Error messages. For text notices only.
-const ATTR_UNMATCH_MSG =
-  "Unmatched attribute (attribute not found in the OCA Bundle).";
-const ATTR_MISSING_MSG =
-  "Missing attribute (attribute not found in the data set).";
+const ATTR_UNMATCH_MSG = "Unmatched attribute (attribute not found in the OCA Bundle).";
+const ATTR_MISSING_MSG = "Missing attribute (attribute not found in the data set).";
 const MISSING_MSG =
   "Missing an entry for a mandatory attribute (check for other missing entries before continuing).";
 const NOT_AN_ARRAY_MSG = "Valid array required.";
@@ -59,18 +58,16 @@ export default class OCABundle {
   static getOverlay(overlay) {
     if (Object.keys(this.overlays).includes(overlay)) {
       return this.overlays[overlay];
-    } else {
-      console.error("overlay not found:", overlay);
     }
+    console.error("overlay not found:", overlay);
   }
 
   static getOverlayVersion(overlay) {
     const overlays = this.getOverlay(overlay);
     if (overlays.length >= 1) {
       return overlays[0][TYPE_KEY].split("/").pop();
-    } else {
-      return overlays[TYPE_KEY].split("/").pop();
     }
+    return overlays[TYPE_KEY].split("/").pop();
   }
 
   getAttributes() {
@@ -97,9 +94,8 @@ export default class OCABundle {
 
     if (attrConfKey && attrConfKey[attrName] !== undefined) {
       return attrConfKey[attrName];
-    } else {
-      return "O";
     }
+    return "O";
   }
 
   getEntryCodes() {
@@ -117,9 +113,8 @@ export default class OCABundle {
 
     if (attrCheKey && attrCheKey[attrName] !== undefined) {
       return attrCheKey[attrName];
-    } else {
-      return defaultCheKey || DEFAULT_ENCODING;
     }
+    return defaultCheKey || DEFAULT_ENCODING;
   }
 
   // The start validation methods...
@@ -145,6 +140,7 @@ export default class OCABundle {
     return rslt.errs;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   errorForEntryCodesForArrayEntries(
     dataEntryWithErrors,
     rslt,
@@ -155,23 +151,24 @@ export default class OCABundle {
   ) {
     rslt.errs[attr][i] = {
       type: "FE",
-      detail: `The following entry(ies): [${dataEntryWithErrors}] have, ${FORMAT_ERR_MSG} Supported format: ${attrFormat} Note: Supported entry codes: ${attrEntryCodes}`,
+      detail: `The following entry(ies): [${dataEntryWithErrors}] have, ${FORMAT_ERR_MSG} Supported format: ${attrFormat} Note: Supported entry codes: ${attrEntryCodes}`
     };
   }
 
+  // eslint-disable-next-line class-methods-use-this
   splitRespectingQuotes(dataEntry) {
     const result = [];
-    let current = '';
+    let current = "";
     let insideQuotes = false;
 
     for (let i = 0; i < dataEntry.length; i++) {
       const char = dataEntry[i];
-
+      // eslint-disable-next-line quotes
       if (char === '"') {
         insideQuotes = !insideQuotes;
       } else if (!insideQuotes && /[,;|]/.test(char)) {
         result.push(current);
-        current = '';
+        current = "";
       } else {
         current += char;
       }
@@ -188,9 +185,9 @@ export default class OCABundle {
     const dataArr = this.splitRespectingQuotes(dataEntry);
     let newDataArr = [];
 
-    dataArr.forEach(item => {
-      if (item.includes(',')) {
-        newDataArr = newDataArr.concat(item.split(','));
+    dataArr.forEach((item) => {
+      if (item.includes(",")) {
+        newDataArr = newDataArr.concat(item.split(","));
       } else {
         newDataArr.push(item);
       }
@@ -206,8 +203,11 @@ export default class OCABundle {
    */
   validateFormat(dataset) {
     const rslt = this.ErrorBuilder.formatErr;
-
-    for (const attr in this.getAttributes()) {
+    const attributes = this.getAttributes();
+    for (const attr in attributes) {
+      if (!Object.prototype.hasOwnProperty.call(attributes, attr)) {
+        continue;
+      }
       rslt.errs[attr] = {};
       const attrType = this.getAttributeType(attr);
       const attrFormat = this.getAttributeFormat(attr);
@@ -223,27 +223,23 @@ export default class OCABundle {
         for (let i = 0; i < dataset[attr]?.length; i++) {
           let dataEntry = dataset[attr][i];
           if (
-            (dataEntry === undefined ||
-              dataEntry === null ||
-              dataEntry === "") &&
+            (dataEntry === undefined || dataEntry === null || dataEntry === "") &&
             attrConformance === "O"
           ) {
             dataEntry = "";
           }
           // Verifying the data entries for attributes with Array data type.
           if (attrType.includes("Array") || Array.isArray(attrType)) {
-            let dataEntryWithErrors = [];
+            const dataEntryWithErrors = [];
             try {
-
               const dataArr = this.processEntries(dataEntry);
               for (let j = 0; j < dataArr.length; j++) {
-                if (!matchFormat(attrType[0], attrFormat, String(dataArr[j]))) {
+                if (
+                  !matchFormat(attrType[0], attrFormat, String(dataArr[j]), hasEntryCodes)
+                ) {
                   dataEntryWithErrors.push(dataArr[j]);
                 }
-                if (
-                  attrConformance === "M" &&
-                  dataEntryWithErrors.length === 0
-                ) {
+                if (attrConformance === "M" && dataEntryWithErrors.length === 0) {
                   if (hasEntryCodes) {
                     this.errorForEntryCodesForArrayEntries(
                       dataEntryWithErrors,
@@ -256,103 +252,94 @@ export default class OCABundle {
                   } else {
                     rslt.errs[attr][i] = {
                       type: "FE",
-                      detail: `${MISSING_MSG} Supported format: ${attrFormat}.`,
+                      detail: `${MISSING_MSG} Supported format: ${attrFormat}.`
                     };
                   }
-                } else if (
-                  attrConformance === "O" &&
-                  dataEntryWithErrors.length === 0
-                ) {
+                } else if (attrConformance === "O" && dataEntryWithErrors.length === 0) {
                   continue;
-                } else {
-                  if (attrType[0].includes("Boolean") && attrConformance === "M") {
-                    if (hasEntryCodes) {
-                      this.errorForEntryCodesForArrayEntries(
-                        dataEntryWithErrors,
-                        rslt,
-                        attr,
-                        i,
-                        attrFormat,
-                        attrEntryCodes
-                      );
-                    } else {
-                      rslt.errs[attr][i] = {
-                        type: "FE",
-                        detail: `The following entry(ies): [${dataEntryWithErrors}] have, ${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']`,
-                      };
-                    }
-                  } else if (attrFormat == null && attrConformance === "M") {
-                    if (hasEntryCodes) {
-                      this.errorForEntryCodesForArrayEntries(
-                        dataEntryWithErrors,
-                        rslt,
-                        attr,
-                        i,
-                        attrFormat,
-                        attrEntryCodes
-                      );
-                    } else {
-                      rslt.errs[attr][i] = {
-                        type: "DTE",
-                        detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.`,
-                      };
-                    }
+                } else if (attrType[0].includes("Boolean") && attrConformance === "M") {
+                  if (hasEntryCodes) {
+                    this.errorForEntryCodesForArrayEntries(
+                      dataEntryWithErrors,
+                      rslt,
+                      attr,
+                      i,
+                      attrFormat,
+                      attrEntryCodes
+                    );
                   } else {
-                    // implementation for other data types except Boolean.
-                    if (hasEntryCodes & attrConformance === "M") {
-                      this.errorForEntryCodesForArrayEntries(
-                        dataEntryWithErrors,
-                        rslt,
-                        attr,
-                        i,
-                        attrFormat,
-                        attrEntryCodes
-                      );
-                    } else {
-
-                      rslt.errs[attr][i] = {
-                        type: "FE",
-                        detail: `The following entry(ies): [${dataEntryWithErrors}] have, ${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`,
-                      };
-                    }
+                    rslt.errs[attr][i] = {
+                      type: "FE",
+                      detail: `The following entry(ies): [${dataEntryWithErrors}] have, ${FORMAT_ERR_MSG} Supported format: ${JSON.stringify(ALLOWED_BOOLEAN_VALUES)}`
+                    };
                   }
+                } else if (attrFormat == null && attrConformance === "M") {
+                  if (hasEntryCodes) {
+                    this.errorForEntryCodesForArrayEntries(
+                      dataEntryWithErrors,
+                      rslt,
+                      attr,
+                      i,
+                      attrFormat,
+                      attrEntryCodes
+                    );
+                  } else {
+                    rslt.errs[attr][i] = {
+                      type: "DTE",
+                      detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.`
+                    };
+                  }
+                } else if (hasEntryCodes && attrConformance === "M") {
+                  this.errorForEntryCodesForArrayEntries(
+                    dataEntryWithErrors,
+                    rslt,
+                    attr,
+                    i,
+                    attrFormat,
+                    attrEntryCodes
+                  );
+                } else {
+                  rslt.errs[attr][i] = {
+                    type: "FE",
+                    detail: `The following entry(ies): [${dataEntryWithErrors}] have, ${FORMAT_ERR_MSG} Supported format: ${attrFormat}.`
+                  };
                 }
               }
             } catch (error) {
               // Not a valid Array format string.
               rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
             }
-          } else if (!matchFormat(attrType, attrFormat, String(dataEntry))) {
+          } else if (
+            !matchFormat(attrType, attrFormat, String(dataEntry), hasEntryCodes)
+          ) {
             if (attrConformance === "O" && dataEntry === "") {
               continue;
             } else if (attrConformance === "M" && dataEntry === "") {
               rslt.errs[attr][i] = {
                 type: "FE",
-                detail: `${MISSING_MSG} Supported format: ${attrFormat}.`,
+                detail: `${MISSING_MSG} Supported format: ${attrFormat}.`
+              };
+            } else if (attrType.includes("Boolean")) {
+              rslt.errs[attr][i] = {
+                type: "FE",
+                detail: `${FORMAT_ERR_MSG} Supported format: ${JSON.stringify(ALLOWED_BOOLEAN_VALUES)}`
+              };
+            } else if (attrFormat == null) {
+              rslt.errs[attr][i] = {
+                type: "DTE",
+                detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.`
               };
             } else {
-              if (attrType.includes("Boolean")) {
-                rslt.errs[attr][i] = {
-                  type: "FE",
-                  detail: `${FORMAT_ERR_MSG} Supported format: ['True','true','TRUE','T','1','1.0','False','false','FALSE','F','0','0.0']`,
-                };
-              } else {
-                if (attrFormat == null) {
-                  rslt.errs[attr][i] = {
-                    type: "DTE",
-                    detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.`,
-                  };
-                } else {
-                  rslt.errs[attr][i] = {
-                    type: "FE",
-                    detail: `${FORMAT_ERR_MSG}`,
-                  };
-                }
-              }
+              rslt.errs[attr][i] = {
+                type: "FE",
+                detail: `${FORMAT_ERR_MSG}`
+              };
             }
           }
         }
-      } catch (error) { }
+      } catch (error) {
+        console.error("Error validating format:", error);
+      }
     }
     return rslt.errs;
   }
@@ -361,40 +348,46 @@ export default class OCABundle {
     const rslt = this.ErrorBuilder.entryCodeErr;
     const attrEntryCodes = this.getEntryCodes();
     for (const attr in attrEntryCodes) {
+      if (!Object.prototype.hasOwnProperty.call(attrEntryCodes, attr)) {
+        continue;
+      }
       const attrType = this.getAttributeType(attr);
       const attrConformance = this.getAttributeConformance(attr);
 
       rslt.errs[attr] = {};
       for (let i = 0; i < dataset[attr]?.length; i++) {
-        if (attrConformance === "M" && dataset[attr][i] === '') {
+        if (attrConformance === "M" && dataset[attr][i] === "") {
           rslt.errs[attr][i] = {
             type: "EC",
             detail: `${MISSING_MSG} Entry codes allowed: [${Object.values(
               attrEntryCodes[attr]
-            )}]`,
+            )}]`
           };
         }
 
         const dataEntryWithSpaces = String(dataset[attr][i]);
-        const dataEntry = dataEntryWithSpaces.replace(/,\s*/g, ',');
+        const dataEntry = dataEntryWithSpaces.replace(/,\s*/g, ",");
 
         if (attrType.includes("Array") || Array.isArray(attrType)) {
           const dataArr = this.processEntries(dataEntry);
           for (let j = 0; j < dataArr.length; j++) {
-            let nonEntrycodeDataEntries = [];
+            const nonEntrycodeDataEntries = [];
             if (
               !attrEntryCodes[attr].includes(dataArr[j]) &&
               dataArr[j] !== "" &&
               dataArr[j] !== undefined
-            ) { nonEntrycodeDataEntries.push(dataArr[j]); }
-          if (nonEntrycodeDataEntries.length > 0) {
-            rslt.errs[attr][i] = {
-              type: "EC",
-              detail: `The following entry(ies): [${nonEntrycodeDataEntries}] are not part of the Entry codes list. Entry codes allowed: [${Object.values(attrEntryCodes[attr])}]`,
-            };
+            ) {
+              nonEntrycodeDataEntries.push(dataArr[j]);
+            }
+            if (nonEntrycodeDataEntries.length > 0) {
+              rslt.errs[attr][i] = {
+                type: "EC",
+                detail: `The following entry(ies): [${nonEntrycodeDataEntries}] are not part of the Entry codes list. Entry codes allowed: [${Object.values(attrEntryCodes[attr])}]`
+              };
+            }
           }
-        }
-      } else if(!attrType.includes('Array') &&
+        } else if (
+          !attrType.includes("Array") &&
           !attrEntryCodes[attr].includes(dataEntry) &&
           dataEntry !== "" &&
           dataEntry !== undefined
@@ -403,17 +396,21 @@ export default class OCABundle {
             type: "EC",
             detail: `${EC_ERR_MSG} Entry codes allowed: [${Object.values(
               attrEntryCodes[attr]
-            )}]`,
+            )}]`
           };
-        }      
+        }
       }
     }
     return rslt.errs;
   }
 
   validateCharacterEncoding(dataset) {
+    const attributes = this.getAttributes();
     const rslt = this.ErrorBuilder.characterEcodeErr;
-    for (const attr in this.getAttributes()) {
+    for (const attr in attributes) {
+      if (!Object.prototype.hasOwnProperty.call(attributes, attr)) {
+        continue;
+      }
       rslt.errs[attr] = {};
       const attrChe = this.getCharacterEncoding(attr);
       for (let i = 0; i < dataset[attr]?.length; i++) {
@@ -433,6 +430,11 @@ export default class OCABundle {
       this.captureBase.flagged_attributes.length > 0
     ) {
       for (const attr in this.captureBase.flagged_attributes) {
+        if (
+          !Object.prototype.hasOwnProperty.call(this.captureBase.flagged_attributes, attr)
+        ) {
+          continue;
+        }
         flagged.push(attr);
       }
     }

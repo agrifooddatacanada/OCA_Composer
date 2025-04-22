@@ -1,13 +1,21 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { messages } from '../constants/messages';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
+import { useTranslation } from "react-i18next";
+import JSZip from "jszip";
 import Papa from "papaparse";
-import { Context } from '../App';
-import { MenuItem } from '@mui/material';
-import JSZip from 'jszip';
-import { useTranslation } from 'react-i18next';
-import { getCurrentData } from '../constants/utils';
+import { MenuItem } from "@mui/material";
+import { messages } from "../constants/messages";
+import { Context } from "../App";
+import { getCurrentData } from "../constants/utils";
+import { ADC } from "../constants/constants";
 
-const userSelectionDropdown = ['Copy from other entry codes', 'Upload'];
+const userSelectionDropdown = ["Copy from other entry codes", "Upload"];
 
 const useHandleEntryCodeDrop = () => {
   const { t } = useTranslation();
@@ -32,9 +40,9 @@ const useHandleEntryCodeDrop = () => {
   const [tableLength, setTableLength] = useState(0);
   const [columnDefs, setColumnDefs] = useState([]);
   const [fileType, setFileType] = useState("");
-  const [selectionValue, setSelectionValue] = useState('Copy from other entry codes');
+  const [selectionValue, setSelectionValue] = useState("Copy from other entry codes");
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
-  const [selectedAttrToCopy, setSelectedAttrToCopy] = useState('');
+  const [selectedAttrToCopy, setSelectedAttrToCopy] = useState("");
   const gridRef = useRef(null);
   const unfilteredAttrRef = useRef([]);
 
@@ -53,14 +61,14 @@ const useHandleEntryCodeDrop = () => {
       Papa.parse(file, {
         header: true,
         skipEmptyLines: "greedy",
-        transformHeader: function(header, index) {
+        transformHeader: (header, index) => {
           if (header !== "") {
             return header;
           }
-          //without this, papaparse will save blank headers as "", "_1", "_2", etc.
+          // without this, papaparse will save blank headers as "", "_1", "_2", etc.
           return `header_empty_placeholder_${index}`;
         },
-        complete: function(results) {
+        complete: (results) => {
           setTempEntryCodeRowData(results.data);
           setEntryCodeHeaders(results.meta.fields);
           setLoading(false);
@@ -68,7 +76,7 @@ const useHandleEntryCodeDrop = () => {
 
           setDropMessage({
             message: messages.successfulUpload,
-            type: "success",
+            type: "success"
           });
 
           setTimeout(() => {
@@ -76,7 +84,7 @@ const useHandleEntryCodeDrop = () => {
             setDropMessage({ message: "", type: "" });
             setLoading(false);
           }, 900);
-        },
+        }
       });
     } catch {
       setDropMessage({ message: messages.parseUploadFail, type: "error" });
@@ -87,12 +95,23 @@ const useHandleEntryCodeDrop = () => {
     }
   }, []);
 
-  const handleBundleJSONDrop = useCallback((jsonFile) => {
+  const handleBundleJSONDrop = useCallback((jsonFile, ocaPackageData = null) => {
     const entryList = [];
     let entryCodeSummary = {};
+    // Check if entry code ordering can be retrieved from oca package
+    // For now, use ADC extension overlays for the top-level/main schema bundle
+    const orderingOverlay =
+      ocaPackageData?.extensions?.[ADC]?.[
+        ocaPackageData?.oca_bundle?.bundle?.capture_base?.d
+      ]?.overlays?.ordering;
+    const hasEntryCodeOrdering =
+      Object.keys(orderingOverlay?.entry_code_ordering || {}).length > 0;
 
     if (jsonFile?.overlays?.entry_code) {
       entryCodeSummary = { ...jsonFile.overlays.entry_code };
+      if (hasEntryCodeOrdering) {
+        entryCodeSummary.attribute_entry_codes = orderingOverlay.entry_code_ordering;
+      }
     }
 
     if (jsonFile?.overlays?.entry) {
@@ -103,38 +122,43 @@ const useHandleEntryCodeDrop = () => {
     setTempEntryList(entryList);
   }, []);
 
+  const processJSONFile = useCallback(
+    (acceptedFiles) => {
+      try {
+        setLoading(true);
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const jsonFile = JSON.parse(e.target.result);
 
-  const processJSONFile = useCallback((acceptedFiles) => {
-    try {
-      setLoading(true);
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const jsonFile = JSON.parse(e.target.result);
+          // First check if the json file is an OCA package that has OCA bundle
+          if (jsonFile?.oca_bundle?.bundle) {
+            handleBundleJSONDrop(jsonFile?.oca_bundle?.bundle, jsonFile);
+          } else if (jsonFile?.bundle) {
+            handleBundleJSONDrop(jsonFile?.bundle);
+          } else if (jsonFile?.schema?.[0]) {
+            handleBundleJSONDrop(jsonFile?.schema?.[0]);
+          } else {
+            handleBundleJSONDrop(jsonFile);
+          }
+        };
 
-        if (jsonFile?.['bundle']) {
-          handleBundleJSONDrop(jsonFile?.['bundle']);
-        } else if (jsonFile?.['schema']?.[0]) {
-          handleBundleJSONDrop(jsonFile?.['schema']?.[0]);
-        } else {
-          handleBundleJSONDrop(jsonFile);
-        }
-      };
+        reader.readAsText(acceptedFiles);
 
-      reader.readAsText(acceptedFiles);
-
-      setTimeout(() => {
-        setDropDisabled(true);
-        setDropMessage({ message: "", type: "" });
+        setTimeout(() => {
+          setDropDisabled(true);
+          setDropMessage({ message: "", type: "" });
+          setLoading(false);
+        }, 900);
+      } catch (error) {
+        setDropMessage({ message: messages.uploadFail, type: "error" });
         setLoading(false);
-      }, 900);
-    } catch (error) {
-      setDropMessage({ message: messages.uploadFail, type: "error" });
-      setLoading(false);
-      setTimeout(() => {
-        setDropMessage({ message: "", type: "" });
-      }, [2500]);
-    }
-  }, [handleBundleJSONDrop]);
+        setTimeout(() => {
+          setDropMessage({ message: "", type: "" });
+        }, [2500]);
+      }
+    },
+    [handleBundleJSONDrop]
+  );
 
   const processZipFile = useCallback((acceptedFiles) => {
     try {
@@ -149,11 +173,12 @@ const useHandleEntryCodeDrop = () => {
         // load up metadata file in OCA bundle
         const loadMetadataFile = await zip.files["meta.json"].async("text");
         const metadataJson = JSON.parse(loadMetadataFile);
-        const root = metadataJson.root;
+        const { root } = metadataJson;
 
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
-          const content = await zip.files[file + '.json'].async("text");
+          // eslint-disable-next-line no-await-in-loop
+          const content = await zip.files[`${file}.json`].async("text");
 
           if (key.includes("entry (")) {
             entryList.push(JSON.parse(content));
@@ -184,7 +209,6 @@ const useHandleEntryCodeDrop = () => {
     }
   }, []);
 
-
   const handleSave = () => {
     if (selectionValue === "Upload") {
       if (fileType === "csvORxls") {
@@ -196,33 +220,41 @@ const useHandleEntryCodeDrop = () => {
       }
     } else {
       const fromIndex = unfilteredAttrRef.current.indexOf(selectedAttrToCopy);
-      setEntryCodeRowData(prev => {
+      setEntryCodeRowData((prev) => {
         const newObj = [...prev];
-        newObj[chosenEntryCodeIndex] = newObj[fromIndex].map(obj => ({ ...obj }));
+        newObj[chosenEntryCodeIndex] = newObj[fromIndex].map((obj) => ({ ...obj }));
         return newObj;
       });
       setCurrentPage("Codes");
     }
   };
 
-  const userSelectionListDropdown = useMemo(() => {
-    return userSelectionDropdown.map((division) => {
-      return (
-        <MenuItem sx={{ height: '38px' }} key={division} value={division}>{t(division)}</MenuItem>
-      );
-    });
-  }, [t]);
+  const userSelectionListDropdown = useMemo(
+    () =>
+      userSelectionDropdown.map((division) => (
+        <MenuItem sx={{ height: "38px" }} key={division} value={division}>
+          {t(division)}
+        </MenuItem>
+      )),
+    [t]
+  );
 
-  const attributeListDropdown = useMemo(() => {
-    return selectedAttributesList.map((division) => {
-      return (
-        <MenuItem sx={{ height: '38px' }} key={division} value={division}>{division}</MenuItem>
-      );
-    });
-  }, [selectedAttributesList]);
+  const attributeListDropdown = useMemo(
+    () =>
+      selectedAttributesList.map((division) => (
+        <MenuItem sx={{ height: "38px" }} key={division} value={division}>
+          {division}
+        </MenuItem>
+      )),
+    [selectedAttributesList]
+  );
 
   useEffect(() => {
-    if (rawFile && rawFile.length > 0 && (rawFile[0].path.includes(".csv") || rawFile[0].path.includes(".xls"))) {
+    if (
+      rawFile &&
+      rawFile.length > 0 &&
+      (rawFile[0].path.includes(".csv") || rawFile[0].path.includes(".xls"))
+    ) {
       setFileType("csvORxls");
       processCSVFile(rawFile[0]);
     } else if (rawFile && rawFile.length > 0 && rawFile[0].path.includes(".json")) {
@@ -249,7 +281,7 @@ const useHandleEntryCodeDrop = () => {
         field: header,
         width: 100,
         resizable: true,
-        editable: true,
+        editable: true
       });
       newTableLength += 100;
     });
@@ -258,12 +290,11 @@ const useHandleEntryCodeDrop = () => {
   }, [entryCodeHeaders]);
 
   useEffect(() => {
-    const unfilteredAttributes = attributeRowData.filter(
-      (item) => item.List === true
+    const unfilteredAttributes = attributeRowData.filter((item) => item.List === true);
+    const filteredAttributes = unfilteredAttributes.filter(
+      (_, index) =>
+        index !== chosenEntryCodeIndex && entryCodeRowData[index]?.[0]?.Code !== ""
     );
-    const filteredAttributes = unfilteredAttributes.filter((_, index) => {
-      return index !== chosenEntryCodeIndex && entryCodeRowData[index]?.[0]?.Code !== '';
-    });
     const attributeArray = filteredAttributes.map((item) => item.Attribute);
     unfilteredAttrRef.current = unfilteredAttributes.map((item) => item.Attribute);
     setSelectedAttributesList(attributeArray);
@@ -292,7 +323,7 @@ const useHandleEntryCodeDrop = () => {
     attributeListDropdown,
     selectedAttrToCopy,
     setSelectedAttrToCopy,
-    entryCodeHeaders,
+    entryCodeHeaders
   };
 };
 

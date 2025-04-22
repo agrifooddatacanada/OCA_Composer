@@ -24,7 +24,7 @@ import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme } = useContext(Context);
+  const { zipToReadme, jsonToReadme, OCAPackage } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
@@ -154,10 +154,10 @@ const UseASchemaAccordionItem = () => {
             variant="contained"
             color="navButton"
             onClick={() => {
-              if (zipToReadme.length > 0) {
+              if (Object.keys(jsonToReadme).length > 0) {
+                jsonToTextFile(jsonToReadme, OCAPackage);
+              } else if (zipToReadme.length > 0) {
                 toTextFile(zipToReadme);
-              } else {
-                jsonToTextFile(jsonToReadme);
               }
             }}
             sx={buttonStyles}

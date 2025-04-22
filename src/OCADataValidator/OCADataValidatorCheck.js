@@ -263,6 +263,7 @@ const OCADataValidatorCheck = ({
   const { t } = useTranslation();
 
   const [rowData, setRowData] = useState([]);
+  const [initialRowData, setInitialRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const [revalidateData, setRevalidateData] = useState(false);
   const langRef = useRef(languages[0]);
@@ -454,8 +455,10 @@ const OCADataValidatorCheck = ({
     gridRef.current.api.showLoadingOverlay();
     setRevalidateData(false);
     setFirstValidate(true);
+
     const bundle = new OCABundle();
     await bundle.loadedBundle(jsonParsedFile);
+
     const newData = getCurrentData(gridRef.current.api, true);
 
     const prepareInput = {};
@@ -472,12 +475,25 @@ const OCADataValidatorCheck = ({
 
     const validate = bundle.validate(prepareInput);
 
-    setRowData(() =>
-      newData.map((data, index) => ({
-        ...data,
-        error: validate?.errCollection?.[index] || {}
-      }))
-    );
+    // Update `rowData` with validation results
+    const updatedRowData = newData.map((data, index) => ({
+      ...data,
+      error: validate?.errCollection?.[index] || {}
+    }));
+
+    // rowdata to store the state of errors per row
+    setRowData(updatedRowData);
+
+    // Update `initialRowData` using `originalIndex`
+    setInitialRowData((prevInitialRowData) => {
+      const updatedInitialRowData = [...prevInitialRowData];
+      updatedRowData.forEach((row) => {
+        if (row.originalIndex !== undefined) {
+          updatedInitialRowData[row.originalIndex] = row;
+        }
+      });
+      return updatedInitialRowData;
+    });
 
     setColumnDefs((prev) => {
       const copy = [];
@@ -623,6 +639,10 @@ const OCADataValidatorCheck = ({
     });
 
     const currentData = getCurrentData(gridRef.current.api, true);
+
+    const newRowIndex = currentData.length;
+    newRow.originalIndex = newRowIndex;
+    gridRef.current.api.applyTransaction({ add: [newRow] });
 
     setRowData([...currentData, newRow]);
   }, [isValidateButtonEnabled, schemaDataConformantHeader, gridRef, setRowData]);
@@ -783,9 +803,25 @@ const OCADataValidatorCheck = ({
       width: 50,
       cellRendererParams: (params) => ({
         delete: () => {
+          const deletedNode = params.node.data;
+
           gridRef.current.api.applyTransaction({
-            remove: [params.node.data]
+            remove: [deletedNode]
           });
+
+          // Recompute the indices of `initialRowData`
+          setInitialRowData((prevInitialRowData) => {
+            const updatedRowData = prevInitialRowData.filter(
+              (row) => row.originalIndex !== deletedNode.originalIndex
+            );
+
+            // Recompute the `originalIndex` for the remaining rows
+            return updatedRowData.map((row, index) => ({
+              ...row,
+              originalIndex: index
+            }));
+          });
+
           gridRef.current.api.redrawRows();
         }
       }),
@@ -794,7 +830,15 @@ const OCADataValidatorCheck = ({
     });
 
     setColumnDefs(columns);
-    setRowData(schemaDataConformantRowData);
+
+    if (schemaDataConformantRowData.length > 0) {
+      const rowDataWithIndex = schemaDataConformantRowData.map((row, index) => ({
+        ...row,
+        originalIndex: index
+      }));
+      setRowData(rowDataWithIndex);
+      setInitialRowData(rowDataWithIndex);
+    }
   }, [
     datasetRawFile.length,
     attributesList,
@@ -817,7 +861,7 @@ const OCADataValidatorCheck = ({
       const selectedErrors = errorName.filter(
         (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
       );
-      return rowData.filter((row) => {
+      return initialRowData.filter((row) => {
         if (!row?.error) return false;
         const errorTypes = Object.values(row.error)
           .flat()
@@ -825,8 +869,7 @@ const OCADataValidatorCheck = ({
         return selectedErrors.some((error) => errorTypes.includes(errorCode?.[error]));
       });
     }
-
-    return rowData;
+    return initialRowData;
   }
 
   return (

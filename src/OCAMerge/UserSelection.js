@@ -1,53 +1,70 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { CustomPalette } from '../constants/customPalette';
-import { Box, Button, Checkbox, List, ListItem, Typography } from '@mui/material';
-import { useTranslation } from 'react-i18next';
-import { Context } from '../App';
+import React, { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import JSZip from "jszip";
+import { Box, Button, Checkbox, List, ListItem, Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { CAPTURE_BASE, CARDINALITY, CHARACTER_ENCODING, CONFORMANCE, ENTRY, ENTRY_CODE, FORMAT, INFORMATION, LABEL, META, UNIT } from '../constants/constants';
-import MergeDifferenceModal from './MergeDifferenceModal';
-import JSZip from 'jszip';
+import { OcaPackage } from "oca_package";
+import { CustomPalette } from "../constants/customPalette";
+import { Context } from "../App";
+import {
+  ADC,
+  CAPTURE_BASE,
+  CARDINALITY,
+  CHARACTER_ENCODING,
+  CONFORMANCE,
+  ENTRY,
+  ENTRY_CODE,
+  FORMAT,
+  INFORMATION,
+  LABEL,
+  META,
+  ORDERING,
+  UNIT
+} from "../constants/constants";
+import MergeDifferenceModal from "./MergeDifferenceModal";
+import { generateOCABundle, generateOCAFileFromMergedOverlays } from "../constants/utils";
+import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 
 const checkIfKeyInList = (key, list) => {
   const lowercaseSearchString = key.toLowerCase();
-  const isMatch = list.some(item => item.toLowerCase() === lowercaseSearchString);
+  const isMatch = list.some((item) => item.toLowerCase() === lowercaseSearchString);
   return isMatch;
 };
 
-const priorityKeys = ["META", 'Information', "ATTRIBUTE"];
+const priorityKeys = ["META", "Information", "ATTRIBUTE"];
 
 const findComparisonObject = (key) => {
   let objKey;
   switch (key) {
     case CAPTURE_BASE:
-      objKey = 'attributes';
+      objKey = "attributes";
       break;
     case CHARACTER_ENCODING:
-      objKey = 'attribute_character_encoding';
+      objKey = "attribute_character_encoding";
       break;
     case FORMAT:
-      objKey = 'attribute_formats';
+      objKey = "attribute_formats";
       break;
     case UNIT:
-      objKey = 'attribute_units';
+      objKey = "attribute_unit";
       break;
     case ENTRY_CODE:
-      objKey = 'attribute_entry_codes';
+      objKey = "attribute_entry_codes";
       break;
     case LABEL:
-      objKey = 'attribute_labels';
+      objKey = "attribute_labels";
       break;
     case INFORMATION:
-      objKey = 'attribute_information';
+      objKey = "attribute_information";
       break;
     case ENTRY:
-      objKey = 'attribute_entries';
+      objKey = "attribute_entries";
       break;
     case CONFORMANCE:
-      objKey = 'attribute_conformance';
+      objKey = "attribute_conformance";
       break;
     case CARDINALITY:
-      objKey = 'attribute_cardinality';
+      objKey = "attribute_cardinality";
       break;
     default:
       break;
@@ -55,20 +72,63 @@ const findComparisonObject = (key) => {
   return objKey;
 };
 
+// Ensures incompatible entry overlays are not selected
+const shouldEnableEntrySelection = (
+  item,
+  overlayComparisonData,
+  selectedOverlaysOCAFile1,
+  selectedOverlaysOCAFile2,
+  fileNumber
+) => {
+  // Only apply this logic to entry and ordering overlays
+  const isEntryOverlay = item.key.includes(ENTRY) && item.key !== ENTRY_CODE;
+  const isOrderingOverlay = item.key === ORDERING;
+  if (!isEntryOverlay && !isOrderingOverlay) return true;
+
+  const entryCodeItem = overlayComparisonData.find((i) => i.key === ENTRY_CODE);
+  if (!entryCodeItem && isOrderingOverlay) return true;
+
+  const entryCodeValue1 = selectedOverlaysOCAFile1?.[ENTRY_CODE]?.attribute_entry_codes;
+  const entryCodeValue2 = selectedOverlaysOCAFile2?.[ENTRY_CODE]?.attribute_entry_codes;
+  const entryCodesAreSame =
+    JSON.stringify(entryCodeValue1) === JSON.stringify(entryCodeValue2);
+
+  if (entryCodesAreSame) return true;
+
+  // If entry codes are different, only enable entry and ordering overlays from the same file
+  if (entryCodeItem.ocaFile1Checked) {
+    return fileNumber === 1 && item.ocafile1 !== "NONE";
+  }
+
+  if (entryCodeItem.ocaFile2Checked) {
+    return fileNumber === 2 && item.ocafile2 !== "NONE";
+  }
+
+  return false;
+};
+
 const UserSelection = () => {
   const { t } = useTranslation();
-  const { selectedOverlaysOCAFile1, selectedOverlaysOCAFile2, parsedOCAFile1, OCAFile1Raw, OCAFile2Raw } = useContext(Context);
+  const {
+    selectedOverlaysOCAFile1,
+    selectedOverlaysOCAFile2,
+    parsedOCAFile1,
+    OCAFile1Raw,
+    OCAFile2Raw
+  } = useContext(Context);
   const [data, setData] = useState([]);
   const [showDifference, setShowDifference] = useState(false);
   const [dataDifference, setDataDifference] = useState({
-    title: '',
-    rowData: [],
+    title: "",
+    rowData: []
   });
 
+  const { jsonToTextFile } = useGenerateReadMeV2();
+
   const fileName1 = OCAFile1Raw[0].path;
-  const fileName1WithoutExt = fileName1.substring(0, fileName1.lastIndexOf('.'));
+  const fileName1WithoutExt = fileName1.substring(0, fileName1.lastIndexOf("."));
   const fileName2 = OCAFile2Raw[0].path;
-  const fileName2WithoutExt = fileName2.substring(0, fileName2.lastIndexOf('.'));
+  const fileName2WithoutExt = fileName2.substring(0, fileName2.lastIndexOf("."));
 
   const processComparisonForDifference = (item) => {
     if (item.ocafile1 === "NONE" && item.ocafile2 === "NONE") {
@@ -82,109 +142,147 @@ const UserSelection = () => {
       const descriptionObj = {
         comparisonValue: "description",
         ocaFile1: value1?.description,
-        ocaFile2: value2?.description,
+        ocaFile2: value2?.description
       };
       const nameObj = {
         comparisonValue: "name",
         ocaFile1: value1?.name,
-        ocaFile2: value2?.name,
+        ocaFile2: value2?.name
       };
       setDataDifference({
         title: item.key,
-        rowData: [descriptionObj, nameObj],
+        rowData: [descriptionObj, nameObj]
       });
     } else if (item.key === CAPTURE_BASE) {
       const classificationObj = {
         comparisonValue: "classification",
         ocaFile1: value1?.classification,
-        ocaFile2: value2?.classification,
+        ocaFile2: value2?.classification
       };
       const uniqueKeys = new Set([
         ...Object.keys(value1.attributes || {}),
-        ...Object.keys(value2.attributes || {}),
+        ...Object.keys(value2.attributes || {})
       ]);
 
-      const attributesComparison = Array.from(uniqueKeys).map(key => ({
+      const attributesComparison = Array.from(uniqueKeys).map((key) => ({
         comparisonValue: key,
         ocaFile1: value1.attributes?.[key],
-        ocaFile2: value2.attributes?.[key],
+        ocaFile2: value2.attributes?.[key]
       }));
 
       setDataDifference({
         title: item.key,
-        rowData: [classificationObj, ...attributesComparison],
+        rowData: [classificationObj, ...attributesComparison]
       });
-    } else if (item.key === CHARACTER_ENCODING || item.key.includes(LABEL) || item.key.includes(INFORMATION) || item.key.includes(CONFORMANCE) || item.key.includes(UNIT) || item.key.includes(CARDINALITY) || item.key.includes(FORMAT) || item.key.includes(ENTRY_CODE)) {
-      const comparisonObj = findComparisonObject(item.key.split(' - ')?.[0]);
+    } else if (
+      item.key === CHARACTER_ENCODING ||
+      item.key.includes(LABEL) ||
+      item.key.includes(INFORMATION) ||
+      item.key.includes(CONFORMANCE) ||
+      item.key.includes(UNIT) ||
+      item.key.includes(CARDINALITY) ||
+      item.key.includes(FORMAT) ||
+      item.key.includes(ENTRY_CODE)
+    ) {
+      const comparisonObj = findComparisonObject(item.key.split(" - ")?.[0]);
+      let overlayData1 = null;
+      let overlayData2 = null;
+      if (item.key.includes(UNIT)) {
+        // In case of zip bundle, the unit is in attribute_units
+        overlayData1 = value1?.[comparisonObj] || value1?.attribute_units || {};
+        overlayData2 = value2?.[comparisonObj] || value2?.attribute_units || {};
+      } else {
+        overlayData1 = value1?.[comparisonObj] || {};
+        overlayData2 = value2?.[comparisonObj] || {};
+      }
       const uniqueKeys = new Set([
-        ...Object.keys(value1?.[comparisonObj] || {}),
-        ...Object.keys(value2?.[comparisonObj] || {}),
+        ...Object.keys(overlayData1),
+        ...Object.keys(overlayData2)
       ]);
 
-      const attributesComparison = Array.from(uniqueKeys).map(key => {
-        return {
-          comparisonValue: key,
-          ocaFile1: value1?.[comparisonObj]?.[key],
-          ocaFile2: value2?.[comparisonObj]?.[key],
-        };
-      });
+      const attributesComparison = Array.from(uniqueKeys).map((key) => ({
+        comparisonValue: key,
+        ocaFile1: overlayData1?.[key],
+        ocaFile2: overlayData2?.[key]
+      }));
 
       setDataDifference({
         title: item.key,
-        rowData: attributesComparison,
+        rowData: attributesComparison
       });
     } else if (item.key.includes(ENTRY)) {
-      const comparisonObj = findComparisonObject(item.key.split(' - ')?.[0]);
+      const comparisonObj = findComparisonObject(item.key.split(" - ")?.[0]);
       const uniqueKeys = new Set([
         ...Object.keys(value1?.[comparisonObj] || {}),
-        ...Object.keys(value2?.[comparisonObj] || {}),
+        ...Object.keys(value2?.[comparisonObj] || {})
       ]);
 
-      const attributesComparison = Array.from(uniqueKeys).map(key => {
+      const attributesComparison = Array.from(uniqueKeys).map((key) => {
         const parsedValue1 = value1?.[comparisonObj]?.[key];
         const parsedValue2 = value2?.[comparisonObj]?.[key];
         return {
           comparisonValue: key,
           ocaFile1: parsedValue1,
-          ocaFile2: parsedValue2,
+          ocaFile2: parsedValue2
         };
       });
 
       setDataDifference({
         title: item.key,
-        rowData: attributesComparison,
+        rowData: attributesComparison
       });
+    } else if (item.key.includes(ORDERING)) {
+      const attributeOrderingComparison = {
+        comparisonValue: "attribute_ordering",
+        ocaFile1: value1?.attribute_ordering,
+        ocaFile2: value2?.attribute_ordering
+      };
+
+      const uniqueEntryKeys = new Set([
+        ...Object.keys(value1?.entry_code_ordering || {}),
+        ...Object.keys(value2?.entry_code_ordering || {})
+      ]);
+
+      const entryCodeOrderingComparisons = Array.from(uniqueEntryKeys).map((key) => ({
+        comparisonValue: `entry_code_ordering - ${key}`,
+        ocaFile1: value1?.entry_code_ordering?.[key],
+        ocaFile2: value2?.entry_code_ordering?.[key]
+      }));
+
+      setDataDifference({
+        title: item.key,
+        rowData: [attributeOrderingComparison, ...entryCodeOrderingComparisons]
+      });
+
+      setShowDifference(true);
     }
 
     setShowDifference(true);
   };
 
   const handleChange = (index, key) => {
-    setData(prev => {
+    setData((prev) => {
       const newData = [...prev];
 
-      if (key === 'ocaFile1Checked') {
+      if (key === "ocaFile1Checked") {
         newData[index].ocaFile1Checked = !newData[index].ocaFile1Checked;
         newData[index].ocaFile2Checked = false;
-      } else if (key === 'ocaFile2Checked') {
+      } else if (key === "ocaFile2Checked") {
         newData[index].ocaFile2Checked = !newData[index].ocaFile2Checked;
         newData[index].ocaFile1Checked = false;
-      } else if (key === 'same') {
+      } else if (key === "same") {
         newData[index].same = !newData[index].same;
       }
       return newData;
     });
   };
 
-  const preparedJSONToExport = () => {
-    let exportedFile;
-    exportedFile = {
-      d: parsedOCAFile1.d,
-      v: parsedOCAFile1.v,
-    };
-    const overlays = {};
-    data.forEach(item => {
-      const key = item.key;
+  const getMergedOverlaysForJSONExport = () => {
+    const coreOverlays = {};
+    const extensionOverlays = {};
+
+    data.forEach((item) => {
+      const { key } = item;
       let value = null;
       if ((item.ocaFile1Checked && key in selectedOverlaysOCAFile1) || item.same) {
         value = selectedOverlaysOCAFile1[key];
@@ -193,25 +291,88 @@ const UserSelection = () => {
       }
 
       if (value && key === CAPTURE_BASE) {
-        exportedFile[key] = value;
+        coreOverlays[key] = value;
       }
 
-      const overlayKey = key.split(' - ')?.[0];
-      if (overlayKey === CHARACTER_ENCODING || overlayKey === FORMAT || overlayKey === CONFORMANCE || overlayKey === ENTRY_CODE || overlayKey === UNIT) {
+      const overlayKey = key.split(" - ")?.[0];
+      // Non-language specific overlays
+      if (
+        overlayKey === CHARACTER_ENCODING ||
+        overlayKey === FORMAT ||
+        overlayKey === CONFORMANCE ||
+        overlayKey === ENTRY_CODE ||
+        overlayKey === UNIT
+      ) {
         if (value) {
-          overlays[overlayKey] = value;
+          coreOverlays[overlayKey] = value;
         }
-      } else if (overlayKey === META || overlayKey === LABEL || overlayKey === INFORMATION || overlayKey === ENTRY) {
-        if (value && overlayKey in overlays) {
-          overlays[overlayKey].push(value);
+        // Language specific overlays
+      } else if (
+        overlayKey === META ||
+        overlayKey === LABEL ||
+        overlayKey === INFORMATION ||
+        overlayKey === ENTRY
+      ) {
+        if (value && overlayKey in coreOverlays) {
+          coreOverlays[overlayKey].push(value);
         } else if (value) {
-          overlays[overlayKey] = [value];
+          coreOverlays[overlayKey] = [value];
+        }
+        // OCA package extension overlays
+      } else if (key === ORDERING) {
+        if (value) {
+          extensionOverlays[overlayKey] = value;
         }
       }
-
-      exportedFile["overlays"] = overlays;
     });
-    return exportedFile;
+
+    return { coreOverlays, extensionOverlays };
+  };
+
+  const exportToJsonFile = (data) => {
+    const jsonString = JSON.stringify(data);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "merged_schema.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportOcaPackage = async () => {
+    const mergedOverlays = getMergedOverlaysForJSONExport();
+    const ocaFileContent = generateOCAFileFromMergedOverlays(mergedOverlays.coreOverlays);
+    const bundle = await generateOCABundle(ocaFileContent);
+
+    // For now, we only have ADC community ordering extension overlay for top-level/main schema bundle
+    const extension = {
+      extensions: {
+        [ADC]: {
+          [bundle.bundle.d]: [
+            {
+              ordering_overlay: {
+                type: ORDERING,
+                attribute_ordering:
+                  mergedOverlays.extensionOverlays?.[ORDERING]?.attribute_ordering || [],
+                entry_code_ordering:
+                  mergedOverlays.extensionOverlays?.[ORDERING]?.entry_code_ordering || {}
+              }
+            }
+          ]
+        }
+      }
+    };
+
+    const ocaPackageService = new OcaPackage(extension, bundle);
+    const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
+
+    jsonToTextFile(bundle.bundle, ocaPackage);
+
+    exportToJsonFile(ocaPackage);
   };
 
   const preparedZipToExport = () => {
@@ -224,8 +385,8 @@ const UserSelection = () => {
       root: rootDigest
     };
 
-    data.forEach(item => {
-      const key = item.key;
+    data.forEach((item) => {
+      const { key } = item;
       let value = null;
       if ((item.ocaFile1Checked && key in selectedOverlaysOCAFile1) || item.same) {
         value = selectedOverlaysOCAFile1[key];
@@ -234,32 +395,38 @@ const UserSelection = () => {
       }
       if (key === CHARACTER_ENCODING) {
         exportedFile.push(value);
-        metaJSON["files"][rootDigest][CHARACTER_ENCODING] = value?.digest;
+        metaJSON.files[rootDigest][CHARACTER_ENCODING] = value?.digest;
       } else if (key === FORMAT) {
         exportedFile.push(value);
-        metaJSON["files"][rootDigest][FORMAT] = value?.digest;
+        metaJSON.files[rootDigest][FORMAT] = value?.digest;
       } else if (key === ENTRY_CODE) {
         exportedFile.push(value);
-        metaJSON["files"][rootDigest][ENTRY_CODE] = value?.digest;
+        metaJSON.files[rootDigest][ENTRY_CODE] = value?.digest;
       } else if (key === CONFORMANCE) {
         exportedFile.push(value);
-        metaJSON["files"][rootDigest][CONFORMANCE] = value?.digest;
+        metaJSON.files[rootDigest][CONFORMANCE] = value?.digest;
       } else if (key === UNIT) {
         exportedFile.push(value);
-        metaJSON["files"][rootDigest][UNIT] = value?.digest;
+        metaJSON.files[rootDigest][UNIT] = value?.digest;
       } else if (key === CARDINALITY) {
         exportedFile.push(value);
-        metaJSON["files"][rootDigest][CARDINALITY] = value?.digest;
-      } else if (key.includes(INFORMATION) || key.includes(LABEL) || key.includes(META) || key.includes(ENTRY)) {
+        metaJSON.files[rootDigest][CARDINALITY] = value?.digest;
+      } else if (
+        key.includes(INFORMATION) ||
+        key.includes(LABEL) ||
+        key.includes(META) ||
+        key.includes(ENTRY)
+      ) {
         exportedFile.push(value);
-        const splitKey = key.split(' - ');
+        const splitKey = key.split(" - ");
         let newKey;
         if (splitKey.length > 1) {
           newKey = `${splitKey[0]} (${splitKey[1]})`;
         } else {
+          // eslint-disable-next-line prefer-destructuring
           newKey = splitKey[0];
         }
-        metaJSON["files"][rootDigest][newKey] = value?.digest;
+        metaJSON.files[rootDigest][newKey] = value?.digest;
       } else if (key === CAPTURE_BASE) {
         exportedFile.push(value);
       }
@@ -268,23 +435,12 @@ const UserSelection = () => {
     return exportedFile;
   };
 
-  const handleExport = () => {
-    let exportedFile;
-    if (OCAFile1Raw[0].path.includes(".json") || OCAFile2Raw[0].path.includes(".json")) {
-      exportedFile = preparedJSONToExport();
-      exportToJsonFile(exportedFile);
-    } else {
-      exportedFile = preparedZipToExport();
-      exportZipFile(exportedFile);
-    }
-  };
-
   const exportZipFile = async (data) => {
     const zip = new JSZip();
 
     for (const item of data) {
-      if (item && 'root' in item) {
-        zip.file('meta.json', JSON.stringify(item, null, 2));
+      if (item && "root" in item) {
+        zip.file("meta.json", JSON.stringify(item, null, 2));
       } else if (item) {
         zip.file(`${item?.digest}.json`, JSON.stringify(item, null, 2));
       }
@@ -303,32 +459,40 @@ const UserSelection = () => {
     document.body.removeChild(link);
   };
 
-  const exportToJsonFile = (data) => {
-    const jsonString = JSON.stringify(data);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = 'merged_schema.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleExport = () => {
+    if (OCAFile1Raw[0].path.includes(".json") || OCAFile2Raw[0].path.includes(".json")) {
+      handleExportOcaPackage();
+    } else {
+      const exportedFile = preparedZipToExport();
+      exportZipFile(exportedFile);
+    }
   };
 
   const compareValues = (key) => {
-    const splitKey = key.split(' - ')?.[0];
+    const splitKey = key.split(" - ")?.[0];
     if (key.includes(META)) {
       const value1 = selectedOverlaysOCAFile1[key];
       const value2 = selectedOverlaysOCAFile2[key];
       return value1?.description === value2?.description && value1?.name === value2?.name;
-    } else {
-      let objKey = findComparisonObject(splitKey);
-      const value1 = selectedOverlaysOCAFile1[key]?.[objKey];
-      const value2 = selectedOverlaysOCAFile2[key]?.[objKey];
-      return JSON.stringify(value1) === JSON.stringify(value2);
     }
+    if (key.includes(ORDERING)) {
+      const value1 = selectedOverlaysOCAFile1[key];
+      const value2 = selectedOverlaysOCAFile2[key];
+
+      const attributeOrderingEqual =
+        JSON.stringify(value1?.attribute_ordering) ===
+        JSON.stringify(value2?.attribute_ordering);
+
+      const entryCodeOrderingEqual =
+        JSON.stringify(value1?.entry_code_ordering) ===
+        JSON.stringify(value2?.entry_code_ordering);
+
+      return attributeOrderingEqual && entryCodeOrderingEqual;
+    }
+    const objKey = findComparisonObject(splitKey);
+    const value1 = selectedOverlaysOCAFile1[key]?.[objKey];
+    const value2 = selectedOverlaysOCAFile2[key]?.[objKey];
+    return JSON.stringify(value1) === JSON.stringify(value2);
   };
 
   useEffect(() => {
@@ -340,18 +504,19 @@ const UserSelection = () => {
     const combinedList = uniqueKeys.reduce((acc, key) => {
       if (!temp?.includes(key.toLowerCase())) {
         temp.push(key.toLowerCase());
-        const same = keysObj1.includes(key) && keysObj2.includes(key) ? compareValues(key) : false;
+        const same =
+          keysObj1.includes(key) && keysObj2.includes(key) ? compareValues(key) : false;
         const checkIfKeyInListObj1 = checkIfKeyInList(key, keysObj1);
         const newEntry = {
-          key: key,
+          key,
           ocafile1: checkIfKeyInListObj1 ? key : "NONE",
-          ocafile2: checkIfKeyInList(key, keysObj2) ? key : "NONE",
+          ocafile2: checkIfKeyInList(key, keysObj2) ? key : "NONE"
         };
         if (same) {
-          newEntry['same'] = true;
+          newEntry.same = true;
         } else {
-          newEntry['ocaFile1Checked'] = false;
-          newEntry['ocaFile2Checked'] = false;
+          newEntry.ocaFile1Checked = false;
+          newEntry.ocaFile2Checked = false;
         }
         acc.push(newEntry);
       }
@@ -359,178 +524,243 @@ const UserSelection = () => {
     }, []);
 
     const sortedList = combinedList.sort((a, b) => {
-      const aPriority = priorityKeys.findIndex(keyword => a.key.includes(keyword));
-      const bPriority = priorityKeys.findIndex(keyword => b.key.includes(keyword));
+      const aPriority = priorityKeys.findIndex((keyword) => a.key.includes(keyword));
+      const bPriority = priorityKeys.findIndex((keyword) => b.key.includes(keyword));
 
       if (aPriority !== -1 && bPriority !== -1) {
         return aPriority - bPriority;
-      } else if (aPriority !== -1) {
-        return -1;
-      } else if (bPriority !== -1) {
-        return 1;
-      } else {
-        return a.key.localeCompare(b.key);
       }
+      if (aPriority !== -1) {
+        return -1;
+      }
+      if (bPriority !== -1) {
+        return 1;
+      }
+      return a.key.localeCompare(b.key);
     });
 
     setData(sortedList);
   }, [selectedOverlaysOCAFile1, selectedOverlaysOCAFile2]);
 
   return (
-    <Box sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flex: 1,
-      padding: '2rem',
-    }}>
-      {showDifference &&
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        flex: 1,
+        padding: "2rem"
+      }}
+    >
+      {showDifference && (
         <MergeDifferenceModal
           file1Name={fileName1WithoutExt}
           file2Name={fileName2WithoutExt}
           setShowCard={setShowDifference}
           dataDifference={dataDifference}
-        />}
-      <Box sx={{
-        display: "flex",
-        justifyContent: "flex-end",
-        width: '100%',
-        marginBottom: '1rem',
-      }}>
+        />
+      )}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          width: "100%",
+          marginBottom: "1rem"
+        }}
+      >
         <Button
           color="button"
           variant="contained"
-          onClick={() => handleExport()}
+          onClick={handleExport}
           sx={{
             alignSelf: "flex-end",
             width: "12rem",
             display: "flex",
             justifyContent: "space-around",
-            p: 1,
+            p: 1
           }}
-        // disabled={exportDisabled}
+          // disabled={exportDisabled}
         >
-          {t('Finish and Export')} <CheckCircleIcon />
+          {t("Finish and Export")} <CheckCircleIcon />
         </Button>
       </Box>
-      <Box sx={{ display: 'flex', width: '100%' }}>
-        <Box sx={{
-          padding: '10px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          width: '40%',
-        }}>
-          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{fileName1WithoutExt}</Typography>
+      <Box sx={{ display: "flex", width: "100%" }}>
+        <Box
+          sx={{
+            padding: "10px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "40%"
+          }}
+        >
+          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+            {fileName1WithoutExt}
+          </Typography>
         </Box>
-        <Box sx={{
-          padding: '10px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          width: '20%',
-        }}>
-          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{t('Selection')}</Typography>
+        <Box
+          sx={{
+            padding: "10px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "20%"
+          }}
+        >
+          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+            {t("Selection")}
+          </Typography>
         </Box>
-        <Box sx={{
-          padding: '10px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          width: '40%',
-        }}>
-          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>{fileName2WithoutExt}</Typography>
+        <Box
+          sx={{
+            padding: "10px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "40%"
+          }}
+        >
+          <Typography sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+            {fileName2WithoutExt}
+          </Typography>
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column' }}>
+      <Box sx={{ display: "flex", width: "100%", flexDirection: "column" }}>
         {data.map((item, index) => (
-          <Box key={index} sx={{ display: 'flex', width: '100%' }}>
-            <Box sx={{
-              paddingLeft: '10px',
-              paddingRight: '10px',
-              borderBottom: index === data.length - 1 && `2px solid ${CustomPalette.GREY_300}`,
-              borderLeft: `2px solid ${CustomPalette.GREY_300}`,
-              borderRight: `2px solid ${CustomPalette.GREY_300}`,
-              borderTop: index === 0 && `2px solid ${CustomPalette.GREY_300}`,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '40%',
-            }}>
+          <Box
+            key={item.key}
+            sx={{ display: item.key === CAPTURE_BASE ? "none" : "flex", width: "100%" }}
+          >
+            <Box
+              sx={{
+                paddingLeft: "10px",
+                paddingRight: "10px",
+                borderBottom:
+                  index === data.length - 1 && `2px solid ${CustomPalette.GREY_300}`,
+                borderLeft: `2px solid ${CustomPalette.GREY_300}`,
+                borderRight: `2px solid ${CustomPalette.GREY_300}`,
+                // Checking if index is 1 since we're hiding the first row (capture base)
+                borderTop: index === 1 && `2px solid ${CustomPalette.GREY_300}`,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "40%"
+              }}
+            >
               <Typography
-                sx={{ fontWeight: item?.ocafile1 === "NONE" ? '500' : 'normal', cursor: 'pointer' }}
+                sx={{
+                  fontWeight: item?.ocafile1 === "NONE" ? "500" : "normal",
+                  cursor: "pointer"
+                }}
                 onClick={() => processComparisonForDifference(item)}
               >
                 {item?.ocafile1}
               </Typography>
             </Box>
-            <Box sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              width: '20%',
-            }}>
-              <List sx={{ display: 'flex', flexDirection: 'row', padding: 0 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: "20%"
+              }}
+            >
+              <List sx={{ display: "flex", flexDirection: "row", padding: 0 }}>
                 <ListItem>
                   <Checkbox
                     sx={{
-                      '&.Mui-checked': {
-                        color: CustomPalette.PRIMARY,
-                      },
+                      "&.Mui-checked": {
+                        color: CustomPalette.PRIMARY
+                      }
                     }}
                     checked={item?.ocaFile1Checked}
-                    onClick={() => handleChange(index, 'ocaFile1Checked')}
-                    disabled={item?.ocafile1 === "NONE" || item?.ocaFile1Checked === undefined}
+                    onClick={() => handleChange(index, "ocaFile1Checked")}
+                    disabled={
+                      item?.ocafile1 === "NONE" ||
+                      item?.ocaFile1Checked === undefined ||
+                      !shouldEnableEntrySelection(
+                        item,
+                        data,
+                        selectedOverlaysOCAFile1,
+                        selectedOverlaysOCAFile2,
+                        1
+                      )
+                    }
                   />
                 </ListItem>
                 <ListItem sx={{ background: CustomPalette.GREY_300 }}>
                   <Checkbox
                     sx={{
-                      '&.Mui-checked': {
-                        color: CustomPalette.PRIMARY,
-                      },
+                      "&.Mui-checked": {
+                        color: CustomPalette.PRIMARY
+                      }
                     }}
                     checked={item?.same}
-                    onClick={() => handleChange(index, 'same')}
-                    disabled={item?.ocaFile1Checked !== undefined || item?.ocaFile2Checked !== undefined}
+                    onClick={() => handleChange(index, "same")}
+                    disabled={
+                      item?.ocaFile1Checked !== undefined ||
+                      item?.ocaFile2Checked !== undefined
+                    }
                   />
                 </ListItem>
                 <ListItem>
                   <Checkbox
                     sx={{
-                      '&.Mui-checked': {
-                        color: CustomPalette.PRIMARY,
-                      },
+                      "&.Mui-checked": {
+                        color: CustomPalette.PRIMARY
+                      }
                     }}
                     checked={item?.ocaFile2Checked}
-                    onClick={() => handleChange(index, 'ocaFile2Checked')}
-                    disabled={item?.ocafile2 === "NONE" || item?.ocaFile2Checked === undefined}
+                    onClick={() => handleChange(index, "ocaFile2Checked")}
+                    disabled={
+                      item?.ocafile2 === "NONE" ||
+                      item?.ocaFile2Checked === undefined ||
+                      !shouldEnableEntrySelection(
+                        item,
+                        data,
+                        selectedOverlaysOCAFile1,
+                        selectedOverlaysOCAFile2,
+                        2
+                      )
+                    }
                   />
                 </ListItem>
               </List>
             </Box>
-            <Box sx={{
-              paddingLeft: '10px',
-              paddingRight: '10px',
-              borderBottom: index === data.length - 1 && `2px solid ${CustomPalette.GREY_300}`,
-              borderLeft: `2px solid ${CustomPalette.GREY_300}`,
-              borderRight: `2px solid ${CustomPalette.GREY_300}`,
-              borderTop: index === 0 && `2px solid ${CustomPalette.GREY_300}`,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              width: '40%',
-              justifyContent: 'center',
-            }}>
-              <Typography sx={{ fontWeight: item?.ocafile2 === "NONE" ? '500' : 'normal', cursor: 'pointer' }} onClick={() => processComparisonForDifference(item)}>{item?.ocafile2}</Typography>
+            <Box
+              sx={{
+                paddingLeft: "10px",
+                paddingRight: "10px",
+                borderBottom:
+                  index === data.length - 1 && `2px solid ${CustomPalette.GREY_300}`,
+                borderLeft: `2px solid ${CustomPalette.GREY_300}`,
+                borderRight: `2px solid ${CustomPalette.GREY_300}`,
+                // Checking if index is 1 since we're hiding the first row (capture base)
+                borderTop: index === 1 && `2px solid ${CustomPalette.GREY_300}`,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: "40%",
+                justifyContent: "center"
+              }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: item?.ocafile2 === "NONE" ? "500" : "normal",
+                  cursor: "pointer"
+                }}
+                onClick={() => processComparisonForDifference(item)}
+              >
+                {item?.ocafile2}
+              </Typography>
             </Box>
           </Box>
         ))}
       </Box>
-    </Box >
+    </Box>
   );
 };
 

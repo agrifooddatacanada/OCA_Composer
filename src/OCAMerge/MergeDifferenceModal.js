@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
+import { CustomPalette } from "../constants/customPalette";
 import { preWrapWordBreak } from "../constants/styles";
 
 const gridStyles = `
@@ -13,37 +13,34 @@ const gridStyles = `
 }
 `;
 
-function MergeDifferenceModal({
-  file1Name,
-  file2Name,
-  setShowCard,
-  dataDifference
-}) {
+function MergeDifferenceModal({ file1Name, file2Name, setShowCard, dataDifference }) {
   const { t } = useTranslation();
   const [columnDefs, setColumnDefs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const defaultColDef = {
     width: 200,
-    editable: false,
+    editable: false
   };
 
-  const checkedType = dataDifference?.rowData?.[0]?.ocaFile1;
+  const checkedType = dataDifference?.rowData?.[0]?.ocaFile1
+    ? dataDifference?.rowData?.[0]?.ocaFile1
+    : dataDifference?.rowData?.[0]?.ocaFile2;
   let displayValues = [];
   const isEntryTable = typeof checkedType === "object" && !(checkedType instanceof Array);
   if (isEntryTable) {
     const newRowData = [];
     dataDifference?.rowData?.forEach((item) => {
       let setComparisonValue = false;
-      const ocaFile1Keys = Object.keys(item.ocaFile1);
-      const ocaFile2Keys = Object.keys(item.ocaFile2);
+      const ocaFile1Keys = Object.keys(item.ocaFile1 || {});
+      const ocaFile2Keys = Object.keys(item.ocaFile2 || {});
       const uniqueKeys = [...new Set([...ocaFile1Keys, ...ocaFile2Keys])];
       for (const key of uniqueKeys) {
         const newObj = {
           comparisonValue: !setComparisonValue ? item.comparisonValue : "",
           ocaFile1: item.ocaFile1?.[key] || "",
           ocaFile2: item.ocaFile2?.[key] || "",
-          code: key,
+          code: key
         };
         setComparisonValue = true;
         newRowData.push(newObj);
@@ -55,16 +52,47 @@ function MergeDifferenceModal({
     displayValues = dataDifference?.rowData;
   }
 
-
   useEffect(() => {
     const columnDefs = [
-      { field: "comparisonValue", headerName: "", cellStyle: () => preWrapWordBreak, autoHeight: true, },
+      {
+        field: "comparisonValue",
+        headerName: "",
+        cellStyle: () => preWrapWordBreak,
+        autoHeight: true
+      }
     ];
     if (isEntryTable) {
-      columnDefs.push({ field: "code", headerName: "Code", cellStyle: () => preWrapWordBreak, autoHeight: true, });
+      columnDefs.push({
+        field: "code",
+        headerName: "Code",
+        cellStyle: () => preWrapWordBreak,
+        autoHeight: true
+      });
     }
-    columnDefs.push({ field: "ocaFile1", headerName: file1Name, cellStyle: () => preWrapWordBreak, autoHeight: true, });
-    columnDefs.push({ field: "ocaFile2", headerName: file2Name, cellStyle: () => preWrapWordBreak, autoHeight: true, });
+    columnDefs.push({
+      field: "ocaFile1",
+      headerName: file1Name,
+      cellStyle: (params) => ({
+        ...preWrapWordBreak,
+        backgroundColor:
+          JSON.stringify(params.data.ocaFile1) !== JSON.stringify(params.data.ocaFile2)
+            ? CustomPalette.PINK_400
+            : "inherit"
+      }),
+      autoHeight: true
+    });
+    columnDefs.push({
+      field: "ocaFile2",
+      headerName: file2Name,
+      cellStyle: (params) => ({
+        ...preWrapWordBreak,
+        backgroundColor:
+          JSON.stringify(params.data.ocaFile1) !== JSON.stringify(params.data.ocaFile2)
+            ? CustomPalette.PINK_400
+            : "inherit"
+      }),
+      autoHeight: true
+    });
     setIsLoading(false);
     setColumnDefs(columnDefs);
   }, [isEntryTable]);
@@ -82,7 +110,7 @@ function MergeDifferenceModal({
         backgroundColor: "rgba(0, 0, 0, 0.3)",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
+        alignItems: "center"
       }}
     >
       <Box
@@ -102,7 +130,7 @@ function MergeDifferenceModal({
           borderRadius: "0.5rem",
           backgroundColor: CustomPalette.WHITE,
           border: "1px solid",
-          borderColor: CustomPalette.RED_100,
+          borderColor: CustomPalette.RED_100
           // animation: appearAnimation,
         }}
       >
@@ -112,17 +140,28 @@ function MergeDifferenceModal({
             justifyContent: "center",
             alignItems: "center",
             width: "100%",
-            backgroundColor: CustomPalette.PRIMARY,
-
+            backgroundColor: CustomPalette.PRIMARY
           }}
         >
           <Typography variant="body1" sx={{ p: 1, fontSize: 20, color: "white" }}>
             {dataDifference?.title}
           </Typography>
         </Box>
-        {isLoading ? <>Loading...</> :
-          (<div style={{ width: '100%', maxHeight: '70vh', overflow: 'auto', display: 'flex', justifyContent: 'center', marginTop: '2rem', marginBottom: "2rem" }}>
-            <div className="ag-theme-balham" style={{ width: 600, height: '100%' }}>
+        {isLoading ? (
+          <>Loading...</>
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              maxHeight: "70vh",
+              overflow: "auto",
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "2rem",
+              marginBottom: "2rem"
+            }}
+          >
+            <div className="ag-theme-balham" style={{ width: 600, height: "100%" }}>
               <style>{gridStyles}</style>
               <AgGridReact
                 rowData={displayValues}
@@ -131,8 +170,8 @@ function MergeDifferenceModal({
                 domLayout="autoHeight"
               />
             </div>
-          </div>)}
-
+          </div>
+        )}
 
         <Box sx={{ alignSelf: "flex-end" }}>
           <Button
@@ -141,15 +180,22 @@ function MergeDifferenceModal({
             onClick={() => {
               setShowCard(false);
             }}
-            sx={{ mr: 2, color: CustomPalette.PRIMARY, borderColor: CustomPalette.PRIMARY, ":hover": { borderColor: CustomPalette.SECONDARY, color: CustomPalette.SECONDARY } }}
+            sx={{
+              mr: 2,
+              color: CustomPalette.PRIMARY,
+              borderColor: CustomPalette.PRIMARY,
+              ":hover": {
+                borderColor: CustomPalette.SECONDARY,
+                color: CustomPalette.SECONDARY
+              }
+            }}
           >
-            {t('Close')}
+            {t("Close")}
           </Button>
         </Box>
       </Box>
     </Box>
   );
 }
-
 
 export default MergeDifferenceModal;

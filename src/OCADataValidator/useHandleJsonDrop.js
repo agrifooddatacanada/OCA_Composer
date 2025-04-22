@@ -1,23 +1,22 @@
 import { useCallback, useContext, useEffect, useState } from "react";
+import JSZip from "jszip";
 import { messages } from "../constants/messages";
 import { Context } from "../App";
 import useZipParser from "../StartSchema/useZipParser";
-import JSZip from "jszip";
+import {
+  replaceAttributeCharsInJsonString,
+  replaceAttributeCharsInParsedJson
+} from "../constants/utils";
 import yaml from "js-yaml";
 import { validateForOCATranslation } from "../SchemaTranslator";
 import { mapLinkMLToOCABundle } from "../SchemaTranslator";
 import { transformToPackage } from "../SchemaTranslator";
 
-const neededOverlays = [
-  "format",
-  "character_encoding",
-  "conformance",
-  "entry_code",
-];
-
+const neededOverlays = ["format", "character_encoding", "conformance", "entry_code"];
+// eslint-disable-next-line import/prefer-default-export
 export const useHandleJsonDrop = (
-  setShowWarningCard = () => { },
-  firstTimeDisplayWarning
+  firstTimeDisplayWarning,
+  setShowWarningCard = () => {}
 ) => {
   const {
     setCurrentDataValidatorPage,
@@ -38,16 +37,14 @@ export const useHandleJsonDrop = (
     firstTimeMatchingRef,
     targetResult,
     setTargetResult,
+    setOCAPackage
   } = useContext(Context);
-  const {
-    processLanguages,
-    processMetadata,
-    processLabelsDescriptionRootUnitsEntries,
-  } = useZipParser();
+  const { processLanguages, processMetadata, processLabelsDescriptionRootUnitsEntries } =
+    useZipParser();
 
   const [jsonDropMessage, setJsonDropMessage] = useState({
     message: "",
-    type: "",
+    type: ""
   });
 
   const overallLoading = useCallback(() => {
@@ -77,10 +74,16 @@ export const useHandleJsonDrop = (
           const jsonString = textDecoder.decode(e.target.result);
           const rawParse = JSON.parse(jsonString);
           let jsonFile = null;
-          if (rawParse?.["bundle"]) {
-            jsonFile = rawParse?.["bundle"];
-          } else if (rawParse?.["schema"]?.[0]) {
-            jsonFile = rawParse?.["schema"]?.[0];
+          let ocaPackageData = null;
+          // First check if the json file is an OCA package that has OCA bundle
+          if (rawParse?.oca_bundle?.bundle) {
+            ocaPackageData = rawParse;
+            jsonFile = rawParse?.oca_bundle?.bundle;
+            setOCAPackage(rawParse);
+          } else if (rawParse?.bundle) {
+            jsonFile = rawParse?.bundle;
+          } else if (rawParse?.schema?.[0]) {
+            jsonFile = rawParse?.schema?.[0];
           } else {
             jsonFile = rawParse;
           }
@@ -89,6 +92,8 @@ export const useHandleJsonDrop = (
             throw new Error("No JSON file found");
           }
 
+          jsonFile = replaceAttributeCharsInParsedJson(jsonFile);
+
           setJsonParsedFile(jsonFile);
           const languageList = [];
           const informationList = [];
@@ -96,14 +101,14 @@ export const useHandleJsonDrop = (
           const metaList = [];
           const entryList = [];
           const allJSONFiles = [];
-          let loadRoot = undefined;
+          let loadRoot;
           let entryCodeSummary = {};
-          let conformance = undefined;
-          let characterEncoding = undefined;
-          let loadUnits = undefined;
-          let formatRules = undefined;
-          let cardinalityData = undefined;
-          let dataStandards = undefined;
+          let conformance;
+          let characterEncoding;
+          let loadUnits;
+          let formatRules;
+          let cardinalityData;
+          let dataStandards;
 
           // load up metadata file in OCA bundle
           if (jsonFile?.overlays?.meta) {
@@ -113,9 +118,7 @@ export const useHandleJsonDrop = (
             );
 
             // ONLY for README
-            const readmeMeta = jsonFile.overlays.meta.map((meta) => {
-              return JSON.stringify(meta);
-            });
+            const readmeMeta = jsonFile.overlays.meta.map((meta) => JSON.stringify(meta));
             allJSONFiles.push(...readmeMeta);
           }
 
@@ -123,10 +126,8 @@ export const useHandleJsonDrop = (
             informationList.push(...jsonFile.overlays.information);
 
             // ONLY for README
-            const readmeInformation = jsonFile.overlays.information.map(
-              (information) => {
-                return JSON.stringify(information);
-              }
+            const readmeInformation = jsonFile.overlays.information.map((information) =>
+              JSON.stringify(information)
             );
             allJSONFiles.push(...readmeInformation);
           }
@@ -135,19 +136,17 @@ export const useHandleJsonDrop = (
             labelList.push(...jsonFile.overlays.label);
 
             // ONLY for README
-            const readmeLabel = jsonFile.overlays.label.map((label) => {
-              return JSON.stringify(label);
-            });
+            const readmeLabel = jsonFile.overlays.label.map((label) =>
+              JSON.stringify(label)
+            );
             allJSONFiles.push(...readmeLabel);
           }
 
-          if (jsonFile?.["capture_base"]) {
-            if (
-              jsonFile?.["capture_base"]?.["flagged_attributes"]?.length > 0
-            ) {
+          if (jsonFile?.capture_base) {
+            if (jsonFile?.capture_base?.flagged_attributes?.length > 0) {
               setShowWarningCard(true);
             }
-            loadRoot = { ...jsonFile["capture_base"] };
+            loadRoot = { ...jsonFile.capture_base };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(loadRoot));
@@ -167,8 +166,8 @@ export const useHandleJsonDrop = (
             allJSONFiles.push(JSON.stringify(conformance));
           }
 
-          if (jsonFile?.overlays?.["character_encoding"]) {
-            characterEncoding = { ...jsonFile.overlays["character_encoding"] };
+          if (jsonFile?.overlays?.character_encoding) {
+            characterEncoding = { ...jsonFile.overlays.character_encoding };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(characterEncoding));
@@ -181,8 +180,8 @@ export const useHandleJsonDrop = (
             allJSONFiles.push(JSON.stringify(entryCodeSummary));
           }
 
-          if (jsonFile?.overlays?.["format"]) {
-            formatRules = { ...jsonFile.overlays["format"] };
+          if (jsonFile?.overlays?.format) {
+            formatRules = { ...jsonFile.overlays.format };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(formatRules));
@@ -192,14 +191,14 @@ export const useHandleJsonDrop = (
             entryList.push(...jsonFile.overlays.entry);
 
             // ONLY for README
-            const readmeEntry = jsonFile.overlays.entry.map((entry) => {
-              return JSON.stringify(entry);
-            });
+            const readmeEntry = jsonFile.overlays.entry.map((entry) =>
+              JSON.stringify(entry)
+            );
             allJSONFiles.push(...readmeEntry);
           }
 
-          if (jsonFile?.overlays?.["cardinality"]) {
-            cardinalityData = { ...jsonFile.overlays["cardinality"] };
+          if (jsonFile?.overlays?.cardinality) {
+            cardinalityData = { ...jsonFile.overlays.cardinality };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(cardinalityData));
@@ -230,7 +229,8 @@ export const useHandleJsonDrop = (
             languageList,
             formatRules,
             cardinalityData,
-            dataStandards
+            dataStandards,
+            ocaPackageData
           );
           setZipToReadme(allJSONFiles);
         };
@@ -281,31 +281,33 @@ export const useHandleJsonDrop = (
         const entryList = [];
         const allZipFiles = [];
         let entryCodeSummary = {};
-        let conformance = undefined;
-        let characterEncoding = undefined;
-        let loadUnits = undefined;
-        let formatRules = undefined;
-        let cardinalityData = undefined;
-        let dataStandards = undefined;
+        let conformance;
+        let characterEncoding;
+        let loadUnits;
+        let formatRules;
+        let cardinalityData;
+        let dataStandards;
         const bundleForValidator = { overlays: {} };
 
         // load up metadata file in OCA bundle
         const loadMetadataFile = await zip.files["meta.json"].async("text");
         const metadataJson = JSON.parse(loadMetadataFile);
-        const root = metadataJson.root;
+        const { root } = metadataJson;
         allZipFiles.push(loadMetadataFile);
 
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
-          const content = await zip.files[file + ".json"].async("text");
-          const parsedContent = JSON.parse(content);
+          // eslint-disable-next-line no-await-in-loop
+          const content = await zip.files[`${file}.json`].async("text");
+          // Sanitize attributes in JSON content; replace disallowed characters in attribute names
+          const convertedContent = replaceAttributeCharsInJsonString(content);
+          const parsedContent = JSON.parse(convertedContent);
 
           if (
             "type" in parsedContent &&
-            neededOverlays.includes(parsedContent["type"].split("/")[2])
+            neededOverlays.includes(parsedContent.type.split("/")[2])
           ) {
-            bundleForValidator.overlays[parsedContent["type"].split("/")[2]] =
-              parsedContent;
+            bundleForValidator.overlays[parsedContent.type.split("/")[2]] = parsedContent;
           }
 
           if (key.includes("meta")) {
@@ -352,23 +354,19 @@ export const useHandleJsonDrop = (
             dataStandards = parsedContent;
           }
 
-          allZipFiles.push(content);
+          allZipFiles.push(convertedContent);
         }
 
-        const loadRoot = await zip.files[metadataJson.root + ".json"].async(
-          "text"
-        );
-        const parsedRoot = JSON.parse(loadRoot);
-        if (parsedRoot?.["flagged_attributes"]?.length > 0) {
+        const loadRoot = await zip.files[`${metadataJson.root}.json`].async("text");
+        const convertedLoadRoot = replaceAttributeCharsInJsonString(loadRoot);
+        const parsedRoot = JSON.parse(convertedLoadRoot);
+        if (parsedRoot?.flagged_attributes?.length > 0) {
           setShowWarningCard(true);
         }
-        if (
-          "type" in parsedRoot &&
-          parsedRoot["type"].split("/")[1] === "capture_base"
-        ) {
-          bundleForValidator["capture_base"] = parsedRoot;
+        if ("type" in parsedRoot && parsedRoot.type.split("/")[1] === "capture_base") {
+          bundleForValidator.capture_base = parsedRoot;
         }
-        allZipFiles.push(loadRoot);
+        allZipFiles.push(convertedLoadRoot);
 
         setJsonParsedFile(bundleForValidator);
         processLanguages(languageList);
@@ -376,7 +374,7 @@ export const useHandleJsonDrop = (
         processLabelsDescriptionRootUnitsEntries(
           labelList,
           informationList,
-          JSON.parse(loadRoot),
+          JSON.parse(convertedLoadRoot),
           loadUnits,
           entryCodeSummary,
           entryList,
@@ -634,11 +632,7 @@ export const useHandleJsonDrop = (
   }, [datasetRawFile.length, jsonIsParsed]);
 
   useEffect(() => {
-    if (
-      jsonRawFile &&
-      jsonRawFile.length > 0 &&
-      jsonRawFile[0].path.includes(".json")
-    ) {
+    if (jsonRawFile && jsonRawFile.length > 0 && jsonRawFile[0].path.includes(".json")) {
       handleJsonDrop(jsonRawFile);
     } else if (
       jsonRawFile &&

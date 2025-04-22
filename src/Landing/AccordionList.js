@@ -16,7 +16,7 @@ import { Context } from "../App";
 import useExportLogic from "../ViewSchema/useExportLogic";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
-// import CollaborateOnASchema from "./CollaborateOnASchema";
+import CollaborateOnASchema from "./CollaborateOnASchema";
 import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
@@ -36,7 +36,8 @@ const AccordionList = () => {
   const isMobile = useMediaQuery("(max-width: 736px)");
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage } = useContext(Context);
+  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, OCAPackage } =
+    useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
@@ -132,7 +133,7 @@ const AccordionList = () => {
         >
           <SchemaAccordionItem />
           <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
-          {/* <CollaborateOnASchema navigateToStartPage={navigateToStartPage} /> */}
+          <CollaborateOnASchema navigateToStartPage={navigateToStartPage} />
           <StoreASchemaAccordionItem />
           <UseASchemaAccordionItem />
           <UseASchemaWithDataAccordionItem />
@@ -234,10 +235,10 @@ const AccordionList = () => {
               variant="contained"
               color="navButton"
               onClick={() => {
-                if (zipToReadme.length > 0) {
+                if (Object.keys(jsonToReadme).length > 0) {
+                  jsonToTextFile(jsonToReadme, OCAPackage);
+                } else if (zipToReadme.length > 0) {
                   toTextFile(zipToReadme);
-                } else {
-                  jsonToTextFile(jsonToReadme);
                 }
               }}
               sx={buttonStyles}
