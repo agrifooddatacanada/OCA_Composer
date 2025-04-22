@@ -423,36 +423,30 @@ export const useHandleJsonDrop = (
   const handleYamlDrop = useCallback((acceptedFiles) => {
     try {
       setJsonLoading(true);
-      console.log("🔵 Starting YAML processing:", acceptedFiles);
       const reader = new FileReader();
 
       reader.onload = async (e) => {
         setTargetResult(e);
         const textDecoder = new TextDecoder("utf-8");
         const yamlString = textDecoder.decode(e.target.result);
-        console.log("🔵 YAML content:", yamlString.substring(0, 200) + "...");
         
         try {
           // Parse YAML content
           const linkmlSchema = yaml.load(yamlString);
-          console.log("🔵 Parsed LinkML schema:", linkmlSchema);
           
           // Validate the LinkML schema
           validateForOCATranslation(linkmlSchema);
-          console.log("🔵 LinkML validation passed");
           
           // Convert LinkML to OCA bundle
           const bundle = mapLinkMLToOCABundle(linkmlSchema);
-          console.log("🔵 Converted to OCA bundle:", bundle);
           
           // Create OCA package
           const ocaPackage = transformToPackage(bundle);
-          console.log("🔵 Created OCA package:", ocaPackage);
           
-          // Extract the bundle for processing
+          // Extract the bundle for processing - exactly the same structure expected by JSON processing
           const jsonFile = ocaPackage.oca_bundle.bundle;
-          console.log("🔵 Final JSON file to be processed:", jsonFile);
           
+          // Process the bundle the same way as JSON files
           setJsonParsedFile(jsonFile);
           const languageList = [];
           const informationList = [];
@@ -467,8 +461,9 @@ export const useHandleJsonDrop = (
           let loadUnits = undefined;
           let formatRules = undefined;
           let cardinalityData = undefined;
+          let dataStandards = undefined;
 
-          // load up metadata file in OCA bundle
+          // load up metadata file in OCA bundle (same as handleJsonDrop)
           if (jsonFile?.overlays?.meta) {
             metaList.push(...jsonFile.overlays.meta);
             languageList.push(
@@ -516,44 +511,41 @@ export const useHandleJsonDrop = (
             allJSONFiles.push(JSON.stringify(loadRoot));
           }
 
-          if (jsonFile?.overlays?.unit) {
-            loadUnits = { ...jsonFile.overlays.unit };
-
+          // Critical fix: For YAML processing, every overlay is in array format
+          // The unit overlay is in jsonFile.overlays.unit as an array
+          if (jsonFile?.overlays?.unit && Array.isArray(jsonFile.overlays.unit)) {
+            loadUnits = jsonFile.overlays.unit[0];
             // ONLY for README
             allJSONFiles.push(JSON.stringify(loadUnits));
           }
 
-          if (jsonFile?.overlays?.conformance) {
-            conformance = { ...jsonFile.overlays.conformance };
-
+          if (jsonFile?.overlays?.conformance && Array.isArray(jsonFile.overlays.conformance)) {
+            conformance = jsonFile.overlays.conformance[0];
             // ONLY for README
             allJSONFiles.push(JSON.stringify(conformance));
           }
 
-          if (jsonFile?.overlays?.["character_encoding"]) {
-            characterEncoding = { ...jsonFile.overlays["character_encoding"] };
-
+          if (jsonFile?.overlays?.["character_encoding"] && 
+              Array.isArray(jsonFile.overlays["character_encoding"])) {
+            characterEncoding = jsonFile.overlays["character_encoding"][0];
             // ONLY for README
             allJSONFiles.push(JSON.stringify(characterEncoding));
           }
 
-          if (jsonFile?.overlays?.entry_code) {
-            entryCodeSummary = { ...jsonFile.overlays.entry_code };
-
+          if (jsonFile?.overlays?.entry_code && Array.isArray(jsonFile.overlays.entry_code)) {
+            entryCodeSummary = jsonFile.overlays.entry_code[0];
             // ONLY for README
             allJSONFiles.push(JSON.stringify(entryCodeSummary));
           }
 
-          if (jsonFile?.overlays?.["format"]) {
-            formatRules = { ...jsonFile.overlays["format"] };
-
+          if (jsonFile?.overlays?.["format"] && Array.isArray(jsonFile.overlays["format"])) {
+            formatRules = jsonFile.overlays["format"][0];
             // ONLY for README
             allJSONFiles.push(JSON.stringify(formatRules));
           }
 
           if (jsonFile?.overlays?.entry) {
             entryList.push(...jsonFile.overlays.entry);
-
             // ONLY for README
             const readmeEntry = jsonFile.overlays.entry.map((entry) => {
               return JSON.stringify(entry);
@@ -561,29 +553,30 @@ export const useHandleJsonDrop = (
             allJSONFiles.push(...readmeEntry);
           }
 
-          if (jsonFile?.overlays?.["cardinality"]) {
-            cardinalityData = { ...jsonFile.overlays["cardinality"] };
-
+          if (jsonFile?.overlays?.["cardinality"] && 
+              Array.isArray(jsonFile.overlays["cardinality"])) {
+            cardinalityData = jsonFile.overlays["cardinality"][0];
             // ONLY for README
             allJSONFiles.push(JSON.stringify(cardinalityData));
           }
 
+          if (jsonFile?.overlays?.standard && Array.isArray(jsonFile.overlays.standard)) {
+            dataStandards = jsonFile.overlays.standard[0];
+            // ONLY for README
+            allJSONFiles.push(JSON.stringify(dataStandards));
+          }
+
           if (!languageList || languageList.length === 0) {
-            console.log("🔵 No language found, defaulting to English");
             languageList.push("en");
           }
 
-          if (!labelList || labelList.length === 0) {
-            console.warn("🔴 No labels found in the YAML file");
-          }
-
-          if (!entryList || entryList.length === 0) {
-            console.warn("🔴 No entries found in the YAML file");
-          }
-
-          if (!metaList || metaList.length === 0) {
-            console.warn("🔴 No metadata found in the YAML file");
-          }
+          // For debugging - log to console the values
+          console.log("YAML processed:", {
+            loadRoot,
+            loadUnits,
+            entryCodeSummary,
+            dataStandards
+          });
 
           processLanguages(languageList);
           processMetadata(metaList);
@@ -598,12 +591,13 @@ export const useHandleJsonDrop = (
             characterEncoding,
             languageList,
             formatRules,
-            cardinalityData
+            cardinalityData,
+            dataStandards
           );
           setZipToReadme(allJSONFiles);
           
         } catch (error) {
-          console.error("🔴 Error processing YAML:", error);
+          console.error("YAML processing error:", error);
           throw new Error("Invalid YAML file or conversion failed: " + error.message);
         }
       };
@@ -626,7 +620,8 @@ export const useHandleJsonDrop = (
         }, 900);
       };
     } catch (error) {
-      setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+      console.error("YAML drop error:", error);
+      setJsonDropMessage({ message: messages.uploadFail + (error.message ? ": " + error.message : ""), type: "error" });
       setJsonLoading(false);
       setDatasetLoading(false);
       if (datasetRawFile.length === 0) {

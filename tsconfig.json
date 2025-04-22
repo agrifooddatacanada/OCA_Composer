@@ -1,23 +1,34 @@
 {
     "compilerOptions": {
-      "target": "es6",                    // Set the JavaScript target version (ES6 is a common choice)
-      "module": "commonjs",               // Use CommonJS modules (for Node.js)
-      "moduleResolution": "node",         // Resolve modules using Node.js-style resolution
-      "strict": true,                     // Enable all strict type-checking options
-      "esModuleInterop": true,            // Allow importing CommonJS modules with ES6-style imports
-      "skipLibCheck": true,               // Skip type checking of declaration files (can improve build time)
-      "forceConsistentCasingInFileNames": true, // Ensure consistent casing for file names
-      "baseUrl": ".",                     // Base directory for resolving non-relative module imports
+      "target": "es6",                    
+      "module": "commonjs",               
+      "moduleResolution": "node",         
+      "strict": false,                   
+      "esModuleInterop": true,            
+      "skipLibCheck": true,               
+      "forceConsistentCasingInFileNames": true,
+      "baseUrl": ".",                     
+      "jsx": "react",                     
+      "allowJs": true,                    
+      "checkJs": false,                   // Don't type-check JavaScript files
+      "noImplicitAny": false,             
+      "resolveJsonModule": true,
+      "noEmit": true,                     // Don't generate output files
+      "isolatedModules": false,           // Avoid errors with files that can't be compiled
+      "allowSyntheticDefaultImports": true,
       "paths": {
-        "*": ["node_modules/*", "src/*"]  // Map imports to the `src` directory (if you have it)
+        "*": ["node_modules/*", "src/*"]  
       }
     },
     "include": [
-      "src/**/*"                          // Include all files in the `src` folder (modify as needed)
+      "src/**/*.ts",                      // Only include TypeScript files
+      "src/**/*.tsx",                     // Only include TypeScript JSX files
+      "tests/**/*.ts",                    // Only include TypeScript test files
+      "tests/**/*.tsx"                    // Only include TypeScript JSX test files
     ],
     "exclude": [
-      "node_modules",                     // Exclude the `node_modules` folder
-      "**/*.spec.js"
+      "node_modules",                    
+      "**/*.spec.js",
+      "build"
     ]
-  }
-  
+}

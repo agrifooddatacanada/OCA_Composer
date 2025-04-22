@@ -28,7 +28,9 @@ export default function Drop({
     } else if (version === 1) {
       return {
         "application/zip": ['.zip'],
-        "application/json": [".json"]
+        "application/json": [".json"],
+        "text/yaml": [".yaml", ".yml"],
+        "application/x-yaml": [".yaml", ".yml"]
       };
     } else if (version === 2) {
       return {

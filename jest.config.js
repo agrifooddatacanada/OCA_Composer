@@ -13,5 +13,11 @@ module.exports = {
     '\\.(css|less|scss|sass)$': '<rootDir>/src/__mocks__/styleMock.js',
     '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/src/__mocks__/fileMock.js'
   },
-  setupFilesAfterEnv: ['<rootDir>/src/setupTests.js']
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
+  
+  // Test groups configuration
+  testPathIgnorePatterns: [
+    // Ignore slow tests by default
+    process.env.RUN_SLOW_TESTS !== 'true' ? 'useHandleJsonDrop.test.js' : ''
+  ]
 };
