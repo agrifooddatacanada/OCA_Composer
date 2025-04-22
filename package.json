@@ -12,13 +12,9 @@
     "@testing-library/user-event": "^13.5.0",
     "ag-grid-community": "^29.2.0",
     "ag-grid-react": "^29.2.0",
-<<<<<<< HEAD
-    "exceljs": "^4.4.0",
-=======
     "assert": "^2.1.0",
     "buffer": "^6.0.3",
     "exceljs": "^4.3.0",
->>>>>>> upstream/agreeable-mushroom
     "i18next": "^23.11.3",
     "i18next-browser-languagedetector": "^7.2.1",
     "i18next-http-backend": "^2.5.1",
