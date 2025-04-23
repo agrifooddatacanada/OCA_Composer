@@ -5,7 +5,7 @@ import { translateLinkMLToOCA } from "../src/SchemaTranslator/linkMLToOCA";
 describe("translateLinkMLToOCA", () => {
   it("should include units in the OCA bundle after translation", async () => {
     // Load the LinkML YAML file
-    const yamlFilePath = path.resolve(__dirname, "../dummyData/linkml/linkml.yaml");
+    const yamlFilePath = path.resolve(__dirname, "../dummyData/linkml.yaml");
     const yamlContent = fs.readFileSync(yamlFilePath, "utf-8");
 
     // Translate the YAML to an OCA bundle

@@ -1,7 +1,0 @@
-{
-  "capture_base": "EAiw6dLb8BnAxpJNQY8PNWQ8MlfvC0LExEwLMejqvsKc",
-  "digest": "EWJERCOpM52MmxB5X95vgLmVMVO_XRH1Unx1YUrQ4nTc",
-  "type": "spec/character_encoding/1.0",
-  "default_character_encoding": "utf-8",
-  "attribute_character_encoding": {}
-}

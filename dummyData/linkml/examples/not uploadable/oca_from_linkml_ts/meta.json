@@ -1,8 +1,0 @@
-{
-  "capture_base": "EAiw6dLb8BnAxpJNQY8PNWQ8MlfvC0LExEwLMejqvsKc",
-  "digest": "EyWRLzyPH014YW_hPqeCi-iRnvvpqiLvZAzXpLVhzbLM",
-  "type": "spec/overlays/meta/1.0",
-  "language": "en",
-  "name": "trout",
-  "description": "A schema to represent trout-related biological and environmental data."
-}

@@ -18,7 +18,7 @@ describe('YAML handler with sample LinkML file', () => {
   // Load and parse YAML once before all tests
   beforeAll(async () => {
     // Read the sample YAML file directly
-    const yamlPath = path.join(__dirname, '../dummyData/linkml/linkml.yaml');
+    const yamlPath = path.join(__dirname, '../dummyData/linkml.yaml');
     yamlContent = fs.readFileSync(yamlPath, 'utf-8');
     
     // Parse the YAML content once
