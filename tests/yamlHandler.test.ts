@@ -5,9 +5,12 @@
 import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
-import { validateForOCATranslation } from "../src/SchemaTranslator/validation.ts";
-import { mapLinkMLToOCABundle } from "../src/SchemaTranslator/index.ts";
-import { transformToPackage, translateLinkMLToOCA } from "../src/SchemaTranslator/linkMLToOCA.ts";
+import { 
+  validateForOCATranslation, 
+  mapLinkMLToOCABundle, 
+  transformToPackage, 
+  translateLinkMLToOCA 
+} from "../src/SchemaTranslator/index.ts";
 
 describe("YAML handler with sample LinkML file", () => {
   let yamlContent: string;
@@ -98,9 +101,6 @@ describe("YAML handler with sample LinkML file", () => {
       // Check that the information overlay exists
       expect(ocaBundle.overlays).toHaveProperty("information");
       expect(Array.isArray(ocaBundle.overlays.information)).toBe(true);
-      expect(ocaBundle.overlays.information.length).toBeGreaterThan(0);
-      
-      // Verify the structure
       const infoOverlay = ocaBundle.overlays.information[0];
       expect(infoOverlay).toHaveProperty("type", "spec/overlays/information/1.0");
       expect(infoOverlay).toHaveProperty("attribute_information");

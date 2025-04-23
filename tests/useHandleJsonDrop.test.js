@@ -7,14 +7,14 @@ import React from "react";
 import { renderHook, act } from "@testing-library/react";
 import { Context } from "../src/App";
 import { useHandleJsonDrop } from "../src/OCADataValidator/useHandleJsonDrop";
-import { validateForOCATranslation } from "../src/SchemaTranslator/validation.ts";
-import { mapLinkMLToOCABundle } from "../src/SchemaTranslator/mapLinkMLToOCABundle.ts";
-import { transformToPackage } from "../src/SchemaTranslator/linkMLToOCA.ts";
+import { 
+  validateForOCATranslation, 
+  mapLinkMLToOCABundle, 
+  transformToPackage 
+} from "../src/SchemaTranslator/index.ts";
 
 // Mock the dependencies
 jest.mock("../src/SchemaTranslator/validation");
-jest.mock("../src/SchemaTranslator");
-jest.mock("../src/SchemaTranslator/linkMLToOCA");
 jest.mock("js-yaml");
 
 // Use fake timers to control all timeouts

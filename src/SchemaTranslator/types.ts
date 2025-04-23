@@ -94,6 +94,23 @@ export interface OCAData {
   entry_code: EntryCode[];
 }
 
+export interface LinkMLAttribute {
+  name: string;
+  description?: string;
+  range?: string;
+  required?: boolean;
+  multivalued?: boolean;
+  pattern?: string;
+}
+
+export interface LinkMLClass {
+  name: string;
+  description?: string;
+  attributes: Record<string, LinkMLAttribute>;
+  slot_usage?: Record<string, Slot>;
+}
+
+
 // Not using LinkML spec for required pieces (not in doc's)
 export interface LinkMLSchema {
   name: string;
@@ -104,28 +121,12 @@ export interface LinkMLSchema {
   enums?: Record<string, Enum>;
 }
 
-export interface LinkMLClass {
-  name: string;
-  description?: string;
-  attributes: Record<string, LinkMLAttribute>;
-  slot_usage?: Record<string, Slot>;
-}
-
-export interface LinkMLAttribute {
-  name: string;
-  description?: string;
-  range?: string;
-  required?: boolean;
-  multivalued?: boolean;
-  pattern?: string;
-}
-
 // Configuration types
 export interface ConversionConfig {
   semVer: string;
   defaultLanguage: string;
   defaultCharacterEncoding: string;
-  outputFormat: 'json' | 'yaml';
+  outputFormat: "json" | "yaml";
 }
 
 export interface OCABundle {

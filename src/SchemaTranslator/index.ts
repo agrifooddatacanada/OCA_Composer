@@ -6,13 +6,13 @@
  */
 
 // Main conversion functionality
-export { translateLinkMLToOCA, validateYAMLSyntax, transformToPackage } from './linkMLToOCA';
+export { translateLinkMLToOCA, validateYAMLSyntax, transformToPackage } from "./linkMLToOCA.ts";
 
 // Validation functions
-export { validateForOCATranslation } from './validation';
+export { validateForOCATranslation } from "./validation.ts";
 
 // Types
-export type { LinkMLSchema, OCABundle, OCAPackage } from './types';
+export type { LinkMLSchema, OCABundle, OCAPackage } from "./types.ts";
 
 // Core processing functions
-export { mapLinkMLToOCABundle } from './mapLinkMLToOCABundle';
+export { mapLinkMLToOCABundle } from "./mapLinkMLToOCABundle.ts";

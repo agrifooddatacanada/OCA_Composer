@@ -1,10 +1,83 @@
-import { Slot, Enum } from "./types";
-import { TYPE_MAPPING } from "./constants";
+import { Slot, Enum } from "./types.ts";
+import { TYPE_MAPPING } from "./constants.ts";
 
 export interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
+}
+
+/**
+ * Validates a single slot's structure and properties
+ */
+function validateSlot(slotName: string, slot: unknown, result: ValidationResult): void {
+  if (!slot || typeof slot !== "object") {
+    result.errors.push(`Slot '${slotName}' must be a non-null object`);
+    return;
+  }
+
+  const s = slot as Partial<Slot>;
+
+  // Check range property
+  if (!s.range) {
+    result.warnings.push(`Slot '${slotName}' has no range specified, will default to "Text"`);
+  } else if (typeof s.range !== "string") {
+    result.errors.push(`Slot '${slotName}' range must be a string`);
+  } else if (!(s.range in TYPE_MAPPING) && !s.range.endsWith("Enum")) {
+    result.warnings.push(`Slot '${slotName}' has range '${s.range}' which will be mapped to "Text"`);
+  }
+
+  // Validate optional properties if present
+  if (s.description !== undefined && typeof s.description !== "string") {
+    result.errors.push(`Slot '${slotName}' description must be a string`);
+  }
+
+  if (s.pattern !== undefined && typeof s.pattern !== "string") {
+    result.errors.push(`Slot '${slotName}' pattern must be a string`);
+  }
+
+  if (s.annotations !== undefined) {
+    if (typeof s.annotations !== "object" || s.annotations === null) {
+      result.errors.push(`Slot '${slotName}' annotations must be an object`);
+    } else if (s.annotations.flagged !== undefined && typeof s.annotations.flagged !== "boolean") {
+      result.errors.push(`Slot '${slotName}' flagged annotation must be a boolean`);
+    }
+  }
+
+  if (s.unit !== undefined) {
+    if (typeof s.unit !== "object" || s.unit === null) {
+      result.errors.push(`Slot '${slotName}' unit must be an object`);
+    } else if (s.unit.ucum_code !== undefined && typeof s.unit.ucum_code !== "string") {
+      result.errors.push(`Slot '${slotName}' ucum_code must be a string`);
+    }
+  }
+}
+
+/**
+ * Validates an enum's structure and properties
+ */
+function validateEnum(enumName: string, enumValue: unknown, result: ValidationResult): void {
+  if (!enumValue || typeof enumValue !== "object") {
+    result.errors.push(`Enum '${enumName}' must be a non-null object`);
+    return;
+  }
+
+  const e = enumValue as Partial<Enum>;
+
+  // Check permissible values
+  if (!e.permissible_values || typeof e.permissible_values !== "object") {
+    result.errors.push(`Enum '${enumName}' must have a permissible_values object`);
+    return;
+  }
+
+  // Validate each permissible value
+  Object.entries(e.permissible_values).forEach(([valueKey, value]) => {
+    if (typeof value !== "object" || value === null) {
+      result.errors.push(`Enum '${enumName}' value '${valueKey}' must be an object`);
+    } else if (value.description !== undefined && typeof value.description !== "string") {
+      result.errors.push(`Enum '${enumName}' value '${valueKey}' description must be a string`);
+    }
+  });
 }
 
 /**
@@ -69,7 +142,7 @@ export function validateForOCATranslation(schema: unknown): ValidationResult {
       
       // Validate slot references
       Object.entries(s.classes || {}).forEach(([className, classObj]: [string, any]) => {
-        Object.keys(classObj.attributes || {}).forEach(attrName => {
+        Object.keys(classObj.attributes || {}).forEach((attrName) => {
           if (!slotNames.has(attrName)) {
             result.errors.push(`Class '${className}' references undefined slot '${attrName}'`);
           }
@@ -83,7 +156,7 @@ export function validateForOCATranslation(schema: unknown): ValidationResult {
 
       // Validate enum references
       Object.entries(s.slots).forEach(([slotName, slot]: [string, any]) => {
-        if (slot.range && typeof slot.range === 'string' && slot.range.endsWith('Enum')) {
+        if (slot.range && typeof slot.range === "string" && slot.range.endsWith("Enum")) {
           const enumName = slot.range;
           if (!s.enums || !s.enums[enumName]) {
             result.errors.push(`Slot '${slotName}' references undefined enum '${enumName}'`);
@@ -106,81 +179,8 @@ export function validateForOCATranslation(schema: unknown): ValidationResult {
     result.isValid = result.errors.length === 0;
   } catch (error) {
     result.isValid = false;
-    result.errors.push(`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    result.errors.push(`Validation error: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 
   return result;
 }
-
-/**
- * Validates a single slot's structure and properties
- */
-function validateSlot(slotName: string, slot: unknown, result: ValidationResult): void {
-  if (!slot || typeof slot !== "object") {
-    result.errors.push(`Slot '${slotName}' must be a non-null object`);
-    return;
-  }
-
-  const s = slot as Partial<Slot>;
-
-  // Check range property
-  if (!s.range) {
-    result.warnings.push(`Slot '${slotName}' has no range specified, will default to "Text"`);
-  } else if (typeof s.range !== "string") {
-    result.errors.push(`Slot '${slotName}' range must be a string`);
-  } else if (!(s.range in TYPE_MAPPING) && !s.range.endsWith('Enum')) {
-    result.warnings.push(`Slot '${slotName}' has range '${s.range}' which will be mapped to "Text"`);
-  }
-
-  // Validate optional properties if present
-  if (s.description !== undefined && typeof s.description !== "string") {
-    result.errors.push(`Slot '${slotName}' description must be a string`);
-  }
-
-  if (s.pattern !== undefined && typeof s.pattern !== "string") {
-    result.errors.push(`Slot '${slotName}' pattern must be a string`);
-  }
-
-  if (s.annotations !== undefined) {
-    if (typeof s.annotations !== "object" || s.annotations === null) {
-      result.errors.push(`Slot '${slotName}' annotations must be an object`);
-    } else if (s.annotations.flagged !== undefined && typeof s.annotations.flagged !== "boolean") {
-      result.errors.push(`Slot '${slotName}' flagged annotation must be a boolean`);
-    }
-  }
-
-  if (s.unit !== undefined) {
-    if (typeof s.unit !== "object" || s.unit === null) {
-      result.errors.push(`Slot '${slotName}' unit must be an object`);
-    } else if (s.unit.ucum_code !== undefined && typeof s.unit.ucum_code !== "string") {
-      result.errors.push(`Slot '${slotName}' ucum_code must be a string`);
-    }
-  }
-}
-
-/**
- * Validates an enum's structure and properties
- */
-function validateEnum(enumName: string, enumValue: unknown, result: ValidationResult): void {
-  if (!enumValue || typeof enumValue !== "object") {
-    result.errors.push(`Enum '${enumName}' must be a non-null object`);
-    return;
-  }
-
-  const e = enumValue as Partial<Enum>;
-
-  // Check permissible values
-  if (!e.permissible_values || typeof e.permissible_values !== "object") {
-    result.errors.push(`Enum '${enumName}' must have a permissible_values object`);
-    return;
-  }
-
-  // Validate each permissible value
-  Object.entries(e.permissible_values).forEach(([valueKey, value]) => {
-    if (typeof value !== "object" || value === null) {
-      result.errors.push(`Enum '${enumName}' value '${valueKey}' must be an object`);
-    } else if (value.description !== undefined && typeof value.description !== "string") {
-      result.errors.push(`Enum '${enumName}' value '${valueKey}' description must be a string`);
-    }
-  });
-} 

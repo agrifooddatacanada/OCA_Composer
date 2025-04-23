@@ -1,6 +1,6 @@
-import { Slot, Enum, LinkMLSchema, OCABundle, CaptureBase } from './types';
+import { Slot, Enum, LinkMLSchema, OCABundle, CaptureBase } from "./types.ts";
 
-type OverlayName = keyof OCABundle['overlays'];
+type OverlayName = keyof OCABundle["overlays"];
 
 type OverlaySpec = {
   name: OverlayName;
@@ -50,14 +50,14 @@ function buildEntryOverlays(
     );
   }
 
-  const overlays: Partial<OCABundle['overlays']> = {};
+  const overlays: Partial<OCABundle["overlays"]> = {};
 
   if (Object.keys(entry_code_data).length > 0) {
     overlays.entry_code = [
       {
-        type: 'spec/overlays/entry_code/1.0',
-        capture_base: '',
-        language: 'en',
+        type: "spec/overlays/entry_code/1.0",
+        capture_base: "",
+        language: "en",
         attribute_entry_codes: entry_code_data
       }
     ];
@@ -66,9 +66,9 @@ function buildEntryOverlays(
   if (Object.keys(entry_data).length > 0) {
     overlays.entry = [
       {
-        type: 'spec/overlays/entry/1.0',
-        capture_base: '',
-        language: 'en',
+        type: "spec/overlays/entry/1.0",
+        capture_base: "",
+        language: "en",
         attribute_entries: entry_data
       }
     ];
@@ -81,8 +81,8 @@ export function buildOverlays(
   slots: Record<string, Slot>,
   enums: Record<string, Enum>,
   linkmlSchema: { name: string; description?: string }
-): { overlays: Partial<OCABundle['overlays']> } {
-  const overlays: Partial<OCABundle['overlays']> = {};
+): { overlays: Partial<OCABundle["overlays"]> } {
+  const overlays: Partial<OCABundle["overlays"]> = {};
 
   const overlaySpecs: OverlaySpec[] = [
     {
@@ -90,7 +90,7 @@ export function buildOverlays(
       type: "spec/overlays/format/1.0",
       key: "attribute_formats",
       data: Object.fromEntries(
-        Object.entries(slots).filter(([_, s]) => s.pattern).map(([k, s]) => [k, s.pattern])
+        Object.entries(slots).filter(([, s]) => s.pattern).map(([k, s]) => [k, s.pattern])
       )
     },
     {
@@ -98,7 +98,7 @@ export function buildOverlays(
       type: "spec/overlays/information/1.0",
       key: "attribute_information",
       data: Object.fromEntries(
-        Object.entries(slots).filter(([_, s]) => s.description).map(([k, s]) => [k, s.description])
+        Object.entries(slots).filter(([, s]) => s.description).map(([k, s]) => [k, s.description])
       )
     },
     {
@@ -106,7 +106,7 @@ export function buildOverlays(
       type: "spec/overlays/label/1.0",
       key: "attribute_labels",
       data: Object.fromEntries(
-        Object.entries(slots).filter(([_, s]) => s.title).map(([k, s]) => [k, s.title])
+        Object.entries(slots).filter(([, s]) => s.title).map(([k, s]) => [k, s.title])
       )
     },
     {
@@ -114,7 +114,7 @@ export function buildOverlays(
       type: "spec/overlays/standard/1.0",
       key: "attr_standards",
       data: Object.fromEntries(
-        Object.entries(slots).filter(([_, s]) => s.slot_uri).map(([k, s]) => [k, s.slot_uri])
+        Object.entries(slots).filter(([, s]) => s.slot_uri).map(([k, s]) => [k, s.slot_uri])
       )
     },
     {
@@ -123,7 +123,7 @@ export function buildOverlays(
       key: "attribute_units",
       data: Object.fromEntries(
         Object.entries(slots)
-          .filter(([_, slot]) => slot.unit?.ucum_code)
+          .filter(([, slot]) => slot.unit?.ucum_code)
           .map(([key, slot]) => [key, slot.unit?.ucum_code || ""])
       )
     }
@@ -187,7 +187,7 @@ export function mapLinkMLToOCABundle(linkmlSchema: LinkMLSchema): OCABundle {
   );
 
   const flaggedAttributes: string[] = Object.entries(slots)
-    .filter(([_, slot]) => slot.annotations?.flagged)
+    .filter(([, slot]) => slot.annotations?.flagged)
     .map(([key]) => key);
 
   // Define capture_base separately
@@ -206,130 +206,3 @@ export function mapLinkMLToOCABundle(linkmlSchema: LinkMLSchema): OCABundle {
     overlays
   };
 }
-
-
-
-
-
-
-  // // Define overlays explicitly as arrays of the correct types
-  // const overlays: {
-  //   character_encoding: CharacterEncoding[];
-  //   format: Format[];
-  //   information: Information[];
-  //   label: Label[];
-  //   meta: Meta[];
-  //   standard: Standard[];
-  //   entry_code: EntryCode[];
-  //   entry: Entry[];
-  //   unit: Unit[];
-  // } = {
-  //   // No equivalent in LinkML?
-  //   // character_encoding: [{
-  //   //   type: "spec/character_encoding/1.0",
-  //   //   capture_base: "",
-  //   //   language: "en",
-  //   //   default_character_encoding: "utf-8",
-  //   //   // Empty 
-  //   //   attribute_character_encoding: {}
-  //   // }],
-
-  //   // slot name: slot pattern
-  //   format: [{
-  //     type: "spec/format/1.0",
-  //     capture_base: "",
-  //     language: "en",
-  //     attribute_formats: Object.fromEntries(
-  //       Object.entries(slots)
-  //         .filter(([_, slot]) => slot.pattern)
-  //         .map(([key, slot]) => [key, slot.pattern || ""])
-  //     )
-  //   }],
-
-  //   // slot name: slot description
-  //   information: [{
-  //     type: "spec/information/1.0",
-  //     capture_base: "",
-  //     language: "en",
-  //     attribute_information: Object.fromEntries(
-  //       Object.entries(slots)
-  //         .filter(([_, slot]) => slot.description)
-  //         .map(([key, slot]) => [key, slot.description || ""])
-  //     )
-  //   }],
-
-  //   // slot name: slot title
-  //   label: [{
-  //     type: "spec/label/1.0",
-  //     capture_base: "",
-  //     language: "en",
-  //     attribute_labels: Object.fromEntries(
-  //       Object.entries(slots)
-  //         .filter(([_, slot]) => slot.title)
-  //         .map(([key, slot]) => [key, slot.title || ""])
-  //     )
-  //   }],
-
-  //   // schema name and description
-  //   meta: [{
-  //     type: "spec/meta/1.0",
-  //     capture_base: "",
-  //     language: "en",
-  //     name: linkmlSchema.name,
-  //     description: linkmlSchema.description || ""
-  //   }],
-
-  //   // slot name: slot URI
-  //   standard: [{
-  //     type: "spec/standard/1.0",
-  //     capture_base: "",
-  //     language: "en",
-  //     attr_standards: Object.fromEntries(
-  //       Object.entries(slots)
-  //         .filter(([_, slot]) => slot.slot_uri)
-  //         .map(([key, slot]) => [key, slot.slot_uri || ""])
-  //     )
-  //   }],
-
-  //   // enum name: [permissible values]
-  //   entry_code: [{
-  //     type: "spec/entry_code/1.0",
-  //     capture_base: "",
-  //     language: "en",
-  //     attribute_entry_codes: Object.fromEntries(
-  //       Object.entries(enums).map(([enumName, enumDef]) => [
-  //         enumName,
-  //         Object.keys(enumDef.permissible_values || {})
-  //       ])
-  //     )
-  //   }],
-  //   // enum name: {permissible value: value description}
-  //   entry: [{
-  //     type: "spec/entry/1.0",
-  //     capture_base: "",
-  //     language: "en",
-  //     attribute_entries: Object.fromEntries(
-  //       Object.entries(enums).map(([enumName, enumData]) => [
-  //         enumName,
-  //         Object.fromEntries(
-  //           Object.entries(enumData.permissible_values || {}).map(([key, value]) => [
-  //             key,
-  //             value.description || key // Use description if available, else default to key
-  //           ])
-  //         )
-  //       ])
-  //     )
-  //   }],
-  //   // SI units are recommended, but not required
-  //   unit: [{
-  //     type: "spec/unit/1.0",
-  //     capture_base: "",
-  //     language: "en",
-  //     metric_system: "",
-  //     attribute_units: Object.fromEntries(
-  //       Object.entries(slots)
-  //         .filter(([_, slot]) => slot.unit?.ucum_code) // Only take slots with unit definitions
-  //         .map(([key, slot]) => [key, slot.unit?.ucum_code || ""])
-  //     )
-  //   }]
-  // };
