@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { translateLinkMLToOCA } from "../src/SchemaTranslator/linkMLToOCA";
+import { translateLinkMLToOCA } from "../src/SchemaTranslator/linkMLToOCA.ts";
 
 describe("translateLinkMLToOCA", () => {
   it("should include units in the OCA bundle after translation", async () => {
