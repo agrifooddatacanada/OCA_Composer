@@ -1,26 +1,27 @@
-import './App.css';
-import { Box } from '@mui/material';
-import StartSchema from './StartSchema/StartSchema';
-import SchemaMetadata from './SchemaMetadata/SchemaMetadata';
-import AttributeDetails from './AttributeDetails/AttributeDetails';
-import EntryCodes from './EntryCodes/EntryCodes';
-import LanguageDetails from './LanguageDetails/LanguageDetails';
-import ViewSchema from './ViewSchema/ViewSchema';
-import CreateManually from './CreateManually/CreateManually';
-import Overlays from './Overlays/Overlays';
-import CharacterEncoding from './Overlays/CharacterEncoding';
-import RequiredEntries from './Overlays/RequiredEntries';
-import { pagesArray } from './App';
-import { useEffect, useMemo, useState } from 'react';
-import Cardinality from './Overlays/Cardinality';
-import FormatRulesV2 from './Overlays/FormatRuleV2';
-import Header from './Header/Header';
-import Footer from './Footer/Footer';
-import UploadPage from './EntryCodes/UploadPage';
-import MatchingEntryCodeHeader from './EntryCodes/MatchingEntryCodeHeader';
-import MatchingJSONEntryCodeHeader from './EntryCodes/MatchingJSONEntryCodeHeader';
-import StepperProgressIndicator from './StepperProgressIndicator/StepperProgressIndicator';
-import DataStandards from './Overlays/DataStandards';
+import "./App.css";
+import { Box } from "@mui/material";
+import React, { useEffect, useMemo, useState } from "react";
+import StartSchema from "./StartSchema/StartSchema";
+import SchemaMetadata from "./SchemaMetadata/SchemaMetadata";
+import AttributeDetails from "./AttributeDetails/AttributeDetails";
+import EntryCodes from "./EntryCodes/EntryCodes";
+import LanguageDetails from "./LanguageDetails/LanguageDetails";
+import ViewSchema from "./ViewSchema/ViewSchema";
+import CreateManually from "./CreateManually/CreateManually";
+import Overlays from "./Overlays/Overlays";
+import CharacterEncoding from "./Overlays/CharacterEncoding";
+import RequiredEntries from "./Overlays/RequiredEntries";
+import { pagesArray } from "./App";
+import Cardinality from "./Overlays/Cardinality";
+import UnitFraming from "./Overlays/UnitFraming";
+import FormatRulesV2 from "./Overlays/FormatRuleV2";
+import Header from "./Header/Header";
+import Footer from "./Footer/Footer";
+import UploadPage from "./EntryCodes/UploadPage";
+import MatchingEntryCodeHeader from "./EntryCodes/MatchingEntryCodeHeader";
+import MatchingJSONEntryCodeHeader from "./EntryCodes/MatchingJSONEntryCodeHeader";
+import StepperProgressIndicator from "./StepperProgressIndicator/StepperProgressIndicator";
+import DataStandards from "./Overlays/DataStandards";
 
 const Home = ({
   currentPage,
@@ -28,7 +29,7 @@ const Home = ({
   pageForward,
   pageBack,
   showIntroCard,
-  setShowIntroCard,
+  setShowIntroCard
 }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [steps, setSteps] = useState([
@@ -36,54 +37,54 @@ const Home = ({
     { label: "Attribute Details", page: "Details" },
     { label: "Language-dependent Attribute Details", page: "LanguageDetails" },
     { label: "Overlays", page: "Overlays" },
-    { label: "View Schema", page: "View" },
+    { label: "View Schema", page: "View" }
   ]);
 
   /**
    * inserts a step at the specified position
    * @param {number} position - index at which the step is to be inserted
    * @param {{label: string, page: string}} step - object containing step label and the step's associated page
-   * @returns 
+   * @returns
    */
   const insertStep = (position, step) => {
     // No need to insert the step if it already exists
-    const stepToInsert = steps.find(s => s.label === step.label);
+    const stepToInsert = steps.find((s) => s.label === step.label);
 
     if (stepToInsert) return;
-    
+
     setSteps((currentSteps) => [
       ...currentSteps.slice(0, position),
       step,
-      ...currentSteps.slice(position),
+      ...currentSteps.slice(position)
     ]);
   };
 
   const removeStep = (stepLabel) => {
-    setSteps((currentSteps) =>
-      currentSteps.filter((step) => step.label !== stepLabel)
-    );
+    setSteps((currentSteps) => currentSteps.filter((step) => step.label !== stepLabel));
   };
 
   // Add new page to this page -> add to this list
-  const allowedPages = useMemo(() => {
-    return [
+  const allowedPages = useMemo(
+    () => [
       ...pagesArray,
-      'Codes',
-      'Create',
-      'Overlays',
-      'CharacterEncoding',
-      'RequiredEntries',
-      'FormatRules',
-      'Cardinality',
-      'UploadEntryCodes',
-      'MatchingEntryCodes',
-      'MatchingJSONEntryCodes',
-      'DataStandards'
-    ];
-  }, []);
+      "Codes",
+      "Create",
+      "Overlays",
+      "CharacterEncoding",
+      "RequiredEntries",
+      "FormatRules",
+      "Cardinality",
+      "UnitFraming",
+      "UploadEntryCodes",
+      "MatchingEntryCodes",
+      "MatchingJSONEntryCodes",
+      "DataStandards"
+    ],
+    []
+  );
 
   if (!allowedPages.includes(currentPage)) {
-    setCurrentPage('Start');
+    setCurrentPage("Start");
   }
 
   useEffect(() => {
@@ -104,8 +105,8 @@ const Home = ({
         {currentPage !== "Start" && currentPage !== "Create" && (
           <StepperProgressIndicator steps={steps} activeStep={activeStep} />
         )}
-        {currentPage === 'Start' && <StartSchema pageForward={pageForward} />}
-        {currentPage === 'Metadata' && (
+        {currentPage === "Start" && <StartSchema pageForward={pageForward} />}
+        {currentPage === "Metadata" && (
           <SchemaMetadata
             pageBack={pageBack}
             pageForward={pageForward}
@@ -113,7 +114,7 @@ const Home = ({
             setShowIntroCard={setShowIntroCard}
           />
         )}
-        {currentPage === 'Details' && (
+        {currentPage === "Details" && (
           <AttributeDetails
             pageBack={pageBack}
             pageForward={pageForward}
@@ -121,20 +122,21 @@ const Home = ({
             removeStep={removeStep}
           />
         )}
-        {currentPage === 'Codes' && <EntryCodes />}
+        {currentPage === "Codes" && <EntryCodes />}
 
-        {currentPage === 'LanguageDetails' && (
+        {currentPage === "LanguageDetails" && (
           <LanguageDetails pageBack={pageBack} pageForward={pageForward} />
         )}
-        {currentPage === 'View' && <ViewSchema pageBack={pageBack} addClearButton />}
-        {currentPage === 'Create' && <CreateManually />}
-        {currentPage === 'Overlays' && (
+        {currentPage === "View" && <ViewSchema pageBack={pageBack} addClearButton />}
+        {currentPage === "Create" && <CreateManually />}
+        {currentPage === "Overlays" && (
           <Overlays pageBack={pageBack} pageForward={pageForward} />
         )}
-        {currentPage === 'CharacterEncoding' && <CharacterEncoding />}
-        {currentPage === 'RequiredEntries' && <RequiredEntries />}
-        {currentPage === 'FormatRules' && <FormatRulesV2 />}
+        {currentPage === "CharacterEncoding" && <CharacterEncoding />}
+        {currentPage === "RequiredEntries" && <RequiredEntries />}
+        {currentPage === "FormatRules" && <FormatRulesV2 />}
         {currentPage === "Cardinality" && <Cardinality />}
+        {currentPage === "UnitFraming" && <UnitFraming />}
         {currentPage === "UploadEntryCodes" && <UploadPage />}
         {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
         {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}

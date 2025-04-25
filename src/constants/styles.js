@@ -2,18 +2,18 @@ import { CustomPalette } from "./customPalette";
 
 export const preWrapWordBreak = {
   whiteSpace: "pre-wrap",
-  wordBreak: "break-word",
+  wordBreak: "break-word"
 };
 
 export const greyCellStyle = {
   ...preWrapWordBreak,
-  backgroundColor: CustomPalette.GREY_200,
+  backgroundColor: CustomPalette.GREY_200
 };
 
 export const flexCenter = {
   display: "flex",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "center"
 };
 
 export const gridStyles = `

@@ -1,8 +1,8 @@
-export const getListOfSelectedOverlays = (overlay) => {
+const getListOfSelectedOverlays = (overlay) => {
   const selectedFeatures = [];
   const unselectedFeatures = [];
 
-  Object.values(overlay).forEach(item => {
+  Object.values(overlay).forEach((item) => {
     if (item.selected) {
       selectedFeatures.push(item.feature);
     } else {
@@ -11,5 +11,6 @@ export const getListOfSelectedOverlays = (overlay) => {
   });
 
   return { selectedFeatures, unselectedFeatures };
-}
+};
 
+export default getListOfSelectedOverlays;

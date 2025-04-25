@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import { Button, Box, Typography, FormControl, InputLabel, Select } from "@mui/material";
+import { Button, Box, Typography } from "@mui/material";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { useTranslation } from "react-i18next";
 import StartIntro from "./StartIntro";
 import Drop from "./Drop";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CustomPalette } from "../constants/customPalette";
 import useHandleAllDrop from "./useHandleAllDrop";
-import { useTranslation } from "react-i18next";
 import ExcelSheetSelection from "../components/ExcelSheetSelection";
 
 export default function StartSchema({ pageForward }) {
@@ -32,7 +32,7 @@ export default function StartSchema({ pageForward }) {
 
   useEffect(() => {
     if (switchToLastPage) {
-      setCurrentPage('View');
+      setCurrentPage("View");
     }
   }, [switchToLastPage]);
 
@@ -52,14 +52,14 @@ export default function StartSchema({ pageForward }) {
           alignItems: "center",
           width: 600,
           margin: "auto",
-          marginBottom: 10,
+          marginBottom: 10
         }}
       >
         <Box
           sx={{
             height: "3rem",
             alignSelf: "flex-end",
-            transform: "translateY(2.5rem)",
+            transform: "translateY(2.5rem)"
           }}
         >
           {(attributesList.length > 0 || excelSheetChoice !== -1) && (
@@ -69,12 +69,16 @@ export default function StartSchema({ pageForward }) {
               sx={{ fontSize: "1.2rem", color: CustomPalette.PRIMARY }}
               onClick={handlePageForward}
             >
-              {t('Next')} <ArrowForwardIosIcon />
+              {t("Next")} <ArrowForwardIosIcon />
             </Button>
           )}
         </Box>
         {excelSheetNames.length > 0 ? (
-          <ExcelSheetSelection chosenValue={excelSheetChoice} choices={excelSheetNames} setChoice={setExcelSheetChoice} />
+          <ExcelSheetSelection
+            chosenValue={excelSheetChoice}
+            choices={excelSheetNames}
+            setChoice={setExcelSheetChoice}
+          />
         ) : (
           <Drop
             setFile={setRawFile}

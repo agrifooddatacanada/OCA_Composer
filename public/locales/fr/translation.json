@@ -307,5 +307,8 @@
   "Capture base (attribute names and their datatypes) of the two schemas must be the same": "La base de capture (noms d'attributs et leurs types de données) des deux schémas doit être la même",
   "Close": "Fermer",
   "Selection": "Sélection",
-  "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Cliquez ici pour sélectionner le bundle de schémas (.zip OU .json) ou faites-en glisser un ici"
+  "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Cliquez ici pour sélectionner le bundle de schémas (.zip OU .json) ou faites-en glisser un ici",
+  "The units defined in schema": "Ces unités peuvent être localisées à partir de la overlay d’unités",
+  "UCUM Code": "Code UCUM",
+  "UCUM Label": "Étiquette UCUM"
 }

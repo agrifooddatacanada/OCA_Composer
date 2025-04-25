@@ -5,7 +5,7 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { Box, Button, List, ListItemButton, ListItemText } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { getListOfSelectedOverlays } from "../constants/getListOfSelectedOverlays";
+import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
 
@@ -17,7 +17,7 @@ const Overlays = ({ pageBack, pageForward }) => {
     setCharacterEncodingRowData,
     overlay,
     setOverlay,
-    setSelectedOverlay,
+    setSelectedOverlay
   } = useContext(Context);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedItemToDelete, setSelectedItemToDelete] = useState("");
@@ -25,7 +25,7 @@ const Overlays = ({ pageBack, pageForward }) => {
   const addToSelected = (item) => {
     setOverlay((prev) => ({
       ...prev,
-      [item]: { ...prev[item], selected: true },
+      [item]: { ...prev[item], selected: true }
     }));
     setSelectedOverlay(item);
     if (item === "Character Encoding") {
@@ -34,6 +34,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("RequiredEntries");
     } else if (item === "Cardinality") {
       setCurrentPage("Cardinality");
+    } else if (item === "Unit Framing") {
+      setCurrentPage("UnitFraming");
     } else if (item === "Data Standards") {
       setCurrentPage("DataStandards");
     } else {
@@ -46,7 +48,7 @@ const Overlays = ({ pageBack, pageForward }) => {
 
   // Exclude data standards for now (temporary)
   const unselectedFeaturesWithoutDataStandards = unselectedFeatures.filter(
-    (feature) => feature !== "Data Standards",
+    (feature) => feature !== "Data Standards"
   );
 
   const removeFromSelected = () => {
@@ -54,8 +56,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       ...prev,
       [selectedItemToDelete]: {
         ...prev[selectedItemToDelete],
-        selected: false,
-      },
+        selected: false
+      }
     }));
 
     // Delete attribute from characterEncodingRowData
@@ -75,6 +77,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("RequiredEntries");
     } else if (overlayName === "Cardinality") {
       setCurrentPage("Cardinality");
+    } else if (overlayName === "Unit Framing") {
+      setCurrentPage("UnitFraming");
     } else if (overlayName === "Data Standards") {
       setCurrentPage("DataStandards");
     } else {
@@ -95,7 +99,7 @@ const Overlays = ({ pageBack, pageForward }) => {
           margin: "2rem",
           gap: "3rem",
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "column"
         }}
       >
         <Box
@@ -103,7 +107,7 @@ const Overlays = ({ pageBack, pageForward }) => {
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
-            gap: 1,
+            gap: 1
           }}
         >
           {t("Add schema feature")}
@@ -113,7 +117,7 @@ const Overlays = ({ pageBack, pageForward }) => {
               height: "300px",
               overflowY: "auto",
               border: "1px solid #ccc",
-              borderRadius: "4px",
+              borderRadius: "4px"
             }}
           >
             <List>
@@ -131,7 +135,7 @@ const Overlays = ({ pageBack, pageForward }) => {
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
-            gap: 1,
+            gap: 1
           }}
         >
           {t("Added schema feature")}
@@ -141,7 +145,7 @@ const Overlays = ({ pageBack, pageForward }) => {
               height: "300px",
               overflowY: "auto",
               border: "1px solid #ccc",
-              borderRadius: "4px",
+              borderRadius: "4px"
             }}
           >
             <List>
@@ -151,7 +155,7 @@ const Overlays = ({ pageBack, pageForward }) => {
                   sx={{
                     display: "flex",
                     flexDirection: "row",
-                    alignItems: "center",
+                    alignItems: "center"
                   }}
                 >
                   <ListItemText
@@ -161,7 +165,7 @@ const Overlays = ({ pageBack, pageForward }) => {
                       paddingLeft: "1rem",
                       textAlign: "left",
                       width: "240px",
-                      paddingRight: "1rem",
+                      paddingRight: "1rem"
                     }}
                   />
                   <DeleteForeverIcon
