@@ -156,7 +156,11 @@ const useGenerateReadMeV2 = () => {
             `Language: ${lang}\n` +
             `Schema attributes: ${layer_name}\n` +
             `${Object.entries(schema_attributes)
-              .map(([key, value]) => `    ${key}: ${value}`)
+              .map(
+                ([key, value]) =>
+                  // eslint-disable-next-line quotes
+                  `    ${key}: ${value.replace(/\\"/g, '"').replace(/\\'/g, "'")}`
+              )
               .join("\n")}\n` +
             "\n"
         );

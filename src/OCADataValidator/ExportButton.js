@@ -105,7 +105,7 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
           padding: "0.5rem 1rem"
         }}
       >
-        {isEmbedded ? "Save & Submit" : "Export Data"}
+        {t("Download Data")}
       </Button>
       <Menu
         id="basic-menu"

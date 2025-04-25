@@ -31,15 +31,12 @@ function getStyles(name, errorName, theme) {
   };
 }
 
-function ErrorFilterSelect({ errorName, setErrorNameList, disabled, handleValidate }) {
+function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
   const theme = useTheme();
   const { t } = useTranslation();
 
   // Add these helper functions at component level
-  const handleShowAllData = () => {
-    setErrorNameList([SHOW_ALL_DATA]);
-    handleValidate();
-  };
+  const handleShowAllData = () => setErrorNameList([SHOW_ALL_DATA]);
 
   const handleShowOnlyErrors = () => {
     if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
@@ -157,3 +154,4 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled, handleValida
 }
 
 export default ErrorFilterSelect;
+

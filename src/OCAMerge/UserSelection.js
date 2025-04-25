@@ -72,6 +72,41 @@ const findComparisonObject = (key) => {
   return objKey;
 };
 
+// Ensures incompatible entry overlays are not selected
+const shouldEnableEntrySelection = (
+  item,
+  overlayComparisonData,
+  selectedOverlaysOCAFile1,
+  selectedOverlaysOCAFile2,
+  fileNumber
+) => {
+  // Only apply this logic to entry and ordering overlays
+  const isEntryOverlay = item.key.includes(ENTRY) && item.key !== ENTRY_CODE;
+  const isOrderingOverlay = item.key === ORDERING;
+  if (!isEntryOverlay && !isOrderingOverlay) return true;
+
+  const entryCodeItem = overlayComparisonData.find((i) => i.key === ENTRY_CODE);
+  if (!entryCodeItem && isOrderingOverlay) return true;
+
+  const entryCodeValue1 = selectedOverlaysOCAFile1?.[ENTRY_CODE]?.attribute_entry_codes;
+  const entryCodeValue2 = selectedOverlaysOCAFile2?.[ENTRY_CODE]?.attribute_entry_codes;
+  const entryCodesAreSame =
+    JSON.stringify(entryCodeValue1) === JSON.stringify(entryCodeValue2);
+
+  if (entryCodesAreSame) return true;
+
+  // If entry codes are different, only enable entry and ordering overlays from the same file
+  if (entryCodeItem.ocaFile1Checked) {
+    return fileNumber === 1 && item.ocafile1 !== "NONE";
+  }
+
+  if (entryCodeItem.ocaFile2Checked) {
+    return fileNumber === 2 && item.ocafile2 !== "NONE";
+  }
+
+  return false;
+};
+
 const UserSelection = () => {
   const { t } = useTranslation();
   const {
@@ -228,6 +263,20 @@ const UserSelection = () => {
   const handleChange = (index, key) => {
     setData((prev) => {
       const newData = [...prev];
+      const currentItem = newData[index];
+
+      // Reset entry and ordering if entry code selection changes
+      if (currentItem.key === ENTRY_CODE && key !== "same") {
+        const overlays = newData.filter(
+          (item) =>
+            item.key === ORDERING || (item.key.includes(ENTRY) && item.key !== ENTRY_CODE)
+        );
+
+        overlays.forEach((overlay) => {
+          overlay.ocaFile1Checked = false;
+          overlay.ocaFile2Checked = false;
+        });
+      }
 
       if (key === "ocaFile1Checked") {
         newData[index].ocaFile1Checked = !newData[index].ocaFile1Checked;
@@ -594,7 +643,10 @@ const UserSelection = () => {
 
       <Box sx={{ display: "flex", width: "100%", flexDirection: "column" }}>
         {data.map((item, index) => (
-          <Box key={item.key} sx={{ display: "flex", width: "100%" }}>
+          <Box
+            key={item.key}
+            sx={{ display: item.key === CAPTURE_BASE ? "none" : "flex", width: "100%" }}
+          >
             <Box
               sx={{
                 paddingLeft: "10px",
@@ -603,7 +655,8 @@ const UserSelection = () => {
                   index === data.length - 1 && `2px solid ${CustomPalette.GREY_300}`,
                 borderLeft: `2px solid ${CustomPalette.GREY_300}`,
                 borderRight: `2px solid ${CustomPalette.GREY_300}`,
-                borderTop: index === 0 && `2px solid ${CustomPalette.GREY_300}`,
+                // Checking if index is 1 since we're hiding the first row (capture base)
+                borderTop: index === 1 && `2px solid ${CustomPalette.GREY_300}`,
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
@@ -640,7 +693,15 @@ const UserSelection = () => {
                     checked={item?.ocaFile1Checked}
                     onClick={() => handleChange(index, "ocaFile1Checked")}
                     disabled={
-                      item?.ocafile1 === "NONE" || item?.ocaFile1Checked === undefined
+                      item?.ocafile1 === "NONE" ||
+                      item?.ocaFile1Checked === undefined ||
+                      !shouldEnableEntrySelection(
+                        item,
+                        data,
+                        selectedOverlaysOCAFile1,
+                        selectedOverlaysOCAFile2,
+                        1
+                      )
                     }
                   />
                 </ListItem>
@@ -669,7 +730,15 @@ const UserSelection = () => {
                     checked={item?.ocaFile2Checked}
                     onClick={() => handleChange(index, "ocaFile2Checked")}
                     disabled={
-                      item?.ocafile2 === "NONE" || item?.ocaFile2Checked === undefined
+                      item?.ocafile2 === "NONE" ||
+                      item?.ocaFile2Checked === undefined ||
+                      !shouldEnableEntrySelection(
+                        item,
+                        data,
+                        selectedOverlaysOCAFile1,
+                        selectedOverlaysOCAFile2,
+                        2
+                      )
                     }
                   />
                 </ListItem>
@@ -683,7 +752,8 @@ const UserSelection = () => {
                   index === data.length - 1 && `2px solid ${CustomPalette.GREY_300}`,
                 borderLeft: `2px solid ${CustomPalette.GREY_300}`,
                 borderRight: `2px solid ${CustomPalette.GREY_300}`,
-                borderTop: index === 0 && `2px solid ${CustomPalette.GREY_300}`,
+                // Checking if index is 1 since we're hiding the first row (capture base)
+                borderTop: index === 1 && `2px solid ${CustomPalette.GREY_300}`,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
