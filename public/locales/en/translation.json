@@ -313,5 +313,6 @@
   "Close": "Close",
   "Selection": "Selection",
   "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Click here to select schema bundle (.zip OR .json) or drag and drop one here",
-  "Download Data": "Download Data"
+  "Download Data": "Download Data",
+  "Show Difference": "Show Difference"
 }
