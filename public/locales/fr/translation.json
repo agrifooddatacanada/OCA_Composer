@@ -308,5 +308,6 @@
   "Close": "Fermer",
   "Selection": "Sélection",
   "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Cliquez ici pour sélectionner le bundle de schémas (.zip OU .json) ou faites-en glisser un ici",
-  "Download Data": "Télécharger les données"
+  "Download Data": "Télécharger les données",
+  "Show Difference": "Afficher la différence"
 }
