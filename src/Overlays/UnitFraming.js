@@ -11,6 +11,7 @@ import { Box, IconButton } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
+import Fuse from "fuse.js";
 import { Context } from "../App";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import BackNextSkeleton from "../components/BackNextSkeleton";
@@ -20,10 +21,13 @@ import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
+import AutoCompleteEditor from "../components/AutoCompleteEditor";
+import ucumUnits from "../constants/ucumUnits";
+
+// const fuse = new Fuse(ucumUnits, {
 
 // TODO: fix the grid styles: handle the last column border
 // The width of the columns are the defined based on the sx={{ width: 705 }}: find a dynamic way to set the width
-
 const TrashCanButton = memo(
   // eslint-disable-next-line no-unused-vars
   forwardRef((props, ref) => {
@@ -58,6 +62,21 @@ const allowOverflowStyle = {
   overflow: "auto"
 };
 
+// const unitFramingRender = memo(
+//   // eslint-disable-next-line no-unused-vars
+//   forwardRef((props, ref) => {
+
+//     // return (
+//     //   // AutoCompleteEditor
+
+//     //   // />
+
+//     // );
+
+//   })
+
+// );
+
 const getColumnDefs = (gridRef, t) => [
   {
     field: "Unit",
@@ -73,7 +92,7 @@ const getColumnDefs = (gridRef, t) => [
     editable: false,
     width: 185,
     autoHeight: true,
-    cellStyle: () => greyCellStyle,
+    // cellRendererFramework: AutoCompleteEditor,
     headerComponent: () => (
       <CellHeader headerText={t("UCUM Code")} helpText={<TypeTooltip />} />
     )
@@ -125,6 +144,30 @@ const UnitFraming = () => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
+
+  const ucumUnitsList = useMemo(() => ucumUnits, []);
+  const options = {
+    keys: ["code", "label", "description"],
+    isCaseSensitive: true,
+    includeScore: true,
+    includeMatches: true,
+    minMatchCharLength: 1,
+    shouldSort: true,
+    threshold: 0.8,
+    distance: 20,
+
+  };
+
+  const fuse = new Fuse(ucumUnitsList, options);
+
+  // TODO: fix the searching and update unitFramingRowData
+  const searchUnits = () => {
+    for (const row of unitFramingRowData) {
+      const { Unit } = row;
+      const searchResults = fuse.search("kg");
+    }
+  };
+
 
   const handleDeleteCurrentOverlay = () => {
     setOverlay((prev) => ({

@@ -243,7 +243,10 @@ function App() {
       } else {
         newUnitFramingArray.push({
           Attribute: item.Attribute,
-          Unit: item.Unit
+          Unit: item.Unit,
+          Code: "",
+          Label: "",
+          Description: ""
         });
       }
     });
