@@ -218,10 +218,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     if (overlay.type && overlay.type.includes("/capture_base/")) {
       captureBaseOverlays.push(overlay);
     } else if (overlay.type && overlay.type.includes("/unit/")) {
-      if (Object.keys(overlay).includes("metric_system")) {
-        // adjust of oca-file & oca-bundle json.
-        unitOverlays.push(overlay);
-      }
+      unitOverlays.push(overlay);
     } else if (overlay.type && overlay.type.includes("/conformance/")) {
       conformanceOverlays.push(overlay);
     } else if (overlay.type && overlay.type.includes("/entry_code/")) {
@@ -815,7 +812,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         skipped += 1;
       }
     } else if (overlay.type && overlay.type.includes("/unit/")) {
-      const attr_units = overlay.attribute_units;
+      const attr_units = overlay.attribute_units || overlay.attribute_unit;
 
       if (attr_units) {
         try {

@@ -62,7 +62,7 @@ const ExportButton = ({ handleSave }) => {
           padding: "0.5rem 1rem"
         }}
       >
-        Export Data
+        {t("Download Data")}
       </Button>
       <Menu
         id="basic-menu"

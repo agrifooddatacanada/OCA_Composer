@@ -202,7 +202,13 @@ export const descriptionToFormatCodeText = {
   // eslint-disable-next-line quotes
   'Longitude in formats E30°15\'45.678" or W90°00.000"':
     // eslint-disable-next-line quotes
-    `^[EW]\\s?(?:1[0-7]\\d|0?\\d{1,2})°\\s?(?:[0-5]?\\d)'?\\s?(?:[0-5]?\\d(?:\\.\\d+)?)"?$`
+    `^[EW]\\s?(?:1[0-7]\\d|0?\\d{1,2})°\\s?(?:[0-5]?\\d)'?\\s?(?:[0-5]?\\d(?:\\.\\d+)?)"?$`,
+  "DNA: (ATGC)": "^[ATGC]+$",
+  "DNA: (ATGCRYSWKMBDHVN)": "^[ATGCRYSWKMBDHVN]+$",
+  "RNA: (AUGC)": "^[AUGC]+$",
+  "RNA: (AUGCRYSWKMBDHVN)": "^[AUGCRYSWKMBDHVN]+$",
+  "Protein: (ACDEFGHIKLMNPQRSTVWY)": "^[ACDEFGHIKLMNPQRSTVWY]+$",
+  "Protein: (ACDEFGHIKLMNPQRSTVWYBZJXUO)": "^[ACDEFGHIKLMNPQRSTVWYBZJXUO]+$"
 };
 
 export const formatCodeText = Object.keys(descriptionToFormatCodeText);
@@ -343,7 +349,7 @@ export const jsonUploadDescription =
 export const dewvSchemaUploadDescription =
   "Click here to select a machine-readable OCA schema bundle or drag and drop one here";
 export const textUploadDescription =
-  "Click here to select an OCA File (.txt) or drag and drop one here";
+  "Click here to select schema bundle (.zip OR .json) or drag and drop one here";
 export const datasetUploadDescription =
   "Click here to select an Excel or CSV dataset or drag and drop one here";
 export const defaultTooltip =
@@ -377,6 +383,9 @@ export const UNIT = "unit";
 export const CONFORMANCE = "conformance";
 export const CARDINALITY = "cardinality";
 
+// Extension overlays
+export const ORDERING = "ordering";
+
 export const overlays = [
   CHARACTER_ENCODING,
   FORMAT,
@@ -389,12 +398,11 @@ export const overlays = [
   CONFORMANCE
 ];
 
+export const extensionOverlays = [ORDERING];
+
 export const SHOW_ALL_DATA = "Show all data";
 export const SHOW_ONLY_ROWS_WITH_ERRORS = "Show only rows with errors";
 export const OCA_REPOSITORY_API_URL = "https://api.adc.oca-repo.semanticengine.org";
-
-// Extension overlays
-export const ORDERING = "ordering";
 
 export const ALLOWED_BOOLEAN_VALUES = [
   "True",
