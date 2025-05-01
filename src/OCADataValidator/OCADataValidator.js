@@ -8,6 +8,7 @@ import OCADataValidatorMain from "./OCADataValidatorMain";
 import { Context } from "../App";
 import PreviewSchema from "./PreviewSchema";
 import StepperProgressIndicator from "../StepperProgressIndicator/StepperProgressIndicator";
+import useFileListener from "./useFileListener";
 
 const steps = [
   { label: "Preview Schema", page: "SchemaViewDataValidator" },
@@ -18,10 +19,18 @@ const steps = [
 ];
 
 const OCADataValidator = () => {
-  const { currentDataValidatorPage } = useContext(Context);
+  const { currentDataValidatorPage, setRawFile, setJsonRawFile } = useContext(Context);
   const [showWarningCard, setShowWarningCard] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const firstTimeDisplayWarning = useRef(true);
+
+  const setFile = (receivedFiles) => {
+    console.log('received files', receivedFiles);
+    setRawFile(receivedFiles);
+    setJsonRawFile(receivedFiles);
+  }
+
+  useFileListener(setFile);
 
   // Sync stepper with the current page
   useEffect(() => {
