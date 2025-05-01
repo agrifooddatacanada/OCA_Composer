@@ -21,8 +21,19 @@ const PreviewSchema = () => {
     navigate('/');
   };
 
+  // Check if the page is rendered inside an iframe
+  const isInIframe = () => {
+    try {
+      return window.self !== window.parent;
+    } catch (e) {
+      return true; // If there's an error, assume it's in an iframe
+    }
+  };
+
+  const inIframe = isInIframe();
+
   return (
-    <ViewSchema isBack pageBack={handleBackPage} pageForward={handleForwardPage} isExport={false} />
+    <ViewSchema isBack={!inIframe} pageBack={handleBackPage} pageForward={handleForwardPage} isExport={false} />
   );
 };
 

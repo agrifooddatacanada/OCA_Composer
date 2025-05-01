@@ -22,6 +22,7 @@ import Languages from "./Languages";
 import ErrorFilterSelect from "./ErrorFilterSelect";
 import CellHeader from "../components/CellHeader";
 import ExportButton from "./ExportButton";
+import UploadButton from "./UploadButton";
 import {
   errorCode,
   formatCodeBinaryDescription,
@@ -958,6 +959,7 @@ const OCADataValidatorCheck = ({
                 validatedData={rowDataFilter}
                 currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
               />
+              <UploadButton/>
             </Box>
           </Box>
         </Box>
