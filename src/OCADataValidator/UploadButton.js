@@ -1,7 +1,7 @@
 import React from "react";
  import { Button } from "@mui/material";
  
- const UploadButton = () => {
+ const UploadButton = ({isDisabled}) => {
  
  
      return (
@@ -10,6 +10,7 @@ import React from "react";
              id="basic-button"
              color="button"
              variant="contained"
+             disabled={isDisabled}
              sx={{
                  alignSelf: "flex-end",
                  display: "flex",

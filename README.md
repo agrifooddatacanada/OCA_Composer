@@ -145,3 +145,83 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 ## Development Status
 
 This code is created with support by [Agri-food Data Canada](https://agrifooddatacanada.ca/), funded by [CFREF](https://www.cfref-apogee.gc.ca/) through the [Food from Thought grant](https://foodfromthought.ca/) held at the [University of Guelph](https://www.uoguelph.ca/). Currently, we do not provide any warranty of any kind regarding the accuracy, security, completeness or reliability of this code or any of its parts.
+
+
+# OCA Data Validator File Listener
+
+This document explains how to use the file listener functionality to send JSON files from a parent application to the OCA Data Validator through an iframe.
+
+## Overview
+
+The file listener is a React hook that enables communication between a parent application and the OCA Data Validator through `postMessage`.
+It allows you to send JSON files from the parent application to the validator, which will then process them for validation.
+
+## Implementation Details
+
+The file listener is implemented as a React hook (`useFileListener`) that:
+1. Sets up a message event listener
+2. Processes incoming messages of type 'FILE'
+3. Converts the received data into a File object
+4. Updates the application state with the received file
+
+## How to Use
+
+### 1. Parent Application Setup
+
+In your parent application, you need to:
+1. Create an iframe that points to the OCA Data Validator
+2. Send the JSON file using `postMessage`
+
+Here's an example of how to set up the parent application:
+
+```html
+<!-- Parent application HTML -->
+<iframe id="validatorFrame" src="https://happy-tree-080b9290f.5.azurestaticapps.net/oca-data-validator" style="width: 100%; height: 600px;"></iframe>
+```
+
+```javascript
+// Parent application JavaScript
+const iframe = document.getElementById('validatorFrame');
+
+// Function to send a JSON file to the validator
+function sendFileToValidator(jsonData) {
+  iframe.contentWindow.postMessage({
+    type: 'FILE',
+    data: jsonData
+  }, '*'); // Replace '*' with the actual origin of the validator for better security
+}
+
+// Example usage
+const jsonData = {
+  // Your JSON data here
+};
+sendFileToValidator(jsonData);
+```
+
+### 2. Message Format
+
+The message sent to the validator must follow this structure:
+```javascript
+{
+  type: 'FILE',
+  data: {
+    // Your JSON data here
+  }
+}
+```
+
+## Error Handling
+
+The file listener includes error handling for:
+- Invalid message formats
+- JSON parsing errors
+- File creation errors
+
+Errors are logged to the console for debugging purposes.
+
+## Notes
+
+- The received file is automatically named 'schema.json'
+- The file path is set to 'oca_bundle.json'
+- The file type is set to 'application/json'
+- The file is wrapped in an array when setting the state, as the validator expects an array of files 

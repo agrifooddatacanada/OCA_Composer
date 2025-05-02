@@ -273,6 +273,7 @@ const OCADataValidatorCheck = ({
   const [firstValidate, setFirstValidate] = useState(false);
   const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isDataValid, setIsDataValid] = useState(false);
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
@@ -363,6 +364,22 @@ const OCADataValidatorCheck = ({
       langRef.current
     ]
   );
+
+  const allCellsPassValidation = async () => {
+     
+    const currData = await new Promise(resolve => setTimeout(resolve, 0)).then(() => getCurrentData(gridRef.current.api, true));
+    return currData.every(row => {
+      if (!row.error) return true;
+      return Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0);
+    });
+  };
+
+
+  const updateDataValidationState = async () => {
+    const isValid = await allCellsPassValidation();
+    setIsDataValid(isValid);
+  }
+
 
   const generateCSVFile = async (ogHeader) => {
     const newData = [];
@@ -515,6 +532,10 @@ const OCADataValidatorCheck = ({
 
       return copy;
     });
+
+    await updateDataValidationState();
+    console.log(isDataValid);
+    console.log(typeof(isDataValid));
   };
 
   function formatHeader(cell) {
@@ -648,7 +669,7 @@ const OCADataValidatorCheck = ({
     setRowData([...currentData, newRow]);
   }, [isValidateButtonEnabled, schemaDataConformantHeader, gridRef, setRowData]);
 
-  const onCellValueChanged = (e) => {
+  const onCellValueChanged = async (e) => {
     if (validateBeforeOnChangeRef.current) {
       validateBeforeOnChangeRef.current = false;
       return;
@@ -670,6 +691,7 @@ const OCADataValidatorCheck = ({
     }
 
     setRevalidateData(true);
+    await updateDataValidationState();
   };
 
   const handleMoveBack = () => {
@@ -959,7 +981,7 @@ const OCADataValidatorCheck = ({
                 validatedData={rowDataFilter}
                 currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
               />
-              <UploadButton/>
+              <UploadButton isDisabled={!isDataValid}/>
             </Box>
           </Box>
         </Box>

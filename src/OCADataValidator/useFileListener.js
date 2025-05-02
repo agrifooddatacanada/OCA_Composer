@@ -7,7 +7,7 @@ const useFileListener = (setFile) => {
       if (event.data.type === 'FILE') {
         try {
           console.log('file received');
-          console.log(event.data.data);
+          console.log(event.data);
           // Convert the received data into a File object
           const file = new File(
             [JSON.stringify(event.data.data)],
