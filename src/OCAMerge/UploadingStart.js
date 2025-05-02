@@ -68,6 +68,16 @@ const UploadingStart = () => {
           comparisonValue: "attributes",
           ocaFile1: captureBase1AttrTypeStr,
           ocaFile2: captureBase2AttrTypeStr
+        },
+        {
+          comparisonValue: "classification",
+          ocaFile1: captureBase1.classification,
+          ocaFile2: captureBase2.classification
+        },
+        {
+          comparisonValue: "sensitive",
+          ocaFile1: captureBase1.flagged_attributes?.join(", "),
+          ocaFile2: captureBase2.flagged_attributes?.join(", ")
         }
       ]
     };
@@ -138,9 +148,9 @@ const UploadingStart = () => {
         <Box sx={{ mt: "3rem" }}>
           {hasIncompatibleCaptureBase && (
             <Box sx={{ mb: "3rem" }}>
-              <Alert severity="error" sx={{ mb: "0.5rem" }}>
+              <Alert severity="error" sx={{ mb: "0.5rem", maxWidth: "75ch" }}>
                 {t(
-                  "Capture base (attribute names and their datatypes) of the two schemas must be the same"
+                  "Capture base (attribute names and their datatypes, classification, and sensitive attributes) of the two schemas must be the same"
                 )}
               </Alert>
               <Button
