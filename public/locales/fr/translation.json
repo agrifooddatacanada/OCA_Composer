@@ -309,6 +309,7 @@
   "Schema Bundle 1": "Ensemble de schémas 1",
   "Schema Bundle 2": "Ensemble de schémas 2",
   "Capture base (attribute names and their datatypes) of the two schemas must be the same": "La base de capture (noms d'attributs et leurs types de données) des deux schémas doit être la même",
+  "Capture base (attribute names and their datatypes, classification, and sensitive attributes) of the two schemas must be the same": "La base de capture (noms d'attributs et leurs types de données, classification et attributs sensibles) des deux schémas doit être la même",
   "Close": "Fermer",
   "Selection": "Sélection",
   "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Cliquez ici pour sélectionner le bundle de schémas (.zip OU .json) ou faites-en glisser un ici",
