@@ -14,6 +14,7 @@ import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
 // import Tutorial from "./Tutorial/Tutorial";
+import ucumUnits from "./constants/ucumUnits";
 
 export const Context = createContext();
 
@@ -117,6 +118,7 @@ function App() {
   const [selectedOverlaysOCAFile1, setSelectedOverlaysOCAFile1] = useState({});
   const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState({});
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
+  const [ucumUnitsList, setUcumUnitsList] = useState([ucumUnits]);
 
   // Ordering extension overlay for OCA package
   const [OCAPackage, setOCAPackage] = useState(null);
@@ -487,7 +489,9 @@ function App() {
             OCAPackage,
             setOCAPackage,
             unitFramingRowData,
-            setUnitFramingRowData
+            setUnitFramingRowData,
+            ucumUnitsList,
+            setUcumUnitsList
           }}
         >
           <Box

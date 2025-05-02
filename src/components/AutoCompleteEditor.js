@@ -1,4 +1,10 @@
-import React, { forwardRef, useImperativeHandle, useEffect, useRef } from "react";
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useEffect,
+  useRef,
+  useState
+} from "react";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import { styled } from "@mui/material/styles";
@@ -7,15 +13,29 @@ import Popper from "@mui/material/Popper";
 const CustomPopper = styled(Popper)(({ theme }) => ({ width: "100%" }));
 
 const AutoCompleteEditor = forwardRef((props, ref) => {
-  const inputRef = useRef(props.value);
+  const [options, setOptions] = useState(props.options || []);
+  // const inputRef = useRef(props.value);
+  const inputRef = useRef();
+  // const [value, setValue] = useState(props.value || "");
 
   const onInputChangeHandler = (event, newInputValue) => {
     inputRef.current.value = newInputValue;
+
+    // Call the search function if provided
+    if (props.search) {
+      props.search(newInputValue, setOptions);
+    }
   };
 
   useEffect(() => {
     inputRef.current.focus();
   }, []);
+
+  // useEffect(() => {
+  //   if (!options.includes(value)) {
+  //     setValue(""); // Reset value if it doesn't exist in options
+  //   }
+  // }, [options, value]);
 
   useImperativeHandle(ref, () => ({
     getValue: () => inputRef.current.value
@@ -29,7 +49,7 @@ const AutoCompleteEditor = forwardRef((props, ref) => {
       autoHighlight
       selectOnFocus
       clearOnBlur
-      options={props.options}
+      options={options}
       value={props.value}
       onInputChange={onInputChangeHandler}
       PopperComponent={CustomPopper}

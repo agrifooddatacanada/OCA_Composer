@@ -5,26 +5,26 @@ import React, {
   useRef,
   useState,
   memo,
-  forwardRef
+  forwardRef,
+  useEffect
 } from "react";
 import { Box, IconButton } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
 import Fuse from "fuse.js";
-import { Context } from "../App";
+import { debounce } from "lodash";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
-import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
+import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
-import AutoCompleteEditor from "../components/AutoCompleteEditor";
 import ucumUnits from "../constants/ucumUnits";
-
-// const fuse = new Fuse(ucumUnits, {
+import AutoCompleteEditor from "../components/AutoCompleteEditor";
+import { Context } from "../App";
 
 // TODO: fix the grid styles: handle the last column border
 // The width of the columns are the defined based on the sx={{ width: 705 }}: find a dynamic way to set the width
@@ -62,22 +62,7 @@ const allowOverflowStyle = {
   overflow: "auto"
 };
 
-// const unitFramingRender = memo(
-//   // eslint-disable-next-line no-unused-vars
-//   forwardRef((props, ref) => {
-
-//     // return (
-//     //   // AutoCompleteEditor
-
-//     //   // />
-
-//     // );
-
-//   })
-
-// );
-
-const getColumnDefs = (gridRef, t) => [
+const getColumnDefs = (gridRef, t, searchUnits) => [
   {
     field: "Unit",
     editable: false,
@@ -89,20 +74,42 @@ const getColumnDefs = (gridRef, t) => [
   },
   {
     field: "UCUM Code",
-    editable: false,
     width: 185,
     autoHeight: true,
-    // cellRendererFramework: AutoCompleteEditor,
+    cellEditor: AutoCompleteEditor,
+    cellEditorParams: {
+      options: [],
+      search: debounce((inputValue, callback) => {
+        const { results } = searchUnits(inputValue || "");
+        callback(results.map((item) => item.code));
+      }, 200)
+    },
+    singleClickEdit: true,
+    editable: true,
     headerComponent: () => (
       <CellHeader headerText={t("UCUM Code")} helpText={<TypeTooltip />} />
-    )
+    ),
+    onCellValueChanged: (params) => {
+      const selectedCode = params.newValue;
+      const { results } = searchUnits(selectedCode || "");
+
+      const selectedItem = results.find((item) => item.code === selectedCode);
+
+      if (selectedItem) {
+        params.node.setData({
+          ...params.data,
+          "UCUM Code": selectedItem.code,
+          "UCUM Label": selectedItem.label,
+          Description: selectedItem.description
+        });
+      }
+    }
   },
   {
     field: "UCUM Label",
     editable: false,
     width: 185,
     autoHeight: true,
-    cellStyle: () => greyCellStyle,
     headerComponent: () => (
       <CellHeader headerText={t("UCUM Label")} helpText={<TypeTooltip />} />
     )
@@ -112,7 +119,6 @@ const getColumnDefs = (gridRef, t) => [
     editable: false,
     width: 185,
     autoHeight: true,
-    cellStyle: () => greyCellStyle,
     headerComponent: () => (
       <CellHeader headerText={t("Description")} helpText={<TypeTooltip />} />
     )
@@ -143,31 +149,54 @@ const UnitFraming = () => {
   } = useContext(Context);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [rowData, setRowData] = useState([]);
   const gridRef = useRef();
 
-  const ucumUnitsList = useMemo(() => ucumUnits, []);
   const options = {
-    keys: ["code", "label", "description"],
-    isCaseSensitive: true,
-    includeScore: true,
-    includeMatches: true,
-    minMatchCharLength: 1,
-    shouldSort: true,
-    threshold: 0.8,
-    distance: 20,
-
+    keys: ["code", "label", "description"]
+    // isCaseSensitive: true,
+    // includeScore: true,
+    // includeMatches: true,
+    // minMatchCharLength: 1,
+    // shouldSort: true,
+    // threshold: 0.4,
+    // distance: 100
   };
 
-  const fuse = new Fuse(ucumUnitsList, options);
+  const fuse = useMemo(() => new Fuse(ucumUnits, options), [ucumUnits, options]);
+  const searchUnits = useCallback(
+    (unit) => {
+      const searchResults = fuse.search(unit.toString());
+      const slicedResults = searchResults.slice(0, 20).map((result) => result.item);
 
-  // TODO: fix the searching and update unitFramingRowData
-  const searchUnits = () => {
-    for (const row of unitFramingRowData) {
-      const { Unit } = row;
-      const searchResults = fuse.search("kg");
+      // Remove duplicates using a Set
+      const uniqueResults = Array.from(
+        new Set(slicedResults.map((item) => item.code))
+      ).map((code) => slicedResults.find((item) => item.code === code));
+
+      return {
+        firstMatch: uniqueResults[0] || null,
+        results: uniqueResults
+      };
+    },
+    [fuse]
+  );
+  useEffect(() => {
+    if (unitFramingRowData?.length > 0) {
+      const updatedRowData = unitFramingRowData.map((row) => {
+        const { firstMatch } = searchUnits(row.Unit);
+        return {
+          ...row,
+          "UCUM Code": firstMatch?.code || row["UCUM Code"],
+          "UCUM Label": firstMatch?.label || row["UCUM Label"],
+          Description: firstMatch?.description || row.Description
+        };
+      });
+      setRowData(updatedRowData);
+    } else {
+      setRowData([]);
     }
-  };
-
+  }, []);
 
   const handleDeleteCurrentOverlay = () => {
     setOverlay((prev) => ({
@@ -200,7 +229,10 @@ const UnitFraming = () => {
     setCurrentPage("Overlays");
   };
 
-  const columnDefs = useMemo(() => getColumnDefs(gridRef, t), [t]);
+  const columnDefs = useMemo(
+    () => getColumnDefs(gridRef, t, searchUnits),
+    [t, searchUnits]
+  );
 
   const onGridReady = useCallback(() => {
     setLoading(false);
@@ -234,7 +266,7 @@ const UnitFraming = () => {
           <style>{gridStyles}</style>
           <AgGridReact
             ref={gridRef}
-            rowData={unitFramingRowData}
+            rowData={rowData}
             columnDefs={columnDefs}
             domLayout="autoHeight"
             suppressHorizontalScroll={true}
@@ -242,30 +274,6 @@ const UnitFraming = () => {
             onGridReady={onGridReady}
           />
         </Box>
-        {/* <Box
-          sx={{
-            width: "80%"
-          }}
-        >
-          {t("All format rules are documented in the")}{" "}
-          <Link
-            href="https://github.com/agrifooddatacanada/format_options"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t("format GitHub repository")}
-          </Link>
-          . {t("Request a new format to be added by")}{" "}
-          <Link
-            href="https://github.com/agrifooddatacanada/format_options/issues"
-            rel="noreferrer"
-            target="_blank"
-          >
-            {t("raising an issue in the repository")}
-          </Link>{" "}
-          {t("or email us at")} <Link href="mailto:adc@uoguelph.ca">adc@uoguelph.ca</Link>
-          .
-        </Box> */}
       </Box>
     </BackNextSkeleton>
   );

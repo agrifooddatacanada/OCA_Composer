@@ -20,6 +20,7 @@
     "i18next-browser-languagedetector": "^7.2.1",
     "i18next-http-backend": "^2.5.1",
     "jszip": "^3.10.1",
+    "lodash": "^4.17.21",
     "oca_package": "^1.1.0",
     "papaparse": "^5.4.1",
     "react": "^18.2.0",
