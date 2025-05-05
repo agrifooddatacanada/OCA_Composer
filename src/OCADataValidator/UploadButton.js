@@ -1,7 +1,7 @@
 import React from "react";
  import { Button } from "@mui/material";
  
- const UploadButton = ({isDisabled}) => {
+ const UploadButton = ({isDisabled, uploadFunc}) => {
  
  
      return (
@@ -11,6 +11,7 @@ import React from "react";
              color="button"
              variant="contained"
              disabled={isDisabled}
+             onClick={uploadFunc}
              sx={{
                  alignSelf: "flex-end",
                  display: "flex",

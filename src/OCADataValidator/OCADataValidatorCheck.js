@@ -365,9 +365,38 @@ const OCADataValidatorCheck = ({
     ]
   );
 
+  const uploadData = async (data) => {
+    try {
+      const response = await fetch(process.env.REACT_APP_CLIENT_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) throw new Error('Network response was not ok');
+
+      const result = await response.json();
+      console.log(result);
+
+    } catch (error){
+      console.error('Error uploading data: ', error);
+    }
+  }
+
+  const handleUpload = () => {
+    const dataToUpload = getCurrentData(gridRef.current.api, true);
+    uploadData(dataToUpload);
+  }
+
   const allCellsPassValidation = async () => {
      
     const currData = await new Promise(resolve => setTimeout(resolve, 0)).then(() => getCurrentData(gridRef.current.api, true));
+
+    if (currData.length === 0) { // edge case for no dataset file uploaded
+      return false;
+    }
     return currData.every(row => {
       if (!row.error) return true;
       return Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0);
@@ -534,8 +563,6 @@ const OCADataValidatorCheck = ({
     });
 
     await updateDataValidationState();
-    console.log(isDataValid);
-    console.log(typeof(isDataValid));
   };
 
   function formatHeader(cell) {
@@ -981,7 +1008,7 @@ const OCADataValidatorCheck = ({
                 validatedData={rowDataFilter}
                 currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
               />
-              <UploadButton isDisabled={!isDataValid}/>
+              <UploadButton isDisabled={!isDataValid} uploadFunc={handleUpload}/>
             </Box>
           </Box>
         </Box>
