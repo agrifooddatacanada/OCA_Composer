@@ -127,8 +127,8 @@ const useZipParser = () => {
     if (indexOfRDF !== -1 && !Number.isNaN(classificationFromJson?.[indexOfRDF + 5])) {
       let divisionCode = classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5);
 
-      // Division 20 is named differently in the codeToDivision object
-      if (divisionCode === "RDF20") {
+      // Division 20 and 21 are named differently in the codeToDivision object
+      if (divisionCode === "RDF20" || divisionCode === "RDF21") {
         divisionCode = "RDF20-21";
       }
 
