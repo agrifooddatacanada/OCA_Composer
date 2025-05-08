@@ -36,7 +36,7 @@ export default function Drop({
     }
     if (version === 2) {
       return {
-        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
+        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"]
       };
     }
     if (version === 3) {
@@ -46,7 +46,7 @@ export default function Drop({
     } 
     if (version === 4) {
       return {
-        "application/vnd.ms-excel": [".xls", ".xlsx"],
+        "application/vnd.ms-excel": [".xls", ".xlsx"]
       };
     }
     if (version === 5) {
@@ -58,7 +58,7 @@ export default function Drop({
     }
     if (version === 6) {
       return {
-        "text/plain": [".txt"],
+        "text/plain": [".txt"]
       };
     }
   }, [version]);
@@ -72,7 +72,7 @@ export default function Drop({
       } else if (file[0].errors[0].code === "file-invalid-type") {
         setDropMessage({
           message: messages.wrongTypeUploadFail,
-          type: "error",
+          type: "error"
         });
       } else {
         setDropMessage({ message: messages.fileRejectedFail, type: "error" });
@@ -85,7 +85,7 @@ export default function Drop({
       setDropMessage({ message: messages.fileAccepted, type: "success" });
       setLoading(true);
     },
-    disabled: dropDisabled,
+    disabled: dropDisabled
   });
   const [hover, setHover] = useState(false);
 
@@ -121,38 +121,42 @@ export default function Drop({
         : CustomPalette.PRIMARY
   , [dropDisabled, hover]);
 
-  return interfaceType === 1 ? (
-    <LandingDropZone
-      dropMessage={dropMessage}
-      loading={loading}
-      dropDisabled={dropDisabled}
-      spinningAnimation={spinningAnimation}
-      downloadIconColor={downloadIconColor}
-      getRootProps={getRootProps}
-      getInputProps={getInputProps}
-      hover={hover}
-      handleHover={handleHover}
-      handleHoverLeave={handleHoverLeave}
-      handleDragOver={handleDragOver}
-      handleDragLeave={handleDragLeave}
-    />
-  ) : (
-    <DropCard
-      dropMessage={dropMessage}
-      loading={loading}
-      dropDisabled={dropDisabled}
-      spinningAnimation={spinningAnimation}
-      downloadIconColor={downloadIconColor}
-      getRootProps={getRootProps}
-      getInputProps={getInputProps}
-      hover={hover}
-      handleHover={handleHover}
-      handleHoverLeave={handleHoverLeave}
-      handleDragOver={handleDragOver}
-      handleDragLeave={handleDragLeave}
-      description={description}
-      tipDescription={tipDescription}
-      noteDescription={noteDescription}
-    />
+  return (
+    <>
+      {interfaceType === 1 ? (
+        <LandingDropZone
+          dropMessage={dropMessage}
+          loading={loading}
+          dropDisabled={dropDisabled}
+          spinningAnimation={spinningAnimation}
+          downloadIconColor={downloadIconColor}
+          getRootProps={getRootProps}
+          getInputProps={getInputProps}
+          hover={hover}
+          handleHover={handleHover}
+          handleHoverLeave={handleHoverLeave}
+          handleDragOver={handleDragOver}
+          handleDragLeave={handleDragLeave}
+        />
+      ) : (
+        <DropCard
+          dropMessage={dropMessage}
+          loading={loading}
+          dropDisabled={dropDisabled}
+          spinningAnimation={spinningAnimation}
+          downloadIconColor={downloadIconColor}
+          getRootProps={getRootProps}
+          getInputProps={getInputProps}
+          hover={hover}
+          handleHover={handleHover}
+          handleHoverLeave={handleHoverLeave}
+          handleDragOver={handleDragOver}
+          handleDragLeave={handleDragLeave}
+          description={description}
+          tipDescription={tipDescription}
+          noteDescription={noteDescription}
+        />
+      )}
+    </>
   );
 }

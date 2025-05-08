@@ -56,6 +56,7 @@ export default function ViewSchema({
     history,
     setHistory,
     formatRuleRowData,
+    unitFramingRowData,
     dataStandardsRowData,
     zipToReadme,
     jsonToReadme,
@@ -168,10 +169,8 @@ export default function ViewSchema({
   ));
 
   // Creates display array with all captured data
-
   useEffect(() => {
     const newDisplayArray = [];
-
     attributeRowData.forEach((item, index) => {
       const dataObject = {};
       const attributeName = item.Attribute;
@@ -248,8 +247,18 @@ export default function ViewSchema({
         dataObject["Data Standards"] = attrWithDataStandard.DataStandard;
       }
 
+      // Add unit framing information
+      const unitFramingData = unitFramingRowData.find(
+        (row) => row.Attribute === attributeName
+      );
+
+      if (unitFramingData) {
+        dataObject["Unit Framing"] = unitFramingData["UCUM Code"];
+      }
+
       newDisplayArray.push(dataObject);
     });
+
     setDisplayArray(newDisplayArray);
   }, [attributeRowData, lanAttributeRowData]);
 
