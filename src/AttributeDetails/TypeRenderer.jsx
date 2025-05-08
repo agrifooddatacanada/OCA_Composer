@@ -38,7 +38,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs }) => {
       value={value.value}
       sx={{ border: "none", height: "2rem", fontSize: "small" }}
     >
-      {t(value.label)}
+      {value.label !== "" ? t(value.label) : value.label}
     </MenuItem>
   ));
 

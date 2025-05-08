@@ -275,6 +275,32 @@ export const hasAttributeOrdering = (OCAPackage) => {
   );
 };
 
+export const hasUnitFramingOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
+  );
+};
+
+// get extension overlays
+export const getExtensionOverlays = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  const extensionOverlays = Object.entries(OCAPackage?.extensions || {}).reduce(
+    (acc, [extensionName, extensionData]) => {
+      const overlay = extensionData?.[captureBaseSaid]?.overlays;
+      if (overlay) {
+        acc[extensionName] = overlay;
+      }
+      return acc;
+    },
+    {}
+  );
+  return extensionOverlays;
+};
+
 export const getTransformedEntryCodes = (entryCodes) => {
   const transformedEntryCodes = {};
   Object.entries(entryCodes).forEach(([attribute, codes]) => {
@@ -291,6 +317,19 @@ export const getOrderedAttributeMap = (attributeOrdering, attributeMap) => {
     }
   });
   return orderedAttributeMap;
+};
+
+// constructing unit framing input
+export const getUnitFramingInput = (unitFramingRowData) => {
+  const unitFramingInput = {};
+  for (const row of unitFramingRowData) {
+    unitFramingInput[row.Unit] = {
+      term_id: row["UCUM Code"],
+      predicate_id: "skos:exactMatch",
+      framing_justification: "semapv:ManualMappingCuration"
+    };
+  }
+  return unitFramingInput;
 };
 
 /*

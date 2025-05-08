@@ -6,7 +6,7 @@ import "./App.css";
 import { CustomTheme } from "./constants/theme";
 import Home from "./Home";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
-import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
+import getListOfSelectedOverlays from "./constants/getListOfSelectedOverlays";
 import Landing from "./Landing/Landing";
 // import HelpStorage from "./Landing/HelpStorage";
 import OCADataValidator from "./OCADataValidator/OCADataValidator";
@@ -14,6 +14,7 @@ import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
 // import Tutorial from "./Tutorial/Tutorial";
+import ucumUnits from "./constants/ucumUnits";
 
 export const Context = createContext();
 
@@ -31,7 +32,8 @@ const overlayItems = {
     selected: false
   },
   Cardinality: { feature: "Cardinality", selected: false },
-  "Data Standards": { feature: "Data Standards", selected: false }
+  "Data Standards": { feature: "Data Standards", selected: false },
+  "Unit Framing": { feature: "Unit Framing", selected: false }
 };
 
 export const pagesArray = [
@@ -79,6 +81,9 @@ function App() {
   const [selectedOverlay, setSelectedOverlay] = useState("");
   const [cardinalityData, setCardinalityData] = useState([]);
   const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
+  const [unitFramingRowData, setUnitFramingRowData] = useState([]);
+  const [ucumUnitsList, setUcumUnitsList] = useState([ucumUnits]);
+  const [isUnitFramingPageRendered, setIsUnitFramingPageRendered] = useState(false);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -171,6 +176,7 @@ function App() {
   }, [fileData]);
 
   // Create Attribute Row Data object when Attributes List updates
+
   useEffect(() => {
     const newAttributesArray = [];
     const newCharacterEncodingArray = [];
@@ -249,6 +255,29 @@ function App() {
     });
 
     setDataStandardsRowData(newDataStandardsArray);
+  }, [attributeRowData]);
+
+  useEffect(() => {
+    const newUnitFramingArray = [];
+    attributeRowData.forEach((item) => {
+      const unitFramingObject = unitFramingRowData.find(
+        (obj) => obj.Attribute === item.Attribute
+      );
+
+      if (unitFramingObject && unitFramingObject.Unit === item.Unit) {
+        newUnitFramingArray.push(unitFramingObject);
+      } else {
+        newUnitFramingArray.push({
+          Attribute: item.Attribute,
+          Unit: item.Unit,
+          "UCUM Code": "",
+          "UCUM Label": "",
+          Description: ""
+        });
+      }
+    });
+
+    setUnitFramingRowData(newUnitFramingArray);
   }, [attributeRowData]);
 
   useEffect(() => {
@@ -462,6 +491,12 @@ function App() {
             setNotToVerifyAttributes,
             OCAPackage,
             setOCAPackage,
+            unitFramingRowData,
+            setUnitFramingRowData,
+            ucumUnitsList,
+            setUcumUnitsList,
+            isUnitFramingPageRendered,
+            setIsUnitFramingPageRendered
           }}
         >
           <Box

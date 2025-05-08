@@ -10,11 +10,11 @@ export default function StepperProgressIndicator({ activeStep, steps }) {
             key={step.label}
             sx={{
               "& .MuiSvgIcon-root.Mui-active": {
-                color: CustomPalette.PRIMARY,
+                color: CustomPalette.PRIMARY
               },
               "& .MuiSvgIcon-root.Mui-completed": {
-                color: CustomPalette.PRIMARY,
-              },
+                color: CustomPalette.PRIMARY
+              }
             }}
           >
             <StepLabel>{step.label}</StepLabel>

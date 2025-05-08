@@ -6,7 +6,7 @@ import { Context } from "../App";
 import { greyCellStyle } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import { getListOfSelectedOverlays } from "../constants/getListOfSelectedOverlays";
+import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import CellHeader from "../components/CellHeader";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
