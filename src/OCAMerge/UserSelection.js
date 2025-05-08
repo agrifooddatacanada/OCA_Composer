@@ -263,6 +263,20 @@ const UserSelection = () => {
   const handleChange = (index, key) => {
     setData((prev) => {
       const newData = [...prev];
+      const currentItem = newData[index];
+
+      // Reset entry and ordering if entry code selection changes
+      if (currentItem.key === ENTRY_CODE && key !== "same") {
+        const overlays = newData.filter(
+          (item) =>
+            item.key === ORDERING || (item.key.includes(ENTRY) && item.key !== ENTRY_CODE)
+        );
+
+        overlays.forEach((overlay) => {
+          overlay.ocaFile1Checked = false;
+          overlay.ocaFile2Checked = false;
+        });
+      }
 
       if (key === "ocaFile1Checked") {
         newData[index].ocaFile1Checked = !newData[index].ocaFile1Checked;

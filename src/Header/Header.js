@@ -173,6 +173,11 @@ export default function Header({ currentPage }) {
           `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/UnitFraming/`
         );
         break;
+      case "UserSelection":
+        setHelpLink(
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/Coauthor/`
+        );
+        break;
       default:
         setHeader("");
         setHelpLink("");
