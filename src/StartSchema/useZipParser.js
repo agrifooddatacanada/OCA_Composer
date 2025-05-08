@@ -5,7 +5,8 @@ import { ADC, codeToDivision, codeToGroup } from "../constants/constants";
 import {
   getOrderedAttributeRowData,
   hasAttributeOrdering,
-  hasEntryCodeOrdering
+  hasEntryCodeOrdering,
+  hasUnitFramingOverlay
 } from "../constants/utils";
 
 const useZipParser = () => {
@@ -22,7 +23,8 @@ const useZipParser = () => {
     setOverlay,
     setFormatRuleRowData,
     setDataStandardsRowData,
-    setCardinalityData
+    setCardinalityData,
+    setUnitFramingRowData
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -58,7 +60,8 @@ const useZipParser = () => {
     formatRules,
     cardinalityData,
     dataStandards,
-    ocaPackageData = null
+    // ocaPackageData = null
+    ocaPackageData
   ) => {
     const newSavedEntryCodes = {};
     const newLangAttributeRowData = {};
@@ -68,6 +71,7 @@ const useZipParser = () => {
     const newDataStandardsRowData = [];
     const attributeListStringMap = {};
     let attributesWithListType = [];
+    const newUnitFramingRowData = [];
 
     // Parse entry codes for list type attributes
     if (entries.length > 0) {
@@ -296,6 +300,34 @@ const useZipParser = () => {
         }
       }));
       setCardinalityData(cardinalityDataToParse);
+    }
+
+    // Parse unit framing
+    if (ocaPackageData && hasUnitFramingOverlay(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const unitFraming = ocaPackageData.extensions[ADC][captureBaseSaid].overlays.unit_framing;
+
+      newAttributeRowData.forEach((row) => {
+        const unitFramed = row?.Unit;
+        const unitFramingValue = unitFraming?.units?.[unitFramed]?.term_id || "";
+
+        newUnitFramingRowData.push({
+          Attribute: row.Attribute,
+          Unit: row.Unit,
+          "UCUM Code": unitFramingValue,
+          "UCUM Label": "",
+          Description: ""
+        });
+
+        setOverlay((prev) => ({
+          ...prev,
+          "Unit Framing": {
+            ...prev["Unit Framing"],
+            selected: true
+          }
+        }));
+        setUnitFramingRowData(newUnitFramingRowData);
+      });
     }
 
     if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {

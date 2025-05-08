@@ -385,6 +385,11 @@ export const CARDINALITY = "cardinality";
 
 // Extension overlays
 export const ORDERING = "ordering";
+export const UNIT_FRAMING = "unit_framing";
+export const UNIT_ID = "UCUM";
+export const UNIT_LABEL = "";
+export const UNIT_LOCATION = "";
+export const UNIT_VERSION = "";
 
 export const overlays = [
   CHARACTER_ENCODING,

@@ -2,11 +2,22 @@ import { useContext, useMemo } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
-import { ADC, divisionCodes, groupCodes, ORDERING } from "../constants/constants";
+import {
+  ADC,
+  divisionCodes,
+  groupCodes,
+  ORDERING,
+  UNIT_FRAMING,
+  UNIT_ID,
+  UNIT_LABEL,
+  UNIT_LOCATION,
+  UNIT_VERSION
+} from "../constants/constants";
 import {
   generateOCABundle,
   getDescriptiveFileName,
-  getTransformedEntryCodes
+  getTransformedEntryCodes,
+  getUnitFramingInput
 } from "../constants/utils";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 
@@ -22,6 +33,7 @@ const useExportLogicV2 = () => {
     divisionGroup,
     savedEntryCodes,
     formatRuleRowData,
+    unitFramingRowData,
     customIsos,
     characterEncodingRowData,
     overlay,
@@ -385,6 +397,18 @@ const useExportLogicV2 = () => {
                 type: ORDERING,
                 attribute_ordering: attributesList,
                 entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
+              }
+            },
+            {
+              unit_framing_overlay: {
+                type: UNIT_FRAMING,
+                properties: {
+                  id: UNIT_ID,
+                  label: UNIT_LABEL,
+                  location: UNIT_LOCATION,
+                  version: UNIT_VERSION
+                },
+                units: getUnitFramingInput(unitFramingRowData)
               }
             }
           ]

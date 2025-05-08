@@ -1803,7 +1803,7 @@ const ucumUnits = [
   {
     code: "dyn.s/(cm.m2)",
     label: "dyne second per centimetre per square metre",
-    description: "Unit of dynamic viscosity, a fluid's resistance to applied forces"
+    description: "Unit of dynamic viscosity, a fluid's resistance to applied force (area)"
   },
   {
     code: "dyn.s/cm",

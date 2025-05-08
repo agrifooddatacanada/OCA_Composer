@@ -77,10 +77,10 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("RequiredEntries");
     } else if (overlayName === "Cardinality") {
       setCurrentPage("Cardinality");
-    } else if (overlayName === "Unit Framing") {
-      setCurrentPage("UnitFraming");
     } else if (overlayName === "Data Standards") {
       setCurrentPage("DataStandards");
+    } else if (overlayName === "Unit Framing") {
+      setCurrentPage("UnitFraming");
     } else {
       setCurrentPage("FormatRules");
     }

@@ -80,8 +80,10 @@ function App() {
   const [overlay, setOverlay] = useState(overlayItems);
   const [selectedOverlay, setSelectedOverlay] = useState("");
   const [cardinalityData, setCardinalityData] = useState([]);
-  const [unitFramingRowData, setUnitFramingRowData] = useState([]);
   const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
+  const [unitFramingRowData, setUnitFramingRowData] = useState([]);
+  const [ucumUnitsList, setUcumUnitsList] = useState([ucumUnits]);
+  const [isUnitFramingPageRendered, setIsUnitFramingPageRendered] = useState(false);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -118,7 +120,6 @@ function App() {
   const [selectedOverlaysOCAFile1, setSelectedOverlaysOCAFile1] = useState({});
   const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState({});
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
-  const [ucumUnitsList, setUcumUnitsList] = useState([ucumUnits]);
 
   // Ordering extension overlay for OCA package
   const [OCAPackage, setOCAPackage] = useState(null);
@@ -175,6 +176,7 @@ function App() {
   }, [fileData]);
 
   // Create Attribute Row Data object when Attributes List updates
+
   useEffect(() => {
     const newAttributesArray = [];
     const newCharacterEncodingArray = [];
@@ -234,28 +236,6 @@ function App() {
   }, [attributeRowData]);
 
   useEffect(() => {
-    const newUnitFramingArray = [];
-    attributeRowData.forEach((item) => {
-      const unitFramingObject = unitFramingRowData.find(
-        (obj) => obj.Attribute === item.Attribute
-      );
-
-      if (unitFramingObject && unitFramingObject.Unit === item.Unit) {
-        newUnitFramingArray.push(unitFramingObject);
-      } else {
-        newUnitFramingArray.push({
-          Attribute: item.Attribute,
-          Unit: item.Unit,
-          Code: "",
-          Label: "",
-          Description: ""
-        });
-      }
-    });
-    setUnitFramingRowData(newUnitFramingArray);
-  }, [attributeRowData]);
-
-  useEffect(() => {
     const newDataStandardsArray = [];
 
     attributeRowData.forEach((attributeRowItem) => {
@@ -275,6 +255,29 @@ function App() {
     });
 
     setDataStandardsRowData(newDataStandardsArray);
+  }, [attributeRowData]);
+
+  useEffect(() => {
+    const newUnitFramingArray = [];
+    attributeRowData.forEach((item) => {
+      const unitFramingObject = unitFramingRowData.find(
+        (obj) => obj.Attribute === item.Attribute
+      );
+
+      if (unitFramingObject && unitFramingObject.Unit === item.Unit) {
+        newUnitFramingArray.push(unitFramingObject);
+      } else {
+        newUnitFramingArray.push({
+          Attribute: item.Attribute,
+          Unit: item.Unit,
+          "UCUM Code": "",
+          "UCUM Label": "",
+          Description: ""
+        });
+      }
+    });
+
+    setUnitFramingRowData(newUnitFramingArray);
   }, [attributeRowData]);
 
   useEffect(() => {
@@ -491,7 +494,9 @@ function App() {
             unitFramingRowData,
             setUnitFramingRowData,
             ucumUnitsList,
-            setUcumUnitsList
+            setUcumUnitsList,
+            isUnitFramingPageRendered,
+            setIsUnitFramingPageRendered
           }}
         >
           <Box
