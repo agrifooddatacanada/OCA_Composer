@@ -17,24 +17,6 @@ const allowOverflowStyle = {
   overflow: "auto"
 };
 
-const AttributeHeader = ({ t }) => (
-  <CellHeader
-    headerText={t("Attributes")}
-    helpText={t("This is the name for the attribute and, for example...")}
-  />
-);
-
-const TypeHeader = ({ t }) => (
-  <CellHeader headerText={t("Type")} helpText={<TypeTooltip />} />
-);
-
-const FormatRuleHeader = ({ t }) => (
-  <CellHeader
-    headerText={t("Format Rule")}
-    helpText={t("Select the formatting rule that applies to data for each attribute")}
-  />
-);
-
 const FormatRulesV2 = () => {
   const { t } = useTranslation();
   const {
@@ -91,7 +73,12 @@ const FormatRulesV2 = () => {
         editable: false,
         width: 180,
         cellStyle: () => allowOverflowStyle,
-        headerComponent: <AttributeHeader t={t} />
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Attributes"),
+          constraint: t("required"),
+          helpText: t("This is the name for the attribute in your schema")
+        }
       },
       {
         field: "Type",
@@ -99,11 +86,21 @@ const FormatRulesV2 = () => {
         width: 150,
         autoHeight: true,
         cellStyle: () => greyCellStyle,
-        headerComponent: <TypeHeader t={t} />
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Type"),
+          helpText: <TypeTooltip />
+        }
       },
       {
         field: "FormatRule",
-        headerComponent: FormatRuleHeader,
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Format Rule"),
+          helpText: t(
+            "Select the formatting rule that applies to data for each attribute"
+          )
+        },
         cellRendererFramework: <FormatRuleTypeRenderer t={t} />,
         width: 200,
         cellRendererParams: (params) => ({
@@ -115,6 +112,11 @@ const FormatRulesV2 = () => {
       {
         headerName: "",
         field: "Delete",
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Actions"),
+          helpText: t("Delete format rule for this attribute")
+        },
         cellRendererFramework: TrashCanButton,
         width: 60,
         cellRendererParams: (params) => ({
