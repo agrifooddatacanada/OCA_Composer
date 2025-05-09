@@ -94,6 +94,7 @@ const FormatRulesV2 = () => {
       },
       {
         field: "FormatRule",
+        cellRendererFramework: FormatRuleTypeRenderer,
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Format Rule"),
@@ -101,7 +102,6 @@ const FormatRulesV2 = () => {
             "Select the formatting rule that applies to data for each attribute"
           )
         },
-        cellRendererFramework: <FormatRuleTypeRenderer t={t} />,
         width: 200,
         cellRendererParams: (params) => ({
           onRefresh: () => {
@@ -112,11 +112,6 @@ const FormatRulesV2 = () => {
       {
         headerName: "",
         field: "Delete",
-        headerComponent: CellHeader,
-        headerComponentParams: {
-          headerText: t("Actions"),
-          helpText: t("Delete format rule for this attribute")
-        },
         cellRendererFramework: TrashCanButton,
         width: 60,
         cellRendererParams: (params) => ({
