@@ -17,6 +17,24 @@ const allowOverflowStyle = {
   overflow: "auto"
 };
 
+const AttributeHeader = ({ t }) => (
+  <CellHeader
+    headerText={t("Attributes")}
+    helpText={t("This is the name for the attribute and, for example...")}
+  />
+);
+
+const TypeHeader = ({ t }) => (
+  <CellHeader headerText={t("Type")} helpText={<TypeTooltip />} />
+);
+
+const FormatRuleHeader = ({ t }) => (
+  <CellHeader
+    headerText={t("Format Rule")}
+    helpText={t("Select the formatting rule that applies to data for each attribute")}
+  />
+);
+
 const FormatRulesV2 = () => {
   const { t } = useTranslation();
   const {
@@ -66,19 +84,14 @@ const FormatRulesV2 = () => {
     setCurrentPage("Overlays");
   };
 
-  const columnDefs = useMemo(() => {
-    return [
+  const columnDefs = useMemo(
+    () => [
       {
         field: "Attribute",
         editable: false,
         width: 180,
         cellStyle: () => allowOverflowStyle,
-        headerComponent: () => (
-          <CellHeader
-            headerText={t("Attributes")}
-            helpText={t("This is the name for the attribute and, for example...")}
-          />
-        )
+        headerComponent: <AttributeHeader t={t} />
       },
       {
         field: "Type",
@@ -86,21 +99,12 @@ const FormatRulesV2 = () => {
         width: 150,
         autoHeight: true,
         cellStyle: () => greyCellStyle,
-        headerComponent: () => (
-          <CellHeader headerText={t("Type")} helpText={<TypeTooltip />} />
-        )
+        headerComponent: <TypeHeader t={t} />
       },
       {
         field: "FormatRule",
-        headerComponent: () => (
-          <CellHeader
-            headerText={t("Format Rule")}
-            helpText={t(
-              "Select the formatting rule that applies to data for each attribute"
-            )}
-          />
-        ),
-        cellRendererFramework: FormatRuleTypeRenderer,
+        headerComponent: FormatRuleHeader,
+        cellRendererFramework: <FormatRuleTypeRenderer t={t} />,
         width: 200,
         cellRendererParams: (params) => ({
           onRefresh: () => {
@@ -119,8 +123,9 @@ const FormatRulesV2 = () => {
           }
         })
       }
-    ];
-  }, []);
+    ],
+    [t]
+  );
 
   const onGridReady = useCallback(() => {
     setLoading(false);
@@ -157,7 +162,7 @@ const FormatRulesV2 = () => {
             rowData={formatRuleRowData}
             columnDefs={columnDefs}
             domLayout="autoHeight"
-            suppressHorizontalScroll={true}
+            suppressHorizontalScroll
             rowHeight={50}
             onGridReady={onGridReady}
           />
