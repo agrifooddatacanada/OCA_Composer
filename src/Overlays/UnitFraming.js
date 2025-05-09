@@ -265,11 +265,15 @@ const UnitFraming = () => {
   };
 
   useEffect(() => {
-    if (!isUnitFramingPageRendered && unitFramingRowData?.length > 0) {
-      const updatedUnitFramingRowData = unitFramingRowData.map((row) => {
-        const { firstMatch } = searchUnits(row["UCUM Code"]);
+    if (!isUnitFramingPageRendered || unitFramingRowData?.length > 0) {
+      const newUnitFramingRowData = unitFramingRowData.filter(
+        (row) => row?.Unit !== undefined
+      );
+      const updatedUnitFramingRowData = newUnitFramingRowData.map((row) => {
+        const { firstMatch } = searchUnits(row["UCUM Code"] || row.Unit);
         return {
           ...row,
+          "UCUM Code": row["UCUM Code"] || firstMatch?.code || row.Unit,
           "UCUM Label": firstMatch?.label || row["UCUM Label"],
           Description: firstMatch?.description || row.Description
         };
