@@ -15,6 +15,7 @@ import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerific
 import OCAMerge from "./OCAMerge/OCAMerge";
 // import Tutorial from "./Tutorial/Tutorial";
 import ucumUnits from "./constants/ucumUnits";
+import { CUSTOM_FORMAT_RULE } from "./constants/constants";
 
 export const Context = createContext();
 
@@ -228,7 +229,8 @@ function App() {
         newFormatRuleArray.push({
           Attribute: item.Attribute,
           Type: item.Type,
-          FormatText: ""
+          FormatText: "",
+          [CUSTOM_FORMAT_RULE]: ""
         });
       }
     });

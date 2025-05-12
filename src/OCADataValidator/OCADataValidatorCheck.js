@@ -23,6 +23,7 @@ import ErrorFilterSelect from "./ErrorFilterSelect";
 import CellHeader from "../components/CellHeader";
 import ExportButton from "./ExportButton";
 import {
+  CUSTOM_FORMAT_RULE,
   errorCode,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
@@ -92,6 +93,7 @@ const flaggedHeader = (
   const formatRule = formatRuleRowData.find(
     (item) => item?.Attribute === props?.displayName
   );
+  const formatRegex = formatRule?.[CUSTOM_FORMAT_RULE] || formatRule?.FormatText || "";
   const attributeType = formatRule?.Type;
   let selectedOption = [];
   if (attributeType?.includes("Date")) {
@@ -153,38 +155,36 @@ const flaggedHeader = (
                     <Typography>{formatRule?.Type}</Typography>
                   </>
                 )}
-                {"FormatText" in formatRule &&
-                  formatRule?.FormatText &&
-                  formatRule?.FormatText !== "" && (
-                    <>
-                      <br />
-                      <Typography sx={{ fontWeight: "bold" }}>Format:</Typography>
-                      <Typography>
-                        <span
-                          style={{
-                            fontWeight: "500"
-                          }}
-                        >
-                          - RegEx:{" "}
-                        </span>{" "}
-                        {formatRule?.FormatText || ""}
-                      </Typography>
-                      <Typography>
-                        {formatRule?.FormatText in selectedOption && (
-                          <>
-                            <span
-                              style={{
-                                fontWeight: "500"
-                              }}
-                            >
-                              - Description:{" "}
-                            </span>
-                            {selectedOption[formatRule?.FormatText]}
-                          </>
-                        )}
-                      </Typography>
-                    </>
-                  )}
+                {formatRegex && (
+                  <>
+                    <br />
+                    <Typography sx={{ fontWeight: "bold" }}>Format:</Typography>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - RegEx:{" "}
+                      </span>{" "}
+                      {formatRegex}
+                    </Typography>
+                    <Typography>
+                      {formatRegex in selectedOption && (
+                        <>
+                          <span
+                            style={{
+                              fontWeight: "500"
+                            }}
+                          >
+                            - Description:{" "}
+                          </span>
+                          {selectedOption[formatRegex]}
+                        </>
+                      )}
+                    </Typography>
+                  </>
+                )}
               </>
             )}
             {characterEncoding && (

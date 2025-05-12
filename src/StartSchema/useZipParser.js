@@ -1,8 +1,14 @@
 import { useContext } from "react";
 import { Context } from "../App";
 import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
-import { ADC, codeToDivision, codeToGroup } from "../constants/constants";
 import {
+  ADC,
+  codeToDivision,
+  codeToGroup,
+  CUSTOM_FORMAT_RULE
+} from "../constants/constants";
+import {
+  getFormatRuleDescription,
   getOrderedAttributeRowData,
   hasAttributeOrdering,
   hasEntryCodeOrdering,
@@ -241,9 +247,15 @@ const useZipParser = () => {
         // Remove the escape character for " in regex patterns
         // OCA file requires " to be escaped, that's why the escape character needs to be added when creating OCA file
         // However, in other situtations, the escape character is not needed
-        newFormatRuleData.FormatText =
+        const formatRule =
           // eslint-disable-next-line quotes
           formatRules?.attribute_formats?.[item.Attribute]?.replace(/\\"/g, '"') || "";
+        const formatRuleDescription = getFormatRuleDescription(item?.Type, formatRule);
+
+        // If format rule has a description, then it's not a custom format rule
+        newFormatRuleData[formatRuleDescription ? "FormatText" : CUSTOM_FORMAT_RULE] =
+          formatRule;
+
         setOverlay((prev) => ({
           ...prev,
           "Add format rule for data": {
@@ -305,7 +317,8 @@ const useZipParser = () => {
     // Parse unit framing
     if (ocaPackageData && hasUnitFramingOverlay(ocaPackageData)) {
       const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
-      const unitFraming = ocaPackageData.extensions[ADC][captureBaseSaid].overlays.unit_framing;
+      const unitFraming =
+        ocaPackageData.extensions[ADC][captureBaseSaid].overlays.unit_framing;
 
       newAttributeRowData.forEach((row) => {
         const unitFramed = row?.Unit;
