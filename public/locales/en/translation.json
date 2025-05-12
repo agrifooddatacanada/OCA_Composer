@@ -318,8 +318,8 @@
   "Unit Framing": "Unit Framing",
   "All unit rules are documented in the": "All unit rules are documented in the",
   "units GitHub repository": "units GitHub repository",
-  "Request new unit ontologies to be added by": "Request new unit ontologies to be added by"
-  "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Click here to select schema bundle (.zip OR .json) or drag and drop one here",
+  "Request new unit ontologies to be added by": "Request new unit ontologies to be added by",
   "Download Data": "Download Data",
-  "Show Difference": "Show Difference"
+  "Show Difference": "Show Difference",
+  "Enter a custom regular expression for the attribute's data": "Enter a custom regular expression for the attribute's data"
 }

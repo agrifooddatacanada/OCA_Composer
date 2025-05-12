@@ -114,7 +114,7 @@ const FormatRulesV2 = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Custom Format Rule"),
-          helpText: t("Enter a custom format rule for the attribute")
+          helpText: t("Enter a custom regular expression for the attribute's data")
         },
         // A custom format rule can be provided only if no built-in format rule is selected
         editable: (params) => !params.node.data.FormatText,
