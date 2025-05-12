@@ -1,21 +1,17 @@
-import { Slot, Enum, LinkMLSchema, OCABundle, CaptureBase } from "./types.ts";
+/**
+ * Maps LinkML schemas to OCA bundle structures.
+ */
 
-type OverlayName = keyof OCABundle["overlays"];
-
-type OverlaySpec = {
-  name: OverlayName;
-  type: string;
-  key: string;
-  data: Record<string, any>;
-};
-
-// Helper: build an overlay block only if data has keys
-function buildOverlay<T extends string>(
-  type: string,
-  key: T,
-  data: Record<string, any>
-): Record<string, any> | null {
+/**
+ * Helper: build an overlay block only if data has keys
+ * @param {string} type - The type of overlay
+ * @param {string} key - The key for the data
+ * @param {Object} data - The overlay data
+ * @returns {Object|null} An overlay object or null if no data
+ */
+function buildOverlay(type, key, data) {
   if (Object.keys(data).length === 0) return null;
+
   return {
     type,
     capture_base: "",
@@ -24,19 +20,20 @@ function buildOverlay<T extends string>(
   };
 }
 
-// Build overlays from enums used in slots
-function buildEntryOverlays(
-  slots: Record<string, Slot>,
-  enums: Record<string, Enum>
-) {
+/**
+ * Build overlays from enums used in slots
+ * @param {Object} slots - The slots dictionary
+ * @param {Object} enums - The enums dictionary
+ * @returns {Object} Entry and entry_code overlays
+ */
+function buildEntryOverlays(slots, enums) {
+  const entry_code_data = {};
+  const entry_data = {};
 
-  const entry_code_data: Record<string, string[]> = {};
-  const entry_data: Record<string, Record<string, string>> = {};
-
-  for (const [slotName, slot] of Object.entries(slots)) {
+  Object.entries(slots).forEach(([slotName, slot]) => {
     const enumName = slot.range;
     const enumDef = enums[enumName];
-    if (!enumDef) continue;
+    if (!enumDef) return;
 
     // For "Entry Code" overlay
     entry_code_data[slotName] = Object.keys(enumDef.permissible_values || {});
@@ -48,9 +45,9 @@ function buildEntryOverlays(
         value.description || code
       ])
     );
-  }
+  });
 
-  const overlays: Partial<OCABundle["overlays"]> = {};
+  const overlays = {};
 
   if (Object.keys(entry_code_data).length > 0) {
     overlays.entry_code = [
@@ -77,20 +74,25 @@ function buildEntryOverlays(
   return overlays;
 }
 
-export function buildOverlays(
-  slots: Record<string, Slot>,
-  enums: Record<string, Enum>,
-  linkmlSchema: { name: string; description?: string }
-): { overlays: Partial<OCABundle["overlays"]> } {
-  const overlays: Partial<OCABundle["overlays"]> = {};
+/**
+ * Build overlays for an OCA bundle
+ * @param {Object} slots - The slots dictionary
+ * @param {Object} enums - The enums dictionary
+ * @param {Object} linkmlSchema - The LinkML schema
+ * @returns {Object} The overlays object
+ */
+export function buildOverlays(slots, enums, linkmlSchema) {
+  const overlays = {};
 
-  const overlaySpecs: OverlaySpec[] = [
+  const overlaySpecs = [
     {
       name: "format",
       type: "spec/overlays/format/1.0",
       key: "attribute_formats",
       data: Object.fromEntries(
-        Object.entries(slots).filter(([, s]) => s.pattern).map(([k, s]) => [k, s.pattern])
+        Object.entries(slots)
+          .filter(([, s]) => s.pattern)
+          .map(([k, s]) => [k, s.pattern])
       )
     },
     {
@@ -98,7 +100,9 @@ export function buildOverlays(
       type: "spec/overlays/information/1.0",
       key: "attribute_information",
       data: Object.fromEntries(
-        Object.entries(slots).filter(([, s]) => s.description).map(([k, s]) => [k, s.description])
+        Object.entries(slots)
+          .filter(([, s]) => s.description)
+          .map(([k, s]) => [k, s.description])
       )
     },
     {
@@ -106,7 +110,9 @@ export function buildOverlays(
       type: "spec/overlays/label/1.0",
       key: "attribute_labels",
       data: Object.fromEntries(
-        Object.entries(slots).filter(([, s]) => s.title).map(([k, s]) => [k, s.title])
+        Object.entries(slots)
+          .filter(([, s]) => s.title)
+          .map(([k, s]) => [k, s.title])
       )
     },
     {
@@ -114,7 +120,9 @@ export function buildOverlays(
       type: "spec/overlays/standard/1.0",
       key: "attr_standards",
       data: Object.fromEntries(
-        Object.entries(slots).filter(([, s]) => s.slot_uri).map(([k, s]) => [k, s.slot_uri])
+        Object.entries(slots)
+          .filter(([, s]) => s.slot_uri)
+          .map(([k, s]) => [k, s.slot_uri])
       )
     },
     {
@@ -132,7 +140,7 @@ export function buildOverlays(
   overlaySpecs.forEach(({ name, type, key, data }) => {
     const overlay = buildOverlay(type, key, data);
     if (overlay) {
-      (overlays as any)[name] = [overlay];
+      overlays[name] = [overlay];
     }
   });
 
@@ -144,6 +152,7 @@ export function buildOverlays(
     name: linkmlSchema.name,
     description: linkmlSchema.description || ""
   };
+
   if (metaOverlay.name || metaOverlay.description) {
     overlays.meta = [metaOverlay];
   }
@@ -155,20 +164,20 @@ export function buildOverlays(
   return { overlays };
 }
 
-
-
 /**
  * Maps a LinkML schema to an OCA bundle structure.
+ * @param {Object} linkmlSchema - The LinkML schema to convert
+ * @returns {Object} An OCA bundle
  */
-export function mapLinkMLToOCABundle(linkmlSchema: LinkMLSchema): OCABundle {
+export function mapLinkMLToOCABundle(linkmlSchema) {
   const slots = linkmlSchema.slots || {};
   const enums = linkmlSchema.enums || {};
 
   // Extract OCA attributes and flagged attributes
-  const attributes: Record<string, string> = Object.fromEntries(
+  const attributes = Object.fromEntries(
     Object.entries(slots).map(([key, slot]) => {
       let range = "Text";
-  
+
       if (["integer", "decimal", "float"].includes(slot.range)) {
         range = "Numeric";
       }
@@ -176,24 +185,23 @@ export function mapLinkMLToOCABundle(linkmlSchema: LinkMLSchema): OCABundle {
       if (slot.range === "datetime") {
         range = "Datetime";
       }
-  
+
       // OCA does not support Event or Type?
       if (/Event|Type/.test(slot.range)) {
         range = "";
       }
-  
+
       return [key, range];
     })
   );
 
-  const flaggedAttributes: string[] = Object.entries(slots)
+  const flaggedAttributes = Object.entries(slots)
     .filter(([, slot]) => slot.annotations?.flagged)
     .map(([key]) => key);
 
   // Define capture_base separately
-  const capture_base: CaptureBase = {
+  const capture_base = {
     type: "spec/capture_base/1.0",
-    // digest: "",
     language: "en",
     attributes,
     flagged_attributes: flaggedAttributes

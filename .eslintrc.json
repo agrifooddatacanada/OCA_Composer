@@ -2,13 +2,8 @@
   "extends": ["airbnb", "airbnb/hooks", "prettier"],
   "env": {
     "browser": true,
-    "es2021": true,
-    "jest": true
-  }, 
-  "parser": "@typescript-eslint/parser", // Use TypeScript parser
-  "plugins": [
-    "@typescript-eslint" // Add TypeScript plugin
-  ],
+    "es2021": true
+  },
   "parserOptions": {
     "ecmaVersion": 12,
     "sourceType": "module"
@@ -35,10 +30,5 @@
     "consistent-return": 0,
     "jsx-a11y/no-autofocus": 1
     // Additional ESLint rules can be added here
-  },
-  "settings": {
-    "import/resolver": {
-      "typescript": {}  // Enable TypeScript resolution
-    }
   }
 }

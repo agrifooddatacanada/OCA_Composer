@@ -1,30 +1,37 @@
-import { Slot, Enum } from "./types.ts";
-import { TYPE_MAPPING } from "./constants.ts";
+import { TYPE_MAPPING } from "./constants";
 
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-}
+/**
+ * @typedef {Object} ValidationResult
+ * @property {boolean} isValid - Whether the validation passed
+ * @property {string[]} errors - List of error messages
+ * @property {string[]} warnings - List of warning messages
+ */
 
 /**
  * Validates a single slot's structure and properties
+ * @param {string} slotName - The name of the slot being validated
+ * @param {Object} slot - The slot object to validate
+ * @param {ValidationResult} result - The validation result to update
  */
-function validateSlot(slotName: string, slot: unknown, result: ValidationResult): void {
+function validateSlot(slotName, slot, result) {
   if (!slot || typeof slot !== "object") {
     result.errors.push(`Slot '${slotName}' must be a non-null object`);
     return;
   }
 
-  const s = slot as Partial<Slot>;
+  const s = slot;
 
   // Check range property
   if (!s.range) {
-    result.warnings.push(`Slot '${slotName}' has no range specified, will default to "Text"`);
+    result.warnings.push(
+      `Slot '${slotName}' has no range specified, will default to "Text"`
+    );
   } else if (typeof s.range !== "string") {
     result.errors.push(`Slot '${slotName}' range must be a string`);
   } else if (!(s.range in TYPE_MAPPING) && !s.range.endsWith("Enum")) {
-    result.warnings.push(`Slot '${slotName}' has range '${s.range}' which will be mapped to "Text"`);
+    result.warnings.push(
+      `Slot '${slotName}' has range '${s.range}' which will be mapped to "Text"`
+    );
   }
 
   // Validate optional properties if present
@@ -39,7 +46,10 @@ function validateSlot(slotName: string, slot: unknown, result: ValidationResult)
   if (s.annotations !== undefined) {
     if (typeof s.annotations !== "object" || s.annotations === null) {
       result.errors.push(`Slot '${slotName}' annotations must be an object`);
-    } else if (s.annotations.flagged !== undefined && typeof s.annotations.flagged !== "boolean") {
+    } else if (
+      s.annotations.flagged !== undefined &&
+      typeof s.annotations.flagged !== "boolean"
+    ) {
       result.errors.push(`Slot '${slotName}' flagged annotation must be a boolean`);
     }
   }
@@ -55,14 +65,17 @@ function validateSlot(slotName: string, slot: unknown, result: ValidationResult)
 
 /**
  * Validates an enum's structure and properties
+ * @param {string} enumName - The name of the enum being validated
+ * @param {Object} enumValue - The enum object to validate
+ * @param {ValidationResult} result - The validation result to update
  */
-function validateEnum(enumName: string, enumValue: unknown, result: ValidationResult): void {
+function validateEnum(enumName, enumValue, result) {
   if (!enumValue || typeof enumValue !== "object") {
     result.errors.push(`Enum '${enumName}' must be a non-null object`);
     return;
   }
 
-  const e = enumValue as Partial<Enum>;
+  const e = enumValue;
 
   // Check permissible values
   if (!e.permissible_values || typeof e.permissible_values !== "object") {
@@ -75,7 +88,9 @@ function validateEnum(enumName: string, enumValue: unknown, result: ValidationRe
     if (typeof value !== "object" || value === null) {
       result.errors.push(`Enum '${enumName}' value '${valueKey}' must be an object`);
     } else if (value.description !== undefined && typeof value.description !== "string") {
-      result.errors.push(`Enum '${enumName}' value '${valueKey}' description must be a string`);
+      result.errors.push(
+        `Enum '${enumName}' value '${valueKey}' description must be a string`
+      );
     }
   });
 }
@@ -87,14 +102,14 @@ function validateEnum(enumName: string, enumValue: unknown, result: ValidationRe
  * 2. Format: pattern validation
  * 3. Meta: name and description
  * 4. Entry Codes: from LinkML enums
- * 
+ *
  * Note: Character Encoding is set to defaults, not validated from LinkML
- * 
- * @param schema The schema to validate
- * @returns Validation result with any errors or warnings
+ *
+ * @param {Object} schema - The schema to validate
+ * @returns {ValidationResult} Validation result with any errors or warnings
  */
-export function validateForOCATranslation(schema: unknown): ValidationResult {
-  const result: ValidationResult = {
+export default function validateForOCATranslation(schema) {
+  const result = {
     isValid: true,
     errors: [],
     warnings: []
@@ -108,7 +123,7 @@ export function validateForOCATranslation(schema: unknown): ValidationResult {
       return result;
     }
 
-    const s = schema as Record<string, any>;
+    const s = schema;
 
     // Required Meta Overlay validation
     if (!s.name || typeof s.name !== "string") {
@@ -125,7 +140,7 @@ export function validateForOCATranslation(schema: unknown): ValidationResult {
       result.errors.push("Schema must have at least one class defined");
     } else {
       // Each class must have attributes for Capture Base
-      Object.entries(s.classes).forEach(([className, classObj]: [string, any]) => {
+      Object.entries(s.classes).forEach(([className, classObj]) => {
         if (!classObj.attributes || typeof classObj.attributes !== "object") {
           result.errors.push(`Class '${className}' must have an 'attributes' object`);
         } else if (Object.keys(classObj.attributes).length === 0) {
@@ -139,27 +154,31 @@ export function validateForOCATranslation(schema: unknown): ValidationResult {
       result.errors.push("Schema must have a 'slots' object defined");
     } else {
       const slotNames = new Set(Object.keys(s.slots));
-      
+
       // Validate slot references
-      Object.entries(s.classes || {}).forEach(([className, classObj]: [string, any]) => {
+      Object.entries(s.classes || {}).forEach(([className, classObj]) => {
         Object.keys(classObj.attributes || {}).forEach((attrName) => {
           if (!slotNames.has(attrName)) {
-            result.errors.push(`Class '${className}' references undefined slot '${attrName}'`);
+            result.errors.push(
+              `Class '${className}' references undefined slot '${attrName}'`
+            );
           }
         });
       });
 
       // Validate slot structure (types, patterns, flags)
-      Object.entries(s.slots).forEach(([slotName, slot]: [string, any]) => {
+      Object.entries(s.slots).forEach(([slotName, slot]) => {
         validateSlot(slotName, slot, result);
       });
 
       // Validate enum references
-      Object.entries(s.slots).forEach(([slotName, slot]: [string, any]) => {
+      Object.entries(s.slots).forEach(([slotName, slot]) => {
         if (slot.range && typeof slot.range === "string" && slot.range.endsWith("Enum")) {
           const enumName = slot.range;
           if (!s.enums || !s.enums[enumName]) {
-            result.errors.push(`Slot '${slotName}' references undefined enum '${enumName}'`);
+            result.errors.push(
+              `Slot '${slotName}' references undefined enum '${enumName}'`
+            );
           }
         }
       });
@@ -170,7 +189,7 @@ export function validateForOCATranslation(schema: unknown): ValidationResult {
       if (typeof s.enums !== "object") {
         result.errors.push("Schema enums must be an object");
       } else {
-        Object.entries(s.enums).forEach(([enumName, enumValue]: [string, any]) => {
+        Object.entries(s.enums).forEach(([enumName, enumValue]) => {
           validateEnum(enumName, enumValue, result);
         });
       }
@@ -179,7 +198,9 @@ export function validateForOCATranslation(schema: unknown): ValidationResult {
     result.isValid = result.errors.length === 0;
   } catch (error) {
     result.isValid = false;
-    result.errors.push(`Validation error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    result.errors.push(
+      `Validation error: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 
   return result;

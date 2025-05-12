@@ -1,14 +1,16 @@
-import * as yaml from "js-yaml";
-import { mapLinkMLToOCABundle } from "./mapLinkMLToOCABundle.ts";
-import { OCAPackage, OCABundle, LinkMLSchema } from "./types.ts";
-import { validateForOCATranslation } from "./validation.ts";
+/**
+ * Main module for converting LinkML schemas to OCA format.
+ */
+import yaml from "js-yaml";
+import { mapLinkMLToOCABundle } from "./mapLinkMLToOCABundle";
+import validateForOCATranslation from "./validation";
 
 /**
  * Validates that the input is valid YAML syntax
- * @param yamlContent - The YAML content to validate
- * @returns parsed YAML object if valid, throws error if invalid
+ * @param {string} yamlContent - The YAML content to validate
+ * @returns {Object} parsed YAML object if valid, throws error if invalid
  */
-export function validateYAMLSyntax(yamlContent: string): object {
+export function validateYAMLSyntax(yamlContent) {
   try {
     const parsed = yaml.load(yamlContent);
     if (!parsed || typeof parsed !== "object") {
@@ -26,14 +28,14 @@ export function validateYAMLSyntax(yamlContent: string): object {
 
 /**
  * Transforms an OCA bundle into an OCA package
- * @param bundle - The OCA bundle to package
- * @returns The OCA package
+ * @param {Object} bundle - The OCA bundle to package
+ * @returns {Object} The OCA package
  */
-export function transformToPackage(bundle: OCABundle): OCAPackage {
+export function transformToPackage(bundle) {
   return {
     type: "oca_package/1.0",
     oca_bundle: {
-      bundle, // Using property shorthand
+      bundle
     },
     dependencies: [],
     extensions: []
@@ -42,18 +44,18 @@ export function transformToPackage(bundle: OCABundle): OCAPackage {
 
 /**
  * Translates a LinkML schema to an OCA package
- * @param yamlContent - The LinkML schema as YAML string
- * @returns The OCA package
+ * @param {string} yamlContent - The LinkML schema as YAML string
+ * @returns {Promise<Object>} The OCA package
  */
-export async function translateLinkMLToOCA(yamlContent: string): Promise<OCABundle> {
+export async function translateLinkMLToOCA(yamlContent) {
   // First validate the YAML syntax
-  const parsedSchema = validateYAMLSyntax(yamlContent) as LinkMLSchema;
-  
+  const parsedSchema = validateYAMLSyntax(yamlContent);
+
   // Then validate the LinkML schema
   validateForOCATranslation(parsedSchema);
-  
+
   // Convert to OCA bundle
   const bundle = mapLinkMLToOCABundle(parsedSchema);
-  
+
   return bundle;
 }
