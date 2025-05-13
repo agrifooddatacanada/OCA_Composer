@@ -133,7 +133,7 @@ const FormatRulesV2 = () => {
         })
       }
     ],
-    []
+    [t]
   );
 
   const onGridReady = useCallback(() => {

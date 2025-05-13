@@ -223,7 +223,6 @@ const getColumnDefs = (gridRef, t, searchUnits) => [
   }
 ];
 
-
 const updateUnitFramingRowDataForOverlayGeneration = (
   unitFramingRowData,
   newUnitFramingRowData
