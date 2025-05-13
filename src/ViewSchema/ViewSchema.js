@@ -22,15 +22,11 @@ import LinkCard from "./LinkCard";
 import useExportLogic from "./useExportLogic";
 import Loading from "../components/Loading";
 import useExportLogicV2 from "./useExportLogicV2";
-import {
-  formatCodeBinaryDescription,
-  formatCodeDateDescription,
-  formatCodeNumericDescription,
-  formatCodeTextDescription
-} from "../constants/constants";
+import { CUSTOM_FORMAT_RULE } from "../constants/constants";
 import { codesToLanguages } from "../constants/isoCodes";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
+import { getFormatRuleDescription } from "../constants/utils";
 
 // const currentEnv = process.env.REACT_APP_ENV;
 
@@ -220,22 +216,15 @@ export default function ViewSchema({
       const attrWithFormatRule = formatRuleRowData.find(
         (row) => row.Attribute === attributeName
       );
-      if (attrWithFormatRule?.FormatText && attrWithFormatRule.FormatText !== "") {
+      const formatRule =
+        attrWithFormatRule?.[CUSTOM_FORMAT_RULE] || attrWithFormatRule?.FormatText;
+      if (formatRule) {
         const attributeType = attrWithFormatRule?.Type;
-        const value = attrWithFormatRule?.FormatText;
-        const desc = attributeType.includes("Date")
-          ? formatCodeDateDescription[value]
-          : attributeType.includes("Numeric")
-            ? formatCodeNumericDescription[value]
-            : attributeType.includes("Binary")
-              ? formatCodeBinaryDescription[value]
-              : attributeType.includes("Text")
-                ? formatCodeTextDescription[value]
-                : "";
+        const desc = getFormatRuleDescription(attributeType, formatRule);
         if (desc) {
           dataObject["Add format rule for data"] = desc;
         } else {
-          dataObject["Add format rule for data"] = value;
+          dataObject["Add format rule for data"] = formatRule;
         }
       }
 

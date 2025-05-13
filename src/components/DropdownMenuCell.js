@@ -1,5 +1,7 @@
+import React from "react";
 import { Box, FormControl, Select } from "@mui/material";
 
+// eslint-disable-next-line import/prefer-default-export
 export const DropdownMenuList = ({
   handleKeyDown,
   type,
@@ -8,42 +10,42 @@ export const DropdownMenuList = ({
   isDropdownOpen,
   setIsDropdownOpen,
   typesDisplay,
-}) => {
-  return (
-    <Box
+  isDisabled = false
+}) => (
+  <Box
+    sx={{
+      height: "105%",
+      display: "flex",
+      alignItems: "center",
+      width: "100%"
+    }}
+  >
+    <FormControl
+      fullWidth
+      variant="standard"
       sx={{
-        height: "105%",
-        display: "flex",
-        alignItems: "center",
-        width: "100%",
+        height: "100%"
       }}
+      onKeyDown={handleKeyDown}
+      disabled={isDisabled}
     >
-      <FormControl
-        fullWidth
-        variant="standard"
+      <Select
+        id="select-drop"
+        value={type || ""}
+        label="Type"
+        onChange={handleChange}
         sx={{
           height: "100%",
+          fontSize: "small"
         }}
-        onKeyDown={handleKeyDown}
+        onClick={handleClick}
+        open={isDropdownOpen}
+        onClose={() => setIsDropdownOpen(false)}
+        onOpen={() => setIsDropdownOpen(true)}
+        renderValue={(value) => value}
       >
-        <Select
-          id="select-drop"
-          value={type || ""}
-          label="Type"
-          onChange={handleChange}
-          sx={{
-            height: "100%",
-            fontSize: "small",
-          }}
-          onClick={handleClick}
-          open={isDropdownOpen}
-          onClose={() => setIsDropdownOpen(false)}
-          onOpen={() => setIsDropdownOpen(true)}
-          renderValue={(value) => value}
-        >
-          {typesDisplay}
-        </Select>
-      </FormControl>
-    </Box>
-  );
-};
+        {typesDisplay}
+      </Select>
+    </FormControl>
+  </Box>
+);
