@@ -160,7 +160,7 @@ export const useHandleJsonDrop = (
           }
 
           if (jsonFile?.overlays?.unit) {
-            [loadUnits] = jsonFile.overlays.unit;
+            loadUnits = { ...jsonFile.overlays.unit };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(loadUnits));
