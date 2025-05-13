@@ -392,6 +392,9 @@ export const UNIT_FRAME_LABEL = "Unified Code for Units of Measure";
 export const UNIT_FRAME_LOCATION = "https://ucum.org/";
 export const UNIT_FRAME_VERSION = "";
 
+// Sensitive overlay (flagged attributes)
+export const SENSITIVE = "sensitive";
+
 export const overlays = [
   CHARACTER_ENCODING,
   FORMAT,
