@@ -85,6 +85,7 @@ function App() {
   const [unitFramingRowData, setUnitFramingRowData] = useState([]);
   const [ucumUnitsList, setUcumUnitsList] = useState([ucumUnits]);
   const [isUnitFramingPageRendered, setIsUnitFramingPageRendered] = useState(false);
+  const [unitRowsToDisplayData, setUnitRowsToDisplayData] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -498,7 +499,9 @@ function App() {
             ucumUnitsList,
             setUcumUnitsList,
             isUnitFramingPageRendered,
-            setIsUnitFramingPageRendered
+            setIsUnitFramingPageRendered,
+            unitRowsToDisplayData,
+            setUnitRowsToDisplayData
           }}
         >
           <Box
