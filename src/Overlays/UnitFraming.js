@@ -223,6 +223,25 @@ const getColumnDefs = (gridRef, t, searchUnits) => [
   }
 ];
 
+const updateUnitFramingRowDataForOverlayGeneration = (
+  unitFramingRowData,
+  newUnitFramingRowData
+) =>
+  unitFramingRowData.map((row) => {
+    const existingRow = newUnitFramingRowData.find(
+      (existing) => existing.Unit === row.Unit
+    );
+
+    return existingRow
+      ? {
+          ...row,
+          "UCUM Code": existingRow["UCUM Code"] || row["UCUM Code"],
+          "UCUM Label": existingRow["UCUM Label"] || row["UCUM Label"],
+          Description: existingRow.Description || row.Description
+        }
+      : row;
+  });
+
 const UnitFraming = () => {
   const { t } = useTranslation();
   const {
@@ -237,6 +256,7 @@ const UnitFraming = () => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
+  const [unitRowsToDisplayData, setUnitRowsToDisplayData] = useState([]);
 
   const options = {
     keys: ["code", "label", "description"],
@@ -265,17 +285,33 @@ const UnitFraming = () => {
   };
 
   useEffect(() => {
-    if (!isUnitFramingPageRendered && unitFramingRowData?.length > 0) {
-      const updatedUnitFramingRowData = unitFramingRowData.map((row) => {
-        const { firstMatch } = searchUnits(row["UCUM Code"]);
+    if (!isUnitFramingPageRendered || unitFramingRowData?.length > 0) {
+      const newUnitFramingRowData = unitFramingRowData.filter(
+        (row) => row?.Unit !== undefined
+      );
+
+      const uniqueUnitFramingRowData = Array.from(
+        new Map(newUnitFramingRowData.map((row) => [row.Unit, row])).values()
+      );
+
+      const updatedUnitFramingRowData = uniqueUnitFramingRowData.map((row) => {
+        const { firstMatch } = searchUnits(row["UCUM Code"] || row.Unit);
         return {
           ...row,
+          "UCUM Code": row["UCUM Code"] || firstMatch?.code || row.Unit,
           "UCUM Label": firstMatch?.label || row["UCUM Label"],
           Description: firstMatch?.description || row.Description
         };
       });
 
-      setUnitFramingRowData(updatedUnitFramingRowData);
+      setUnitRowsToDisplayData(updatedUnitFramingRowData);
+      setUnitFramingRowData(
+        updateUnitFramingRowDataForOverlayGeneration(
+          newUnitFramingRowData,
+          updatedUnitFramingRowData
+        )
+      );
+
       setIsUnitFramingPageRendered(true);
     }
   }, []);
@@ -295,7 +331,10 @@ const UnitFraming = () => {
     const newUnitFramingData = gridRef.current.api
       .getRenderedNodes()
       ?.map((node) => node?.data);
-    setUnitFramingRowData(newUnitFramingData);
+
+    setUnitFramingRowData(
+      updateUnitFramingRowDataForOverlayGeneration(unitFramingRowData, newUnitFramingData)
+    );
   };
 
   const handleForward = () => {
@@ -338,7 +377,7 @@ const UnitFraming = () => {
           <style>{gridStyles}</style>
           <AgGridReact
             ref={gridRef}
-            rowData={unitFramingRowData}
+            rowData={unitRowsToDisplayData}
             columnDefs={columnDefs}
             domLayout="autoHeight"
             suppressHorizontalScroll

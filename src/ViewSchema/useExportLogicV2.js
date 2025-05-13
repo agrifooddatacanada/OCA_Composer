@@ -4,6 +4,7 @@ import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
 import {
   ADC,
+  CUSTOM_FORMAT_RULE,
   divisionCodes,
   groupCodes,
   ORDERING,
@@ -157,10 +158,11 @@ const useExportLogicV2 = () => {
 
     let tempText = "";
     formatRuleRowData.forEach((item, index) => {
-      if (item.FormatText) {
+      const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText;
+      if (formatRule) {
         // Any " in the format text needs to be escaped for OCA file
         // eslint-disable-next-line quotes
-        tempText += ` ${attributesList[index]}="${item.FormatText.replace(/"/g, '\\"')}"`;
+        tempText += ` ${attributesList[index]}="${formatRule.replace(/"/g, '\\"')}"`;
       }
     });
 

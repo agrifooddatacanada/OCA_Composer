@@ -4,6 +4,10 @@ import {
   ADC,
   DEFAULT_LANGUAGE,
   DISALLOWED_CHARACTERS,
+  formatCodeBinaryDescription,
+  formatCodeDateDescription,
+  formatCodeNumericDescription,
+  formatCodeTextDescription,
   OCA_REPOSITORY_API_URL
 } from "./constants";
 
@@ -543,3 +547,14 @@ export const downloadJsonFile = (data, fileName) => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
+
+export const getFormatRuleDescription = (attributeType, formatRule) =>
+  attributeType.includes("Date")
+    ? formatCodeDateDescription[formatRule]
+    : attributeType.includes("Numeric")
+      ? formatCodeNumericDescription[formatRule]
+      : attributeType.includes("Binary")
+        ? formatCodeBinaryDescription[formatRule]
+        : attributeType.includes("Text")
+          ? formatCodeTextDescription[formatRule]
+          : "";

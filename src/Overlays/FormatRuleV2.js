@@ -11,6 +11,7 @@ import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { FormatRuleTypeRenderer, TrashCanButton } from "./FormatRuleCellRender";
 import Loading from "../components/Loading";
+import { CUSTOM_FORMAT_RULE } from "../constants/constants";
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -76,8 +77,7 @@ const FormatRulesV2 = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attributes"),
-          constraint: t("required"),
-          helpText: t("This is the name for the attribute in your schema")
+          helpText: t("This is the name for the attribute and, for example...")
         }
       },
       {
@@ -94,7 +94,6 @@ const FormatRulesV2 = () => {
       },
       {
         field: "FormatRule",
-        cellRendererFramework: FormatRuleTypeRenderer,
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Format Rule"),
@@ -102,12 +101,25 @@ const FormatRulesV2 = () => {
             "Select the formatting rule that applies to data for each attribute"
           )
         },
+        cellRendererFramework: FormatRuleTypeRenderer,
         width: 200,
         cellRendererParams: (params) => ({
           onRefresh: () => {
             gridRef.current.api.redrawRows({ rowNodes: [params.node] });
           }
         })
+      },
+      {
+        field: CUSTOM_FORMAT_RULE,
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Custom Format Rule"),
+          helpText: t("Enter a custom regular expression for the attribute's data")
+        },
+        // A custom format rule can be provided only if no built-in format rule is selected
+        editable: (params) => !params.node.data.FormatText,
+        autoHeight: true,
+        width: 200
       },
       {
         headerName: "",
@@ -127,6 +139,25 @@ const FormatRulesV2 = () => {
   const onGridReady = useCallback(() => {
     setLoading(false);
   }, []);
+
+  const handleKeyPress = (params) => {
+    if (params.colDef.field !== CUSTOM_FORMAT_RULE) return;
+
+    params.node.updateData({
+      ...params.node.data,
+      [CUSTOM_FORMAT_RULE]: params.event.target.value
+    });
+
+    // Force refresh the format rule cell to update its disabled state
+    const formatRuleColumn = params.columnApi.getColumn("FormatRule");
+    if (formatRuleColumn) {
+      params.api.refreshCells({
+        force: true,
+        rowNodes: [params.node],
+        columns: [formatRuleColumn]
+      });
+    }
+  };
 
   return (
     <BackNextSkeleton
@@ -152,7 +183,7 @@ const FormatRulesV2 = () => {
           alignItems: "center"
         }}
       >
-        <Box className="ag-theme-balham" sx={{ width: 590 }}>
+        <Box className="ag-theme-balham" sx={{ width: 790 }}>
           <style>{gridStyles}</style>
           <AgGridReact
             ref={gridRef}
@@ -162,6 +193,7 @@ const FormatRulesV2 = () => {
             suppressHorizontalScroll
             rowHeight={50}
             onGridReady={onGridReady}
+            onCellKeyDown={handleKeyPress}
           />
         </Box>
         <Box
