@@ -59,15 +59,7 @@ export const useHandleJsonDrop = (
     firstTimeMatchingRef.current = true;
     firstTimeDisplayWarning.current = true;
     setShowWarningCard(false);
-  }, [
-    setJsonIsParsed,
-    setJsonDropDisabled,
-    setJsonRawFile,
-    setMatchingRowData,
-    firstTimeMatchingRef,
-    firstTimeDisplayWarning,
-    setShowWarningCard
-  ]);
+  }, []);
 
   const handleJsonDrop = useCallback(
     (acceptedFiles) => {
@@ -149,8 +141,8 @@ export const useHandleJsonDrop = (
             allJSONFiles.push(...readmeLabel);
           }
 
-          if (jsonFile.capture_base) {
-            if (jsonFile.capture_base.flagged_attributes?.length > 0) {
+          if (jsonFile?.capture_base) {
+            if (jsonFile?.capture_base?.flagged_attributes?.length > 0) {
               setShowWarningCard(true);
             }
             loadRoot = { ...jsonFile.capture_base };
@@ -167,28 +159,28 @@ export const useHandleJsonDrop = (
           }
 
           if (jsonFile?.overlays?.conformance) {
-            [conformance] = jsonFile.overlays.conformance;
+            conformance = { ...jsonFile.overlays.conformance };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(conformance));
           }
 
           if (jsonFile?.overlays?.character_encoding) {
-            [characterEncoding] = jsonFile.overlays.character_encoding;
+            characterEncoding = { ...jsonFile.overlays.character_encoding };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(characterEncoding));
           }
 
           if (jsonFile?.overlays?.entry_code) {
-            [entryCodeSummary] = jsonFile.overlays.entry_code;
+            entryCodeSummary = { ...jsonFile.overlays.entry_code };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(entryCodeSummary));
           }
 
           if (jsonFile?.overlays?.format) {
-            [formatRules] = jsonFile.overlays.format;
+            formatRules = { ...jsonFile.overlays.format };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(formatRules));
@@ -205,14 +197,14 @@ export const useHandleJsonDrop = (
           }
 
           if (jsonFile?.overlays?.cardinality) {
-            [cardinalityData] = jsonFile.overlays.cardinality;
+            cardinalityData = { ...jsonFile.overlays.cardinality };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(cardinalityData));
           }
 
           if (jsonFile?.overlays?.standard) {
-            [dataStandards] = jsonFile.overlays.standard;
+            dataStandards = { ...jsonFile.overlays.standard };
 
             // ONLY for README
             allJSONFiles.push(JSON.stringify(dataStandards));
@@ -260,10 +252,7 @@ export const useHandleJsonDrop = (
           }, 900);
         };
       } catch (error) {
-        setJsonDropMessage({
-          message: `${messages.uploadFail}: ${error.message}`,
-          type: "error"
-        });
+        setJsonDropMessage({ message: messages.uploadFail, type: "error" });
         setJsonLoading(false);
         setDatasetLoading(false);
         if (datasetRawFile.length === 0) {
@@ -277,179 +266,156 @@ export const useHandleJsonDrop = (
     [datasetRawFile.length, jsonIsParsed]
   );
 
-  const handleZipDrop = useCallback(
-    (acceptedFiles) => {
-      try {
-        const reader = new FileReader();
+  const handleZipDrop = useCallback((acceptedFiles) => {
+    try {
+      const reader = new FileReader();
 
-        reader.onload = async (e) => {
-          setTargetResult(e);
-          const zip = await JSZip.loadAsync(e.target.result);
-          const languageList = [];
-          const informationList = [];
-          const labelList = [];
-          const metaList = [];
-          const entryList = [];
-          const allZipFiles = [];
-          let entryCodeSummary = {};
-          let conformance;
-          let characterEncoding;
-          let loadUnits;
-          let formatRules;
-          let cardinalityData;
-          let dataStandards;
-          const bundleForValidator = { overlays: {} };
+      reader.onload = async (e) => {
+        setTargetResult(e);
+        const zip = await JSZip.loadAsync(e.target.result);
+        const languageList = [];
+        const informationList = [];
+        const labelList = [];
+        const metaList = [];
+        const entryList = [];
+        const allZipFiles = [];
+        let entryCodeSummary = {};
+        let conformance;
+        let characterEncoding;
+        let loadUnits;
+        let formatRules;
+        let cardinalityData;
+        let dataStandards;
+        const bundleForValidator = { overlays: {} };
 
-          // load up metadata file in OCA bundle
-          const loadMetadataFile = await zip.files["meta.json"].async("text");
-          const metadataJson = JSON.parse(loadMetadataFile);
-          const { root } = metadataJson;
-          allZipFiles.push(loadMetadataFile);
+        // load up metadata file in OCA bundle
+        const loadMetadataFile = await zip.files["meta.json"].async("text");
+        const metadataJson = JSON.parse(loadMetadataFile);
+        const { root } = metadataJson;
+        allZipFiles.push(loadMetadataFile);
 
-          // loop through all files in OCA bundle
-          for (const [key, file] of Object.entries(metadataJson.files[root])) {
-            // eslint-disable-next-line no-await-in-loop
-            const content = await zip.files[`${file}.json`].async("text");
-            // Sanitize attributes in JSON content; replace disallowed characters in attribute names
-            const convertedContent = replaceAttributeCharsInJsonString(content);
-            const parsedContent = JSON.parse(convertedContent);
+        // loop through all files in OCA bundle
+        for (const [key, file] of Object.entries(metadataJson.files[root])) {
+          // eslint-disable-next-line no-await-in-loop
+          const content = await zip.files[`${file}.json`].async("text");
+          // Sanitize attributes in JSON content; replace disallowed characters in attribute names
+          const convertedContent = replaceAttributeCharsInJsonString(content);
+          const parsedContent = JSON.parse(convertedContent);
 
-            if (
-              "type" in parsedContent &&
-              neededOverlays.includes(parsedContent.type.split("/")[2])
-            ) {
-              bundleForValidator.overlays[parsedContent.type.split("/")[2]] =
-                parsedContent;
-            }
-
-            if (key.includes("meta")) {
-              metaList.push(parsedContent);
-              languageList.push(key.substring(6, 8));
-            }
-
-            if (key.includes("information")) {
-              informationList.push(parsedContent);
-            } else if (key.includes("format")) {
-              // Format word is inside Information word, so we need to check if it is a format or information
-              formatRules = parsedContent;
-            }
-
-            if (key.includes("label")) {
-              labelList.push(parsedContent);
-            }
-
-            if (key.includes("entry (")) {
-              entryList.push(parsedContent);
-            }
-
-            if (key.includes("entry_code")) {
-              entryCodeSummary = parsedContent;
-            }
-
-            if (key.includes("conformance")) {
-              conformance = parsedContent;
-            }
-
-            if (key.includes("character_encoding")) {
-              characterEncoding = parsedContent;
-            }
-
-            if (key.includes("unit")) {
-              loadUnits = parsedContent;
-            }
-
-            if (key.includes("cardinality")) {
-              cardinalityData = parsedContent;
-            }
-
-            if (key.includes("standard")) {
-              dataStandards = parsedContent;
-            }
-
-            allZipFiles.push(convertedContent);
+          if (
+            "type" in parsedContent &&
+            neededOverlays.includes(parsedContent.type.split("/")[2])
+          ) {
+            bundleForValidator.overlays[parsedContent.type.split("/")[2]] = parsedContent;
           }
 
-          const loadRoot = await zip.files[`${metadataJson.root}.json`].async("text");
-          const convertedLoadRoot = replaceAttributeCharsInJsonString(loadRoot);
-          const parsedRoot = JSON.parse(convertedLoadRoot);
-          if (parsedRoot?.flagged_attributes?.length > 0) {
-            setShowWarningCard(true);
+          if (key.includes("meta")) {
+            metaList.push(parsedContent);
+            languageList.push(key.substring(6, 8));
           }
-          if ("type" in parsedRoot && parsedRoot.type.split("/")[1] === "capture_base") {
-            bundleForValidator.capture_base = parsedRoot;
+
+          if (key.includes("information")) {
+            informationList.push(parsedContent);
+          } else if (key.includes("format")) {
+            // Format word is inside Information word, so we need to check if it is a format or information
+            formatRules = parsedContent;
           }
-          allZipFiles.push(convertedLoadRoot);
 
-          setJsonParsedFile(bundleForValidator);
-          processLanguages(languageList);
-          processMetadata(metaList);
-          processLabelsDescriptionRootUnitsEntries(
-            labelList,
-            informationList,
-            JSON.parse(convertedLoadRoot),
-            loadUnits,
-            entryCodeSummary,
-            entryList,
-            conformance,
-            characterEncoding,
-            languageList,
-            formatRules,
-            cardinalityData,
-            dataStandards
-          );
-          setZipToReadme(allZipFiles);
-        };
+          if (key.includes("label")) {
+            labelList.push(parsedContent);
+          }
 
-        reader.readAsArrayBuffer(acceptedFiles[0]);
+          if (key.includes("entry (")) {
+            entryList.push(parsedContent);
+          }
 
-        reader.onloadend = () => {
-          setTimeout(() => {
-            setJsonDropDisabled(true);
-            setJsonDropMessage({ message: "", type: "" });
-            setJsonLoading(false);
-            setDatasetLoading(false);
-            if (datasetRawFile.length === 0) {
-              setDatasetDropDisabled(false);
-            }
-            if (!jsonIsParsed) {
-              setJsonIsParsed(true);
-              setCurrentDataValidatorPage("SchemaViewDataValidator");
-            }
-          }, 900);
-        };
-      } catch (error) {
-        setJsonDropMessage({
-          message: `${messages.uploadFail}: ${error.message}`,
-          type: "error"
-        });
-        setJsonLoading(false);
-        setDatasetLoading(false);
-        if (datasetRawFile.length === 0) {
-          setDatasetDropDisabled(false);
+          if (key.includes("entry_code")) {
+            entryCodeSummary = parsedContent;
+          }
+
+          if (key.includes("conformance")) {
+            conformance = parsedContent;
+          }
+
+          if (key.includes("character_encoding")) {
+            characterEncoding = parsedContent;
+          }
+
+          if (key.includes("unit")) {
+            loadUnits = parsedContent;
+          }
+
+          if (key.includes("cardinality")) {
+            cardinalityData = parsedContent;
+          }
+
+          if (key.includes("standard")) {
+            dataStandards = parsedContent;
+          }
+
+          allZipFiles.push(convertedContent);
         }
+
+        const loadRoot = await zip.files[`${metadataJson.root}.json`].async("text");
+        const convertedLoadRoot = replaceAttributeCharsInJsonString(loadRoot);
+        const parsedRoot = JSON.parse(convertedLoadRoot);
+        if (parsedRoot?.flagged_attributes?.length > 0) {
+          setShowWarningCard(true);
+        }
+        if ("type" in parsedRoot && parsedRoot.type.split("/")[1] === "capture_base") {
+          bundleForValidator.capture_base = parsedRoot;
+        }
+        allZipFiles.push(convertedLoadRoot);
+
+        setJsonParsedFile(bundleForValidator);
+        processLanguages(languageList);
+        processMetadata(metaList);
+        processLabelsDescriptionRootUnitsEntries(
+          labelList,
+          informationList,
+          JSON.parse(convertedLoadRoot),
+          loadUnits,
+          entryCodeSummary,
+          entryList,
+          conformance,
+          characterEncoding,
+          languageList,
+          formatRules,
+          cardinalityData,
+          dataStandards
+        );
+        setZipToReadme(allZipFiles);
+      };
+
+      reader.readAsArrayBuffer(acceptedFiles[0]);
+
+      reader.onloadend = () => {
         setTimeout(() => {
+          setJsonDropDisabled(true);
           setJsonDropMessage({ message: "", type: "" });
-        }, [2500]);
+          setJsonLoading(false);
+          setDatasetLoading(false);
+          if (datasetRawFile.length === 0) {
+            setDatasetDropDisabled(false);
+          }
+          if (!jsonIsParsed) {
+            setJsonIsParsed(true);
+            setCurrentDataValidatorPage("SchemaViewDataValidator");
+          }
+        }, 900);
+      };
+    } catch (error) {
+      setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+      setJsonLoading(false);
+      setDatasetLoading(false);
+      if (datasetRawFile.length === 0) {
+        setDatasetDropDisabled(false);
       }
-    },
-    [
-      datasetRawFile.length,
-      jsonIsParsed,
-      processLabelsDescriptionRootUnitsEntries,
-      processLanguages,
-      processMetadata,
-      setCurrentDataValidatorPage,
-      setDatasetDropDisabled,
-      setDatasetLoading,
-      setJsonDropDisabled,
-      setJsonIsParsed,
-      setJsonLoading,
-      setJsonParsedFile,
-      setShowWarningCard,
-      setTargetResult,
-      setZipToReadme
-    ]
-  );
+      setTimeout(() => {
+        setJsonDropMessage({ message: "", type: "" });
+      }, [2500]);
+    }
+  }, []);
 
   const handleYamlDrop = useCallback(
     (acceptedFiles) => {
