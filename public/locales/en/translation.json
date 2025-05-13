@@ -309,7 +309,6 @@
   "Capture base (attribute names and their datatypes, classification, and sensitive attributes) of the two schemas must be the same": "Capture base (attribute names and their datatypes, classification, and sensitive attributes) of the two schemas must be the same",
   "Close": "Close",
   "Selection": "Selection",
-  "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Click here to select schema bundle (.zip OR .json) or drag and drop one here",
   "The units defined in schema": "These units can be located from the unit overlay",
   "UCUM Code": "UCUM Code",
   "UCUM Label": "UCUM label",
@@ -318,7 +317,7 @@
   "Unit Framing": "Unit Framing",
   "All unit rules are documented in the": "All unit rules are documented in the",
   "units GitHub repository": "units GitHub repository",
-  "Request new unit ontologies to be added by": "Request new unit ontologies to be added by"
+  "Request new unit ontologies to be added by": "Request new unit ontologies to be added by",
   "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Click here to select schema bundle (.zip OR .json) or drag and drop one here",
   "Download Data": "Download Data",
   "Show Difference": "Show Difference"

@@ -63,16 +63,11 @@ const allowOverflowStyle = {
 const CustomPopper = styled(Popper)(() => ({ width: "100%" }));
 
 const UnitFramingAutoCompleteEditor = forwardRef(
-  ({ search, value, options: initialOptions }, ref) => {
+  ({ search, value, initialOptions }, ref) => {
     const [options, setOptions] = useState(initialOptions || []);
     const [autoValue, setAutoValue] = useState(value || "");
 
     const inputRef = useRef({ value });
-
-    const onInputChangeHandler = (event, newInputValue) => {
-      setAutoValue(newInputValue);
-      search(newInputValue, setOptions);
-    };
 
     const onOptionSelected = (event, newValue) => {
       setAutoValue(newValue);
@@ -80,6 +75,29 @@ const UnitFramingAutoCompleteEditor = forwardRef(
 
       if (ref && ref.current) {
         ref.current.api.stopEditing();
+      }
+    };
+
+    const onInputChangeHandler = (event, newInputValue) => {
+      setAutoValue(newInputValue);
+      search(newInputValue, (newOptions) => {
+        setOptions(newOptions);
+
+        // Check for exact match
+        const exactMatch = newOptions.find((option) => option === newInputValue);
+        if (exactMatch) {
+          // Manually trigger the onChange event
+          onOptionSelected(event, exactMatch);
+        }
+      });
+    };
+
+    const onKeyDownHandler = (event) => {
+      if (event.key === "Enter") {
+        const exactMatch = options.find((option) => option === autoValue);
+        if (exactMatch) {
+          onOptionSelected(event, exactMatch);
+        }
       }
     };
 
@@ -100,6 +118,7 @@ const UnitFramingAutoCompleteEditor = forwardRef(
         selectOnFocus
         clearOnBlur
         freeSolo
+        onKeyDown={onKeyDownHandler}
         options={options}
         value={autoValue}
         onInputChange={onInputChangeHandler}
@@ -135,7 +154,6 @@ const UnitFramingAutoCompleteEditor = forwardRef(
 );
 
 const createCellEditorParams = (searchUnits, key) => ({
-  options: [],
   search: (inputValue, setOptions) => {
     const { results } = searchUnits(inputValue || "");
     setOptions(results.map((item) => item[key]));
@@ -223,7 +241,6 @@ const getColumnDefs = (gridRef, t, searchUnits) => [
   }
 ];
 
-
 const updateUnitFramingRowDataForOverlayGeneration = (
   unitFramingRowData,
   newUnitFramingRowData
@@ -236,9 +253,9 @@ const updateUnitFramingRowDataForOverlayGeneration = (
     return existingRow
       ? {
           ...row,
-          "UCUM Code": existingRow["UCUM Code"] || row["UCUM Code"],
-          "UCUM Label": existingRow["UCUM Label"] || row["UCUM Label"],
-          Description: existingRow.Description || row.Description
+          "UCUM Code": existingRow["UCUM Code"],
+          "UCUM Label": existingRow["UCUM Label"],
+          Description: existingRow.Description
         }
       : row;
   });
@@ -252,12 +269,13 @@ const UnitFraming = () => {
     setOverlay,
     setUnitFramingRowData,
     isUnitFramingPageRendered,
-    setIsUnitFramingPageRendered
+    setIsUnitFramingPageRendered,
+    unitRowsToDisplayData,
+    setUnitRowsToDisplayData
   } = useContext(Context);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
-  const [unitRowsToDisplayData, setUnitRowsToDisplayData] = useState([]);
 
   const options = {
     keys: ["code", "label", "description"],
@@ -286,7 +304,7 @@ const UnitFraming = () => {
   };
 
   useEffect(() => {
-    if (!isUnitFramingPageRendered || unitFramingRowData?.length > 0) {
+    if (!isUnitFramingPageRendered && unitFramingRowData?.length > 0) {
       const newUnitFramingRowData = unitFramingRowData.filter(
         (row) => row?.Unit !== undefined
       );
@@ -333,6 +351,7 @@ const UnitFraming = () => {
       .getRenderedNodes()
       ?.map((node) => node?.data);
 
+    setUnitRowsToDisplayData(newUnitFramingData);
     setUnitFramingRowData(
       updateUnitFramingRowDataForOverlayGeneration(unitFramingRowData, newUnitFramingData)
     );
