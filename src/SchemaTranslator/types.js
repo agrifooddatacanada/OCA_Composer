@@ -1,6 +1,5 @@
 /**
  * This file contains JSDoc type definitions for the LinkML to OCA translation
- * These are used for documentation purposes since we've removed TypeScript
  */
 
 /**
