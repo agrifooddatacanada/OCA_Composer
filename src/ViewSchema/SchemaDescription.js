@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
-import { Box } from "@mui/system";
-import { Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
 
