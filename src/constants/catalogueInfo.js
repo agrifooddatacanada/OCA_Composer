@@ -44,7 +44,7 @@ export const catalogueInfoFormFields = {
       type: "select",
       placeholder: "Please select",
       options: [
-        "SOCIAL",
+        "Just Transitions",
         "PEAce",
         "Loop",
         "GG4GHG",
