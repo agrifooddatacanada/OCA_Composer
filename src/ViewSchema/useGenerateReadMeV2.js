@@ -5,7 +5,7 @@ import {
   getOrderedAttributeMap,
   getOrderedEntries
 } from "../constants/utils";
-import { ADC } from "../constants/constants";
+import { ADC, SENSITIVE } from "../constants/constants";
 
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL
@@ -430,6 +430,23 @@ const useGenerateReadMeV2 = () => {
           "\n",
           "******************************************************************\n"
         );
+      }
+
+      if (Object.prototype.hasOwnProperty.call(extensionOverlays, SENSITIVE)) {
+        const sensitiveOverlay = extensionOverlays[SENSITIVE];
+        const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
+          ? sensitiveOverlay?.sensitive_attributes
+          : [];
+
+        if (sensitiveAttributes.length > 0) {
+          text_file.push(
+            `Layer name: ${sensitiveOverlay.type}\n`,
+            `SAID/digest: ${sensitiveOverlay.d}\n`,
+            `Sensitive attributes: ${sensitiveAttributes.join(", ")}\n`,
+            "\n",
+            "******************************************************************\n"
+          );
+        }
       }
 
       text_file.push("END_OCA_PACKAGE_EXTENSIONS\n");
