@@ -5,7 +5,8 @@ import {
   ADC,
   codeToDivision,
   codeToGroup,
-  CUSTOM_FORMAT_RULE
+  CUSTOM_FORMAT_RULE,
+  SENSITIVE
 } from "../constants/constants";
 import {
   getFormatRuleDescription,
@@ -199,10 +200,18 @@ const useZipParser = () => {
     }
 
     // Parse attributes details such as type and unit + Parsing conformance and character encoding to characterEncodingRowData
+    // Flagged attributes are retrieved from OCA package ADC community sensitive overlay
+    const sensitiveOverlay =
+      ocaPackageData?.extensions?.[ADC]?.[
+        ocaPackageData?.oca_bundle?.bundle?.capture_base?.d
+      ]?.overlays?.[SENSITIVE];
+
+    const sensitiveAttributes = sensitiveOverlay?.sensitive_attributes || [];
+
     attributeList.forEach((item) => {
       newAttributeRowData.push({
         Attribute: item,
-        Flagged: root?.flagged_attributes?.includes(item),
+        Flagged: sensitiveAttributes.includes(item),
         List: attributesWithListType.includes(item),
         Type: Array.isArray(root?.attributes?.[item])
           ? `Array[${root?.attributes?.[item][0]}]`

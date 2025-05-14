@@ -9,10 +9,11 @@ import {
   groupCodes,
   ORDERING,
   UNIT_FRAMING,
-  UNIT_ID,
-  UNIT_LABEL,
-  UNIT_LOCATION,
-  UNIT_VERSION
+  UNIT_FRAME_ID,
+  UNIT_FRAME_LABEL,
+  UNIT_FRAME_LOCATION,
+  UNIT_FRAME_VERSION,
+  SENSITIVE
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -399,6 +400,10 @@ const useExportLogicV2 = () => {
     const data = buildOCAText(OCADataArray);
     const bundle = await generateOCABundle(data);
 
+    const sensitiveAttributes = attributeRowData
+      .filter((item) => item.Flagged)
+      .map((item) => item.Attribute);
+
     const extension = {
       extensions: {
         [ADC]: {
@@ -414,12 +419,18 @@ const useExportLogicV2 = () => {
               unit_framing_overlay: {
                 type: UNIT_FRAMING,
                 properties: {
-                  id: UNIT_ID,
-                  label: UNIT_LABEL,
-                  location: UNIT_LOCATION,
-                  version: UNIT_VERSION
+                  id: UNIT_FRAME_ID,
+                  label: UNIT_FRAME_LABEL,
+                  location: UNIT_FRAME_LOCATION,
+                  version: UNIT_FRAME_VERSION
                 },
                 units: getUnitFramingInput(unitFramingRowData)
+              }
+            },
+            {
+              sensitive_overlay: {
+                type: SENSITIVE,
+                sensitive_attributes: sensitiveAttributes
               }
             }
           ]
