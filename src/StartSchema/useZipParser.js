@@ -206,7 +206,11 @@ const useZipParser = () => {
         ocaPackageData?.oca_bundle?.bundle?.capture_base?.d
       ]?.overlays?.[SENSITIVE];
 
-    const sensitiveAttributes = sensitiveOverlay?.sensitive_attributes || [];
+    const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
+      ? sensitiveOverlay?.sensitive_attributes
+      : Array.isArray(root?.flagged_attributes)
+        ? root?.flagged_attributes
+        : [];
 
     attributeList.forEach((item) => {
       newAttributeRowData.push({
