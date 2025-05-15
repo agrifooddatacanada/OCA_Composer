@@ -23,7 +23,7 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
     setSelectedOption(option);
 
     if (option === "excel") {
-      handleSave(true, "excel");
+      handleSave("excel", true);
 
       if (isEmbedded) {
         window.parent.postMessage(
@@ -61,7 +61,7 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
 
   const handleCsvExport = (keepOriginalHeaders) => {
     handleAdditionalOptionsClose();
-    handleSave(keepOriginalHeaders, "csv");
+    handleSave("csv", keepOriginalHeaders);
 
     if (isEmbedded) {
       window.parent.postMessage(

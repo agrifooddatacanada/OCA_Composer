@@ -6,7 +6,7 @@ import React from "react";
  
      return (
          <>
-             <Button
+            <Button
              id="basic-button"
              color="button"
              variant="contained"
@@ -20,7 +20,7 @@ import React from "react";
                  margin: "0rem 0.5rem"
              }}>
                  Upload Data
-             </Button>
+            </Button>
          </>
      );
  };

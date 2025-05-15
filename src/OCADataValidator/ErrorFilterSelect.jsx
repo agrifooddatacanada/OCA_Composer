@@ -7,7 +7,7 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { Box, Checkbox } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
-import { SHOW_ALL_DATA, SHOW_ONLY_ROWS_WITH_ERRORS } from "../constants/constants";
+import { SHOW_ALL_DATA, SHOW_ONLY_ROWS_WITH_ERRORS, SHOW_NO_ERRORS } from "../constants/constants";
 
 const ITEM_HEIGHT = 30;
 const ITEM_PADDING_TOP = 0;
@@ -38,6 +38,13 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
   // Add these helper functions at component level
   const handleShowAllData = () => setErrorNameList([SHOW_ALL_DATA]);
 
+  const handleShowNoErrors = () => {
+    if (errorName.includes(SHOW_NO_ERRORS)){
+      setErrorNameList([SHOW_ALL_DATA]);
+    } else {
+      setErrorNameList([SHOW_NO_ERRORS]);
+    }
+  }
   const handleShowOnlyErrors = () => {
     if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
       setErrorNameList([SHOW_ALL_DATA]);
@@ -72,6 +79,8 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
 
     if (newValue === SHOW_ALL_DATA) {
       handleShowAllData();
+    } else if (newValue === SHOW_NO_ERRORS) {
+      handleShowNoErrors();
     } else if (newValue === SHOW_ONLY_ROWS_WITH_ERRORS) {
       handleShowOnlyErrors();
     } else if (ERROR_GROUP.includes(newValue)) {
@@ -110,6 +119,9 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
             if (selected.includes(SHOW_ALL_DATA)) {
               return t("Show all data");
             }
+            if (selected.includes(SHOW_NO_ERRORS)) {
+              return t("Show only rows without errors");
+            }
             if (selected.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
               return t("Show only rows with errors");
             }
@@ -123,6 +135,14 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
               onChange={handleShowAllData}
             />
             {t("Show all data")}
+          </MenuItem>
+
+          <MenuItem value={SHOW_NO_ERRORS}>
+            <Checkbox
+              checked={errorName.includes(SHOW_NO_ERRORS)}
+              onChange={handleShowNoErrors}
+            />
+            {t("Show only rows without errors")}
           </MenuItem>
 
           <MenuItem value={SHOW_ONLY_ROWS_WITH_ERRORS}>

@@ -30,6 +30,7 @@ import {
   formatCodeNumericDescription,
   formatCodeTextDescription,
   SHOW_ALL_DATA,
+  SHOW_NO_ERRORS,
   SHOW_ONLY_ROWS_WITH_ERRORS
 } from "../constants/constants";
 import WarningPopup from "./WarningPopup";
@@ -367,21 +368,15 @@ const OCADataValidatorCheck = ({
 
   const uploadData = async (data) => {
     try {
-      const response = await fetch(process.env.REACT_APP_CLIENT_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
+      const csvString = await generateCSVFile(false)
 
-      if (!response.ok) throw new Error('Network response was not ok');
-
-      const result = await response.json();
-      console.log(result);
+      window.parent.postMessage({
+        type: 'CSV_STRING',
+        data: csvString
+      }, '*');
 
     } catch (error){
-      console.error('Error uploading data: ', error);
+      console.error('Error sending data to parent: ', error);
     }
   }
 
@@ -392,7 +387,7 @@ const OCADataValidatorCheck = ({
 
   const allCellsPassValidation = async () => {
      
-    const currData = await new Promise(resolve => setTimeout(resolve, 0)).then(() => getCurrentData(gridRef.current.api, true));
+    const currData = await new Promise(resolve => setTimeout(resolve, 0)).then(() => getCurrentData(gridRef.current.api, true)); // wait for the grid to render
 
     if (currData.length === 0) { // edge case for no dataset file uploaded
       return false;
@@ -409,6 +404,16 @@ const OCADataValidatorCheck = ({
     setIsDataValid(isValid);
   }
 
+  // Check if the page is rendered inside an iframe
+  const isInIframe = () => {
+    try {
+      return window.self !== window.parent;
+    } catch (e) {
+      return true; // If there's an error, assume it's in an iframe
+    }
+  };
+
+  const inIframe = isInIframe();
 
   const generateCSVFile = async (ogHeader) => {
     const newData = [];
@@ -925,6 +930,7 @@ const OCADataValidatorCheck = ({
         })
       : rowData;
   function filterRowData() {
+    updateDataValidationState()
     if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
       const selectedErrors = errorName.filter(
         (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
@@ -936,6 +942,8 @@ const OCADataValidatorCheck = ({
           .map((err) => err?.type);
         return selectedErrors.some((error) => errorTypes.includes(errorCode?.[error]));
       });
+    } else if (errorName.includes(SHOW_NO_ERRORS)) {
+      return initialRowData.filter((row) => !row?.error || Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0));
     }
     return initialRowData;
   }
@@ -1008,7 +1016,7 @@ const OCADataValidatorCheck = ({
                 validatedData={rowDataFilter}
                 currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
               />
-              <UploadButton isDisabled={!isDataValid} uploadFunc={handleUpload}/>
+              {inIframe && <UploadButton isDisabled={!isDataValid} uploadFunc={handleUpload}/>}
             </Box>
           </Box>
         </Box>
