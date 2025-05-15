@@ -418,7 +418,9 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     if (overlay.type && overlay.type.includes("/capture_base/")) {
       const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
         ? sensitiveOverlay?.sensitive_attributes
-        : [];
+        : Array.isArray(overlay.flagged_attributes)
+          ? overlay.flagged_attributes
+          : [];
       Object.entries(overlay.attributes).forEach(([attrName, attrType], index) => {
         let attrIndex = null;
 
