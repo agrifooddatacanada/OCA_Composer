@@ -16,7 +16,7 @@ import { Context } from "../App";
 import useExportLogic from "../ViewSchema/useExportLogic";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
-// import CollaborateOnASchema from "./CollaborateOnASchema";
+import CollaborateOnASchema from "./CollaborateOnASchema";
 import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
@@ -133,7 +133,7 @@ const AccordionList = () => {
         >
           <SchemaAccordionItem />
           <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
-          {/* <CollaborateOnASchema navigateToStartPage={navigateToStartPage} /> */}
+          <CollaborateOnASchema navigateToStartPage={navigateToStartPage} />
           <StoreASchemaAccordionItem />
           <UseASchemaAccordionItem />
           <UseASchemaWithDataAccordionItem />
