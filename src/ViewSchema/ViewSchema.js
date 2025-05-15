@@ -2,14 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
-import {
-  Box,
-  Button,
-  Typography,
-  Tooltip,
-  Checkbox,
-  FormControlLabel
-} from "@mui/material";
+import { Box, Button, Typography, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -22,15 +15,11 @@ import LinkCard from "./LinkCard";
 import useExportLogic from "./useExportLogic";
 import Loading from "../components/Loading";
 import useExportLogicV2 from "./useExportLogicV2";
-import {
-  formatCodeBinaryDescription,
-  formatCodeDateDescription,
-  formatCodeNumericDescription,
-  formatCodeTextDescription
-} from "../constants/constants";
+import { CUSTOM_FORMAT_RULE } from "../constants/constants";
 import { codesToLanguages } from "../constants/isoCodes";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
+import { getFormatRuleDescription } from "../constants/utils";
 
 // const currentEnv = process.env.REACT_APP_ENV;
 
@@ -56,6 +45,7 @@ export default function ViewSchema({
     history,
     setHistory,
     formatRuleRowData,
+    unitFramingRowData,
     dataStandardsRowData,
     zipToReadme,
     jsonToReadme,
@@ -72,13 +62,11 @@ export default function ViewSchema({
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
-  const { resetToDefaults, exportDisabled, handleExport } = useExportLogic();
+  const { resetToDefaults, exportDisabled } = useExportLogic();
   const { exportData } = useExportLogicV2();
   const [loading, setLoading] = useState(true);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
-
-  const [shouldDownloadZip, setShouldDownloadZip] = useState(false);
 
   // Formats language buttons in a way that can handle many languages cleanly
   // Minimizes language for cases where it's too long to fit in button size
@@ -168,10 +156,8 @@ export default function ViewSchema({
   ));
 
   // Creates display array with all captured data
-
   useEffect(() => {
     const newDisplayArray = [];
-
     attributeRowData.forEach((item, index) => {
       const dataObject = {};
       const attributeName = item.Attribute;
@@ -221,22 +207,15 @@ export default function ViewSchema({
       const attrWithFormatRule = formatRuleRowData.find(
         (row) => row.Attribute === attributeName
       );
-      if (attrWithFormatRule?.FormatText && attrWithFormatRule.FormatText !== "") {
+      const formatRule =
+        attrWithFormatRule?.[CUSTOM_FORMAT_RULE] || attrWithFormatRule?.FormatText;
+      if (formatRule) {
         const attributeType = attrWithFormatRule?.Type;
-        const value = attrWithFormatRule?.FormatText;
-        const desc = attributeType.includes("Date")
-          ? formatCodeDateDescription[value]
-          : attributeType.includes("Numeric")
-            ? formatCodeNumericDescription[value]
-            : attributeType.includes("Binary")
-              ? formatCodeBinaryDescription[value]
-              : attributeType.includes("Text")
-                ? formatCodeTextDescription[value]
-                : "";
+        const desc = getFormatRuleDescription(attributeType, formatRule);
         if (desc) {
           dataObject["Add format rule for data"] = desc;
         } else {
-          dataObject["Add format rule for data"] = value;
+          dataObject["Add format rule for data"] = formatRule;
         }
       }
 
@@ -248,8 +227,18 @@ export default function ViewSchema({
         dataObject["Data Standards"] = attrWithDataStandard.DataStandard;
       }
 
+      // Add unit framing information
+      const unitFramingData = unitFramingRowData.find(
+        (row) => row.Attribute === attributeName
+      );
+
+      if (unitFramingData) {
+        dataObject["Unit Framing"] = unitFramingData["UCUM Code"];
+      }
+
       newDisplayArray.push(dataObject);
     });
+
     setDisplayArray(newDisplayArray);
   }, [attributeRowData, lanAttributeRowData]);
 
@@ -274,10 +263,6 @@ export default function ViewSchema({
   const handleClickDownload = () => {
     // Download OCA package and related files
     exportData();
-    if (shouldDownloadZip) {
-      // Download legacy .zip bundle
-      handleExport({ onlyZip: true });
-    }
   };
 
   return (
@@ -406,17 +391,6 @@ export default function ViewSchema({
                         </Tooltip>
                       </Box>
                     </Box>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={shouldDownloadZip}
-                          onChange={(e) => setShouldDownloadZip(e.target.checked)}
-                          size="small"
-                        />
-                      }
-                      label={t("Download legacy .zip bundle")}
-                      sx={{ marginTop: "4px" }}
-                    />
                   </Box>
                 ) : (
                   <></>
@@ -629,17 +603,6 @@ export default function ViewSchema({
             >
               {t("Finish and Download")} <CheckCircleIcon />
             </Button>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={shouldDownloadZip}
-                  onChange={(e) => setShouldDownloadZip(e.target.checked)}
-                  size="small"
-                />
-              }
-              label={t("Download legacy .zip bundle")}
-              sx={{ marginTop: "4px" }}
-            />
           </Box>
         </Box>
       ) : (

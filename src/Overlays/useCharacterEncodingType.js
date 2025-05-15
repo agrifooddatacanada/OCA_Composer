@@ -1,6 +1,6 @@
-import { useCallback, useContext, useState } from "react";
-import { Context } from "../App";
+import { React, useCallback, useContext, useState } from "react";
 import { MenuItem } from "@mui/material";
+import { Context } from "../App";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { displayValues } from "../constants/constants";
 
@@ -12,7 +12,7 @@ export const CharacterEncodingTypeRenderer = (props) => {
     setType(e.target.value);
     props.node.updateData({
       ...props.node.data,
-      "Character Encoding": e.target.value,
+      "Character Encoding": e.target.value
     });
     setIsDropdownOpen(false);
   };
@@ -57,7 +57,9 @@ const useCharacterEncodingType = (gridRef) => {
 
   const handleSave = useCallback(() => {
     gridRef.current.api.stopEditing();
-    const attributeWithCharacterEncoding = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+    const attributeWithCharacterEncoding = gridRef.current.api
+      .getRenderedNodes()
+      ?.map((node) => node?.data);
     setCharacterEncodingRowData(attributeWithCharacterEncoding);
   }, [gridRef, setCharacterEncodingRowData]);
 
@@ -68,7 +70,7 @@ const useCharacterEncodingType = (gridRef) => {
     characterEncodingRowData.forEach((item) => {
       newCharacterEncodingRowData.push({
         ...item,
-        "Character Encoding": firstAttribute || '',
+        "Character Encoding": firstAttribute || ""
       });
     });
 

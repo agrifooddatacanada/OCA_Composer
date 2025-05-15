@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import JSZip from "jszip";
 import { messages } from "../constants/messages";
+import { ADC, SENSITIVE } from "../constants/constants";
 import { Context } from "../App";
 import useZipParser from "../StartSchema/useZipParser";
 import {
@@ -139,7 +140,20 @@ export const useHandleJsonDrop = (
           }
 
           if (jsonFile?.capture_base) {
-            if (jsonFile?.capture_base?.flagged_attributes?.length > 0) {
+            const sensitiveOverlay =
+              ocaPackageData?.extensions?.[ADC]?.[
+                ocaPackageData?.oca_bundle?.bundle?.capture_base?.d
+              ]?.overlays?.[SENSITIVE];
+
+            const sensitiveAttributes = Array.isArray(
+              sensitiveOverlay?.sensitive_attributes
+            )
+              ? sensitiveOverlay?.sensitive_attributes
+              : Array.isArray(jsonFile?.capture_base?.flagged_attributes)
+                ? jsonFile?.capture_base?.flagged_attributes
+                : [];
+
+            if (sensitiveAttributes?.length > 0) {
               setShowWarningCard(true);
             }
             loadRoot = { ...jsonFile.capture_base };

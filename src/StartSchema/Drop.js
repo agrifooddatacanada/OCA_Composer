@@ -22,17 +22,17 @@ export default function Drop({
     if (version === 0) {
       return {
         "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
-        "application/zip": ['.zip'],
+        "application/zip": [".zip"],
         "application/json": [".json"]
       };
     } else if (version === 1) {
       return {
-        "application/zip": ['.zip'],
+        "application/zip": [".zip"],
         "application/json": [".json"]
       };
     } else if (version === 2) {
       return {
-        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
+        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"]
       };
     } else if (version === 3) {
       return {
@@ -40,17 +40,17 @@ export default function Drop({
       };
     } else if (version === 4) {
       return {
-        "application/vnd.ms-excel": [".xls", ".xlsx"],
+        "application/vnd.ms-excel": [".xls", ".xlsx"]
       };
     } else if (version === 5) {
       return {
         "application/vnd.ms-excel": [".csv"],
-        "application/zip": ['.zip'],
+        "application/zip": [".zip"],
         "application/json": [".json"]
       };
     } else if (version === 6) {
       return {
-        "text/plain": [".txt"],
+        "text/plain": [".txt"]
       };
     }
   }, [version]);
@@ -64,7 +64,7 @@ export default function Drop({
       } else if (file[0].errors[0].code === "file-invalid-type") {
         setDropMessage({
           message: messages.wrongTypeUploadFail,
-          type: "error",
+          type: "error"
         });
       } else {
         setDropMessage({ message: messages.fileRejectedFail, type: "error" });
@@ -77,7 +77,7 @@ export default function Drop({
       setDropMessage({ message: messages.fileAccepted, type: "success" });
       setLoading(true);
     },
-    disabled: dropDisabled,
+    disabled: dropDisabled
   });
   const [hover, setHover] = useState(false);
 
@@ -115,7 +115,7 @@ export default function Drop({
 
   return (
     <>
-      {interfaceType === 1 ?
+      {interfaceType === 1 ? (
         <LandingDropZone
           dropMessage={dropMessage}
           loading={loading}
@@ -130,7 +130,8 @@ export default function Drop({
           handleDragOver={handleDragOver}
           handleDragLeave={handleDragLeave}
         />
-        : <DropCard
+      ) : (
+        <DropCard
           dropMessage={dropMessage}
           loading={loading}
           dropDisabled={dropDisabled}
@@ -147,6 +148,7 @@ export default function Drop({
           tipDescription={tipDescription}
           noteDescription={noteDescription}
         />
-      }</>
+      )}
+    </>
   );
 }

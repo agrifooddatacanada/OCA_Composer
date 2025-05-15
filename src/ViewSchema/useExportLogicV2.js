@@ -2,11 +2,24 @@ import { useContext, useMemo } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
-import { ADC, divisionCodes, groupCodes, ORDERING } from "../constants/constants";
+import {
+  ADC,
+  CUSTOM_FORMAT_RULE,
+  divisionCodes,
+  groupCodes,
+  ORDERING,
+  UNIT_FRAMING,
+  UNIT_FRAME_ID,
+  UNIT_FRAME_LABEL,
+  UNIT_FRAME_LOCATION,
+  UNIT_FRAME_VERSION,
+  SENSITIVE
+} from "../constants/constants";
 import {
   generateOCABundle,
   getDescriptiveFileName,
-  getTransformedEntryCodes
+  getTransformedEntryCodes,
+  getUnitFramingInput
 } from "../constants/utils";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 
@@ -22,6 +35,7 @@ const useExportLogicV2 = () => {
     divisionGroup,
     savedEntryCodes,
     formatRuleRowData,
+    unitFramingRowData,
     customIsos,
     characterEncodingRowData,
     overlay,
@@ -136,10 +150,11 @@ const useExportLogicV2 = () => {
 
     let tempText = "";
     formatRuleRowData.forEach((item, index) => {
-      if (item.FormatText) {
+      const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText;
+      if (formatRule) {
         // Any " in the format text needs to be escaped for OCA file
         // eslint-disable-next-line quotes
-        tempText += ` ${attributesList[index]}="${item.FormatText.replace(/"/g, '\\"')}"`;
+        tempText += ` ${attributesList[index]}="${formatRule.replace(/"/g, '\\"')}"`;
       }
     });
 
@@ -376,6 +391,10 @@ const useExportLogicV2 = () => {
     const data = buildOCAText(OCADataArray);
     const bundle = await generateOCABundle(data);
 
+    const sensitiveAttributes = attributeRowData
+      .filter((item) => item.Flagged)
+      .map((item) => item.Attribute);
+
     const extension = {
       extensions: {
         [ADC]: {
@@ -385,6 +404,24 @@ const useExportLogicV2 = () => {
                 type: ORDERING,
                 attribute_ordering: attributesList,
                 entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
+              }
+            },
+            {
+              unit_framing_overlay: {
+                type: UNIT_FRAMING,
+                properties: {
+                  id: UNIT_FRAME_ID,
+                  label: UNIT_FRAME_LABEL,
+                  location: UNIT_FRAME_LOCATION,
+                  version: UNIT_FRAME_VERSION
+                },
+                units: getUnitFramingInput(unitFramingRowData)
+              }
+            },
+            {
+              sensitive_overlay: {
+                type: SENSITIVE,
+                sensitive_attributes: sensitiveAttributes
               }
             }
           ]

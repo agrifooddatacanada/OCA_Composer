@@ -1,11 +1,19 @@
 import { useContext } from "react";
 import { Context } from "../App";
 import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
-import { ADC, codeToDivision, codeToGroup } from "../constants/constants";
 import {
+  ADC,
+  codeToDivision,
+  codeToGroup,
+  CUSTOM_FORMAT_RULE,
+  SENSITIVE
+} from "../constants/constants";
+import {
+  getFormatRuleDescription,
   getOrderedAttributeRowData,
   hasAttributeOrdering,
-  hasEntryCodeOrdering
+  hasEntryCodeOrdering,
+  hasUnitFramingOverlay
 } from "../constants/utils";
 
 const useZipParser = () => {
@@ -22,7 +30,8 @@ const useZipParser = () => {
     setOverlay,
     setFormatRuleRowData,
     setDataStandardsRowData,
-    setCardinalityData
+    setCardinalityData,
+    setUnitFramingRowData
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -58,7 +67,8 @@ const useZipParser = () => {
     formatRules,
     cardinalityData,
     dataStandards,
-    ocaPackageData = null
+    // ocaPackageData = null
+    ocaPackageData
   ) => {
     const newSavedEntryCodes = {};
     const newLangAttributeRowData = {};
@@ -68,6 +78,7 @@ const useZipParser = () => {
     const newDataStandardsRowData = [];
     const attributeListStringMap = {};
     let attributesWithListType = [];
+    const newUnitFramingRowData = [];
 
     // Parse entry codes for list type attributes
     if (entries.length > 0) {
@@ -189,10 +200,22 @@ const useZipParser = () => {
     }
 
     // Parse attributes details such as type and unit + Parsing conformance and character encoding to characterEncodingRowData
+    // Flagged attributes are retrieved from OCA package ADC community sensitive overlay
+    const sensitiveOverlay =
+      ocaPackageData?.extensions?.[ADC]?.[
+        ocaPackageData?.oca_bundle?.bundle?.capture_base?.d
+      ]?.overlays?.[SENSITIVE];
+
+    const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
+      ? sensitiveOverlay?.sensitive_attributes
+      : Array.isArray(root?.flagged_attributes)
+        ? root?.flagged_attributes
+        : [];
+
     attributeList.forEach((item) => {
       newAttributeRowData.push({
         Attribute: item,
-        Flagged: root?.flagged_attributes?.includes(item),
+        Flagged: sensitiveAttributes.includes(item),
         List: attributesWithListType.includes(item),
         Type: Array.isArray(root?.attributes?.[item])
           ? `Array[${root?.attributes?.[item][0]}]`
@@ -237,9 +260,15 @@ const useZipParser = () => {
         // Remove the escape character for " in regex patterns
         // OCA file requires " to be escaped, that's why the escape character needs to be added when creating OCA file
         // However, in other situtations, the escape character is not needed
-        newFormatRuleData.FormatText =
+        const formatRule =
           // eslint-disable-next-line quotes
           formatRules?.attribute_formats?.[item.Attribute]?.replace(/\\"/g, '"') || "";
+        const formatRuleDescription = getFormatRuleDescription(item?.Type, formatRule);
+
+        // If format rule has a description, then it's not a custom format rule
+        newFormatRuleData[formatRuleDescription ? "FormatText" : CUSTOM_FORMAT_RULE] =
+          formatRule;
+
         setOverlay((prev) => ({
           ...prev,
           "Add format rule for data": {
@@ -296,6 +325,35 @@ const useZipParser = () => {
         }
       }));
       setCardinalityData(cardinalityDataToParse);
+    }
+
+    // Parse unit framing
+    if (ocaPackageData && hasUnitFramingOverlay(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const unitFraming =
+        ocaPackageData.extensions[ADC][captureBaseSaid].overlays.unit_framing;
+
+      newAttributeRowData.forEach((row) => {
+        const unitFramed = row?.Unit;
+        const unitFramingValue = unitFraming?.units?.[unitFramed]?.term_id || "";
+
+        newUnitFramingRowData.push({
+          Attribute: row.Attribute,
+          Unit: row.Unit,
+          "UCUM Code": unitFramingValue,
+          "UCUM Label": "",
+          Description: ""
+        });
+
+        setOverlay((prev) => ({
+          ...prev,
+          "Unit Framing": {
+            ...prev["Unit Framing"],
+            selected: true
+          }
+        }));
+        setUnitFramingRowData(newUnitFramingRowData);
+      });
     }
 
     if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {

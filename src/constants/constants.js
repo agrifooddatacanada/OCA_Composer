@@ -385,6 +385,15 @@ export const CARDINALITY = "cardinality";
 
 // Extension overlays
 export const ORDERING = "ordering";
+// Unit Framing Overlay
+export const UNIT_FRAMING = "unit_framing";
+export const UNIT_FRAME_ID = "UCUM";
+export const UNIT_FRAME_LABEL = "Unified Code for Units of Measure";
+export const UNIT_FRAME_LOCATION = "https://ucum.org/";
+export const UNIT_FRAME_VERSION = "";
+
+// Sensitive overlay (flagged attributes)
+export const SENSITIVE = "sensitive";
 
 export const overlays = [
   CHARACTER_ENCODING,
@@ -433,3 +442,4 @@ export const ALLOWED_BOOLEAN_VALUES = [
 
 export const DISALLOWED_CHARACTERS = [",", " ", "\\", "/", "(", ")", "'"];
 export const ADC = "adc";
+export const CUSTOM_FORMAT_RULE = "CustomFormatRule";
