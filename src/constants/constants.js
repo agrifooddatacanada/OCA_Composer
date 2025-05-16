@@ -402,6 +402,7 @@ export const extensionOverlays = [ORDERING];
 
 export const SHOW_ALL_DATA = "Show all data";
 export const SHOW_ONLY_ROWS_WITH_ERRORS = "Show only rows with errors";
+export const SHOW_NO_ERRORS = "Show only rows without errors"
 export const OCA_REPOSITORY_API_URL = "https://api.adc.oca-repo.semanticengine.org";
 
 export const ALLOWED_BOOLEAN_VALUES = [

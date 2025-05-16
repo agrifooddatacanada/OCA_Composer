@@ -22,6 +22,7 @@ import Languages from "./Languages";
 import ErrorFilterSelect from "./ErrorFilterSelect";
 import CellHeader from "../components/CellHeader";
 import ExportButton from "./ExportButton";
+import UploadButton from "./UploadButton";
 import {
   errorCode,
   formatCodeBinaryDescription,
@@ -29,6 +30,7 @@ import {
   formatCodeNumericDescription,
   formatCodeTextDescription,
   SHOW_ALL_DATA,
+  SHOW_NO_ERRORS,
   SHOW_ONLY_ROWS_WITH_ERRORS
 } from "../constants/constants";
 import WarningPopup from "./WarningPopup";
@@ -272,6 +274,7 @@ const OCADataValidatorCheck = ({
   const [firstValidate, setFirstValidate] = useState(false);
   const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isDataValid, setIsDataValid] = useState(false);
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
@@ -362,6 +365,50 @@ const OCADataValidatorCheck = ({
       langRef.current
     ]
   );
+
+  const uploadData = async () => {
+    try {
+      const csvString = await generateCSVFile(false)
+
+      window.parent.postMessage({
+        type: 'CSV_STRING',
+        data: csvString
+      }, '*');
+
+    } catch (error){
+      console.error('Error sending data to parent: ', error);
+    }
+  }
+
+  const allCellsPassValidation = async () => {
+     
+    const currData = await new Promise(resolve => setTimeout(resolve, 0)).then(() => getCurrentData(gridRef.current.api, true)); // wait for the grid to render
+
+    if (currData.length === 0) { // edge case for no dataset file uploaded
+      return false;
+    }
+    return currData.every(row => {
+      if (!row.error) return true;
+      return Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0);
+    });
+  };
+
+
+  const updateDataValidationState = async () => {
+    const isValid = await allCellsPassValidation();
+    setIsDataValid(isValid);
+  }
+
+  // Check if the page is rendered inside an iframe
+  const isInIframe = () => {
+    try {
+      return window.self !== window.parent;
+    } catch (e) {
+      return true; // If there's an error, assume it's in an iframe
+    }
+  };
+
+  const inIframe = isInIframe();
 
   const generateCSVFile = async (ogHeader) => {
     const newData = [];
@@ -514,6 +561,8 @@ const OCADataValidatorCheck = ({
 
       return copy;
     });
+
+    await updateDataValidationState();
   };
 
   function formatHeader(cell) {
@@ -647,7 +696,7 @@ const OCADataValidatorCheck = ({
     setRowData([...currentData, newRow]);
   }, [isValidateButtonEnabled, schemaDataConformantHeader, gridRef, setRowData]);
 
-  const onCellValueChanged = (e) => {
+  const onCellValueChanged = async (e) => {
     if (validateBeforeOnChangeRef.current) {
       validateBeforeOnChangeRef.current = false;
       return;
@@ -669,6 +718,7 @@ const OCADataValidatorCheck = ({
     }
 
     setRevalidateData(true);
+    await updateDataValidationState();
   };
 
   const handleMoveBack = () => {
@@ -875,6 +925,7 @@ const OCADataValidatorCheck = ({
         })
       : rowData;
   function filterRowData() {
+    updateDataValidationState()
     if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
       const selectedErrors = errorName.filter(
         (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
@@ -886,6 +937,8 @@ const OCADataValidatorCheck = ({
           .map((err) => err?.type);
         return selectedErrors.some((error) => errorTypes.includes(errorCode?.[error]));
       });
+    } else if (errorName.includes(SHOW_NO_ERRORS)) {
+      return initialRowData.filter((row) => !row?.error || Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0));
     }
     return initialRowData;
   }
@@ -958,6 +1011,7 @@ const OCADataValidatorCheck = ({
                 validatedData={rowDataFilter}
                 currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
               />
+              {inIframe && <UploadButton isDisabled={!isDataValid} uploadFunc={uploadData}/>}
             </Box>
           </Box>
         </Box>

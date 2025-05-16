@@ -365,10 +365,10 @@ function App() {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      console.log("React: Received message from R Shiny:", {
-        origin: event.origin,
-        data: event.data
-      });
+      // console.log("React: Received message from R Shiny:", {
+      //   origin: event.origin,
+      //   data: event.data
+      // });
 
       if (event.data?.schema && event.data?.data) {
         console.log("React: Processing schema data");
