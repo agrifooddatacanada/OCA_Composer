@@ -366,7 +366,7 @@ const OCADataValidatorCheck = ({
     ]
   );
 
-  const uploadData = async (data) => {
+  const uploadData = async () => {
     try {
       const csvString = await generateCSVFile(false)
 
@@ -378,11 +378,6 @@ const OCADataValidatorCheck = ({
     } catch (error){
       console.error('Error sending data to parent: ', error);
     }
-  }
-
-  const handleUpload = () => {
-    const dataToUpload = getCurrentData(gridRef.current.api, true);
-    uploadData(dataToUpload);
   }
 
   const allCellsPassValidation = async () => {
@@ -1016,7 +1011,7 @@ const OCADataValidatorCheck = ({
                 validatedData={rowDataFilter}
                 currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
               />
-              {inIframe && <UploadButton isDisabled={!isDataValid} uploadFunc={handleUpload}/>}
+              {inIframe && <UploadButton isDisabled={!isDataValid} uploadFunc={uploadData}/>}
             </Box>
           </Box>
         </Box>
