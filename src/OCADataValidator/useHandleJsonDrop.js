@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import JSZip from "jszip";
+import yaml from "js-yaml";
 import { messages } from "../constants/messages";
 import { ADC, SENSITIVE } from "../constants/constants";
 import { Context } from "../App";
@@ -8,6 +9,8 @@ import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
 } from "../constants/utils";
+import { mapLinkMLToOCABundle } from "../SchemaTranslator/mapLinkMLToOCABundle";
+import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
 
 const neededOverlays = ["format", "character_encoding", "conformance", "entry_code"];
 // eslint-disable-next-line import/prefer-default-export
@@ -428,6 +431,236 @@ export const useHandleJsonDrop = (
     }
   }, []);
 
+  const handleYamlDrop = useCallback(
+    (acceptedFiles) => {
+      try {
+        setJsonLoading(true);
+        const reader = new FileReader();
+
+        reader.onload = async (e) => {
+          setTargetResult(e);
+          const textDecoder = new TextDecoder("utf-8");
+          const yamlString = textDecoder.decode(e.target.result);
+
+          try {
+            // Parse YAML content
+            const linkmlSchema = yaml.load(yamlString);
+
+            // Convert LinkML to OCA bundle
+            const bundle = mapLinkMLToOCABundle(linkmlSchema);
+
+            // Create OCA package
+            const ocaPackage = transformToPackage(bundle);
+
+            // Extract the bundle for processing - exactly the same structure expected by JSON processing
+            const jsonFile = ocaPackage.oca_bundle.bundle;
+
+            // Process the bundle the same way as JSON files
+            setJsonParsedFile(jsonFile);
+            const languageList = [];
+            const informationList = [];
+            const labelList = [];
+            const metaList = [];
+            const entryList = [];
+            const allJSONFiles = [];
+            let loadRoot;
+            let entryCodeSummary = {};
+            let conformance;
+            let characterEncoding;
+            let loadUnits;
+            let formatRules;
+            let cardinalityData;
+            let dataStandards;
+
+            // load up metadata file in OCA bundle (same as handleJsonDrop)
+            if (jsonFile?.overlays?.meta) {
+              metaList.push(...jsonFile.overlays.meta);
+              languageList.push(
+                ...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2))
+              );
+
+              // ONLY for README
+              const readmeMeta = jsonFile.overlays.meta.map((meta) =>
+                JSON.stringify(meta)
+              );
+              allJSONFiles.push(...readmeMeta);
+            }
+
+            if (jsonFile?.overlays?.information) {
+              informationList.push(...jsonFile.overlays.information);
+
+              // ONLY for README
+              const readmeInformation = jsonFile.overlays.information.map((information) =>
+                JSON.stringify(information)
+              );
+              allJSONFiles.push(...readmeInformation);
+            }
+
+            if (jsonFile?.overlays?.label) {
+              labelList.push(...jsonFile.overlays.label);
+
+              // ONLY for README
+              const readmeLabel = jsonFile.overlays.label.map((label) =>
+                JSON.stringify(label)
+              );
+              allJSONFiles.push(...readmeLabel);
+            }
+
+            if (jsonFile.capture_base) {
+              if (jsonFile.capture_base.flagged_attributes?.length > 0) {
+                setShowWarningCard(true);
+              }
+              loadRoot = { ...jsonFile.capture_base };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(loadRoot));
+            }
+
+            // Critical fix: For YAML processing, every overlay is in array format
+            // The unit overlay is in jsonFile.overlays.unit as an array
+            if (jsonFile?.overlays?.unit && Array.isArray(jsonFile.overlays.unit)) {
+              [loadUnits] = jsonFile.overlays.unit;
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(loadUnits));
+            }
+
+            if (
+              jsonFile?.overlays?.conformance &&
+              Array.isArray(jsonFile.overlays.conformance)
+            ) {
+              [conformance] = jsonFile.overlays.conformance;
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(conformance));
+            }
+
+            if (
+              jsonFile?.overlays?.character_encoding &&
+              Array.isArray(jsonFile.overlays.character_encoding)
+            ) {
+              [characterEncoding] = jsonFile.overlays.character_encoding;
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(characterEncoding));
+            }
+
+            if (
+              jsonFile?.overlays?.entry_code &&
+              Array.isArray(jsonFile.overlays.entry_code)
+            ) {
+              [entryCodeSummary] = jsonFile.overlays.entry_code;
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(entryCodeSummary));
+            }
+
+            if (jsonFile?.overlays?.format && Array.isArray(jsonFile.overlays.format)) {
+              [formatRules] = jsonFile.overlays.format;
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(formatRules));
+            }
+
+            if (jsonFile?.overlays?.entry) {
+              entryList.push(...jsonFile.overlays.entry);
+              // ONLY for README
+              const readmeEntry = jsonFile.overlays.entry.map((entry) =>
+                JSON.stringify(entry)
+              );
+              allJSONFiles.push(...readmeEntry);
+            }
+
+            if (
+              jsonFile?.overlays?.cardinality &&
+              Array.isArray(jsonFile.overlays.cardinality)
+            ) {
+              [cardinalityData] = jsonFile.overlays.cardinality;
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(cardinalityData));
+            }
+
+            if (
+              jsonFile?.overlays?.standard &&
+              Array.isArray(jsonFile.overlays.standard)
+            ) {
+              [dataStandards] = jsonFile.overlays.standard;
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(dataStandards));
+            }
+
+            if (!languageList || languageList.length === 0) {
+              languageList.push("en");
+            }
+
+            processLanguages(languageList);
+            processMetadata(metaList);
+            processLabelsDescriptionRootUnitsEntries(
+              labelList,
+              informationList,
+              loadRoot,
+              loadUnits,
+              entryCodeSummary,
+              entryList,
+              conformance,
+              characterEncoding,
+              languageList,
+              formatRules,
+              cardinalityData,
+              dataStandards
+            );
+            setZipToReadme(allJSONFiles);
+          } catch (error) {
+            throw new Error(`Invalid YAML file or conversion failed: ${error.message}`);
+          }
+        };
+
+        reader.readAsArrayBuffer(acceptedFiles[0]);
+
+        reader.onloadend = () => {
+          setTimeout(() => {
+            setJsonDropDisabled(true);
+            setJsonDropMessage({ message: "", type: "" });
+            setJsonLoading(false);
+            setDatasetLoading(false);
+            if (datasetRawFile.length === 0) {
+              setDatasetDropDisabled(false);
+            }
+            if (!jsonIsParsed) {
+              setJsonIsParsed(true);
+              setCurrentDataValidatorPage("SchemaViewDataValidator");
+            }
+          }, 900);
+        };
+      } catch (error) {
+        setJsonDropMessage({
+          message: `${messages.uploadFail}: ${error.message}`,
+          type: "error"
+        });
+        setJsonLoading(false);
+        setDatasetLoading(false);
+        if (datasetRawFile.length === 0) {
+          setDatasetDropDisabled(false);
+        }
+        setTimeout(() => {
+          setJsonDropMessage({ message: "", type: "" });
+        }, [2500]);
+      }
+    },
+    [
+      datasetRawFile.length,
+      jsonIsParsed,
+      processLabelsDescriptionRootUnitsEntries,
+      processLanguages,
+      processMetadata,
+      setCurrentDataValidatorPage,
+      setDatasetDropDisabled,
+      setDatasetLoading,
+      setJsonDropDisabled,
+      setJsonIsParsed,
+      setJsonLoading,
+      setJsonParsedFile,
+      setShowWarningCard,
+      setTargetResult,
+      setZipToReadme
+    ]
+  );
+
   useEffect(() => {
     if (jsonRawFile && jsonRawFile.length > 0 && jsonRawFile[0].path.includes(".json")) {
       handleJsonDrop(jsonRawFile);
@@ -437,6 +670,12 @@ export const useHandleJsonDrop = (
       jsonRawFile[0].path.includes(".zip")
     ) {
       handleZipDrop(jsonRawFile);
+    } else if (
+      jsonRawFile &&
+      jsonRawFile.length > 0 &&
+      (jsonRawFile[0].path.includes(".yaml") || jsonRawFile[0].path.includes(".yml"))
+    ) {
+      handleYamlDrop(jsonRawFile);
     } else if (jsonRawFile && jsonRawFile.length > 0) {
       setJsonDropMessage({ message: messages.uploadFail, type: "error" });
       setJsonLoading(false);

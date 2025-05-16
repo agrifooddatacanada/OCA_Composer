@@ -61,17 +61,25 @@ const useExportLogicV2 = () => {
   languages.forEach((language) => {
     const rowObject = {};
     rowObject.Language = language;
-    rowObject.Name = schemaDescription[language].name;
-    rowObject.Description = schemaDescription[language].description;
+
+    // Defensive checks for schemaDescription[language]
+    if (schemaDescription && schemaDescription[language]) {
+      rowObject.Name = schemaDescription[language].name || "Unknown";
+      rowObject.Description = schemaDescription[language].description || "Unknown";
+    } else {
+      rowObject.Name = "Unknown";
+      rowObject.Description = "Unknown";
+    }
+
     OCADescriptionData.push(rowObject);
 
     const languageObject = {};
     languageObject.language = language;
     languageObject.code =
-      languageCodesObject[language.toLowerCase()] || customIsos[language.toLowerCase()];
-    if (!languageObject.code) {
-      languageObject.code = "unknown";
-    }
+      languageCodesObject[language.toLowerCase()] ||
+      customIsos[language.toLowerCase()] ||
+      "unknown";
+
     if (allLanguageCodes.includes(languageObject.code)) {
       let number = 2;
       let newCode = `${languageObject.code}_${number}`;
@@ -81,6 +89,7 @@ const useExportLogicV2 = () => {
       }
       languageObject.code = newCode;
     }
+
     allLanguageCodes.push(languageObject.code);
     languagesWithCode.push(languageObject);
   });

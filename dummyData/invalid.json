@@ -1,0 +1,3 @@
+- This is a list, not an object
+- It will fail validation
+- Because the parsed result is not an object

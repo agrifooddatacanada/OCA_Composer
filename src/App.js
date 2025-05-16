@@ -20,7 +20,9 @@ import { CUSTOM_FORMAT_RULE } from "./constants/constants";
 export const Context = createContext();
 
 // Initializing react-ga with google analytics ID
-ReactGA.initialize(process.env.REACT_APP_GA_ID);
+if (process.env.REACT_APP_GA_ID) {
+  ReactGA.initialize(process.env.REACT_APP_GA_ID);
+}
 
 const overlayItems = {
   "Character Encoding": { feature: "Character Encoding", selected: false },
