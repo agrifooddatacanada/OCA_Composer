@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
@@ -43,6 +43,8 @@ const useExportLogicV2 = () => {
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
+
+  const [error, setError] = useState("");
 
   // CAPTURE SHEET DESCRIPTIONS DATA
   const OCADescriptionData = [];
@@ -136,9 +138,15 @@ const useExportLogicV2 = () => {
         (obj) => obj.Language === language.language
       );
 
+      // Need to escape " and ' for OCA file
+      const parsedDescription = OCADataArray[0][languageIndex].Description
+        // eslint-disable-next-line quotes
+        .replace(/"/g, '\\"')
+        .replace(/'/g, "\\'");
+
       buildText += `\nADD Meta ${language.code} PROPS`;
       buildText += ` name="${OCADataArray[0][languageIndex].Name}"`;
-      buildText += ` description="${OCADataArray[0][languageIndex].Description}"`;
+      buildText += ` description="${parsedDescription}"`;
     });
 
     buildText += "\n";
@@ -389,73 +397,85 @@ const useExportLogicV2 = () => {
 
   const exportData = async () => {
     const data = buildOCAText(OCADataArray);
-    const bundle = await generateOCABundle(data);
+    try {
+      setError("");
+      const bundle = await generateOCABundle(data);
 
-    const sensitiveAttributes = attributeRowData
-      .filter((item) => item.Flagged)
-      .map((item) => item.Attribute);
+      const sensitiveAttributes = attributeRowData
+        .filter((item) => item.Flagged)
+        .map((item) => item.Attribute);
 
-    const extension = {
-      extensions: {
-        [ADC]: {
-          [bundle.bundle.d]: [
-            {
-              ordering_overlay: {
-                type: ORDERING,
-                attribute_ordering: attributesList,
-                entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
+      const extension = {
+        extensions: {
+          [ADC]: {
+            [bundle.bundle.d]: [
+              {
+                ordering_overlay: {
+                  type: ORDERING,
+                  attribute_ordering: attributesList,
+                  entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
+                }
+              },
+              {
+                unit_framing_overlay: {
+                  type: UNIT_FRAMING,
+                  properties: {
+                    id: UNIT_FRAME_ID,
+                    label: UNIT_FRAME_LABEL,
+                    location: UNIT_FRAME_LOCATION,
+                    version: UNIT_FRAME_VERSION
+                  },
+                  units: getUnitFramingInput(unitFramingRowData)
+                }
+              },
+              {
+                sensitive_overlay: {
+                  type: SENSITIVE,
+                  sensitive_attributes: sensitiveAttributes
+                }
               }
-            },
-            {
-              unit_framing_overlay: {
-                type: UNIT_FRAMING,
-                properties: {
-                  id: UNIT_FRAME_ID,
-                  label: UNIT_FRAME_LABEL,
-                  location: UNIT_FRAME_LOCATION,
-                  version: UNIT_FRAME_VERSION
-                },
-                units: getUnitFramingInput(unitFramingRowData)
-              }
-            },
-            {
-              sensitive_overlay: {
-                type: SENSITIVE,
-                sensitive_attributes: sensitiveAttributes
-              }
-            }
-          ]
+            ]
+          }
         }
-      }
-    };
+      };
 
-    const ocaPackageService = new OcaPackage(extension, bundle);
-    const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
+      const ocaPackageService = new OcaPackage(extension, bundle);
+      const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
 
-    // Generate and download text readme
-    jsonToTextFile(bundle.bundle, ocaPackage);
+      // Generate and download text readme
+      jsonToTextFile(bundle.bundle, ocaPackage);
 
-    downloadJsonFile(
-      ocaPackage,
-      getDescriptiveFileName(schemaDescription, "OCA_package.json")
-    );
-
-    // Download OCA file only on testing site
-    if (currentEnv === "DEV") {
-      downloadTextFile(data, getDescriptiveFileName(schemaDescription, "OCA_file.txt"));
-    }
-
-    // Download bundle only on testing site
-    if (currentEnv === "DEV") {
       downloadJsonFile(
-        bundle,
-        getDescriptiveFileName(schemaDescription, "OCA_bundle.json")
+        ocaPackage,
+        getDescriptiveFileName(schemaDescription, "OCA_package.json")
+      );
+
+      // Download OCA file only on testing site
+      if (currentEnv === "DEV") {
+        downloadTextFile(data, getDescriptiveFileName(schemaDescription, "OCA_file.txt"));
+      }
+
+      // Download bundle only on testing site
+      if (currentEnv === "DEV") {
+        downloadJsonFile(
+          bundle,
+          getDescriptiveFileName(schemaDescription, "OCA_bundle.json")
+        );
+      }
+    } catch (error) {
+      console.error("Error downloading OCA package:", error);
+      setError("Could not download OCA package");
+      downloadTextFile(
+        data,
+        getDescriptiveFileName(schemaDescription, "Error_OCA_file.txt")
       );
     }
   };
 
   return {
-    exportData
+    exportData,
+    error,
+    clearError: () => setError("")
   };
 };
 

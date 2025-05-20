@@ -103,7 +103,8 @@ const useGenerateReadMeV2 = () => {
           `Layer name: ${layer_name}\n` +
             `SAID/digest: ${said}\n` +
             `Language: ${lang}\n` +
-            `Description: ${description}\n` +
+            // eslint-disable-next-line quotes
+            `Description: ${description ? description.replace(/\\"/g, '"').replace(/\\'/g, "'") : ""}\n` +
             "\n"
         );
       }

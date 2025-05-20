@@ -321,5 +321,6 @@
   "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Click here to select schema bundle (.zip OR .json) or drag and drop one here",
   "Download Data": "Download Data",
   "Show Difference": "Show Difference",
-  "Enter a custom regular expression for the attribute's data": "Enter a custom regular expression for the attribute's data"
+  "Enter a custom regular expression for the attribute's data": "Enter a custom regular expression for the attribute's data",
+  "SchemaExportError": "Something went wrong. Please email <0>adc@uoguelph.ca</0> and include the OCA File."
 }
