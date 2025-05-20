@@ -49,7 +49,15 @@ const useZipParser = () => {
   const processMetadata = (metadata) => {
     const newMetadata = {};
     for (const { language, name, description } of metadata) {
-      newMetadata[codesToLanguages[language.slice(0, 2)]] = { name, description };
+      // Removing any escape characters for " and '
+      const formattedDescription = description
+        ? // eslint-disable-next-line quotes
+          description.replace(/\\"/g, '"').replace(/\\'/g, "'")
+        : "";
+      newMetadata[codesToLanguages[language.slice(0, 2)]] = {
+        name,
+        description: formattedDescription
+      };
     }
     setSchemaDescription(newMetadata);
   };
