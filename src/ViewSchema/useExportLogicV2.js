@@ -136,9 +136,15 @@ const useExportLogicV2 = () => {
         (obj) => obj.Language === language.language
       );
 
+      // Need to escape " and ' for OCA file
+      const parsedDescription = OCADataArray[0][languageIndex].Description
+        // eslint-disable-next-line quotes
+        .replace(/"/g, '\\"')
+        .replace(/'/g, "\\'");
+
       buildText += `\nADD Meta ${language.code} PROPS`;
       buildText += ` name="${OCADataArray[0][languageIndex].Name}"`;
-      buildText += ` description="${OCADataArray[0][languageIndex].Description}"`;
+      buildText += ` description="${parsedDescription}"`;
     });
 
     buildText += "\n";
