@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import i18next from "i18next";
 import { Box, Button, Typography, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -20,6 +20,8 @@ import { codesToLanguages } from "../constants/isoCodes";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 import { getFormatRuleDescription } from "../constants/utils";
+import ErrorPopup from "./ErrorPopup";
+import CustomRouterLink from "../components/CustomRouterLink";
 
 // const currentEnv = process.env.REACT_APP_ENV;
 
@@ -63,7 +65,7 @@ export default function ViewSchema({
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
   const { resetToDefaults, exportDisabled } = useExportLogic();
-  const { exportData } = useExportLogicV2();
+  const { exportData, error: exportError, clearError } = useExportLogicV2();
   const [loading, setLoading] = useState(true);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -633,6 +635,22 @@ export default function ViewSchema({
             {t("Clear All Data and Restart")}
           </Button>
         </Box>
+      )}
+      {exportError && (
+        <ErrorPopup onClose={clearError}>
+          <Typography variant="h5" sx={{ p: 1 }}>
+            <Trans
+              i18nKey="SchemaExportError"
+              components={[
+                <CustomRouterLink
+                  to="mailto:adc@uoguelph.ca"
+                  text="adc@uoguelph.ca"
+                  overrideStyle={{ fontWeight: "500", color: CustomPalette.PRIMARY }}
+                />
+              ]}
+            />
+          </Typography>
+        </ErrorPopup>
       )}
     </Box>
   );
