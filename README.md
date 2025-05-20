@@ -174,6 +174,9 @@ In your parent application, you need to:
 
 Here's an example of how to set up the parent application:
 
+
+### Sending Data to the Iframe
+
 ```html
 <!-- Parent application HTML -->
 <iframe id="validatorFrame" src="https://happy-tree-080b9290f.5.azurestaticapps.net/oca-data-validator" style="width: 100%; height: 600px;"></iframe>
@@ -198,7 +201,7 @@ const jsonData = {
 sendFileToValidator(jsonData);
 ```
 
-### 2. Message Format
+### 2. Sent Message Format
 
 The message sent to the validator must follow this structure:
 ```javascript
@@ -209,6 +212,39 @@ The message sent to the validator must follow this structure:
   }
 }
 ```
+
+### 3. Receiving Data from the Iframe (in your parent component)
+
+To receive data from the iframe, set up an event listener in your JavaScript code. This is typically done in the `window` object:
+
+```javascript
+window.addEventListener('message', receiveData)
+
+function receiveData(event) {
+  // Check the origin of the message for security
+  if (event.origin !== 'https://www.semanticengine.org/') {
+    return // Ignore messages from unknown origins
+  }
+
+  // Check the type of the message
+  if (event.data.type === 'CSV_STRING') {
+    const csvData = event.data.data
+    // Handle the CSV data as needed
+    console.log('Received CSV data:', csvData)
+  }
+}
+```
+
+### 4. Received Message Format
+
+The message received from the semantic engine is of the following format:
+```javascript
+{
+  type: 'CSV_STRING', // this value is hardcoded so always check if the object.type == 'CSV_STRING'
+  data: // the csv string
+}
+```
+
 
 ## Error Handling
 
