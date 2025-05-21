@@ -15,7 +15,15 @@ import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerific
 import OCAMerge from "./OCAMerge/OCAMerge";
 // import Tutorial from "./Tutorial/Tutorial";
 import ucumUnits from "./constants/ucumUnits";
-import { CUSTOM_FORMAT_RULE } from "./constants/constants";
+import {
+  CUSTOM_FORMAT_RULE,
+  FIELD_CARDINALITY_OVERLAY,
+  FIELD_CHARACTER_ENCODING_OVERLAY,
+  FIELD_CONFORMANCE_OVERLAY,
+  FIELD_DATA_STANDARDS_OVERLAY,
+  FIELD_FORMAT_OVERLAY,
+  FIELD_UNIT_FRAMING_OVERLAY
+} from "./constants/constants";
 
 export const Context = createContext();
 
@@ -25,18 +33,18 @@ if (process.env.REACT_APP_GA_ID) {
 }
 
 const overlayItems = {
-  "Character Encoding": { feature: "Character Encoding", selected: false },
-  "Make selected entries required": {
+  [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
+  [FIELD_CONFORMANCE_OVERLAY]: {
     feature: "Make selected entries required",
     selected: false
   },
-  "Add format rule for data": {
+  [FIELD_FORMAT_OVERLAY]: {
     feature: "Add format rule for data",
     selected: false
   },
-  Cardinality: { feature: "Cardinality", selected: false },
-  "Data Standards": { feature: "Data Standards", selected: false },
-  "Unit Framing": { feature: "Unit Framing", selected: false }
+  [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
+  [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
+  [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false }
 };
 
 export const pagesArray = [

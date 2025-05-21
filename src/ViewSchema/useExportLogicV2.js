@@ -13,7 +13,8 @@ import {
   UNIT_FRAME_LABEL,
   UNIT_FRAME_LOCATION,
   UNIT_FRAME_VERSION,
-  SENSITIVE
+  SENSITIVE,
+  FIELD_FORMAT_OVERLAY
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -45,6 +46,11 @@ const useExportLogicV2 = () => {
   const { jsonToTextFile } = useGenerateReadMeV2();
 
   const [error, setError] = useState("");
+
+  const attributeListMap = attributeRowData.reduce((acc, attr) => {
+    acc[attr.Attribute] = attr.List;
+    return acc;
+  }, {});
 
   // CAPTURE SHEET DESCRIPTIONS DATA
   const OCADescriptionData = [];
@@ -131,7 +137,7 @@ const useExportLogicV2 = () => {
   };
 
   const buildClassificationsText = () => {
-    let buildText = "# TODO add classification\n";
+    let buildText = "# Add classification\n";
     if (classificationCode) {
       buildText += `ADD classification ${classificationCode}`;
       buildText += "\n";
@@ -165,20 +171,22 @@ const useExportLogicV2 = () => {
   const buildFormatText = () => {
     let buildText = "# Add Format Overlay\n";
 
-    let tempText = "";
-    formatRuleRowData.forEach((item, index) => {
-      const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText;
-      if (formatRule) {
-        // Any " in the format text needs to be escaped for OCA file
-        // eslint-disable-next-line quotes
-        tempText += ` ${attributesList[index]}="${formatRule.replace(/"/g, '\\"')}"`;
-      }
-    });
+    if (overlay[FIELD_FORMAT_OVERLAY].selected) {
+      let tempText = "";
+      formatRuleRowData.forEach((item, index) => {
+        const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText;
+        if (formatRule) {
+          // Any " in the format text needs to be escaped for OCA file
+          // eslint-disable-next-line quotes
+          tempText += ` ${attributesList[index]}="${formatRule.replace(/"/g, '\\"')}"`;
+        }
+      });
 
-    if (tempText !== "") {
-      buildText += "ADD Format ATTRS";
-      buildText += tempText;
-      buildText += "\n";
+      if (tempText !== "") {
+        buildText += "ADD Format ATTRS";
+        buildText += tempText;
+        buildText += "\n";
+      }
     }
 
     return buildText;
@@ -260,7 +268,7 @@ const useExportLogicV2 = () => {
     let entryCodesText = "";
     attributesList.forEach((item) => {
       let entryCodes = "";
-      if (savedEntryCodes[item]) {
+      if (attributeListMap[item] && savedEntryCodes[item]) {
         for (const entry of savedEntryCodes[item]) {
           entryCodes += `, "${entry.Code}"`;
         }
@@ -406,6 +414,14 @@ const useExportLogicV2 = () => {
 
   const exportData = async () => {
     const data = buildOCAText(OCADataArray);
+    const filteredEntryCodes = {};
+
+    Object.entries(attributeListMap).forEach(([attribute, isList]) => {
+      if (isList && savedEntryCodes[attribute]) {
+        filteredEntryCodes[attribute] = savedEntryCodes[attribute];
+      }
+    });
+
     try {
       setError("");
       const bundle = await generateOCABundle(data);
@@ -420,7 +436,7 @@ const useExportLogicV2 = () => {
           ordering_overlay: {
             type: ORDERING,
             attribute_ordering: attributesList,
-            entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
+            entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
           }
         },
         ...(overlay["Unit Framing"].selected
