@@ -13,7 +13,8 @@ import {
   UNIT_FRAME_LABEL,
   UNIT_FRAME_LOCATION,
   UNIT_FRAME_VERSION,
-  SENSITIVE
+  SENSITIVE,
+  FIELD_FORMAT_OVERLAY
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -35,7 +36,7 @@ const useExportLogicV2 = () => {
     divisionGroup,
     savedEntryCodes,
     formatRuleRowData,
-    unitFramingRowData,
+    unitFramedRowData,
     customIsos,
     characterEncodingRowData,
     overlay,
@@ -45,6 +46,11 @@ const useExportLogicV2 = () => {
   const { jsonToTextFile } = useGenerateReadMeV2();
 
   const [error, setError] = useState("");
+
+  const attributeListMap = attributeRowData.reduce((acc, attr) => {
+    acc[attr.Attribute] = attr.List;
+    return acc;
+  }, {});
 
   // CAPTURE SHEET DESCRIPTIONS DATA
   const OCADescriptionData = [];
@@ -63,17 +69,25 @@ const useExportLogicV2 = () => {
   languages.forEach((language) => {
     const rowObject = {};
     rowObject.Language = language;
-    rowObject.Name = schemaDescription[language].name;
-    rowObject.Description = schemaDescription[language].description;
+
+    // Defensive checks for schemaDescription[language]
+    if (schemaDescription && schemaDescription[language]) {
+      rowObject.Name = schemaDescription[language].name || "Unknown";
+      rowObject.Description = schemaDescription[language].description || "Unknown";
+    } else {
+      rowObject.Name = "Unknown";
+      rowObject.Description = "Unknown";
+    }
+
     OCADescriptionData.push(rowObject);
 
     const languageObject = {};
     languageObject.language = language;
     languageObject.code =
-      languageCodesObject[language.toLowerCase()] || customIsos[language.toLowerCase()];
-    if (!languageObject.code) {
-      languageObject.code = "unknown";
-    }
+      languageCodesObject[language.toLowerCase()] ||
+      customIsos[language.toLowerCase()] ||
+      "unknown";
+
     if (allLanguageCodes.includes(languageObject.code)) {
       let number = 2;
       let newCode = `${languageObject.code}_${number}`;
@@ -83,6 +97,7 @@ const useExportLogicV2 = () => {
       }
       languageObject.code = newCode;
     }
+
     allLanguageCodes.push(languageObject.code);
     languagesWithCode.push(languageObject);
   });
@@ -122,7 +137,7 @@ const useExportLogicV2 = () => {
   };
 
   const buildClassificationsText = () => {
-    let buildText = "# TODO add classification\n";
+    let buildText = "# Add classification\n";
     if (classificationCode) {
       buildText += `ADD classification ${classificationCode}`;
       buildText += "\n";
@@ -156,20 +171,22 @@ const useExportLogicV2 = () => {
   const buildFormatText = () => {
     let buildText = "# Add Format Overlay\n";
 
-    let tempText = "";
-    formatRuleRowData.forEach((item, index) => {
-      const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText;
-      if (formatRule) {
-        // Any " in the format text needs to be escaped for OCA file
-        // eslint-disable-next-line quotes
-        tempText += ` ${attributesList[index]}="${formatRule.replace(/"/g, '\\"')}"`;
-      }
-    });
+    if (overlay[FIELD_FORMAT_OVERLAY].selected) {
+      let tempText = "";
+      formatRuleRowData.forEach((item, index) => {
+        const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText;
+        if (formatRule) {
+          // Any " in the format text needs to be escaped for OCA file
+          // eslint-disable-next-line quotes
+          tempText += ` ${attributesList[index]}="${formatRule.replace(/"/g, '\\"')}"`;
+        }
+      });
 
-    if (tempText !== "") {
-      buildText += "ADD Format ATTRS";
-      buildText += tempText;
-      buildText += "\n";
+      if (tempText !== "") {
+        buildText += "ADD Format ATTRS";
+        buildText += tempText;
+        buildText += "\n";
+      }
     }
 
     return buildText;
@@ -251,7 +268,7 @@ const useExportLogicV2 = () => {
     let entryCodesText = "";
     attributesList.forEach((item) => {
       let entryCodes = "";
-      if (savedEntryCodes[item]) {
+      if (attributeListMap[item] && savedEntryCodes[item]) {
         for (const entry of savedEntryCodes[item]) {
           entryCodes += `, "${entry.Code}"`;
         }
@@ -397,6 +414,14 @@ const useExportLogicV2 = () => {
 
   const exportData = async () => {
     const data = buildOCAText(OCADataArray);
+    const filteredEntryCodes = {};
+
+    Object.entries(attributeListMap).forEach(([attribute, isList]) => {
+      if (isList && savedEntryCodes[attribute]) {
+        filteredEntryCodes[attribute] = savedEntryCodes[attribute];
+      }
+    });
+
     try {
       setError("");
       const bundle = await generateOCABundle(data);
@@ -405,17 +430,17 @@ const useExportLogicV2 = () => {
         .filter((item) => item.Flagged)
         .map((item) => item.Attribute);
 
-      const extension = {
-        extensions: {
-          [ADC]: {
-            [bundle.bundle.d]: [
-              {
-                ordering_overlay: {
-                  type: ORDERING,
-                  attribute_ordering: attributesList,
-                  entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
-                }
-              },
+      // dynamic addition optional extension overlays
+      const extension_overlays = [
+        {
+          ordering_overlay: {
+            type: ORDERING,
+            attribute_ordering: attributesList,
+            entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
+          }
+        },
+        ...(overlay["Unit Framing"].selected
+          ? [
               {
                 unit_framing_overlay: {
                   type: UNIT_FRAMING,
@@ -425,16 +450,23 @@ const useExportLogicV2 = () => {
                     location: UNIT_FRAME_LOCATION,
                     version: UNIT_FRAME_VERSION
                   },
-                  units: getUnitFramingInput(unitFramingRowData)
-                }
-              },
-              {
-                sensitive_overlay: {
-                  type: SENSITIVE,
-                  sensitive_attributes: sensitiveAttributes
+                  units: getUnitFramingInput(unitFramedRowData)
                 }
               }
             ]
+          : []),
+        {
+          sensitive_overlay: {
+            type: SENSITIVE,
+            sensitive_attributes: sensitiveAttributes
+          }
+        }
+      ];
+
+      const extension = {
+        extensions: {
+          [ADC]: {
+            [bundle.bundle.d]: extension_overlays
           }
         }
       };

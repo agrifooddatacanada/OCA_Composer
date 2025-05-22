@@ -1,5 +1,4 @@
-import { Box } from "@mui/system";
-import { Button, Alert } from "@mui/material";
+import { Box, Button, Alert } from "@mui/material";
 import React, { useContext, useState } from "react";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
@@ -26,27 +25,22 @@ const languageEntryErrors = {
   blankLanguage: "Language name cannot be blank",
   quotesMisuse: "Language name cannot start or end with quotes",
   backslashMisuse: "Language name cannot include the character \\",
-  codeInjection: "Language name cannot include HTML",
+  codeInjection: "Language name cannot include HTML"
 };
 
 export default function LanguageSelection({
   setShowLanguages,
   setEditingLanguage,
-  setShowIsoInput,
+  setShowIsoInput
 }) {
   const { languages, setLanguages, schemaDescription, setSchemaDescription } =
     useContext(Context);
   // const [newLanguage, setNewLanguage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
-  const toTitleCase = (str) => {
-    return str.toLowerCase().replace(/^(.)|\s(.)/g, function(match) {
-      return match.toUpperCase();
-    });
-  };
-
+  const toTitleCase = (str) =>
+    str.toLowerCase().replace(/^(.)|\s(.)/g, (match) => match.toUpperCase());
   const addLanguage = (newLanguage) => {
-    let languageToAdd = toTitleCase(removeSpacesFromString(newLanguage));
+    const languageToAdd = toTitleCase(removeSpacesFromString(newLanguage));
 
     if (languageToAdd.length > 50) {
       setErrorMessage(languageEntryErrors.tooLong);
@@ -64,7 +58,7 @@ export default function LanguageSelection({
       return;
     }
 
-    //backslash in language name can create export errors
+    // backslash in language name can create export errors
     if (languageToAdd.includes("\\")) {
       setErrorMessage(languageEntryErrors.backslashMisuse);
       setTimeout(() => {
@@ -86,7 +80,7 @@ export default function LanguageSelection({
       return;
     }
 
-    //quotes at start or end of language name can create export errors
+    // quotes at start or end of language name can create export errors
     if (
       languageToAdd.startsWith('"') ||
       languageToAdd.endsWith('"') ||
@@ -104,9 +98,7 @@ export default function LanguageSelection({
 
     if (!languages.includes(languageToAdd)) {
       setLanguages([...languages, languageToAdd]);
-      const newSchemaDescription = JSON.parse(
-        JSON.stringify(schemaDescription)
-      );
+      const newSchemaDescription = JSON.parse(JSON.stringify(schemaDescription));
       newSchemaDescription[languageToAdd] = { name: "", description: "" };
       setSchemaDescription(newSchemaDescription);
       setShowLanguages(false);
@@ -127,30 +119,27 @@ export default function LanguageSelection({
   //   setNewLanguage(e.target.value);
   // };
 
-
-  const languageDisplay = languageList.map((item) => {
-    return (
-      <Button
-        key={item}
-        onClick={() => addLanguage(item)}
-        color="button"
-        sx={{
-          borderRadius: 0,
-          textTransform: "capitalize",
-          boxShadow: `0px 0px 1px ${CustomPalette.GREY_300}`,
-          "&:hover": {
-            backgroundColor: CustomPalette.PRIMARY,
-            color: CustomPalette.WHITE,
-          },
-          "&:nth-of-type(7)": {
-            boxShadow: 0,
-          },
-        }}
-      >
-        {item}
-      </Button>
-    );
-  });
+  const languageDisplay = languageList.map((item) => (
+    <Button
+      key={item}
+      onClick={() => addLanguage(item)}
+      color="button"
+      sx={{
+        borderRadius: 0,
+        textTransform: "capitalize",
+        boxShadow: `0px 0px 1px ${CustomPalette.GREY_300}`,
+        "&:hover": {
+          backgroundColor: CustomPalette.PRIMARY,
+          color: CustomPalette.WHITE
+        },
+        "&:nth-of-type(7)": {
+          boxShadow: 0
+        }
+      }}
+    >
+      {item}
+    </Button>
+  ));
   return (
     <Box
       sx={{
@@ -158,7 +147,7 @@ export default function LanguageSelection({
         backgroundColor: CustomPalette.WHITE,
         display: "flex",
         flexDirection: "column",
-        boxShadow: 10,
+        boxShadow: 10
       }}
     >
       {errorMessage.length > 0 && (
@@ -172,7 +161,7 @@ export default function LanguageSelection({
             width: `calc(${errorMessage.length}ch + 1rem)`,
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: "center"
           }}
         >
           {errorMessage}

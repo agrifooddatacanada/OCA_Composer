@@ -19,7 +19,10 @@ import { CUSTOM_FORMAT_RULE } from "../constants/constants";
 import { codesToLanguages } from "../constants/isoCodes";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
-import { getFormatRuleDescription } from "../constants/utils";
+import {
+  getFormatRuleDescription,
+  updateUnitFramingRowDataForOverlayGeneration
+} from "../constants/utils";
 import ErrorPopup from "./ErrorPopup";
 import CustomRouterLink from "../components/CustomRouterLink";
 
@@ -47,7 +50,7 @@ export default function ViewSchema({
     history,
     setHistory,
     formatRuleRowData,
-    unitFramingRowData,
+    unitFramedRowData,
     dataStandardsRowData,
     zipToReadme,
     jsonToReadme,
@@ -157,6 +160,12 @@ export default function ViewSchema({
     <Box key={languageSegment.join(",")}>{createLanguageRow(languageSegment, index)}</Box>
   ));
 
+  // updating attributeRowData to include unit framing data
+  const updatedFramedRowData = updateUnitFramingRowDataForOverlayGeneration(
+    attributeRowData,
+    unitFramedRowData
+  );
+
   // Creates display array with all captured data
   useEffect(() => {
     const newDisplayArray = [];
@@ -230,7 +239,7 @@ export default function ViewSchema({
       }
 
       // Add unit framing information
-      const unitFramingData = unitFramingRowData.find(
+      const unitFramingData = updatedFramedRowData.find(
         (row) => row.Attribute === attributeName
       );
 

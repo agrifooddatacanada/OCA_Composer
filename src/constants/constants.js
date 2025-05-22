@@ -443,3 +443,11 @@ export const ALLOWED_BOOLEAN_VALUES = [
 export const DISALLOWED_CHARACTERS = [",", " ", "\\", "/", "(", ")", "'"];
 export const ADC = "adc";
 export const CUSTOM_FORMAT_RULE = "CustomFormatRule";
+
+// Fields for overlay items
+export const FIELD_CHARACTER_ENCODING_OVERLAY = "Character Encoding";
+export const FIELD_FORMAT_OVERLAY = "Add format rule for data";
+export const FIELD_CONFORMANCE_OVERLAY = "Make selected entries required";
+export const FIELD_CARDINALITY_OVERLAY = "Cardinality";
+export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
+export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
