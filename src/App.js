@@ -299,8 +299,6 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attributeRowData]);
 
-  // console.log("unitRowData --->", unitRowData);
-
   const framedUnits = useUnitFramingUpdater(unitRowData);
 
   useEffect(() => {
