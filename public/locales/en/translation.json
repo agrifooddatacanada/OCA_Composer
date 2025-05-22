@@ -20,6 +20,10 @@
   "Use a Schema with Data": "Use a Schema with Data",
   "Quick Links": "Quick Links",
   "Upload schema bundle (.zip OR .json) Or drag and drop one": "Upload schema bundle (.zip OR .json) Or drag and drop one",
+  "Upload Schema": "Upload Schema",
+  "(.zip or .json for OCA)": "(.zip or .json for OCA)",
+  "(.yaml or .yml for LinkML)": "(.yaml or .yml for LinkML)",
+  "Drag-and-Drop/Click-to-Find": "Drag-and-Drop/Click-to-Find",
   "View Schema": "View Schema",
   "Edit Schema": "Edit Schema",
   "Generate Text Readme": "Generate Text Readme",
@@ -321,5 +325,6 @@
   "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Click here to select schema bundle (.zip OR .json) or drag and drop one here",
   "Download Data": "Download Data",
   "Show Difference": "Show Difference",
-  "Enter a custom regular expression for the attribute's data": "Enter a custom regular expression for the attribute's data"
+  "Enter a custom regular expression for the attribute's data": "Enter a custom regular expression for the attribute's data",
+  "SchemaExportError": "Something went wrong. Please email <0>adc@uoguelph.ca</0> and include the OCA File."
 }

@@ -319,7 +319,10 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
   try {
     schemaTitle = metaOverlays[0].name;
-    schemaDescription = metaOverlays[0].description;
+    schemaDescription = metaOverlays[0].description
+      ? // eslint-disable-next-line quotes
+        metaOverlays[0].description.replace(/\\"/g, '"').replace(/\\'/g, "'")
+      : "";
     schemaLanguage = metaOverlays[0].language;
     schemaClassification = jsonData.find(
       (o) => o.type && o.type.includes("/capture_base/")
@@ -418,7 +421,9 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     if (overlay.type && overlay.type.includes("/capture_base/")) {
       const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
         ? sensitiveOverlay?.sensitive_attributes
-        : [];
+        : Array.isArray(overlay.flagged_attributes)
+          ? overlay.flagged_attributes
+          : [];
       Object.entries(overlay.attributes).forEach(([attrName, attrType], index) => {
         let attrIndex = null;
 

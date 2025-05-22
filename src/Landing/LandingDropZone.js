@@ -1,21 +1,52 @@
-import { Box, Card, CardContent, Typography } from '@mui/material';
-import React from 'react';
-import { CustomPalette } from '../constants/customPalette';
+import React from "react";
+import { Box, Card, CardContent, Typography, Tooltip } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import LoopIcon from "@mui/icons-material/Loop";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { useTranslation } from 'react-i18next';
+import { CustomPalette } from "../constants/customPalette";
 
-const LandingDropZone = ({ loading, dropDisabled, dropMessage, spinningAnimation, downloadIconColor, getRootProps, getInputProps, hover, handleHover, handleHoverLeave, handleDragOver, handleDragLeave }) => {
+const LandingDropZone = ({
+  loading,
+  dropDisabled,
+  spinningAnimation,
+  getRootProps,
+  getInputProps,
+  handleHover,
+  handleHoverLeave,
+  handleDragOver,
+  handleDragLeave
+}) => {
   const { t } = useTranslation();
 
   return (
     <Box
-      sx={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}
+      sx={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center"
+      }}
       {...getRootProps({ className: "dropzone" })}
     >
       <input {...getInputProps()} />
       <Card
-        sx={{ border: 1, padding: '8px', paddingLeft: '20px', paddingRight: '20px', height: '80px', width: '300px', marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: '#CDCDCD', alignSelf: 'center', cursor: 'pointer' }}
+        sx={{
+          border: 1,
+          padding: "8px",
+          paddingLeft: "20px",
+          paddingRight: "20px",
+          height: "80px",
+          width: "300px",
+          marginTop: 3,
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#CDCDCD",
+          alignSelf: "center",
+          cursor: "pointer"
+        }}
         onMouseOver={handleHover}
         onMouseLeave={handleHoverLeave}
         onDragOver={handleDragOver}
@@ -43,7 +74,7 @@ const LandingDropZone = ({ loading, dropDisabled, dropMessage, spinningAnimation
                 m: 2,
                 fontSize: "60px",
                 animation: spinningAnimation,
-                transition: "all 0.2s ease-in-out",
+                transition: "all 0.2s ease-in-out"
               }}
             />
           ) : dropDisabled === true ? (
@@ -51,17 +82,22 @@ const LandingDropZone = ({ loading, dropDisabled, dropMessage, spinningAnimation
               sx={{
                 m: 2,
                 fontSize: "60px",
-                color: CustomPalette.PRIMARY,
+                color: CustomPalette.PRIMARY
               }}
             />
           ) : (
-            <Typography sx={{ fontSize: '16px', fontWeight: '700' }}>
-              {t('Upload schema bundle (.zip OR .json) Or drag and drop one')}
-            </Typography>
+            <Tooltip title={t("Drag-and-Drop/Click-to-Find")} arrow>
+              <Typography sx={{ fontSize: "16px", fontWeight: "700" }}>
+                {t("Upload Schema")}
+                <br />
+                {t("(.zip or .json for OCA)")}
+                <br />
+                {t("(.yaml or .yml for LinkML)")}
+              </Typography>
+            </Tooltip>
           )}
         </CardContent>
       </Card>
-
     </Box>
   );
 };

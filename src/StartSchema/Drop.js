@@ -25,30 +25,38 @@ export default function Drop({
         "application/zip": [".zip"],
         "application/json": [".json"]
       };
-    } else if (version === 1) {
+    }
+    if (version === 1) {
       return {
         "application/zip": [".zip"],
-        "application/json": [".json"]
+        "application/json": [".json"],
+        "text/yaml": [".yaml", ".yml"],
+        "application/x-yaml": [".yaml", ".yml"]
       };
-    } else if (version === 2) {
+    }
+    if (version === 2) {
       return {
         "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"]
       };
-    } else if (version === 3) {
+    }
+    if (version === 3) {
       return {
         "application/json": [".json"]
       };
-    } else if (version === 4) {
+    }
+    if (version === 4) {
       return {
         "application/vnd.ms-excel": [".xls", ".xlsx"]
       };
-    } else if (version === 5) {
+    }
+    if (version === 5) {
       return {
         "application/vnd.ms-excel": [".csv"],
         "application/zip": [".zip"],
         "application/json": [".json"]
       };
-    } else if (version === 6) {
+    }
+    if (version === 6) {
       return {
         "text/plain": [".txt"]
       };
@@ -105,13 +113,15 @@ export default function Drop({
     }
   }, [acceptedFiles, setFile]);
 
-  const downloadIconColor = useMemo(() => {
-    return dropDisabled === true
-      ? CustomPalette.GREY_600
-      : hover === true
-        ? CustomPalette.SECONDARY
-        : CustomPalette.PRIMARY;
-  }, [dropDisabled, hover]);
+  const downloadIconColor = useMemo(
+    () =>
+      dropDisabled === true
+        ? CustomPalette.GREY_600
+        : hover === true
+          ? CustomPalette.SECONDARY
+          : CustomPalette.PRIMARY,
+    [dropDisabled, hover]
+  );
 
   return (
     <>
