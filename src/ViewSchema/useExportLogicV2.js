@@ -430,39 +430,46 @@ const useExportLogicV2 = () => {
         .filter((item) => item.Flagged)
         .map((item) => item.Attribute);
 
-    const extension = {
-      extensions: {
-        [ADC]: {
-          [bundle.bundle.d]: [
-            {
-              ordering_overlay: {
-                type: ORDERING,
-                attribute_ordering: attributesList,
-                entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
+      // dynamic addition optional extension overlays
+      const extension_overlays = [
+        {
+          ordering_overlay: {
+            type: ORDERING,
+            attribute_ordering: attributesList,
+            entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
+          }
+        },
+        ...(overlay["Unit Framing"].selected
+          ? [
+              {
+                unit_framing_overlay: {
+                  type: UNIT_FRAMING,
+                  properties: {
+                    id: UNIT_FRAME_ID,
+                    label: UNIT_FRAME_LABEL,
+                    location: UNIT_FRAME_LOCATION,
+                    version: UNIT_FRAME_VERSION
+                  },
+                  units: getUnitFramingInput(unitFramedRowData)
+                }
               }
-            },
-            {
-              unit_framing_overlay: {
-                type: UNIT_FRAMING,
-                properties: {
-                  id: UNIT_FRAME_ID,
-                  label: UNIT_FRAME_LABEL,
-                  location: UNIT_FRAME_LOCATION,
-                  version: UNIT_FRAME_VERSION
-                },
-                units: getUnitFramingInput(unitFramedRowData)
-              }
-            },
-            {
-              sensitive_overlay: {
-                type: SENSITIVE,
-                sensitive_attributes: sensitiveAttributes
-              }
-            }
-          ]
+            ]
+          : []),
+        {
+          sensitive_overlay: {
+            type: SENSITIVE,
+            sensitive_attributes: sensitiveAttributes
+          }
         }
-      }
-    };
+      ];
+
+      const extension = {
+        extensions: {
+          [ADC]: {
+            [bundle.bundle.d]: extension_overlays
+          }
+        }
+      };
 
       const ocaPackageService = new OcaPackage(extension, bundle);
       const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
