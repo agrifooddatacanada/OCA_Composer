@@ -31,7 +31,7 @@ const useZipParser = () => {
     setFormatRuleRowData,
     setDataStandardsRowData,
     setCardinalityData,
-    setUnitFramingRowData
+    setUnitRowData
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -67,7 +67,6 @@ const useZipParser = () => {
     formatRules,
     cardinalityData,
     dataStandards,
-    // ocaPackageData = null
     ocaPackageData
   ) => {
     const newSavedEntryCodes = {};
@@ -348,7 +347,7 @@ const useZipParser = () => {
             selected: true
           }
         }));
-        setUnitFramingRowData(newUnitFramingRowData);
+        setUnitRowData(newUnitFramingRowData);
       });
     }
 
