@@ -13,7 +13,6 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { useTranslation } from "react-i18next";
-import Fuse from "fuse.js";
 import { styled } from "@mui/material/styles";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
@@ -21,7 +20,7 @@ import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
-import ucumUnits from "../constants/ucumUnits";
+import { searchUnits } from "../constants/utils";
 import { Context } from "../App";
 
 // TODO: fix the grid styles: handle the last column border
@@ -29,7 +28,15 @@ import { Context } from "../App";
 const TrashCanButton = memo(
   // eslint-disable-next-line no-unused-vars
   forwardRef((props, ref) => {
+    const { setUnitFramedDeleteStatus } = useContext(Context);
     const onClick = useCallback(() => {
+      setUnitFramedDeleteStatus((prev) =>
+        prev.map((row) =>
+          row.Unit === props.node.data.Unit && row.Attribute === props.node.data.Attribute
+            ? { ...row, deleted: true }
+            : row
+        )
+      );
       props.node.updateData({
         ...props.node.data,
         "UCUM Code": "",
@@ -37,7 +44,8 @@ const TrashCanButton = memo(
         Description: ""
       });
       props?.onRefresh();
-    }, []);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.node.data, setUnitFramedDeleteStatus]);
 
     return (
       <IconButton
@@ -241,12 +249,9 @@ const getColumnDefs = (gridRef, t, searchUnits) => [
   }
 ];
 
-const updateUnitFramingRowDataForOverlayGeneration = (
-  unitFramingRowData,
-  newUnitFramingRowData
-) =>
-  unitFramingRowData.map((row) => {
-    const existingRow = newUnitFramingRowData.find(
+const updateUnitFramedRowData = (unitFramedRowData, newUnitFramedRowData) =>
+  unitFramedRowData.map((row) => {
+    const existingRow = newUnitFramedRowData.find(
       (existing) => existing.Unit === row.Unit
     );
 
@@ -265,74 +270,32 @@ const UnitFraming = () => {
   const {
     setCurrentPage,
     setSelectedOverlay,
-    unitFramingRowData,
+    unitFramedRowData,
+    setUnitFramedRowData,
     setOverlay,
-    setUnitFramingRowData,
-    isUnitFramingPageRendered,
-    setIsUnitFramingPageRendered,
-    unitRowsToDisplayData,
-    setUnitRowsToDisplayData
+    unitFramedDeleteStatus,
+    setUnitRowData
   } = useContext(Context);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [tempToDisplayRowData, setTempToDisplayRowData] = useState([]);
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
 
-  const options = {
-    keys: ["code", "label", "description"],
-    isCaseSensitive: true,
-    includeScore: true,
-    includeMatches: true,
-    minMatchCharLength: 1,
-    shouldSort: true,
-    threshold: 0.4,
-    distance: 100
-  };
-
-  const fuse = new Fuse(ucumUnits, options);
-  const searchUnits = (unit) => {
-    const searchResults = fuse.search(unit.toString());
-    const slicedResults = searchResults.slice(0, 20).map((result) => result.item);
-
-    const uniqueResults = Array.from(new Set(slicedResults.map((item) => item.code))).map(
-      (code) => slicedResults.find((item) => item.code === code)
+  useEffect(() => {
+    const unitFramedRowDataSet = Array.from(
+      new Map(unitFramedRowData.map((row) => [row.Unit, row])).values()
     );
 
-    return {
-      firstMatch: uniqueResults[0] || null,
-      results: uniqueResults
-    };
-  };
-
-  useEffect(() => {
-    if (!isUnitFramingPageRendered && unitFramingRowData?.length > 0) {
-      const newUnitFramingRowData = unitFramingRowData.filter(
-        (row) => row?.Unit !== undefined
+    const filteredUnitFramedRowData = unitFramedRowDataSet.filter((row) => {
+      const toDisplayRow = unitFramedDeleteStatus.find(
+        (displayRow) => displayRow.Attribute === row.Attribute && !displayRow.deleted
       );
+      return !!toDisplayRow;
+    });
 
-      const uniqueUnitFramingRowData = Array.from(
-        new Map(newUnitFramingRowData.map((row) => [row.Unit, row])).values()
-      );
+    setTempToDisplayRowData(filteredUnitFramedRowData);
 
-      const updatedUnitFramingRowData = uniqueUnitFramingRowData.map((row) => {
-        const { firstMatch } = searchUnits(row["UCUM Code"] || row.Unit);
-        return {
-          ...row,
-          "UCUM Code": row["UCUM Code"] || firstMatch?.code || row.Unit,
-          "UCUM Label": firstMatch?.label || row["UCUM Label"],
-          Description: firstMatch?.description || row.Description
-        };
-      });
-
-      setUnitRowsToDisplayData(updatedUnitFramingRowData);
-      setUnitFramingRowData(
-        updateUnitFramingRowDataForOverlayGeneration(
-          newUnitFramingRowData,
-          updatedUnitFramingRowData
-        )
-      );
-
-      setIsUnitFramingPageRendered(true);
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDeleteCurrentOverlay = () => {
@@ -347,13 +310,13 @@ const UnitFraming = () => {
 
   const handleSave = () => {
     gridRef.current.api.stopEditing();
-    const newUnitFramingData = gridRef.current.api
+    const displayedFramedUnits = gridRef.current.api
       .getRenderedNodes()
       ?.map((node) => node?.data);
 
-    setUnitRowsToDisplayData(newUnitFramingData);
-    setUnitFramingRowData(
-      updateUnitFramingRowDataForOverlayGeneration(unitFramingRowData, newUnitFramingData)
+    setUnitRowData(displayedFramedUnits);
+    setUnitFramedRowData(
+      updateUnitFramedRowData(unitFramedRowData, displayedFramedUnits)
     );
   };
 
@@ -377,7 +340,7 @@ const UnitFraming = () => {
       pageBack={() => setShowDeleteConfirmation(true)}
       backText="Remove overlay"
     >
-      {loading && unitFramingRowData?.length > 40 && <Loading />}
+      {loading && unitFramedRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={handleDeleteCurrentOverlay}
@@ -397,7 +360,7 @@ const UnitFraming = () => {
           <style>{gridStyles}</style>
           <AgGridReact
             ref={gridRef}
-            rowData={unitRowsToDisplayData}
+            rowData={tempToDisplayRowData}
             columnDefs={columnDefs}
             domLayout="autoHeight"
             suppressHorizontalScroll

@@ -36,7 +36,7 @@ const useExportLogicV2 = () => {
     divisionGroup,
     savedEntryCodes,
     formatRuleRowData,
-    unitFramingRowData,
+    unitFramedRowData,
     customIsos,
     characterEncodingRowData,
     overlay,
@@ -450,7 +450,7 @@ const useExportLogicV2 = () => {
                     location: UNIT_FRAME_LOCATION,
                     version: UNIT_FRAME_VERSION
                   },
-                  units: getUnitFramingInput(unitFramingRowData)
+                  units: getUnitFramingInput(unitFramedRowData)
                 }
               }
             ]

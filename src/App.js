@@ -15,6 +15,7 @@ import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerific
 import OCAMerge from "./OCAMerge/OCAMerge";
 // import Tutorial from "./Tutorial/Tutorial";
 import ucumUnits from "./constants/ucumUnits";
+import useUnitFramingUpdater from "./hooks/useUnitFramingUpdater";
 import {
   CUSTOM_FORMAT_RULE,
   FIELD_CARDINALITY_OVERLAY,
@@ -92,10 +93,9 @@ function App() {
   const [selectedOverlay, setSelectedOverlay] = useState("");
   const [cardinalityData, setCardinalityData] = useState([]);
   const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
-  const [unitFramingRowData, setUnitFramingRowData] = useState([]);
-  const [ucumUnitsList, setUcumUnitsList] = useState([ucumUnits]);
-  const [isUnitFramingPageRendered, setIsUnitFramingPageRendered] = useState(false);
-  const [unitRowsToDisplayData, setUnitRowsToDisplayData] = useState([]);
+  const [unitRowData, setUnitRowData] = useState([]);
+  const [unitFramedRowData, setUnitFramedRowData] = useState([]);
+  const [unitFramedDeleteStatus, setUnitFramedDeleteStatus] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -270,28 +270,60 @@ function App() {
     setDataStandardsRowData(newDataStandardsArray);
   }, [attributeRowData]);
 
+  // unit framing starts here
   useEffect(() => {
-    const newUnitFramingArray = [];
+    const newUnitRowArray = [];
     attributeRowData.forEach((item) => {
-      const unitFramingObject = unitFramingRowData.find(
-        (obj) => obj.Attribute === item.Attribute
+      if (!item.Unit) {
+        return;
+      }
+
+      const unitRowObject = unitRowData.find(
+        (obj) => obj.Attribute === item.Attribute && obj.Unit === item.Unit
       );
 
-      if (unitFramingObject && unitFramingObject.Unit === item.Unit) {
-        newUnitFramingArray.push(unitFramingObject);
+      if (unitRowObject) {
+        newUnitRowArray.push(unitRowObject);
       } else {
-        newUnitFramingArray.push({
+        newUnitRowArray.push({
           Attribute: item.Attribute,
           Unit: item.Unit,
-          "UCUM Code": "",
+          "UCUM Code": item["UCUM Code"] || "",
           "UCUM Label": "",
           Description: ""
         });
       }
     });
 
-    setUnitFramingRowData(newUnitFramingArray);
+    setUnitRowData(newUnitRowArray);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attributeRowData]);
+
+  const framedUnits = useUnitFramingUpdater(unitRowData);
+
+  useEffect(() => {
+    setUnitFramedRowData(framedUnits);
+  }, [framedUnits]);
+
+  useEffect(() => {
+    if (framedUnits.length > 0) {
+      setUnitFramedDeleteStatus((prev) =>
+        framedUnits.map((row) => {
+          // Check if the row already exists in unitFramedDeleteStatus
+          const existingRow = prev.find(
+            (statusRow) =>
+              statusRow.Attribute === row.Attribute &&
+              statusRow.Unit === row.Unit &&
+              statusRow["UCUM Code"] === row["UCUM Code"]
+          );
+
+          // If it exists, keep the existing row (including its `deleted` status)
+          // Otherwise, add the new row with `deleted: false`
+          return existingRow || { ...row, deleted: false };
+        })
+      );
+    }
+  }, [framedUnits]);
 
   useEffect(() => {
     if (jsonRawFile.length > 0) {
@@ -504,14 +536,12 @@ function App() {
             setNotToVerifyAttributes,
             OCAPackage,
             setOCAPackage,
-            unitFramingRowData,
-            setUnitFramingRowData,
-            ucumUnitsList,
-            setUcumUnitsList,
-            isUnitFramingPageRendered,
-            setIsUnitFramingPageRendered,
-            unitRowsToDisplayData,
-            setUnitRowsToDisplayData
+            unitFramedRowData,
+            setUnitFramedRowData,
+            unitFramedDeleteStatus,
+            setUnitFramedDeleteStatus,
+            unitRowData,
+            setUnitRowData
           }}
         >
           <Box
