@@ -21,25 +21,60 @@ function buildOverlay(type, key, data) {
 }
 
 /**
+ * Collect mappings between attributes and enums, including nested references
+ * @param {Object} slots - The slots dictionary
+ * @param {Object} enums - The enums dictionary
+ * @param {Object} linkmlSchema - The full LinkML schema
+ * @returns {Object} Map of attribute names to enum names
+ */
+function collectAttributeEnumMappings(slots, enums, linkmlSchema) {
+  const mappings = {};
+
+  // Add direct enum references
+  Object.entries(slots).forEach(([slotName, slot]) => {
+    if (slot.range && enums[slot.range]) {
+      mappings[slotName] = slot.range;
+    }
+  });
+
+  // Add class enum references
+  Object.entries(slots).forEach(([slotName, slot]) => {
+    if (!slot.range || !linkmlSchema.classes || !linkmlSchema.classes[slot.range]) return;
+
+    const rangeClass = linkmlSchema.classes[slot.range];
+
+    // Within slot_usage are slots
+    Object.entries(rangeClass.slot_usage || {}).forEach(([, slot]) => {
+      if (slot.range && enums[slot.range]) {
+        mappings[slotName] = slot.range;
+      }
+    });
+  });
+
+  return mappings;
+}
+
+/**
  * Build overlays from enums used in slots
  * @param {Object} slots - The slots dictionary
  * @param {Object} enums - The enums dictionary
  * @returns {Object} Entry and entry_code overlays
  */
-function buildEntryOverlays(slots, enums) {
+function buildEntryOverlays(slots, enums, linkmlSchema) {
+  const attributeEnumMappings = collectAttributeEnumMappings(slots, enums, linkmlSchema);
+
   const entry_code_data = {};
   const entry_data = {};
 
-  Object.entries(slots).forEach(([slotName, slot]) => {
-    const enumName = slot.range;
+  Object.entries(attributeEnumMappings).forEach(([attrName, enumName]) => {
     const enumDef = enums[enumName];
-    if (!enumDef) return;
+    if (!enumDef || !enumDef.permissible_values) return;
 
     // For "Entry Code" overlay
-    entry_code_data[slotName] = Object.keys(enumDef.permissible_values || {});
+    entry_code_data[attrName] = Object.keys(enumDef.permissible_values || {});
 
     // For "Entry" overlay
-    entry_data[slotName] = Object.fromEntries(
+    entry_data[attrName] = Object.fromEntries(
       Object.entries(enumDef.permissible_values || {}).map(([code, value]) => [
         code,
         value.description || code
@@ -158,10 +193,111 @@ export function buildOverlays(slots, enums, linkmlSchema) {
   }
 
   // Add entry/entry_code overlays
-  const entryOverlays = buildEntryOverlays(slots, enums);
+  const entryOverlays = buildEntryOverlays(slots, enums, linkmlSchema);
   Object.assign(overlays, entryOverlays);
 
   return { overlays };
+}
+
+// Map LinkML types to OCA types
+function mapRangeToOCAType(linkmlRange) {
+  if (!linkmlRange) return "Text";
+
+  if (linkmlRange === "string") {
+    return "Text";
+  }
+
+  if (["integer", "decimal", "float"].includes(linkmlRange)) {
+    return "Numeric";
+  }
+
+  if (["datetime", "date"].includes(linkmlRange)) {
+    return "DateTime";
+  }
+
+  if (linkmlRange === "boolean") {
+    return "Boolean";
+  }
+
+  // Check if it's a custom class or enum by looking for capital first letter
+  // which is common naming convention for classes/types
+  if (/^[A-Z]/.test(linkmlRange)) {
+    return "Text"; // Convert all class types to Text
+  }
+  // Any other type defaults to Text
+  return "Text";
+}
+
+/**
+ * Collects all slots from all classes in the LinkML schema
+ * @param {Object} linkmlSchema - The LinkML schema
+ * @returns {Object} All collected slots
+ */
+/**
+ * Collects all slots from all classes in the LinkML schema
+ * @param {Object} linkmlSchema - The LinkML schema
+ * @returns {Object} All collected slots
+ */
+function collectAllSlots(linkmlSchema) {
+  // Early return if no schema
+  if (!linkmlSchema) {
+    return {};
+  }
+
+  // Start with a normalized empty object
+  const allSlots = {};
+
+  // First, collect slots explicitly defined in the schema
+  if (linkmlSchema.slots) {
+    Object.entries(linkmlSchema.slots).forEach(([slotName, slotDef]) => {
+      // Handle empty slot definitions
+      if (!slotDef || Object.keys(slotDef).length === 0) {
+        allSlots[slotName] = {};
+        return;
+      }
+
+      // Just copy the slot definition as is
+      allSlots[slotName] = { ...slotDef };
+    });
+  }
+
+  // Next, process class slots if classes exist
+  if (linkmlSchema.classes) {
+    Object.entries(linkmlSchema.classes).forEach(([, classData]) => {
+      // Skip tree_root and mixin classes
+      if (classData.tree_root || classData.mixin) {
+        return;
+      }
+
+      // Process attributes defined within the class
+      if (classData.attributes) {
+        Object.entries(classData.attributes).forEach(([attrName, attrDef]) => {
+          if (!attrDef) {
+            // Handle empty attribute definitions
+            allSlots[attrName] = {};
+            return;
+          }
+
+          // Either use an existing slot definition or create a new one
+          if (!allSlots[attrName]) {
+            allSlots[attrName] = { ...attrDef };
+          }
+        });
+      }
+
+      // Also handle the 'slots' array that lists slot names
+      if (classData.slots) {
+        classData.slots.forEach((slotName) => {
+          // Ensure the slot exists if referenced but not defined
+          if (!allSlots[slotName]) {
+            allSlots[slotName] = {};
+          }
+        });
+      }
+    });
+  }
+
+  return allSlots;
 }
 
 /**
@@ -170,31 +306,18 @@ export function buildOverlays(slots, enums, linkmlSchema) {
  * @returns {Object} An OCA bundle
  */
 export function mapLinkMLToOCABundle(linkmlSchema) {
-  const slots = linkmlSchema.slots || {};
+  const slots = collectAllSlots(linkmlSchema);
   const enums = linkmlSchema.enums || {};
 
-  // Extract OCA attributes and flagged attributes
+  // Extract OCA attributes
   const attributes = Object.fromEntries(
     Object.entries(slots).map(([key, slot]) => {
-      let range = "Text";
-
-      if (["integer", "decimal", "float"].includes(slot.range)) {
-        range = "Numeric";
-      }
-
-      if (slot.range === "datetime") {
-        range = "Datetime";
-      }
-
-      // OCA does not support Event or Type?
-      if (/Event|Type/.test(slot.range)) {
-        range = "";
-      }
-
-      return [key, range];
+      const ocaType = mapRangeToOCAType(slot.range);
+      return [key, ocaType];
     })
   );
 
+  // Extract OCA flagged attributes
   const flaggedAttributes = Object.entries(slots)
     .filter(([, slot]) => slot.annotations?.flagged)
     .map(([key]) => key);
