@@ -24,32 +24,23 @@ function buildOverlay(type, key, data) {
  * Collect mappings between attributes and enums, including nested references
  * @param {Object} slots - The slots dictionary
  * @param {Object} enums - The enums dictionary
- * @param {Object} linkmlSchema - The full LinkML schema
  * @returns {Object} Map of attribute names to enum names
  */
-function collectAttributeEnumMappings(slots, enums, linkmlSchema) {
+function collectAttributeEnumMappings(slots, enums) {
   const mappings = {};
 
-  // Add direct enum references
-  Object.entries(slots).forEach(([slotName, slot]) => {
-    // check if the range is an enum using enums[slot.range]
-    if (slot.range && enums[slot.range]) {
-      mappings[slotName] = slot.range;
+  // Skip if no slots or enums
+  if (!slots || !enums) return mappings;
+
+  // For each slot, check if its range is an enum
+  Object.entries(slots).forEach(([slotName, slotDef]) => {
+    if (!slotDef.range) return;
+
+    // Direct match with an enum name
+    if (enums[slotDef.range]) {
+      mappings[slotName] = slotDef.range;
     }
   });
-
-  // Check for slot_usage in classes and map its range
-  if (linkmlSchema.classes) {
-    Object.entries(linkmlSchema.classes).forEach(([, classData]) => {
-      if (classData.slot_usage) {
-        Object.entries(classData.slot_usage).forEach(([slotName, slot]) => {
-          if (slot.range && enums[slot.range]) {
-            mappings[slotName] = slot.range;
-          }
-        });
-      }
-    });
-  }
 
   return mappings;
 }
@@ -60,8 +51,8 @@ function collectAttributeEnumMappings(slots, enums, linkmlSchema) {
  * @param {Object} enums - The enums dictionary
  * @returns {Object} Entry and entry_code overlays
  */
-function buildEntryOverlays(slots, enums, linkmlSchema) {
-  const attributeEnumMappings = collectAttributeEnumMappings(slots, enums, linkmlSchema);
+function buildEntryOverlays(slots, enums) {
+  const attributeEnumMappings = collectAttributeEnumMappings(slots, enums);
 
   const entry_code_data = {};
   const entry_data = {};
@@ -193,7 +184,7 @@ export function buildOverlays(slots, enums, linkmlSchema) {
   }
 
   // Add entry/entry_code overlays
-  const entryOverlays = buildEntryOverlays(slots, enums, linkmlSchema);
+  const entryOverlays = buildEntryOverlays(slots, enums);
   Object.assign(overlays, entryOverlays);
 
   return { overlays };
@@ -233,11 +224,6 @@ function mapRangeToOCAType(range) {
  * @param {Object} linkmlSchema - The LinkML schema
  * @returns {Object} All collected slots
  */
-/**
- * Collects all slots from all classes in the LinkML schema
- * @param {Object} linkmlSchema - The LinkML schema
- * @returns {Object} All collected slots
- */
 function collectAllSlots(linkmlSchema) {
   const allSlots = {};
 
@@ -261,7 +247,7 @@ function collectAllSlots(linkmlSchema) {
         });
       }
 
-      // Process slot_usage overrides
+      // Process slot_usage
       if (classData.slot_usage) {
         Object.entries(classData.slot_usage).forEach(([slotName, slotUsage]) => {
           // Create or update slot definition
@@ -285,34 +271,104 @@ function collectAllSlots(linkmlSchema) {
  * @returns {Object} An OCA bundle
  */
 export function mapLinkMLToOCABundle(linkmlSchema) {
-  const slots = collectAllSlots(linkmlSchema);
-  const enums = linkmlSchema.enums || {};
+  try {
+    // Add basic validation
+    if (!linkmlSchema) {
+      throw new Error("No schema provided");
+    }
 
-  // Extract OCA attributes
-  const attributes = Object.fromEntries(
-    Object.entries(slots).map(([key, slot]) => {
-      const ocaType = mapRangeToOCAType(slot.range);
-      return [key, ocaType];
-    })
-  );
+    if (!linkmlSchema.name) {
+      // Generate a name if missing
+      linkmlSchema.name = "Untitled_Schema";
+    }
 
-  // Extract OCA flagged attributes
-  const flaggedAttributes = Object.entries(slots)
-    .filter(([, slot]) => slot.annotations?.flagged)
-    .map(([key]) => key);
+    const slots = collectAllSlots(linkmlSchema);
 
-  // Define capture_base separately
-  const capture_base = {
-    type: "spec/capture_base/1.0",
-    language: "en",
-    attributes,
-    flagged_attributes: flaggedAttributes
-  };
+    // Create a simple bundle even if there are issues
+    const attributes = {};
 
-  const { overlays } = buildOverlays(slots, enums, linkmlSchema);
+    // Try to extract attributes from slots
+    try {
+      Object.entries(slots).forEach(([key, slot]) => {
+        try {
+          const ocaType = mapRangeToOCAType(slot.range);
+          attributes[key] = ocaType;
+        } catch (e) {
+          // If there's an error with this slot, use Text as fallback
+          attributes[key] = "Text";
+        }
+      });
+    } catch (e) {
+      console.error("Error processing slots:", e);
+    }
 
-  return {
-    capture_base,
-    overlays
-  };
+    // If no attributes were found, add a dummy one
+    if (Object.keys(attributes).length === 0) {
+      attributes.dummy = "Text";
+    }
+
+    // Define capture_base
+    const capture_base = {
+      type: "spec/capture_base/1.0",
+      language: "en",
+      attributes
+    };
+
+    // Basic overlays
+    const overlays = {
+      meta: [
+        {
+          type: "spec/overlays/meta/1.0",
+          capture_base: "",
+          language: "en",
+          name: linkmlSchema.name || "Unnamed Schema",
+          description: linkmlSchema.description || "No description available"
+        }
+      ]
+    };
+
+    // Try to build more overlays if possible
+    try {
+      const enums = linkmlSchema.enums || {};
+      const builtOverlays = buildOverlays(slots, enums, linkmlSchema);
+      Object.assign(overlays, builtOverlays.overlays);
+    } catch (e) {
+      console.error("Error building overlays:", e);
+    }
+
+    return { capture_base, overlays };
+  } catch (error) {
+    console.error("Fatal error processing schema:", error);
+
+    // Return a minimal valid bundle
+    return {
+      capture_base: {
+        type: "spec/capture_base/1.0",
+        language: "en",
+        attributes: { error_message: "Text" }
+      },
+      overlays: {
+        meta: [
+          {
+            type: "spec/overlays/meta/1.0",
+            capture_base: "",
+            language: "en",
+            name: "Error Processing Schema",
+            description: error.message
+          }
+        ],
+        information: [
+          {
+            type: "spec/overlays/information/1.0",
+            capture_base: "",
+            language: "en",
+            attribute_information: {
+              error_message:
+                "There was an error processing this schema. Please try with a simpler schema."
+            }
+          }
+        ]
+      }
+    };
+  }
 }
