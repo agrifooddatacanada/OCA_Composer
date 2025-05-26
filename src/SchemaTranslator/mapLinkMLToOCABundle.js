@@ -32,7 +32,7 @@ function collectAttributeEnumMappings(slots, enums) {
   // Skip if no slots or enums
   if (!slots || !enums) return mappings;
 
-  // For each slot, check if its range is an enum
+  // 1. First approach - direct check from slots section (nmdc.yaml style)
   Object.entries(slots).forEach(([slotName, slotDef]) => {
     if (!slotDef.range) return;
 
@@ -271,6 +271,7 @@ function collectAllSlots(linkmlSchema) {
  * @returns {Object} An OCA bundle
  */
 export function mapLinkMLToOCABundle(linkmlSchema) {
+  console.log("Mapping LinkML schema to OCA bundle...");
   try {
     // Add basic validation
     if (!linkmlSchema) {
