@@ -14,11 +14,14 @@ import {
   UNIT_FRAME_LOCATION,
   UNIT_FRAME_VERSION,
   SENSITIVE,
-  FIELD_FORMAT_OVERLAY
+  FIELD_FORMAT_OVERLAY,
+  FIELD_RANGE_OVERLAY,
+  RANGE
 } from "../constants/constants";
 import {
   generateOCABundle,
   getDescriptiveFileName,
+  getRangeOverlayInput,
   getTransformedEntryCodes,
   getUnitFramingInput
 } from "../constants/utils";
@@ -40,7 +43,8 @@ const useExportLogicV2 = () => {
     customIsos,
     characterEncodingRowData,
     overlay,
-    cardinalityData
+    cardinalityData,
+    rangeRowData
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -424,11 +428,17 @@ const useExportLogicV2 = () => {
 
     try {
       setError("");
+      // const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
+      // console.log("rangeOverlayInput", rangeOverlayInput);
+      // return;
+
       const bundle = await generateOCABundle(data);
 
       const sensitiveAttributes = attributeRowData
         .filter((item) => item.Flagged)
         .map((item) => item.Attribute);
+
+      const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
 
       // dynamic addition optional extension overlays
       const extension_overlays = [
@@ -451,6 +461,16 @@ const useExportLogicV2 = () => {
                     version: UNIT_FRAME_VERSION
                   },
                   units: getUnitFramingInput(unitFramedRowData)
+                }
+              }
+            ]
+          : []),
+        ...(overlay[FIELD_RANGE_OVERLAY].selected
+          ? [
+              {
+                range_overlay: {
+                  type: RANGE,
+                  attributes: rangeOverlayInput
                 }
               }
             ]

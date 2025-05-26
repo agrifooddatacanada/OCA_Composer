@@ -8,6 +8,8 @@ import { Context } from "../App";
 import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
+import { shouldDisableRangeOverlay } from "../constants/utils";
+import { FIELD_FORMAT_OVERLAY, FIELD_RANGE_OVERLAY } from "../constants/constants";
 
 const Overlays = ({ pageBack, pageForward }) => {
   const { t } = useTranslation();
@@ -17,16 +19,26 @@ const Overlays = ({ pageBack, pageForward }) => {
     setCharacterEncodingRowData,
     overlay,
     setOverlay,
-    setSelectedOverlay
+    setSelectedOverlay,
+    rangeRowData,
+    attributeRowData
   } = useContext(Context);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedItemToDelete, setSelectedItemToDelete] = useState("");
 
+  // Convert overlay into a list of features
+  const { selectedFeatures, unselectedFeatures } = getListOfSelectedOverlays(overlay);
+
   const addToSelected = (item) => {
+    // Range overlay can be selected only if format overlay is selected
+    if (shouldDisableRangeOverlay(item, selectedFeatures, attributeRowData, rangeRowData))
+      return;
+
     setOverlay((prev) => ({
       ...prev,
       [item]: { ...prev[item], selected: true }
     }));
+
     setSelectedOverlay(item);
     if (item === "Character Encoding") {
       setCurrentPage("CharacterEncoding");
@@ -38,13 +50,12 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("UnitFraming");
     } else if (item === "Data Standards") {
       setCurrentPage("DataStandards");
+    } else if (item === "Add range rule for data") {
+      setCurrentPage("Range");
     } else {
       setCurrentPage("FormatRules");
     }
   };
-
-  // Convert overlay into a list of features
-  const { selectedFeatures, unselectedFeatures } = getListOfSelectedOverlays(overlay);
 
   const removeFromSelected = () => {
     setOverlay((prev) => ({
@@ -52,7 +63,13 @@ const Overlays = ({ pageBack, pageForward }) => {
       [selectedItemToDelete]: {
         ...prev[selectedItemToDelete],
         selected: false
-      }
+      },
+      ...(selectedItemToDelete === FIELD_FORMAT_OVERLAY && {
+        [FIELD_RANGE_OVERLAY]: {
+          ...prev[FIELD_RANGE_OVERLAY],
+          selected: false
+        }
+      })
     }));
 
     // Delete attribute from characterEncodingRowData
@@ -76,6 +93,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("DataStandards");
     } else if (overlayName === "Unit Framing") {
       setCurrentPage("UnitFraming");
+    } else if (overlayName === "Add range rule for data") {
+      setCurrentPage("Range");
     } else {
       setCurrentPage("FormatRules");
     }
@@ -117,7 +136,16 @@ const Overlays = ({ pageBack, pageForward }) => {
           >
             <List>
               {unselectedFeatures.map((text) => (
-                <ListItemButton key={text} onClick={() => addToSelected(text)}>
+                <ListItemButton
+                  key={text}
+                  onClick={() => addToSelected(text)}
+                  disabled={shouldDisableRangeOverlay(
+                    text,
+                    selectedFeatures,
+                    attributeRowData,
+                    rangeRowData
+                  )}
+                >
                   <AddCircleIcon sx={{ color: CustomPalette.PRIMARY }} />
                   <ListItemText primary={t(text)} sx={{ marginLeft: 2 }} />
                 </ListItemButton>

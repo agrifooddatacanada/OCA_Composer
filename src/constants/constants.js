@@ -395,6 +395,9 @@ export const UNIT_FRAME_VERSION = "";
 // Sensitive overlay (flagged attributes)
 export const SENSITIVE = "sensitive";
 
+// Range overlay
+export const RANGE = "range";
+
 export const overlays = [
   CHARACTER_ENCODING,
   FORMAT,
@@ -451,3 +454,4 @@ export const FIELD_CONFORMANCE_OVERLAY = "Make selected entries required";
 export const FIELD_CARDINALITY_OVERLAY = "Cardinality";
 export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
 export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
+export const FIELD_RANGE_OVERLAY = "Add range rule for data";

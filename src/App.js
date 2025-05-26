@@ -22,6 +22,7 @@ import {
   FIELD_CONFORMANCE_OVERLAY,
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_FORMAT_OVERLAY,
+  FIELD_RANGE_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY
 } from "./constants/constants";
 
@@ -44,7 +45,8 @@ const overlayItems = {
   },
   [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
   [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
-  [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false }
+  [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
+  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false }
 };
 
 export const pagesArray = [
@@ -95,6 +97,7 @@ function App() {
   const [unitRowData, setUnitRowData] = useState([]);
   const [unitFramedRowData, setUnitFramedRowData] = useState([]);
   const [unitFramedDeleteStatus, setUnitFramedDeleteStatus] = useState([]);
+  const [rangeRowData, setRangeRowData] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -325,6 +328,35 @@ function App() {
   }, [framedUnits]);
 
   useEffect(() => {
+    const newRangeArray = [];
+
+    attributeRowData.forEach((attributeRowItem) => {
+      const rangeObject = rangeRowData.find(
+        (rangeRowItem) => attributeRowItem.Attribute === rangeRowItem.Attribute
+      );
+
+      if (rangeObject) {
+        newRangeArray.push(rangeObject);
+      } else if (
+        attributeRowItem.Type === "Numeric" ||
+        attributeRowItem.Type === "DateTime"
+      ) {
+        newRangeArray.push({
+          Attribute: attributeRowItem.Attribute,
+          Type: attributeRowItem.Type,
+          FormatRule: "",
+          LowerBound: "",
+          LowerInclusive: false,
+          UpperBound: "",
+          UpperInclusive: false
+        });
+      }
+    });
+
+    setRangeRowData(newRangeArray);
+  }, [attributeRowData]);
+
+  useEffect(() => {
     if (jsonRawFile.length > 0) {
       const newMatchingRowData = [];
       attributesList.forEach((item, index) => {
@@ -540,7 +572,9 @@ function App() {
             unitFramedDeleteStatus,
             setUnitFramedDeleteStatus,
             unitRowData,
-            setUnitRowData
+            setUnitRowData,
+            rangeRowData,
+            setRangeRowData
           }}
         >
           <Box
