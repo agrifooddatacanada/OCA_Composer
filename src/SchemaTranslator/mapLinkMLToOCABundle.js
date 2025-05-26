@@ -32,24 +32,24 @@ function collectAttributeEnumMappings(slots, enums, linkmlSchema) {
 
   // Add direct enum references
   Object.entries(slots).forEach(([slotName, slot]) => {
+    // check if the range is an enum using enums[slot.range]
     if (slot.range && enums[slot.range]) {
       mappings[slotName] = slot.range;
     }
   });
 
-  // Add class enum references
-  Object.entries(slots).forEach(([slotName, slot]) => {
-    if (!slot.range || !linkmlSchema.classes || !linkmlSchema.classes[slot.range]) return;
-
-    const rangeClass = linkmlSchema.classes[slot.range];
-
-    // Within slot_usage are slots
-    Object.entries(rangeClass.slot_usage || {}).forEach(([, slot]) => {
-      if (slot.range && enums[slot.range]) {
-        mappings[slotName] = slot.range;
+  // Check for slot_usage in classes and map its range
+  if (linkmlSchema.classes) {
+    Object.entries(linkmlSchema.classes).forEach(([, classData]) => {
+      if (classData.slot_usage) {
+        Object.entries(classData.slot_usage).forEach(([slotName, slot]) => {
+          if (slot.range && enums[slot.range]) {
+            mappings[slotName] = slot.range;
+          }
+        });
       }
     });
-  });
+  }
 
   return mappings;
 }
@@ -199,29 +199,29 @@ export function buildOverlays(slots, enums, linkmlSchema) {
   return { overlays };
 }
 
-// Map LinkML types to OCA types
-function mapRangeToOCAType(linkmlRange) {
-  if (!linkmlRange) return "Text";
+// Map LinkML ranges to OCA types
+function mapRangeToOCAType(range) {
+  if (!range) return "Text";
 
-  if (linkmlRange === "string") {
+  if (range === "string") {
     return "Text";
   }
 
-  if (["integer", "decimal", "float"].includes(linkmlRange)) {
+  if (["integer", "decimal", "float"].includes(range)) {
     return "Numeric";
   }
 
-  if (["datetime", "date"].includes(linkmlRange)) {
+  if (["datetime", "date"].includes(range)) {
     return "DateTime";
   }
 
-  if (linkmlRange === "boolean") {
+  if (range === "boolean") {
     return "Boolean";
   }
 
   // Check if it's a custom class or enum by looking for capital first letter
   // which is common naming convention for classes/types
-  if (/^[A-Z]/.test(linkmlRange)) {
+  if (/^[A-Z]/.test(range)) {
     return "Text"; // Convert all class types to Text
   }
   // Any other type defaults to Text
@@ -239,58 +239,37 @@ function mapRangeToOCAType(linkmlRange) {
  * @returns {Object} All collected slots
  */
 function collectAllSlots(linkmlSchema) {
-  // Early return if no schema
-  if (!linkmlSchema) {
-    return {};
-  }
-
-  // Start with a normalized empty object
   const allSlots = {};
 
-  // First, collect slots explicitly defined in the schema
+  // Process slots defined directly in the schema
   if (linkmlSchema.slots) {
     Object.entries(linkmlSchema.slots).forEach(([slotName, slotDef]) => {
-      // Handle empty slot definitions
-      if (!slotDef || Object.keys(slotDef).length === 0) {
-        allSlots[slotName] = {};
-        return;
-      }
-
-      // Just copy the slot definition as is
       allSlots[slotName] = { ...slotDef };
     });
   }
 
-  // Next, process class slots if classes exist
+  // Process all classes
   if (linkmlSchema.classes) {
     Object.entries(linkmlSchema.classes).forEach(([, classData]) => {
-      // Skip tree_root and mixin classes
-      if (classData.tree_root || classData.mixin) {
-        return;
-      }
-
-      // Process attributes defined within the class
-      if (classData.attributes) {
-        Object.entries(classData.attributes).forEach(([attrName, attrDef]) => {
-          if (!attrDef) {
-            // Handle empty attribute definitions
-            allSlots[attrName] = {};
-            return;
-          }
-
-          // Either use an existing slot definition or create a new one
-          if (!allSlots[attrName]) {
-            allSlots[attrName] = { ...attrDef };
+      // Process slots directly defined in the class
+      if (classData.slots) {
+        classData.slots.forEach((slotName) => {
+          // If slot isn't already defined, add an empty entry
+          if (!allSlots[slotName]) {
+            allSlots[slotName] = {};
           }
         });
       }
 
-      // Also handle the 'slots' array that lists slot names
-      if (classData.slots) {
-        classData.slots.forEach((slotName) => {
-          // Ensure the slot exists if referenced but not defined
+      // Process slot_usage overrides
+      if (classData.slot_usage) {
+        Object.entries(classData.slot_usage).forEach(([slotName, slotUsage]) => {
+          // Create or update slot definition
           if (!allSlots[slotName]) {
-            allSlots[slotName] = {};
+            allSlots[slotName] = { ...slotUsage };
+          } else {
+            // Merge with existing definition
+            allSlots[slotName] = { ...allSlots[slotName], ...slotUsage };
           }
         });
       }

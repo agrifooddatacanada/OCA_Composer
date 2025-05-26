@@ -1,0 +1,1327 @@
+id: https://w3id.org/include
+name: include-schema
+prefixes:
+  include:
+    prefix_prefix: include
+    prefix_reference: https://w3id.org/include/
+  linkml:
+    prefix_prefix: linkml
+    prefix_reference: https://w3id.org/linkml/
+  schema:
+    prefix_prefix: schema
+    prefix_reference: http://schema.org/
+  mesh:
+    prefix_prefix: mesh
+    prefix_reference: http://id.nlm.nih.gov/mesh/
+  MONDO:
+    prefix_prefix: MONDO
+    prefix_reference: http://purl.obolibrary.org/obo/mondo
+  NCIT:
+    prefix_prefix: NCIT
+    prefix_reference: http://purl.obolibrary.org/obo/ncit
+default_prefix: include
+imports:
+  - linkml:types
+default_curi_maps:
+  - semweb_context
+
+classes:
+  Study:
+    definition_uri: include:Study
+    description: General information about the study
+    title: Study
+    slots:
+    - studyCode
+    - studyTitle
+    - program
+    - studyDescription
+    - principalInvestigatorName
+    - studyContactName
+    - studyContactInstitution
+    - studyContactEmail
+    - vbrEmail
+    - vbrUrl
+    - vbrReadme
+    - researchDomain
+    - participantLifespanStage
+    - selectionCriteria
+    - studyDesign
+    - clinicalDataSourceType
+    - dataCategory
+    - studyWebsite
+    - dbgap
+    - publication
+    - expectedNumberOfParticipants
+    - guidType
+    - guidMapped
+    - acknowledgments
+    - citationStatement
+    - doi
+    - doiCitation
+    slot_usage:
+      dataCategory:
+        description: Categories of data expected to be collected in this study
+        multivalued: true
+      dbgap:
+        description: dbGaP "phs" accession code(s) associated with this Study, either for access or informational purposes (pipe-separated if multiple)
+      publication:
+        description: URL for publication(s) describing the study's rationale and methodology (PubMed Central preferred but not required; pipe-separated if multiple)
+      expectedNumberOfParticipants:
+        description: Expected number of participants in this study (or actual number, if data has been submitted to INCLUDE DCC). If additional explanation is needed, please add to Study Description field.
+  Dataset:
+    definition_uri: include:Dataset
+    description: Information about a specific grouping of data files
+    title: Dataset
+    slots:
+    - studyCode
+    - datasetName
+    - datasetDescription
+    - datasetGlobalId
+    - datasetExternalId
+    - expectedNumberOfParticipants
+    - expectedNumberOfFiles
+    - dataCollectionStartYear
+    - dataCollectionEndYear
+    - dataCategory
+    - dataType
+    - experimentalStrategy
+    - experimentalPlatform
+    - publication
+    - accessLimitations
+    - accessRequirements
+    - dbgap
+    - otherRepository
+    - otherAccessAuthority
+    - isHarmonized
+    - datasetManifestLocation
+    - doi
+    - doiCitation
+    slot_usage:
+      dataCategory:
+        description: General category of data in Dataset; pipe-separated if multiple
+        multivalued: true
+      dbgap:
+        description: dbGaP "phs" accession code(s) required to access the files in this Dataset, if applicable (pipe-separated if multiple)
+      publication:
+        description: URL for publication(s) describing the Dataset's rationale and methodology (PubMed Central preferred but not required; pipe-separated if multiple)
+      expectedNumberOfParticipants:
+        description: Expected number of participants in this Dataset (or actual number, if data has been submitted to INCLUDE DCC). If additional explanation is needed, please add to Dataset Description field.
+      dataType:
+        description: Specific type of data contained in Dataset; pipe-separated if multiple (e.g. Preprocessed metabolite relative abundance, Absolute protein concentration, Aligned reads, Simple nucleotide variations, GVCF, Gene expression quantifications, Gene fusions, Somatic copy number variations, Somatic structural variations)
+        multivalued: true
+      experimentalStrategy:
+        description: Experimental method used to obtain data in Dataset; pipe-separated if multiple (e.g. Whole genome sequencing, RNAseq, Multiplex immunoassay, Mass spec metabolomics)
+        multivalued: true
+      # Reference Slots
+      studyCode:
+        range: Study
+  DatasetManifest:
+    definition_uri: include:DatasetManifest
+    description: Mapping information for files in Dataset
+    title: Dataset Manifest
+    slots:
+    - studyCode
+    - datasetName
+    - datasetGlobalId
+    - datasetExternalId
+    - fileName
+    - fileGlobalId
+    #TODO: add Dictonary File Name & Global ID
+    slot_usage:
+      # Reference Slots
+      studyCode:
+        range: Study
+      fileGlobalId:
+        range: DataFile
+      datasetGlobalId:
+        range: Dataset
+
+  Participant:
+    definition_uri: include:Participant
+    description: Demographic and clinical information about the participant
+    title: Participant
+    slots:
+    - studyCode
+    - participantGlobalId
+    - participantExternalId
+    - familyId
+    - familyType
+    - fatherId
+    - motherId
+    - siblingId
+    - otherFamilyMemberId
+    - familyRelationship
+    - sex
+    - race
+    - ethnicity
+    - downSyndromeStatus
+    - ageAtFirstParticipantEngagement
+    - firstParticipantEngagementEvent
+    - outcomesVitalStatus
+    - ageAtLastVitalStatus
+    slot_usage:
+      studyCode:
+        multivalued: true
+        range: Study # Reference Slots
+      participantExternalId:
+        multivalued: true
+  Condition:
+    definition_uri: include:Condition
+    description: Co-occurring conditions and other observations for the participant
+    title: Condition
+    slots:
+    - studyCode
+    - participantGlobalId
+    - participantExternalId
+    - eventId
+    - eventType
+    - conditionMeasureSourceText # will include DS Genetic Diagnosis
+    - ageAtConditionMeasureObservation
+    - conditionInterpretation
+    - conditionStatus
+    - conditionDataSource
+    - hpoLabel
+    - hpoCode
+    - mondoLabel
+    - mondoCode
+    - maxoLabel
+    - maxoCode
+    - otherLabel
+    - otherCode
+    - measureValue
+    - measureUnit
+    slot_usage:
+      # Reference Slots
+      studyCode:
+        range: Study
+      participantGlobalId:
+        range: Participant
+  Biospecimen:
+    definition_uri: include:Biospecimen
+    description: A Biospecimen Collected from A Participant
+    title: Biospecimen
+    slots:
+    - studyCode
+    - participantGlobalId
+    - participantExternalId
+    - sampleGlobalId
+    - sampleExternalId
+    - sampleType
+    - ageAtBiospecimenCollection
+    - parentSampleGlobalId
+    - parentSampleExternalId
+    - parentSampleType
+    - collectionGlobalId
+    - collectionExternalId
+    - collectionSampleType
+    - containerGlobalId
+    - containerExternalId
+    - volume
+    - volumeUnit
+    - concentration
+    - concentrationUnit
+    - laboratoryProcedure
+    - biospecimenStorage
+    - sampleAvailability
+    - containerAvailability
+    slot_usage:
+      # Reference Slots
+      studyCode:
+        range: Study
+      participantGlobalId:
+        range: Participant
+  DataFile:
+    definition_uri: include:DataFile
+    description: Metadata about Data Files
+    title: Data File
+    slots:
+    - studyCode
+    - participantGlobalId #usage of this field in multi-participant files is TBD
+    - participantExternalId #usage of this field in multi-participant files is TBD
+    - sampleGlobalId #usage of this field in multi-sample files is TBD
+    - sampleExternalId #usage of this field in multi-sample files is TBD
+    - fileName
+    - fileGlobalId
+    - fileUploadLocation
+    - fileS3Location
+    - drsUri
+    - fileHash
+    - dataAccess
+    - dataCategory
+    - dataType
+    - experimentalStrategy
+    - experimentalPlatform
+    - fileFormat
+    - fileSize
+    - fileSizeUnit
+    slot_usage:
+      dataCategory:
+        description: General category of data in file (e.g. Clinical, Genomics, Proteomics, Metabolomics, Immune profiling, Transcriptomics)
+      dataType:
+        description: Specific type of data contained in file (e.g. Preprocessed metabolite relative abundance, Absolute protein concentration, Aligned reads, Simple nucleotide variations, GVCF, Gene expression quantifications, Gene fusions, Somatic copy number variations, Somatic structural variations)
+      experimentalStrategy:
+        description: Experimental method used to obtain data in file (e.g. Whole genome sequencing, RNAseq, Multiplex immunoassay, Mass spec metabolomics)
+      # Reference Slots
+      studyCode:
+        range: Study
+      participantGlobalId:
+        range: Participant
+      sampleGlobalId:
+        range: Biospecimen
+
+####################################################################################################
+# Slot Usage Overview
+# ====================
+# This section outlines the use of various slots (fields) across different entity classes,
+# including how slots can be customized or referenced within specific classes.
+# Slot usage enables fine-grained control over how each slot behaves within the context of each class.
+#
+# Slot Usage: Directly Assigned to Entity Classes
+# -------------------------------------------------------
+# These slots are associated with specific classes, defining essential attributes for each entity.
+#
+# - dataCategory: Used in Study, Dataset, DataFile
+# - dbgap: Used in Study, Dataset
+# - publication: Used in Study, Dataset
+# - expectedNumberOfParticipant: Used in Study, Dataset
+# - dataType: Used in DataFile, Dataset
+# - experimentalStrategy: Used in DataFile, Dataset
+# - studyCode: Used in Participant
+# - participantExternalId: Used in Participant
+#
+# Referential Slot Usage: Cross-Class References
+# ------------------------------------------------
+# These slots are used in multiple classes to establish relationships and link data across entities.
+# They do not define new slots but rather adapt existing slots for use in multiple contexts.
+#
+# - studyCode: Referenced in Participant, Condition, Biospecimen, DataFile, Dataset, DatasetManifest
+# - participantGlobalId: Referenced in Condition, Biospecimen, DataFile
+# - eventId: (Usage not fully defined, consider adding specific references)
+# - sampleGlobalId: Referenced in DataFile, DatasetManifest
+# - fileGlobalId: Referenced in DatasetManifest
+# - datasetGlobalId: (Usage not fully defined, consider adding specific references)
+####################################################################################################
+
+slots:
+  studyCode:
+    definition_uri: include:studyCode
+    description: Unique identifier for the study (generally a short acronym)
+    title: Study Code
+    range: enum_studyCode
+    required: true
+    #slot_usage
+  studyTitle:
+    definition_uri: include:studyTitle
+    description: Full title of the study
+    title: Study Title
+    range: string
+    required: true
+  program:
+    definition_uri: include:program
+    description: Funding source(s) for the study (pipe-separated if multiple)
+    title: Program
+    range: enum_program
+    required: true
+    multivalued: true
+  studyDescription:
+    definition_uri: include:studyDescription
+    description: Brief description of the study (2-4 sentences)
+    title: Study Description
+    range: string
+    required: true
+  principalInvestigatorName:
+    definition_uri: include:principalInvestigatorName
+    description: Name(s) of Principal Investigator(s) of this study; pipe-separated if multiple
+    title: Principal Investigator Name
+    range: string
+    required: true
+    multivalued: true
+  studyContactName:
+    definition_uri: include:studyContactName
+    description: Name of contact person for this study; pipe-separated if multiple
+    title: Study Contact Name
+    range: string
+    required: true
+    multivalued: true
+  studyContactInstitution:
+    definition_uri: include:studyContactInstitution
+    description: Institution of contact person for this study; pipe-separated if multiple
+    title: Study Contact Institution
+    range: string
+    required: true
+    multivalued: true
+  studyContactEmail:
+    definition_uri: include:studyContactEmail
+    description: Email address of contact person for this study; pipe-separated if multiple
+    title: Study Contact Email
+    range: string
+    required: true
+    multivalued: true
+  vbrEmail:
+    definition_uri: include:vbrEmail
+    description: Email address for Virtual Biorepository requests/inquiries, if participating
+    title: VBR Email
+    range: string
+  vbrUrl:
+    definition_uri: include:vbrUrl
+    description: Link to Virtual Biorepository request form, if participating
+    title: VBR URL
+    range: uri
+  vbrReadme:
+    definition_uri: include:vbrReadme
+    description: Instructions for contacting or requesting samples from Virtual Biorepository, if participating
+    title: VBR Readme
+    range: string
+  researchDomain:
+    definition_uri: include:researchDomain
+    description: Main research domain(s) of the study, other than Down syndrome; pipe-separated if multiple
+    title: Research Domain
+    range: enum_researchDomain
+    required: true
+    multivalued: true
+  participantLifespanStage:
+    definition_uri: include:participantLifespanStage
+    description: Focus age group(s) of the study population; pipe-separated if multiple
+    title: Participant Lifespan Stage
+    range: enum_participantLifespanStage
+    required: true
+    multivalued: true
+  selectionCriteria:
+    definition_uri: include:selectionCriteria
+    description: Brief description of inclusion and/or exclusion criteria for the study
+    title: Selection Criteria
+    range: string
+  studyDesign:
+    definition_uri: include:studyDesign
+    description: Overall design of study, including whether it is longitudinal and whether family members/unrelated controls are also enrolled
+    title: Study Design
+    range: enum_studyDesign
+    required: true
+    multivalued: true
+  clinicalDataSourceType:
+    definition_uri: include:clinicalDataSourceType
+    description: Source(s) of data collected from study participants; pipe-separated if multiple
+    title: Clinical Data Source Type
+    range: enum_clinicalDataSourceType
+    #TODO: replace enum_conditionDataSource with this - or consider deleting slot conditionDataSource
+    required: true
+    multivalued: true
+  studyWebsite:
+    definition_uri: include:studyWebsite
+    description: Website for the study
+    title: Study Website
+    range: uri
+  publication:
+    definition_uri: include:publication
+    title: Publication
+    range: uri
+    multivalued: true
+    #slot_usage
+  expectedNumberOfParticipants:
+    definition_uri: include:expectedNumberOfParticipants
+    title: Expected Number of Participants
+    range: integer
+    required: true
+    #slot_usage
+  guidType:
+    definition_uri: include:guidType
+    description: System used to generate globally unique identifiers (GUIDs)
+    title: GUID Type
+    range: enum_guidType
+    required: true
+  guidMapped:
+    definition_uri: include:guidMapped
+    description: For studies using NDAR GUIDs, have the GUIDs been added to the INCLUDE GUID Mapping File?
+    title: GUIDs Mapped?
+    range: boolean
+  dbgap:
+    definition_uri: include:dbgap
+    title: dbGaP
+    range: string
+    multivalued: true
+    #slot_usage
+  acknowledgments:
+    definition_uri: include:acknowledgments
+    description: Funding statement and acknowledgments for this study
+    title: Acknowledgments
+    range: string
+    multivalued: true
+  citationStatement:
+    definition_uri: include:citationStatement
+    description: Statement that secondary data users should use to acknowledge use of this dataset. E.g., "The results analyzed and <published or shown> here are based in whole or in part upon data generated by the INCLUDE (INvestigation of Co-occurring conditions across the Lifespan to Understand Down syndromE) Project <insert accession number(s) and/or study DOI(s)>, and were accessed from the INCLUDE Data Hub and <insert other database(s)>."
+    title: Citation Statement
+    range: string
+    multivalued: true
+  doi:
+    definition_uri: include:doi
+    description: Unique Digital Object Identifier for each Study and Dataset, minted by the DCC using DataCite 
+    title: DOI
+    range: uri
+    required: false #change to true after pilot
+  doiCitation:
+    definition_uri: include:doiCitation
+    description: Bibliographic citation for DOI, generated by DataCite
+    title: DOI Citation
+    range: string
+    required: false #change to true after pilot
+  datasetName:
+    definition_uri: include:datasetName
+    description: Full name of the dataset, provided by contributor
+    title: Dataset Name
+    range: string
+    required: true
+  datasetDescription:
+    definition_uri: include:datasetDescription
+    description: Brief additional notes about the dataset (1-3 sentences) that are not already captured in the other fields
+    title: Dataset Description
+    range: string
+  datasetGlobalId:
+    definition_uri: include:datasetGlobalId
+    description: Unique Global ID for dataset, generated by DCC
+    title: Dataset Global ID
+    range: string
+    required: false #update to true when this is figured out
+  datasetExternalId:
+    definition_uri: include:datasetExternalId
+    description: Unique identifier or code for dataset, if provided by contributor
+    title: Dataset External ID
+    range: string
+  expectedNumberOfFiles:
+    definition_uri: include:expectedNumberOfFiles
+    description: Expected number of files associated with this dataset, including dictionaries. If additional explanation is needed, please add to Dataset Description field.
+    title: Expected Number of Files
+    range: integer
+    required: false #update to true when this is figured out
+  dataCollectionStartYear:
+    definition_uri: include:dataCollectionStartYear
+    description: Year that data collection started
+    title: Data Collection Start Year
+    range: string
+    #pattern: "^1|2\\d(3)$|nan"
+    required: false #change to true when we have for all studies
+  dataCollectionEndYear:
+    definition_uri: include:dataCollectionEndYear
+    description: Year that data collection ended
+    title: Data Collection End Year
+    range: string
+    #pattern: "^1|2\\d(3)$|nan"
+    required: false
+  accessLimitations:
+    definition_uri: include:accessLimitations
+    description: Data access limitations, as defined in the GA4GH Data Use Ontology (DUO; can list more than one, pipe separated)
+    title: Access Limitations
+    range: string
+    required: false #make true when we have enums
+  accessRequirements:
+    definition_uri: include:accessRequirements
+    description: Data access requirements, as defined in the GA4GH Data Use Ontology (DUO; can list more than one, pipe separated)
+    title: Access Requirements
+    range: string
+    required: false #make true when we have enums
+  otherRepository:
+    definition_uri: include:otherRepository
+    description: URL if dataset is already deposited in a public repository other than dbGaP (e.g. LONI, Metabolomics Workbench, etc.)
+    title: Other Repository
+    range: uri
+  otherAccessAuthority:
+    definition_uri: include:otherAccessAuthority
+    description: Email or URL for dataset's Access Authority, if not dbGaP
+    title: Other Access Authority
+    range: string
+  isHarmonized:
+    definition_uri: include:isHarmonized
+    description: All of the elements in this Dataset are harmonized and available in the INCLUDE Data Hub
+    title: Is Harmonized
+    range: boolean
+  datasetManifestLocation:
+    definition_uri: include:datasetManifestLocation
+    description: Location of associated Dataset Manifest
+    title: Dataset Manifest Location
+    range: string
+  participantGlobalId:
+    definition_uri: include:participantGlobalId
+    description: Unique INCLUDE global identifier for the participant, assigned by DCC
+    title: Participant Global ID
+    required: true
+    range: string
+    #slot_usage
+  participantExternalId:
+    definition_uri: include:participantExternalId
+    description: Unique, de-identified identifier for the participant, assigned by data contributor. External IDs must be two steps removed from personal information in the study records.
+    title: Participant External ID
+    range: string
+    required: true
+    #slot_usage
+  familyId:
+    definition_uri: include:familyId
+    description: Unique identifer for family to which Participant belongs, assigned by data contributor
+    title: Family ID
+    range: string
+  familyType:
+    definition_uri: include:familyType
+    description: Structure of family members participating in the study
+    title: Family Type
+    range: enum_familyType
+    required: true
+  fatherId:
+    definition_uri: include:fatherId
+    description: Participant External ID for Participant's father (NA if Participant is not the proband)
+    title: Father ID
+    range: string
+  motherId:
+    definition_uri: include:motherId
+    description: Participant External ID for Participant's mother (NA if Participant is not the proband)
+    title: Mother ID
+    range: string
+  siblingId:
+    definition_uri: include:siblingId
+    description: Participant External ID for Participant's sibling(s) (NA if Participant is not the proband)
+    title: Sibling ID
+    range: string
+  otherFamilyMemberId:
+    definition_uri: include:otherFamilyMemberId
+    description: Participant External ID for Participant's other family members (NA if Participant is not the proband)
+    title: Other Family Member ID
+    range: string
+  familyRelationship:
+    definition_uri: include:familyRelationship
+    description: Relationship of Participant to proband
+    title: Family Relationship
+    required: true
+    range: enum_familyRelationship
+  sex:
+    definition_uri: include:sex
+    description: Sex of Participant
+    title: Sex
+    range: enum_sex
+    required: true
+  race:
+    definition_uri: include:race
+    description: Race of Participant
+    title: Race
+    range: enum_race
+    required: true
+  ethnicity:
+    definition_uri: include:ethnicity
+    description: Ethnicity of Participant
+    title: Ethnicity
+    range: enum_ethnicity
+    required: true
+  downSyndromeStatus:
+    definition_uri: include:downSyndromeStatus
+    description: Down Syndrome status of participant
+    title: Down Syndrome Status
+    range: enum_downSyndromeStatus
+    required: true
+  ageAtFirstParticipantEngagement:
+    definition_uri: include:ageAtFirstParticipantEngagement
+    description: Age in days of Participant at first recorded study event (enrollment, visit, observation, sample collection, survey completion, etc.). Age at enrollment is preferred, if available.
+    title: Age at First Participant Engagement
+    range: integer
+    minimum_value: 0
+    maximum_value: 33000
+    required: true
+  firstParticipantEngagementEvent:
+    definition_uri: include:firstParticipantEngagementEvent
+    description: Event for which Age at First Participant Engagement is given (e.g. enrollment, visit, observation, sample collection, survey completion, etc.). Age at enrollment is preferred, if available.
+    title: First Participant Engagement Event
+    required: true
+    range: string
+  outcomesVitalStatus:
+    definition_uri: include:outcomesVitalStatus
+    description: Whether participant is alive or dead
+    title: Outcomes Vital Status
+    range: enum_vital_status
+  ageAtLastVitalStatus:
+    definition_uri: include:ageAtLastVitalStatus
+    description: Age in days when participant's vital status was last recorded
+    title: Age at Last Vital Status
+    range: integer
+    minimum_value: 0
+    maximum_value: 33000
+  eventId:
+    definition_uri: include:eventId
+    description: Identifier for event (Visit, Survey completion, Sample collection, etc.) to which the Condition data are linked, if applicable. There may be multiple events linked to a Participant.
+    title: Event ID
+    range: string
+  eventType:
+    definition_uri: include:eventType
+    description: Type of event for which Event ID is given (Visit, Survey completion, Sample collection, etc.)
+    title: Event Type
+    range: string
+  conditionMeasureSourceText:
+    definition_uri: include:conditionMeasureSourceText
+    description: Co-occurring Condition (phenotype or diagnosis) or Measure (observation with numeric value), as described by data contributor. The Down Syndrome Genetic Diagnosis will be rolled into this field.
+    title: Condition or Measure Source Text
+    range: string
+  ageAtConditionMeasureObservation:
+    definition_uri: include:ageAtConditionMeasureObservation
+    description: Age in days at which Condition or Measure was observed, recorded, or diagnosed
+    title: Age At Condition or Measure Observation
+    range: integer
+    minimum_value: 0
+    maximum_value: 33000
+  conditionInterpretation:
+    definition_uri: include:conditionInterpretation
+    description: Whether Condition was observed or not
+    title: Condition Interpretation
+    range: enum_conditionInterpretation
+  conditionStatus:
+    definition_uri: include:conditionStatus
+    description: Whether the Condition is ongoing, has been resolved, or this is a general history of the condition without known dates
+    title: Condition Status
+    range: enum_conditionStatus
+  conditionDataSource:
+    definition_uri: include:conditionDataSource
+    description: Whether Condition information was obtained by the investigator or reported by participant/family member
+    title: Condition Data Source
+    range: enum_conditionDataSource
+  hpoLabel:
+    definition_uri: include:hpoLabel
+    description: Label for Condition in the Human Phenotype Ontology (HPO)
+    title: HPO Label
+    range: string
+  hpoCode:
+    definition_uri: include:hpoCode
+    description: Code for Condition in the Human Phenotype Ontology (HPO)
+    title: HPO Code
+    range: string
+  mondoLabel:
+    definition_uri: include:mondoLabel
+    description: Label for Condition in the Mondo Disease Ontology (MONDO)
+    title: MONDO Label
+    range: string
+  mondoCode:
+    definition_uri: include:mondoCode
+    description: Code for Condition in the Mondo Disease Ontology (Mondo)
+    title: MONDO Code
+    range: string
+  maxoLabel:
+    definition_uri: include:maxoLabel
+    description: Label for Condition in the Medical Action Ontology (MAXO)
+    title: MAXO Label
+    range: string
+  maxoCode:
+    definition_uri: include:maxoCode
+    description: Code for condition in the Medical Action Ontology (MAXO)
+    title: MAXO Code
+    range: string
+  otherLabel:
+    definition_uri: include:otherLabel
+    description: Label for Condition in another ontology (if no match in HPO, MONDO, or MAXO)
+    title: Other Label
+    range: string
+  otherCode:
+    definition_uri: include:otherCode
+    description: Code for Condition in another ontology (if no match in HPO, MONDO, or MAXO)
+    title: Other Code
+    range: string
+  measureValue:
+    definition_uri: include:measureValue
+    description: Numeric value of Measure
+    title: Measure Value
+    range: float
+  measureUnit:
+    definition_uri: include:measureUnit
+    description: Unit that is associated with Measure Value (e.g. kg, cm, %, x10^9/L, etc.)
+    title: Measure Unit
+    range: string # eventually want ontology terms here
+  sampleGlobalId:
+    definition_uri: include:sampleGlobalId
+    description: INCLUDE global identifier for sample, assigned by DCC
+    title: Sample Global ID
+    required: true
+    range: string
+    #slot_usage
+  sampleExternalId:
+    definition_uri: include:sampleExternalId
+    description: Unique identifier for sample, assigned by data contributor. A sample is a unique biological material;
+      two samples with two different IDs are biologically distinct.
+    title: Sample External ID
+    required: true
+    range: string
+  sampleType:
+    definition_uri: include:sampleType
+    description: Type of biological material comprising the Sample (e.g. Plasma, White blood cells, Red blood cells, DNA, RNA, Peripheral blood mononuclear cells, CD4+ Tconv cells, NK cells, Monocytes, CD8+ T cells, B cells, Granulocytes, Treg cells)
+    title: Sample Type
+    required: true
+    range: string
+  ageAtBiospecimenCollection:
+    definition_uri: include:ageAtBiospecimenCollection
+    description: Age in days of participant at time of biospecimen collection
+    title: Age At Biospecimen Collection
+    range: integer
+  parentSampleGlobalId:
+    definition_uri: include:parentSampleGlobalId
+    description: INCLUDE global identifier for the direct parent from which Sample was derived, assigned by DCC
+    title: Parent Sample Global ID
+    range: string
+  parentSampleExternalId:
+    definition_uri: include:parentSampleExternalId
+    description: Identifier for the direct parent from which Sample was derived, processed,
+      pooled, etc. (if applicable); assigned by data contributor
+    title: Parent Sample External ID
+    range: string
+  parentSampleType:
+    definition_uri: include:parentSampleType
+    description: Type of biological material comprising the Parent Sample (e.g. Peripheral Whole Blood, Derived Cell Line, Saliva, Whole blood, WBCs)
+    title: Parent Sample Type
+    range: string
+  collectionGlobalId:
+    definition_uri: include:collectionGlobalId
+    description: INCLUDE global identifier for the eldest sample in a lineage, assigned by DCC
+    title: Collection Global ID
+    range: string
+  collectionExternalId:
+    definition_uri: include:collectionExternalId
+    description: Identifier for the eldest sample in a lineage of processed, pooled,
+      or aliquoted samples - typically the material actually collected from the Participant. This may be the same as Parent Sample ID or Sample ID
+      (if no processing was performed). Assigned by data contributor.
+    title: Collection External ID
+    range: string
+  collectionSampleType:
+    definition_uri: include:collectionSampleType
+    description: Type of biological material comprising the Collected Sample (e.g. Whole blood, Not reported, Saliva, Derived cell line)
+    title: Collection Sample Type
+    range: string
+  containerGlobalId:
+    definition_uri: include:containerGlobalId
+    description: INCLUDE global identifier for specific container/aliquot of sample, assigned by DCC
+    title: Container Global ID
+    range: string
+  containerExternalId:
+    definition_uri: include:containerExternalId
+    description: Identifier for specific container/aliquot of sample, assigned by data contributor.
+      For example, distinct aliquots of a sample will have the same Sample ID but
+      different Container IDs.
+    title: Container External ID
+    range: string
+  volume:
+    definition_uri: include:volume
+    description: Amount of sample in container
+    title: Volume
+    range: float
+  volumeUnit:
+    definition_uri: include:volumeUnit
+    description: Unit of sample volume
+    title: Volume Unit
+    range: string
+  concentration:
+    definition_uri: include:concentration
+    description: Concentration of sample in container
+    title: Concentration
+    range: float
+  concentrationUnit:
+    definition_uri: include:concentrationUnit
+    description: Unit of sample concentration
+    title: Concentration Unit
+    range: string
+  laboratoryProcedure:
+    definition_uri: include:laboratoryProcedure
+    description: Procedure by which Sample was derived from Parent Sample (e.g. Centrifugation, RBC lysis, Lyse/fix buffer, FACS, PAXgene DNA, PAXgene RNA, Qiagen Allprep, Ficoll)
+    title: Laboratory Procedure
+    range: string
+  biospecimenStorage:
+    definition_uri: include:biospecimenStorage
+    description: Method by which Container is stored (e.g. Minus 80 degrees Celsius, Liquid nitrogen storage)
+    title: Biospecimen Storage
+    range: string
+  sampleAvailability:
+    definition_uri: include:sampleAvailability
+    description: Whether or not the Sample (any Container thereof) is potentially available for sharing through the Virtual Biorepository
+    title: Sample Availability
+    required: true
+    range: enum_Availability
+  containerAvailability:
+    definition_uri: include:containerAvailability
+    description: Whether or not the specific Container is potentially available for sharing through the Virtual Biorepository
+    title: Container Availability
+    range: enum_Availability
+  fileName:
+    definition_uri: include:fileName
+    description: Name of file, assigned by data contributor
+    title: File Name
+    required: true
+    range: string
+  fileGlobalId:
+    definition_uri: include:fileGlobalId
+    description: INCLUDE global file identifier, assigned by DCC
+    title: File Global ID
+    required: true
+    range: string
+    #slot_usage
+  fileUploadLocation:
+    definition_uri: include:fileUploadLocation
+    description: Where source file was uploaded, if not directly to an S3 bucket (e.g. Synapse)
+    title: File Upload Location
+    range: string
+  fileS3Location:
+    definition_uri: include:fileS3Location
+    description: S3 bucket location of file; also serves as dewrangle descriptor
+    title: File S3 Location
+    required: true
+    range: string
+  drsUri:
+    definition_uri: include:drsUri
+    description: Data Repository Services API Uniform Resource Identifier
+    title: DRS URI
+    required: true
+    range: uriorcurie
+  fileHash:
+    definition_uri: include:fileHash
+    description: md5 hash of this file for validation (if known)
+    title: File Hash
+    range: string
+  dataAccess:
+    definition_uri: include:dataAccess
+    description: Type of access control on this file, determined by DCC
+    title: Data Access
+    range: enum_dataAccess
+    required: true
+  dataCategory:
+    definition_uri: include:dataCategory
+    title: Data Category
+    required: true
+    range: enum_dataCategory
+    #slot_usage
+  dataType:
+    definition_uri: include:dataType
+    title: Data Type
+    range: string
+    #slot_usage
+  experimentalStrategy:
+    definition_uri: include:experimentalStrategy
+    title: Experimental Strategy
+    range: string
+    multivalued: true
+    #slot_usage
+  experimentalPlatform:
+    definition_uri: include:experimentalPlatform
+    description: Specific platform used to perform experiment; pipe-separated if multiple (e.g. SOMAscan, MSD, Luminex, Illumina)
+    title: Experimental Platform
+    range: string
+    multivalued: true
+  fileFormat:
+    definition_uri: include:fileFormat
+    description: Format of file (e.g. tsv, cram, gvcf, vcf, maf, txt, pdf, html, png)
+    title: File Format
+    required: true
+    range: string
+  fileSize:
+    definition_uri: include:fileSize
+    description: Size of file, if known (mainly important if large)
+    title: File Size
+    range: integer
+  fileSizeUnit:
+    definition_uri: include:fileSizeUnit
+    description: Unit of file size
+    title: File Size Unit
+    range: string # eventually want ontology terms here
+
+enums:
+  enum_program:
+    definition_uri: include:enum_program
+    permissible_values:
+      include:
+        title: INCLUDE
+      kf:
+        title: KF
+      other:
+        title: Other
+  enum_studyCode:
+    definition_uri: include:enum_studyCode
+    permissible_values:
+      aadsc:
+        title: AADSC
+      abc_ds:
+        title: ABC-DS
+      ads:
+        title: ADS
+      aecom_ds:
+        title: AECOM-DS
+      best21:
+        title: BEST21
+      brainpower:
+        title: BrainPower
+      bri_dsr:
+        title: BRI-DSR
+      ccds:
+        title: CCDS
+      child_ds:
+        title: CHILD-DS
+      charge_ds:
+        title: CHARGE-DS
+      decidas:
+        title: DECIDAS
+      ds_arc:
+        title: DS-ARC
+      ds_brain:
+        title: DS-Brain
+      ds_cog_all:
+        title: DS-COG-ALL
+      ds_cog_aml:
+        title: DS-COG-AML
+      ds_determined:
+        title: DS-DETERMINED
+      ds_home:
+        title: DS-HOME
+      ds_hsat:
+        title: DS-HSAT
+      ds_isp:
+        title: DS-ISP
+      ds_nexus:
+        title: DS-Nexus
+      ds_pals:
+        title: DS-PALS
+      ds_pcgc:
+        title: DS-PCGC
+      ds_sleep:
+        title: DS-Sleep
+      ds_vite:
+        title: DS-VitE
+      ds360_chd:
+        title: DS360-CHD
+      dsc:
+        title: DSC
+      dsrrs:
+        title: DSRRS
+      ecods:
+        title: ECODS
+      exceeds:
+        title: EXcEEDS
+      htp:
+        title: HTP
+      ibis-ds:
+        title: IBIS-DS
+      jaki_ds:
+        title: JAKi-DS
+      optimal:
+        title: OPTimal
+      team_ds:
+        title: TEAM-DS
+      tomi:
+        title: TOMI
+      trc_ds:
+        title: TRC-DS
+      x01_desmith:
+        title: X01-deSmith
+      x01_hakonarson:
+        title: X01-Hakonarson
+  enum_researchDomain:
+    #TODO: replace/add NIH internal categories from Huiqing
+    definition_uri: include:enum_researchDomain
+    permissible_values:
+      behavior_and_behavior_mechanisms:
+        title: Behavior and Behavior Mechanisms
+        meaning: mesh:D001520
+      congenital_heart_defects:
+        title: Congenital Heart Defects
+        meaning: mesh:D006330
+      immune_system_diseases:
+        title: Immune System Diseases
+        meaning: mesh:D007154
+      hematologic_diseases:
+        title: Hematologic Diseases
+        meaning: mesh:D006402
+      neurodevelopment:
+        title: Neurodevelopment
+        meaning: 
+      sleep_wake_disorders:
+        title: Sleep Wake Disorders
+        meaning: mesh:D012893
+      all_co_occurring_conditions:
+        title: All Co-occurring Conditions
+        meaning: mesh:D013568
+      physical_fitness:
+        title: Physical Fitness
+        meaning: mesh:D010809
+      other:
+        title: Other
+  enum_participantLifespanStage:
+    definition_uri: include:enum_participantLifespanStage
+    permissible_values:
+      fetal:
+        title: Fetal
+      neonatal:
+        title: Neonatal
+        description: 0-28 days old
+      pediatric:
+        title: Pediatric
+        description: Birth-17 years old
+      adult:
+        title: Adult
+        description: 18+ years old
+  enum_studyDesign:
+    definition_uri: include:enum_studyDesign
+    permissible_values:
+      case_control:
+        title: Case-Control
+      case_set:
+        title: Case Set
+      control_set:
+        title: Control Set
+      clinical_trial:
+        title: Clinical Trial
+      cross_sectional:
+        title: Cross-Sectional
+      family_twins_trios:
+        title: Family/Twins/Trios
+      interventional:
+        title: Interventional
+      longitudinal:
+        title: Longitudinal
+      tumor_vs_matched_normal:
+        title: Tumor vs Matched Normal
+  enum_clinicalDataSourceType:
+    #TODO: replace enum_conditionDataSource with this - or consider deleting slot conditionDataSource
+    definition_uri: include:enum_clinicalDataSourceType
+    permissible_values:
+      medical_record:
+        title: Medical Record
+        description: Data obtained directly from medical record
+      investigator_assessment:
+        title: Investigator Assessment
+        description: Data obtained by examination, interview, etc. with investigator
+      participant_or_caregiver_report:
+        title: Participant or Caregiver Report
+        description: Data obtained from survey, questionnaire, etc. filled out by participant or caregiver
+      other:
+        title: Other
+        description: Data obtained from other source, such as tissue bank
+      unknown:
+        title: Unknown
+  enum_dataCategory:
+    definition_uri: include:enum_dataCategory
+    permissible_values:
+      unharmonized_demographic_clinical_data:
+        title: Unharmonized Demographic/Clinical Data
+      harmonized_demographic_clinical_data:
+        title: Harmonized Demographic/Clinical Data
+      genomics:
+        title: Genomics
+      transcriptomics:
+        title: Transcriptomics
+      proteomics:
+        title: Proteomics
+      metabolomics:
+        title: Metabolomics
+      cognitive_behavioral:
+        title: Cognitive/Behavioral
+      immune_profiling:
+        title: Immune Profiling
+      imaging:
+        title: Imaging
+      microbiome:
+        title: Microbiome
+      fitness:
+        title: Fitness
+      physical_activity:
+        title: Physical Activity
+      other:
+        title: Other
+      sleep_study:
+        title: Sleep Study
+  enum_guidType:
+    definition_uri: include:enum_guidType
+    permissible_values:
+      ndar:
+        title: NDAR
+        description: GUID generated by NIMH Data Archive (NDA) GUID tool
+      other:
+        title: Other
+        description: GUID generated by other system
+      no_guid:
+        title: No GUID
+        description: No GUIDs used in this study
+  enum_conditionInterpretation:
+    permissible_values:
+      observed:
+        title: Observed
+        description: Condition was observed or reported (this will be the case for most conditions)
+      not_observed:
+        title: Not Observed
+        description: Participant was specifically examined or medical record queried for condition and found to be negative
+  enum_conditionDataSource: #replace with enum_clinicalDataSourceType & re-harmonize data
+    name: enum_conditionDataSource
+    permissible_values:
+      clinical:
+        title: Clinical
+        description: Information about condition was obtained from medical records or reported by investigator
+      self_reported:
+        title: Self-reported
+        description: Information about condition was reported by participant or family member
+  enum_conditionStatus:
+    permissible_values:
+      current:
+        title: Current
+        description: Condition is ongoing
+      resolved:
+        title: Resolved
+        description: Condition has been resolved
+      history_of:
+        title: History Of
+        description: This is a general history of the condition, without known dates
+  enum_downSyndromeStatus:
+    definition_uri: include:enum_downSyndromeStatus
+    permissible_values:
+      d21:
+        title: D21
+        description: Disomy 21 (euploid)
+      t21:
+        title: T21
+        description: Trisomy 21 (Down syndrome)
+        meaning: MONDO:0008608
+  enum_ethnicity:
+    definition_uri: include:enum_ethnicity
+    permissible_values:
+      # asked_but_unknown:
+      #   text: asked_but_unknown
+      #   title: Asked but unknown
+      hispanic_or_latino:
+        title: Hispanic or Latino
+        meaning: NCIT:C17459
+      not_hispanic_or_latino:
+        title: Not Hispanic or Latino
+        meaning: NCIT:C41222
+      prefer_not_to_answer:
+        title: Prefer not to answer
+        meaning: NCIT:C132222
+      unknown:
+        title: Unknown
+        meaning: NCIT:C17998
+  enum_familyRelationship:
+    definition_uri: include:enum_familyRelationship
+    permissible_values:
+      proband:
+        title: Proband
+        meaning: NCIT:C64435
+        description: The first affected family member to join the study
+      father:
+        title: Father
+        meaning: NCIT:C25174
+      mother:
+        title: Mother
+        meaning: NCIT:C25189
+      sibling:
+        title: Sibling
+        meaning: NCIT:C25204
+      other_relative:
+        title: Other relative
+        meaning: NCIT:C21480
+      unrelated_control:
+        title: Unrelated control
+        meaning: NCIT:C25328
+  enum_familyType:
+    definition_uri: include:enum_familyType
+    permissible_values:
+      control_only:
+        title: Control-only
+        description: Unrelated control, no Down syndrome family members
+      duo:
+        title: Duo
+        description: Proband + one parent
+      other:
+        title: Other
+        description: Other family structure, e.g. one parent + twins
+      proband_only:
+        title: Proband-only
+        description: Proband only, no family members participating in study
+      trio:
+        title: Trio
+        description: Proband + two parents
+      trio_plus:
+        title: Trio Plus #need to reharmonize data
+        description: Proband + two parents + other relatives
+  enum_race:
+    definition_uri: include:enum_race
+    permissible_values:
+      american_indian_or_alaska_native:
+        title: American Indian or Alaska Native
+        meaning: NCIT:C41259
+      asian:
+        title: Asian
+        meaning: NCIT:C41260
+      black_or_african_american:
+        title: Black or African American
+        meaning: NCIT:C16352
+      more_than_one_race:
+        title: More than one race
+        meaning: NCIT:C67109
+      native_hawaiian_or_other_pacific_islander:
+        title: Native Hawaiian or Other Pacific Islander
+        meaning: NCIT:C41219
+      other:
+        title: Other
+        meaning: NCIT:C17649
+      white:
+        title: White
+        meaning: NCIT:C41261
+      prefer_not_to_answer:
+        title: Prefer not to answer
+        meaning: NCIT:C132222
+      unknown:
+        title: Unknown
+        meaning: NCIT:C17998
+      east_asian:
+        title: East Asian
+        description: UK only; do not use for US data
+        meaning: NCIT:C161419
+      latin_american:
+        title: Latin American
+        description: UK only; do not use for US data
+        meaning: NCIT:C126531
+      middle_eastern_or_north_african:
+        title: Middle Eastern or North African
+        description: UK only; do not use for US data
+        meaning: NCIT:C43866
+      south_asian:
+        title: South Asian
+        description: UK only; do not use for US data
+        meaning: NCIT:C41263
+  enum_sex:
+    definition_uri: include:enum_sex
+    permissible_values:
+      female:
+        title: Female
+        meaning: NCIT:C16576
+      male:
+        title: Male
+        meaning: NCIT:C20197
+      other:
+        title: Other
+        meaning: NCIT:C17649
+      unknown:
+        title: Unknown
+        meaning: NCIT:C17998
+  enum_vital_status:
+    definition_uri: include:vital_status
+    permissible_values:
+      dead:
+        title: Dead
+        meaning: NCIT:C28554
+      alive:
+        title: Alive
+        meaning: NCIT:C37987
+      unknown_or_not_available:
+        title: Unknown or not available
+        meaning: NCIT:C17998
+  enum_dataAccess:
+    definition_uri: include:enum_dataAccess
+    permissible_values:
+      controlled:
+        title: Controlled
+      open:
+        title: Open
+      registered:
+        title: Registered
+  enum_Availability:
+    definition_uri: include:enum_Availability
+    permissible_values:
+      available:
+        title: Available
+        description: Sample or Container is potentially available to be requested through the Virtual Biorepository (see VBR contact info in Study page)
+      unavailable:
+        title: Unavailable
+        description: Sample or Container either was available through Virtual Biorepository but has been used up, or is part of a study that is not participating in the VBR
+
+
