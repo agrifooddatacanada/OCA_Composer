@@ -69,22 +69,27 @@ export const ListRenderer = memo((props) => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const typesDisplay = props.data?.List?.split(" | ").map((value) => (
-    <MenuItem
-      key={value}
-      value={value}
-      sx={{ border: "none", height: "2rem", fontSize: "small" }}
-    >
-      {value}
-    </MenuItem>
-  ));
+  // Extract only the enum value (before the pipe character)
+  const typesDisplay = props.data?.List?.split(" | ").map((value) => {
+    // Get just the enum value without metadata
+    const enumValue = value.split(" | ")[0];
+    return (
+      <MenuItem
+        key={enumValue}
+        value={enumValue}
+        sx={{ border: "none", height: "2rem", fontSize: "small" }}
+      >
+        {enumValue}
+      </MenuItem>
+    );
+  });
 
   return props.data?.List === "Not a List" ? (
     <Box>Not a List </Box>
   ) : (
     <DropdownMenuList
       handleKeyDown={() => {}}
-      type={props.node.data.List.substring(0, 18)}
+      type={props.node.data.List.split(" | ")[0]}
       handleChange={handleChange}
       handleClick={handleClick}
       isDropdownOpen={isDropdownOpen}
