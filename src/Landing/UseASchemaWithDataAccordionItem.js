@@ -3,20 +3,21 @@ import {
   AccordionSummary,
   Box,
   Button,
-  Typography,
-} from '@mui/material';
-import React, { useContext } from 'react';
-import { CustomPalette } from '../constants/customPalette';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AccordionItemWrapper from './AccordionItemWrapper';
-import CustomAnchorLink from '../components/CustomAnchorLink';
-import Drop from '../StartSchema/Drop';
-import GenerateDataEntryExcel from './GenerateDataEntryExcel';
-import { useTranslation } from 'react-i18next';
-import { useHandleJsonDrop } from '../OCADataValidator/useHandleJsonDrop';
-import { Context } from '../App';
-import { useNavigate } from 'react-router-dom';
-import useHandleAllDrop from '../StartSchema/useHandleAllDrop';
+  Typography
+} from "@mui/material";
+import React, { useContext } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { CustomPalette } from "../constants/customPalette";
+import AccordionItemWrapper from "./AccordionItemWrapper";
+import CustomAnchorLink from "../components/CustomAnchorLink";
+import Drop from "../StartSchema/Drop";
+import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
+import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
+import { Context } from "../App";
+import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 
 const UseASchemaWithDataAccordionItem = () => {
   const { t } = useTranslation();
@@ -34,8 +35,8 @@ const UseASchemaWithDataAccordionItem = () => {
   } = useHandleJsonDrop();
 
   const handleMoveToPreviewSchema = () => {
-    navigate('/oca-data-validator');
-    setCurrentDataValidatorPage('SchemaViewDataValidator');
+    navigate("/oca-data-verifier");
+    setCurrentDataValidatorPage("SchemaViewDataValidator");
   };
 
   const { setRawFile } = useHandleAllDrop();
@@ -43,7 +44,7 @@ const UseASchemaWithDataAccordionItem = () => {
   const setFile = (acceptedFiles) => {
     setRawFile(acceptedFiles);
     setJsonRawFile(acceptedFiles);
-  }
+  };
 
   return (
     <AccordionItemWrapper>
@@ -51,17 +52,17 @@ const UseASchemaWithDataAccordionItem = () => {
         expandIcon={
           <ExpandMoreIcon sx={{ color: CustomPalette.PRIMARY, fontSize: 50 }} />
         }
-        aria-controls='panel1a-content'
-        id='panel1a-header'
+        aria-controls="panel1a-content"
+        id="panel1a-header"
       >
-        <Typography sx={{ fontSize: '20px', fontWeight: '500' }}>
-          {t('Use a Schema with Data')}
+        <Typography sx={{ fontSize: "20px", fontWeight: "500" }}>
+          {t("Use a Schema with Data")}
         </Typography>
       </AccordionSummary>
 
-      <AccordionDetails sx={{ textAlign: 'start' }}>
+      <AccordionDetails sx={{ textAlign: "start" }}>
         <Typography>
-          {t('Use your machine-readable schema bundle to help you collect...')}
+          {t("Use your machine-readable schema bundle to help you collect...")}
         </Typography>
 
         <Drop
@@ -77,12 +78,12 @@ const UseASchemaWithDataAccordionItem = () => {
 
         <Box
           sx={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginTop: 2,
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 2
           }}
         >
           <GenerateDataEntryExcel
@@ -100,30 +101,34 @@ const UseASchemaWithDataAccordionItem = () => {
               width: "100%",
               maxWidth: "300px",
               marginTop: "20px",
-              marginBottom: "20px",
+              marginBottom: "20px"
             }}
             disabled={jsonRawFile.length === 0 || jsonLoading}
           >
-            {t('Enter/Verify Data in Webpage')}
+            {t("Enter/Verify Data in Webpage")}
           </Button>
         </Box>
 
-        <div style={{
-          marginTop: '20px',
-          borderBottom: '3px solid #94002a',
-        }} />
+        <div
+          style={{
+            marginTop: "20px",
+            borderBottom: "3px solid #94002a"
+          }}
+        />
 
-        <Typography variant='h6' sx={{ marginTop: '20px', color: CustomPalette.PRIMARY }}>
-          {t('Verify data in your python code')}
+        <Typography variant="h6" sx={{ marginTop: "20px", color: CustomPalette.PRIMARY }}>
+          {t("Verify data in your python code")}
         </Typography>
         <Typography>
-          {t('Visit our')}
-          {' '}
-          <CustomAnchorLink link="https://github.com/agrifooddatacanada/OCA_data_set_validator" text={t('GitHub repository')} />
-          {' '}
-          {t('to find a python package that you can use to include data verification in your workflow')}
+          {t("Visit our")}{" "}
+          <CustomAnchorLink
+            link="https://github.com/agrifooddatacanada/OCA_data_set_validator"
+            text={t("GitHub repository")}
+          />{" "}
+          {t(
+            "to find a python package that you can use to include data verification in your workflow"
+          )}
         </Typography>
-
       </AccordionDetails>
     </AccordionItemWrapper>
   );

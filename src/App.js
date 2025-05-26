@@ -14,7 +14,6 @@ import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
 // import Tutorial from "./Tutorial/Tutorial";
-import ucumUnits from "./constants/ucumUnits";
 import useUnitFramingUpdater from "./hooks/useUnitFramingUpdater";
 import {
   CUSTOM_FORMAT_RULE,
@@ -567,7 +566,7 @@ function App() {
                     />
                   }
                 />
-                <Route path="/oca-data-validator" element={<OCADataValidator />} />
+                <Route path="/oca-data-verifier" element={<OCADataValidator />} />
                 {/* <Route
                   path='/help_designing_datasets'
                   element={<GuidanceForDesigningDataSets />}
