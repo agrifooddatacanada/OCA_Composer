@@ -32,15 +32,33 @@ function collectAttributeEnumMappings(slots, enums) {
   // Skip if no slots or enums
   if (!slots || !enums) return mappings;
 
-  // 1. First approach - direct check from slots section (nmdc.yaml style)
+  // Process all slots to find enum references
   Object.entries(slots).forEach(([slotName, slotDef]) => {
     if (!slotDef.range) return;
 
-    // Direct match with an enum name
+    // eslint-disable-next-line no-console
+    console.log(`DEBUG - Checking slot ${slotName} with range ${slotDef.range}`);
+
+    // Match with defined enum names
     if (enums[slotDef.range]) {
       mappings[slotName] = slotDef.range;
+
+      // Check if the enum has permissible values
+      const enumDef = enums[slotDef.range];
+      if (
+        !enumDef.permissible_values ||
+        Object.keys(enumDef.permissible_values).length === 0
+      ) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `WARNING: Enum ${slotDef.range} exists but has no permissible values`
+        );
+      }
     }
   });
+
+  // eslint-disable-next-line no-console
+  console.log("DEBUG - Enum mappings result:", mappings);
 
   return mappings;
 }
@@ -54,21 +72,32 @@ function collectAttributeEnumMappings(slots, enums) {
 function buildEntryOverlays(slots, enums) {
   const attributeEnumMappings = collectAttributeEnumMappings(slots, enums);
 
+  if (Object.keys(attributeEnumMappings).length === 0) {
+    return {};
+  }
+
   const entry_code_data = {};
   const entry_data = {};
 
   Object.entries(attributeEnumMappings).forEach(([attrName, enumName]) => {
     const enumDef = enums[enumName];
-    if (!enumDef || !enumDef.permissible_values) return;
 
-    // For "Entry Code" overlay
-    entry_code_data[attrName] = Object.keys(enumDef.permissible_values || {});
+    if (
+      !enumDef ||
+      !enumDef.permissible_values ||
+      Object.keys(enumDef.permissible_values).length === 0
+    ) {
+      return;
+    }
 
-    // For "Entry" overlay
+    const permValues = Object.keys(enumDef.permissible_values);
+
+    entry_code_data[attrName] = permValues;
     entry_data[attrName] = Object.fromEntries(
-      Object.entries(enumDef.permissible_values || {}).map(([code, value]) => [
-        code,
-        value.description || code
+      Object.entries(enumDef.permissible_values).map(([value]) => [
+        value,
+        // Nothing from linkML fits neatly here, so we use the value as is
+        value
       ])
     );
   });
@@ -210,11 +239,6 @@ function mapRangeToOCAType(range) {
     return "Boolean";
   }
 
-  // Check if it's a custom class or enum by looking for capital first letter
-  // which is common naming convention for classes/types
-  if (/^[A-Z]/.test(range)) {
-    return "Text"; // Convert all class types to Text
-  }
   // Any other type defaults to Text
   return "Text";
 }
@@ -271,18 +295,7 @@ function collectAllSlots(linkmlSchema) {
  * @returns {Object} An OCA bundle
  */
 export function mapLinkMLToOCABundle(linkmlSchema) {
-  console.log("Mapping LinkML schema to OCA bundle...");
   try {
-    // Add basic validation
-    if (!linkmlSchema) {
-      throw new Error("No schema provided");
-    }
-
-    if (!linkmlSchema.name) {
-      // Generate a name if missing
-      linkmlSchema.name = "Untitled_Schema";
-    }
-
     const slots = collectAllSlots(linkmlSchema);
 
     // Create a simple bundle even if there are issues
@@ -300,6 +313,7 @@ export function mapLinkMLToOCABundle(linkmlSchema) {
         }
       });
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error("Error processing slots:", e);
     }
 
@@ -332,13 +346,28 @@ export function mapLinkMLToOCABundle(linkmlSchema) {
     try {
       const enums = linkmlSchema.enums || {};
       const builtOverlays = buildOverlays(slots, enums, linkmlSchema);
+
+      // Debug the entry overlays
+      if (builtOverlays.overlays && builtOverlays.overlays.entry_code) {
+        // eslint-disable-next-line no-console
+        console.log(
+          "DEBUG - Built entry_code overlays:",
+          JSON.stringify(builtOverlays.overlays.entry_code, null, 2)
+        );
+      } else {
+        // eslint-disable-next-line no-console
+        console.log("DEBUG - No entry_code overlays were built");
+      }
+
       Object.assign(overlays, builtOverlays.overlays);
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error("Error building overlays:", e);
     }
 
     return { capture_base, overlays };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Fatal error processing schema:", error);
 
     // Return a minimal valid bundle
