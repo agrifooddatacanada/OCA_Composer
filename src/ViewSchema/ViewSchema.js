@@ -54,7 +54,8 @@ export default function ViewSchema({
     dataStandardsRowData,
     zipToReadme,
     jsonToReadme,
-    OCAPackage
+    OCAPackage,
+    rangeRowData
   } = useContext(Context);
   const languageIndex = languages.findIndex(
     (item) => codesToLanguages?.[i18next.language] === item
@@ -211,6 +212,7 @@ export default function ViewSchema({
       const attrWithOverlay = characterEncodingRowData.find(
         (row) => row.Attribute === attributeName
       );
+      // Contains information about conformance overlay (whether or not the attribute is required)
       if (attrWithOverlay) {
         Object.assign(dataObject, attrWithOverlay);
       }
@@ -245,6 +247,27 @@ export default function ViewSchema({
 
       if (unitFramingData) {
         dataObject["Unit Framing"] = unitFramingData["UCUM Code"];
+      }
+
+      // Add range overlay information
+      const attrWithRange = rangeRowData.find((row) => row.Attribute === attributeName);
+
+      if (attrWithRange) {
+        if (Object.prototype.hasOwnProperty.call(attrWithRange, "LowerBound")) {
+          dataObject.LowerBound = attrWithRange.LowerBound;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(attrWithRange, "LowerInclusive")) {
+          dataObject.LowerInclusive = attrWithRange.LowerInclusive;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(attrWithRange, "UpperBound")) {
+          dataObject.UpperBound = attrWithRange.UpperBound;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(attrWithRange, "UpperInclusive")) {
+          dataObject.UpperInclusive = attrWithRange.UpperInclusive;
+        }
       }
 
       newDisplayArray.push(dataObject);

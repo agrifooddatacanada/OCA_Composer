@@ -12,6 +12,7 @@ import {
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { hasDisallowedChars } from "../constants/utils";
+import { FIELD_RANGE_OVERLAY } from "../constants/constants";
 
 export default function AttributeDetails({
   pageBack,
@@ -25,7 +26,9 @@ export default function AttributeDetails({
     setCurrentPage,
     attributeRowData,
     setAttributesList,
-    setAttributeRowData
+    setAttributeRowData,
+    overlay,
+    setOverlay
   } = useContext(Context);
   const [errorMessage, setErrorMessage] = useState("");
   const [canDelete, setCanDelete] = useState(attributeRowData.length !== 1);
@@ -155,6 +158,19 @@ export default function AttributeDetails({
 
       const noSpacesArray = removeSpacesFromArrayOfObjects(newAttributeRowData);
       setAttributeRowData(noSpacesArray);
+
+      if (overlay[FIELD_RANGE_OVERLAY].selected) {
+        const hasValidAttribute = noSpacesArray.some(
+          (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
+        );
+
+        if (!hasValidAttribute) {
+          setOverlay((prev) => ({
+            ...prev,
+            [FIELD_RANGE_OVERLAY]: { ...prev[FIELD_RANGE_OVERLAY], selected: false }
+          }));
+        }
+      }
 
       return allAttributes;
     };

@@ -6,6 +6,8 @@ import {
   codeToDivision,
   codeToGroup,
   CUSTOM_FORMAT_RULE,
+  FIELD_RANGE_OVERLAY,
+  RANGE,
   SENSITIVE
 } from "../constants/constants";
 import {
@@ -13,6 +15,7 @@ import {
   getOrderedAttributeRowData,
   hasAttributeOrdering,
   hasEntryCodeOrdering,
+  hasRangeOverlay,
   hasUnitFramingOverlay
 } from "../constants/utils";
 
@@ -31,7 +34,8 @@ const useZipParser = () => {
     setFormatRuleRowData,
     setDataStandardsRowData,
     setCardinalityData,
-    setUnitRowData
+    setUnitRowData,
+    setRangeRowData
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -86,6 +90,7 @@ const useZipParser = () => {
     const attributeListStringMap = {};
     let attributesWithListType = [];
     const newUnitFramingRowData = [];
+    const newRangeRowData = [];
 
     // Parse entry codes for list type attributes
     if (entries.length > 0) {
@@ -220,17 +225,34 @@ const useZipParser = () => {
         : [];
 
     attributeList.forEach((item) => {
+      const attributeType = Array.isArray(root?.attributes?.[item])
+        ? `Array[${root?.attributes?.[item][0]}]`
+        : root?.attributes?.[item];
+
       newAttributeRowData.push({
         Attribute: item,
         Flagged: sensitiveAttributes.includes(item),
         List: attributesWithListType.includes(item),
-        Type: Array.isArray(root?.attributes?.[item])
-          ? `Array[${root?.attributes?.[item][0]}]`
-          : root?.attributes?.[item],
+        Type: attributeType,
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
       const newRowForCharacterEncoding = { Attribute: item };
+
+      if (attributeType === "Numeric" || attributeType === "DateTime") {
+        const formatRule =
+          // eslint-disable-next-line quotes
+          formatRules?.attribute_formats?.[item]?.replace(/\\"/g, '"') || "";
+        newRangeRowData.push({
+          Attribute: item,
+          Type: attributeType,
+          FormatRule: formatRule,
+          LowerBound: "",
+          LowerInclusive: false,
+          UpperBound: "",
+          UpperInclusive: false
+        });
+      }
 
       if (conformance) {
         newRowForCharacterEncoding["Make selected entries required"] =
@@ -363,6 +385,46 @@ const useZipParser = () => {
       });
     }
 
+    if (ocaPackageData && hasRangeOverlay(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const rangeOverlay =
+        ocaPackageData.extensions[ADC][captureBaseSaid].overlays[RANGE];
+
+      newRangeRowData.forEach((row) => {
+        const attributeRangeData = rangeOverlay?.attributes?.[row.Attribute] || {};
+
+        row.LowerBound = Object.prototype.hasOwnProperty.call(attributeRangeData, "lower")
+          ? attributeRangeData.lower
+          : "";
+
+        row.LowerInclusive = Object.prototype.hasOwnProperty.call(
+          attributeRangeData,
+          "lower_inclusive"
+        )
+          ? attributeRangeData.lower_inclusive
+          : false;
+
+        row.UpperBound = Object.prototype.hasOwnProperty.call(attributeRangeData, "upper")
+          ? attributeRangeData.upper
+          : "";
+
+        row.UpperInclusive = Object.prototype.hasOwnProperty.call(
+          attributeRangeData,
+          "upper_inclusive"
+        )
+          ? attributeRangeData.upper_inclusive
+          : false;
+      });
+
+      setOverlay((prev) => ({
+        ...prev,
+        [FIELD_RANGE_OVERLAY]: {
+          ...prev[FIELD_RANGE_OVERLAY],
+          selected: true
+        }
+      }));
+    }
+
     if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {
       const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
       const attributeOrdering =
@@ -383,6 +445,7 @@ const useZipParser = () => {
     setDataStandardsRowData(newDataStandardsRowData);
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setLanAttributeRowData(newLangAttributeRowData);
+    setRangeRowData(newRangeRowData);
   };
 
   return {

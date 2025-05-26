@@ -326,5 +326,12 @@
   "Download Data": "Download Data",
   "Show Difference": "Show Difference",
   "Enter a custom regular expression for the attribute's data": "Enter a custom regular expression for the attribute's data",
-  "SchemaExportError": "Something went wrong. Please email <0>adc@uoguelph.ca</0> and include the OCA File."
+  "SchemaExportError": "Something went wrong. Please email <0>adc@uoguelph.ca</0> and include the OCA File.",
+  "Add range rule for data": "Add range rule for data",
+  "Add Range Rules for Data": "Add Range Rules for Data",
+  "Lower Bound": "Lower Bound",
+  "Upper Bound": "Upper Bound",
+  "Inclusive": "Inclusive",
+  "Range bounds must match the format rules.": "Range bounds must match the format rules.",
+  "Please re-verify the data!": "Please re-verify the data!"
 }
