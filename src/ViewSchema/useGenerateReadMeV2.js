@@ -5,7 +5,7 @@ import {
   getOrderedAttributeMap,
   getOrderedEntries
 } from "../constants/utils";
-import { ADC, SENSITIVE } from "../constants/constants";
+import { ADC, RANGE, SENSITIVE } from "../constants/constants";
 
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL
@@ -444,6 +444,41 @@ const useGenerateReadMeV2 = () => {
             `Layer name: ${sensitiveOverlay.type}\n`,
             `SAID/digest: ${sensitiveOverlay.d}\n`,
             `Sensitive attributes: ${sensitiveAttributes.join(", ")}\n`,
+            "\n",
+            "******************************************************************\n"
+          );
+        }
+      }
+
+      if (Object.prototype.hasOwnProperty.call(extensionOverlays, RANGE)) {
+        const rangeOverlay = extensionOverlays[RANGE];
+        const rangeAttributes = Object.keys(rangeOverlay.attributes || {});
+
+        if (rangeAttributes.length > 0) {
+          text_file.push(
+            `Layer name: ${rangeOverlay.type}\n`,
+            `SAID/digest: ${rangeOverlay.d}\n\n`,
+            `Schema attributes: ${rangeOverlay.type}\n`
+          );
+
+          rangeAttributes.forEach((attribute) => {
+            const rangeData = rangeOverlay.attributes[attribute];
+            if (rangeData.lower === "" && rangeData.upper === "") return;
+
+            let rangeText = `   ${attribute}: `;
+
+            if (rangeData.lower !== "") {
+              rangeText += `lower_bound: ${rangeData.lower} (${rangeData.lower_inclusive ? "Inclusive" : "Exclusive"})`;
+            }
+
+            if (rangeData.upper !== "") {
+              rangeText += `, upper_bound: ${rangeData.upper} (${rangeData.upper_inclusive ? "Inclusive" : "Exclusive"})`;
+            }
+
+            text_file.push(rangeText, "\n");
+          });
+
+          text_file.push(
             "\n",
             "******************************************************************\n"
           );
