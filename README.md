@@ -179,8 +179,40 @@ Here's an example of how to set up the parent application:
 
 ```html
 <!-- Parent application HTML -->
-<iframe id="validatorFrame" src="https://happy-tree-080b9290f.5.azurestaticapps.net/oca-data-validator" style="width: 100%; height: 600px;"></iframe>
+<iframe id="validatorFrame" src="https://www.semanticengine.org/oca-data-validator" style="width: 100%; height: 600px;"></iframe>
 ```
+
+### Sent Message Format
+
+The message sent to the validator must follow this structure:
+```javascript
+{
+  type: 'JSON_SCHEMA',
+  data: {
+    "bundle": {
+      "v": "OCAB10JSON0010eb_",
+      "d": "EMY8Z5PAJSJ4RknrB4FVHhslCAa2kecE_UuooZXHgocZ",
+      "capture_base": {
+        "d": "EK2EbGdxi56FIUqT42NP2wl31eSCld97wJao9dhkDr9O",
+        "type": "spec/capture_base/1.0",
+        "classification": "",
+        "attributes": {
+          "Age": "Numeric",
+          "BreastWt": "Numeric",
+          "Breed": "Text",
+          "Farm": "Text",
+          "Glucose": "Numeric",
+          "Lipase": "Numeric",
+          "LiveWt": "Numeric"
+        },
+        "flagged_attributes": []
+      },
+    }
+  }
+  // example schema data
+}
+```
+The message object should include the `type: 'JSON_SCHEMA'` 
 
 ```javascript
 // Parent application JavaScript
@@ -189,8 +221,8 @@ const iframe = document.getElementById('validatorFrame');
 // Function to send a JSON file to the validator
 function sendFileToValidator(jsonData) {
   iframe.contentWindow.postMessage({
-    type: 'FILE',
-    data: jsonData
+    type: 'JSON_SCHEMA',
+    data: jsonData // add your json schema here
   }, '*'); // Replace '*' with the actual origin of the validator for better security
 }
 
@@ -201,19 +233,8 @@ const jsonData = {
 sendFileToValidator(jsonData);
 ```
 
-### 2. Sent Message Format
 
-The message sent to the validator must follow this structure:
-```javascript
-{
-  type: 'FILE',
-  data: {
-    // Your JSON data here
-  }
-}
-```
-
-### 3. Receiving Data from the Iframe (in your parent component)
+### 2. Receiving Data from the Iframe (in your parent component)
 
 To receive data from the iframe, set up an event listener in your JavaScript code. This is typically done in the `window` object:
 
@@ -227,7 +248,7 @@ function receiveData(event) {
   }
 
   // Check the type of the message
-  if (event.data.type === 'CSV_STRING') {
+  if (event.data.type === 'VERIFIED_DATA') {
     const csvData = event.data.data
     // Handle the CSV data as needed
     console.log('Received CSV data:', csvData)
@@ -235,16 +256,43 @@ function receiveData(event) {
 }
 ```
 
-### 4. Received Message Format
+### Received Message Format
 
 The message received from the semantic engine is of the following format:
 ```javascript
 {
-  type: 'CSV_STRING', // this value is hardcoded so always check if the object.type == 'CSV_STRING'
-  data: // the csv string
+  type: 'VERIFIED_DATA', // this value is hardcoded so always check if the object.type == 'VERIFIED_DATA'
+  data: // the verified data as a csv string
 }
 ```
 
+### Example usage of data
+```javascript
+// Check the type of the message
+if (event.data.type === 'VERIFIED_DATA') {
+  const csvData = event.data.data; // Assuming this is the CSV string received
+
+  // Create a Blob from the CSV string
+  const blob = new Blob([csvData], { type: 'text/csv' });
+
+  // Create a URL for the Blob
+  const url = URL.createObjectURL(blob);
+
+  // Create a temporary anchor element to trigger the download
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'validatedData.csv'; // Specify the filename for the download
+  document.body.appendChild(a); // Append the anchor to the body
+  a.click(); // Trigger the download
+
+  // Clean up: remove the anchor and revoke the URL
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+```
+### Explanation
+- This demo code shows how you can convert the csv string into a csv file and then download it.
+- You can also simply send the csv string to your database/storage server using a simple POST method.
 
 ## Error Handling
 

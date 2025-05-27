@@ -371,7 +371,7 @@ const OCADataValidatorCheck = ({
       const csvString = await generateCSVFile(false)
 
       window.parent.postMessage({
-        type: 'CSV_STRING',
+        type: 'VERIFIED_DATA',
         data: csvString
       }, '*');
 
