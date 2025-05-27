@@ -1,0 +1,155 @@
+id: https://w3.org/mianct
+title: Minimal Information About a new Cell Type
+name: mianct
+license: https://creativecommons.org/publicdomain/zero/1.0/
+version: 0.0.1
+see_also:
+  - https://docs.google.com/document/d/1EVgs2Z5dpJs7cbuSBwWlg1xOWQEqMtbSKRGgdneXnU8/edit#
+description: |-
+
+  This schema is CJM's attempt to translate Tiago's [minimal info doc](https://docs.google.com/document/d/1EVgs2Z5dpJs7cbuSBwWlg1xOWQEqMtbSKRGgdneXnU8/edit#) into a LinkML schema
+
+  The schema is fairly minimal and is in the form of a "checklist" style schema. It is a set of fields mostly associated with this class:
+
+    * [CellType](CellType.md)
+
+  There are a set of examples here:
+
+    * [tests/input](https://github.com/cmungall/mianct-schema/tree/main/tests/input)
+
+  Currently the examples are YAML, but the YAML is deliberately flat as this is a "checklist" schema, and we could have TSV/CSV/xlsx here
+
+  TODO:
+
+    - include "packages" and "checklists"; e.g.
+        - a neuron package would have the enum for morphologies constrained
+        - a transcriptomics package would make it required to enter the set of marker genes
+        - see [MIxS schema](https://cmungall.github.io/mixs-source/) for example of how this might work
+    - document how this relates to dosdp/robot templates
+    
+  When should one provide an entry for a cell type in a MIANCT sheet?
+
+   - When there is a claim of a new cell class (type or state) that has not been described before
+   - When new information is discovered for a previously cataloged type that might influence its cataloguing (i.e. description of the presence in a different species or in a new location)
+   - When a cell type mentioned in the article has been described before, but is not yet catalogued on an authoritative source like the Cell Ontology.
+
+prefixes:
+ linkml: https://w3id.org/linkml/
+ biolink: https://w3id.org/biolink/vocab/
+ sdo: https://schema.org/
+ mianct: https://w3.org/mianct/
+ UBERON: http://purl.obolibrary.org/obo/UBERON_
+ CL: http://purl.obolibrary.org/obo/CL_
+
+default_prefix: mianct
+default_curi_maps:
+ - semweb_context
+ - obo_context
+
+imports:
+ - linkml:types
+
+classes:
+  CellType:
+    description: Minimal information about a cell type
+    class_uri: CL:0000000
+    slots:
+      - id
+      - label
+      - organ or tissue
+      - taxon
+      - major life stage
+      - major class
+      - diagnostic description
+      - morphology
+      - develops from
+      - develops into
+      - previous observations
+      
+  OrganismTaxon:
+    class_uri: biolink:OrganismTaxon
+    aliases:
+      - taxon
+      - taxonomic classification
+    description: >-
+      A classification of a set of organisms. Example instances:
+      NCBITaxon:9606 (Homo sapiens), NCBITaxon:2 (Bacteria).
+      Can also be used to represent strains or subspecies.
+    exact_mappings:
+      - WIKIDATA:Q16521
+    slots:
+      - id
+      - label
+    id_prefixes:
+      - NCBITaxon
+      - MESH
+     
+slots:
+  id:
+    identifier: true
+    slot_uri: sdo:identifier
+  label:
+    slot_uri: rdfs:label
+    description: >-
+      The main label used to refer to a cell type
+    required: true
+  organ or tissue:
+    slot_uri: BFO:0000050
+    description: >-
+      Cells of this type were identified in an organ of this kind.
+    todos:
+      - decide whether to use part-of, which is not appropriate for neurons with soma in one part of the brain and projects overlapping other parys
+  taxon:
+    description: >-
+      Cells of this type were identified in an individual of this taxon. If the cell type is thought to be exclusive for that cell type, note it on the additional information field.
+    #recommended: true
+    slot_uri: RO:0002162 ## in taxon
+  major life stage:
+    description: >-
+      Cells of this type were identified at this stage
+    range:
+      major_life_stage_enum
+  major class:
+    range: major_class_enum
+  diagnostic description:
+  morphology:
+    range: morphology_enum
+  develops from:
+    range: CellType
+  develops into:
+    range: CellType
+    multivalued: true
+  previous observations:
+    range: narrative text
+    multivalued: true
+    
+    
+
+enums:
+  major_class_enum:
+    permissible_values:
+      neuron:
+        meaning: CL:0000540 ## neuron
+      leukocyte:
+        meaning: CL:0000738 ## leukocyte
+      gial cell:
+        meaning: CL:0000125 ## glial cell
+      other:
+  major_life_stage_enum:
+    permissible_values:
+      post-embryonic:
+        meaning: UBERON:0000092 ## post-embryonic stage
+      embryonic or fetal:
+        meaning: UBERON:0000068 ## embryo stage
+      larval stage:
+        meaning: UBERON:0000069 ## larval stage
+  morphology_enum:
+    permissible_values:
+      stellate:
+      basket:
+      other:
+        
+types:
+  narrative text:
+    uri: xsd:string
+    base: str

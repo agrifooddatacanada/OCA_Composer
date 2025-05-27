@@ -1,0 +1,226 @@
+id: https://w3id.org/kgviz/
+title: Knowledge Graph Visualization Configuration
+name: kgviz
+license: https://creativecommons.org/publicdomain/zero/1.0/
+version: 0.0.1
+description: |-
+  A data model for describing configurations / stylesheets for visualzing graphs, and
+  in particular Knowledge Graphs or Ontologies. These graphs are characterized by having meaningful edge labels,
+  node categories, IDs or URIs on each element, as well as additional rich metadata on the nodes or edges.
+
+  An example of a use of this is https://github.com/INCATools/obographviz
+
+prefixes:
+ linkml: https://w3id.org/linkml/
+ sdo: https://schema.org/
+ kgviz: https://w3id.org/kgviz/
+see_also:
+  - https://github.com/INCATools/obographviz
+ 
+default_prefix: kgviz
+default_curi_maps:
+ - semweb_context
+
+imports:
+ - linkml:types
+ - graphviz
+
+types:
+
+  Node:
+    uri: xsd:string
+    base: str
+    description: e.g. UBERON:0002101
+    
+ 
+classes:
+  StyleSheet:
+    description: A configuration for both global graph-level properties and element-level properties indicating how a KG should be rendered graphically
+    slots:
+      - style
+      - styles
+      - fillcolor
+      - labelFrom
+      - highlightIds
+      - displayAnnotations
+      - cliqueRelations
+      - containmentRelations
+      - reasoning
+      - excludeSingletons
+      - relationProperties
+      - prefixProperties
+      - conditionalProperties
+      - nodeFilter
+      
+  ElementConfiguration:
+    abstract: true
+    description: >-
+      Abstract parent for all coniguration classes
+      
+  RelationConfiguration:
+    is_a: ElementConfiguration
+    description: |-
+      style for a particular relation (for example, BFO:0000050 or rdfs:subClassOf).
+
+      Example of usage, where [relationProperties](relationProperties.md)
+      specifies a collection of RelationConfigurations keyed by property.
+
+      ```json
+      {
+          "relationProperties": {
+              "rdfs:subClassOf": {
+                  "color": "black",
+                  "penwith": 3,
+                  "arrowhead": "open",
+                  "label": ""
+              },
+              "BFO:0000050": {
+                  "arrowhead": "tee",
+                  "color": "blue"
+              }
+          }
+      }
+      ```
+
+      This will render subclass links in black and part-of links in blue
+    mixins:
+      - EdgeProperty
+    slots:
+      - id
+      - color
+      - penwidth
+      - label
+  PrefixConfiguration:
+    is_a: ElementConfiguration
+    description: style for a particular prefix (e.g. GO)
+    mixins:
+      - NodeProperty
+    slots:
+      - id
+      - fillcolor
+  AnyConfiguration:
+    is_a: ElementConfiguration
+    description: Generic configuration that inherits all aspects of both node and edge configurations
+    mixins:
+      - NodeProperty
+      - EdgeProperty
+      
+  ConditionalProperty:
+    description: conditionally applied properties based on filters
+    slots:
+      - fillcolor
+      - conditions
+      - properties
+  Condition:
+    description: >-
+      a constraint or condition to be applied, e.g. type=Class
+    slots:
+      - type
+      - subset
+        
+
+  GeneralProperty:
+    description: abstract grouping for properties/configs
+    mixin: true
+    slots:
+      - penwidth
+      - label
+      - fontcolor
+  EdgeProperty:
+    is_a: GeneralProperty
+    description: a property object for an edge/relation
+    mixin: true
+    slots:
+      - arrowhead
+      - arrowtail
+      
+  NodeProperty:
+    is_a: GeneralProperty
+    mixin: true
+    slots:
+      - color
+      - fontcolor  ## TODO: check why putting at General level does not work
+      
+    
+enums:
+  ReasoningType:
+    permissible_values:
+      transitive_reduction:
+      todo:
+
+
+slots:
+
+  id:
+    identifier: true
+    range: Node
+  highlightIds:
+    range: Node
+    multivalued: true
+    description: >-
+      List of nodes to be visually demarcated
+  relationProperties:
+    range: RelationConfiguration
+    multivalued: true
+    inlined: true
+    description: >-
+      Collection of styles keyed by predicate ID
+  prefixProperties:
+    range: PrefixConfiguration
+    multivalued: true
+    inlined: true
+    description: >-
+      Collection of styles keyed by ID prefix
+  conditionalProperties:
+    range: ConditionalProperty
+    multivalued: true
+    inlined: true
+  nodeFilter:
+    range: Condition
+    inlined: true
+  reasoning:
+    range: ReasoningType
+    multivalued: true
+    description: >-
+      Set of reasoning or processing steps to be applied to graph
+  excludeSingletons:
+    range: boolean
+    description: >-
+      Remove nodes that have no incoming or outgoing edges
+  displayAnnotations:
+    multivalued: true
+    range: Node
+    description: >-
+      Display annotations for these selected properties
+  cliqueRelations:
+    multivalued: true
+    range: Node
+    description: >-
+      Set of properties that indicate identity relations whose symmetric reflexive transitive closure form a clique
+    examples:
+      - value: owl:equivalentClass
+      - value: skos:exactMatch
+  containmentRelations:
+    aliases:
+      - nestRelations
+    multivalued: true
+    range: Node
+    description: >-
+      Set of properties that indicate identity relations and can be used to create nesting boxes in displays
+    examples:
+      - value: rdfs:isDefinedBy
+  conditions:
+    range: Condition
+    inlined: true
+  properties:
+    range: AnyConfiguration
+    inlined: true
+  type:
+    range: string
+    description: >-
+      the logical type, eg INDIVIDUAL, CLASS, etc
+  subset:
+    range: string
+    description: >-
+      the subset to which the node belongs
+    

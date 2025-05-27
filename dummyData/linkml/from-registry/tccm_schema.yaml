@@ -1,0 +1,183 @@
+id: https://w3id.org/tccm_schema
+name: tccm_schema
+description: >-
+  Terminology Core Common Model
+
+imports:
+ - linkml:types
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  tccm: https://hotecosystem.org/tccm/
+  skos: http://www.w3.org/2004/02/skos/core#
+  sh: http://www.w3.org/ns/shacl#
+  dc: http://purl.org/dc/elements/1.1/
+  sct: http://snomed.info/id/
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+
+default_prefix: tccm
+default_range: string
+
+slots:
+  code:
+    range: string
+    required: true
+    description: |-
+      The official code of this entry
+    slot_uri: skos:notation
+
+  designation:
+    description: |-
+      The preferred label or text in the context of a particular community or language
+    notes:
+      - Designation should never be used as an identifier.  They are strictly informative
+    range: string
+    slot_uri: skos:prefLabel
+    multivalued: false
+    required: false
+
+  definition:
+    range: string
+    description: |-
+      The "preferred" textual definition of this code in the context of a particular community or language
+    slot_uri: skos:definition
+    multivalued: false
+    required: false
+
+  reference:
+    range: uri
+    description: |-
+      A link that provides additional information about this entry
+    slot_uri: rdfs:seeAlso
+    multivalued: true
+    required: false
+
+  defined_in:
+    range: ConceptSystem
+    description: |-
+      The terminological resource (ontology, classification scheme, concept system, etc.) that defines this code
+    slot_uri: skos:inScheme
+    multivalued: false
+    required: true
+
+  narrower_than:
+    range: ConceptReference
+    description: |-
+      A reference to a SKOS concept whose intended meaning or extension is broader than this entry in the defining concept
+      system
+    slot_uri: skos:broader
+    multivalued: true
+    required: false
+
+  prefix:
+    range: string
+    description: |-
+      The official prefix assigned to a concept system
+    required: true
+    slot_uri: sh:prefix
+
+  namespace:
+    range: uri
+    description: |-
+      A known namespace URI assigned to this concept system/prefix
+    slot_uri: sh:namespace
+
+  concept_system_uri:
+    range: uriorcurie
+    description: |-
+      The URI or CURIE of a concept system 
+    identifier: true
+    alias: uri
+
+  root_concept:
+    range: ConceptReference
+    description: |-
+      A concept that has no broader concepts in a ConceptSystem
+    multivalued: true
+    required: false
+    slot_uri: skos:hasTopConcept
+
+  description:
+    range: string
+    description: |-
+      The description of a concept system
+    slot_uri: dc:description
+
+  concept_uri:
+    range: uriorcurie
+    description: |-
+      The URI or CURIE of a code entry
+    identifier: true
+    alias: uri
+
+  contents:
+    description: |-
+      The concept references that are in the ConceptSystem
+    range: ConceptReference
+    multivalued: true
+    inlined_as_list: true
+
+  code_set_uri:
+    range: uriorcurie
+    description: |-
+      The URI or CURIE of a code set 
+    identifier: true
+    alias: uri
+
+  members:
+    description: |-
+      The concept references that are in the CodeSet
+    range: ConceptReference
+    multivalued: true
+    inlined_as_list: true
+    slot_uri: skos:member    
+
+classes:
+  ConceptReference:
+    description: |-
+      A minimal description of a class, individual, term or similar construct
+    class_uri: skos:Concept
+    slots:
+      - concept_uri
+      - code
+      - designation
+      - definition
+      - reference
+      - defined_in
+      - narrower_than
+
+  ConceptSystem:
+    description: |-
+      A terminological resource (ontology, classification scheme, concept system, etc.)
+    class_uri: skos:ConceptScheme
+    slots:
+      - concept_system_uri
+      - prefix
+      - namespace
+      - description
+      - reference
+      - root_concept
+      - contents
+
+  CodeSet:
+    description: |-
+      A collection of terminological concept references
+    class_uri: skos:CodeSet
+    slots:
+      - description
+      - designation
+      - code_set_uri
+      - members
+
+  Package:
+    description: |-
+      A collection of ConceptSystems
+    attributes:
+      system:
+        range: ConceptSystem
+        inlined_as_list: true
+        multivalued: true
+
+
+
+

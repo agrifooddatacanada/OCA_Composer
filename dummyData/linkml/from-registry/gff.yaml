@@ -1,0 +1,300 @@
+id: https://w3id.org/biodatamodels/gff
+name: GFF
+description: >-
+  Playing around with GFF spec
+imports:
+  - linkml:types
+prefixes:
+  linkml: https://w3id.org/linkml/
+  gff: https://w3id.org/biodatamodels/gff
+  faldo: "http://biohackathon.org/resource/faldo#"
+  gfvo: "http://www.biointerchange.org/gfvo#"
+default_prefix: gff
+
+slots:
+  gff attribute:
+    abstract: true
+    
+  gff column:
+    abstract: true
+    
+  seqid:
+    is_a: gff column
+    description: The ID of the landmark used to establish the coordinate system for the current feature.
+    range: seq
+    required: true
+  source:
+    is_a: gff column
+    description: The source is a free text qualifier intended to describe the algorithm or operating procedure that generated this feature.
+    range: string ## make this an object
+    required: true
+  type:
+    is_a: gff column
+    range: controlled term type
+    description: >-
+      A type from the sequence ontology
+      slot_uri: rdf:type
+    pattern: "^SO:\\d+"
+    todos:
+      - explore defining an enum for all allowed SO types
+  start:
+    is_a: gff coordinate
+    description: The start of the feature in positive 1-based integer coordinates
+    required: true
+    close_mappings:
+      - biolink:start_interbase_coordinate
+    exact_mappings:
+      - faldo:begin
+  end:
+    is_a: gff coordinate
+    description: The end of the feature in positive 1-based integer coordinates
+    comments: >-
+      - "constraint: end > start"
+      - "For features that cross the origin of a circular feature,  end = the position of the end + the length of the landmark feature."
+    required: true
+    close_mappings:
+      - biolink:end_interbase_coordinate
+    exact_mappings:
+      - faldo:end
+  strand:
+    ## TODO: enum
+    description: >-
+      The strand on which a feature is located. Has a value of '+' (sense strand or forward strand) or '-' (anti-sense strand or reverse strand).
+    range: strand_enum
+    exact_mappings:
+      - biolink:strand
+  score:
+    description: >-
+      The score of the feature, a floating point number. As in earlier versions of the format, the semantics of the score are ill-defined. It is strongly recommended that E-values be used for sequence similarity features, and that P-values be used for ab initio gene prediction features.
+    range: float
+  phase:
+    range: phase_enum
+    description: >-
+      The phase for a coding sequence entity. For example, phase of a CDS as represented in a GFF3 with a value of 0, 1 or 2.
+    exact_mappings:
+      - biolink:phase
+
+  Ontology term:
+    is_a: gff attribute
+    range: controlled term type
+    multivalued: true
+
+  ID:
+    is_a: gff attribute
+    range: uriorcurie
+    identifier: true
+  Parent:
+    is_a: gff attribute
+    range: genome feature
+    multivalued: true
+  Derives from:
+    is_a: gff attribute
+    range: genome feature
+    multivalued: true
+  Name:
+    is_a: gff attribute
+    range: string
+  Note:
+    is_a: gff attribute
+    range: string
+  Aliases:
+    is_a: gff attribute
+    range: string
+    multivalued: true
+  Dbxref:
+    is_a: gff attribute
+    range: uriorcurie
+    multivalued: true
+    pattern: "^\\S+:\\S+"
+  Is circular:
+    is_a: gff attribute
+    range: boolean
+  Target:
+    is_a: gff attribute
+    string_serialization: "{seqid} {start} {end}"
+    range: target location
+  Gap:
+    is_a: gff attribute
+    range: gap string
+    
+  gff coordinate:
+    is_a: gff column
+    range: integer
+    minimum_value: 1
+    description: A positive 1-based integer coordinate indicating start or end
+    comments:
+      - "For features that cross the origin of a circular feature (e.g. most bacterial genomes, plasmids, and some viral genomes), the requirement for start to be less than or equal to end is satisfied by making end = the position of the end + the length of the landmark feature."
+
+  has attributes:
+    range: genome feature attribute set
+
+  has metadata:
+    abstract: true
+    range: metadata
+
+  ontology URI:
+    abstract: true
+    is_a: has metadata
+    range: uriorcurie
+    multivalued: true
+    comments:
+      - This directive may appear multiple times to load multiple URIs, in which case they are merged (or raise an exception if merging is not possible).
+
+
+  has sequence string:
+    range: sequence_enum
+      
+classes:
+
+  gff document:
+    description:
+      Collection of GFF features and metadata
+    attributes:
+      gff version:
+        range: string
+        pattern: "^3\\.\\d+\\.\\d+$"
+      feature ontology URI:
+        is_a: ontology URI
+        description: >-
+          This directive indicates that the GFF3 file uses the ontology of feature types located at the indicated URI or URL.
+      attribute ontology URI:
+        is_a: ontology URI
+        description: >-
+          This directive indicates that the GFF3 uses the ontology of attribute names located at the indicated URI or URL.
+      source ontology URI:
+        is_a: ontology URI
+        description: >-
+          This directive indicates that the GFF3 uses the ontology of source names located at the indicated URI or URL.
+      species:
+        is_a: has metadata
+        range: uriorcurie
+        todos:
+          - align with spec
+        exact_mappings:
+          - biolink:in_taxon
+      sequence region:
+        is_a: has metadata
+        range: sequence region value
+      genome build:
+        is_a: has metadata
+        range: genome build value
+      sequences:
+        range: seq
+        multivalued: true
+      features:
+        range: genome feature
+        multivalued: true
+  
+  seq:
+    description: >-
+      A biological sequence    
+    slots:
+      - ID
+      - has sequence string
+    todos:
+      - should sequence have defline?
+
+  metadata:
+    abstract: true
+    description: >-
+      A piece of metadata for a GFF document
+    aliases:
+      - pragma
+      - directive
+      
+  sequence region value:
+    is_a: metadata      
+    description: >-
+      Used for sequence-region pragmas
+    slots:
+      - seqid
+      - start
+      - end
+
+  genome build value:
+    is_a: metadata      
+    description: >-
+      Used for genome-build pragmas
+    attributes:
+      source:
+        todos:
+          - consider enum
+      name:
+        range: string
+      species:
+        range: string
+
+  genome feature attribute set:
+    description: >-
+      Holds a collection of attributes that can be used by a feature
+    comments:
+      - an equally valid decision decision is to fold this directly into the genome feature class
+    slots:
+      - ID
+      - Name
+      - Parent
+      - Ontology term
+
+  genome feature:
+    description: >-
+      A feature localized to an interval along a genome
+    see_also:
+      - https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
+    slots:
+      - seqid
+      - source
+      - type
+      - strand
+      - start
+      - end
+      - phase
+      - has attributes
+
+  target location:
+    slots:
+      - seqid
+      - start
+      - end
+  
+
+types:
+  controlled term type:
+    typeof: uriorcurie
+    description: >-
+      An IRI
+  gap string:
+    typeof: string
+    todos:
+      - model this explicitly
+
+enums:
+  phase_enum:
+    description: phase
+    permissible_values:
+      0: zero
+      1: one
+      2: two
+      
+  strand_enum:
+    description: strand
+    permissible_values:
+      "+":
+        description: Positive
+        meaning: faldo:ForwardStrandPosition
+      "-":
+        description: Negative
+        meaning: faldo:ReverseStrandPosition
+      ".":
+        description: Unstranded
+        meaning: faldo:BothStrandsPosition
+      "?":
+        description: Unknown
+        
+  sequence_enum:
+    description: type of sequence
+    permissible_values:
+      "NA":
+        description: nucleic acid
+      "AA":
+        description: amino acid
+    
