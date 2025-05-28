@@ -233,7 +233,8 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   layers,
   captureBaseOverlay,
   attributeNames,
-  sensitiveAttributes = []
+  sensitiveAttributes = [],
+  rangeOverlay = null
 }) => {
   const hcfFlaggedAttributes = Array.isArray(captureBaseOverlay.flagged_attributes)
     ? captureBaseOverlay.flagged_attributes
@@ -273,6 +274,10 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
 
   if (standardOverlay) {
     columns.push("Data standard");
+  }
+
+  if (rangeOverlay?.attributes) {
+    columns.push("Lower Bound", "Inclusive", "Upper Bound", "Inclusive");
   }
 
   const rows = attributeNames.map((attribute) => {
@@ -316,6 +321,16 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
     if (standardOverlay) {
       const standard = standardOverlay.attr_standards[attribute] || "";
       row.push(standard);
+    }
+
+    if (rangeOverlay?.attributes?.[attribute]) {
+      const rangeData = rangeOverlay.attributes[attribute];
+      row.push(
+        rangeData.lower,
+        rangeData.lower_inclusive,
+        rangeData.upper,
+        rangeData.upper_inclusive
+      );
     }
 
     return row;
