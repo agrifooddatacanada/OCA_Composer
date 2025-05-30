@@ -80,7 +80,7 @@ const AccordionList = () => {
   const navigateToPreviewSchema = () => {
     setIsZip(true);
     setCurrentDataValidatorPage("SchemaViewDataValidator");
-    navigate("/oca-data-validator");
+    navigate("/oca-data-verifier");
   };
 
   const setFile = (acceptedFiles) => {

@@ -12,8 +12,8 @@ import ExcelSheetSelection from "../components/ExcelSheetSelection";
 const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const { t } = useTranslation();
   const { jsonRawFile, setCurrentDataValidatorPage } = useHandleJsonDrop(
-    setShowWarningCard,
-    firstTimeDisplayWarning
+    firstTimeDisplayWarning,
+    setShowWarningCard
   );
 
   const {

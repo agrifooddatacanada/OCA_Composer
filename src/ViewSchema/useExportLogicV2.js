@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
@@ -13,11 +13,15 @@ import {
   UNIT_FRAME_LABEL,
   UNIT_FRAME_LOCATION,
   UNIT_FRAME_VERSION,
-  SENSITIVE
+  SENSITIVE,
+  FIELD_FORMAT_OVERLAY,
+  FIELD_RANGE_OVERLAY,
+  RANGE
 } from "../constants/constants";
 import {
   generateOCABundle,
   getDescriptiveFileName,
+  getRangeOverlayInput,
   getTransformedEntryCodes,
   getUnitFramingInput
 } from "../constants/utils";
@@ -35,14 +39,22 @@ const useExportLogicV2 = () => {
     divisionGroup,
     savedEntryCodes,
     formatRuleRowData,
-    unitFramingRowData,
+    unitFramedRowData,
     customIsos,
     characterEncodingRowData,
     overlay,
-    cardinalityData
+    cardinalityData,
+    rangeRowData
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
+
+  const [error, setError] = useState("");
+
+  const attributeListMap = attributeRowData.reduce((acc, attr) => {
+    acc[attr.Attribute] = attr.List;
+    return acc;
+  }, {});
 
   // CAPTURE SHEET DESCRIPTIONS DATA
   const OCADescriptionData = [];
@@ -129,7 +141,7 @@ const useExportLogicV2 = () => {
   };
 
   const buildClassificationsText = () => {
-    let buildText = "# TODO add classification\n";
+    let buildText = "# Add classification\n";
     if (classificationCode) {
       buildText += `ADD classification ${classificationCode}`;
       buildText += "\n";
@@ -145,9 +157,15 @@ const useExportLogicV2 = () => {
         (obj) => obj.Language === language.language
       );
 
+      // Need to escape " and ' for OCA file
+      const parsedDescription = OCADataArray[0][languageIndex].Description
+        // eslint-disable-next-line quotes
+        .replace(/"/g, '\\"')
+        .replace(/'/g, "\\'");
+
       buildText += `\nADD Meta ${language.code} PROPS`;
       buildText += ` name="${OCADataArray[0][languageIndex].Name}"`;
-      buildText += ` description="${OCADataArray[0][languageIndex].Description}"`;
+      buildText += ` description="${parsedDescription}"`;
     });
 
     buildText += "\n";
@@ -157,20 +175,22 @@ const useExportLogicV2 = () => {
   const buildFormatText = () => {
     let buildText = "# Add Format Overlay\n";
 
-    let tempText = "";
-    formatRuleRowData.forEach((item, index) => {
-      const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText;
-      if (formatRule) {
-        // Any " in the format text needs to be escaped for OCA file
-        // eslint-disable-next-line quotes
-        tempText += ` ${attributesList[index]}="${formatRule.replace(/"/g, '\\"')}"`;
-      }
-    });
+    if (overlay[FIELD_FORMAT_OVERLAY].selected) {
+      let tempText = "";
+      formatRuleRowData.forEach((item, index) => {
+        const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText;
+        if (formatRule) {
+          // Any " in the format text needs to be escaped for OCA file
+          // eslint-disable-next-line quotes
+          tempText += ` ${attributesList[index]}="${formatRule.replace(/"/g, '\\"')}"`;
+        }
+      });
 
-    if (tempText !== "") {
-      buildText += "ADD Format ATTRS";
-      buildText += tempText;
-      buildText += "\n";
+      if (tempText !== "") {
+        buildText += "ADD Format ATTRS";
+        buildText += tempText;
+        buildText += "\n";
+      }
     }
 
     return buildText;
@@ -252,7 +272,7 @@ const useExportLogicV2 = () => {
     let entryCodesText = "";
     attributesList.forEach((item) => {
       let entryCodes = "";
-      if (savedEntryCodes[item]) {
+      if (attributeListMap[item] && savedEntryCodes[item]) {
         for (const entry of savedEntryCodes[item]) {
           entryCodes += `, "${entry.Code}"`;
         }
@@ -398,73 +418,116 @@ const useExportLogicV2 = () => {
 
   const exportData = async () => {
     const data = buildOCAText(OCADataArray);
-    const bundle = await generateOCABundle(data);
+    const filteredEntryCodes = {};
 
-    const sensitiveAttributes = attributeRowData
-      .filter((item) => item.Flagged)
-      .map((item) => item.Attribute);
-
-    const extension = {
-      extensions: {
-        [ADC]: {
-          [bundle.bundle.d]: [
-            {
-              ordering_overlay: {
-                type: ORDERING,
-                attribute_ordering: attributesList,
-                entry_code_ordering: getTransformedEntryCodes(savedEntryCodes)
-              }
-            },
-            {
-              unit_framing_overlay: {
-                type: UNIT_FRAMING,
-                properties: {
-                  id: UNIT_FRAME_ID,
-                  label: UNIT_FRAME_LABEL,
-                  location: UNIT_FRAME_LOCATION,
-                  version: UNIT_FRAME_VERSION
-                },
-                units: getUnitFramingInput(unitFramingRowData)
-              }
-            },
-            {
-              sensitive_overlay: {
-                type: SENSITIVE,
-                sensitive_attributes: sensitiveAttributes
-              }
-            }
-          ]
-        }
+    Object.entries(attributeListMap).forEach(([attribute, isList]) => {
+      if (isList && savedEntryCodes[attribute]) {
+        filteredEntryCodes[attribute] = savedEntryCodes[attribute];
       }
-    };
+    });
 
-    const ocaPackageService = new OcaPackage(extension, bundle);
-    const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
+    try {
+      setError("");
+      // const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
+      // console.log("rangeOverlayInput", rangeOverlayInput);
+      // return;
 
-    // Generate and download text readme
-    jsonToTextFile(bundle.bundle, ocaPackage);
+      const bundle = await generateOCABundle(data);
 
-    downloadJsonFile(
-      ocaPackage,
-      getDescriptiveFileName(schemaDescription, "OCA_package.json")
-    );
+      const sensitiveAttributes = attributeRowData
+        .filter((item) => item.Flagged)
+        .map((item) => item.Attribute);
 
-    // Download OCA file only on testing site
-    if (currentEnv === "DEV") {
-      downloadTextFile(data, getDescriptiveFileName(schemaDescription, "OCA_file.txt"));
-    }
+      const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
 
-    // Download bundle only on testing site
-    if (currentEnv === "DEV") {
+      // dynamic addition optional extension overlays
+      const extension_overlays = [
+        {
+          ordering_overlay: {
+            type: ORDERING,
+            attribute_ordering: attributesList,
+            entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
+          }
+        },
+        ...(overlay["Unit Framing"].selected
+          ? [
+              {
+                unit_framing_overlay: {
+                  type: UNIT_FRAMING,
+                  properties: {
+                    id: UNIT_FRAME_ID,
+                    label: UNIT_FRAME_LABEL,
+                    location: UNIT_FRAME_LOCATION,
+                    version: UNIT_FRAME_VERSION
+                  },
+                  units: getUnitFramingInput(unitFramedRowData)
+                }
+              }
+            ]
+          : []),
+        ...(overlay[FIELD_RANGE_OVERLAY].selected
+          ? [
+              {
+                range_overlay: {
+                  type: RANGE,
+                  attributes: rangeOverlayInput
+                }
+              }
+            ]
+          : []),
+        {
+          sensitive_overlay: {
+            type: SENSITIVE,
+            sensitive_attributes: sensitiveAttributes
+          }
+        }
+      ];
+
+      const extension = {
+        extensions: {
+          [ADC]: {
+            [bundle.bundle.d]: extension_overlays
+          }
+        }
+      };
+
+      const ocaPackageService = new OcaPackage(extension, bundle);
+      const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
+
+      // Generate and download text readme
+      jsonToTextFile(bundle.bundle, ocaPackage);
+
       downloadJsonFile(
-        bundle,
-        getDescriptiveFileName(schemaDescription, "OCA_bundle.json")
+        ocaPackage,
+        getDescriptiveFileName(schemaDescription, "OCA_package.json")
+      );
+
+      // Download OCA file only on testing site
+      if (currentEnv === "DEV") {
+        downloadTextFile(data, getDescriptiveFileName(schemaDescription, "OCA_file.txt"));
+      }
+
+      // Download bundle only on testing site
+      if (currentEnv === "DEV") {
+        downloadJsonFile(
+          bundle,
+          getDescriptiveFileName(schemaDescription, "OCA_bundle.json")
+        );
+      }
+    } catch (error) {
+      console.error("Error downloading OCA package:", error);
+      setError("Could not download OCA package");
+      downloadTextFile(
+        data,
+        getDescriptiveFileName(schemaDescription, "Error_OCA_file.txt")
       );
     }
   };
 
   return {
-    exportData
+    exportData,
+    error,
+    clearError: () => setError("")
   };
 };
 

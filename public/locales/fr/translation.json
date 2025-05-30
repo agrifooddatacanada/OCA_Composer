@@ -323,5 +323,13 @@
   "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Cliquez ici pour sélectionner le bundle de schémas (.zip OU .json) ou faites-en glisser un ici",
   "Download Data": "Télécharger les données",
   "Show Difference": "Afficher la différence",
-  "Enter a custom regular expression for the attribute's data": "Saisissez une expression régulière personnalisée pour les données de l'attribut"
+  "Enter a custom regular expression for the attribute's data": "Saisissez une expression régulière personnalisée pour les données de l'attribut",
+  "SchemaExportError": "Une erreur s'est produite. Veuillez envoyer un e-mail à <0>adc@uoguelph.ca</0> en incluant le fichier OCA.",
+  "Add range rule for data": "Ajouter une règle de plage pour les données",
+  "Add Range Rules for Data": "Ajouter des règles de plage pour les données",
+  "Lower Bound": "Limite inférieure",
+  "Upper Bound": "Limite supérieure",
+  "Inclusive": "Inclusif",
+  "Range bounds must match the format rules.": "Les limites de plage doivent correspondre aux règles de format.",
+  "Please re-verify the data!": "Veuillez revérifier les données !"
 }

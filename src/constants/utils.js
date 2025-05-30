@@ -1,15 +1,20 @@
 import i18next from "i18next";
+import Fuse from "fuse.js";
 import { codesToLanguages, alpha3CodesToTwoLetterCodes } from "./isoCodes";
 import {
   ADC,
+  CUSTOM_FORMAT_RULE,
   DEFAULT_LANGUAGE,
   DISALLOWED_CHARACTERS,
+  FIELD_FORMAT_OVERLAY,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
   formatCodeTextDescription,
-  OCA_REPOSITORY_API_URL
+  OCA_REPOSITORY_API_URL,
+  RANGE
 } from "./constants";
+import ucumUnits from "./ucumUnits";
 
 export const getCurrentData = (currentApi, includedError) => {
   const newData = [];
@@ -279,12 +284,12 @@ export const hasAttributeOrdering = (OCAPackage) => {
   );
 };
 
-export const hasUnitFramingOverlay = (OCAPackage) => {
+export const hasRangeOverlay = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
   const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
   return Boolean(
     Object.keys(OCAPackage?.extensions || {}).length > 0 &&
-      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[RANGE]
   );
 };
 
@@ -323,7 +328,7 @@ export const getOrderedAttributeMap = (attributeOrdering, attributeMap) => {
   return orderedAttributeMap;
 };
 
-// constructing unit framing input
+// for unit framing overlay
 export const getUnitFramingInput = (unitFramingRowData) => {
   const unitFramingInput = {};
   for (const row of unitFramingRowData) {
@@ -334,6 +339,83 @@ export const getUnitFramingInput = (unitFramingRowData) => {
     };
   }
   return unitFramingInput;
+};
+
+export const hasUnitFramingOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
+  );
+};
+
+export const options = {
+  keys: ["code", "label", "description"],
+  isCaseSensitive: true,
+  includeScore: true,
+  includeMatches: true,
+  minMatchCharLength: 1,
+  shouldSort: true,
+  threshold: 0.4,
+  distance: 100
+};
+
+export const searchUnits = (unit) => {
+  if (!unit) return { firstMatch: null, results: [] };
+
+  const fuse = new Fuse(ucumUnits, options);
+  const searchResults = fuse.search(unit);
+  const slicedResults = searchResults.slice(0, 20).map((result) => result.item);
+
+  const uniqueResults = Array.from(new Set(slicedResults.map((item) => item.code))).map(
+    (code) => slicedResults.find((item) => item.code === code)
+  );
+
+  return {
+    firstMatch: uniqueResults[0] || null,
+    results: uniqueResults
+  };
+};
+
+export const updateUnitFramingRowDataForOverlayGeneration = (
+  attributeRowData,
+  unitFramedRowData
+) =>
+  attributeRowData.map((attributeRow) => {
+    const matchingRow = unitFramedRowData.find(
+      (unitRow) => unitRow.Unit === attributeRow.Unit
+    );
+
+    return matchingRow
+      ? {
+          ...attributeRow,
+          "UCUM Code": matchingRow["UCUM Code"],
+          "UCUM Label": matchingRow["UCUM Label"],
+          Description: matchingRow.Description
+        }
+      : attributeRow;
+  });
+
+export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {
+  const rangeOverlayInput = {};
+  rangeRowData.forEach((row) => {
+    if (row.LowerBound === "" && row.UpperBound === "") return;
+
+    const attributeFormatData = formatRuleRowData.find(
+      (item) => item.Attribute === row.Attribute
+    );
+    if (!attributeFormatData?.FormatText && !attributeFormatData?.[CUSTOM_FORMAT_RULE])
+      return;
+
+    rangeOverlayInput[row.Attribute] = {
+      lower: row.LowerBound,
+      lower_inclusive: row.LowerInclusive,
+      upper: row.UpperBound,
+      upper_inclusive: row.UpperInclusive
+    };
+  });
+  return rangeOverlayInput;
 };
 
 /*
@@ -558,3 +640,20 @@ export const getFormatRuleDescription = (attributeType, formatRule) =>
         : attributeType.includes("Text")
           ? formatCodeTextDescription[formatRule]
           : "";
+
+export const shouldDisableRangeOverlay = (
+  overlayText,
+  selectedFeatures,
+  attributes,
+  rangeRowData
+) => {
+  const hasValidAttribute = attributes.some(
+    (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
+  );
+  return (
+    overlayText === "Add range rule for data" &&
+    (rangeRowData.length === 0 ||
+      !selectedFeatures.includes(FIELD_FORMAT_OVERLAY) ||
+      !hasValidAttribute)
+  );
+};

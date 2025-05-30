@@ -5,7 +5,7 @@ import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
 } from "../constants/utils";
-import { ADC } from "../constants/constants";
+import { ADC, SENSITIVE } from "../constants/constants";
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -117,6 +117,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   const ocaPackageSaid = inPutJsonResult[3];
   let attribute_ordering_container = null;
   let entry_code_ordering = null;
+  let sensitiveOverlay = null;
 
   if (isOcaPackage) {
     const extensions = inPutJsonResult[2];
@@ -127,6 +128,10 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         if (overlays[overlayKey].type.includes("ordering")) {
           attribute_ordering_container = overlays[overlayKey].attribute_ordering;
           entry_code_ordering = overlays[overlayKey].entry_code_ordering;
+        }
+
+        if (overlays[overlayKey].type.includes(SENSITIVE)) {
+          sensitiveOverlay = overlays[overlayKey];
         }
       }
     }
@@ -314,7 +319,10 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
   try {
     schemaTitle = metaOverlays[0].name;
-    schemaDescription = metaOverlays[0].description;
+    schemaDescription = metaOverlays[0].description
+      ? // eslint-disable-next-line quotes
+        metaOverlays[0].description.replace(/\\"/g, '"').replace(/\\'/g, "'")
+      : "";
     schemaLanguage = metaOverlays[0].language;
     schemaClassification = jsonData.find(
       (o) => o.type && o.type.includes("/capture_base/")
@@ -411,6 +419,11 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   // TODO: add an index i.e., the order from the ordering overlay if the json is an oca-package
   jsonData.forEach((overlay) => {
     if (overlay.type && overlay.type.includes("/capture_base/")) {
+      const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
+        ? sensitiveOverlay?.sensitive_attributes
+        : Array.isArray(overlay.flagged_attributes)
+          ? overlay.flagged_attributes
+          : [];
       Object.entries(overlay.attributes).forEach(([attrName, attrType], index) => {
         let attrIndex = null;
 
@@ -437,7 +450,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
           throw new WorkbookError(".. Error check the attribute type ...");
         }
 
-        const isFlagged = overlay.flagged_attributes.includes(attrName);
+        const isFlagged = sensitiveAttributes.includes(attrName);
         sheet1.getCell(shift + attrIndex, 3).value = isFlagged ? "Y" : "";
         formatAttr(sheet1.getCell(shift + attrIndex, 3));
       });

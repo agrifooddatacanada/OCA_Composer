@@ -178,6 +178,11 @@ export default function Header({ currentPage }) {
           `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/Coauthor/`
         );
         break;
+      case "Range":
+        setHeader(t("Add Range Rules for Data"));
+        setToolTipText("");
+        setHelpLink("");
+        break;
       default:
         setHeader("");
         setHelpLink("");

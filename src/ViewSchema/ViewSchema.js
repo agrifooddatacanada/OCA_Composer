@@ -1,15 +1,8 @@
 import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import i18next from "i18next";
-import {
-  Box,
-  Button,
-  Typography,
-  Tooltip,
-  Checkbox,
-  FormControlLabel
-} from "@mui/material";
+import { Box, Button, Typography, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -26,7 +19,12 @@ import { CUSTOM_FORMAT_RULE } from "../constants/constants";
 import { codesToLanguages } from "../constants/isoCodes";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
-import { getFormatRuleDescription } from "../constants/utils";
+import {
+  getFormatRuleDescription,
+  updateUnitFramingRowDataForOverlayGeneration
+} from "../constants/utils";
+import ErrorPopup from "./ErrorPopup";
+import CustomRouterLink from "../components/CustomRouterLink";
 
 // const currentEnv = process.env.REACT_APP_ENV;
 
@@ -52,11 +50,12 @@ export default function ViewSchema({
     history,
     setHistory,
     formatRuleRowData,
-    unitFramingRowData,
+    unitFramedRowData,
     dataStandardsRowData,
     zipToReadme,
     jsonToReadme,
-    OCAPackage
+    OCAPackage,
+    rangeRowData
   } = useContext(Context);
   const languageIndex = languages.findIndex(
     (item) => codesToLanguages?.[i18next.language] === item
@@ -69,13 +68,11 @@ export default function ViewSchema({
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   const [displayArray, setDisplayArray] = useState([]);
   const [showLink, setShowLink] = useState(false);
-  const { resetToDefaults, exportDisabled, handleExport } = useExportLogic();
-  const { exportData } = useExportLogicV2();
+  const { resetToDefaults, exportDisabled } = useExportLogic();
+  const { exportData, error: exportError, clearError } = useExportLogicV2();
   const [loading, setLoading] = useState(true);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
-
-  const [shouldDownloadZip, setShouldDownloadZip] = useState(false);
 
   // Formats language buttons in a way that can handle many languages cleanly
   // Minimizes language for cases where it's too long to fit in button size
@@ -164,6 +161,12 @@ export default function ViewSchema({
     <Box key={languageSegment.join(",")}>{createLanguageRow(languageSegment, index)}</Box>
   ));
 
+  // updating attributeRowData to include unit framing data
+  const updatedFramedRowData = updateUnitFramingRowDataForOverlayGeneration(
+    attributeRowData,
+    unitFramedRowData
+  );
+
   // Creates display array with all captured data
   useEffect(() => {
     const newDisplayArray = [];
@@ -209,6 +212,7 @@ export default function ViewSchema({
       const attrWithOverlay = characterEncodingRowData.find(
         (row) => row.Attribute === attributeName
       );
+      // Contains information about conformance overlay (whether or not the attribute is required)
       if (attrWithOverlay) {
         Object.assign(dataObject, attrWithOverlay);
       }
@@ -237,12 +241,33 @@ export default function ViewSchema({
       }
 
       // Add unit framing information
-      const unitFramingData = unitFramingRowData.find(
+      const unitFramingData = updatedFramedRowData.find(
         (row) => row.Attribute === attributeName
       );
 
       if (unitFramingData) {
         dataObject["Unit Framing"] = unitFramingData["UCUM Code"];
+      }
+
+      // Add range overlay information
+      const attrWithRange = rangeRowData.find((row) => row.Attribute === attributeName);
+
+      if (attrWithRange) {
+        if (Object.prototype.hasOwnProperty.call(attrWithRange, "LowerBound")) {
+          dataObject.LowerBound = attrWithRange.LowerBound;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(attrWithRange, "LowerInclusive")) {
+          dataObject.LowerInclusive = attrWithRange.LowerInclusive;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(attrWithRange, "UpperBound")) {
+          dataObject.UpperBound = attrWithRange.UpperBound;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(attrWithRange, "UpperInclusive")) {
+          dataObject.UpperInclusive = attrWithRange.UpperInclusive;
+        }
       }
 
       newDisplayArray.push(dataObject);
@@ -272,10 +297,6 @@ export default function ViewSchema({
   const handleClickDownload = () => {
     // Download OCA package and related files
     exportData();
-    if (shouldDownloadZip) {
-      // Download legacy .zip bundle
-      handleExport({ onlyZip: true });
-    }
   };
 
   return (
@@ -404,17 +425,6 @@ export default function ViewSchema({
                         </Tooltip>
                       </Box>
                     </Box>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={shouldDownloadZip}
-                          onChange={(e) => setShouldDownloadZip(e.target.checked)}
-                          size="small"
-                        />
-                      }
-                      label={t("Download legacy .zip bundle")}
-                      sx={{ marginTop: "4px" }}
-                    />
                   </Box>
                 ) : (
                   <></>
@@ -627,17 +637,6 @@ export default function ViewSchema({
             >
               {t("Finish and Download")} <CheckCircleIcon />
             </Button>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={shouldDownloadZip}
-                  onChange={(e) => setShouldDownloadZip(e.target.checked)}
-                  size="small"
-                />
-              }
-              label={t("Download legacy .zip bundle")}
-              sx={{ marginTop: "4px" }}
-            />
           </Box>
         </Box>
       ) : (
@@ -668,6 +667,22 @@ export default function ViewSchema({
             {t("Clear All Data and Restart")}
           </Button>
         </Box>
+      )}
+      {exportError && (
+        <ErrorPopup onClose={clearError}>
+          <Typography variant="h5" sx={{ p: 1 }}>
+            <Trans
+              i18nKey="SchemaExportError"
+              components={[
+                <CustomRouterLink
+                  to="mailto:adc@uoguelph.ca"
+                  text="adc@uoguelph.ca"
+                  overrideStyle={{ fontWeight: "500", color: CustomPalette.PRIMARY }}
+                />
+              ]}
+            />
+          </Typography>
+        </ErrorPopup>
       )}
     </Box>
   );
