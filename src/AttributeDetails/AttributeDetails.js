@@ -1,9 +1,8 @@
 import React, { useRef, useContext, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "@mui/material";
+import { Alert, Box, Typography } from "@mui/material";
 import Grid from "./Grid";
 import AddAttribute from "./AddAttribute";
-import NavigationCard from "../constants/NavigationCard";
 import { Context } from "../App";
 import {
   removeSpacesFromString,
@@ -13,6 +12,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { hasDisallowedChars } from "../constants/utils";
 import { FIELD_RANGE_OVERLAY } from "../constants/constants";
+import ErrorPopup from "../ViewSchema/ErrorPopup";
 
 export default function AttributeDetails({
   pageBack,
@@ -233,13 +233,16 @@ export default function AttributeDetails({
     >
       {loading && attributeRowData?.length > 40 && <Loading />}
       {showCard && (
-        <NavigationCard
-          fieldArray={["Type"]}
-          setShowCard={setShowCard}
-          handleForward={
-            entryCodesRef.current ? () => setCurrentPage("Codes") : () => pageForward()
-          }
-        />
+        <ErrorPopup onClose={() => setShowCard(false)}>
+          <Box>
+            <Typography variant="h5" sx={{ mb: 1 }}>
+              {t("There are one or more blank entries in the Type column.")}
+            </Typography>
+            <Typography variant="h6" fontWeight="semibold">
+              {t("Please provide valid data types for all attributes.")}
+            </Typography>
+          </Box>
+        </ErrorPopup>
       )}
       {errorMessage.length > 0 && (
         <Alert
