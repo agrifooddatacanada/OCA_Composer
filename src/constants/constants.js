@@ -180,6 +180,19 @@ export const codeToGroup = {
   RDF605: "Other humanities"
 };
 
+export const dataTypes = [
+  "Binary",
+  "Boolean",
+  "DateTime",
+  "Numeric",
+  "Text",
+  "Array[Binary]",
+  "Array[Boolean]",
+  "Array[DateTime]",
+  "Array[Numeric]",
+  "Array[Text]"
+];
+
 export const descriptionToFormatCodeText = {
   "": "",
   "Entries of any length with only capital letters": "^[A-Z]*$",

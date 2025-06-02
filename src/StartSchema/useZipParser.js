@@ -6,6 +6,7 @@ import {
   codeToDivision,
   codeToGroup,
   CUSTOM_FORMAT_RULE,
+  dataTypes,
   FIELD_RANGE_OVERLAY,
   RANGE,
   SENSITIVE
@@ -233,7 +234,7 @@ const useZipParser = () => {
         Attribute: item,
         Flagged: sensitiveAttributes.includes(item),
         List: attributesWithListType.includes(item),
-        Type: attributeType,
+        Type: dataTypes.includes(attributeType) ? attributeType : "",
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
