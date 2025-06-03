@@ -1,11 +1,9 @@
 import { Autocomplete, styled, TextField } from "@mui/material";
-import { useState } from "react";
+import React, { useState } from "react";
 import { dataStandardOptions } from "../../constants/constants";
 
-
-
 const DataStandardAutocompleteEditor = ({ value, api, node, column }) => {
-  const [inputValue, setInputValue] = useState(value || '');
+  const [inputValue, setInputValue] = useState(value || "");
 
   const handleValueChange = (_event, newValue) => {
     setInputValue(newValue);
@@ -27,17 +25,13 @@ const DataStandardAutocompleteEditor = ({ value, api, node, column }) => {
       onInputChange={handleValueChange}
       ListboxProps={{
         sx: {
-          '& .MuiAutocomplete-option': {
-            fontSize: 'small'
+          "& .MuiAutocomplete-option": {
+            fontSize: "small"
           }
         }
       }}
       renderInput={(params) => (
-        <TextField
-          {...params}
-          onBlur={handleBlur}
-          label="Select Option"
-        />
+        <TextField {...params} onBlur={handleBlur} label="Select Option" />
       )}
     />
   );
@@ -45,11 +39,11 @@ const DataStandardAutocompleteEditor = ({ value, api, node, column }) => {
 
 export default DataStandardAutocompleteEditor;
 
-const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
-  '& .MuiInputBase-input, & .MuiFormLabel-root': {
-    fontSize: 'small',
+const StyledAutocomplete = styled(Autocomplete)(() => ({
+  "& .MuiInputBase-input, & .MuiFormLabel-root": {
+    fontSize: "small"
   },
-  '& .MuiOutlinedInput-root fieldset': {
-    border: 'none'
+  "& .MuiOutlinedInput-root fieldset": {
+    border: "none"
   }
 }));

@@ -6,11 +6,15 @@ import { Context } from "../App";
 import { greyCellStyle } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import { getListOfSelectedOverlays } from "../constants/getListOfSelectedOverlays";
+import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import CellHeader from "../components/CellHeader";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
-import { MAX_ATTR_DESCRIPTION_CHARS, MAX_ATTR_LABEL_CHARS } from "../constants/constants";
+import {
+  FIELD_RANGE_OVERLAY,
+  MAX_ATTR_DESCRIPTION_CHARS,
+  MAX_ATTR_LABEL_CHARS
+} from "../constants/constants";
 import SelectedFeatureHeader from "./SelectedFeatureHeader";
 
 const gridStyles = `
@@ -201,24 +205,72 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
 
       const { selectedFeatures } = getListOfSelectedOverlays(overlay);
       selectedFeatures.forEach((feature) => {
-        predefinedColumns.push({
-          field: feature,
-          width: 160,
-          autoHeight: true,
-          headerComponent: SelectedFeatureHeader,
-          headerComponentParams: {
-            feature
-          },
-          cellRenderer:
-            feature === "Make selected entries required" ? CheckboxRenderer : null
-        });
+        if (feature === FIELD_RANGE_OVERLAY) {
+          predefinedColumns.push({
+            field: "LowerBound",
+            width: 130,
+            autoHeight: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Lower Bound"),
+              helpText: t("The lower bound of the range")
+            }
+          });
+
+          predefinedColumns.push({
+            field: "LowerInclusive",
+            width: 120,
+            autoHeight: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Inclusive"),
+              helpText: t("Whether or not the lower bound is included in the range")
+            },
+            cellRenderer: CheckboxRenderer
+          });
+
+          predefinedColumns.push({
+            field: "UpperBound",
+            width: 130,
+            autoHeight: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Upper Bound"),
+              helpText: t("The upper bound of the range")
+            }
+          });
+
+          predefinedColumns.push({
+            field: "UpperInclusive",
+            width: 120,
+            autoHeight: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Inclusive"),
+              helpText: t("Whether or not the upper bound is included in the range")
+            },
+            cellRenderer: CheckboxRenderer
+          });
+        } else {
+          predefinedColumns.push({
+            field: feature,
+            width: 160,
+            autoHeight: true,
+            headerComponent: SelectedFeatureHeader,
+            headerComponentParams: {
+              feature
+            },
+            cellRenderer:
+              feature === "Make selected entries required" ? CheckboxRenderer : null
+          });
+        }
       });
 
       return predefinedColumns;
     };
 
     setColumnDefs(getColumns());
-  }, [overlay]);
+  }, [overlay, t]);
 
   useEffect(() => {
     const newRowData = JSON.parse(JSON.stringify(displayArray));

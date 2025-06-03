@@ -1,15 +1,13 @@
 import React, { useState, useContext } from "react";
-import { TextField } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
 
-import { Box } from "@mui/system";
-import { Button } from "@mui/material";
+import { Box, Button, TextField } from "@mui/material";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AddIcon from "@mui/icons-material/Add";
+import { useTranslation } from "react-i18next";
 import { Context } from "../App";
 import { removeSpacesFromString } from "../constants/removeSpaces";
-import { useTranslation } from "react-i18next";
+import { CustomPalette } from "../constants/customPalette";
 
 export default function AddAttribute({
   addButton1,
@@ -21,7 +19,7 @@ export default function AddAttribute({
   setShowAddAttribute,
   addByTab,
   setAddByTab,
-  typesObjectRef,
+  typesObjectRef
 }) {
   const { t } = useTranslation();
   const { setAttributesList, setAttributeRowData } = useContext(Context);
@@ -34,18 +32,14 @@ export default function AddAttribute({
 
   const handleAddRow = () => {
     gridRef.current.api.stopEditing();
-    const newAttributeRowData = JSON.parse(
-      JSON.stringify(gridRef.current.props.rowData)
-    );
+    const newAttributeRowData = JSON.parse(JSON.stringify(gridRef.current.props.rowData));
 
     newAttributeRowData.forEach((item) => {
       item.Type = typesObjectRef.current[item.Attribute] || "";
     });
     let attributeToAdd = removeSpacesFromString(newAttribute);
-    const newAttributesList = [];
-
-    //Data won't be handled properly if there are blank or duplicate attributes in the grid
-    //Errors stop user from proceeding if there are entries that will cause issues
+    const newAttributesList = []; // Data won't be handled properly if there are blank or duplicate attributes in the grid
+    // Errors stop user from proceeding if there are entries that will cause issues
 
     let blanks = false;
     gridRef.current.props.rowData.forEach((row) => {
@@ -57,7 +51,7 @@ export default function AddAttribute({
         newAttributesList.push(attributeValue);
       }
     });
-    let attributeListCopy = [...newAttributesList];
+    const attributeListCopy = [...newAttributesList];
 
     const duplicates = [];
     const attributesChecked = [];
@@ -66,10 +60,8 @@ export default function AddAttribute({
         duplicates.push(item);
       }
       attributesChecked.push(item);
-    });
-
-    //When added by tab, the new attribute can be "" - this is the only case where a blank Attribute doesn't raise an error
-    //Attribute names can be blank until a function happens that reloads the grid (adding/deleting/navigating)
+    }); // When added by tab, the new attribute can be "" - this is the only case where a blank Attribute doesn't raise an error
+    // Attribute names can be blank until a function happens that reloads the grid (adding/deleting/navigating)
 
     if (addByTab) {
       attributeToAdd = "";
@@ -82,9 +74,7 @@ export default function AddAttribute({
       }
     }
     const isNew =
-      (!attributeListCopy.includes(attributeToAdd) &&
-        attributeToAdd &&
-        !blanks) ||
+      (!attributeListCopy.includes(attributeToAdd) && attributeToAdd && !blanks) ||
       (addByTab && !blanks);
     if (isNew) {
       if (duplicates.length > 0) {
@@ -103,25 +93,23 @@ export default function AddAttribute({
           Flagged: false,
           List: false,
           Type: "",
-          Unit: "",
-        },
+          Unit: ""
+        }
       ]);
       setCanDelete(true);
       setNewAttribute("");
+    } else if (blanks) {
+      setErrorMessage(
+        t("Attribute names cannot be blank. Please fill out all names before continuing")
+      );
+      setTimeout(() => {
+        setErrorMessage("");
+      }, [2000]);
     } else {
-      if (blanks) {
-        setErrorMessage(
-          t("Attribute names cannot be blank. Please fill out all names before continuing")
-        );
-        setTimeout(() => {
-          setErrorMessage("");
-        }, [2000]);
-      } else {
-        setErrorMessage(t("Please enter a unique attribute name"));
-        setTimeout(() => {
-          setErrorMessage("");
-        }, [2000]);
-      }
+      setErrorMessage(t("Please enter a unique attribute name"));
+      setTimeout(() => {
+        setErrorMessage("");
+      }, [2000]);
     }
     setAddByTab(false);
   };
@@ -141,7 +129,7 @@ export default function AddAttribute({
             top: -20,
             display: "flex",
             left: "10%",
-            width: "100%",
+            width: "100%"
           }}
         >
           <TextField
@@ -155,17 +143,17 @@ export default function AddAttribute({
               style: {
                 color: CustomPalette.PRIMARY,
                 fontWeight: "bold",
-                paddingLeft: "0.8rem",
-              },
+                paddingLeft: "0.8rem"
+              }
             }}
             sx={{
               width: "9rem",
               "& .MuiInput-underline:before": {
-                borderBottomColor: CustomPalette.GREY_300,
+                borderBottomColor: CustomPalette.GREY_300
               },
               "& .MuiInput-underline:after": {
-                borderBottomColor: CustomPalette.PRIMARY,
-              },
+                borderBottomColor: CustomPalette.PRIMARY
+              }
             }}
           />
           <Button onClick={handleAddRow} ref={addButton2}>
@@ -174,8 +162,8 @@ export default function AddAttribute({
                 color: CustomPalette.SECONDARY,
                 "&:hover": {
                   color: CustomPalette.PRIMARY,
-                  transform: "scale(1.1)",
-                },
+                  transform: "scale(1.1)"
+                }
               }}
             />
           </Button>
@@ -188,12 +176,12 @@ export default function AddAttribute({
           display: "flex",
           justifyContent: "space-between",
           alignSelf: "flex-end",
-          m: 2,
+          m: 2
         }}
         onClick={handleToggle}
         ref={addButton1}
       >
-        {t('Add Attribute')} &nbsp;
+        {t("Add Attribute")} &nbsp;
         {showAddAttribute === true ? <RemoveCircleIcon /> : <AddCircleIcon />}
       </Button>
     </Box>

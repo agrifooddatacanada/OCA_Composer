@@ -167,10 +167,22 @@ export default function Header({ currentPage }) {
           `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/DataVerification/`
         );
         break;
+      case "UnitFraming":
+        setHeader(t("Define units for schema attributes"));
+        setToolTipText("");
+        setHelpLink(
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/UnitFraming/`
+        );
+        break;
       case "UserSelection":
         setHelpLink(
           `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/Coauthor/`
         );
+        break;
+      case "Range":
+        setHeader(t("Add Range Rules for Data"));
+        setToolTipText("");
+        setHelpLink("");
         break;
       default:
         setHeader("");
