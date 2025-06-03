@@ -1,18 +1,18 @@
-import { useCallback, useContext, useState } from "react";
-import { Context } from "../App";
+import { React, useCallback, useContext, useState } from "react";
 import { MenuItem } from "@mui/material";
+import { Context } from "../App";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { displayValues } from "../constants/constants";
 
-export const CharacterEncodingTypeRenderer = (props) => {
-  const [type, setType] = useState(props?.value);
+export const CharacterEncodingTypeRenderer = ({ value, node }) => {
+  const [type, setType] = useState(value);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleChange = (e) => {
     setType(e.target.value);
-    props.node.updateData({
-      ...props.node.data,
-      "Character Encoding": e.target.value,
+    node.updateData({
+      ...node.data,
+      "Character Encoding": e.target.value
     });
     setIsDropdownOpen(false);
   };
@@ -29,9 +29,9 @@ export const CharacterEncodingTypeRenderer = (props) => {
     }
   };
 
-  const typesDisplay = displayValues.map((value, index) => (
+  const typesDisplay = displayValues.map((value) => (
     <MenuItem
-      key={index + "_" + value}
+      key={value}
       value={value}
       sx={{ border: "none", height: "2rem", fontSize: "small" }}
     >
@@ -57,7 +57,9 @@ const useCharacterEncodingType = (gridRef) => {
 
   const handleSave = useCallback(() => {
     gridRef.current.api.stopEditing();
-    const attributeWithCharacterEncoding = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+    const attributeWithCharacterEncoding = gridRef.current.api
+      .getRenderedNodes()
+      ?.map((node) => node?.data);
     setCharacterEncodingRowData(attributeWithCharacterEncoding);
   }, [gridRef, setCharacterEncodingRowData]);
 
@@ -68,7 +70,7 @@ const useCharacterEncodingType = (gridRef) => {
     characterEncodingRowData.forEach((item) => {
       newCharacterEncodingRowData.push({
         ...item,
-        "Character Encoding": firstAttribute || '',
+        "Character Encoding": firstAttribute || ""
       });
     });
 

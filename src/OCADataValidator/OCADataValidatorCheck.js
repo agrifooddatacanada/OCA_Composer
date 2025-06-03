@@ -24,6 +24,7 @@ import CellHeader from "../components/CellHeader";
 import ExportButton from "./ExportButton";
 import UploadButton from "./UploadButton";
 import {
+  CUSTOM_FORMAT_RULE,
   errorCode,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
@@ -94,6 +95,7 @@ const flaggedHeader = (
   const formatRule = formatRuleRowData.find(
     (item) => item?.Attribute === props?.displayName
   );
+  const formatRegex = formatRule?.[CUSTOM_FORMAT_RULE] || formatRule?.FormatText || "";
   const attributeType = formatRule?.Type;
   let selectedOption = [];
   if (attributeType?.includes("Date")) {
@@ -155,38 +157,36 @@ const flaggedHeader = (
                     <Typography>{formatRule?.Type}</Typography>
                   </>
                 )}
-                {"FormatText" in formatRule &&
-                  formatRule?.FormatText &&
-                  formatRule?.FormatText !== "" && (
-                    <>
-                      <br />
-                      <Typography sx={{ fontWeight: "bold" }}>Format:</Typography>
-                      <Typography>
-                        <span
-                          style={{
-                            fontWeight: "500"
-                          }}
-                        >
-                          - RegEx:{" "}
-                        </span>{" "}
-                        {formatRule?.FormatText || ""}
-                      </Typography>
-                      <Typography>
-                        {formatRule?.FormatText in selectedOption && (
-                          <>
-                            <span
-                              style={{
-                                fontWeight: "500"
-                              }}
-                            >
-                              - Description:{" "}
-                            </span>
-                            {selectedOption[formatRule?.FormatText]}
-                          </>
-                        )}
-                      </Typography>
-                    </>
-                  )}
+                {formatRegex && (
+                  <>
+                    <br />
+                    <Typography sx={{ fontWeight: "bold" }}>Format:</Typography>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - RegEx:{" "}
+                      </span>{" "}
+                      {formatRegex}
+                    </Typography>
+                    <Typography>
+                      {formatRegex in selectedOption && (
+                        <>
+                          <span
+                            style={{
+                              fontWeight: "500"
+                            }}
+                          >
+                            - Description:{" "}
+                          </span>
+                          {selectedOption[formatRegex]}
+                        </>
+                      )}
+                    </Typography>
+                  </>
+                )}
               </>
             )}
             {characterEncoding && (
@@ -366,50 +366,6 @@ const OCADataValidatorCheck = ({
     ]
   );
 
-  const uploadData = async () => {
-    try {
-      const csvString = await generateCSVFile(false)
-
-      window.parent.postMessage({
-        type: 'CSV_STRING',
-        data: csvString
-      }, '*');
-
-    } catch (error){
-      console.error('Error sending data to parent: ', error);
-    }
-  }
-
-  const allCellsPassValidation = async () => {
-     
-    const currData = await new Promise(resolve => setTimeout(resolve, 0)).then(() => getCurrentData(gridRef.current.api, true)); // wait for the grid to render
-
-    if (currData.length === 0) { // edge case for no dataset file uploaded
-      return false;
-    }
-    return currData.every(row => {
-      if (!row.error) return true;
-      return Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0);
-    });
-  };
-
-
-  const updateDataValidationState = async () => {
-    const isValid = await allCellsPassValidation();
-    setIsDataValid(isValid);
-  }
-
-  // Check if the page is rendered inside an iframe
-  const isInIframe = () => {
-    try {
-      return window.self !== window.parent;
-    } catch (e) {
-      return true; // If there's an error, assume it's in an iframe
-    }
-  };
-
-  const inIframe = isInIframe();
-
   const generateCSVFile = async (ogHeader) => {
     const newData = [];
     gridRef.current.api.forEachNode((node) => {
@@ -444,6 +400,55 @@ const OCADataValidatorCheck = ({
     const headerToString = `${newHeader.join(",")}\n`;
     return headerToString + convertToCSV(newData, newHeader);
   };
+
+  const uploadData = async () => {
+    try {
+      const csvString = await generateCSVFile(false);
+
+      window.parent.postMessage(
+        {
+          type: "CSV_STRING",
+          data: csvString
+        },
+        "*"
+      );
+    } catch (error) {
+      console.error("Error sending data to parent: ", error);
+    }
+  };
+
+  const allCellsPassValidation = async () => {
+    const currData = await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    }).then(() => getCurrentData(gridRef.current.api, true)); // wait for the grid to render
+
+    if (currData.length === 0) {
+      // edge case for no dataset file uploaded
+      return false;
+    }
+    return currData.every((row) => {
+      if (!row.error) return true;
+      return Object.values(row.error).every(
+        (cellErrors) => !cellErrors || cellErrors.length === 0
+      );
+    });
+  };
+
+  const updateDataValidationState = async () => {
+    const isValid = await allCellsPassValidation();
+    setIsDataValid(isValid);
+  };
+
+  // Check if the page is rendered inside an iframe
+  const isInIframe = () => {
+    try {
+      return window.self !== window.parent;
+    } catch (e) {
+      return true; // If there's an error, assume it's in an iframe
+    }
+  };
+
+  const inIframe = isInIframe();
 
   const downloadCSVFile = (csvData, fileName) => {
     const blob = new Blob([csvData], { type: "text/csv" });
@@ -925,7 +930,7 @@ const OCADataValidatorCheck = ({
         })
       : rowData;
   function filterRowData() {
-    updateDataValidationState()
+    updateDataValidationState();
     if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
       const selectedErrors = errorName.filter(
         (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
@@ -937,8 +942,15 @@ const OCADataValidatorCheck = ({
           .map((err) => err?.type);
         return selectedErrors.some((error) => errorTypes.includes(errorCode?.[error]));
       });
-    } else if (errorName.includes(SHOW_NO_ERRORS)) {
-      return initialRowData.filter((row) => !row?.error || Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0));
+    }
+    if (errorName.includes(SHOW_NO_ERRORS)) {
+      return initialRowData.filter(
+        (row) =>
+          !row?.error ||
+          Object.values(row.error).every(
+            (cellErrors) => !cellErrors || cellErrors.length === 0
+          )
+      );
     }
     return initialRowData;
   }
@@ -1011,7 +1023,9 @@ const OCADataValidatorCheck = ({
                 validatedData={rowDataFilter}
                 currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
               />
-              {inIframe && <UploadButton isDisabled={!isDataValid} uploadFunc={uploadData}/>}
+              {inIframe && (
+                <UploadButton isDisabled={!isDataValid} uploadFunc={uploadData} />
+              )}
             </Box>
           </Box>
         </Box>

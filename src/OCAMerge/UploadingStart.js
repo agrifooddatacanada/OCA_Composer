@@ -1,5 +1,5 @@
 import { Alert, Box, Button, Typography } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import useHandleOCAFileUpload from "./useHandleOCAFileUpload";
@@ -9,9 +9,11 @@ import {
   jsonUploadTooltip,
   textUploadDescription
 } from "../constants/constants";
+import MergeDifferenceModal from "./MergeDifferenceModal";
 
 const UploadingStart = () => {
   const { t } = useTranslation();
+  const [showDifference, setShowDifference] = useState(false);
 
   const {
     setCurrentOCAMergePage,
@@ -37,6 +39,49 @@ const UploadingStart = () => {
 
   const filePath1 = OCAFile1Raw?.[0]?.path;
   const filePath2 = OCAFile2Raw?.[0]?.path;
+
+  function createCaptureBaseDifferenceData() {
+    const captureBase1 = parsedOCAFile1.capture_base;
+    const captureBase2 = parsedOCAFile2.capture_base;
+
+    let captureBase1AttrTypeStr = "";
+    let captureBase2AttrTypeStr = "";
+
+    Object.keys(captureBase1.attributes).forEach((attr, i, arr) => {
+      captureBase1AttrTypeStr += `${attr} - ${captureBase1.attributes[attr]}`;
+      if (i < arr.length - 1) {
+        captureBase1AttrTypeStr += ", ";
+      }
+    });
+
+    Object.keys(captureBase2.attributes).forEach((attr, i, arr) => {
+      captureBase2AttrTypeStr += `${attr} - ${captureBase2.attributes[attr]}`;
+      if (i < arr.length - 1) {
+        captureBase2AttrTypeStr += ", ";
+      }
+    });
+
+    return {
+      title: "capture base",
+      rowData: [
+        {
+          comparisonValue: "attributes",
+          ocaFile1: captureBase1AttrTypeStr,
+          ocaFile2: captureBase2AttrTypeStr
+        },
+        {
+          comparisonValue: "classification",
+          ocaFile1: captureBase1.classification,
+          ocaFile2: captureBase2.classification
+        },
+        {
+          comparisonValue: "sensitive",
+          ocaFile1: captureBase1.flagged_attributes?.join(", "),
+          ocaFile2: captureBase2.flagged_attributes?.join(", ")
+        }
+      ]
+    };
+  }
 
   const hasIncompatibleCaptureBase =
     parsedOCAFile1 !== "" &&
@@ -102,11 +147,20 @@ const UploadingStart = () => {
         </Box>
         <Box sx={{ mt: "3rem" }}>
           {hasIncompatibleCaptureBase && (
-            <Alert severity="error" sx={{ mb: "3rem" }}>
-              {t(
-                "Capture base (attribute names and their datatypes) of the two schemas must be the same"
-              )}
-            </Alert>
+            <Box sx={{ mb: "3rem" }}>
+              <Alert severity="error" sx={{ mb: "0.5rem", maxWidth: "75ch" }}>
+                {t(
+                  "Capture base (attribute names and their datatypes, classification, and sensitive attributes) of the two schemas must be the same"
+                )}
+              </Alert>
+              <Button
+                variant="text"
+                color="button"
+                onClick={() => setShowDifference(true)}
+              >
+                {t("Show Difference")}
+              </Button>
+            </Box>
           )}
         </Box>
         <Box>
@@ -145,6 +199,15 @@ const UploadingStart = () => {
         </Box>
 
         <Box sx={{ height: "3rem" }} />
+
+        {showDifference && (
+          <MergeDifferenceModal
+            file1Name={filePath1.substring(0, filePath1.lastIndexOf("."))}
+            file2Name={filePath2.substring(0, filePath2.lastIndexOf("."))}
+            setShowCard={setShowDifference}
+            dataDifference={createCaptureBaseDifferenceData()}
+          />
+        )}
       </Box>
     </Box>
   );
