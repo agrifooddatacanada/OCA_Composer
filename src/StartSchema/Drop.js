@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { useTranslation } from "react-i18next";
 import DropCard from "./DropCard";
 import { messages } from "../constants/messages";
 import { CustomPalette } from "../constants/customPalette";
 import LandingDropZone from "../Landing/LandingDropZone";
+import { MAX_FILE_SIZE } from "../constants/constants";
+import { toMegabytes } from "../constants/utils";
 
 export default function Drop({
   setFile,
@@ -18,6 +21,7 @@ export default function Drop({
   interfaceType = 0,
   noteDescription
 }) {
+  const { t } = useTranslation();
   const acceptFormat = useMemo(() => {
     if (version === 0) {
       return {
@@ -65,10 +69,15 @@ export default function Drop({
 
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: acceptFormat,
-    maxSize: 10485760,
+    maxSize: MAX_FILE_SIZE,
     onDropRejected: (file) => {
       if (file[0].errors[0].code === "file-too-large") {
-        setDropMessage({ message: messages.fileTooLarge, type: "error" });
+        setDropMessage({
+          message: t("FileSizeError", {
+            maxFileSize: toMegabytes(MAX_FILE_SIZE)
+          }),
+          type: "error"
+        });
       } else if (file[0].errors[0].code === "file-invalid-type") {
         setDropMessage({
           message: messages.wrongTypeUploadFail,
@@ -79,7 +88,7 @@ export default function Drop({
       }
       setTimeout(() => {
         setDropMessage({ message: "", type: "" });
-      }, [2500]);
+      }, [3500]);
     },
     onDropAccepted: () => {
       setDropMessage({ message: messages.fileAccepted, type: "success" });

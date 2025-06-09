@@ -657,3 +657,5 @@ export const shouldDisableRangeOverlay = (
       !hasValidAttribute)
   );
 };
+
+export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();
