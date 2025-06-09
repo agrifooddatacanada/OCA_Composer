@@ -336,5 +336,6 @@
   "Please re-verify the data!": "Please re-verify the data!",
   "There are one or more blank entries in the Type column.": "There are one or more blank entries in the Type column.",
   "Please provide valid data types for all attributes.": "Please provide valid data types for all attributes.",
-  "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.": "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available."
+  "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.": "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.",
+  "FileSizeError": "File is too large. Please upload a file smaller than {{maxFileSize}} MB."
 }
