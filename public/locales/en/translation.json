@@ -326,5 +326,16 @@
   "Download Data": "Download Data",
   "Show Difference": "Show Difference",
   "Enter a custom regular expression for the attribute's data": "Enter a custom regular expression for the attribute's data",
-  "SchemaExportError": "Something went wrong. Please email <0>adc@uoguelph.ca</0> and include the OCA File."
+  "SchemaExportError": "Something went wrong. Please email <0>adc@uoguelph.ca</0> and include the OCA File.",
+  "Add range rule for data": "Add range rule for data",
+  "Add Range Rules for Data": "Add Range Rules for Data",
+  "Lower Bound": "Lower Bound",
+  "Upper Bound": "Upper Bound",
+  "Inclusive": "Inclusive",
+  "Range bounds must match the format rules.": "Range bounds must match the format rules.",
+  "Please re-verify the data!": "Please re-verify the data!",
+  "There are one or more blank entries in the Type column.": "There are one or more blank entries in the Type column.",
+  "Please provide valid data types for all attributes.": "Please provide valid data types for all attributes.",
+  "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.": "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.",
+  "FileSizeError": "File is too large. Please upload a file smaller than {{maxFileSize}} MB."
 }

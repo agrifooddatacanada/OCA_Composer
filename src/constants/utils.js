@@ -3,13 +3,16 @@ import Fuse from "fuse.js";
 import { codesToLanguages, alpha3CodesToTwoLetterCodes } from "./isoCodes";
 import {
   ADC,
+  CUSTOM_FORMAT_RULE,
   DEFAULT_LANGUAGE,
   DISALLOWED_CHARACTERS,
+  FIELD_FORMAT_OVERLAY,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
   formatCodeTextDescription,
-  OCA_REPOSITORY_API_URL
+  OCA_REPOSITORY_API_URL,
+  RANGE
 } from "./constants";
 import ucumUnits from "./ucumUnits";
 
@@ -281,6 +284,15 @@ export const hasAttributeOrdering = (OCAPackage) => {
   );
 };
 
+export const hasRangeOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[RANGE]
+  );
+};
+
 // get extension overlays
 export const getExtensionOverlays = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
@@ -384,6 +396,27 @@ export const updateUnitFramingRowDataForOverlayGeneration = (
         }
       : attributeRow;
   });
+
+export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {
+  const rangeOverlayInput = {};
+  rangeRowData.forEach((row) => {
+    if (row.LowerBound === "" && row.UpperBound === "") return;
+
+    const attributeFormatData = formatRuleRowData.find(
+      (item) => item.Attribute === row.Attribute
+    );
+    if (!attributeFormatData?.FormatText && !attributeFormatData?.[CUSTOM_FORMAT_RULE])
+      return;
+
+    rangeOverlayInput[row.Attribute] = {
+      lower: row.LowerBound,
+      lower_inclusive: row.LowerInclusive,
+      upper: row.UpperBound,
+      upper_inclusive: row.UpperInclusive
+    };
+  });
+  return rangeOverlayInput;
+};
 
 /*
 "attribute_entries": {
@@ -607,3 +640,22 @@ export const getFormatRuleDescription = (attributeType, formatRule) =>
         : attributeType.includes("Text")
           ? formatCodeTextDescription[formatRule]
           : "";
+
+export const shouldDisableRangeOverlay = (
+  overlayText,
+  selectedFeatures,
+  attributes,
+  rangeRowData
+) => {
+  const hasValidAttribute = attributes.some(
+    (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
+  );
+  return (
+    overlayText === "Add range rule for data" &&
+    (rangeRowData.length === 0 ||
+      !selectedFeatures.includes(FIELD_FORMAT_OVERLAY) ||
+      !hasValidAttribute)
+  );
+};
+
+export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();

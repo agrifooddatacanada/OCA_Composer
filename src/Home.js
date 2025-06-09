@@ -1,6 +1,6 @@
+import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { Box } from "@mui/material";
-import React, { useEffect, useMemo, useState } from "react";
 import StartSchema from "./StartSchema/StartSchema";
 import SchemaMetadata from "./SchemaMetadata/SchemaMetadata";
 import AttributeDetails from "./AttributeDetails/AttributeDetails";
@@ -22,6 +22,7 @@ import MatchingEntryCodeHeader from "./EntryCodes/MatchingEntryCodeHeader";
 import MatchingJSONEntryCodeHeader from "./EntryCodes/MatchingJSONEntryCodeHeader";
 import StepperProgressIndicator from "./StepperProgressIndicator/StepperProgressIndicator";
 import DataStandards from "./Overlays/DataStandards";
+import Range from "./Overlays/Range";
 
 const Home = ({
   currentPage,
@@ -63,7 +64,7 @@ const Home = ({
     setSteps((currentSteps) => currentSteps.filter((step) => step.label !== stepLabel));
   };
 
-  // Add new page to this page -> add to this list
+  // Add new page to this list
   const allowedPages = useMemo(
     () => [
       ...pagesArray,
@@ -78,7 +79,8 @@ const Home = ({
       "UploadEntryCodes",
       "MatchingEntryCodes",
       "MatchingJSONEntryCodes",
-      "DataStandards"
+      "DataStandards",
+      "Range"
     ],
     []
   );
@@ -141,6 +143,7 @@ const Home = ({
         {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
         {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
         {currentPage === "DataStandards" && <DataStandards />}
+        {currentPage === "Range" && <Range />}
       </Box>
       <Footer currentPage={currentPage} />
     </>

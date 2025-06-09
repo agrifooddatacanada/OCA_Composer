@@ -180,6 +180,19 @@ export const codeToGroup = {
   RDF605: "Other humanities"
 };
 
+export const dataTypes = [
+  "Binary",
+  "Boolean",
+  "DateTime",
+  "Numeric",
+  "Text",
+  "Array[Binary]",
+  "Array[Boolean]",
+  "Array[DateTime]",
+  "Array[Numeric]",
+  "Array[Text]"
+];
+
 export const descriptionToFormatCodeText = {
   "": "",
   "Entries of any length with only capital letters": "^[A-Z]*$",
@@ -395,6 +408,9 @@ export const UNIT_FRAME_VERSION = "";
 // Sensitive overlay (flagged attributes)
 export const SENSITIVE = "sensitive";
 
+// Range overlay
+export const RANGE = "range";
+
 export const overlays = [
   CHARACTER_ENCODING,
   FORMAT,
@@ -440,6 +456,7 @@ export const ALLOWED_BOOLEAN_VALUES = [
   "oui"
 ];
 
+export const MAX_FILE_SIZE = 10485760;
 export const DISALLOWED_CHARACTERS = [",", " ", "\\", "/", "(", ")", "'"];
 export const ADC = "adc";
 export const CUSTOM_FORMAT_RULE = "CustomFormatRule";
@@ -451,3 +468,4 @@ export const FIELD_CONFORMANCE_OVERLAY = "Make selected entries required";
 export const FIELD_CARDINALITY_OVERLAY = "Cardinality";
 export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
 export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
+export const FIELD_RANGE_OVERLAY = "Add range rule for data";

@@ -324,5 +324,16 @@
   "Download Data": "Télécharger les données",
   "Show Difference": "Afficher la différence",
   "Enter a custom regular expression for the attribute's data": "Saisissez une expression régulière personnalisée pour les données de l'attribut",
-  "SchemaExportError": "Une erreur s'est produite. Veuillez envoyer un e-mail à <0>adc@uoguelph.ca</0> en incluant le fichier OCA."
+  "SchemaExportError": "Une erreur s'est produite. Veuillez envoyer un e-mail à <0>adc@uoguelph.ca</0> en incluant le fichier OCA.",
+  "Add range rule for data": "Ajouter une règle de plage pour les données",
+  "Add Range Rules for Data": "Ajouter des règles de plage pour les données",
+  "Lower Bound": "Limite inférieure",
+  "Upper Bound": "Limite supérieure",
+  "Inclusive": "Inclusif",
+  "Range bounds must match the format rules.": "Les limites de plage doivent correspondre aux règles de format.",
+  "Please re-verify the data!": "Veuillez revérifier les données !",
+  "There are one or more blank entries in the Type column.": "Il y a une ou plusieurs entrées vides dans la colonne Type.",
+  "Please provide valid data types for all attributes.": "Veuillez fournir des types de données valides pour tous les attributs.",
+  "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.": "Tous les outils ne sont pas disponibles pour les schémas non valides. Les schémas doivent d'abord être convertis par édition avant que d'autres outils ne soient disponibles.",
+  "FileSizeError": "Le fichier est trop volumineux. Veuillez télécharger un fichier de moins de {{maxFileSize}} Mo."
 }

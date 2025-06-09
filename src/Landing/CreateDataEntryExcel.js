@@ -5,7 +5,7 @@ import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
 } from "../constants/utils";
-import { ADC, SENSITIVE } from "../constants/constants";
+import { ADC, RANGE, SENSITIVE } from "../constants/constants";
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -118,6 +118,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let attribute_ordering_container = null;
   let entry_code_ordering = null;
   let sensitiveOverlay = null;
+  let rangeOverlay = null;
 
   if (isOcaPackage) {
     const extensions = inPutJsonResult[2];
@@ -132,6 +133,10 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
         if (overlays[overlayKey].type.includes(SENSITIVE)) {
           sensitiveOverlay = overlays[overlayKey];
+        }
+
+        if (overlays[overlayKey].type.includes(RANGE)) {
+          rangeOverlay = overlays[overlayKey];
         }
       }
     }
@@ -852,6 +857,43 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       }
     }
   });
+
+  if (rangeOverlay?.attributes) {
+    const columns = ["Lower Bound", "Inclusive", "Upper Bound", "Inclusive"];
+    const startColumnIndex = jsonData.length + 3 - skipped;
+
+    try {
+      columns.forEach((column, i) => {
+        const columnIndex = startColumnIndex + i;
+        const columnHeaderCell = sheet1.getCell(shift + 1, columnIndex);
+
+        sheet1.getColumn(columnIndex).width = 15;
+        columnHeaderCell.value = column;
+        formatHeader(columnHeaderCell);
+
+        Object.keys(rangeOverlay.attributes).forEach((attribute) => {
+          const rowIndex = mappingAttrKeysandAttrValues[attribute];
+          if (!rowIndex) return;
+
+          const valueCell = sheet1.getCell(shift + rowIndex, columnIndex);
+
+          if (i === 0) {
+            valueCell.value = rangeOverlay.attributes[attribute].lower;
+          } else if (i === 1) {
+            valueCell.value = rangeOverlay.attributes[attribute].lower_inclusive;
+          } else if (i === 2) {
+            valueCell.value = rangeOverlay.attributes[attribute].upper;
+          } else if (i === 3) {
+            valueCell.value = rangeOverlay.attributes[attribute].upper_inclusive;
+          }
+        });
+      });
+    } catch (error) {
+      throw new WorkbookError(
+        ".. Error in formatting range columns (header and rows) ..."
+      );
+    }
+  }
 
   // Step 7: lookup table
   const lookUpTable = new Map();

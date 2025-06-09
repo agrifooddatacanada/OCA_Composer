@@ -11,7 +11,11 @@ import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { FormatRuleTypeRenderer, TrashCanButton } from "./FormatRuleCellRender";
 import Loading from "../components/Loading";
-import { CUSTOM_FORMAT_RULE } from "../constants/constants";
+import {
+  CUSTOM_FORMAT_RULE,
+  FIELD_FORMAT_OVERLAY,
+  FIELD_RANGE_OVERLAY
+} from "../constants/constants";
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -27,7 +31,9 @@ const FormatRulesV2 = () => {
     characterEncodingRowData,
     setCharacterEncodingRowData,
     setOverlay,
-    setFormatRuleRowData
+    setFormatRuleRowData,
+    rangeRowData,
+    setRangeRowData
   } = useContext(Context);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -36,8 +42,12 @@ const FormatRulesV2 = () => {
   const handleDeleteCurrentOverlay = () => {
     setOverlay((prev) => ({
       ...prev,
-      "Add format rule for data": {
-        ...prev["Add format rule for data"],
+      [FIELD_FORMAT_OVERLAY]: {
+        ...prev[FIELD_FORMAT_OVERLAY],
+        selected: false
+      },
+      [FIELD_RANGE_OVERLAY]: {
+        ...prev[FIELD_RANGE_OVERLAY],
         selected: false
       }
     }));
@@ -55,10 +65,54 @@ const FormatRulesV2 = () => {
 
   const handleSave = () => {
     gridRef.current.api.stopEditing();
-    const attributeWithCharacterEncoding = gridRef.current.api
+    const newFormatRuleRowData = gridRef.current.api
       .getRenderedNodes()
       ?.map((node) => node?.data);
-    setFormatRuleRowData(attributeWithCharacterEncoding);
+    setFormatRuleRowData(newFormatRuleRowData);
+
+    const newRangeRowData = [];
+
+    newFormatRuleRowData.forEach((row) => {
+      if (
+        (row.Type !== "Numeric" && row.Type !== "DateTime") ||
+        (!row.FormatText && !row[CUSTOM_FORMAT_RULE])
+      ) {
+        return;
+      }
+
+      const existingRangeRow = rangeRowData.find(
+        (rangeRow) => rangeRow.Attribute === row.Attribute
+      );
+
+      if (existingRangeRow) {
+        newRangeRowData.push({
+          ...existingRangeRow,
+          FormatRule: row.FormatText || row[CUSTOM_FORMAT_RULE]
+        });
+      } else {
+        newRangeRowData.push({
+          Attribute: row.Attribute,
+          Type: row.Type,
+          FormatRule: row.FormatText || row[CUSTOM_FORMAT_RULE],
+          LowerBound: "",
+          LowerInclusive: false,
+          UpperBound: "",
+          UpperInclusive: false
+        });
+      }
+    });
+
+    setRangeRowData(newRangeRowData);
+
+    if (newRangeRowData.length === 0) {
+      setOverlay((prev) => ({
+        ...prev,
+        [FIELD_RANGE_OVERLAY]: {
+          ...prev[FIELD_RANGE_OVERLAY],
+          selected: false
+        }
+      }));
+    }
   };
 
   const handleForward = () => {
