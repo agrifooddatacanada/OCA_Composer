@@ -18,6 +18,7 @@ class AttributeErr {
 class FormatErr extends BaseErr {}
 class EntryCodeErr extends BaseErr {}
 class CharacterEcodeErr extends BaseErr {}
+class RangeErr extends BaseErr {}
 
 export default class OCADataSetErr {
   constructor() {
@@ -25,6 +26,7 @@ export default class OCADataSetErr {
     this.formatErr = this.createErrInstance(FormatErr);
     this.entryCodeErr = this.createErrInstance(EntryCodeErr);
     this.characterEcodeErr = this.createErrInstance(CharacterEcodeErr);
+    this.rangeErr = this.createErrInstance(RangeErr);
 
     this.missingAttrs = new Set();
     this.unmachedAttrs = new Set();
@@ -76,6 +78,7 @@ export default class OCADataSetErr {
         }
       }
     }
+
     for (const i in this.entryCodeErr.errs) {
       if (Object.prototype.hasOwnProperty.call(this.entryCodeErr.errs, i)) {
         for (const j in this.entryCodeErr.errs[i]) {
@@ -101,6 +104,20 @@ export default class OCADataSetErr {
         }
       }
     }
+
+    for (const i in this.rangeErr.errs) {
+      if (Object.prototype.hasOwnProperty.call(this.rangeErr.errs, i)) {
+        for (const j in this.rangeErr.errs[i]) {
+          if (Object.prototype.hasOwnProperty.call(this.rangeErr.errs[i], j)) {
+            this.errRows.add(j);
+            if (Object.keys(this.rangeErr.errs).includes(i)) {
+              this.errCols.add(i);
+            }
+          }
+        }
+      }
+    }
+
     this.getAllErrs();
 
     return this;
@@ -118,6 +135,10 @@ export default class OCADataSetErr {
     return this.entryCodeErr.errs;
   }
 
+  getRangeErr() {
+    return this.rangeErr.errs;
+  }
+
   /**
    *
    * @param {*} attrName - The attribute name (column name).
@@ -132,6 +153,16 @@ export default class OCADataSetErr {
     if (Object.keys(this.getFormatErr()).includes(attrName)) {
       for (const row in this.getFormatErr()[attrName]) {
         if (Object.prototype.hasOwnProperty.call(this.getFormatErr()[attrName], row)) {
+          this.errRows.add(row);
+        }
+      }
+    } else {
+      return null;
+    }
+
+    if (Object.keys(this.getRangeErr()).includes(attrName)) {
+      for (const row in this.getRangeErr()[attrName]) {
+        if (Object.prototype.hasOwnProperty.call(this.getRangeErr()[attrName], row)) {
           this.errRows.add(row);
         }
       }
@@ -198,10 +229,12 @@ export default class OCADataSetErr {
         this.characterEcodeErr.errs,
         row
       );
+      const rangeError = this.rowErrorsForErrCollection(this.rangeErr.errs, row);
       const mergedErrors = this.mergeErrors(
         formatError,
         entryCodeError,
-        characterEncodingError
+        characterEncodingError,
+        rangeError
       );
       this.errCollection[row] = mergedErrors;
     }

@@ -659,3 +659,4 @@ export const shouldDisableRangeOverlay = (
 };
 
 export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();
+export const isValidNumber = (value) => !Number.isNaN(Number.parseFloat(value));
