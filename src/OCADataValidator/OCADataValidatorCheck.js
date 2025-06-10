@@ -23,12 +23,14 @@ import ErrorFilterSelect from "./ErrorFilterSelect";
 import CellHeader from "../components/CellHeader";
 import ExportButton from "./ExportButton";
 import {
+  ADC,
   CUSTOM_FORMAT_RULE,
   errorCode,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
   formatCodeTextDescription,
+  RANGE,
   SHOW_ALL_DATA,
   SHOW_ONLY_ROWS_WITH_ERRORS
 } from "../constants/constants";
@@ -86,7 +88,8 @@ const flaggedHeader = (
   formatRuleRowData,
   characterEncodingRowData,
   cardinalityData,
-  lang
+  lang,
+  OCAPackage = null
 ) => {
   const labelDescription = lanAttributeRowData[lang];
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
@@ -112,6 +115,12 @@ const flaggedHeader = (
   const cardinality = cardinalityData.find(
     (item) => item?.Attribute === props?.displayName
   );
+
+  // For now, use ADC community's extension overlays for the top-level/main schema bundle
+  const rangeOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.[RANGE];
+  const rangeData = rangeOverlay?.attributes?.[props?.displayName];
 
   return (
     <CellHeader
@@ -223,6 +232,60 @@ const flaggedHeader = (
                   <Typography>{cardinality?.EntryLimit}</Typography>
                 </>
               )}
+            {rangeData && (
+              <>
+                <br />
+                <Typography sx={{ fontWeight: "bold" }}>Range:</Typography>
+                {rangeData.lower !== "" && (
+                  <>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - Lower Bound:{" "}
+                      </span>{" "}
+                      {rangeData.lower}
+                    </Typography>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - Inclusive:{" "}
+                      </span>{" "}
+                      {rangeData.lower_inclusive ? "Yes" : "No"}
+                    </Typography>
+                  </>
+                )}
+                {rangeData.upper !== "" && (
+                  <>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - Upper Bound:{" "}
+                      </span>{" "}
+                      {rangeData.upper}
+                    </Typography>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - Inclusive:{" "}
+                      </span>{" "}
+                      {rangeData.upper_inclusive ? "Yes" : "No"}
+                    </Typography>
+                  </>
+                )}
+              </>
+            )}
           </Box>
         ) : (
           ""
@@ -256,7 +319,8 @@ const OCADataValidatorCheck = ({
     savedEntryCodes,
     targetResult,
     notToVerifyAttributes,
-    schemaDescription
+    schemaDescription,
+    OCAPackage
     // attributeRowData // Check to see sensitive data
   } = useContext(Context);
 
@@ -342,7 +406,8 @@ const OCADataValidatorCheck = ({
           formatRuleRowData,
           characterEncodingRowData,
           cardinalityData,
-          langRef.current
+          langRef.current,
+          OCAPackage
         ),
       cellRendererParams: (params) => ({
         dataHeaders: savedEntryCodes,
@@ -457,7 +522,7 @@ const OCADataValidatorCheck = ({
     setFirstValidate(true);
 
     const bundle = new OCABundle();
-    await bundle.loadedBundle(jsonParsedFile);
+    await bundle.loadedBundle(jsonParsedFile, OCAPackage);
 
     const newData = getCurrentData(gridRef.current.api, true);
 

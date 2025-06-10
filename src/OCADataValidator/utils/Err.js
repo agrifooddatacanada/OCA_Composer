@@ -1,23 +1,24 @@
 // Error messages
-const ATTR_UNMATCH_MSG = 'Unmatched attribute (attribute not found in the OCA Bundle).';
-const ATTR_MISSING_MSG = 'Missing attribute (attribute not found in the data set).';
+const ATTR_UNMATCH_MSG = "Unmatched attribute (attribute not found in the OCA Bundle).";
+const ATTR_MISSING_MSG = "Missing attribute (attribute not found in the data set).";
 
 // Base error class for FormatErr and EntryCodeErr.
 class BaseErr {
   constructor() {
     this.errs = {};
   }
-};
+}
 
 class AttributeErr {
   constructor() {
     this.errs = [];
   }
-};
+}
 
-class FormatErr extends BaseErr { }
-class EntryCodeErr extends BaseErr { }
-class CharacterEcodeErr extends BaseErr { }
+class FormatErr extends BaseErr {}
+class EntryCodeErr extends BaseErr {}
+class CharacterEcodeErr extends BaseErr {}
+class RangeErr extends BaseErr {}
 
 export default class OCADataSetErr {
   constructor() {
@@ -25,6 +26,7 @@ export default class OCADataSetErr {
     this.formatErr = this.createErrInstance(FormatErr);
     this.entryCodeErr = this.createErrInstance(EntryCodeErr);
     this.characterEcodeErr = this.createErrInstance(CharacterEcodeErr);
+    this.rangeErr = this.createErrInstance(RangeErr);
 
     this.missingAttrs = new Set();
     this.unmachedAttrs = new Set();
@@ -33,8 +35,9 @@ export default class OCADataSetErr {
     this.errRows = new Set();
 
     this.errCollection = {};
-  };
+  }
 
+  // eslint-disable-next-line class-methods-use-this
   createErrInstance(ErrClass) {
     return new ErrClass();
   }
@@ -47,10 +50,9 @@ export default class OCADataSetErr {
     if (this.errCols.size > 0) {
       const firstErrCol = [...this.errCols].sort()[0];
       return firstErrCol;
-    } else {
-      return null;
     }
-  };
+    return null;
+  }
 
   /**
    * @returns {object} - This method returns the object that consits of attr_missing, attr_unmatch attributes, errRows, and errCols errors.
@@ -65,38 +67,77 @@ export default class OCADataSetErr {
     }
 
     for (const i in this.formatErr.errs) {
-      for (const j in this.formatErr.errs[i]) {
-        this.errRows.add(j);
-        if (Object.keys(this.formatErr.errs).includes(i)) {
-          this.errCols.add(i);
+      if (Object.prototype.hasOwnProperty.call(this.formatErr.errs, i)) {
+        for (const j in this.formatErr.errs[i]) {
+          if (Object.prototype.hasOwnProperty.call(this.formatErr.errs[i], j)) {
+            this.errRows.add(j);
+            if (Object.keys(this.formatErr.errs).includes(i)) {
+              this.errCols.add(i);
+            }
+          }
         }
       }
     }
+
     for (const i in this.entryCodeErr.errs) {
-      for (const j in this.entryCodeErr.errs[i]) {
-        this.errRows.add(j);
-        if (Object.keys(this.entryCodeErr.errs).includes(i)) {
-          this.errCols.add(i);
+      if (Object.prototype.hasOwnProperty.call(this.entryCodeErr.errs, i)) {
+        for (const j in this.entryCodeErr.errs[i]) {
+          if (Object.prototype.hasOwnProperty.call(this.entryCodeErr.errs[i], j)) {
+            this.errRows.add(j);
+            if (Object.keys(this.entryCodeErr.errs).includes(i)) {
+              this.errCols.add(i);
+            }
+          }
         }
       }
     }
 
     for (const i in this.characterEcodeErr.errs) {
-      for (const j in this.characterEcodeErr.errs[i]) {
-        this.errRows.add(j);
-        if (Object.keys(this.characterEcodeErr.errs).includes(i)) {
-          this.errCols.add(i);
+      if (Object.prototype.hasOwnProperty.call(this.characterEcodeErr.errs, i)) {
+        for (const j in this.characterEcodeErr.errs[i]) {
+          if (Object.prototype.hasOwnProperty.call(this.characterEcodeErr.errs[i], j)) {
+            this.errRows.add(j);
+            if (Object.keys(this.characterEcodeErr.errs).includes(i)) {
+              this.errCols.add(i);
+            }
+          }
         }
       }
     }
+
+    for (const i in this.rangeErr.errs) {
+      if (Object.prototype.hasOwnProperty.call(this.rangeErr.errs, i)) {
+        for (const j in this.rangeErr.errs[i]) {
+          if (Object.prototype.hasOwnProperty.call(this.rangeErr.errs[i], j)) {
+            this.errRows.add(j);
+            if (Object.keys(this.rangeErr.errs).includes(i)) {
+              this.errCols.add(i);
+            }
+          }
+        }
+      }
+    }
+
     this.getAllErrs();
 
     return this;
-  };
+  }
 
-  getAttErr() { return this.attErr.errs; };
-  getFormatErr() { return this.formatErr.errs; };
-  getEntryCodeErr() { return this.entryCodeErr.errs; };
+  getAttErr() {
+    return this.attErr.errs;
+  }
+
+  getFormatErr() {
+    return this.formatErr.errs;
+  }
+
+  getEntryCodeErr() {
+    return this.entryCodeErr.errs;
+  }
+
+  getRangeErr() {
+    return this.rangeErr.errs;
+  }
 
   /**
    *
@@ -107,25 +148,42 @@ export default class OCADataSetErr {
     this.errRows.clear();
     if (!Array.from(this.errCols).includes(attrName)) {
       return null;
-    } else {
-      if (Object.keys(this.getFormatErr()).includes(attrName)) {
-        for (const row in this.getFormatErr()[attrName]) {
-          this.errRows.add(row);
-        }
-      } else {
-        return null;
-      }
-      if (attrName in Object.keys(this.getEntryCodeErr())) {
-        for (const row in this.getEntryCodeErr()[attrName]) {
-          this.errRows.add(row);
-        }
-      } else {
-        return this.errRows;
-      }
-    };
-    return this.errRows;
-  };
+    }
 
+    if (Object.keys(this.getFormatErr()).includes(attrName)) {
+      for (const row in this.getFormatErr()[attrName]) {
+        if (Object.prototype.hasOwnProperty.call(this.getFormatErr()[attrName], row)) {
+          this.errRows.add(row);
+        }
+      }
+    } else {
+      return null;
+    }
+
+    if (Object.keys(this.getRangeErr()).includes(attrName)) {
+      for (const row in this.getRangeErr()[attrName]) {
+        if (Object.prototype.hasOwnProperty.call(this.getRangeErr()[attrName], row)) {
+          this.errRows.add(row);
+        }
+      }
+    } else {
+      return null;
+    }
+
+    if (attrName in Object.keys(this.getEntryCodeErr())) {
+      for (const row in this.getEntryCodeErr()[attrName]) {
+        if (Object.prototype.hasOwnProperty.call(this.getEntryCodeErr()[attrName], row)) {
+          this.errRows.add(row);
+        }
+      }
+    } else {
+      return this.errRows;
+    }
+
+    return this.errRows;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
   rowErrorsForErrCollection(errObject, row) {
     const outputErrCollection = {};
     for (const col in errObject) {
@@ -144,6 +202,7 @@ export default class OCADataSetErr {
     return outputErrCollection;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   mergeErrors(...errors) {
     const mergedErrors = {};
     for (const errorSet of errors) {
@@ -166,9 +225,18 @@ export default class OCADataSetErr {
     for (const row of rowsErros) {
       const formatError = this.rowErrorsForErrCollection(this.formatErr.errs, row);
       const entryCodeError = this.rowErrorsForErrCollection(this.entryCodeErr.errs, row);
-      const characterEncodingError = this.rowErrorsForErrCollection(this.characterEcodeErr.errs, row);
-      const mergedErrors = this.mergeErrors(formatError, entryCodeError, characterEncodingError);
+      const characterEncodingError = this.rowErrorsForErrCollection(
+        this.characterEcodeErr.errs,
+        row
+      );
+      const rangeError = this.rowErrorsForErrCollection(this.rangeErr.errs, row);
+      const mergedErrors = this.mergeErrors(
+        formatError,
+        entryCodeError,
+        characterEncodingError,
+        rangeError
+      );
       this.errCollection[row] = mergedErrors;
     }
-  };
-};
+  }
+}
