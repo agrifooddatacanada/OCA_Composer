@@ -380,7 +380,8 @@ export const errorCode = {
   Format: "FE",
   "Entry Codes": "EC",
   "Character Encoding": "CHE",
-  "Data Type": "DTE"
+  "Data Type": "DTE",
+  Range: "RE"
 };
 
 export const OVERLAYS_WORD = "overlays";
