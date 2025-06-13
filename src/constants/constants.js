@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 export const DEFAULT_LANGUAGE_CODE = "en";
 export const DEFAULT_THREE_LETTER_LANGUAGE_CODE = "eng";
 export const DEFAULT_LANGUAGE = "English";
@@ -294,6 +296,55 @@ export const formatCodeDateDescription = Object.entries(
   acc[value] = key;
   return acc;
 }, {});
+
+// These are not ISO 8601 formats
+export const customDateFormatParsers = [
+  {
+    name: "ISO: MM",
+    regex: /^(0[1-9]|1[0-2])$/,
+    parse: (str) => DateTime.fromFormat(str, "MM")
+  },
+  {
+    name: "ISO: DD",
+    regex: /^(0[1-9]|[1-2][0-9]|3[01])$/,
+    parse: (str) => DateTime.fromFormat(str, "dd")
+  },
+  {
+    name: "DD/MM/YYYY",
+    regex: /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/,
+    parse: (str) => DateTime.fromFormat(str, "dd/MM/yyyy")
+  },
+  {
+    name: "DD/MM/YY",
+    regex: /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{2}$/,
+    parse: (str) => DateTime.fromFormat(str, "dd/MM/yy")
+  },
+  {
+    name: "MM/DD/YYYY",
+    regex: /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/,
+    parse: (str) => DateTime.fromFormat(str, "MM/dd/yyyy")
+  },
+  {
+    name: "DDMMYYYY",
+    regex: /^(0[1-9]|[12]\d|3[01])(0[1-9]|1[0-2])\d{4}$/,
+    parse: (str) => DateTime.fromFormat(str, "ddMMyyyy")
+  },
+  {
+    name: "MMDDYYYY",
+    regex: /^(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{4}$/,
+    parse: (str) => DateTime.fromFormat(str, "MMddyyyy")
+  },
+  {
+    name: "HH:MM:SS AM/PM",
+    regex: /^(0?[1-9]|1[0-2]):[0-5][0-9]:[0-5][0-9] ?[APMapm]{2}$/,
+    parse: (str) => DateTime.fromFormat(str, "h:mm:ss a")
+  },
+  {
+    name: "H:MM or HH:MM AM/PM",
+    regex: /^(0?[1-9]|1[0-2]):[0-5][0-9] ?[APMapm]{2}$/,
+    parse: (str) => DateTime.fromFormat(str, "h:mm a")
+  }
+];
 
 export const descriptionToFormatCodeBinary = {
   "": "",

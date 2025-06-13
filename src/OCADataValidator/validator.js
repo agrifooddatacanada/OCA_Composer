@@ -1,7 +1,8 @@
+import { Duration } from "luxon";
 import OCADataSetErr from "./utils/Err";
 import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
 import { ADC, ALLOWED_BOOLEAN_VALUES, errorCode, RANGE } from "../constants/constants";
-import { isValidNumber } from "../constants/utils";
+import { isValidNumber, parseDateString } from "../constants/utils";
 
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
@@ -249,6 +250,56 @@ export default class OCABundle {
                   type: errorCode.Range,
                   detail: `${RANGE_ERR_MSG}: value is equal to ${upperBound} (non-inclusive)`
                 };
+              }
+            }
+          }
+
+          if (attributeType === "DateTime") {
+            const rowValueDate = parseDateString(rowValue);
+            if (rowValueDate) {
+              const lowerBoundDate = parseDateString(lower);
+              const upperBoundDate = parseDateString(upper);
+              const isDuration = Duration.isDuration(rowValueDate);
+              const rowVal = isDuration ? rowValueDate.as("milliseconds") : rowValueDate;
+
+              if (lowerBoundDate) {
+                const lowerBound = isDuration
+                  ? lowerBoundDate.as("milliseconds")
+                  : lowerBoundDate;
+
+                if (rowVal < lowerBound) {
+                  rslt.errs[attribute][i] = {
+                    type: errorCode.Range,
+                    detail: `${RANGE_ERR_MSG}: value is smaller than ${lower}`
+                  };
+                }
+
+                if (!lower_inclusive && rowValueDate.equals(lowerBoundDate)) {
+                  rslt.errs[attribute][i] = {
+                    type: errorCode.Range,
+                    detail: `${RANGE_ERR_MSG}: value is equal to ${lower} (non-inclusive)`
+                  };
+                }
+              }
+
+              if (upperBoundDate) {
+                const upperBound = isDuration
+                  ? upperBoundDate.as("milliseconds")
+                  : upperBoundDate;
+
+                if (rowVal > upperBound) {
+                  rslt.errs[attribute][i] = {
+                    type: errorCode.Range,
+                    detail: `${RANGE_ERR_MSG}: value is greater than ${upper}`
+                  };
+                }
+
+                if (!upper_inclusive && rowValueDate.equals(upperBoundDate)) {
+                  rslt.errs[attribute][i] = {
+                    type: errorCode.Range,
+                    detail: `${RANGE_ERR_MSG}: value is equal to ${upper} (non-inclusive)`
+                  };
+                }
               }
             }
           }
