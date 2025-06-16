@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   Card,
   CardContent,
@@ -14,6 +14,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { defaultNoteDescription, defaultTooltip, defaultUploadedDescription } from "../constants/constants";
 import { useTranslation } from "react-i18next";
+import { Context } from "../App";
 
 export default function DropCard({
   loading,
@@ -33,6 +34,7 @@ export default function DropCard({
   noteDescription = defaultNoteDescription,
 }) {
   const { t } = useTranslation();
+  const { currentTheme } = useContext(Context);
   return (
     <section
       className="container"
@@ -123,8 +125,9 @@ export default function DropCard({
                   mb: 2,
                   color:
                     dropDisabled === false
-                      ? CustomPalette.PRIMARY
+                      ? currentTheme?.primaryColor ?? CustomPalette.PRIMARY
                       : CustomPalette.GREY_600,
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif",
                   whiteSpace: "pre-line",
                 }}
                 gutterBottom
@@ -138,7 +141,12 @@ export default function DropCard({
                     </>
                   )}
               </Typography>
-              <Typography sx={{ fontSize: 12, color: CustomPalette.GREY_600 }}>
+              <Typography 
+              sx={{ 
+                fontSize: 12, 
+                color: CustomPalette.GREY_600,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}>
                 {t(noteDescription)}
               </Typography>
             </CardContent>

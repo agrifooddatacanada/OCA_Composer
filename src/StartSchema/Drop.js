@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import DropCard from "./DropCard";
 import { messages } from "../constants/messages";
 import { CustomPalette } from "../constants/customPalette";
 import LandingDropZone from "../Landing/LandingDropZone";
+import { Context } from "../App";
+import { lightenColor } from "../utils/colorUtils";
 
 export default function Drop({
   setFile,
@@ -18,6 +20,7 @@ export default function Drop({
   interfaceType = 0,
   noteDescription
 }) {
+  const { currentTheme } = useContext(Context);
   const acceptFormat = useMemo(() => {
     if (version === 0) {
       return {
@@ -109,8 +112,8 @@ export default function Drop({
     return dropDisabled === true
       ? CustomPalette.GREY_600
       : hover === true
-        ? CustomPalette.SECONDARY
-        : CustomPalette.PRIMARY;
+        ? lightenColor(currentTheme?.primaryColor ?? CustomPalette.PRIMARY, 10) // this function dynamically lightens whatever the primary color is defined in the themeConstants.js
+        : currentTheme?.primaryColor ?? CustomPalette.PRIMARY;
   }, [dropDisabled, hover]);
 
   return (

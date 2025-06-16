@@ -3,10 +3,11 @@ import { Box } from "@mui/system";
 import { Typography } from "@mui/material";
 import { Context } from "../App";
 import { useTranslation } from "react-i18next";
+import { CustomPalette } from "../constants/customPalette";
 
 export default function SchemaDescription({ currentLanguage }) {
   const { t } = useTranslation();
-  const { schemaDescription, divisionGroup } = useContext(Context);
+  const { schemaDescription, divisionGroup, currentTheme } = useContext(Context);
   return (
     <Box>
       <Typography
@@ -15,6 +16,8 @@ export default function SchemaDescription({ currentLanguage }) {
           fontWeight: "bold",
           textAlign: "left",
           margin: "1rem 0 0.5rem 0",
+          color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
         {t('Name of Schema')}
@@ -32,6 +35,8 @@ export default function SchemaDescription({ currentLanguage }) {
           fontWeight: "bold",
           textAlign: "left",
           margin: "1rem 0 0.5rem 0",
+          color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
         {t('Description')}
@@ -48,6 +53,8 @@ export default function SchemaDescription({ currentLanguage }) {
           fontWeight: "bold",
           textAlign: "left",
           margin: "1rem 0 0.5rem 0",
+          color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
         {t('Classification')}

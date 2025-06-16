@@ -1,7 +1,10 @@
 import { Box, Step, StepLabel, Stepper } from "@mui/material";
+import { useContext } from "react";
+import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
 
 export default function StepperProgressIndicator({ activeStep, steps }) {
+  const { currentTheme } = useContext(Context);
   return (
     <Box sx={{ px: 10, py: 4 }}>
       <Stepper activeStep={activeStep} alternativeLabel>
@@ -10,14 +13,22 @@ export default function StepperProgressIndicator({ activeStep, steps }) {
             key={step.label}
             sx={{
               "& .MuiSvgIcon-root.Mui-active": {
-                color: CustomPalette.PRIMARY,
+                color: currentTheme?.primaryColor || CustomPalette.PRIMARY,
               },
               "& .MuiSvgIcon-root.Mui-completed": {
-                color: CustomPalette.PRIMARY,
+                color: currentTheme?.primaryColor || CustomPalette.PRIMARY,
               },
             }}
           >
-            <StepLabel>{step.label}</StepLabel>
+            <StepLabel
+              sx={{
+                "& .MuiStepLabel-label": {
+                  fontFamily: "Courier New"
+                }
+              }}
+            >
+              {step.label}
+            </StepLabel>
           </Step>
         ))}
       </Stepper>

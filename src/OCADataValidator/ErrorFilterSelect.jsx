@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@mui/material/styles";
 import OutlinedInput from "@mui/material/OutlinedInput";
@@ -6,8 +6,9 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { Box, Checkbox } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
 import { SHOW_ALL_DATA, SHOW_ONLY_ROWS_WITH_ERRORS, SHOW_NO_ERRORS } from "../constants/constants";
+import { Context } from "../App";
+import { CustomPalette } from "../constants/customPalette";
 
 const ITEM_HEIGHT = 30;
 const ITEM_PADDING_TOP = 0;
@@ -34,7 +35,7 @@ function getStyles(name, errorName, theme) {
 function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
   const theme = useTheme();
   const { t } = useTranslation();
-
+  const { currentTheme } = useContext(Context);
   // Add these helper functions at component level
   const handleShowAllData = () => setErrorNameList([SHOW_ALL_DATA]);
 
@@ -97,10 +98,11 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
     >
       <Box
         sx={{
-          color: CustomPalette.PRIMARY,
+          color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
           fontWeight: "bold",
           alignSelf: "center",
-          textAlign: "center"
+          textAlign: "center",
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
         {t("Filter rows:")} &nbsp;&nbsp;
@@ -112,6 +114,9 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
           value={errorName}
           onChange={handleChange}
           input={<OutlinedInput />}
+          sx={{
+            fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+          }}
           renderValue={(selected) => {
             if (selected.length === 0) {
               return <em>{t("Select Errors")}</em>;
@@ -129,7 +134,9 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
           }}
           MenuProps={MenuProps}
         >
-          <MenuItem value={SHOW_ALL_DATA}>
+          <MenuItem sx={{
+            fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+          }} value={SHOW_ALL_DATA}>
             <Checkbox
               checked={errorName.includes(SHOW_ALL_DATA)}
               onChange={handleShowAllData}
@@ -137,7 +144,9 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
             {t("Show all data")}
           </MenuItem>
 
-          <MenuItem value={SHOW_NO_ERRORS}>
+          <MenuItem sx={{
+            fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+          }} value={SHOW_NO_ERRORS}>
             <Checkbox
               checked={errorName.includes(SHOW_NO_ERRORS)}
               onChange={handleShowNoErrors}
@@ -145,7 +154,9 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
             {t("Show only rows without errors")}
           </MenuItem>
 
-          <MenuItem value={SHOW_ONLY_ROWS_WITH_ERRORS}>
+          <MenuItem sx={{
+            fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+          }} value={SHOW_ONLY_ROWS_WITH_ERRORS}>
             <Checkbox
               checked={errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)}
               onChange={handleShowOnlyErrors}
@@ -158,7 +169,9 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
               key={name}
               value={name}
               style={getStyles(name, errorName, theme)}
-              sx={{ pl: 4, fontSize: "14px" }}
+              sx={{ pl: 4, fontSize: "14px",
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}
             >
               <Checkbox
                 checked={errorName.includes(name)}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { Box, Button, Typography } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -8,6 +8,8 @@ import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
 import { datasetUploadDescription, datasetUploadTooltip } from "../constants/constants";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import ExcelSheetSelection from "../components/ExcelSheetSelection";
+import { Context } from "../App";
+import { CustomPalette } from "../constants/customPalette";
 
 const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const { t } = useTranslation();
@@ -15,7 +17,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
     setShowWarningCard,
     firstTimeDisplayWarning
   );
-
+  const { currentTheme } = useContext(Context);
   const {
     datasetRawFile,
     setDatasetRawFile,
@@ -85,7 +87,11 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
               width: "100%"
             }}
           >
-            <Typography variant="h6" sx={{ textAlign: "start", color: "black" }}>
+            <Typography variant="h6" sx={{ 
+              textAlign: "start", 
+              color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+            }}>
               {t("Optional: Upload Data")}
             </Typography>
             {!firstNavigationToDataset && excelSheetChoice !== -1 && (
@@ -134,7 +140,9 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             variant="contained"
             color="button"
             onClick={handleClearDataset}
-            sx={{ width: 190, mr: 2 }}
+            sx={{ width: 190, mr: 2,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+            }}
             disabled={datasetRawFile.length === 0}
           >
             {t("Clear Dataset File")}
@@ -142,7 +150,9 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
           <Button
             variant="contained"
             color="button"
-            sx={{ width: 200, ml: 2 }}
+            sx={{ width: 200, ml: 2,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+            }}
             onClick={handleClickViewData}
             disabled={datasetRawFile.length === 0}
           >

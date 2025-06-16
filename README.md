@@ -29,37 +29,99 @@ The JSON schema bundle can be consumed by several tools within the ADC/OCA ecosy
  In `src/constants`, the file `themeConstants.js` contains theme configurations for different entities. 
  Here, users can add a new theme object with the specific site attributes, such as colors, logos and URLs. 
  
+ #### Theme Object Components
+ 
+ **`domains`** (Array of strings)
+ - Specifies which domains this theme should be applied to
+ - Used for automatic theme detection based on the current domain
+ - Example: `['yourdomain.com', 'localhost:3000', 'staging.yourdomain.com']`
+ - If the current domain matches any in this array, this theme will be applied
+ 
+ **`primaryColor`** (String - Hex color)
+ - The main brand color used throughout the application
+ - Used for primary buttons, links, and accent elements
+ - Example: `"#94002a"` (dark red)
+ 
+ **`secondaryColor`** (String - Hex color)
+ - Secondary brand color used for hover states and secondary elements
+ - Often a lighter or complementary version of the primary color
+ - Example: `"#ce1141"` (lighter red)
+ 
+ **`logos`** (Object)
+ Contains all logo configurations for the theme:
+ 
+ - **`primaryLogo`** (Object): The main branding logo
+   - `url`: Path to the logo image file (use `require()` for local assets)
+   - `website`: URL where clicking the logo should navigate (optional)
+   - `alt`: Alt text for accessibility
+   - `style`: CSS styles object for the logo (width, height, cursor, etc.)
+ 
+ - **`supportedByLogo1`, `supportedByLogo2`, etc.** (Objects): Supporting organization logos
+   - These are rendered dynamically - you can add as many as needed
+   - Each follows the same structure as `primaryLogo`
+   - The system automatically detects and renders all `supportedByLogo` objects
+   - Numbered sequentially: `supportedByLogo1`, `supportedByLogo2`, `supportedByLogo3`, etc.
+ 
+ **`typography`** (Object)
+ - **`fontFamily`**: CSS font-family value for the application
+ - Example: `"Roboto, sans-serif"`, `"Arial, sans-serif"`, `"Courier New"`
+ 
+ **`buttonStyles`** (Object)
+ Defines the color scheme for buttons throughout the application:
+ - **`primary`**: Color for primary action buttons
+ - **`secondary`**: Color for secondary buttons and hover states
+ - **`contrastText`**: Text color that provides good contrast against button backgrounds (usually white or black)
+ 
  Follow a format like the following:
  
  ```javascript
  // Add your custom theme here
-   yourTheme: {
-     primaryColor: "#000000",
-     secondaryColor: "#111111",
- 
-     logos: {
-       yourLogo: {
-         url: require('../assets/your-logo.png'),
-         website: "https://yourwebsite.com",
-         alt: "Your Logo",
-         style: { width: '200px', cursor: "pointer" }
-       },
- 
-       // Add more logos as needed
+ yourTheme: {
+   domains: ['yourdomain.com', 'localhost:3000'], // Domains where this theme applies
+   primaryColor: "#000000",
+   secondaryColor: "#111111",
+
+   logos: {
+     primaryLogo: {
+       url: require('../assets/your-logo.png'),
+       website: "https://yourwebsite.com",
+       alt: "Your Logo",
+       style: { width: '200px', cursor: "pointer" }
      },
- 
-     typography: {
-       fontFamily: "Arial, sans-serif",
+
+     // Multiple supported logos - will be rendered dynamically
+     supportedByLogo1: {
+       url: require('../assets/supported-logo1.png'),
+       alt: "Supported Logo 1",
+       style: { height: "120px" }
      },
- 
-     buttonStyles: {
-       light: "#000000",
-       main: "#1111111",
-       dark: "#abcdef",
-       contrastText: "#FFFFFF",
+     supportedByLogo2: {
+       url: require('../assets/supported-logo2.png'),
+       alt: "Supported Logo 2", 
+       style: { height: "120px" }
      },
+     // Add more supportedByLogo objects as needed (supportedByLogo3, supportedByLogo4, etc.)
+   },
+
+   typography: {
+     fontFamily: "Arial, sans-serif",
+   },
+
+   buttonStyles: {
+     primary: "#000000",
+     secondary: "#111111",
+     contrastText: "#FFFFFF",
    }
-   ```
+ }
+ ```
+ 
+ ### Logo System
+ The new logo system supports:
+ 
+ - **Primary Logo**: Main branding logo with optional website link
+ - **Multiple Supported Logos**: Dynamic rendering of multiple `supportedByLogo` objects
+ - **Automatic Detection**: The system automatically detects and renders all `supportedByLogo1`, `supportedByLogo2`, etc. objects
+ - **Flexible Styling**: Each logo can have its own styling and alt text
  
  ### Embedding OCA Composer
  When embedding the OCA Composer in an application, the theme will be automatically detected from the embedding content. Follow the steps below:
@@ -68,48 +130,17 @@ The JSON schema bundle can be consumed by several tools within the ADC/OCA ecosy
     - Create a new theme object in `themeConstants.js`
     - Upload your logo files to the assets directory
     - Configure your colors and styles
+    - Add your domains to the `domains` array
  
- 2. **Embed the Application**:
- ```html
- <iframe 
-   src="https://your-oca-composer-url/oca-data-validator"
-   height="2000px"
-   width="100%"
-   style="border: none; border-radius: 10px;"
- ></iframe>
- ```
+ 2. **Theme Detection**:
+    - The system automatically detects the theme based on the current domain
+    - If no matching domain is found, it falls back to the 'default' theme
+    - Theme detection is handled by `src/utils/themeDetector.js`
  
- 3. **Domain Detection**:
- The application automatically detects the embedding domain and applies the appropriate theme. No additional configuration is needed.
- 
- ### Example Implementation
- Here's an example of embedding OCA Composer in a Shiny application:
- ```r
- # In your Shiny UI
- tags$iframe(
-   id = "reactAppIframe",
-   src = "https://your-oca-composer-url/oca-data-validator",
-   height = "2000px",
-   width = "100%",
-   style = "border: none; border-radius: 10px; overflow: hidden;"
- )
- ```
- 
- ### Communication Between Applications
- When embedded, OCA Composer can communicate with the parent application using postMessage:
- ```javascript
- // In parent application
- window.addEventListener('message', function(event) {
-   if (event.origin === 'https://your-oca-composer-url') {
-     // Handle messages from OCA Composer
-     console.log('Received from OCA Composer:', event.data);
-   }
- });
- 
- // Sending messages to OCA Composer
- const iframe = document.getElementById('reactAppIframe');
- iframe.contentWindow.postMessage(data, 'https://your-oca-composer-url');
- ```
+ 3. **Dynamic Updates**:
+    - Themes update automatically when the domain changes
+    - All components using theme colors will update dynamically
+    - Logo rendering is automatic based on your configuration
 
 ## Running the app locally
 
