@@ -1,9 +1,11 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
+import { DateTime, Duration } from "luxon";
 import { codesToLanguages, alpha3CodesToTwoLetterCodes } from "./isoCodes";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
+  customDateFormatParsers,
   DEFAULT_LANGUAGE,
   DISALLOWED_CHARACTERS,
   FIELD_FORMAT_OVERLAY,
@@ -660,3 +662,20 @@ export const shouldDisableRangeOverlay = (
 
 export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();
 export const isValidNumber = (value) => !Number.isNaN(Number.parseFloat(value));
+
+export const parseDateString = (str) => {
+  let result;
+  // Custom parser is needed for non ISO 8601 formats
+  const customParser = customDateFormatParsers.find((parser) => parser.regex.test(str));
+
+  if (customParser) {
+    result = customParser.parse(str);
+  } else if (str.startsWith("P")) {
+    result = Duration.fromISO(str);
+  } else {
+    result = DateTime.fromISO(str);
+  }
+
+  if (result.isValid) return result;
+  return null;
+};
