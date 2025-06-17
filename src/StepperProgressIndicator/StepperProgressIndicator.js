@@ -23,7 +23,7 @@ export default function StepperProgressIndicator({ activeStep, steps }) {
             <StepLabel
               sx={{
                 "& .MuiStepLabel-label": {
-                  fontFamily: "Courier New"
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
                 }
               }}
             >
