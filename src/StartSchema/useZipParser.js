@@ -17,7 +17,8 @@ import {
   hasAttributeOrdering,
   hasEntryCodeOrdering,
   hasRangeOverlay,
-  hasUnitFramingOverlay
+  hasUnitFramingOverlay,
+  replaceCharsInKeys
 } from "../constants/utils";
 
 const useZipParser = () => {
@@ -428,9 +429,10 @@ const useZipParser = () => {
 
     if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {
       const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
-      const attributeOrdering =
+      const attributeOrdering = replaceCharsInKeys(
         ocaPackageData.extensions[ADC][captureBaseSaid].overlays.ordering
-          .attribute_ordering;
+          .attribute_ordering
+      );
       const orderedAttributeRowData = getOrderedAttributeRowData(
         newAttributeRowData,
         attributeOrdering
