@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Card, CardContent, Typography, Tooltip } from "@mui/material";
+import { Box, Card, CardContent, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import LoopIcon from "@mui/icons-material/Loop";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -86,15 +86,9 @@ const LandingDropZone = ({
               }}
             />
           ) : (
-            <Tooltip title={t("Drag-and-Drop/Click-to-Find")} arrow>
-              <Typography sx={{ fontSize: "16px", fontWeight: "700" }}>
-                {t("Upload Schema")}
-                <br />
-                {t("(.zip or .json for OCA)")}
-                <br />
-                {t("(.yaml or .yml for LinkML)")}
-              </Typography>
-            </Tooltip>
+            <Typography sx={{ fontSize: "16px", fontWeight: "700" }}>
+              {t("Upload schema bundle (.zip OR .json) Or drag and drop one")}
+            </Typography>
           )}
         </CardContent>
       </Card>
