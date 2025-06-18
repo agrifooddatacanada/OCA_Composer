@@ -295,7 +295,7 @@ const OCADataValidatorCheck = ({
         <h1
           style={{
             textAlign: "center",
-            color: CustomPalette.PRIMARY
+            color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY
           }}
         >
           {t("Schema Preview")}

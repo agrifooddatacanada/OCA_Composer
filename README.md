@@ -180,7 +180,7 @@ This code is created with support by [Agri-food Data Canada](https://agrifooddat
 
 # OCA Data Validator File Listener
 
-This document explains how to use the file listener functionality to send JSON files from a parent application to the OCA Data Validator through an iframe.
+This document explains how to use the file listener functionality to send JSON schema files from a parent application to the OCA Data Validator through an iframe.
 
 ## Overview
 
@@ -243,7 +243,7 @@ The message sent to the validator must follow this structure:
   // example schema data
 }
 ```
-The message object should include the `type: 'JSON_SCHEMA'` 
+The message object should include the `type: 'JSON_SCHEMA'`, the verifier is hard coded to check the `type=='JSON_SCHEMA'`
 
 ```javascript
 // Parent application JavaScript

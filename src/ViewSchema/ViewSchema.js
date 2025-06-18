@@ -154,7 +154,7 @@ export default function ViewSchema({
             borderRadius,
             minWidth: languages.length < 5 ? "12rem" : "10rem",
             boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.PRIMARY}`
+            border: `0.5px solid ${currentTheme?.primaryColor ?? CustomPalette.PRIMARY}`
           }}
         >
           <Typography variant="button">{minimizedLanguage}</Typography>
