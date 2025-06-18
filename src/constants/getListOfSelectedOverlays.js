@@ -2,7 +2,7 @@ const getListOfSelectedOverlays = (overlay) => {
   const selectedFeatures = [];
   const unselectedFeatures = [];
   // Temporarily excluding these features
-  const featuresToExclude = ["Data Standards", "Add range rule for data"];
+  const featuresToExclude = ["Data Standards"];
 
   Object.values(overlay).forEach((item) => {
     if (featuresToExclude.includes(item.feature)) return;
