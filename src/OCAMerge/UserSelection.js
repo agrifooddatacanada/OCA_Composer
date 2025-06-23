@@ -19,6 +19,8 @@ import {
   LABEL,
   META,
   ORDERING,
+  RANGE,
+  SENSITIVE,
   UNIT
 } from "../constants/constants";
 import MergeDifferenceModal from "./MergeDifferenceModal";
@@ -255,6 +257,53 @@ const UserSelection = () => {
       });
 
       setShowDifference(true);
+    } else if (item.key.includes(SENSITIVE)) {
+      const sensitiveAttributesComparison = {
+        comparisonValue: "sensitive_attributes",
+        ocaFile1: value1?.sensitive_attributes,
+        ocaFile2: value2?.sensitive_attributes
+      };
+
+      setDataDifference({
+        title: item.key,
+        rowData: [sensitiveAttributesComparison]
+      });
+    } else if (item.key.includes(RANGE)) {
+      const attributes = Object.keys(value1?.attributes || value2?.attributes || {});
+      const attributeRangeComparison = [];
+      attributes.forEach((attribute) => {
+        const rangeData1 = value1?.attributes?.[attribute] || {};
+        const rangeData2 = value2?.attributes?.[attribute] || {};
+        let parsedValue1 = "";
+        let parsedValue2 = "";
+
+        if (rangeData1.lower !== "") {
+          parsedValue1 += `Lower Bound: ${rangeData1.lower} (${rangeData1.lower_inclusive ? "Inclusive" : "Exclusive"})\n`;
+        }
+
+        if (rangeData1.upper !== "") {
+          parsedValue1 += `Upper Bound: ${rangeData1.upper} (${rangeData1.upper_inclusive ? "Inclusive" : "Exclusive"})`;
+        }
+
+        if (rangeData2.lower !== "") {
+          parsedValue2 += `Lower Bound: ${rangeData2.lower} (${rangeData2.lower_inclusive ? "Inclusive" : "Exclusive"})\n`;
+        }
+
+        if (rangeData2.upper !== "") {
+          parsedValue2 += `Upper Bound: ${rangeData2.upper} (${rangeData2.upper_inclusive ? "Inclusive" : "Exclusive"})`;
+        }
+
+        attributeRangeComparison.push({
+          comparisonValue: attribute,
+          ocaFile1: parsedValue1,
+          ocaFile2: parsedValue2
+        });
+      });
+
+      setDataDifference({
+        title: item.key,
+        rowData: attributeRangeComparison
+      });
     }
 
     setShowDifference(true);
@@ -333,7 +382,7 @@ const UserSelection = () => {
           coreOverlays[overlayKey] = [value];
         }
         // OCA package extension overlays
-      } else if (key === ORDERING) {
+      } else if ([ORDERING, SENSITIVE, RANGE].includes(key)) {
         if (value) {
           extensionOverlays[overlayKey] = value;
         }
@@ -374,6 +423,24 @@ const UserSelection = () => {
                   mergedOverlays.extensionOverlays?.[ORDERING]?.attribute_ordering || [],
                 entry_code_ordering:
                   mergedOverlays.extensionOverlays?.[ORDERING]?.entry_code_ordering || {}
+              }
+            },
+            ...(mergedOverlays.extensionOverlays?.[RANGE]?.attributes
+              ? [
+                  {
+                    range_overlay: {
+                      type: RANGE,
+                      attributes: mergedOverlays.extensionOverlays?.[RANGE]?.attributes
+                    }
+                  }
+                ]
+              : []),
+            {
+              sensitive_overlay: {
+                type: SENSITIVE,
+                sensitive_attributes:
+                  mergedOverlays.extensionOverlays?.[SENSITIVE]?.sensitive_attributes ||
+                  []
               }
             }
           ]
@@ -502,6 +569,22 @@ const UserSelection = () => {
         JSON.stringify(value2?.entry_code_ordering);
 
       return attributeOrderingEqual && entryCodeOrderingEqual;
+    }
+    if (key.includes(SENSITIVE)) {
+      const value1 = selectedOverlaysOCAFile1[key];
+      const value2 = selectedOverlaysOCAFile2[key];
+      const sensitiveAttributesEqual =
+        JSON.stringify(value1?.sensitive_attributes) ===
+        JSON.stringify(value2?.sensitive_attributes);
+      return sensitiveAttributesEqual;
+    }
+    if (key.includes(RANGE)) {
+      const value1 = selectedOverlaysOCAFile1[key];
+      const value2 = selectedOverlaysOCAFile2[key];
+      const rangeOverlayEqual =
+        JSON.stringify(value1?.attributes || {}) ===
+        JSON.stringify(value2?.attributes || {});
+      return rangeOverlayEqual;
     }
     const objKey = findComparisonObject(splitKey);
     const value1 = selectedOverlaysOCAFile1[key]?.[objKey];
