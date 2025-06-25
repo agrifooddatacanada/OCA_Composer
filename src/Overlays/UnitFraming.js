@@ -25,16 +25,16 @@ import { Context } from "../App";
 
 // TODO: fix the grid styles: handle the last column border
 // The width of the columns are the defined based on the sx={{ width: 705 }}: find a dynamic way to set the width
+
 const TrashCanButton = memo(
   // eslint-disable-next-line no-unused-vars
   forwardRef((props, ref) => {
-    const { setUnitFramedDeleteStatus } = useContext(Context);
+    const { setUnitFramedRowData } = useContext(Context);
+
     const onClick = useCallback(() => {
-      setUnitFramedDeleteStatus((prev) =>
+      setUnitFramedRowData((prev) =>
         prev.map((row) =>
-          row.Unit === props.node.data.Unit && row.Attribute === props.node.data.Attribute
-            ? { ...row, deleted: true }
-            : row
+          row.Unit === props.node.data.Unit ? { ...row, deleted: true } : row
         )
       );
       props.node.updateData({
@@ -45,7 +45,7 @@ const TrashCanButton = memo(
       });
       props?.onRefresh();
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.node.data, setUnitFramedDeleteStatus]);
+    }, [props.node.data, setUnitFramedRowData]);
 
     return (
       <IconButton
@@ -249,18 +249,18 @@ const getColumnDefs = (gridRef, t, searchUnits) => [
   }
 ];
 
-const updateUnitFramedRowData = (unitFramedRowData, newUnitFramedRowData) =>
+const updateUnitFramedRowData = (unitFramedRowData, displayedFramedUnits) =>
   unitFramedRowData.map((row) => {
-    const existingRow = newUnitFramedRowData.find(
-      (existing) => existing.Unit === row.Unit
+    const displayedRow = displayedFramedUnits.find(
+      (displayed) => displayed.Unit === row.Unit
     );
 
-    return existingRow
+    return displayedRow
       ? {
           ...row,
-          "UCUM Code": existingRow["UCUM Code"],
-          "UCUM Label": existingRow["UCUM Label"],
-          Description: existingRow.Description
+          "UCUM Code": displayedRow["UCUM Code"],
+          "UCUM Label": displayedRow["UCUM Label"],
+          Description: displayedRow.Description
         }
       : row;
   });
@@ -272,9 +272,7 @@ const UnitFraming = () => {
     setSelectedOverlay,
     unitFramedRowData,
     setUnitFramedRowData,
-    setOverlay,
-    unitFramedDeleteStatus,
-    setUnitRowData
+    setOverlay
   } = useContext(Context);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [tempToDisplayRowData, setTempToDisplayRowData] = useState([]);
@@ -282,17 +280,20 @@ const UnitFraming = () => {
   const gridRef = useRef();
 
   useEffect(() => {
+    // step1: create a set for only unique units to process what needs to be displayed
     const unitFramedRowDataSet = Array.from(
       new Map(unitFramedRowData.map((row) => [row.Unit, row])).values()
     );
 
+    // step2: filter the unitFramedRowDataSet to only include the units that are not deleted by the user (i.e., deleted: false)
     const filteredUnitFramedRowData = unitFramedRowDataSet.filter((row) => {
-      const toDisplayRow = unitFramedDeleteStatus.find(
+      const toDisplayRow = unitFramedRowData.find(
         (displayRow) => displayRow.Attribute === row.Attribute && !displayRow.deleted
       );
       return !!toDisplayRow;
     });
 
+    // step3: set the tempToDisplayRowData to the filteredUnitFramedRowData
     setTempToDisplayRowData(filteredUnitFramedRowData);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -314,7 +315,6 @@ const UnitFraming = () => {
       .getRenderedNodes()
       ?.map((node) => node?.data);
 
-    setUnitRowData(displayedFramedUnits);
     setUnitFramedRowData(
       updateUnitFramedRowData(unitFramedRowData, displayedFramedUnits)
     );

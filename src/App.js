@@ -94,9 +94,8 @@ function App() {
   const [selectedOverlay, setSelectedOverlay] = useState("");
   const [cardinalityData, setCardinalityData] = useState([]);
   const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
-  const [unitRowData, setUnitRowData] = useState([]);
+  const [unitRowData, setUnitRowData] = useState([]); // the current state of units from attributeRowData
   const [unitFramedRowData, setUnitFramedRowData] = useState([]);
-  const [unitFramedDeleteStatus, setUnitFramedDeleteStatus] = useState([]);
   const [rangeRowData, setRangeRowData] = useState([]);
 
   // Use for OCA Validator
@@ -283,7 +282,7 @@ function App() {
       const unitRowObject = unitRowData.find(
         (obj) => obj.Attribute === item.Attribute && obj.Unit === item.Unit
       );
-
+      // the attribute unit exits and hasn't changed from the attributeRowData.
       if (unitRowObject) {
         newUnitRowArray.push(unitRowObject);
       } else {
@@ -301,29 +300,42 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attributeRowData]);
 
+  /*
+  Every time the unitRowData updates, we need to update the unitFramedRowData
+  This is because the unitFramedRowData is used to display the unit framing overlay
+  and the unitFramedRowData has to be updated when the unitRowData is updated.
+  */
   const framedUnits = useUnitFramingUpdater(unitRowData);
 
   useEffect(() => {
-    setUnitFramedRowData(framedUnits);
-  }, [framedUnits]);
-
-  useEffect(() => {
     if (framedUnits.length > 0) {
-      setUnitFramedDeleteStatus((prev) =>
-        framedUnits.map((row) => {
-          // Check if the row already exists in unitFramedDeleteStatus
+      setUnitFramedRowData((prev) => {
+        // First, preserve all existing rows that are marked as deleted
+        const deletedRows = prev.filter((row) => row.deleted === true);
+
+        return framedUnits.map((currentFramedUnit) => {
+          // Check if the row already exists in unitFramedRowData
           const existingRow = prev.find(
-            (statusRow) =>
-              statusRow.Attribute === row.Attribute &&
-              statusRow.Unit === row.Unit &&
-              statusRow["UCUM Code"] === row["UCUM Code"]
+            (prevFramedUnit) =>
+              prevFramedUnit.Attribute === currentFramedUnit.Attribute &&
+              prevFramedUnit.Unit === currentFramedUnit.Unit &&
+              prevFramedUnit["UCUM Code"] === currentFramedUnit["UCUM Code"]
           );
 
           // If it exists, keep the existing row (including its `deleted` status)
-          // Otherwise, add the new row with `deleted: false`
-          return existingRow || { ...row, deleted: false };
-        })
-      );
+          if (existingRow) {
+            return existingRow;
+          }
+
+          // Check if this unit was previously deleted
+          const wasDeleted = deletedRows.some(
+            (deletedRow) => deletedRow.Unit === currentFramedUnit.Unit
+          );
+
+          // If it was deleted, keep it deleted; otherwise, set to false
+          return { ...currentFramedUnit, deleted: wasDeleted };
+        });
+      });
     }
   }, [framedUnits]);
 
@@ -569,8 +581,6 @@ function App() {
             setOCAPackage,
             unitFramedRowData,
             setUnitFramedRowData,
-            unitFramedDeleteStatus,
-            setUnitFramedDeleteStatus,
             unitRowData,
             setUnitRowData,
             rangeRowData,

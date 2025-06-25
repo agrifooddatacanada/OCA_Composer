@@ -380,13 +380,13 @@ export const searchUnits = (unit) => {
   };
 };
 
-export const updateUnitFramingRowDataForOverlayGeneration = (
+export const updatedUnitFramingRowDataForViewSchema = (
   attributeRowData,
   unitFramedRowData
 ) =>
   attributeRowData.map((attributeRow) => {
     const matchingRow = unitFramedRowData.find(
-      (unitRow) => unitRow.Unit === attributeRow.Unit
+      (unitRow) => unitRow.Unit === attributeRow.Unit && !unitRow.deleted
     );
 
     return matchingRow

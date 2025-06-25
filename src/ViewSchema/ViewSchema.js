@@ -21,7 +21,7 @@ import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 import {
   getFormatRuleDescription,
-  updateUnitFramingRowDataForOverlayGeneration
+  updatedUnitFramingRowDataForViewSchema
 } from "../constants/utils";
 import ErrorPopup from "./ErrorPopup";
 import CustomRouterLink from "../components/CustomRouterLink";
@@ -162,10 +162,15 @@ export default function ViewSchema({
   ));
 
   // updating attributeRowData to include unit framing data
-  const updatedFramedRowData = updateUnitFramingRowDataForOverlayGeneration(
+
+  console.log("unitFramedRowData", unitFramedRowData);
+
+  const updatedFramedRowData = updatedUnitFramingRowDataForViewSchema(
     attributeRowData,
     unitFramedRowData
   );
+
+  console.log("unitupdatedFramedRowData", updatedFramedRowData);
 
   // Creates display array with all captured data
   useEffect(() => {
