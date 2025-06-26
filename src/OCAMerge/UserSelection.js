@@ -412,6 +412,8 @@ const UserSelection = () => {
     const bundle = await generateOCABundle(ocaFileContent);
 
     // For now, we only have ADC community ordering extension overlay for top-level/main schema bundle
+    const sensitiveAttributes =
+      mergedOverlays.extensionOverlays?.[SENSITIVE]?.sensitive_attributes || [];
     const extension = {
       extensions: {
         [ADC]: {
@@ -435,14 +437,16 @@ const UserSelection = () => {
                   }
                 ]
               : []),
-            {
-              sensitive_overlay: {
-                type: SENSITIVE,
-                sensitive_attributes:
-                  mergedOverlays.extensionOverlays?.[SENSITIVE]?.sensitive_attributes ||
-                  []
-              }
-            }
+            ...(sensitiveAttributes.length > 0
+              ? [
+                  {
+                    sensitive_overlay: {
+                      type: SENSITIVE,
+                      sensitive_attributes: sensitiveAttributes
+                    }
+                  }
+                ]
+              : [])
           ]
         }
       }
