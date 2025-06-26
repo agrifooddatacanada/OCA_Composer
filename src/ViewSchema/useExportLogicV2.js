@@ -475,12 +475,16 @@ const useExportLogicV2 = () => {
               }
             ]
           : []),
-        {
-          sensitive_overlay: {
-            type: SENSITIVE,
-            sensitive_attributes: sensitiveAttributes
-          }
-        }
+        ...(sensitiveAttributes.length > 0
+          ? [
+              {
+                sensitive_overlay: {
+                  type: SENSITIVE,
+                  sensitive_attributes: sensitiveAttributes
+                }
+              }
+            ]
+          : [])
       ];
 
       const extension = {
