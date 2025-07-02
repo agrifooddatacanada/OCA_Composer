@@ -295,6 +295,15 @@ export const hasRangeOverlay = (OCAPackage) => {
   );
 };
 
+export const hasUnitFramingOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
+  );
+};
+
 // get extension overlays
 export const getExtensionOverlays = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
@@ -330,7 +339,51 @@ export const getOrderedAttributeMap = (attributeOrdering, attributeMap) => {
   return orderedAttributeMap;
 };
 
-// for unit framing overlay
+export const getUnitsFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+
+  const unitFramingOverlay = hasUnitFramingOverlay(OCAPackage)
+    ? OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
+    : undefined;
+
+  if (!unitFramingOverlay) return {};
+
+  const unitsArleadyFramed = {};
+  if (
+    unitFramingOverlay &&
+    typeof unitFramingOverlay === "object" &&
+    unitFramingOverlay.units
+  ) {
+    for (const unit of Object.keys(unitFramingOverlay.units)) {
+      unitsArleadyFramed[unit] = unitFramingOverlay.units[unit].term_id;
+    }
+  }
+
+  return unitsArleadyFramed;
+
+  // if (!unitFramingOverlay) return [];
+
+  // let unitsObj;
+  // if (Array.isArray(unitFramingOverlay)) {
+  //   unitsObj = unitFramingOverlay.find(
+  //     (item) => item && typeof item === "object" && item.units
+  //   )?.units;
+  // } else if (
+  //   unitFramingOverlay &&
+  //   typeof unitFramingOverlay === "object" &&
+  //   unitFramingOverlay.units
+  // ) {
+  //   unitsObj = unitFramingOverlay.units;
+  // }
+
+  // if (!unitsObj || typeof unitsObj !== "object") return [];
+
+  // const units = [];
+  // for (const key of Object.keys(unitsObj)) {
+  //   units.push(unitsObj[key].term_id);
+  // }
+};
+
 export const getUnitFramingInput = (unitFramingRowData) => {
   const unitFramingInput = {};
   for (const row of unitFramingRowData) {
@@ -341,15 +394,6 @@ export const getUnitFramingInput = (unitFramingRowData) => {
     };
   }
   return unitFramingInput;
-};
-
-export const hasUnitFramingOverlay = (OCAPackage) => {
-  // For now, use the capture base SAID of the main/top-level bundle
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
-  return Boolean(
-    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
-      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
-  );
 };
 
 export const options = {
@@ -398,6 +442,17 @@ export const updatedUnitFramingRowDataForViewSchema = (
         }
       : attributeRow;
   });
+
+export const getCurrentUnitFramingRowData = (
+  framedAllUnits,
+  unitFramedRowData,
+  unitRowDataWhenNoFrameAll
+) => {
+  if (framedAllUnits) {
+    return unitFramedRowData;
+  }
+  return unitRowDataWhenNoFrameAll;
+};
 
 export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {
   const rangeOverlayInput = {};

@@ -50,7 +50,8 @@ export default function ViewSchema({
     history,
     setHistory,
     formatRuleRowData,
-    unitFramedRowData,
+    // unitFramedRowData,
+    currentUnitFramedRowData,
     dataStandardsRowData,
     zipToReadme,
     jsonToReadme,
@@ -162,16 +163,10 @@ export default function ViewSchema({
   ));
 
   // updating attributeRowData to include unit framing data
-
-  console.log("unitFramedRowData", unitFramedRowData);
-
   const updatedFramedRowData = updatedUnitFramingRowDataForViewSchema(
     attributeRowData,
-    unitFramedRowData
+    currentUnitFramedRowData
   );
-
-  console.log("unitupdatedFramedRowData", updatedFramedRowData);
-
   // Creates display array with all captured data
   useEffect(() => {
     const newDisplayArray = [];

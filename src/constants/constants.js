@@ -448,8 +448,8 @@ export const UNIT = "unit";
 export const CONFORMANCE = "conformance";
 export const CARDINALITY = "cardinality";
 
-// Extension overlays
 export const ORDERING = "ordering";
+
 // Unit Framing Overlay
 export const UNIT_FRAMING = "unit_framing";
 export const UNIT_FRAME_ID = "UCUM";

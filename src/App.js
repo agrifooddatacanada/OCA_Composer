@@ -25,6 +25,10 @@ import {
   FIELD_RANGE_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY
 } from "./constants/constants";
+import {
+  getUnitsFramedThatAlreadyExistInOcaPackage,
+  hasUnitFramingOverlay
+} from "./constants/utils";
 
 export const Context = createContext();
 
@@ -94,9 +98,18 @@ function App() {
   const [selectedOverlay, setSelectedOverlay] = useState("");
   const [cardinalityData, setCardinalityData] = useState([]);
   const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
-  const [unitRowData, setUnitRowData] = useState([]); // the current state of units from attributeRowData
-  const [unitFramedRowData, setUnitFramedRowData] = useState([]);
   const [rangeRowData, setRangeRowData] = useState([]);
+  // the current state of units from attributeRowData
+  const [unitRowData, setUnitRowData] = useState([]);
+  const [currentUnitFramedRowData, setCurrentUnitFramedRowData] = useState([]);
+  const [unitFramedRowData, setUnitFramedRowData] = useState([]);
+  const [frameAllUnits, setFrameAllUnits] = useState(hasUnitFramingOverlay());
+  const [
+    unitFramedThatAlreadyExistInOcaPackage,
+    setUnitFramedThatAlreadyExistInOcaPackage
+  ] = useState({});
+  const [unframedUnitList, setUnframedUnitList] = useState([]);
+  const [unitRowDataWhenNoFrameAll, setUnitRowDataWhenNoFrameAll] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -273,6 +286,14 @@ function App() {
 
   // unit framing starts here
   useEffect(() => {
+    if (OCAPackage) {
+      setUnitFramedThatAlreadyExistInOcaPackage(
+        getUnitsFramedThatAlreadyExistInOcaPackage(OCAPackage)
+      );
+    }
+  }, [OCAPackage]);
+
+  useEffect(() => {
     const newUnitRowArray = [];
     attributeRowData.forEach((item) => {
       if (!item.Unit) {
@@ -302,8 +323,8 @@ function App() {
 
   /*
   Every time the unitRowData updates, we need to update the unitFramedRowData
-  This is because the unitFramedRowData is used to display the unit framing overlay
-  and the unitFramedRowData has to be updated when the unitRowData is updated.
+  This is because the unitFramedRowData is used to display & create the unit framing overlay
+  and the unitFramedRowData has to be updated whenever unitRowData is updated.
   */
   const framedUnits = useUnitFramingUpdater(unitRowData);
 
@@ -338,6 +359,82 @@ function App() {
       });
     }
   }, [framedUnits]);
+
+  useEffect(() => {
+    if (!frameAllUnits) {
+      // framed units that already exist in the OCA package
+      const existingUnits = unitFramedRowData.filter((row) =>
+        Object.prototype.hasOwnProperty.call(
+          unitFramedThatAlreadyExistInOcaPackage,
+          row.Unit
+        )
+      );
+      setUnitRowDataWhenNoFrameAll(existingUnits);
+
+      // unframed units that don't exist in the OCA package
+      const unframedUnits = unitFramedRowData.filter(
+        (row) =>
+          !Object.prototype.hasOwnProperty.call(
+            unitFramedThatAlreadyExistInOcaPackage,
+            row.Unit
+          )
+      );
+
+      const uniqueUnframedUnits = Array.from(
+        new Map(unframedUnits.map((row) => [row.Unit, row])).values()
+      );
+      setUnframedUnitList(uniqueUnframedUnits.map((row) => row.Unit));
+    }
+  }, [frameAllUnits, unitFramedRowData, unitFramedThatAlreadyExistInOcaPackage]);
+
+  useEffect(() => {
+    if (!frameAllUnits) {
+      setCurrentUnitFramedRowData((prev) => {
+        const deletedRows = prev.filter((row) => row.deleted === true);
+
+        return unitRowDataWhenNoFrameAll.map((currentFramedUnit) => {
+          const existingRow = prev.find(
+            (prevFramedUnit) =>
+              prevFramedUnit.Attribute === currentFramedUnit.Attribute &&
+              prevFramedUnit.Unit === currentFramedUnit.Unit
+          );
+
+          if (existingRow) {
+            return existingRow;
+          }
+
+          const wasDeleted = deletedRows.some(
+            (deletedRow) => deletedRow.Unit === currentFramedUnit.Unit
+          );
+
+          return { ...currentFramedUnit, deleted: wasDeleted };
+        });
+      });
+    }
+
+    if (frameAllUnits) {
+      setCurrentUnitFramedRowData((prev) => {
+        const deletedRows = prev.filter((row) => row.deleted === true);
+
+        return unitFramedRowData.map((currentFramedUnit) => {
+          const existingRow = prev.find(
+            (prevFramedUnit) =>
+              prevFramedUnit.Attribute === currentFramedUnit.Attribute &&
+              prevFramedUnit.Unit === currentFramedUnit.Unit
+          );
+
+          if (existingRow) {
+            return existingRow;
+          }
+
+          const wasDeleted = deletedRows.some(
+            (deletedRow) => deletedRow.Unit === currentFramedUnit.Unit
+          );
+          return { ...currentFramedUnit, deleted: wasDeleted };
+        });
+      });
+    }
+  }, [frameAllUnits, unitFramedRowData, unitRowDataWhenNoFrameAll]);
 
   useEffect(() => {
     const newRangeArray = [];
@@ -579,12 +676,22 @@ function App() {
             setNotToVerifyAttributes,
             OCAPackage,
             setOCAPackage,
-            unitFramedRowData,
-            setUnitFramedRowData,
+            rangeRowData,
+            setRangeRowData,
             unitRowData,
             setUnitRowData,
-            rangeRowData,
-            setRangeRowData
+            unitFramedRowData,
+            setUnitFramedRowData,
+            unitFramedThatAlreadyExistInOcaPackage,
+            setUnitFramedThatAlreadyExistInOcaPackage,
+            frameAllUnits,
+            setFrameAllUnits,
+            unitRowDataWhenNoFrameAll,
+            setUnitRowDataWhenNoFrameAll,
+            currentUnitFramedRowData,
+            setCurrentUnitFramedRowData,
+            unframedUnitList,
+            setUnframedUnitList
           }}
         >
           <Box
