@@ -29,7 +29,7 @@ import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
-import { searchUnits } from "../constants/utils";
+import { searchUnits, hasUnitFramingOverlay } from "../constants/utils";
 import { Context } from "../App";
 
 const GRID_WIDTH = 705;
@@ -394,24 +394,18 @@ const UnitFraming = () => {
   }, [handleSave, setSelectedOverlay, setCurrentPage]);
 
   const handleFrameAllUnits = useCallback(() => {
-    // First, save any current changes from the grid
     gridRef.current?.api?.stopEditing();
     const displayedFramedUnits =
       gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data) || [];
 
-    // First effect: Update currentUnitFramedRowData with displayed grid data
     const updatedCurrentUnitFramedRowData = updateUnits(
       currentUnitFramedRowData,
       displayedFramedUnits
     );
     setCurrentUnitFramedRowData(updatedCurrentUnitFramedRowData);
 
-    // Second effect: Handle frame all units logic
-    // Compare updated currentUnitFramedRowData with unitFramedRowData
-    // and update tempToDisplayRowData with all eligible data (excluding deleted rows)
     const eligibleData = updatedCurrentUnitFramedRowData.filter((row) => !row.deleted);
 
-    // Update tempToDisplayRowData to show the framed data
     setTempToDisplayRowData(eligibleData);
     setFrameAllUnits(true);
   }, [
