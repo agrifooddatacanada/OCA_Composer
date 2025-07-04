@@ -21,7 +21,7 @@ import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 import {
   getFormatRuleDescription,
-  updateUnitFramingRowDataForOverlayGeneration
+  updatedUnitFramingRowDataForViewSchema
 } from "../constants/utils";
 import ErrorPopup from "./ErrorPopup";
 import CustomRouterLink from "../components/CustomRouterLink";
@@ -50,7 +50,8 @@ export default function ViewSchema({
     history,
     setHistory,
     formatRuleRowData,
-    unitFramedRowData,
+    // unitFramedRowData,
+    currentUnitFramedRowData,
     dataStandardsRowData,
     zipToReadme,
     jsonToReadme,
@@ -162,11 +163,10 @@ export default function ViewSchema({
   ));
 
   // updating attributeRowData to include unit framing data
-  const updatedFramedRowData = updateUnitFramingRowDataForOverlayGeneration(
+  const updatedFramedRowData = updatedUnitFramingRowDataForViewSchema(
     attributeRowData,
-    unitFramedRowData
+    currentUnitFramedRowData
   );
-
   // Creates display array with all captured data
   useEffect(() => {
     const newDisplayArray = [];
