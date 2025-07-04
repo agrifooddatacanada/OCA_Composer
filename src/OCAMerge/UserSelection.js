@@ -21,10 +21,19 @@ import {
   ORDERING,
   RANGE,
   SENSITIVE,
-  UNIT
+  UNIT,
+  UNIT_FRAME_ID,
+  UNIT_FRAME_LABEL,
+  UNIT_FRAME_LOCATION,
+  UNIT_FRAME_VERSION,
+  UNIT_FRAMING
 } from "../constants/constants";
 import MergeDifferenceModal from "./MergeDifferenceModal";
-import { generateOCABundle, generateOCAFileFromMergedOverlays } from "../constants/utils";
+import {
+  generateOCABundle,
+  generateOCAFileFromMergedOverlays,
+  searchUnits
+} from "../constants/utils";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 
 const checkIfKeyInList = (key, list) => {
@@ -181,7 +190,7 @@ const UserSelection = () => {
       item.key.includes(LABEL) ||
       item.key.includes(INFORMATION) ||
       item.key.includes(CONFORMANCE) ||
-      item.key.includes(UNIT) ||
+      item.key === UNIT ||
       item.key.includes(CARDINALITY) ||
       item.key.includes(FORMAT) ||
       item.key.includes(ENTRY_CODE)
@@ -189,7 +198,7 @@ const UserSelection = () => {
       const comparisonObj = findComparisonObject(item.key.split(" - ")?.[0]);
       let overlayData1 = null;
       let overlayData2 = null;
-      if (item.key.includes(UNIT)) {
+      if (item.key === UNIT) {
         // In case of zip bundle, the unit is in attribute_units
         overlayData1 = value1?.[comparisonObj] || value1?.attribute_units || {};
         overlayData2 = value2?.[comparisonObj] || value2?.attribute_units || {};
@@ -257,6 +266,63 @@ const UserSelection = () => {
       });
 
       setShowDifference(true);
+    } else if (item.key === UNIT_FRAMING) {
+      const unitOverlayData1 =
+        selectedOverlaysOCAFile1.unit?.attribute_unit ||
+        selectedOverlaysOCAFile1.unit?.attribute_units ||
+        {};
+
+      const unitOverlayData2 =
+        selectedOverlaysOCAFile2.unit?.attribute_unit ||
+        selectedOverlaysOCAFile2.unit?.attribute_units ||
+        {};
+
+      const uniqueAttributes = new Set([
+        ...Object.keys(unitOverlayData1),
+        ...Object.keys(unitOverlayData2)
+      ]);
+
+      const unitFramingComparison = [];
+
+      uniqueAttributes.forEach((attribute) => {
+        const attributeUnit1 = unitOverlayData1[attribute];
+        const attributeUnit2 = unitOverlayData2[attribute];
+        const unitFramingData1 = value1?.units?.[attributeUnit1] || {};
+        const unitFramingData2 = value2?.units?.[attributeUnit2] || {};
+        let parsedValue1 = "";
+        let parsedValue2 = "";
+
+        if (attributeUnit1 && unitFramingData1.term_id) {
+          parsedValue1 += `Unit: ${attributeUnit1}\nUCUM Code: ${unitFramingData1.term_id}`;
+          const { firstMatch } = searchUnits(unitFramingData1.term_id);
+          if (firstMatch?.label) {
+            parsedValue1 += `\nUCUM Label: ${firstMatch.label}`;
+          }
+          if (firstMatch?.description) {
+            parsedValue1 += `\nDescription: ${firstMatch.description}`;
+          }
+        }
+        if (attributeUnit2 && unitFramingData2.term_id) {
+          parsedValue2 += `Unit: ${attributeUnit2}\nUCUM Code: ${unitFramingData2.term_id}`;
+          const { firstMatch } = searchUnits(unitFramingData2.term_id);
+          if (firstMatch?.label) {
+            parsedValue2 += `\nUCUM Label: ${firstMatch.label}`;
+          }
+          if (firstMatch?.description) {
+            parsedValue2 += `\nDescription: ${firstMatch.description}`;
+          }
+        }
+        unitFramingComparison.push({
+          comparisonValue: attribute,
+          ocaFile1: parsedValue1,
+          ocaFile2: parsedValue2
+        });
+      });
+
+      setDataDifference({
+        title: item.key,
+        rowData: unitFramingComparison
+      });
     } else if (item.key.includes(SENSITIVE)) {
       const sensitiveAttributesComparison = {
         comparisonValue: "sensitive_attributes",
@@ -382,7 +448,7 @@ const UserSelection = () => {
           coreOverlays[overlayKey] = [value];
         }
         // OCA package extension overlays
-      } else if ([ORDERING, SENSITIVE, RANGE].includes(key)) {
+      } else if ([ORDERING, SENSITIVE, RANGE, UNIT_FRAMING].includes(key)) {
         if (value) {
           extensionOverlays[overlayKey] = value;
         }
@@ -443,6 +509,22 @@ const UserSelection = () => {
                     sensitive_overlay: {
                       type: SENSITIVE,
                       sensitive_attributes: sensitiveAttributes
+                    }
+                  }
+                ]
+              : []),
+            ...(mergedOverlays.extensionOverlays?.[UNIT_FRAMING]?.units
+              ? [
+                  {
+                    unit_framing_overlay: {
+                      type: UNIT_FRAMING,
+                      properties: {
+                        id: UNIT_FRAME_ID,
+                        label: UNIT_FRAME_LABEL,
+                        location: UNIT_FRAME_LOCATION,
+                        version: UNIT_FRAME_VERSION
+                      },
+                      units: mergedOverlays.extensionOverlays?.[UNIT_FRAMING]?.units
                     }
                   }
                 ]
@@ -589,6 +671,13 @@ const UserSelection = () => {
         JSON.stringify(value1?.attributes || {}) ===
         JSON.stringify(value2?.attributes || {});
       return rangeOverlayEqual;
+    }
+    if (key.includes(UNIT_FRAMING)) {
+      const value1 = selectedOverlaysOCAFile1[key];
+      const value2 = selectedOverlaysOCAFile2[key];
+      const unitFramingOverlayEqual =
+        JSON.stringify(value1?.units || {}) === JSON.stringify(value2?.units || {});
+      return unitFramingOverlayEqual;
     }
     const objKey = findComparisonObject(splitKey);
     const value1 = selectedOverlaysOCAFile1[key]?.[objKey];

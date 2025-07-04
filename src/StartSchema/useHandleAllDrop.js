@@ -8,7 +8,7 @@ import { removeSpacesFromString } from "../constants/removeSpaces";
 import { messages } from "../constants/messages";
 import {
   replaceAttributeCharsInJsonString,
-  replaceAttributeCharsInParsedJson,
+  replaceAttributeCharsInParsedJson
   // getUnitsFramedThatAlreadyExistInOcaPackage
 } from "../constants/utils";
 
