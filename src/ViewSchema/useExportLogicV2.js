@@ -39,7 +39,7 @@ const useExportLogicV2 = () => {
     divisionGroup,
     savedEntryCodes,
     formatRuleRowData,
-    unitFramedRowData,
+    currentUnitFramedRowData,
     customIsos,
     characterEncodingRowData,
     overlay,
@@ -438,7 +438,12 @@ const useExportLogicV2 = () => {
         .filter((item) => item.Flagged)
         .map((item) => item.Attribute);
 
+      // extension creation preparation starts here
       const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
+      // unit framing overlay extension input for creation
+      const retainedUniqueFramedUnits = currentUnitFramedRowData.filter(
+        (row) => !row.deleted
+      );
 
       // dynamic addition optional extension overlays
       const extension_overlays = [
@@ -460,7 +465,7 @@ const useExportLogicV2 = () => {
                     location: UNIT_FRAME_LOCATION,
                     version: UNIT_FRAME_VERSION
                   },
-                  units: getUnitFramingInput(unitFramedRowData)
+                  units: getUnitFramingInput(retainedUniqueFramedUnits)
                 }
               }
             ]
