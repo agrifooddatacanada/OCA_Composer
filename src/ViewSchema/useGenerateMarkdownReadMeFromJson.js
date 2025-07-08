@@ -10,7 +10,8 @@ import {
   ADC,
   DEFAULT_THREE_LETTER_LANGUAGE_CODE,
   RANGE,
-  SENSITIVE
+  SENSITIVE,
+  UNIT_FRAMING
 } from "../constants/constants";
 import {
   downloadMarkdownFile,
@@ -52,6 +53,10 @@ const useGenerateMarkdownReadMeFromJson = () => {
   const rangeOverlay =
     OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[RANGE];
+
+  const unitFramingOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.[UNIT_FRAMING];
 
   // Ensuring that the currently selected site language is one of the languages of the schema
   const currentLanguageCode = languages.some(
@@ -149,7 +154,8 @@ const useGenerateMarkdownReadMeFromJson = () => {
       captureBaseOverlay,
       attributeNames,
       sensitiveAttributes,
-      rangeOverlay
+      rangeOverlay,
+      unitFramingOverlay
     });
     fileContent += generateLanguageSpecificSchemaDetailsTable({
       layers,
