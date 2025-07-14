@@ -202,6 +202,26 @@ const UserSelection = () => {
         // In case of zip bundle, the unit is in attribute_units
         overlayData1 = value1?.[comparisonObj] || value1?.attribute_units || {};
         overlayData2 = value2?.[comparisonObj] || value2?.attribute_units || {};
+      } else if (item.key.includes(INFORMATION)) {
+        const informationOverlayData1 = value1?.[comparisonObj] || {};
+        const informationOverlayData2 = value2?.[comparisonObj] || {};
+
+        // Removing any escape characters for " and '
+        overlayData1 = Object.keys(informationOverlayData1).reduce((acc, key) => {
+          acc[key] = informationOverlayData1[key]
+            // eslint-disable-next-line quotes
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
+          return acc;
+        }, {});
+
+        overlayData2 = Object.keys(informationOverlayData2).reduce((acc, key) => {
+          acc[key] = informationOverlayData2[key]
+            // eslint-disable-next-line quotes
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
+          return acc;
+        }, {});
       } else {
         overlayData1 = value1?.[comparisonObj] || {};
         overlayData2 = value2?.[comparisonObj] || {};
@@ -682,6 +702,28 @@ const UserSelection = () => {
     const objKey = findComparisonObject(splitKey);
     const value1 = selectedOverlaysOCAFile1[key]?.[objKey];
     const value2 = selectedOverlaysOCAFile2[key]?.[objKey];
+
+    if (key.includes(INFORMATION)) {
+      // Removing any escape characters for " and '
+      const parsedValue1 = Object.keys(value1).reduce((acc, key) => {
+        acc[key] = value1[key]
+          // eslint-disable-next-line quotes
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'");
+        return acc;
+      }, {});
+
+      const parsedValue2 = Object.keys(value2).reduce((acc, key) => {
+        acc[key] = value2[key]
+          // eslint-disable-next-line quotes
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'");
+        return acc;
+      }, {});
+
+      return JSON.stringify(parsedValue1) === JSON.stringify(parsedValue2);
+    }
+
     return JSON.stringify(value1) === JSON.stringify(value2);
   };
 
