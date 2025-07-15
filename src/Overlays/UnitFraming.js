@@ -29,7 +29,7 @@ import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
-import { searchUnits, hasUnitFramingOverlay } from "../constants/utils";
+import { searchUnits } from "../constants/utils";
 import { Context } from "../App";
 
 const GRID_WIDTH = 705;

@@ -1,5 +1,6 @@
 {
   "Schemas add value to data": "Schemas add value to data",
+  "Schemas": "Schemas",
   "Make your data more valuable with a data schema": "Make your data more valuable with a data schema",
   "New to Schemas? Watch our video and then": "New to Schemas? Watch our video and then",
   "Learn more": "Learn more",
@@ -338,6 +339,10 @@
   "Please provide valid data types for all attributes.": "Please provide valid data types for all attributes.",
   "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.": "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.",
   "FileSizeError": "File is too large. Please upload a file smaller than {{maxFileSize}} MB.",
+  "OCA Merge": "OCA Merge",
+  "Collaborate on a Schema": "Collaborate on a Schema",
+  "You can support multiple contributors to your schema and merge the final results together in:": "You can support multiple contributors to your schema and merge the final results together in:",
+  "To merge schemas you must have the same capture base. The suggested process...": "To merge schemas you must have the same capture base. The suggested process is to create a basic schema with all attributes and then distribute this schema bundle to your collaborators. Everyone can work on their own features of the schema and at the end everything can be combined in a single schema using the OCA merge tool.",
   "Unframed units": "Unframed units",
   "No units to frame": "No units to frame",
   "All units are framed": "All units are framed",

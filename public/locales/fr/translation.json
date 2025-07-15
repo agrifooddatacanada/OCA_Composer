@@ -1,5 +1,6 @@
 {
   "Schemas add value to data": "Les schémas ajoutent de la valeur aux données",
+  "Schemas": "Schémas",
   "Make your data more valuable with a data schema": "Donnez plus de valeur à vos données avec un schéma de données",
   "New to Schemas? Watch our video and then": "Vous débutez avec Schemas ? Regardez notre vidéo et",
   "Learn more": "Apprendre encore plus",
@@ -336,6 +337,10 @@
   "Please provide valid data types for all attributes.": "Veuillez fournir des types de données valides pour tous les attributs.",
   "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.": "Tous les outils ne sont pas disponibles pour les schémas non valides. Les schémas doivent d'abord être convertis par édition avant que d'autres outils ne soient disponibles.",
   "FileSizeError": "Le fichier est trop volumineux. Veuillez télécharger un fichier de moins de {{maxFileSize}} Mo.",
+  "OCA Merge": "Fusion OCA",
+  "Collaborate on a Schema": "Collaborer sur un schéma",
+  "You can support multiple contributors to your schema and merge the final results together in:": "Vous pouvez prendre en charge plusieurs contributeurs à votre schéma et fusionner les résultats finaux dans :",
+  "To merge schemas you must have the same capture base. The suggested process...": "Pour fusionner des schémas, vous devez disposer de la même base de capture. La procédure suggérée consiste à créer un schéma de base avec tous les attributs, puis à distribuer ce bundle à vos collaborateurs. Chacun peut travailler sur ses propres fonctionnalités du schéma et, à terme, tout peut être combiné en un seul schéma grâce à l'outil de fusion OCA.",
   "Unframed units": "Unités non encadrées",
   "No units to frame": "Aucune unité à encadrer",
   "All units are framed": "Toutes les unités sont encadrées",
