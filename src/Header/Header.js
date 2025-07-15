@@ -212,6 +212,19 @@ export default function Header({ currentPage }) {
               >
                 Semantic Engine
               </Typography>
+              <Typography
+                sx={{
+                  fontSize: isMobile ? 14 : 22,
+                  fontWeight: "semibold",
+                  color: "white",
+                  alignSelf: "start",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  marginTop: "-10px"
+                }}
+              >
+                {t("Schemas")}
+              </Typography>
             </Link>
           </Box>
         ) : (
