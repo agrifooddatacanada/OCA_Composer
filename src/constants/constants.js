@@ -521,3 +521,4 @@ export const FIELD_CARDINALITY_OVERLAY = "Cardinality";
 export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
 export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
 export const FIELD_RANGE_OVERLAY = "Add range rule for data";
+export const FIELD_ATTRIBUTE_MAPPING_OVERLAY = "Attribute Mapping";

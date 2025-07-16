@@ -23,7 +23,8 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
-  FIELD_UNIT_FRAMING_OVERLAY
+  FIELD_UNIT_FRAMING_OVERLAY,
+  FIELD_ATTRIBUTE_MAPPING_OVERLAY
 } from "./constants/constants";
 import {
   getUnitsFramedThatAlreadyExistInOcaPackage,
@@ -50,7 +51,8 @@ const overlayItems = {
   [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
   [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
   [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
-  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false }
+  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
+  [FIELD_ATTRIBUTE_MAPPING_OVERLAY]: { feature: "Attribute Mapping", selected: false }
 };
 
 export const pagesArray = [
@@ -110,6 +112,8 @@ function App() {
   ] = useState({});
   const [unframedUnitList, setUnframedUnitList] = useState([]);
   const [unitRowDataWhenNoFrameAll, setUnitRowDataWhenNoFrameAll] = useState([]);
+  // the current state of attributeMapping
+  const [attributeMappingRowData, setAttributeMappingRowData] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -465,6 +469,31 @@ function App() {
     setRangeRowData(newRangeArray);
   }, [attributeRowData]);
 
+  /*
+  Attribute Mapping starts here.
+  */
+  useEffect(() => {
+    const newAttributeMappingArray = [];
+
+    attributeRowData.forEach((attributeRowItem) => {
+      const attributeMappingObject = attributeMappingRowData.find(
+        (attributeMappingRowItem) =>
+          attributeRowItem.Attribute === attributeMappingRowItem.Attribute
+      );
+      if (attributeMappingObject) {
+        newAttributeMappingArray.push(attributeMappingObject);
+      } else {
+        newAttributeMappingArray.push({
+          subjectId: attributeRowItem.Attribute,
+          PredicateId: "",
+          ObjectId: "",
+          MappingJustification: ""
+        });
+      }
+    });
+    setAttributeMappingRowData(newAttributeMappingArray);
+  }, [attributeRowData]);
+
   useEffect(() => {
     if (jsonRawFile.length > 0) {
       const newMatchingRowData = [];
@@ -691,7 +720,9 @@ function App() {
             currentUnitFramedRowData,
             setCurrentUnitFramedRowData,
             unframedUnitList,
-            setUnframedUnitList
+            setUnframedUnitList,
+            attributeMappingRowData,
+            setAttributeMappingRowData
           }}
         >
           <Box
