@@ -496,9 +496,20 @@ const useGenerateReadMeV2 = () => {
         if (Object.keys(unitFramingOverlay?.units || {}).length > 0) {
           text_file.push(
             `Layer name: ${unitFramingOverlay.type}\n`,
-            `SAID/digest: ${unitFramingOverlay.d}\n\n`,
-            `Schema attributes: ${unitFramingOverlay.type}\n`
+            `SAID/digest: ${unitFramingOverlay.d}\n\n`
           );
+
+          if (unitFramingOverlay.framing_metadata) {
+            text_file.push("Unit frame\n");
+            Object.entries(unitFramingOverlay.framing_metadata).forEach(
+              ([key, value]) => {
+                text_file.push(`   "${key}": "${value}"\n`);
+              }
+            );
+            text_file.push("\n");
+          }
+
+          text_file.push(`Schema attributes: ${unitFramingOverlay.type}\n`);
 
           Object.entries(unitOverlayData).forEach(([attribute, unit]) => {
             const unitFramingData = unitFramingOverlay.units[unit];
