@@ -353,6 +353,14 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   return markdownContent.join("");
 };
 
+export const generateUnitFramingMetadataTable = (unitFramingMetadata) => {
+  const markdownContent = ["### Unit framing \n\n"];
+  const columns = ["Term", "Value"];
+  const rows = Object.entries(unitFramingMetadata);
+  markdownContent.push(generateTable(columns, rows), "\n\n");
+  return markdownContent.join("");
+};
+
 // For ZIP schema bundle
 export const generateSAIDTable = (captureBaseSAID, layerToSAIDMap) => {
   const markdownContent = ["## Schema SAIDs\n\n"];
