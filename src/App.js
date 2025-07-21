@@ -24,7 +24,7 @@ import {
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY,
-  FIELD_ATTRIBUTE_MAPPING_OVERLAY
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY
 } from "./constants/constants";
 import {
   getUnitsFramedThatAlreadyExistInOcaPackage,
@@ -52,7 +52,7 @@ const overlayItems = {
   [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
   [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
   [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
-  [FIELD_ATTRIBUTE_MAPPING_OVERLAY]: { feature: "Attribute Mapping", selected: false }
+  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false }
 };
 
 export const pagesArray = [
@@ -112,8 +112,8 @@ function App() {
   ] = useState({});
   const [unframedUnitList, setUnframedUnitList] = useState([]);
   const [unitRowDataWhenNoFrameAll, setUnitRowDataWhenNoFrameAll] = useState([]);
-  // the current state of attributeMapping
-  const [attributeMappingRowData, setAttributeMappingRowData] = useState([]);
+  // the current state of attributeFraming
+  const [attributeFramingRowData, setAttributeFramingRowData] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -470,28 +470,29 @@ function App() {
   }, [attributeRowData]);
 
   /*
-  Attribute Mapping starts here.
+  Attribute Framing starts here.
   */
   useEffect(() => {
-    const newAttributeMappingArray = [];
+    const newAttributeFramingArray = [];
 
     attributeRowData.forEach((attributeRowItem) => {
-      const attributeMappingObject = attributeMappingRowData.find(
-        (attributeMappingRowItem) =>
-          attributeRowItem.Attribute === attributeMappingRowItem.Attribute
+      const attributeFramingObj = attributeFramingRowData.find(
+        (attributeFramingRowItem) =>
+          attributeRowItem.Attribute === attributeFramingRowItem.Attribute
       );
-      if (attributeMappingObject) {
-        newAttributeMappingArray.push(attributeMappingObject);
+      if (attributeFramingObj) {
+        newAttributeFramingArray.push(attributeFramingObj);
       } else {
-        newAttributeMappingArray.push({
+        newAttributeFramingArray.push({
           subjectId: attributeRowItem.Attribute,
-          PredicateId: "",
-          ObjectId: "",
-          MappingJustification: ""
+          predicateId: "skos:exactMatch",
+          objectId: "",
+          description: "",
+          mappingJustification: "semapv:ManualMappingCuration"
         });
       }
     });
-    setAttributeMappingRowData(newAttributeMappingArray);
+    setAttributeFramingRowData(newAttributeFramingArray);
   }, [attributeRowData]);
 
   useEffect(() => {
@@ -721,8 +722,8 @@ function App() {
             setCurrentUnitFramedRowData,
             unframedUnitList,
             setUnframedUnitList,
-            attributeMappingRowData,
-            setAttributeMappingRowData
+            attributeFramingRowData,
+            setAttributeFramingRowData
           }}
         >
           <Box

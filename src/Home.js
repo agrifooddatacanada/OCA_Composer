@@ -23,7 +23,7 @@ import MatchingJSONEntryCodeHeader from "./EntryCodes/MatchingJSONEntryCodeHeade
 import StepperProgressIndicator from "./StepperProgressIndicator/StepperProgressIndicator";
 import DataStandards from "./Overlays/DataStandards";
 import Range from "./Overlays/Range";
-import AttributeMapping from "./Overlays/AttributeMapping";
+import AttributeFraming from "./Overlays/AttributeFraming";
 
 const Home = ({
   currentPage,
@@ -82,7 +82,7 @@ const Home = ({
       "MatchingJSONEntryCodes",
       "DataStandards",
       "Range",
-      "AttributeMapping"
+      "AttributeFraming"
     ],
     []
   );
@@ -146,7 +146,7 @@ const Home = ({
         {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
         {currentPage === "DataStandards" && <DataStandards />}
         {currentPage === "Range" && <Range />}
-        {currentPage === "AttributeMapping" && <AttributeMapping />}
+        {currentPage === "AttributeFraming" && <AttributeFraming />}
       </Box>
       <Footer currentPage={currentPage} />
     </>

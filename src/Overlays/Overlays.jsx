@@ -52,8 +52,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("DataStandards");
     } else if (item === "Add range rule for data") {
       setCurrentPage("Range");
-    } else if (item === "Attribute Mapping") {
-      setCurrentPage("AttributeMapping");
+    } else if (item === "Attribute Framing") {
+      setCurrentPage("AttributeFraming");
     } else {
       setCurrentPage("FormatRules");
     }
@@ -97,8 +97,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("UnitFraming");
     } else if (overlayName === "Add range rule for data") {
       setCurrentPage("Range");
-    } else if (overlayName === "Attribute Mapping") {
-      setCurrentPage("AttributeMapping");
+    } else if (overlayName === "Attribute Framing") {
+      setCurrentPage("AttributeFraming");
     } else {
       setCurrentPage("FormatRules");
     }

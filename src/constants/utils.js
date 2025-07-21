@@ -14,7 +14,8 @@ import {
   formatCodeNumericDescription,
   formatCodeTextDescription,
   OCA_REPOSITORY_API_URL,
-  RANGE
+  RANGE,
+  SSSOM_MAPPER_API_URL
 } from "./constants";
 import ucumUnits from "./ucumUnits";
 
@@ -360,28 +361,6 @@ export const getUnitsFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
   }
 
   return unitsArleadyFramed;
-
-  // if (!unitFramingOverlay) return [];
-
-  // let unitsObj;
-  // if (Array.isArray(unitFramingOverlay)) {
-  //   unitsObj = unitFramingOverlay.find(
-  //     (item) => item && typeof item === "object" && item.units
-  //   )?.units;
-  // } else if (
-  //   unitFramingOverlay &&
-  //   typeof unitFramingOverlay === "object" &&
-  //   unitFramingOverlay.units
-  // ) {
-  //   unitsObj = unitFramingOverlay.units;
-  // }
-
-  // if (!unitsObj || typeof unitsObj !== "object") return [];
-
-  // const units = [];
-  // for (const key of Object.keys(unitsObj)) {
-  //   units.push(unitsObj[key].term_id);
-  // }
 };
 
 export const getUnitFramingInput = (unitFramingRowData) => {
@@ -538,6 +517,29 @@ export const generateOCABundle = async (OCAFileData) => {
     console.error("Error generating OCA bundle from OCA file:", error);
     throw error;
   }
+};
+
+export const searchPredicates = async (data) => {
+  // http://localhost:8080/search/?page=1&page_size=10&query=beans
+  const response = await fetch(
+    `${SSSOM_MAPPER_API_URL}/search/?page=${data.page}&page_size=${data.page_size}&query=${data.query}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+  const responseData = await response.json();
+  return responseData;
+};
+
+export const matchedSubjectAndPredicate = async (data) => {
+  // return the first result, i,e first rdf triple that matches the query.
+  const response = await searchPredicates(data);
+
+  const { results } = response;
+  return results[0];
 };
 
 export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
