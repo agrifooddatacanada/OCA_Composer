@@ -523,3 +523,31 @@ export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
 export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
 export const FIELD_RANGE_OVERLAY = "Add range rule for data";
 export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
+
+// Attribute Framing Overlay Dropdown Options
+export const ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS = {
+  typeOfMatch: [
+    { value: "skos:exactMatch", label: "skos:exactMatch" },
+    { value: "skos:broadMatch", label: "skos:broadMatch" },
+    { value: "skos:narrowMatch", label: "skos:narrowMatch" },
+    { value: "skos:closeMatch", label: "skos:closeMatch" },
+    { value: "skos:relatedMatch", label: "skos:relatedMatch" }
+  ],
+  mappingJustification: [
+    { value: "semapv:MappingReview", label: "semapv:MappingReview" },
+    { value: "semapv:ManualMappingCuration", label: "semapv:ManualMappingCuration" },
+    { value: "semapv:LogicalReasoning", label: "semapv:LogicalReasoning" },
+    { value: "semapv:LexicalMatching", label: "semapv:LexicalMatching" },
+    { value: "semapv:CompositeMatching", label: "semapv:CompositeMatching" },
+    { value: "semapv:UnspecifiedMatching", label: "semapv:UnspecifiedMatching" },
+    {
+      value: "semapv:SemanticSimilarityThresholdMatching",
+      label: "semapv:SemanticSimilarityThresholdMatching"
+    },
+    {
+      value: "semapv:LexicalSimilarityThresholdMatching",
+      label: "semapv:LexicalSimilarityThresholdMatching"
+    },
+    { value: "semapv:MappingChaining", label: "semapv:MappingChaining" }
+  ]
+};

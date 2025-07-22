@@ -536,6 +536,7 @@ export const searchPredicates = async (data) => {
 
 export const matchedSubjectAndPredicate = async (data) => {
   // return the first result, i,e first rdf triple that matches the query.
+  // using this for the very first time the attribute framing is added (the page is loaded).
   const response = await searchPredicates(data);
 
   const { results } = response;
