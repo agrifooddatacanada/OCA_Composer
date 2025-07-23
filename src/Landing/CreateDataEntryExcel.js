@@ -940,7 +940,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     }
   }
 
-  // Step 7: lookup table
+  // Step 7: lookup table and unit framing references
   const lookUpTable = new Map();
   const lookUpStart = shift + attributeNames.length + 6;
 
@@ -949,6 +949,34 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
   sheet1.getCell(lookUpStart, 2).value = null;
   formatLookupHeader(sheet1.getCell(lookUpStart, 2));
+
+  if (unitFramingOverlay?.framing_metadata) {
+    sheet1.getCell(lookUpStart, 3).value = "Framing references";
+    formatLookupHeader(sheet1.getCell(lookUpStart, 3));
+
+    sheet1.getCell(lookUpStart, 4).value = null;
+    formatLookupHeader(sheet1.getCell(lookUpStart, 4));
+
+    sheet1.getCell(lookUpStart, 5).value = null;
+    formatLookupHeader(sheet1.getCell(lookUpStart, 5));
+
+    sheet1.getCell(lookUpStart + 1, 3).value = "Unit framing";
+    formatLookupValue(sheet1.getCell(lookUpStart + 1, 3));
+
+    let metadataRow = lookUpStart + 2;
+
+    for (const [property, value] of Object.entries(
+      unitFramingOverlay?.framing_metadata
+    )) {
+      sheet1.getCell(metadataRow, 4).value = property;
+      formatLookupAttr(sheet1.getCell(metadataRow, 4));
+
+      sheet1.getCell(metadataRow, 5).value = value;
+      formatLookupValue(sheet1.getCell(metadataRow, 5));
+
+      metadataRow++;
+    }
+  }
 
   let offset = 0;
   for (const [attrName, entries] of Object.entries(lookupEntries)) {
