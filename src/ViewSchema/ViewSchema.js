@@ -50,13 +50,13 @@ export default function ViewSchema({
     history,
     setHistory,
     formatRuleRowData,
-    // unitFramedRowData,
     currentUnitFramedRowData,
     dataStandardsRowData,
     zipToReadme,
     jsonToReadme,
     OCAPackage,
-    rangeRowData
+    rangeRowData,
+    attributeFramingRowData
   } = useContext(Context);
   const languageIndex = languages.findIndex(
     (item) => codesToLanguages?.[i18next.language] === item
@@ -268,6 +268,15 @@ export default function ViewSchema({
         if (Object.prototype.hasOwnProperty.call(attrWithRange, "UpperInclusive")) {
           dataObject.UpperInclusive = attrWithRange.UpperInclusive;
         }
+      }
+
+      // Add attribute framing information
+      const attrWithAttributeFraming = attributeFramingRowData.find(
+        (row) => row.Attribute === attributeName
+      );
+
+      if (attrWithAttributeFraming) {
+        dataObject["Attribute Framing"] = attrWithAttributeFraming.objectId;
       }
 
       newDisplayArray.push(dataObject);

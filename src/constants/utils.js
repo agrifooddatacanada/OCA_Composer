@@ -543,6 +543,18 @@ export const matchedSubjectAndPredicate = async (data) => {
   return results[0];
 };
 
+export const getLabelofParentClass = async (uri) => {
+  // return the label of the parent class of the given uri
+  const response = await fetch(`${SSSOM_MAPPER_API_URL}/search/?query=${uri}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+  const responseData = await response.json();
+  return responseData;
+};
+
 export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   const attributes = Object.keys(coreOverlays.capture_base.attributes);
   const attributeTypeMap = coreOverlays.capture_base.attributes;

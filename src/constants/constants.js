@@ -534,8 +534,8 @@ export const ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS = {
     { value: "skos:relatedMatch", label: "skos:relatedMatch" }
   ],
   mappingJustification: [
-    { value: "semapv:MappingReview", label: "semapv:MappingReview" },
     { value: "semapv:ManualMappingCuration", label: "semapv:ManualMappingCuration" },
+    { value: "semapv:MappingReview", label: "semapv:MappingReview" },
     { value: "semapv:LogicalReasoning", label: "semapv:LogicalReasoning" },
     { value: "semapv:LexicalMatching", label: "semapv:LexicalMatching" },
     { value: "semapv:CompositeMatching", label: "semapv:CompositeMatching" },

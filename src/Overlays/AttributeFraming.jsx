@@ -29,7 +29,11 @@ import {
   ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS
 } from "../constants/constants";
 import { CustomPalette } from "../constants/customPalette";
-import { matchedSubjectAndPredicate, searchPredicates } from "../constants/utils";
+import {
+  matchedSubjectAndPredicate,
+  searchPredicates,
+  getLabelofParentClass
+} from "../constants/utils";
 
 let globalGridRef = null;
 
@@ -73,49 +77,41 @@ const DescriptionCellRenderer = ({ value }) => (
   <TruncatedTextCellRenderer value={value} maxLength={35} />
 );
 
-// Dropdown cell renderers defined outside
-const TypeOfMatchCellRenderer = ({ value, rowIndex }) => {
+const DropdownCellRenderer = ({
+  value,
+  rowIndex,
+  fieldName,
+  options,
+  maxTextLength = 25
+}) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(
-    value || ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.typeOfMatch[0]?.value || ""
-  );
+  const [selectedValue, setSelectedValue] = useState(value || options[0]?.value);
 
   const handleChange = (e) => {
     const newValue = e.target.value;
     setSelectedValue(newValue);
 
-    // Update the row data directly using AG Grid API
     if (globalGridRef && globalGridRef.current && globalGridRef.current.api) {
       const node = globalGridRef.current.api.getRowNode(rowIndex);
       if (node) {
-        node.setDataValue("typeOfMatch", newValue);
+        node.setDataValue(fieldName, newValue);
       }
     }
     setIsDropdownOpen(false);
   };
 
-  const handleClick = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
   useEffect(() => {
-    setSelectedValue(
-      value || ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.typeOfMatch[0]?.value || ""
-    );
-  }, [value]);
+    setSelectedValue(value || options[0]?.value);
+  }, [value, options]);
 
   const getDisplayText = (value) => {
-    const option = ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.typeOfMatch.find(
-      (opt) => opt.value === value
-    );
+    const option = options.find((opt) => opt.value === value);
     const text = option ? option.label : value;
-    return text.length > 25 ? `${text.substring(0, 25)}...` : text;
+    return text.length > maxTextLength ? `${text.substring(0, maxTextLength)}...` : text;
   };
 
   const getFullText = (value) => {
-    const option = ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.typeOfMatch.find(
-      (opt) => opt.value === value
-    );
+    const option = options.find((opt) => opt.value === value);
     return option ? option.label : value;
   };
 
@@ -142,13 +138,12 @@ const TypeOfMatchCellRenderer = ({ value, rowIndex }) => {
               minHeight: "auto"
             }
           }}
-          onClick={handleClick}
           open={isDropdownOpen}
           onClose={() => setIsDropdownOpen(false)}
           onOpen={() => setIsDropdownOpen(true)}
           renderValue={(value) => getDisplayText(value)}
         >
-          {ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.typeOfMatch.map((option) => (
+          {options.map((option) => (
             <MenuItem
               key={option.value}
               value={option.value}
@@ -163,98 +158,26 @@ const TypeOfMatchCellRenderer = ({ value, rowIndex }) => {
   );
 };
 
-const MappingJustificationCellRenderer = ({ value, rowIndex }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(
-    value || ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.mappingJustification[0]?.value || ""
-  );
+const TypeOfMatchCellRenderer = (props) => (
+  <DropdownCellRenderer
+    {...props}
+    fieldName="typeOfMatch"
+    options={ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.typeOfMatch}
+    maxTextLength={25}
+  />
+);
 
-  const handleChange = (e) => {
-    const newValue = e.target.value;
-    setSelectedValue(newValue);
+const MappingJustificationCellRenderer = (props) => (
+  <DropdownCellRenderer
+    {...props}
+    fieldName="mappingJustification"
+    options={ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.mappingJustification}
+    maxTextLength={30}
+  />
+);
 
-    // Update the row data directly using AG Grid API
-    if (globalGridRef && globalGridRef.current && globalGridRef.current.api) {
-      const node = globalGridRef.current.api.getRowNode(rowIndex);
-      if (node) {
-        node.setDataValue("mappingJustification", newValue);
-      }
-    }
-    setIsDropdownOpen(false);
-  };
-
-  const handleClick = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
-  useEffect(() => {
-    setSelectedValue(
-      value || ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.mappingJustification[0]?.value || ""
-    );
-  }, [value]);
-
-  const getDisplayText = (value) => {
-    const option = ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.mappingJustification.find(
-      (opt) => opt.value === value
-    );
-    const text = option ? option.label : value;
-    return text.length > 30 ? `${text.substring(0, 30)}...` : text;
-  };
-
-  const getFullText = (value) => {
-    const option = ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.mappingJustification.find(
-      (opt) => opt.value === value
-    );
-    return option ? option.label : value;
-  };
-
-  return (
-    <Box sx={{ height: "100%", display: "flex", alignItems: "center", width: "100%" }}>
-      <FormControl fullWidth variant="standard" sx={{ height: "100%" }}>
-        <Select
-          value={selectedValue}
-          onChange={handleChange}
-          variant="standard"
-          disableUnderline
-          title={getFullText(selectedValue)}
-          sx={{
-            height: "100%",
-            fontSize: "small",
-            "& .MuiSelect-select": {
-              padding: "4px 8px",
-              fontSize: "12px",
-              color: CustomPalette.GREY_800,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              lineHeight: "1.2",
-              minHeight: "auto"
-            }
-          }}
-          onClick={handleClick}
-          open={isDropdownOpen}
-          onClose={() => setIsDropdownOpen(false)}
-          onOpen={() => setIsDropdownOpen(true)}
-          renderValue={(value) => getDisplayText(value)}
-        >
-          {ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.mappingJustification.map((option) => (
-            <MenuItem
-              key={option.value}
-              value={option.value}
-              sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-            >
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </Box>
-  );
-};
-
-// Checkbox renderer component defined outside
 const CheckboxRenderer = (props) => {
-  const { value, rowIndex, colDef } = props;
+  const { value, rowIndex, colDef, onSelectionChange } = props;
   const inputRef = useRef();
 
   useEffect(() => {
@@ -266,7 +189,6 @@ const CheckboxRenderer = (props) => {
     if (globalGridRef && globalGridRef.current && globalGridRef.current.api) {
       const node = globalGridRef.current.api.getRowNode(rowIndex);
       if (node) {
-        // If checking this box, uncheck all others first
         if (checked) {
           const allNodes = globalGridRef.current.api.getRenderedNodes();
           allNodes.forEach((node, index) => {
@@ -274,8 +196,12 @@ const CheckboxRenderer = (props) => {
               node.setDataValue(colDef.field, false);
             }
           });
+          if (onSelectionChange) {
+            onSelectionChange(node.data);
+          }
+        } else if (onSelectionChange) {
+          onSelectionChange(null);
         }
-
         node.setDataValue(colDef.field, checked);
       }
     }
@@ -290,8 +216,305 @@ const toDisplayRowData = (results) =>
     description: result.definition || result.description || "",
     typeOfMatch: ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.typeOfMatch[0]?.value,
     mappingJustification:
-      ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.mappingJustification[0]?.value
+      ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.mappingJustification[0]?.value,
+    uri: result?.uri,
+    subClassOf: result?.subClassOf || []
   }));
+
+// Tree node component for ontology hierarchy
+const TreeNode = ({
+  node,
+  level = 0,
+  isParent = false,
+  isChild = false,
+  isSelected = false,
+  expandedNodes,
+  toggleNode
+}) => {
+  const { id, label, hasChildren } = node;
+  const nodeId = id || "root";
+  const isExpanded = expandedNodes.includes(nodeId);
+
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          py: 0.3,
+          px: 0.5,
+          ml: level * 2,
+          cursor: hasChildren ? "pointer" : "default",
+          "&:hover": {
+            backgroundColor: "#f5f5f5"
+          },
+          backgroundColor: isSelected ? CustomPalette.PINK_100 : "transparent",
+          borderLeft: isSelected ? `3px solid ${CustomPalette.PRIMARY}` : "none",
+          pl: isSelected ? 1 : 0.5
+        }}
+        onClick={hasChildren ? () => toggleNode(nodeId) : undefined}
+      >
+        {hasChildren ? (
+          <Typography
+            variant="body2"
+            sx={{
+              mr: 0.5,
+              fontSize: "12px",
+              color: "#666",
+              fontFamily: "monospace",
+              fontWeight: "bold"
+            }}
+          >
+            {isExpanded ? "−" : "+"}
+          </Typography>
+        ) : (
+          <Box sx={{ width: 8, mr: 0.5 }} />
+        )}
+
+        <Typography
+          variant="body2"
+          sx={{
+            fontSize: "13px",
+            fontWeight: isSelected ? "500" : "normal",
+            color: isSelected ? CustomPalette.PRIMARY : "#333",
+            flexGrow: 1
+          }}
+        >
+          {label}
+        </Typography>
+
+        {isParent && (
+          <Typography
+            variant="caption"
+            sx={{
+              ml: 1,
+              color: "#666",
+              fontSize: "11px"
+            }}
+          >
+            (parent)
+          </Typography>
+        )}
+        {isChild && (
+          <Typography
+            variant="caption"
+            sx={{
+              ml: 1,
+              color: "#666",
+              fontSize: "11px"
+            }}
+          >
+            (subclass)
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
+const CustomTreeView = ({ selectedTerm }) => {
+  const [expandedNodes, setExpandedNodes] = useState(["root"]);
+  const [hierarchyData, setHierarchyData] = useState({ parents: [], children: [] });
+  const [isLoadingHierarchy, setIsLoadingHierarchy] = useState(false);
+
+  const toggleNode = (nodeId) => {
+    setExpandedNodes((prev) =>
+      prev.includes(nodeId) ? prev.filter((id) => id !== nodeId) : [...prev, nodeId]
+    );
+  };
+
+  const fetchParentClassLabels = async (subClassOfArray) => {
+    if (!subClassOfArray || subClassOfArray.length === 0) return [];
+
+    setIsLoadingHierarchy(true);
+
+    try {
+      const promises = subClassOfArray.map(async (uri) => {
+        try {
+          const response = await getLabelofParentClass(uri);
+          const { results } = response;
+          return {
+            id: results[0]?.uri,
+            label: results[0]?.label,
+            uri,
+            hasChildren: false
+          };
+        } catch (error) {
+          return {
+            id: uri,
+            label: uri,
+            uri,
+            hasChildren: false
+          };
+        }
+      });
+
+      const results = await Promise.all(promises);
+      return results.filter(Boolean);
+    } catch (error) {
+      return [];
+    } finally {
+      setIsLoadingHierarchy(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedTerm?.subClassOf && selectedTerm.subClassOf.length > 0) {
+      fetchParentClassLabels(selectedTerm.subClassOf).then((parents) => {
+        setHierarchyData({
+          parents,
+          children: [] // TODO: Implement children fetching if needed
+        });
+      });
+    } else {
+      setHierarchyData({ parents: [], children: [] });
+    }
+  }, [selectedTerm]);
+
+  if (!selectedTerm) return null;
+  return (
+    <Box sx={{ maxHeight: "100%", overflow: "auto" }}>
+      {/* Loading state */}
+      {isLoadingHierarchy && (
+        <Box sx={{ textAlign: "center", py: 3 }}>
+          <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}>
+            <Box
+              sx={{
+                width: 16,
+                height: 16,
+                border: "2px solid #e0e0e0",
+                borderTop: `2px solid ${CustomPalette.PRIMARY}`,
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+                "@keyframes spin": {
+                  "0%": { transform: "rotate(0deg)" },
+                  "100%": { transform: "rotate(360deg)" }
+                }
+              }}
+            />
+            <Typography variant="body2" sx={{ color: "#666", fontSize: "13px" }}>
+              Loading hierarchy...
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      {/* Parent classes with selected term as children */}
+      {!isLoadingHierarchy && hierarchyData.parents.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#666",
+              fontWeight: "500",
+              mb: 1,
+              fontSize: "12px",
+              textTransform: "uppercase",
+              letterSpacing: 0.5
+            }}
+          >
+            Ontology Hierarchy
+          </Typography>
+          {hierarchyData.parents.map((parent) => (
+            <Box key={parent.id}>
+              <TreeNode
+                node={{ ...parent, hasChildren: true }}
+                level={0}
+                isParent
+                expandedNodes={expandedNodes}
+                toggleNode={toggleNode}
+              />
+              {/* Show selected term under expanded parent */}
+              {expandedNodes.includes(parent.id) && (
+                <TreeNode
+                  node={{ id: "selected", label: selectedTerm.term, hasChildren: false }}
+                  level={1}
+                  isSelected
+                  expandedNodes={expandedNodes}
+                  toggleNode={toggleNode}
+                />
+              )}
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {/* Child classes */}
+      {hierarchyData.children.length > 0 && (
+        <Box>
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#666",
+              fontWeight: "500",
+              mb: 1,
+              fontSize: "12px",
+              textTransform: "uppercase",
+              letterSpacing: 0.5
+            }}
+          >
+            Subclasses
+          </Typography>
+          {hierarchyData.children.map((child) => (
+            <TreeNode
+              key={child.id}
+              node={child}
+              level={0}
+              isChild
+              expandedNodes={expandedNodes}
+              toggleNode={toggleNode}
+            />
+          ))}
+        </Box>
+      )}
+
+      {/* URI References */}
+      {!isLoadingHierarchy && hierarchyData.parents.length > 0 && (
+        <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid #e0e0e0" }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#666",
+              fontWeight: "500",
+              mb: 1,
+              fontSize: "12px",
+              textTransform: "uppercase",
+              letterSpacing: 0.5
+            }}
+          >
+            uris
+          </Typography>
+          {hierarchyData.parents.map((parent) => (
+            <Box key={`ref-${parent.id}`} sx={{ mb: 1, pl: 1 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "#888",
+                  fontSize: "11px",
+                  fontFamily: "monospace",
+                  wordBreak: "break-all"
+                }}
+              >
+                {parent.label}: {parent.uri}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {/* Empty state */}
+      {!isLoadingHierarchy &&
+        hierarchyData.parents.length === 0 &&
+        hierarchyData.children.length === 0 && (
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <Typography variant="body2" color="text.secondary">
+              No hierarchy data available for this term
+            </Typography>
+          </Box>
+        )}
+    </Box>
+  );
+};
 
 const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -300,13 +523,12 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
+  const [selectedTermForExploring, setSelectedTermForExploring] = useState(null);
   const gridRef = useRef();
 
-  // Set search term when modal opens with editing row data
   useEffect(() => {
-    if (editingRowData && editingRowData.subjectId) {
-      setSearchTerm(editingRowData.subjectId);
-      // Clear previous search results when setting new search term
+    if (editingRowData && editingRowData.Attribute) {
+      setSearchTerm(editingRowData.Attribute);
       setSearchResults([]);
       setCurrentPage(1);
       setTotalPages(1);
@@ -316,11 +538,9 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
 
   const handleSearch = async (page = 1) => {
     if (!searchTerm.trim()) {
-      console.log("No search term provided");
       return;
     }
 
-    console.log("Searching for:", searchTerm, "page:", page);
     setIsSearching(true);
 
     try {
@@ -330,13 +550,10 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
         query: searchTerm
       });
 
-      console.log("response", response);
-
       const { results, count } = response;
       const resultsData = toDisplayRowData(results);
-      const calculatedTotalPages = Math.ceil(count / 17); // 17 is the page_size
+      const calculatedTotalPages = Math.ceil(count / 17);
 
-      console.log("Setting search results:", resultsData.length, "items");
       setSearchResults(resultsData);
       setCurrentPage(page);
       setTotalPages(calculatedTotalPages);
@@ -351,8 +568,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
   };
 
   const handleSearchButtonClick = () => {
-    console.log("Search button clicked");
-    handleSearch(1); // Always start from page 1 when clicking search button
+    handleSearch(1);
   };
 
   const handleNextPage = () => {
@@ -385,7 +601,8 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
         autoHeight: true,
         cellRenderer: CheckboxRenderer,
         cellRendererParams: {
-          gridRef: globalGridRef
+          gridRef: globalGridRef,
+          onSelectionChange: setSelectedTermForExploring
         },
         headerComponent: EmptyHeaderRenderer
       },
@@ -416,7 +633,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
       {
         field: "typeOfMatch",
         headerName: "Type of Match",
-        width: 150,
+        width: 130,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         cellRenderer: TypeOfMatchCellRenderer,
@@ -429,7 +646,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
       {
         field: "mappingJustification",
         headerName: "Mapping Justification",
-        width: 180,
+        width: 220,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         cellRenderer: MappingJustificationCellRenderer,
@@ -490,7 +707,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                 gutterBottom
                 sx={{ color: CustomPalette.PRIMARY, mb: 2 }}
               >
-                Frame: {editingRowData?.subjectId || "Search Terms"}
+                Frame: {editingRowData?.Attribute || "Search Terms"}
               </Typography>
 
               <Box sx={{ mb: 3 }}>
@@ -498,8 +715,8 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                   <Grid item xs={10}>
                     <TextField
                       fullWidth
-                      placeholder="Search terms"
-                      value={searchTerm}
+                      placeholder="Search for terms..."
+                      // value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                       sx={{
@@ -652,21 +869,64 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
               >
                 Explore Terms
               </Typography>
-              <Box
-                sx={{
-                  height: "calc(70vh - 80px)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  border: `2px dashed ${CustomPalette.GREY_300}`,
-                  borderRadius: 1,
-                  backgroundColor: CustomPalette.PINK_200
-                }}
-              >
-                <Typography variant="body1" color="textSecondary">
-                  Term relationship explorer will be developed here
-                </Typography>
-              </Box>
+              {selectedTermForExploring ? (
+                <Box sx={{ height: "calc(70vh - 80px)", overflow: "auto" }}>
+                  <Typography variant="h6" sx={{ mb: 2 }}>
+                    {selectedTermForExploring.term}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
+                    {selectedTermForExploring.description}
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 2,
+                      border: `1px solid ${CustomPalette.GREY_300}`,
+                      borderRadius: 1,
+                      backgroundColor: CustomPalette.PINK_100
+                    }}
+                  >
+                    <CustomTreeView selectedTerm={selectedTermForExploring} />
+                  </Box>
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    height: "calc(70vh - 80px)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  <Box
+                    sx={{
+                      mb: 3,
+                      fontFamily: "monospace",
+                      fontSize: "14px",
+                      color: "#bbb",
+                      lineHeight: 1.2,
+                      textAlign: "left"
+                    }}
+                  >
+                    <div>├── Parent Class</div>
+                    <div>│ └── Selected Term</div>
+                    <div>│ ├── Subclass 1</div>
+                    <div>│ └── Subclass 2</div>
+                    <div>└── Another Parent</div>
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#888",
+                      textAlign: "center",
+                      maxWidth: "80%"
+                    }}
+                  >
+                    Select a term from the search results to explore its ontological
+                    hierarchy
+                  </Typography>
+                </Box>
+              )}
             </Paper>
           </Grid>
         </Grid>
@@ -728,14 +988,14 @@ const EditButton = ({ node, onEdit }) => {
   );
 };
 
-const DeleteButton = ({ node }) => {
+const DeleteButton = ({ node, onDelete }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <IconButton
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => console.log("Delete clicked for row:", node.rowIndex)}
+      onClick={() => onDelete(node.rowIndex)}
       sx={{
         color: isHovered ? CustomPalette.PRIMARY : CustomPalette.GREY_600,
         transition: "all 0.2s ease-in-out",
@@ -778,25 +1038,27 @@ const AttributeFraming = () => {
     setShowEditModal(true);
   };
 
-  const handleEditSave = (selectedItem) => {
-    // Handle saving the edited data
-    console.log(
-      "Saving edited data for row:",
-      editingRowIndex,
-      "with selected item:",
-      selectedItem
+  const handleDelete = (rowIndex) => {
+    const updatedRowData = attributeFramingRowData.filter(
+      (_, index) => index !== rowIndex
     );
 
-    // Update the main grid data with the selected item
+    setAttributeFramingRowData(updatedRowData);
+
+    if (editingRowIndex !== null && editingRowIndex > rowIndex) {
+      setEditingRowIndex(editingRowIndex - 1);
+    }
+  };
+
+  const handleEditSave = (selectedItem) => {
     if (selectedItem && editingRowIndex !== null) {
       const updatedRowData = [...attributeFramingRowData];
       updatedRowData[editingRowIndex] = {
         ...updatedRowData[editingRowIndex],
-        subjectId: selectedItem.term, // Term from search becomes subjectId
-        objectId: selectedItem.term, // Term from search becomes objectId (predicate replacement)
-        description: selectedItem.description, // Description from search
-        typeOfMatch: selectedItem.typeOfMatch, // Type of match from dropdown
-        mappingJustification: selectedItem.mappingJustification // Mapping justification from dropdown
+        objectId: selectedItem.term,
+        description: selectedItem.description,
+        typeOfMatch: selectedItem.typeOfMatch,
+        mappingJustification: selectedItem.mappingJustification
       };
       setAttributeFramingRowData(updatedRowData);
     }
@@ -813,7 +1075,7 @@ const AttributeFraming = () => {
   const columnDefs = useMemo(
     () => [
       {
-        field: "subjectId",
+        field: "Attribute",
         width: 150,
         autoHeight: true,
         editable: false,
@@ -892,6 +1154,9 @@ const AttributeFraming = () => {
         field: "delete",
         width: 70,
         cellRendererFramework: DeleteButton,
+        cellRendererParams: {
+          onDelete: handleDelete
+        },
         cellStyle: () => ({
           display: "flex",
           justifyContent: "center",
@@ -920,6 +1185,7 @@ const AttributeFraming = () => {
       if (hasObjects) {
         setPredicatesLoaded(true);
         setDataPopulated(true);
+        setIsLoadingPredicates(false);
         return;
       }
 
@@ -927,12 +1193,12 @@ const AttributeFraming = () => {
       const updatedRowData = [...attributeFramingRowData];
 
       const promises = updatedRowData.map(async (row, index) => {
-        if (row.subjectId && !row.objectId) {
+        if (row.Attribute && !row.objectId) {
           try {
             const matchedResult = await matchedSubjectAndPredicate({
               page: 1,
-              page_size: 10,
-              query: row.subjectId
+              page_size: 1,
+              query: row.Attribute
             });
 
             if (matchedResult) {
@@ -943,7 +1209,7 @@ const AttributeFraming = () => {
               };
             }
           } catch (error) {
-            console.log(`No match found for subject: ${row.subjectId}`);
+            // No match found for subject - handled gracefully
           }
         }
       });
@@ -952,7 +1218,6 @@ const AttributeFraming = () => {
       setAttributeFramingRowData(updatedRowData);
       setPredicatesLoaded(true);
       setDataPopulated(true);
-      // Add a small delay to make the loading state visible
       setTimeout(() => {
         setIsLoadingPredicates(false);
       }, 500);
@@ -960,7 +1225,7 @@ const AttributeFraming = () => {
 
     populateAttributeFraming();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Removed attributeFramingRowData from dependencies
+  }, []);
 
   const handleDeleteCurrentOverlay = () => {
     setOverlay((prev) => ({
@@ -1022,7 +1287,7 @@ const AttributeFraming = () => {
         ) : isLoadingPredicates ? (
           <Spinner text="Framing Attributes..." size={36} />
         ) : (
-          <Box sx={{ my: "2rem" }}>
+          <Box sx={{}}>
             <Box className="ag-theme-balham" sx={{ width: 1290 }}>
               <style>{gridStyles}</style>
               <AgGridReact

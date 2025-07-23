@@ -484,7 +484,7 @@ function App() {
         newAttributeFramingArray.push(attributeFramingObj);
       } else {
         newAttributeFramingArray.push({
-          subjectId: attributeRowItem.Attribute,
+          Attribute: attributeRowItem.Attribute,
           predicateId: "skos:exactMatch",
           objectId: "",
           description: "",
