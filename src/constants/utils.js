@@ -1,9 +1,11 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
+import { DateTime, Duration } from "luxon";
 import { codesToLanguages, alpha3CodesToTwoLetterCodes } from "./isoCodes";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
+  customDateFormatParsers,
   DEFAULT_LANGUAGE,
   DISALLOWED_CHARACTERS,
   FIELD_FORMAT_OVERLAY,
@@ -293,6 +295,15 @@ export const hasRangeOverlay = (OCAPackage) => {
   );
 };
 
+export const hasUnitFramingOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
+  );
+};
+
 // get extension overlays
 export const getExtensionOverlays = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
@@ -328,7 +339,51 @@ export const getOrderedAttributeMap = (attributeOrdering, attributeMap) => {
   return orderedAttributeMap;
 };
 
-// for unit framing overlay
+export const getUnitsFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+
+  const unitFramingOverlay = hasUnitFramingOverlay(OCAPackage)
+    ? OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
+    : undefined;
+
+  if (!unitFramingOverlay) return {};
+
+  const unitsArleadyFramed = {};
+  if (
+    unitFramingOverlay &&
+    typeof unitFramingOverlay === "object" &&
+    unitFramingOverlay.units
+  ) {
+    for (const unit of Object.keys(unitFramingOverlay.units)) {
+      unitsArleadyFramed[unit] = unitFramingOverlay.units[unit].term_id;
+    }
+  }
+
+  return unitsArleadyFramed;
+
+  // if (!unitFramingOverlay) return [];
+
+  // let unitsObj;
+  // if (Array.isArray(unitFramingOverlay)) {
+  //   unitsObj = unitFramingOverlay.find(
+  //     (item) => item && typeof item === "object" && item.units
+  //   )?.units;
+  // } else if (
+  //   unitFramingOverlay &&
+  //   typeof unitFramingOverlay === "object" &&
+  //   unitFramingOverlay.units
+  // ) {
+  //   unitsObj = unitFramingOverlay.units;
+  // }
+
+  // if (!unitsObj || typeof unitsObj !== "object") return [];
+
+  // const units = [];
+  // for (const key of Object.keys(unitsObj)) {
+  //   units.push(unitsObj[key].term_id);
+  // }
+};
+
 export const getUnitFramingInput = (unitFramingRowData) => {
   const unitFramingInput = {};
   for (const row of unitFramingRowData) {
@@ -339,15 +394,6 @@ export const getUnitFramingInput = (unitFramingRowData) => {
     };
   }
   return unitFramingInput;
-};
-
-export const hasUnitFramingOverlay = (OCAPackage) => {
-  // For now, use the capture base SAID of the main/top-level bundle
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
-  return Boolean(
-    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
-      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
-  );
 };
 
 export const options = {
@@ -378,13 +424,13 @@ export const searchUnits = (unit) => {
   };
 };
 
-export const updateUnitFramingRowDataForOverlayGeneration = (
+export const updatedUnitFramingRowDataForViewSchema = (
   attributeRowData,
   unitFramedRowData
 ) =>
   attributeRowData.map((attributeRow) => {
     const matchingRow = unitFramedRowData.find(
-      (unitRow) => unitRow.Unit === attributeRow.Unit
+      (unitRow) => unitRow.Unit === attributeRow.Unit && !unitRow.deleted
     );
 
     return matchingRow
@@ -396,6 +442,17 @@ export const updateUnitFramingRowDataForOverlayGeneration = (
         }
       : attributeRow;
   });
+
+export const getCurrentUnitFramingRowData = (
+  framedAllUnits,
+  unitFramedRowData,
+  unitRowDataWhenNoFrameAll
+) => {
+  if (framedAllUnits) {
+    return unitFramedRowData;
+  }
+  return unitRowDataWhenNoFrameAll;
+};
 
 export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {
   const rangeOverlayInput = {};
@@ -656,4 +713,24 @@ export const shouldDisableRangeOverlay = (
       !selectedFeatures.includes(FIELD_FORMAT_OVERLAY) ||
       !hasValidAttribute)
   );
+};
+
+export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();
+export const isValidNumber = (value) => !Number.isNaN(Number.parseFloat(value));
+
+export const parseDateString = (str) => {
+  let result;
+  // Custom parser is needed for non ISO 8601 formats
+  const customParser = customDateFormatParsers.find((parser) => parser.regex.test(str));
+
+  if (customParser) {
+    result = customParser.parse(str);
+  } else if (str.startsWith("P")) {
+    result = Duration.fromISO(str);
+  } else {
+    result = DateTime.fromISO(str);
+  }
+
+  if (result.isValid) return result;
+  return null;
 };

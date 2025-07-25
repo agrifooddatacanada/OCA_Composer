@@ -5,7 +5,7 @@ import {
   getOrderedAttributeMap,
   getOrderedEntries
 } from "../constants/utils";
-import { ADC, RANGE, SENSITIVE } from "../constants/constants";
+import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
 
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL
@@ -476,6 +476,48 @@ const useGenerateReadMeV2 = () => {
             }
 
             text_file.push(rangeText, "\n");
+          });
+
+          text_file.push(
+            "\n",
+            "******************************************************************\n"
+          );
+        }
+      }
+
+      if (Object.prototype.hasOwnProperty.call(extensionOverlays, UNIT_FRAMING)) {
+        const unitFramingOverlay = extensionOverlays[UNIT_FRAMING];
+
+        const unitOverlayData =
+          json_bundle.overlays.unit?.attribute_units ||
+          json_bundle.overlays.unit?.attribute_unit ||
+          {};
+
+        if (Object.keys(unitFramingOverlay?.units || {}).length > 0) {
+          text_file.push(
+            `Layer name: ${unitFramingOverlay.type}\n`,
+            `SAID/digest: ${unitFramingOverlay.d}\n\n`
+          );
+
+          if (unitFramingOverlay.framing_metadata) {
+            text_file.push("Unit frame\n");
+            Object.entries(unitFramingOverlay.framing_metadata).forEach(
+              ([key, value]) => {
+                text_file.push(`   "${key}": "${value}"\n`);
+              }
+            );
+            text_file.push("\n");
+          }
+
+          text_file.push(`Schema attributes: ${unitFramingOverlay.type}\n`);
+
+          Object.entries(unitOverlayData).forEach(([attribute, unit]) => {
+            const unitFramingData = unitFramingOverlay.units[unit];
+            if (!unitFramingData) return;
+            text_file.push(
+              `   ${attribute}: unit: ${unit}, UCUM code: ${unitFramingData.term_id}`,
+              "\n"
+            );
           });
 
           text_file.push(

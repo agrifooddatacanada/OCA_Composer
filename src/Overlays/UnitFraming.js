@@ -6,9 +6,18 @@ import React, {
   memo,
   forwardRef,
   useEffect,
-  useImperativeHandle
+  useImperativeHandle,
+  useMemo
 } from "react";
-import { Box, IconButton, TextField, Autocomplete, Popper, Link } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  TextField,
+  Autocomplete,
+  Popper,
+  Link,
+  Button
+} from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-theme-balham.css";
@@ -23,45 +32,10 @@ import Loading from "../components/Loading";
 import { searchUnits } from "../constants/utils";
 import { Context } from "../App";
 
-// TODO: fix the grid styles: handle the last column border
-// The width of the columns are the defined based on the sx={{ width: 705 }}: find a dynamic way to set the width
-const TrashCanButton = memo(
-  // eslint-disable-next-line no-unused-vars
-  forwardRef((props, ref) => {
-    const { setUnitFramedDeleteStatus } = useContext(Context);
-    const onClick = useCallback(() => {
-      setUnitFramedDeleteStatus((prev) =>
-        prev.map((row) =>
-          row.Unit === props.node.data.Unit && row.Attribute === props.node.data.Attribute
-            ? { ...row, deleted: true }
-            : row
-        )
-      );
-      props.node.updateData({
-        ...props.node.data,
-        "UCUM Code": "",
-        "UCUM Label": "",
-        Description: ""
-      });
-      props?.onRefresh();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.node.data, setUnitFramedDeleteStatus]);
-
-    return (
-      <IconButton
-        sx={{
-          pr: 1,
-          color: CustomPalette.GREY_600,
-          transition: "all 0.2s ease-in-out",
-          display: props.node.data?.Unit === "" ? "none" : "block"
-        }}
-        onClick={onClick}
-      >
-        <DeleteOutlineIcon />
-      </IconButton>
-    );
-  })
-);
+const GRID_WIDTH = 705;
+const LOADING_THRESHOLD = 40;
+const BUTTON_MIN_WIDTH = "150px";
+const MAX_TEXT_WIDTH = "600px";
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -70,44 +44,133 @@ const allowOverflowStyle = {
 
 const CustomPopper = styled(Popper)(() => ({ width: "100%" }));
 
-const UnitFramingAutoCompleteEditor = forwardRef(
-  ({ search, value, initialOptions }, ref) => {
+const buttonDisabledStyles = {
+  backgroundColor: "grey.400 !important",
+  color: "grey.600 !important",
+  "&:hover": {
+    backgroundColor: "grey.400 !important"
+  },
+  "&:disabled": {
+    backgroundColor: "grey.400 !important",
+    color: "grey.600 !important"
+  }
+};
+
+// managing unit data
+const useUnitData = (currentUnitFramedRowData) => {
+  const [tempToDisplayRowData, setTempToDisplayRowData] = useState([]);
+
+  const processUnitData = useCallback(() => {
+    // Always use currentUnitFramedRowData as the source
+    const sourceData = currentUnitFramedRowData;
+
+    // Create unique units map
+    const unitFramedRowDataSet = Array.from(
+      new Map(sourceData.map((row) => [row.Unit, row])).values()
+    );
+
+    // Filter out deleted units
+    const filteredUnitFramedRowData = unitFramedRowDataSet.filter((row) => {
+      const toDisplayRow = unitFramedRowDataSet.find(
+        (displayRow) => displayRow.Attribute === row.Attribute && !displayRow.deleted
+      );
+      return !!toDisplayRow;
+    });
+
+    setTempToDisplayRowData(filteredUnitFramedRowData);
+  }, [currentUnitFramedRowData]);
+
+  useEffect(() => {
+    processUnitData();
+  }, [processUnitData]);
+
+  return { tempToDisplayRowData, setTempToDisplayRowData, processUnitData };
+};
+
+const TrashCanButton = memo((props) => {
+  const { setCurrentUnitFramedRowData } = useContext(Context);
+
+  const handleDelete = useCallback(() => {
+    setCurrentUnitFramedRowData((prev) =>
+      prev.map((row) =>
+        row.Unit === props.node.data.Unit ? { ...row, deleted: true } : row
+      )
+    );
+
+    props.node.updateData({
+      ...props.node.data,
+      "UCUM Code": "",
+      "UCUM Label": "",
+      Description: ""
+    });
+
+    props?.onRefresh();
+  }, [props.node.data, setCurrentUnitFramedRowData, props]);
+
+  const isVisible = props.node.data?.Unit !== "";
+
+  return (
+    <IconButton
+      sx={{
+        pr: 1,
+        color: CustomPalette.GREY_600,
+        transition: "all 0.2s ease-in-out",
+        display: isVisible ? "block" : "none"
+      }}
+      onClick={handleDelete}
+    >
+      <DeleteOutlineIcon />
+    </IconButton>
+  );
+});
+
+TrashCanButton.displayName = "TrashCanButton";
+
+const UnitFramingAutoCompleteEditor = memo(
+  forwardRef(({ search, value, initialOptions }, ref) => {
     const [options, setOptions] = useState(initialOptions || []);
     const [autoValue, setAutoValue] = useState(value || "");
-
     const inputRef = useRef({ value });
 
-    const onOptionSelected = (event, newValue) => {
-      setAutoValue(newValue);
-      inputRef.current.value = newValue;
+    const onOptionSelected = useCallback(
+      (event, newValue) => {
+        setAutoValue(newValue);
+        inputRef.current.value = newValue;
 
-      if (ref && ref.current) {
-        ref.current.api.stopEditing();
-      }
-    };
-
-    const onInputChangeHandler = (event, newInputValue) => {
-      setAutoValue(newInputValue);
-      search(newInputValue, (newOptions) => {
-        setOptions(newOptions);
-
-        // Check for exact match
-        const exactMatch = newOptions.find((option) => option === newInputValue);
-        if (exactMatch) {
-          // Manually trigger the onChange event
-          onOptionSelected(event, exactMatch);
+        if (ref?.current) {
+          ref.current.api.stopEditing();
         }
-      });
-    };
+      },
+      [ref]
+    );
 
-    const onKeyDownHandler = (event) => {
-      if (event.key === "Enter") {
-        const exactMatch = options.find((option) => option === autoValue);
-        if (exactMatch) {
-          onOptionSelected(event, exactMatch);
+    const onInputChangeHandler = useCallback(
+      (event, newInputValue) => {
+        setAutoValue(newInputValue);
+        search(newInputValue, (newOptions) => {
+          setOptions(newOptions);
+
+          // Check for exact match
+          const exactMatch = newOptions.find((option) => option === newInputValue);
+          if (exactMatch) {
+            onOptionSelected(event, exactMatch);
+          }
+        });
+      },
+      [search, onOptionSelected]
+    );
+
+    const onKeyDownHandler = useCallback(
+      (event) => {
+        if (event.key === "Enter") {
+          const exactMatch = options.find((option) => option === autoValue);
+          if (exactMatch) {
+            onOptionSelected(event, exactMatch);
+          }
         }
-      }
-    };
+      },
+      [options, autoValue, onOptionSelected]
+    );
 
     useEffect(() => {
       inputRef.current.value = value;
@@ -158,8 +221,10 @@ const UnitFramingAutoCompleteEditor = forwardRef(
         )}
       />
     );
-  }
+  })
 );
+
+UnitFramingAutoCompleteEditor.displayName = "UnitFramingAutoCompleteEditor";
 
 const createCellEditorParams = (searchUnits, key) => ({
   search: (inputValue, setOptions) => {
@@ -184,153 +249,183 @@ const createOnCellValueChanged = (searchUnits, key) => (params) => {
   }
 };
 
-const getColumnDefs = (gridRef, t, searchUnits) => [
-  {
-    field: "Unit",
-    editable: false,
-    width: 100,
-    cellStyle: () => allowOverflowStyle,
-    headerComponent: () => (
-      <CellHeader headerText={t("Unit")} helpText={t("The units defined in schema")} />
-    )
-  },
-  {
-    field: "UCUM Code",
-    width: 185,
-    autoHeight: true,
-    cellStyle: () => allowOverflowStyle,
-    cellEditor: UnitFramingAutoCompleteEditor,
-    cellEditorParams: createCellEditorParams(searchUnits, "code"),
-    singleClickEdit: true,
-    editable: true,
-    onCellValueChanged: createOnCellValueChanged(searchUnits, "code"),
-    headerComponent: () => (
-      <CellHeader headerText={t("UCUM Code")} helpText={t("UCUM Code")} />
-    )
-  },
-  {
-    field: "UCUM Label",
-    width: 185,
-    autoHeight: true,
-    cellStyle: () => allowOverflowStyle,
-    cellEditor: UnitFramingAutoCompleteEditor,
-    cellEditorParams: createCellEditorParams(searchUnits, "label"),
-    singleClickEdit: true,
-    editable: true,
-    onCellValueChanged: createOnCellValueChanged(searchUnits, "label"),
-    headerComponent: () => (
-      <CellHeader headerText={t("UCUM Label")} helpText={t("UCUM Label")} />
-    )
-  },
-  {
-    field: "Description",
-    width: 185,
-    autoHeight: true,
-    cellStyle: () => allowOverflowStyle,
-    cellEditor: UnitFramingAutoCompleteEditor,
-    cellEditorParams: createCellEditorParams(searchUnits, "description"),
-    singleClickEdit: true,
-    editable: true,
-    onCellValueChanged: createOnCellValueChanged(searchUnits, "description"),
-    headerComponent: () => (
-      <CellHeader headerText={t("UCUM Description")} helpText={t("UCUM Description")} />
-    )
-  },
-  {
-    headerName: "",
-    field: "Delete",
-    cellRendererFramework: TrashCanButton,
-    width: 48,
-    cellRendererParams: (params) => ({
-      onRefresh: () => {
-        gridRef.current.api.redrawRows({ rowNodes: [params.node] });
-      }
-    })
-  }
-];
-
-const updateUnitFramedRowData = (unitFramedRowData, newUnitFramedRowData) =>
+const updateUnits = (unitFramedRowData, displayedFramedUnits) =>
   unitFramedRowData.map((row) => {
-    const existingRow = newUnitFramedRowData.find(
-      (existing) => existing.Unit === row.Unit
+    const displayedRow = displayedFramedUnits.find(
+      (displayed) => displayed.Unit === row.Unit
     );
 
-    return existingRow
+    return displayedRow
       ? {
           ...row,
-          "UCUM Code": existingRow["UCUM Code"],
-          "UCUM Label": existingRow["UCUM Label"],
-          Description: existingRow.Description
+          "UCUM Code": displayedRow["UCUM Code"],
+          "UCUM Label": displayedRow["UCUM Label"],
+          Description: displayedRow.Description
         }
       : row;
   });
+
+const useColumnDefs = (gridRef, t) =>
+  useMemo(
+    () => [
+      {
+        field: "Unit",
+        editable: false,
+        width: 100,
+        cellStyle: () => allowOverflowStyle,
+        headerComponent: () => (
+          <CellHeader
+            headerText={t("Unit")}
+            helpText={t("The units defined in schema")}
+          />
+        )
+      },
+      {
+        field: "UCUM Code",
+        width: 185,
+        autoHeight: true,
+        cellStyle: () => allowOverflowStyle,
+        cellEditor: UnitFramingAutoCompleteEditor,
+        cellEditorParams: createCellEditorParams(searchUnits, "code"),
+        singleClickEdit: true,
+        editable: true,
+        onCellValueChanged: createOnCellValueChanged(searchUnits, "code"),
+        headerComponent: () => (
+          <CellHeader headerText={t("UCUM Code")} helpText={t("UCUM Code")} />
+        )
+      },
+      {
+        field: "UCUM Label",
+        width: 185,
+        autoHeight: true,
+        cellStyle: () => allowOverflowStyle,
+        cellEditor: UnitFramingAutoCompleteEditor,
+        cellEditorParams: createCellEditorParams(searchUnits, "label"),
+        singleClickEdit: true,
+        editable: true,
+        onCellValueChanged: createOnCellValueChanged(searchUnits, "label"),
+        headerComponent: () => (
+          <CellHeader headerText={t("UCUM Label")} helpText={t("UCUM Label")} />
+        )
+      },
+      {
+        field: "Description",
+        width: 185,
+        autoHeight: true,
+        cellStyle: () => allowOverflowStyle,
+        cellEditor: UnitFramingAutoCompleteEditor,
+        cellEditorParams: createCellEditorParams(searchUnits, "description"),
+        singleClickEdit: true,
+        editable: true,
+        onCellValueChanged: createOnCellValueChanged(searchUnits, "description"),
+        headerComponent: () => (
+          <CellHeader
+            headerText={t("UCUM Description")}
+            helpText={t("UCUM Description")}
+          />
+        )
+      },
+      {
+        headerName: "",
+        field: "Delete",
+        cellRendererFramework: TrashCanButton,
+        width: 48,
+        cellRendererParams: (params) => ({
+          onRefresh: () => {
+            gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
+          }
+        })
+      }
+    ],
+    [t, gridRef]
+  );
 
 const UnitFraming = () => {
   const { t } = useTranslation();
   const {
     setCurrentPage,
     setSelectedOverlay,
+    setOverlay,
     unitFramedRowData,
     setUnitFramedRowData,
-    setOverlay,
-    unitFramedDeleteStatus,
-    setUnitRowData
+    frameAllUnits,
+    setFrameAllUnits,
+    currentUnitFramedRowData,
+    setCurrentUnitFramedRowData,
+    unframedUnitList
   } = useContext(Context);
+
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [tempToDisplayRowData, setTempToDisplayRowData] = useState([]);
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
 
-  useEffect(() => {
-    const unitFramedRowDataSet = Array.from(
-      new Map(unitFramedRowData.map((row) => [row.Unit, row])).values()
-    );
+  const { tempToDisplayRowData, setTempToDisplayRowData } = useUnitData(
+    currentUnitFramedRowData
+  );
 
-    const filteredUnitFramedRowData = unitFramedRowDataSet.filter((row) => {
-      const toDisplayRow = unitFramedDeleteStatus.find(
-        (displayRow) => displayRow.Attribute === row.Attribute && !displayRow.deleted
-      );
-      return !!toDisplayRow;
-    });
+  const columnDefs = useColumnDefs(gridRef, t);
 
-    setTempToDisplayRowData(filteredUnitFramedRowData);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleDeleteCurrentOverlay = () => {
+  const handleDeleteCurrentOverlay = useCallback(() => {
     setOverlay((prev) => ({
       ...prev,
       "Unit Framing": { feature: "Unit Framing", selected: false }
     }));
-
     setSelectedOverlay("");
     setCurrentPage("Overlays");
-  };
+  }, [setOverlay, setSelectedOverlay, setCurrentPage]);
 
-  const handleSave = () => {
-    gridRef.current.api.stopEditing();
-    const displayedFramedUnits = gridRef.current.api
-      .getRenderedNodes()
-      ?.map((node) => node?.data);
+  const handleSave = useCallback(() => {
+    gridRef.current?.api?.stopEditing();
+    const displayedFramedUnits =
+      gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data) || [];
 
-    setUnitRowData(displayedFramedUnits);
-    setUnitFramedRowData(
-      updateUnitFramedRowData(unitFramedRowData, displayedFramedUnits)
-    );
-  };
+    // Update currentUnitFramedRowData with only displayed data
+    setCurrentUnitFramedRowData((prev) => updateUnits(prev, displayedFramedUnits));
 
-  const handleForward = () => {
+    // Update unitFramedRowData with the final framed data
+    const finalUnitFramedRowData = updateUnits(unitFramedRowData, displayedFramedUnits);
+    setUnitFramedRowData(finalUnitFramedRowData);
+  }, [unitFramedRowData, setUnitFramedRowData, setCurrentUnitFramedRowData]);
+
+  const handleForward = useCallback(() => {
     handleSave();
     setSelectedOverlay("");
     setCurrentPage("Overlays");
-  };
+  }, [handleSave, setSelectedOverlay, setCurrentPage]);
 
-  const columnDefs = getColumnDefs(gridRef, t, searchUnits);
+  const handleFrameAllUnits = useCallback(() => {
+    gridRef.current?.api?.stopEditing();
+    const displayedFramedUnits =
+      gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data) || [];
+
+    const updatedCurrentUnitFramedRowData = updateUnits(
+      currentUnitFramedRowData,
+      displayedFramedUnits
+    );
+    setCurrentUnitFramedRowData(updatedCurrentUnitFramedRowData);
+
+    const eligibleData = updatedCurrentUnitFramedRowData.filter((row) => !row.deleted);
+
+    setTempToDisplayRowData(eligibleData);
+    setFrameAllUnits(true);
+  }, [
+    currentUnitFramedRowData,
+    setFrameAllUnits,
+    setCurrentUnitFramedRowData,
+    setTempToDisplayRowData
+  ]);
 
   const onGridReady = useCallback(() => {
     setLoading(false);
   }, []);
+
+  const showLoading = loading && unitFramedRowData?.length > LOADING_THRESHOLD;
+  const hasUnframedUnits = unframedUnitList && unframedUnitList.length > 0;
+  const unframedUnitsText = frameAllUnits
+    ? t("All units are framed")
+    : hasUnframedUnits
+      ? `${t("Unframed units")}: [${unframedUnitList.join(", ")}]`
+      : t("No units to frame");
 
   return (
     <BackNextSkeleton
@@ -340,7 +435,7 @@ const UnitFraming = () => {
       pageBack={() => setShowDeleteConfirmation(true)}
       backText="Remove overlay"
     >
-      {loading && unitFramedRowData?.length > 40 && <Loading />}
+      {showLoading && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={handleDeleteCurrentOverlay}
@@ -350,13 +445,51 @@ const UnitFraming = () => {
       <Box
         sx={{
           margin: "2rem",
-          gap: "3rem",
+          gap: "2rem",
           display: "flex",
           flexDirection: "column",
           alignItems: "center"
         }}
       >
-        <Box className="ag-theme-balham" sx={{ width: 705 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "0.75rem",
+            width: "100%"
+          }}
+        >
+          <Button
+            color="button"
+            variant="contained"
+            disabled={frameAllUnits || !hasUnframedUnits}
+            onClick={handleFrameAllUnits}
+            sx={{
+              padding: "0.5rem 1rem",
+              minWidth: BUTTON_MIN_WIDTH,
+              ...((frameAllUnits || !hasUnframedUnits) && buttonDisabledStyles)
+            }}
+          >
+            {frameAllUnits
+              ? t("All units are framed")
+              : !hasUnframedUnits
+                ? t("No units to frame")
+                : t("Frame all units")}
+          </Button>
+          <Box
+            sx={{
+              textAlign: "center",
+              fontSize: "0.9rem",
+              color: "text.secondary",
+              maxWidth: MAX_TEXT_WIDTH,
+              wordWrap: "break-word"
+            }}
+          >
+            {unframedUnitsText}
+          </Box>
+        </Box>
+        <Box className="ag-theme-balham" sx={{ width: GRID_WIDTH }}>
           <style>{gridStyles}</style>
           <AgGridReact
             ref={gridRef}
@@ -368,11 +501,7 @@ const UnitFraming = () => {
             onGridReady={onGridReady}
           />
         </Box>
-        <Box
-          sx={{
-            width: "80%"
-          }}
-        >
+        <Box sx={{ width: "80%" }}>
           {t("All unit rules are documented in the")}{" "}
           <Link
             href="https://github.com/agrifooddatacanada/UCUM_agri-food_units"

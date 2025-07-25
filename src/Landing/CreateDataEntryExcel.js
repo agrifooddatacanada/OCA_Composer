@@ -5,7 +5,7 @@ import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
 } from "../constants/utils";
-import { ADC, RANGE, SENSITIVE } from "../constants/constants";
+import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -119,6 +119,8 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let entry_code_ordering = null;
   let sensitiveOverlay = null;
   let rangeOverlay = null;
+  let unitFramingOverlay = null;
+  let extensionOverlayColumnCount = 0;
 
   if (isOcaPackage) {
     const extensions = inPutJsonResult[2];
@@ -137,6 +139,10 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
         if (overlays[overlayKey].type.includes(RANGE)) {
           rangeOverlay = overlays[overlayKey];
+        }
+
+        if (overlays[overlayKey].type.includes(UNIT_FRAMING)) {
+          unitFramingOverlay = overlays[overlayKey];
         }
       }
     }
@@ -858,9 +864,47 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     }
   });
 
+  if (Object.keys(unitFramingOverlay?.units || {}).length > 0) {
+    const unitOverlay = jsonData.find((overlay) => overlay.type.includes("/unit/"));
+    const attributeUnitMap = unitOverlay?.attribute_units || unitOverlay?.attribute_unit;
+    if (attributeUnitMap) {
+      const columns = ["Unit Framing"];
+      const startColumnIndex =
+        jsonData.length + 3 + extensionOverlayColumnCount - skipped;
+      try {
+        columns.forEach((column, i) => {
+          const columnIndex = startColumnIndex + i;
+          const columnHeaderCell = sheet1.getCell(shift + 1, columnIndex);
+
+          sheet1.getColumn(columnIndex).width = 15;
+          columnHeaderCell.value = column;
+          formatHeader(columnHeaderCell);
+          attributeNames.forEach((attribute) => {
+            const rowIndex = mappingAttrKeysandAttrValues[attribute];
+            if (!rowIndex) return;
+
+            const unit = attributeUnitMap[attribute];
+            if (!unit) return;
+
+            const unitFramingData = unitFramingOverlay.units[unit];
+            if (!unitFramingData) return;
+
+            const valueCell = sheet1.getCell(shift + rowIndex, columnIndex);
+            valueCell.value = unitFramingData.term_id;
+          });
+          extensionOverlayColumnCount += 1;
+        });
+      } catch (error) {
+        throw new WorkbookError(
+          ".. Error in formatting unit framing columns (header and rows) ..."
+        );
+      }
+    }
+  }
+
   if (rangeOverlay?.attributes) {
     const columns = ["Lower Bound", "Inclusive", "Upper Bound", "Inclusive"];
-    const startColumnIndex = jsonData.length + 3 - skipped;
+    const startColumnIndex = jsonData.length + 3 + extensionOverlayColumnCount - skipped;
 
     try {
       columns.forEach((column, i) => {
@@ -887,6 +931,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
             valueCell.value = rangeOverlay.attributes[attribute].upper_inclusive;
           }
         });
+        extensionOverlayColumnCount += 1;
       });
     } catch (error) {
       throw new WorkbookError(
@@ -895,7 +940,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     }
   }
 
-  // Step 7: lookup table
+  // Step 7: lookup table and unit framing references
   const lookUpTable = new Map();
   const lookUpStart = shift + attributeNames.length + 6;
 
@@ -904,6 +949,34 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
   sheet1.getCell(lookUpStart, 2).value = null;
   formatLookupHeader(sheet1.getCell(lookUpStart, 2));
+
+  if (unitFramingOverlay?.framing_metadata) {
+    sheet1.getCell(lookUpStart, 3).value = "Framing references";
+    formatLookupHeader(sheet1.getCell(lookUpStart, 3));
+
+    sheet1.getCell(lookUpStart, 4).value = null;
+    formatLookupHeader(sheet1.getCell(lookUpStart, 4));
+
+    sheet1.getCell(lookUpStart, 5).value = null;
+    formatLookupHeader(sheet1.getCell(lookUpStart, 5));
+
+    sheet1.getCell(lookUpStart + 1, 3).value = "Unit framing";
+    formatLookupValue(sheet1.getCell(lookUpStart + 1, 3));
+
+    let metadataRow = lookUpStart + 2;
+
+    for (const [property, value] of Object.entries(
+      unitFramingOverlay?.framing_metadata
+    )) {
+      sheet1.getCell(metadataRow, 4).value = property;
+      formatLookupAttr(sheet1.getCell(metadataRow, 4));
+
+      sheet1.getCell(metadataRow, 5).value = value;
+      formatLookupValue(sheet1.getCell(metadataRow, 5));
+
+      metadataRow++;
+    }
+  }
 
   let offset = 0;
   for (const [attrName, entries] of Object.entries(lookupEntries)) {

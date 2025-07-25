@@ -19,10 +19,21 @@ import {
   LABEL,
   META,
   ORDERING,
-  UNIT
+  RANGE,
+  SENSITIVE,
+  UNIT,
+  UNIT_FRAME_ID,
+  UNIT_FRAME_LABEL,
+  UNIT_FRAME_LOCATION,
+  UNIT_FRAME_VERSION,
+  UNIT_FRAMING
 } from "../constants/constants";
 import MergeDifferenceModal from "./MergeDifferenceModal";
-import { generateOCABundle, generateOCAFileFromMergedOverlays } from "../constants/utils";
+import {
+  generateOCABundle,
+  generateOCAFileFromMergedOverlays,
+  searchUnits
+} from "../constants/utils";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 
 const checkIfKeyInList = (key, list) => {
@@ -179,7 +190,7 @@ const UserSelection = () => {
       item.key.includes(LABEL) ||
       item.key.includes(INFORMATION) ||
       item.key.includes(CONFORMANCE) ||
-      item.key.includes(UNIT) ||
+      item.key === UNIT ||
       item.key.includes(CARDINALITY) ||
       item.key.includes(FORMAT) ||
       item.key.includes(ENTRY_CODE)
@@ -187,10 +198,30 @@ const UserSelection = () => {
       const comparisonObj = findComparisonObject(item.key.split(" - ")?.[0]);
       let overlayData1 = null;
       let overlayData2 = null;
-      if (item.key.includes(UNIT)) {
+      if (item.key === UNIT) {
         // In case of zip bundle, the unit is in attribute_units
         overlayData1 = value1?.[comparisonObj] || value1?.attribute_units || {};
         overlayData2 = value2?.[comparisonObj] || value2?.attribute_units || {};
+      } else if (item.key.includes(INFORMATION)) {
+        const informationOverlayData1 = value1?.[comparisonObj] || {};
+        const informationOverlayData2 = value2?.[comparisonObj] || {};
+
+        // Removing any escape characters for " and '
+        overlayData1 = Object.keys(informationOverlayData1).reduce((acc, key) => {
+          acc[key] = informationOverlayData1[key]
+            // eslint-disable-next-line quotes
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
+          return acc;
+        }, {});
+
+        overlayData2 = Object.keys(informationOverlayData2).reduce((acc, key) => {
+          acc[key] = informationOverlayData2[key]
+            // eslint-disable-next-line quotes
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
+          return acc;
+        }, {});
       } else {
         overlayData1 = value1?.[comparisonObj] || {};
         overlayData2 = value2?.[comparisonObj] || {};
@@ -255,6 +286,110 @@ const UserSelection = () => {
       });
 
       setShowDifference(true);
+    } else if (item.key === UNIT_FRAMING) {
+      const unitOverlayData1 =
+        selectedOverlaysOCAFile1.unit?.attribute_unit ||
+        selectedOverlaysOCAFile1.unit?.attribute_units ||
+        {};
+
+      const unitOverlayData2 =
+        selectedOverlaysOCAFile2.unit?.attribute_unit ||
+        selectedOverlaysOCAFile2.unit?.attribute_units ||
+        {};
+
+      const uniqueAttributes = new Set([
+        ...Object.keys(unitOverlayData1),
+        ...Object.keys(unitOverlayData2)
+      ]);
+
+      const unitFramingComparison = [];
+
+      uniqueAttributes.forEach((attribute) => {
+        const attributeUnit1 = unitOverlayData1[attribute];
+        const attributeUnit2 = unitOverlayData2[attribute];
+        const unitFramingData1 = value1?.units?.[attributeUnit1] || {};
+        const unitFramingData2 = value2?.units?.[attributeUnit2] || {};
+        let parsedValue1 = "";
+        let parsedValue2 = "";
+
+        if (attributeUnit1 && unitFramingData1.term_id) {
+          parsedValue1 += `Unit: ${attributeUnit1}\nUCUM Code: ${unitFramingData1.term_id}`;
+          const { firstMatch } = searchUnits(unitFramingData1.term_id);
+          if (firstMatch?.label) {
+            parsedValue1 += `\nUCUM Label: ${firstMatch.label}`;
+          }
+          if (firstMatch?.description) {
+            parsedValue1 += `\nDescription: ${firstMatch.description}`;
+          }
+        }
+        if (attributeUnit2 && unitFramingData2.term_id) {
+          parsedValue2 += `Unit: ${attributeUnit2}\nUCUM Code: ${unitFramingData2.term_id}`;
+          const { firstMatch } = searchUnits(unitFramingData2.term_id);
+          if (firstMatch?.label) {
+            parsedValue2 += `\nUCUM Label: ${firstMatch.label}`;
+          }
+          if (firstMatch?.description) {
+            parsedValue2 += `\nDescription: ${firstMatch.description}`;
+          }
+        }
+        unitFramingComparison.push({
+          comparisonValue: attribute,
+          ocaFile1: parsedValue1,
+          ocaFile2: parsedValue2
+        });
+      });
+
+      setDataDifference({
+        title: item.key,
+        rowData: unitFramingComparison
+      });
+    } else if (item.key.includes(SENSITIVE)) {
+      const sensitiveAttributesComparison = {
+        comparisonValue: "sensitive_attributes",
+        ocaFile1: value1?.sensitive_attributes,
+        ocaFile2: value2?.sensitive_attributes
+      };
+
+      setDataDifference({
+        title: item.key,
+        rowData: [sensitiveAttributesComparison]
+      });
+    } else if (item.key.includes(RANGE)) {
+      const attributes = Object.keys(value1?.attributes || value2?.attributes || {});
+      const attributeRangeComparison = [];
+      attributes.forEach((attribute) => {
+        const rangeData1 = value1?.attributes?.[attribute] || {};
+        const rangeData2 = value2?.attributes?.[attribute] || {};
+        let parsedValue1 = "";
+        let parsedValue2 = "";
+
+        if (rangeData1.lower !== "") {
+          parsedValue1 += `Lower Bound: ${rangeData1.lower} (${rangeData1.lower_inclusive ? "Inclusive" : "Exclusive"})\n`;
+        }
+
+        if (rangeData1.upper !== "") {
+          parsedValue1 += `Upper Bound: ${rangeData1.upper} (${rangeData1.upper_inclusive ? "Inclusive" : "Exclusive"})`;
+        }
+
+        if (rangeData2.lower !== "") {
+          parsedValue2 += `Lower Bound: ${rangeData2.lower} (${rangeData2.lower_inclusive ? "Inclusive" : "Exclusive"})\n`;
+        }
+
+        if (rangeData2.upper !== "") {
+          parsedValue2 += `Upper Bound: ${rangeData2.upper} (${rangeData2.upper_inclusive ? "Inclusive" : "Exclusive"})`;
+        }
+
+        attributeRangeComparison.push({
+          comparisonValue: attribute,
+          ocaFile1: parsedValue1,
+          ocaFile2: parsedValue2
+        });
+      });
+
+      setDataDifference({
+        title: item.key,
+        rowData: attributeRangeComparison
+      });
     }
 
     setShowDifference(true);
@@ -333,7 +468,7 @@ const UserSelection = () => {
           coreOverlays[overlayKey] = [value];
         }
         // OCA package extension overlays
-      } else if (key === ORDERING) {
+      } else if ([ORDERING, SENSITIVE, RANGE, UNIT_FRAMING].includes(key)) {
         if (value) {
           extensionOverlays[overlayKey] = value;
         }
@@ -363,6 +498,8 @@ const UserSelection = () => {
     const bundle = await generateOCABundle(ocaFileContent);
 
     // For now, we only have ADC community ordering extension overlay for top-level/main schema bundle
+    const sensitiveAttributes =
+      mergedOverlays.extensionOverlays?.[SENSITIVE]?.sensitive_attributes || [];
     const extension = {
       extensions: {
         [ADC]: {
@@ -375,7 +512,43 @@ const UserSelection = () => {
                 entry_code_ordering:
                   mergedOverlays.extensionOverlays?.[ORDERING]?.entry_code_ordering || {}
               }
-            }
+            },
+            ...(mergedOverlays.extensionOverlays?.[RANGE]?.attributes
+              ? [
+                  {
+                    range_overlay: {
+                      type: RANGE,
+                      attributes: mergedOverlays.extensionOverlays?.[RANGE]?.attributes
+                    }
+                  }
+                ]
+              : []),
+            ...(sensitiveAttributes.length > 0
+              ? [
+                  {
+                    sensitive_overlay: {
+                      type: SENSITIVE,
+                      sensitive_attributes: sensitiveAttributes
+                    }
+                  }
+                ]
+              : []),
+            ...(mergedOverlays.extensionOverlays?.[UNIT_FRAMING]?.units
+              ? [
+                  {
+                    unit_framing_overlay: {
+                      type: UNIT_FRAMING,
+                      properties: {
+                        id: UNIT_FRAME_ID,
+                        label: UNIT_FRAME_LABEL,
+                        location: UNIT_FRAME_LOCATION,
+                        version: UNIT_FRAME_VERSION
+                      },
+                      units: mergedOverlays.extensionOverlays?.[UNIT_FRAMING]?.units
+                    }
+                  }
+                ]
+              : [])
           ]
         }
       }
@@ -503,9 +676,54 @@ const UserSelection = () => {
 
       return attributeOrderingEqual && entryCodeOrderingEqual;
     }
+    if (key.includes(SENSITIVE)) {
+      const value1 = selectedOverlaysOCAFile1[key];
+      const value2 = selectedOverlaysOCAFile2[key];
+      const sensitiveAttributesEqual =
+        JSON.stringify(value1?.sensitive_attributes) ===
+        JSON.stringify(value2?.sensitive_attributes);
+      return sensitiveAttributesEqual;
+    }
+    if (key.includes(RANGE)) {
+      const value1 = selectedOverlaysOCAFile1[key];
+      const value2 = selectedOverlaysOCAFile2[key];
+      const rangeOverlayEqual =
+        JSON.stringify(value1?.attributes || {}) ===
+        JSON.stringify(value2?.attributes || {});
+      return rangeOverlayEqual;
+    }
+    if (key.includes(UNIT_FRAMING)) {
+      const value1 = selectedOverlaysOCAFile1[key];
+      const value2 = selectedOverlaysOCAFile2[key];
+      const unitFramingOverlayEqual =
+        JSON.stringify(value1?.units || {}) === JSON.stringify(value2?.units || {});
+      return unitFramingOverlayEqual;
+    }
     const objKey = findComparisonObject(splitKey);
     const value1 = selectedOverlaysOCAFile1[key]?.[objKey];
     const value2 = selectedOverlaysOCAFile2[key]?.[objKey];
+
+    if (key.includes(INFORMATION)) {
+      // Removing any escape characters for " and '
+      const parsedValue1 = Object.keys(value1).reduce((acc, key) => {
+        acc[key] = value1[key]
+          // eslint-disable-next-line quotes
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'");
+        return acc;
+      }, {});
+
+      const parsedValue2 = Object.keys(value2).reduce((acc, key) => {
+        acc[key] = value2[key]
+          // eslint-disable-next-line quotes
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'");
+        return acc;
+      }, {});
+
+      return JSON.stringify(parsedValue1) === JSON.stringify(parsedValue2);
+    }
+
     return JSON.stringify(value1) === JSON.stringify(value2);
   };
 

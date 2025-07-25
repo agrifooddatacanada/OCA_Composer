@@ -193,6 +193,7 @@ const Range = () => {
   const handleValidate = () => {
     gridRef.current.api.stopEditing();
     setShouldRevalidate(false);
+    setErrors({});
     const newData = getCurrentData(gridRef.current.api, true);
 
     newData.forEach((row) => {
@@ -219,8 +220,6 @@ const Range = () => {
       }
     });
   };
-
-  console.log("errors", errors);
 
   return (
     <BackNextSkeleton
