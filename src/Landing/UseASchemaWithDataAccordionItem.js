@@ -18,8 +18,9 @@ import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
 import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
 import { Context } from "../App";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
+import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 
-const UseASchemaWithDataAccordionItem = () => {
+const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setCurrentDataValidatorPage } = useContext(Context);
@@ -45,6 +46,9 @@ const UseASchemaWithDataAccordionItem = () => {
     setRawFile(acceptedFiles);
     setJsonRawFile(acceptedFiles);
   };
+
+  const disableButtonCheck = jsonRawFile.length === 0 || jsonLoading;
+  const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
 
   return (
     <AccordionItemWrapper>
@@ -86,10 +90,15 @@ const UseASchemaWithDataAccordionItem = () => {
             marginTop: 2
           }}
         >
+          {isInvalidOcaPackage && !disableButtonCheck && (
+            <Box sx={{ maxWidth: "300px", marginTop: "30px" }}>
+              <InvalidOCAPackageMessage textStyles={{ textAlign: "center" }} />
+            </Box>
+          )}
           <GenerateDataEntryExcel
             rawFile={jsonRawFile}
             setLoading={setJsonLoading}
-            disableButtonCheck={jsonRawFile.length === 0 || jsonLoading}
+            disableButtonCheck={disableAdditionalSchemaTools}
           />
           <Button
             variant="contained"
@@ -103,7 +112,7 @@ const UseASchemaWithDataAccordionItem = () => {
               marginTop: "20px",
               marginBottom: "20px"
             }}
-            disabled={jsonRawFile.length === 0 || jsonLoading}
+            disabled={disableAdditionalSchemaTools}
           >
             {t("Enter/Verify Data in Webpage")}
           </Button>

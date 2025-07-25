@@ -234,7 +234,8 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   captureBaseOverlay,
   attributeNames,
   sensitiveAttributes = [],
-  rangeOverlay = null
+  rangeOverlay = null,
+  unitFramingOverlay = null
 }) => {
   const hcfFlaggedAttributes = Array.isArray(captureBaseOverlay.flagged_attributes)
     ? captureBaseOverlay.flagged_attributes
@@ -260,6 +261,8 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
 
   const standardOverlay = layers.find((layer) => layer.layerName.includes("standard"));
 
+  const unitFramingUnits = Object.keys(unitFramingOverlay?.units || {});
+
   if (conformanceOverlay?.attribute_conformance) {
     columns.push("Required entry");
   }
@@ -278,6 +281,10 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
 
   if (rangeOverlay?.attributes) {
     columns.push("Lower Bound", "Inclusive", "Upper Bound", "Inclusive");
+  }
+
+  if (unitFramingUnits.length > 0) {
+    columns.push("Unit Framing");
   }
 
   const rows = attributeNames.map((attribute) => {
@@ -333,11 +340,24 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
       );
     }
 
+    if (unitFramingOverlay?.units?.[unit]) {
+      const unitFramingData = unitFramingOverlay.units[unit];
+      row.push(unitFramingData.term_id);
+    }
+
     return row;
   });
 
   markdownContent.push(generateTable(columns, rows), "\n\n");
 
+  return markdownContent.join("");
+};
+
+export const generateUnitFramingMetadataTable = (unitFramingMetadata) => {
+  const markdownContent = ["### Unit framing \n\n"];
+  const columns = ["Term", "Value"];
+  const rows = Object.entries(unitFramingMetadata);
+  markdownContent.push(generateTable(columns, rows), "\n\n");
   return markdownContent.join("");
 };
 

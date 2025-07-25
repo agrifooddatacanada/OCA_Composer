@@ -21,8 +21,9 @@ import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
+import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 
-const UseASchemaAccordionItem = () => {
+const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme, OCAPackage } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
@@ -61,6 +62,7 @@ const UseASchemaAccordionItem = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
+  const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
 
   const handleClickMarkdownReadme = () => {
     const jsonSchemaIsUploaded = Object.keys(jsonToReadme).length > 0;
@@ -132,12 +134,17 @@ const UseASchemaAccordionItem = () => {
             alignItems: "center"
           }}
         >
+          {isInvalidOcaPackage && !disableButtonCheck && (
+            <Box sx={{ maxWidth: "300px", marginTop: "30px" }}>
+              <InvalidOCAPackageMessage textStyles={{ textAlign: "center" }} />
+            </Box>
+          )}
           <Button
             variant="contained"
             color="navButton"
             onClick={navigateToViewPage}
             sx={buttonStyles}
-            disabled={disableButtonCheck}
+            disabled={disableAdditionalSchemaTools}
           >
             {t("View Schema")}
           </Button>
@@ -161,7 +168,7 @@ const UseASchemaAccordionItem = () => {
               }
             }}
             sx={buttonStyles}
-            disabled={disableButtonCheck}
+            disabled={disableAdditionalSchemaTools}
           >
             {t("Generate Text Readme")}
           </Button>
@@ -170,7 +177,7 @@ const UseASchemaAccordionItem = () => {
             color="navButton"
             onClick={handleClickMarkdownReadme}
             sx={buttonStyles}
-            disabled={disableButtonCheck}
+            disabled={disableAdditionalSchemaTools}
           >
             {t("Generate Markdown Readme")}
           </Button>

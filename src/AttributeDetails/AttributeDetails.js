@@ -89,9 +89,7 @@ export default function AttributeDetails({
         blankAttribute: t("Attribute names cannot be blank"),
         codeInjection: t("Attribute names cannot include HTML"),
         blankType: t("Please enter a Type for all attributes"),
-        disallowedCharacters: t(
-          "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes"
-        )
+        disallowedCharacters: t("AttributeDisallowedCharErrorMessage")
       };
       let codeInjection = false;
       let hasDisallowedCharacters = false;

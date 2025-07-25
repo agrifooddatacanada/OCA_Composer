@@ -9,6 +9,7 @@ import { messages } from "../constants/messages";
 import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
+  // getUnitsFramedThatAlreadyExistInOcaPackage
 } from "../constants/utils";
 
 const useHandleAllDrop = (pageForward) => {
@@ -548,6 +549,9 @@ const useHandleAllDrop = (pageForward) => {
           const modifiedBundle = replaceAttributeCharsInParsedJson(
             jsonFile.oca_bundle.bundle
           );
+          // setUnitFramedThatAlreadyExistInOcaPackage(
+          //   getUnitsFramedThatAlreadyExistInOcaPackage(jsonFile)
+          // );
           setOCAPackage(jsonFile);
           handleBundleJSONDrop(modifiedBundle, jsonFile);
         } else if (jsonFile?.bundle) {
