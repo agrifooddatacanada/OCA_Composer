@@ -11,9 +11,12 @@ import CellHeader from "../components/CellHeader";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import {
+  ADC,
   FIELD_RANGE_OVERLAY,
+  FIELD_UNIT_FRAMING_OVERLAY,
   MAX_ATTR_DESCRIPTION_CHARS,
-  MAX_ATTR_LABEL_CHARS
+  MAX_ATTR_LABEL_CHARS,
+  UNIT_FRAMING
 } from "../constants/constants";
 import SelectedFeatureHeader from "./SelectedFeatureHeader";
 
@@ -100,9 +103,13 @@ export const ListRenderer = memo((props) => {
 
 export default function ViewGrid({ displayArray, currentLanguage, setLoading }) {
   const { t } = useTranslation();
-  const { overlay, cardinalityData } = useContext(Context);
+  const { overlay, cardinalityData, OCAPackage } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
+
+  const unitFramingOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.[UNIT_FRAMING];
 
   const onGridReady = useCallback(() => {
     setLoading(false);
@@ -250,6 +257,30 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
               helpText: t("Whether or not the upper bound is included in the range")
             },
             cellRenderer: CheckboxRenderer
+          });
+        } else if (feature === FIELD_UNIT_FRAMING_OVERLAY) {
+          let helpText = "";
+          if (unitFramingOverlay?.framing_metadata) {
+            const helpTextElements = Object.entries(
+              unitFramingOverlay.framing_metadata
+            ).map(([key, value], index) => (
+              <React.Fragment key={key}>
+                {index > 0 && <br />}
+                <strong>{key}:</strong> &quot;{value}&quot;
+              </React.Fragment>
+            ));
+            helpText = <>{helpTextElements}</>;
+          }
+
+          predefinedColumns.push({
+            field: "Unit Framing",
+            width: 160,
+            autoHeight: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Unit Framing"),
+              helpText
+            }
           });
         } else {
           predefinedColumns.push({
