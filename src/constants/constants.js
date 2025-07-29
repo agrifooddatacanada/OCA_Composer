@@ -480,7 +480,7 @@ export const extensionOverlays = [ORDERING];
 export const SHOW_ALL_DATA = "Show all data";
 export const SHOW_ONLY_ROWS_WITH_ERRORS = "Show only rows with errors";
 export const OCA_REPOSITORY_API_URL = "https://api.adc.oca-repo.semanticengine.org";
-export const SSSOM_MAPPER_API_URL = "http://localhost:8080"; // TODO: change to production URL something like https://api.adc.sssom-mapper.semanticengine.org
+export const SSSOM_MAPPER_API_URL = "https://api.adc.sssom-mapper.semanticengine.org";
 
 export const ALLOWED_BOOLEAN_VALUES = [
   "True",

@@ -621,7 +621,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
       {
         field: "description",
         headerName: "Description",
-        width: 250,
+        width: 230,
         autoHeight: true,
         cellRenderer: DescriptionCellRenderer,
         headerComponent: CellHeader,
