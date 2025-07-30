@@ -23,7 +23,8 @@ import {
   generateLanguageSpecificSchemaDetailsTable,
   generateSAIDTableForJson,
   generateSchemaInformation,
-  generateSchemaQuickView
+  generateSchemaQuickView,
+  generateUnitFramingMetadataTable
 } from "./markdownReadmeUtils";
 
 const getModifiedLayer = (overlay) => {
@@ -157,6 +158,11 @@ const useGenerateMarkdownReadMeFromJson = () => {
       rangeOverlay,
       unitFramingOverlay
     });
+    if (unitFramingOverlay?.framing_metadata) {
+      fileContent += generateUnitFramingMetadataTable(
+        unitFramingOverlay.framing_metadata
+      );
+    }
     fileContent += generateLanguageSpecificSchemaDetailsTable({
       layers,
       attributeNames,
