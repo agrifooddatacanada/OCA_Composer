@@ -28,7 +28,8 @@ import {
 } from "./constants/constants";
 import {
   getUnitsFramedThatAlreadyExistInOcaPackage,
-  hasUnitFramingOverlay
+  hasUnitFramingOverlay,
+  hasAttributeFramingOverlay
 } from "./constants/utils";
 
 export const Context = createContext();
@@ -112,8 +113,13 @@ function App() {
   ] = useState({});
   const [unframedUnitList, setUnframedUnitList] = useState([]);
   const [unitRowDataWhenNoFrameAll, setUnitRowDataWhenNoFrameAll] = useState([]);
-  // the current state of attributeFraming
+
+  // Attribute framing
   const [attributeFramingRowData, setAttributeFramingRowData] = useState([]);
+  const [frameAllAttributes, setFrameAllAttributes] = useState(
+    hasAttributeFramingOverlay()
+  );
+  const [unframedAttributeList, setUnframedAttributeList] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -467,6 +473,7 @@ function App() {
     });
 
     setRangeRowData(newRangeArray);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attributeRowData]);
 
   /*
@@ -493,6 +500,7 @@ function App() {
       }
     });
     setAttributeFramingRowData(newAttributeFramingArray);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attributeRowData]);
 
   useEffect(() => {
@@ -515,6 +523,7 @@ function App() {
       });
       setMatchingRowData(newMatchingRowData);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datasetRawFile, jsonRawFile, attributesList]);
 
   function createEntryCodeRowData(languages, attributesWithLists, savedEntryCodes) {
@@ -722,6 +731,10 @@ function App() {
             setCurrentUnitFramedRowData,
             unframedUnitList,
             setUnframedUnitList,
+            frameAllAttributes,
+            setFrameAllAttributes,
+            unframedAttributeList,
+            setUnframedAttributeList,
             attributeFramingRowData,
             setAttributeFramingRowData
           }}

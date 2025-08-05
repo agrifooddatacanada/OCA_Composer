@@ -287,15 +287,6 @@ export const hasAttributeOrdering = (OCAPackage) => {
   );
 };
 
-export const hasRangeOverlay = (OCAPackage) => {
-  // For now, use the capture base SAID of the main/top-level bundle
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
-  return Boolean(
-    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
-      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[RANGE]
-  );
-};
-
 export const hasUnitFramingOverlay = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
   const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
@@ -305,7 +296,24 @@ export const hasUnitFramingOverlay = (OCAPackage) => {
   );
 };
 
-// get extension overlays
+export const hasAttributeFramingOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.attribute_framing
+  );
+};
+
+export const hasRangeOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[RANGE]
+  );
+};
+
 export const getExtensionOverlays = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
   const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
@@ -361,6 +369,31 @@ export const getUnitsFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
   }
 
   return unitsArleadyFramed;
+};
+
+export const getAttributesFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+
+  const attributeFramingOverlay = hasAttributeFramingOverlay(OCAPackage)
+    ? OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.find(
+        (overlay) => overlay.attribute_framing
+      )?.attribute_framing
+    : undefined;
+
+  if (!attributeFramingOverlay) return {};
+
+  const attributesAlreadyFramed = {};
+  if (
+    attributeFramingOverlay &&
+    typeof attributeFramingOverlay === "object" &&
+    attributeFramingOverlay.attributes
+  ) {
+    for (const attribute of Object.keys(attributeFramingOverlay.attributes)) {
+      attributesAlreadyFramed[attribute] = attributeFramingOverlay.attributes[attribute];
+    }
+  }
+
+  return attributesAlreadyFramed;
 };
 
 export const getUnitFramingInput = (unitFramingRowData) => {
@@ -431,6 +464,21 @@ export const getCurrentUnitFramingRowData = (
     return unitFramedRowData;
   }
   return unitRowDataWhenNoFrameAll;
+};
+
+export const getAttributeFramingInput = (attributeFramingRowData) => {
+  const attributeFramingInput = {};
+  for (const row of attributeFramingRowData) {
+    if (!row.objectId) continue;
+
+    attributeFramingInput[row.Attribute] = {
+      description: row.description,
+      framing_justification: row.mappingJustification,
+      predicate_id: row.predicateId,
+      term_id: row.objectId
+    };
+  }
+  return attributeFramingInput;
 };
 
 export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {

@@ -1,4 +1,15 @@
-import React, { useContext, useMemo, useRef, useState, useEffect } from "react";
+// TODO: change to framing_justification instead of mapping_justification.
+// !Important: in generating extension input object if the term_id is empty we don't include it.
+// TODO: imnplement a similar solution like in unit framing using a boolean flag.
+
+import React, {
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  useCallback
+} from "react";
 import { useTranslation } from "react-i18next";
 import {
   Box,
@@ -36,6 +47,21 @@ import {
 } from "../constants/utils";
 
 let globalGridRef = null;
+
+const BUTTON_MIN_WIDTH = "150px";
+const MAX_TEXT_WIDTH = "600px";
+
+const buttonDisabledStyles = {
+  backgroundColor: "grey.400 !important",
+  color: "grey.600 !important",
+  "&:hover": {
+    backgroundColor: "grey.400 !important"
+  },
+  "&:disabled": {
+    backgroundColor: "grey.400 !important",
+    color: "grey.600 !important"
+  }
+};
 
 const EmptyHeaderRenderer = () => <div />;
 
@@ -1015,23 +1041,130 @@ const DeleteButton = ({ node, onDelete }) => {
   );
 };
 
+const updateFramedAttributes = (attributeFramingRowData, displayedFramedAttributes) => {
+  return attributeFramingRowData.map((row) => {
+    const displayedRow = displayedFramedAttributes.find(
+      (displayed) => displayed.Attribute === row.Attribute
+    );
+
+    return displayedRow
+      ? {
+          ...row,
+          objectId: displayedRow.objectId,
+          description: displayedRow.description,
+          mappingJustification: displayedRow.mappingJustification,
+          predicateId: displayedRow.predicateId
+        }
+      : row;
+  });
+};
+
 const AttributeFraming = () => {
   const {
     attributeFramingRowData,
     setAttributeFramingRowData,
     setCurrentPage,
     setSelectedOverlay,
-    setOverlay
+    setOverlay,
+    frameAllAttributes,
+    setFrameAllAttributes,
+    unframedAttributeList,
+    setUnframedAttributeList,
+    attributesList
   } = useContext(Context);
 
   const { t } = useTranslation();
   const gridRef = useRef();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [predicatesLoaded, setPredicatesLoaded] = useState(false);
-  const [isLoadingPredicates, setIsLoadingPredicates] = useState(true);
+  const [isLoadingPredicates, setIsLoadingPredicates] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [dataPopulated, setDataPopulated] = useState(false);
+  const [gridReady, setGridReady] = useState(false);
+
+  const hasUnframedAttributes = unframedAttributeList && unframedAttributeList.length > 0;
+
+  // Update unframed attributes list whenever attributeFramingRowData changes
+  useEffect(() => {
+    if (attributeFramingRowData && attributeFramingRowData.length > 0) {
+      const unframed = attributeFramingRowData
+        .filter((row) => !row.objectId || row.objectId.trim() === "")
+        .map((row) => row.Attribute);
+      setUnframedAttributeList(unframed);
+
+      // Update frameAllAttributes based on whether all attributes are framed
+      const allFramed = attributeFramingRowData.every(
+        (row) => row.objectId && row.objectId.trim() !== ""
+      );
+      if (allFramed && attributeFramingRowData.length > 0) {
+        setFrameAllAttributes(true);
+      }
+    }
+  }, [attributeFramingRowData, setUnframedAttributeList, setFrameAllAttributes]);
+
+  const handleFrameAllAttributes = useCallback(async () => {
+    if (!gridReady || !gridRef.current?.api) {
+      console.warn("Grid not ready for frame all attributes operation");
+      return;
+    }
+
+    setIsLoadingPredicates(true);
+
+    try {
+      gridRef.current.api.stopEditing();
+    } catch (error) {
+      console.warn("Error stopping grid editing:", error);
+    }
+
+    const displayedFramedAttributes =
+      gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data) || [];
+
+    // Update with any current changes from the grid
+    const updatedAttributeFramingRowData = updateFramedAttributes(
+      attributeFramingRowData,
+      displayedFramedAttributes
+    );
+
+    // Frame only unframed attributes (those without objectId)
+    const promises = updatedAttributeFramingRowData.map(async (row, index) => {
+      if (row.Attribute && !row.objectId) {
+        try {
+          const matchedResult = await matchedSubjectAndPredicate({
+            page: 1,
+            page_size: 1,
+            query: row.Attribute
+          });
+
+          if (matchedResult) {
+            return {
+              ...row,
+              objectId: matchedResult.label || "",
+              description: matchedResult.definition || ""
+            };
+          }
+        } catch (error) {
+          // No match found for subject - handled gracefully
+        }
+      }
+      return row;
+    });
+
+    const finalRowData = await Promise.all(promises);
+
+    setAttributeFramingRowData(finalRowData);
+    setFrameAllAttributes(true);
+    setDataPopulated(true);
+
+    setTimeout(() => {
+      setIsLoadingPredicates(false);
+    }, 500);
+  }, [
+    setAttributeFramingRowData,
+    setFrameAllAttributes,
+    attributeFramingRowData,
+    gridReady
+  ]);
 
   const handleEdit = (rowIndex) => {
     setEditingRowIndex(rowIndex);
@@ -1057,7 +1190,7 @@ const AttributeFraming = () => {
         ...updatedRowData[editingRowIndex],
         objectId: selectedItem.term,
         description: selectedItem.description,
-        typeOfMatch: selectedItem.typeOfMatch,
+        predicateId: selectedItem.typeOfMatch,
         mappingJustification: selectedItem.mappingJustification
       };
       setAttributeFramingRowData(updatedRowData);
@@ -1167,65 +1300,11 @@ const AttributeFraming = () => {
     [t]
   );
 
-  useEffect(() => {
-    const populateAttributeFraming = async () => {
-      // Skip if data is already populated or if there's no data
-      if (
-        dataPopulated ||
-        !attributeFramingRowData ||
-        attributeFramingRowData.length === 0
-      ) {
-        setPredicatesLoaded(true);
-        setIsLoadingPredicates(false);
-        return;
-      }
-
-      const hasObjects = attributeFramingRowData.some((row) => row.objectId);
-
-      if (hasObjects) {
-        setPredicatesLoaded(true);
-        setDataPopulated(true);
-        setIsLoadingPredicates(false);
-        return;
-      }
-
-      setIsLoadingPredicates(true);
-      const updatedRowData = [...attributeFramingRowData];
-
-      const promises = updatedRowData.map(async (row, index) => {
-        if (row.Attribute && !row.objectId) {
-          try {
-            const matchedResult = await matchedSubjectAndPredicate({
-              page: 1,
-              page_size: 1,
-              query: row.Attribute
-            });
-
-            if (matchedResult) {
-              updatedRowData[index] = {
-                ...row,
-                objectId: matchedResult.label || "",
-                description: matchedResult.definition || ""
-              };
-            }
-          } catch (error) {
-            // No match found for subject - handled gracefully
-          }
-        }
-      });
-
-      await Promise.all(promises);
-      setAttributeFramingRowData(updatedRowData);
-      setPredicatesLoaded(true);
-      setDataPopulated(true);
-      setTimeout(() => {
-        setIsLoadingPredicates(false);
-      }, 500);
-    };
-
-    populateAttributeFraming();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const unframedAttributesText = frameAllAttributes
+    ? t("All attributes are framed")
+    : hasUnframedAttributes
+      ? `${t("Unframed attributes")}: [${unframedAttributeList.join(", ")}]`
+      : t("No attributes to frame");
 
   const handleDeleteCurrentOverlay = () => {
     setOverlay((prev) => ({
@@ -1241,9 +1320,20 @@ const AttributeFraming = () => {
   };
 
   const handleSave = () => {
-    gridRef.current.api.stopEditing();
-    const rowData = gridRef.current.api.getRenderedNodes()?.map((node) => node?.data);
-    setAttributeFramingRowData(rowData);
+    if (!gridReady || !gridRef.current?.api) {
+      console.warn("Grid not ready for save operation");
+      return;
+    }
+
+    try {
+      gridRef.current.api.stopEditing();
+      const rowData = gridRef.current.api.getRenderedNodes()?.map((node) => node?.data);
+      if (rowData) {
+        setAttributeFramingRowData(rowData);
+      }
+    } catch (error) {
+      console.error("Error saving grid data:", error);
+    }
   };
 
   const handleForward = () => {
@@ -1264,7 +1354,6 @@ const AttributeFraming = () => {
       pageBack={handleBack}
       backText="Remove overlay"
     >
-      {/* {loading && <Loading text="Loading predicates..." />} */}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={handleDeleteCurrentOverlay}
@@ -1282,13 +1371,69 @@ const AttributeFraming = () => {
         />
       )}
       <Box sx={{ my: "2rem" }}>
-        {!predicatesLoaded ? (
-          <Spinner text="Framing Attributes..." size={36} />
-        ) : isLoadingPredicates ? (
+        {isLoadingPredicates ? (
           <Spinner text="Framing Attributes..." size={36} />
         ) : (
-          <Box sx={{}}>
-            <Box className="ag-theme-balham" sx={{ width: 1290 }}>
+          <Box
+            sx={{
+              margin: { xs: "1rem", sm: "2rem" },
+              gap: "2rem",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "100%",
+              overflow: "visible"
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "0.75rem",
+                width: "100%"
+              }}
+            >
+              <Button
+                color="button"
+                variant="contained"
+                disabled={frameAllAttributes || !gridReady}
+                onClick={handleFrameAllAttributes}
+                sx={{
+                  padding: "0.5rem 1rem",
+                  minWidth: BUTTON_MIN_WIDTH,
+                  ...((frameAllAttributes || !gridReady) && buttonDisabledStyles)
+                }}
+              >
+                {!gridReady
+                  ? t("Loading...")
+                  : frameAllAttributes
+                    ? t("All attributes are framed")
+                    : t("Frame all attributes")}
+              </Button>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  fontSize: "0.9rem",
+                  color: "text.secondary",
+                  maxWidth: MAX_TEXT_WIDTH,
+                  wordWrap: "break-word"
+                }}
+              >
+                {unframedAttributesText}
+              </Box>
+            </Box>
+
+            <Box
+              className="ag-theme-balham"
+              sx={{
+                width: "100%",
+                minWidth: "1230px",
+                overflowX: "auto",
+                border: "1px solid #ddd",
+                borderRadius: "4px"
+              }}
+            >
               <style>{gridStyles}</style>
               <AgGridReact
                 ref={gridRef}
@@ -1296,7 +1441,8 @@ const AttributeFraming = () => {
                 columnDefs={columnDefs}
                 domLayout="autoHeight"
                 stopEditingWhenCellsLoseFocus
-                onGridReady={() => {}}
+                suppressHorizontalScroll={false}
+                onGridReady={() => setGridReady(true)}
               />
             </Box>
           </Box>

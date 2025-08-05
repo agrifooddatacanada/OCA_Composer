@@ -130,15 +130,34 @@ const Overlays = ({ pageBack, pageForward }) => {
         >
           {t("Add schema feature")}
           <Box
-            style={{
+            sx={{
               width: "350px",
               height: "300px",
-              overflowY: "auto",
               border: "1px solid #ccc",
-              borderRadius: "4px"
+              borderRadius: "4px",
+              overflow: "hidden"
             }}
           >
-            <List>
+            <List
+              sx={{
+                height: "100%",
+                overflowY: "auto",
+                padding: 0,
+                "&::-webkit-scrollbar": {
+                  width: "8px"
+                },
+                "&::-webkit-scrollbar-track": {
+                  backgroundColor: "#f1f1f1"
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "#c1c1c1",
+                  borderRadius: "4px"
+                },
+                "&::-webkit-scrollbar-thumb:hover": {
+                  backgroundColor: "#a8a8a8"
+                }
+              }}
+            >
               {unselectedFeatures.map((text) => (
                 <ListItemButton
                   key={text}
@@ -167,15 +186,34 @@ const Overlays = ({ pageBack, pageForward }) => {
         >
           {t("Added schema feature")}
           <Box
-            style={{
+            sx={{
               width: "350px",
               height: "300px",
-              overflowY: "auto",
               border: "1px solid #ccc",
-              borderRadius: "4px"
+              borderRadius: "4px",
+              overflow: "hidden"
             }}
           >
-            <List>
+            <List
+              sx={{
+                height: "100%",
+                overflowY: "auto",
+                padding: 0,
+                "&::-webkit-scrollbar": {
+                  width: "8px"
+                },
+                "&::-webkit-scrollbar-track": {
+                  backgroundColor: "#f1f1f1"
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "#c1c1c1",
+                  borderRadius: "4px"
+                },
+                "&::-webkit-scrollbar-thumb:hover": {
+                  backgroundColor: "#a8a8a8"
+                }
+              }}
+            >
               {selectedFeatures.map((text) => (
                 <Box
                   key={text}

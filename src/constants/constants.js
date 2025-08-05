@@ -463,6 +463,9 @@ export const SENSITIVE = "sensitive";
 // Range overlay
 export const RANGE = "range";
 
+// Attribute Framing Overlay
+export const ATTRIBUTE_FRAMING = "attribute_framing";
+
 export const overlays = [
   CHARACTER_ENCODING,
   FORMAT,
