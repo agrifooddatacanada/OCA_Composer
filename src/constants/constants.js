@@ -6,6 +6,9 @@ export const DEFAULT_LANGUAGE = "English";
 export const MAX_ATTR_LABEL_CHARS = 250;
 export const MAX_ATTR_DESCRIPTION_CHARS = 250;
 
+export const SCHEMA_MODE_SINGLE = "single";
+export const SCHEMA_MODE_MULTI_LEVEL = "multi-level";
+
 export const classification = {
   "": [""],
   "Natural sciences": [
@@ -188,11 +191,13 @@ export const dataTypes = [
   "DateTime",
   "Numeric",
   "Text",
+  "Reference",
   "Array[Binary]",
   "Array[Boolean]",
   "Array[DateTime]",
   "Array[Numeric]",
-  "Array[Text]"
+  "Array[Text]",
+  "Array[Reference]"
 ];
 
 export const descriptionToFormatCodeText = {

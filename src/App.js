@@ -23,7 +23,8 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
-  FIELD_UNIT_FRAMING_OVERLAY
+  FIELD_UNIT_FRAMING_OVERLAY,
+  SCHEMA_MODE_SINGLE
 } from "./constants/constants";
 import {
   getUnitsFramedThatAlreadyExistInOcaPackage,
@@ -63,6 +64,7 @@ export const pagesArray = [
 ];
 
 function App() {
+  const [schemaMode, setSchemaMode] = useState(SCHEMA_MODE_SINGLE);
   const [isZip, setIsZip] = useState(false);
   const [isZipEdited, setIsZipEdited] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
@@ -564,6 +566,8 @@ function App() {
         <Context.Provider
           // eslint-disable-next-line react/jsx-no-constructed-context-values
           value={{
+            schemaMode,
+            setSchemaMode,
             fileData,
             setFileData,
             rawFile,
