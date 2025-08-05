@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import i18next from "i18next";
 import { useTranslation } from "react-i18next";
 import { Typography, Tooltip, Button, Box, useMediaQuery } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
+import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
 import logo from "../assets/agri-logo.png";
 import logoWhite from "../assets/agri-logo-white.png";
 import HeaderWrapper from "./HeaderWrapper";
 import logoSE from "../assets/se-logo.png";
+import { SCHEMA_MODE_MULTI_LEVEL, SCHEMA_MODE_SINGLE } from "../constants/constants";
 
 export default function Header({ currentPage }) {
   const { t } = useTranslation();
+  const { schemaMode, setSchemaMode } = useContext(Context);
   const [header, setHeader] = useState(currentPage);
   const [toolTipText, setToolTipText] = useState("");
   const [helpLink, setHelpLink] = useState("");
@@ -300,6 +303,24 @@ export default function Header({ currentPage }) {
               alignItems: "center"
             }}
           >
+            <div>
+              <select
+                id="language-select"
+                style={{
+                  border: "none",
+                  fontSize: "18px",
+                  color: "white",
+                  background: CustomPalette.PRIMARY,
+                  marginRight: "2.5rem"
+                }}
+                value={schemaMode}
+                onChange={(e) => setSchemaMode(e.target.value)}
+              >
+                <option value={SCHEMA_MODE_SINGLE}>Single schema</option>
+                <option value={SCHEMA_MODE_MULTI_LEVEL}>Multi-level schema</option>
+              </select>
+            </div>
+
             <div>
               <select
                 id="language-select"
