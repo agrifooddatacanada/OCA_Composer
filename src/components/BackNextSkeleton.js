@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Context } from "../App";
 import { useContext } from "react";
 
-const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back', middleText, nextText = 'Next' }) => {
+const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back', middleText, nextText = 'Next', disableForward = false }) => {
   const { t } = useTranslation();
   const { currentTheme } = useContext(Context);
   return (
@@ -61,6 +61,7 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
             {isForward && <Button
               color="navButton"
               onClick={pageForward}
+              disabled={disableForward}
               sx={{ color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
                 fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
               }}
