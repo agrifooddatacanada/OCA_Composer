@@ -548,10 +548,10 @@ const OCADataValidatorCheck = ({
 
       prev.forEach((header) => {
         if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== "") {
-          copy.push({
-            ...header,
-            cellStyle: () => ({ backgroundColor: CustomPalette.GREY_200 })
-          });
+          // copy.push({
+          //   ...header,
+          //   cellStyle: () => ({ backgroundColor: CustomPalette.GREY_200 })
+          // });
         } else {
           copy.push({
             ...header,
@@ -797,12 +797,10 @@ const OCADataValidatorCheck = ({
   useEffect(() => {
     const columns = [];
     const LIMIT_ENTRYCODES_LENGTH = 20;
-    const variableToCheck =
-      datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
+    const variableToCheck = attributesList;
     if (datasetRawFile.length === 0) {
       setSchemaDataConformantHeader(attributesList);
     }
-
     if (variableToCheck && variableToCheck?.length > 1) {
       variableToCheck.forEach((header) => {
         if (

@@ -37,7 +37,7 @@ export const themes = {
   },
 
   Genovis: {
-    domains: ['http://localhost:5173/'],
+    domains: ['http://localhost:5173/', 'http://localhost:8080/'],
     primaryColor: "#26557b",
     secondaryColor: "#8cc0e6",
 
