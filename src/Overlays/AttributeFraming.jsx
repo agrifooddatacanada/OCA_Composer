@@ -22,7 +22,8 @@ import {
   Paper,
   Select,
   MenuItem,
-  FormControl
+  FormControl,
+  CircularProgress
 } from "@mui/material";
 import { AgGridReact } from "ag-grid-react";
 import EditIcon from "@mui/icons-material/Edit";
@@ -543,6 +544,7 @@ const CustomTreeView = ({ selectedTerm }) => {
 };
 
 const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -640,8 +642,8 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
         cellRenderer: TermCellRenderer,
         headerComponent: CellHeader,
         headerComponentParams: {
-          headerText: "Term",
-          helpText: "The term name or label"
+          headerText: t("Term"),
+          helpText: t("The term name or label")
         }
       },
       {
@@ -652,8 +654,8 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
         cellRenderer: DescriptionCellRenderer,
         headerComponent: CellHeader,
         headerComponentParams: {
-          headerText: "Description",
-          helpText: "Detailed description of the term"
+          headerText: t("Description"),
+          helpText: t("Definition")
         }
       },
       {
@@ -665,25 +667,25 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
         cellRenderer: TypeOfMatchCellRenderer,
         headerComponent: CellHeader,
         headerComponentParams: {
-          headerText: "Type of Match",
-          helpText: "Select the type of match for this term"
+          headerText: t("Type of Match"),
+          helpText: t("Mapping vocabulary ...")
         }
       },
       {
         field: "mappingJustification",
-        headerName: "Mapping Justification",
+        headerName: "Framing Justification",
         width: 220,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         cellRenderer: MappingJustificationCellRenderer,
         headerComponent: CellHeader,
         headerComponentParams: {
-          headerText: "Mapping Justification",
-          helpText: "Select the mapping justification for this term"
+          headerText: t("Framing Justification"),
+          helpText: t("Framing Justification")
         }
       }
     ],
-    []
+    [t]
   );
 
   return (
@@ -702,11 +704,11 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
     >
       <Paper
         sx={{
-          width: "90vw",
+          width: { xs: "95vw", sm: "90vw" },
           maxWidth: 1400,
           maxHeight: "90vh",
           overflow: "auto",
-          p: 3
+          p: { xs: 2, sm: 3 }
         }}
       >
         <Typography
@@ -714,16 +716,16 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
           gutterBottom
           sx={{ color: CustomPalette.PRIMARY, mb: 3 }}
         >
-          Edit or Add terms
+          {t("Edit or Add terms")}
         </Typography>
 
         <Grid container spacing={3}>
           {/* Left Box - Search */}
-          <Grid item xs={7}>
+          <Grid item xs={12} md={7}>
             <Paper
               sx={{
-                p: 3,
-                height: "70vh",
+                p: { xs: 2, sm: 3 },
+                height: { xs: "60vh", md: "70vh" },
                 border: `1px solid ${CustomPalette.GREY_300}`,
                 boxShadow: "none"
               }}
@@ -733,15 +735,15 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                 gutterBottom
                 sx={{ color: CustomPalette.PRIMARY, mb: 2 }}
               >
-                Frame: {editingRowData?.Attribute || "Search Terms"}
+                {t("Term to frame")}: {editingRowData?.Attribute || "Search Terms"}
               </Typography>
 
               <Box sx={{ mb: 3 }}>
-                <Grid container spacing={3}>
-                  <Grid item xs={10}>
+                <Grid container spacing={4}>
+                  <Grid item xs={12} sm={8} md={9}>
                     <TextField
                       fullWidth
-                      placeholder="Search for terms..."
+                      placeholder={t("Search for terms...")}
                       // value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && handleSearch()}
@@ -758,16 +760,27 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                       }}
                     />
                   </Grid>
-                  <Grid item xs={2}>
+                  <Grid item xs={12} sm={4} md={3}>
                     <Button
                       variant="contained"
                       onClick={handleSearchButtonClick}
                       disabled={isSearching}
-                      startIcon={<SearchIcon />}
+                      startIcon={
+                        isSearching ? (
+                          <CircularProgress
+                            size={20}
+                            sx={{ color: CustomPalette.PRIMARY }}
+                          />
+                        ) : (
+                          <SearchIcon sx={{ width: "20px", height: "20px" }} />
+                        )
+                      }
+                      fullWidth
                       sx={{
                         height: "40px",
-                        minWidth: "80px",
+                        minWidth: { xs: "100%", sm: "80px" },
                         backgroundColor: CustomPalette.PRIMARY,
+                        // gap: 1.5,
                         "&:hover": {
                           backgroundColor: CustomPalette.SECONDARY
                         },
@@ -776,7 +789,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                         }
                       }}
                     >
-                      {isSearching ? "..." : "Search"}
+                      {isSearching ? "" : t("Search")}
                     </Button>
                   </Grid>
                 </Grid>
@@ -822,7 +835,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
               {searchResults.length > 0 && (
                 <Box
                   sx={{
-                    mt: 2,
+                    mt: 4,
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center"
@@ -850,7 +863,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                         }
                       }}
                     >
-                      Previous
+                      {t("Previous")}
                     </Button>
                     <Button
                       variant="outlined"
@@ -870,7 +883,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                         }
                       }}
                     >
-                      Next
+                      {t("Next")}
                     </Button>
                   </Box>
                 </Box>
@@ -879,11 +892,11 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
           </Grid>
 
           {/* Right Box - Explore Terms */}
-          <Grid item xs={5}>
+          <Grid item xs={12} md={5}>
             <Paper
               sx={{
-                p: 3,
-                height: "70vh",
+                p: { xs: 2, sm: 3 },
+                height: { xs: "50vh", md: "70vh" },
                 border: `1px solid ${CustomPalette.GREY_300}`,
                 boxShadow: "none"
               }}
@@ -893,7 +906,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                 gutterBottom
                 sx={{ color: CustomPalette.PRIMARY, mb: 2 }}
               >
-                Explore Terms
+                {t("Explore Terms")}
               </Typography>
               {selectedTermForExploring ? (
                 <Box sx={{ height: "calc(70vh - 80px)", overflow: "auto" }}>
@@ -971,7 +984,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
               }
             }}
           >
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button
             variant="contained"
@@ -983,7 +996,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
               }
             }}
           >
-            Save Changes
+            {t("Save Changes")}
           </Button>
         </Box>
       </Paper>
@@ -1041,8 +1054,8 @@ const DeleteButton = ({ node, onDelete }) => {
   );
 };
 
-const updateFramedAttributes = (attributeFramingRowData, displayedFramedAttributes) => {
-  return attributeFramingRowData.map((row) => {
+const updateFramedAttributes = (attributeFramingRowData, displayedFramedAttributes) =>
+  attributeFramingRowData.map((row) => {
     const displayedRow = displayedFramedAttributes.find(
       (displayed) => displayed.Attribute === row.Attribute
     );
@@ -1057,7 +1070,6 @@ const updateFramedAttributes = (attributeFramingRowData, displayedFramedAttribut
         }
       : row;
   });
-};
 
 const AttributeFraming = () => {
   const {
@@ -1069,18 +1081,15 @@ const AttributeFraming = () => {
     frameAllAttributes,
     setFrameAllAttributes,
     unframedAttributeList,
-    setUnframedAttributeList,
-    attributesList
+    setUnframedAttributeList
   } = useContext(Context);
 
   const { t } = useTranslation();
   const gridRef = useRef();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [predicatesLoaded, setPredicatesLoaded] = useState(false);
   const [isLoadingPredicates, setIsLoadingPredicates] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
-  const [dataPopulated, setDataPopulated] = useState(false);
   const [gridReady, setGridReady] = useState(false);
 
   const hasUnframedAttributes = unframedAttributeList && unframedAttributeList.length > 0;
@@ -1127,7 +1136,7 @@ const AttributeFraming = () => {
     );
 
     // Frame only unframed attributes (those without objectId)
-    const promises = updatedAttributeFramingRowData.map(async (row, index) => {
+    const promises = updatedAttributeFramingRowData.map(async (row) => {
       if (row.Attribute && !row.objectId) {
         try {
           const matchedResult = await matchedSubjectAndPredicate({
@@ -1140,7 +1149,9 @@ const AttributeFraming = () => {
             return {
               ...row,
               objectId: matchedResult.label || "",
-              description: matchedResult.definition || ""
+              description: matchedResult.definition || "",
+              predicateId: "skos:exactMatch",
+              mappingJustification: "semapv:ManualMappingCuration"
             };
           }
         } catch (error) {
@@ -1154,7 +1165,6 @@ const AttributeFraming = () => {
 
     setAttributeFramingRowData(finalRowData);
     setFrameAllAttributes(true);
-    setDataPopulated(true);
 
     setTimeout(() => {
       setIsLoadingPredicates(false);
@@ -1228,7 +1238,7 @@ const AttributeFraming = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Predicate"),
-          helpText: t("This is the name for the predicate and, for example...")
+          helpText: t("Mapping vocabulary ...")
         }
       },
       {
@@ -1240,7 +1250,7 @@ const AttributeFraming = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Object"),
-          helpText: t("This is the name for the object and, for example...")
+          helpText: t("Ontology term")
         }
       },
       {
@@ -1252,7 +1262,7 @@ const AttributeFraming = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Description"),
-          helpText: t("This is the name for the description and, for example...")
+          helpText: t("Definition")
         }
       },
       {
@@ -1262,10 +1272,8 @@ const AttributeFraming = () => {
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
         headerComponentParams: {
-          headerText: t("Mapping Justification"),
-          helpText: t(
-            "This is the name for the mapping justification and, for example..."
-          )
+          headerText: t("Framing Justification"),
+          helpText: t("Framing Justification")
         }
       },
       {

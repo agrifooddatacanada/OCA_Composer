@@ -492,16 +492,19 @@ function App() {
       } else {
         newAttributeFramingArray.push({
           Attribute: attributeRowItem.Attribute,
-          predicateId: "skos:exactMatch",
+          predicateId: "",
           objectId: "",
           description: "",
-          mappingJustification: "semapv:ManualMappingCuration"
+          mappingJustification: ""
         });
       }
     });
     setAttributeFramingRowData(newAttributeFramingArray);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attributeRowData]);
+
+  // skos:exactMatch
+  // semapv:ManualMappingCuratio
 
   useEffect(() => {
     if (jsonRawFile.length > 0) {
