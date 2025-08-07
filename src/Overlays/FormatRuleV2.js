@@ -173,7 +173,8 @@ const FormatRulesV2 = () => {
         // A custom format rule can be provided only if no built-in format rule is selected
         editable: (params) => !params.node.data.FormatText,
         autoHeight: true,
-        width: 200
+        width: 200,
+        wrapText: true
       },
       {
         headerName: "",
