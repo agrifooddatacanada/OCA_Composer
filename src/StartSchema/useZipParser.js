@@ -18,6 +18,7 @@ import {
   hasEntryCodeOrdering,
   hasRangeOverlay,
   hasUnitFramingOverlay,
+  hasAttributeFramingOverlay,
   replaceCharsInKeys
 } from "../constants/utils";
 
@@ -37,7 +38,8 @@ const useZipParser = () => {
     setDataStandardsRowData,
     setCardinalityData,
     setUnitRowData,
-    setRangeRowData
+    setRangeRowData,
+    setAttributeFramingRowData
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -93,6 +95,7 @@ const useZipParser = () => {
     let attributesWithListType = [];
     const newUnitFramingRowData = [];
     const newRangeRowData = [];
+    const newAttributeFramingRowData = [];
 
     // Parse entry codes for list type attributes
     if (entries.length > 0) {
@@ -384,6 +387,36 @@ const useZipParser = () => {
           }
         }));
         setUnitRowData(newUnitFramingRowData);
+      });
+    }
+
+    // Parse attribute framing
+    if (ocaPackageData && hasAttributeFramingOverlay(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const attributeFraming =
+        ocaPackageData.extensions[ADC][captureBaseSaid]?.overlays.attribute_framing;
+
+      newAttributeRowData.forEach((row) => {
+        const attribute = row?.Attribute;
+        const framingData = attributeFraming?.attributes?.[attribute];
+
+        newAttributeFramingRowData.push({
+          Attribute: attribute,
+          objectId: framingData?.term_id,
+          description: framingData?.description,
+          mappingJustification: framingData?.framing_justification,
+          predicateId: framingData?.predicate_id
+        });
+
+        setOverlay((prev) => ({
+          ...prev,
+          "Attribute Framing": {
+            ...prev["Attribute Framing"],
+            selected: true
+          }
+        }));
+
+        setAttributeFramingRowData(newAttributeFramingRowData);
       });
     }
 
