@@ -9,6 +9,8 @@ import {
   dataTypes,
   FIELD_RANGE_OVERLAY,
   RANGE,
+  SCHEMA_MODE_MULTI_LEVEL,
+  SCHEMA_MODE_SINGLE,
   SENSITIVE
 } from "../constants/constants";
 import {
@@ -19,6 +21,7 @@ import {
   hasRangeOverlay,
   hasUnitFramingOverlay,
   hasAttributeFramingOverlay,
+  isMultiLevelSchema,
   replaceCharsInKeys
 } from "../constants/utils";
 
@@ -39,7 +42,8 @@ const useZipParser = () => {
     setCardinalityData,
     setUnitRowData,
     setRangeRowData,
-    setAttributeFramingRowData
+    setAttributeFramingRowData,
+    setSchemaMode
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -96,6 +100,12 @@ const useZipParser = () => {
     const newUnitFramingRowData = [];
     const newRangeRowData = [];
     const newAttributeFramingRowData = [];
+
+    if (isMultiLevelSchema(root?.attributes || {})) {
+      setSchemaMode(SCHEMA_MODE_MULTI_LEVEL);
+    } else {
+      setSchemaMode(SCHEMA_MODE_SINGLE);
+    }
 
     // Parse entry codes for list type attributes
     if (entries.length > 0) {
@@ -238,7 +248,13 @@ const useZipParser = () => {
         Attribute: item,
         Flagged: sensitiveAttributes.includes(item),
         List: attributesWithListType.includes(item),
-        Type: dataTypes.includes(attributeType) ? attributeType : "",
+        Type: dataTypes.includes(attributeType)
+          ? attributeType
+          : attributeType.includes("Array[ref")
+            ? "Array[Child Schema]"
+            : attributeType.includes("ref")
+              ? "Child Schema"
+              : "",
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
