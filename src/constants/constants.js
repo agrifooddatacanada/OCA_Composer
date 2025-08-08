@@ -191,13 +191,13 @@ export const dataTypes = [
   "DateTime",
   "Numeric",
   "Text",
-  "Reference",
+  "Child Schema",
   "Array[Binary]",
   "Array[Boolean]",
   "Array[DateTime]",
   "Array[Numeric]",
   "Array[Text]",
-  "Array[Reference]"
+  "Array[Child Schema]"
 ];
 
 export const descriptionToFormatCodeText = {

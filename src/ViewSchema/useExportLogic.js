@@ -4,7 +4,7 @@ import JSZip from "jszip";
 import { Context } from "../App";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
-import { divisionCodes, groupCodes } from "../constants/constants";
+import { divisionCodes, groupCodes, SCHEMA_MODE_SINGLE } from "../constants/constants";
 // import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 import useGenerateReadMe from "./useGenerateReadMe";
 import { getDescriptiveFileName } from "../constants/utils";
@@ -54,7 +54,8 @@ const useExportLogic = () => {
     dataStandardsRowData,
     cardinalityData,
     setZipToReadme,
-    setOCAPackage
+    setOCAPackage,
+    setSchemaMode
   } = useContext(Context);
   // const { jsonToTextFile } = useGenerateReadMeV2();
   const { toTextFile } = useGenerateReadMe();
@@ -368,7 +369,7 @@ const useExportLogic = () => {
           formulae: [
             // '"Binary,Boolean,DateTime,Numeric,Reference,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Reference],Array[Text]"',
             // eslint-disable-next-line quotes
-            '"Binary,Boolean,DateTime,Numeric,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Text]"'
+            '"Binary,Boolean,DateTime,Numeric,ChildSchema,Text,Array[Binary],Array[Boolean],Array[DateTime],Array[Numeric],Array[Text],Array[ChildSchema]"'
           ]
         };
 
@@ -649,6 +650,7 @@ const useExportLogic = () => {
     setFileData([]);
     setRawFile([]);
     setOCAPackage(null);
+    setSchemaMode(SCHEMA_MODE_SINGLE);
     setCurrentPage("Landing");
     navigate("/");
   };

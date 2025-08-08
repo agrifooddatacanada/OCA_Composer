@@ -797,3 +797,11 @@ export const parseDateString = (str) => {
   if (result.isValid) return result;
   return null;
 };
+
+export const isMultiLevelSchema = (attributeTypeMap) => {
+  const types = Object.values(attributeTypeMap);
+  if (types.length === 0) return false;
+  return types.some((type) =>
+    Array.isArray(type) ? type[0].includes("ref") : type.includes("ref")
+  );
+};

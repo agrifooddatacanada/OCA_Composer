@@ -1,12 +1,9 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MenuItem } from "@mui/material";
-import { Context } from "../App";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
-import { SCHEMA_MODE_MULTI_LEVEL } from "../constants/constants";
 
 const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs }) => {
-  const { schemaMode } = useContext(Context);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t } = useTranslation();
   const displayValues = [
@@ -15,18 +12,14 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs }) => {
     { value: "Boolean", label: "Boolean" },
     { value: "DateTime", label: "DateTime" },
     { value: "Numeric", label: "Numeric" },
-    ...(schemaMode === SCHEMA_MODE_MULTI_LEVEL
-      ? [{ value: "Reference", label: "Reference" }]
-      : []),
+    { value: "Child Schema", label: "Child Schema" },
     { value: "Text", label: "Text" },
     { value: "Array[Binary]", label: "Array[Binaryfile]" },
     { value: "Array[Boolean]", label: "Array[Boolean]" },
     { value: "Array[DateTime]", label: "Array[DateTime]" },
     { value: "Array[Numeric]", label: "Array[Numeric]" },
     { value: "Array[Text]", label: "Array[Text]" },
-    ...(schemaMode === SCHEMA_MODE_MULTI_LEVEL
-      ? [{ value: "Array[Reference]", label: "Array[Reference]" }]
-      : [])
+    { value: "Array[Child Schema]", label: "Array[Child Schema]" }
   ];
 
   const attributeName = data.Attribute;
