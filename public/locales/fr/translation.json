@@ -333,6 +333,7 @@
   "Upper Bound": "Limite supérieure",
   "Inclusive": "Inclusif",
   "Range bounds must match the format rules.": "Les limites de plage doivent correspondre aux règles de format.",
+  "Range": "gamme",
   "Please re-verify the data!": "Veuillez revérifier les données !",
   "There are one or more blank entries in the Type column.": "Il y a une ou plusieurs entrées vides dans la colonne Type.",
   "Please provide valid data types for all attributes.": "Veuillez fournir des types de données valides pour tous les attributs.",

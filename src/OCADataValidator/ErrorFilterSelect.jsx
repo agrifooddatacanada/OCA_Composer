@@ -20,7 +20,7 @@ const MenuProps = {
   }
 };
 
-const ERROR_GROUP = ["Format", "Entry Codes", "Character Encoding", "Data Type"];
+const ERROR_GROUP = ["Format", "Entry Codes", "Character Encoding", "Data Type", "Range"];
 
 function getStyles(name, errorName, theme) {
   return {
@@ -154,4 +154,3 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
 }
 
 export default ErrorFilterSelect;
-
