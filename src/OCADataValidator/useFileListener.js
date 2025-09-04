@@ -1,13 +1,27 @@
 // src/hooks/useFileListener.js
 import { useEffect } from 'react';
+import { validateOCAJsonFile } from './validateOCAJsonFile';
 
 const useFileListener = (setFile) => {
   useEffect(() => {
     const handleMessage = (event) => {
-      if (event.data.type === 'FILE') {
+      if (event.data.type === 'JSON_SCHEMA') {
         try {
           console.log('file received');
           console.log(event.data);
+
+          const validationResult = validateOCAJsonFile(JSON.stringify(event.data.data));
+
+          if (!validationResult.isValid) {
+            console.error(validationResult.errorsMessage);
+            return;
+          }
+
+          // Show warnings if any
+          if (validationResult.warnings.length > 0) {
+            console.warn("Validation warnings:", validationResult.warnings);
+            console.warn(validationResult.warningsMessage);
+          }
           // Convert the received data into a File object
           const file = new File(
             [JSON.stringify(event.data.data)],

@@ -11,8 +11,12 @@ import {
 } from "../constants/utils";
 import { mapLinkMLToOCABundle } from "../SchemaTranslator/mapLinkMLToOCABundle";
 import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
+import { validateOCAJsonFile } from "./validateOCAJsonFile";
 
 const neededOverlays = ["format", "character_encoding", "conformance", "entry_code"];
+
+// message formatting now provided by validator (errorsMessage, warningsMessage)
+
 // eslint-disable-next-line import/prefer-default-export
 export const useHandleJsonDrop = (
   firstTimeDisplayWarning,
@@ -72,6 +76,20 @@ export const useHandleJsonDrop = (
           setTargetResult(e);
           const textDecoder = new TextDecoder("utf-8");
           const jsonString = textDecoder.decode(e.target.result);
+
+          const validationResult = validateOCAJsonFile(jsonString);
+
+          if (!validationResult.isValid) {
+            console.error(validationResult.errorsMessage);
+            return;
+          }
+
+          // Show warnings if any
+          if (validationResult.warnings.length > 0) {
+            console.warn("Validation warnings:", validationResult.warnings);
+            console.warn(validationResult.warningsMessage);
+          }
+
           const rawParse = JSON.parse(jsonString);
           let jsonFile = null;
           let ocaPackageData = null;
