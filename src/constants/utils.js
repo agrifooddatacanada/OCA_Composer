@@ -14,7 +14,8 @@ import {
   formatCodeNumericDescription,
   formatCodeTextDescription,
   OCA_REPOSITORY_API_URL,
-  RANGE
+  RANGE,
+  SSSOM_MAPPER_API_URL
 } from "./constants";
 import ucumUnits from "./ucumUnits";
 
@@ -286,15 +287,6 @@ export const hasAttributeOrdering = (OCAPackage) => {
   );
 };
 
-export const hasRangeOverlay = (OCAPackage) => {
-  // For now, use the capture base SAID of the main/top-level bundle
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
-  return Boolean(
-    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
-      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[RANGE]
-  );
-};
-
 export const hasUnitFramingOverlay = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
   const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
@@ -304,7 +296,24 @@ export const hasUnitFramingOverlay = (OCAPackage) => {
   );
 };
 
-// get extension overlays
+export const hasAttributeFramingOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.attribute_framing
+  );
+};
+
+export const hasRangeOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[RANGE]
+  );
+};
+
 export const getExtensionOverlays = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
   const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
@@ -360,28 +369,31 @@ export const getUnitsFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
   }
 
   return unitsArleadyFramed;
+};
 
-  // if (!unitFramingOverlay) return [];
+export const getAttributesFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
 
-  // let unitsObj;
-  // if (Array.isArray(unitFramingOverlay)) {
-  //   unitsObj = unitFramingOverlay.find(
-  //     (item) => item && typeof item === "object" && item.units
-  //   )?.units;
-  // } else if (
-  //   unitFramingOverlay &&
-  //   typeof unitFramingOverlay === "object" &&
-  //   unitFramingOverlay.units
-  // ) {
-  //   unitsObj = unitFramingOverlay.units;
-  // }
+  const attributeFramingOverlay = hasAttributeFramingOverlay(OCAPackage)
+    ? OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.find(
+        (overlay) => overlay.attribute_framing
+      )?.attribute_framing
+    : undefined;
 
-  // if (!unitsObj || typeof unitsObj !== "object") return [];
+  if (!attributeFramingOverlay) return {};
 
-  // const units = [];
-  // for (const key of Object.keys(unitsObj)) {
-  //   units.push(unitsObj[key].term_id);
-  // }
+  const attributesAlreadyFramed = {};
+  if (
+    attributeFramingOverlay &&
+    typeof attributeFramingOverlay === "object" &&
+    attributeFramingOverlay.attributes
+  ) {
+    for (const attribute of Object.keys(attributeFramingOverlay.attributes)) {
+      attributesAlreadyFramed[attribute] = attributeFramingOverlay.attributes[attribute];
+    }
+  }
+
+  return attributesAlreadyFramed;
 };
 
 export const getUnitFramingInput = (unitFramingRowData) => {
@@ -452,6 +464,21 @@ export const getCurrentUnitFramingRowData = (
     return unitFramedRowData;
   }
   return unitRowDataWhenNoFrameAll;
+};
+
+export const getAttributeFramingInput = (attributeFramingRowData) => {
+  const attributeFramingInput = {};
+  for (const row of attributeFramingRowData) {
+    if (!row.objectId) continue;
+
+    attributeFramingInput[row.Attribute] = {
+      description: row.description,
+      framing_justification: row.mappingJustification,
+      predicate_id: row.predicateId,
+      term_id: row.objectId
+    };
+  }
+  return attributeFramingInput;
 };
 
 export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {
@@ -538,6 +565,42 @@ export const generateOCABundle = async (OCAFileData) => {
     console.error("Error generating OCA bundle from OCA file:", error);
     throw error;
   }
+};
+
+export const searchPredicates = async (data) => {
+  // http://localhost:8080/search/?page=1&page_size=10&query=beans
+  const response = await fetch(
+    `${SSSOM_MAPPER_API_URL}/search/?page=${data.page}&page_size=${data.page_size}&query=${data.query}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+  const responseData = await response.json();
+  return responseData;
+};
+
+export const matchedSubjectAndPredicate = async (data) => {
+  // return the first result, i,e first rdf triple that matches the query.
+  // using this for the very first time the attribute framing is added (the page is loaded).
+  const response = await searchPredicates(data);
+
+  const { results } = response;
+  return results[0];
+};
+
+export const getLabelofParentClass = async (uri) => {
+  // return the label of the parent class of the given uri
+  const response = await fetch(`${SSSOM_MAPPER_API_URL}/search/?query=${uri}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+  const responseData = await response.json();
+  return responseData;
 };
 
 export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
@@ -733,4 +796,12 @@ export const parseDateString = (str) => {
 
   if (result.isValid) return result;
   return null;
+};
+
+export const isMultiLevelSchema = (attributeTypeMap) => {
+  const types = Object.values(attributeTypeMap);
+  if (types.length === 0) return false;
+  return types.some((type) =>
+    Array.isArray(type) ? type[0].includes("ref") : type.includes("ref")
+  );
 };

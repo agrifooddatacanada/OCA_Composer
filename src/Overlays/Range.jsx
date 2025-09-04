@@ -81,7 +81,8 @@ const Range = () => {
           headerText: t("Lower Bound"),
           helpText: t("The lower bound of the range")
         },
-        cellStyle: getCellValidationStyle
+        cellStyle: getCellValidationStyle,
+        wrapText: true
       },
       {
         field: "LowerInclusive",
@@ -110,7 +111,8 @@ const Range = () => {
           headerText: t("Upper Bound"),
           helpText: t("The upper bound of the range")
         },
-        cellStyle: getCellValidationStyle
+        cellStyle: getCellValidationStyle,
+        wrapText: true
       },
       {
         field: "UpperInclusive",
