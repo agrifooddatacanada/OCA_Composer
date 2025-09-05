@@ -6,7 +6,13 @@ import {
   languageNameToAlpha3Codes,
   toThreeLetterCode
 } from "../constants/isoCodes";
-import { ADC, DEFAULT_THREE_LETTER_LANGUAGE_CODE } from "../constants/constants";
+import {
+  ADC,
+  DEFAULT_THREE_LETTER_LANGUAGE_CODE,
+  RANGE,
+  SENSITIVE,
+  UNIT_FRAMING
+} from "../constants/constants";
 import {
   downloadMarkdownFile,
   generateCreationTimestamp,
@@ -17,7 +23,8 @@ import {
   generateLanguageSpecificSchemaDetailsTable,
   generateSAIDTableForJson,
   generateSchemaInformation,
-  generateSchemaQuickView
+  generateSchemaQuickView,
+  generateUnitFramingMetadataTable
 } from "./markdownReadmeUtils";
 
 const getModifiedLayer = (overlay) => {
@@ -36,6 +43,21 @@ const useGenerateMarkdownReadMeFromJson = () => {
     OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.ordering;
   const hasAttributeOrdering = orderingOverlay?.attribute_ordering?.length > 0;
+
+  const sensitiveOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.[SENSITIVE];
+  const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
+    ? sensitiveOverlay?.sensitive_attributes
+    : [];
+
+  const rangeOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.[RANGE];
+
+  const unitFramingOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.[UNIT_FRAMING];
 
   // Ensuring that the currently selected site language is one of the languages of the schema
   const currentLanguageCode = languages.some(
@@ -131,8 +153,16 @@ const useGenerateMarkdownReadMeFromJson = () => {
     fileContent += generateLanguageIndependentSchemaDetailsTable({
       layers,
       captureBaseOverlay,
-      attributeNames
+      attributeNames,
+      sensitiveAttributes,
+      rangeOverlay,
+      unitFramingOverlay
     });
+    if (unitFramingOverlay?.framing_metadata) {
+      fileContent += generateUnitFramingMetadataTable(
+        unitFramingOverlay.framing_metadata
+      );
+    }
     fileContent += generateLanguageSpecificSchemaDetailsTable({
       layers,
       attributeNames,

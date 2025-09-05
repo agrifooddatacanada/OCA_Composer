@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Box, Button, Typography, useMediaQuery } from "@mui/material";
+import { VerifyOcaPackage } from "oca_package";
 import UseASchemaAccordionItem from "./UseASchemaAccordionItem";
 import UseASchemaWithDataAccordionItem from "./UseASchemaWithDataAccordionItem";
 import SchemaAccordionItem from "./SchemaAccordionItem";
@@ -23,6 +24,7 @@ import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdown
 import CatalogueInfo from "../CatalogueInfo/CatalogueInfo";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
+import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 
 const buttonStyles = {
   backgroundColor: CustomPalette.PRIMARY,
@@ -53,10 +55,9 @@ const AccordionList = () => {
     setCurrentPage,
     setIsZip
   } = useHandleAllDrop();
+
   const { setJsonRawFile } = useHandleJsonDrop();
-
   const { resetToDefaults } = useExportLogic();
-
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
   const navigateToStartPage = () => {
@@ -80,7 +81,7 @@ const AccordionList = () => {
   const navigateToPreviewSchema = () => {
     setIsZip(true);
     setCurrentDataValidatorPage("SchemaViewDataValidator");
-    navigate("/oca-data-validator");
+    navigate("/oca-data-verifier");
   };
 
   const setFile = (acceptedFiles) => {
@@ -101,6 +102,8 @@ const AccordionList = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
+  const isInvalidOcaPackage = OCAPackage && !VerifyOcaPackage(OCAPackage, OCAPackage.d);
+  const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
 
   return (
     <Box
@@ -135,8 +138,8 @@ const AccordionList = () => {
           <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
           <CollaborateOnASchema navigateToStartPage={navigateToStartPage} />
           <StoreASchemaAccordionItem />
-          <UseASchemaAccordionItem />
-          <UseASchemaWithDataAccordionItem />
+          <UseASchemaAccordionItem isInvalidOcaPackage={isInvalidOcaPackage} />
+          <UseASchemaWithDataAccordionItem isInvalidOcaPackage={isInvalidOcaPackage} />
           {/* <OCADataValidatorItem /> */}
         </Box>
         <Box
@@ -213,12 +216,17 @@ const AccordionList = () => {
               alignItems: "center"
             }}
           >
+            {isInvalidOcaPackage && !disableButtonCheck && (
+              <Box sx={{ maxWidth: "300px", marginTop: "30px" }}>
+                <InvalidOCAPackageMessage />
+              </Box>
+            )}
             <Button
               variant="contained"
               color="navButton"
               onClick={navigateToViewPage}
               sx={buttonStyles}
-              disabled={disableButtonCheck}
+              disabled={disableAdditionalSchemaTools}
             >
               {t("View Schema")}
             </Button>
@@ -242,7 +250,7 @@ const AccordionList = () => {
                 }
               }}
               sx={buttonStyles}
-              disabled={disableButtonCheck}
+              disabled={disableAdditionalSchemaTools}
             >
               {t("Generate Text Readme")}
             </Button>
@@ -256,13 +264,13 @@ const AccordionList = () => {
                 border: `1px solid ${CustomPalette.PRIMARY}`
               }}
             >
-              <CatalogueInfo isDisabled={disableButtonCheck} />
+              <CatalogueInfo isDisabled={disableAdditionalSchemaTools} />
               <Button
                 variant="contained"
                 color="navButton"
                 onClick={handleClickMarkdownReadme}
                 sx={{ ...buttonStyles, marginTop: "12px" }}
-                disabled={disableButtonCheck}
+                disabled={disableAdditionalSchemaTools}
               >
                 {t("Generate Markdown Readme")}
               </Button>
@@ -270,7 +278,7 @@ const AccordionList = () => {
             <GenerateDataEntryExcel
               rawFile={rawFile}
               setLoading={setLoading}
-              disableButtonCheck={disableButtonCheck}
+              disableButtonCheck={disableAdditionalSchemaTools}
             />
             <Button
               variant="contained"
@@ -280,7 +288,7 @@ const AccordionList = () => {
                 ...buttonStyles,
                 marginBottom: "30px"
               }}
-              disabled={disableButtonCheck}
+              disabled={disableAdditionalSchemaTools}
             >
               {t("Enter/Verify Data in Webpage")}
             </Button>

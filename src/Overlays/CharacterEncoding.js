@@ -1,16 +1,18 @@
 import { Box, Button } from "@mui/material";
 import React, { useCallback, useContext, useMemo, useRef, useState } from "react";
-import { Context } from "../App";
 import { AgGridReact } from "ag-grid-react";
+import { useTranslation } from "react-i18next";
+import { Context } from "../App";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import useCharacterEncodingType, { CharacterEncodingTypeRenderer } from "./useCharacterEncodingType";
+import useCharacterEncodingType, {
+  CharacterEncodingTypeRenderer
+} from "./useCharacterEncodingType";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
-import { useTranslation } from "react-i18next";
 
 const CharacterEncoding = () => {
   const { t } = useTranslation();
@@ -19,39 +21,50 @@ const CharacterEncoding = () => {
     setCurrentPage,
     setSelectedOverlay,
     setCharacterEncodingRowData,
-    setOverlay,
+    setOverlay
   } = useContext(Context);
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const gridRef = useRef();
   const { handleSave, applyAllFunc } = useCharacterEncodingType(gridRef);
 
-  const columnDefs = useMemo(() => {
-    return [
+  const columnDefs = useMemo(
+    () => [
       {
         field: "Attribute",
         editable: false,
         width: 180,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => <CellHeader headerText={t("Attributes")} helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Attributes"),
+          helpText:
+            "This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
+        }
       },
       {
         field: "Character Encoding",
-        headerComponent: () => <CellHeader headerText={t("Character Encoding")} helpText='Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here.' />,
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Character Encoding"),
+          helpText:
+            "Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here."
+        },
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
-          attr: params.data.Attribute,
+          attr: params.data.Attribute
         }),
-        width: 200,
-      },
-    ];
-  }, [t]);
+        width: 200
+      }
+    ],
+    [t]
+  );
 
   const handleForward = useCallback(() => {
     handleSave();
-    setSelectedOverlay('');
-    setCurrentPage('Overlays');
+    setSelectedOverlay("");
+    setCurrentPage("Overlays");
   }, [handleSave, setCurrentPage, setSelectedOverlay]);
 
   const handleDeleteCurrentOverlay = useCallback(() => {
@@ -59,26 +72,38 @@ const CharacterEncoding = () => {
       ...prev,
       "Character Encoding": {
         ...prev["Character Encoding"],
-        selected: false,
-      },
+        selected: false
+      }
     }));
 
     // Delete attribute from characterEncodingRowData
     const newCharacterEncodingRowData = characterEncodingRowData.map((row) => {
-      delete row['Character Encoding'];
+      delete row["Character Encoding"];
       return row;
     });
     setCharacterEncodingRowData(newCharacterEncodingRowData);
-    setSelectedOverlay('');
-    setCurrentPage('Overlays');
-  }, [characterEncodingRowData, setCharacterEncodingRowData, setCurrentPage, setOverlay, setSelectedOverlay]);
+    setSelectedOverlay("");
+    setCurrentPage("Overlays");
+  }, [
+    characterEncodingRowData,
+    setCharacterEncodingRowData,
+    setCurrentPage,
+    setOverlay,
+    setSelectedOverlay
+  ]);
 
   const onGridReady = useCallback(() => {
     setLoading(false);
   }, []);
 
   return (
-    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
+    <BackNextSkeleton
+      isForward
+      pageForward={handleForward}
+      isBack
+      pageBack={() => setShowDeleteConfirmation(true)}
+      backText="Remove overlay"
+    >
       {loading && characterEncodingRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
@@ -91,7 +116,7 @@ const CharacterEncoding = () => {
           margin: "2rem",
           gap: "3rem",
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "column"
         }}
       >
         <Box style={{ display: "flex" }}>
@@ -110,21 +135,21 @@ const CharacterEncoding = () => {
               width: 70,
               display: "flex",
               flexDirection: "column",
-              alignItems: "flex-start",
+              alignItems: "flex-start"
             }}
           >
-            <Box sx={{ height: "2.2rem" }} key={0}></Box>
+            <Box sx={{ height: "2.2rem" }} key={0} />
             <Button
               color="navButton"
               sx={{
                 ml: 1,
-                width: '130px',
+                width: "130px",
                 height: "1.7rem",
-                color: CustomPalette.PRIMARY,
+                color: CustomPalette.PRIMARY
               }}
               onClick={applyAllFunc}
             >
-              {t('Apply All')}
+              {t("Apply All")}
             </Button>
           </Box>
         </Box>

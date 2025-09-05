@@ -14,8 +14,8 @@ import { CustomPalette } from "../constants/customPalette";
 const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const { t } = useTranslation();
   const { jsonRawFile, setCurrentDataValidatorPage } = useHandleJsonDrop(
-    setShowWarningCard,
-    firstTimeDisplayWarning
+    firstTimeDisplayWarning,
+    setShowWarningCard
   );
   const { currentTheme } = useContext(Context);
   const {

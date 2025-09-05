@@ -1,13 +1,19 @@
 import React, { useContext } from "react";
-import { Box } from "@mui/system";
-import { Typography } from "@mui/material";
-import { Context } from "../App";
+import { Box, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
+import { Context } from "../App";
 
 export default function SchemaDescription({ currentLanguage }) {
   const { t } = useTranslation();
-  const { schemaDescription, divisionGroup, currentTheme } = useContext(Context);
+  const { schemaDescription, divisionGroup } = useContext(Context);
+
+  const schemaName = schemaDescription?.[currentLanguage]?.name || t("Unknown");
+  const schemaDescriptionText =
+    schemaDescription?.[currentLanguage]?.description || t("No description available");
+  const classification =
+    divisionGroup?.group || divisionGroup?.division || t("Not classified");
+
   return (
     <Box>
       <Typography
@@ -18,16 +24,19 @@ export default function SchemaDescription({ currentLanguage }) {
           margin: "1rem 0 0.5rem 0",
           color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
           fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+
         }}
       >
-        {t('Name of Schema')}
+        {t("Name of Schema")}
       </Typography>
-      <Box sx={{
-        textAlign: 'left',
-        width: "30rem",
-        overflowY: 'auto'
-      }}>
-        {schemaDescription[currentLanguage].name}
+      <Box
+        sx={{
+          textAlign: "left",
+          width: "30rem",
+          overflowY: "auto"
+        }}
+      >
+        {schemaName}
       </Box>
       <Typography
         sx={{
@@ -39,13 +48,15 @@ export default function SchemaDescription({ currentLanguage }) {
           fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
-        {t('Description')}
+        {t("Description")}
       </Typography>
-      <Box sx={{
-        textAlign: 'left',
-        width: "30rem",
-      }}>
-        {schemaDescription[currentLanguage].description}
+      <Box
+        sx={{
+          textAlign: "left",
+          width: "30rem"
+        }}
+      >
+        {schemaDescriptionText}
       </Box>
       <Typography
         sx={{
@@ -57,14 +68,16 @@ export default function SchemaDescription({ currentLanguage }) {
           fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
-        {t('Classification')}
+        {t("Classification")}
       </Typography>
-      <Box sx={{
-        textAlign: 'left',
-        width: "30rem",
-        overflowY: 'auto'
-      }}>
-        {divisionGroup.group || divisionGroup.division}
+      <Box
+        sx={{
+          textAlign: "left",
+          width: "30rem",
+          overflowY: "auto"
+        }}
+      >
+        {classification}
       </Box>
     </Box>
   );

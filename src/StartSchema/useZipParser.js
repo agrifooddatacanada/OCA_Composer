@@ -1,11 +1,24 @@
 import { useContext } from "react";
 import { Context } from "../App";
 import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
-import { ADC, codeToDivision, codeToGroup } from "../constants/constants";
 import {
+  ADC,
+  codeToDivision,
+  codeToGroup,
+  CUSTOM_FORMAT_RULE,
+  dataTypes,
+  FIELD_RANGE_OVERLAY,
+  RANGE,
+  SENSITIVE
+} from "../constants/constants";
+import {
+  getFormatRuleDescription,
   getOrderedAttributeRowData,
   hasAttributeOrdering,
-  hasEntryCodeOrdering
+  hasEntryCodeOrdering,
+  hasRangeOverlay,
+  hasUnitFramingOverlay,
+  replaceCharsInKeys
 } from "../constants/utils";
 
 const useZipParser = () => {
@@ -22,7 +35,9 @@ const useZipParser = () => {
     setOverlay,
     setFormatRuleRowData,
     setDataStandardsRowData,
-    setCardinalityData
+    setCardinalityData,
+    setUnitRowData,
+    setRangeRowData
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -40,7 +55,15 @@ const useZipParser = () => {
   const processMetadata = (metadata) => {
     const newMetadata = {};
     for (const { language, name, description } of metadata) {
-      newMetadata[codesToLanguages[language.slice(0, 2)]] = { name, description };
+      // Removing any escape characters for " and '
+      const formattedDescription = description
+        ? // eslint-disable-next-line quotes
+          description.replace(/\\"/g, '"').replace(/\\'/g, "'")
+        : "";
+      newMetadata[codesToLanguages[language.slice(0, 2)]] = {
+        name,
+        description: formattedDescription
+      };
     }
     setSchemaDescription(newMetadata);
   };
@@ -58,7 +81,7 @@ const useZipParser = () => {
     formatRules,
     cardinalityData,
     dataStandards,
-    ocaPackageData = null
+    ocaPackageData
   ) => {
     const newSavedEntryCodes = {};
     const newLangAttributeRowData = {};
@@ -68,6 +91,8 @@ const useZipParser = () => {
     const newDataStandardsRowData = [];
     const attributeListStringMap = {};
     let attributesWithListType = [];
+    const newUnitFramingRowData = [];
+    const newRangeRowData = [];
 
     // Parse entry codes for list type attributes
     if (entries.length > 0) {
@@ -127,8 +152,8 @@ const useZipParser = () => {
     if (indexOfRDF !== -1 && !Number.isNaN(classificationFromJson?.[indexOfRDF + 5])) {
       let divisionCode = classificationFromJson?.substring(indexOfRDF, indexOfRDF + 5);
 
-      // Division 20 is named differently in the codeToDivision object
-      if (divisionCode === "RDF20") {
+      // Division 20 and 21 are named differently in the codeToDivision object
+      if (divisionCode === "RDF20" || divisionCode === "RDF21") {
         divisionCode = "RDF20-21";
       }
 
@@ -189,18 +214,47 @@ const useZipParser = () => {
     }
 
     // Parse attributes details such as type and unit + Parsing conformance and character encoding to characterEncodingRowData
+    // Flagged attributes are retrieved from OCA package ADC community sensitive overlay
+    const sensitiveOverlay =
+      ocaPackageData?.extensions?.[ADC]?.[
+        ocaPackageData?.oca_bundle?.bundle?.capture_base?.d
+      ]?.overlays?.[SENSITIVE];
+
+    const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
+      ? sensitiveOverlay?.sensitive_attributes
+      : Array.isArray(root?.flagged_attributes)
+        ? root?.flagged_attributes
+        : [];
+
     attributeList.forEach((item) => {
+      const attributeType = Array.isArray(root?.attributes?.[item])
+        ? `Array[${root?.attributes?.[item][0]}]`
+        : root?.attributes?.[item];
+
       newAttributeRowData.push({
         Attribute: item,
-        Flagged: root?.flagged_attributes?.includes(item),
+        Flagged: sensitiveAttributes.includes(item),
         List: attributesWithListType.includes(item),
-        Type: Array.isArray(root?.attributes?.[item])
-          ? `Array[${root?.attributes?.[item][0]}]`
-          : root?.attributes?.[item],
+        Type: dataTypes.includes(attributeType) ? attributeType : "",
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
       const newRowForCharacterEncoding = { Attribute: item };
+
+      if (attributeType === "Numeric" || attributeType === "DateTime") {
+        const formatRule =
+          // eslint-disable-next-line quotes
+          formatRules?.attribute_formats?.[item]?.replace(/\\"/g, '"') || "";
+        newRangeRowData.push({
+          Attribute: item,
+          Type: attributeType,
+          FormatRule: formatRule,
+          LowerBound: "",
+          LowerInclusive: false,
+          UpperBound: "",
+          UpperInclusive: false
+        });
+      }
 
       if (conformance) {
         newRowForCharacterEncoding["Make selected entries required"] =
@@ -237,9 +291,15 @@ const useZipParser = () => {
         // Remove the escape character for " in regex patterns
         // OCA file requires " to be escaped, that's why the escape character needs to be added when creating OCA file
         // However, in other situtations, the escape character is not needed
-        newFormatRuleData.FormatText =
+        const formatRule =
           // eslint-disable-next-line quotes
           formatRules?.attribute_formats?.[item.Attribute]?.replace(/\\"/g, '"') || "";
+        const formatRuleDescription = getFormatRuleDescription(item?.Type, formatRule);
+
+        // If format rule has a description, then it's not a custom format rule
+        newFormatRuleData[formatRuleDescription ? "FormatText" : CUSTOM_FORMAT_RULE] =
+          formatRule;
+
         setOverlay((prev) => ({
           ...prev,
           "Add format rule for data": {
@@ -298,11 +358,81 @@ const useZipParser = () => {
       setCardinalityData(cardinalityDataToParse);
     }
 
+    // Parse unit framing
+    if (ocaPackageData && hasUnitFramingOverlay(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const unitFraming =
+        ocaPackageData.extensions[ADC][captureBaseSaid].overlays.unit_framing;
+
+      newAttributeRowData.forEach((row) => {
+        const unitFramed = row?.Unit;
+        const unitFramingValue = unitFraming?.units?.[unitFramed]?.term_id || "";
+
+        newUnitFramingRowData.push({
+          Attribute: row.Attribute,
+          Unit: row.Unit,
+          "UCUM Code": unitFramingValue,
+          "UCUM Label": "",
+          Description: ""
+        });
+
+        setOverlay((prev) => ({
+          ...prev,
+          "Unit Framing": {
+            ...prev["Unit Framing"],
+            selected: true
+          }
+        }));
+        setUnitRowData(newUnitFramingRowData);
+      });
+    }
+
+    if (ocaPackageData && hasRangeOverlay(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const rangeOverlay =
+        ocaPackageData.extensions[ADC][captureBaseSaid].overlays[RANGE];
+
+      newRangeRowData.forEach((row) => {
+        const attributeRangeData = rangeOverlay?.attributes?.[row.Attribute] || {};
+
+        row.LowerBound = Object.prototype.hasOwnProperty.call(attributeRangeData, "lower")
+          ? attributeRangeData.lower
+          : "";
+
+        row.LowerInclusive = Object.prototype.hasOwnProperty.call(
+          attributeRangeData,
+          "lower_inclusive"
+        )
+          ? attributeRangeData.lower_inclusive
+          : false;
+
+        row.UpperBound = Object.prototype.hasOwnProperty.call(attributeRangeData, "upper")
+          ? attributeRangeData.upper
+          : "";
+
+        row.UpperInclusive = Object.prototype.hasOwnProperty.call(
+          attributeRangeData,
+          "upper_inclusive"
+        )
+          ? attributeRangeData.upper_inclusive
+          : false;
+      });
+
+      setOverlay((prev) => ({
+        ...prev,
+        [FIELD_RANGE_OVERLAY]: {
+          ...prev[FIELD_RANGE_OVERLAY],
+          selected: true
+        }
+      }));
+    }
+
     if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {
       const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
-      const attributeOrdering =
+      const attributeOrdering = replaceCharsInKeys(
         ocaPackageData.extensions[ADC][captureBaseSaid].overlays.ordering
-          .attribute_ordering;
+          .attribute_ordering
+      );
       const orderedAttributeRowData = getOrderedAttributeRowData(
         newAttributeRowData,
         attributeOrdering
@@ -318,6 +448,7 @@ const useZipParser = () => {
     setDataStandardsRowData(newDataStandardsRowData);
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setLanAttributeRowData(newLangAttributeRowData);
+    setRangeRowData(newRangeRowData);
   };
 
   return {

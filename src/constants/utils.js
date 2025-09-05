@@ -1,11 +1,22 @@
 import i18next from "i18next";
+import Fuse from "fuse.js";
+import { DateTime, Duration } from "luxon";
 import { codesToLanguages, alpha3CodesToTwoLetterCodes } from "./isoCodes";
 import {
   ADC,
+  CUSTOM_FORMAT_RULE,
+  customDateFormatParsers,
   DEFAULT_LANGUAGE,
   DISALLOWED_CHARACTERS,
-  OCA_REPOSITORY_API_URL
+  FIELD_FORMAT_OVERLAY,
+  formatCodeBinaryDescription,
+  formatCodeDateDescription,
+  formatCodeNumericDescription,
+  formatCodeTextDescription,
+  OCA_REPOSITORY_API_URL,
+  RANGE
 } from "./constants";
+import ucumUnits from "./ucumUnits";
 
 export const getCurrentData = (currentApi, includedError) => {
   const newData = [];
@@ -275,6 +286,41 @@ export const hasAttributeOrdering = (OCAPackage) => {
   );
 };
 
+export const hasRangeOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[RANGE]
+  );
+};
+
+export const hasUnitFramingOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
+  );
+};
+
+// get extension overlays
+export const getExtensionOverlays = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  const extensionOverlays = Object.entries(OCAPackage?.extensions || {}).reduce(
+    (acc, [extensionName, extensionData]) => {
+      const overlay = extensionData?.[captureBaseSaid]?.overlays;
+      if (overlay) {
+        acc[extensionName] = overlay;
+      }
+      return acc;
+    },
+    {}
+  );
+  return extensionOverlays;
+};
+
 export const getTransformedEntryCodes = (entryCodes) => {
   const transformedEntryCodes = {};
   Object.entries(entryCodes).forEach(([attribute, codes]) => {
@@ -291,6 +337,142 @@ export const getOrderedAttributeMap = (attributeOrdering, attributeMap) => {
     }
   });
   return orderedAttributeMap;
+};
+
+export const getUnitsFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+
+  const unitFramingOverlay = hasUnitFramingOverlay(OCAPackage)
+    ? OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
+    : undefined;
+
+  if (!unitFramingOverlay) return {};
+
+  const unitsArleadyFramed = {};
+  if (
+    unitFramingOverlay &&
+    typeof unitFramingOverlay === "object" &&
+    unitFramingOverlay.units
+  ) {
+    for (const unit of Object.keys(unitFramingOverlay.units)) {
+      unitsArleadyFramed[unit] = unitFramingOverlay.units[unit].term_id;
+    }
+  }
+
+  return unitsArleadyFramed;
+
+  // if (!unitFramingOverlay) return [];
+
+  // let unitsObj;
+  // if (Array.isArray(unitFramingOverlay)) {
+  //   unitsObj = unitFramingOverlay.find(
+  //     (item) => item && typeof item === "object" && item.units
+  //   )?.units;
+  // } else if (
+  //   unitFramingOverlay &&
+  //   typeof unitFramingOverlay === "object" &&
+  //   unitFramingOverlay.units
+  // ) {
+  //   unitsObj = unitFramingOverlay.units;
+  // }
+
+  // if (!unitsObj || typeof unitsObj !== "object") return [];
+
+  // const units = [];
+  // for (const key of Object.keys(unitsObj)) {
+  //   units.push(unitsObj[key].term_id);
+  // }
+};
+
+export const getUnitFramingInput = (unitFramingRowData) => {
+  const unitFramingInput = {};
+  for (const row of unitFramingRowData) {
+    unitFramingInput[row.Unit] = {
+      term_id: row["UCUM Code"],
+      predicate_id: "skos:exactMatch",
+      framing_justification: "semapv:ManualMappingCuration"
+    };
+  }
+  return unitFramingInput;
+};
+
+export const options = {
+  keys: ["code", "label", "description"],
+  isCaseSensitive: true,
+  includeScore: true,
+  includeMatches: true,
+  minMatchCharLength: 1,
+  shouldSort: true,
+  threshold: 0.4,
+  distance: 100
+};
+
+export const searchUnits = (unit) => {
+  if (!unit) return { firstMatch: null, results: [] };
+
+  const fuse = new Fuse(ucumUnits, options);
+  const searchResults = fuse.search(unit);
+  const slicedResults = searchResults.slice(0, 20).map((result) => result.item);
+
+  const uniqueResults = Array.from(new Set(slicedResults.map((item) => item.code))).map(
+    (code) => slicedResults.find((item) => item.code === code)
+  );
+
+  return {
+    firstMatch: uniqueResults[0] || null,
+    results: uniqueResults
+  };
+};
+
+export const updatedUnitFramingRowDataForViewSchema = (
+  attributeRowData,
+  unitFramedRowData
+) =>
+  attributeRowData.map((attributeRow) => {
+    const matchingRow = unitFramedRowData.find(
+      (unitRow) => unitRow.Unit === attributeRow.Unit && !unitRow.deleted
+    );
+
+    return matchingRow
+      ? {
+          ...attributeRow,
+          "UCUM Code": matchingRow["UCUM Code"],
+          "UCUM Label": matchingRow["UCUM Label"],
+          Description: matchingRow.Description
+        }
+      : attributeRow;
+  });
+
+export const getCurrentUnitFramingRowData = (
+  framedAllUnits,
+  unitFramedRowData,
+  unitRowDataWhenNoFrameAll
+) => {
+  if (framedAllUnits) {
+    return unitFramedRowData;
+  }
+  return unitRowDataWhenNoFrameAll;
+};
+
+export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {
+  const rangeOverlayInput = {};
+  rangeRowData.forEach((row) => {
+    if (row.LowerBound === "" && row.UpperBound === "") return;
+
+    const attributeFormatData = formatRuleRowData.find(
+      (item) => item.Attribute === row.Attribute
+    );
+    if (!attributeFormatData?.FormatText && !attributeFormatData?.[CUSTOM_FORMAT_RULE])
+      return;
+
+    rangeOverlayInput[row.Attribute] = {
+      lower: row.LowerBound,
+      lower_inclusive: row.LowerInclusive,
+      upper: row.UpperBound,
+      upper_inclusive: row.UpperInclusive
+    };
+  });
+  return rangeOverlayInput;
 };
 
 /*
@@ -503,4 +685,52 @@ export const downloadJsonFile = (data, fileName) => {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+};
+
+export const getFormatRuleDescription = (attributeType, formatRule) =>
+  attributeType.includes("Date")
+    ? formatCodeDateDescription[formatRule]
+    : attributeType.includes("Numeric")
+      ? formatCodeNumericDescription[formatRule]
+      : attributeType.includes("Binary")
+        ? formatCodeBinaryDescription[formatRule]
+        : attributeType.includes("Text")
+          ? formatCodeTextDescription[formatRule]
+          : "";
+
+export const shouldDisableRangeOverlay = (
+  overlayText,
+  selectedFeatures,
+  attributes,
+  rangeRowData
+) => {
+  const hasValidAttribute = attributes.some(
+    (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
+  );
+  return (
+    overlayText === "Add range rule for data" &&
+    (rangeRowData.length === 0 ||
+      !selectedFeatures.includes(FIELD_FORMAT_OVERLAY) ||
+      !hasValidAttribute)
+  );
+};
+
+export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();
+export const isValidNumber = (value) => !Number.isNaN(Number.parseFloat(value));
+
+export const parseDateString = (str) => {
+  let result;
+  // Custom parser is needed for non ISO 8601 formats
+  const customParser = customDateFormatParsers.find((parser) => parser.regex.test(str));
+
+  if (customParser) {
+    result = customParser.parse(str);
+  } else if (str.startsWith("P")) {
+    result = Duration.fromISO(str);
+  } else {
+    result = DateTime.fromISO(str);
+  }
+
+  if (result.isValid) return result;
+  return null;
 };

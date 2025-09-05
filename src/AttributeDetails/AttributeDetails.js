@@ -1,9 +1,8 @@
 import React, { useRef, useContext, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "@mui/material";
+import { Alert, Box, Typography } from "@mui/material";
 import Grid from "./Grid";
 import AddAttribute from "./AddAttribute";
-import NavigationCard from "../constants/NavigationCard";
 import { Context } from "../App";
 import {
   removeSpacesFromString,
@@ -12,6 +11,8 @@ import {
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { hasDisallowedChars } from "../constants/utils";
+import { FIELD_RANGE_OVERLAY } from "../constants/constants";
+import ErrorPopup from "../ViewSchema/ErrorPopup";
 
 export default function AttributeDetails({
   pageBack,
@@ -25,7 +26,9 @@ export default function AttributeDetails({
     setCurrentPage,
     attributeRowData,
     setAttributesList,
-    setAttributeRowData
+    setAttributeRowData,
+    overlay,
+    setOverlay
   } = useContext(Context);
   const [errorMessage, setErrorMessage] = useState("");
   const [canDelete, setCanDelete] = useState(attributeRowData.length !== 1);
@@ -86,9 +89,7 @@ export default function AttributeDetails({
         blankAttribute: t("Attribute names cannot be blank"),
         codeInjection: t("Attribute names cannot include HTML"),
         blankType: t("Please enter a Type for all attributes"),
-        disallowedCharacters: t(
-          "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes"
-        )
+        disallowedCharacters: t("AttributeDisallowedCharErrorMessage")
       };
       let codeInjection = false;
       let hasDisallowedCharacters = false;
@@ -156,6 +157,19 @@ export default function AttributeDetails({
       const noSpacesArray = removeSpacesFromArrayOfObjects(newAttributeRowData);
       setAttributeRowData(noSpacesArray);
 
+      if (overlay[FIELD_RANGE_OVERLAY].selected) {
+        const hasValidAttribute = noSpacesArray.some(
+          (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
+        );
+
+        if (!hasValidAttribute) {
+          setOverlay((prev) => ({
+            ...prev,
+            [FIELD_RANGE_OVERLAY]: { ...prev[FIELD_RANGE_OVERLAY], selected: false }
+          }));
+        }
+      }
+
       return allAttributes;
     };
 
@@ -217,13 +231,16 @@ export default function AttributeDetails({
     >
       {loading && attributeRowData?.length > 40 && <Loading />}
       {showCard && (
-        <NavigationCard
-          fieldArray={["Type"]}
-          setShowCard={setShowCard}
-          handleForward={
-            entryCodesRef.current ? () => setCurrentPage("Codes") : () => pageForward()
-          }
-        />
+        <ErrorPopup onClose={() => setShowCard(false)}>
+          <Box>
+            <Typography variant="h5" sx={{ mb: 1 }}>
+              {t("There are one or more blank entries in the Type column.")}
+            </Typography>
+            <Typography variant="h6" fontWeight="semibold">
+              {t("Please provide valid data types for all attributes.")}
+            </Typography>
+          </Box>
+        </ErrorPopup>
       )}
       {errorMessage.length > 0 && (
         <Alert

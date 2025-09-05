@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 export const DEFAULT_LANGUAGE_CODE = "en";
 export const DEFAULT_THREE_LETTER_LANGUAGE_CODE = "eng";
 export const DEFAULT_LANGUAGE = "English";
@@ -180,6 +182,19 @@ export const codeToGroup = {
   RDF605: "Other humanities"
 };
 
+export const dataTypes = [
+  "Binary",
+  "Boolean",
+  "DateTime",
+  "Numeric",
+  "Text",
+  "Array[Binary]",
+  "Array[Boolean]",
+  "Array[DateTime]",
+  "Array[Numeric]",
+  "Array[Text]"
+];
+
 export const descriptionToFormatCodeText = {
   "": "",
   "Entries of any length with only capital letters": "^[A-Z]*$",
@@ -282,6 +297,55 @@ export const formatCodeDateDescription = Object.entries(
   return acc;
 }, {});
 
+// These are not ISO 8601 formats
+export const customDateFormatParsers = [
+  {
+    name: "ISO: MM",
+    regex: /^(0[1-9]|1[0-2])$/,
+    parse: (str) => DateTime.fromFormat(str, "MM")
+  },
+  {
+    name: "ISO: DD",
+    regex: /^(0[1-9]|[1-2][0-9]|3[01])$/,
+    parse: (str) => DateTime.fromFormat(str, "dd")
+  },
+  {
+    name: "DD/MM/YYYY",
+    regex: /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/,
+    parse: (str) => DateTime.fromFormat(str, "dd/MM/yyyy")
+  },
+  {
+    name: "DD/MM/YY",
+    regex: /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{2}$/,
+    parse: (str) => DateTime.fromFormat(str, "dd/MM/yy")
+  },
+  {
+    name: "MM/DD/YYYY",
+    regex: /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/,
+    parse: (str) => DateTime.fromFormat(str, "MM/dd/yyyy")
+  },
+  {
+    name: "DDMMYYYY",
+    regex: /^(0[1-9]|[12]\d|3[01])(0[1-9]|1[0-2])\d{4}$/,
+    parse: (str) => DateTime.fromFormat(str, "ddMMyyyy")
+  },
+  {
+    name: "MMDDYYYY",
+    regex: /^(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{4}$/,
+    parse: (str) => DateTime.fromFormat(str, "MMddyyyy")
+  },
+  {
+    name: "HH:MM:SS AM/PM",
+    regex: /^(0?[1-9]|1[0-2]):[0-5][0-9]:[0-5][0-9] ?[APMapm]{2}$/,
+    parse: (str) => DateTime.fromFormat(str, "h:mm:ss a")
+  },
+  {
+    name: "H:MM or HH:MM AM/PM",
+    regex: /^(0?[1-9]|1[0-2]):[0-5][0-9] ?[APMapm]{2}$/,
+    parse: (str) => DateTime.fromFormat(str, "h:mm a")
+  }
+];
+
 export const descriptionToFormatCodeBinary = {
   "": "",
   "Electronic publication (EPUB)": "application/epub+zip",
@@ -367,7 +431,8 @@ export const errorCode = {
   Format: "FE",
   "Entry Codes": "EC",
   "Character Encoding": "CHE",
-  "Data Type": "DTE"
+  "Data Type": "DTE",
+  Range: "RE"
 };
 
 export const OVERLAYS_WORD = "overlays";
@@ -383,8 +448,20 @@ export const UNIT = "unit";
 export const CONFORMANCE = "conformance";
 export const CARDINALITY = "cardinality";
 
-// Extension overlays
 export const ORDERING = "ordering";
+
+// Unit Framing Overlay
+export const UNIT_FRAMING = "unit_framing";
+export const UNIT_FRAME_ID = "UCUM";
+export const UNIT_FRAME_LABEL = "Unified Code for Units of Measure";
+export const UNIT_FRAME_LOCATION = "https://ucum.org/";
+export const UNIT_FRAME_VERSION = "";
+
+// Sensitive overlay (flagged attributes)
+export const SENSITIVE = "sensitive";
+
+// Range overlay
+export const RANGE = "range";
 
 export const overlays = [
   CHARACTER_ENCODING,
@@ -402,7 +479,7 @@ export const extensionOverlays = [ORDERING];
 
 export const SHOW_ALL_DATA = "Show all data";
 export const SHOW_ONLY_ROWS_WITH_ERRORS = "Show only rows with errors";
-export const SHOW_NO_ERRORS = "Show only rows without errors"
+export const SHOW_NO_ERRORS = "Show only rows without errors";
 export const OCA_REPOSITORY_API_URL = "https://api.adc.oca-repo.semanticengine.org";
 
 export const ALLOWED_BOOLEAN_VALUES = [
@@ -432,5 +509,16 @@ export const ALLOWED_BOOLEAN_VALUES = [
   "oui"
 ];
 
-export const DISALLOWED_CHARACTERS = [",", " ", "\\", "/", "(", ")", "'"];
+export const MAX_FILE_SIZE = 10485760;
+export const DISALLOWED_CHARACTERS = [",", " ", "\\", "/", "(", ")", "'", "+", "%"];
 export const ADC = "adc";
+export const CUSTOM_FORMAT_RULE = "CustomFormatRule";
+
+// Fields for overlay items
+export const FIELD_CHARACTER_ENCODING_OVERLAY = "Character Encoding";
+export const FIELD_FORMAT_OVERLAY = "Add format rule for data";
+export const FIELD_CONFORMANCE_OVERLAY = "Make selected entries required";
+export const FIELD_CARDINALITY_OVERLAY = "Cardinality";
+export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
+export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
+export const FIELD_RANGE_OVERLAY = "Add range rule for data";

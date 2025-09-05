@@ -1,6 +1,8 @@
+import { Duration } from "luxon";
 import OCADataSetErr from "./utils/Err";
 import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
-import { ALLOWED_BOOLEAN_VALUES } from "../constants/constants";
+import { ADC, ALLOWED_BOOLEAN_VALUES, errorCode, RANGE } from "../constants/constants";
+import { isValidNumber, parseDateString } from "../constants/utils";
 
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
@@ -34,19 +36,22 @@ const FORMAT_ERR_MSG = "Format mismatch.";
 const EC_ERR_MSG = "One of the entry codes is required.";
 const CHE_ERR_MSG = "Character encoding mismatch.";
 const DATA_TYPE_ERR_MSG = "Data type mismatch.";
+const RANGE_ERR_MSG = "Range mismatch";
 
 export default class OCABundle {
   constructor() {
     this.captureBase = null;
     this.overlays = {};
     this.ErrorBuilder = new OCADataSetErr();
+    this.OCAPackage = null;
   }
 
   // Load the OCA bundle from a JSON file.
-  async loadedBundle(bundle) {
+  async loadedBundle(bundle, OCAPackage) {
     try {
       this.captureBase = bundle[CB_KEY];
       this.overlays = bundle[OVERLAYS_KEY];
+      this.OCAPackage = OCAPackage;
     } catch (error) {
       console.error("Error loading bundle:", error);
       throw error;
@@ -194,6 +199,115 @@ export default class OCABundle {
     });
 
     return newDataArr;
+  }
+
+  validateRange(dataset) {
+    const rslt = this.ErrorBuilder.rangeErr;
+    // For now, use ADC community's extension overlays for the top-level/main schema bundle
+    const rangeOverlay =
+      this.OCAPackage?.extensions?.[ADC]?.[
+        this.OCAPackage?.oca_bundle?.bundle?.capture_base?.d
+      ]?.overlays?.[RANGE];
+
+    if (rangeOverlay?.attributes) {
+      Object.keys(rangeOverlay.attributes).forEach((attribute) => {
+        rslt.errs[attribute] = {};
+        const { lower, lower_inclusive, upper, upper_inclusive } =
+          rangeOverlay.attributes[attribute];
+        const attributeType = this.getAttributeType(attribute);
+
+        dataset[attribute]?.forEach((rowValue, i) => {
+          if (attributeType === "Numeric") {
+            const rowValueNum = Number.parseFloat(rowValue);
+            if (isValidNumber(lower)) {
+              const lowerBound = Number.parseFloat(lower);
+              if (rowValueNum < lowerBound) {
+                rslt.errs[attribute][i] = {
+                  type: errorCode.Range,
+                  detail: `${RANGE_ERR_MSG}: value is smaller than ${lowerBound}`
+                };
+              }
+
+              if (!lower_inclusive && rowValueNum === lowerBound) {
+                rslt.errs[attribute][i] = {
+                  type: errorCode.Range,
+                  detail: `${RANGE_ERR_MSG}: value is equal to ${lowerBound} (non-inclusive)`
+                };
+              }
+            }
+
+            if (isValidNumber(upper)) {
+              const upperBound = Number.parseFloat(upper);
+              if (rowValueNum > upperBound) {
+                rslt.errs[attribute][i] = {
+                  type: errorCode.Range,
+                  detail: `${RANGE_ERR_MSG}: value is greater than ${upperBound}`
+                };
+              }
+
+              if (!upper_inclusive && rowValueNum === upperBound) {
+                rslt.errs[attribute][i] = {
+                  type: errorCode.Range,
+                  detail: `${RANGE_ERR_MSG}: value is equal to ${upperBound} (non-inclusive)`
+                };
+              }
+            }
+          }
+
+          if (attributeType === "DateTime") {
+            const rowValueDate = parseDateString(rowValue);
+            if (rowValueDate) {
+              const lowerBoundDate = parseDateString(lower);
+              const upperBoundDate = parseDateString(upper);
+              const isDuration = Duration.isDuration(rowValueDate);
+              const rowVal = isDuration ? rowValueDate.as("milliseconds") : rowValueDate;
+
+              if (lowerBoundDate) {
+                const lowerBound = isDuration
+                  ? lowerBoundDate.as("milliseconds")
+                  : lowerBoundDate;
+
+                if (rowVal < lowerBound) {
+                  rslt.errs[attribute][i] = {
+                    type: errorCode.Range,
+                    detail: `${RANGE_ERR_MSG}: value is smaller than ${lower}`
+                  };
+                }
+
+                if (!lower_inclusive && rowValueDate.equals(lowerBoundDate)) {
+                  rslt.errs[attribute][i] = {
+                    type: errorCode.Range,
+                    detail: `${RANGE_ERR_MSG}: value is equal to ${lower} (non-inclusive)`
+                  };
+                }
+              }
+
+              if (upperBoundDate) {
+                const upperBound = isDuration
+                  ? upperBoundDate.as("milliseconds")
+                  : upperBoundDate;
+
+                if (rowVal > upperBound) {
+                  rslt.errs[attribute][i] = {
+                    type: errorCode.Range,
+                    detail: `${RANGE_ERR_MSG}: value is greater than ${upper}`
+                  };
+                }
+
+                if (!upper_inclusive && rowValueDate.equals(upperBoundDate)) {
+                  rslt.errs[attribute][i] = {
+                    type: errorCode.Range,
+                    detail: `${RANGE_ERR_MSG}: value is equal to ${upper} (non-inclusive)`
+                  };
+                }
+              }
+            }
+          }
+        });
+      });
+    }
+
+    return rslt.errs;
   }
 
   /** Validates all attributes for format values.
@@ -467,6 +581,7 @@ export default class OCABundle {
     rslt.formatErr.errs = this.validateFormat(dataset);
     rslt.entryCodeErr.errs = this.validateEntryCodes(dataset);
     rslt.characterEcodeErr.errs = this.validateCharacterEncoding(dataset);
+    rslt.rangeErr.errs = this.validateRange(dataset);
     return rslt.updateErr();
   }
 }

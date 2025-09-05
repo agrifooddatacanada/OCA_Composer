@@ -44,8 +44,8 @@ export const catalogueInfoFormFields = {
       type: "select",
       placeholder: "Please select",
       options: [
-        "SOCIAL",
-        "PEAce",
+        "Just Transitions",
+        "peaCE",
         "Loop",
         "GG4GHG",
         "Cell Cultured Meat",

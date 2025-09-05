@@ -24,11 +24,14 @@ import CellHeader from "../components/CellHeader";
 import ExportButton from "./ExportButton";
 import UploadButton from "./UploadButton";
 import {
+  ADC,
+  CUSTOM_FORMAT_RULE,
   errorCode,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
   formatCodeTextDescription,
+  RANGE,
   SHOW_ALL_DATA,
   SHOW_NO_ERRORS,
   SHOW_ONLY_ROWS_WITH_ERRORS
@@ -87,13 +90,15 @@ const flaggedHeader = (
   formatRuleRowData,
   characterEncodingRowData,
   cardinalityData,
-  lang
+  lang,
+  OCAPackage = null
 ) => {
   const labelDescription = lanAttributeRowData[lang];
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
   const formatRule = formatRuleRowData.find(
     (item) => item?.Attribute === props?.displayName
   );
+  const formatRegex = formatRule?.[CUSTOM_FORMAT_RULE] || formatRule?.FormatText || "";
   const attributeType = formatRule?.Type;
   let selectedOption = [];
   if (attributeType?.includes("Date")) {
@@ -112,6 +117,12 @@ const flaggedHeader = (
   const cardinality = cardinalityData.find(
     (item) => item?.Attribute === props?.displayName
   );
+
+  // For now, use ADC community's extension overlays for the top-level/main schema bundle
+  const rangeOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.[RANGE];
+  const rangeData = rangeOverlay?.attributes?.[props?.displayName];
 
   return (
     <CellHeader
@@ -155,38 +166,36 @@ const flaggedHeader = (
                     <Typography>{formatRule?.Type}</Typography>
                   </>
                 )}
-                {"FormatText" in formatRule &&
-                  formatRule?.FormatText &&
-                  formatRule?.FormatText !== "" && (
-                    <>
-                      <br />
-                      <Typography sx={{ fontWeight: "bold" }}>Format:</Typography>
-                      <Typography>
-                        <span
-                          style={{
-                            fontWeight: "500"
-                          }}
-                        >
-                          - RegEx:{" "}
-                        </span>{" "}
-                        {formatRule?.FormatText || ""}
-                      </Typography>
-                      <Typography>
-                        {formatRule?.FormatText in selectedOption && (
-                          <>
-                            <span
-                              style={{
-                                fontWeight: "500"
-                              }}
-                            >
-                              - Description:{" "}
-                            </span>
-                            {selectedOption[formatRule?.FormatText]}
-                          </>
-                        )}
-                      </Typography>
-                    </>
-                  )}
+                {formatRegex && (
+                  <>
+                    <br />
+                    <Typography sx={{ fontWeight: "bold" }}>Format:</Typography>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - RegEx:{" "}
+                      </span>{" "}
+                      {formatRegex}
+                    </Typography>
+                    <Typography>
+                      {formatRegex in selectedOption && (
+                        <>
+                          <span
+                            style={{
+                              fontWeight: "500"
+                            }}
+                          >
+                            - Description:{" "}
+                          </span>
+                          {selectedOption[formatRegex]}
+                        </>
+                      )}
+                    </Typography>
+                  </>
+                )}
               </>
             )}
             {characterEncoding && (
@@ -225,6 +234,60 @@ const flaggedHeader = (
                   <Typography>{cardinality?.EntryLimit}</Typography>
                 </>
               )}
+            {rangeData && (
+              <>
+                <br />
+                <Typography sx={{ fontWeight: "bold" }}>Range:</Typography>
+                {rangeData.lower !== "" && (
+                  <>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - Lower Bound:{" "}
+                      </span>{" "}
+                      {rangeData.lower}
+                    </Typography>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - Inclusive:{" "}
+                      </span>{" "}
+                      {rangeData.lower_inclusive ? "Yes" : "No"}
+                    </Typography>
+                  </>
+                )}
+                {rangeData.upper !== "" && (
+                  <>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - Upper Bound:{" "}
+                      </span>{" "}
+                      {rangeData.upper}
+                    </Typography>
+                    <Typography>
+                      <span
+                        style={{
+                          fontWeight: "500"
+                        }}
+                      >
+                        - Inclusive:{" "}
+                      </span>{" "}
+                      {rangeData.upper_inclusive ? "Yes" : "No"}
+                    </Typography>
+                  </>
+                )}
+              </>
+            )}
           </Box>
         ) : (
           ""
@@ -258,7 +321,8 @@ const OCADataValidatorCheck = ({
     savedEntryCodes,
     targetResult,
     notToVerifyAttributes,
-    schemaDescription
+    schemaDescription,
+    OCAPackage
     // attributeRowData // Check to see sensitive data
   } = useContext(Context);
 
@@ -346,7 +410,8 @@ const OCADataValidatorCheck = ({
           formatRuleRowData,
           characterEncodingRowData,
           cardinalityData,
-          langRef.current
+          langRef.current,
+          OCAPackage
         ),
       cellRendererParams: (params) => ({
         dataHeaders: savedEntryCodes,
@@ -446,6 +511,55 @@ const OCADataValidatorCheck = ({
     return headerToString + convertToCSV(newData, newHeader);
   };
 
+  const uploadData = async () => {
+    try {
+      const csvString = await generateCSVFile(false);
+
+      window.parent.postMessage(
+        {
+          type: "CSV_STRING",
+          data: csvString
+        },
+        "*"
+      );
+    } catch (error) {
+      console.error("Error sending data to parent: ", error);
+    }
+  };
+
+  const allCellsPassValidation = async () => {
+    const currData = await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    }).then(() => getCurrentData(gridRef.current.api, true)); // wait for the grid to render
+
+    if (currData.length === 0) {
+      // edge case for no dataset file uploaded
+      return false;
+    }
+    return currData.every((row) => {
+      if (!row.error) return true;
+      return Object.values(row.error).every(
+        (cellErrors) => !cellErrors || cellErrors.length === 0
+      );
+    });
+  };
+
+  const updateDataValidationState = async () => {
+    const isValid = await allCellsPassValidation();
+    setIsDataValid(isValid);
+  };
+
+  // Check if the page is rendered inside an iframe
+  const isInIframe = () => {
+    try {
+      return window.self !== window.parent;
+    } catch (e) {
+      return true; // If there's an error, assume it's in an iframe
+    }
+  };
+
+  const inIframe = isInIframe();
+
   const downloadCSVFile = (csvData, fileName) => {
     const blob = new Blob([csvData], { type: "text/csv" });
 
@@ -505,7 +619,7 @@ const OCADataValidatorCheck = ({
     setFirstValidate(true);
 
     const bundle = new OCABundle();
-    await bundle.loadedBundle(jsonParsedFile);
+    await bundle.loadedBundle(jsonParsedFile, OCAPackage);
 
     const newData = getCurrentData(gridRef.current.api, true);
 
@@ -924,7 +1038,7 @@ const OCADataValidatorCheck = ({
         })
       : rowData;
   function filterRowData() {
-    updateDataValidationState()
+    updateDataValidationState();
     if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
       const selectedErrors = errorName.filter(
         (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
@@ -936,8 +1050,15 @@ const OCADataValidatorCheck = ({
           .map((err) => err?.type);
         return selectedErrors.some((error) => errorTypes.includes(errorCode?.[error]));
       });
-    } else if (errorName.includes(SHOW_NO_ERRORS)) {
-      return initialRowData.filter((row) => !row?.error || Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0));
+    }
+    if (errorName.includes(SHOW_NO_ERRORS)) {
+      return initialRowData.filter(
+        (row) =>
+          !row?.error ||
+          Object.values(row.error).every(
+            (cellErrors) => !cellErrors || cellErrors.length === 0
+          )
+      );
     }
     return initialRowData;
   }
@@ -1012,7 +1133,9 @@ const OCADataValidatorCheck = ({
                 validatedData={rowDataFilter}
                 currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
               />
-              {inIframe && <UploadButton isDisabled={!isDataValid} uploadFunc={uploadData}/>}
+              {inIframe && (
+                <UploadButton isDisabled={!isDataValid} uploadFunc={uploadData} />
+              )}
             </Box>
           </Box>
         </Box>

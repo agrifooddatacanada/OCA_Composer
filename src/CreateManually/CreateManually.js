@@ -189,11 +189,7 @@ export default function CreateManually() {
     });
 
     if (hasDisallowedCharacters) {
-      errorSettingFunction(
-        t(
-          "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes"
-        )
-      );
+      errorSettingFunction(t("AttributeDisallowedCharErrorMessage"));
       gridRef.current.api.setFocusedCell(errorIndex, "Name");
       setTimeout(() => {
         errorSettingFunction("");

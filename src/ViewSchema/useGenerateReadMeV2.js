@@ -5,7 +5,7 @@ import {
   getOrderedAttributeMap,
   getOrderedEntries
 } from "../constants/utils";
-import { ADC } from "../constants/constants";
+import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
 
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL
@@ -103,7 +103,8 @@ const useGenerateReadMeV2 = () => {
           `Layer name: ${layer_name}\n` +
             `SAID/digest: ${said}\n` +
             `Language: ${lang}\n` +
-            `Description: ${description}\n` +
+            // eslint-disable-next-line quotes
+            `Description: ${description ? description.replace(/\\"/g, '"').replace(/\\'/g, "'") : ""}\n` +
             "\n"
         );
       }
@@ -430,6 +431,100 @@ const useGenerateReadMeV2 = () => {
           "\n",
           "******************************************************************\n"
         );
+      }
+
+      if (Object.prototype.hasOwnProperty.call(extensionOverlays, SENSITIVE)) {
+        const sensitiveOverlay = extensionOverlays[SENSITIVE];
+        const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
+          ? sensitiveOverlay?.sensitive_attributes
+          : [];
+
+        if (sensitiveAttributes.length > 0) {
+          text_file.push(
+            `Layer name: ${sensitiveOverlay.type}\n`,
+            `SAID/digest: ${sensitiveOverlay.d}\n`,
+            `Sensitive attributes: ${sensitiveAttributes.join(", ")}\n`,
+            "\n",
+            "******************************************************************\n"
+          );
+        }
+      }
+
+      if (Object.prototype.hasOwnProperty.call(extensionOverlays, RANGE)) {
+        const rangeOverlay = extensionOverlays[RANGE];
+        const rangeAttributes = Object.keys(rangeOverlay.attributes || {});
+
+        if (rangeAttributes.length > 0) {
+          text_file.push(
+            `Layer name: ${rangeOverlay.type}\n`,
+            `SAID/digest: ${rangeOverlay.d}\n\n`,
+            `Schema attributes: ${rangeOverlay.type}\n`
+          );
+
+          rangeAttributes.forEach((attribute) => {
+            const rangeData = rangeOverlay.attributes[attribute];
+            if (rangeData.lower === "" && rangeData.upper === "") return;
+
+            let rangeText = `   ${attribute}: `;
+
+            if (rangeData.lower !== "") {
+              rangeText += `lower_bound: ${rangeData.lower} (${rangeData.lower_inclusive ? "Inclusive" : "Exclusive"})`;
+            }
+
+            if (rangeData.upper !== "") {
+              rangeText += `, upper_bound: ${rangeData.upper} (${rangeData.upper_inclusive ? "Inclusive" : "Exclusive"})`;
+            }
+
+            text_file.push(rangeText, "\n");
+          });
+
+          text_file.push(
+            "\n",
+            "******************************************************************\n"
+          );
+        }
+      }
+
+      if (Object.prototype.hasOwnProperty.call(extensionOverlays, UNIT_FRAMING)) {
+        const unitFramingOverlay = extensionOverlays[UNIT_FRAMING];
+
+        const unitOverlayData =
+          json_bundle.overlays.unit?.attribute_units ||
+          json_bundle.overlays.unit?.attribute_unit ||
+          {};
+
+        if (Object.keys(unitFramingOverlay?.units || {}).length > 0) {
+          text_file.push(
+            `Layer name: ${unitFramingOverlay.type}\n`,
+            `SAID/digest: ${unitFramingOverlay.d}\n\n`
+          );
+
+          if (unitFramingOverlay.framing_metadata) {
+            text_file.push("Unit frame\n");
+            Object.entries(unitFramingOverlay.framing_metadata).forEach(
+              ([key, value]) => {
+                text_file.push(`   "${key}": "${value}"\n`);
+              }
+            );
+            text_file.push("\n");
+          }
+
+          text_file.push(`Schema attributes: ${unitFramingOverlay.type}\n`);
+
+          Object.entries(unitOverlayData).forEach(([attribute, unit]) => {
+            const unitFramingData = unitFramingOverlay.units[unit];
+            if (!unitFramingData) return;
+            text_file.push(
+              `   ${attribute}: unit: ${unit}, UCUM code: ${unitFramingData.term_id}`,
+              "\n"
+            );
+          });
+
+          text_file.push(
+            "\n",
+            "******************************************************************\n"
+          );
+        }
       }
 
       text_file.push("END_OCA_PACKAGE_EXTENSIONS\n");

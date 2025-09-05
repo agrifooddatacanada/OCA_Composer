@@ -4,6 +4,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
 import {
+  CUSTOM_FORMAT_RULE,
   descriptionToFormatCodeBinary,
   descriptionToFormatCodeDate,
   descriptionToFormatCodeNumeric,
@@ -62,6 +63,8 @@ export const FormatRuleTypeRenderer = memo(
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+    const hasCustomFormatRule = Boolean(props.node.data[CUSTOM_FORMAT_RULE]);
+
     const findCode = (value) =>
       attributeType.includes("Date")
         ? descriptionToFormatCodeDate[value]
@@ -83,6 +86,7 @@ export const FormatRuleTypeRenderer = memo(
     };
 
     const handleClick = () => {
+      if (hasCustomFormatRule) return;
       setIsDropdownOpen(!isDropdownOpen);
     };
 
@@ -129,6 +133,7 @@ export const FormatRuleTypeRenderer = memo(
         isDropdownOpen={isDropdownOpen}
         setIsDropdownOpen={setIsDropdownOpen}
         typesDisplay={typesDisplay}
+        isDisabled={hasCustomFormatRule}
       />
     ) : (
       <></>

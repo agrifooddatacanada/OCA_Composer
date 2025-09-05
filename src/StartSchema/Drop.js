@@ -1,11 +1,15 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { useTranslation } from "react-i18next";
 import DropCard from "./DropCard";
 import { messages } from "../constants/messages";
 import { CustomPalette } from "../constants/customPalette";
 import LandingDropZone from "../Landing/LandingDropZone";
 import { Context } from "../App";
 import { lightenColor } from "../utils/colorUtils";
+import { MAX_FILE_SIZE } from "../constants/constants";
+import { toMegabytes } from "../constants/utils";
+
 
 export default function Drop({
   setFile,
@@ -20,67 +24,83 @@ export default function Drop({
   interfaceType = 0,
   noteDescription
 }) {
+
   const { currentTheme } = useContext(Context);
+  const { t } = useTranslation();
+
   const acceptFormat = useMemo(() => {
     if (version === 0) {
       return {
         "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
-        "application/zip": ['.zip'],
+        "application/zip": [".zip"],
         "application/json": [".json"]
       };
-    } else if (version === 1) {
+    }
+    if (version === 1) {
       return {
-        "application/zip": ['.zip'],
+        "application/zip": [".zip"],
+        "application/json": [".json"],
+        "text/yaml": [".yaml", ".yml"],
+        "application/x-yaml": [".yaml", ".yml"]
+      };
+    }
+    if (version === 2) {
+      return {
+        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"]
+      };
+    }
+    if (version === 3) {
+      return {
         "application/json": [".json"]
       };
-    } else if (version === 2) {
+    }
+    if (version === 4) {
       return {
-        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
+        "application/vnd.ms-excel": [".xls", ".xlsx"]
       };
-    } else if (version === 3) {
-      return {
-        "application/json": [".json"]
-      };
-    } else if (version === 4) {
-      return {
-        "application/vnd.ms-excel": [".xls", ".xlsx"],
-      };
-    } else if (version === 5) {
+    }
+    if (version === 5) {
       return {
         "application/vnd.ms-excel": [".csv"],
-        "application/zip": ['.zip'],
+        "application/zip": [".zip"],
         "application/json": [".json"]
       };
-    } else if (version === 6) {
+    }
+    if (version === 6) {
       return {
-        "text/plain": [".txt"],
+        "text/plain": [".txt"]
       };
     }
   }, [version]);
 
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: acceptFormat,
-    maxSize: 10485760,
+    maxSize: MAX_FILE_SIZE,
     onDropRejected: (file) => {
       if (file[0].errors[0].code === "file-too-large") {
-        setDropMessage({ message: messages.fileTooLarge, type: "error" });
+        setDropMessage({
+          message: t("FileSizeError", {
+            maxFileSize: toMegabytes(MAX_FILE_SIZE)
+          }),
+          type: "error"
+        });
       } else if (file[0].errors[0].code === "file-invalid-type") {
         setDropMessage({
           message: messages.wrongTypeUploadFail,
-          type: "error",
+          type: "error"
         });
       } else {
         setDropMessage({ message: messages.fileRejectedFail, type: "error" });
       }
       setTimeout(() => {
         setDropMessage({ message: "", type: "" });
-      }, [2500]);
+      }, [3500]);
     },
     onDropAccepted: () => {
       setDropMessage({ message: messages.fileAccepted, type: "success" });
       setLoading(true);
     },
-    disabled: dropDisabled,
+    disabled: dropDisabled
   });
   const [hover, setHover] = useState(false);
 
@@ -118,7 +138,7 @@ export default function Drop({
 
   return (
     <>
-      {interfaceType === 1 ?
+      {interfaceType === 1 ? (
         <LandingDropZone
           dropMessage={dropMessage}
           loading={loading}
@@ -133,7 +153,8 @@ export default function Drop({
           handleDragOver={handleDragOver}
           handleDragLeave={handleDragLeave}
         />
-        : <DropCard
+      ) : (
+        <DropCard
           dropMessage={dropMessage}
           loading={loading}
           dropDisabled={dropDisabled}
@@ -150,6 +171,7 @@ export default function Drop({
           tipDescription={tipDescription}
           noteDescription={noteDescription}
         />
-      }</>
+      )}
+    </>
   );
 }

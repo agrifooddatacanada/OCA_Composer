@@ -5,7 +5,7 @@ import { Box, createTheme, ThemeProvider } from "@mui/material";
 import "./App.css";
 import Home from "./Home";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
-import { getListOfSelectedOverlays } from "./constants/getListOfSelectedOverlays";
+import getListOfSelectedOverlays from "./constants/getListOfSelectedOverlays";
 import Landing from "./Landing/Landing";
 // import HelpStorage from "./Landing/HelpStorage";
 import OCADataValidator from "./OCADataValidator/OCADataValidator";
@@ -15,26 +15,45 @@ import OCAMerge from "./OCAMerge/OCAMerge";
 import { getCurrentTheme } from "./utils/themeDetector";
 import { CustomPalette } from "./constants/customPalette";
 // import Tutorial from "./Tutorial/Tutorial";
+import useUnitFramingUpdater from "./hooks/useUnitFramingUpdater";
+import {
+  CUSTOM_FORMAT_RULE,
+  FIELD_CARDINALITY_OVERLAY,
+  FIELD_CHARACTER_ENCODING_OVERLAY,
+  FIELD_CONFORMANCE_OVERLAY,
+  FIELD_DATA_STANDARDS_OVERLAY,
+  FIELD_FORMAT_OVERLAY,
+  FIELD_RANGE_OVERLAY,
+  FIELD_UNIT_FRAMING_OVERLAY
+} from "./constants/constants";
+import {
+  getUnitsFramedThatAlreadyExistInOcaPackage,
+  hasUnitFramingOverlay
+} from "./constants/utils";
 
 // import { environVariables } from "./components/environmentConfig";
 
 export const Context = createContext();
 
 // Initializing react-ga with google analytics ID
-ReactGA.initialize(process.env.REACT_APP_GA_ID);
+if (process.env.REACT_APP_GA_ID) {
+  ReactGA.initialize(process.env.REACT_APP_GA_ID);
+}
 
 const overlayItems = {
-  "Character Encoding": { feature: "Character Encoding", selected: false },
-  "Make selected entries required": {
+  [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
+  [FIELD_CONFORMANCE_OVERLAY]: {
     feature: "Make selected entries required",
     selected: false
   },
-  "Add format rule for data": {
+  [FIELD_FORMAT_OVERLAY]: {
     feature: "Add format rule for data",
     selected: false
   },
-  Cardinality: { feature: "Cardinality", selected: false },
-  "Data Standards": { feature: "Data Standards", selected: false }
+  [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
+  [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
+  [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
+  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false }
 };
 
 export const pagesArray = [
@@ -82,6 +101,18 @@ function App() {
   const [selectedOverlay, setSelectedOverlay] = useState("");
   const [cardinalityData, setCardinalityData] = useState([]);
   const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
+  const [rangeRowData, setRangeRowData] = useState([]);
+  // the current state of units from attributeRowData
+  const [unitRowData, setUnitRowData] = useState([]);
+  const [currentUnitFramedRowData, setCurrentUnitFramedRowData] = useState([]);
+  const [unitFramedRowData, setUnitFramedRowData] = useState([]);
+  const [frameAllUnits, setFrameAllUnits] = useState(hasUnitFramingOverlay());
+  const [
+    unitFramedThatAlreadyExistInOcaPackage,
+    setUnitFramedThatAlreadyExistInOcaPackage
+  ] = useState({});
+  const [unframedUnitList, setUnframedUnitList] = useState([]);
+  const [unitRowDataWhenNoFrameAll, setUnitRowDataWhenNoFrameAll] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -208,6 +239,7 @@ function App() {
   }, [fileData]);
 
   // Create Attribute Row Data object when Attributes List updates
+
   useEffect(() => {
     const newAttributesArray = [];
     const newCharacterEncodingArray = [];
@@ -259,7 +291,8 @@ function App() {
         newFormatRuleArray.push({
           Attribute: item.Attribute,
           Type: item.Type,
-          FormatText: ""
+          FormatText: "",
+          [CUSTOM_FORMAT_RULE]: ""
         });
       }
     });
@@ -286,6 +319,187 @@ function App() {
     });
 
     setDataStandardsRowData(newDataStandardsArray);
+  }, [attributeRowData]);
+
+  // unit framing starts here
+  useEffect(() => {
+    if (OCAPackage) {
+      setUnitFramedThatAlreadyExistInOcaPackage(
+        getUnitsFramedThatAlreadyExistInOcaPackage(OCAPackage)
+      );
+    }
+  }, [OCAPackage]);
+
+  useEffect(() => {
+    const newUnitRowArray = [];
+    attributeRowData.forEach((item) => {
+      if (!item.Unit) {
+        return;
+      }
+
+      const unitRowObject = unitRowData.find(
+        (obj) => obj.Attribute === item.Attribute && obj.Unit === item.Unit
+      );
+      // the attribute unit exits and hasn't changed from the attributeRowData.
+      if (unitRowObject) {
+        newUnitRowArray.push(unitRowObject);
+      } else {
+        newUnitRowArray.push({
+          Attribute: item.Attribute,
+          Unit: item.Unit,
+          "UCUM Code": item["UCUM Code"] || "",
+          "UCUM Label": "",
+          Description: ""
+        });
+      }
+    });
+
+    setUnitRowData(newUnitRowArray);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attributeRowData]);
+
+  /*
+  Every time the unitRowData updates, we need to update the unitFramedRowData
+  This is because the unitFramedRowData is used to display & create the unit framing overlay
+  and the unitFramedRowData has to be updated whenever unitRowData is updated.
+  */
+  const framedUnits = useUnitFramingUpdater(unitRowData);
+
+  useEffect(() => {
+    if (framedUnits.length > 0) {
+      setUnitFramedRowData((prev) => {
+        // First, preserve all existing rows that are marked as deleted
+        const deletedRows = prev.filter((row) => row.deleted === true);
+
+        return framedUnits.map((currentFramedUnit) => {
+          // Check if the row already exists in unitFramedRowData
+          const existingRow = prev.find(
+            (prevFramedUnit) =>
+              prevFramedUnit.Attribute === currentFramedUnit.Attribute &&
+              prevFramedUnit.Unit === currentFramedUnit.Unit &&
+              prevFramedUnit["UCUM Code"] === currentFramedUnit["UCUM Code"]
+          );
+
+          // If it exists, keep the existing row (including its `deleted` status)
+          if (existingRow) {
+            return existingRow;
+          }
+
+          // Check if this unit was previously deleted
+          const wasDeleted = deletedRows.some(
+            (deletedRow) => deletedRow.Unit === currentFramedUnit.Unit
+          );
+
+          // If it was deleted, keep it deleted; otherwise, set to false
+          return { ...currentFramedUnit, deleted: wasDeleted };
+        });
+      });
+    }
+  }, [framedUnits]);
+
+  useEffect(() => {
+    if (!frameAllUnits) {
+      // framed units that already exist in the OCA package
+      const existingUnits = unitFramedRowData.filter((row) =>
+        Object.prototype.hasOwnProperty.call(
+          unitFramedThatAlreadyExistInOcaPackage,
+          row.Unit
+        )
+      );
+      setUnitRowDataWhenNoFrameAll(existingUnits);
+
+      // unframed units that don't exist in the OCA package
+      const unframedUnits = unitFramedRowData.filter(
+        (row) =>
+          !Object.prototype.hasOwnProperty.call(
+            unitFramedThatAlreadyExistInOcaPackage,
+            row.Unit
+          )
+      );
+
+      const uniqueUnframedUnits = Array.from(
+        new Map(unframedUnits.map((row) => [row.Unit, row])).values()
+      );
+      setUnframedUnitList(uniqueUnframedUnits.map((row) => row.Unit));
+    }
+  }, [frameAllUnits, unitFramedRowData, unitFramedThatAlreadyExistInOcaPackage]);
+
+  useEffect(() => {
+    if (!frameAllUnits) {
+      setCurrentUnitFramedRowData((prev) => {
+        const deletedRows = prev.filter((row) => row.deleted === true);
+
+        return unitRowDataWhenNoFrameAll.map((currentFramedUnit) => {
+          const existingRow = prev.find(
+            (prevFramedUnit) =>
+              prevFramedUnit.Attribute === currentFramedUnit.Attribute &&
+              prevFramedUnit.Unit === currentFramedUnit.Unit
+          );
+
+          if (existingRow) {
+            return existingRow;
+          }
+
+          const wasDeleted = deletedRows.some(
+            (deletedRow) => deletedRow.Unit === currentFramedUnit.Unit
+          );
+
+          return { ...currentFramedUnit, deleted: wasDeleted };
+        });
+      });
+    }
+
+    if (frameAllUnits) {
+      setCurrentUnitFramedRowData((prev) => {
+        const deletedRows = prev.filter((row) => row.deleted === true);
+
+        return unitFramedRowData.map((currentFramedUnit) => {
+          const existingRow = prev.find(
+            (prevFramedUnit) =>
+              prevFramedUnit.Attribute === currentFramedUnit.Attribute &&
+              prevFramedUnit.Unit === currentFramedUnit.Unit
+          );
+
+          if (existingRow) {
+            return existingRow;
+          }
+
+          const wasDeleted = deletedRows.some(
+            (deletedRow) => deletedRow.Unit === currentFramedUnit.Unit
+          );
+          return { ...currentFramedUnit, deleted: wasDeleted };
+        });
+      });
+    }
+  }, [frameAllUnits, unitFramedRowData, unitRowDataWhenNoFrameAll]);
+
+  useEffect(() => {
+    const newRangeArray = [];
+
+    attributeRowData.forEach((attributeRowItem) => {
+      const rangeObject = rangeRowData.find(
+        (rangeRowItem) => attributeRowItem.Attribute === rangeRowItem.Attribute
+      );
+
+      if (rangeObject) {
+        newRangeArray.push(rangeObject);
+      } else if (
+        attributeRowItem.Type === "Numeric" ||
+        attributeRowItem.Type === "DateTime"
+      ) {
+        newRangeArray.push({
+          Attribute: attributeRowItem.Attribute,
+          Type: attributeRowItem.Type,
+          FormatRule: "",
+          LowerBound: "",
+          LowerInclusive: false,
+          UpperBound: "",
+          UpperInclusive: false
+        });
+      }
+    });
+
+    setRangeRowData(newRangeArray);
   }, [attributeRowData]);
 
   useEffect(() => {
@@ -536,6 +750,23 @@ function App() {
             setOCAPackage,
             currentTheme,
             setCurrentTheme
+
+            rangeRowData,
+            setRangeRowData,
+            unitRowData,
+            setUnitRowData,
+            unitFramedRowData,
+            setUnitFramedRowData,
+            unitFramedThatAlreadyExistInOcaPackage,
+            setUnitFramedThatAlreadyExistInOcaPackage,
+            frameAllUnits,
+            setFrameAllUnits,
+            unitRowDataWhenNoFrameAll,
+            setUnitRowDataWhenNoFrameAll,
+            currentUnitFramedRowData,
+            setCurrentUnitFramedRowData,
+            unframedUnitList,
+            setUnframedUnitList
           }}
         >
           <Box
@@ -561,7 +792,7 @@ function App() {
                     />
                   }
                 />
-                <Route path="/oca-data-validator" element={<OCADataValidator />} />
+                <Route path="/oca-data-verifier" element={<OCADataValidator />} />
                 {/* <Route
                   path='/help_designing_datasets'
                   element={<GuidanceForDesigningDataSets />}
