@@ -10,7 +10,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 import { Context } from "../App";
 
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import { removeSpacesFromString } from "../constants/removeSpaces";
 
 import "ag-grid-community/styles/ag-grid.css";

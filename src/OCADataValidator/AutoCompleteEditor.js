@@ -1,10 +1,10 @@
-import React, { forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
-import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
-import { styled } from '@mui/material/styles';
-import Popper from '@mui/material/Popper';
+import React, { forwardRef, useImperativeHandle, useEffect, useRef } from "react";
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
+import { styled } from "@mui/material/styles";
+import Popper from "@mui/material/Popper";
 
-const CustomPopper = styled(Popper)(({ theme }) => ({ width: '100%' }));
+const CustomPopper = styled(Popper)(({ theme }) => ({ width: "100%" }));
 
 const AutoCompleteEditor = forwardRef((props, ref) => {
   const inputRef = useRef(props.value);
@@ -23,7 +23,7 @@ const AutoCompleteEditor = forwardRef((props, ref) => {
 
   return (
     <Autocomplete
-      sx={{ width: '100%' }}
+      sx={{ width: "100%" }}
       disableClearable
       clearOnEscape
       autoHighlight
@@ -38,23 +38,23 @@ const AutoCompleteEditor = forwardRef((props, ref) => {
           {...params}
           inputRef={inputRef}
           sx={{
-            '& .MuiInputBase-input': {
-              fontSize: '0.80rem',
+            "& .MuiInputBase-input": {
+              fontSize: "0.80rem",
             },
-            '& .MuiFormLabel-root': {
-              fontSize: '0.8rem'
+            "& .MuiFormLabel-root": {
+              fontSize: "0.8rem"
             }
           }}
           placeholder='Search...'
           InputProps={{
             ...params.InputProps,
-            type: 'search',
+            type: "search",
           }}
         />
       )}
       getOptionLabel={(option) => option}
       renderOption={(props, option) => (
-        <li {...props} style={{ fontSize: '0.8rem' }}>
+        <li {...props} style={{ fontSize: "0.8rem" }}>
           {option}
         </li>
       )}

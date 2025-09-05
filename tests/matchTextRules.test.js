@@ -1,7 +1,7 @@
-import {  matchText } from '../src/OCADataValidator/utils/matchRules';
-import { descriptionToFormatCodeText } from '../src/constants/constants';
+import {  matchText } from "../src/OCADataValidator/utils/matchRules";
+import { descriptionToFormatCodeText } from "../src/constants/constants";
 
-test('match Regex (Entries of any length with only capital letters)', () => {
+test("match Regex (Entries of any length with only capital letters)", () => {
     const pattern = descriptionToFormatCodeText["Entries of any length with only capital letters"];
     const testTexts = [
         "ABC",
@@ -27,7 +27,7 @@ test('match Regex (Entries of any length with only capital letters)', () => {
     });
 });
 
-test('match Regex (Capital or lower case letters only, at least 1 character, and 50 characters max)', () => {
+test("match Regex (Capital or lower case letters only, at least 1 character, and 50 characters max)", () => {
     const pattern = descriptionToFormatCodeText["Capital or lower case letters only, at least 1 character, and 50 characters max"];
     const testTexts = [
         "ABC",
@@ -52,7 +52,7 @@ test('match Regex (Capital or lower case letters only, at least 1 character, and
     });
 });
 
-test('match Regex (Capital or lower case letters only, 50 characters max)', () => {
+test("match Regex (Capital or lower case letters only, 50 characters max)", () => {
     const pattern = descriptionToFormatCodeText["Capital or lower case letters only, 50 characters max"];
     const testTexts = [
         "",
@@ -78,7 +78,7 @@ test('match Regex (Capital or lower case letters only, 50 characters max)', () =
     });
 });
 
-test('match Regex (Short text, 50 characters max)', () => {
+test("match Regex (Short text, 50 characters max)", () => {
     const pattern = descriptionToFormatCodeText["Short text, 50 characters max"];
     const testTexts = [
         "",
@@ -103,7 +103,7 @@ test('match Regex (Short text, 50 characters max)', () => {
     });
 });
 
-test('match Regex (Short text, 250 characters max)', () => {
+test("match Regex (Short text, 250 characters max)", () => {
     const pattern = descriptionToFormatCodeText["Short text, 250 characters max"];
     const testTexts = [
         "",
@@ -129,7 +129,7 @@ test('match Regex (Short text, 250 characters max)', () => {
     });
 });
 
-test('match Regex (long text, 800 characters max)', () => {
+test("match Regex (long text, 800 characters max)", () => {
     const pattern = descriptionToFormatCodeText["long text, 800 characters max"];
     const testTexts = [
         "",
@@ -156,7 +156,7 @@ test('match Regex (long text, 800 characters max)', () => {
     });
 });
 
-test ('match Regex (Canadian postal codes (A1A 1A1))', () => {
+test ("match Regex (Canadian postal codes (A1A 1A1))", () => {
     const pattern = descriptionToFormatCodeText["Canadian postal codes (A1A 1A1)"];
     const testTexts = [
         "A1A 1A1",
@@ -183,7 +183,7 @@ test ('match Regex (Canadian postal codes (A1A 1A1))', () => {
     });
 });
 
-test ('match Regex (Zip code)', () => {
+test ("match Regex (Zip code)", () => {
     const pattern = descriptionToFormatCodeText["Zip code"];
     const testTexts = [
         "12345",
@@ -216,7 +216,7 @@ test ('match Regex (Zip code)', () => {
     });
 });
 
-test ('match Regex (Email address)', () => {
+test ("match Regex (Email address)", () => {
     const pattern = descriptionToFormatCodeText["Email address"];
 
     const TestEmails = [
@@ -241,8 +241,8 @@ test ('match Regex (Email address)', () => {
     });
 });
 
-test ('match Regex (URL)', () => {
-    const pattern = descriptionToFormatCodeText["URL"];
+test ("match Regex (URL)", () => {
+    const pattern = descriptionToFormatCodeText.URL;
 
     const TestURLs = [
         "http://www.google.com",
@@ -270,7 +270,7 @@ test ('match Regex (URL)', () => {
     });
 });
 
-test ('match Regex (Phone number)', () => {
+test ("match Regex (Phone number)", () => {
     const pattern = descriptionToFormatCodeText["Phone number"];
 
     const TestPhoneNumbers = [
@@ -320,7 +320,7 @@ test ('match Regex (Phone number)', () => {
     });
 
     badTestPhoneNumbers.forEach((phone) => {
-        expect(matchText(pattern, phone)).toBeFalsy
+        expect(matchText(pattern, phone)).toBeFalsy;
     });
 });
 

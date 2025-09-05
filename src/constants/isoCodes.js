@@ -580,5 +580,5 @@ export const alpha3CodesToTwoLetterCodes = {
 
 export const toThreeLetterCode = (twoLetterCode) => {
   const languageName = codesToLanguages[twoLetterCode];
-  return languageNameToAlpha3Codes[languageName];
+  return languageNameToAlpha3Codes[languageName?.toLowerCase()];
 };

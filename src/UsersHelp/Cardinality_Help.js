@@ -1,15 +1,14 @@
-import React from 'react';
-import HelpPageContainer from '../components/HelpPageContainer';
-import HelpPageH2Title from '../components/HelpPageH2Title';
-import TypographyTag from '../components/TypographyTag';
-import attrType from '../assets/attr_types.png';
-import dataset from '../assets/dataset.png';
-import entryCodes from '../assets/entry_codes.png';
-import labelDescription from '../assets/label_description.png';
-import range from '../assets/range.png';
+import React from "react";
+import HelpPageContainer from "../components/HelpPageContainer";
+import HelpPageH2Title from "../components/HelpPageH2Title";
+import TypographyTag from "../components/TypographyTag";
+import attrType from "../assets/attr_types.png";
+import dataset from "../assets/dataset.png";
+import entryCodes from "../assets/entry_codes.png";
+import labelDescription from "../assets/label_description.png";
+import range from "../assets/range.png";
 
-const CardinalityHelp = () => {
-  return (
+const CardinalityHelp = () => (
     <HelpPageContainer>
       <HelpPageH2Title text="Overlays – Cardinality" />
       <br />
@@ -65,6 +64,5 @@ const CardinalityHelp = () => {
       <br />
     </HelpPageContainer>
   );
-};
 
 export default CardinalityHelp;

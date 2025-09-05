@@ -1,16 +1,15 @@
-import React from 'react';
-import Header from '../Header/Header';
-import Footer from '../Footer/Footer';
-import { Box } from '@mui/material';
-import HelpPageH3Title from '../components/HelpPageH3Title';
-import TypographyTag from '../components/TypographyTag';
-import SchemaDataset3 from '../assets/SchemaDatasetv3.png';
+import React from "react";
+import { Box } from "@mui/material";
+import Header from "../Header/Header";
+import Footer from "../Footer/Footer";
+import HelpPageH3Title from "../components/HelpPageH3Title";
+import TypographyTag from "../components/TypographyTag";
+import SchemaDataset3 from "../assets/SchemaDatasetv3.png";
 
-const LearnAboutSchemaRule = () => {
-  return (
+const LearnAboutSchemaRule = () => (
     <>
       <Header currentPage="Landing" />
-      <Box sx={{ fontFamily: 'roboto', fontWeight: ' 400', fontSize: '1rem', textAlign: 'left', padding: '1.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
+      <Box sx={{ fontFamily: "roboto", fontWeight: " 400", fontSize: "1rem", textAlign: "left", padding: "1.5rem", paddingLeft: "3rem", paddingRight: "3rem" }}>
         <HelpPageH3Title text="Schemas and schema rules" />
         <br />
         <TypographyTag>
@@ -21,7 +20,7 @@ const LearnAboutSchemaRule = () => {
           The Semantic Engine helps researchers write data schemas in both machine-readable and human-readable documents. A well-documented data schema helps you understand and use a dataset. A good schema will tell you what the column labels are and what they mean. It will tell you the units and it will tell you what type of data is in each column.
         </TypographyTag>
         <br />
-        <img src={SchemaDataset3} alt="Schema Dataset" style={{ width: '100%' }} />
+        <img src={SchemaDataset3} alt="Schema Dataset" style={{ width: "100%" }} />
         <br />
         <TypographyTag>
           Schemas help ensure high quality because a schema can document the expected rules for a dataset.
@@ -62,6 +61,5 @@ const LearnAboutSchemaRule = () => {
       <Footer currentPage="Landing" />
     </>
   );
-};
 
 export default LearnAboutSchemaRule;

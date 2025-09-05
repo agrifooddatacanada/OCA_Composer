@@ -6,8 +6,9 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import { removeSpacesFromString } from "../constants/removeSpaces";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 
 export default function AddAttribute({
   addButton1,
@@ -19,10 +20,13 @@ export default function AddAttribute({
   setShowAddAttribute,
   addByTab,
   setAddByTab,
-  typesObjectRef
+  typesObjectRef,
+  attributeRowData,
+  setAttributeRowData
 }) {
   const { t } = useTranslation();
-  const { setAttributesList, setAttributeRowData } = useContext(Context);
+  const { setAttributesList } = useContext(Context);
+  const { activeSchemaId, updateSchemaState } = useMultiSchema();
   const [newAttribute, setNewAttribute] = useState("");
 
   const handleLanguageField = (e) => {
@@ -32,7 +36,10 @@ export default function AddAttribute({
 
   const handleAddRow = () => {
     gridRef.current.api.stopEditing();
-    const newAttributeRowData = JSON.parse(JSON.stringify(gridRef.current.props.rowData));
+
+    // Use context data instead of trying to get it from the grid
+    const currentRowData = attributeRowData || [];
+    const newAttributeRowData = JSON.parse(JSON.stringify(currentRowData));
 
     newAttributeRowData.forEach((item) => {
       item.Type = typesObjectRef.current[item.Attribute] || "";
@@ -42,7 +49,7 @@ export default function AddAttribute({
     // Errors stop user from proceeding if there are entries that will cause issues
 
     let blanks = false;
-    gridRef.current.props.rowData.forEach((row) => {
+    currentRowData.forEach((row) => {
       const attributeValue = removeSpacesFromString(row.Attribute);
       if (attributeValue) {
         newAttributesList.push(attributeValue);
@@ -86,16 +93,33 @@ export default function AddAttribute({
       }
       setAttributesList([...newAttributesList, attributeToAdd]);
       setShowAddAttribute(false);
-      setAttributeRowData([
-        ...newAttributeRowData,
-        {
-          Attribute: attributeToAdd,
-          Flagged: false,
-          List: false,
-          Type: "",
-          Unit: ""
-        }
-      ]);
+      const newAttributeObj = {
+        Attribute: attributeToAdd,
+        Type: "",
+        Description: "",
+        Required: false,
+        EntryCodes: [],
+        List: false,
+        Flagged: false,
+        Unit: ""
+      };
+      const updatedAttributeRowData = [...newAttributeRowData, newAttributeObj];
+      setAttributeRowData(updatedAttributeRowData);
+      
+      // Also save to MultiSchemaContext to prevent data loss when List is toggled
+      if (activeSchemaId) {
+        // Preserve any existing _rid values when saving to schema state
+        const attributesWithIds = updatedAttributeRowData.map((attr) => {
+          const existingAttr = attributeRowData.find(existing => existing.Attribute === attr.Attribute);
+          return existingAttr?._rid ? { ...attr, _rid: existingAttr._rid } : attr;
+        });
+        
+        updateSchemaState(activeSchemaId, {
+          attributes: attributesWithIds,
+          attributesList: [...newAttributesList, attributeToAdd]
+        });
+      }
+      
       setCanDelete(true);
       setNewAttribute("");
     } else if (blanks) {

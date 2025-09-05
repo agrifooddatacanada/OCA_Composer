@@ -1,11 +1,11 @@
-import React, { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useContext } from 'react';
-import { Context } from '../App';
-import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
-import BackNextSkeleton from '../components/BackNextSkeleton';
-import { AgGridReact } from 'ag-grid-react';
-import { gridStyles } from '../constants/styles';
-import { DropdownMenuList } from '../components/DropdownMenuCell';
+import React, { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState , useContext } from "react";
+
+import { Box, FormControl, MenuItem, Select, Typography } from "@mui/material";
+import { AgGridReact } from "ag-grid-react";
+import { Context } from "../App";
+import BackNextSkeleton from "../components/BackNextSkeleton";
+import { gridStyles } from "../constants/styles";
+import { DropdownMenuList } from "../components/DropdownMenuCell";
 
 export const DataHeaderRenderer = memo(
   forwardRef((props, ref) => {
@@ -27,17 +27,15 @@ export const DataHeaderRenderer = memo(
       }
     };
 
-    const typesDisplay = props?.dataHeaders.map((value, index) => {
-      return (
+    const typesDisplay = props?.dataHeaders.map((value, index) => (
         <MenuItem
-          key={index + "_" + value}
+          key={`${index  }_${  value}`}
           value={value}
           sx={{ border: "none", height: "2rem", fontSize: "small" }}
         >
           {value}
         </MenuItem>
-      );
-    });
+      ));
 
     return (
       <>
@@ -67,20 +65,16 @@ const MatchingJSONEntryCodeHeader = () => {
   const [attrValue, setAttrValue] = useState([]);
   const gridRef = useRef();
 
-  const attributeListDropdown = useMemo(() => {
-    return attributeList.map((division) => {
-      return (
-        <MenuItem sx={{ height: '38px' }} key={division} value={division}>{division}</MenuItem>
-      );
-    });
-  }, [attributeList]);
+  const attributeListDropdown = useMemo(() => attributeList.map((division) => (
+        <MenuItem sx={{ height: "38px" }} key={division} value={division}>{division}</MenuItem>
+      )), [attributeList]);
 
   const changeDataFromTable = useCallback((e, params) => {
-    let saveNode = undefined;
+    let saveNode;
     for (const node of gridRef.current?.api?.rowModel?.rowsToDisplay) {
       if (node.data.matchingDataHeader === e.target.value) {
         saveNode = node;
-        node.data.matchingDataHeader = '';
+        node.data.matchingDataHeader = "";
         break;
       }
     }
@@ -91,17 +85,16 @@ const MatchingJSONEntryCodeHeader = () => {
     gridRef.current?.api?.redrawRows({ rowNodes: [saveNode, params.node] });
   }, [gridRef]);
 
-  const columnDefs = useMemo(() => {
-    return [
+  const columnDefs = useMemo(() => [
       {
-        headerName: 'Current Languages',
-        field: 'lang',
+        headerName: "Current Languages",
+        field: "lang",
         width: 200,
         editable: false,
       },
       {
-        headerName: 'Matching Attributes',
-        field: 'matchingDataHeader',
+        headerName: "Matching Attributes",
+        field: "matchingDataHeader",
         width: 200,
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
@@ -112,31 +105,30 @@ const MatchingJSONEntryCodeHeader = () => {
           changeDataFromTable: (e) => changeDataFromTable(e, params)
         }),
       }
-    ];
-  }, [languageList]);
+    ], [languageList]);
 
   const handleSave = () => {
-    const matchingData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
-    const entryCodes = tempEntryCodeSummary?.['attribute_entry_codes']?.[attrValue];
+    const matchingData = gridRef.current.api.getRenderedNodes()?.map((node) => node?.data);
+    const entryCodes = tempEntryCodeSummary?.attribute_entry_codes?.[attrValue];
 
     if (entryCodes && entryCodes?.length > 0) {
       const newEntryCodeRowData = [];
       for (const code of entryCodes) {
         const newObj = { Code: code };
         for (const lang of languages) {
-          const correspondingHeader = matchingData.find(item => item.lang === lang)?.matchingDataHeader;
-          const correspondingEntryCodes = tempEntryList.find(item => item.language === correspondingHeader);
-          const value = correspondingEntryCodes?.['attribute_entries']?.[attrValue]?.[code];
-          newObj[lang] = value ? value : '';
+          const correspondingHeader = matchingData.find((item) => item.lang === lang)?.matchingDataHeader;
+          const correspondingEntryCodes = tempEntryList.find((item) => item.language === correspondingHeader);
+          const value = correspondingEntryCodes?.attribute_entries?.[attrValue]?.[code];
+          newObj[lang] = value || "";
         }
         newEntryCodeRowData.push(newObj);
       }
-      setEntryCodeRowData(prev => {
+      setEntryCodeRowData((prev) => {
         const newData = [...prev];
         newData[chosenEntryCodeIndex] = newEntryCodeRowData;
         return newData;
       });
-      setCurrentPage('Codes');
+      setCurrentPage("Codes");
     }
   };
 
@@ -155,18 +147,18 @@ const MatchingJSONEntryCodeHeader = () => {
   }, []);
 
   useEffect(() => {
-    const attrList = Object.keys(tempEntryCodeSummary?.['attribute_entry_codes'] || {});
+    const attrList = Object.keys(tempEntryCodeSummary?.attribute_entry_codes || {});
     const chosenAttribute = attributeRowData.filter(
       (item) => item.List === true
-    ).filter((_, index) => index === chosenEntryCodeIndex)?.[0]?.['Attribute'] || '';
+    ).filter((_, index) => index === chosenEntryCodeIndex)?.[0]?.Attribute || "";
     const matchingValues = [];
     const tempLanguagesList = tempEntryList.map((entry) => entry?.language);
-    languages.forEach(lang => {
+    languages.forEach((lang) => {
       // const matchingIndex = matchingFunction(tempLanguagesList, lang);
       matchingValues.push({
         lang,
         // matchingDataHeader: matchingIndex !== -1 ? tempLanguagesList[matchingIndex] : ''
-        matchingDataHeader: ''
+        matchingDataHeader: ""
       });
     });
     const matchingIndex = matchingFunction(attrList, chosenAttribute);
@@ -181,7 +173,7 @@ const MatchingJSONEntryCodeHeader = () => {
       <BackNextSkeleton
         isBack
         pageBack={() => {
-          setCurrentPage('UploadEntryCodes');
+          setCurrentPage("UploadEntryCodes");
         }}
         isForward={attributeList?.length > 0}
         pageForward={handleSave} />
@@ -191,27 +183,27 @@ const MatchingJSONEntryCodeHeader = () => {
             // margin: '2rem',
             marginLeft: 11,
             marginTop: 2,
-            gap: '3rem',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            width: '100%',
+            gap: "3rem",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            width: "100%",
           }}
         >
-          <FormControl variant="standard" sx={{ minWidth: 120, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-            <Typography>Please choose the source attribute to import from: {' '}</Typography>
+          <FormControl variant="standard" sx={{ minWidth: 120, width: "100%", display: "flex", flexDirection: "row", alignItems: "center" }}>
+            <Typography>Please choose the source attribute to import from: {" "}</Typography>
             <Select
               value={attrValue}
               onChange={(e) => setAttrValue(e.target.value)}
               displayEmpty
               sx={{
-                minWidth: '100px'
+                minWidth: "100px"
               }}
             >
               {attributeListDropdown}
             </Select>
           </FormControl>
-          <div className="ag-theme-balham" style={{ width: '400px' }}>
+          <div className="ag-theme-balham" style={{ width: "400px" }}>
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
@@ -222,10 +214,10 @@ const MatchingJSONEntryCodeHeader = () => {
           </div>
         </Box> :
         <Box sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
           flex: 1,
         }}>
           <Typography variant="h5">No entry codes in this schema</Typography>

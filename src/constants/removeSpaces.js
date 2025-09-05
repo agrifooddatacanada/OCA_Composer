@@ -1,16 +1,16 @@
 export const removeSpacesFromString = (string) => {
   if (typeof string === "string") {
     return string.trim().replace(/\s+/g, " ");
-  } else {
+  } 
     return string;
-  }
+  
 };
 export const replaceColonFromString = (string) => {
   if (typeof string === "string") {
     return string.replace(/:/g, "-");
-  } else {
+  } 
     return string;
-  }
+  
 };
 
 export const removeSpacesFromObject = (object) => {
@@ -42,9 +42,7 @@ export const removeSpacesFromObjectOfObjects = (object) => {
 };
 
 export const removeSpacesFromArrayOfObjects = (objectArray) => {
-  const noSpacesArray = objectArray.map((object) => {
-    return removeSpacesFromObject(object);
-  });
+  const noSpacesArray = objectArray.map((object) => removeSpacesFromObject(object));
   return noSpacesArray;
 };
 

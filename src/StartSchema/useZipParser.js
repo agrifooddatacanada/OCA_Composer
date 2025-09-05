@@ -9,6 +9,8 @@ import {
   dataTypes,
   FIELD_RANGE_OVERLAY,
   RANGE,
+  SCHEMA_MODE_MULTI_LEVEL,
+  SCHEMA_MODE_SINGLE,
   SENSITIVE
 } from "../constants/constants";
 import {
@@ -18,6 +20,8 @@ import {
   hasEntryCodeOrdering,
   hasRangeOverlay,
   hasUnitFramingOverlay,
+  hasAttributeFramingOverlay,
+  isMultiLevelSchema,
   replaceCharsInKeys
 } from "../constants/utils";
 
@@ -37,7 +41,9 @@ const useZipParser = () => {
     setDataStandardsRowData,
     setCardinalityData,
     setUnitRowData,
-    setRangeRowData
+    setRangeRowData,
+    setAttributeFramingRowData,
+    setSchemaMode
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -93,6 +99,13 @@ const useZipParser = () => {
     let attributesWithListType = [];
     const newUnitFramingRowData = [];
     const newRangeRowData = [];
+    const newAttributeFramingRowData = [];
+
+    if (isMultiLevelSchema(root?.attributes || {})) {
+      setSchemaMode(SCHEMA_MODE_MULTI_LEVEL);
+    } else {
+      setSchemaMode(SCHEMA_MODE_SINGLE);
+    }
 
     // Parse entry codes for list type attributes
     if (entries.length > 0) {
@@ -235,7 +248,13 @@ const useZipParser = () => {
         Attribute: item,
         Flagged: sensitiveAttributes.includes(item),
         List: attributesWithListType.includes(item),
-        Type: dataTypes.includes(attributeType) ? attributeType : "",
+        Type: dataTypes.includes(attributeType)
+          ? attributeType
+          : attributeType.includes("Array[ref")
+            ? "Array[Child Schema]"
+            : attributeType.includes("ref")
+              ? "Child Schema"
+              : "",
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
@@ -384,6 +403,36 @@ const useZipParser = () => {
           }
         }));
         setUnitRowData(newUnitFramingRowData);
+      });
+    }
+
+    // Parse attribute framing
+    if (ocaPackageData && hasAttributeFramingOverlay(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const attributeFraming =
+        ocaPackageData.extensions[ADC][captureBaseSaid]?.overlays.attribute_framing;
+
+      newAttributeRowData.forEach((row) => {
+        const attribute = row?.Attribute;
+        const framingData = attributeFraming?.attributes?.[attribute];
+
+        newAttributeFramingRowData.push({
+          Attribute: attribute,
+          objectId: framingData?.term_id,
+          description: framingData?.description,
+          mappingJustification: framingData?.framing_justification,
+          predicateId: framingData?.predicate_id
+        });
+
+        setOverlay((prev) => ({
+          ...prev,
+          "Attribute Framing": {
+            ...prev["Attribute Framing"],
+            selected: true
+          }
+        }));
+
+        setAttributeFramingRowData(newAttributeFramingRowData);
       });
     }
 

@@ -8,7 +8,7 @@ import { Context } from "../App";
 import Languages from "./Languages";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import { codesToLanguages } from "../constants/isoCodes";
 
 export const DataHeaderRenderer = memo((props) => {

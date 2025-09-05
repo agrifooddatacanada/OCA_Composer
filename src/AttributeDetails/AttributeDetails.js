@@ -1,9 +1,17 @@
-import React, { useRef, useContext, useState, useEffect } from "react";
+import React, {
+  useRef,
+  useContext,
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle
+} from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Box, Typography } from "@mui/material";
 import Grid from "./Grid";
 import AddAttribute from "./AddAttribute";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import {
   removeSpacesFromString,
   removeSpacesFromArrayOfObjects
@@ -13,30 +21,40 @@ import Loading from "../components/Loading";
 import { hasDisallowedChars } from "../constants/utils";
 import { FIELD_RANGE_OVERLAY } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
+import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
+import { toThreeLetterCode } from "../constants/isoCodes";
 
-export default function AttributeDetails({
-  pageBack,
-  pageForward,
-  insertStep,
-  removeStep
-}) {
-  const { t } = useTranslation();
+const AttributeDetails = forwardRef(({ pageBack, pageForward, removeStep }, ref) => {
+  const { t, i18n } = useTranslation();
+  
+  // Get overlay from App context (still needed for UI state)
   const {
-    setAttributesWithLists,
-    setCurrentPage,
-    attributeRowData,
-    setAttributesList,
-    setAttributeRowData,
     overlay,
     setOverlay
   } = useContext(Context);
+  
+  // Use only MultiSchemaContext - unified approach
+  const {
+    activeSchemaId,
+    editingSchemaId,
+    getSchemaState,
+    updateSchemaState,
+    getCompleteSchema
+  } = useMultiSchema();
+
+  const currentSchemaId = activeSchemaId || editingSchemaId;
+
+  // Local state for the current editing session
+  const [attributeRowData, setAttributeRowData] = useState([]);
+  const [attributesList, setAttributesList] = useState([]);
+
   const [errorMessage, setErrorMessage] = useState("");
-  const [canDelete, setCanDelete] = useState(attributeRowData.length !== 1);
+  const [canDelete, setCanDelete] = useState(false);
   const [showAddAttribute, setShowAddAttribute] = useState(false);
   const [addByTab, setAddByTab] = useState(false);
   const [showCard, setShowCard] = useState(false);
-
   const [loading, setLoading] = useState(true);
+
   const navigationSafe = useRef();
   const gridRef = useRef();
   const refContainer = useRef();
@@ -46,6 +64,10 @@ export default function AttributeDetails({
   const addButton1 = useRef();
   const addButton2 = useRef();
 
+  // Track initialization to prevent unnecessary package parsing
+  const initializedSchemaRef = useRef(null);
+
+  // Update types object when attribute data changes
   useEffect(() => {
     const newTypesObjetRef = {};
     attributeRowData.forEach((item) => {
@@ -54,10 +76,162 @@ export default function AttributeDetails({
     typesObjectRef.current = newTypesObjetRef;
   }, [attributeRowData]);
 
+  // Ensure overlay state has all required keys
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (currentSchemaId && overlay) {
+      // Ensure all required overlay keys are present
+      const requiredOverlayKeys = [
+        FIELD_RANGE_OVERLAY,
+        "Unit Framing",
+        "Attribute Framing",
+        "Character Encoding",
+        "Format Rules",
+        "Cardinality",
+        "Data Standards",
+        "Make selected entries required"
+      ];
+
+      const missingKeys = requiredOverlayKeys.filter((key) => !overlay[key]);
+      if (missingKeys.length > 0) {
+        setOverlay((prev) => {
+          const updated = { ...prev };
+          missingKeys.forEach((key) => {
+            updated[key] = { feature: key, selected: false };
+          });
+          return updated;
+        });
+      }
+    }
+  }, [currentSchemaId, overlay, setOverlay]);
+
+  // Initialize or refresh data when switching to edit a schema
+  useEffect(() => {
+    if (!currentSchemaId) return;
+    setLoading(true);
+
+    const schemaState = getSchemaState(currentSchemaId);
+    
+    // Get current language code for schema data
+    const languageCode = toThreeLetterCode(i18n.language.split("-")[0]) || "eng";
+    // NEW UNIFIED APPROACH: Get complete schema data directly
+    const completeSchema = getCompleteSchema(currentSchemaId);
+
+    // Skip if already initialized for this schema
+    if (initializedSchemaRef.current === currentSchemaId) {
+      setLoading(false);
+      return;
+    }
+
+    // Check if existing state exists (should take precedence over complete schema)
+    if (schemaState?.attributes && schemaState.attributes.length >= 0) {
+      // Use existing state (preserves user-added/deleted attributes and edits)
+      // Avoid redundant updates to prevent flicker
+      const sameAttrs =
+        JSON.stringify(attributeRowData) === JSON.stringify(schemaState.attributes);
+      const sameList =
+        JSON.stringify(attributesList) ===
+        JSON.stringify(schemaState.attributesList || []);
+      
+      // If attributes don't match, merge carefully to preserve _rid values
+      if (!sameAttrs) {
+        const mergedAttributes = schemaState.attributes.map((schemaAttr) => {
+          const existingAttr = attributeRowData.find(existing => existing.Attribute === schemaAttr.Attribute);
+          // Preserve _rid if it exists in current data
+          return existingAttr?._rid ? { ...schemaAttr, _rid: existingAttr._rid } : schemaAttr;
+        });
+        setAttributeRowData(mergedAttributes);
+      }
+      
+      if (!sameList) setAttributesList(schemaState.attributesList || []);
+      setLoading(false);
+      initializedSchemaRef.current = currentSchemaId;
+      return;
+    }
+
+    // Only initialize from complete schema if no existing state at all
+    if (completeSchema && !schemaState?.attributes) {
+      const schemaAttributes = completeSchema.attributes || {};
+      const newAttributeRowData = Object.entries(schemaAttributes).map(([key, value]) => {
+        // Check if this attribute has entry codes (is a list)
+        const hasEntryCodes =
+          (completeSchema.overlays?.entry &&
+            completeSchema.overlays.entry.some(
+              (entryOverlay) =>
+                entryOverlay.attribute_entries && entryOverlay.attribute_entries[key]
+            )) ||
+          (completeSchema.overlays?.entry_code &&
+            (Array.isArray(completeSchema.overlays.entry_code)
+              ? completeSchema.overlays.entry_code.some(
+                  (entryOverlay) =>
+                    entryOverlay.attribute_entry_codes && entryOverlay.attribute_entry_codes[key]
+                )
+              : completeSchema.overlays.entry_code.attribute_entry_codes &&
+                completeSchema.overlays.entry_code.attribute_entry_codes[key]));
+
+        // Handle schema references (refs/refn) - these should be "Child Schema" not a type
+        let displayType = value;
+        if (Array.isArray(value)) {
+          const arrayType = value[0] || "Unknown";
+          displayType = `Array[${arrayType}]`;
+        }
+        if (
+          displayType &&
+          (displayType.startsWith("refs:") || displayType.startsWith("refn:"))
+        ) {
+          displayType = "Child Schema";
+        }
+
+        return {
+          Attribute: key,
+          Type: displayType,
+          Description: "",
+          Required: false,
+          EntryCodes: [],
+          List: hasEntryCodes
+        };
+      });
+
+      // Avoid redundant updates to prevent flicker
+      const nextList = Object.keys(schemaAttributes);
+      const sameAttrs =
+        JSON.stringify(attributeRowData) === JSON.stringify(newAttributeRowData);
+      const sameList = JSON.stringify(attributesList) === JSON.stringify(nextList);
+      if (!sameAttrs) setAttributeRowData(newAttributeRowData);
+      if (!sameList) setAttributesList(nextList);
+
+      // Save to MultiSchemaContext
+      updateSchemaState(currentSchemaId, {
+        attributes: newAttributeRowData,
+        attributesList: Object.keys(schemaAttributes)
+      });
+
+      // Update overlay context with schema's overlay data (if needed)
+      if (completeSchema.overlays) {
+        const newOverlay = { ...overlay };
+        // Handle overlay updates if needed - simplified for unified approach
+        setOverlay(newOverlay);
+      }
+
+      setLoading(false);
+      initializedSchemaRef.current = currentSchemaId;
+    } else {
+      setLoading(false);
+    }
+  }, [currentSchemaId, i18n.language]); // Removed function dependencies that cause infinite loops
+
+  // Intentionally removed continuous auto-sync to prevent flicker.
+
+  // Update canDelete when attributeRowData changes
+  useEffect(() => {
+    setCanDelete(attributeRowData.length > 0);
+  }, [attributeRowData.length]);
+
   // Stops grid editing when clicking outside grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
       if (
+        gridRef.current &&
         gridRef.current.api &&
         refContainer.current &&
         !refContainer.current.contains(event.target)
@@ -66,18 +240,23 @@ export default function AttributeDetails({
       }
     };
 
-    document.addEventListener("click", handleClickOutsideGrid);
+    // Only add the event listener if the grid is loaded (not loading)
+    if (!loading) {
+      document.addEventListener("click", handleClickOutsideGrid);
+    }
 
     return () => {
       document.removeEventListener("click", handleClickOutsideGrid);
     };
-  }, [gridRef, refContainer]);
+  }, [gridRef, refContainer, loading]);
 
   const handleSave = () => {
     entryCodesRef.current = false;
     navigationSafe.current = false;
     typeBlanksRef.current = false;
-    gridRef.current.api.stopEditing();
+    if (gridRef.current && gridRef.current.api) {
+      gridRef.current.api.stopEditing();
+    }
 
     const validateForward = () => {
       const allAttributes = [];
@@ -101,7 +280,6 @@ export default function AttributeDetails({
           hasDisallowedCharacters = true;
         }
 
-        // REVISIT
         if (
           attributeName.includes("/>") ||
           attributeName.includes("</") ||
@@ -157,7 +335,7 @@ export default function AttributeDetails({
       const noSpacesArray = removeSpacesFromArrayOfObjects(newAttributeRowData);
       setAttributeRowData(noSpacesArray);
 
-      if (overlay[FIELD_RANGE_OVERLAY].selected) {
+      if (overlay && overlay[FIELD_RANGE_OVERLAY]?.selected) {
         const hasValidAttribute = noSpacesArray.some(
           (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
         );
@@ -165,7 +343,10 @@ export default function AttributeDetails({
         if (!hasValidAttribute) {
           setOverlay((prev) => ({
             ...prev,
-            [FIELD_RANGE_OVERLAY]: { ...prev[FIELD_RANGE_OVERLAY], selected: false }
+            [FIELD_RANGE_OVERLAY]: {
+              ...(prev[FIELD_RANGE_OVERLAY] || {}),
+              selected: false
+            }
           }));
         }
       }
@@ -173,7 +354,6 @@ export default function AttributeDetails({
       return allAttributes;
     };
 
-    // validateForward either returns an error message (string) or it removes blanks from (and sets) Attribute Row Data and returns the current array of attributes
     const validationResult = validateForward();
 
     if (typeof validationResult === "string") {
@@ -191,16 +371,38 @@ export default function AttributeDetails({
         }
       });
 
-      setAttributesWithLists(newAttributesWithLists);
+      // Save attributesWithLists to schema state instead of global state
+      if (currentSchemaId) {
+        updateSchemaState(currentSchemaId, {
+          attributes: attributeRowData,
+          attributesList: validationResult,
+          attributesWithLists: newAttributesWithLists
+        });
+      }
+      
       if (newAttributesWithLists.length > 0) {
         entryCodesRef.current = true;
-        insertStep(2, { label: "Entry Codes", page: "Codes" });
+        // Entry Codes step already inserted centrally
       } else {
         removeStep("Entry Codes");
+      }
+
+      // Persist attributes and list to MultiSchemaContext in one place to avoid flicker
+      if (currentSchemaId) {
+        updateSchemaState(currentSchemaId, {
+          attributes: attributeRowData,
+          attributesList: validationResult,
+          attributesWithLists: newAttributesWithLists
+        });
       }
       navigationSafe.current = true;
     }
   };
+
+  // Expose save to parent (Home) so stepper click can persist before navigation
+  useImperativeHandle(ref, () => ({
+    save: handleSave
+  }));
 
   const pageForwardSave = () => {
     handleSave();
@@ -208,7 +410,8 @@ export default function AttributeDetails({
       if (typeBlanksRef.current === true) {
         setShowCard(true);
       } else if (entryCodesRef.current) {
-        setCurrentPage("Codes");
+        // Navigate to Codes page - this should be handled by the normal page flow
+        pageForward();
       } else {
         pageForward();
       }
@@ -229,7 +432,7 @@ export default function AttributeDetails({
       isForward
       pageForward={pageForwardSave}
     >
-      {loading && attributeRowData?.length > 40 && <Loading />}
+      {loading && <Loading />}
       {showCard && (
         <ErrorPopup onClose={() => setShowCard(false)}>
           <Box>
@@ -257,17 +460,21 @@ export default function AttributeDetails({
         </Alert>
       )}
       <div ref={refContainer}>
-        <Grid
-          gridRef={gridRef}
-          addButton1={addButton1}
-          addButton2={addButton2}
-          setErrorMessage={setErrorMessage}
-          canDelete={canDelete}
-          setCanDelete={setCanDelete}
-          setAddByTab={setAddByTab}
-          typesObjectRef={typesObjectRef}
-          setLoading={setLoading}
-        />
+        {!loading && (
+          <Grid
+            gridRef={gridRef}
+            addButton1={addButton1}
+            addButton2={addButton2}
+            setErrorMessage={setErrorMessage}
+            canDelete={canDelete}
+            setCanDelete={setCanDelete}
+            setAddByTab={setAddByTab}
+            typesObjectRef={typesObjectRef}
+            setLoading={setLoading}
+            attributeRowData={attributeRowData}
+            setAttributeRowData={setAttributeRowData}
+          />
+        )}
       </div>
       <AddAttribute
         addButton1={addButton1}
@@ -280,7 +487,11 @@ export default function AttributeDetails({
         addByTab={addByTab}
         setAddByTab={setAddByTab}
         typesObjectRef={typesObjectRef}
+        attributeRowData={attributeRowData}
+        setAttributeRowData={setAttributeRowData}
       />
     </BackNextSkeleton>
   );
-}
+});
+
+export default AttributeDetails;

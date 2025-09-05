@@ -4,7 +4,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useTranslation } from "react-i18next";
 import StartIntro from "./StartIntro";
 import Drop from "./Drop";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import useHandleAllDrop from "./useHandleAllDrop";
 import ExcelSheetSelection from "../components/ExcelSheetSelection";
 

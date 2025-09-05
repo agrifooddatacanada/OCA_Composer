@@ -2,8 +2,8 @@ import React from "react";
 import { Box, Button, ListItem, Typography, List } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CloseIcon from "@mui/icons-material/Close";
-import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
+import CustomPalette from "../constants/customPalette";
 
 export default function IntroCard({ setShowIntroCard }) {
   const { t } = useTranslation();
@@ -18,7 +18,7 @@ export default function IntroCard({ setShowIntroCard }) {
         height: "100vh",
         zIndex: 50,
         backdropFilter: "blur(5px)",
-        backgroundColor: "rgba(0, 0, 0, 0.3)",
+        backgroundColor: "rgba(0, 0, 0, 0.3)"
       }}
     >
       <Box
@@ -39,7 +39,7 @@ export default function IntroCard({ setShowIntroCard }) {
           backgroundColor: CustomPalette.WHITE,
           border: "1px solid",
           borderColor: CustomPalette.RED_100,
-          animation: appearAnimation,
+          animation: appearAnimation
         }}
       >
         <Box
@@ -49,7 +49,7 @@ export default function IntroCard({ setShowIntroCard }) {
             alignItems: "center",
             width: "100%",
             backgroundColor: CustomPalette.RED_100,
-            mb: 2,
+            mb: 2
           }}
         >
           <ErrorOutlineIcon
@@ -57,15 +57,15 @@ export default function IntroCard({ setShowIntroCard }) {
               color: CustomPalette.SECONDARY,
               p: 1,
               pl: 0,
-              fontSize: 35,
+              fontSize: 35
             }}
           />
         </Box>
         <Typography variant="h5" sx={{ p: 1 }}>
-          {t('This program lets you create OCA schema templates')}
+          {t("This program lets you create OCA schema templates")}
         </Typography>
         <Typography variant="h6" sx={{ p: 1 }}>
-          <strong>{t('A well formed template MUST include')}</strong>
+          <strong>{t("A well formed template MUST include")}</strong>
         </Typography>
         <List
           sx={{
@@ -73,15 +73,16 @@ export default function IntroCard({ setShowIntroCard }) {
             pl: 2,
             mb: 2,
             "& .MuiListItem-root": {
-              display: "list-item",
-            },
+              display: "list-item"
+            }
           }}
         >
           <ListItem variant="body1" sx={{ p: 1, fontSize: 18 }}>
-            {t('a complete')} <strong>{t('schema description')}</strong> {t('in at least one language')}
+            {t("a complete")} <strong>{t("schema description")}</strong>{" "}
+            {t("in at least one language")}
           </ListItem>
           <ListItem variant="body1" sx={{ p: 1, fontSize: 18 }}>
-            <strong>{t('data types')}</strong> {t('for every attribute')}
+            <strong>{t("data types")}</strong> {t("for every attribute")}
           </ListItem>
         </List>
         <Button
@@ -96,7 +97,7 @@ export default function IntroCard({ setShowIntroCard }) {
             justifyContent: "space-around",
             backgroundColor: CustomPalette.PRIMARY,
             ":hover": {
-              backgroundColor: CustomPalette.SECONDARY,
+              backgroundColor: CustomPalette.SECONDARY
             }
           }}
         >

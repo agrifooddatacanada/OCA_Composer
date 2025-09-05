@@ -1,16 +1,15 @@
-import React from 'react';
-import Header from '../Header/Header';
-import Footer from '../Footer/Footer';
-import { Box } from '@mui/material';
-import HelpPageH3Title from '../components/HelpPageH3Title';
-import TypographyTag from '../components/TypographyTag';
-import CustomAnchorLink from '../components/CustomAnchorLink';
+import React from "react";
+import { Box } from "@mui/material";
+import Header from "../Header/Header";
+import Footer from "../Footer/Footer";
+import HelpPageH3Title from "../components/HelpPageH3Title";
+import TypographyTag from "../components/TypographyTag";
+import CustomAnchorLink from "../components/CustomAnchorLink";
 
-const LearnAboutDataVerification = () => {
-  return (
+const LearnAboutDataVerification = () => (
     <>
       <Header currentPage="Landing" />
-      <Box sx={{ fontFamily: 'roboto', fontWeight: ' 400', fontSize: '1rem', textAlign: 'left', padding: '1.5rem', paddingLeft: '3rem', paddingRight: '3rem', display: 'flex', flex: 1, flexDirection: "column", }}>
+      <Box sx={{ fontFamily: "roboto", fontWeight: " 400", fontSize: "1rem", textAlign: "left", padding: "1.5rem", paddingLeft: "3rem", paddingRight: "3rem", display: "flex", flex: 1, flexDirection: "column", }}>
         <HelpPageH3Title text="Data Verification" />
         <br />
         <TypographyTag>
@@ -29,6 +28,5 @@ const LearnAboutDataVerification = () => {
       <Footer currentPage="Landing" />
     </>
   );
-};
 
 export default LearnAboutDataVerification;

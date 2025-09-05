@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
-import ViewSchema from '../ViewSchema/ViewSchema';
-import { Context } from '../App';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import ViewSchema from "../ViewSchema/ViewSchema";
+import { Context } from "../App";
 
 const PreviewSchema = () => {
   const navigate = useNavigate();
@@ -9,16 +9,16 @@ const PreviewSchema = () => {
 
   const handleForwardPage = () => {
     if (datasetRawFile && datasetRawFile.length > 0) {
-      setCurrentDataValidatorPage('AttributeMatchDataValidator');
+      setCurrentDataValidatorPage("AttributeMatchDataValidator");
       return;
     }
 
     // Go to Upload Data page
-    setCurrentDataValidatorPage('StartDataValidator');
-  }
+    setCurrentDataValidatorPage("StartDataValidator");
+  };
 
   const handleBackPage = () => {
-    navigate('/');
+    navigate("/");
   };
 
   return (

@@ -1,13 +1,12 @@
-import React from 'react';
-import HelpPageContainer from '../components/HelpPageContainer';
-import HelpPageH2Title from '../components/HelpPageH2Title';
-import TypographyTag from '../components/TypographyTag';
-import CustomAnchorLink from '../components/CustomAnchorLink';
-import HelpPageH3Title from '../components/HelpPageH3Title';
-import { Link } from '@mui/material';
+import React from "react";
+import { Link } from "@mui/material";
+import HelpPageContainer from "../components/HelpPageContainer";
+import HelpPageH2Title from "../components/HelpPageH2Title";
+import TypographyTag from "../components/TypographyTag";
+import CustomAnchorLink from "../components/CustomAnchorLink";
+import HelpPageH3Title from "../components/HelpPageH3Title";
 
-const FormatTextHelp = () => {
-  return (
+const FormatTextHelp = () => (
     <HelpPageContainer>
       <HelpPageH2Title text="Format Rules" />
       <br />
@@ -31,11 +30,11 @@ const FormatTextHelp = () => {
       </TypographyTag>
       <br />
       <TypographyTag>
-        In the background, format rules for DateTime are expressed in the language of RegEx (regular expression), specifically the Rust RegEx flavour. It is not necessary for schema writers to understand RegEx but users can view the RegEx rules at the <CustomAnchorLink text="format_options GitHub repository" link="https://github.com/agrifooddatacanada/format_options" /> and request their own by raising an issue or emailing {' '}
+        In the background, format rules for DateTime are expressed in the language of RegEx (regular expression), specifically the Rust RegEx flavour. It is not necessary for schema writers to understand RegEx but users can view the RegEx rules at the <CustomAnchorLink text="format_options GitHub repository" link="https://github.com/agrifooddatacanada/format_options" /> and request their own by raising an issue or emailing {" "}
         <Link
           to='#'
           onClick={(e) => {
-            window.location.href = `mailto:adc@uoguelph.ca`;
+            window.location.href = "mailto:adc@uoguelph.ca";
             e.preventDefault();
           }}
         >
@@ -67,6 +66,5 @@ const FormatTextHelp = () => {
       </TypographyTag>
     </HelpPageContainer>
   );
-};
 
 export default FormatTextHelp;;

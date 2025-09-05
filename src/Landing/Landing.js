@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import React, { useContext, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import QuickStart from "./Quick_Start";
 import Introduction from "./Introduction";
 import AccordionList from "./AccordionList";

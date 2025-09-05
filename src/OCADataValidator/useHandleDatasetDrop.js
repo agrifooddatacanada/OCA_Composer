@@ -1,8 +1,8 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
-import { Context } from '../App';
+import { useCallback, useContext, useEffect, useState } from "react";
 import Papa from "papaparse";
-import { messages } from '../constants/messages';
 import * as XLSX from "xlsx";
+import { Context } from "../App";
+import { messages } from "../constants/messages";
 
 export const useHandleDatasetDrop = () => {
   const {
@@ -59,14 +59,14 @@ export const useHandleDatasetDrop = () => {
       Papa.parse(file, {
         header: true,
         skipEmptyLines: "greedy",
-        transformHeader: function(header, index) {
+        transformHeader(header, index) {
           if (header !== "") {
             return header;
           }
-          //without this, papaparse will save blank headers as "", "_1", "_2", etc.
+          // without this, papaparse will save blank headers as "", "_1", "_2", etc.
           return `header_empty_placeholder_${index}`;
         },
-        complete: function(results) {
+        complete(results) {
           setSchemaDataConformantHeader(results.meta.fields);
           setSchemaDataConformantRowData(results.data);
 
@@ -113,8 +113,8 @@ export const useHandleDatasetDrop = () => {
 
     const reader = new FileReader();
     const rABS = !!reader.readAsBinaryString; // converts object to boolean
-    reader.onabort = () => console.log("file reading was aborted");
-    reader.onerror = () => console.log("file reading has failed");
+    reader.onabort = () => {}; // console.log("file reading was aborted");
+    reader.onerror = () => {}; // console.log("file reading has failed");
     reader.onload = async (e) => {
       try {
         const bstr = e.target.result;
@@ -171,7 +171,7 @@ export const useHandleDatasetDrop = () => {
       return;
     }
 
-    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    const range = XLSX.utils.decode_range(worksheet["!ref"]);
 
     // Find the last row index.
     let lastRowIndex = range.s.r;
@@ -182,7 +182,7 @@ export const useHandleDatasetDrop = () => {
         const cellRef = XLSX.utils.encode_cell(cellAddress);
         const cell = worksheet[cellRef];
 
-        if (cell && cell.v !== undefined && cell.v !== '') {
+        if (cell && cell.v !== undefined && cell.v !== "") {
           if (row > lastRowIndex) {
             lastRowIndex = row;
           }

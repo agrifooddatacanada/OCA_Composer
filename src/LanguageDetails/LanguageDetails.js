@@ -1,44 +1,86 @@
-import React, { useRef, useContext, useState, useEffect } from "react";
+import React, { useRef, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
 import { Context } from "../App";
 import LanGrid from "./LanGrid";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { codesToLanguages } from "../constants/isoCodes";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 
 export default function LanguageDetails({ pageBack, pageForward }) {
   const { t } = useTranslation();
+  
+  // Use MultiSchemaContext
+  const {
+    activeSchemaId,
+    editingSchemaId,
+    getSchemaState,
+    updateSchemaState
+  } = useMultiSchema();
+
+  const currentSchemaId = activeSchemaId || editingSchemaId;
+
+  // Global context
   const {
     languages,
-    lanAttributeRowData,
     setLanAttributeRowData,
-    attributesWithLists,
     setCurrentPage
   } = useContext(Context);
+
+  // Get schema state data
+  const schemaState = getSchemaState(currentSchemaId);
+  const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
+  const attributesWithLists = schemaState?.attributesWithLists || [];
 
   const languageIndex = languages.findIndex(
     (item) => codesToLanguages?.[i18next.language] === item
   );
-  const filteredLanguages = [...languages];
-  if (languageIndex !== -1 && languageIndex !== 0) {
-    const removedLanguage = filteredLanguages.splice(languageIndex, 1);
-    filteredLanguages.unshift(removedLanguage[0]);
-  }
+  const filteredLanguages = useMemo(() => {
+    const arr = [...languages];
+    if (languageIndex !== -1 && languageIndex !== 0) {
+      const removedLanguage = arr.splice(languageIndex, 1);
+      arr.unshift(removedLanguage[0]);
+    }
+    return arr;
+  }, [languages, languageIndex]);
+
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
+  
+  // Update currentLanguage when UI language changes
+  useEffect(() => {
+    const uiLanguageName = codesToLanguages?.[i18next.language];
+    if (uiLanguageName && languages.includes(uiLanguageName)) {
+      setCurrentLanguage(uiLanguageName);
+    } else {
+      setCurrentLanguage(filteredLanguages[0]);
+    }
+  }, [t, languages, filteredLanguages]); // Use 't' to track language changes
+
   const [loading, setLoading] = useState(true);
+  const setLoadingIfChanged = useCallback((next) => {
+    setLoading((prev) => (prev === next ? prev : next));
+  }, []);
   const gridRef = useRef();
   const refContainer = useRef();
   const entryCodesRef = useRef();
+
+  // Reset global language-dependent data when switching schemas to avoid stale rows from previous schema
+  useEffect(() => {
+    if (currentSchemaId) {
+      setLanAttributeRowData({});
+    }
+  }, [currentSchemaId, setLanAttributeRowData]);
 
   // Stops grid editing when clicking outside grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
       if (
+        gridRef.current &&
         gridRef.current.api &&
         refContainer.current &&
         !refContainer.current.contains(event.target)
@@ -47,31 +89,48 @@ export default function LanguageDetails({ pageBack, pageForward }) {
       }
     };
 
-    document.addEventListener("click", handleClickOutsideGrid);
+    // Only add the event listener if the grid is loaded (not loading)
+    if (!loading) {
+      document.addEventListener("click", handleClickOutsideGrid);
+    }
 
     return () => {
       document.removeEventListener("click", handleClickOutsideGrid);
     };
-  }, [gridRef, refContainer]);
+  }, [gridRef, refContainer, loading]);
 
   const handleSave = () => {
     entryCodesRef.current = false;
-    gridRef.current.api.stopEditing();
+    if (gridRef.current && gridRef.current.api) {
+      gridRef.current.api.stopEditing();
+    }
     const newLanAttributeRowData = JSON.parse(JSON.stringify(lanAttributeRowData));
     const noSpacesObject = {};
     languages.forEach((language) => {
-      noSpacesObject[language] = removeSpacesFromArrayOfObjects(
-        newLanAttributeRowData[language]
-      );
+      // Check if lanAttributeRowData exists for this language
+      if (newLanAttributeRowData[language] && Array.isArray(newLanAttributeRowData[language])) {
+        noSpacesObject[language] = removeSpacesFromArrayOfObjects(
+          newLanAttributeRowData[language]
+        );
+      } else {
+        noSpacesObject[language] = [];
+      }
     });
-    setLanAttributeRowData(noSpacesObject);
-    if (attributesWithLists.length > 0) {
-      entryCodesRef.current = true;
+    
+    // Save to MultiSchemaContext if editing a specific schema
+    if (currentSchemaId) {
+      updateSchemaState(currentSchemaId, {
+        lanAttributeRowData: noSpacesObject
+      });
     }
+    
+    // Also save to global context for compatibility
+    setLanAttributeRowData(noSpacesObject);
+    entryCodesRef.current = attributesWithLists.length > 0;
   };
   const handlePageBack = () => {
     handleSave();
-    if (entryCodesRef.current) {
+    if (entryCodesRef.current && attributesWithLists.length > 0) {
       setCurrentPage("Codes");
     } else {
       pageBack();
@@ -241,7 +300,7 @@ export default function LanguageDetails({ pageBack, pageForward }) {
           <LanGrid
             gridRef={gridRef}
             currentLanguage={currentLanguage}
-            setLoading={setLoading}
+            setLoading={setLoadingIfChanged}
           />
         </div>
       </Box>

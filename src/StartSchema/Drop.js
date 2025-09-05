@@ -3,7 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
 import DropCard from "./DropCard";
 import { messages } from "../constants/messages";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import LandingDropZone from "../Landing/LandingDropZone";
 import { MAX_FILE_SIZE } from "../constants/constants";
 import { toMegabytes } from "../constants/utils";

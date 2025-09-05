@@ -13,7 +13,7 @@ import {
   Typography
 } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import { Context } from "../App";
 import { CreateDataEntryExcel } from "./CreateDataEntryExcel";
 import { getDescriptiveFileName } from "../constants/utils";

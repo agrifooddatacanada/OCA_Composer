@@ -84,7 +84,7 @@ const ucumUnits = [
   {
     code: "cal_IT",
     label: "internation table calorie",
-    description: 'Synonymous with the "mean calorie"'
+    description: "Synonymous with the \"mean calorie\""
   },
   {
     code: "cal_th",

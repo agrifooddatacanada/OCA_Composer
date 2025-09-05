@@ -1,9 +1,8 @@
-import React from 'react';
-import { CustomPalette } from '../constants/customPalette';
-import { Box, Stack } from '@mui/material';
+import React from "react";
+import { Box, Stack } from "@mui/material";
+import CustomPalette from "../constants/customPalette";
 
-const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem }) => {
-  return (
+const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem }) => (
     <Stack
       direction='row'
       justifyContent='space-between'
@@ -17,19 +16,18 @@ const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem }) => {
         backgroundColor: headerColor,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>{leftItem}</Box>
+      <Box sx={{ display: "flex", alignItems: "center" }}>{leftItem}</Box>
       <Stack
         direction='row'
         sx={{
-          width: isMobile ? 'fit-content' : 300,
-          alignItems: 'center',
-          justifyContent: 'flex-end',
+          width: isMobile ? "fit-content" : 300,
+          alignItems: "center",
+          justifyContent: "flex-end",
         }}
       >
         {rightItem}
       </Stack>
     </Stack>
   );
-};
 
 export default HeaderWrapper;

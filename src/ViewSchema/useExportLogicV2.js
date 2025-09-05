@@ -16,14 +16,16 @@ import {
   SENSITIVE,
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
-  RANGE
+  RANGE,
+  ATTRIBUTE_FRAMING
 } from "../constants/constants";
 import {
   generateOCABundle,
   getDescriptiveFileName,
   getRangeOverlayInput,
   getTransformedEntryCodes,
-  getUnitFramingInput
+  getUnitFramingInput,
+  getAttributeFramingInput
 } from "../constants/utils";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 
@@ -44,7 +46,9 @@ const useExportLogicV2 = () => {
     characterEncodingRowData,
     overlay,
     cardinalityData,
-    rangeRowData
+    rangeRowData,
+    attributeFramingRowData,
+    OCAPackage
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -113,12 +117,16 @@ const useExportLogicV2 = () => {
     attributesList.forEach((item, index) => {
       const rowObject = {};
       rowObject.Attribute = item;
-      rowObject.Flagged = attributeRowData[index].Flagged ? "Y" : "";
-      rowObject.Unit = attributeRowData[index].Unit;
-      rowObject.Type = attributeRowData[index].Type;
-      rowObject.Label = lanAttributeRowData[language][index].Label;
-      rowObject.Description = lanAttributeRowData[language][index].Description;
-      rowObject.List = lanAttributeRowData[language][index].List;
+      // Defensive reads to avoid crashes when grids are not yet synced
+      const attrRow = attributeRowData[index] || {};
+      const lanRows = lanAttributeRowData?.[language] || [];
+      const lanRow = lanRows[index] || {};
+      rowObject.Flagged = attrRow.Flagged ? "Y" : "";
+      rowObject.Unit = attrRow.Unit || "";
+      rowObject.Type = attrRow.Type || "";
+      rowObject.Label = lanRow.Label || "";
+      rowObject.Description = lanRow.Description || "";
+      rowObject.List = lanRow.List || (attrRow.List ? "" : "Not a List");
       rowObject.Language = language;
       rowData.push(rowObject);
     });
@@ -428,6 +436,17 @@ const useExportLogicV2 = () => {
 
     try {
       setError("");
+
+      // Check if we're working with a pre-existing OCA package from upload
+      // Note: Even for existing packages, we regenerate on export to ensure consistency
+      // and avoid digest verification issues with the oca_package library
+      const hasExistingOCAPackage =
+        OCAPackage && OCAPackage.bundle && OCAPackage.bundle.d;
+
+      if (hasExistingOCAPackage) {
+        // console.log("Regenerating OCA package for export to ensure consistency");
+      }
+
       // const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
       // console.log("rangeOverlayInput", rangeOverlayInput);
       // return;
@@ -438,64 +457,75 @@ const useExportLogicV2 = () => {
         .filter((item) => item.Flagged)
         .map((item) => item.Attribute);
 
-      // extension creation preparation starts here
+      /* extension input object creation and preparation starts here 
+      - attribute framing overlay
+      - range overlay
+      - Sensitive overlay
+      - unit framing overlay
+      - ordering overlay
+      - entry code overlay
+      */
+
       const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
+
       // unit framing overlay extension input for creation
       const retainedUniqueFramedUnits = currentUnitFramedRowData.filter(
         (row) => !row.deleted
       );
 
       // dynamic addition optional extension overlays
-      const extension_overlays = [
-        {
-          ordering_overlay: {
-            type: ORDERING,
-            attribute_ordering: attributesList,
-            entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
-          }
+      const extension_overlay_object = {
+        ordering_overlay: {
+          type: ORDERING,
+          attribute_ordering: attributesList,
+          entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
         },
-        ...(overlay["Unit Framing"].selected
-          ? [
-              {
-                unit_framing_overlay: {
-                  type: UNIT_FRAMING,
-                  properties: {
-                    id: UNIT_FRAME_ID,
-                    label: UNIT_FRAME_LABEL,
-                    location: UNIT_FRAME_LOCATION,
-                    version: UNIT_FRAME_VERSION
-                  },
-                  units: getUnitFramingInput(retainedUniqueFramedUnits)
-                }
-              }
-            ]
-          : []),
-        ...(overlay[FIELD_RANGE_OVERLAY].selected
-          ? [
-              {
-                range_overlay: {
-                  type: RANGE,
-                  attributes: rangeOverlayInput
-                }
-              }
-            ]
-          : []),
-        ...(sensitiveAttributes.length > 0
-          ? [
-              {
-                sensitive_overlay: {
-                  type: SENSITIVE,
-                  sensitive_attributes: sensitiveAttributes
-                }
-              }
-            ]
-          : [])
-      ];
+        ...(overlay["Unit Framing"].selected && {
+          unit_framing_overlay: {
+            type: UNIT_FRAMING,
+            properties: {
+              id: UNIT_FRAME_ID,
+              label: UNIT_FRAME_LABEL,
+              location: UNIT_FRAME_LOCATION,
+              version: UNIT_FRAME_VERSION
+            },
+            units: getUnitFramingInput(retainedUniqueFramedUnits)
+          }
+        }),
+        ...(overlay[FIELD_RANGE_OVERLAY].selected && {
+          range_overlay: {
+            type: RANGE,
+            attributes: rangeOverlayInput
+          }
+        }),
+        ...(sensitiveAttributes.length > 0 && {
+          sensitive_overlay: {
+            type: SENSITIVE,
+            sensitive_attributes: sensitiveAttributes
+          }
+        }),
+        ...(overlay["Attribute Framing"].selected &&
+          Object.keys(getAttributeFramingInput(attributeFramingRowData)).length > 0 && {
+            attribute_framing_overlay: {
+              type: ATTRIBUTE_FRAMING,
+              framing_metadata: {
+                id: "FOODON",
+                label: "Food Ontology",
+                location:
+                  "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl",
+                version: "1.0"
+              },
+              attributes: getAttributeFramingInput(attributeFramingRowData)
+            }
+          })
+      };
+
+      const extension_overlays = [extension_overlay_object];
 
       const extension = {
         extensions: {
           [ADC]: {
-            [bundle.bundle.d]: extension_overlays
+            [bundle?.bundle?.d || "bundle_id"]: extension_overlays
           }
         }
       };

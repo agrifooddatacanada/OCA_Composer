@@ -1,0 +1,1037 @@
+{
+  "v": "OCAA11JSON0058a4_",
+  "bundle": {
+    "v": "OCAS11JSON0016a1_",
+    "d": "EL6pEeD1nMih-nEAJ0tq5eIP6MEwzSfQKQ1wlQM2UfrL",
+    "capture_base": {
+      "d": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+      "type": "spec/capture_base/1.1",
+      "attributes": {
+        "q1": "Text",
+        "q2": "DateTime",
+        "q3": "Numeric",
+        "q4": [
+          "Text"
+        ],
+        "q5": "Boolean",
+        "q6": "Text",
+        "q7": "refs:EFuYncE54X7PckIdYjE5I568R7FdU4_9Dkp1M40fR7Ud",
+        "q8": "refs:EGH_IV2vxXrH32bsOH8IVXkRHV0Io45uAtqAvO0UxE1x",
+        "q9": "refn:placeholder1"
+      },
+      "classification": "RDF509",
+      "flagged_attributes": []
+    },
+    "overlays": {
+      "cardinality": {
+        "d": "EPE_kT9mOkwb4OhxvuhDtMpTY34p5qGmvFd5Xz-OeRIq",
+        "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+        "type": "spec/overlays/cardinality/1.1",
+        "attribute_cardinality": {
+          "q4": "1-5"
+        }
+      },
+      "character_encoding": {
+        "d": "EBYoU06hkb2QUDuASqJmTvhbNJJcQMFmdfvNQl0MwJD6",
+        "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+        "type": "spec/overlays/character_encoding/1.1",
+        "attribute_character_encoding": {
+          "q1": "utf-8",
+          "q2": "utf-8",
+          "q3": "utf-8",
+          "q4": "utf-8",
+          "q5": "utf-8",
+          "q6": "utf-8",
+          "q7": "utf-8",
+          "q8": "utf-8"
+        }
+      },
+      "conformance": {
+        "d": "ENeUNp_XQQ2LSAVebaswEd6NdbpKpjOWKUYb0Z6yWmh1",
+        "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+        "type": "spec/overlays/conformance/1.1",
+        "attribute_conformance": {
+          "q1": "M",
+          "q2": "M",
+          "q3": "O",
+          "q4": "O",
+          "q5": "M",
+          "q6": "O"
+        }
+      },
+      "entry": [
+        {
+          "d": "EErJVIC_QUWadzeyEwOLEDAZDBwKB3iMu-A_ZWfhVfeZ",
+          "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+          "type": "spec/overlays/entry/1.1",
+          "language": "fra",
+          "attribute_entries": {
+            "q3": {
+              "001": "Rouge",
+              "002": "Vert",
+              "003": "Bleu",
+              "004": "Jaune",
+              "005": "Orange"
+            },
+            "q4": {
+              "5G": "Réseaux 5G et télécommunications",
+              "AI": "Intelligence artificielle et éthique",
+              "AIH": "IA dans les diagnostics de santé",
+              "BA": "Applications de la blockchain en finance",
+              "BL": "Perte de biodiversité et efforts de conservation",
+              "CC": "Changement climatique et réchauffement global",
+              "CG": "CRISPR et génie génétique",
+              "CT": "Menaces et solutions en cybersécurité",
+              "DP": "Protection et confidentialité des données",
+              "FRW": "L'avenir du travail à distance",
+              "MLPA": "Apprentissage automatique en analyse prédictive",
+              "NB": "Neurosciences et cartographie cérébrale",
+              "QC": "Avancées en calcul quantique",
+              "RA": "Robotiques et automatisation dans l'industrie",
+              "RE": "Technologies des énergies renouvelables",
+              "RES": "Systèmes de stockage d'énergie renouvelable",
+              "SE": "Exploration spatiale et colonisation de Mars",
+              "SM": "Impact des médias sociaux sur la santé mentale",
+              "US": "Urbanisation et villes durables",
+              "VR": "Réalité virtuelle dans l'éducation"
+            }
+          }
+        },
+        {
+          "d": "EL3G1jY3nHEpT2vnBg_fhQVxSld-IdjYK6Vim437nx2q",
+          "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+          "type": "spec/overlays/entry/1.1",
+          "language": "eng",
+          "attribute_entries": {
+            "q3": {
+              "001": "Red",
+              "002": "Green",
+              "003": "Blue",
+              "004": "Yellow",
+              "005": "Orange"
+            },
+            "q4": {
+              "5G": "5G Networks and Telecommunications",
+              "AI": "Artificial Intelligence and Ethics",
+              "AIH": "AI in Healthcare Diagnostics",
+              "BA": "Blockchain Applications in Finance",
+              "BL": "Biodiversity Loss and Conservation Efforts",
+              "CC": "Climate Change and Global Warming",
+              "CG": "CRISPR and Genetic Engineering",
+              "CT": "Cybersecurity Threats and Solutions",
+              "DP": "Data Privacy and Protection",
+              "FRW": "The Future of Remote Work",
+              "MLPA": "Machine Learning in Predictive Analytics",
+              "NB": "Neuroscience and Brain Mapping",
+              "QC": "Quantum Computing Advancements",
+              "RA": "Robotics and Automation in Industry",
+              "RE": "Renewable Energy Technologies",
+              "RES": "Renewable Energy Storage Systems",
+              "SE": "Space Exploration and Mars Colonization",
+              "SM": "Social Media Impact on Mental Health",
+              "US": "Urbanization and Sustainable Cities",
+              "VR": "Virtual Reality in Education"
+            }
+          }
+        }
+      ],
+      "entry_code": {
+        "d": "EAvLcYM_UzQRafhmbfDKEgKC8ZfMBDhb2WWsk-8WAOe3",
+        "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+        "type": "spec/overlays/entry_code/1.1",
+        "attribute_entry_codes": {
+          "q3": [
+            "001",
+            "002",
+            "003",
+            "004",
+            "005"
+          ],
+          "q4": [
+            "5G",
+            "AI",
+            "AIH",
+            "BA",
+            "BL",
+            "CC",
+            "CG",
+            "CT",
+            "DP",
+            "FRW",
+            "MLPA",
+            "NB",
+            "QC",
+            "RA",
+            "RE",
+            "RES",
+            "SE",
+            "SM",
+            "US",
+            "VR"
+          ]
+        }
+      },
+      "format": {
+        "d": "EDonQCCCHtEKi6VAhfO4nK2upR299FVGqlG2-IXyVuaf",
+        "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+        "type": "spec/overlays/format/1.1",
+        "attribute_formats": {
+          "q1": "^[A-Za-z]{1,50}$",
+          "q2": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+          "q3": "^-?[0-9]+$",
+          "q4": "^[A-Z]*$",
+          "q6": "^.{0,800}$"
+        }
+      },
+      "label": [
+        {
+          "d": "ECofnB_bEkV4RwWmAnkZSgjLK-r2msJpPfm75p_9L6rV",
+          "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+          "type": "spec/overlays/label/1.1",
+          "language": "eng",
+          "attribute_categories": [],
+          "attribute_labels": {
+            "q1": "What is your name?",
+            "q2": "Enter a date",
+            "q3": "What is your favourite colour?",
+            "q4": "Select which research fields apply.",
+            "q5": "Yes or no?",
+            "q6": "Write a paragraph explaining your reasoning.",
+            "q7": "Name the Authors.",
+            "q8": "Name the Collaborators."
+          },
+          "category_labels": {}
+        },
+        {
+          "d": "ELaycksqscFwA0g1xaOLkTDyXlT7_V2LSxw6Y0rXY5Go",
+          "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+          "type": "spec/overlays/label/1.1",
+          "language": "fra",
+          "attribute_categories": [],
+          "attribute_labels": {
+            "q1": "Quel est ton nom?",
+            "q2": "Entrez une date",
+            "q3": "Quelle est ta couleur préférée ?",
+            "q4": "Sélectionnez les domaines de recherche qui s'appli",
+            "q5": "Oui ou non ?",
+            "q6": "Écrivez un paragraphe expliquant votre raisonnemen",
+            "q7": "Nommer les auteurs.",
+            "q8": "Nommez les collaborateurs."
+          },
+          "category_labels": {}
+        }
+      ],
+      "meta": [
+        {
+          "d": "EAj6Vbm-syEb_u0dFLJ3Ouolp-Vk3GvYJfXTcilDvVeu",
+          "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+          "type": "spec/overlays/meta/1.1",
+          "language": "fra",
+          "description": "Un exemple de questionnaire pour le développement du DRT.",
+          "name": "exemple_de_questionnaire"
+        },
+        {
+          "d": "EI9eeuOpI4EJ0cbHJZnQlQearXLk3APpVcTfQ-qpw5ts",
+          "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+          "type": "spec/overlays/meta/1.1",
+          "language": "eng",
+          "description": "A sample questionnaire for the development of the DRT.",
+          "name": "sample_questionnaire"
+        }
+      ]
+    }
+  },
+  "dependencies": [
+    {
+      "v": "OCAS11JSON00072d_",
+      "d": "EFuYncE54X7PckIdYjE5I568R7FdU4_9Dkp1M40fR7Ud",
+      "capture_base": {
+        "d": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "q1": "Text",
+          "q2": "Text",
+          "q3": "refs:EHdKVUWRXdsgr8o9zt6oblFlz4NkmqJ1fSOPPVXigvFL"
+        },
+        "classification": "RDF508",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "character_encoding": {
+          "d": "EHGQPnikaH7JNiLkOE7UWDBoMiNaoZS6kgu2jibMKrZG",
+          "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "q1": "utf-8",
+            "q2": "utf-8",
+            "q3": "utf-8"
+          }
+        },
+        "format": {
+          "d": "EFdVtOLTxmZSeHcdYQEnF-XA7NZtXn-kdUc2-_Q5MKd7",
+          "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "q1": "^.{0,50}$",
+            "q2": "^.{0,250}$"
+          }
+        },
+        "label": [
+          {
+            "d": "EG_uB2flJIVRLDt_4JsBZ2xxs_1rkMdlGQvpDDD9AoIc",
+            "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "First name",
+              "q2": "Last name",
+              "q3": "Identifier"
+            },
+            "category_labels": {}
+          },
+          {
+            "d": "EIUsRRAnUiGUJ3f7_d9lHxPdXgei1dM0VdBKJ-JmteYZ",
+            "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+            "type": "spec/overlays/label/1.1",
+            "language": "fra",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Prénom",
+              "q2": "Nom de famille",
+              "q3": "Identifiant"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EJyPhYXlP7XSOPNEUF7Y6X0rDaEpEnF74A8zrKMVEAdW",
+            "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+            "type": "spec/overlays/meta/1.1",
+            "language": "fra",
+            "description": "Détails sur la personne",
+            "name": "personne"
+          },
+          {
+            "d": "EKe4WsCQJ-Qm_A0jvPGSibNnVmD0NbQbMXK5nJzIy7j3",
+            "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Details about person",
+            "name": "person"
+          }
+        ]
+      }
+    },
+    {
+      "v": "OCAS11JSON000a73_",
+      "d": "EHdKVUWRXdsgr8o9zt6oblFlz4NkmqJ1fSOPPVXigvFL",
+      "capture_base": {
+        "d": "EHZhyiAe8O5-S-sbucO6D9EmjeXdi2sBGsoctvsfNzp9",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "q1": "Text",
+          "q2": "Text",
+          "q3": "refs:EE4aodvoOUc3ILF6roHF2FVpVonmAFWBe8hd_SJtEmsY"
+        },
+        "classification": "RDF508",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "character_encoding": {
+          "d": "EK5XJMNiDPaM_cToR-9-MdI8OTNIlK27wDr_TYYRTPdH",
+          "capture_base": "EHZhyiAe8O5-S-sbucO6D9EmjeXdi2sBGsoctvsfNzp9",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "q1": "utf-8",
+            "q2": "utf-8"
+          }
+        },
+        "entry": [
+          {
+            "d": "EFNgUsVe0HWz9XDbDUthsQNtDw7W0TrVNOyBDZNyDKE7",
+            "capture_base": "EHZhyiAe8O5-S-sbucO6D9EmjeXdi2sBGsoctvsfNzp9",
+            "type": "spec/overlays/entry/1.1",
+            "language": "fra",
+            "attribute_entries": {
+              "q1": {
+                "Google": "ID Google Scholar",
+                "ISNI": "ISNI",
+                "ORCiD": "ORCiD",
+                "ResearcherID": "ResearcherID",
+                "Scopus": "ID Auteur Scopus"
+              }
+            }
+          },
+          {
+            "d": "ENrDmvv8-8_FW7JYetQuqz7UPSuA1TF8dcWxH-reGVWa",
+            "capture_base": "EHZhyiAe8O5-S-sbucO6D9EmjeXdi2sBGsoctvsfNzp9",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "q1": {
+                "Google": "Google Scholar ID",
+                "ISNI": "ISNI",
+                "ORCiD": "ORCiD",
+                "ResearcherID": "ResearcherID",
+                "Scopus": "Scopus Author ID"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "ECOT5Ew9WtMrIbK4FF-I2KjwiMu2fTKdrnrsmsdUdkCn",
+          "capture_base": "EHZhyiAe8O5-S-sbucO6D9EmjeXdi2sBGsoctvsfNzp9",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "q1": [
+              "Google",
+              "ISNI",
+              "ORCiD",
+              "ResearcherID",
+              "Scopus"
+            ]
+          }
+        },
+        "format": {
+          "d": "EJySsIjmnIX4mylI_6NqT54zKZlmvxql5WA6iZX-wZuD",
+          "capture_base": "EHZhyiAe8O5-S-sbucO6D9EmjeXdi2sBGsoctvsfNzp9",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "q1": "^.{0,50}$",
+            "q2": "^.{0,50}$"
+          }
+        },
+        "label": [
+          {
+            "d": "EAlRu1KhCN1RkLFnK8s0DClVD7xnODnTo72DNC6k9UG4",
+            "capture_base": "EHZhyiAe8O5-S-sbucO6D9EmjeXdi2sBGsoctvsfNzp9",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Identifier",
+              "q2": "value"
+            },
+            "category_labels": {}
+          },
+          {
+            "d": "EGH9mCk-zobgulbaCT0GkIFMdc3EahbWh9GGhFVAACxf",
+            "capture_base": "EHZhyiAe8O5-S-sbucO6D9EmjeXdi2sBGsoctvsfNzp9",
+            "type": "spec/overlays/label/1.1",
+            "language": "fra",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Identifiant",
+              "q2": "valeur"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EACYHhuTehGJ3blx5-6lg7Hdd3bWlrPNXtsSbQLKPYsd",
+            "capture_base": "EHZhyiAe8O5-S-sbucO6D9EmjeXdi2sBGsoctvsfNzp9",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Identifiers for people.",
+            "name": "identifier"
+          },
+          {
+            "d": "EFRkKxm7lu0RXjTzqWrp2ixmpmY5Ydu4ZqiFyuaCzrsG",
+            "capture_base": "EHZhyiAe8O5-S-sbucO6D9EmjeXdi2sBGsoctvsfNzp9",
+            "type": "spec/overlays/meta/1.1",
+            "language": "fra",
+            "description": "Identifiants pour les personnes.",
+            "name": "identifiant"
+          }
+        ]
+      }
+    },
+    {
+      "v": "OCAS11JSON000a3a_",
+      "d": "EE4aodvoOUc3ILF6roHF2FVpVonmAFWBe8hd_SJtEmsY",
+      "capture_base": {
+        "d": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "q1": "Text",
+          "q2": "Text"
+        },
+        "classification": "RDF508",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "character_encoding": {
+          "d": "EB9PtVv2XuA_Q_OXEyGyD_MUr3yuOlWiV8GO4OcjnmV5",
+          "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "q1": "utf-8",
+            "q2": "utf-8"
+          }
+        },
+        "entry": [
+          {
+            "d": "EA4yMD482isbHc4VNLxku_tbgxQ5X0Ec0ErfcpyIdWaj",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/entry/1.1",
+            "language": "fra",
+            "attribute_entries": {
+              "q1": {
+                "Google": "ID Google Scholar",
+                "ISNI": "ISNI",
+                "ORCiD": "ORCiD",
+                "ResearcherID": "ResearcherID",
+                "Scopus": "ID Auteur Scopus"
+              }
+            }
+          },
+          {
+            "d": "EO_oyuFERRaA7Zxzc-CrrpA9kBOahjC6X75NrtW0GCtf",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "q1": {
+                "Google": "Google Scholar ID",
+                "ISNI": "ISNI",
+                "ORCiD": "ORCiD",
+                "ResearcherID": "ResearcherID",
+                "Scopus": "Scopus Author ID"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "EEt42rLbQ0fgh_SOB2qYgVB83NimP6eQG9IROIRPzAu0",
+          "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "q1": [
+              "Google",
+              "ISNI",
+              "ORCiD",
+              "ResearcherID",
+              "Scopus"
+            ]
+          }
+        },
+        "format": {
+          "d": "ELQnJN4RMzFVgT_fdE7dwkrt2uwlsWx5w2zg6iGVOLqA",
+          "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "q1": "^.{0,50}$",
+            "q2": "^.{0,50}$"
+          }
+        },
+        "label": [
+          {
+            "d": "EFypJQ0yUwESkNapAGu51Jx9uDmD5oJ03zdXH0gU4WTW",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Identifier",
+              "q2": "value"
+            },
+            "category_labels": {}
+          },
+          {
+            "d": "EJYT3eKQVanF0-91hpHwOaIKHXnJnbPKmNgldp1xm_VN",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/label/1.1",
+            "language": "fra",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Identifiant",
+              "q2": "valeur"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EEA-lJBzVB8sZtRZjlL--UubUV_RNIkqiSLe0X_hXiaR",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Identifiers for people.",
+            "name": "fakechild1"
+          },
+          {
+            "d": "EN75P9TISgCmwGhsmrONYuisnf-inutu5RZu2U0EmfBF",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/meta/1.1",
+            "language": "fra",
+            "description": "Identifiants pour les personnes.",
+            "name": "identifiant"
+          }
+        ]
+      }
+    },
+    {
+      "v": "OCAS11JSON0007c7_",
+      "d": "EGH_IV2vxXrH32bsOH8IVXkRHV0Io45uAtqAvO0UxE1x",
+      "capture_base": {
+        "d": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "q1": "Text",
+          "q2": "Text",
+          "q3": "Text",
+          "q4": "refs:EFNnYtZ9VWy054SudFIdAneKMKH78tWmfOQmVRIafLe0",
+          "q5": "refs:EO9k3aVgEqewD4mCU5_ge3RJMv_A52tVNxtQTmakqmbu"
+        },
+        "classification": "RDF508",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "character_encoding": {
+          "d": "EOOppxTz5bPQKrylWtqsVDJRNd1H2DGRCBi7LDyi7GZB",
+          "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "q1": "utf-8",
+            "q2": "utf-8",
+            "q3": "utf-8",
+            "q4": "utf-8"
+          }
+        },
+        "format": {
+          "d": "EHidnr9yweIkUEA9CW1OxQfHo8wDjjMVu4nivnzVmnDf",
+          "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "q1": "^.{0,50}$",
+            "q2": "^.{0,250}$"
+          }
+        },
+        "label": [
+          {
+            "d": "EA_MEkUknnuxLaQFvhQh7s7I7JsDligD-SxTDCxKMoXP",
+            "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "First name",
+              "q2": "Last name",
+              "q3": "Organization",
+              "q4": "Identifier"
+            },
+            "category_labels": {}
+          },
+          {
+            "d": "EDuaInAX94tCUNVf1e3gVNadxmU3aeuCTt8SgzvqB3ZN",
+            "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+            "type": "spec/overlays/label/1.1",
+            "language": "fra",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Prénom",
+              "q2": "Nom de famille",
+              "q3": "Organisation",
+              "q4": "Identifiant"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EAxM7v3xqq_49CPNAJEtpUimsyjeKUwHAhzvjMvRR9oQ",
+            "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Details about collaborator",
+            "name": "collaborator"
+          },
+          {
+            "d": "EMUHax60kHQW3VsFrxSViCNkMnZlazSqTwxz0Z7-iSHQ",
+            "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+            "type": "spec/overlays/meta/1.1",
+            "language": "fra",
+            "description": "Détails sur le collaborateur/rice",
+            "name": "collaborateur/rice"
+          }
+        ]
+      }
+    },
+    {
+      "v": "OCAS11JSON000a3a_",
+      "d": "EFNnYtZ9VWy054SudFIdAneKMKH78tWmfOQmVRIafLe0",
+      "capture_base": {
+        "d": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "q1": "Text",
+          "q2": "Text"
+        },
+        "classification": "RDF508",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "character_encoding": {
+          "d": "EB9PtVv2XuA_Q_OXEyGyD_MUr3yuOlWiV8GO4OcjnmV5",
+          "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "q1": "utf-8",
+            "q2": "utf-8"
+          }
+        },
+        "entry": [
+          {
+            "d": "EA4yMD482isbHc4VNLxku_tbgxQ5X0Ec0ErfcpyIdWaj",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/entry/1.1",
+            "language": "fra",
+            "attribute_entries": {
+              "q1": {
+                "Google": "ID Google Scholar",
+                "ISNI": "ISNI",
+                "ORCiD": "ORCiD",
+                "ResearcherID": "ResearcherID",
+                "Scopus": "ID Auteur Scopus"
+              }
+            }
+          },
+          {
+            "d": "EO_oyuFERRaA7Zxzc-CrrpA9kBOahjC6X75NrtW0GCtf",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "q1": {
+                "Google": "Google Scholar ID",
+                "ISNI": "ISNI",
+                "ORCiD": "ORCiD",
+                "ResearcherID": "ResearcherID",
+                "Scopus": "Scopus Author ID"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "EEt42rLbQ0fgh_SOB2qYgVB83NimP6eQG9IROIRPzAu0",
+          "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "q1": [
+              "Google",
+              "ISNI",
+              "ORCiD",
+              "ResearcherID",
+              "Scopus"
+            ]
+          }
+        },
+        "format": {
+          "d": "ELQnJN4RMzFVgT_fdE7dwkrt2uwlsWx5w2zg6iGVOLqA",
+          "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "q1": "^.{0,50}$",
+            "q2": "^.{0,50}$"
+          }
+        },
+        "label": [
+          {
+            "d": "EFypJQ0yUwESkNapAGu51Jx9uDmD5oJ03zdXH0gU4WTW",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Identifier",
+              "q2": "value"
+            },
+            "category_labels": {}
+          },
+          {
+            "d": "EJYT3eKQVanF0-91hpHwOaIKHXnJnbPKmNgldp1xm_VN",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/label/1.1",
+            "language": "fra",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Identifiant",
+              "q2": "valeur"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EN75P9TISgCmwGhsmrONYuisnf-inutu5RZu2U0EmfBF",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/meta/1.1",
+            "language": "fra",
+            "description": "Identifiants pour les personnes.",
+            "name": "identifiant"
+          },
+          {
+            "d": "ENqBM-_mhE9Ul1VJgBNF-oDLqsVkaVyrn7GlbwBD1AWs",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Identifiers for people.",
+            "name": "identifier"
+          }
+        ]
+      }
+    },
+    {
+      "v": "OCAS11JSON000a73_",
+      "d": "EO9k3aVgEqewD4mCU5_ge3RJMv_A52tVNxtQTmakqmbu",
+      "capture_base": {
+        "d": "EK6ZdE2PcZTuM1XKUUjcfLK4wn_0pYv5Bg_skMaAld1u",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "q1": "Text",
+          "q2": "Text",
+          "q3": "refs:EFAvcZflc22ilDBErGR7q4KPU4cw8MD65TYW7Zz1SnNL"
+        },
+        "classification": "RDF508",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "character_encoding": {
+          "d": "EGbcR7eCMd9lVHoTTtPQ5qXM02PeX3chv2-lEwMEQB2V",
+          "capture_base": "EK6ZdE2PcZTuM1XKUUjcfLK4wn_0pYv5Bg_skMaAld1u",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "q1": "utf-8",
+            "q2": "utf-8"
+          }
+        },
+        "entry": [
+          {
+            "d": "EGDFKA_4yguAaSN4P08oOomk3evuYfIVpS6g2by6ZH8g",
+            "capture_base": "EK6ZdE2PcZTuM1XKUUjcfLK4wn_0pYv5Bg_skMaAld1u",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "q1": {
+                "Google": "Google Scholar ID",
+                "ISNI": "ISNI",
+                "ORCiD": "ORCiD",
+                "ResearcherID": "ResearcherID",
+                "Scopus": "Scopus Author ID"
+              }
+            }
+          },
+          {
+            "d": "EPUJo_reovcmuKnFjnzCduP__xifpAwWSnFqBJ6ZU5yP",
+            "capture_base": "EK6ZdE2PcZTuM1XKUUjcfLK4wn_0pYv5Bg_skMaAld1u",
+            "type": "spec/overlays/entry/1.1",
+            "language": "fra",
+            "attribute_entries": {
+              "q1": {
+                "Google": "ID Google Scholar",
+                "ISNI": "ISNI",
+                "ORCiD": "ORCiD",
+                "ResearcherID": "ResearcherID",
+                "Scopus": "ID Auteur Scopus"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "EP73O6aMDx3RJc8QWUKxQezJoHQEI6gKfUBYiMROLQNm",
+          "capture_base": "EK6ZdE2PcZTuM1XKUUjcfLK4wn_0pYv5Bg_skMaAld1u",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "q1": [
+              "Google",
+              "ISNI",
+              "ORCiD",
+              "ResearcherID",
+              "Scopus"
+            ]
+          }
+        },
+        "format": {
+          "d": "EOj7T398KiHfzYuhnFzqeSEKpI4wVj1hfkfhwfZttr70",
+          "capture_base": "EK6ZdE2PcZTuM1XKUUjcfLK4wn_0pYv5Bg_skMaAld1u",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "q1": "^.{0,50}$",
+            "q2": "^.{0,50}$"
+          }
+        },
+        "label": [
+          {
+            "d": "EMLxMxGx05Aagf8Jwlg1RaO3PKGjqbrFPW8f1NLkRVd9",
+            "capture_base": "EK6ZdE2PcZTuM1XKUUjcfLK4wn_0pYv5Bg_skMaAld1u",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Identifier",
+              "q2": "value"
+            },
+            "category_labels": {}
+          },
+          {
+            "d": "EOvHiVPS2wFx4SAmKE4zWI9XHpG9s3H9s24FeonvKCYy",
+            "capture_base": "EK6ZdE2PcZTuM1XKUUjcfLK4wn_0pYv5Bg_skMaAld1u",
+            "type": "spec/overlays/label/1.1",
+            "language": "fra",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Identifiant",
+              "q2": "valeur"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EJsISlcTkqfg_n9Clj1j9r1RdrjDt6opCeh_BfiC6qz0",
+            "capture_base": "EK6ZdE2PcZTuM1XKUUjcfLK4wn_0pYv5Bg_skMaAld1u",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Identifiers for people.",
+            "name": "fakechild2"
+          },
+          {
+            "d": "EKoiac3l_FbWkqc1KgnfCCV3lPjGOE59IT4Cx86DDHN2",
+            "capture_base": "EK6ZdE2PcZTuM1XKUUjcfLK4wn_0pYv5Bg_skMaAld1u",
+            "type": "spec/overlays/meta/1.1",
+            "language": "fra",
+            "description": "Identifiants pour les personnes.",
+            "name": "identifiant"
+          }
+        ]
+      }
+    },
+    {
+      "v": "OCAS11JSON000a3a_",
+      "d": "EFAvcZflc22ilDBErGR7q4KPU4cw8MD65TYW7Zz1SnNL",
+      "capture_base": {
+        "d": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "q1": "Text",
+          "q2": "Text"
+        },
+        "classification": "RDF508",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "character_encoding": {
+          "d": "EB9PtVv2XuA_Q_OXEyGyD_MUr3yuOlWiV8GO4OcjnmV5",
+          "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "q1": "utf-8",
+            "q2": "utf-8"
+          }
+        },
+        "entry": [
+          {
+            "d": "EA4yMD482isbHc4VNLxku_tbgxQ5X0Ec0ErfcpyIdWaj",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/entry/1.1",
+            "language": "fra",
+            "attribute_entries": {
+              "q1": {
+                "Google": "ID Google Scholar",
+                "ISNI": "ISNI",
+                "ORCiD": "ORCiD",
+                "ResearcherID": "ResearcherID",
+                "Scopus": "ID Auteur Scopus"
+              }
+            }
+          },
+          {
+            "d": "EO_oyuFERRaA7Zxzc-CrrpA9kBOahjC6X75NrtW0GCtf",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "q1": {
+                "Google": "Google Scholar ID",
+                "ISNI": "ISNI",
+                "ORCiD": "ORCiD",
+                "ResearcherID": "ResearcherID",
+                "Scopus": "Scopus Author ID"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "EEt42rLbQ0fgh_SOB2qYgVB83NimP6eQG9IROIRPzAu0",
+          "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "q1": [
+              "Google",
+              "ISNI",
+              "ORCiD",
+              "ResearcherID",
+              "Scopus"
+            ]
+          }
+        },
+        "format": {
+          "d": "ELQnJN4RMzFVgT_fdE7dwkrt2uwlsWx5w2zg6iGVOLqA",
+          "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "q1": "^.{0,50}$",
+            "q2": "^.{0,50}$"
+          }
+        },
+        "label": [
+          {
+            "d": "EFypJQ0yUwESkNapAGu51Jx9uDmD5oJ03zdXH0gU4WTW",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Identifier",
+              "q2": "value"
+            },
+            "category_labels": {}
+          },
+          {
+            "d": "EJYT3eKQVanF0-91hpHwOaIKHXnJnbPKmNgldp1xm_VN",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/label/1.1",
+            "language": "fra",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "q1": "Identifiant",
+              "q2": "valeur"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EHN9yazPEdSF7j7nZ99OGb7JoeWIMq0zBIpSATVlwruw",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Identifiers for people.",
+            "name": "fakechild3"
+          },
+          {
+            "d": "EN75P9TISgCmwGhsmrONYuisnf-inutu5RZu2U0EmfBF",
+            "capture_base": "ENZp5nSDpKkgBvE8xAhtvaQZnj6CDtBleun2LqGmMc94",
+            "type": "spec/overlays/meta/1.1",
+            "language": "fra",
+            "description": "Identifiants pour les personnes.",
+            "name": "identifiant"
+          }
+        ]
+      }
+    }
+  ]
+}

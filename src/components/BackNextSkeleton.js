@@ -1,10 +1,11 @@
+import React from "react";
 import { Alert, Box, Button } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
+import CustomPalette from "../constants/customPalette";
 
-const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back', middleText, nextText = 'Next' }) => {
+const BackNextSkeleton = ({ errorMessage = "", isBack = false, pageBack, isForward = false, pageForward, children, backText = "Back", middleText, nextText = "Next" }) => {
   const { t } = useTranslation();
   return (
     <Box>

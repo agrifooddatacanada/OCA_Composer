@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Typography, Tooltip, Button, Box, useMediaQuery } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import logo from "../assets/agri-logo.png";
 import logoWhite from "../assets/agri-logo-white.png";
 import HeaderWrapper from "./HeaderWrapper";
@@ -300,6 +300,24 @@ export default function Header({ currentPage }) {
               alignItems: "center"
             }}
           >
+            {/* <div>
+              <select
+                id="language-select"
+                style={{
+                  border: "none",
+                  fontSize: "18px",
+                  color: "white",
+                  background: CustomPalette.PRIMARY,
+                  marginRight: "2.5rem"
+                }}
+                value={schemaMode}
+                onChange={(e) => setSchemaMode(e.target.value)}
+              >
+                <option value={SCHEMA_MODE_SINGLE}>Single schema</option>
+                <option value={SCHEMA_MODE_MULTI_LEVEL}>Multi-level schema</option>
+              </select>
+            </div> */}
+
             <div>
               <select
                 id="language-select"

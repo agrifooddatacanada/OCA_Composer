@@ -9,10 +9,11 @@ import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import AccordionItemWrapper from "./AccordionItemWrapper";
 import Drop from "../StartSchema/Drop";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
@@ -25,7 +26,11 @@ import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 
 const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, OCAPackage } = useContext(Context);
+  const { zipToReadme, jsonToReadme, OCAPackage, setEditingSchemaId } =
+    useContext(Context);
+
+  // Multi-schema context
+  const { switchToSchema } = useMultiSchema();
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
@@ -47,11 +52,22 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
   const navigateToMetadataPage = () => {
-    setCurrentPage("Metadata");
-    navigate("/start");
+    // Completely rewrite to match the visualization Edit button functionality
+    const schemaId = OCAPackage?.bundle?.d;
+
+    if (schemaId) {
+      // Use multi-schema context to switch to the selected schema
+      switchToSchema(schemaId, OCAPackage);
+      // Set the schema being edited
+      setEditingSchemaId(schemaId);
+      // Navigate to the editor step 1 (Metadata) to start editing the selected schema
+      setCurrentPage("Metadata");
+      navigate("/start");
+    }
   };
 
   const navigateToViewPage = () => {
+    // Go directly to the View step in the editor instead of separate page
     setCurrentPage("View");
     navigate("/start");
   };

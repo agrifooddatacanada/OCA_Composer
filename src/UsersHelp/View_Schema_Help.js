@@ -1,11 +1,10 @@
-import React from 'react';
-import HelpPageContainer from '../components/HelpPageContainer';
-import HelpPageH2Title from '../components/HelpPageH2Title';
-import TypographyTag from '../components/TypographyTag';
-import HelpPageH3Title from '../components/HelpPageH3Title';
+import React from "react";
+import HelpPageContainer from "../components/HelpPageContainer";
+import HelpPageH2Title from "../components/HelpPageH2Title";
+import TypographyTag from "../components/TypographyTag";
+import HelpPageH3Title from "../components/HelpPageH3Title";
 
-const ViewSchemaHelp = () => {
-  return (
+const ViewSchemaHelp = () => (
     <HelpPageContainer>
       <HelpPageH2Title text="View Schema" />
       <br />
@@ -34,6 +33,5 @@ const ViewSchemaHelp = () => {
         The advantage of OCA schemas is that they are modular. You can start with a very simple design, and because of the OCA layered architecture you can add more functionality to the schema later. The simplest OCA schema has a Capture Base (CB) which defines the basic structure of the data, and some additional overlays (OL) that help the user understand the data. OCA schemas are also shareable and machine-readable. You can publish your OCA schema with an identifier and others can reference and extend your work.      </TypographyTag>
     </HelpPageContainer>
   );
-};
 
 export default ViewSchemaHelp;

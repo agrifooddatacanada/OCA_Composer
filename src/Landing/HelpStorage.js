@@ -1,12 +1,11 @@
-import React from 'react';
-import TypographyTag from '../components/TypographyTag';
-import HelpPageH2Title from '../components/HelpPageH2Title';
-import HelpPageContainer from '../components/HelpPageContainer';
-import CustomAnchorLink from '../components/CustomAnchorLink';
-import { Link } from '@mui/material';
+import React from "react";
+import { Link } from "@mui/material";
+import TypographyTag from "../components/TypographyTag";
+import HelpPageH2Title from "../components/HelpPageH2Title";
+import HelpPageContainer from "../components/HelpPageContainer";
+import CustomAnchorLink from "../components/CustomAnchorLink";
 
-const HelpStorage = () => {
-  return (
+const HelpStorage = () => (
     <HelpPageContainer>
       <HelpPageH2Title text="Saving, Depositing and/or Publishing your Schema" />
       <TypographyTag>
@@ -24,23 +23,23 @@ const HelpStorage = () => {
         </TypographyTag>
       </ul>
 
-      <p style={{ fontSize: '24px' }}><strong>Save your schema with your data</strong> </p>
+      <p style={{ fontSize: "24px" }}><strong>Save your schema with your data</strong> </p>
       <TypographyTag>
         The first, and easiest way to save your schema for future reference is together with the dataset that it is associated with it. This is most useful for schemas that are very specific to your dataset and where you haven't created the schema with an eye towards reuse.
       </TypographyTag>
-      <br></br>
+      <br />
       <TypographyTag>
         We suggest that you save your schema both as the Excel template and the OCA bundle. The OCA bundle is a machine-readable version and is a published standard. This should be the most future-proof version of your schema. The Excel Template is a human readable version and also useful to save with your data. As we develop the Semantic Engine we will depreciate the Excel Template and use other tools to generate OCA schemas.
       </TypographyTag>
-      <p style={{ fontSize: '24px' }}><strong>Deposit your schema separately in a repository</strong> </p>
+      <p style={{ fontSize: "24px" }}><strong>Deposit your schema separately in a repository</strong> </p>
       <TypographyTag>
         Schemas can be written to be useful for multiple datasets. A well written schema can be very useful for a research community because it can make it easier to share and understand data, and save the work of documentation.
       </TypographyTag>
-      <br></br>
+      <br />
       <TypographyTag>
         You can deposit a schema separately in the University of Guelph's Borealis repository and this will give your schema a citable DOI. You can share and publish this DOI and reference it when you publish your data. Other researchers can reference your schema for their own data collection and publication.
       </TypographyTag>
-      <br></br>
+      <br />
       <TypographyTag>
         Obtaining a DOI via Borealis:
       </TypographyTag>
@@ -49,11 +48,11 @@ const HelpStorage = () => {
           <CustomAnchorLink link='https://borealisdata.ca/loginpage.xhtml' text='Log in to Borealis' />, A Canadian Dataverse Repository using your U of G username and password.
         </TypographyTag>
         <TypographyTag type='li'>
-          Request permission to deposit in the U of G Research Data Repositories at {' '}
+          Request permission to deposit in the U of G Research Data Repositories at {" "}
           <Link
             to='#'
             onClick={(e) => {
-              window.location.href = `mailto:lib.research@uoguelph.ca`;
+              window.location.href = "mailto:lib.research@uoguelph.ca";
               e.preventDefault();
             }}
           >
@@ -110,7 +109,7 @@ const HelpStorage = () => {
       <TypographyTag>
         For reference: Research & Scholarship, 2020, “How to deposit research data in the Agri-environmental Research Data Repository or the University of Guelph Research Data Repository”, <CustomAnchorLink text="https://doi.org/10.5683/SP2/CPHFGA" link='https://doi.org/10.5683/SP2/CPHFGA' />, Borealis
       </TypographyTag>
-      <p style={{ fontSize: '20px' }}><strong>Versioning</strong> </p>
+      <p style={{ fontSize: "20px" }}><strong>Versioning</strong> </p>
 
       <TypographyTag>
         For <strong>minor updates</strong> (like correcting typos) we recommend that you use the replacement feature of the Repository.
@@ -127,7 +126,7 @@ const HelpStorage = () => {
       <TypographyTag>
         For <strong>major updates</strong> we recommend that you create another DOI and deposit the updated schema there. Add the citation (including DOI) to the original version of the schema into the ‘Related Datasets’ field in the record metadata.
       </TypographyTag>
-      <p style={{ fontSize: '24px' }}><strong>OCA Repository</strong> </p>
+      <p style={{ fontSize: "24px" }}><strong>OCA Repository</strong> </p>
       <TypographyTag>
         Agri-food Data Canada, together with the Human Colossus Foundation is currently developing a specialized repository for OCA Schema creation.
       </TypographyTag>
@@ -135,6 +134,5 @@ const HelpStorage = () => {
 
     </HelpPageContainer >
   );
-};
 
 export default HelpStorage;

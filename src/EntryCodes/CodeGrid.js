@@ -16,7 +16,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { Context } from "../App";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import { preWrapWordBreak } from "../constants/styles";
 
 // Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens

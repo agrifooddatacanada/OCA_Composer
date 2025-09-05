@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Menu, MenuItem, MenuList, ClickAwayListener } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 
 const exportOptions = ["excel", "csv"];
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 
 export default function LinkCard({ setShowLink }) {
@@ -19,7 +19,7 @@ export default function LinkCard({ setShowLink }) {
           boxShadow: 10,
           backgroundColor: CustomPalette.SECONDARY,
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "column"
         }}
       >
         <Box sx={{ alignSelf: "flex-end", pr: 1, pt: 1 }}>
@@ -31,8 +31,8 @@ export default function LinkCard({ setShowLink }) {
               color: CustomPalette.DARK,
               "&:hover": {
                 color: CustomPalette.PRIMARY,
-                transform: "scale(1.1)",
-              },
+                transform: "scale(1.1)"
+              }
             }}
           />
         </Box>
@@ -48,13 +48,16 @@ export default function LinkCard({ setShowLink }) {
             mr: 5,
             ml: 5,
             mt: -0.5,
-            backgroundColor: CustomPalette.WHITE,
+            backgroundColor: CustomPalette.WHITE
           }}
         >
           Upload your file to the following address:
           <br />
           <br />
-          <CustomAnchorLink link='https://www.semanticengine.org/#/develop' text="https://www.semanticengine.org/#/develop" />
+          <CustomAnchorLink
+            link="https://www.semanticengine.org/#/develop"
+            text="https://www.semanticengine.org/#/develop"
+          />
         </Box>
       </Card>
     </Box>

@@ -3,8 +3,9 @@ import { useTranslation } from "react-i18next";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { Box, Button, List, ListItemButton, ListItemText } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
@@ -13,16 +14,31 @@ import { FIELD_FORMAT_OVERLAY, FIELD_RANGE_OVERLAY } from "../constants/constant
 
 const Overlays = ({ pageBack, pageForward }) => {
   const { t } = useTranslation();
+  
+  // Global context (for non-schema-specific data)
   const {
     setCurrentPage,
     characterEncodingRowData,
     setCharacterEncodingRowData,
-    overlay,
-    setOverlay,
-    setSelectedOverlay,
     rangeRowData,
     attributeRowData
   } = useContext(Context);
+
+  // Schema-specific overlay state from MultiSchemaContext
+  const {
+    activeSchemaId,
+    editingSchemaId,
+    getOverlaySelections,
+    updateOverlaySelection,
+    updateSchemaState,
+    setSelectedOverlay,
+    getSelectedOverlay
+  } = useMultiSchema();
+
+  const currentSchemaId = activeSchemaId || editingSchemaId;
+  const overlay = getOverlaySelections(currentSchemaId);
+  const selectedOverlay = getSelectedOverlay(currentSchemaId);
+  
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedItemToDelete, setSelectedItemToDelete] = useState("");
 
@@ -34,12 +50,22 @@ const Overlays = ({ pageBack, pageForward }) => {
     if (shouldDisableRangeOverlay(item, selectedFeatures, attributeRowData, rangeRowData))
       return;
 
-    setOverlay((prev) => ({
-      ...prev,
-      [item]: { ...prev[item], selected: true }
-    }));
-
-    setSelectedOverlay(item);
+    // Get current overlay selections
+    const currentSelections = getOverlaySelections(currentSchemaId);
+    const updatedSelections = {
+      ...currentSelections,
+      [item]: {
+        ...currentSelections[item],
+        selected: true
+      }
+    };
+    
+    // Combine both updates into a single updateSchemaState call to avoid race condition
+    updateSchemaState(currentSchemaId, {
+      overlaySelections: updatedSelections,
+      selectedOverlay: item
+    });
+    
     if (item === "Character Encoding") {
       setCurrentPage("CharacterEncoding");
     } else if (item === "Make selected entries required") {
@@ -52,25 +78,36 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("DataStandards");
     } else if (item === "Add range rule for data") {
       setCurrentPage("Range");
+    } else if (item === "Attribute Framing") {
+      setCurrentPage("AttributeFraming");
     } else {
       setCurrentPage("FormatRules");
     }
   };
 
   const removeFromSelected = () => {
-    setOverlay((prev) => ({
-      ...prev,
+    // Get current overlay selections
+    const currentSelections = getOverlaySelections(currentSchemaId);
+    const updatedSelections = {
+      ...currentSelections,
       [selectedItemToDelete]: {
-        ...prev[selectedItemToDelete],
+        ...currentSelections[selectedItemToDelete],
         selected: false
-      },
-      ...(selectedItemToDelete === FIELD_FORMAT_OVERLAY && {
-        [FIELD_RANGE_OVERLAY]: {
-          ...prev[FIELD_RANGE_OVERLAY],
-          selected: false
-        }
-      })
-    }));
+      }
+    };
+
+    // Also remove range overlay if format overlay is being removed
+    if (selectedItemToDelete === FIELD_FORMAT_OVERLAY) {
+      updatedSelections[FIELD_RANGE_OVERLAY] = {
+        ...currentSelections[FIELD_RANGE_OVERLAY],
+        selected: false
+      };
+    }
+
+    // Update overlay selections in a single call to avoid race condition
+    updateSchemaState(currentSchemaId, {
+      overlaySelections: updatedSelections
+    });
 
     // Delete attribute from characterEncodingRowData
     const newCharacterEncodingRowData = characterEncodingRowData.map((row) => {
@@ -82,7 +119,7 @@ const Overlays = ({ pageBack, pageForward }) => {
   };
 
   const handleEditOverlay = (overlayName) => {
-    setSelectedOverlay(overlayName);
+    setSelectedOverlay(currentSchemaId, overlayName);
     if (overlayName === "Character Encoding") {
       setCurrentPage("CharacterEncoding");
     } else if (overlayName === "Make selected entries required") {
@@ -95,6 +132,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("UnitFraming");
     } else if (overlayName === "Add range rule for data") {
       setCurrentPage("Range");
+    } else if (overlayName === "Attribute Framing") {
+      setCurrentPage("AttributeFraming");
     } else {
       setCurrentPage("FormatRules");
     }
@@ -126,16 +165,37 @@ const Overlays = ({ pageBack, pageForward }) => {
         >
           {t("Add schema feature")}
           <Box
-            style={{
+            sx={{
               width: "350px",
               height: "300px",
-              overflowY: "auto",
               border: "1px solid #ccc",
-              borderRadius: "4px"
+              borderRadius: "4px",
+              overflow: "hidden"
             }}
           >
-            <List>
-              {unselectedFeatures.map((text) => (
+            <List
+              sx={{
+                height: "100%",
+                overflowY: "auto",
+                padding: 0,
+                "&::-webkit-scrollbar": {
+                  width: "8px"
+                },
+                "&::-webkit-scrollbar-track": {
+                  backgroundColor: "#f1f1f1"
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "#c1c1c1",
+                  borderRadius: "4px"
+                },
+                "&::-webkit-scrollbar-thumb:hover": {
+                  backgroundColor: "#a8a8a8"
+                }
+              }}
+            >
+              {unselectedFeatures
+                .filter((text) => text && text.trim() !== "") // Filter out empty/null features
+                .map((text) => (
                 <ListItemButton
                   key={text}
                   onClick={() => addToSelected(text)}
@@ -163,15 +223,34 @@ const Overlays = ({ pageBack, pageForward }) => {
         >
           {t("Added schema feature")}
           <Box
-            style={{
+            sx={{
               width: "350px",
               height: "300px",
-              overflowY: "auto",
               border: "1px solid #ccc",
-              borderRadius: "4px"
+              borderRadius: "4px",
+              overflow: "hidden"
             }}
           >
-            <List>
+            <List
+              sx={{
+                height: "100%",
+                overflowY: "auto",
+                padding: 0,
+                "&::-webkit-scrollbar": {
+                  width: "8px"
+                },
+                "&::-webkit-scrollbar-track": {
+                  backgroundColor: "#f1f1f1"
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "#c1c1c1",
+                  borderRadius: "4px"
+                },
+                "&::-webkit-scrollbar-thumb:hover": {
+                  backgroundColor: "#a8a8a8"
+                }
+              }}
+            >
               {selectedFeatures.map((text) => (
                 <Box
                   key={text}

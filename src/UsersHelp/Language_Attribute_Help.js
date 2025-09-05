@@ -1,10 +1,9 @@
-import React from 'react';
-import HelpPageContainer from '../components/HelpPageContainer';
-import HelpPageH2Title from '../components/HelpPageH2Title';
-import TypographyTag from '../components/TypographyTag';
+import React from "react";
+import HelpPageContainer from "../components/HelpPageContainer";
+import HelpPageH2Title from "../components/HelpPageH2Title";
+import TypographyTag from "../components/TypographyTag";
 
-const LanguageAttributeHelp = () => {
-  return (
+const LanguageAttributeHelp = () => (
     <HelpPageContainer>
       <HelpPageH2Title text="Language Dependent Attribute Details" />
       <br />
@@ -21,6 +20,5 @@ const LanguageAttributeHelp = () => {
       </TypographyTag>
     </HelpPageContainer>
   );
-};
 
 export default LanguageAttributeHelp;

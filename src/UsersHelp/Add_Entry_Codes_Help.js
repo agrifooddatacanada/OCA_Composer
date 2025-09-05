@@ -1,11 +1,10 @@
-import React from 'react';
-import HelpPageContainer from '../components/HelpPageContainer';
-import HelpPageH2Title from '../components/HelpPageH2Title';
-import TypographyTag from '../components/TypographyTag';
+import React from "react";
+import HelpPageContainer from "../components/HelpPageContainer";
+import HelpPageH2Title from "../components/HelpPageH2Title";
+import TypographyTag from "../components/TypographyTag";
 
 
-const AddEntryCodesHelp = () => {
-  return (
+const AddEntryCodesHelp = () => (
     <HelpPageContainer>
       <HelpPageH2Title text="Add Entry Codes" />
       <br />
@@ -25,9 +24,8 @@ const AddEntryCodesHelp = () => {
         If you don't need to have specific labels created for the Entry Codes (e.g. you create an Entry Code list of GO terms) you can copy the Entry Code into the language specific language columns.
       </TypographyTag>
       <br />
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/T-Uzr3p41SM" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/T-Uzr3p41SM" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
     </HelpPageContainer>
   );
-};
 
 export default AddEntryCodesHelp;

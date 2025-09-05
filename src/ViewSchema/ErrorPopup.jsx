@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Button } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CloseIcon from "@mui/icons-material/Close";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 
 const ErrorPopup = ({ onClose, children }) => {
   const appearAnimation =

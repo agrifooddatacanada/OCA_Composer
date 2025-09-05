@@ -4,7 +4,7 @@ import JSZip from "jszip";
 import { Box, Button, Checkbox, List, ListItem, Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { OcaPackage } from "oca_package";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import { Context } from "../App";
 import {
   ADC,

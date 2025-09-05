@@ -1,10 +1,9 @@
-import React from 'react';
-import HelpPageContainer from '../components/HelpPageContainer';
-import HelpPageH2Title from '../components/HelpPageH2Title';
-import TypographyTag from '../components/TypographyTag';
+import React from "react";
+import HelpPageContainer from "../components/HelpPageContainer";
+import HelpPageH2Title from "../components/HelpPageH2Title";
+import TypographyTag from "../components/TypographyTag";
 
-const StartSchemaHelp = () => {
-  return (
+const StartSchemaHelp = () => (
     <HelpPageContainer>
       <HelpPageH2Title text="Start Schema - Add attributes" />
       <br />
@@ -30,6 +29,5 @@ const StartSchemaHelp = () => {
       </TypographyTag>
     </HelpPageContainer>
   );
-};
 
 export default StartSchemaHelp;

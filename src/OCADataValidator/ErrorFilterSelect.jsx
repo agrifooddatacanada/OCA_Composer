@@ -6,7 +6,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { Box, Checkbox } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import { SHOW_ALL_DATA, SHOW_ONLY_ROWS_WITH_ERRORS } from "../constants/constants";
 
 const ITEM_HEIGHT = 30;

@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ReactGA from "react-ga4";
 import { Box, ThemeProvider } from "@mui/material";
 import "./App.css";
-import { CustomTheme } from "./constants/theme";
+import CustomTheme from "./constants/theme";
 import Home from "./Home";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import getListOfSelectedOverlays from "./constants/getListOfSelectedOverlays";
@@ -13,6 +13,9 @@ import OCADataValidator from "./OCADataValidator/OCADataValidator";
 import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
+import SchemaVisualization from "./SchemaVisualization/SchemaVisualization";
+import { getSchemaDataById } from "./SchemaVisualization/dataUtils";
+import { MultiSchemaProvider } from "./context/MultiSchemaContext";
 // import Tutorial from "./Tutorial/Tutorial";
 import useUnitFramingUpdater from "./hooks/useUnitFramingUpdater";
 import {
@@ -23,11 +26,14 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
-  FIELD_UNIT_FRAMING_OVERLAY
+  FIELD_UNIT_FRAMING_OVERLAY,
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  SCHEMA_MODE_SINGLE
 } from "./constants/constants";
 import {
   getUnitsFramedThatAlreadyExistInOcaPackage,
-  hasUnitFramingOverlay
+  hasUnitFramingOverlay,
+  hasAttributeFramingOverlay
 } from "./constants/utils";
 
 export const Context = createContext();
@@ -50,7 +56,8 @@ const overlayItems = {
   [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
   [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
   [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
-  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false }
+  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
+  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false }
 };
 
 export const pagesArray = [
@@ -63,6 +70,7 @@ export const pagesArray = [
 ];
 
 function App() {
+  const [schemaMode, setSchemaMode] = useState(SCHEMA_MODE_SINGLE);
   const [isZip, setIsZip] = useState(false);
   const [isZipEdited, setIsZipEdited] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
@@ -90,6 +98,8 @@ function App() {
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
+  const [currentSchemaId, setCurrentSchemaId] = useState(null);
+  const [editingSchemaId, setEditingSchemaId] = useState(null);
 
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
@@ -110,6 +120,13 @@ function App() {
   ] = useState({});
   const [unframedUnitList, setUnframedUnitList] = useState([]);
   const [unitRowDataWhenNoFrameAll, setUnitRowDataWhenNoFrameAll] = useState([]);
+
+  // Attribute framing
+  const [attributeFramingRowData, setAttributeFramingRowData] = useState([]);
+  const [frameAllAttributes, setFrameAllAttributes] = useState(
+    hasAttributeFramingOverlay()
+  );
+  const [unframedAttributeList, setUnframedAttributeList] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -149,6 +166,8 @@ function App() {
 
   // Ordering extension overlay for OCA package
   const [OCAPackage, setOCAPackage] = useState(null);
+
+
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -463,7 +482,38 @@ function App() {
     });
 
     setRangeRowData(newRangeArray);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attributeRowData]);
+
+  /*
+  Attribute Framing starts here.
+  */
+  useEffect(() => {
+    const newAttributeFramingArray = [];
+
+    attributeRowData.forEach((attributeRowItem) => {
+      const attributeFramingObj = attributeFramingRowData.find(
+        (attributeFramingRowItem) =>
+          attributeRowItem.Attribute === attributeFramingRowItem.Attribute
+      );
+      if (attributeFramingObj) {
+        newAttributeFramingArray.push(attributeFramingObj);
+      } else {
+        newAttributeFramingArray.push({
+          Attribute: attributeRowItem.Attribute,
+          predicateId: "",
+          objectId: "",
+          description: "",
+          mappingJustification: ""
+        });
+      }
+    });
+    setAttributeFramingRowData(newAttributeFramingArray);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attributeRowData]);
+
+  // skos:exactMatch
+  // semapv:ManualMappingCuratio
 
   useEffect(() => {
     if (jsonRawFile.length > 0) {
@@ -485,6 +535,7 @@ function App() {
       });
       setMatchingRowData(newMatchingRowData);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datasetRawFile, jsonRawFile, attributesList]);
 
   function createEntryCodeRowData(languages, attributesWithLists, savedEntryCodes) {
@@ -558,187 +609,219 @@ function App() {
     setOCAPackage(null);
   }, [fileData, jsonRawFile]);
 
+  // Keep attributesList in sync with the schema currently being edited
+  useEffect(() => {
+    try {
+      if (!OCAPackage || !editingSchemaId) {
+        return;
+      }
+      const schemaData = getSchemaDataById(OCAPackage, editingSchemaId);
+      const attrs = schemaData?.attributes ? Object.keys(schemaData.attributes) : [];
+      // Only update if attributesList is empty (avoid overwriting schema-aware state)
+      if (attributesList.length === 0 && JSON.stringify(attrs) !== JSON.stringify(attributesList)) {
+        setAttributesList(attrs);
+      }
+    } catch (e) {
+      // no-op: defensive guard
+    }
+  }, [OCAPackage, editingSchemaId]);
+
   return (
     <div className="App">
       <ThemeProvider theme={CustomTheme}>
-        <Context.Provider
-          // eslint-disable-next-line react/jsx-no-constructed-context-values
-          value={{
-            fileData,
-            setFileData,
-            rawFile,
-            setRawFile,
-            attributesList,
-            setAttributesList,
-            schemaDescription,
-            setSchemaDescription,
-            divisionGroup,
-            setDivisionGroup,
-            languages,
-            setLanguages,
-            attributeRowData,
-            setAttributeRowData,
-            entryCodeRowData,
-            setEntryCodeRowData,
-            attributesWithLists,
-            setAttributesWithLists,
-            savedEntryCodes,
-            setSavedEntryCodes,
-            lanAttributeRowData,
-            setLanAttributeRowData,
-            setCurrentPage,
-            history,
-            setHistory,
-            customIsos,
-            setCustomIsos,
-            isZip,
-            setIsZip,
-            characterEncodingRowData,
-            setCharacterEncodingRowData,
-            formatRuleRowData,
-            setFormatRuleRowData,
-            dataStandardsRowData,
-            setDataStandardsRowData,
-            overlay,
-            setOverlay,
-            selectedOverlay,
-            setSelectedOverlay,
-            zipToReadme,
-            setZipToReadme,
-            jsonToReadme,
-            setJsonToReadme,
-            isZipEdited,
-            setIsZipEdited,
-            cardinalityData,
-            setCardinalityData,
-            setCurrentDataValidatorPage,
-            currentDataValidatorPage,
-            jsonLoading,
-            setJsonLoading,
-            jsonDropDisabled,
-            setJsonDropDisabled,
-            datasetLoading,
-            setDatasetLoading,
-            datasetDropDisabled,
-            setDatasetDropDisabled,
-            jsonRawFile,
-            setJsonRawFile,
-            datasetRawFile,
-            setDatasetRawFile,
-            jsonIsParsed,
-            setJsonIsParsed,
-            datasetIsParsed,
-            setDatasetIsParsed,
-            schemaDataConformantHeader,
-            setSchemaDataConformantHeader,
-            matchingRowData,
-            setMatchingRowData,
-            firstTimeMatchingRef,
-            schemaDataConformantRowData,
-            setSchemaDataConformantRowData,
-            ogWorkbook,
-            setOgWorkbook,
-            jsonParsedFile,
-            setJsonParsedFile,
-            ogSchemaDataConformantHeaderRef,
-            entryCodeHeaders,
-            setEntryCodeHeaders,
-            tempEntryCodeRowData,
-            setTempEntryCodeRowData,
-            chosenEntryCodeIndex,
-            setChosenEntryCodeIndex,
-            tempEntryCodeSummary,
-            setTempEntryCodeSummary,
-            tempEntryList,
-            setTempEntryList,
-            excelSheetChoice,
-            setExcelSheetChoice,
-            setCurrentOCAMergePage,
-            OCAFile1Raw,
-            setOCAFile1Raw,
-            OCAFile2Raw,
-            setOCAFile2Raw,
-            parsedOCAFile1,
-            setParsedOCAFile1,
-            parsedOCAFile2,
-            setParsedOCAFile2,
-            selectedOverlaysOCAFile1,
-            setSelectedOverlaysOCAFile1,
-            selectedOverlaysOCAFile2,
-            setSelectedOverlaysOCAFile2,
-            firstNavigationToDataset,
-            setFirstNavigationToDataset,
-            targetResult,
-            setTargetResult,
-            datasetDropMessage,
-            setDatasetDropMessage,
-            notToVerifyAttributes,
-            setNotToVerifyAttributes,
-            OCAPackage,
-            setOCAPackage,
-            rangeRowData,
-            setRangeRowData,
-            unitRowData,
-            setUnitRowData,
-            unitFramedRowData,
-            setUnitFramedRowData,
-            unitFramedThatAlreadyExistInOcaPackage,
-            setUnitFramedThatAlreadyExistInOcaPackage,
-            frameAllUnits,
-            setFrameAllUnits,
-            unitRowDataWhenNoFrameAll,
-            setUnitRowDataWhenNoFrameAll,
-            currentUnitFramedRowData,
-            setCurrentUnitFramedRowData,
-            unframedUnitList,
-            setUnframedUnitList
-          }}
-        >
-          <Box
-            sx={{
-              minHeight: "100vh",
-              display: "flex",
-              flexDirection: "column"
+        <MultiSchemaProvider>
+          <Context.Provider
+            // eslint-disable-next-line react/jsx-no-constructed-context-values
+            value={{
+              schemaMode,
+              setSchemaMode,
+              fileData,
+              setFileData,
+              rawFile,
+              setRawFile,
+              attributesList,
+              setAttributesList,
+              schemaDescription,
+              setSchemaDescription,
+              divisionGroup,
+              setDivisionGroup,
+              languages,
+              setLanguages,
+              attributeRowData,
+              setAttributeRowData,
+              entryCodeRowData,
+              setEntryCodeRowData,
+              attributesWithLists,
+              setAttributesWithLists,
+              savedEntryCodes,
+              setSavedEntryCodes,
+              lanAttributeRowData,
+              setLanAttributeRowData,
+              setCurrentPage,
+              history,
+              setHistory,
+              customIsos,
+              setCustomIsos,
+              isZip,
+              setIsZip,
+              characterEncodingRowData,
+              setCharacterEncodingRowData,
+              formatRuleRowData,
+              setFormatRuleRowData,
+              dataStandardsRowData,
+              setDataStandardsRowData,
+              overlay,
+              setOverlay,
+              selectedOverlay,
+              setSelectedOverlay,
+              zipToReadme,
+              setZipToReadme,
+              jsonToReadme,
+              setJsonToReadme,
+              isZipEdited,
+              setIsZipEdited,
+              cardinalityData,
+              setCardinalityData,
+              setCurrentDataValidatorPage,
+              currentDataValidatorPage,
+              jsonLoading,
+              setJsonLoading,
+              jsonDropDisabled,
+              setJsonDropDisabled,
+              datasetLoading,
+              setDatasetLoading,
+              datasetDropDisabled,
+              setDatasetDropDisabled,
+              jsonRawFile,
+              setJsonRawFile,
+              datasetRawFile,
+              setDatasetRawFile,
+              jsonIsParsed,
+              setJsonIsParsed,
+              datasetIsParsed,
+              setDatasetIsParsed,
+              schemaDataConformantHeader,
+              setSchemaDataConformantHeader,
+              matchingRowData,
+              setMatchingRowData,
+              firstTimeMatchingRef,
+              schemaDataConformantRowData,
+              setSchemaDataConformantRowData,
+              ogWorkbook,
+              setOgWorkbook,
+              jsonParsedFile,
+              setJsonParsedFile,
+              ogSchemaDataConformantHeaderRef,
+              entryCodeHeaders,
+              setEntryCodeHeaders,
+              tempEntryCodeRowData,
+              setTempEntryCodeRowData,
+              chosenEntryCodeIndex,
+              setChosenEntryCodeIndex,
+              tempEntryCodeSummary,
+              setTempEntryCodeSummary,
+              tempEntryList,
+              setTempEntryList,
+              excelSheetChoice,
+              setExcelSheetChoice,
+              setCurrentOCAMergePage,
+              OCAFile1Raw,
+              setOCAFile1Raw,
+              OCAFile2Raw,
+              setOCAFile2Raw,
+              parsedOCAFile1,
+              setParsedOCAFile1,
+              parsedOCAFile2,
+              setParsedOCAFile2,
+              selectedOverlaysOCAFile1,
+              setSelectedOverlaysOCAFile1,
+              selectedOverlaysOCAFile2,
+              setSelectedOverlaysOCAFile2,
+              firstNavigationToDataset,
+              setFirstNavigationToDataset,
+              targetResult,
+              setTargetResult,
+              datasetDropMessage,
+              setDatasetDropMessage,
+              notToVerifyAttributes,
+              setNotToVerifyAttributes,
+              OCAPackage,
+              setOCAPackage,
+              rangeRowData,
+              setRangeRowData,
+              unitRowData,
+              setUnitRowData,
+              unitFramedRowData,
+              setUnitFramedRowData,
+              unitFramedThatAlreadyExistInOcaPackage,
+              setUnitFramedThatAlreadyExistInOcaPackage,
+              frameAllUnits,
+              setFrameAllUnits,
+              unitRowDataWhenNoFrameAll,
+              setUnitRowDataWhenNoFrameAll,
+              currentUnitFramedRowData,
+              setCurrentUnitFramedRowData,
+              unframedUnitList,
+              setUnframedUnitList,
+              frameAllAttributes,
+              setFrameAllAttributes,
+              unframedAttributeList,
+              setUnframedAttributeList,
+              attributeFramingRowData,
+              setAttributeFramingRowData,
+              currentSchemaId,
+              setCurrentSchemaId,
+              editingSchemaId,
+              setEditingSchemaId
             }}
           >
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route
-                  path="/start"
-                  element={
-                    <Home
-                      currentPage={currentPage}
-                      setCurrentPage={setCurrentPage}
-                      pageForward={pageForward}
-                      pageBack={pageBack}
-                      showIntroCard={showIntroCard}
-                      setShowIntroCard={setShowIntroCard}
-                    />
-                  }
-                />
-                <Route path="/oca-data-verifier" element={<OCADataValidator />} />
-                {/* <Route
-                  path='/help_designing_datasets'
-                  element={<GuidanceForDesigningDataSets />}
-                /> */}
-                {/* <Route path="/help_storage" element={<HelpStorage />} /> */}
-                <Route path="/start_schema_help" element={<StartSchemaHelp />} />
-                <Route path="/learn_schema_rule" element={<LearnAboutSchemaRule />} />
-                <Route
-                  path="/learn_data_verification"
-                  element={<LearnAboutDataVerification />}
-                />
-                <Route path="*" element={<Navigate to="/" />} />
-                <Route
-                  path="/oca-merge"
-                  element={<OCAMerge currentOCAMergePage={currentOCAMergePage} />}
-                />
-                {/* <Route path="/tutorial" element={<Tutorial />} /> */}
-              </Routes>
-            </BrowserRouter>
-          </Box>
-        </Context.Provider>
+            <Box
+              sx={{
+                minHeight: "100vh",
+                display: "flex",
+                flexDirection: "column"
+              }}
+            >
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route
+                    path="/start"
+                    element={
+                      <Home
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                        pageForward={pageForward}
+                        pageBack={pageBack}
+                        showIntroCard={showIntroCard}
+                        setShowIntroCard={setShowIntroCard}
+                      />
+                    }
+                  />
+                  <Route path="/oca-data-verifier" element={<OCADataValidator />} />
+                  <Route path="/schema-visualization" element={<SchemaVisualization />} />
+                  {/* <Route
+                    path='/help_designing_datasets'
+                    element={<GuidanceForDesigningDataSets />}
+                  /> */}
+                  {/* <Route path="/help_storage" element={<HelpStorage />} /> */}
+                  <Route path="/start_schema_help" element={<StartSchemaHelp />} />
+                  <Route path="/learn_schema_rule" element={<LearnAboutSchemaRule />} />
+                  <Route
+                    path="/learn_data_verification"
+                    element={<LearnAboutDataVerification />}
+                  />
+                  <Route path="*" element={<Navigate to="/" />} />
+                  <Route
+                    path="/oca-merge"
+                    element={<OCAMerge currentOCAMergePage={currentOCAMergePage} />}
+                  />
+                  {/* <Route path="/tutorial" element={<Tutorial />} /> */}
+                </Routes>
+              </BrowserRouter>
+            </Box>
+          </Context.Provider>
+        </MultiSchemaProvider>
       </ThemeProvider>
     </div>
   );

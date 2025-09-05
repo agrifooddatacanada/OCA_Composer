@@ -2,7 +2,7 @@ import React, { forwardRef, memo, useCallback, useState } from "react";
 import { IconButton, MenuItem } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import {
   CUSTOM_FORMAT_RULE,
   descriptionToFormatCodeBinary,
@@ -22,13 +22,14 @@ import {
 export const TrashCanButton = memo(
   // eslint-disable-next-line no-unused-vars
   forwardRef((props, ref) => {
+    const { node, onRefresh } = props;
     const onClick = useCallback(() => {
-      props.node.updateData({
-        ...props.node.data,
-        FormatText: ""
+      node.updateData({
+        ...node.data,
+        "Format Rule": ""
       });
-      props?.onRefresh();
-    }, []);
+      onRefresh?.();
+    }, [node, onRefresh]);
 
     return (
       <IconButton
@@ -36,7 +37,7 @@ export const TrashCanButton = memo(
           pr: 1,
           color: CustomPalette.GREY_600,
           transition: "all 0.2s ease-in-out",
-          display: props.node.data?.FormatText === "" ? "none" : "block"
+          display: node.data?.["Format Rule"] === "" ? "none" : "block"
         }}
         onClick={onClick}
       >
@@ -49,45 +50,50 @@ export const TrashCanButton = memo(
 export const FormatRuleTypeRenderer = memo(
   // eslint-disable-next-line no-unused-vars
   forwardRef((props, ref) => {
-    const attributeType = props.data.Type;
+    const attributeType = props.data?.Type || "Text"; // Default to "Text" if Type is undefined
     let selectedOption = [];
-    if (attributeType.includes("Date")) {
+    
+    // Handle Array types by extracting the base type
+    const baseType = attributeType.includes("Array") 
+      ? attributeType.replace(/Array\[|\]/g, "") 
+      : attributeType;
+    
+    if (baseType.includes("Date")) {
       selectedOption = formatCodeDate;
-    } else if (attributeType.includes("Numeric")) {
+    } else if (baseType.includes("Numeric")) {
       selectedOption = formatCodeNumeric;
-    } else if (attributeType.includes("Binary")) {
+    } else if (baseType.includes("Binary")) {
       selectedOption = formatCodeBinary;
-    } else if (attributeType.includes("Text")) {
+    } else if (baseType.includes("Text") || baseType === "Text") {
       selectedOption = formatCodeText;
     }
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
     const hasCustomFormatRule = Boolean(props.node.data[CUSTOM_FORMAT_RULE]);
 
+    const handleClick = () => {
+      if (hasCustomFormatRule) return;
+      setIsDropdownOpen(!isDropdownOpen);
+    };
+
     const findCode = (value) =>
-      attributeType.includes("Date")
+      baseType.includes("Date")
         ? descriptionToFormatCodeDate[value]
-        : attributeType.includes("Numeric")
+        : baseType.includes("Numeric")
           ? descriptionToFormatCodeNumeric[value]
-          : attributeType.includes("Binary")
+          : baseType.includes("Binary")
             ? descriptionToFormatCodeBinary[value]
-            : attributeType.includes("Text")
+            : (baseType.includes("Text") || baseType === "Text")
               ? descriptionToFormatCodeText[value]
               : "";
 
     const handleChange = (e) => {
       props.node.updateData({
         ...props.node.data,
-        FormatText: findCode(e.target.value)
+        "Format Rule": findCode(e.target.value)
       });
       setIsDropdownOpen(false);
       props.onRefresh();
-    };
-
-    const handleClick = () => {
-      if (hasCustomFormatRule) return;
-      setIsDropdownOpen(!isDropdownOpen);
     };
 
     const handleKeyDown = (e) => {
@@ -103,13 +109,13 @@ export const FormatRuleTypeRenderer = memo(
       // However, in other situtations, the escape character is not needed
       // eslint-disable-next-line quotes
       const formattedValue = value?.replace(/\\"/g, '"');
-      return attributeType.includes("Date")
+      return baseType.includes("Date")
         ? formatCodeDateDescription[formattedValue]
-        : attributeType.includes("Numeric")
+        : baseType.includes("Numeric")
           ? formatCodeNumericDescription[formattedValue]
-          : attributeType.includes("Binary")
+          : baseType.includes("Binary")
             ? formatCodeBinaryDescription[formattedValue]
-            : attributeType.includes("Text")
+            : (baseType.includes("Text") || baseType === "Text")
               ? formatCodeTextDescription[formattedValue]
               : "";
     };
@@ -127,7 +133,7 @@ export const FormatRuleTypeRenderer = memo(
     return selectedOption.length > 0 ? (
       <DropdownMenuList
         handleKeyDown={handleKeyDown}
-        type={findDescription(props.node.data.FormatText)}
+        type={findDescription(props.node.data["Format Rule"])}
         handleChange={handleChange}
         handleClick={handleClick}
         isDropdownOpen={isDropdownOpen}
@@ -135,8 +141,6 @@ export const FormatRuleTypeRenderer = memo(
         typesDisplay={typesDisplay}
         isDisabled={hasCustomFormatRule}
       />
-    ) : (
-      <></>
-    );
+    ) : null;
   })
 );

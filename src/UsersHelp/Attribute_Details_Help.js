@@ -1,16 +1,15 @@
-import React from 'react';
-import HelpPageContainer from '../components/HelpPageContainer';
-import HelpPageH2Title from '../components/HelpPageH2Title';
-import HelpPageH3Title from '../components/HelpPageH3Title';
-import TypographyTag from '../components/TypographyTag';
-import CustomAnchorLink from '../components/CustomAnchorLink';
+import React from "react";
+import HelpPageContainer from "../components/HelpPageContainer";
+import HelpPageH2Title from "../components/HelpPageH2Title";
+import HelpPageH3Title from "../components/HelpPageH3Title";
+import TypographyTag from "../components/TypographyTag";
+import CustomAnchorLink from "../components/CustomAnchorLink";
 
-const AttributeDetailsHelp = () => {
-  return (
+const AttributeDetailsHelp = () => (
     <HelpPageContainer>
       <HelpPageH2Title text="Attribute Details" />
 
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: "center" }}>
         <TypographyTag>
           On the attribute details page you can edit properties of each attribute present in your schema.
         </TypographyTag>
@@ -79,9 +78,8 @@ const AttributeDetailsHelp = () => {
         It the user is able to select only one valid entry from the list (e.g. a list where the user will select the sample location), your data Type will be something suitable like "Text" or "Numeric". If you will allow multi-selection from the list (e.g. a list where the user can select all that apply) then your data Type is an Array.
       </TypographyTag>
       <br />
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/T-Uzr3p41SM" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/T-Uzr3p41SM" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
     </HelpPageContainer >
   );
-};
 
 export default AttributeDetailsHelp;

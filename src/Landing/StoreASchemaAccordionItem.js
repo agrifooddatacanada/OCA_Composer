@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import i18next from "i18next";
 import { AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import AccordionItemWrapper from "./AccordionItemWrapper";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 

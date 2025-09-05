@@ -1,4 +1,4 @@
-import { CustomPalette } from "./customPalette";
+import CustomPalette from "./customPalette";
 
 export const preWrapWordBreak = {
   whiteSpace: "pre-wrap",

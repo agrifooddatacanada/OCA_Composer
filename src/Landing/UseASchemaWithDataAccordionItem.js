@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import AccordionItemWrapper from "./AccordionItemWrapper";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import Drop from "../StartSchema/Drop";

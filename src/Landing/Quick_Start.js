@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import i18next from "i18next";
 import { Box, Typography } from "@mui/material";
 import CustomAnchorLink from "../components/CustomAnchorLink";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import CustomRouterLink from "../components/CustomRouterLink";
 
 const QuickStart = () => {

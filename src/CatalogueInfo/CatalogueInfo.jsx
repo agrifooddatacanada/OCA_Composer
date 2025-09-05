@@ -5,7 +5,7 @@ import { CheckBox, CheckBoxOutlineBlank } from "@mui/icons-material";
 import CatalogueInfoForm from "./CatalogueInfoForm";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 
 function CatalogueInfo({ isDisabled }) {
   const [isOpen, setIsOpen] = useState(false);

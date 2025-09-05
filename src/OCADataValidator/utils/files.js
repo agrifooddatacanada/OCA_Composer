@@ -1,5 +1,5 @@
-import * as XLSX from 'xlsx';
-import Papa from 'papaparse';
+import * as XLSX from "xlsx";
+import Papa from "papaparse";
 
 export default class OCADataSet {
   // Processing excel files.
@@ -7,10 +7,10 @@ export default class OCADataSet {
     return new Promise((resolve, reject) => {
       try {
         const workbook = XLSX.readFile(fileContent);
-        const sheetNameToUse = workbook.SheetNames.includes('Schema Conformant Data') ? 'Schema Conformant Data' : 'Data Entry';
+        const sheetNameToUse = workbook.SheetNames.includes("Schema Conformant Data") ? "Schema Conformant Data" : "Data Entry";
         const worksheet = workbook.Sheets[sheetNameToUse];
 
-        const range = XLSX.utils.decode_range(worksheet['!ref']);
+        const range = XLSX.utils.decode_range(worksheet["!ref"]);
 
         // Find the last row index containing data.
         let lastRowIndex = null;
@@ -20,7 +20,7 @@ export default class OCADataSet {
             const cellAddress = { c: col, r: row };
             const cellRef = XLSX.utils.encode_cell(cellAddress);
             const cell = worksheet[cellRef];
-            if (cell && cell.v !== undefined && cell.v !== '') {
+            if (cell && cell.v !== undefined && cell.v !== "") {
               isRowEmpty = false;
               // lastRowIndex = row;
               break;
@@ -39,7 +39,7 @@ export default class OCADataSet {
             const cellAddress = { c: col, r: row };
             const cellRef = XLSX.utils.encode_cell(cellAddress);
             const cell = worksheet[cellRef];
-            rowData.push(cell ? cell.v : '');
+            rowData.push(cell ? cell.v : "");
           }
           dataset.push(rowData);
         }
@@ -47,7 +47,7 @@ export default class OCADataSet {
         const result = {};
         for (let col = 0; col < dataset[0].length; col++) {
           const columnName = dataset[0][col];
-          result[columnName] = dataset.slice(1, lastRowIndex + 1).map(row => row[col]);
+          result[columnName] = dataset.slice(1, lastRowIndex + 1).map((row) => row[col]);
         }
        resolve(result);
        resolve(result);

@@ -1,7 +1,7 @@
 import { createTheme } from "@mui/material/styles";
-import { CustomPalette } from "./customPalette";
+import CustomPalette from "./customPalette";
 
-//When updating button colors, use customeTheme colors instead of customPalette
+// When updating button colors, use customeTheme colors instead of customPalette
 
 const customTheme = {
   status: {
@@ -34,4 +34,6 @@ const customTheme = {
   },
 };
 
-export const CustomTheme = createTheme(customTheme);
+const CustomTheme = createTheme(customTheme);
+
+export default CustomTheme;

@@ -4,7 +4,7 @@ import { AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AccordionItemWrapper from "./AccordionItemWrapper";
 import CustomAnchorLink from "../components/CustomAnchorLink";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 
 const CollaborateOnASchema = () => {
   const { t } = useTranslation();

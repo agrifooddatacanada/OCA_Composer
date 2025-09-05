@@ -1,10 +1,10 @@
-import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import BackNextSkeleton from '../components/BackNextSkeleton';
-import { Context } from '../App';
-import { Box, MenuItem } from '@mui/material';
-import { gridStyles } from '../constants/styles';
-import { AgGridReact } from 'ag-grid-react';
-import { DropdownMenuList } from '../components/DropdownMenuCell';
+import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Box, MenuItem } from "@mui/material";
+import { AgGridReact } from "ag-grid-react";
+import BackNextSkeleton from "../components/BackNextSkeleton";
+import { Context } from "../App";
+import { gridStyles } from "../constants/styles";
+import { DropdownMenuList } from "../components/DropdownMenuCell";
 
 export const DataHeaderRenderer = memo(
   forwardRef((props, ref) => {
@@ -26,17 +26,15 @@ export const DataHeaderRenderer = memo(
       }
     };
 
-    const typesDisplay = props?.dataHeaders.map((value, index) => {
-      return (
+    const typesDisplay = props?.dataHeaders.map((value, index) => (
         <MenuItem
-          key={index + "_" + value}
+          key={`${index  }_${  value}`}
           value={value}
           sx={{ border: "none", height: "2rem", fontSize: "small" }}
         >
           {value}
         </MenuItem>
-      );
-    });
+      ));
 
     return (
       <>
@@ -65,12 +63,12 @@ const MatchingEntryCodeHeader = () => {
 
   const handleSave = () => {
     const newLanguages = ["Code", ...languages];
-    const currentData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+    const currentData = gridRef.current.api.getRenderedNodes()?.map((node) => node?.data);
     const assignedData = [];
     const matchingEntryCodeMap = {};
     for (const ec of currentData) {
       matchingEntryCodeMap[ec.matchingDataHeader] = ec.matchingDataHeader in matchingEntryCodeMap ? [...matchingEntryCodeMap[ec.matchingDataHeader], ec.lang] : [ec.lang];
-      if (ec?.matchingDataHeader !== '') {
+      if (ec?.matchingDataHeader !== "") {
         assignedData.push(ec.matchingDataHeader);
       }
     }
@@ -79,7 +77,7 @@ const MatchingEntryCodeHeader = () => {
     for (const row of tempEntryCodeRowData) {
       let hasItem = false;
       for (const assign of assignedData) {
-        if (assign in row && row[assign] !== '') {
+        if (assign in row && row[assign] !== "") {
           hasItem = true;
           break;
         }
@@ -93,43 +91,41 @@ const MatchingEntryCodeHeader = () => {
         }
         for (const lang of newLanguages) {
           if (!(lang in newRow)) {
-            newRow[lang] = '';
+            newRow[lang] = "";
           }
         }
         newRowData.push(newRow);
       }
     }
-    setEntryCodeRowData(prev => {
+    setEntryCodeRowData((prev) => {
       const newEntryCodeRowData = [...prev];
       newEntryCodeRowData[chosenEntryCodeIndex] = newRowData;
       return newEntryCodeRowData;
     });
-    setCurrentPage('Codes');
+    setCurrentPage("Codes");
   };
 
-  const columnDefs = useMemo(() => {
-    return [
+  const columnDefs = useMemo(() => [
       {
-        headerName: 'Items',
-        field: 'lang',
+        headerName: "Items",
+        field: "lang",
         width: 200,
         editable: false,
       },
       {
-        headerName: 'Data Header',
-        field: 'matchingDataHeader',
+        headerName: "Data Header",
+        field: "matchingDataHeader",
         width: 200,
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
-          dataHeaders: ['', ...entryCodeHeaders],
+          dataHeaders: ["", ...entryCodeHeaders],
           onRefresh: () => {
             gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
           },
           changeDataFromTable: (e) => changeDataFromTable(e, params)
         }),
       }
-    ];
-  }, []);
+    ], []);
 
   const matchingFunction = useCallback((unassignedVar, attr) => {
     for (let i = 0; i < unassignedVar.length; i++) {
@@ -159,9 +155,9 @@ const MatchingEntryCodeHeader = () => {
     const newMatchingEntryCodes = [];
     for (const lang of newLanguages) {
       const newObj = {};
-      newObj['lang'] = lang;
+      newObj.lang = lang;
       const index = matchingFunction(unassignedVariables, lang);
-      newObj['matchingDataHeader'] = index !== -1 ? unassignedVariables[index] : '';
+      newObj.matchingDataHeader = index !== -1 ? unassignedVariables[index] : "";
       newMatchingEntryCodes.push(newObj);
       if (index !== -1) {
         assignedVariables.push(unassignedVariables[index]);
@@ -175,18 +171,18 @@ const MatchingEntryCodeHeader = () => {
     <>
       <BackNextSkeleton
         isBack
-        pageBack={() => setCurrentPage('UploadEntryCodes')}
+        pageBack={() => setCurrentPage("UploadEntryCodes")}
         isForward
         pageForward={handleSave} />
       <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
         marginTop: 2,
         flex: 1,
       }}>
-        <div className="ag-theme-balham" style={{ width: '400px' }}>
+        <div className="ag-theme-balham" style={{ width: "400px" }}>
           <style>{gridStyles}</style>
           <AgGridReact
             ref={gridRef}

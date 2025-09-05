@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
 import { Box, Tooltip, Typography } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import CustomPalette from "../constants/customPalette";
 import CodeGrid from "./CodeGrid";
-import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { Context } from "../App";
 
 export default function SingleTable({ attribute, index, codeRefs, chosenTable, setChosenTable, setShowCard }) {

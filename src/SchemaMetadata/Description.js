@@ -1,11 +1,8 @@
 import { Box } from "@mui/material";
-import React, { useContext } from "react";
-import { Context } from "../App";
+import React from "react";
 import SchemaInput from "./SchemaInput";
 
-export default function Description({ setShowIsoInput, setEditingLanguage }) {
-  const { languages } = useContext(Context);
-
+export default function Description({ setShowIsoInput, setEditingLanguage, languages }) {
   return (
     <Box
       sx={{

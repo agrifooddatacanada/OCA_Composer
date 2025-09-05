@@ -35,7 +35,7 @@ import {
   SHOW_ONLY_ROWS_WITH_ERRORS
 } from "../constants/constants";
 import WarningPopup from "./WarningPopup";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import { getCurrentData, getDescriptiveFileName } from "../constants/utils";
 import { CreateDataEntryExcel } from "../Landing/CreateDataEntryExcel";
 import CustomAnchorLink from "../components/CustomAnchorLink";

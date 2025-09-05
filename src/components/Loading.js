@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
 import React from "react";
 
-const Loading = () => {
+const Loading = ({ text }) => {
   const loadingContainerStyle = {
     position: "fixed",
     top: "70px",
@@ -23,7 +23,7 @@ const Loading = () => {
 
   return (
     <div style={loadingContainerStyle}>
-      <Typography style={textStyle}>Loading...</Typography>
+      <Typography style={textStyle}>{text || "Loading..."}</Typography>
     </div>
   );
 };

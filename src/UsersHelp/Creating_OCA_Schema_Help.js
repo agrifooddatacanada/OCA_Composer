@@ -1,11 +1,10 @@
-import React from 'react';
-import HelpPageContainer from '../components/HelpPageContainer';
-import HelpPageH2Title from '../components/HelpPageH2Title';
-import TypographyTag from '../components/TypographyTag';
+import React from "react";
+import HelpPageContainer from "../components/HelpPageContainer";
+import HelpPageH2Title from "../components/HelpPageH2Title";
+import TypographyTag from "../components/TypographyTag";
 
 
-const CreatingOCASchemaHelp = () => {
-  return (
+const CreatingOCASchemaHelp = () => (
     <HelpPageContainer>
       <HelpPageH2Title text="Creating schema help with this page" />
       <br />
@@ -18,6 +17,5 @@ const CreatingOCASchemaHelp = () => {
       </TypographyTag>
     </HelpPageContainer>
   );
-};
 
 export default CreatingOCASchemaHelp;

@@ -3,7 +3,7 @@ import { Box, Card, CardContent, Typography, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import LoopIcon from "@mui/icons-material/Loop";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 
 const LandingDropZone = ({
   loading,

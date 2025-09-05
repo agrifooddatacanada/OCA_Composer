@@ -9,7 +9,7 @@ import SchemaAccordionItem from "./SchemaAccordionItem";
 import WriteASchemaAccordionItem from "./WriteASchemaAccordionItem";
 import StoreASchemaAccordionItem from "./StoreASchemaAccordionItem";
 import CustomAnchorLink from "../components/CustomAnchorLink";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import Drop from "../StartSchema/Drop";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
@@ -73,6 +73,21 @@ const AccordionList = () => {
   };
 
   const navigateToViewPage = () => {
+    // Always go to the View step in the editor instead of separate page
+    // Keep the separate page code commented out in case we change our mind later
+    /*
+    // Navigate to visualization if we have any file uploaded
+    if (rawFile && rawFile.length > 0) {
+      // Pass the file object so the visualization page can read it
+      navigate("/schema-visualization", { state: { rawFile: rawFile[0] } });
+    } else {
+      setIsZip(true);
+      setCurrentPage("View");
+      navigate("/start");
+    }
+    */
+
+    // Go directly to View step in editor
     setIsZip(true);
     setCurrentPage("View");
     navigate("/start");
@@ -102,7 +117,24 @@ const AccordionList = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
-  const isInvalidOcaPackage = OCAPackage && !VerifyOcaPackage(OCAPackage, OCAPackage.d);
+  let isInvalidOcaPackage = false;
+
+  if (OCAPackage) {
+    // Only verify if this is actually an OCA package with proper structure
+    const hasOcaStructure = OCAPackage.bundle || OCAPackage.oca_bundle;
+    const digest = OCAPackage.d || OCAPackage?.bundle?.d || OCAPackage?.oca_bundle?.d;
+
+    if (hasOcaStructure && digest) {
+      try {
+        isInvalidOcaPackage = !VerifyOcaPackage(OCAPackage, digest);
+      } catch (e) {
+        isInvalidOcaPackage = false; // Don't block UI on verification errors
+      }
+    } else {
+      // Not a verifiable OCA package, treat as valid
+      isInvalidOcaPackage = false;
+    }
+  }
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
 
   return (
