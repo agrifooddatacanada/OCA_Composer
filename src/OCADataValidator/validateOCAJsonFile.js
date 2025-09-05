@@ -78,7 +78,7 @@ export const validateOCAJsonFile = (jsonString) => {
     }
 
     if (!jsonFile.capture_base.type || !jsonFile.capture_base.type.includes('capture_base')) {
-      errors.push("Invalid or missing 'type' in capture_base (should contain 'capture_base')");
+      errors.push("Invalid or missing 'type' in capture_base (should contain 'type' in capture_base)");
       return {
         isValid: false,
         errors,
