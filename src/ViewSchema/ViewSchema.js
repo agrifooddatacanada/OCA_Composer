@@ -38,6 +38,7 @@ export default function ViewSchema({
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { currentTheme } = useContext(Context);
   const {
     languages,
     attributeRowData,
@@ -143,12 +144,12 @@ export default function ViewSchema({
           sx={{
             backgroundColor:
               currentLanguage === language
-                ? CustomPalette.PRIMARY
-                : CustomPalette.SECONDARY,
+                ? currentTheme?.buttonStyles?.primary ?? CustomPalette.PRIMARY
+                : currentTheme?.buttonStyles?.secondary ?? CustomPalette.SECONDARY,
             borderRadius,
             minWidth: languages.length < 5 ? "12rem" : "10rem",
             boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.PRIMARY}`
+            border: `0.5px solid ${currentTheme?.primaryColor ?? CustomPalette.PRIMARY}`
           }}
         >
           <Typography variant="button">{minimizedLanguage}</Typography>
@@ -325,7 +326,8 @@ export default function ViewSchema({
             sx={{
               textAlign: "left",
               alignSelf: "flex-start",
-              color: CustomPalette.PRIMARY
+              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
             }}
             onClick={pageBack}
           >
@@ -336,7 +338,10 @@ export default function ViewSchema({
           <Button
             color="navButton"
             onClick={pageForward}
-            sx={{ color: CustomPalette.PRIMARY }}
+            sx={{
+              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+            }}
           >
             {t("Next")} <ArrowForwardIosIcon />
           </Button>
@@ -347,7 +352,8 @@ export default function ViewSchema({
               sx={{
                 textAlign: "left",
                 alignSelf: "flex-start",
-                color: CustomPalette.PRIMARY
+                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
               }}
               onClick={moveBackward}
             >
@@ -469,7 +475,8 @@ export default function ViewSchema({
                 sx={{
                   fontSize: 22,
                   fontWeight: "bold",
-                  color: CustomPalette.PRIMARY
+                  color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
                 }}
               >
                 {t("Schema Language")}
@@ -566,7 +573,8 @@ export default function ViewSchema({
             sx={{
               fontSize: 22,
               fontWeight: "bold",
-              color: CustomPalette.PRIMARY
+              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
             }}
           >
             {t("Schema Metadata")}
@@ -597,7 +605,8 @@ export default function ViewSchema({
             sx={{
               fontSize: 22,
               fontWeight: "bold",
-              color: CustomPalette.PRIMARY
+              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
             }}
           >
             {t("Schema Details")}

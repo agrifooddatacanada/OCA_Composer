@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Menu, MenuItem, MenuList, ClickAwayListener } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
+import { Context } from "../App";
 
 const exportOptions = ["excel", "csv"];
 
 const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
+  const { currentTheme } = useContext(Context);
   const [selectedOption, setSelectedOption] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [additionalOptionsAnchorEl, setAdditionalOptionsAnchorEl] = useState(null);
@@ -102,7 +104,8 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
           alignSelf: "flex-end",
           display: "flex",
           justifyContent: "space-around",
-          padding: "0.5rem 1rem"
+          padding: "0.5rem 1rem",
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
         {t("Download Data")}
@@ -126,7 +129,9 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
       >
         {exportOptions.map((option) => (
           <MenuItem
-            sx={{ color: CustomPalette.PRIMARY }}
+            sx={{ color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+            }}
             key={option}
             selected={option === selectedOption}
             onClick={() => handleMenuItemClick(option)}
@@ -147,7 +152,9 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
         <ClickAwayListener onClickAway={handleAdditionalOptionsClose}>
           <MenuList>
             <MenuItem
-              sx={{ color: CustomPalette.PRIMARY }}
+              sx={{ color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}
               // onClick={() => {
               //   handleAdditionalOptionsClose();
               //   handleSave("csv", true);
@@ -157,7 +164,9 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
               Keep original data column headers
             </MenuItem>
             <MenuItem
-              sx={{ color: CustomPalette.PRIMARY }}
+              sx={{ color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}
               // onClick={() => {
               //   handleAdditionalOptionsClose();
               //   handleSave("csv", false);

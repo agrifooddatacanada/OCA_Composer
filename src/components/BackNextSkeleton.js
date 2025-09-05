@@ -3,9 +3,12 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
+import { Context } from "../App";
+import { useContext } from "react";
 
-const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back', middleText, nextText = 'Next' }) => {
+const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back', middleText, nextText = 'Next', disableForward = false }) => {
   const { t } = useTranslation();
+  const { currentTheme } = useContext(Context);
   return (
     <Box>
       <Box
@@ -29,7 +32,12 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
         >
           {isBack ? <Button
             color="navButton"
-            sx={{ textAlign: "left", alignSelf: "flex-start" }}
+            sx={{ 
+              textAlign: "left", 
+              alignSelf: "flex-start", 
+              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY, 
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif",
+            }}
             onClick={pageBack}
           >
             <ArrowBackIosIcon /> {t(backText)}
@@ -53,7 +61,10 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
             {isForward && <Button
               color="navButton"
               onClick={pageForward}
-              sx={{ color: CustomPalette.PRIMARY }}
+              disabled={disableForward}
+              sx={{ color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}
             >
               {t(nextText)} <ArrowForwardIosIcon />
             </Button>}

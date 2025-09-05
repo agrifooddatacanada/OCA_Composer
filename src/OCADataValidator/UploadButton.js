@@ -1,8 +1,9 @@
 import React from "react";
  import { Button } from "@mui/material";
- 
+import { useTranslation } from "react-i18next";
+
  const UploadButton = ({isDisabled, uploadFunc}) => {
- 
+  const { t } = useTranslation();
  
      return (
          <>
@@ -19,7 +20,7 @@ import React from "react";
                  padding: "0.5rem 1rem",
                  margin: "0rem 0.5rem"
              }}>
-                 Upload Data
+                {t("Upload Data")}
             </Button>
          </>
      );

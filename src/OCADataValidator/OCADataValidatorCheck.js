@@ -327,6 +327,7 @@ const OCADataValidatorCheck = ({
   } = useContext(Context);
 
   const { t } = useTranslation();
+  const { currentTheme } = useContext(Context);
 
   const [rowData, setRowData] = useState([]);
   const [initialRowData, setInitialRowData] = useState([]);
@@ -358,7 +359,7 @@ const OCADataValidatorCheck = ({
         <h1
           style={{
             textAlign: "center",
-            color: CustomPalette.PRIMARY
+            color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY
           }}
         >
           {t("Schema Preview")}
@@ -430,6 +431,50 @@ const OCADataValidatorCheck = ({
       langRef.current
     ]
   );
+
+  const uploadData = async () => {
+    try {
+      const csvString = await generateCSVFile(false)
+
+      window.parent.postMessage({
+        type: 'VERIFIED_DATA',
+        data: csvString
+      }, '*');
+
+    } catch (error){
+      console.error('Error sending data to parent: ', error);
+    }
+  }
+
+  const allCellsPassValidation = async () => {
+     
+    const currData = await new Promise(resolve => setTimeout(resolve, 0)).then(() => getCurrentData(gridRef.current.api, true)); // wait for the grid to render
+
+    if (currData.length === 0) { // edge case for no dataset file uploaded
+      return false;
+    }
+    return currData.every(row => {
+      if (!row.error) return true;
+      return Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0);
+    });
+  };
+
+
+  const updateDataValidationState = async () => {
+    const isValid = await allCellsPassValidation();
+    setIsDataValid(isValid);
+  }
+
+  // Check if the page is rendered inside an iframe
+  const isInIframe = () => {
+    try {
+      return window.self !== window.parent;
+    } catch (e) {
+      return true; // If there's an error, assume it's in an iframe
+    }
+  };
+
+  const inIframe = isInIframe();
 
   const generateCSVFile = async (ogHeader) => {
     const newData = [];
@@ -617,10 +662,10 @@ const OCADataValidatorCheck = ({
 
       prev.forEach((header) => {
         if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== "") {
-          copy.push({
-            ...header,
-            cellStyle: () => ({ backgroundColor: CustomPalette.GREY_200 })
-          });
+          // copy.push({
+          //   ...header,
+          //   cellStyle: () => ({ backgroundColor: CustomPalette.GREY_200 })
+          // });
         } else {
           copy.push({
             ...header,
@@ -866,12 +911,10 @@ const OCADataValidatorCheck = ({
   useEffect(() => {
     const columns = [];
     const LIMIT_ENTRYCODES_LENGTH = 20;
-    const variableToCheck =
-      datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
+    const variableToCheck = attributesList;
     if (datasetRawFile.length === 0) {
       setSchemaDataConformantHeader(attributesList);
     }
-
     if (variableToCheck && variableToCheck?.length > 1) {
       variableToCheck.forEach((header) => {
         if (
@@ -1048,7 +1091,9 @@ const OCADataValidatorCheck = ({
           >
             <Button
               color="navButton"
-              sx={{ textAlign: "left", alignSelf: "flex-start" }}
+              sx={{ textAlign: "left", alignSelf: "flex-start", color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}
               onClick={handleMoveBack}
             >
               <ArrowBackIosIcon /> Back
@@ -1156,6 +1201,9 @@ const OCADataValidatorCheck = ({
                   style={{ width: "120px", height: "40px" }}
                   onClick={handleValidate}
                   disabled={isValidateButtonEnabled}
+                  sx={{
+                    fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  }}
                 >
                   Verify
                 </Button>
@@ -1164,7 +1212,8 @@ const OCADataValidatorCheck = ({
                     sx={{
                       marginLeft: "20px",
                       color: "red",
-                      fontWeight: "bold"
+                      fontWeight: "bold",
+                      fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
                     }}
                   >
                     Please re-verify the data!
@@ -1185,7 +1234,9 @@ const OCADataValidatorCheck = ({
             <CustomAnchorLink
               text={t("Verification Rules")}
               onClick={toggleDrawer(true)}
-              overrideStyle={{ textAlign: "right", marginRight: "2rem" }}
+              overrideStyle={{ textAlign: "right", marginRight: "2rem",
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}
             />
             <Box
               sx={{
@@ -1202,7 +1253,9 @@ const OCADataValidatorCheck = ({
                   marginRight: "15px"
                 }}
               />
-              <span>{t("Pass Verification")}</span>
+              <span style={{
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}>{t("Pass Verification")}</span>
             </Box>
             <Box
               sx={{
@@ -1219,7 +1272,9 @@ const OCADataValidatorCheck = ({
                   marginRight: "15px"
                 }}
               />
-              <span>{t("Fail Verification")}</span>
+              <span style={{
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}>{t("Fail Verification")}</span>
             </Box>
             <Box
               sx={{
@@ -1236,7 +1291,9 @@ const OCADataValidatorCheck = ({
                   marginRight: "15px"
                 }}
               />
-              <span>{t("Unmatched Attributes")}</span>
+              <span style={{
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}>{t("Unmatched Attributes")}</span>
             </Box>
             <Box
               sx={{
@@ -1254,7 +1311,9 @@ const OCADataValidatorCheck = ({
                   border: "1px solid #ededed"
                 }}
               />
-              <span>{t("Unverified Data")}</span>
+              <span style={{
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}>{t("Unverified Data")}</span>
             </Box>
           </Box>
         </Box>

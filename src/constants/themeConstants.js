@@ -1,40 +1,63 @@
 import { CustomPalette } from "./customPalette";
+import { lightenColor } from "../utils/colorUtils";
 
 // eslint-disable-next-line import/prefer-default-export
 export const themes = {
   default: {
-    primaryColor: CustomPalette.WHITE,
-    secondaryColor: "#AAAAAA",
+    domains: ['semanticengine.org', 'agrifooddatacanada.ca', 'localhost:3000'],
+    primaryColor: "#94002a",
+    secondaryColor: "#000",
 
     logos: {
-      agriFoodCanada_white_logo: {
+      primaryLogo: {
         // eslint-disable-next-line global-require
-        url: require("../assets/agri-logo-white.png"),
+        url: require("../assets/agri-logo.png"),
         website: "https://agrifooddatacanada.ca/",
         alt: "Agri Logo_white",
         style: { width: "200px", cursor: "pointer" }
       },
 
-      agriFoodCanada_logo: {
-        // eslint-disable-next-line global-require
-        url: require("../assets/agri-logo-white.png"),
-        website: "https://agrifooddatacanada.ca/",
-        alt: "Agri Logo",
-        style: { width: "200px", cursor: "pointer" }
-      },
-
-      canadaFirst_logo: {
+      supportedByLogo: {
         // eslint-disable-next-line global-require
         url: require("../assets/research-excellent-fund.png"),
         alt: "Canada First Logo",
         style: { height: "120px" }
+      }
+    },
+
+    typography: {
+      fontFamily: 'Courier New'
+    },
+
+    buttonStyles: {
+      primary: "#94002a",
+      secondary: "#ce1141",
+      contrastText: CustomPalette.WHITE
+    }
+  },
+
+  Genovis: {
+    domains: ['http://localhost:5173/', 'http://localhost:8080/'],
+    primaryColor: "#26557b",
+    secondaryColor: "#8cc0e6",
+
+    logos: {
+      primaryLogo: {
+        url: require("../assets/genovisLogo.png"),
+        website: "http://localhost:5173/",
+        alt: "Genovis Logo",
+        style: { height: "120px", marginLeft: "1rem" }
       },
 
-      omafa_ontario_logo: {
-        // eslint-disable-next-line global-require
+      supportedByLogo1: {
+        url: require("../assets/genovisLogo.png"),
+        website: "http://localhost:5173/",
+        alt: "Genovis Logo",
+        style: { height: "120px", marginLeft: "1rem" }
+      },
+      supportedByLogo2: {
         url: require("../assets/OMAFA.PNG"),
-        website:
-          "https://www.ontario.ca/page/ministry-agriculture-food-and-agribusiness-and-ministry-rural-affairs",
+        website: "https://www.ontario.ca/page/ministry-agriculture-food-and-agribusiness-and-ministry-rural-affairs",
         alt: "OMAFA Logo",
         style: { height: "120px", marginLeft: "1rem" }
       }
@@ -45,14 +68,14 @@ export const themes = {
     },
 
     buttonStyles: {
-      light: CustomPalette.WHITE,
-      main: CustomPalette.PRIMARY,
-      dark: CustomPalette.SECONDARY,
+      primary: "#26557b",
+      secondary: lightenColor('#26557b', 20),
       contrastText: CustomPalette.WHITE
     }
   },
 
   BED: {
+    domains: ['bed.example.com'],
     // still in progress
 
     // primaryColor: "#121212",
@@ -63,15 +86,17 @@ export const themes = {
     },
 
     logos: {
-      UofG_Cornerstone: {
+      primaryLogo: {
         // eslint-disable-next-line global-require
         url: require("../assets/UofG_Cornerstone_wTagline_blk_rgb.png"),
+        website: "https://www.uoguelph.ca/",
         alt: "University of Guelph Logo",
         style: { width: "200px", height: "100px", align: "left" }
       },
-      OMAFA: {
+      secondaryLogo: {
         // eslint-disable-next-line global-require
         url: require("../assets/OMAFA.PNG"),
+        website: "https://www.ontario.ca/page/ministry-agriculture-food-and-agribusiness-and-ministry-rural-affairs",
         alt: "OMAFA Ontario Logo",
         style: { width: "200px", height: "100px", align: "right" }
       }

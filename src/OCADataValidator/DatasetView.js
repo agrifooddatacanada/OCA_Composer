@@ -32,6 +32,7 @@ export const TrashCanButton = memo(
 
 const DatasetView = () => {
   const { t } = useTranslation();
+  const { currentTheme } = useContext(Context);
   const schemaGridRef = useRef(null);
   const {
     setCurrentDataValidatorPage,
@@ -127,7 +128,13 @@ const DatasetView = () => {
         justifyContent: 'center',
         flex: 1,
       }}>
-        <Typography variant="h5" sx={{ mb: 2, color: CustomPalette.PRIMARY, fontWeight: 500 }}>{t('Schema Data')}</Typography>
+        <Typography variant="h5" 
+        sx={{ 
+          mb: 2, 
+          color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY, 
+          fontWeight: 500,
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+        }}>{t('Schema Data')}</Typography>
         {schemaDataConformantHeader && schemaDataConformantHeader?.length > 0 ?
           <div className="ag-theme-balham" style={{ width: schemaTableLength, maxWidth: '90%', height: "45vh" }}>
             <style>{gridStyles}</style>
@@ -139,7 +146,9 @@ const DatasetView = () => {
               suppressFieldDotNotation={true}
             />
           </div>
-          : <Typography>{t('No Schema Conformant Data')}</Typography>}
+          : <Typography sx={{
+            fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+          }}>{t('No Schema Conformant Data')}</Typography>}
       </Box>
     </>
   );

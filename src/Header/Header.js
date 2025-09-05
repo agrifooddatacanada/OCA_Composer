@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import i18next from "i18next";
 import { useTranslation } from "react-i18next";
@@ -11,6 +11,7 @@ import { CustomPalette } from "../constants/customPalette";
 import HeaderWrapper from "./HeaderWrapper";
 import logoSE from "../assets/se-logo.png";
 import { themes } from "../constants/themeConstants";
+import { Context } from "../App";
 
 export default function Header({ currentPage }) {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export default function Header({ currentPage }) {
   const [selectedLanguage, setSelectedLanguage] = useState(
     i18next.language === "en-US" || i18next.language === "en-CA" ? "en" : i18next.language
   );
-
+  const { currentTheme } = useContext(Context);
   useEffect(() => {
     setSelectedLanguage(i18next.language);
   }, []);
@@ -249,7 +250,7 @@ export default function Header({ currentPage }) {
             />
             <a
               // href="https://agrifooddatacanada.ca/"
-              href={themes.default.logos.agriFoodCanada_logo.website}
+              href={currentTheme.logos.primaryLogo.website}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -264,22 +265,23 @@ export default function Header({ currentPage }) {
                 alt="Agri-food Data Canada"
               /> */}
               <img
-                src={themes.default.logos.agriFoodCanada_logo.url}
+                src={currentTheme.logos.primaryLogo.url}
                 style={{
                   display: "block",
                   width: isMobile ? "100px" : "150px",
                   marginRight: "20px",
                   cursor: "pointer"
                 }}
-                alt={themes.default.logos.agriFoodCanada_logo.alt}
+                alt={currentTheme.logos.primaryLogo.alt}
               />
             </a>
             <Typography
               sx={{
                 fontSize: 25,
                 fontWeight: "bold",
-                color: CustomPalette.PRIMARY,
-                alignSelf: "center"
+                color: currentTheme?.primaryColor || CustomPalette.PRIMARY,
+                alignSelf: "center",
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
               }}
             >
               {header}
@@ -331,7 +333,7 @@ export default function Header({ currentPage }) {
             </div>
             <a
               // href="https://agrifooddatacanada.ca/"
-              href={themes.default.logos.agriFoodCanada_white_logo.url}
+              href={themes.default.logos.primaryLogo.url}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -347,7 +349,7 @@ export default function Header({ currentPage }) {
                 alt="Agri-food Data Canada"
               /> */}
               <img
-                src={themes.default.logos.agriFoodCanada_white_logo.url}
+                src={themes.default.logos.primaryLogo.url}
                 style={{
                   display: "block",
                   width: isMobile ? "auto" : "250px",
@@ -355,7 +357,7 @@ export default function Header({ currentPage }) {
                   marginRight: isMobile ? "unset" : "20px",
                   cursor: "pointer"
                 }}
-                alt={themes.default.logos.agriFoodCanada_white_logo.alt}
+                alt={themes.default.logos.primaryLogo.alt}
               />
             </a>
           </Box>
@@ -370,7 +372,7 @@ export default function Header({ currentPage }) {
                   my: 2,
                   mr: 2,
                   py: 1,
-                  px: 5
+                  px: 5,
                 }}
                 onClick={() =>
                   window.open(`${helpLink}`, "_blank", "rel=noopener noreferrer")
@@ -385,7 +387,8 @@ export default function Header({ currentPage }) {
                 style={{
                   border: "none",
                   fontSize: "20px",
-                  color: CustomPalette.PRIMARY
+                  color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
                 }}
                 value={selectedLanguage}
                 onChange={changeLanguage}

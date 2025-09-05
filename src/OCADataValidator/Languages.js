@@ -1,7 +1,8 @@
 import { Box, FormControl, MenuItem, Select } from '@mui/material';
-import React from 'react';
+import React, { useContext } from 'react';
 import { CustomPalette } from '../constants/customPalette';
 import { useTranslation } from 'react-i18next';
+import { Context } from '../App';
 
 const Languages = ({
   languages,
@@ -12,6 +13,7 @@ const Languages = ({
   setIsDropdownOpen,
 }) => {
   const { t } = useTranslation();
+  const { currentTheme } = useContext(Context);
   const typesDisplay = languages.map((value, index) => (
     <MenuItem
       key={index + "_" + value}
@@ -28,10 +30,11 @@ const Languages = ({
       height: "wrap-content",
     }}>
       <Box sx={{
-        color: CustomPalette.PRIMARY,
+        color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
         fontWeight: 'bold',
         alignSelf: 'center',
         textAlign: 'center',
+        fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
       }}>{t('Language')}: &nbsp;&nbsp;</Box>
       {" "}
       <Box>

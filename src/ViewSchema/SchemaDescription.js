@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { Box, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 
 export default function SchemaDescription({ currentLanguage }) {
@@ -20,7 +21,10 @@ export default function SchemaDescription({ currentLanguage }) {
           fontSize: 15,
           fontWeight: "bold",
           textAlign: "left",
-          margin: "1rem 0 0.5rem 0"
+          margin: "1rem 0 0.5rem 0",
+          color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+
         }}
       >
         {t("Name of Schema")}
@@ -39,7 +43,9 @@ export default function SchemaDescription({ currentLanguage }) {
           fontSize: 15,
           fontWeight: "bold",
           textAlign: "left",
-          margin: "1rem 0 0.5rem 0"
+          margin: "1rem 0 0.5rem 0",
+          color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
         {t("Description")}
@@ -57,7 +63,9 @@ export default function SchemaDescription({ currentLanguage }) {
           fontSize: 15,
           fontWeight: "bold",
           textAlign: "left",
-          margin: "1rem 0 0.5rem 0"
+          margin: "1rem 0 0.5rem 0",
+          color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
         {t("Classification")}
