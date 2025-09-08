@@ -1,22 +1,25 @@
 import React, { useState, useRef, useEffect, useContext, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
-import { Box, MenuItem } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import { greyCellStyle } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import CellHeader from "../components/CellHeader";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
-import { DropdownMenuList } from "../components/DropdownMenuCell";
 import {
   ADC,
   FIELD_RANGE_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY,
+  FIELD_FORMAT_OVERLAY,
+  FIELD_CONFORMANCE_OVERLAY,
   MAX_ATTR_DESCRIPTION_CHARS,
   MAX_ATTR_LABEL_CHARS,
-  UNIT_FRAMING
+  UNIT_FRAMING,
+  CUSTOM_FORMAT_RULE
 } from "../constants/constants";
 import SelectedFeatureHeader from "./SelectedFeatureHeader";
 
@@ -66,44 +69,45 @@ const CheckboxRenderer = ({ value }) => {
 };
 
 export const ListRenderer = memo((props) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const listText = props?.data?.List;
+  if (!listText || listText === "Not a List") {
+    return <Box>Not a List</Box>;
+  }
 
-  const handleChange = () => {
-    setIsDropdownOpen(false);
-  };
-
-  const handleClick = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
-  const typesDisplay = props.data?.List?.split(" | ").map((value) => (
-    <MenuItem
-      key={value}
-      value={value}
-      sx={{ border: "none", height: "2rem", fontSize: "small" }}
-    >
-      {value}
-    </MenuItem>
-  ));
-
-  return props.data?.List === "Not a List" ? (
-    <Box>Not a List </Box>
-  ) : (
-    <DropdownMenuList
-      handleKeyDown={() => {}}
-      type={props.node.data.List.substring(0, 18)}
-      handleChange={handleChange}
-      handleClick={handleClick}
-      isDropdownOpen={isDropdownOpen}
-      setIsDropdownOpen={setIsDropdownOpen}
-      typesDisplay={typesDisplay}
-    />
+  // Render plain text with single-line ellipsis and a tooltip for full content
+  return (
+    <Tooltip title={listText} placement="top" arrow>
+      <Box
+        sx={{
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          width: "100%"
+        }}
+      >
+        {listText}
+      </Box>
+    </Tooltip>
   );
 });
 
-export default function ViewGrid({ displayArray, currentLanguage, setLoading }) {
+export default function ViewGrid({
+  displayArray,
+  currentLanguage,
+  setLoading = () => {}
+}) {
   const { t } = useTranslation();
-  const { overlay, cardinalityData, OCAPackage } = useContext(Context);
+  const { OCAPackage } = useContext(Context);
+  
+  // Get overlay data from MultiSchemaContext
+  const { activeSchemaId, getOverlaySelections, getSchemaState, updateSchemaState } = useMultiSchema();
+  const currentSchemaId = activeSchemaId;
+  const overlay = getOverlaySelections(currentSchemaId);
+  const schemaState = getSchemaState(currentSchemaId);
+  
+  // Get cardinality data from MultiSchema context instead of legacy context
+  const cardinalityData = schemaState?.cardinalityData || [];
+  
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
 
@@ -112,11 +116,23 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
       ?.overlays?.[UNIT_FRAMING];
 
   const onGridReady = useCallback(() => {
-    setLoading(false);
-  }, []);
+    if (setLoading) {
+      setLoading(false);
+    }
+  }, [setLoading]);
 
   useEffect(() => {
     const getColumns = () => {
+      // // eslint-disable-next-line no-console
+      // console.log("ViewGrid Debug - overlay:", overlay);
+      // // eslint-disable-next-line no-console  
+      // console.log("ViewGrid Debug - displayArray:", displayArray);
+      // // eslint-disable-next-line no-console
+      // console.log("ViewGrid Debug - Format Rules:", displayArray.map(item => ({ 
+      //   Attribute: item.Attribute, 
+      //   FormatRule: item["Format Rule"] 
+      // })));
+      
       const predefinedColumns = [
         {
           field: "Attribute",
@@ -196,10 +212,21 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
             helpText: t("This is a language specific description of the attribute...")
           }
         },
+        // Character Encoding follows (in case overlay not selected)
+        {
+          field: "Character Encoding",
+          width: 180,
+          autoHeight: true,
+          headerComponent: CellHeader,
+          headerComponentParams: {
+            headerText: t("Character Encoding")
+          }
+        },
         {
           field: "List",
           headerName: t("List"),
-          width: 173,
+          flex: 2,
+          minWidth: 320,
           autoHeight: true,
           headerComponent: CellHeader,
           headerComponentParams: {
@@ -258,6 +285,29 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
             },
             cellRenderer: CheckboxRenderer
           });
+        } else if (feature === FIELD_CONFORMANCE_OVERLAY) {
+          // Handle Required column
+          predefinedColumns.push({
+            field: "Required",
+            width: 120,
+            autoHeight: true,
+            headerComponent: SelectedFeatureHeader,
+            headerComponentParams: {
+              feature
+            },
+            cellRenderer: CheckboxRenderer
+          });
+        } else if (feature === FIELD_FORMAT_OVERLAY) {
+          // Handle Format Rule column
+          predefinedColumns.push({
+            field: "Format Rule",
+            width: 160,
+            autoHeight: true,
+            headerComponent: SelectedFeatureHeader,
+            headerComponentParams: {
+              feature
+            }
+          });
         } else if (feature === FIELD_UNIT_FRAMING_OVERLAY) {
           let helpText = "";
           if (unitFramingOverlay?.framing_metadata) {
@@ -269,7 +319,7 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
                 <strong>{key}:</strong> &quot;{value}&quot;
               </React.Fragment>
             ));
-            helpText = <>{helpTextElements}</>;
+            helpText = helpTextElements;
           }
 
           predefinedColumns.push({
@@ -283,16 +333,32 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
             }
           });
         } else {
+          // Map overlay feature names to actual data fields when needed
+          const normalized = (feature || "").toString().toLowerCase();
+          const isFormat =
+            normalized === "format rules" ||
+            normalized === "format rule" ||
+            normalized === "add format rule for data";
+          const isRequired =
+            normalized === "make selected entries required" ||
+            normalized === "required entry" ||
+            normalized === "required";
+          const mappedField = isFormat
+            ? "Format Rule"
+            : isRequired
+              ? "Required"
+              : feature;
+          const useCheckbox = isRequired || feature === "Make selected entries required";
+
           predefinedColumns.push({
-            field: feature,
+            field: mappedField,
             width: 160,
             autoHeight: true,
             headerComponent: SelectedFeatureHeader,
             headerComponentParams: {
               feature
             },
-            cellRenderer:
-              feature === "Make selected entries required" ? CheckboxRenderer : null
+            cellRenderer: useCheckbox ? CheckboxRenderer : null
           });
         }
       });
@@ -301,24 +367,73 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
     };
 
     setColumnDefs(getColumns());
-  }, [overlay, t]);
+  }, [overlay, t, displayArray, unitFramingOverlay?.framing_metadata]);
 
   useEffect(() => {
     const newRowData = JSON.parse(JSON.stringify(displayArray));
     const newCardinalityData = JSON.parse(JSON.stringify(cardinalityData));
 
-    newRowData.forEach((item, index) => {
-      item.Description = item.Description[currentLanguage];
-      item.Label = item.Label[currentLanguage];
-      item.List = item.List[currentLanguage];
+    // Initialize format rule data in schema state if overlay is selected but data doesn't exist
+    if (overlay && overlay[FIELD_FORMAT_OVERLAY]?.selected && !schemaState?.formatRuleData && newRowData.length > 0) {
+      const initialFormatRuleData = newRowData.map((item) => ({
+        Attribute: item.Attribute,
+        Type: item.Type || "Text",
+        "Format Rule": "",
+        [CUSTOM_FORMAT_RULE]: ""
+      }));
+      updateSchemaState(currentSchemaId, { formatRuleData: initialFormatRuleData });
+    }
 
-      if (newCardinalityData[index] && newCardinalityData[index].EntryLimit) {
-        item.Cardinality = newCardinalityData[index].EntryLimit;
+    newRowData.forEach((item, index) => {
+      // Add null checks to prevent errors
+      item.Description =
+        item.Description && item.Description[currentLanguage]
+          ? item.Description[currentLanguage]
+          : "";
+      item.Label =
+        item.Label && item.Label[currentLanguage] ? item.Label[currentLanguage] : "";
+      item.List =
+        item.List && item.List[currentLanguage]
+          ? item.List[currentLanguage]
+          : "Not a List";
+
+      // Find cardinality data by attribute name instead of index to ensure correct mapping
+      const cardinalityItem = newCardinalityData.find(card => card.Attribute === item.Attribute);
+      if (cardinalityItem && (cardinalityItem.EntryLimit || cardinalityItem.Cardinality)) {
+        item.Cardinality = cardinalityItem.EntryLimit || cardinalityItem.Cardinality;
+      }
+      
+      // Add Required and Format Rule data from overlay selections
+      if (overlay) {
+        // Add Required field data
+        if (overlay[FIELD_CONFORMANCE_OVERLAY]?.selected) {
+          // Load required data from schema state
+          const requiredOverlayData = schemaState?.requiredOverlayData;
+          if (requiredOverlayData) {
+            const requiredItem = requiredOverlayData.find((req) => req.Attribute === item.Attribute);
+            item.Required = requiredItem ? requiredItem.Required : false;
+          } else {
+            item.Required = item.Required || false; // Default to false if not set
+          }
+        }
+        
+        // Add Format Rule field data
+        if (overlay[FIELD_FORMAT_OVERLAY]?.selected) {
+          // Load format rule data from schema state
+          const formatRuleData = schemaState?.formatRuleData;
+          if (formatRuleData) {
+            const formatRuleItem = formatRuleData.find((rule) => rule.Attribute === item.Attribute);
+            // Handle both legacy FormatText field and new "Format Rule" field
+            item["Format Rule"] = formatRuleItem ? (formatRuleItem["Format Rule"] || formatRuleItem.FormatText || "") : "";
+          } else {
+            item["Format Rule"] = item["Format Rule"] || ""; // Default to empty if not set
+          }
+        }
       }
     });
 
     setRowData(newRowData);
-  }, [displayArray, cardinalityData, currentLanguage]);
+  }, [displayArray, cardinalityData, currentLanguage, overlay, schemaState?.formatRuleData, schemaState?.requiredOverlayData, currentSchemaId, updateSchemaState]);
 
   return (
     <div className="ag-theme-balham" style={{ width: "100%" }}>

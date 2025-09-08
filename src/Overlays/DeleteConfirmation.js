@@ -1,7 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import React from "react";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 
 const DeleteConfirmation = ({ removeFromSelected, closeModal }) => (
   <Box style={{ position: "relative" }}>

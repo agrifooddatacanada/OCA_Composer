@@ -2,14 +2,42 @@ import React, { useContext } from "react";
 import { Box, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 
 export default function SchemaDescription({ currentLanguage }) {
-  const { t } = useTranslation();
-  const { schemaDescription, divisionGroup } = useContext(Context);
+  const { t, i18n } = useTranslation();
+  const { divisionGroup } = useContext(Context);
+  // Use MultiSchema context with standard pattern
+  const { activeSchemaId, getSchemaState } = useMultiSchema();
+  
+  const currentSchemaId = activeSchemaId;
+  const schemaState = getSchemaState(currentSchemaId);
 
-  const schemaName = schemaDescription?.[currentLanguage]?.name || t("Unknown");
+  // Use current schema state's metadata
+  const currentMeta = schemaState?.metadata || {};
+  
+  // Convert display language to ISO language code
+  const langKey =
+    currentLanguage?.toLowerCase() === "english"
+      ? "eng"
+      : currentLanguage?.toLowerCase() === "french"
+        ? "fra"
+        : currentLanguage?.toLowerCase();
+  
+  // Get the current UI language to determine fallback behavior
+  const uiLanguage = i18n.language; // "en" or "fr"
+  
+  // Get metadata for the current display language from localized structure
+  const localizedMeta = currentMeta.localized?.[langKey];
+  
+  const schemaName =
+    localizedMeta?.name || 
+    (uiLanguage === "en" ? currentMeta?.name : null) || 
+    t("Unknown");
   const schemaDescriptionText =
-    schemaDescription?.[currentLanguage]?.description || t("No description available");
+    localizedMeta?.description ||
+    (uiLanguage === "en" ? currentMeta?.description : null) ||
+    t("No description available");
   const classification =
     divisionGroup?.group || divisionGroup?.division || t("Not classified");
 

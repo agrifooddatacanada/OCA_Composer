@@ -68,7 +68,7 @@ export const documentationArray = [
   {
     row: 5,
     column: 4,
-    text: `A Capture Base is a stable base object that defines a single dataset in its purest form, providing a standard base to harmonise data. The "classification" meta attribute is for capturing a standardised classification scheme and taxonomy code to identify the primary sector, area, or topic of a published schema's intended use. Taxonomy codes provide a means for classifying schemas into groupings according to similar functions, markets, products, or services, ultimately leading to better search results for users interested in different categories. (e.g., CRDC:RDF40).`,
+    text: "A Capture Base is a stable base object that defines a single dataset in its purest form, providing a standard base to harmonise data. The \"classification\" meta attribute is for capturing a standardised classification scheme and taxonomy code to identify the primary sector, area, or topic of a published schema's intended use. Taxonomy codes provide a means for classifying schemas into groupings according to similar functions, markets, products, or services, ultimately leading to better search results for users interested in different categories. (e.g., CRDC:RDF40).",
   },
   { row: 6, column: 3, text: "CB-AN: Attribute Name" },
   {

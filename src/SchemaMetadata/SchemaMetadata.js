@@ -1,43 +1,89 @@
 import { Box, Button, Typography, Tooltip } from "@mui/material";
-import React, { useState, useContext, useEffect, useRef } from "react";
-import Attributes from "./Attributes";
+import React, { useState, useContext, useEffect, useRef, useCallback } from "react";
+
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Description from "./Description";
 import LanguageSelection from "./LanguageSelection";
 import NavigationCard from "../constants/NavigationCard";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import { removeSpacesFromObjectOfObjects } from "../constants/removeSpaces";
 import IntroCard from "./IntroCard";
 import IsoCard from "./IsoCard";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 
 export default function SchemaMetadata({
   pageBack,
   pageForward,
   showIntroCard,
-  setShowIntroCard,
+  setShowIntroCard
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  
+  // Schema data hook
+  // Use MultiSchema context with standard pattern
+  const { 
+    activeSchemaId, 
+    getSchemaState, 
+    updateSchemaState 
+  } = useMultiSchema();
+  
+  const currentSchemaId = activeSchemaId;
+  const schemaState = getSchemaState(currentSchemaId);
+  
+  const updateCurrentSchema = useCallback((updates) => {
+    if (currentSchemaId) {
+      updateSchemaState(currentSchemaId, updates);
+    }
+  }, [currentSchemaId, updateSchemaState]);
+  
+  // Local component state
   const [showLanguages, setShowLanguages] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [fieldArray, setFieldArray] = useState([]);
   const [showIsoInput, setShowIsoInput] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState("");
-  const { schemaDescription, setSchemaDescription, languages, history, setHistory, setCurrentPage } =
-    useContext(Context);
+  
+  // Global context for app-level state
+  const {
+    schemaDescription: globalSchemaDescription,
+    languages: globalLanguages,
+    history,
+    setHistory,
+    setCurrentPage
+  } = useContext(Context);
 
-  const toTitleCase = (str) => {
-    return str.toLowerCase().replace(/^(.)|\s(.)/g, function(match) {
-      return match.toUpperCase();
+  // Use schema state directly - no fallback needed
+  const schemaDescription = schemaState?.metadata?.description || globalSchemaDescription;
+  const languages = schemaState?.metadata?.languages || globalLanguages;
+  
+  const setSchemaDescription = (newDescription) => {
+    updateCurrentSchema({
+      metadata: {
+        ...schemaState?.metadata,
+        description: newDescription
+      }
     });
   };
+
+  const setLanguages = (newLanguages) => {
+    updateCurrentSchema({
+      metadata: {
+        ...schemaState?.metadata,
+        languages: newLanguages
+      }
+    });
+  };
+
+  const toTitleCase = (str) =>
+    str.toLowerCase().replace(/^(.)|\s(.)/g, (match) => match.toUpperCase());
 
   const handleForward = () => {
     const noSpacesObject = removeSpacesFromObjectOfObjects(schemaDescription);
@@ -60,18 +106,15 @@ export default function SchemaMetadata({
     }
   };
 
-  //When showIsoInput component is visible, prevents user from clicking other buttons on the screen
+  // When showIsoInput component is visible, prevents user from clicking other buttons on the screen
   const defaultButton = useRef();
   const addCustomButton = useRef();
 
   useEffect(() => {
     const handleDisableClick = (event) => {
       if (showIsoInput) {
-        const target = event.target;
-        if (
-          target !== defaultButton.current &&
-          target !== addCustomButton.current
-        ) {
+        const { target } = event;
+        if (target !== defaultButton.current && target !== addCustomButton.current) {
           event.stopPropagation();
         }
       }
@@ -88,16 +131,21 @@ export default function SchemaMetadata({
 
   const moveBackward = () => {
     if (history.length > 1 && history[history.length - 2] === "Landing") {
-      setHistory(prev => prev.slice(0, prev.length - 1));
-      setCurrentPage('Landing');
-      navigate('/');
+      setHistory((prev) => prev.slice(0, prev.length - 1));
+      setCurrentPage("Landing");
+      navigate("/");
     } else {
       pageBack();
     }
   };
 
   return (
-    <BackNextSkeleton isBack pageBack={moveBackward} isForward pageForward={handleForward}>
+    <BackNextSkeleton
+      isBack
+      pageBack={moveBackward}
+      isForward
+      pageForward={handleForward}
+    >
       {showCard && (
         <NavigationCard
           fieldArray={fieldArray}
@@ -117,48 +165,20 @@ export default function SchemaMetadata({
       <Box
         sx={{
           mt: 2,
-          width: "100%",
+          width: "100%"
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            color: CustomPalette.GREY_600,
-          }}
-        >
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Typography
             sx={{
               fontSize: 20,
               fontWeight: "bold",
               textAlign: "left",
               margin: "1rem 0 1rem 0",
-              color: CustomPalette.PRIMARY,
-              width: "7rem",
+              color: CustomPalette.PRIMARY
             }}
           >
-            {t('Attributes')}
-          </Typography>
-          <Tooltip
-            title={t("The list of attributes correspond to the column headers of a data file")}
-            placement="right"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </Box>
-        <Attributes />
-        <Box sx={{ display: "flex", justifyContent: 'space-between' }}>
-          <Typography
-            sx={{
-              fontSize: 20,
-              fontWeight: "bold",
-              textAlign: "left",
-              margin: "1rem 0 1rem 0",
-              color: CustomPalette.PRIMARY,
-            }}
-          >
-            {t('Schema Description')}
+            {t("Schema Description")}
           </Typography>
           <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
             <Box
@@ -167,7 +187,7 @@ export default function SchemaMetadata({
                 position: "absolute",
                 zIndex: "1000",
                 top: 70,
-                width: "100%",
+                width: "100%"
               }}
             >
               {showLanguages && (
@@ -175,6 +195,10 @@ export default function SchemaMetadata({
                   setShowLanguages={setShowLanguages}
                   setEditingLanguage={setEditingLanguage}
                   setShowIsoInput={setShowIsoInput}
+                  languages={languages}
+                  setLanguages={setLanguages}
+                  schemaDescription={schemaDescription}
+                  setSchemaDescription={setSchemaDescription}
                 />
               )}
             </Box>
@@ -182,11 +206,13 @@ export default function SchemaMetadata({
               sx={{
                 display: "flex",
                 alignItems: "center",
-                color: CustomPalette.GREY_600,
+                color: CustomPalette.GREY_600
               }}
             >
               <Tooltip
-                title={t("Add another language to your schema. Without changing the basic structure of your schema...")}
+                title={t(
+                  "Add another language to your schema. Without changing the basic structure of your schema..."
+                )}
                 placement="left"
                 arrow
               >
@@ -200,15 +226,11 @@ export default function SchemaMetadata({
                   display: "flex",
                   justifyContent: "space-between",
                   width: "11rem",
-                  m: 2,
+                  m: 2
                 }}
               >
-                {t('Add Language')}
-                {showLanguages === true ? (
-                  <RemoveCircleIcon />
-                ) : (
-                  <AddCircleIcon />
-                )}
+                {t("Add Language")}
+                {showLanguages === true ? <RemoveCircleIcon /> : <AddCircleIcon />}
               </Button>
             </Box>
           </Box>
@@ -216,6 +238,7 @@ export default function SchemaMetadata({
         <Description
           setShowIsoInput={setShowIsoInput}
           setEditingLanguage={setEditingLanguage}
+          languages={languages}
         />
       </Box>
     </BackNextSkeleton>

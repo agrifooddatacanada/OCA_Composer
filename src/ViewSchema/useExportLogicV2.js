@@ -47,7 +47,8 @@ const useExportLogicV2 = () => {
     overlay,
     cardinalityData,
     rangeRowData,
-    attributeFramingRowData
+    attributeFramingRowData,
+    OCAPackage
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -116,12 +117,16 @@ const useExportLogicV2 = () => {
     attributesList.forEach((item, index) => {
       const rowObject = {};
       rowObject.Attribute = item;
-      rowObject.Flagged = attributeRowData[index].Flagged ? "Y" : "";
-      rowObject.Unit = attributeRowData[index].Unit;
-      rowObject.Type = attributeRowData[index].Type;
-      rowObject.Label = lanAttributeRowData[language][index].Label;
-      rowObject.Description = lanAttributeRowData[language][index].Description;
-      rowObject.List = lanAttributeRowData[language][index].List;
+      // Defensive reads to avoid crashes when grids are not yet synced
+      const attrRow = attributeRowData[index] || {};
+      const lanRows = lanAttributeRowData?.[language] || [];
+      const lanRow = lanRows[index] || {};
+      rowObject.Flagged = attrRow.Flagged ? "Y" : "";
+      rowObject.Unit = attrRow.Unit || "";
+      rowObject.Type = attrRow.Type || "";
+      rowObject.Label = lanRow.Label || "";
+      rowObject.Description = lanRow.Description || "";
+      rowObject.List = lanRow.List || (attrRow.List ? "" : "Not a List");
       rowObject.Language = language;
       rowData.push(rowObject);
     });
@@ -431,6 +436,17 @@ const useExportLogicV2 = () => {
 
     try {
       setError("");
+
+      // Check if we're working with a pre-existing OCA package from upload
+      // Note: Even for existing packages, we regenerate on export to ensure consistency
+      // and avoid digest verification issues with the oca_package library
+      const hasExistingOCAPackage =
+        OCAPackage && OCAPackage.bundle && OCAPackage.bundle.d;
+
+      if (hasExistingOCAPackage) {
+        // console.log("Regenerating OCA package for export to ensure consistency");
+      }
+
       // const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
       // console.log("rangeOverlayInput", rangeOverlayInput);
       // return;
@@ -509,7 +525,7 @@ const useExportLogicV2 = () => {
       const extension = {
         extensions: {
           [ADC]: {
-            [bundle.bundle.d]: extension_overlays
+            [bundle?.bundle?.d || "bundle_id"]: extension_overlays
           }
         }
       };

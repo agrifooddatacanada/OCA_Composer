@@ -1,6 +1,5 @@
-import { React, useCallback, useContext, useState } from "react";
+import { React, useCallback, useState } from "react";
 import { MenuItem } from "@mui/material";
-import { Context } from "../App";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { displayValues } from "../constants/constants";
 
@@ -9,9 +8,10 @@ export const CharacterEncodingTypeRenderer = (props) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleChange = (e) => {
+    const { node } = props;
     setType(e.target.value);
-    props.node.updateData({
-      ...props.node.data,
+    node.updateData({
+      ...node.data,
       "Character Encoding": e.target.value
     });
     setIsDropdownOpen(false);
@@ -29,9 +29,9 @@ export const CharacterEncodingTypeRenderer = (props) => {
     }
   };
 
-  const typesDisplay = displayValues.map((value, index) => (
+  const typesDisplay = displayValues.map((value) => (
     <MenuItem
-      key={index + "_" + value}
+      key={value}
       value={value}
       sx={{ border: "none", height: "2rem", fontSize: "small" }}
     >
@@ -52,9 +52,7 @@ export const CharacterEncodingTypeRenderer = (props) => {
   );
 };
 
-const useCharacterEncodingType = (gridRef) => {
-  const { characterEncodingRowData, setCharacterEncodingRowData } = useContext(Context);
-
+const useCharacterEncodingType = (gridRef, characterEncodingRowData, setCharacterEncodingRowData) => {
   const handleSave = useCallback(() => {
     gridRef.current.api.stopEditing();
     const attributeWithCharacterEncoding = gridRef.current.api

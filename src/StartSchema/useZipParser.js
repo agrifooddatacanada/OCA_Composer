@@ -255,7 +255,6 @@ const useZipParser = () => {
             : attributeType.includes("ref")
               ? "Child Schema"
               : "",
-        // Type: dataTypes.includes(attributeType) ? attributeType : "",
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 

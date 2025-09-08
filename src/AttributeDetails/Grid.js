@@ -28,6 +28,15 @@ const gridStyle = `
   .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
     height: 100%;
   }
+  .ag-theme-balham.ag-grid-compact {
+    height: auto !important;
+  }
+  .ag-theme-balham.ag-grid-compact .ag-root-wrapper {
+    height: auto !important;
+  }
+  .ag-theme-balham.ag-grid-compact .ag-center-cols-clipper {
+    min-height: unset !important;
+  }
   `;
 
 // Renderers define input cells, Headers define grid header cells
@@ -42,14 +51,14 @@ export default function Grid({
   setCanDelete,
   setAddByTab,
   typesObjectRef,
-  setLoading
+  setLoading,
+  attributeRowData,
+  setAttributeRowData
 }) {
   const { t } = useTranslation();
   const {
     attributesList,
     setAttributesList,
-    attributeRowData,
-    setAttributeRowData,
     lanAttributeRowData,
     setLanAttributeRowData,
     setCharacterEncodingRowData,
@@ -67,6 +76,18 @@ export default function Grid({
   // typesObjectRef saves all the types for the grid, and type is the 'local' current type of the cell
 
   const dropRefs = useRef(attributeRowData.map(() => React.createRef()));
+
+  // Ensure stable row ids so rows don't disappear when toggling List or editing
+  useEffect(() => {
+    const missingId = attributeRowData.some((r) => !r._rid);
+    if (!missingId) return;
+    const stamped = Date.now();
+    const next = attributeRowData.map((r, i) =>
+      r._rid ? r : { ...r, _rid: `${stamped}_${i}` }
+    );
+    setAttributeRowData(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attributeRowData]);
 
   useEffect(() => {
     dropRefs.current = attributeRowData.map(() => React.createRef());
@@ -105,9 +126,6 @@ export default function Grid({
           gridRef
         },
         cellRenderer: CheckboxRenderer,
-        cellRendererParams: {
-          gridRef
-        },
         checkboxSelection: false,
         cellStyle: () => flexCenter
       },
@@ -139,7 +157,8 @@ export default function Grid({
           data: params.data,
           attributeRowData,
           typesObjectRef,
-          dropRefs
+          dropRefs,
+          setAttributeRowData
         }),
         width: 150
       },
@@ -151,7 +170,13 @@ export default function Grid({
         },
         cellRenderer: CheckboxRenderer,
         cellRendererParams: {
-          gridRef
+          onLocalToggle: (attributeName, checked) => {
+            setAttributeRowData((prev) =>
+              prev.map((row) =>
+                row.Attribute === attributeName ? { ...row, List: checked } : row
+              )
+            );
+          }
         },
         checkboxSelection: false,
         cellStyle: () => flexCenter,
@@ -165,6 +190,7 @@ export default function Grid({
           data: params.data,
           gridRef,
           typesObjectRef,
+          currentRows: attributeRowData,
           setAttributesList,
           setAttributeRowData,
           canDelete,
@@ -174,7 +200,7 @@ export default function Grid({
         width: 60
       }
     ]);
-  }, [attributesList]);
+  }, [attributesList, attributeRowData, canDelete, typesObjectRef]);
 
   const defaultColDef = {
     width: 125
@@ -578,10 +604,14 @@ export default function Grid({
 
   return (
     <div style={{ margin: "2rem" }}>
-      <div className="ag-theme-balham" style={{ width: 752 }}>
+      <div
+        className={`ag-theme-balham ${attributeRowData.length > 0 ? "ag-grid-compact" : ""}`}
+        style={{ width: 752 }}
+      >
         <style>{gridStyle}</style>
         <AgGridReact
           ref={gridRef}
+          getRowId={(params) => (params.data && (params.data._rid || params.data.Attribute))}
           rowData={attributeRowData}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
@@ -589,6 +619,7 @@ export default function Grid({
           suppressRowClickSelection
           suppressCellSelection={false}
           domLayout="autoHeight"
+          suppressRowHoverHighlight
           onCellKeyDown={onCellKeyDown}
           animateRows
           onRowDragEnd={(e) => onRowDragEnd(e)}

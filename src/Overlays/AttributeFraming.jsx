@@ -40,7 +40,7 @@ import {
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS
 } from "../constants/constants";
-import { CustomPalette } from "../constants/customPalette";
+import CustomPalette from "../constants/customPalette";
 import {
   matchedSubjectAndPredicate,
   searchPredicates,
