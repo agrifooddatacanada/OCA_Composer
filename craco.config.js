@@ -13,6 +13,7 @@ module.exports = {
         util: require.resolve("util/"),
         buffer: require.resolve("buffer/")
       };
+
       webpackConfig.plugins = (webpackConfig.plugins || []).concat([
         new webpack.ProvidePlugin({
           Buffer: ["buffer", "Buffer"]

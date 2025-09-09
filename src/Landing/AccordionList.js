@@ -102,7 +102,24 @@ const AccordionList = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
-  const isInvalidOcaPackage = OCAPackage && !VerifyOcaPackage(OCAPackage, OCAPackage.d);
+  let isInvalidOcaPackage = false;
+
+  if (OCAPackage) {
+    // Only verify if this is actually an OCA package with proper structure
+    const hasOcaStructure = OCAPackage.bundle || OCAPackage.oca_bundle;
+    const digest = OCAPackage.d || OCAPackage?.bundle?.d || OCAPackage?.oca_bundle?.d;
+
+    if (hasOcaStructure && digest) {
+      try {
+        isInvalidOcaPackage = !VerifyOcaPackage(OCAPackage, digest);
+      } catch (e) {
+        isInvalidOcaPackage = false; // Don't block UI on verification errors
+      }
+    } else {
+      // Not a verifiable OCA package, treat as valid
+      isInvalidOcaPackage = false;
+    }
+  }
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
 
   return (

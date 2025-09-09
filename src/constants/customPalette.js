@@ -1,4 +1,4 @@
-//When updating button colors, use customeTheme colors instead of customPalette
+// When updating button colors, use customeTheme colors instead of customPalette
 
 export const CustomPalette = {
   BLACK: "#000",
@@ -21,3 +21,4 @@ export const CustomPalette = {
   DARK: "#66011e"
 };
 
+export default CustomPalette;

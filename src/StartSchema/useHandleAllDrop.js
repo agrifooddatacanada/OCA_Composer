@@ -11,6 +11,7 @@ import {
   replaceAttributeCharsInParsedJson
   // getUnitsFramedThatAlreadyExistInOcaPackage
 } from "../constants/utils";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 
 const useHandleAllDrop = (pageForward) => {
   const {
@@ -28,6 +29,7 @@ const useHandleAllDrop = (pageForward) => {
     setExcelSheetChoice,
     setOCAPackage
   } = useContext(Context);
+  const { clearAllSchemas, switchToSchema, initializeFromOCAPackage } = useMultiSchema();
   const { processLanguages, processMetadata, processLabelsDescriptionRootUnitsEntries } =
     useZipParser();
 
@@ -287,8 +289,8 @@ const useHandleAllDrop = (pageForward) => {
       acceptedFiles.forEach((file) => {
         const reader = new FileReader();
         const rABS = !!reader.readAsBinaryString; // converts object to boolean
-        reader.onabort = () => console.log("file reading was aborted");
-        reader.onerror = () => console.log("file reading has failed");
+        reader.onabort = () => {}; // console.log("file reading was aborted");
+        reader.onerror = () => {}; // console.log("file reading has failed");
         reader.onload = (e) => {
           const bstr = e.target.result;
           const workbook = XLSX.read(bstr, {
@@ -540,6 +542,9 @@ const useHandleAllDrop = (pageForward) => {
   const handleJsonDrop = useCallback((acceptedFiles) => {
     try {
       setLoading(true);
+      // Clear multi-schema context when uploading a new file
+      clearAllSchemas();
+
       const reader = new FileReader();
 
       reader.onload = async (e) => {
@@ -553,10 +558,36 @@ const useHandleAllDrop = (pageForward) => {
           //   getUnitsFramedThatAlreadyExistInOcaPackage(jsonFile)
           // );
           setOCAPackage(jsonFile);
+
+          // NEW: Initialize MultiSchemaContext with complete package data
+          initializeFromOCAPackage(jsonFile);
+
+          // Set editing schema to root schema
+          switchToSchema(jsonFile.oca_bundle.bundle.d, jsonFile);
           handleBundleJSONDrop(modifiedBundle, jsonFile);
         } else if (jsonFile?.bundle) {
           const modifiedJsonFile = replaceAttributeCharsInParsedJson(jsonFile.bundle);
-          handleBundleJSONDrop(modifiedJsonFile);
+          // If dependencies exist, keep the full OCA package in context for visualization
+          if (jsonFile?.dependencies && Array.isArray(jsonFile.dependencies)) {
+            const sanitizedOcaPackage = { ...jsonFile, bundle: modifiedJsonFile };
+            setOCAPackage(sanitizedOcaPackage);
+
+            // NEW: Initialize MultiSchemaContext with complete package data
+            initializeFromOCAPackage(sanitizedOcaPackage);
+
+            // Set editing schema to root schema
+            switchToSchema(jsonFile.bundle.d, sanitizedOcaPackage);
+            handleBundleJSONDrop(modifiedJsonFile, sanitizedOcaPackage);
+          } else {
+            // Single schema package
+            setOCAPackage(jsonFile);
+
+            // NEW: Initialize MultiSchemaContext
+            initializeFromOCAPackage(jsonFile);
+
+            switchToSchema(jsonFile.bundle.d, jsonFile);
+            handleBundleJSONDrop(modifiedJsonFile);
+          }
         } else if (jsonFile?.schema?.[0]) {
           handleBundleJSONDrop(jsonFile?.schema?.[0]);
         } else {

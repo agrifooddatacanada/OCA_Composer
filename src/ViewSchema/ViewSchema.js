@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useCallback } from "react";
+import React, { useContext, useState, useEffect, useCallback, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import i18next from "i18next";
@@ -14,7 +14,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
 
@@ -27,7 +27,11 @@ import { codesToLanguages } from "../constants/isoCodes";
 
 import ErrorPopup from "./ErrorPopup";
 import CustomRouterLink from "../components/CustomRouterLink";
-import SchemaVisualizationEmbed from "../SchemaVisualization/SchemaVisualizationEmbed";
+
+// Lazy load the schema visualization component to avoid React hook issues
+const SchemaVisualizationEmbed = React.lazy(
+  () => import("../SchemaVisualization/SchemaVisualizationEmbed")
+);
 
 export default function ViewSchema({
   isExport = true,
@@ -38,14 +42,8 @@ export default function ViewSchema({
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const {
-    languages,
-    schemaDescription,
-    isZip,
-    isZipEdited,
-    setCurrentPage,
-    OCAPackage
-  } = useContext(Context);
+  const { languages, schemaDescription, isZip, isZipEdited, setCurrentPage, OCAPackage } =
+    useContext(Context);
 
   // Multi-schema context
   const {
@@ -69,10 +67,10 @@ export default function ViewSchema({
     }
     return arr;
   }, [languages, languageIndex]);
-  
+
   // Make currentLanguage responsive to UI language changes
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
-  
+
   // Update currentLanguage when UI language changes
   useEffect(() => {
     const uiLanguageName = codesToLanguages?.[i18next.language];
@@ -112,13 +110,7 @@ export default function ViewSchema({
       setCurrentPage("Details");
       navigate("/start");
     },
-    [
-      activeSchemaId,
-      switchToSchema,
-      OCAPackage,
-      setCurrentPage,
-      navigate
-    ]
+    [activeSchemaId, switchToSchema, OCAPackage, setCurrentPage, navigate]
   );
 
   // readme hooks not used on this page
@@ -201,12 +193,12 @@ export default function ViewSchema({
 
           if (currentSchemaId) {
             const schemaState = getSchemaState(currentSchemaId);
-            
+
             if (schemaState && schemaState.initialized) {
               // Convert schema state back to the format expected by ViewGrid
               const schemaAttributes = schemaState.attributes || [];
               const formatRuleData = schemaState.formatRuleData || [];
-              
+
               const formatRuleIndex = new Map(
                 formatRuleData.map((r) => [
                   r.Attribute,
@@ -307,18 +299,20 @@ export default function ViewSchema({
           } else {
             // Create display array from schema attributes if available
             const currentSchemaState = getSchemaState(currentSchemaId);
-            const fallbackDisplayArray = (currentSchemaState?.attributes || []).map((attr) => ({
-              Attribute: attr.Attribute,
-              Type: attr.Type || "",
-              Description: { [currentLanguage]: attr.Description || "" },
-              Label: { [currentLanguage]: attr.Label || "" },
-              Required: !!attr.Required,
-              "Format Rule": "",
-              "Character Encoding": "",
-              List: { [currentLanguage]: "Not a List" },
-              Unit: attr.Unit || "",
-              Flagged: attr.Flagged || false
-            }));
+            const fallbackDisplayArray = (currentSchemaState?.attributes || []).map(
+              (attr) => ({
+                Attribute: attr.Attribute,
+                Type: attr.Type || "",
+                Description: { [currentLanguage]: attr.Description || "" },
+                Label: { [currentLanguage]: attr.Label || "" },
+                Required: !!attr.Required,
+                "Format Rule": "",
+                "Character Encoding": "",
+                List: { [currentLanguage]: "Not a List" },
+                Unit: attr.Unit || "",
+                Flagged: attr.Flagged || false
+              })
+            );
             setDisplayArray(fallbackDisplayArray);
           }
         } else {
@@ -474,22 +468,40 @@ export default function ViewSchema({
           </Box>
 
           <Box sx={{ mb: 4, width: "100%" }}>
-            <SchemaVisualizationEmbed
-              key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${getModifiedSchemas().length}`}
-              attributeRowData={(() => {
-                // Get attribute data from MultiSchema context for visualization
-                const currentSchemaId = activeSchemaId || (OCAPackage?.bundle?.d || OCAPackage?.bundle?.capture_base?.d);
-                const schemaState = getSchemaState(currentSchemaId);
-                return schemaState?.attributes || [];
-              })()}
-              schemaDescription={schemaDescription}
-              languages={filteredLanguages}
-              OCAPackage={updatedOCAPackage}
-              viewMode={visualizationMode}
-              height="70vh"
-              currentSchemaId={activeSchemaId}
-              setCurrentSchemaId={handleSchemaSwitch}
-            />
+            <Suspense
+              fallback={
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "70vh"
+                  }}
+                >
+                  <Loading />
+                </Box>
+              }
+            >
+              <SchemaVisualizationEmbed
+                key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${getModifiedSchemas().length}`}
+                attributeRowData={(() => {
+                  // Get attribute data from MultiSchema context for visualization
+                  const currentSchemaId =
+                    activeSchemaId ||
+                    OCAPackage?.bundle?.d ||
+                    OCAPackage?.bundle?.capture_base?.d;
+                  const schemaState = getSchemaState(currentSchemaId);
+                  return schemaState?.attributes || [];
+                })()}
+                schemaDescription={schemaDescription}
+                languages={filteredLanguages}
+                OCAPackage={updatedOCAPackage}
+                viewMode={visualizationMode}
+                height="70vh"
+                currentSchemaId={activeSchemaId}
+                setCurrentSchemaId={handleSchemaSwitch}
+              />
+            </Suspense>
           </Box>
         </>
       )}

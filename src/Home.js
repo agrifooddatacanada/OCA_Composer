@@ -71,6 +71,7 @@ const Home = ({
       const rootSchemaId = OCAPackage.bundle?.d;
       if (rootSchemaId) {
         switchToSchema(rootSchemaId, OCAPackage);
+
         setEditingSchemaId(rootSchemaId);
       }
     }
@@ -345,30 +346,14 @@ const Home = ({
         {currentPage === "Overlays" && (
           <Overlays pageBack={pageBack} pageForward={pageForward} />
         )}
-        {currentPage === "CharacterEncoding" && (
-          <CharacterEncoding />
-        )}
-        {currentPage === "RequiredEntries" && (
-          <RequiredEntries />
-        )}
-        {currentPage === "Cardinality" && (
-          <Cardinality />
-        )}
-        {currentPage === "UnitFraming" && (
-          <UnitFraming />
-        )}
-        {currentPage === "DataStandards" && (
-          <DataStandards />
-        )}
-        {currentPage === "Range" && (
-          <Range />
-        )}
-        {currentPage === "AttributeFraming" && (
-          <AttributeFraming />
-        )}
-        {currentPage === "FormatRules" && (
-          <FormatRuleV2 />
-        )}
+        {currentPage === "CharacterEncoding" && <CharacterEncoding />}
+        {currentPage === "RequiredEntries" && <RequiredEntries />}
+        {currentPage === "Cardinality" && <Cardinality />}
+        {currentPage === "UnitFraming" && <UnitFraming />}
+        {currentPage === "DataStandards" && <DataStandards />}
+        {currentPage === "Range" && <Range />}
+        {currentPage === "AttributeFraming" && <AttributeFraming />}
+        {currentPage === "FormatRules" && <FormatRuleV2 />}
       </Box>
       <Footer />
     </>
