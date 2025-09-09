@@ -18,7 +18,7 @@ You can learn more about schemas and see OCA Composer live at the [Semantic Engi
   - [Theme Object Components](#theme-object-components)
   - [Logo System](#logo-system)
   - [Embedding OCA Composer](#embedding-oca-composer)
-- [Iframe File Listener (OCA Data Validator)](#iframe-file-listener-oca-data-validator)
+- [Iframe File Listener (OCA Data Verifier)](#iframe-file-listener-oca-data-verifier)
   - [Overview](#overview)
   - [Implementation Details](#implementation-details)
   - [How to Use](#how-to-use)
@@ -204,14 +204,14 @@ When embedding OCA Composer, the theme is automatically detected from the embedd
    - All components using theme colors update dynamically
    - Logo rendering is automatic based on your configuration
 
-## Iframe File Listener (OCA Data Validator)
+## Iframe File Listener (OCA Data Verifier)
 
-This feature explains how to send JSON schema files from a parent application to the OCA Data Validator through an iframe.
+This feature explains how to send JSON schema files from a parent application to the OCA Data Verifier through an iframe.
 
 ### Overview
 
-The file listener is a React hook that enables communication between a parent application and the OCA Data Validator through `postMessage`.
-It allows you to send JSON files from the parent application to the validator, which will then process them for validation.
+The file listener is a React hook that enables communication between a parent application and the OCA Data Verifier through `postMessage`.
+It allows you to send JSON files from the parent application to the verifier, which will then process them for validation.
 
 ### Implementation Details
 
@@ -226,19 +226,19 @@ The file listener is implemented as a React hook (`useFileListener`) that:
 #### 1. Parent Application Setup
 
 In your parent application:
-1. Create an iframe that points to the OCA Data Validator
+1. Create an iframe that points to the OCA Data verifier
 2. Send the JSON file using `postMessage`
 
 Example parent application HTML:
 
 ```html
 <!-- Parent application HTML -->
-<iframe id="validatorFrame" src="https://www.semanticengine.org/oca-data-validator" style="width: 100%; height: 600px;"></iframe>
+<iframe id="verifierFrame" src="https://www.semanticengine.org/oca-data-verifier" style="width: 100%; height: 600px;"></iframe>
 ```
 
 #### Sent Message Format
 
-The message sent to the validator must follow this structure:
+The message sent to the verifier must follow this structure:
 ```javascript
 {
   type: 'JSON_SCHEMA',
@@ -270,21 +270,21 @@ Include `type: 'JSON_SCHEMA'` — the verifier checks `type === 'JSON_SCHEMA'`.
 
 ```javascript
 // Parent application JavaScript
-const iframe = document.getElementById('validatorFrame');
+const iframe = document.getElementById('verifierFrame');
 
-// Function to send a JSON file to the validator
-function sendFileToValidator(jsonData) {
+// Function to send a JSON file to the verifier
+function sendFileToVerifier(jsonData) {
   iframe.contentWindow.postMessage({
     type: 'JSON_SCHEMA',
     data: jsonData // add your json schema here
-  }, '*'); // Replace '*' with the actual origin of the validator for better security
+  }, '*'); // Replace '*' with the actual origin of the verifier for better security
 }
 
 // Example usage
 const jsonData = {
   // Your JSON data here
 };
-sendFileToValidator(jsonData);
+sendFileToVerifier(jsonData);
 ```
 
 ### 2. Receiving Data from the Iframe (in your parent component)
@@ -362,7 +362,7 @@ Errors are logged to the console for debugging.
 - The received file is automatically named `schema.json`.
 - The file path is set to `oca_bundle.json`.
 - The file type is `application/json`.
-- The file is wrapped in an array when setting state, as the validator expects an array of files.
+- The file is wrapped in an array when setting state, as the verifier expects an array of files.
 
 ## Development Status
 
