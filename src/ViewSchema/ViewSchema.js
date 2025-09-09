@@ -50,7 +50,6 @@ export default function ViewSchema({
     activeSchemaId,
     switchToSchema,
     exportSchemaChanges,
-    getModifiedSchemas,
 
     getSchemaState,
     schemaStates
@@ -83,7 +82,6 @@ export default function ViewSchema({
   const [displayArray, setDisplayArray] = useState([]);
   const { resetToDefaults, exportDisabled } = useExportLogic();
   const {
-    exportData: originalExportData,
     error: exportError,
     clearError
   } = useExportLogicV2();
@@ -131,35 +129,28 @@ export default function ViewSchema({
   const handleClickDownload = async () => {
     try {
       setLoading(true);
-      // Use multi-schema export if we have modified schemas
-      const modifiedSchemas = getModifiedSchemas();
-      if (modifiedSchemas.length > 0) {
-        // Export with schema changes already reflected in updatedOCAPackage
-        const pkg = updatedOCAPackage || exportSchemaChanges(OCAPackage);
-        try {
-          await multiSchemaExportData(pkg);
-        } catch (exportError) {
-          // If the main export fails, we'll use our fallback
-        }
-        // Fallback: trigger a JSON download if the exporter didn't prompt a file save
-        const blob = new Blob([JSON.stringify(pkg, null, 2)], {
-          type: "application/json"
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "oca_bundle.json";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        // Clear any export errors since we successfully downloaded
-        clearError();
-        clearMultiSchemaError();
-      } else {
-        // Use original export logic
-        await originalExportData();
+      // Always export the complete package with all schema changes
+      const pkg = updatedOCAPackage || exportSchemaChanges(OCAPackage);
+      try {
+        await multiSchemaExportData(pkg);
+      } catch (exportError) {
+        // If the main export fails, we'll use our fallback
       }
+      // Fallback: trigger a JSON download if the exporter didn't prompt a file save
+      const blob = new Blob([JSON.stringify(pkg, null, 2)], {
+        type: "application/json"
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "oca_bundle.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      // Clear any export errors since we successfully downloaded
+      clearError();
+      clearMultiSchemaError();
     } catch (error) {
       // console.error("Export failed:", error);
     } finally {
@@ -483,7 +474,7 @@ export default function ViewSchema({
               }
             >
               <SchemaVisualizationEmbed
-                key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${getModifiedSchemas().length}`}
+                key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${activeSchemaId}`}
                 attributeRowData={(() => {
                   // Get attribute data from MultiSchema context for visualization
                   const currentSchemaId =

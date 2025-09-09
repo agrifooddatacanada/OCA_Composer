@@ -111,15 +111,11 @@ export const MultiSchemaProvider = ({ children }) => {
   // Multi-schema state
   const [schemaStates, setSchemaStates] = useState({});
   const [activeSchemaId, setActiveSchemaId] = useState(null);
-  const [schemaNavigationHistory, setSchemaNavigationHistory] = useState([]);
-  const [modifiedSchemas, setModifiedSchemas] = useState(new Set());
-  const [currentPackageId, setCurrentPackageId] = useState(null);
 
   // Step management callback
 
   // Refs for persistence
   const saveTimerRef = useRef(null);
-  const lastSavedState = useRef({});
 
   // Constants for special schema IDs
   const TEMP_SCHEMA_ID = "temp-schema";
@@ -151,9 +147,6 @@ export const MultiSchemaProvider = ({ children }) => {
           ...updates
         }
       }));
-
-      // Mark schema as modified
-      setModifiedSchemas((prev) => new Set([...prev, targetId]));
     },
     [getSchemaState]
   );
@@ -193,7 +186,6 @@ export const MultiSchemaProvider = ({ children }) => {
         }
       };
     });
-    setModifiedSchemas((prev) => new Set([...prev, schemaId]));
   }, []);
 
   const getDeletedAttributes = useCallback(
@@ -552,7 +544,6 @@ export const MultiSchemaProvider = ({ children }) => {
       });
 
       setActiveSchemaId(resolvedId);
-      setSchemaNavigationHistory((prev) => [...prev, resolvedId]);
 
       // Initialize schema if it doesn't exist (based on snapshot above)
       if (shouldInitialize && ocaPackage) {
@@ -562,29 +553,17 @@ export const MultiSchemaProvider = ({ children }) => {
     [initializeSchemaFromOCA]
   );
 
-  // Check if a schema has been modified
-  const isSchemaModified = useCallback(
-    (schemaId) => modifiedSchemas.has(schemaId),
-    [modifiedSchemas]
-  );
-
-  // Get all modified schemas
-  const getModifiedSchemas = useCallback(
-    () => Array.from(modifiedSchemas),
-    [modifiedSchemas]
-  );
-
   // Export schema changes back to OCA package format
   const exportSchemaChanges = useCallback(
     (ocaPackage) => {
-      if (!ocaPackage || modifiedSchemas.size === 0) {
+      if (!ocaPackage) {
         return ocaPackage;
       }
 
       const modifiedPackage = JSON.parse(JSON.stringify(ocaPackage));
 
-      // Apply changes to each modified schema
-      Array.from(modifiedSchemas).forEach((schemaId) => {
+      // Apply changes to all schemas that have been initialized
+      Object.keys(schemaStates).forEach((schemaId) => {
         const schemaState = getSchemaState(schemaId);
         if (!schemaState.initialized) return;
 
@@ -719,8 +698,8 @@ export const MultiSchemaProvider = ({ children }) => {
         }
       });
 
-      // After processing all modified schemas, check for child schemas that need to be added as dependencies
-      Array.from(modifiedSchemas).forEach((schemaId) => {
+      // After processing all schemas, check for child schemas that need to be added as dependencies
+      Object.keys(schemaStates).forEach((schemaId) => {
         const schemaState = getSchemaState(schemaId);
         if (!schemaState.initialized) return;
 
@@ -734,7 +713,7 @@ export const MultiSchemaProvider = ({ children }) => {
               const childSchemaState = getSchemaState(childSchemaName);              
               if (childSchemaState && (childSchemaState.initialized || childSchemaState.attributes?.length > 0)) {
                 // Check if this child schema is already in the package
-                const existsInPackage = modifiedPackage.dependencies?.some(dep => dep.d === childSchemaName) ||
+                const existsInPackage = modifiedPackage.dependencies?.some((dep) => dep.d === childSchemaName) ||
                                       modifiedPackage.bundle?.d === childSchemaName;
                 
                 if (!existsInPackage) {
@@ -820,23 +799,16 @@ export const MultiSchemaProvider = ({ children }) => {
 
       return modifiedPackage;
     },
-    [getSchemaState, modifiedSchemas]
+    [getSchemaState, schemaStates]
   );
 
   // Clear all schema states
   const clearAllSchemas = useCallback(() => {
     setSchemaStates({});
     setActiveSchemaId(null);
-    setSchemaNavigationHistory([]);
-    setModifiedSchemas(new Set());
 
     // Clear localStorage for all multi-schema data
     try {
-      // Clear current package data
-      if (currentPackageId) {
-        localStorage.removeItem(`oca_composer_multischema_${currentPackageId}`);
-      }
-
       // Clear all multi-schema entries (in case there are old ones)
       const keys = Object.keys(localStorage);
       keys.forEach((key) => {
@@ -847,26 +819,7 @@ export const MultiSchemaProvider = ({ children }) => {
     } catch (error) {
       // console.warn("Failed to clear localStorage:", error);
     }
-  }, [currentPackageId]);
-
-  // Get navigation history
-  const getNavigationHistory = useCallback(
-    () => [...schemaNavigationHistory],
-    [schemaNavigationHistory]
-  );
-
-  // Navigate back in history
-  const navigateBack = useCallback(() => {
-    if (schemaNavigationHistory.length > 1) {
-      const newHistory = [...schemaNavigationHistory];
-      newHistory.pop(); // Remove current
-      const previousSchema = newHistory[newHistory.length - 1];
-      setActiveSchemaId(previousSchema);
-      setSchemaNavigationHistory(newHistory);
-      return previousSchema;
-    }
-    return null;
-  }, [schemaNavigationHistory]);
+  }, []);
 
   // === NEW UNIFIED SCHEMA METHODS ===
   
@@ -1023,41 +976,30 @@ export const MultiSchemaProvider = ({ children }) => {
 
   // Persistence functions
   const saveToLocalStorage = useCallback(() => {
-    if (!currentPackageId) return;
-
     const stateToSave = {
       version: PERSIST_VERSION,
-      packageId: currentPackageId,
-      schemaStates,
-      modifiedSchemas: Array.from(modifiedSchemas),
-      navigationHistory: schemaNavigationHistory
+      schemaStates
     };
 
     try {
       localStorage.setItem(
-        `oca_composer_multischema_${currentPackageId}`,
+        "oca_composer_multischema",
         JSON.stringify(stateToSave)
       );
-      lastSavedState.current = JSON.parse(JSON.stringify(stateToSave));
     } catch (error) {
       // console.warn("Failed to save multi-schema state to localStorage:", error);
     }
-  }, [currentPackageId, schemaStates, modifiedSchemas, schemaNavigationHistory]);
+  }, [schemaStates]);
 
-  const loadFromLocalStorage = useCallback((packageId) => {
-    if (!packageId) return false;
-
+  const loadFromLocalStorage = useCallback(() => {
     try {
-      const saved = localStorage.getItem(`oca_composer_multischema_${packageId}`);
+      const saved = localStorage.getItem("oca_composer_multischema");
       if (!saved) return false;
 
       const parsed = JSON.parse(saved);
       if (parsed.version !== PERSIST_VERSION) return false;
 
       setSchemaStates(parsed.schemaStates || {});
-      setModifiedSchemas(new Set(parsed.modifiedSchemas || []));
-      setSchemaNavigationHistory(parsed.navigationHistory || []);
-      lastSavedState.current = parsed;
 
       return true;
     } catch (error) {
@@ -1081,7 +1023,7 @@ export const MultiSchemaProvider = ({ children }) => {
         clearTimeout(saveTimerRef.current);
       }
     };
-  }, [schemaStates, modifiedSchemas, saveToLocalStorage]);
+  }, [schemaStates, saveToLocalStorage]);
 
   // Context value
   const contextValue = useMemo(
@@ -1089,9 +1031,6 @@ export const MultiSchemaProvider = ({ children }) => {
       // State
       schemaStates,
       activeSchemaId,
-      schemaNavigationHistory,
-      modifiedSchemas,
-      currentPackageId,
 
       // Actions
       getSchemaState,
@@ -1102,12 +1041,8 @@ export const MultiSchemaProvider = ({ children }) => {
       getDeletedAttributes,
       initializeSchemaFromOCA,
       switchToSchema,
-      isSchemaModified,
-      getModifiedSchemas,
       exportSchemaChanges,
       clearAllSchemas,
-      getNavigationHistory,
-      navigateBack,
 
       // NEW: Unified schema methods
       addSchemaFromOCA,
@@ -1123,15 +1058,11 @@ export const MultiSchemaProvider = ({ children }) => {
 
       // Persistence
       saveToLocalStorage,
-      loadFromLocalStorage,
-      setCurrentPackageId
+      loadFromLocalStorage
     }),
     [
       schemaStates,
       activeSchemaId,
-      schemaNavigationHistory,
-      modifiedSchemas,
-      currentPackageId,
       getSchemaState,
       updateSchemaState,
       getCurrentSchemaId,
@@ -1140,12 +1071,8 @@ export const MultiSchemaProvider = ({ children }) => {
       getDeletedAttributes,
       initializeSchemaFromOCA,
       switchToSchema,
-      isSchemaModified,
-      getModifiedSchemas,
       exportSchemaChanges,
       clearAllSchemas,
-      getNavigationHistory,
-      navigateBack,
       addSchemaFromOCA,
       getCompleteSchema,
       initializeFromOCAPackage,

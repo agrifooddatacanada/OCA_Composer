@@ -47,8 +47,7 @@ const useMultiSchemaExport = () => {
   const { 
     activeSchemaId,
     getSchemaState,
-    exportSchemaChanges,
-    getModifiedSchemas
+    exportSchemaChanges
   } = useMultiSchema();
 
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -111,17 +110,8 @@ const useMultiSchemaExport = () => {
         throw new Error("No OCA package available for export");
       }
 
-      // Get modified schemas
-      const modifiedSchemas = getModifiedSchemas();
-      
-      let exportPackage;
-      if (modifiedSchemas.length > 0) {
-        // Export with modifications
-        exportPackage = exportSchemaChanges(OCAPackage);
-      } else {
-        // Export original package
-        exportPackage = OCAPackage;
-      }
+      // Always export with all changes integrated
+      const exportPackage = exportSchemaChanges(OCAPackage);
 
       // Generate the OCA package
       const ocaPackage = new OcaPackage(exportPackage);
@@ -176,8 +166,7 @@ const useMultiSchemaExport = () => {
     exportMultiSchemaPackage,
     error,
     clearError,
-    activeSchemaId,
-    modifiedSchemas: getModifiedSchemas()
+    activeSchemaId
   };
 };
 

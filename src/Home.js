@@ -36,7 +36,6 @@ const Home = ({
   const { editingSchemaId, OCAPackage, setEditingSchemaId, overlay, setOverlay } =
     useContext(Context);
   const {
-    setCurrentPackageId,
     loadFromLocalStorage,
     switchToSchema,
     activeSchemaId,
@@ -44,26 +43,12 @@ const Home = ({
     getSchemaState
   } = useMultiSchema();
 
-  // Register current package fingerprint for persistence namespace
+  // Try to load saved state when package is loaded
   useEffect(() => {
-    const computePackageId = (pkg) => {
-      if (!pkg) return null;
-      const root = pkg.bundle?.d || "root";
-      const deps = (pkg.dependencies || [])
-        .map((d) => d?.d)
-        .filter(Boolean)
-        .sort()
-        .join("|");
-      return `${root}::${deps}`;
-    };
-    const id = computePackageId(OCAPackage);
-    setCurrentPackageId(id);
-
-    // Try to load saved state for this package
-    if (id) {
-      loadFromLocalStorage(id);
+    if (OCAPackage) {
+      loadFromLocalStorage();
     }
-  }, [OCAPackage, setCurrentPackageId, loadFromLocalStorage]);
+  }, [OCAPackage, loadFromLocalStorage]);
 
   // Ensure schema is initialized when entering via EDIT SCHEMA (old flow)
   useEffect(() => {
@@ -130,7 +115,7 @@ const Home = ({
     } catch (_e) {
       setOverlay(newOverlay);
     }
-  }, [OCAPackage, setOverlay]);
+  }, [OCAPackage, overlay, setOverlay]);
 
   // Determine if we should use schema-aware components
 
