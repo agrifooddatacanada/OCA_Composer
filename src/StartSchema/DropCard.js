@@ -10,7 +10,7 @@ import {
   defaultTooltip,
   defaultUploadedDescription
 } from "../constants/constants";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 
 export default function DropCard({
   loading,

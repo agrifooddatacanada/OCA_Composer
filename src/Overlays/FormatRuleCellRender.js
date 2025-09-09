@@ -2,7 +2,7 @@ import React, { forwardRef, memo, useCallback, useState } from "react";
 import { IconButton, MenuItem } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import {
   CUSTOM_FORMAT_RULE,
   descriptionToFormatCodeBinary,
@@ -52,12 +52,12 @@ export const FormatRuleTypeRenderer = memo(
   forwardRef((props, ref) => {
     const attributeType = props.data?.Type || "Text"; // Default to "Text" if Type is undefined
     let selectedOption = [];
-    
+
     // Handle Array types by extracting the base type
-    const baseType = attributeType.includes("Array") 
-      ? attributeType.replace(/Array\[|\]/g, "") 
+    const baseType = attributeType.includes("Array")
+      ? attributeType.replace(/Array\[|\]/g, "")
       : attributeType;
-    
+
     if (baseType.includes("Date")) {
       selectedOption = formatCodeDate;
     } else if (baseType.includes("Numeric")) {
@@ -83,7 +83,7 @@ export const FormatRuleTypeRenderer = memo(
           ? descriptionToFormatCodeNumeric[value]
           : baseType.includes("Binary")
             ? descriptionToFormatCodeBinary[value]
-            : (baseType.includes("Text") || baseType === "Text")
+            : baseType.includes("Text") || baseType === "Text"
               ? descriptionToFormatCodeText[value]
               : "";
 
@@ -115,7 +115,7 @@ export const FormatRuleTypeRenderer = memo(
           ? formatCodeNumericDescription[formattedValue]
           : baseType.includes("Binary")
             ? formatCodeBinaryDescription[formattedValue]
-            : (baseType.includes("Text") || baseType === "Text")
+            : baseType.includes("Text") || baseType === "Text"
               ? formatCodeTextDescription[formattedValue]
               : "";
     };

@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Step, StepLabel, Stepper } from "@mui/material";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 
 export default function StepperProgressIndicator({ activeStep, steps }) {
   return (

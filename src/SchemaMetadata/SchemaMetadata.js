@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import Description from "./Description";
 import LanguageSelection from "./LanguageSelection";
 import NavigationCard from "../constants/NavigationCard";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import { removeSpacesFromObjectOfObjects } from "../constants/removeSpaces";
@@ -26,31 +26,30 @@ export default function SchemaMetadata({
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  
+
   // Schema data hook
   // Use MultiSchema context with standard pattern
-  const { 
-    activeSchemaId, 
-    getSchemaState, 
-    updateSchemaState 
-  } = useMultiSchema();
-  
+  const { activeSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+
   const currentSchemaId = activeSchemaId;
   const schemaState = getSchemaState(currentSchemaId);
-  
-  const updateCurrentSchema = useCallback((updates) => {
-    if (currentSchemaId) {
-      updateSchemaState(currentSchemaId, updates);
-    }
-  }, [currentSchemaId, updateSchemaState]);
-  
+
+  const updateCurrentSchema = useCallback(
+    (updates) => {
+      if (currentSchemaId) {
+        updateSchemaState(currentSchemaId, updates);
+      }
+    },
+    [currentSchemaId, updateSchemaState]
+  );
+
   // Local component state
   const [showLanguages, setShowLanguages] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [fieldArray, setFieldArray] = useState([]);
   const [showIsoInput, setShowIsoInput] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState("");
-  
+
   // Global context for app-level state
   const {
     schemaDescription: globalSchemaDescription,
@@ -63,7 +62,7 @@ export default function SchemaMetadata({
   // Use schema state directly - no fallback needed
   const schemaDescription = schemaState?.metadata?.description || globalSchemaDescription;
   const languages = schemaState?.metadata?.languages || globalLanguages;
-  
+
   const setSchemaDescription = (newDescription) => {
     updateCurrentSchema({
       metadata: {

@@ -4,7 +4,7 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { languageCodesObject } from "../constants/isoCodes";
 import Classification from "./Classification";
@@ -45,20 +45,16 @@ export default function SchemaInput({
     : null;
 
   // If we're editing a specific schema, use the schema name and description from the data
-  const metaState = activeSchemaId
-      ? getSchemaState(activeSchemaId)?.metadata
-      : null;
+  const metaState = activeSchemaId ? getSchemaState(activeSchemaId)?.metadata : null;
   const metaLocalized = metaState?.localized || {};
 
   // Get the schema name and description for the current language
   const schemaName = activeSchemaId
-      ? metaLocalized?.[langKey]?.name || currentSchemaData?.schemaName || activeSchemaId
-      : currentSchemaData?.schemaName || currentSchemaData?.fieldName || "";
+    ? metaLocalized?.[langKey]?.name || currentSchemaData?.schemaName || activeSchemaId
+    : currentSchemaData?.schemaName || currentSchemaData?.fieldName || "";
   const currentSchemaDescription = activeSchemaId
-      ? metaLocalized?.[langKey]?.description ||
-        currentSchemaData?.schemaDescription ||
-        ""
-      : currentSchemaData?.schemaDescription || "";
+    ? metaLocalized?.[langKey]?.description || currentSchemaData?.schemaDescription || ""
+    : currentSchemaData?.schemaDescription || "";
 
   // Debug logs removed to reduce console noise during schema-aware editing
 
@@ -89,12 +85,16 @@ export default function SchemaInput({
       };
       // Ensure we always have localized structure, initialize English if missing
       if (!nextLocalized.eng) {
-        nextLocalized.eng = { name: prevMeta.name || newText, description: prevMeta.description || "" };
+        nextLocalized.eng = {
+          name: prevMeta.name || newText,
+          description: prevMeta.description || ""
+        };
       }
       // Only update the global name field if editing English (primary language)
-      const nextMeta = langKey === "eng" 
-        ? { ...prevMeta, name: newText, localized: nextLocalized }
-        : { ...prevMeta, localized: nextLocalized };
+      const nextMeta =
+        langKey === "eng"
+          ? { ...prevMeta, name: newText, localized: nextLocalized }
+          : { ...prevMeta, localized: nextLocalized };
       updateSchemaState(targetId, { metadata: nextMeta });
     }
   };
@@ -126,12 +126,16 @@ export default function SchemaInput({
       };
       // Ensure we always have localized structure, initialize English if missing
       if (!nextLocalized.eng) {
-        nextLocalized.eng = { name: prevMeta.name || "", description: prevMeta.description || newText };
+        nextLocalized.eng = {
+          name: prevMeta.name || "",
+          description: prevMeta.description || newText
+        };
       }
       // Only update the global description field if editing English (primary language)
-      const nextMeta = langKey === "eng" 
-        ? { ...prevMeta, description: newText, localized: nextLocalized }
-        : { ...prevMeta, localized: nextLocalized };
+      const nextMeta =
+        langKey === "eng"
+          ? { ...prevMeta, description: newText, localized: nextLocalized }
+          : { ...prevMeta, localized: nextLocalized };
       updateSchemaState(targetId, { metadata: nextMeta });
     }
   };

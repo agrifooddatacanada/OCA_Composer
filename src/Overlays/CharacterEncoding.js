@@ -11,40 +11,43 @@ import useCharacterEncodingType, {
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 
 const CharacterEncoding = () => {
   const { t } = useTranslation();
   const { setCurrentPage } = useContext(Context);
-  
+
   // Use MultiSchema context with standard pattern
-  const { 
-    activeSchemaId, 
-    editingSchemaId, 
-    getSchemaState, 
+  const {
+    activeSchemaId,
+    editingSchemaId,
+    getSchemaState,
     updateSchemaState,
     updateOverlaySelection,
     setSelectedOverlay
   } = useMultiSchema();
-  
+
   const currentSchemaId = activeSchemaId || editingSchemaId;
   const schemaState = getSchemaState(currentSchemaId);
-  
-  const updateCurrentSchema = useCallback((updates) => {
-    if (currentSchemaId) {
-      updateSchemaState(currentSchemaId, updates);
-    }
-  }, [currentSchemaId, updateSchemaState]);
-  
+
+  const updateCurrentSchema = useCallback(
+    (updates) => {
+      if (currentSchemaId) {
+        updateSchemaState(currentSchemaId, updates);
+      }
+    },
+    [currentSchemaId, updateSchemaState]
+  );
+
   // Get character encoding data, initialize with attributes if empty
   const characterEncodingRowData = useMemo(() => {
     const existing = schemaState?.characterEncodingData;
     if (existing && existing.length > 0) {
       return existing;
     }
-    
+
     // Initialize with current schema attributes if no data exists
     const attributes = schemaState?.attributes || [];
     return attributes.map((attr) => ({
@@ -52,48 +55,63 @@ const CharacterEncoding = () => {
       "Character Encoding": "utf-8" // default encoding
     }));
   }, [schemaState?.characterEncodingData, schemaState?.attributes]);
-  
+
   // Always update schema state - no dual logic needed
-  const setCharacterEncodingRowData = useCallback((newData) => {
-    updateCurrentSchema({
-      characterEncodingData: newData
-    });
-  }, [updateCurrentSchema]);
-  
+  const setCharacterEncodingRowData = useCallback(
+    (newData) => {
+      updateCurrentSchema({
+        characterEncodingData: newData
+      });
+    },
+    [updateCurrentSchema]
+  );
+
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const gridRef = useRef();
-  const { handleSave, applyAllFunc } = useCharacterEncodingType(gridRef, characterEncodingRowData, setCharacterEncodingRowData);
+  const { handleSave, applyAllFunc } = useCharacterEncodingType(
+    gridRef,
+    characterEncodingRowData,
+    setCharacterEncodingRowData
+  );
 
-  const columnDefs = useMemo(() => [
+  // Move header components outside render
+  const AttributeHeaderComponent = (
+    <CellHeader
+      headerText={t("Attributes")}
+      helpText="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
+    />
+  );
+
+  const CharacterEncodingHeaderComponent = (
+    <CellHeader
+      headerText={t("Character Encoding")}
+      helpText="Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here."
+    />
+  );
+
+  const columnDefs = useMemo(
+    () => [
       {
         field: "Attribute",
         editable: false,
         width: 180,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => (
-          <CellHeader
-            headerText={t("Attributes")}
-            helpText="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
-          />
-        )
+        headerComponent: AttributeHeaderComponent
       },
       {
         field: "Character Encoding",
-        headerComponent: () => (
-          <CellHeader
-            headerText={t("Character Encoding")}
-            helpText="Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here."
-          />
-        ),
+        headerComponent: CharacterEncodingHeaderComponent,
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
           attr: params.data.Attribute
         }),
         width: 200
       }
-    ], [t]);
+    ],
+    [t, AttributeHeaderComponent, CharacterEncodingHeaderComponent]
+  );
 
   const handleForward = useCallback(() => {
     handleSave();

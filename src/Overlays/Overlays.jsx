@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { Box, Button, List, ListItemButton, ListItemText } from "@mui/material";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
