@@ -26,7 +26,7 @@ export const themes = {
     },
 
     typography: {
-      fontFamily: 'Courier New'
+      fontFamily: 'Roboto, sans-serif'
     },
 
     buttonStyles: {

@@ -511,55 +511,6 @@ const OCADataValidatorCheck = ({
     return headerToString + convertToCSV(newData, newHeader);
   };
 
-  const uploadData = async () => {
-    try {
-      const csvString = await generateCSVFile(false);
-
-      window.parent.postMessage(
-        {
-          type: "CSV_STRING",
-          data: csvString
-        },
-        "*"
-      );
-    } catch (error) {
-      console.error("Error sending data to parent: ", error);
-    }
-  };
-
-  const allCellsPassValidation = async () => {
-    const currData = await new Promise((resolve) => {
-      setTimeout(resolve, 0);
-    }).then(() => getCurrentData(gridRef.current.api, true)); // wait for the grid to render
-
-    if (currData.length === 0) {
-      // edge case for no dataset file uploaded
-      return false;
-    }
-    return currData.every((row) => {
-      if (!row.error) return true;
-      return Object.values(row.error).every(
-        (cellErrors) => !cellErrors || cellErrors.length === 0
-      );
-    });
-  };
-
-  const updateDataValidationState = async () => {
-    const isValid = await allCellsPassValidation();
-    setIsDataValid(isValid);
-  };
-
-  // Check if the page is rendered inside an iframe
-  const isInIframe = () => {
-    try {
-      return window.self !== window.parent;
-    } catch (e) {
-      return true; // If there's an error, assume it's in an iframe
-    }
-  };
-
-  const inIframe = isInIframe();
-
   const downloadCSVFile = (csvData, fileName) => {
     const blob = new Blob([csvData], { type: "text/csv" });
 

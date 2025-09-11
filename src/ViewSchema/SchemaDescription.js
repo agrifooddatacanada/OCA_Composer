@@ -4,10 +4,11 @@ import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 
+
 export default function SchemaDescription({ currentLanguage }) {
   const { t } = useTranslation();
   const { schemaDescription, divisionGroup } = useContext(Context);
-
+  const { currentTheme } = useContext(Context);
   const schemaName = schemaDescription?.[currentLanguage]?.name || t("Unknown");
   const schemaDescriptionText =
     schemaDescription?.[currentLanguage]?.description || t("No description available");
