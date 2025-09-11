@@ -329,6 +329,12 @@ export const customDateFormatParsers = [
     regex: /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/,
     parse: (str) => DateTime.fromFormat(str, "MM/dd/yyyy")
   },
+  // YYYYMMDD must be before DDMMYYYY so that DDMMYYYY doesn't try to match a date with this pattern
+  {
+    name: "YYYYMMDD",
+    regex: /^(\d{4})(0[1-9]|1[0-2])(0[1-9]|[1-2]\d|3[0-1])$/,
+    parse: (str) => DateTime.fromFormat(str, "yyyyMMdd")
+  },
   {
     name: "DDMMYYYY",
     regex: /^(0[1-9]|[12]\d|3[01])(0[1-9]|1[0-2])\d{4}$/,
