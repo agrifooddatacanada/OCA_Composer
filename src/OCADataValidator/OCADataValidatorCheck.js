@@ -447,16 +447,23 @@ const OCADataValidatorCheck = ({
   }
 
   const allCellsPassValidation = async () => {
-     
-    const currData = await new Promise(resolve => setTimeout(resolve, 0)).then(() => getCurrentData(gridRef.current.api, true)); // wait for the grid to render
+    try {
+      let currData = [];
+      if (gridRef.current) {
+        currData = await new Promise(resolve => setTimeout(resolve, 0)).then(() => getCurrentData(gridRef.current.api, true)); // wait for the grid to render
+      }
 
-    if (currData.length === 0) { // edge case for no dataset file uploaded
+      if (currData.length === 0) { // edge case for no dataset file uploaded
+        return false;
+      }
+      return currData.every(row => {
+        if (!row.error) return true;
+        return Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0);
+      });
+    } catch (error) {
+      console.error('Error checking if all cells pass validation: ', error);
       return false;
     }
-    return currData.every(row => {
-      if (!row.error) return true;
-      return Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0);
-    });
   };
 
 
