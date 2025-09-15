@@ -25,7 +25,6 @@ const OCADataValidator = () => {
   const firstTimeDisplayWarning = useRef(true);
 
   const setFile = (receivedFiles) => {
-    console.log('received files', receivedFiles);
     setRawFile(receivedFiles);
     setJsonRawFile(receivedFiles);
   }
