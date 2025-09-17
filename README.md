@@ -211,7 +211,7 @@ This feature explains how to send JSON schema files from a parent application to
 ### Overview
 
 The file listener is a React hook that enables communication between a parent application and the OCA Data Verifier through `postMessage`.
-It allows you to send JSON files from the parent application to the verifier, which will then process them for validation.
+It allows you to send JSON files from the parent application to the verifier, which will then process them for verification.
 
 ### Implementation Details
 
@@ -334,7 +334,7 @@ if (event.data.type === 'VERIFIED_DATA') {
   // Create a temporary anchor element to trigger the download
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'validatedData.csv'; // Specify the filename for the download
+  a.download = 'verifiedData.csv'; // Specify the filename for the download
   document.body.appendChild(a); // Append the anchor to the body
   a.click(); // Trigger the download
 
