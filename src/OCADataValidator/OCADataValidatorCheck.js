@@ -22,6 +22,7 @@ import Languages from "./Languages";
 import ErrorFilterSelect from "./ErrorFilterSelect";
 import CellHeader from "../components/CellHeader";
 import ExportButton from "./ExportButton";
+import UploadButton from "./UploadButton";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -32,6 +33,7 @@ import {
   formatCodeTextDescription,
   RANGE,
   SHOW_ALL_DATA,
+  SHOW_NO_ERRORS,
   SHOW_ONLY_ROWS_WITH_ERRORS
 } from "../constants/constants";
 import WarningPopup from "./WarningPopup";
@@ -325,6 +327,7 @@ const OCADataValidatorCheck = ({
   } = useContext(Context);
 
   const { t } = useTranslation();
+  const { currentTheme } = useContext(Context);
 
   const [rowData, setRowData] = useState([]);
   const [initialRowData, setInitialRowData] = useState([]);
@@ -336,6 +339,7 @@ const OCADataValidatorCheck = ({
   const [firstValidate, setFirstValidate] = useState(false);
   const [isValidateButtonEnabled, setIsValidateButtonEnabled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isDataValid, setIsDataValid] = useState(false);
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
@@ -355,7 +359,7 @@ const OCADataValidatorCheck = ({
         <h1
           style={{
             textAlign: "center",
-            color: CustomPalette.PRIMARY
+            color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY
           }}
         >
           {t("Schema Preview")}
@@ -427,6 +431,57 @@ const OCADataValidatorCheck = ({
       langRef.current
     ]
   );
+
+  const uploadData = async () => {
+    try {
+      const csvString = await generateCSVFile(false)
+
+      window.parent.postMessage({
+        type: 'VERIFIED_DATA',
+        data: csvString
+      }, '*');
+
+    } catch (error){
+      console.error('Error sending data to parent: ', error);
+    }
+  }
+
+  const allCellsPassValidation = async () => {
+    try {
+      let currData = [];
+      if (gridRef.current) {
+        currData = await new Promise(resolve => setTimeout(resolve, 0)).then(() => getCurrentData(gridRef.current.api, true)); // wait for the grid to render
+      }
+
+      if (currData.length === 0) { // edge case for no dataset file uploaded
+        return false;
+      }
+      return currData.every(row => {
+        if (!row.error) return true;
+        return Object.values(row.error).every(cellErrors => !cellErrors || cellErrors.length === 0);
+      });
+    } catch (error) {
+      console.error('Error checking if all cells pass validation: ', error);
+      return false;
+    }
+  };
+
+
+  const updateDataValidationState = async () => {
+    const isValid = await allCellsPassValidation();
+    setIsDataValid(isValid);
+  }
+
+  // Check if the page is rendered inside an iframe
+  const isInIframe = () => {
+    try {
+      return window.self !== window.parent;
+    } catch (e) {
+      return true; // If there's an error, assume it's in an iframe
+    }
+  };
+
+  const inIframe = isInIframe();
 
   const generateCSVFile = async (ogHeader) => {
     const newData = [];
@@ -565,10 +620,10 @@ const OCADataValidatorCheck = ({
 
       prev.forEach((header) => {
         if (validate?.unmachedAttrs?.has(header.headerName) && header.headerName !== "") {
-          copy.push({
-            ...header,
-            cellStyle: () => ({ backgroundColor: CustomPalette.GREY_200 })
-          });
+          // copy.push({
+          //   ...header,
+          //   cellStyle: () => ({ backgroundColor: CustomPalette.GREY_200 })
+          // });
         } else {
           copy.push({
             ...header,
@@ -579,6 +634,8 @@ const OCADataValidatorCheck = ({
 
       return copy;
     });
+
+    await updateDataValidationState();
   };
 
   function formatHeader(cell) {
@@ -712,7 +769,7 @@ const OCADataValidatorCheck = ({
     setRowData([...currentData, newRow]);
   }, [isValidateButtonEnabled, schemaDataConformantHeader, gridRef, setRowData]);
 
-  const onCellValueChanged = (e) => {
+  const onCellValueChanged = async (e) => {
     if (validateBeforeOnChangeRef.current) {
       validateBeforeOnChangeRef.current = false;
       return;
@@ -734,6 +791,7 @@ const OCADataValidatorCheck = ({
     }
 
     setRevalidateData(true);
+    await updateDataValidationState();
   };
 
   const handleMoveBack = () => {
@@ -811,12 +869,10 @@ const OCADataValidatorCheck = ({
   useEffect(() => {
     const columns = [];
     const LIMIT_ENTRYCODES_LENGTH = 20;
-    const variableToCheck =
-      datasetRawFile.length === 0 ? attributesList : schemaDataConformantHeader;
+    const variableToCheck = attributesList;
     if (datasetRawFile.length === 0) {
       setSchemaDataConformantHeader(attributesList);
     }
-
     if (variableToCheck && variableToCheck?.length > 1) {
       variableToCheck.forEach((header) => {
         if (
@@ -921,7 +977,26 @@ const OCADataValidatorCheck = ({
     }
   }, [rowData, isValidateButtonEnabled]);
 
+  const rowDataFilter =
+    errorName.length > 0
+      ? rowData.filter((row) => {
+          for (const error of errorName) {
+            if (row?.error) {
+              const errCode = errorCode?.[error];
+              const errorValues = Object.values(row?.error);
+              for (const err of errorValues) {
+                const errs = err.map((item) => item?.type);
+                if (errs?.includes(errCode)) {
+                  return true;
+                }
+              }
+            }
+          }
+          return false;
+        })
+      : rowData;
   function filterRowData() {
+    updateDataValidationState();
     if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
       const selectedErrors = errorName.filter(
         (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
@@ -933,6 +1008,15 @@ const OCADataValidatorCheck = ({
           .map((err) => err?.type);
         return selectedErrors.some((error) => errorTypes.includes(errorCode?.[error]));
       });
+    }
+    if (errorName.includes(SHOW_NO_ERRORS)) {
+      return initialRowData.filter(
+        (row) =>
+          !row?.error ||
+          Object.values(row.error).every(
+            (cellErrors) => !cellErrors || cellErrors.length === 0
+          )
+      );
     }
     return initialRowData;
   }
@@ -965,7 +1049,9 @@ const OCADataValidatorCheck = ({
           >
             <Button
               color="navButton"
-              sx={{ textAlign: "left", alignSelf: "flex-start" }}
+              sx={{ textAlign: "left", alignSelf: "flex-start", color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}
               onClick={handleMoveBack}
             >
               <ArrowBackIosIcon /> Back
@@ -990,7 +1076,7 @@ const OCADataValidatorCheck = ({
                   fontSize: 25
                 }}
               />
-              <p>No data is saved without exporting!</p>
+              <p>{t("No data is saved without exporting!")}</p>
             </Box>
             <Box
               sx={{
@@ -998,7 +1084,16 @@ const OCADataValidatorCheck = ({
                 flexDirection: "row"
               }}
             >
-              <ExportButton handleSave={handleSave} inputDataType={datasetRawFileType} />
+              {/* <ExportButton handleSave={handleSave} inputDataType={datasetRawFileType} /> */}
+              <ExportButton
+                handleSave={handleSave}
+                inputDataType={datasetRawFileType}
+                validatedData={rowDataFilter}
+                currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
+              />
+              {inIframe && (
+                <UploadButton isDisabled={!isDataValid} uploadFunc={uploadData} />
+              )}
             </Box>
           </Box>
         </Box>
@@ -1064,18 +1159,22 @@ const OCADataValidatorCheck = ({
                   style={{ width: "120px", height: "40px" }}
                   onClick={handleValidate}
                   disabled={isValidateButtonEnabled}
+                  sx={{
+                    fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  }}
                 >
-                  Verify
+                  {t("Verify")}
                 </Button>
                 {revalidateData && (
                   <Typography
                     sx={{
                       marginLeft: "20px",
                       color: "red",
-                      fontWeight: "bold"
+                      fontWeight: "bold",
+                      fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
                     }}
                   >
-                    Please re-verify the data!
+                    {t("Please re-verify the data!")}
                   </Typography>
                 )}
               </Box>
@@ -1093,7 +1192,9 @@ const OCADataValidatorCheck = ({
             <CustomAnchorLink
               text={t("Verification Rules")}
               onClick={toggleDrawer(true)}
-              overrideStyle={{ textAlign: "right", marginRight: "2rem" }}
+              overrideStyle={{ textAlign: "right", marginRight: "2rem",
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}
             />
             <Box
               sx={{
@@ -1110,7 +1211,9 @@ const OCADataValidatorCheck = ({
                   marginRight: "15px"
                 }}
               />
-              <span>{t("Pass Verification")}</span>
+              <span style={{
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}>{t("Pass Verification")}</span>
             </Box>
             <Box
               sx={{
@@ -1127,7 +1230,9 @@ const OCADataValidatorCheck = ({
                   marginRight: "15px"
                 }}
               />
-              <span>{t("Fail Verification")}</span>
+              <span style={{
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}>{t("Fail Verification")}</span>
             </Box>
             <Box
               sx={{
@@ -1144,7 +1249,9 @@ const OCADataValidatorCheck = ({
                   marginRight: "15px"
                 }}
               />
-              <span>{t("Unmatched Attributes")}</span>
+              <span style={{
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}>{t("Unmatched Attributes")}</span>
             </Box>
             <Box
               sx={{
@@ -1162,7 +1269,9 @@ const OCADataValidatorCheck = ({
                   border: "1px solid #ededed"
                 }}
               />
-              <span>{t("Unverified Data")}</span>
+              <span style={{
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}>{t("Unverified Data")}</span>
             </Box>
           </Box>
         </Box>
@@ -1209,7 +1318,7 @@ const OCADataValidatorCheck = ({
                 justifyContent: "space-around"
               }}
             >
-              Add row <AddCircleIcon />
+              {t("Add row")} <AddCircleIcon />
             </Button>
           </Box>
         </div>
