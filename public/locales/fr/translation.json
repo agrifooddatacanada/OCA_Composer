@@ -323,7 +323,7 @@
   "Request new unit ontologies to be added by": "Demander l'ajout de nouvelles ontologies d'unités en",
   "Click here to select schema bundle (.zip OR .json) or drag and drop one here": "Cliquez ici pour sélectionner le bundle de schémas (.zip OU .json) ou faites-en glisser un ici",
   "Download Data": "Télécharger les données",
-  "Upload Data": "Téléverser les données"
+  "Upload Data": "Téléverser les données",
   "Show Difference": "Afficher la différence",
   "Enter a custom regular expression for the attribute's data": "Saisissez une expression régulière personnalisée pour les données de l'attribut",
   "SchemaExportError": "Une erreur s'est produite. Veuillez envoyer un e-mail à <0>adc@uoguelph.ca</0> en incluant le fichier OCA.",
