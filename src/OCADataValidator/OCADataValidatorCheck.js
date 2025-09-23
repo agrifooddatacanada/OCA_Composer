@@ -990,7 +990,7 @@ const OCADataValidatorCheck = ({
                   fontSize: 25
                 }}
               />
-              <p>No data is saved without exporting!</p>
+              <p>{t("No data is saved without exporting!")}</p>
             </Box>
             <Box
               sx={{
@@ -1065,7 +1065,7 @@ const OCADataValidatorCheck = ({
                   onClick={handleValidate}
                   disabled={isValidateButtonEnabled}
                 >
-                  Verify
+                  {t("Verify")}
                 </Button>
                 {revalidateData && (
                   <Typography
@@ -1075,7 +1075,7 @@ const OCADataValidatorCheck = ({
                       fontWeight: "bold"
                     }}
                   >
-                    Please re-verify the data!
+                    {t("Please re-verify the data!")}
                   </Typography>
                 )}
               </Box>
@@ -1209,7 +1209,7 @@ const OCADataValidatorCheck = ({
                 justifyContent: "space-around"
               }}
             >
-              Add row <AddCircleIcon />
+              {t("Add row")} <AddCircleIcon />
             </Button>
           </Box>
         </div>
