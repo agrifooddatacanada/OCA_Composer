@@ -9,7 +9,10 @@ You can learn more about schemas and see OCA Composer live at the [Semantic Engi
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Quick Start: Run Locally](#quick-start-run-locally)
+- [Development (Run Locally)](#development-run-locally)
+- [Deployment](#deployment)
+  - [General guidance](#general-guidance)
+  - [Docker Compose](#docker-compose)
 - [What OCA Composer Outputs](#what-oca-composer-outputs)
 - [Data Privacy: Uploading Data](#data-privacy-uploading-data)
 - [Consuming the OCA Schema Bundle](#consuming-the-oca-schema-bundle)
@@ -17,12 +20,14 @@ You can learn more about schemas and see OCA Composer live at the [Semantic Engi
   - [Theme Configuration](#theme-configuration)
   - [Theme Object Components](#theme-object-components)
   - [Logo System](#logo-system)
-  - [Embedding OCA Composer](#embedding-oca-composer)
-- [Iframe File Listener (OCA Data Verifier)](#iframe-file-listener-oca-data-verifier)
+  - [Embedded OCA Composer](#embedded-oca-composer)
+- [Embedding OCA Composer](#embedding-oca-composer)
   - [Overview](#overview)
-  - [Implementation Details](#implementation-details)
-  - [How to Use](#how-to-use)
-  - [Receiving Data from the Iframe](#2-receiving-data-from-the-iframe-in-your-parent-component)
+  - [Implementation](#implementation)
+  - [Parent Application Setup](#parent-application-setup)
+    - [Create an iframe that points to the OCA Data verifier](#create-an-iframe-that-points-to-the-oca-data-verifier)
+    - [Send OCA Schema data as JSON to the iframe](#send-oca-schema-data-as-json-to-the-iframe)
+    - [Receive verified data as CSV from the iframe](#receive-verified-data-as-csv-from-the-iframe)
   - [Error Handling](#error-handling)
   - [Notes](#notes)
 - [Development Status](#development-status)
@@ -32,15 +37,16 @@ You can learn more about schemas and see OCA Composer live at the [Semantic Engi
 
 The OCA Composer is written in React and deployed as a web application. It guides users to define and export OCA-compliant schemas that describe their datasets.
 
-## Quick Start: Run Locally
+## Development (Run Locally)
 
 You can clone the project or download it as a ZIP from GitHub.
 
 Create a `.env` file in the project root and add:
 
 ```
-REACT_APP_GA_ID=0
+# Google Analytics ID. Use 0 if you don't want to use this feature
 
+REACT_APP_GA_ID=0
 ```
 
 In the project directory, run:
@@ -52,15 +58,56 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 The page reloads on edits, and you will see any errors/warnings in the console.
 
-### `npm run build`
+## Deployment
 
-Builds the app for production to the `build` folder.\
-It bundles React in production mode and optimizes for performance.
+### General guidance
 
-The build is minified and filenames include hashes.\
-Your app is ready to deploy.
+This is a standard React (CRA + craco) single-page app that builds to static files under `build/` in production mode and optimizes for performance. The built app is minified and filenames include hashes.
+
+You can deploy it with any static hosting or CDN you’re comfortable with (e.g., Nginx/Apache, Azure Static Web Apps, S3/CloudFront, Netlify, Vercel, etc.). Key points:
+
+- Provide build-time environment variables (e.g., `REACT_APP_GA_ID`) through your CI or build command.
+- Create a production build: `npm run build`.
+- Serve the `build/` directory via any static server.
+- SPA routing: ensure a “rewrite all to /index.html” rule (our `nginx.conf` shows an example using `try_files $uri /index.html;`).
+
+If you already have a React deployment workflow, follow that process.
 
 See [deployment docs](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### Docker Compose
+
+You can use Docker Compose as an alternative deployment method. This setup shines in self-hosted environments where [OCA Composer runs embedded in an external application](#oca-data-verifier-embedded-oca-composer). Drop your application into the same `docker-compose.yml`, add a service, and wire it up—no bespoke infrastructure required. You get a clean, repeatable deployment that can be embedded into larger systems without friction.
+
+We keep Nginx as a separate service so it can be updated independently (e.g., to address CVEs) without rebuilding the app. The Compose file builds an assets-only image and serves it with `nginx:alpine`.
+
+
+
+1) Create a `.env` file in the repo root (Docker Compose auto-loads it):
+
+```
+# Google Analytics ID. Use 0 if you don't want to use this feature
+
+REACT_APP_GA_ID=0
+```
+
+2) Build and start:
+
+```bash
+docker compose up --build
+# Or run in detached mode
+docker compose up --build -d
+```
+
+3) Open the app:
+
+```
+http://localhost:3000
+```
+
+Notes:
+- Re-run `docker compose up --build` to rebuild assets when the app changes.
+- Nginx uses `nginx.conf` from this repo for SPA routing.
 
 ## What OCA Composer Outputs
 
@@ -184,9 +231,9 @@ The logo system supports:
 - **Automatic Detection**: Automatically detects and renders all `supportedByLogo1`, `supportedByLogo2`, etc.
 - **Flexible Styling**: Each logo can have its own styling and alt text
  
-### Embedding OCA Composer
+### Embedded OCA Composer
 
-When embedding OCA Composer, the theme is automatically detected from the embedding context:
+When [embedding OCA Composer](#embedding-oca-composer), the theme is automatically detected from the embedding context:
  
 1. **Add Your Theme**
    - Create a new theme object in `themeConstants.js`
@@ -204,69 +251,44 @@ When embedding OCA Composer, the theme is automatically detected from the embedd
    - All components using theme colors update dynamically
    - Logo rendering is automatic based on your configuration
 
-## Iframe File Listener (OCA Data Verifier)
+## Embedding OCA Composer
 
-This feature explains how to send JSON schema files from a parent application to the OCA Data Verifier through an iframe.
+OCA Composer can be embedded as an iframe, especially to use the OCA Data Verifier natively inside other applications. This feature explains how to send JSON schema files from a parent application to the OCA Data Verifier through an iframe.
 
 ### Overview
 
 The file listener is a React hook that enables communication between a parent application and the OCA Data Verifier through `postMessage`.
-It allows you to send JSON files from the parent application to the verifier, which will then process them for verification.
+It allows you to send JSON files from the parent application to the verifier, which will then process them for validation.
 
-### Implementation Details
+### Implementation
 
 The file listener is implemented as a React hook (`useFileListener`) that:
 1. Sets up a message event listener
 2. Processes incoming messages of type `JSON_SCHEMA`
 3. Converts the received data into a File object
 4. Updates the application state with the received file
+5. Sends back verified data as `VERIFIED_DATA` message type
 
-### How to Use
-
-#### 1. Parent Application Setup
+#### Parent Application Setup
 
 In your parent application:
 1. Create an iframe that points to the OCA Data verifier
 2. Send the JSON file using `postMessage`
+3. Receive verified data using `addEventListener`
 
-Example parent application HTML:
+
+##### Create an iframe that points to the OCA Data verifier
+
+Example parent application HTML for the iframe:
 
 ```html
 <!-- Parent application HTML -->
 <iframe id="verifierFrame" src="https://www.semanticengine.org/oca-data-verifier" style="width: 100%; height: 600px;"></iframe>
 ```
 
-#### Sent Message Format
+##### Send OCA Schema data as JSON to the iframe
 
-The message sent to the verifier must follow this structure:
-```javascript
-{
-  type: 'JSON_SCHEMA',
-  data: {
-    "bundle": {
-      "v": "OCAB10JSON0010eb_",
-      "d": "EMY8Z5PAJSJ4RknrB4FVHhslCAa2kecE_UuooZXHgocZ",
-      "capture_base": {
-        "d": "EK2EbGdxi56FIUqT42NP2wl31eSCld97wJao9dhkDr9O",
-        "type": "spec/capture_base/1.0",
-        "classification": "",
-        "attributes": {
-          "Age": "Numeric",
-          "BreastWt": "Numeric",
-          "Breed": "Text",
-          "Farm": "Text",
-          "Glucose": "Numeric",
-          "Lipase": "Numeric",
-          "LiveWt": "Numeric"
-        },
-        "flagged_attributes": []
-      },
-    }
-  }
-  // example schema data
-}
-```
-Include `type: 'JSON_SCHEMA'` — the verifier checks `type === 'JSON_SCHEMA'`.
+Example javascript to send JSON file via `postMessage`:
 
 ```javascript
 // Parent application JavaScript
@@ -275,19 +297,38 @@ const iframe = document.getElementById('verifierFrame');
 // Function to send a JSON file to the verifier
 function sendFileToVerifier(jsonData) {
   iframe.contentWindow.postMessage({
-    type: 'JSON_SCHEMA',
-    data: jsonData // add your json schema here
+    type: 'JSON_SCHEMA', // This type is hardcoded on OCA Composer, so you can't change it
+    data: jsonData // this is your json schema here
   }, '*'); // Replace '*' with the actual origin of the verifier for better security
 }
 
-// Example usage
+// Example usage - JSON data must follow this structure
 const jsonData = {
-  // Your JSON data here
+  "bundle": {
+    "v": "OCAB10JSON0010eb_",
+    "d": "EMY8Z5PAJSJ4RknrB4FVHhslCAa2kecE_UuooZXHgocZ",
+    "capture_base": {
+      "d": "EK2EbGdxi56FIUqT42NP2wl31eSCld97wJao9dhkDr9O",
+      "type": "spec/capture_base/1.0",
+      "classification": "",
+      "attributes": {
+        "Age": "Numeric",
+        "BreastWt": "Numeric",
+        "Breed": "Text",
+        "Farm": "Text",
+        "Glucose": "Numeric",
+        "Lipase": "Numeric",
+        "LiveWt": "Numeric"
+      },
+      "flagged_attributes": []
+    },
+  }
 };
+
 sendFileToVerifier(jsonData);
 ```
 
-### 2. Receiving Data from the Iframe (in your parent component)
+##### Receive verified data as CSV from the iframe
 
 Set up an event listener in your JavaScript code, typically on the `window` object:
 
@@ -300,7 +341,8 @@ function receiveData(event) {
     return // Ignore messages from unknown origins
   }
 
-  // Check the type of the message
+  // Check the type of the message.
+  // OCA Composer has the event data type hard-coded as VERIFIED_DATA
   if (event.data.type === 'VERIFIED_DATA') {
     const csvData = event.data.data
     // Handle the CSV data as needed
@@ -309,9 +351,8 @@ function receiveData(event) {
 }
 ```
 
-#### Received Message Format
-
 The message received from the Semantic Engine has this format:
+
 ```javascript
 {
   type: 'VERIFIED_DATA', // Always check object.type === 'VERIFIED_DATA'
@@ -319,7 +360,11 @@ The message received from the Semantic Engine has this format:
 }
 ```
 
-#### Example usage of data
+###### Example usage of verified data received
+
+- The example below shows how to convert the CSV string into a downloadable CSV file.
+- Alternatively, you can send the CSV string to your database/storage via a POST request.
+
 ```javascript
 // Check the type of the message
 if (event.data.type === 'VERIFIED_DATA') {
@@ -334,7 +379,7 @@ if (event.data.type === 'VERIFIED_DATA') {
   // Create a temporary anchor element to trigger the download
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'verifiedData.csv'; // Specify the filename for the download
+  a.download = 'validatedData.csv'; // Specify the filename for the download
   document.body.appendChild(a); // Append the anchor to the body
   a.click(); // Trigger the download
 
@@ -343,10 +388,6 @@ if (event.data.type === 'VERIFIED_DATA') {
   URL.revokeObjectURL(url);
 }
 ```
-
-#### Explanation
-- This demo shows how to convert the CSV string into a downloadable CSV file.
-- Alternatively, send the CSV string to your database/storage via a POST request.
 
 ### Error Handling
 
@@ -364,10 +405,10 @@ Errors are logged to the console for debugging.
 - The file type is `application/json`.
 - The file is wrapped in an array when setting state, as the verifier expects an array of files.
 
-## Development Status
+# Development Status
 
 This code is created with support by [Agri-food Data Canada](https://agrifooddatacanada.ca/), funded by [CFREF](https://www.cfref-apogee.gc.ca/) through the [Food from Thought grant](https://foodfromthought.ca/) held at the [University of Guelph](https://www.uoguelph.ca/). Currently, we do not provide any warranty of any kind regarding the accuracy, security, completeness or reliability of this code or any of its parts.
 
-## License
+# License
 
 This project is licensed under the terms of the LICENSE file included in the repository.
