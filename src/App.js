@@ -511,7 +511,7 @@ function App() {
   useEffect(() => {
     if (jsonRawFile.length > 0) {
       const newMatchingRowData = [];
-      attributesList.forEach((item, index) => {
+      attributesList.forEach((item) => {
         // if matchingRowData has data, use it
         const matchingRow = matchingRowData.find((obj) => obj.Attribute === item);
         const newObj = {
@@ -522,8 +522,10 @@ function App() {
           newObj.Dataset = matchingRow.Dataset;
         }
         languages.forEach((lang) => {
-          newObj[lang] = lanAttributeRowData?.[lang]?.[index]?.Label;
-        });
+            const languageRows = lanAttributeRowData?.[lang] || [];
+            const matchingLangRow = languageRows.find((row) => row?.Attribute === item);
+            newObj[lang] = matchingLangRow?.Label || "";
+          });
         newMatchingRowData.push(newObj);
       });
       setMatchingRowData(newMatchingRowData);
