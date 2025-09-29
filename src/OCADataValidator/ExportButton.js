@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Menu, MenuItem, MenuList, ClickAwayListener } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
+import { Context } from "../App";
 
 const exportOptions = ["excel", "csv"];
 
-const ExportButton = ({ handleSave }) => {
+const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
+  const { currentTheme } = useContext(Context);
   const [selectedOption, setSelectedOption] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [additionalOptionsAnchorEl, setAdditionalOptionsAnchorEl] = useState(null);
@@ -14,11 +16,32 @@ const ExportButton = ({ handleSave }) => {
 
   const { t } = useTranslation();
 
+  const [isEmbedded, setIsEmbedded] = useState(false);
+  useEffect(() => {
+    setIsEmbedded(window !== window.parent);
+  }, []);
+
   const handleMenuItemClick = (option) => {
     setSelectedOption(option);
 
     if (option === "excel") {
       handleSave("excel", true);
+
+      if (isEmbedded) {
+        window.parent.postMessage(
+          {
+            type: "validatedData",
+            format: "excel",
+            data: validatedData,
+            metadata: {
+              timestamp: new Date().toISOString(),
+              schemaName: currentSchemaName,
+              validationStatus: true
+            }
+          },
+          "*"
+        );
+      }
     } else if (option === "csv") {
       setAdditionalOptionsAnchorEl(anchorEl);
     }
@@ -36,6 +59,28 @@ const ExportButton = ({ handleSave }) => {
   const handleAdditionalOptionsClose = () => {
     setAdditionalOptionsAnchorEl(null);
     setAnchorEl(null);
+  };
+
+  const handleCsvExport = (keepOriginalHeaders) => {
+    handleAdditionalOptionsClose();
+    handleSave("csv", keepOriginalHeaders);
+
+    if (isEmbedded) {
+      window.parent.postMessage(
+        {
+          type: "validatedData",
+          format: "csv",
+          keepOriginalHeaders,
+          data: validatedData,
+          metadata: {
+            timestamp: new Date().toISOString(),
+            schemaName: currentSchemaName,
+            validationStatus: true
+          }
+        },
+        "*"
+      );
+    }
   };
 
   useEffect(() => {
@@ -59,7 +104,8 @@ const ExportButton = ({ handleSave }) => {
           alignSelf: "flex-end",
           display: "flex",
           justifyContent: "space-around",
-          padding: "0.5rem 1rem"
+          padding: "0.5rem 1rem",
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
         {t("Download Data")}
@@ -83,7 +129,10 @@ const ExportButton = ({ handleSave }) => {
       >
         {exportOptions.map((option) => (
           <MenuItem
-            sx={{ color: CustomPalette.PRIMARY }}
+            sx={{
+              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+            }}
             key={option}
             selected={option === selectedOption}
             onClick={() => handleMenuItemClick(option)}
@@ -104,20 +153,28 @@ const ExportButton = ({ handleSave }) => {
         <ClickAwayListener onClickAway={handleAdditionalOptionsClose}>
           <MenuList>
             <MenuItem
-              sx={{ color: CustomPalette.PRIMARY }}
-              onClick={() => {
-                handleAdditionalOptionsClose();
-                handleSave("csv", true);
+              sx={{
+                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
               }}
+              // onClick={() => {
+              //   handleAdditionalOptionsClose();
+              //   handleSave("csv", true);
+              // }}
+              onClick={() => handleCsvExport(true)}
             >
               Keep original data column headers
             </MenuItem>
             <MenuItem
-              sx={{ color: CustomPalette.PRIMARY }}
-              onClick={() => {
-                handleAdditionalOptionsClose();
-                handleSave("csv", false);
+              sx={{
+                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
               }}
+              // onClick={() => {
+              //   handleAdditionalOptionsClose();
+              //   handleSave("csv", false);
+              // }}
+              onClick={() => handleCsvExport(false)}
             >
               Change to Schema column headers
             </MenuItem>

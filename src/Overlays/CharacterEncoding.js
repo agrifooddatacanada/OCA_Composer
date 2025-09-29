@@ -1,7 +1,8 @@
 import { Box, Button } from "@mui/material";
 import React, { useCallback, useContext, useMemo, useRef, useState } from "react";
-import { Context } from "../App";
 import { AgGridReact } from "ag-grid-react";
+import { useTranslation } from "react-i18next";
+import { Context } from "../App";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import useCharacterEncodingType, {
   CharacterEncodingTypeRenderer
@@ -12,7 +13,6 @@ import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
-import { useTranslation } from "react-i18next";
 
 const CharacterEncoding = () => {
   const { t } = useTranslation();
@@ -28,37 +28,38 @@ const CharacterEncoding = () => {
   const gridRef = useRef();
   const { handleSave, applyAllFunc } = useCharacterEncodingType(gridRef);
 
-  const columnDefs = useMemo(() => {
-    return [
+  const columnDefs = useMemo(
+    () => [
       {
         field: "Attribute",
         editable: false,
         width: 180,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: () => (
-          <CellHeader
-            headerText={t("Attributes")}
-            helpText="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
-          />
-        )
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Attributes"),
+          helpText:
+            "This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
+        }
       },
       {
         field: "Character Encoding",
-        headerComponent: () => (
-          <CellHeader
-            headerText={t("Character Encoding")}
-            helpText="Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here."
-          />
-        ),
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Character Encoding"),
+          helpText:
+            "Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here."
+        },
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
           attr: params.data.Attribute
         }),
         width: 200
       }
-    ];
-  }, [t]);
+    ],
+    [t]
+  );
 
   const handleForward = useCallback(() => {
     handleSave();
@@ -137,7 +138,7 @@ const CharacterEncoding = () => {
               alignItems: "flex-start"
             }}
           >
-            <Box sx={{ height: "2.2rem" }} key={0}></Box>
+            <Box sx={{ height: "2.2rem" }} key={0} />
             <Button
               color="navButton"
               sx={{

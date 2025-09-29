@@ -84,6 +84,7 @@ const ucumUnits = [
   {
     code: "cal_IT",
     label: "internation table calorie",
+    // eslint-disable-next-line quotes
     description: 'Synonymous with the "mean calorie"'
   },
   {

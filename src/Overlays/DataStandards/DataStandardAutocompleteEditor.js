@@ -39,7 +39,7 @@ const DataStandardAutocompleteEditor = ({ value, api, node, column }) => {
 
 export default DataStandardAutocompleteEditor;
 
-const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
+const StyledAutocomplete = styled(Autocomplete)(() => ({
   "& .MuiInputBase-input, & .MuiFormLabel-root": {
     fontSize: "small"
   },
