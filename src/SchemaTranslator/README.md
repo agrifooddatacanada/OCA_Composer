@@ -42,13 +42,6 @@ Our team is using the [OCA Package standard](https://github.com/agrifooddatacana
 | Sensitive data overlay | N/A | Sensitive Overlay | (uses general `flagged`) | `attributes: ["ssn", "dob"]` |
 | Cross-enum mappings | N/A | Entry Code Mapping Overlay | (no equivalent) | `attr_entry_codes_mapping: {"country": ["US:USA"]}` |
 
-## Development Priorities
-
-1. **✅ Implemented Features**: Ready for production use
-2. **⚠️ Next Sprint**: Low-hanging fruit, easy to add to core translator
-3. **🔧 OCA Package**: Requires community overlay development
-4. **🎯 OCA-Specific**: Generate with sensible defaults
-
 ### Example Mapping
 
 ```yaml
@@ -143,45 +136,30 @@ slots:
       ucum_code: cm
 ```
 
-## Directory Structure
+## LinkML Schema Processing
 
-```
-SchemaTranslator/
-├── components/          # React components for the translator UI
-├── processors/         # Core processing logic for schema translation
-│   ├── index.ts              # Processor exports
-│   ├── mapLinkMLToOCABundle.ts    # Main LinkML to OCA mapping
-├── constants.ts       # Shared constants and configuration
-├── linkMLToOCA.ts     # Main translation logic
-├── linkmlLint.ts      # LinkML schema linting
-├── types.ts          # TypeScript type definitions
-├── utils.ts          # Utility functions
-└── validation.ts     # Schema validation functions
-```
+Currently, the translator processes LinkML schemas **without validation**. While initially considering the integration of [`linkml-lint`](https://linkml.io/linkml/schemas/linter.html) for schema validation, we found that LinkML's JavaScript implementation is still experimental. The schema validation feature is currently being tracked in the [linkml-runtime.js repository (Issue #13)](https://github.com/linkml/linkml-runtime.js/issues/13).
 
-## Core Files
+### Current Implementation
 
-- `linkMLToOCA.ts`: Main entry point for schema translation
-- `types.ts`: TypeScript interfaces and types for LinkML and OCA schemas
-- `validation.ts`: Schema validation and error checking
-- `constants.ts`: Shared constants and configuration values
-- `utils.ts`: Helper functions and utilities
+The translator currently:
+- Parses YAML content using `js-yaml` 
+- Processes `slots` and `enums` objects if present (defaults to empty objects if missing)
+- Maps available slots to OCA attributes with basic type conversion
+- Generates overlays based on available LinkML properties
 
-## Components
+### Validation Limitations
 
-The `components/` directory contains React components for the translator UI interface.
+⚠️ **Important**: No schema validation is currently implemented. The translator will attempt to process any YAML input, which may result in:
+- Empty OCA bundles from malformed LinkML schemas
+- Missing overlays if expected LinkML properties are absent
+- Unexpected behavior with invalid schema structures
 
-## LinkML Schema Validation
+### Recommendations
 
-While initially considering the integration of [`linkml-lint`](https://linkml.io/linkml/schemas/linter.html) for schema validation, we found that LinkML's JavaScript implementation is still experimental. The schema validation feature is currently being tracked in the [linkml-runtime.js repository (Issue #13)](https://github.com/linkml/linkml-runtime.js/issues/13).
+For reliable results, ensure your LinkML schemas include:
+- Valid `slots` definitions with `range` properties
+- Proper `enums` with `permissible_values` where needed  
+- Schema metadata (`name`, `description`)
 
-Since implementing the Python-based LinkML validator would introduce similar complexity as a Python-based conversion process, we've implemented a focused set of validation rules that check for these minimum requirements:
-
-- Must have a `name` field
-- Must have a `classes` object with at least one class
-- Each class must have `attributes`
-- Must have a `slots` object defined (where attribute types are defined)
-- Each slot referenced in class attributes must exist in the `slots` object
-- Each slot should have a valid `range` property that maps to OCA types (or defaults to "Text")
-
-For comprehensive LinkML validation, we recommend users run [`linkml-lint`](https://linkml.io/linkml/cli/lint.html) on their schemas before uploading them to this tool.
+For comprehensive LinkML validation, we **strongly recommend** users run [`linkml-lint`](https://linkml.io/linkml/cli/lint.html) on their schemas before uploading them to this tool.
