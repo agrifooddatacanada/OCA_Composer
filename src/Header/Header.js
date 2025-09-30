@@ -254,16 +254,6 @@ export default function Header({ currentPage }) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              {/* <img
-                src={logo}
-                style={{
-                  display: "block",
-                  width: isMobile ? "100px" : "150px",
-                  marginRight: "20px",
-                  cursor: "pointer"
-                }}
-                alt="Agri-food Data Canada"
-              /> */}
               <img
                 src={currentTheme.logos.primaryLogo.url}
                 style={{
@@ -350,24 +340,12 @@ export default function Header({ currentPage }) {
               </select>
             </div>
             <a
-              // href="https://agrifooddatacanada.ca/"
-              href={themes.default.logos.primaryLogo.url}
+              href={themes.default.logos.homeNavLogo.website}
               target="_blank"
               rel="noopener noreferrer"
             >
-              {/* <img
-                src={logoWhite}
-                style={{
-                  display: "block",
-                  width: isMobile ? "auto" : "250px",
-                  height: isMobile ? "70px" : "auto",
-                  marginRight: isMobile ? "unset" : "20px",
-                  cursor: "pointer"
-                }}
-                alt="Agri-food Data Canada"
-              /> */}
               <img
-                src={themes.default.logos.primaryLogo.url}
+                src={themes.default.logos.homeNavLogo.url}
                 style={{
                   display: "block",
                   width: isMobile ? "auto" : "250px",
@@ -375,7 +353,7 @@ export default function Header({ currentPage }) {
                   marginRight: isMobile ? "unset" : "20px",
                   cursor: "pointer"
                 }}
-                alt={themes.default.logos.primaryLogo.alt}
+                alt={themes.default.logos.homeNavLogo.alt}
               />
             </a>
           </Box>

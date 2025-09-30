@@ -12,7 +12,15 @@ export const themes = {
         // eslint-disable-next-line global-require
         url: require("../assets/agri-logo.png"),
         website: "https://agrifooddatacanada.ca/",
-        alt: "Agri Logo_white",
+        alt: "Agri-food Data Canada",
+        style: { width: "200px", cursor: "pointer" }
+      },
+
+      homeNavLogo: {
+        // eslint-disable-next-line global-require
+        url: require("../assets/agri-logo-white.png"),
+        website: "https://agrifooddatacanada.ca/",
+        alt: "Agri-food Data Canada",
         style: { width: "200px", cursor: "pointer" }
       },
 
