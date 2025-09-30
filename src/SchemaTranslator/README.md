@@ -1,75 +1,53 @@
 # Schema Translator Module
 
-This module provides functionality to translate LinkML schemas to OCA (Overlays Capture Architecture) format.
+This module provides functionality to translate [LinkML](https://linkml.io/linkml/) schemas to [OCA (Overlays Capture Architecture)](https://oca.colossi.network/) format.
 
-## LinkML to OCA Mappings
+## Overview
 
-### Required OCA Objects
+While there's significant overlap between LinkML and OCA, there are some key differences:
 
-#### Capture Base
+## Comprehensive Translation Overview
 
-| LinkML Feature                     | OCA Output                             | Notes                |
-| ---------------------------------- | -------------------------------------- | -------------------- |
-| `range: float`                   | `attributes: { "field": "Numeric" }` | Numeric type mapping |
-| Any other range                    | `attributes: { "field": "Text" }`    | Default type mapping |
-| `annotations: { flagged: true }` | `flagged_attributes: ["field"]`      | For sensitive data   |
+Our team is using the [OCA Package standard](https://github.com/agrifooddatacanada/OCA_package_standard) which significantly extends OCA's capabilities. Here's the development-focused translation overview:
 
-#### Character Encoding
+## LinkML to OCA Translation Status
 
-| LinkML Feature | OCA Output                              | Notes                                |
-| -------------- | --------------------------------------- | ------------------------------------ |
-| N/A            | `default_character_encoding: "utf-8"` | Default for all attributes           |
-| N/A            | `attribute_character_encoding: {}`    | Per-attribute encoding not supported |
+| Feature | LinkML Source | OCA Target | Details | |
+|---------|---------------|------------|---------|--|
+|         |               |            | **LinkML** | **OCA** |
+| **✅ Implemented** |  |  |  |  |
+| Data types | `range: float/string/integer` | Capture Base attributes | `slots: {field: {range: "float"}}` | `attributes: {"field": "Numeric"}` |
+| Field descriptions | `slot.description` | Information Overlay | `slots: {field: {description: "Patient age"}}` | `attribute_information: {"field": "Patient age"}` |
+| Field labels | `slot.title` | Label Overlay | `slots: {field: {title: "Full Name"}}` | `attribute_labels: {"field": "Full Name"}` |
+| Schema metadata | `name`, `description` | Meta Overlay | `name: "PatientSchema", description: "Clinical data"` | `name: "PatientSchema", description: "Clinical data"` |
+| Format validation | `slot.pattern` | Format Overlay | `slots: {ssn: {pattern: "^\\d{3}-\\d{2}"}}` | `attribute_formats: {"ssn": "^\\d{3}-\\d{2}"}` |
+| Enumerations | `enums.permissible_values` | Entry/Entry Code Overlays | `enums: {GenderEnum: {M: {description: "Male"}}}` | `attribute_entries: {"gender": {"M": "Male"}}` |
+| Units | `slot.unit.ucum_code` | Unit Overlay | `slots: {height: {unit: {ucum_code: "cm"}}}` | `attribute_units: {"height": "cm"}` |
+| Semantic references | `slot.slot_uri` | Standard Overlay | `slots: {name: {slot_uri: "schema:name"}}` | `attr_standards: {"name": "schema:name"}` |
+| Flagged attributes | `annotations.flagged` | `flagged_attributes` | `slots: {ssn: {annotations: {flagged: true}}}` | `flagged_attributes: ["ssn"]` |
+| **⚠️ To Do** |  |  |  |  |
+| Required fields | `slot.required` | Conformance Overlay | `required: true` | `attribute_conformance: {"field": "M"}` |
+| Cardinality constraints | `multivalued`, array limits | Cardinality Overlay | `multivalued: true` | `attr_cardinality: {"tags": "1-5"}` |
+| Aliases/mappings | `aliases`, `structured_aliases` | Attribute Mapping Overlay | `aliases: ["alt_name"]` | `attribute_mapping: {"name": "full_name"}` |
+| **🔧 Possible Through OCA Package Extensions** |  |  |  |  |
+| Schema imports | `imports` | OCA Package dependencies | `imports: ["base_schema"]` | `dependencies: [{"bundle": "base_said"}]` |
+| Class inheritance | `is_a`, `mixins` | ADC Inheritance Overlay | `is_a: Person` | `inheritance: {"Patient": {"parent": "Person"}}` |
+| Object relationships | Object `range` values | ADC Relationship Overlay | `range: Organization` | `relationships: {"employer": {"type": "Organization"}}` |
+| Unique keys | `unique_keys` | ADC Validation Overlay | `unique_keys: ["ssn"]` | `validation: {"unique": ["ssn"]}` |
+| Complex validation | `rules`, `conditions` | ADC Validation Overlay | `rules: [{if: age > 18}]` | `validation: {"rules": [...]}` |
+| Advanced types | `any_of`, `exactly_one_of` | ADC Type Overlay | `any_of: [string, integer]` | `types: {"union": ["string", "integer"]}` |
+| Custom annotations | `annotations` | ADC Community Overlays | `annotations: {custom: "value"}` | `extensions: {"adc": {...}}` |
+| **🎯 OCA-Specific (No LinkML Equivalent)** |  |  |  |  |
+| Character encoding | N/A | Character Encoding Overlay | (assumes UTF-8) | `attribute_character_encoding: {"field": "utf-8"}` |
+| Sensitive data overlay | N/A | Sensitive Overlay | (uses general `flagged`) | `attributes: ["ssn", "dob"]` |
+| Cross-enum mappings | N/A | Entry Code Mapping Overlay | (no equivalent) | `attr_entry_codes_mapping: {"country": ["US:USA"]}` |
 
-#### Format
+## Development Priorities
 
-| LinkML Feature       | OCA Output                                  | Notes                      |
-| -------------------- | ------------------------------------------- | -------------------------- |
-| `pattern: "regex"` | `attribute_formats: { "field": "regex" }` | Only if pattern is defined |
-
-### Optional OCA Overlays
-
-#### Information & Labels
-
-| LinkML Feature       | OCA Output                                            | Notes                 |
-| -------------------- | ----------------------------------------------------- | --------------------- |
-| Slot `description` | `attribute_information: { "field": "description" }` | Field descriptions    |
-| Slot `title`       | `attribute_labels: { "field": "title" }`            | Human-readable labels |
-
-#### Meta
-
-| LinkML Feature         | OCA Output                           | Notes              |
-| ---------------------- | ------------------------------------ | ------------------ |
-| Schema `name`        | `meta: { "name": "value" }`        | Schema identifier  |
-| Schema `description` | `meta: { "description": "value" }` | Schema description |
-
-#### Standards & Units
-
-| LinkML Feature          | OCA Output                               | Notes               |
-| ----------------------- | ---------------------------------------- | ------------------- |
-| Slot `slot_uri`       | `attr_standards: { "field": "uri" }`   | Semantic references |
-| Slot `unit.ucum_code` | `attribute_units: { "field": "code" }` | UCUM codes only     |
-
-#### Enumerations
-
-| LinkML Feature    | OCA Output                                                          | Notes              |
-| ----------------- | ------------------------------------------------------------------- | ------------------ |
-| Enum keys         | `entry_code.attribute_entry_codes: { "field": ["key1", "key2"] }` | Valid values       |
-| Enum descriptions | `entry.attribute_entries: { "field": { "key": "description" } }`  | Value descriptions |
-
-### Unsupported Features
-
-| OCA Feature         | Potential LinkML Source     | Status           |
-| ------------------- | --------------------------- | ---------------- |
-| Cardinality Overlay | Array constraints           | Not implemented  |
-| Conditional Overlay | No equivalent               | Gap              |
-| Conformance Overlay | `required` property       | Could map to M/O |
-| Mapping Overlay     | Slot aliases                | Not implemented  |
-| Entry Code Mapping  | No equivalent               | Gap              |
-| Subset Overlay      | No equivalent               | Gap              |
-| Unit Mapping        | Redundant with Unit Overlay | Not needed       |
-| Layout Overlay      | Under review                | Not implemented  |
-| Sensitive Overlay   | Under review                | Not implemented  |
+1. **✅ Implemented Features**: Ready for production use
+2. **⚠️ Next Sprint**: Low-hanging fruit, easy to add to core translator
+3. **🔧 OCA Package**: Requires community overlay development
+4. **🎯 OCA-Specific**: Generate with sensible defaults
 
 ### Example Mapping
 
@@ -195,7 +173,7 @@ The `components/` directory contains React components for the translator UI inte
 
 ## LinkML Schema Validation
 
-While initially considering the integration of `linkml-lint` for schema validation, we found that LinkML's JavaScript implementation is still experimental. The schema validation feature is currently being tracked in the linkml-runtime.js repository (Issue #13).
+While initially considering the integration of [`linkml-lint`](https://linkml.io/linkml/schemas/linter.html) for schema validation, we found that LinkML's JavaScript implementation is still experimental. The schema validation feature is currently being tracked in the [linkml-runtime.js repository (Issue #13)](https://github.com/linkml/linkml-runtime.js/issues/13).
 
 Since implementing the Python-based LinkML validator would introduce similar complexity as a Python-based conversion process, we've implemented a focused set of validation rules that check for these minimum requirements:
 
@@ -206,4 +184,4 @@ Since implementing the Python-based LinkML validator would introduce similar com
 - Each slot referenced in class attributes must exist in the `slots` object
 - Each slot should have a valid `range` property that maps to OCA types (or defaults to "Text")
 
-For comprehensive LinkML validation, we recommend users run `linkml-lint` on their schemas before uploading them to this tool.
+For comprehensive LinkML validation, we recommend users run [`linkml-lint`](https://linkml.io/linkml/cli/lint.html) on their schemas before uploading them to this tool.
