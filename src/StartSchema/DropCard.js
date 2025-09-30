@@ -1,19 +1,17 @@
-import React from "react";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Alert,
-  Tooltip,
-  Box
-} from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
+import React, { useContext } from "react";
+import { useTranslation } from "react-i18next";
+import { Card, CardContent, Typography, Alert, Tooltip, Box } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import LoopIcon from "@mui/icons-material/Loop";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { defaultNoteDescription, defaultTooltip, defaultUploadedDescription } from "../constants/constants";
-import { useTranslation } from "react-i18next";
+import { CustomPalette } from "../constants/customPalette";
+import {
+  defaultNoteDescription,
+  defaultTooltip,
+  defaultUploadedDescription
+} from "../constants/constants";
+import { Context } from "../App";
 
 export default function DropCard({
   loading,
@@ -30,9 +28,10 @@ export default function DropCard({
   handleDragLeave,
   description = defaultUploadedDescription,
   tipDescription = defaultTooltip,
-  noteDescription = defaultNoteDescription,
+  noteDescription = defaultNoteDescription
 }) {
   const { t } = useTranslation();
+  const { currentTheme } = useContext(Context);
   return (
     <section
       className="container"
@@ -41,22 +40,24 @@ export default function DropCard({
       <div {...getRootProps({ className: "dropzone" })}>
         <input {...getInputProps()} />
         <Box>
-          {tipDescription && <Box
-            sx={{
-              textAlign: "right",
-              height: "0rem",
-              transform: "translateX(25px)",
-              color: CustomPalette.GREY_600,
-            }}
-          >
-            <Tooltip
-              title={<div style={{ whiteSpace: 'pre-line' }}>{t(tipDescription)}</div>}
-              arrow
-              placement="right"
+          {tipDescription && (
+            <Box
+              sx={{
+                textAlign: "right",
+                height: "0rem",
+                transform: "translateX(25px)",
+                color: CustomPalette.GREY_600
+              }}
             >
-              <HelpOutlineIcon sx={{ fontSize: 15 }} />
-            </Tooltip>
-          </Box>}
+              <Tooltip
+                title={<div style={{ whiteSpace: "pre-line" }}>{t(tipDescription)}</div>}
+                arrow
+                placement="right"
+              >
+                <HelpOutlineIcon sx={{ fontSize: 15 }} />
+              </Tooltip>
+            </Box>
+          )}
           <Card
             sx={{
               maxWidth: 575,
@@ -64,7 +65,7 @@ export default function DropCard({
               border: "1px dashed grey",
               transition: "all 0.2s ease-in-out",
               boxShadow: hover === true && dropDisabled === false ? 9 : 0,
-              height: "15rem",
+              height: "15rem"
             }}
             onMouseOver={handleHover}
             onMouseLeave={handleHoverLeave}
@@ -78,7 +79,7 @@ export default function DropCard({
                   position: "absolute",
                   zIndex: 9999,
                   left: "50%",
-                  transform: "translate(-50%, -110%)",
+                  transform: "translate(-50%, -110%)"
                 }}
               >
                 {dropMessage?.message}
@@ -93,7 +94,7 @@ export default function DropCard({
                     m: 2,
                     fontSize: "60px",
                     animation: spinningAnimation,
-                    transition: "all 0.2s ease-in-out",
+                    transition: "all 0.2s ease-in-out"
                   }}
                 />
               ) : dropDisabled === true ? (
@@ -102,7 +103,7 @@ export default function DropCard({
                     m: 2,
                     fontSize: "60px",
                     // color: CustomPalette.GREEN_400,
-                    color: CustomPalette.PRIMARY,
+                    color: CustomPalette.PRIMARY
                   }}
                 />
               ) : (
@@ -113,7 +114,7 @@ export default function DropCard({
                     fontSize: "60px",
                     transition: "all 0.2s ease-in-out",
                     transform:
-                      hover === true && dropDisabled === false && "translateY(5px)",
+                      hover === true && dropDisabled === false && "translateY(5px)"
                   }}
                 />
               )}
@@ -123,22 +124,30 @@ export default function DropCard({
                   mb: 2,
                   color:
                     dropDisabled === false
-                      ? CustomPalette.PRIMARY
+                      ? (currentTheme?.primaryColor ?? CustomPalette.PRIMARY)
                       : CustomPalette.GREY_600,
-                  whiteSpace: "pre-line",
+                  fontFamily:
+                    currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif",
+                  whiteSpace: "pre-line"
                 }}
                 gutterBottom
               >
-                {dropDisabled === false ?
+                {dropDisabled === false ? (
                   t(description)
-                  : (
-                    <>
-                      Use the buttons below to add a <strong>new</strong> file or{" "}
-                      <strong>edit</strong> the uploaded file.
-                    </>
-                  )}
+                ) : (
+                  <>
+                    Use the buttons below to add a <strong>new</strong> file or{" "}
+                    <strong>edit</strong> the uploaded file.
+                  </>
+                )}
               </Typography>
-              <Typography sx={{ fontSize: 12, color: CustomPalette.GREY_600 }}>
+              <Typography
+                sx={{
+                  fontSize: 12,
+                  color: CustomPalette.GREY_600,
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                }}
+              >
                 {t(noteDescription)}
               </Typography>
             </CardContent>

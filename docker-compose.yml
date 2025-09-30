@@ -1,0 +1,29 @@
+services:
+  assets:
+    # Build the React assets only
+    build:
+      context: .
+      args:
+        REACT_APP_GA_ID: ${REACT_APP_GA_ID}
+    image: oca-composer-assets:latest
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["cp -r /app/build/* /out/ && echo 'Assets copied' && ls -la /out"]
+    volumes:
+      - site:/out
+    # Run once to populate the volume, then exit
+    restart: "no"
+
+  web:
+    image: nginx:1.25-alpine
+    depends_on:
+      - assets
+    ports:
+      - "3000:80"
+    volumes:
+      - site:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  site:
+
+
