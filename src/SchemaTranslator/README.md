@@ -1,6 +1,6 @@
 # Schema Translator Module
 
-This module provides functionality to translate [LinkML](https://linkml.io/linkml/) schemas to [OCA (Overlays Capture Architecture)](https://oca.colossi.network/) format.
+Th mode provides functionality to translate [LinkML](https://linkml.io/linkml/) schemas to [OCA (Overlays Capture Architecture)](https://oca.colossi.network/) format.
 
 ## Overview
 
@@ -15,6 +15,24 @@ Our team is using the [OCA Package standard](https://github.com/agrifooddatacana
 | Feature | LinkML Source | OCA Target | Details | |
 |---------|---------------|------------|---------|--|
 |         |               |            | **LinkML** | **OCA** |
+| **🎯 OCA-Specific (No LinkML Equivalent)** |  |  |  |  |
+| Character encoding | N/A | Character Encoding Overlay | (assumes UTF-8) | `attribute_character_encoding: {"field": "utf-8"}` |
+| Sensitive data overlay | N/A | Sensitive Overlay | (uses general `flagged`) | `attributes: ["ssn", "dob"]` |
+| Cross-enum mappings | N/A | Entry Code Mapping Overlay | (no equivalent) | `attr_entry_codes_mapping: {"country": ["US:USA"]}` |
+| **⚠️ Not Yet Implemented** |  |  |  |  |
+| Required fields | `slot.required` | Conformance Overlay | `required: true` | `attribute_conformance: {"field": "M"}` |
+| Cardinality constraints | `multivalued`, array limits | Cardinality Overlay | `multivalued: true` | `attr_cardinality: {"tags": "1-5"}` |
+| Aliases/mappings | `aliases`, `structured_aliases` | Attribute Mapping Overlay | `aliases: ["alt_name"]` | `attribute_mapping: {"name": "full_name"}` |
+| **📦 Only Possible with Extensions** |  |  |  |  |
+| Range constraints | `minimum_value`, `maximum_value` | ADC Range Overlay | `minimum_value: 0, maximum_value: 100` | `attribute_ranges: {"score": {"min": 0, "max": 100}}` |
+| Unit framing | `slot.unit.ucum_code` | ADC Unit Framing Overlay | `slots: {temp: {unit: {ucum_code: "Cel"}}}` | `units: {"Cel": {"term_id": "Cel", "predicate_id": "skos:exactMatch"}}` |
+| Schema imports | `imports` | OCA Package Dependencies | `imports: ["base_schema"]` | `dependencies: [{"bundle": "base_said"}]` |
+| Class inheritance | `is_a`, `mixins` | Community Overlay | `is_a: Person` | `inheritance: {"Patient": {"parent": "Person"}}` |
+| Object relationships | Object `range` values | Community Overlay | `range: Organization` | `relationships: {"employer": {"type": "Organization"}}` |
+| Unique keys | `unique_keys` | Community Overlay | `unique_keys: ["ssn"]` | `validation: {"unique": ["ssn"]}` |
+| Complex validation | `rules`, `conditions` | Community Overlay | `rules: [{if: age > 18}]` | `validation: {"rules": [...]}` |
+| Advanced types | `any_of`, `exactly_one_of` | Community Overlay | `any_of: [string, integer]` | `types: {"union": ["string", "integer"]}` |
+| Custom annotations | `annotations` | Community Overlay | `annotations: {custom: "value"}` | `extensions: {"community": {...}}` |
 | **✅ Implemented** |  |  |  |  |
 | Data types | `range: float/string/integer` | Capture Base attributes | `slots: {field: {range: "float"}}` | `attributes: {"field": "Numeric"}` |
 | Field descriptions | `slot.description` | Information Overlay | `slots: {field: {description: "Patient age"}}` | `attribute_information: {"field": "Patient age"}` |
@@ -25,22 +43,6 @@ Our team is using the [OCA Package standard](https://github.com/agrifooddatacana
 | Units | `slot.unit.ucum_code` | Unit Overlay | `slots: {height: {unit: {ucum_code: "cm"}}}` | `attribute_units: {"height": "cm"}` |
 | Semantic references | `slot.slot_uri` | Standard Overlay | `slots: {name: {slot_uri: "schema:name"}}` | `attr_standards: {"name": "schema:name"}` |
 | Flagged attributes | `annotations.flagged` | `flagged_attributes` | `slots: {ssn: {annotations: {flagged: true}}}` | `flagged_attributes: ["ssn"]` |
-| **⚠️ To Do** |  |  |  |  |
-| Required fields | `slot.required` | Conformance Overlay | `required: true` | `attribute_conformance: {"field": "M"}` |
-| Cardinality constraints | `multivalued`, array limits | Cardinality Overlay | `multivalued: true` | `attr_cardinality: {"tags": "1-5"}` |
-| Aliases/mappings | `aliases`, `structured_aliases` | Attribute Mapping Overlay | `aliases: ["alt_name"]` | `attribute_mapping: {"name": "full_name"}` |
-| **🔧 Possible Through OCA Package Extensions** |  |  |  |  |
-| Schema imports | `imports` | OCA Package dependencies | `imports: ["base_schema"]` | `dependencies: [{"bundle": "base_said"}]` |
-| Class inheritance | `is_a`, `mixins` | ADC Inheritance Overlay | `is_a: Person` | `inheritance: {"Patient": {"parent": "Person"}}` |
-| Object relationships | Object `range` values | ADC Relationship Overlay | `range: Organization` | `relationships: {"employer": {"type": "Organization"}}` |
-| Unique keys | `unique_keys` | ADC Validation Overlay | `unique_keys: ["ssn"]` | `validation: {"unique": ["ssn"]}` |
-| Complex validation | `rules`, `conditions` | ADC Validation Overlay | `rules: [{if: age > 18}]` | `validation: {"rules": [...]}` |
-| Advanced types | `any_of`, `exactly_one_of` | ADC Type Overlay | `any_of: [string, integer]` | `types: {"union": ["string", "integer"]}` |
-| Custom annotations | `annotations` | ADC Community Overlays | `annotations: {custom: "value"}` | `extensions: {"adc": {...}}` |
-| **🎯 OCA-Specific (No LinkML Equivalent)** |  |  |  |  |
-| Character encoding | N/A | Character Encoding Overlay | (assumes UTF-8) | `attribute_character_encoding: {"field": "utf-8"}` |
-| Sensitive data overlay | N/A | Sensitive Overlay | (uses general `flagged`) | `attributes: ["ssn", "dob"]` |
-| Cross-enum mappings | N/A | Entry Code Mapping Overlay | (no equivalent) | `attr_entry_codes_mapping: {"country": ["US:USA"]}` |
 
 ### Example Mapping
 
@@ -84,7 +86,9 @@ slots:
 
 ## TODO
 
-- Keep insertion order of attributes in LinkML schema
+- **Keep insertion order of attributes in LinkML schema** - Currently attribute order may not be preserved during translation
+- Implement the features listed in the "⚠️ To Do" section of the translation table above
+- Add validation for LinkML schema structure before translation
 
 ## Examples
 
