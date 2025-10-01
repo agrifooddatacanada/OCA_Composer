@@ -109,9 +109,9 @@ const LanguageHeader = ({ languages, language }) => {
   );
 };
 
-export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable }) {
+export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable, entryCodeData = [], setEntryCodeData }) {
   const { t } = useTranslation();
-  const { languages, setEntryCodeRowData, entryCodeRowData } = useContext(Context);
+  const { languages } = useContext(Context);
   const [buttonArray, setButtonArray] = useState([]);
   const [gridWidth, setGridWidth] = useState(500);
   const [hoveredRowIndex, setHoveredRowIndex] = useState(-1);
@@ -125,15 +125,11 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
         grid.current.api.stopEditing();
       });
 
-      const newEntryCodeRowData = JSON.parse(JSON.stringify(entryCodeRowData[index]));
+      const newEntryCodeRowData = JSON.parse(JSON.stringify(entryCodeData));
       newEntryCodeRowData.splice(elementIndex, 1);
-      setEntryCodeRowData((prevState) => {
-        const newState = [...prevState];
-        newState[index] = newEntryCodeRowData;
-        return newState;
-      });
+      setEntryCodeData(newEntryCodeRowData);
     },
-    [codeRefs, entryCodeRowData, index, setEntryCodeRowData]
+    [codeRefs, entryCodeData, setEntryCodeData]
   );
 
   const handleAddRow = useCallback(() => {
@@ -146,13 +142,9 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
       newEntryCodeRow[lang] = "";
     });
 
-    const newRowData = [...entryCodeRowData[index], { ...newEntryCodeRow }];
-    setEntryCodeRowData((prevState) => {
-      const newState = [...prevState];
-      newState[index] = newRowData;
-      return newState;
-    });
-  }, [codeRefs, entryCodeRowData, index, languages, setEntryCodeRowData]);
+    const newRowData = [...entryCodeData, { ...newEntryCodeRow }];
+    setEntryCodeData(newRowData);
+  }, [codeRefs, entryCodeData, languages, setEntryCodeData]);
 
   // Saves elements in proper order after dragging
   const onRowDragEnd = (event) => {
@@ -160,21 +152,17 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
       grid.current.api.stopEditing();
     });
 
-    const oldEntryCodeIndex = entryCodeRowData[index].findIndex(
+    const oldEntryCodeIndex = entryCodeData.findIndex(
       (item) => item.Code === event.node.data.Code
     );
     const newEntryCodeIndex = event.node.rowIndex;
 
-    const newEntryCodeRowData = [...entryCodeRowData[index]];
+    const newEntryCodeRowData = [...entryCodeData];
 
     const [movedItem] = newEntryCodeRowData.splice(oldEntryCodeIndex, 1);
     newEntryCodeRowData.splice(newEntryCodeIndex, 0, movedItem);
 
-    setEntryCodeRowData((prevState) => {
-      const newState = [...prevState];
-      newState[index] = newEntryCodeRowData;
-      return newState;
-    });
+    setEntryCodeData(newEntryCodeRowData);
   };
 
   const onRowDragLeave = () => {
@@ -207,7 +195,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
       },
       ...languageHeaders
     ];
-  }, [languages, entryCodeRowData, index]);
+  }, [languages, entryCodeData]);
 
   const defaultColDef = useMemo(
     () => ({
@@ -270,11 +258,11 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
   // There is an empty box at the top to make the icons line up correctly
   // Hover effect helps with clarity since the delete icons are floating beside
   useEffect(() => {
-    if (entryCodeRowData[index].length > 0) {
+    if (entryCodeData.length > 0) {
       const newButtonArray = [];
       boxRefs.current = [];
       newButtonArray.push(<Box sx={{ height: "2.2rem" }} key={0} />);
-      entryCodeRowData[index].forEach((item, index) => {
+      entryCodeData.forEach((item, index) => {
         const ref = React.createRef();
         boxRefs.current.push(ref);
         newButtonArray.push(
@@ -308,7 +296,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
         setButtonArray(null);
       }
     }
-  }, [entryCodeRowData, hoveredRowIndex, index]);
+  }, [entryCodeData, hoveredRowIndex]);
 
   useEffect(() => {
     const handleMousemove = (event) => {
@@ -366,7 +354,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable 
           <div ref={refContainer}>
             <AgGridReact
               ref={codeRefs.current[index]}
-              rowData={entryCodeRowData[index]}
+              rowData={entryCodeData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               domLayout="autoHeight"

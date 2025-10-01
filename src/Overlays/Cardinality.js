@@ -117,11 +117,9 @@ const Cardinality = () => {
   }, [schemaState?.cardinalityData, schemaState?.attributes, schemaState?.lanAttributeRowData]);
     
   const setCardinalityData = useCallback((newData) => {
-    console.log("setCardinalityData called with:", newData);
     updateCurrentSchema({
       cardinalityData: newData
     });
-    console.log("Updated schema with cardinalityData");
   }, [updateCurrentSchema]);
   
   const cardinalityRef = useRef();
@@ -149,12 +147,8 @@ const Cardinality = () => {
           EntryLimit: "",
           Label: labelInfo?.Label || ""
         };
-        console.log("Creating cardinality item:", cardinalityItem);
-        console.log("Label data for", attr.Attribute, ":", labelInfo);
         return cardinalityItem;
       });
-      console.log("Full labelData:", labelData);
-      console.log("Full newCardinalityData:", newCardinalityData);
       updateCurrentSchema({ cardinalityData: newCardinalityData });
     }
   }, [schemaState?.attributes, schemaState?.lanAttributeRowData, schemaState?.cardinalityData, updateCurrentSchema]);
@@ -308,7 +302,6 @@ const Cardinality = () => {
             newData.push(node.data);
           }
         });
-        console.log("Cardinality handleApplyValues - saving data:", newData);
         setCardinalityData(newData);
       }
       

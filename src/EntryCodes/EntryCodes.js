@@ -25,7 +25,7 @@ const errorMessages = {
   fieldEmpty: "Please fill out all fields",
   quoteMisuse: "Fields cannot contain quotes or commas"
 };
-const EntryCodes = forwardRef((props, ref) => {
+const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   const { t } = useTranslation();
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
@@ -44,12 +44,13 @@ const EntryCodes = forwardRef((props, ref) => {
 
   // Global context
   const {
-    entryCodeRowData: globalEntryCodeRowData,
-    setEntryCodeRowData,
     setSavedEntryCodes,
     setCurrentPage,
-    languages
+    languages,
+    OCAPackage
   } = useContext(Context);
+  
+
 
   // Use schema state data directly - no fallback needed
   const attributeRowData = useMemo(
@@ -69,6 +70,9 @@ const EntryCodes = forwardRef((props, ref) => {
   const pageForwardDisabledRef = useRef(false);
   const [showWarning, setShowWarning] = useState(false);
   const { overlay } = useContext(Context);
+  
+  // Local state for entry code grid data (schema-specific)
+  const [localEntryCodeRowData, setLocalEntryCodeRowData] = useState([]);
 
   // Prefill entry codes from overlays on first load if schema state is empty
   useEffect(() => {
@@ -110,6 +114,16 @@ const EntryCodes = forwardRef((props, ref) => {
         if (codes.length === 0) return;
         const rows = codes.map((code) => {
           const row = { Code: code };
+          
+          // Add all available overlay translations (preserve ISO codes like fra, eng, etc.)
+          Object.keys(overlayEntries).forEach((langCode) => {
+            const label = overlayEntries[langCode]?.[attr]?.[code];
+            if (label) {
+              row[langCode] = label;
+            }
+          });
+          
+          // Also ensure current language names have properties (even if empty)
           languages.forEach((languageName) => {
             const alpha3 = resolveAlpha3(languageName);
             const label = (alpha3 && overlayEntries?.[alpha3]?.[attr]?.[code]) || "";
@@ -135,7 +149,8 @@ const EntryCodes = forwardRef((props, ref) => {
           : [{ Code: "" }];
         return rowsForAttr.map((r) => ({ ...r }));
       });
-      setEntryCodeRowData(alignedEntryCodesArray);
+      // Use local state instead of global
+      setLocalEntryCodeRowData(alignedEntryCodesArray);
     } catch (_) {
       // silent
     }
@@ -144,8 +159,7 @@ const EntryCodes = forwardRef((props, ref) => {
     entryCodeRowData,
     languages,
     overlay,
-    updateCurrentSchema,
-    setEntryCodeRowData
+    updateCurrentSchema
   ]);
 
   // Create codeRefs so there can be multiple grids on the page
@@ -210,6 +224,16 @@ const EntryCodes = forwardRef((props, ref) => {
         if (codes.length > 0) {
           rowsForAttr = codes.map((code) => {
             const row = { Code: code };
+            
+            // Add all available overlay translations (preserve ISO codes like fra, eng, etc.)
+            Object.keys(overlayEntries).forEach((langCode) => {
+              const label = overlayEntries[langCode]?.[attr]?.[code];
+              if (label) {
+                row[langCode] = label;
+              }
+            });
+            
+            // Also ensure current language names have properties (even if empty)
             languages.forEach((languageName) => {
               const alpha3 = resolveAlpha3(languageName);
               const label = (alpha3 && overlayEntries?.[alpha3]?.[attr]?.[code]) || "";
@@ -222,7 +246,16 @@ const EntryCodes = forwardRef((props, ref) => {
       if (!rowsForAttr) rowsForAttr = [emptyRow];
       return rowsForAttr.map((r) => ({ ...r }));
     });
-    setEntryCodeRowData(alignedEntryCodesArray);
+    
+    // Only update if the data has actually changed or if local state is empty/wrong structure
+    const shouldUpdate = !localEntryCodeRowData || 
+                        !Array.isArray(localEntryCodeRowData) ||
+                        localEntryCodeRowData.length !== attributeArray.length ||
+                        JSON.stringify(alignedEntryCodesArray) !== JSON.stringify(localEntryCodeRowData);
+    
+    if (shouldUpdate) {
+      setLocalEntryCodeRowData(alignedEntryCodesArray);
+    }
 
     // If no attributes are marked as lists, redirect to LanguageDetails
     if (filteredAttributes.length === 0) {
@@ -233,8 +266,7 @@ const EntryCodes = forwardRef((props, ref) => {
     languages,
     entryCodeRowData,
     overlay,
-    setEntryCodeRowData,
-    setCurrentPage
+    currentSchemaId
   ]);
 
   const handleSave = () => {
@@ -243,15 +275,20 @@ const EntryCodes = forwardRef((props, ref) => {
     });
 
     // Build object keyed by attribute from the grid's visible array state
-    // The visible array is stored in global context (aligned to selectedAttributesList order)
-    const rowsArray = Array.isArray(globalEntryCodeRowData) ? globalEntryCodeRowData : [];
+    // The visible array is stored in local state (aligned to selectedAttributesList order)
+    const rowsArray = Array.isArray(localEntryCodeRowData) ? localEntryCodeRowData : [];
+    
     const newEntryCodeObject = {};
     selectedAttributesList.forEach((attrName, index) => {
       const sourceRows = Array.isArray(rowsArray[index]) ? rowsArray[index] : [];
       const normalizedRows = sourceRows.map((obj) => {
-        const normalized = { Code: obj.Code };
+        // Preserve all properties from the source object, not just the current languages
+        const normalized = { ...obj };
+        // Ensure all current languages have properties (even if empty)
         languages.forEach((language) => {
-          normalized[language] = obj[language] || "";
+          if (!(language in normalized)) {
+            normalized[language] = "";
+          }
         });
         return normalized;
       });
@@ -294,7 +331,7 @@ const EntryCodes = forwardRef((props, ref) => {
 
   const pageBackSave = () => {
     handleSave();
-    setCurrentPage("Details");
+    pageBack();
   };
 
   // Quotes, commas and blanks in these fields cause issues with the excel export (they interfere with the drop-down menu formatting)
@@ -302,7 +339,7 @@ const EntryCodes = forwardRef((props, ref) => {
     pageForwardDisabledRef.current = false;
     handleSave();
     if (!pageForwardDisabledRef.current) {
-      setCurrentPage("LanguageDetails");
+      pageForward();
     }
   };
 
@@ -320,6 +357,14 @@ const EntryCodes = forwardRef((props, ref) => {
       chosenTable={chosenTable}
       setChosenTable={setChosenTable}
       setShowCard={setShowWarning}
+      entryCodeData={Array.isArray(localEntryCodeRowData[index]) ? localEntryCodeRowData[index] : []}
+      setEntryCodeData={(newData) => {
+        setLocalEntryCodeRowData(prev => {
+          const updated = [...prev];
+          updated[index] = newData;
+          return updated;
+        });
+      }}
     />
   ));
 

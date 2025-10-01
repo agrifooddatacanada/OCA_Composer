@@ -411,10 +411,7 @@ export const generateDetailedLayout = (
               labelAttributes
             );
             
-            console.log(`Processed fields for ${placeholderId}:`, {
-              fieldCount: placeholderFields.length,
-              fields: placeholderFields.map(f => ({ name: f.name, type: f.type, isReference: f.isReference, isPlaceholder: f.isPlaceholder }))
-            });
+
             
             const metaOverlays = dependencyWithAttributes.overlays?.meta;
             const metaOverlay = Array.isArray(metaOverlays)

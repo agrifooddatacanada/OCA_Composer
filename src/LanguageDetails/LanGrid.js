@@ -163,31 +163,6 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     return [];
   }, [attributesList, attributeRowData]);
 
-  // Debug which schema/state this grid renders from
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log("LanGrid: schema state", {
-      currentSchemaId,
-      activeSchemaId,
-      editingSchemaId,
-      attributesList,
-      attributeRowDataLength: Array.isArray(attributeRowData)
-        ? attributeRowData.length
-        : 0,
-      effectiveAttributesList,
-      hasSchemaOverlay: !!schemaOverlay,
-      schemaOverlayKeys: Object.keys(schemaOverlay || {})
-    });
-  }, [
-    currentSchemaId,
-    activeSchemaId,
-    editingSchemaId,
-    attributesList,
-    attributeRowData,
-    effectiveAttributesList,
-    schemaOverlay
-  ]);
-
   // Memoize entry codes to prevent unnecessary re-renders, only when schema is initialized
   const stableEntryCodes = useMemo(() => {
     if (!currentSchemaId) return {};
@@ -195,7 +170,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     // Only return entry codes if the schema is fully initialized to prevent flickering
     if (!currentSchemaState?.initialized) return {};
     return currentSchemaState?.entryCodes || {};
-  }, [currentSchemaId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentSchemaId, getSchemaState]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
+
+
 
   // Track last computed data to prevent infinite updates
   const lastDataHashRef = useRef("");
@@ -242,17 +221,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
               languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
             const entryCodesForItem = entryCodesMap?.[item] || [];
 
-            // Debug what we're actually getting
-            if (item === "q3" && entryCodesForItem.length > 0) {
-              // eslint-disable-next-line no-console
-              console.log("Entry codes debug for q3:", {
-                language,
-                overlayLangKey,
-                entryCodesForItem,
-                firstEntry: entryCodesForItem[0],
-                availableKeys: Object.keys(entryCodesForItem[0] || {})
-              });
-            }
+
 
             const listDisplayArray = entryCodesForItem
               .map((row) => {

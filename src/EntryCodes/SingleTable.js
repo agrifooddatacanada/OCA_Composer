@@ -5,7 +5,7 @@ import CodeGrid from "./CodeGrid";
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { Context } from "../App";
 
-export default function SingleTable({ attribute, index, codeRefs, chosenTable, setChosenTable, setShowCard }) {
+export default function SingleTable({ attribute, index, codeRefs, chosenTable, setChosenTable, setShowCard, entryCodeData, setEntryCodeData }) {
   const { setChosenEntryCodeIndex } = useContext(Context);
 
   return (
@@ -51,7 +51,7 @@ export default function SingleTable({ attribute, index, codeRefs, chosenTable, s
           />
         </Tooltip>
       </Box>
-      <CodeGrid index={index} codeRefs={codeRefs} chosenTable={chosenTable} setChosenTable={setChosenTable} />
+      <CodeGrid index={index} codeRefs={codeRefs} chosenTable={chosenTable} setChosenTable={setChosenTable} entryCodeData={entryCodeData} setEntryCodeData={setEntryCodeData} />
     </Box>
   );
 }

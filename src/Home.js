@@ -147,32 +147,18 @@ const Home = ({
 
   // Custom navigation functions that use dynamic steps array instead of static pagesArray
   const pageForward = () => {
-    console.log('Home pageForward called');
-    console.log('Current page:', currentPage);
-    console.log('Current steps:', steps);
     const currentIndex = steps.findIndex((step) => step.page === currentPage);
-    console.log('Current index:', currentIndex);
     if (currentIndex >= 0 && currentIndex < steps.length - 1) {
       const nextStep = steps[currentIndex + 1];
-      console.log('Next step:', nextStep);
       setCurrentPage(nextStep.page);
-    } else {
-      console.log('Cannot navigate forward - at end or invalid index');
     }
   };
 
   const pageBack = () => {
-    console.log('Home pageBack called');
-    console.log('Current page:', currentPage);
-    console.log('Current steps:', steps);
     const currentIndex = steps.findIndex((step) => step.page === currentPage);
-    console.log('Current index:', currentIndex);
     if (currentIndex > 0) {
       const prevStep = steps[currentIndex - 1];
-      console.log('Previous step:', prevStep);
       setCurrentPage(prevStep.page);
-    } else {
-      console.log('Cannot navigate back - at start or invalid index');
     }
   };
 
@@ -350,7 +336,13 @@ const Home = ({
             removeStep={removeStep}
           />
         )}
-        {currentPage === "Codes" && <EntryCodes ref={entryCodesRef} />}
+        {currentPage === "Codes" && (
+          <EntryCodes 
+            ref={entryCodesRef}
+            pageBack={pageBack}
+            pageForward={pageForward}
+          />
+        )}
 
         {currentPage === "LanguageDetails" && (
           <LanguageDetails pageBack={pageBack} pageForward={pageForward} />

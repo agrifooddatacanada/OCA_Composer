@@ -78,12 +78,44 @@ export default function SchemaMetadata({
     : rawSchemaDescription;
 
   const setSchemaDescription = (newDescription) => {
-    updateCurrentSchema({
-      metadata: {
-        ...schemaState?.metadata,
-        description: newDescription
-      }
-    });
+    // Convert the language object format to proper localized structure
+    if (typeof newDescription === 'object' && !Array.isArray(newDescription)) {
+      const localized = {};
+      let rootName = "";
+      let rootDescription = "";
+      
+      Object.entries(newDescription).forEach(([langName, data]) => {
+        const langCode = langName.toLowerCase() === 'english' ? 'eng' : 
+                        langName.toLowerCase() === 'french' ? 'fra' : langName;
+        localized[langCode] = {
+          name: data.name || "",
+          description: data.description || ""
+        };
+        
+        // Use English as the root name/description if available
+        if (langName.toLowerCase() === 'english') {
+          rootName = data.name || "";
+          rootDescription = data.description || "";
+        }
+      });
+      
+      updateCurrentSchema({
+        metadata: {
+          ...schemaState?.metadata,
+          name: rootName,
+          description: rootDescription,
+          localized: localized
+        }
+      });
+    } else {
+      // Handle string or other formats
+      updateCurrentSchema({
+        metadata: {
+          ...schemaState?.metadata,
+          description: newDescription
+        }
+      });
+    }
   };
 
   const setLanguages = (newLanguages) => {
