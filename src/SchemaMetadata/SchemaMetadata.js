@@ -60,8 +60,22 @@ export default function SchemaMetadata({
   } = useContext(Context);
 
   // Use schema state directly - no fallback needed
-  const schemaDescription = schemaState?.metadata?.description || globalSchemaDescription;
+  const rawSchemaDescription = schemaState?.metadata?.description || globalSchemaDescription;
   const languages = schemaState?.metadata?.languages || globalLanguages;
+  
+  // Ensure schemaDescription is always in the correct format (object with language keys)
+  const schemaDescription = typeof rawSchemaDescription === 'string' 
+    ? (() => {
+        const result = {};
+        languages.forEach(lang => {
+          result[lang] = { 
+            name: schemaState?.metadata?.name || "", 
+            description: rawSchemaDescription 
+          };
+        });
+        return result;
+      })()
+    : rawSchemaDescription;
 
   const setSchemaDescription = (newDescription) => {
     updateCurrentSchema({
@@ -90,12 +104,16 @@ export default function SchemaMetadata({
     const spacesArray = [];
 
     languages.forEach((language) => {
-      const allValues = Object.values(noSpacesObject[language]);
-      allValues.forEach((value) => {
-        if (!value && !spacesArray.includes(toTitleCase(language))) {
-          spacesArray.push(toTitleCase(language));
-        }
-      });
+      // Check if noSpacesObject[language] exists and is an object before calling Object.values
+      const languageData = noSpacesObject[language];
+      if (languageData && typeof languageData === 'object') {
+        const allValues = Object.values(languageData);
+        allValues.forEach((value) => {
+          if (!value && !spacesArray.includes(toTitleCase(language))) {
+            spacesArray.push(toTitleCase(language));
+          }
+        });
+      }
     });
     if (spacesArray.length >= 1) {
       setFieldArray(spacesArray);

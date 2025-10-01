@@ -24,7 +24,7 @@ import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 import { toThreeLetterCode } from "../constants/isoCodes";
 
-const AttributeDetails = forwardRef(({ pageBack, pageForward, removeStep }, ref) => {
+const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, removeStep }, ref) => {
   const { t, i18n } = useTranslation();
   
   // Get overlay from App context (still needed for UI state)
@@ -382,7 +382,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, removeStep }, ref)
       
       if (newAttributesWithLists.length > 0) {
         entryCodesRef.current = true;
-        // Entry Codes step already inserted centrally
+        // Insert Entry Codes step synchronously to ensure it's available for navigation
+        insertStep(2, { label: "Entry Codes", page: "Codes" });
       } else {
         removeStep("Entry Codes");
       }

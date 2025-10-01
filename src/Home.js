@@ -27,21 +27,21 @@ import ErrorPopup from "./ViewSchema/ErrorPopup";
 const Home = ({
   currentPage,
   setCurrentPage,
-  pageForward,
-  pageBack,
+  pageForward: appPageForward,
+  pageBack: appPageBack,
   showIntroCard,
   setShowIntroCard
 }) => {
   // Get context to check if we're editing a specific schema
-  const { editingSchemaId, OCAPackage, setEditingSchemaId, overlay, setOverlay } =
-    useContext(Context);
-  const {
+  const { 
+    activeSchemaId, 
+    getSchemaState, 
+    schemaStates, 
+    updateSchemaState,
     loadFromLocalStorage,
-    switchToSchema,
-    activeSchemaId,
-    schemaStates,
-    getSchemaState
+    switchToSchema
   } = useMultiSchema();
+  const { OCAPackage, overlay, setOverlay } = useContext(Context);
 
   // Try to load saved state when package is loaded
   useEffect(() => {
@@ -52,15 +52,13 @@ const Home = ({
 
   // Ensure schema is initialized when entering via EDIT SCHEMA (old flow)
   useEffect(() => {
-    if (OCAPackage && !editingSchemaId) {
+    if (OCAPackage && !activeSchemaId) {
       const rootSchemaId = OCAPackage.bundle?.d;
       if (rootSchemaId) {
         switchToSchema(rootSchemaId, OCAPackage);
-
-        setEditingSchemaId(rootSchemaId);
       }
     }
-  }, [OCAPackage, editingSchemaId, switchToSchema, setEditingSchemaId]);
+  }, [OCAPackage, activeSchemaId, switchToSchema]);
 
   // Normalize and load overlay data from OCAPackage so LanguageDetails has labels/lists
   useEffect(() => {
@@ -145,6 +143,37 @@ const Home = ({
 
   const removeStep = (stepLabel) => {
     setSteps((currentSteps) => currentSteps.filter((step) => step.label !== stepLabel));
+  };
+
+  // Custom navigation functions that use dynamic steps array instead of static pagesArray
+  const pageForward = () => {
+    console.log('Home pageForward called');
+    console.log('Current page:', currentPage);
+    console.log('Current steps:', steps);
+    const currentIndex = steps.findIndex((step) => step.page === currentPage);
+    console.log('Current index:', currentIndex);
+    if (currentIndex >= 0 && currentIndex < steps.length - 1) {
+      const nextStep = steps[currentIndex + 1];
+      console.log('Next step:', nextStep);
+      setCurrentPage(nextStep.page);
+    } else {
+      console.log('Cannot navigate forward - at end or invalid index');
+    }
+  };
+
+  const pageBack = () => {
+    console.log('Home pageBack called');
+    console.log('Current page:', currentPage);
+    console.log('Current steps:', steps);
+    const currentIndex = steps.findIndex((step) => step.page === currentPage);
+    console.log('Current index:', currentIndex);
+    if (currentIndex > 0) {
+      const prevStep = steps[currentIndex - 1];
+      console.log('Previous step:', prevStep);
+      setCurrentPage(prevStep.page);
+    } else {
+      console.log('Cannot navigate back - at start or invalid index');
+    }
   };
 
   const [showValidationPopup, setShowValidationPopup] = useState(false);
