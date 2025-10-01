@@ -91,7 +91,7 @@ const AttributeMatch = () => {
     setNotToVerifyAttributes
   } = useContext(Context);
   const [type, setType] = useState(() => {
-    const siteLanguageCode = i18next.language;
+    const siteLanguageCode = (i18next.resolvedLanguage || i18next.language).split("-")[0];
     const siteLanguage = codesToLanguages[siteLanguageCode];
     return siteLanguage === "English"
       ? languages[0]
@@ -193,7 +193,7 @@ const AttributeMatch = () => {
 
   // Change selected language when site language changes
   useEffect(() => {
-    const siteLanguageCode = i18next.language;
+    const siteLanguageCode = (i18next.resolvedLanguage || i18next.language).split("-")[0];
     const siteLanguage = codesToLanguages[siteLanguageCode];
     setType(
       siteLanguage === "English"
