@@ -72,21 +72,21 @@ const FormInformation = () => {
   const primaryLanguage = languages?.[0];
 
   useEffect(() => {
-    const newLan = JSON.parse(JSON.stringify(lanAttributeRowData || {}));
-    languages.forEach((language) => {
-      const newLanguageList = [];
-      attributesList.forEach((attrName, idx) => {
-        const existing = newLan[language]?.[idx] || {};
-        const basePlaceholder = FormInformationRowData?.[idx]?.Placeholder ?? "";
-        newLanguageList.push({
-          Attribute: attrName,
-          Label: existing.Label || "",
-          Placeholder: existing.Placeholder ?? basePlaceholder
-        });
+    setLanAttributeRowData((prevLanData) => {
+      const newLan = JSON.parse(JSON.stringify(prevLanData || {}));
+      languages.forEach((language) => {
+        if (newLan[language]) {
+          newLan[language] = newLan[language].map((item, idx) => {
+            const basePlaceholder = FormInformationRowData?.[idx]?.Placeholder ?? "";
+            return {
+              ...item, // Preserve all existing fields
+              Placeholder: item.Placeholder ?? basePlaceholder
+            };
+          });
+        }
       });
-      newLan[language] = newLanguageList;
+      return newLan;
     });
-    setLanAttributeRowData(newLan);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languages, attributesList, FormInformationRowData]);
 
@@ -346,21 +346,10 @@ const FormInformation = () => {
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
           const isEditable = attrType === "Text" || attrType === "Array[Text]";
           if (!isEditable) return true;
-          const rawVal = params.newValue || "";
-          const newVal =
-            attrType === "Array[Text]"
-              ? rawVal
-                  .split("|")
-                  .map((s) => s.trim())
-                  .filter((s) => s.length > 0)
-              : rawVal;
-          params.data.Placeholder = newVal;
+          params.data.Placeholder = params.newValue || "";
           return true;
         },
-        valueGetter: (params) =>
-          Array.isArray(params.data.Placeholder)
-            ? params.data.Placeholder.join(" | ")
-            : params.data.Placeholder || ""
+        valueGetter: (params) => params.data.Placeholder || ""
       }
     ];
   }, [attributeRowData, formatRuleRowData, currentLanguage, t]);
