@@ -57,6 +57,7 @@ export default function ViewSchema({
     jsonToReadme,
     OCAPackage,
     rangeRowData,
+    overlay,
     attributeFramingRowData
   } = useContext(Context);
   const languageIndex = languages.findIndex(
@@ -231,6 +232,13 @@ export default function ViewSchema({
         } else {
           dataObject["Add format rule for data"] = formatRule;
         }
+      }
+
+      // Add form information placeholder
+      const attrWithFormInformation = lanAttributeRowData?.[currentLanguage]?.[index];
+      const placeholder = attrWithFormInformation?.Placeholder;
+      if (placeholder) {
+        dataObject["Add Form Information"] = placeholder;
       }
 
       // Add data standard information

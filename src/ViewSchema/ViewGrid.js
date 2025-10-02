@@ -14,6 +14,7 @@ import {
   ADC,
   FIELD_RANGE_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY,
+  FIELD_FORM_INFORMATION_OVERLAY,
   MAX_ATTR_DESCRIPTION_CHARS,
   MAX_ATTR_LABEL_CHARS,
   UNIT_FRAMING
@@ -280,6 +281,18 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
             headerComponentParams: {
               headerText: t("Unit Framing"),
               helpText
+            }
+          });
+        } else if (feature === FIELD_FORM_INFORMATION_OVERLAY) {
+          predefinedColumns.push({
+            field: "Add Form Information",
+            headerName: `${t("Placeholder")} (${currentLanguage || ""})`,
+            width: 200,
+            autoHeight: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Placeholder"),
+              helpText: t("Shown to users in forms when expecting free text input")
             }
           });
         } else {
