@@ -377,5 +377,12 @@
   "Object": "Object",
   "Subject": "Subject",
   "Delete": "Delete",
-  "The term name or label": "The term name or label"
+  "The term name or label": "The term name or label",
+  "Form Information prerequisite tooltip": "Form Information requires 'Add format rule for data' to be selected first.",
+  "Add Form Information": "Add Form Information",
+  "Answer Type": "Answer Type",
+  "Placeholder": "Placeholder",
+  "Shown to users in forms when expecting free text input. Only available for Text and Array[Text] types.": "Shown to users in forms when expecting free text input. Only available for Text and Array[Text] types.",
+  "No format rule": "No format rule",
+  "No placeholder": "No placeholder"
 }

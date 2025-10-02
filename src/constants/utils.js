@@ -9,6 +9,7 @@ import {
   DEFAULT_LANGUAGE,
   DISALLOWED_CHARACTERS,
   FIELD_FORMAT_OVERLAY,
+  FIELD_FORM_INFORMATION_OVERLAY,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
@@ -777,6 +778,21 @@ export const shouldDisableRangeOverlay = (
       !hasValidAttribute)
   );
 };
+
+export const shouldDisableFormInformationOverlay = (
+  overlayText,
+  selectedFeatures
+) =>
+  overlayText === FIELD_FORM_INFORMATION_OVERLAY &&
+  !selectedFeatures.includes(FIELD_FORMAT_OVERLAY);
+
+export const getFormInformationDisabledReason = (
+  overlayText,
+  selectedFeatures
+) =>
+  shouldDisableFormInformationOverlay(overlayText, selectedFeatures)
+    ? i18next.t("Form Information prerequisite tooltip")
+    : "";
 
 export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();
 export const isValidNumber = (value) => !Number.isNaN(Number.parseFloat(value));

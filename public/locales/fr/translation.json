@@ -377,5 +377,12 @@
   "Object": "Objet",
   "Subject": "Sujet",
   "Delete": "Supprimer",
-  "The term name or label": "Le nom ou l'étiquette du terme"
+  "The term name or label": "Le nom ou l'étiquette du terme",
+  "Form Information prerequisite tooltip": "Les informations de formulaire nécessitent d'abord la sélection de 'Ajouter une règle de format pour les données'.",
+  "Add Form Information": "Ajouter des informations de formulaire",
+  "Answer Type": "Type de réponse",
+  "Placeholder": "Espace réservé",
+  "Shown to users in forms when expecting free text input. Only available for Text and Array[Text] types.": "Affiché aux utilisateurs dans les formulaires lorsqu'un texte libre est attendu. Disponible uniquement pour les types Texte et Tableau[Texte].",
+  "No format rule": "Aucune règle de format",
+  "No placeholder": "Aucun espace réservé"
 }

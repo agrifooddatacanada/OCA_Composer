@@ -538,6 +538,7 @@ export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
 export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
 export const FIELD_RANGE_OVERLAY = "Add range rule for data";
 export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
+export const FIELD_FORM_INFORMATION_OVERLAY = "Add Form Information";
 
 // Attribute Framing Overlay Dropdown Options
 export const ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS = {

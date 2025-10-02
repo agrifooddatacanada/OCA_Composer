@@ -23,6 +23,7 @@ import {
   FIELD_CONFORMANCE_OVERLAY,
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_FORMAT_OVERLAY,
+  FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_RANGE_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
@@ -57,7 +58,8 @@ const overlayItems = {
   [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
   [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
   [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
-  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false }
+  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false },
+  [FIELD_FORM_INFORMATION_OVERLAY]: { feature: "Add Form Information", selected: false }
 };
 
 export const pagesArray = [
@@ -101,6 +103,7 @@ function App() {
 
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
+  const [FormInformationRowData, setFormInformationRowData] = useState([]);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(overlayItems);
   const [selectedOverlay, setSelectedOverlay] = useState("");
@@ -309,6 +312,26 @@ function App() {
     });
     setFormatRuleRowData(newFormatRuleArray);
   }, [attributeRowData]);
+
+  // Initialize Form Information rows when attributes change
+  useEffect(() => {
+    const newFormInformationArray = [];
+    attributesList.forEach((item) => {
+      const formInformationObject = FormInformationRowData.find(
+        (obj) => obj.Attribute === item
+      );
+      if (formInformationObject) {
+        newFormInformationArray.push(formInformationObject);
+      } else {
+        newFormInformationArray.push({
+          Attribute: item,
+          Label: "",
+          Placeholder: ""
+        });
+      }
+    });
+    setFormInformationRowData(newFormInformationArray);
+  }, [attributesList]);
 
   useEffect(() => {
     const newDataStandardsArray = [];
@@ -714,6 +737,8 @@ function App() {
             setIsZip,
             characterEncodingRowData,
             setCharacterEncodingRowData,
+            FormInformationRowData,
+            setFormInformationRowData,
             formatRuleRowData,
             setFormatRuleRowData,
             dataStandardsRowData,
