@@ -25,6 +25,7 @@ import {
 } from "../constants/utils";
 import ErrorPopup from "./ErrorPopup";
 import CustomRouterLink from "../components/CustomRouterLink";
+import ConfirmResetCard from "./ConfirmResetCard";
 
 // const currentEnv = process.env.REACT_APP_ENV;
 
@@ -75,6 +76,7 @@ export default function ViewSchema({
   const [loading, setLoading] = useState(true);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
+  const [showConfirmReset, setShowConfirmReset] = useState(false);
 
   // Formats language buttons in a way that can handle many languages cleanly
   // Minimizes language for cases where it's too long to fit in button size
@@ -672,7 +674,7 @@ export default function ViewSchema({
           <Button
             color="warning"
             variant="outlined"
-            onClick={resetToDefaults}
+            onClick={() => setShowConfirmReset(true)}
             sx={{
               alignSelf: "flex-end",
               width: "20rem",
@@ -685,6 +687,15 @@ export default function ViewSchema({
             {t("Clear All Data and Restart")}
           </Button>
         </Box>
+      )}
+      {showConfirmReset && (
+        <ConfirmResetCard
+          onConfirm={() => {
+            setShowConfirmReset(false);
+            resetToDefaults();
+          }}
+          onCancel={() => setShowConfirmReset(false)}
+        />
       )}
       {exportError && (
         <ErrorPopup onClose={clearError}>
