@@ -1,8 +1,8 @@
 import React from "react";
 import { Box, Button, Typography } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
+import { CustomPalette } from "../constants/customPalette";
 
 export default function ConfirmResetCard({ onConfirm, onCancel }) {
   const { t } = useTranslation();
