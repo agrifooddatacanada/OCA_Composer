@@ -71,6 +71,14 @@ const FormInformation = () => {
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   const primaryLanguage = languages?.[0];
 
+  // Update currentLanguage when global UI language changes
+  useEffect(() => {
+    const userLanguage = codesToLanguages?.[i18next.language];
+    if (userLanguage && languages.includes(userLanguage)) {
+      setCurrentLanguage(userLanguage);
+    }
+  }, [i18next.language, languages]);
+
   useEffect(() => {
     setLanAttributeRowData((prevLanData) => {
       const newLan = JSON.parse(JSON.stringify(prevLanData || {}));
@@ -393,9 +401,8 @@ const FormInformation = () => {
       return;
     }
     if (result.rows) setFormInformationRowData(result.rows);
-    setSelectedOverlay("");
-    setCurrentPage("Overlays");
-  }, [handleSave, setFormInformationRowData, t, validateRows]);
+    setCurrentPage("FormBuilder");
+  }, [handleSave, setFormInformationRowData, t, validateRows, setCurrentPage]);
 
   const handleBack = useCallback(() => {
     setShowDeleteConfirmation(true);
