@@ -85,9 +85,15 @@ const FormInformation = () => {
       languages.forEach((language) => {
         if (newLan[language]) {
           newLan[language] = newLan[language].map((item, idx) => {
-            const basePlaceholder = FormInformationRowData?.[idx]?.Placeholder ?? "";
+            const basePlaceholderValue = FormInformationRowData?.[idx]?.Placeholder;
+            let basePlaceholder = "";
+            if (typeof basePlaceholderValue === 'object' && basePlaceholderValue !== null) {
+              basePlaceholder = basePlaceholderValue[language] || "";
+            } else if (typeof basePlaceholderValue === 'string') {
+              basePlaceholder = basePlaceholderValue;
+            }
             return {
-              ...item, // Preserve all existing fields
+              ...item, 
               Placeholder: item.Placeholder ?? basePlaceholder
             };
           });
