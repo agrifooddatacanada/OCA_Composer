@@ -137,7 +137,7 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
             selected={option === selectedOption}
             onClick={() => handleMenuItemClick(option)}
           >
-            {option === "excel" ? t("EXCEL") : t("CSV")}
+            {option === "excel" ? "EXCEL" : "CSV"}
           </MenuItem>
         ))}
       </Menu>
