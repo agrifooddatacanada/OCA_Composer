@@ -57,12 +57,21 @@ const AttributePalette = ({
   const { t } = useTranslation();
   
   return (
-    <Box sx={{ border: `1px solid ${CustomPalette.GREY_300}`, borderRadius: 1, height: 'fit-content', boxShadow: 1 }}>
+    <Box sx={{ 
+      position: 'sticky', 
+      top: '2rem', 
+      alignSelf: 'flex-start',
+      maxHeight: 'calc(100vh - 4rem)',
+      border: `1px solid ${CustomPalette.GREY_300}`, 
+      borderRadius: 1, 
+      height: 'fit-content', 
+      boxShadow: 1 
+    }}>
       <Box sx={{ p: 1.5, borderBottom: `1px solid ${CustomPalette.GREY_300}`, backgroundColor: CustomPalette.GREY_200 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: CustomPalette.GREY_800 }}>{t("Attributes")}</Typography>
         <Typography variant="caption" sx={{ color: CustomPalette.GREY_600 }}>{t("Drag into the form")}</Typography>
       </Box>
-      <Box sx={{ p: 1.5, maxHeight: 520, overflowY: 'auto' }}>
+      <Box sx={{ p: 1.5, maxHeight: 'calc(100vh - 12rem)', overflowY: 'auto' }}>
         {(attributesList || []).filter((attr) => !usedAttributes.has(attr)).map((attr) => {
           // Build multilingual labels and placeholders
           const labels = {};
