@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, CardContent, Box, Typography, IconButton } from "@mui/material";
+import { Card, CardContent, Box, Typography, IconButton, Collapse } from "@mui/material";
 import { useDrag, useDrop } from 'react-dnd';
-import { DragIndicator as DragIcon, Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import { DragIndicator as DragIcon, Edit as EditIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
 import { codesToLanguages } from "../../constants/isoCodes";
 import i18next from "i18next";
@@ -11,6 +11,7 @@ import {
   formatCodeNumericDescription,
   formatCodeTextDescription
 } from "../../constants/constants";
+import QuestionAnswerPreview from "./QuestionAnswerPreview";
 
 const findDescription = (formatText, attributeType) => {
   if (!formatText) return "";
@@ -24,7 +25,8 @@ const findDescription = (formatText, attributeType) => {
 };
 
 const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLanguage, onEdit, onDelete, onReorder }) => {
-  const [{ isDragging }, drag] = useDrag({ type: 'question', item: { index, question, pageIndex, sectionIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
+  const [expanded, setExpanded] = React.useState(true);
+  const [{ isDragging }, drag] = useDrag({ type: 'question', item: { type: 'question', index, question, pageIndex, sectionIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
   const [{ }, drop] = useDrop({
     accept: 'question',
     canDrop: (item) => item.pageIndex === pageIndex && (item.sectionIndex ?? null) === (sectionIndex ?? null) && item.index !== index,
@@ -39,21 +41,17 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
     }
   });
 
-  const getIcon = (type) => '📝';
   
   const formatRuleDescription = findDescription(question.formatText, question.attributeType);
   
   // Get the question title - prioritize user's global UI language, then currentLanguage tab, then fallback
   const getQuestionTitle = () => {
     if (typeof question.title === 'object' && question.title !== null) {
-      // First try user's global UI language
       const userLanguage = codesToLanguages?.[i18next.language];
       if (userLanguage && question.title[userLanguage]) return question.title[userLanguage];
       
-      // Then try the current language tab
       if (currentLanguage && question.title[currentLanguage]) return question.title[currentLanguage];
       
-      // Fallback to first available language
       const firstLang = Object.keys(question.title)[0];
       if (firstLang && question.title[firstLang]) return question.title[firstLang];
     }
@@ -75,19 +73,53 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
       }}
     >
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DragIcon sx={{ color: CustomPalette.GREY_600 }} />
-          <Typography variant="h6" sx={{ fontSize: '1.1rem' }}>{getIcon(question.formatText)}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+          <DragIcon sx={{ color: CustomPalette.GREY_600, mt: 0.5 }} />
           <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800 }}>{getQuestionTitle()}</Typography>
-            <Typography variant="body2" sx={{ color: CustomPalette.GREY_600 }}>{formatRuleDescription || question.attributeType || 'No format rule'}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800, flexGrow: 1 }}>
+                {getQuestionTitle()}
+              </Typography>
+              <IconButton 
+                size="small" 
+                onClick={() => setExpanded(!expanded)}
+                sx={{ 
+                  color: CustomPalette.GREY_600,
+                  transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.3s'
+                }}
+              >
+                <ExpandMoreIcon fontSize="small" />
+              </IconButton>
+              <IconButton size="small" onClick={() => onEdit(question, index, pageIndex, sectionIndex)} sx={{ color: CustomPalette.GREY_600 }}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <IconButton size="small" onClick={() => onDelete(index, pageIndex, sectionIndex)} sx={{ color: CustomPalette.SECONDARY }}>
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
+            <Typography variant="body2" sx={{ color: CustomPalette.GREY_600, mb: 1 }}>
+              {formatRuleDescription || question.attributeType || 'No format rule'}
+            </Typography>
+            
+            <Collapse in={expanded}>
+              <Box sx={{ 
+                p: 2, 
+                backgroundColor: CustomPalette.GREY_50, 
+                borderRadius: 1,
+                border: `1px solid ${CustomPalette.GREY_200}`
+              }}>
+                <Typography variant="caption" sx={{ color: CustomPalette.GREY_600, fontWeight: 600, mb: 1, display: 'block' }}>
+                  Answer Area Preview:
+                </Typography>
+                <QuestionAnswerPreview 
+                  question={question} 
+                  currentLanguage={currentLanguage}
+                  compact={false}
+                />
+              </Box>
+            </Collapse>
           </Box>
-          <IconButton size="small" onClick={() => onEdit(question, index, pageIndex, sectionIndex)} sx={{ color: CustomPalette.GREY_600 }}>
-            <EditIcon />
-          </IconButton>
-          <IconButton size="small" onClick={() => onDelete(index, pageIndex, sectionIndex)} sx={{ color: CustomPalette.SECONDARY }}>
-            <DeleteIcon />
-          </IconButton>
         </Box>
       </CardContent>
     </Card>
