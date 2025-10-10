@@ -57,5 +57,15 @@ export const reorderQuestionInContainer = (pages, pageIndex, sectionIndexOrNull,
   });
 };
 
+export const reorderSectionInPage = (pages, pageIndex, fromIndex, toIndex) => {
+  return pages.map((p, i) => {
+    if (i !== pageIndex) return p;
+    const newSections = [...(p.sections || [])];
+    const [moved] = newSections.splice(fromIndex, 1);
+    newSections.splice(toIndex, 0, moved);
+    return { ...p, sections: newSections };
+  });
+};
+
 
 
