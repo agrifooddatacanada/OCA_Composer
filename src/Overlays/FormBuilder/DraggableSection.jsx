@@ -7,10 +7,10 @@ import { codesToLanguages } from "../../constants/isoCodes";
 import i18next from "i18next";
 import DraggableQuestion from "./DraggableQuestion";
 
-const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, onDelete, onMoveQuestionToSection, onDropPaletteQuestionToSection, onEditQuestion, onDeleteQuestion, onReorderQuestion }) => {
-  const [{ isDragging }, drag] = useDrag({ type: 'section', item: { index, section, pageIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
+const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, onDelete, onReorder, onMoveQuestionToSection, onDropPaletteQuestionToSection, onEditQuestion, onDeleteQuestion, onReorderQuestion }) => {
+  const [{ isDragging }, drag] = useDrag({ type: 'section', item: { type: 'section', index, section, pageIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
   const [{ isOver }, drop] = useDrop({
-    accept: ['question', 'palette-question'],
+    accept: ['question', 'palette-question', 'section'],
     drop: (item, monitor) => {
       if (monitor.didDrop()) return;
       if (item.source === 'palette') { onDropPaletteQuestionToSection(pageIndex, index, item); return; }
@@ -19,6 +19,14 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
         const fromSectionIndex = item.sectionIndex ?? null;
         onMoveQuestionToSection(fromPageIndex, item.index, pageIndex, index, fromSectionIndex);
       }
+    },
+    hover: (item, monitor) => {
+      if (item.type !== 'section') return;
+      if (!monitor.isOver({ shallow: true })) return;
+      if (item.pageIndex !== pageIndex) return;
+      if (item.index === index) return;
+      onReorder(pageIndex, item.index, index);
+      item.index = index;
     },
     collect: (monitor) => ({ isOver: monitor.isOver() })
   });
