@@ -40,6 +40,8 @@ const FormInformation = () => {
   const {
     FormInformationRowData,
     setFormInformationRowData,
+    formBuilderPages,
+    setFormBuilderPages,
     languages,
     setCurrentPage,
     attributeRowData,
@@ -423,8 +425,9 @@ const FormInformation = () => {
       }
     }));
     setSelectedOverlay("");
+    setFormBuilderPages(null);
     setCurrentPage("Overlays");
-  }, [setOverlay, setSelectedOverlay, setCurrentPage]);
+  }, [setOverlay, setSelectedOverlay, setCurrentPage, setFormBuilderPages]);
 
   return (
     <BackNextSkeleton

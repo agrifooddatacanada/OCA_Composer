@@ -104,6 +104,7 @@ function App() {
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [FormInformationRowData, setFormInformationRowData] = useState([]);
+  const [formBuilderPages, setFormBuilderPages] = useState(null); // Persistent form builder state
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(overlayItems);
   const [selectedOverlay, setSelectedOverlay] = useState("");
@@ -661,6 +662,7 @@ function App() {
     setIsZip(false);
     setZipToReadme([]);
     setOCAPackage(null);
+    setFormBuilderPages(null);
   }, [fileData, jsonRawFile]);
 
   // Add state for environmental variables
@@ -739,6 +741,8 @@ function App() {
             setCharacterEncodingRowData,
             FormInformationRowData,
             setFormInformationRowData,
+            formBuilderPages,
+            setFormBuilderPages,
             formatRuleRowData,
             setFormatRuleRowData,
             dataStandardsRowData,
