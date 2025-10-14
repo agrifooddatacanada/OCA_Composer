@@ -47,39 +47,39 @@ const PageEditorDialog = ({ open, onClose, page, onSave, languages = ['English']
       </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: CustomPalette.GREY_800 }}>{t("Page Labels (Multilingual)")}</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: CustomPalette.GREY_800 }}>{t("Page Labels")}</Typography>
           
           {languages.map(lang => (
             <Box key={lang} sx={{ pl: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 500, color: CustomPalette.PRIMARY }}>{lang}</Typography>
               
               <TextField 
-                label={`${t("Page Label")} (${lang})`}
+                label={`${t("Page Label")}`}
                 value={formData.labels?.[lang] || ''} 
                 onChange={(e) => handleLabelChange(lang, 'labels', e.target.value)} 
                 fullWidth 
                 size="small"
-                helperText={t("Full page label with page number")}
+                // helperText={t("Full page label with page number")}
               />
               
               <TextField 
-                label={`${t("Sidebar Label")} (${lang})`}
+                label={`${t("Sidebar Label")}`}
                 value={formData.sidebarLabels?.[lang] || ''} 
                 onChange={(e) => handleLabelChange(lang, 'sidebarLabels', e.target.value)} 
                 fullWidth 
                 size="small"
-                helperText={t("Short label for sidebar navigation")}
+                // helperText={t("Short label for sidebar navigation")}
               />
               
               <TextField 
-                label={`${t("Subheading")} (${lang})`}
+                label={`${t("Subheading")}`}
                 value={formData.subheadings?.[lang] || ''} 
                 onChange={(e) => handleLabelChange(lang, 'subheadings', e.target.value)} 
                 fullWidth 
                 size="small"
                 multiline
                 rows={2}
-                helperText={t("Descriptive subheading text")}
+                // helperText={t("Descriptive subheading text")}
               />
             </Box>
           ))}

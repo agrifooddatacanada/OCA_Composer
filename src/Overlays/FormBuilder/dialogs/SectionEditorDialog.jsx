@@ -43,30 +43,30 @@ const SectionEditorDialog = ({ open, onClose, section, onSave, languages = ['Eng
       </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: CustomPalette.GREY_800 }}>{t("Section Labels (Multilingual)")}</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: CustomPalette.GREY_800 }}>{t("Section Labels")}</Typography>
           
           {languages.map(lang => (
             <Box key={lang} sx={{ pl: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 500, color: CustomPalette.PRIMARY }}>{lang}</Typography>
               
               <TextField 
-                label={`${t("Section Label")} (${lang})`}
+                label={`${t("Section Label")}`}
                 value={formData.labels?.[lang] || ''} 
                 onChange={(e) => handleLabelChange(lang, 'labels', e.target.value)} 
                 fullWidth 
                 size="small"
-                helperText={t("Section label for this language")}
+                // helperText={t("Section label for this language")}
               />
               
               <TextField 
-                label={`${t("Subheading")} (${lang})`}
+                label={`${t("Subheading")}`}
                 value={formData.subheadings?.[lang] || ''} 
                 onChange={(e) => handleLabelChange(lang, 'subheadings', e.target.value)} 
                 fullWidth 
                 size="small"
                 multiline
                 rows={2}
-                helperText={t("Descriptive subheading text")}
+                // helperText={t("Descriptive subheading text")}
               />
             </Box>
           ))}
