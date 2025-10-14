@@ -44,13 +44,13 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
   
   const formatRuleDescription = findDescription(question.formatText, question.attributeType);
   
-  // Get the question title - prioritize user's global UI language, then currentLanguage tab, then fallback
+  // Get the question title - prioritize currentLanguage tab, then user's global UI language, then fallback
   const getQuestionTitle = () => {
     if (typeof question.title === 'object' && question.title !== null) {
+      if (currentLanguage && question.title[currentLanguage]) return question.title[currentLanguage];
+      
       const userLanguage = codesToLanguages?.[i18next.language];
       if (userLanguage && question.title[userLanguage]) return question.title[userLanguage];
-      
-      if (currentLanguage && question.title[currentLanguage]) return question.title[currentLanguage];
       
       const firstLang = Object.keys(question.title)[0];
       if (firstLang && question.title[firstLang]) return question.title[firstLang];

@@ -31,17 +31,12 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
     collect: (monitor) => ({ isOver: monitor.isOver() })
   });
 
-  // Get the section title - prioritize user's global UI language, then currentLanguage tab, then fallback
+  // Get the section title - prioritize currentLanguage tab, then user's global UI language, then fallback
   const getSectionTitle = () => {
     if (section.labels) {
-      // First try user's global UI language
+      if (currentLanguage && section.labels[currentLanguage]) return section.labels[currentLanguage];
       const userLanguage = codesToLanguages?.[i18next.language];
       if (userLanguage && section.labels[userLanguage]) return section.labels[userLanguage];
-      
-      // Then try the current language tab
-      if (currentLanguage && section.labels[currentLanguage]) return section.labels[currentLanguage];
-      
-      // Fallback to first available language
       const firstLang = Object.keys(section.labels)[0];
       if (firstLang && section.labels[firstLang]) return section.labels[firstLang];
     }

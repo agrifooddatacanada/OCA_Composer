@@ -7,11 +7,11 @@ import i18next from "i18next";
 import { useTranslation } from "react-i18next";
 
 const DraggablePaletteItem = ({ attribute, labels, type, attributeType, placeholders, currentLanguage }) => {
-  // Prioritize user's global UI language, then currentLanguage tab, then fallback
+  // Prioritize currentLanguage tab, then user's global UI language, then fallback
   const userLanguage = codesToLanguages?.[i18next.language];
   const displayLabel = 
-    (userLanguage && labels?.[userLanguage]) || 
     labels?.[currentLanguage] || 
+    (userLanguage && labels?.[userLanguage]) || 
     labels?.['default'] || 
     attribute;
   

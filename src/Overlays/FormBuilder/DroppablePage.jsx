@@ -63,14 +63,14 @@ const DroppablePage = ({
     collect: (monitor) => ({ isOver: monitor.isOver() })
   });
 
-  // Get the page title - prioritize user's global UI language, then currentLanguage tab, then fallback
+  // Get the page title - prioritize currentLanguage tab, then user's global UI language, then fallback
   const getPageTitle = () => {
     if (page.labels) {
-      const userLanguage = codesToLanguages?.[i18next.language];
-      if (userLanguage && page.labels[userLanguage]) return page.labels[userLanguage];
-
       if (currentLanguage && page.labels[currentLanguage])
         return page.labels[currentLanguage];
+
+      const userLanguage = codesToLanguages?.[i18next.language];
+      if (userLanguage && page.labels[userLanguage]) return page.labels[userLanguage];
 
       const firstLang = Object.keys(page.labels)[0];
       if (firstLang && page.labels[firstLang]) return page.labels[firstLang];
