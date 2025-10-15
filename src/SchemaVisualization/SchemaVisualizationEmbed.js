@@ -32,6 +32,7 @@ const SchemaVisualizationEmbed = ({
   schemaDescription,
   languages,
   OCAPackage,
+  lanAttributeRowData,
   viewMode = "tree",
   height = "500px",
   showDebug = false,
@@ -151,7 +152,10 @@ const SchemaVisualizationEmbed = ({
     }
 
     const languageCode = toThreeLetterCode(i18n.language.split("-")[0]) || "eng";
-    const processedSchemaData = extractSchemaDataFromPackage(ocaPackage, languageCode);
+    console.log("SchemaVisualizationEmbed: lanAttributeRowData:", lanAttributeRowData);
+    console.log("SchemaVisualizationEmbed: languageCode:", languageCode);
+    const processedSchemaData = extractSchemaDataFromPackage(ocaPackage, languageCode, lanAttributeRowData);
+    console.log("SchemaVisualizationEmbed: processedSchemaData.labels:", processedSchemaData?.labels);
     if (!processedSchemaData) {
       return;
     }
@@ -255,7 +259,7 @@ const SchemaVisualizationEmbed = ({
       setEdges([]);
       setHasData(false);
     }
-  }, [getOCAPackage, internalViewMode, viewSwitchLoading, i18n.language, t]);
+  }, [getOCAPackage, internalViewMode, viewSwitchLoading, i18n.language, t, lanAttributeRowData]);
 
   // Generate layout on component mount and when dependencies change
   useEffect(() => {
