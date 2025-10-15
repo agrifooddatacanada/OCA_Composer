@@ -453,47 +453,33 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       }
     };
 
-    // Extract localized metadata from meta overlays
-    const extractLocalizedMetadata = () => {
-      const localized = {};
-      const metaOverlay = schemaData.overlays?.meta;
-      
-      if (Array.isArray(metaOverlay)) {
-        // Meta overlays as array (OCA 1.0 format)
-        metaOverlay.forEach((m) => {
-          if (m && m.language) {
-            localized[m.language] = {
-              name: m.name || schemaId,
-              description: m.description || ""
-            };
-          }
-        });
-      } else if (metaOverlay && typeof metaOverlay === "object") {
-        // Meta overlays as object (alternative format)
-        Object.entries(metaOverlay).forEach(([lang, m]) => {
-          if (m && typeof m === "object") {
-            localized[lang] = {
-              name: m.name || schemaId,
-              description: m.description || ""
-            };
-          }
-        });
-      }
-      
-      // Ensure we have at least default entries
-      if (!localized.eng) {
-        localized.eng = {
-          name: schemaData.schemaName || schemaId,
-          description: schemaData.schemaDescription || ""
-        };
-      }
-      
-      return localized;
-    };
+    // Build localized metadata directly from meta overlays
+    const metaOverlay = schemaData.overlays?.meta;
+    const localized = {};
+    
+    // Extract from OCA meta overlays (array format)
+    if (Array.isArray(metaOverlay)) {
+      metaOverlay.forEach((m) => {
+        if (m?.language) {
+          localized[m.language] = {
+            name: m.name || schemaId,
+            description: m.description || ""
+          };
+        }
+      });
+    }
+    
+    // Fallback to default English if no meta overlays
+    if (!localized.eng) {
+      localized.eng = {
+        name: schemaData.schemaName || schemaId,
+        description: schemaData.schemaDescription || ""
+      };
+    }
 
     const newState = {
       metadata: {
-        localized: extractLocalizedMetadata(),
+        localized,
         languages: ["English", "French"]
       },
       attributes: attributesWithLists,
