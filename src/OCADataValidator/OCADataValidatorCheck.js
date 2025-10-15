@@ -879,7 +879,7 @@ const OCADataValidatorCheck = ({
     if (datasetRawFile.length === 0) {
       setSchemaDataConformantHeader(attributesList);
     }
-    if (variableToCheck && variableToCheck?.length > 1) {
+    if (variableToCheck && variableToCheck?.length >= 1) {
       variableToCheck.forEach((header) => {
         if (
           header in SavedEntryCodesWithNoArrayType &&
