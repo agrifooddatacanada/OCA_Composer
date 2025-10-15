@@ -67,7 +67,6 @@ export default function ViewSchema({
     activeSchemaId,
     switchToSchema,
     exportSchemaChanges,
-
     getSchemaState,
     schemaStates
   } = useMultiSchema();
@@ -316,15 +315,7 @@ export default function ViewSchema({
           }
 
           if (currentSchemaId) {
-            let schemaState = getSchemaState(currentSchemaId);
-
-            // If schema state doesn't exist or isn't initialized, initialize from OCA package
-            if (!schemaState || !schemaState.initialized) {
-              // Initialize the schema from the OCA package
-              initializeFromOCAPackage(OCAPackage);
-              // Get the schema state again after initialization
-              schemaState = getSchemaState(currentSchemaId);
-            }
+            const schemaState = getSchemaState(currentSchemaId);
 
             if (schemaState && schemaState.initialized) {
               // Convert schema state back to the format expected by ViewGrid

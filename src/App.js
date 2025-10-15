@@ -629,7 +629,7 @@ function App() {
   return (
     <div className="App">
       <ThemeProvider theme={CustomTheme}>
-        <MultiSchemaProvider>
+        <MultiSchemaProvider OCAPackage={OCAPackage}>
           <Context.Provider
             // eslint-disable-next-line react/jsx-no-constructed-context-values
             value={{

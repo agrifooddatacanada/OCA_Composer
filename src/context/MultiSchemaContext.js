@@ -105,7 +105,7 @@ const createDefaultSchemaState = () => ({
 });
 
 // Multi-schema provider component
-export const MultiSchemaProvider = ({ children }) => {
+export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   const PERSIST_VERSION = 2;
 
   // Multi-schema state
@@ -453,10 +453,47 @@ export const MultiSchemaProvider = ({ children }) => {
       }
     };
 
+    // Extract localized metadata from meta overlays
+    const extractLocalizedMetadata = () => {
+      const localized = {};
+      const metaOverlay = schemaData.overlays?.meta;
+      
+      if (Array.isArray(metaOverlay)) {
+        // Meta overlays as array (OCA 1.0 format)
+        metaOverlay.forEach((m) => {
+          if (m && m.language) {
+            localized[m.language] = {
+              name: m.name || schemaId,
+              description: m.description || ""
+            };
+          }
+        });
+      } else if (metaOverlay && typeof metaOverlay === "object") {
+        // Meta overlays as object (alternative format)
+        Object.entries(metaOverlay).forEach(([lang, m]) => {
+          if (m && typeof m === "object") {
+            localized[lang] = {
+              name: m.name || schemaId,
+              description: m.description || ""
+            };
+          }
+        });
+      }
+      
+      // Ensure we have at least default entries
+      if (!localized.eng) {
+        localized.eng = {
+          name: schemaData.schemaName || schemaId,
+          description: schemaData.schemaDescription || ""
+        };
+      }
+      
+      return localized;
+    };
+
     const newState = {
       metadata: {
-        name: schemaData.schemaName || schemaId,
-        description: schemaData.schemaDescription || "",
+        localized: extractLocalizedMetadata(),
         languages: ["English", "French"]
       },
       attributes: attributesWithLists,
@@ -1024,6 +1061,21 @@ export const MultiSchemaProvider = ({ children }) => {
       }
     };
   }, [schemaStates, saveToLocalStorage]);
+
+  // Auto-initialize from OCA package when it changes
+  useEffect(() => {
+    if (OCAPackage && Object.keys(schemaStates).length === 0) {
+      // Only initialize if we don't have any schemas yet
+      // This prevents re-initialization when user is actively editing
+      console.log("MultiSchemaContext: Auto-initializing from OCA package");
+      const schemaIds = initializeFromOCAPackage(OCAPackage);
+      
+      // Set the first schema as active if none is set
+      if (schemaIds.length > 0 && !activeSchemaId) {
+        setActiveSchemaId(schemaIds[0]);
+      }
+    }
+  }, [OCAPackage, initializeFromOCAPackage, schemaStates, activeSchemaId]);
 
   // Context value
   const contextValue = useMemo(
