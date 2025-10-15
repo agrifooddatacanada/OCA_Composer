@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import { CustomPalette } from "../constants/customPalette";
@@ -22,6 +24,8 @@ import useExportLogic from "./useExportLogic";
 import Loading from "../components/Loading";
 import useExportLogicV2 from "./useExportLogicV2";
 import useMultiSchemaExport from "../hooks/useMultiSchemaExport";
+import useGenerateReadMe from "./useGenerateReadMe";
+import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 
 import { codesToLanguages } from "../constants/isoCodes";
 
@@ -34,16 +38,29 @@ const SchemaVisualizationEmbed = React.lazy(
 );
 
 export default function ViewSchema({
+  pageBack,
   isExport = true,
   addClearButton,
-
-  isPageForward = true
+  pageForward,
+  isPageForward = true,
+  isBack = false
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { languages, schemaDescription, isZip, isZipEdited, setCurrentPage, OCAPackage } =
-    useContext(Context);
+  const { 
+    languages, 
+    schemaDescription, 
+    isZip, 
+    isZipEdited, 
+    setIsZipEdited,
+    setCurrentPage, 
+    history,
+    setHistory,
+    zipToReadme,
+    jsonToReadme,
+    OCAPackage 
+  } = useContext(Context);
 
   // Multi-schema context
   const {
@@ -79,6 +96,89 @@ export default function ViewSchema({
       setCurrentLanguage(filteredLanguages[0]);
     }
   }, [t, languages, filteredLanguages]); // Use 't' to track language changes
+
+  // Language selector display logic
+  const displayLanguageArray = [];
+  for (let i = 0; i < filteredLanguages.length; i += 7) {
+    const languageRow = filteredLanguages.slice(i, i + 7).filter(Boolean);
+    displayLanguageArray.push(languageRow);
+  }
+
+  const createLanguageRow = (languageArray, rowIndex) => {
+    const languageRowDisplay = languageArray.map((language, index) => {
+      let curveLeftTop = "0";
+      let curveRightTop = "0";
+      let curveRightBottom = "0";
+      let curveLeftBottom = "0";
+
+      if (languages.length > 7) {
+        if (rowIndex === 0 && index === 0) {
+          curveLeftBottom = "8px";
+        }
+        if (rowIndex === displayLanguageArray.length - 1 && index === 0) {
+          curveLeftTop = "8px";
+        }
+        if (rowIndex === 0 && index === 6) {
+          curveRightBottom = "8px";
+        }
+        if (
+          rowIndex === displayLanguageArray.length - 1 &&
+          index === languageArray.length - 1
+        ) {
+          curveRightTop = "8px";
+        }
+        if (
+          rowIndex === displayLanguageArray.length - 2 &&
+          displayLanguageArray[displayLanguageArray.length - 1].length < 7 &&
+          index === 6
+        ) {
+          curveRightTop = "8px";
+        }
+      } else {
+        if (index === 0) {
+          curveLeftBottom = "8px";
+          curveLeftTop = "8px";
+        }
+        if (index === languages.length - 1) {
+          curveRightBottom = "8px";
+          curveRightTop = "8px";
+        }
+      }
+
+      const borderRadius = `${curveLeftTop} ${curveRightTop} ${curveRightBottom} ${curveLeftBottom}`;
+      let minimizedLanguage = language.slice(0, 9);
+      if (minimizedLanguage !== language) {
+        minimizedLanguage += "...";
+      }
+      return (
+        <Button
+          onClick={() => {
+            setCurrentLanguage(language);
+          }}
+          key={language}
+          color="button"
+          variant="contained"
+          sx={{
+            backgroundColor:
+              currentLanguage === language
+                ? CustomPalette.PRIMARY
+                : CustomPalette.SECONDARY,
+            borderRadius,
+            minWidth: languages.length < 5 ? "12rem" : "10rem",
+            boxShadow: "none",
+            border: `0.5px solid ${CustomPalette.PRIMARY}`
+          }}
+        >
+          <Typography variant="button">{minimizedLanguage}</Typography>
+        </Button>
+      );
+    });
+    return languageRowDisplay;
+  };
+
+  const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
+    <Box key={languageSegment.join(",")}>{createLanguageRow(languageSegment, index)}</Box>
+  ));
   const [displayArray, setDisplayArray] = useState([]);
   const { resetToDefaults, exportDisabled } = useExportLogic();
   const {
@@ -90,6 +190,8 @@ export default function ViewSchema({
     error: multiSchemaExportError,
     clearError: clearMultiSchemaError
   } = useMultiSchemaExport();
+  const { toTextFile } = useGenerateReadMe();
+  const { jsonToTextFile } = useGenerateReadMeV2();
   const [loading, setLoading] = useState(true);
   const [visualizationMode, setVisualizationMode] = useState("detailed");
   const [updatedOCAPackage, setUpdatedOCAPackage] = useState(OCAPackage);
@@ -111,9 +213,40 @@ export default function ViewSchema({
     [activeSchemaId, switchToSchema, OCAPackage, setCurrentPage, navigate]
   );
 
+  const downloadReadMe = () => {
+    if (Object.keys(jsonToReadme).length > 0) {
+      jsonToTextFile(jsonToReadme, OCAPackage);
+    } else if (zipToReadme.length > 0) {
+      toTextFile(zipToReadme);
+    }
+  };
+
+  const moveBackward = () => {
+    if (history.length > 1 && history[history.length - 2] === "Landing") {
+      setHistory((prev) => prev.slice(0, prev.length - 1));
+      setCurrentPage("Landing");
+      navigate("/");
+    } else {
+      pageBack();
+    }
+  };
+
   // readme hooks not used on this page
-  // Always show multi-schema visualization if we have an OCA package
-  const hasHierarchy = !!OCAPackage;
+  // Only show multi-schema visualization if we have child schemas (refs: or refn: types)
+  const hasHierarchy = React.useMemo(() => {
+    if (!OCAPackage) return false;
+    
+    // Always check the root/parent schema, not the currently active one
+    const rootSchemaId = OCAPackage.bundle?.d || OCAPackage.bundle?.capture_base?.d;
+    const rootSchemaState = getSchemaState(rootSchemaId);
+    
+    if (!rootSchemaState?.attributes) return false;
+    
+    // Simple check: does any attribute type contain "ref" (covers refs: and refn:)
+    return rootSchemaState.attributes.some(attr => 
+      attr.Type && attr.Type.includes('ref')
+    );
+  }, [OCAPackage, getSchemaState]);
 
   // Update the package data when schemas are modified
   useEffect(() => {
@@ -183,7 +316,15 @@ export default function ViewSchema({
           }
 
           if (currentSchemaId) {
-            const schemaState = getSchemaState(currentSchemaId);
+            let schemaState = getSchemaState(currentSchemaId);
+
+            // If schema state doesn't exist or isn't initialized, initialize from OCA package
+            if (!schemaState || !schemaState.initialized) {
+              // Initialize the schema from the OCA package
+              initializeFromOCAPackage(OCAPackage);
+              // Get the schema state again after initialization
+              schemaState = getSchemaState(currentSchemaId);
+            }
 
             if (schemaState && schemaState.initialized) {
               // Convert schema state back to the format expected by ViewGrid
@@ -338,17 +479,89 @@ export default function ViewSchema({
 
   return (
     <Box sx={{ padding: "2rem" }}>
-      {/* Header: Schema description + actions */}
+      {/* Header: Navigation and Action buttons */}
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: isBack || !pageForward ? "space-between" : "flex-end",
           alignItems: "flex-start",
           mb: 2
         }}
       >
-        <SchemaDescription currentLanguage={currentLanguage} />
+        {/* Back button logic */}
+        {isBack && (
+          <Button
+            color="navButton"
+            sx={{
+              textAlign: "left",
+              alignSelf: "flex-start",
+              color: CustomPalette.PRIMARY
+            }}
+            onClick={pageBack}
+          >
+            <ArrowBackIosIcon /> {t("Back")}
+          </Button>
+        )}
+        {isPageForward && !pageForward && (
+          <Button
+            color="navButton"
+            sx={{
+              textAlign: "left",
+              alignSelf: "flex-start",
+              color: CustomPalette.PRIMARY
+            }}
+            onClick={moveBackward}
+          >
+            <ArrowBackIosIcon /> {t("Back")}
+          </Button>
+        )}
+
+        {/* Next button for page forward */}
+        {isPageForward && pageForward && (
+          <Button
+            color="navButton"
+            onClick={pageForward}
+            sx={{ color: CustomPalette.PRIMARY }}
+          >
+            {t("Next")} <ArrowForwardIosIcon />
+          </Button>
+        )}
+        
         <Box sx={{ display: "flex", gap: 2 }}>
+          {isZip && (
+            <>
+              <Button
+                color="button"
+                variant="contained"
+                onClick={() => {
+                  setCurrentPage("Metadata");
+                  setIsZipEdited(true);
+                }}
+                sx={{
+                  alignSelf: "flex-end",
+                  display: "flex",
+                  justifyContent: "space-around",
+                  padding: "0.5rem 1rem"
+                }}
+              >
+                {t("Edit Schema")}
+              </Button>
+              <Button
+                color="button"
+                variant="contained"
+                onClick={downloadReadMe}
+                sx={{
+                  alignSelf: "flex-end",
+                  display: "flex",
+                  justifyContent: "space-around",
+                  padding: "0.5rem 1rem"
+                }}
+                disabled={exportDisabled}
+              >
+                {t("Download ReadMe")}
+              </Button>
+            </>
+          )}
           {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
             <Button
               color="button"
@@ -386,7 +599,124 @@ export default function ViewSchema({
         </Box>
       </Box>
 
-      {/* Multi-Schema Visualization (moved above details) */}
+      {/* Note about downloading files */}
+      {isPageForward && isExport && (
+        <Box
+          sx={{
+            padding: 2,
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            backgroundColor: "#f9f9f9",
+            width: "300px",
+            textAlign: "left",
+            position: "absolute",
+            right: 0,
+            marginRight: "4rem"
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 16,
+              color: "#333"
+            }}
+          >
+            {t("Note: Downloading two files")}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: 14,
+              marginTop: 1
+            }}
+          >
+            {t("1) Schema in .txt format, readable and archivable.")}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: 14,
+              marginTop: 1
+            }}
+          >
+            {t(
+              "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine."
+            )}
+          </Typography>
+        </Box>
+      )}
+
+      {/* Language selector */}
+      <Box sx={{ marginTop: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center"
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 22,
+              fontWeight: "bold",
+              color: CustomPalette.PRIMARY
+            }}
+          >
+            {t("Schema Language")}
+          </Typography>
+          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
+            <Tooltip
+              title={t(
+                "Toggles between the one or more languages used in the schema"
+              )}
+              placement="right"
+              arrow
+            >
+              <HelpOutlineIcon sx={{ fontSize: 15 }} />
+            </Tooltip>
+          </Box>
+        </Box>
+        <Box sx={{ mb: 4, width: "70rem" }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column-reverse",
+              alignItems: "flex-start"
+            }}
+          >
+            {languageButtonDisplay}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Schema Metadata section */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: 2
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: 22,
+            fontWeight: "bold",
+            color: CustomPalette.PRIMARY
+          }}
+        >
+          {t("Schema Metadata")}
+        </Typography>
+        <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
+          <Tooltip
+            title={t(
+              "Language specific information describing general schema information"
+            )}
+            placement="right"
+            arrow
+          >
+            <HelpOutlineIcon sx={{ fontSize: 15 }} />
+          </Tooltip>
+        </Box>
+      </Box>
+      <SchemaDescription key={currentLanguage} currentLanguage={currentLanguage} />
+
+      {/* Multi-Schema Visualization */}
       {hasHierarchy && (
         <>
           <Box
@@ -497,29 +827,29 @@ export default function ViewSchema({
         </>
       )}
 
-      {/* Attribute Details header and grid */}
-      <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+      {/* Schema Details header and grid */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: 4,
+          marginBottom: 2
+        }}
+      >
         <Typography
-          sx={{ fontSize: 22, fontWeight: "bold", color: CustomPalette.PRIMARY }}
+          sx={{
+            fontSize: 22,
+            fontWeight: "bold",
+            color: CustomPalette.PRIMARY
+          }}
         >
-          {(() => {
-            const name = (() => {
-              try {
-                const st = getSchemaState(activeSchemaId);
-                return st?.metadata?.name || "";
-              } catch (_) {
-                return "";
-              }
-            })();
-            const label = t(
-              name ? `Attribute Details for "${name}"` : "Attribute Details"
-            );
-            return label;
-          })()}
+          {t("Schema Details")}
         </Typography>
-        <Box sx={{ marginLeft: "0.5rem", color: CustomPalette.GREY_600 }}>
+        <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
           <Tooltip
-            title="This table shows each attribute with its labels, descriptions, required status, format rules, and units"
+            title={t(
+              "The details of the schema including attribute names and their features as well as language specific information"
+            )}
             placement="right"
             arrow
           >
