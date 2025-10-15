@@ -85,7 +85,7 @@ export const getDependencyInfo = (depId, dependencyMap, language = "eng") => {
     dependency.overlays?.meta?.[0];
   const name = metaOverlay?.name || depId;
 
-  // Get label overlay for field labels
+  // Get label overlay for field labels - LDAD changes will be saved directly to overlays
   const labelOverlay =
     dependency.overlays?.label?.find((l) => l.language === language) ||
     dependency.overlays?.label?.[0];
@@ -107,61 +107,18 @@ export const getDependencyInfo = (depId, dependencyMap, language = "eng") => {
  * @param {Object} lanAttributeRowData - Updated language attribute data from LDAD
  * @returns {Object} Processed schema data for visualization
  */
-export const extractSchemaDataFromPackage = (ocaPackage, language = "eng", lanAttributeRowData = {}) => {
+export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
   if (!ocaPackage) {
     return null;
   }
 
-  // Extract labels from the bundle's overlays
+  // Extract labels from the bundle's overlays - no LDAD merging needed
+  // LDAD changes will be saved directly to overlays by the Language Details component
   const labelOverlay =
     ocaPackage.bundle.overlays?.label?.find((l) => l.language === language) ||
     ocaPackage.bundle.overlays?.label?.[0] ||
     {};
-  let labels = labelOverlay.attribute_labels || {};
-
-  // If we have updated labels from LDAD, use those instead
-  if (lanAttributeRowData && Object.keys(lanAttributeRowData).length > 0) {
-    const updatedLabels = {};
-    // New format: { attributeName: { eng: "Updated Label", English: "Updated Label", fra: "Label français", French: "Label français" } }
-    Object.entries(lanAttributeRowData).forEach(([attrName, langData]) => {
-      if (langData && typeof langData === 'object') {
-        // Try to get the label for the current language with comprehensive fallback
-        let updatedLabel;
-        
-        // Prioritize full language names (where LDAD stores updates) for visualization codes
-        if (language === 'eng' && langData.English) {
-          updatedLabel = langData.English;
-        }
-        else if (language === 'fra' && langData.French) {
-          updatedLabel = langData.French;
-        }
-        // Then try exact match for other cases
-        else if (langData[language]) {
-          updatedLabel = langData[language];
-        }
-        // Generic fallbacks
-        else if (langData.English || langData.english) {
-          updatedLabel = langData.English || langData.english;
-        }
-        else if (langData.eng) {
-          updatedLabel = langData.eng;
-        }
-        else if (langData.French || langData.french) {
-          updatedLabel = langData.French || langData.french;
-        }
-        else if (langData.fra) {
-          updatedLabel = langData.fra;
-        }
-        
-        if (updatedLabel) {
-          updatedLabels[attrName] = updatedLabel;
-        }
-      }
-    });
-    
-    // Merge with existing labels, prioritizing updated labels
-    labels = { ...labels, ...updatedLabels };
-  }
+  const labels = labelOverlay.attribute_labels || {};
 
   return {
     dependencies: ocaPackage.dependencies || [],

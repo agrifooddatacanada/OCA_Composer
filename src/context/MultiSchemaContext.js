@@ -669,7 +669,9 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         if (!targetSchema.overlays) targetSchema.overlays = {};
         if (schemaState.overlays) {
           Object.entries(schemaState.overlays).forEach(([overlayType, overlayData]) => {
-            if (overlayData) targetSchema.overlays[overlayType] = overlayData;
+            if (overlayData) {
+              targetSchema.overlays[overlayType] = overlayData;
+            }
           });
         }
 

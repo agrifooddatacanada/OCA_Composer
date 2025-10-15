@@ -83,18 +83,19 @@ export default function ViewSchema({
     return arr;
   }, [languages, languageIndex]);
 
-  // Make currentLanguage responsive to UI language changes
-  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
+  // Schema language state - defaults to null (use i18n), can be overridden by schema buttons
+  const [schemaLanguageOverride, setSchemaLanguageOverride] = useState(null);
+  
+  // Helper to get current effective language (standardized approach)
+  const getCurrentLanguage = () => {
+    return schemaLanguageOverride || codesToLanguages?.[i18next.language] || filteredLanguages[0];
+  };
 
-  // Update currentLanguage when UI language changes
+  // Reset schema language override when app language changes (i18n primary approach)
   useEffect(() => {
-    const uiLanguageName = codesToLanguages?.[i18next.language];
-    if (uiLanguageName && languages.includes(uiLanguageName)) {
-      setCurrentLanguage(uiLanguageName);
-    } else {
-      setCurrentLanguage(filteredLanguages[0]);
-    }
-  }, [t, languages, filteredLanguages]); // Use 't' to track language changes
+    setSchemaLanguageOverride(null); // Reset to use i18n language
+    setVizVersion((v) => v + 1); // Force visualization update
+  }, [t]); // Track i18n language changes
 
   // Language selector display logic
   const displayLanguageArray = [];
@@ -152,14 +153,15 @@ export default function ViewSchema({
       return (
         <Button
           onClick={() => {
-            setCurrentLanguage(language);
+            setSchemaLanguageOverride(language);
+            setVizVersion((v) => v + 1); // Force visualization update
           }}
           key={language}
           color="button"
           variant="contained"
           sx={{
             backgroundColor:
-              currentLanguage === language
+              getCurrentLanguage() === language
                 ? CustomPalette.PRIMARY
                 : CustomPalette.SECONDARY,
             borderRadius,
@@ -244,6 +246,7 @@ export default function ViewSchema({
     if (!OCAPackage) return;
     // Always regenerate a derived package from current multi-schema state
     const modifiedPackage = exportSchemaChanges(OCAPackage);
+
     setUpdatedOCAPackage(modifiedPackage);
     setVizVersion((v) => v + 1);
   }, [OCAPackage, schemaStates, exportSchemaChanges]);
@@ -402,12 +405,12 @@ export default function ViewSchema({
               const fallbackDisplayArray = (schemaState.attributes || []).map((attr) => ({
                 Attribute: attr.Attribute,
                 Type: attr.Type || "",
-                Description: { [currentLanguage]: attr.Description || "" },
-                Label: { [currentLanguage]: attr.Label || "" },
+                Description: { [getCurrentLanguage()]: attr.Description || "" },
+                Label: { [getCurrentLanguage()]: attr.Label || "" },
                 Required: !!attr.Required,
                 "Format Rule": "",
                 "Character Encoding": "",
-                List: { [currentLanguage]: "Not a List" },
+                List: { [getCurrentLanguage()]: "Not a List" },
                 Unit: attr.Unit || "",
                 Flagged: attr.Flagged || false
               }));
@@ -420,12 +423,12 @@ export default function ViewSchema({
               (attr) => ({
                 Attribute: attr.Attribute,
                 Type: attr.Type || "",
-                Description: { [currentLanguage]: attr.Description || "" },
-                Label: { [currentLanguage]: attr.Label || "" },
+                Description: { [getCurrentLanguage()]: attr.Description || "" },
+                Label: { [getCurrentLanguage()]: attr.Label || "" },
                 Required: !!attr.Required,
                 "Format Rule": "",
                 "Character Encoding": "",
-                List: { [currentLanguage]: "Not a List" },
+                List: { [getCurrentLanguage()]: "Not a List" },
                 Unit: attr.Unit || "",
                 Flagged: attr.Flagged || false
               })
@@ -452,7 +455,8 @@ export default function ViewSchema({
   }, [
     activeSchemaId,
     OCAPackage,
-    currentLanguage,
+    schemaLanguageOverride,
+    i18next.language,
     getSchemaState,
     filteredLanguages,
     schemaStates // Add this to ensure updates when schema state changes
@@ -699,7 +703,7 @@ export default function ViewSchema({
           </Tooltip>
         </Box>
       </Box>
-      <SchemaDescription key={currentLanguage} currentLanguage={currentLanguage} />
+      <SchemaDescription key={getCurrentLanguage()} currentLanguage={getCurrentLanguage()} />
 
       {/* Multi-Schema Visualization */}
       {hasHierarchy && (
@@ -789,7 +793,7 @@ export default function ViewSchema({
               }
             >
               <SchemaVisualizationEmbed
-                key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${activeSchemaId}`}
+                key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${activeSchemaId}-${schemaLanguageOverride || i18next.language}`}
                 attributeRowData={(() => {
                   // Get attribute data from MultiSchema context for visualization
                   const currentSchemaId =
@@ -801,35 +805,8 @@ export default function ViewSchema({
                 })()}
                 schemaDescription={schemaDescription}
                 languages={filteredLanguages}
+                schemaLanguageOverride={schemaLanguageOverride}
                 OCAPackage={updatedOCAPackage}
-                lanAttributeRowData={(() => {
-                  // Get language attribute data from MultiSchema context for visualization
-                  const currentSchemaId =
-                    activeSchemaId ||
-                    OCAPackage?.bundle?.d ||
-                    OCAPackage?.bundle?.capture_base?.d;
-                  const schemaState = getSchemaState(currentSchemaId);
-                  
-                  // Extract updated labels from schema state same way as Schema Details table
-                  const lanAttributeData = schemaState.lanAttributeRowData || {};
-                  const updatedLabels = {};
-                  
-                  // Process each language
-                  Object.keys(lanAttributeData).forEach(langKey => {
-                    const langDataRows = lanAttributeData[langKey] || [];
-                    if (Array.isArray(langDataRows)) {
-                      langDataRows.forEach((item, index) => {
-                        if (item.Attribute && item.Label) {
-                          if (!updatedLabels[item.Attribute]) {
-                            updatedLabels[item.Attribute] = {};
-                          }
-                          updatedLabels[item.Attribute][langKey] = item.Label;
-                        }
-                      });
-                    }
-                  });
-                  return updatedLabels;
-                })()}
                 viewMode={visualizationMode}
                 height="70vh"
                 currentSchemaId={activeSchemaId}
@@ -872,8 +849,8 @@ export default function ViewSchema({
       </Box>
       <Box sx={{ marginBottom: "2rem" }}>
         <ViewGrid
-          currentLanguage={currentLanguage}
-          setCurrentLanguage={setCurrentLanguage}
+          currentLanguage={getCurrentLanguage()}
+          setCurrentLanguage={setSchemaLanguageOverride}
           displayArray={displayArray}
           setDisplayArray={setDisplayArray}
         />

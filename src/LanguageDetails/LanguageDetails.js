@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import React, { useRef, useContext, useState, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from "react";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
@@ -9,10 +9,10 @@ import CustomPalette from "../constants/customPalette";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
-import { codesToLanguages } from "../constants/isoCodes";
+import { codesToLanguages, languageNameToAlpha3Codes } from "../constants/isoCodes";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 
-export default function LanguageDetails({ pageBack, pageForward }) {
+const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForward }, ref) {
   const { t } = useTranslation();
   
   // Use MultiSchemaContext
@@ -119,8 +119,49 @@ export default function LanguageDetails({ pageBack, pageForward }) {
     
     // Save to MultiSchemaContext if editing a specific schema
     if (currentSchemaId) {
+      // Convert LDAD data to schema overlays
+      const schemaState = getSchemaState(currentSchemaId);
+      const currentSchema = schemaState?.completeSchema || {};
+      const updatedOverlays = { ...currentSchema.overlays };
+
+      // Create label overlays from LDAD data
+      const labelOverlays = [];
+      languages.forEach((language) => {
+        const langData = noSpacesObject[language] || [];
+        if (langData.length > 0) {
+          // Convert language name to ISO 639-2 (3-letter) code for overlay
+          // Use the existing languageNameToAlpha3Codes mapping
+          const languageCode = languageNameToAlpha3Codes[language.toLowerCase()] || 
+                               language.toLowerCase().slice(0, 3); // Fallback to first 3 chars
+          
+          const attributeLabels = {};
+          langData.forEach((item) => {
+            if (item.Attribute && item.Label && item.Label.trim() !== '') {
+              attributeLabels[item.Attribute] = item.Label;
+            }
+          });
+
+          if (Object.keys(attributeLabels).length > 0) {
+            labelOverlays.push({
+              language: languageCode,
+              attribute_labels: attributeLabels
+            });
+          }
+        }
+      });
+
+      // Update the overlays
+      if (labelOverlays.length > 0) {
+        updatedOverlays.label = labelOverlays;
+      }
+
       updateSchemaState(currentSchemaId, {
-        lanAttributeRowData: noSpacesObject
+        lanAttributeRowData: noSpacesObject, // Keep for compatibility during transition
+        overlays: updatedOverlays,  // Save overlays directly to schema state
+        completeSchema: {
+          ...currentSchema,
+          overlays: updatedOverlays
+        }
       });
     }
     
@@ -141,6 +182,11 @@ export default function LanguageDetails({ pageBack, pageForward }) {
     handleSave();
     pageForward();
   };
+
+  // Expose save method to parent (Home) so it can persist edits on navigation
+  useImperativeHandle(ref, () => ({
+    save: handleSave
+  }));
 
   // Formats language button display in a way that is displayed cleanly
 
@@ -306,4 +352,6 @@ export default function LanguageDetails({ pageBack, pageForward }) {
       </Box>
     </BackNextSkeleton>
   );
-}
+});
+
+export default LanguageDetails;

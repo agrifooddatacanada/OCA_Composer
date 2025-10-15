@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import { PlaceholderNode, DetailedNode, TreeNode } from "./CustomNodes";
 import { generateTreeLayout, generateDetailedLayout } from "./layoutGenerators";
 import { extractSchemaDataFromPackage } from "./dataUtils";
-import { toThreeLetterCode } from "../constants/isoCodes";
+import { toThreeLetterCode, codesToLanguages, languageNameToAlpha3Codes } from "../constants/isoCodes";
 import CustomPalette from "../constants/customPalette";
 import Spinner from "../components/Spinner";
 
@@ -31,8 +31,8 @@ const SchemaVisualizationEmbed = ({
   attributeRowData,
   schemaDescription,
   languages,
+  schemaLanguageOverride,
   OCAPackage,
-  lanAttributeRowData,
   viewMode = "tree",
   height = "500px",
   showDebug = false,
@@ -151,8 +151,25 @@ const SchemaVisualizationEmbed = ({
       return;
     }
 
-    const languageCode = toThreeLetterCode(i18n.language.split("-")[0]) || "eng";
-    const processedSchemaData = extractSchemaDataFromPackage(ocaPackage, languageCode, lanAttributeRowData);
+    // Standardized approach: i18n primary, schema override secondary
+    let languageCode = "eng"; // default fallback
+    
+    if (schemaLanguageOverride) {
+      // Schema-specific language override (from schema language buttons)
+      // schemaLanguageOverride is a full language name like "French", "English"
+      // Convert to lowercase for lookup in languageNameToAlpha3Codes
+      languageCode = languageNameToAlpha3Codes[schemaLanguageOverride.toLowerCase()] || "eng";
+    } else {
+      // Primary: Use i18n app language (from EN/FR toggle)
+      const i18nLanguageName = codesToLanguages?.[i18n.language.split("-")[0]];
+      if (i18nLanguageName) {
+        languageCode = languageNameToAlpha3Codes[i18nLanguageName.toLowerCase()] || "eng";
+      } else {
+        languageCode = toThreeLetterCode(i18n.language.split("-")[0]) || "eng";
+      }
+    }
+    
+    const processedSchemaData = extractSchemaDataFromPackage(ocaPackage, languageCode);
     if (!processedSchemaData) {
       return;
     }
@@ -256,7 +273,7 @@ const SchemaVisualizationEmbed = ({
       setEdges([]);
       setHasData(false);
     }
-  }, [getOCAPackage, internalViewMode, viewSwitchLoading, i18n.language, t, lanAttributeRowData]);
+  }, [getOCAPackage, internalViewMode, viewSwitchLoading, schemaLanguageOverride, t]);
 
   // Generate layout on component mount and when dependencies change
   useEffect(() => {

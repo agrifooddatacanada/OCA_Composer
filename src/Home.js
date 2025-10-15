@@ -165,6 +165,7 @@ const Home = ({
   const [showValidationPopup, setShowValidationPopup] = useState(false);
   const entryCodesRef = useRef(null);
   const attributeDetailsRef = useRef(null);
+  const languageDetailsRef = useRef(null);
 
   // Validation function to check if navigation should be allowed
   const validateNavigation = () => {
@@ -207,6 +208,15 @@ const Home = ({
         typeof entryCodesRef.current.save === "function"
       ) {
         entryCodesRef.current.save();
+      }
+
+      // If leaving Language Details step, persist any edits before navigation
+      if (
+        currentPage === "LanguageDetails" &&
+        languageDetailsRef.current &&
+        typeof languageDetailsRef.current.save === "function"
+      ) {
+        languageDetailsRef.current.save();
       }
 
       setCurrentPage(target.page);
@@ -345,7 +355,11 @@ const Home = ({
         )}
 
         {currentPage === "LanguageDetails" && (
-          <LanguageDetails pageBack={pageBack} pageForward={pageForward} />
+          <LanguageDetails 
+            ref={languageDetailsRef}
+            pageBack={pageBack} 
+            pageForward={pageForward} 
+          />
         )}
         {currentPage === "View" && <ViewSchema pageBack={pageBack} addClearButton />}
         {currentPage === "Create" && <CreateManually />}
