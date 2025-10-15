@@ -133,59 +133,85 @@ export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
  * @param {string} language - Language code (optional)
  * @returns {Object} Schema data for the specified schema
  */
+/**
+ * Normalize OCA package structure to handle different formats
+ * @param {Object} ocaPackage - Raw OCA package 
+ * @returns {Object} Normalized package with consistent structure
+ */
+const normalizeOCAPackage = (ocaPackage) => {
+  if (!ocaPackage) return null;
+  
+  // Handle oca_package format: { oca_bundle: { bundle: {...}, dependencies: [...] } }
+  if (ocaPackage.oca_bundle) {
+    return {
+      bundle: ocaPackage.oca_bundle.bundle,
+      dependencies: ocaPackage.oca_bundle.dependencies || []
+    };
+  }
+  
+  // Handle direct format: { bundle: {...}, dependencies: [...] }
+  return ocaPackage;
+};
+
 export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
   if (!ocaPackage || !schemaId) {
     return null;
   }
 
+  // Normalize the package structure
+  const normalizedPackage = normalizeOCAPackage(ocaPackage);
+  if (!normalizedPackage) {
+    return null;
+  }
+
   // If it's the root schema (either by bundle digest, capture base digest, by "root" ID, or by schema name)
   if (
-    schemaId === ocaPackage.bundle?.d ||
-    schemaId === ocaPackage.bundle?.capture_base?.d ||
+    schemaId === normalizedPackage.bundle?.d ||
+    schemaId === normalizedPackage.bundle?.capture_base?.d ||
     schemaId === "root"
   ) {
     // Get the schema name and description from meta overlays
     const metaOverlay =
-      ocaPackage.bundle.overlays?.meta?.find((m) => m.language === language) ||
-      ocaPackage.bundle.overlays?.meta?.[0];
-    const schemaName = metaOverlay?.name || ocaPackage.bundle?.d || "root";
+      normalizedPackage.bundle.overlays?.meta?.find((m) => m.language === language) ||
+      normalizedPackage.bundle.overlays?.meta?.[0];
+    const schemaName = metaOverlay?.name || normalizedPackage.bundle?.d || "root";
     const schemaDescription = metaOverlay?.description || "";
 
     return {
-      schemaId: ocaPackage.bundle.d || "root",
+      schemaId: normalizedPackage.bundle.d || "root",
       schemaName,
       schemaDescription,
-      attributes: ocaPackage.bundle.capture_base?.attributes || {},
-      overlays: ocaPackage.bundle.overlays || {},
+      attributes: normalizedPackage.bundle.capture_base?.attributes || {},
+      overlays: normalizedPackage.bundle.overlays || {},
       labels:
-        ocaPackage.bundle.overlays?.label?.find((l) => l.language === language)
+        normalizedPackage.bundle.overlays?.label?.find((l) => l.language === language)
           ?.attribute_labels || {}
     };
   }
 
   // Check if it's the root schema by name (e.g., "sample_questionnaire")
   const rootMetaOverlay =
-    ocaPackage.bundle.overlays?.meta?.find((m) => m.language === language) ||
-    ocaPackage.bundle.overlays?.meta?.[0];
+    normalizedPackage.bundle.overlays?.meta?.find((m) => m.language === language) ||
+    normalizedPackage.bundle.overlays?.meta?.[0];
   if (rootMetaOverlay?.name === schemaId) {
     return {
-      schemaId: ocaPackage.bundle.d || "root",
+      schemaId: normalizedPackage.bundle.d || "root",
       schemaName: rootMetaOverlay.name,
       schemaDescription: rootMetaOverlay.description || "",
-      attributes: ocaPackage.bundle.capture_base?.attributes || {},
-      overlays: ocaPackage.bundle.overlays || {},
+      attributes: normalizedPackage.bundle.capture_base?.attributes || {},
+      overlays: normalizedPackage.bundle.overlays || {},
       labels:
-        ocaPackage.bundle.overlays?.label?.find((l) => l.language === language)
+        normalizedPackage.bundle.overlays?.label?.find((l) => l.language === language)
           ?.attribute_labels || {}
     };
   }
 
   // If it's a dependency schema - try to find by digest first
-  let dependency = ocaPackage.dependencies?.find((dep) => dep.d === schemaId);
+  let dependency = normalizedPackage.dependencies?.find((dep) => dep.d === schemaId);
 
   // If not found by digest, try to find by name in meta overlays
-  if (!dependency && ocaPackage.dependencies) {
-    dependency = ocaPackage.dependencies.find((dep) => {
+  if (!dependency && normalizedPackage.dependencies) {
+    dependency = normalizedPackage.dependencies.find((dep) => {
       const metaOverlay =
         dep.overlays?.meta?.find((m) => m.language === language) ||
         dep.overlays?.meta?.[0];
