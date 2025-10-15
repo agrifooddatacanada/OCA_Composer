@@ -357,9 +357,11 @@ export default function ViewSchema({
                 // Initialize for all languages with proper data (accept either display name or 3-letter code)
                 filteredLanguages.forEach((lang) => {
                   const langKey = toLangKey(lang);
-                  const rowsByCode = lanAttributeData[langKey] || [];
+                  // Try to find language data using both full name and 3-letter code
                   const rowsByName = lanAttributeData[lang] || [];
-                  const langData = (rowsByCode.length ? rowsByCode : rowsByName).find(
+                  const rowsByCode = lanAttributeData[langKey] || [];
+                  const langDataRows = rowsByName.length > 0 ? rowsByName : rowsByCode;
+                  const langData = langDataRows.find(
                     (item) => item.Attribute === attr.Attribute
                   );
 

@@ -192,10 +192,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       // Get entry codes from memoized value
       const entryCodesMap = stableEntryCodes;
 
-      // Recompute from scratch for the current schema to avoid leaking rows across schemas
-      const newLanAttributeRowData = {};
-
-      // Build schema-scoped overlay maps (labels, entries, codes) from overlay context
+      // Build schema-scoped overlay maps (labels, entries, codes) from overlay context first
       const labelByLang = {};
       const entriesByLang = {};
 
@@ -210,6 +207,54 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           entriesByLang[lang] = schemaOverlay.entry[lang] || {};
         });
       }
+
+      // Check if we have existing language attribute data - if so, we should preserve user edits
+      const existingLanData = lanAttributeRowData;
+      const hasExistingUserData = existingLanData && Object.keys(existingLanData).length > 0 && 
+        Object.values(existingLanData).some(langData => 
+          Array.isArray(langData) && langData.some(item => item.Label && item.Label.trim() !== "")
+        );
+
+      // If user has made edits, don't regenerate from scratch - just ensure all attributes are present
+      if (hasExistingUserData) {
+        // Only add missing attributes, don't overwrite existing ones
+        const updatedLanData = { ...existingLanData };
+        
+        languages.forEach((language) => {
+          if (!updatedLanData[language]) {
+            updatedLanData[language] = [];
+          }
+          
+          // Add any new attributes that aren't already present
+          const existingAttributes = updatedLanData[language].map(item => item.Attribute);
+          effectiveAttributesList.forEach((attr) => {
+            if (!existingAttributes.includes(attr)) {
+              const overlayLangKey = languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
+              updatedLanData[language].push({
+                Attribute: attr,
+                Label: labelByLang?.[overlayLangKey]?.[attr] || "",
+                Description: "",
+                List: "Not a List"
+              });
+            }
+          });
+        });
+        
+        // Update schema state with preserved user data
+        if (currentSchemaId) {
+          const newDataHash = JSON.stringify(updatedLanData);
+          if (lastDataHashRef.current !== newDataHash) {
+            lastDataHashRef.current = newDataHash;
+            updateSchemaState(currentSchemaId, {
+              lanAttributeRowData: updatedLanData
+            });
+          }
+        }
+        return;
+      }
+
+      // Recompute from scratch for the current schema to avoid leaking rows across schemas
+      const newLanAttributeRowData = {};
       languages.forEach((language) => {
         const overlayLang =
           languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
@@ -267,16 +312,16 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         } else {
           const newLanguageList = [];
           attributeRowData.forEach((item) => {
-            // Find existing data for this attribute in this language
-            const existingData = newLanAttributeRowData[language].find(
+            // Find existing data for this attribute in this language from the persisted schema state
+            const existingData = lanAttributeRowData[language]?.find(
               (i) => i.Attribute === item.Attribute
             );
 
-            const newLabel = existingData ? existingData.Label : "";
-            const newDescription = existingData ? existingData.Description : "";
+            // Preserve user edits - use existing Label/Description if available, fallback to overlay
+            const overlayLangKey = languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
+            const newLabel = existingData?.Label || labelByLang?.[overlayLangKey]?.[item.Attribute] || "";
+            const newDescription = existingData?.Description || "";
             // Prefer saved entry codes (user edits) for List display; fallback to overlays
-            const overlayLangKey =
-              languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
             let listDisplayArray = (entryCodesMap?.[item.Attribute] || [])
               .map((row) => {
                 // Prioritize human-readable text over raw codes
@@ -294,8 +339,6 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
               const codesForAttr = Array.isArray(entryCodesMap[item.Attribute])
                 ? entryCodesMap[item.Attribute]
                 : [];
-              const overlayLangKey =
-                languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
               const labelForLang = (row) => {
                 // Prioritize human-readable text, avoid showing raw codes unless necessary
                 const displayValue =
@@ -333,7 +376,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
             const newObj = {
               Attribute: item.Attribute,
-              Label: newLabel || labelByLang?.[overlayLang]?.[item.Attribute] || "",
+              Label: newLabel,
               Description: newDescription,
               List: listDisplay
             };
