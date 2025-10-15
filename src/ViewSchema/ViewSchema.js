@@ -812,28 +812,22 @@ export default function ViewSchema({
                   
                   // Extract updated labels from schema state same way as Schema Details table
                   const lanAttributeData = schemaState.lanAttributeRowData || {};
-                  console.log("ViewSchema: Raw lanAttributeData from schema state:", lanAttributeData);
                   const updatedLabels = {};
                   
                   // Process each language
                   Object.keys(lanAttributeData).forEach(langKey => {
                     const langDataRows = lanAttributeData[langKey] || [];
-                    console.log(`ViewSchema: Processing ${langKey} with ${langDataRows.length} rows:`, langDataRows);
                     if (Array.isArray(langDataRows)) {
                       langDataRows.forEach((item, index) => {
-                        console.log(`ViewSchema: Item ${index} for ${langKey}:`, item);
                         if (item.Attribute && item.Label) {
                           if (!updatedLabels[item.Attribute]) {
                             updatedLabels[item.Attribute] = {};
                           }
                           updatedLabels[item.Attribute][langKey] = item.Label;
-                          console.log(`ViewSchema: Set ${item.Attribute}.${langKey} = "${item.Label}"`);
                         }
                       });
                     }
                   });
-                  
-                  console.log("ViewSchema: extracted updated labels:", updatedLabels);
                   return updatedLabels;
                 })()}
                 viewMode={visualizationMode}

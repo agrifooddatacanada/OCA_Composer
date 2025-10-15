@@ -217,13 +217,18 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
       // If user has made edits, don't regenerate from scratch - just ensure all attributes are present
       if (hasExistingUserData) {
-        // Only add missing attributes, don't overwrite existing ones
+        // Only add missing attributes, don't overwrite existing ones, and remove deleted attributes
         const updatedLanData = { ...existingLanData };
         
         languages.forEach((language) => {
           if (!updatedLanData[language]) {
             updatedLanData[language] = [];
           }
+          
+          // Remove attributes that are no longer in the effective attributes list
+          updatedLanData[language] = updatedLanData[language].filter(item => 
+            effectiveAttributesList.includes(item.Attribute)
+          );
           
           // Add any new attributes that aren't already present
           const existingAttributes = updatedLanData[language].map(item => item.Attribute);

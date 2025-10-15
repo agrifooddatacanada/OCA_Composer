@@ -40,7 +40,7 @@ const DeleteRenderer = ({
       // Update canDelete based on remaining attributes (allow deletion down to 0)
       setCanDelete(newAttributeRowData.length > 0);
 
-      // Sync MultiSchema state: remove from attributes, attributesList, attributesWithLists, and entryCodes
+      // Sync MultiSchema state: remove from attributes, attributesList, attributesWithLists, entryCodes, and lanAttributeRowData
       if (activeSchemaId) {
         const schemaState = getSchemaState(activeSchemaId) || {};
         const nextEntryCodes = { ...(schemaState.entryCodes || {}) };
@@ -49,11 +49,21 @@ const DeleteRenderer = ({
         const prevLists = schemaState.attributesWithLists || [];
         const nextLists = prevLists.filter((a) => a !== data.Attribute);
 
+        // Clean up LDAD data - remove the deleted attribute from all languages
+        const prevLanData = schemaState.lanAttributeRowData || {};
+        const nextLanData = {};
+        Object.keys(prevLanData).forEach((language) => {
+          nextLanData[language] = prevLanData[language].filter(
+            (item) => item.Attribute !== data.Attribute
+          );
+        });
+
         updateSchemaState(activeSchemaId, {
           attributes: newAttributeRowData,
           attributesList: updatedAttributesList,
           entryCodes: nextEntryCodes,
-          attributesWithLists: nextLists
+          attributesWithLists: nextLists,
+          lanAttributeRowData: nextLanData
         });
       }
     }

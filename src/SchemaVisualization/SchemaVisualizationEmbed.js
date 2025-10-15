@@ -152,10 +152,7 @@ const SchemaVisualizationEmbed = ({
     }
 
     const languageCode = toThreeLetterCode(i18n.language.split("-")[0]) || "eng";
-    console.log("SchemaVisualizationEmbed: lanAttributeRowData:", lanAttributeRowData);
-    console.log("SchemaVisualizationEmbed: languageCode:", languageCode);
     const processedSchemaData = extractSchemaDataFromPackage(ocaPackage, languageCode, lanAttributeRowData);
-    console.log("SchemaVisualizationEmbed: processedSchemaData.labels:", processedSchemaData?.labels);
     if (!processedSchemaData) {
       return;
     }
