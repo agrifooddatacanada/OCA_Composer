@@ -235,17 +235,9 @@ export default function ViewSchema({
   const hasHierarchy = React.useMemo(() => {
     if (!OCAPackage) return false;
     
-    // Always check the root/parent schema, not the currently active one
-    const rootSchemaId = OCAPackage.bundle?.d || OCAPackage.bundle?.capture_base?.d;
-    const rootSchemaState = getSchemaState(rootSchemaId);
-    
-    if (!rootSchemaState?.attributes) return false;
-    
-    // Simple check: does any attribute type contain "ref" (covers refs: and refn:)
-    return rootSchemaState.attributes.some(attr => 
-      attr.Type && attr.Type.includes('ref')
-    );
-  }, [OCAPackage, getSchemaState]);
+    // Simple check: if the OCA package has dependencies, it's a multi-schema structure
+    return OCAPackage.dependencies && OCAPackage.dependencies.length > 0;
+  }, [OCAPackage]);
 
   // Update the package data when schemas are modified
   useEffect(() => {
