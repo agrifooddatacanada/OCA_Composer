@@ -1,4 +1,3 @@
-// Legacy conversion for backward compatibility
 export const convertToFormInformation = (pages) => {
   const formData = [];
   (pages || []).forEach((page) => {
@@ -20,26 +19,26 @@ export const convertToFormInformation = (pages) => {
 };
 
 // Convert to hierarchical form information overlay structure
-export const convertToFormInformationOverlay = (pages, languages = ['eng']) => {
+export const convertToFormInformationOverlay = (pages, languages = ['eng'], schemaName = {}) => {
   const pagesStructure = [];
   const pageOrder = [];
   const pageLabels = {};
   const sidebarLabel = {};
   const subheading = {};
+  const title = {};
   const interaction = [{ arguments: {} }];
 
-  // Initialize language objects
   languages.forEach(lang => {
     pageLabels[lang] = {};
     sidebarLabel[lang] = {};
     subheading[lang] = {};
+    title[lang] = schemaName[lang] || '';
   });
 
   pages.forEach((page, pageIdx) => {
     const pageId = page.id || `page-${pageIdx + 1}`;
     pageOrder.push(pageId);
 
-    // Set page labels - use user-provided multilingual labels or fall back to defaults
     languages.forEach(lang => {
       pageLabels[lang][pageId] = page.labels?.[lang] || `Page ${pageIdx + 1}`;
       sidebarLabel[lang][pageId] = page.sidebarLabels?.[lang] || `Page ${pageIdx + 1}`;
@@ -51,7 +50,6 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng']) => {
       attribute_order: []
     };
 
-    // Process sections
     (page.sections || []).forEach((section, sectionIdx) => {
       const sectionId = section.id || `section-${sectionIdx + 1}`;
       const sectionQuestions = (section.questions || []).map(q => q.attribute).filter(Boolean);
@@ -62,22 +60,37 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng']) => {
           attribute_order: sectionQuestions
         });
 
-        // Set section labels - use user-provided multilingual labels or fall back to defaults
         languages.forEach(lang => {
           pageLabels[lang][sectionId] = section.labels?.[lang] || `Section ${sectionIdx + 1}`;
           subheading[lang][sectionId] = section.subheadings?.[lang] || `Section ${sectionIdx + 1}`;
         });
 
-        // Add question interactions
         section.questions.forEach(q => {
           if (q?.attribute) {
+            const attributeType = q.attributeType || q.type;
+            const isTextType = attributeType === 'Text' || attributeType === 'Array[Text]';
+            
+            const placeholderObj = {};
+            if (isTextType) {
+              languages.forEach(lang => {
+                // Extract language-specific placeholder if it's an object, otherwise use the value directly
+                if (typeof q.placeholder === 'object' && q.placeholder !== null) {
+                  placeholderObj[lang] = q.placeholder[lang] || '';
+                } else {
+                  placeholderObj[lang] = q.placeholder || '';
+                }
+              });
+            }
+
             interaction[0].arguments[q.attribute] = {
-              type: q.type || 'text',
-              placeholder: {}
+              type: q.inputType || q.type || 'text',
+              attribute_type: attributeType,
+              ...(isTextType && Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
+              ...(q.formatText && { format_text: q.formatText }),
+              ...(q.required && { required: q.required }),
+              ...(q.booleanValues && { boolean_values: q.booleanValues })
             };
-            languages.forEach(lang => {
-              interaction[0].arguments[q.attribute].placeholder[lang] = q.placeholder || '';
-            });
+            // Note: Entry codes/options are referenced from the OCA bundle's entry and entry_code overlays
           }
         });
       }
@@ -92,16 +105,31 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng']) => {
     if (directQuestions.length > 0) {
       pageStructure.attribute_order.push(...directQuestions);
 
-      // Add question interactions
       page.questions.forEach(q => {
         if (q?.attribute && !q.sectionId) {
+          const attributeType = q.attributeType || q.type;
+          const isTextType = attributeType === 'Text' || attributeType === 'Array[Text]';
+          
+          const placeholderObj = {};
+          if (isTextType) {
+            languages.forEach(lang => {
+              if (typeof q.placeholder === 'object' && q.placeholder !== null) {
+                placeholderObj[lang] = q.placeholder[lang] || '';
+              } else {
+                placeholderObj[lang] = q.placeholder || '';
+              }
+            });
+          }
+
           interaction[0].arguments[q.attribute] = {
-            type: q.type || 'text',
-            placeholder: {}
+            type: q.inputType || q.type || 'text',
+            attribute_type: attributeType,
+            ...(isTextType && Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
+            ...(q.formatText && { format_text: q.formatText }),
+            ...(q.required && { required: q.required }),
+            ...(q.booleanValues && { boolean_values: q.booleanValues })
           };
-          languages.forEach(lang => {
-            interaction[0].arguments[q.attribute].placeholder[lang] = q.placeholder || '';
-          });
+          // Note: Entry codes/options are referenced from the OCA bundle's entry and entry_code overlays
         }
       });
     }
@@ -115,7 +143,8 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng']) => {
     page_labels: pageLabels,
     sidebar_label: sidebarLabel,
     subheading: subheading,
-    interaction: interaction
+    interaction: interaction,
+    title: title
   };
 };
 

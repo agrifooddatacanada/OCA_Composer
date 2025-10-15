@@ -37,7 +37,8 @@ const FormBuilder = () => {
     lanAttributeRowData,
     setLanAttributeRowData,
     savedEntryCodes,
-    attributesWithLists
+    attributesWithLists,
+    schemaDescription
   } = useContext(Context);
 
   
@@ -302,13 +303,19 @@ const FormBuilder = () => {
     
     // Convert pages to form information format
     const formData = convertToFormInformation(pages);
-    const formDataOverlay = convertToFormInformationOverlay(pages);
+    
+    const schemaName = {};
+    languages.forEach(lang => {
+      schemaName[lang] = schemaDescription[lang]?.name || '';
+    });
+    
+    const formDataOverlay = convertToFormInformationOverlay(pages, languages, schemaName);
     console.log(formDataOverlay);
     setFormInformationRowData(formData);
     
     setSelectedOverlay("");
     setCurrentPage("Overlays");
-  }, [validateForm, pages, setFormInformationRowData, setSelectedOverlay, setCurrentPage]);
+  }, [validateForm, pages, setFormInformationRowData, setSelectedOverlay, setCurrentPage, languages, schemaDescription]);
 
   const handleBack = useCallback(() => setCurrentPage("FormInformation"), [setCurrentPage]);
 
