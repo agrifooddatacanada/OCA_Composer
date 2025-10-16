@@ -81,7 +81,9 @@ const createDefaultSchemaState = () => ({
     [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false }
   },
   selectedOverlay: "",
-  // Overlay-specific data
+  // Language-specific data
+  lanAttributeRowData: {},
+  // Overlay display data (populated during initialization)
   characterEncodingData: [],
   formatRuleData: [],
   cardinalityData: [],
@@ -90,8 +92,6 @@ const createDefaultSchemaState = () => ({
   unitData: [],
   unitFramedData: [],
   attributeFramingData: [],
-  // Language-specific data
-  lanAttributeRowData: {},
   // Flags
   frameAllUnits: false,
   frameAllAttributes: false,
@@ -346,18 +346,14 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       });
     }
 
-    // Parse other overlays
-    const characterEncodingData = [];
-    const formatRuleData = [];
-    const cardinalityData = [];
-    const dataStandardsData = [];
-    const rangeData = [];
-    const unitData = [];
-    const unitFramedData = [];
-    const attributeFramingData = [];
-
-    // Character encoding overlay
+    // Parse overlays and populate display-friendly arrays for components
     const charEncodingOverlay = schemaData.overlays?.character_encoding;
+    const formatOverlay = schemaData.overlays?.format;
+    const cardinalityOverlay = schemaData.overlays?.cardinality;
+    const conformanceOverlay = schemaData.overlays?.conformance;
+
+    // Character encoding data for components
+    const characterEncodingData = [];
     if (charEncodingOverlay?.attribute_character_encoding) {
       Object.entries(charEncodingOverlay.attribute_character_encoding).forEach(
         ([attr, encoding]) => {
@@ -369,8 +365,8 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       );
     }
 
-    // Format overlay
-    const formatOverlay = schemaData.overlays?.format;
+    // Format rule data for components
+    const formatRuleData = [];
     if (formatOverlay?.attribute_formats) {
       Object.entries(formatOverlay.attribute_formats).forEach(([attr, format]) => {
         formatRuleData.push({
@@ -380,8 +376,8 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       });
     }
 
-    // Cardinality overlay
-    const cardinalityOverlay = schemaData.overlays?.cardinality;
+    // Cardinality data for components
+    const cardinalityData = [];
     if (cardinalityOverlay?.attribute_cardinality) {
       Object.entries(cardinalityOverlay.attribute_cardinality).forEach(
         ([attr, cardinality]) => {
@@ -393,8 +389,9 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       );
     }
 
-    // Conformance overlay
-    const conformanceOverlay = schemaData.overlays?.conformance;
+
+
+    // Process conformance overlay for Required field in attributes
     if (conformanceOverlay?.attribute_conformance) {
       Object.entries(conformanceOverlay.attribute_conformance).forEach(
         ([attr, conformance]) => {
@@ -406,16 +403,15 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       );
     }
 
+    // Add other overlay arrays that components might expect
+    const rangeData = [];
+    const unitData = [];
+    const dataStandardsData = [];
+    const unitFramedData = [];
+    const attributeFramingData = [];
+
     // Unit overlay
     const unitOverlay = schemaData.overlays?.unit;
-    if (unitOverlay?.attribute_units) {
-      Object.entries(unitOverlay.attribute_units).forEach(([attr, unit]) => {
-        unitData.push({
-          Attribute: attr,
-          Unit: unit || ""
-        });
-      });
-    }
 
     // Initialize overlay selections based on which overlays are present in the schema
     const overlaySelections = {
@@ -491,6 +487,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         .filter((a) => a.List)
         .map((a) => a.Attribute),
       lanAttributeRowData,
+      // Populated display-friendly overlay data for components
       characterEncodingData,
       formatRuleData,
       cardinalityData,
@@ -846,7 +843,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     }
   }, []);
 
-  // === NEW UNIFIED SCHEMA METHODS ===
+    // === SIMPLIFIED: Direct field access with proper initialization ===
   
   // Add complete schema from OCA package
   const addSchemaFromOCA = useCallback((ocaPackage, schemaId) => {
@@ -998,6 +995,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   // === END OVERLAY SELECTION METHODS ===
 
   // === END NEW UNIFIED SCHEMA METHODS ===
+
 
   // Persistence functions
   const saveToLocalStorage = useCallback(() => {

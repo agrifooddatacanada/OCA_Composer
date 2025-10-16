@@ -291,150 +291,96 @@ export default function ViewSchema({
       try {
         setLoading(true);
 
-        if (OCAPackage) {
-          // Use currentSchemaId for current schema
-          let currentSchemaId = currentSchemaId;
+        if (OCAPackage && currentSchemaId) {
+          const schemaState = getSchemaState(currentSchemaId);
 
-          // Validate that the selected schema actually exists in the package
-          if (currentSchemaId) {
-            const schemaExists = getSchemaState(currentSchemaId);
-            if (!schemaExists || !schemaExists.initialized) {
-              // console.warn("ViewSchema: Selected schema", currentSchemaId, "not found or not initialized, falling back to root schema");
-              currentSchemaId = null;
-            }
-          }
+          // Convert schema state back to the format expected by ViewGrid
+          const schemaAttributes = schemaState.attributes || [];
+          const formatRuleData = schemaState.formatRuleData || [];
 
-          // If no schema is set or it doesn't exist, use the root schema
-          if (!currentSchemaId) {
-            currentSchemaId = OCAPackage.bundle?.d || OCAPackage.bundle?.capture_base?.d;
-          }
+          const formatRuleIndex = new Map(
+            formatRuleData.map((r) => [
+              r.Attribute,
+              // Handle both legacy FormatText field and new "Format Rule" field
+              r["Format Rule"] || r.FormatText || ""
+            ])
+          );
 
-          if (currentSchemaId) {
-            const schemaState = getSchemaState(currentSchemaId);
+          // Create the display array in the format expected by ViewGrid
+          const newDisplayArray = schemaAttributes.map((attr) => {
+            // Get language-specific data from schema state
+            const lanAttributeData = schemaState.lanAttributeRowData || {};
 
-            if (schemaState && schemaState.initialized) {
-              // Convert schema state back to the format expected by ViewGrid
-              const schemaAttributes = schemaState.attributes || [];
-              const formatRuleData = schemaState.formatRuleData || [];
+            // Initialize language-specific fields for all available languages
+            const descriptionObj = {};
+            const labelObj = {};
+            const listObj = {};
 
-              const formatRuleIndex = new Map(
-                formatRuleData.map((r) => [
-                  r.Attribute,
-                  // Handle both legacy FormatText field and new "Format Rule" field
-                  r["Format Rule"] || r.FormatText || ""
-                ])
+            // Quick helper to derive overlay language code from UI language name
+            const toLangKey = (l) =>
+              l === "English"
+                ? "eng"
+                : l === "French"
+                  ? "fra"
+                  : (l || "").toLowerCase();
+
+            // Build a map of attribute -> entryCodes array once
+            const entryCodesMap = schemaState.entryCodes || {};
+            const codesForAttr = Array.isArray(entryCodesMap[attr.Attribute])
+              ? entryCodesMap[attr.Attribute]
+              : [];
+
+            // Initialize for all languages with proper data (accept either display name or 3-letter code)
+            filteredLanguages.forEach((lang) => {
+              const langKey = toLangKey(lang);
+              // Try to find language data using both full name and 3-letter code
+              const rowsByName = lanAttributeData[lang] || [];
+              const rowsByCode = lanAttributeData[langKey] || [];
+              const langDataRows = rowsByName.length > 0 ? rowsByName : rowsByCode;
+              const langData = langDataRows.find(
+                (item) => item.Attribute === attr.Attribute
               );
 
-              // Create the display array in the format expected by ViewGrid
-              const newDisplayArray = schemaAttributes.map((attr) => {
-                // Get language-specific data from schema state
-                const lanAttributeData = schemaState.lanAttributeRowData || {};
+              descriptionObj[lang] = langData?.Description || attr.Description || "";
+              labelObj[lang] = langData?.Label || attr.Label || "";
 
-                // Initialize language-specific fields for all available languages
-                const descriptionObj = {};
-                const labelObj = {};
-                const listObj = {};
+              // Build list text from entry codes for this language, or Not a List
+              if (codesForAttr.length > 0) {
+                const labelForLang = (row) =>
+                  row[lang] || row[langKey] || row.English || row.eng || row.Code;
+                const items = codesForAttr
+                  .map((row) => labelForLang(row))
+                  .filter(Boolean);
+                listObj[lang] = items.length > 0 ? items.join(" | ") : "Not a List";
+              } else {
+                listObj[lang] = "Not a List";
+              }
+            });
 
-                // Quick helper to derive overlay language code from UI language name
-                const toLangKey = (l) =>
-                  l === "English"
-                    ? "eng"
-                    : l === "French"
-                      ? "fra"
-                      : (l || "").toLowerCase();
-
-                // Build a map of attribute -> entryCodes array once
-                const entryCodesMap = schemaState.entryCodes || {};
-                const codesForAttr = Array.isArray(entryCodesMap[attr.Attribute])
-                  ? entryCodesMap[attr.Attribute]
-                  : [];
-
-                // Initialize for all languages with proper data (accept either display name or 3-letter code)
-                filteredLanguages.forEach((lang) => {
-                  const langKey = toLangKey(lang);
-                  // Try to find language data using both full name and 3-letter code
-                  const rowsByName = lanAttributeData[lang] || [];
-                  const rowsByCode = lanAttributeData[langKey] || [];
-                  const langDataRows = rowsByName.length > 0 ? rowsByName : rowsByCode;
-                  const langData = langDataRows.find(
-                    (item) => item.Attribute === attr.Attribute
-                  );
-
-                  descriptionObj[lang] = langData?.Description || attr.Description || "";
-                  labelObj[lang] = langData?.Label || attr.Label || "";
-
-                  // Build list text from entry codes for this language, or Not a List
-                  if (codesForAttr.length > 0) {
-                    const labelForLang = (row) =>
-                      row[lang] || row[langKey] || row.English || row.eng || row.Code;
-                    const items = codesForAttr
-                      .map((row) => labelForLang(row))
-                      .filter(Boolean);
-                    listObj[lang] = items.length > 0 ? items.join(" | ") : "Not a List";
-                  } else {
-                    listObj[lang] = "Not a List";
-                  }
-                });
-
-                // Handle schema references (refs/refn) - these should be "Child Schema" not a type
-                let displayType = attr.Type || "";
-                if (displayType.startsWith("refs:") || displayType.startsWith("refn:")) {
-                  displayType = "Child Schema";
-                }
-
-                return {
-                  Attribute: attr.Attribute,
-                  Type: displayType,
-                  Description: descriptionObj,
-                  Label: labelObj,
-                  Required: !!attr.Required,
-                  "Format Rule": formatRuleIndex.get(attr.Attribute) || "",
-                  "Character Encoding":
-                    (schemaState.characterEncodingData || []).find(
-                      (r) => r.Attribute === attr.Attribute
-                    )?.["Character Encoding"] || "",
-                  List: listObj,
-                  Unit: attr.Unit || "",
-                  Flagged: attr.Flagged || false
-                };
-              });
-
-              setDisplayArray(newDisplayArray);
-            } else {
-              // Fallback: create basic display array from schema attributes
-              const fallbackDisplayArray = (schemaState.attributes || []).map((attr) => ({
-                Attribute: attr.Attribute,
-                Type: attr.Type || "",
-                Description: { [getCurrentLanguage()]: attr.Description || "" },
-                Label: { [getCurrentLanguage()]: attr.Label || "" },
-                Required: !!attr.Required,
-                "Format Rule": "",
-                "Character Encoding": "",
-                List: { [getCurrentLanguage()]: "Not a List" },
-                Unit: attr.Unit || "",
-                Flagged: attr.Flagged || false
-              }));
-              setDisplayArray(fallbackDisplayArray);
+            // Handle schema references (refs/refn) - these should be "Child Schema" not a type
+            let displayType = attr.Type || "";
+            if (displayType.startsWith("refs:") || displayType.startsWith("refn:")) {
+              displayType = "Child Schema";
             }
-          } else {
-            // Create display array from schema attributes if available
-            const currentSchemaState = getSchemaState(currentSchemaId);
-            const fallbackDisplayArray = (currentSchemaState?.attributes || []).map(
-              (attr) => ({
-                Attribute: attr.Attribute,
-                Type: attr.Type || "",
-                Description: { [getCurrentLanguage()]: attr.Description || "" },
-                Label: { [getCurrentLanguage()]: attr.Label || "" },
-                Required: !!attr.Required,
-                "Format Rule": "",
-                "Character Encoding": "",
-                List: { [getCurrentLanguage()]: "Not a List" },
-                Unit: attr.Unit || "",
-                Flagged: attr.Flagged || false
-              })
-            );
-            setDisplayArray(fallbackDisplayArray);
-          }
+
+            return {
+              Attribute: attr.Attribute,
+              Type: displayType,
+              Description: descriptionObj,
+              Label: labelObj,
+              Required: !!attr.Required,
+              "Format Rule": formatRuleIndex.get(attr.Attribute) || "",
+              "Character Encoding":
+                (schemaState.characterEncodingData || []).find(
+                  (r) => r.Attribute === attr.Attribute
+                )?.["Character Encoding"] || "",
+              List: listObj,
+              Unit: attr.Unit || "",
+              Flagged: attr.Flagged || false
+            };
+          });
+
+          setDisplayArray(newDisplayArray);
         } else {
           // No valid schema - show empty array
           setDisplayArray([]);

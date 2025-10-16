@@ -33,7 +33,8 @@ const FormatRulesV2 = () => {
     getSchemaState, 
     updateSchemaState,
     updateOverlaySelection,
-    setSelectedOverlay
+    setSelectedOverlay,
+    getFormatRuleData
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
   
@@ -47,12 +48,12 @@ const FormatRulesV2 = () => {
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
   
-  // Get format rule data directly from schema state - no complex initialization
+  // Get format rule data using computed getter
   const formatRuleRowData = useMemo(() => {
     if (!schemaState?.attributes) return [];
     
-    // Always ensure we have format rule data for all attributes
-    const existingFormatRules = schemaState?.formatRuleData || [];
+    // Get existing format rules using the computed getter
+    const existingFormatRules = getFormatRuleData(currentSchemaId);
     const existingRulesMap = new Map(existingFormatRules.map(rule => [rule.Attribute, rule]));
     
     return schemaState.attributes.map(attr => {
@@ -65,7 +66,7 @@ const FormatRulesV2 = () => {
         [CUSTOM_FORMAT_RULE]: existingRule?.[CUSTOM_FORMAT_RULE] || ""
       };
     });
-  }, [schemaState?.attributes, schemaState?.formatRuleData]);
+  }, [schemaState?.attributes, getFormatRuleData, currentSchemaId]);
   
   const rangeRowData = useMemo(() => 
     schemaState?.rangeData || []

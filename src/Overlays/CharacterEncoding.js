@@ -25,7 +25,8 @@ const CharacterEncoding = () => {
     getSchemaState,
     updateSchemaState,
     updateOverlaySelection,
-    setSelectedOverlay
+    setSelectedOverlay,
+    getCharacterEncodingData
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
 
@@ -40,7 +41,7 @@ const CharacterEncoding = () => {
 
   // Get character encoding data, initialize with attributes if empty
   const characterEncodingRowData = useMemo(() => {
-    const existing = schemaState?.characterEncodingData;
+    const existing = getCharacterEncodingData(currentSchemaId);
     if (existing && existing.length > 0) {
       return existing;
     }
@@ -51,16 +52,32 @@ const CharacterEncoding = () => {
       Attribute: attr.Attribute,
       "Character Encoding": "utf-8" // default encoding
     }));
-  }, [schemaState?.characterEncodingData, schemaState?.attributes]);
+  }, [getCharacterEncodingData, currentSchemaId, schemaState?.attributes]);
 
-  // Always update schema state - no dual logic needed
+  // Update the overlay data directly instead of duplicate array
   const setCharacterEncodingRowData = useCallback(
     (newData) => {
-      updateCurrentSchema({
-        characterEncodingData: newData
+      // Transform UI data back to overlay format
+      const attribute_character_encoding = {};
+      newData.forEach(row => {
+        if (row.Attribute && row["Character Encoding"]) {
+          attribute_character_encoding[row.Attribute] = row["Character Encoding"];
+        }
       });
+
+      // Update the overlay directly
+      const currentOverlays = schemaState?.overlays || {};
+      const updatedOverlays = {
+        ...currentOverlays,
+        character_encoding: {
+          ...currentOverlays.character_encoding,
+          attribute_character_encoding
+        }
+      };
+
+      updateCurrentSchema({ overlays: updatedOverlays });
     },
-    [updateCurrentSchema]
+    [updateCurrentSchema, schemaState?.overlays]
   );
 
   const [loading, setLoading] = useState(true);
