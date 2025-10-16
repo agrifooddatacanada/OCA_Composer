@@ -26,8 +26,7 @@ const Overlays = ({ pageBack, pageForward }) => {
 
   // Schema-specific overlay state from MultiSchemaContext
   const {
-    activeSchemaId,
-    editingSchemaId,
+    currentSchemaId,
     getOverlaySelections,
     updateOverlaySelection,
     updateSchemaState,
@@ -35,7 +34,6 @@ const Overlays = ({ pageBack, pageForward }) => {
     getSelectedOverlay
   } = useMultiSchema();
 
-  const currentSchemaId = activeSchemaId || editingSchemaId;
   const overlay = getOverlaySelections(currentSchemaId);
   const selectedOverlay = getSelectedOverlay(currentSchemaId);
   

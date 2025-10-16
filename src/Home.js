@@ -34,7 +34,7 @@ const Home = ({
 }) => {
   // Get context to check if we're editing a specific schema
   const { 
-    activeSchemaId, 
+    currentSchemaId, 
     getSchemaState, 
     schemaStates, 
     updateSchemaState,
@@ -52,13 +52,13 @@ const Home = ({
 
   // Ensure schema is initialized when entering via EDIT SCHEMA (old flow)
   useEffect(() => {
-    if (OCAPackage && !activeSchemaId) {
+    if (OCAPackage && !currentSchemaId) {
       const rootSchemaId = OCAPackage.bundle?.d;
       if (rootSchemaId) {
         switchToSchema(rootSchemaId, OCAPackage);
       }
     }
-  }, [OCAPackage, activeSchemaId, switchToSchema]);
+  }, [OCAPackage, currentSchemaId, switchToSchema]);
 
   // Normalize and load overlay data from OCAPackage so LanguageDetails has labels/lists
   useEffect(() => {
@@ -170,7 +170,7 @@ const Home = ({
   // Validation function to check if navigation should be allowed
   const validateNavigation = () => {
     if (currentPage === "Details") {
-      const currentSchemaState = getSchemaState(activeSchemaId);
+      const currentSchemaState = getSchemaState(currentSchemaId);
       if (!currentSchemaState || !currentSchemaState.attributes) {
         return true; // Allow navigation if no schema state
       }
@@ -269,8 +269,8 @@ const Home = ({
   // Ensure Entry Codes step reflects the currently active schema (root or dependency)
   const prevShouldShowRef = React.useRef(false);
   useEffect(() => {
-    if (!activeSchemaId) return;
-    const state = getSchemaState(activeSchemaId);
+    if (!currentSchemaId) return;
+    const state = getSchemaState(currentSchemaId);
     const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
     const hasExplicitListFlags = attributesArray.some(
       (a) => a && (a.List === true || a.List === false)
@@ -298,7 +298,7 @@ const Home = ({
     }
 
     prevShouldShowRef.current = shouldShow;
-  }, [activeSchemaId, schemaStates, getSchemaState, currentPage, setCurrentPage]);
+  }, [currentSchemaId, schemaStates, getSchemaState, currentPage, setCurrentPage]);
 
   return (
     <>

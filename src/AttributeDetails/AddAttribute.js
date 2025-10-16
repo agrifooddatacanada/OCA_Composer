@@ -26,7 +26,7 @@ export default function AddAttribute({
 }) {
   const { t } = useTranslation();
   const { setAttributesList } = useContext(Context);
-  const { activeSchemaId, updateSchemaState } = useMultiSchema();
+  const { currentSchemaId, updateSchemaState } = useMultiSchema();
   const [newAttribute, setNewAttribute] = useState("");
 
   const handleLanguageField = (e) => {
@@ -107,14 +107,14 @@ export default function AddAttribute({
       setAttributeRowData(updatedAttributeRowData);
       
       // Also save to MultiSchemaContext to prevent data loss when List is toggled
-      if (activeSchemaId) {
+      if (currentSchemaId) {
         // Preserve any existing _rid values when saving to schema state
         const attributesWithIds = updatedAttributeRowData.map((attr) => {
           const existingAttr = attributeRowData.find(existing => existing.Attribute === attr.Attribute);
           return existingAttr?._rid ? { ...attr, _rid: existingAttr._rid } : attr;
         });
         
-        updateSchemaState(activeSchemaId, {
+        updateSchemaState(currentSchemaId, {
           attributes: attributesWithIds,
           attributesList: [...newAttributesList, attributeToAdd]
         });

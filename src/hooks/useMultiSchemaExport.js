@@ -45,7 +45,7 @@ const useMultiSchemaExport = () => {
   } = useContext(Context);
 
   const { 
-    activeSchemaId,
+    currentSchemaId,
     getSchemaState,
     exportSchemaChanges
   } = useMultiSchema();
@@ -148,8 +148,8 @@ const useMultiSchemaExport = () => {
   const exportData = async () => {
     try {
       // If we're editing a specific schema, export that schema
-      if (activeSchemaId) {
-        return await exportIndividualSchema(activeSchemaId);
+      if (currentSchemaId) {
+        return await exportIndividualSchema(currentSchemaId);
       } 
         // Otherwise export the entire multi-schema package
         return await exportMultiSchemaPackage();
@@ -166,7 +166,7 @@ const useMultiSchemaExport = () => {
     exportMultiSchemaPackage,
     error,
     clearError,
-    activeSchemaId
+    currentSchemaId
   };
 };
 

@@ -35,14 +35,11 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   
   // Use only MultiSchemaContext - unified approach
   const {
-    activeSchemaId,
-    editingSchemaId,
+    currentSchemaId,
     getSchemaState,
     updateSchemaState,
     getCompleteSchema
   } = useMultiSchema();
-
-  const currentSchemaId = activeSchemaId || editingSchemaId;
 
   // Local state for the current editing session
   const [attributeRowData, setAttributeRowData] = useState([]);

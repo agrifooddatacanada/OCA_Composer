@@ -34,7 +34,7 @@ getOverlaySelections, getSelectedOverlay
 saveToLocalStorage, loadFromLocalStorage, setCurrentPackageId
 
 // Plus: 16 arrays of overlay-specific data
-// Plus: schemaStates, activeSchemaId, navigationHistory, etc.
+// Plus: schemaStates, currentSchemaId, navigationHistory, etc.
 ```
 
 ## Immediate Cleanup Opportunities
@@ -123,7 +123,7 @@ export const SchemaDataProvider = ({ children }) => {
 
 // 2. Navigation state  
 export const NavigationProvider = ({ children }) => {
-  const [activeSchemaId, setActiveSchemaId] = useState(null);
+  const [currentSchemaId, setcurrentSchemaId] = useState(null);
   const [history, setHistory] = useState([]);
   // Only navigation
 };

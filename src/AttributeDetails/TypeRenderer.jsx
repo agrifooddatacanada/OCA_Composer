@@ -8,7 +8,7 @@ import { useMultiSchema } from "../context/MultiSchemaContext";
 const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAttributeRowData }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t } = useTranslation();
-  const { activeSchemaId, updateSchemaState, getSchemaState } = useMultiSchema();
+  const { currentSchemaId, updateSchemaState, getSchemaState } = useMultiSchema();
   
   const displayValues = [
     { value: "", label: "" },
@@ -65,8 +65,8 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     setAttributeRowData(updatedAttributeRowData);
     
     // Update MultiSchemaContext to persist the change
-    if (activeSchemaId) {
-      updateSchemaState(activeSchemaId, {
+    if (currentSchemaId) {
+      updateSchemaState(currentSchemaId, {
         attributes: updatedAttributeRowData
       });
     }
@@ -102,8 +102,8 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       setAttributeRowData(updatedAttributeRowData);
       
       // Update MultiSchemaContext to persist the change
-      if (activeSchemaId) {
-        updateSchemaState(activeSchemaId, {
+      if (currentSchemaId) {
+        updateSchemaState(currentSchemaId, {
           attributes: updatedAttributeRowData
         });
       }

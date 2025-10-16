@@ -85,14 +85,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   // Use MultiSchemaContext
   const {
-    activeSchemaId,
-    editingSchemaId,
+    currentSchemaId,
     getSchemaState,
     updateSchemaState,
     getCompleteSchema
   } = useMultiSchema();
-
-  const currentSchemaId = activeSchemaId || editingSchemaId;
 
   // Global context (for languages only)
   const { languages } = useContext(Context);

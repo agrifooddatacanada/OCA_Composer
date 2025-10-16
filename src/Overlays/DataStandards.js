@@ -20,9 +20,7 @@ const DataStandards = () => {
   
   // Use simplified schema data hook
   // Use MultiSchema context with standard pattern
-  const { activeSchemaId, editingSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
-  
-  const currentSchemaId = activeSchemaId || editingSchemaId;
+  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
   
   const updateCurrentSchema = useCallback((updates) => {

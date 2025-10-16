@@ -64,7 +64,7 @@ export default function ViewSchema({
 
   // Multi-schema context
   const {
-    activeSchemaId,
+    currentSchemaId,
     switchToSchema,
     exportSchemaChanges,
     getSchemaState,
@@ -205,13 +205,13 @@ export default function ViewSchema({
     (schemaId) => {
       if (!schemaId) return;
       // Switch only if different, but always navigate to the editor
-      if (schemaId !== activeSchemaId) {
+      if (schemaId !== currentSchemaId) {
         switchToSchema(schemaId, OCAPackage);
       }
       setCurrentPage("Details");
       navigate("/start");
     },
-    [activeSchemaId, switchToSchema, OCAPackage, setCurrentPage, navigate]
+    [currentSchemaId, switchToSchema, OCAPackage, setCurrentPage, navigate]
   );
 
   const downloadReadMe = () => {
@@ -292,8 +292,8 @@ export default function ViewSchema({
         setLoading(true);
 
         if (OCAPackage) {
-          // Use activeSchemaId for current schema
-          let currentSchemaId = activeSchemaId;
+          // Use currentSchemaId for current schema
+          let currentSchemaId = currentSchemaId;
 
           // Validate that the selected schema actually exists in the package
           if (currentSchemaId) {
@@ -453,7 +453,7 @@ export default function ViewSchema({
 
     return () => clearTimeout(timer);
   }, [
-    activeSchemaId,
+    currentSchemaId,
     OCAPackage,
     schemaLanguageOverride,
     i18next.language,
@@ -793,13 +793,9 @@ export default function ViewSchema({
               }
             >
               <SchemaVisualizationEmbed
-                key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${activeSchemaId}-${schemaLanguageOverride || i18next.language}`}
+                key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
                 attributeRowData={(() => {
                   // Get attribute data from MultiSchema context for visualization
-                  const currentSchemaId =
-                    activeSchemaId ||
-                    OCAPackage?.bundle?.d ||
-                    OCAPackage?.bundle?.capture_base?.d;
                   const schemaState = getSchemaState(currentSchemaId);
                   return schemaState?.attributes || [];
                 })()}
@@ -809,7 +805,7 @@ export default function ViewSchema({
                 OCAPackage={updatedOCAPackage}
                 viewMode={visualizationMode}
                 height="70vh"
-                currentSchemaId={activeSchemaId}
+                currentSchemaId={currentSchemaId}
                 setCurrentSchemaId={handleSchemaSwitch}
               />
             </Suspense>

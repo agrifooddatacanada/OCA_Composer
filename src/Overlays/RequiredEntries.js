@@ -68,9 +68,8 @@ const RequiredEntries = () => {
   } = useContext(Context);
   
   // Use MultiSchema context with standard pattern
-  const { activeSchemaId, editingSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
   
-  const currentSchemaId = activeSchemaId || editingSchemaId;
   const schemaState = getSchemaState(currentSchemaId);
   
   const updateCurrentSchema = useCallback((updates) => {

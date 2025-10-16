@@ -110,7 +110,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
   // Multi-schema state
   const [schemaStates, setSchemaStates] = useState({});
-  const [activeSchemaId, setActiveSchemaId] = useState(null);
+  const [currentSchemaId, setCurrentSchemaId] = useState(null);
 
   // Step management callback
 
@@ -153,8 +153,8 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
   // Get current working schema ID (with fallback to temp)
   const getCurrentSchemaId = useCallback(() => 
-    activeSchemaId || TEMP_SCHEMA_ID
-  , [activeSchemaId]);
+    currentSchemaId || TEMP_SCHEMA_ID
+  , [currentSchemaId]);
 
   // Switch to a schema or create temp if none specified
   const ensureSchemaExists = useCallback((schemaId) => {
@@ -566,7 +566,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         return prev;
       });
 
-      setActiveSchemaId(resolvedId);
+      setCurrentSchemaId(resolvedId);
 
       // Initialize schema if it doesn't exist (based on snapshot above)
       if (shouldInitialize && ocaPackage) {
@@ -830,7 +830,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   // Clear all schema states
   const clearAllSchemas = useCallback(() => {
     setSchemaStates({});
-    setActiveSchemaId(null);
+    setCurrentSchemaId(null);
 
     // Clear localStorage for all multi-schema data
     try {
@@ -1059,18 +1059,18 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       const schemaIds = initializeFromOCAPackage(OCAPackage);
       
       // Set the first schema as active if none is set
-      if (schemaIds.length > 0 && !activeSchemaId) {
-        setActiveSchemaId(schemaIds[0]);
+      if (schemaIds.length > 0 && !currentSchemaId) {
+        setCurrentSchemaId(schemaIds[0]);
       }
     }
-  }, [OCAPackage, initializeFromOCAPackage, schemaStates, activeSchemaId]);
+  }, [OCAPackage, initializeFromOCAPackage, schemaStates, currentSchemaId]);
 
   // Context value
   const contextValue = useMemo(
     () => ({
       // State
       schemaStates,
-      activeSchemaId,
+      currentSchemaId,
 
       // Actions
       getSchemaState,
@@ -1102,7 +1102,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     }),
     [
       schemaStates,
-      activeSchemaId,
+      currentSchemaId,
       getSchemaState,
       updateSchemaState,
       getCurrentSchemaId,

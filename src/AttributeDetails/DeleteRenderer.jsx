@@ -13,7 +13,7 @@ const DeleteRenderer = ({
   setCanDelete,
   currentRows
 }) => {
-  const { activeSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
   const handleDeleteClick = () => {
     gridRef.current.api.stopEditing();
     
@@ -41,8 +41,8 @@ const DeleteRenderer = ({
       setCanDelete(newAttributeRowData.length > 0);
 
       // Sync MultiSchema state: remove from attributes, attributesList, attributesWithLists, entryCodes, and lanAttributeRowData
-      if (activeSchemaId) {
-        const schemaState = getSchemaState(activeSchemaId) || {};
+      if (currentSchemaId) {
+        const schemaState = getSchemaState(currentSchemaId) || {};
         const nextEntryCodes = { ...(schemaState.entryCodes || {}) };
         delete nextEntryCodes[data.Attribute];
 
@@ -58,7 +58,7 @@ const DeleteRenderer = ({
           );
         });
 
-        updateSchemaState(activeSchemaId, {
+        updateSchemaState(currentSchemaId, {
           attributes: newAttributeRowData,
           attributesList: updatedAttributesList,
           entryCodes: nextEntryCodes,

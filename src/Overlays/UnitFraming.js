@@ -347,15 +347,12 @@ const UnitFraming = () => {
 
   // Use MultiSchema context with standard pattern
   const {
-    activeSchemaId,
-    editingSchemaId,
+    currentSchemaId,
     getSchemaState,
     updateSchemaState,
     updateOverlaySelection,
     setSelectedOverlay
   } = useMultiSchema();
-
-  const currentSchemaId = activeSchemaId || editingSchemaId;
   const schemaState = getSchemaState(currentSchemaId);
 
   const updateCurrentSchema = useCallback(
