@@ -4,6 +4,7 @@ import { AgGridReact } from "ag-grid-react";
 import { Alert, Box, Button, Typography } from "@mui/material";
 
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
@@ -17,12 +18,32 @@ import { matchFormat } from "../OCADataValidator/utils/matchRules";
 
 const Range = () => {
   const {
-    rangeRowData,
-    setRangeRowData,
     setCurrentPage,
     setSelectedOverlay,
-    setOverlay
   } = useContext(Context);
+  
+  // Use MultiSchema context with standard pattern
+  const { activeSchemaId, editingSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  
+  const currentSchemaId = activeSchemaId || editingSchemaId;
+  const schemaState = getSchemaState(currentSchemaId);
+  
+  const updateCurrentSchema = useCallback((updates) => {
+    if (currentSchemaId) {
+      updateSchemaState(currentSchemaId, updates);
+    }
+  }, [currentSchemaId, updateSchemaState]);
+  
+  // Get range data from schema state
+  const rangeRowData = useMemo(() => {
+    return schemaState?.rangeRowData || [];
+  }, [schemaState?.rangeRowData]);
+  
+  const setRangeRowData = useCallback((newData) => {
+    updateCurrentSchema({
+      rangeRowData: newData
+    });
+  }, [updateCurrentSchema]);
   const { t } = useTranslation();
   const gridRef = useRef();
   const [loading, setLoading] = useState(true);
@@ -168,13 +189,16 @@ const Range = () => {
   };
 
   const handleDeleteCurrentOverlay = () => {
-    setOverlay((prev) => ({
-      ...prev,
-      [FIELD_RANGE_OVERLAY]: {
-        ...prev[FIELD_RANGE_OVERLAY],
-        selected: false
+    updateCurrentSchema({
+      rangeRowData: [],
+      overlays: {
+        ...schemaState.overlays,
+        [FIELD_RANGE_OVERLAY]: {
+          ...schemaState.overlays?.[FIELD_RANGE_OVERLAY],
+          selected: false
+        }
       }
-    }));
+    });
 
     setSelectedOverlay("");
     setCurrentPage("Overlays");

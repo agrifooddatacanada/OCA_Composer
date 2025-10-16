@@ -65,10 +65,8 @@ const RequiredEntries = () => {
   const {
     setCurrentPage,
     setSelectedOverlay,
-    setOverlay
   } = useContext(Context);
   
-  // Use simplified schema data hook
   // Use MultiSchema context with standard pattern
   const { activeSchemaId, editingSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
   
@@ -155,20 +153,23 @@ const RequiredEntries = () => {
   };
 
   const handleDeleteCurrentOverlay = () => {
-    setOverlay((prev) => ({
-      ...prev,
-      "Make selected entries required": {
-        ...prev["Make selected entries required"],
-        selected: false,
-      },
+    // Update schema state to remove required flags from all attributes
+    const updatedAttributes = schemaState.attributes.map((attr) => ({
+      ...attr,
+      Required: false
     }));
 
-    // Delete attribute from requiredEntriesRowData - uncheck all required flags
-    const newRequiredEntriesRowData = requiredEntriesRowData.map((row) => ({
-      ...row,
-      "Make selected entries required": false
-    }));
-    setRequiredEntriesRowData(newRequiredEntriesRowData);
+    updateCurrentSchema({
+      attributes: updatedAttributes,
+      overlays: {
+        ...schemaState.overlays,
+        "Make selected entries required": {
+          ...schemaState.overlays?.["Make selected entries required"],
+          selected: false,
+        },
+      }
+    });
+
     setSelectedOverlay("");
     setCurrentPage("Overlays");
   };
