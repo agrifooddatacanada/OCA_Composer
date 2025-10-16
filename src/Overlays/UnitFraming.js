@@ -31,6 +31,7 @@ import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
 import { searchUnits } from "../constants/utils";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 
 const GRID_WIDTH = 705;
 const LOADING_THRESHOLD = 40;
@@ -342,18 +343,72 @@ const useColumnDefs = (gridRef, t) =>
 
 const UnitFraming = () => {
   const { t } = useTranslation();
+  const { setCurrentPage } = useContext(Context);
+
+  // Use MultiSchema context with standard pattern
   const {
-    setCurrentPage,
-    setSelectedOverlay,
-    setOverlay,
-    unitFramedRowData,
-    setUnitFramedRowData,
-    frameAllUnits,
-    setFrameAllUnits,
-    currentUnitFramedRowData,
-    setCurrentUnitFramedRowData,
-    unframedUnitList
-  } = useContext(Context);
+    activeSchemaId,
+    editingSchemaId,
+    getSchemaState,
+    updateSchemaState,
+    updateOverlaySelection,
+    setSelectedOverlay
+  } = useMultiSchema();
+
+  const currentSchemaId = activeSchemaId || editingSchemaId;
+  const schemaState = getSchemaState(currentSchemaId);
+
+  const updateCurrentSchema = useCallback(
+    (updates) => {
+      if (currentSchemaId) {
+        updateSchemaState(currentSchemaId, updates);
+      }
+    },
+    [currentSchemaId, updateSchemaState]
+  );
+
+  // Get unit framing data from schema state, initialize with attributes if empty
+  const unitFramedRowData = useMemo(() => {
+    const existing = schemaState?.unitFramedRowData;
+    if (existing && existing.length > 0) {
+      return existing;
+    }
+
+    // Initialize with current schema attributes if no data exists
+    const attributes = schemaState?.attributes || [];
+    return attributes.map((attr) => ({
+      Attribute: attr.Attribute,
+      Unit: attr.Unit || "",
+      "UCUM Code": "",
+      "UCUM Label": "",
+      Description: ""
+    }));
+  }, [schemaState?.unitFramedRowData, schemaState?.attributes]);
+
+  const setUnitFramedRowData = useCallback(
+    (newData) => {
+      updateCurrentSchema({
+        unitFramedRowData: newData
+      });
+    },
+    [updateCurrentSchema]
+  );
+
+  // For compatibility, use the same data for currentUnitFramedRowData
+  const currentUnitFramedRowData = unitFramedRowData;
+  const setCurrentUnitFramedRowData = setUnitFramedRowData;
+
+  // Get frame all units flag from schema state
+  const frameAllUnits = schemaState?.frameAllUnits || false;
+  const setFrameAllUnits = useCallback(
+    (value) => {
+      updateCurrentSchema({ frameAllUnits: value });
+    },
+    [updateCurrentSchema]
+  );
+
+  // Get unframed unit list from schema state
+  const unframedUnitList = schemaState?.unframedUnitList || [];
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -366,13 +421,13 @@ const UnitFraming = () => {
   const columnDefs = useColumnDefs(gridRef, t);
 
   const handleDeleteCurrentOverlay = useCallback(() => {
-    setOverlay((prev) => ({
-      ...prev,
-      "Unit Framing": { feature: "Unit Framing", selected: false }
-    }));
-    setSelectedOverlay("");
+    // Remove the overlay selection
+    updateOverlaySelection(currentSchemaId, "Unit Framing", { selected: false });
+    // Clear the unit framing data from schema state
+    updateCurrentSchema({ unitFramedRowData: undefined, frameAllUnits: false, unframedUnitList: [] });
+    setSelectedOverlay(currentSchemaId, "");
     setCurrentPage("Overlays");
-  }, [setOverlay, setSelectedOverlay, setCurrentPage]);
+  }, [updateOverlaySelection, currentSchemaId, setCurrentPage, setSelectedOverlay, updateCurrentSchema]);
 
   const handleSave = useCallback(() => {
     gridRef.current?.api?.stopEditing();
@@ -389,9 +444,9 @@ const UnitFraming = () => {
 
   const handleForward = useCallback(() => {
     handleSave();
-    setSelectedOverlay("");
+    setSelectedOverlay(currentSchemaId, "");
     setCurrentPage("Overlays");
-  }, [handleSave, setSelectedOverlay, setCurrentPage]);
+  }, [handleSave, setSelectedOverlay, currentSchemaId, setCurrentPage]);
 
   const handleFrameAllUnits = useCallback(() => {
     gridRef.current?.api?.stopEditing();

@@ -62,7 +62,6 @@ deleteSchema(id)
 // Navigation
 setActiveSchema(id)
 getActiveSchema()
-getNavigationHistory()
 
 // Changes
 hasChanges(id?)
