@@ -1,15 +1,22 @@
 # Multi-Schema Context Refactoring Plan
 
-## 🎯 **Current Status: Phase 1.1 Complete!**
+## 🎯 **Current Status: Phase 1.3 Complete!**
 
 **✅ Completed:**
 - **Eliminate Duplicate Overlay Arrays** (Phase 1.1)
   - Removed 8 duplicate arrays from state (60% memory reduction)
   - Maintained simple component access patterns
   - Fixed initialization logic to populate from overlays
+- **Remove Dead Navigation Code** (Phase 1.2)
+  - Removed unused `navigateBack()` and `navigationHistory` complexity
+  - Kept `switchToSchema()` (actively used throughout app)
+- **Extract OCA Parser** (Phase 1.3)
+  - Moved 300+ lines of parsing logic to `src/utils/ocaParser.js`
+  - Context file reduced by 26% (1,142 → 840 lines)
+  - Better separation of concerns and testability
 
 **🚀 Next Priority:** 
-- **Extract OCA Parser** (Phase 1.2) - Move 300+ lines of parsing logic to separate utility
+- **Consolidate Simple Getters** (Phase 1.4) - Replace 6 simple getters with direct access or single helper
 
 **📊 Current Impact:**
 - Context complexity: Reduced significantly 
@@ -43,8 +50,8 @@ setSelectedOverlay, updateOverlaySelection, clearAllSchemas
 initializeSchemaFromOCA, switchToSchema, addSchemaFromOCA,
 initializeFromOCAPackage, exportSchemaToOCA, exportSchemaChanges
 
-// Navigation (2)
-navigateBack, isSchemaModified
+// Navigation (2)  
+navigateBack, isSchemaModified  // ❌ navigateBack & navigationHistory = DEAD CODE
 
 // Overlay management (4)
 getOverlaySelections, getSelectedOverlay
@@ -177,11 +184,16 @@ export const ChangeTrackingProvider = ({ children }) => {
 - **Impact:** Reduces state memory by ~60%, maintains simple component code
 - **Result:** Clean component code + proper memory management + no confusing abstractions
 
-### 1.2 Extract OCA Parser ⭐ **NEXT PRIORITY**
-- Move 300 lines of parsing logic to `src/utils/ocaParser.js`
-- **Impact:** Context file size -25%, better testability
+### 1.2 Remove Dead Navigation Code ✅ **COMPLETED**
+- ~~Delete unused `navigateBack()` and `navigationHistory` state/methods~~ ✅ DONE
+- ~~Keep `switchToSchema()` (actively used in ViewSchema, Home, useHandleAllDrop)~~ ✅ DONE
+- **Impact:** Eliminated ~50 lines of dead code, reduced API surface by 2 methods
 
-### 1.3 Consolidate Simple Getters
+### 1.3 Extract OCA Parser ✅ **COMPLETED**
+- ~~Move 300 lines of parsing logic to `src/utils/ocaParser.js`~~ ✅ DONE
+- **Impact:** Context file reduced from 1,142 to 840 lines (-26%), better testability, cleaner separation of concerns
+
+### 1.4 Consolidate Simple Getters ⭐ **NEXT PRIORITY**
 - Replace 6 simple getters with direct state access or single helper
 - **Impact:** Reduces API surface, simpler usage
 
