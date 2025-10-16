@@ -25,8 +25,7 @@ const CharacterEncoding = () => {
     getSchemaState,
     updateSchemaState,
     updateOverlaySelection,
-    setSelectedOverlay,
-    getCharacterEncodingData
+    setSelectedOverlay
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
 
@@ -41,18 +40,23 @@ const CharacterEncoding = () => {
 
   // Get character encoding data, initialize with attributes if empty
   const characterEncodingRowData = useMemo(() => {
-    const existing = getCharacterEncodingData(currentSchemaId);
-    if (existing && existing.length > 0) {
-      return existing;
+    const characterEncodingOverlay = schemaState?.overlays?.character_encoding?.attribute_character_encoding || {};
+    const attributes = schemaState?.attributes || [];
+    
+    // Convert overlay data to UI format or initialize with attributes if empty
+    if (Object.keys(characterEncodingOverlay).length > 0) {
+      return attributes.map((attr) => ({
+        Attribute: attr.Attribute,
+        "Character Encoding": characterEncodingOverlay[attr.Attribute] || "utf-8"
+      }));
     }
 
-    // Initialize with current schema attributes if no data exists
-    const attributes = schemaState?.attributes || [];
+    // Initialize with current schema attributes if no overlay data exists
     return attributes.map((attr) => ({
       Attribute: attr.Attribute,
       "Character Encoding": "utf-8" // default encoding
     }));
-  }, [getCharacterEncodingData, currentSchemaId, schemaState?.attributes]);
+  }, [schemaState?.overlays?.character_encoding, schemaState?.attributes]);
 
   // Update the overlay data directly instead of duplicate array
   const setCharacterEncodingRowData = useCallback(
