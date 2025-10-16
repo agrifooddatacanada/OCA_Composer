@@ -11,6 +11,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { codesToLanguages, languageNameToAlpha3Codes } from "../constants/isoCodes";
 import { useMultiSchema } from "../context/MultiSchemaContext";
+import { LanguageUtils } from "../utils/languageUtils";
 
 const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForward }, ref) {
   const { t } = useTranslation();
@@ -34,29 +35,17 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const attributesWithLists = schemaState?.attributesWithLists || [];
 
-  const languageIndex = languages.findIndex(
-    (item) => codesToLanguages?.[i18next.language] === item
-  );
   const filteredLanguages = useMemo(() => {
-    const arr = [...languages];
-    if (languageIndex !== -1 && languageIndex !== 0) {
-      const removedLanguage = arr.splice(languageIndex, 1);
-      arr.unshift(removedLanguage[0]);
-    }
-    return arr;
-  }, [languages, languageIndex]);
+    return LanguageUtils.getPrioritizedSchemaLanguages(languages);
+  }, [languages]);
 
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   
   // Update currentLanguage when UI language changes
   useEffect(() => {
-    const uiLanguageName = codesToLanguages?.[i18next.language];
-    if (uiLanguageName && languages.includes(uiLanguageName)) {
-      setCurrentLanguage(uiLanguageName);
-    } else {
-      setCurrentLanguage(filteredLanguages[0]);
-    }
-  }, [t, languages, filteredLanguages]); // Use 't' to track language changes
+    const bestLanguage = LanguageUtils.getBestSchemaLanguage(LanguageUtils.getCurrentUILanguage(), languages);
+    setCurrentLanguage(bestLanguage);
+  }, [t, languages]); // Use 't' to track language changes
 
   const [loading, setLoading] = useState(true);
   const setLoadingIfChanged = useCallback((next) => {

@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Step, StepLabel, Stepper } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import CustomPalette from "../constants/customPalette";
 
 export default function ClickableStepperProgressIndicator({
@@ -7,6 +8,7 @@ export default function ClickableStepperProgressIndicator({
   steps,
   onStepClick
 }) {
+  const { t } = useTranslation();
   return (
     <Box sx={{ px: 10, py: 4 }}>
       <Stepper activeStep={activeStep} alternativeLabel>
@@ -50,7 +52,7 @@ export default function ClickableStepperProgressIndicator({
                   }
                 }}
               >
-                {step.label}
+                {t(step.label)}
               </Box>
             </StepLabel>
           </Step>

@@ -18,6 +18,7 @@ import { getSchemaDataById } from "./SchemaVisualization/dataUtils";
 import { MultiSchemaProvider } from "./context/MultiSchemaContext";
 // import Tutorial from "./Tutorial/Tutorial";
 import useUnitFramingUpdater from "./hooks/useUnitFramingUpdater";
+import { LanguageConstants } from "./utils/languageUtils";
 import {
   CUSTOM_FORMAT_RULE,
   FIELD_CARDINALITY_OVERLAY,
@@ -90,7 +91,7 @@ function App() {
     division: "",
     group: ""
   });
-  const [languages, setLanguages] = useState(["English"]);
+  const [languages, setLanguages] = useState([LanguageConstants.DEFAULT_SCHEMA_LANGUAGE]);
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
@@ -598,7 +599,7 @@ function App() {
       group: ""
     });
 
-    setLanguages(["English"]);
+    setLanguages([LanguageConstants.DEFAULT_SCHEMA_LANGUAGE]);
     setAttributeRowData([]);
     setEntryCodeRowData([]);
     setAttributesWithLists([]);

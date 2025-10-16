@@ -19,6 +19,7 @@ import { useMultiSchema } from "../context/MultiSchemaContext";
 import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
+import { LanguageUtils } from "../utils/languageUtils";
 
 import useExportLogic from "./useExportLogic";
 import Loading from "../components/Loading";
@@ -71,24 +72,16 @@ export default function ViewSchema({
     schemaStates
   } = useMultiSchema();
 
-  const languageIndex = languages.findIndex(
-    (item) => codesToLanguages?.[i18next.language] === item
-  );
   const filteredLanguages = React.useMemo(() => {
-    const arr = [...languages];
-    if (languageIndex !== -1 && languageIndex !== 0) {
-      const removedLanguage = arr.splice(languageIndex, 1);
-      arr.unshift(removedLanguage[0]);
-    }
-    return arr;
-  }, [languages, languageIndex]);
+    return LanguageUtils.getPrioritizedSchemaLanguages(languages);
+  }, [languages]);
 
   // Schema language state - defaults to null (use i18n), can be overridden by schema buttons
   const [schemaLanguageOverride, setSchemaLanguageOverride] = useState(null);
   
   // Helper to get current effective language (standardized approach)
   const getCurrentLanguage = () => {
-    return schemaLanguageOverride || codesToLanguages?.[i18next.language] || filteredLanguages[0];
+    return LanguageUtils.getEffectiveSchemaLanguage(schemaLanguageOverride, filteredLanguages);
   };
 
   // Reset schema language override when app language changes (i18n primary approach)
@@ -351,9 +344,9 @@ export default function ViewSchema({
                 const items = codesForAttr
                   .map((row) => labelForLang(row))
                   .filter(Boolean);
-                listObj[lang] = items.length > 0 ? items.join(" | ") : "Not a List";
+                listObj[lang] = items.length > 0 ? items.join(" | ") : t("Not a List");
               } else {
-                listObj[lang] = "Not a List";
+                listObj[lang] = t("Not a List");
               }
             });
 

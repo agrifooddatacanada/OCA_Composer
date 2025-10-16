@@ -317,7 +317,7 @@
   "Data Standard": "Norme de données",
   "Data Standards": "Normes de données",
   "Add Data Standards": "Ajouter des normes de données",
-  "Remove overlay": "Supprimer la superposition",
+  "Remove overlay": "Supprimer la surcouche",
   "scenario": "scénario",
   "Update": "Mise à jour",
   "Save": "Sauvegarder",
@@ -340,7 +340,7 @@
   "Capture base (attribute names and their datatypes, classification, and sensitive attributes) of the two schemas must be the same": "La base de capture (noms d'attributs et leurs types de données, classification et attributs sensibles) des deux schémas doit être la même",
   "Close": "Fermer",
   "Selection": "Sélection",
-  "The units defined in schema": "Ces unités peuvent être localisées à partir de la overlay d’unités",
+  "The units defined in schema": "Ces unités peuvent être localisées à partir de la surcouche d’unités",
   "UCUM Code": "Code UCUM",
   "UCUM Label": "Étiquette UCUM",
   "UCUM Description": "Description unité UCUM",
@@ -394,5 +394,9 @@
   "Object": "Objet",
   "Subject": "Sujet",
   "Delete": "Supprimer",
-  "The term name or label": "Le nom ou l'étiquette du terme"
+  "The term name or label": "Le nom ou l'étiquette du terme",
+  "Standard": "Standard",
+  "Not a List": "Pas une liste",
+  "Language-dependent Attribute Details": "Détails des attributs dépendants de la langue",
+  "Overlays": "Surcouches"
 }

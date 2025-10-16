@@ -9,6 +9,7 @@ import {
   FIELD_RANGE_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY
 } from "../constants/constants";
+import { LanguageUtils, LanguageConstants } from "./languageUtils";
 
 /**
  * OCA Package Parser Utility
@@ -174,7 +175,7 @@ export class OCAParser {
 
     if (Array.isArray(entryOverlay)) {
       entryOverlay.forEach((o) => {
-        const lang = o.language || "eng";
+        const lang = o.language || LanguageConstants.DEFAULT_OCA_CODE;
         const attrMap = o.attribute_entries || {};
         Object.entries(attrMap).forEach(([attr, codeMap]) => {
           Object.entries(codeMap || {}).forEach(([code, text]) =>
@@ -390,7 +391,7 @@ export class OCAParser {
 
     return {
       localized,
-      languages: ["English", "French"]
+      languages: LanguageConstants.FALLBACK_LANGUAGES
     };
   }
 }

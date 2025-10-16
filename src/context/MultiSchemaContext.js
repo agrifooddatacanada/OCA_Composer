@@ -19,6 +19,7 @@ import {
 } from "../constants/constants";
 import { OCAParser } from "../utils/ocaParser";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
+import { LanguageConstants } from "../utils/languageUtils";
 
 // Create the multi-schema context
 const MultiSchemaContext = createContext();
@@ -31,7 +32,7 @@ const createDefaultSchemaState = () => ({
     metadata: {
       name: "",
       description: "",
-      languages: ["English"],
+      languages: [LanguageConstants.DEFAULT_SCHEMA_LANGUAGE],
       digest: ""
     },
     attributes: {}, // Raw attribute definitions from OCA
@@ -52,7 +53,7 @@ const createDefaultSchemaState = () => ({
   metadata: {
     name: "",
     description: "",
-    languages: ["English"]
+    languages: [LanguageConstants.DEFAULT_SCHEMA_LANGUAGE]
   },
   // Schema attributes
   attributes: [],
