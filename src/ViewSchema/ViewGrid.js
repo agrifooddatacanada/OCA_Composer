@@ -212,16 +212,6 @@ export default function ViewGrid({
             helpText: t("This is a language specific description of the attribute...")
           }
         },
-        // Character Encoding follows (in case overlay not selected)
-        {
-          field: "Character Encoding",
-          width: 180,
-          autoHeight: true,
-          headerComponent: CellHeader,
-          headerComponentParams: {
-            headerText: t("Character Encoding")
-          }
-        },
         {
           field: "List",
           headerName: t("List"),

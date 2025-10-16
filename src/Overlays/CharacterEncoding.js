@@ -75,15 +75,15 @@ const CharacterEncoding = () => {
     setCharacterEncodingRowData
   );
 
-  // Move header components outside render
-  const AttributeHeaderComponent = (
+  // Define header components as functions, not JSX elements
+  const AttributeHeaderComponent = () => (
     <CellHeader
       headerText={t("Attributes")}
       helpText="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
     />
   );
 
-  const CharacterEncodingHeaderComponent = (
+  const CharacterEncodingHeaderComponent = () => (
     <CellHeader
       headerText={t("Character Encoding")}
       helpText="Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here."
