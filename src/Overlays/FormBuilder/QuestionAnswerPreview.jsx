@@ -653,7 +653,7 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
             fullWidth
             size="small"
             disabled
-            placeholder={numericHelper}
+            placeholder={placeholderText || numericHelper}
             inputProps={{ step: numericStep }}
             sx={{ 
               backgroundColor: CustomPalette.GREY_100,
@@ -710,7 +710,7 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
               fullWidth
               size="small"
               disabled
-              placeholder={arrayNumericHelper}
+              placeholder={placeholderText || arrayNumericHelper}
               sx={{ 
                 backgroundColor: CustomPalette.GREY_100,
                 fontSize: '0.875rem'

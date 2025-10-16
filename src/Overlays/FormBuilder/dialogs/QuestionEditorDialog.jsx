@@ -80,7 +80,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
   
   const formatRuleDescription = findDescription(formData.formatText, formData.attributeType);
   
-  const isPlaceholderAvailable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]"].includes(formData.attributeType);
+  const isPlaceholderAvailable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"].includes(formData.attributeType);
   
   const hasOptions = formData.options && formData.options.length > 0;
   const isArray = formData.attributeType?.startsWith('Array[');
@@ -309,6 +309,8 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
                   helperText={
                     (formData.attributeType === "DateTime" || formData.attributeType === "Array[DateTime]")
                       ? t("Example format to show in the date field")
+                      : (formData.attributeType === "Numeric" || formData.attributeType === "Array[Numeric]")
+                      ? t("Example value or hint to show in the number field")
                       : t("Placeholder text to display when field is empty")
                   }
                 />

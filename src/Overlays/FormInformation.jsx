@@ -87,6 +87,17 @@ const FormInformation = () => {
       languages.forEach((language) => {
         if (newLan[language]) {
           newLan[language] = newLan[language].map((item, idx) => {
+            const attr = item.Attribute;
+            const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
+            
+            // Clear placeholder for Binary and Boolean types
+            if (attrType.includes("Binary") || attrType.includes("Boolean")) {
+              return {
+                ...item,
+                Placeholder: ""
+              };
+            }
+            
             const basePlaceholderValue = FormInformationRowData?.[idx]?.Placeholder;
             let basePlaceholder = "";
             if (typeof basePlaceholderValue === 'object' && basePlaceholderValue !== null) {
@@ -104,7 +115,7 @@ const FormInformation = () => {
       return newLan;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [languages, attributesList, FormInformationRowData]);
+  }, [languages, attributesList, FormInformationRowData, attributeRowData]);
 
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
@@ -338,14 +349,14 @@ const FormInformation = () => {
         editable: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
-          return ["Text", "Array[Text]", "DateTime", "Array[DateTime]"].includes(attrType);
+          return ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"].includes(attrType);
         },
         width: 240,
         autoHeight: true,
         cellStyle: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
-          const isEditable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]"].includes(attrType);
+          const isEditable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"].includes(attrType);
           return isEditable ? preWrapWordBreak : greyCellStyle;
         },
         headerComponent: CellHeader,
@@ -353,19 +364,27 @@ const FormInformation = () => {
           headerText: t("Placeholder"),
           constraint: t("max 100 chars"),
           helpText: t(
-            "Shown to users in forms. Available for Text, Array[Text], DateTime, and Array[DateTime] types."
+            "Shown to users in forms. Available for Text, Array[Text], DateTime, Array[DateTime], Numeric, and Array[Numeric] types."
           )
         },
         cellEditorParams: { maxLength: 100 },
         valueSetter: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
-          const isEditable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]"].includes(attrType);
+          const isEditable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"].includes(attrType);
           if (!isEditable) return true;
           params.data.Placeholder = params.newValue || "";
           return true;
         },
-        valueGetter: (params) => params.data.Placeholder || ""
+        valueGetter: (params) => {
+          const attr = params.data.Attribute;
+          const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
+          // Clear placeholder for Binary and Boolean types
+          if (attrType.includes("Binary") || attrType.includes("Boolean")) {
+            return "";
+          }
+          return params.data.Placeholder || "";
+        }
       }
     ];
   }, [attributeRowData, formatRuleRowData, currentLanguage, t]);
