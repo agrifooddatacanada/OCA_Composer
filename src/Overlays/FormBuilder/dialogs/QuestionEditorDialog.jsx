@@ -80,7 +80,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
   
   const formatRuleDescription = findDescription(formData.formatText, formData.attributeType);
   
-  const isPlaceholderAvailable = formData.attributeType === "Text" || formData.attributeType === "Array[Text]";
+  const isPlaceholderAvailable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]"].includes(formData.attributeType);
   
   const hasOptions = formData.options && formData.options.length > 0;
   const isArray = formData.attributeType?.startsWith('Array[');
@@ -306,7 +306,11 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
                   onChange={(e) => handleFieldChange(lang, 'placeholder', e.target.value)} 
                   fullWidth 
                   size="small"
-                  // helperText={t("Placeholder text for this language (only for Text and Array[Text] types)")}
+                  helperText={
+                    (formData.attributeType === "DateTime" || formData.attributeType === "Array[DateTime]")
+                      ? t("Example format to show in the date field")
+                      : t("Placeholder text to display when field is empty")
+                  }
                 />
               )}
             </Box>

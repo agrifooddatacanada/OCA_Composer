@@ -338,14 +338,14 @@ const FormInformation = () => {
         editable: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
-          return attrType === "Text" || attrType === "Array[Text]";
+          return ["Text", "Array[Text]", "DateTime", "Array[DateTime]"].includes(attrType);
         },
         width: 240,
         autoHeight: true,
         cellStyle: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
-          const isEditable = attrType === "Text" || attrType === "Array[Text]";
+          const isEditable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]"].includes(attrType);
           return isEditable ? preWrapWordBreak : greyCellStyle;
         },
         headerComponent: CellHeader,
@@ -353,14 +353,14 @@ const FormInformation = () => {
           headerText: t("Placeholder"),
           constraint: t("max 100 chars"),
           helpText: t(
-            "Shown to users in forms when expecting free text input. Only available for Text and Array[Text] types."
+            "Shown to users in forms. Available for Text, Array[Text], DateTime, and Array[DateTime] types."
           )
         },
         cellEditorParams: { maxLength: 100 },
         valueSetter: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
-          const isEditable = attrType === "Text" || attrType === "Array[Text]";
+          const isEditable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]"].includes(attrType);
           if (!isEditable) return true;
           params.data.Placeholder = params.newValue || "";
           return true;

@@ -17,8 +17,14 @@ import {
   ButtonGroup,
   ToggleButton,
   ToggleButtonGroup,
-  Slider
+  Slider,
+  InputAdornment
 } from "@mui/material";
+import { 
+  CalendarToday as CalendarIcon, 
+  AccessTime as ClockIcon,
+  Event as EventIcon 
+} from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
 import { codesToLanguages } from "../../constants/isoCodes";
 import i18next from "i18next";
@@ -50,6 +56,89 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
   };
   
   const formatDescription = getFormatDescription(formatText, attributeType);
+  
+  // Helper function to get date/time picker configuration based on format description
+  const getDateTimePickerConfig = (formatDesc) => {
+    if (!formatDesc) {
+      return {
+        pickerComponent: 'date',
+        displayFormat: 'YYYY-MM-DD',
+        helperText: 'Select a date'
+      };
+    }
+
+    switch (formatDesc) {
+      // Full date formats
+      case "ISO: YYYY-MM-DD: year month day":
+        return { pickerComponent: 'date', displayFormat: 'YYYY-MM-DD', helperText: formatDesc };
+      case "ISO: YYYYMMDD: year month day":
+        return { pickerComponent: 'date', displayFormat: 'YYYYMMDD', helperText: formatDesc };
+      case "DD/MM/YYYY: day, month, year":
+        return { pickerComponent: 'date', displayFormat: 'DD/MM/YYYY', helperText: formatDesc };
+      case "DD/MM/YY: day, month, year":
+        return { pickerComponent: 'date', displayFormat: 'DD/MM/YY', helperText: formatDesc };
+      case "MM/DD/YYYY: month, day, year":
+        return { pickerComponent: 'date', displayFormat: 'MM/DD/YYYY', helperText: formatDesc };
+      case "DDMMYYYY: day, month, year":
+        return { pickerComponent: 'date', displayFormat: 'DDMMYYYY', helperText: formatDesc };
+      case "MMDDYYYY: month, day, year":
+        return { pickerComponent: 'date', displayFormat: 'MMDDYYYY', helperText: formatDesc };
+      case "YYYYMMDD: year, month, day":
+        return { pickerComponent: 'date', displayFormat: 'YYYYMMDD', helperText: formatDesc };
+      
+      // Year-month formats
+      case "ISO: YYYY-MM: year month":
+        return { pickerComponent: 'date', displayFormat: 'YYYY-MM', helperText: formatDesc, views: ['year', 'month'] };
+      
+      // Week formats (use text input since DatePicker doesn't support week format well)
+      case "ISO: YYYY-Www: year week (e.g. W01)":
+        return { pickerComponent: 'text', displayFormat: 'YYYY-[W]ww', helperText: formatDesc, placeholder: '2024-W42' };
+      case "ISO: YYYYWww: year week (e.g. W01)":
+        return { pickerComponent: 'text', displayFormat: 'YYYY[W]ww', helperText: formatDesc, placeholder: '2024W42' };
+      
+      // Ordinal date formats (use text input)
+      case "ISO: YYYY-DDD: Ordinal date (day number from the year)":
+        return { pickerComponent: 'text', displayFormat: 'YYYY-DDD', helperText: formatDesc, placeholder: '2024-295' };
+      case "ISO: YYYYDDD: Ordinal date (day number from the year)":
+        return { pickerComponent: 'text', displayFormat: 'YYYYDDD', helperText: formatDesc, placeholder: '2024295' };
+      
+      // Duration formats (use text input)
+      case "ISO: PnD: accumulated days (n days)":
+        return { pickerComponent: 'text', displayFormat: 'P[n]D', helperText: formatDesc, placeholder: 'P5D' };
+      case "ISO: PnYnMnDTnHnMnS :durations e.g. P3Y6M4DT12H30M5S":
+        return { pickerComponent: 'text', displayFormat: 'ISO 8601 Duration', helperText: formatDesc, placeholder: 'P3Y6M4DT12H30M5S' };
+      
+      // Individual components (use DatePicker with specific views)
+      case "ISO: YYYY: year":
+        return { pickerComponent: 'date', displayFormat: 'YYYY', helperText: formatDesc, views: ['year'] };
+      case "ISO: MM: month":
+        return { pickerComponent: 'date', displayFormat: 'MM', helperText: formatDesc, views: ['month'] };
+      case "ISO: DD: day":
+        return { pickerComponent: 'date', displayFormat: 'DD', helperText: formatDesc, views: ['day'] };
+      
+      // Date and time combined
+      case "ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC)":
+        return { pickerComponent: 'datetime', displayFormat: 'YYYY-MM-DD[T]HH:mm:ss[Z]', helperText: formatDesc };
+      case "ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: Date and Time Combined (with Timezone Offset)":
+        return { pickerComponent: 'datetime', displayFormat: 'YYYY-MM-DD[T]HH:mm:ssZ', helperText: formatDesc };
+      
+      // Time formats (24-hour)
+      case "ISO: HH:MM: hour, minutes in 24 hour notation":
+        return { pickerComponent: 'time', displayFormat: 'HH:mm', helperText: formatDesc };
+      case "ISO: HH:MM:SS: hour, minutes, seconds in 24 hour notation":
+        return { pickerComponent: 'time', displayFormat: 'HH:mm:ss', helperText: formatDesc };
+      
+      // Time formats (12-hour with AM/PM)
+      case "HH:MM:SS: hour, minutes, seconds 12 hour notation AM/PM":
+        return { pickerComponent: 'time', displayFormat: 'hh:mm:ss A', helperText: formatDesc };
+      case "H:MM or HH:MM: hour, minutes AM/PM":
+        return { pickerComponent: 'time', displayFormat: 'h:mm A', helperText: formatDesc };
+      
+      // Default fallback
+      default:
+        return { pickerComponent: 'date', displayFormat: 'YYYY-MM-DD', helperText: formatDesc };
+    }
+  };
   
   // Get placeholder text for current language
   const getPlaceholder = () => {
@@ -414,282 +503,61 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
         );
       
       case 'DateTime':
-        let dateInputType = "date";
-        let helperText = '';
-
-        if (formatDescription) {
-          switch (formatDescription) {
-            // Full date formats
-            case "ISO: YYYY-MM-DD: year month day":
-              dateInputType = "date";
-              helperText = "Year, month, day (YYYY-MM-DD)";
-              break;
-            case "ISO: YYYYMMDD: year month day":
-              dateInputType = "text";
-              helperText = "Year, month, day (YYYYMMDD)";
-              break;
-            case "DD/MM/YYYY: day, month, year":
-              dateInputType = "text";
-              helperText = "Day, month, year (DD/MM/YYYY)";
-              break;
-            case "DD/MM/YY: day, month, year":
-              dateInputType = "text";
-              helperText = "Day, month, year (DD/MM/YY)";
-              break;
-            case "MM/DD/YYYY: month, day, year":
-              dateInputType = "text";
-              helperText = "Month, day, year (MM/DD/YYYY)";
-              break;
-            case "DDMMYYYY: day, month, year":
-              dateInputType = "text";
-              helperText = "Day, month, year (DDMMYYYY)";
-              break;
-            case "MMDDYYYY: month, day, year":
-              dateInputType = "text";
-              helperText = "Month, day, year (MMDDYYYY)";
-              break;
-            case "YYYYMMDD: year, month, day":
-              dateInputType = "text";
-              helperText = "Year, month, day (YYYYMMDD)";
-              break;
-            
-            // Year-month formats
-            case "ISO: YYYY-MM: year month":
-              dateInputType = "month";
-              helperText = "Year and month (YYYY-MM)";
-              break;
-            
-            // Week formats
-            case "ISO: YYYY-Www: year week (e.g. W01)":
-              dateInputType = "week";
-              helperText = "Year and week number (e.g., 2023-W04)";
-              break;
-            case "ISO: YYYYWww: year week (e.g. W01)":
-              dateInputType = "text";
-              helperText = "Year and week number (e.g., 2023W04)";
-              break;
-            
-            // Ordinal date formats
-            case "ISO: YYYY-DDD: Ordinal date (day number from the year)":
-              dateInputType = "text";
-              helperText = "Ordinal date - day number from the year (YYYY-DDD, 2023-120)";
-              break;
-            case "ISO: YYYYDDD: Ordinal date (day number from the year)":
-              dateInputType = "text";
-              helperText = "Ordinal date - day number from the year (YYYYDDD, 2023120)";
-              break;
-            
-            // Individual components
-            case "ISO: YYYY: year":
-              dateInputType = "number";
-              helperText = "Year only (YYYY)";
-              break;
-            case "ISO: MM: month":
-              dateInputType = "number";
-              helperText = "Month only (MM)";
-              break;
-            case "ISO: DD: day":
-              dateInputType = "number";
-              helperText = "Day only (DD)";
-              break;
-            
-            // Date and time combined
-            case "ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC)":
-              dateInputType = "datetime-local";
-              helperText = "Date and time combined in UTC (YYYY-MM-DDTHH:MM:SSZ)";
-              break;
-            case "ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: Date and Time Combined (with Timezone Offset)":
-              dateInputType = "text";
-              helperText = "Date and time with timezone offset (YYYY-MM-DDTHH:MM:SS±hh:mm)";
-              break;
-            
-            // Duration formats
-            case "ISO: PnD: accumulated days (n days)":
-              dateInputType = "text";
-              helperText = "Accumulated days (e.g., P5D for 5 days)";
-              break;
-            case "ISO: PnYnMnDTnHnMnS :durations e.g. P3Y6M4DT12H30M5S":
-              dateInputType = "text";
-              helperText = "ISO 8601 duration (e.g., P3Y6M4DT12H30M5S)";
-              break;
-            
-            // Time formats (24-hour)
-            case "ISO: HH:MM: hour, minutes in 24 hour notation":
-              dateInputType = "time";
-              helperText = "Hour and minutes in 24-hour notation (HH:MM)";
-              break;
-            case "ISO: HH:MM:SS: hour, minutes, seconds in 24 hour notation":
-              dateInputType = "time";
-              helperText = "Hour, minutes, seconds in 24-hour notation (HH:MM:SS)";
-              break;
-            
-            // Time formats (12-hour with AM/PM)
-            case "HH:MM:SS: hour, minutes, seconds 12 hour notation AM/PM":
-              dateInputType = "text";
-              helperText = "Hour, minutes, seconds in 12-hour notation with AM/PM (HH:MM:SS AM/PM)";
-              break;
-            case "H:MM or HH:MM: hour, minutes AM/PM":
-              dateInputType = "text";
-              helperText = "Hour and minutes with AM/PM (H:MM AM/PM or HH:MM AM/PM)";
-              break;
-            
-            // Default fallback
-            default:
-              dateInputType = "date";
-              helperText = formatDescription || "Select a date";
-              break;
-          }
-        } else {
-          helperText = "Select a date";
-        }
+        const { pickerComponent, displayFormat, helperText, placeholder: configPlaceholder, views } = getDateTimePickerConfig(formatDescription);
         
+        // Get custom placeholder from question data (language-aware) or use config default
+        const customPlaceholder = placeholderText || configPlaceholder || displayFormat;
+        
+        // Determine which icon to show
+        const getDateTimeIcon = () => {
+          if (pickerComponent === 'datetime') {
+            return <EventIcon sx={{ color: CustomPalette.GREY_500 }} />;
+          } else if (pickerComponent === 'time') {
+            return <ClockIcon sx={{ color: CustomPalette.GREY_500 }} />;
+          } else {
+            return <CalendarIcon sx={{ color: CustomPalette.GREY_500 }} />;
+          }
+        };
+        
+        // For disabled preview, use TextField for all formats with appropriate icon
         return (
-          <Box>
-            <TextField
-              type={dateInputType}
-              fullWidth
-              size="small"
-              disabled
-              placeholder={helperText}
-              InputLabelProps={{ shrink: true }}
-              sx={{ 
-                backgroundColor: CustomPalette.GREY_100,
-                fontSize: '0.875rem'
-              }}
-            />
-          </Box>
+          <TextField
+            fullWidth
+            size="small"
+            label={helperText}
+            placeholder={customPlaceholder}
+            disabled
+            sx={{ 
+              backgroundColor: CustomPalette.GREY_100,
+              fontSize: '0.875rem'
+            }}
+            InputLabelProps={{ shrink: true }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  {getDateTimeIcon()}
+                </InputAdornment>
+              )
+            }}
+          />
         );
       
       case 'Array[DateTime]':
-        // Chip input for multiple dates/times
-        let arrayDateInputType = "date";
-        let arrayDateHelper = '';
+        const arrayConfig = getDateTimePickerConfig(formatDescription);
         
-        if (formatDescription) {
-          switch (formatDescription) {
-            // Full date formats
-            case "ISO: YYYY-MM-DD: year month day":
-              arrayDateInputType = "date";
-              arrayDateHelper = "Year, month, day (YYYY-MM-DD)";
-              break;
-            case "ISO: YYYYMMDD: year month day":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Year, month, day (YYYYMMDD)";
-              break;
-            case "DD/MM/YYYY: day, month, year":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Day, month, year (DD/MM/YYYY)";
-              break;
-            case "DD/MM/YY: day, month, year":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Day, month, year (DD/MM/YY)";
-              break;
-            case "MM/DD/YYYY: month, day, year":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Month, day, year (MM/DD/YYYY)";
-              break;
-            case "DDMMYYYY: day, month, year":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Day, month, year (DDMMYYYY)";
-              break;
-            case "MMDDYYYY: month, day, year":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Month, day, year (MMDDYYYY)";
-              break;
-            case "YYYYMMDD: year, month, day":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Year, month, day (YYYYMMDD)";
-              break;
-            
-            // Year-month formats
-            case "ISO: YYYY-MM: year month":
-              arrayDateInputType = "month";
-              arrayDateHelper = "Year and month (YYYY-MM)";
-              break;
-            
-            // Week formats
-            case "ISO: YYYY-Www: year week (e.g. W01)":
-              arrayDateInputType = "week";
-              arrayDateHelper = "Year and week number (e.g., 2023-W04)";
-              break;
-            case "ISO: YYYYWww: year week (e.g. W01)":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Year and week number (e.g., 2023W04)";
-              break;
-            
-            // Ordinal date formats
-            case "ISO: YYYY-DDD: Ordinal date (day number from the year)":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Ordinal date - day number from the year (YYYY-DDD, 2023-120)";
-              break;
-            case "ISO: YYYYDDD: Ordinal date (day number from the year)":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Ordinal date - day number from the year (YYYYDDD, 2023120)";
-              break;
-            
-            // Individual components
-            case "ISO: YYYY: year":
-              arrayDateInputType = "number";
-              arrayDateHelper = "Year only (YYYY)";
-              break;
-            case "ISO: MM: month":
-              arrayDateInputType = "number";
-              arrayDateHelper = "Month only (MM)";
-              break;
-            case "ISO: DD: day":
-              arrayDateInputType = "number";
-              arrayDateHelper = "Day only (DD)";
-              break;
-            
-            // Date and time combined
-            case "ISO: YYYY-MM-DDTHH:MM:SSZ: Date and Time Combined (UTC)":
-              arrayDateInputType = "datetime-local";
-              arrayDateHelper = "Date and time combined in UTC (YYYY-MM-DDTHH:MM:SSZ)";
-              break;
-            case "ISO: YYYY-MM-DDTHH:MM:SS±hh:mm: Date and Time Combined (with Timezone Offset)":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Date and time with timezone offset (YYYY-MM-DDTHH:MM:SS±hh:mm)";
-              break;
-            
-            // Duration formats
-            case "ISO: PnD: accumulated days (n days)":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Accumulated days (e.g., P5D for 5 days)";
-              break;
-            case "ISO: PnYnMnDTnHnMnS :durations e.g. P3Y6M4DT12H30M5S":
-              arrayDateInputType = "text";
-              arrayDateHelper = "ISO 8601 duration (e.g., P3Y6M4DT12H30M5S)";
-              break;
-            
-            // Time formats (24-hour)
-            case "ISO: HH:MM: hour, minutes in 24 hour notation":
-              arrayDateInputType = "time";
-              arrayDateHelper = "Hour and minutes in 24-hour notation (HH:MM)";
-              break;
-            case "ISO: HH:MM:SS: hour, minutes, seconds in 24 hour notation":
-              arrayDateInputType = "time";
-              arrayDateHelper = "Hour, minutes, seconds in 24-hour notation (HH:MM:SS)";
-              break;
-            
-            // Time formats (12-hour with AM/PM)
-            case "HH:MM:SS: hour, minutes, seconds 12 hour notation AM/PM":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Hour, minutes, seconds in 12-hour notation with AM/PM (HH:MM:SS AM/PM)";
-              break;
-            case "H:MM or HH:MM: hour, minutes AM/PM":
-              arrayDateInputType = "text";
-              arrayDateHelper = "Hour and minutes with AM/PM (H:MM AM/PM or HH:MM AM/PM)";
-              break;
-            
-            // Default fallback
-            default:
-              arrayDateInputType = "date";
-              arrayDateHelper = formatDescription || "Select a date";
-              break;
+        // Get custom placeholder from question data (language-aware) or use config default
+        const arrayCustomPlaceholder = placeholderText || arrayConfig.placeholder || arrayConfig.displayFormat;
+        
+        // Determine which icon to show
+        const getArrayDateTimeIcon = () => {
+          if (arrayConfig.pickerComponent === 'datetime') {
+            return <EventIcon sx={{ color: CustomPalette.GREY_500 }} />;
+          } else if (arrayConfig.pickerComponent === 'time') {
+            return <ClockIcon sx={{ color: CustomPalette.GREY_500 }} />;
+          } else {
+            return <CalendarIcon sx={{ color: CustomPalette.GREY_500 }} />;
           }
-        } else {
-          arrayDateHelper = "Type and press Enter to add...";
-        }
+        };
         
         return (
           <Box>
@@ -727,19 +595,31 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
                 }}
               />
             </Box>
-            {/* Text input area */}
+            
+            {/* Input area - Text field for disabled preview */}
             <TextField
-              type={arrayDateInputType}
               fullWidth
               size="small"
+              label={arrayConfig.helperText}
+              placeholder={arrayCustomPlaceholder}
               disabled
-              placeholder={arrayDateHelper}
-              InputLabelProps={{ shrink: true }}
               sx={{ 
                 backgroundColor: CustomPalette.GREY_100,
                 fontSize: '0.875rem'
               }}
+              InputLabelProps={{ shrink: true }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {getArrayDateTimeIcon()}
+                  </InputAdornment>
+                )
+              }}
             />
+            
+            <Typography variant="caption" sx={{ color: CustomPalette.GREY_500, display: 'block', mt: 0.5 }}>
+              Multiple dates can be selected and added
+            </Typography>
           </Box>
         );
       
