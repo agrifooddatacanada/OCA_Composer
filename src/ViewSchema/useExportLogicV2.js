@@ -17,7 +17,9 @@ import {
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
   RANGE,
-  ATTRIBUTE_FRAMING
+  ATTRIBUTE_FRAMING,
+  FORM_INFORMATION,
+  FIELD_FORM_INFORMATION_OVERLAY
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -28,6 +30,7 @@ import {
   getAttributeFramingInput
 } from "../constants/utils";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
+import { convertToFormInformationOverlay } from "../Overlays/FormBuilder/utils/convertToFormInformation";
 
 const currentEnv = process.env.REACT_APP_ENV;
 
@@ -47,7 +50,8 @@ const useExportLogicV2 = () => {
     overlay,
     cardinalityData,
     rangeRowData,
-    attributeFramingRowData
+    attributeFramingRowData,
+    formBuilderPages
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -501,7 +505,22 @@ const useExportLogicV2 = () => {
               },
               attributes: getAttributeFramingInput(attributeFramingRowData)
             }
-          })
+          }),
+        ...(overlay[FIELD_FORM_INFORMATION_OVERLAY].selected &&
+          formBuilderPages &&
+          formBuilderPages.length > 0 && (() => {
+            // Create schemaName object from schemaDescription
+            const schemaName = {};
+            languages.forEach(lang => {
+              schemaName[lang] = schemaDescription[lang]?.name || '';
+            });
+            return {
+              form_information_overlay: {
+                type: FORM_INFORMATION,
+                ...convertToFormInformationOverlay(formBuilderPages, languages, schemaName)
+              }
+            };
+          })())
       };
 
       const extension_overlays = [extension_overlay_object];

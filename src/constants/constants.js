@@ -461,6 +461,9 @@ export const CARDINALITY = "cardinality";
 
 export const ORDERING = "ordering";
 
+// Form Information Overlay
+export const FORM_INFORMATION = "form_information";
+
 // Unit Framing Overlay
 export const UNIT_FRAMING = "unit_framing";
 export const UNIT_FRAME_ID = "UCUM";

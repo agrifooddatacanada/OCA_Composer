@@ -7,21 +7,21 @@ const SectionEditorDialog = ({ open, onClose, section, onSave, languages = ['Eng
   const { t } = useTranslation();
   const [formData, setFormData] = useState({ 
     labels: {},
-    subheadings: {},
+    descriptions: {},
     ...section 
   });
   
   useEffect(() => { 
     if (section) {
       const defaultLabels = {};
-      const defaultSubheadings = {};
+      const defaultDescriptions = {};
       languages.forEach(lang => {
         defaultLabels[lang] = section.labels?.[lang] || '';
-        defaultSubheadings[lang] = section.subheadings?.[lang] || '';
+        defaultDescriptions[lang] = section.descriptions?.[lang] || '';
       });
       setFormData({ 
         labels: defaultLabels,
-        subheadings: defaultSubheadings,
+        descriptions: defaultDescriptions,
         ...section 
       }); 
     }
@@ -59,14 +59,14 @@ const SectionEditorDialog = ({ open, onClose, section, onSave, languages = ['Eng
               />
               
               <TextField 
-                label={`${t("Subheading")}`}
-                value={formData.subheadings?.[lang] || ''} 
-                onChange={(e) => handleLabelChange(lang, 'subheadings', e.target.value)} 
+                label={`${t("Description")}`}
+                value={formData.descriptions?.[lang] || ''} 
+                onChange={(e) => handleLabelChange(lang, 'descriptions', e.target.value)} 
                 fullWidth 
                 size="small"
                 multiline
                 rows={2}
-                // helperText={t("Descriptive subheading text")}
+                // helperText={t("Descriptive description text")}
               />
             </Box>
           ))}

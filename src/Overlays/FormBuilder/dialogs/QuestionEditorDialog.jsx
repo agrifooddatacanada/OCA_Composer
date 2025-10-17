@@ -15,6 +15,7 @@ import {
   formatCodeTextDescription,
   ALLOWED_BOOLEAN_VALUES
 } from "../../../constants/constants";
+import { getDateTimePickerConfig } from "../utils/getDateTimePickerConfig";
 
 const findDescription = (formatText, attributeType) => {
   if (!formatText) return "";
@@ -47,9 +48,23 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
     if (question) {
       const defaultTitle = {};
       const defaultPlaceholder = {};
+      
+      // For DateTime types, get default placeholder from format rule
+      const isDateTimeType = question.attributeType === 'DateTime' || question.attributeType === 'Array[DateTime]';
+      let dateTimeDefaultPlaceholder = '';
+      
+      if (isDateTimeType && question.formatText) {
+        const formatDescription = findDescription(question.formatText, question.attributeType);
+        if (formatDescription) {
+          const config = getDateTimePickerConfig(formatDescription);
+          dateTimeDefaultPlaceholder = config.displayFormat;
+        }
+      }
+      
       languages.forEach(lang => {
         defaultTitle[lang] = question.title?.[lang] || '';
-        defaultPlaceholder[lang] = question.placeholder?.[lang] || '';
+        // Use existing placeholder or DateTime default
+        defaultPlaceholder[lang] = question.placeholder?.[lang] || (isDateTimeType ? dateTimeDefaultPlaceholder : '');
       });
       setFormData({ 
         title: defaultTitle,

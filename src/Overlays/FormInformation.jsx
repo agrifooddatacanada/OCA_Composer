@@ -17,6 +17,7 @@ import {
   formatCodeTextDescription
 } from "../constants/constants";
 import { FIELD_FORM_INFORMATION_OVERLAY } from "../constants/constants";
+import { getDateTimePickerConfig } from "./FormBuilder/utils/getDateTimePickerConfig";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
@@ -98,6 +99,43 @@ const FormInformation = () => {
               };
             }
             
+            // For DateTime types, get default placeholder from format rule
+            let dateTimeDefaultPlaceholder = "";
+            const isDateTimeType = attrType === "DateTime" || attrType === "Array[DateTime]";
+            if (isDateTimeType) {
+              const formatRule = formatRuleRowData.find((rule) => rule.Attribute === attr);
+              if (formatRule?.FormatText) {
+                const formatDescription = formatCodeDateDescription[formatRule.FormatText] || "";
+                if (formatDescription) {
+                  const config = getDateTimePickerConfig(formatDescription);
+                  dateTimeDefaultPlaceholder = config.displayFormat;
+                }
+              }
+            }
+            
+            // For Numeric types, get default placeholder from format rule
+            let numericDefaultPlaceholder = "";
+            const isNumericType = attrType === "Numeric" || attrType === "Array[Numeric]";
+            if (isNumericType) {
+              const formatRule = formatRuleRowData.find((rule) => rule.Attribute === attr);
+              if (formatRule?.FormatText) {
+                const formatDescription = formatCodeNumericDescription[formatRule.FormatText] || "";
+                if (formatDescription) {
+                  switch (formatDescription) {
+                    case "any integer or decimal number, may begin with + or -":
+                      numericDefaultPlaceholder = "Any integer or decimal number";
+                      break;
+                    case "any integer":
+                      numericDefaultPlaceholder = "Any integer";
+                      break;
+                    default:
+                      numericDefaultPlaceholder = formatDescription;
+                      break;
+                  }
+                }
+              }
+            }
+            
             const basePlaceholderValue = FormInformationRowData?.[idx]?.Placeholder;
             let basePlaceholder = "";
             if (typeof basePlaceholderValue === 'object' && basePlaceholderValue !== null) {
@@ -105,9 +143,23 @@ const FormInformation = () => {
             } else if (typeof basePlaceholderValue === 'string') {
               basePlaceholder = basePlaceholderValue;
             }
+            
+            let finalPlaceholder = item.Placeholder;
+            if (finalPlaceholder === null || finalPlaceholder === undefined || finalPlaceholder === "") {
+              if (basePlaceholder) {
+                finalPlaceholder = basePlaceholder;
+              } else if (isDateTimeType) {
+                finalPlaceholder = dateTimeDefaultPlaceholder;
+              } else if (isNumericType) {
+                finalPlaceholder = numericDefaultPlaceholder;
+              } else {
+                finalPlaceholder = "";
+              }
+            }
+            
             return {
               ...item, 
-              Placeholder: item.Placeholder ?? basePlaceholder
+              Placeholder: finalPlaceholder
             };
           });
         }
@@ -115,7 +167,7 @@ const FormInformation = () => {
       return newLan;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [languages, attributesList, FormInformationRowData, attributeRowData]);
+  }, [languages, attributesList, FormInformationRowData, attributeRowData, formatRuleRowData]);
 
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {

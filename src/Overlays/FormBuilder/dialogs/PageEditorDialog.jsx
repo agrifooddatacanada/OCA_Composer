@@ -8,7 +8,7 @@ const PageEditorDialog = ({ open, onClose, page, onSave, languages = ['English']
   const [formData, setFormData] = useState({ 
     labels: {},
     sidebarLabels: {},
-    subheadings: {},
+    descriptions: {},
     ...page 
   });
   
@@ -16,16 +16,16 @@ const PageEditorDialog = ({ open, onClose, page, onSave, languages = ['English']
     if (page) {
       const defaultLabels = {};
       const defaultSidebarLabels = {};
-      const defaultSubheadings = {};
+      const defaultDescriptions = {};
       languages.forEach(lang => {
         defaultLabels[lang] = page.labels?.[lang] || '';
         defaultSidebarLabels[lang] = page.sidebarLabels?.[lang] || '';
-        defaultSubheadings[lang] = page.subheadings?.[lang] || '';
+        defaultDescriptions[lang] = page.descriptions?.[lang] || '';
       });
       setFormData({ 
         labels: defaultLabels,
         sidebarLabels: defaultSidebarLabels,
-        subheadings: defaultSubheadings,
+        descriptions: defaultDescriptions,
         ...page 
       }); 
     }
@@ -72,14 +72,14 @@ const PageEditorDialog = ({ open, onClose, page, onSave, languages = ['English']
               />
               
               <TextField 
-                label={`${t("Subheading")}`}
-                value={formData.subheadings?.[lang] || ''} 
-                onChange={(e) => handleLabelChange(lang, 'subheadings', e.target.value)} 
+                label={`${t("Description")}`}
+                value={formData.descriptions?.[lang] || ''} 
+                onChange={(e) => handleLabelChange(lang, 'descriptions', e.target.value)} 
                 fullWidth 
                 size="small"
                 multiline
                 rows={2}
-                // helperText={t("Descriptive subheading text")}
+                // helperText={t("Descriptive description text")}
               />
             </Box>
           ))}

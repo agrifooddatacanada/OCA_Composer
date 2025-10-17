@@ -65,24 +65,24 @@ const FormBuilder = () => {
     const defaultLabel = `Page ${pageNumber}`;
     const labels = {};
     const sidebarLabels = {};
-    const subheadings = {};
+    const descriptions = {};
     langs.forEach(lang => {
       labels[lang] = defaultLabel;
       sidebarLabels[lang] = defaultLabel;
-      subheadings[lang] = defaultLabel;
+      descriptions[lang] = defaultLabel;
     });
-    return { labels, sidebarLabels, subheadings };
+    return { labels, sidebarLabels, descriptions };
   };
 
   const initializeSectionLabels = (sectionNumber, langs) => {
     const defaultLabel = `Section ${sectionNumber}`;
     const labels = {};
-    const subheadings = {};
+    const descriptions = {};
     langs.forEach(lang => {
       labels[lang] = defaultLabel;
-      subheadings[lang] = defaultLabel;
+      descriptions[lang] = defaultLabel;
     });
-    return { labels, subheadings };
+    return { labels, descriptions };
   };
 
   const [pages, setPages] = useState(() => {
@@ -295,6 +295,47 @@ const FormBuilder = () => {
     setPages(prev => prev.map((p, pi) => pi !== pageIndex ? p : ({ ...p, sections: p.sections.map((s, si) => si !== sectionIndex ? s : ({ ...s, questions: [ ...(s.questions || []), newQuestion ] })) })));
   };
 
+  // Helper function to sync placeholder changes back to lanAttributeRowData
+  const syncPlaceholdersToLanData = useCallback(() => {
+    const updatedLanData = { ...lanAttributeRowData };
+    
+    const questionsByAttribute = {};
+    pages.forEach(page => {
+      [...(page.questions || []), ...(page.sections || []).flatMap(s => s.questions || [])].forEach(q => {
+        if (q?.attribute && q.placeholder) {
+          questionsByAttribute[q.attribute] = q.placeholder;
+        }
+      });
+    });
+    
+    languages.forEach(lang => {
+      if (updatedLanData[lang]) {
+        updatedLanData[lang] = updatedLanData[lang].map(item => {
+          const attr = item.Attribute;
+          const questionPlaceholder = questionsByAttribute[attr];
+          
+          if (questionPlaceholder) {
+            let newPlaceholder = '';
+            if (typeof questionPlaceholder === 'object' && questionPlaceholder !== null) {
+              newPlaceholder = questionPlaceholder[lang] || '';
+            } else if (typeof questionPlaceholder === 'string') {
+              newPlaceholder = questionPlaceholder;
+            }
+            
+            return {
+              ...item,
+              Placeholder: newPlaceholder
+            };
+          }
+          
+          return item;
+        });
+      }
+    });
+    
+    setLanAttributeRowData(updatedLanData);
+  }, [pages, languages, lanAttributeRowData, setLanAttributeRowData]);
+
   const validateForm = useCallback(() => ({ ok: true }), []);
 
   const handleForward = useCallback(() => {
@@ -313,11 +354,16 @@ const FormBuilder = () => {
     console.log(formDataOverlay);
     setFormInformationRowData(formData);
     
+    syncPlaceholdersToLanData();
+    
     setSelectedOverlay("");
     setCurrentPage("Overlays");
-  }, [validateForm, pages, setFormInformationRowData, setSelectedOverlay, setCurrentPage, languages, schemaDescription]);
+  }, [validateForm, pages, setFormInformationRowData, setSelectedOverlay, setCurrentPage, languages, schemaDescription, syncPlaceholdersToLanData]);
 
-  const handleBack = useCallback(() => setCurrentPage("FormInformation"), [setCurrentPage]);
+  const handleBack = useCallback(() => {
+    syncPlaceholdersToLanData();
+    setCurrentPage("FormInformation");
+  }, [setCurrentPage, syncPlaceholdersToLanData]);
 
   // Build Language Tabs
   const displayLanguageArray = [];

@@ -3,13 +3,15 @@ export const convertToFormInformation = (pages) => {
   (pages || []).forEach((page) => {
     const collect = (q) => {
       if (!q?.attribute) return;
+      const hasOptions = q.options && Array.isArray(q.options) && q.options.length > 0;
       formData.push({
         Attribute: q.attribute,
         Label: q.title || q.attribute,
         Placeholder: q.placeholder || '',
         Type: q.type,
         Required: q.required || false,
-        Options: q.options || []
+        Options: q.options || [],
+        ...(hasOptions && q.inputType && { InputType: q.inputType })
       });
     };
     (page.questions || []).forEach(collect);
@@ -18,20 +20,20 @@ export const convertToFormInformation = (pages) => {
   return formData;
 };
 
-// Convert to hierarchical form information overlay structure
+
 export const convertToFormInformationOverlay = (pages, languages = ['eng'], schemaName = {}) => {
   const pagesStructure = [];
   const pageOrder = [];
   const pageLabels = {};
   const sidebarLabel = {};
-  const subheading = {};
+  const description = {};
   const title = {};
   const interaction = [{ arguments: {} }];
 
   languages.forEach(lang => {
     pageLabels[lang] = {};
     sidebarLabel[lang] = {};
-    subheading[lang] = {};
+    description[lang] = {};
     title[lang] = schemaName[lang] || '';
   });
 
@@ -42,7 +44,7 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
     languages.forEach(lang => {
       pageLabels[lang][pageId] = page.labels?.[lang] || `Page ${pageIdx + 1}`;
       sidebarLabel[lang][pageId] = page.sidebarLabels?.[lang] || `Page ${pageIdx + 1}`;
-      subheading[lang][pageId] = page.subheadings?.[lang] || `Page ${pageIdx + 1}`;
+      description[lang][pageId] = page.descriptions?.[lang] || `Page ${pageIdx + 1}`;
     });
 
     const pageStructure = {
@@ -62,18 +64,21 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
 
         languages.forEach(lang => {
           pageLabels[lang][sectionId] = section.labels?.[lang] || `Section ${sectionIdx + 1}`;
-          subheading[lang][sectionId] = section.subheadings?.[lang] || `Section ${sectionIdx + 1}`;
+          description[lang][sectionId] = section.descriptions?.[lang] || `Section ${sectionIdx + 1}`;
         });
 
         section.questions.forEach(q => {
           if (q?.attribute) {
             const attributeType = q.attributeType || q.type;
+            const isBooleanType = attributeType === 'Boolean' || attributeType === 'Array[Boolean]';
             const isTextType = attributeType === 'Text' || attributeType === 'Array[Text]';
+            const isNumericType = attributeType === 'Numeric' || attributeType === 'Array[Numeric]';
+            const isDateTimeType = attributeType === 'DateTime' || attributeType === 'Array[DateTime]';
             
             const placeholderObj = {};
-            if (isTextType) {
+            const supportsPlaceholder = isTextType || isNumericType || isDateTimeType;
+            if (supportsPlaceholder) {
               languages.forEach(lang => {
-                // Extract language-specific placeholder if it's an object, otherwise use the value directly
                 if (typeof q.placeholder === 'object' && q.placeholder !== null) {
                   placeholderObj[lang] = q.placeholder[lang] || '';
                 } else {
@@ -82,15 +87,17 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
               });
             }
 
+            // For Boolean types, include the selected boolean value options (default to ['True', 'False'])
+            const booleanOptions = isBooleanType ? (q.booleanValues || ['True', 'False']) : null;
+            
+            const hasOptions = q.options && Array.isArray(q.options) && q.options.length > 0;
+
             interaction[0].arguments[q.attribute] = {
-              type: q.inputType || q.type || 'text',
-              attribute_type: attributeType,
-              ...(isTextType && Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
-              ...(q.formatText && { format_text: q.formatText }),
-              ...(q.required && { required: q.required }),
-              ...(q.booleanValues && { boolean_values: q.booleanValues })
+              type: attributeType,
+              ...(supportsPlaceholder && Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
+              ...(booleanOptions && { options: booleanOptions }),
+              ...(hasOptions && q.inputType && { input_type: q.inputType })
             };
-            // Note: Entry codes/options are referenced from the OCA bundle's entry and entry_code overlays
           }
         });
       }
@@ -108,10 +115,14 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
       page.questions.forEach(q => {
         if (q?.attribute && !q.sectionId) {
           const attributeType = q.attributeType || q.type;
+          const isBooleanType = attributeType === 'Boolean' || attributeType === 'Array[Boolean]';
           const isTextType = attributeType === 'Text' || attributeType === 'Array[Text]';
+          const isNumericType = attributeType === 'Numeric' || attributeType === 'Array[Numeric]';
+          const isDateTimeType = attributeType === 'DateTime' || attributeType === 'Array[DateTime]';
           
           const placeholderObj = {};
-          if (isTextType) {
+          const supportsPlaceholder = isTextType || isNumericType || isDateTimeType;
+          if (supportsPlaceholder) {
             languages.forEach(lang => {
               if (typeof q.placeholder === 'object' && q.placeholder !== null) {
                 placeholderObj[lang] = q.placeholder[lang] || '';
@@ -121,15 +132,17 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
             });
           }
 
+          // For Boolean types, include the selected boolean value options (default to ['True', 'False'])
+          const booleanOptions = isBooleanType ? (q.booleanValues || ['True', 'False']) : null;
+          
+          const hasOptions = q.options && Array.isArray(q.options) && q.options.length > 0;
+
           interaction[0].arguments[q.attribute] = {
-            type: q.inputType || q.type || 'text',
-            attribute_type: attributeType,
-            ...(isTextType && Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
-            ...(q.formatText && { format_text: q.formatText }),
-            ...(q.required && { required: q.required }),
-            ...(q.booleanValues && { boolean_values: q.booleanValues })
+            type: attributeType,
+            ...(supportsPlaceholder && Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
+            ...(booleanOptions && { options: booleanOptions }),
+            ...(hasOptions && q.inputType && { input_type: q.inputType })
           };
-          // Note: Entry codes/options are referenced from the OCA bundle's entry and entry_code overlays
         }
       });
     }
@@ -142,7 +155,7 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
     page_order: pageOrder,
     page_labels: pageLabels,
     sidebar_label: sidebarLabel,
-    subheading: subheading,
+    description: description,
     interaction: interaction,
     title: title
   };
