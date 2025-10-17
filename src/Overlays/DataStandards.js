@@ -10,6 +10,8 @@ import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
+import { FIELD_DATA_STANDARDS_OVERLAY } from "../constants/constants";
+import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 
 const DataStandards = () => {
   const {
@@ -18,10 +20,15 @@ const DataStandards = () => {
     setOverlay
   } = useContext(Context);
   
-  // Use simplified schema data hook
   // Use MultiSchema context with standard pattern
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { 
+    currentSchemaId, 
+    getSchemaState, 
+    updateSchemaState,
+    updateOverlaySelection
+  } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
+  const deleteHandler = useDeleteOverlayHandler(FIELD_DATA_STANDARDS_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
     if (currentSchemaId) {
@@ -46,18 +53,7 @@ const DataStandards = () => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const handleDeleteCurrentOverlay = () => {
-    setOverlay((prev) => ({
-      ...prev,
-      "Data Standards": {
-        ...prev["Data Standards"],
-        selected: false,
-      },
-    }));
 
-    setSelectedOverlay("");
-    setCurrentPage("Overlays");
-  };
 
   const handleSave = () => {
     gridRef.current.api.stopEditing();
@@ -100,7 +96,7 @@ const DataStandards = () => {
       {loading && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={handleDeleteCurrentOverlay}
+          removeFromSelected={deleteHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}

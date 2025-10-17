@@ -8,6 +8,8 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { flexCenter, gridStyles, preWrapWordBreak } from "../constants/styles";
 import CellHeader from "../components/CellHeader";
 import DeleteConfirmation from "./DeleteConfirmation";
+import { FIELD_CONFORMANCE_OVERLAY } from "../constants/constants";
+import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 
 const RequiredEntryHeader = ({ gridRef, t }) => {
   const inputRef = useRef();
@@ -71,6 +73,7 @@ const RequiredEntries = () => {
   const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
   
   const schemaState = getSchemaState(currentSchemaId);
+  const deleteHandler = useDeleteOverlayHandler(FIELD_CONFORMANCE_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
     if (currentSchemaId) {
@@ -151,33 +154,13 @@ const RequiredEntries = () => {
     setCurrentPage("Overlays");
   };
 
-  const handleDeleteCurrentOverlay = () => {
-    // Update schema state to remove required flags from all attributes
-    const updatedAttributes = schemaState.attributes.map((attr) => ({
-      ...attr,
-      Required: false
-    }));
 
-    updateCurrentSchema({
-      attributes: updatedAttributes,
-      overlays: {
-        ...schemaState.overlays,
-        "Make selected entries required": {
-          ...schemaState.overlays?.["Make selected entries required"],
-          selected: false,
-        },
-      }
-    });
-
-    setSelectedOverlay("");
-    setCurrentPage("Overlays");
-  };
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={handleDeleteCurrentOverlay}
+          removeFromSelected={deleteHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}

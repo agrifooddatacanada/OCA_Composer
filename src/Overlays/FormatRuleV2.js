@@ -13,8 +13,10 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import { FormatRuleTypeRenderer, TrashCanButton } from "./FormatRuleCellRender";
 import Loading from "../components/Loading";
 import {
-  CUSTOM_FORMAT_RULE
+  CUSTOM_FORMAT_RULE,
+  FIELD_FORMAT_OVERLAY
 } from "../constants/constants";
+import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -36,6 +38,7 @@ const FormatRulesV2 = () => {
     setSelectedOverlay
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
+  const deleteHandler = useDeleteOverlayHandler(FIELD_FORMAT_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
     if (currentSchemaId) {
@@ -139,13 +142,7 @@ const FormatRulesV2 = () => {
     }
   }, [rangeRowData, setFormatRuleRowData, setRangeRowData, updateOverlaySelection, currentSchemaId]);
 
-  const handleDeleteCurrentOverlay = useCallback(() => {
-    // Save current changes before deleting overlay
-    handleSave();
-    updateOverlaySelection(currentSchemaId, "Add format rule for data", { selected: false });
-    updateOverlaySelection(currentSchemaId, "Add range rule for data", { selected: false });
-    setCurrentPage("Overlays");
-  }, [handleSave, updateOverlaySelection, currentSchemaId, setCurrentPage]);
+
 
   const handleForward = useCallback(() => {
     handleSave();
@@ -289,7 +286,7 @@ const FormatRulesV2 = () => {
       {loading && formatRuleRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={handleDeleteCurrentOverlay}
+          removeFromSelected={deleteHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}

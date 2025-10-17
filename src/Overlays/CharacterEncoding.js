@@ -14,6 +14,8 @@ import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
+import { FIELD_CHARACTER_ENCODING_OVERLAY } from "../constants/constants";
+import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 
 const CharacterEncoding = () => {
   const { t } = useTranslation();
@@ -28,6 +30,7 @@ const CharacterEncoding = () => {
     setSelectedOverlay
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
+  const deleteHandler = useDeleteOverlayHandler(FIELD_CHARACTER_ENCODING_OVERLAY);
 
   const updateCurrentSchema = useCallback(
     (updates) => {
@@ -40,48 +43,38 @@ const CharacterEncoding = () => {
 
   // Get character encoding data, initialize with attributes if empty
   const characterEncodingRowData = useMemo(() => {
-    const characterEncodingOverlay = schemaState?.overlays?.character_encoding?.attribute_character_encoding || {};
+    const characterEncodingData = schemaState?.characterEncodingData || {};
     const attributes = schemaState?.attributes || [];
     
-    // Convert overlay data to UI format or initialize with attributes if empty
-    if (Object.keys(characterEncodingOverlay).length > 0) {
+    // Convert data to UI format or initialize with attributes if empty
+    if (Object.keys(characterEncodingData).length > 0) {
       return attributes.map((attr) => ({
         Attribute: attr.Attribute,
-        "Character Encoding": characterEncodingOverlay[attr.Attribute] || "utf-8"
+        "Character Encoding": characterEncodingData[attr.Attribute] || "utf-8"
       }));
     }
 
-    // Initialize with current schema attributes if no overlay data exists
+    // Initialize with current schema attributes if no data exists
     return attributes.map((attr) => ({
       Attribute: attr.Attribute,
       "Character Encoding": "utf-8" // default encoding
     }));
-  }, [schemaState?.overlays?.character_encoding, schemaState?.attributes]);
+  }, [schemaState?.characterEncodingData, schemaState?.attributes]);
 
-  // Update the overlay data directly instead of duplicate array
+  // Update the character encoding data using simple field
   const setCharacterEncodingRowData = useCallback(
     (newData) => {
-      // Transform UI data back to overlay format
-      const attribute_character_encoding = {};
+      // Transform UI data to simple object format
+      const characterEncodingData = {};
       newData.forEach(row => {
         if (row.Attribute && row["Character Encoding"]) {
-          attribute_character_encoding[row.Attribute] = row["Character Encoding"];
+          characterEncodingData[row.Attribute] = row["Character Encoding"];
         }
       });
 
-      // Update the overlay directly
-      const currentOverlays = schemaState?.overlays || {};
-      const updatedOverlays = {
-        ...currentOverlays,
-        character_encoding: {
-          ...currentOverlays.character_encoding,
-          attribute_character_encoding
-        }
-      };
-
-      updateCurrentSchema({ overlays: updatedOverlays });
+      updateCurrentSchema({ characterEncodingData });
     },
-    [updateCurrentSchema, schemaState?.overlays]
+    [updateCurrentSchema]
   );
 
   const [loading, setLoading] = useState(true);
@@ -137,10 +130,7 @@ const CharacterEncoding = () => {
     setCurrentPage("Overlays");
   }, [handleSave, setCurrentPage, setSelectedOverlay, currentSchemaId]);
 
-  const handleDeleteCurrentOverlay = useCallback(() => {
-    updateOverlaySelection(currentSchemaId, "Character Encoding", { selected: false });
-    setCurrentPage("Overlays");
-  }, [updateOverlaySelection, currentSchemaId, setCurrentPage]);
+
 
   const onGridReady = useCallback(() => {
     setLoading(false);
@@ -157,7 +147,7 @@ const CharacterEncoding = () => {
       {loading && characterEncodingRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={handleDeleteCurrentOverlay}
+          removeFromSelected={deleteHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}

@@ -36,6 +36,8 @@ import CustomPalette from "../constants/customPalette";
 import Loading from "../components/Loading";
 import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
+import { FIELD_CARDINALITY_OVERLAY } from "../constants/constants";
+import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import "../App.css";
 
 const gridOptions = {
@@ -77,6 +79,7 @@ const Cardinality = () => {
     setSelectedOverlay
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
+  const deleteHandler = useDeleteOverlayHandler(FIELD_CARDINALITY_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
     if (currentSchemaId) {
@@ -372,13 +375,7 @@ const Cardinality = () => {
     [handleDeleteRow, t]
   );
 
-  const handleDeleteCurrentOverlay = useCallback(() => {
-    // Remove the overlay selection
-    updateOverlaySelection(currentSchemaId, "Cardinality", { selected: false });
-    // Clear the cardinality data from schema state
-    updateCurrentSchema({ cardinalityData: undefined });
-    setCurrentPage("Overlays");
-  }, [updateOverlaySelection, currentSchemaId, setCurrentPage, updateCurrentSchema]);
+
 
   const rowClassRules = useMemo(
     () => ({
@@ -400,7 +397,7 @@ const Cardinality = () => {
       {loading && cardinalityData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={handleDeleteCurrentOverlay}
+          removeFromSelected={deleteHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}

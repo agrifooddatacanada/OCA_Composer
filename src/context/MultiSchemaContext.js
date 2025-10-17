@@ -142,13 +142,16 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       
       const currentState = getSchemaState(targetId);
       
-      setSchemaStates((prev) => ({
-        ...prev,
-        [targetId]: {
-          ...currentState,
-          ...updates
-        }
-      }));
+      setSchemaStates((prev) => {
+        const newState = {
+          ...prev,
+          [targetId]: {
+            ...currentState,
+            ...updates
+          }
+        };
+        return newState;
+      });
     },
     [getSchemaState]
   );
@@ -656,8 +659,12 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   }, [getSchemaState]);
 
   // === OVERLAY SELECTION METHODS ===
-  const getOverlaySelections = useCallback((schemaId) => {
-    const state = getSchemaState(schemaId);
+  // Remove useCallback to avoid stale closure issues completely
+  const getOverlaySelections = (schemaId) => {
+    // Direct access to current schemaStates
+    const targetId = schemaId || TEMP_SCHEMA_ID;
+    const state = schemaStates[targetId] || createDefaultSchemaState();
+    
     // Return default overlay options if none exist yet
     return state.overlaySelections || {
       [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
@@ -669,20 +676,41 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false }
     };
-  }, [getSchemaState]);
+  };
 
   const updateOverlaySelection = useCallback((schemaId, overlayKey, updates) => {
-    const currentSelections = getOverlaySelections(schemaId);
-    const updatedSelections = {
-      ...currentSelections,
-      [overlayKey]: {
-        ...currentSelections[overlayKey],
-        ...updates
-      }
-    };
-    
-    updateSchemaState(schemaId, { overlaySelections: updatedSelections });
-  }, [getOverlaySelections, updateSchemaState]);
+    // Use setSchemaStates to get fresh state at update time
+    setSchemaStates(prevStates => {
+      const targetId = schemaId || currentSchemaId;
+      const currentState = prevStates[targetId] || createDefaultSchemaState();
+      const currentSelections = currentState.overlaySelections || {
+        [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
+        [FIELD_CONFORMANCE_OVERLAY]: { feature: "Make selected entries required", selected: false },
+        [FIELD_FORMAT_OVERLAY]: { feature: "Add format rule for data", selected: false },
+        [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
+        [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
+        [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
+        [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
+        [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false }
+      };
+      
+      const updatedSelections = {
+        ...currentSelections,
+        [overlayKey]: {
+          ...currentSelections[overlayKey],
+          ...updates
+        }
+      };
+      
+      return {
+        ...prevStates,
+        [targetId]: {
+          ...currentState,
+          overlaySelections: updatedSelections
+        }
+      };
+    });
+  }, [currentSchemaId]);
 
   const setSelectedOverlay = useCallback((schemaId, overlayKey) => {
     updateSchemaState(schemaId, { selectedOverlay: overlayKey });

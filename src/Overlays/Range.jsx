@@ -187,7 +187,7 @@ const Range = () => {
     setShowDeleteConfirmation(true);
   };
 
-  const handleDeleteCurrentOverlay = () => {
+  const useDeleteOverlayHandler = () => {
     updateCurrentSchema({
       rangeRowData: [],
       overlays: {
@@ -257,7 +257,7 @@ const Range = () => {
       {loading && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={handleDeleteCurrentOverlay}
+          removeFromSelected={useDeleteOverlayHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}

@@ -1314,7 +1314,7 @@ const AttributeFraming = () => {
       ? `${t("Unframed attributes")}: [${unframedAttributeList.join(", ")}]`
       : t("No attributes to frame");
 
-  const handleDeleteCurrentOverlay = () => {
+  const useDeleteOverlayHandler = () => {
     setOverlay((prev) => ({
       ...prev,
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: {
@@ -1364,7 +1364,7 @@ const AttributeFraming = () => {
     >
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={handleDeleteCurrentOverlay}
+          removeFromSelected={useDeleteOverlayHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}

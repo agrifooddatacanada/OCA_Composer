@@ -364,9 +364,7 @@ export default function ViewSchema({
               Required: !!attr.Required,
               "Format Rule": formatRuleIndex.get(attr.Attribute) || "",
               "Character Encoding":
-                (schemaState.characterEncodingData || []).find(
-                  (r) => r.Attribute === attr.Attribute
-                )?.["Character Encoding"] || "",
+                (schemaState.characterEncodingData || {})[attr.Attribute] || "",
               List: listObj,
               Unit: attr.Unit || "",
               Flagged: attr.Flagged || false

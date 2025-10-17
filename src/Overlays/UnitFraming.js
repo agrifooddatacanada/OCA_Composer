@@ -30,6 +30,8 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
 import { searchUnits } from "../constants/utils";
+import { FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
+import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 
@@ -354,6 +356,7 @@ const UnitFraming = () => {
     setSelectedOverlay
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
+  const deleteHandler = useDeleteOverlayHandler(FIELD_UNIT_FRAMING_OVERLAY);
 
   const updateCurrentSchema = useCallback(
     (updates) => {
@@ -417,14 +420,7 @@ const UnitFraming = () => {
 
   const columnDefs = useColumnDefs(gridRef, t);
 
-  const handleDeleteCurrentOverlay = useCallback(() => {
-    // Remove the overlay selection
-    updateOverlaySelection(currentSchemaId, "Unit Framing", { selected: false });
-    // Clear the unit framing data from schema state
-    updateCurrentSchema({ unitFramedRowData: undefined, frameAllUnits: false, unframedUnitList: [] });
-    setSelectedOverlay(currentSchemaId, "");
-    setCurrentPage("Overlays");
-  }, [updateOverlaySelection, currentSchemaId, setCurrentPage, setSelectedOverlay, updateCurrentSchema]);
+
 
   const handleSave = useCallback(() => {
     gridRef.current?.api?.stopEditing();
@@ -490,7 +486,7 @@ const UnitFraming = () => {
       {showLoading && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={handleDeleteCurrentOverlay}
+          removeFromSelected={deleteHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}
