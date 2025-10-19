@@ -137,10 +137,15 @@ export default function SchemaMetadata({
       // Check if noSpacesObject[language] exists and is an object before calling Object.values
       const languageData = noSpacesObject[language];
       if (languageData && typeof languageData === 'object') {
-        const allValues = Object.values(languageData);
-        allValues.forEach((value) => {
-          if (!value && !spacesArray.includes(toTitleCase(language))) {
-            spacesArray.push(toTitleCase(language));
+        // Check each field individually and report which field is blank
+        Object.entries(languageData).forEach(([fieldName, value]) => {
+          if (!value) {
+            const fieldDisplayName = fieldName === 'name' ? 'Name of Schema' : 
+                                   fieldName === 'description' ? 'Description' : 
+                                   toTitleCase(fieldName);
+            if (!spacesArray.includes(fieldDisplayName)) {
+              spacesArray.push(fieldDisplayName);
+            }
           }
         });
       }
