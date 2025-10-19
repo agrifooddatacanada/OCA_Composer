@@ -43,4 +43,8 @@ export const gridStyles = `
 .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
   height: 100%;
 }
+
+.ag-center-cols-clipper {
+  min-height: unset !important;
+}
 `;

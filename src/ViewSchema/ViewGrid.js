@@ -25,7 +25,15 @@ import SelectedFeatureHeader from "./SelectedFeatureHeader";
 
 const gridStyles = `
 .ag-cell {
-  line-height: 1.5
+  line-height: 1 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ag-row {
+  border-bottom-width: 1px !important;
 }
 
 .ag-header-cell-label {
@@ -49,6 +57,10 @@ const gridStyles = `
   border-radius: 4px;
   background-color: rgba(0,0,0,.5);
   box-shadow: 0 0 1px rgba(255,255,255,.5);
+}
+
+.ag-center-cols-clipper {
+  min-height: unset !important;
 }
 `;
 
