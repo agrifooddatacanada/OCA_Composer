@@ -172,9 +172,9 @@ const Home = ({
       // If we're currently on the Metadata step, validate and show popup if needed
       if (currentPage === "Metadata") {
         if (schemaMetadataRef.current && typeof schemaMetadataRef.current.showValidationPopup === "function") {
-          const isValid = schemaMetadataRef.current.showValidationPopup();
+          const isValid = schemaMetadataRef.current.showValidationPopup(target.page);
           if (!isValid) {
-            return; // Validation failed, component will show its popup
+            return; // Validation failed, component will show its popup with target page
           }
         }
       }

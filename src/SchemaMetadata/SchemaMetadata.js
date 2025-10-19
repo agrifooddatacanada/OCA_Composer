@@ -153,17 +153,20 @@ const SchemaMetadata = forwardRef(({
     return spacesArray;
   }, [schemaDescription, languages]);
 
+  const [pendingNavigationTarget, setPendingNavigationTarget] = useState(null);
+
   // Expose validation function to parent component
   useImperativeHandle(ref, () => ({
     validateSchemaMetadata: () => {
       return validateSchemaMetadata();
     },
-    showValidationPopup: () => {
+    showValidationPopup: (targetPage) => {
       // Trigger the same popup as NEXT button
       const validationErrors = validateSchemaMetadata();
       if (validationErrors.length >= 1) {
         setFieldArray(validationErrors);
         setShowCard(true);
+        setPendingNavigationTarget(targetPage || null);
         return false;
       }
       return true;
@@ -223,8 +226,21 @@ const SchemaMetadata = forwardRef(({
       {showCard && (
         <NavigationCard
           fieldArray={fieldArray}
-          setShowCard={setShowCard}
-          handleForward={pageForward}
+          setShowCard={(show) => {
+            setShowCard(show);
+            if (!show) {
+              setPendingNavigationTarget(null);
+            }
+          }}
+          handleForward={() => {
+            setShowCard(false);
+            if (pendingNavigationTarget) {
+              setCurrentPage(pendingNavigationTarget);
+              setPendingNavigationTarget(null);
+            } else {
+              pageForward();
+            }
+          }}
         />
       )}
       {showIntroCard && <IntroCard setShowIntroCard={setShowIntroCard} />}
