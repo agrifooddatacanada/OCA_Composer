@@ -86,7 +86,7 @@ const createDefaultSchemaState = () => ({
   // Language-specific data
   lanAttributeRowData: {},
   // Overlay display data (populated during initialization)
-  characterEncodingData: [],
+  characterEncodingData: {},  // Object mapping attribute name to encoding
   formatRuleData: [],
   cardinalityData: [],
   dataStandardsData: [],

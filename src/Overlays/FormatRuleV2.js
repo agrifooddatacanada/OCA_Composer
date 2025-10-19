@@ -41,9 +41,8 @@ const FormatRulesV2 = () => {
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORMAT_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
-    if (currentSchemaId) {
-      updateSchemaState(currentSchemaId, updates);
-    }
+    // MultiSchemaContext handles null schemaId internally
+    updateSchemaState(currentSchemaId, updates);
   }, [currentSchemaId, updateSchemaState]);
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);

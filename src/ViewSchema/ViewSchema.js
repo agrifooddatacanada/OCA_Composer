@@ -358,6 +358,8 @@ export default function ViewSchema({
               displayType = "Child Schema";
             }
 
+            const charEncoding = (schemaState.characterEncodingData || {})[attr.Attribute] || "";
+            
             return {
               Attribute: attr.Attribute,
               Type: displayType,
@@ -365,8 +367,7 @@ export default function ViewSchema({
               Label: labelObj,
               Required: !!attr.Required,
               "Format Rule": formatRuleIndex.get(attr.Attribute) || "",
-              "Character Encoding":
-                (schemaState.characterEncodingData || {})[attr.Attribute] || "",
+              "Character Encoding": charEncoding,
               List: listObj,
               Unit: attr.Unit || "",
               Flagged: attr.Flagged || false

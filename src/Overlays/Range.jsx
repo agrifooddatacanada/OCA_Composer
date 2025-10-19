@@ -28,9 +28,8 @@ const Range = () => {
   const schemaState = getSchemaState(currentSchemaId);
   
   const updateCurrentSchema = useCallback((updates) => {
-    if (currentSchemaId) {
-      updateSchemaState(currentSchemaId, updates);
-    }
+    // MultiSchemaContext handles null schemaId internally
+    updateSchemaState(currentSchemaId, updates);
   }, [currentSchemaId, updateSchemaState]);
   
   // Get range data from schema state

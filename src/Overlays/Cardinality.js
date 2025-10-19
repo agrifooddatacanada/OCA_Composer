@@ -82,9 +82,8 @@ const Cardinality = () => {
   const deleteHandler = useDeleteOverlayHandler(FIELD_CARDINALITY_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
-    if (currentSchemaId) {
-      updateSchemaState(currentSchemaId, updates);
-    }
+    // MultiSchemaContext handles null schemaId internally
+    updateSchemaState(currentSchemaId, updates);
   }, [currentSchemaId, updateSchemaState]);
   
   // Always get data from schema state - no fallback needed

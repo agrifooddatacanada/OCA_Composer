@@ -34,9 +34,8 @@ const CharacterEncoding = () => {
 
   const updateCurrentSchema = useCallback(
     (updates) => {
-      if (currentSchemaId) {
-        updateSchemaState(currentSchemaId, updates);
-      }
+      // Remove the if check - MultiSchemaContext handles null schemaId internally
+      updateSchemaState(currentSchemaId, updates);
     },
     [currentSchemaId, updateSchemaState]
   );
@@ -74,7 +73,7 @@ const CharacterEncoding = () => {
 
       updateCurrentSchema({ characterEncodingData });
     },
-    [updateCurrentSchema]
+    [updateCurrentSchema, currentSchemaId]
   );
 
   const [loading, setLoading] = useState(true);

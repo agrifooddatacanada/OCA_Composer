@@ -360,9 +360,8 @@ const UnitFraming = () => {
 
   const updateCurrentSchema = useCallback(
     (updates) => {
-      if (currentSchemaId) {
-        updateSchemaState(currentSchemaId, updates);
-      }
+      // MultiSchemaContext handles null schemaId internally
+      updateSchemaState(currentSchemaId, updates);
     },
     [currentSchemaId, updateSchemaState]
   );
