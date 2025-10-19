@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next";
 import { Alert, Box, Typography } from "@mui/material";
 import Grid from "./Grid";
 import AddAttribute from "./AddAttribute";
-import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import {
   removeSpacesFromString,
@@ -27,18 +26,14 @@ import { LanguageUtils } from "../utils/languageUtils";
 const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, removeStep }, ref) => {
   const { t, i18n } = useTranslation();
   
-  // Get overlay from App context (still needed for UI state)
-  const {
-    overlay,
-    setOverlay
-  } = useContext(Context);
-  
   // Use only MultiSchemaContext - unified approach
   const {
     currentSchemaId,
     getSchemaState,
     updateSchemaState,
-    getCompleteSchema
+    getCompleteSchema,
+    getOverlaySelections,
+    updateOverlaySelection
   } = useMultiSchema();
 
   // Local state for the current editing session
@@ -73,50 +68,25 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     typesObjectRef.current = newTypesObjetRef;
   }, [attributeRowData]);
 
-  // Ensure overlay state has all required keys
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (currentSchemaId && overlay) {
-      // Ensure all required overlay keys are present
-      const requiredOverlayKeys = [
-        FIELD_RANGE_OVERLAY,
-        "Unit Framing",
-        "Attribute Framing",
-        "Character Encoding",
-        "Format Rules",
-        "Cardinality",
-        "Data Standards",
-        "Make selected entries required"
-      ];
-
-      const missingKeys = requiredOverlayKeys.filter((key) => !overlay[key]);
-      if (missingKeys.length > 0) {
-        setOverlay((prev) => {
-          const updated = { ...prev };
-          missingKeys.forEach((key) => {
-            updated[key] = { feature: key, selected: false };
-          });
-          return updated;
-        });
-      }
-    }
-  }, [currentSchemaId, overlay, setOverlay]);
+  // Note: Overlay selections are now managed per-schema in MultiSchemaContext
+  // No need for separate overlay initialization as it's handled in the schema state
 
   // Initialize or refresh data when switching to edit a schema
   useEffect(() => {
-    if (!currentSchemaId) return;
     setLoading(true);
 
-    const schemaState = getSchemaState(currentSchemaId);
+    // Use currentSchemaId or fallback to temp schema for manual creation
+    const effectiveSchemaId = currentSchemaId || "temp-schema";
+    const schemaState = getSchemaState(effectiveSchemaId);
     
     // Get current language code for schema data
     const schemaLanguageName = LanguageUtils.getSchemaLanguageFromUI(i18n.language);
     const languageCode = LanguageUtils.getOCALanguageCode(schemaLanguageName);
     // NEW UNIFIED APPROACH: Get complete schema data directly
-    const completeSchema = getCompleteSchema(currentSchemaId);
+    const completeSchema = getCompleteSchema(effectiveSchemaId);
 
     // Skip if already initialized for this schema
-    if (initializedSchemaRef.current === currentSchemaId) {
+    if (initializedSchemaRef.current === effectiveSchemaId) {
       setLoading(false);
       return;
     }
@@ -147,7 +117,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       return;
     }
 
-    // Only initialize from complete schema if no existing state at all
+    // Initialize from complete schema if available and no existing state
     if (completeSchema && !schemaState?.attributes) {
       const schemaAttributes = completeSchema.attributes || {};
       const newAttributeRowData = Object.entries(schemaAttributes).map(([key, value]) => {
@@ -199,22 +169,36 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       if (!sameList) setAttributesList(nextList);
 
       // Save to MultiSchemaContext
-      updateSchemaState(currentSchemaId, {
+      updateSchemaState(effectiveSchemaId, {
         attributes: newAttributeRowData,
         attributesList: Object.keys(schemaAttributes)
       });
 
-      // Update overlay context with schema's overlay data (if needed)
-      if (completeSchema.overlays) {
-        const newOverlay = { ...overlay };
-        // Handle overlay updates if needed - simplified for unified approach
-        setOverlay(newOverlay);
-      }
+      // Note: Overlay data is now managed per-schema in MultiSchemaContext
 
       setLoading(false);
-      initializedSchemaRef.current = currentSchemaId;
-    } else {
+      initializedSchemaRef.current = effectiveSchemaId;
+    } else if (!schemaState?.attributes || schemaState.attributes.length === 0) {
+      // Handle manual schema creation case (no completeSchema but also no existing attributes)
+      // Initialize with empty arrays to allow user to start adding attributes
+      const emptyAttributeRowData = [];
+      const emptyAttributesList = [];
+      
+      setAttributeRowData(emptyAttributeRowData);
+      setAttributesList(emptyAttributesList);
+
+      // Save empty state to MultiSchemaContext
+      updateSchemaState(effectiveSchemaId, {
+        attributes: emptyAttributeRowData,
+        attributesList: emptyAttributesList
+      });
+
       setLoading(false);
+      initializedSchemaRef.current = effectiveSchemaId;
+    } else {
+      // Some other case - just stop loading
+      setLoading(false);
+      initializedSchemaRef.current = effectiveSchemaId;
     }
   }, [currentSchemaId, i18n.language]); // Removed function dependencies that cause infinite loops
 
@@ -333,19 +317,17 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       const noSpacesArray = removeSpacesFromArrayOfObjects(newAttributeRowData);
       setAttributeRowData(noSpacesArray);
 
-      if (overlay && overlay[FIELD_RANGE_OVERLAY]?.selected) {
+      // Check range overlay selection using MultiSchemaContext
+      const effectiveSchemaId = currentSchemaId || "temp-schema";
+      const overlaySelections = getOverlaySelections(effectiveSchemaId);
+      
+      if (overlaySelections && overlaySelections[FIELD_RANGE_OVERLAY]?.selected) {
         const hasValidAttribute = noSpacesArray.some(
           (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
         );
 
         if (!hasValidAttribute) {
-          setOverlay((prev) => ({
-            ...prev,
-            [FIELD_RANGE_OVERLAY]: {
-              ...(prev[FIELD_RANGE_OVERLAY] || {}),
-              selected: false
-            }
-          }));
+          updateOverlaySelection(effectiveSchemaId, FIELD_RANGE_OVERLAY, { selected: false });
         }
       }
 

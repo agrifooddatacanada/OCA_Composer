@@ -9,6 +9,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 
 import { CustomPalette } from "../constants/customPalette";
 import { removeSpacesFromString } from "../constants/removeSpaces";
@@ -64,13 +65,21 @@ export default function CreateManually() {
   const refContainer = useRef();
   const { t } = useTranslation();
 
-  const { setCurrentPage, setAttributesList, attributesList, setFileData } =
-    useContext(Context);
+  // Keep minimal legacy Context usage for navigation and file clearing
+  const { setCurrentPage, setFileData } = useContext(Context);
+
+  // Use MultiSchemaContext for all attribute management
+  const { currentSchemaId, updateSchemaState, getSchemaState } = useMultiSchema();
 
   const [rowData, setRowData] = useState([{ Name: "" }]);
   const [addErrorMessage, setAddErrorMessage] = useState("");
   const [forwardErrorMessage, setForwardErrorMessage] = useState("");
   const [backErrorMessage, setBackErrorMessage] = useState("");
+  // Get current attributes from MultiSchemaContext
+  const effectiveSchemaId = currentSchemaId || "temp-schema";
+  const schemaState = getSchemaState(effectiveSchemaId);
+  const attributesList = schemaState?.attributesList || [];
+  
   const [canDelete, setCanDelete] = useState(attributesList.length > 1);
 
   const handleDeleteRow = (rowIndex) => {
@@ -245,7 +254,22 @@ export default function CreateManually() {
   };
 
   const pageForwardSuccess = (attributes) => {
-    setAttributesList(attributes);
+    // Save to MultiSchemaContext only
+    const effectiveSchemaId = currentSchemaId || "temp-schema";
+    const attributeRowData = attributes.map(attr => ({
+      Attribute: attr,
+      Type: "", // Will be filled in AttributeDetails
+      Description: "",
+      Required: false,
+      EntryCodes: [],
+      List: false
+    }));
+    
+    updateSchemaState(effectiveSchemaId, {
+      attributes: attributeRowData,
+      attributesList: attributes
+    });
+    
     setCurrentPage("Metadata");
   };
 
@@ -254,12 +278,31 @@ export default function CreateManually() {
   };
 
   const pageBackSuccess = (attributes) => {
-    setAttributesList(attributes);
+    // Save to MultiSchemaContext only
+    const effectiveSchemaId = currentSchemaId || "temp-schema";
+    const attributeRowData = attributes.map(attr => ({
+      Attribute: attr,
+      Type: "",
+      Description: "",
+      Required: false,
+      EntryCodes: [],
+      List: false
+    }));
+    
+    updateSchemaState(effectiveSchemaId, {
+      attributes: attributeRowData,
+      attributesList: attributes
+    });
     setCurrentPage("Start");
   };
 
   const pageBackReset = () => {
-    setAttributesList([]);
+    // Clear MultiSchemaContext data
+    const effectiveSchemaId = currentSchemaId || "temp-schema";
+    updateSchemaState(effectiveSchemaId, {
+      attributes: [],
+      attributesList: []
+    });
     setCurrentPage("Start");
   };
 
@@ -268,13 +311,15 @@ export default function CreateManually() {
   };
 
   const handleClearAll = () => {
+    // Clear MultiSchemaContext data
+    const effectiveSchemaId = currentSchemaId || "temp-schema";
+    updateSchemaState(effectiveSchemaId, {
+      attributes: [],
+      attributesList: []
+    });
+    setFileData([]); // Still needed for file data clearing
     setRowData([{ Name: "" }]);
-    setAttributesList([]);
-    setFileData([]);
-    setCanDelete(false);
-  };
-
-  // Stops grid editing when clicking outside grid
+  };  // Stops grid editing when clicking outside grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
       if (
