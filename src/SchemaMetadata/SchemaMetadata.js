@@ -1,5 +1,5 @@
 import { Box, Button, Typography, Tooltip } from "@mui/material";
-import React, { useState, useContext, useEffect, useRef, useCallback } from "react";
+import React, { useState, useContext, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
 
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
@@ -18,12 +18,12 @@ import IntroCard from "./IntroCard";
 import IsoCard from "./IsoCard";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 
-export default function SchemaMetadata({
+const SchemaMetadata = forwardRef(({
   pageBack,
   pageForward,
   showIntroCard,
   setShowIntroCard
-}) {
+}, ref) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -34,17 +34,14 @@ export default function SchemaMetadata({
 
   const updateCurrentSchema = useCallback(
     (updates) => {
-      if (currentSchemaId) {
-        updateSchemaState(currentSchemaId, updates);
-      }
+      updateSchemaState(currentSchemaId, updates);
     },
     [currentSchemaId, updateSchemaState]
   );
 
   // Local component state
   const [showLanguages, setShowLanguages] = useState(false);
-  const [showCard, setShowCard] = useState(false);
-  const [fieldArray, setFieldArray] = useState([]);
+  // Removed: showCard, setShowCard, fieldArray, setFieldArray (handled by parent)
   const [showIsoInput, setShowIsoInput] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState("");
 
@@ -128,7 +125,8 @@ export default function SchemaMetadata({
   const toTitleCase = (str) =>
     str.toLowerCase().replace(/^(.)|\s(.)/g, (match) => match.toUpperCase());
 
-  const handleForward = () => {
+  // Reusable validation function
+  const validateSchemaMetadata = useCallback(() => {
     const noSpacesObject = removeSpacesFromObjectOfObjects(schemaDescription);
     setSchemaDescription(noSpacesObject);
     const spacesArray = [];
@@ -150,10 +148,20 @@ export default function SchemaMetadata({
         });
       }
     });
-    if (spacesArray.length >= 1) {
-      setFieldArray(spacesArray);
-      setShowCard(true);
-    } else {
+    
+    return spacesArray;
+  }, [schemaDescription, languages]);
+
+  // Expose validation function to parent component
+  useImperativeHandle(ref, () => ({
+    validateSchemaMetadata: () => {
+      return validateSchemaMetadata();
+    }
+  }));
+
+  // Use parent-provided handler for NEXT (validation and navigation handled by Home.js)
+  const handleForward = () => {
+    if (typeof pageForward === 'function') {
       pageForward();
     }
   };
@@ -198,13 +206,7 @@ export default function SchemaMetadata({
       isForward
       pageForward={handleForward}
     >
-      {showCard && (
-        <NavigationCard
-          fieldArray={fieldArray}
-          setShowCard={setShowCard}
-          handleForward={pageForward}
-        />
-      )}
+      {/* Validation popup handled by parent (Home.js) */}
       {showIntroCard && <IntroCard setShowIntroCard={setShowIntroCard} />}
       {showIsoInput && (
         <IsoCard
@@ -295,4 +297,8 @@ export default function SchemaMetadata({
       </Box>
     </BackNextSkeleton>
   );
-}
+});
+
+SchemaMetadata.displayName = 'SchemaMetadata';
+
+export default SchemaMetadata;

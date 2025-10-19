@@ -57,9 +57,8 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
 
   // Reset global language-dependent data when switching schemas to avoid stale rows from previous schema
   useEffect(() => {
-    if (currentSchemaId) {
-      setLanAttributeRowData({});
-    }
+    const effectiveId = currentSchemaId || "temp-schema";
+    setLanAttributeRowData({});
   }, [currentSchemaId, setLanAttributeRowData]);
 
   // Stops grid editing when clicking outside grid
@@ -103,53 +102,51 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       }
     });
     
-    // Save to MultiSchemaContext if editing a specific schema
-    if (currentSchemaId) {
-      // Convert LDAD data to schema overlays
-      const schemaState = getSchemaState(currentSchemaId);
-      const currentSchema = schemaState?.completeSchema || {};
-      const updatedOverlays = { ...currentSchema.overlays };
+    // Save to MultiSchemaContext for both manual and loaded schemas
+    // Convert LDAD data to schema overlays
+    const schemaState = getSchemaState(currentSchemaId);
+    const currentSchema = schemaState?.completeSchema || {};
+    const updatedOverlays = { ...currentSchema.overlays };
 
-      // Create label overlays from LDAD data
-      const labelOverlays = [];
-      languages.forEach((language) => {
-        const langData = noSpacesObject[language] || [];
-        if (langData.length > 0) {
-          // Convert language name to ISO 639-2 (3-letter) code for overlay
-          // Use the existing languageNameToAlpha3Codes mapping
-          const languageCode = languageNameToAlpha3Codes[language.toLowerCase()] || 
-                               language.toLowerCase().slice(0, 3); // Fallback to first 3 chars
-          
-          const attributeLabels = {};
-          langData.forEach((item) => {
-            if (item.Attribute && item.Label && item.Label.trim() !== '') {
-              attributeLabels[item.Attribute] = item.Label;
-            }
-          });
-
-          if (Object.keys(attributeLabels).length > 0) {
-            labelOverlays.push({
-              language: languageCode,
-              attribute_labels: attributeLabels
-            });
+    // Create label overlays from LDAD data
+    const labelOverlays = [];
+    languages.forEach((language) => {
+      const langData = noSpacesObject[language] || [];
+      if (langData.length > 0) {
+        // Convert language name to ISO 639-2 (3-letter) code for overlay
+        // Use the existing languageNameToAlpha3Codes mapping
+        const languageCode = languageNameToAlpha3Codes[language.toLowerCase()] || 
+                             language.toLowerCase().slice(0, 3); // Fallback to first 3 chars
+        
+        const attributeLabels = {};
+        langData.forEach((item) => {
+          if (item.Attribute && item.Label && item.Label.trim() !== '') {
+            attributeLabels[item.Attribute] = item.Label;
           }
-        }
-      });
+        });
 
-      // Update the overlays
-      if (labelOverlays.length > 0) {
-        updatedOverlays.label = labelOverlays;
+        if (Object.keys(attributeLabels).length > 0) {
+          labelOverlays.push({
+            language: languageCode,
+            attribute_labels: attributeLabels
+          });
+        }
       }
+    });
 
-      updateSchemaState(currentSchemaId, {
-        lanAttributeRowData: noSpacesObject, // Keep for compatibility during transition
-        overlays: updatedOverlays,  // Save overlays directly to schema state
-        completeSchema: {
-          ...currentSchema,
-          overlays: updatedOverlays
-        }
-      });
+    // Update the overlays
+    if (labelOverlays.length > 0) {
+      updatedOverlays.label = labelOverlays;
     }
+
+    updateSchemaState(currentSchemaId, {
+      lanAttributeRowData: noSpacesObject, // Keep for compatibility during transition
+      overlays: updatedOverlays,  // Save overlays directly to schema state
+      completeSchema: {
+        ...currentSchema,
+        overlays: updatedOverlays
+      }
+    });
     
     // Also save to global context for compatibility
     setLanAttributeRowData(noSpacesObject);

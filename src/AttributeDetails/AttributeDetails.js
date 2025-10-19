@@ -75,18 +75,17 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   useEffect(() => {
     setLoading(true);
 
-    // Use currentSchemaId or fallback to temp schema for manual creation
-    const effectiveSchemaId = currentSchemaId || "temp-schema";
-    const schemaState = getSchemaState(effectiveSchemaId);
+    // Get schema state (MultiSchemaContext handles the fallback internally)
+    const schemaState = getSchemaState(currentSchemaId);
     
     // Get current language code for schema data
     const schemaLanguageName = LanguageUtils.getSchemaLanguageFromUI(i18n.language);
     const languageCode = LanguageUtils.getOCALanguageCode(schemaLanguageName);
     // NEW UNIFIED APPROACH: Get complete schema data directly
-    const completeSchema = getCompleteSchema(effectiveSchemaId);
+    const completeSchema = getCompleteSchema(currentSchemaId);
 
     // Skip if already initialized for this schema
-    if (initializedSchemaRef.current === effectiveSchemaId) {
+    if (initializedSchemaRef.current === currentSchemaId) {
       setLoading(false);
       return;
     }
@@ -241,8 +240,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     }
 
     // Always save current attribute data to schema state first, so validation can check current data
-    const effectiveSchemaId = currentSchemaId || "temp-schema";
-    updateSchemaState(effectiveSchemaId, {
+    updateSchemaState(currentSchemaId, {
       attributes: attributeRowData,
       attributesList: attributesList
     });

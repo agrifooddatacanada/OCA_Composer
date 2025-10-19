@@ -22,7 +22,7 @@ import Header from "./Header/Header";
 import Footer from "./Footer/Footer";
 import { useMultiSchema } from "./context/MultiSchemaContext";
 import ClickableStepperProgressIndicator from "./StepperProgressIndicator/ClickableStepperProgressIndicator";
-import ErrorPopup from "./ViewSchema/ErrorPopup";
+import NavigationCard from "./constants/NavigationCard";
 
 const Home = ({
   currentPage,
@@ -163,12 +163,28 @@ const Home = ({
   };
 
   const [showValidationPopup, setShowValidationPopup] = useState(false);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [pendingTargetPage, setPendingTargetPage] = useState(null);
   const entryCodesRef = useRef(null);
   const attributeDetailsRef = useRef(null);
   const languageDetailsRef = useRef(null);
+  const schemaMetadataRef = useRef(null);
 
   // Validation function to check if navigation should be allowed
   const validateNavigation = () => {
+    if (currentPage === "Metadata") {
+      // Validate schema metadata before allowing navigation
+      if (schemaMetadataRef.current && typeof schemaMetadataRef.current.validateSchemaMetadata === "function") {
+        const errors = schemaMetadataRef.current.validateSchemaMetadata();
+        if (errors.length > 0) {
+          setValidationErrors(errors);
+          return false; // Validation failed
+        }
+        return true; // Validation passed
+      }
+      return true; // Allow navigation if validation method not available
+    }
+    
     if (currentPage === "Details") {
       // Get current data directly from AttributeDetails component if available
       if (attributeDetailsRef.current && typeof attributeDetailsRef.current.getCurrentData === "function") {
@@ -179,7 +195,11 @@ const Home = ({
         const hasBlankTypes = currentData.some(
           (attr) => !attr?.Type || attr.Type === ""
         );
-        return !hasBlankTypes;
+        if (hasBlankTypes) {
+          setValidationErrors(["There are one or more blank entries in the Type column. Please provide valid data types for all attributes before proceeding."]);
+          return false;
+        }
+        return true;
       }
       
       // Fallback to schema state if component method not available
@@ -190,7 +210,11 @@ const Home = ({
       const hasBlankTypes = currentSchemaState.attributes.some(
         (attr) => !attr?.Type || attr.Type === ""
       );
-      return !hasBlankTypes;
+      if (hasBlankTypes) {
+        setValidationErrors(["There are one or more blank entries in the Type column. Please provide valid data types for all attributes before proceeding."]);
+        return false;
+      }
+      return true;
     }
     return true; // Allow navigation for other steps
   };
@@ -198,6 +222,15 @@ const Home = ({
   const handleStepClick = (index) => {
     const target = steps[index];
     if (target?.page) {
+      // If we're currently on the Metadata step, validate before allowing navigation
+      if (currentPage === "Metadata") {
+        if (!validateNavigation()) {
+          setPendingTargetPage(target.page);
+          setShowValidationPopup(true);
+          return; // Prevent navigation
+        }
+      }
+
       // If we're currently on the Details step, validate before allowing navigation
       if (currentPage === "Details") {
         // Persist edits before validating/navigation
@@ -208,7 +241,7 @@ const Home = ({
           attributeDetailsRef.current.save();
         }
         if (!validateNavigation()) {
-          // Show validation popup
+          setPendingTargetPage(target.page);
           setShowValidationPopup(true);
           return; // Prevent navigation
         }
@@ -313,23 +346,45 @@ const Home = ({
     prevShouldShowRef.current = shouldShow;
   }, [currentSchemaId, schemaStates, getSchemaState, currentPage, setCurrentPage]);
 
+  // DRY handler for NEXT from SchemaMetadata (and can be reused for BACK if needed)
+  function handleNextFromMetadata() {
+    if (schemaMetadataRef.current && typeof schemaMetadataRef.current.validateSchemaMetadata === "function") {
+      const errors = schemaMetadataRef.current.validateSchemaMetadata();
+      if (errors.length > 0) {
+        setValidationErrors(errors);
+        setShowValidationPopup(true);
+        setPendingTargetPage(null); // Don't navigate, just show error
+        return;
+      }
+    }
+    // If validation passes, go to next step
+    pageForward();
+  }
+
   return (
     <>
       <Header currentPage={currentPage} />
 
       {/* Validation Popup for stepper navigation */}
       {showValidationPopup && (
-        <ErrorPopup onClose={() => setShowValidationPopup(false)}>
-          <Box>
-            <Typography variant="h5" sx={{ mb: 1 }}>
-              Cannot Navigate - Validation Required
-            </Typography>
-            <Typography variant="h6" fontWeight="semibold">
-              There are one or more blank entries in the Type column. Please provide valid
-              data types for all attributes before proceeding.
-            </Typography>
-          </Box>
-        </ErrorPopup>
+        <NavigationCard
+          fieldArray={validationErrors}
+          setShowCard={(show) => {
+            setShowValidationPopup(show);
+            if (!show) {
+              setValidationErrors([]);
+              setPendingTargetPage(null);
+            }
+          }}
+          handleForward={() => {
+            setShowValidationPopup(false);
+            setValidationErrors([]);
+            if (pendingTargetPage) {
+              setCurrentPage(pendingTargetPage);
+              setPendingTargetPage(null);
+            }
+          }}
+        />
       )}
 
       <Box sx={{ flex: 1 }}>
@@ -344,12 +399,27 @@ const Home = ({
         {currentPage === "Start" && <StartSchema pageForward={pageForward} />}
         {currentPage === "Metadata" && (
           <SchemaMetadata
+            ref={schemaMetadataRef}
             pageBack={pageBack}
-            pageForward={pageForward}
+            pageForward={handleNextFromMetadata}
             showIntroCard={showIntroCard}
             setShowIntroCard={setShowIntroCard}
           />
         )}
+  // DRY handler for NEXT from SchemaMetadata (and can be reused for BACK if needed)
+  function handleNextFromMetadata() {
+    if (schemaMetadataRef.current && typeof schemaMetadataRef.current.validateSchemaMetadata === "function") {
+      const errors = schemaMetadataRef.current.validateSchemaMetadata();
+      if (errors.length > 0) {
+        setValidationErrors(errors);
+        setShowValidationPopup(true);
+        setPendingTargetPage(null); // Don't navigate, just show error
+        return;
+      }
+    }
+    // If validation passes, go to next step
+    pageForward();
+  }
         {currentPage === "Details" && (
           <AttributeDetails
             ref={attributeDetailsRef}

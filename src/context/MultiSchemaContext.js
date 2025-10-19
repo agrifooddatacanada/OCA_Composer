@@ -120,13 +120,13 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   const saveTimerRef = useRef(null);
 
   // Constants for special schema IDs
-  const TEMP_SCHEMA_ID = "temp-schema";
+  const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
 
   // Get state for a specific schema - auto-create temp schemas
   const getSchemaState = useCallback(
     (schemaId) => {
-      // If no schemaId provided, use temp schema
-      const targetId = schemaId || TEMP_SCHEMA_ID;
+      // If no schemaId provided, use manual creation schema
+      const targetId = schemaId || MANUAL_CREATION_SCHEMA_ID;
       
       // Return existing schema state or create default
       return schemaStates[targetId] || createDefaultSchemaState();
@@ -137,8 +137,8 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   // Update state for a specific schema - auto-create if needed
   const updateSchemaState = useCallback(
     (schemaId, updates) => {
-      // If no schemaId provided, use temp schema
-      const targetId = schemaId || TEMP_SCHEMA_ID;
+      // If no schemaId provided, use manual creation schema
+      const targetId = schemaId || MANUAL_CREATION_SCHEMA_ID;
       
       const currentState = getSchemaState(targetId);
       
@@ -158,12 +158,12 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
   // Get current working schema ID (with fallback to temp)
   const getCurrentSchemaId = useCallback(() => 
-    currentSchemaId || TEMP_SCHEMA_ID
+    currentSchemaId || MANUAL_CREATION_SCHEMA_ID
   , [currentSchemaId]);
 
-  // Switch to a schema or create temp if none specified
+  // Switch to a schema or create manual creation schema if none specified
   const ensureSchemaExists = useCallback((schemaId) => {
-    const targetId = schemaId || TEMP_SCHEMA_ID;
+    const targetId = schemaId || MANUAL_CREATION_SCHEMA_ID;
     
     // Initialize schema if it doesn't exist
     if (!schemaStates[targetId]) {
@@ -662,7 +662,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   // Remove useCallback to avoid stale closure issues completely
   const getOverlaySelections = (schemaId) => {
     // Direct access to current schemaStates
-    const targetId = schemaId || TEMP_SCHEMA_ID;
+    const targetId = schemaId || MANUAL_CREATION_SCHEMA_ID;
     const state = schemaStates[targetId] || createDefaultSchemaState();
     
     // Return default overlay options if none exist yet
