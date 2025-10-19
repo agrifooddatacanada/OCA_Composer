@@ -41,31 +41,30 @@ const DeleteRenderer = ({
       setCanDelete(newAttributeRowData.length > 0);
 
       // Sync MultiSchema state: remove from attributes, attributesList, attributesWithLists, entryCodes, and lanAttributeRowData
-      if (currentSchemaId) {
-        const schemaState = getSchemaState(currentSchemaId) || {};
-        const nextEntryCodes = { ...(schemaState.entryCodes || {}) };
-        delete nextEntryCodes[data.Attribute];
+      // MultiSchemaContext handles null schemaId internally
+      const schemaState = getSchemaState(currentSchemaId) || {};
+      const nextEntryCodes = { ...(schemaState.entryCodes || {}) };
+      delete nextEntryCodes[data.Attribute];
 
-        const prevLists = schemaState.attributesWithLists || [];
-        const nextLists = prevLists.filter((a) => a !== data.Attribute);
+      const prevLists = schemaState.attributesWithLists || [];
+      const nextLists = prevLists.filter((a) => a !== data.Attribute);
 
-        // Clean up LDAD data - remove the deleted attribute from all languages
-        const prevLanData = schemaState.lanAttributeRowData || {};
-        const nextLanData = {};
-        Object.keys(prevLanData).forEach((language) => {
-          nextLanData[language] = prevLanData[language].filter(
-            (item) => item.Attribute !== data.Attribute
-          );
-        });
+      // Clean up LDAD data - remove the deleted attribute from all languages
+      const prevLanData = schemaState.lanAttributeRowData || {};
+      const nextLanData = {};
+      Object.keys(prevLanData).forEach((language) => {
+        nextLanData[language] = prevLanData[language].filter(
+          (item) => item.Attribute !== data.Attribute
+        );
+      });
 
-        updateSchemaState(currentSchemaId, {
-          attributes: newAttributeRowData,
-          attributesList: updatedAttributesList,
-          entryCodes: nextEntryCodes,
-          attributesWithLists: nextLists,
-          lanAttributeRowData: nextLanData
-        });
-      }
+      updateSchemaState(currentSchemaId, {
+        attributes: newAttributeRowData,
+        attributesList: updatedAttributesList,
+        entryCodes: nextEntryCodes,
+        attributesWithLists: nextLists,
+        lanAttributeRowData: nextLanData
+      });
     }
   };
   

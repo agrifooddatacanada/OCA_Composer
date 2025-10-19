@@ -365,13 +365,12 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       });
 
       // Save attributesWithLists to schema state instead of global state
-      if (currentSchemaId) {
-        updateSchemaState(currentSchemaId, {
-          attributes: attributeRowData,
-          attributesList: validationResult,
-          attributesWithLists: newAttributesWithLists
-        });
-      }
+      // MultiSchemaContext handles null schemaId internally
+      updateSchemaState(currentSchemaId, {
+        attributes: attributeRowData,
+        attributesList: validationResult,
+        attributesWithLists: newAttributesWithLists
+      });
       
       if (newAttributesWithLists.length > 0) {
         entryCodesRef.current = true;

@@ -107,18 +107,17 @@ export default function AddAttribute({
       setAttributeRowData(updatedAttributeRowData);
       
       // Also save to MultiSchemaContext to prevent data loss when List is toggled
-      if (currentSchemaId) {
-        // Preserve any existing _rid values when saving to schema state
-        const attributesWithIds = updatedAttributeRowData.map((attr) => {
-          const existingAttr = attributeRowData.find(existing => existing.Attribute === attr.Attribute);
-          return existingAttr?._rid ? { ...attr, _rid: existingAttr._rid } : attr;
-        });
-        
-        updateSchemaState(currentSchemaId, {
-          attributes: attributesWithIds,
-          attributesList: [...newAttributesList, attributeToAdd]
-        });
-      }
+      // MultiSchemaContext handles null schemaId internally
+      // Preserve any existing _rid values when saving to schema state
+      const attributesWithIds = updatedAttributeRowData.map((attr) => {
+        const existingAttr = attributeRowData.find(existing => existing.Attribute === attr.Attribute);
+        return existingAttr?._rid ? { ...attr, _rid: existingAttr._rid } : attr;
+      });
+      
+      updateSchemaState(currentSchemaId, {
+        attributes: attributesWithIds,
+        attributesList: [...newAttributesList, attributeToAdd]
+      });
       
       setCanDelete(true);
       setNewAttribute("");

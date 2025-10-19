@@ -59,9 +59,8 @@ export const useDeleteOverlayHandler = (overlayType) => {
   const { setCurrentPage } = useContext(Context);
   
   const updateCurrentSchema = (updates) => {
-    if (currentSchemaId) {
-      updateSchemaState(currentSchemaId, updates);
-    }
+    // MultiSchemaContext handles null schemaId internally
+    updateSchemaState(currentSchemaId, updates);
   };
   
   return useCallback(() => {

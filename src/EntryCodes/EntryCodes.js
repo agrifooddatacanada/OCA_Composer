@@ -35,9 +35,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   const schemaState = getSchemaState(currentSchemaId);
   
   const updateCurrentSchema = useCallback((updates) => {
-    if (currentSchemaId) {
-      updateSchemaState(currentSchemaId, updates);
-    }
+    // MultiSchemaContext handles null schemaId internally
+    updateSchemaState(currentSchemaId, updates);
   }, [currentSchemaId, updateSchemaState]);
 
   // Global context

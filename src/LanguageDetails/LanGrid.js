@@ -243,14 +243,13 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         });
         
         // Update schema state with preserved user data
-        if (currentSchemaId) {
-          const newDataHash = JSON.stringify(updatedLanData);
-          if (lastDataHashRef.current !== newDataHash) {
-            lastDataHashRef.current = newDataHash;
-            updateSchemaState(currentSchemaId, {
-              lanAttributeRowData: updatedLanData
-            });
-          }
+        // MultiSchemaContext handles null schemaId internally
+        const newDataHash = JSON.stringify(updatedLanData);
+        if (lastDataHashRef.current !== newDataHash) {
+          lastDataHashRef.current = newDataHash;
+          updateSchemaState(currentSchemaId, {
+            lanAttributeRowData: updatedLanData
+          });
         }
         return;
       }
@@ -389,16 +388,15 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       });
 
       // Save to schema state only if data has changed to prevent infinite loops
-      if (currentSchemaId) {
-        const newDataHash = JSON.stringify(newLanAttributeRowData);
+      // MultiSchemaContext handles null schemaId internally
+      const newDataHash = JSON.stringify(newLanAttributeRowData);
 
-        // Only update if the data has actually changed
-        if (lastDataHashRef.current !== newDataHash) {
-          lastDataHashRef.current = newDataHash;
-          updateSchemaState(currentSchemaId, {
-            lanAttributeRowData: newLanAttributeRowData
-          });
-        }
+      // Only update if the data has actually changed
+      if (lastDataHashRef.current !== newDataHash) {
+        lastDataHashRef.current = newDataHash;
+        updateSchemaState(currentSchemaId, {
+          lanAttributeRowData: newLanAttributeRowData
+        });
       }
     }, 100); // 100ms debounce to prevent flickering
 
@@ -509,11 +507,10 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       );
 
       // Update schema state
-      if (currentSchemaId) {
-        updateSchemaState(currentSchemaId, {
-          lanAttributeRowData: updatedLanAttributeRowData
-        });
-      }
+      // MultiSchemaContext handles null schemaId internally
+      updateSchemaState(currentSchemaId, {
+        lanAttributeRowData: updatedLanAttributeRowData
+      });
     },
     [lanAttributeRowData, currentLanguage, currentSchemaId, updateSchemaState]
   );

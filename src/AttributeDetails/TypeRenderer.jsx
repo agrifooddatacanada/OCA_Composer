@@ -65,11 +65,10 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     setAttributeRowData(updatedAttributeRowData);
     
     // Update MultiSchemaContext to persist the change
-    if (currentSchemaId) {
-      updateSchemaState(currentSchemaId, {
-        attributes: updatedAttributeRowData
-      });
-    }
+    // MultiSchemaContext handles null schemaId internally
+    updateSchemaState(currentSchemaId, {
+      attributes: updatedAttributeRowData
+    });
     
     setIsDropdownOpen(false);
   };
@@ -102,11 +101,10 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       setAttributeRowData(updatedAttributeRowData);
       
       // Update MultiSchemaContext to persist the change
-      if (currentSchemaId) {
-        updateSchemaState(currentSchemaId, {
-          attributes: updatedAttributeRowData
-        });
-      }
+      // MultiSchemaContext handles null schemaId internally
+      updateSchemaState(currentSchemaId, {
+        attributes: updatedAttributeRowData
+      });
     }
   };
 
