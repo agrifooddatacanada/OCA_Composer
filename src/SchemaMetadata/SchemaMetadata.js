@@ -157,6 +157,16 @@ const SchemaMetadata = forwardRef(({
   useImperativeHandle(ref, () => ({
     validateSchemaMetadata: () => {
       return validateSchemaMetadata();
+    },
+    showValidationPopup: () => {
+      // Trigger the same popup as NEXT button
+      const validationErrors = validateSchemaMetadata();
+      if (validationErrors.length >= 1) {
+        setFieldArray(validationErrors);
+        setShowCard(true);
+        return false;
+      }
+      return true;
     }
   }));
 

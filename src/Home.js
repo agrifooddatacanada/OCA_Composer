@@ -22,7 +22,6 @@ import Header from "./Header/Header";
 import Footer from "./Footer/Footer";
 import { useMultiSchema } from "./context/MultiSchemaContext";
 import ClickableStepperProgressIndicator from "./StepperProgressIndicator/ClickableStepperProgressIndicator";
-import NavigationCard from "./constants/NavigationCard";
 
 const Home = ({
   currentPage,
@@ -162,88 +161,36 @@ const Home = ({
     }
   };
 
-  const [showValidationPopup, setShowValidationPopup] = useState(false);
-  const [validationErrors, setValidationErrors] = useState([]);
-  const [pendingTargetPage, setPendingTargetPage] = useState(null);
   const entryCodesRef = useRef(null);
   const attributeDetailsRef = useRef(null);
   const languageDetailsRef = useRef(null);
   const schemaMetadataRef = useRef(null);
 
-  // Validation function to check if navigation should be allowed
-  const validateNavigation = () => {
-    if (currentPage === "Metadata") {
-      // Validate schema metadata before allowing navigation
-      if (schemaMetadataRef.current && typeof schemaMetadataRef.current.validateSchemaMetadata === "function") {
-        const errors = schemaMetadataRef.current.validateSchemaMetadata();
-        if (errors.length > 0) {
-          setValidationErrors(errors);
-          return false; // Validation failed
-        }
-        return true; // Validation passed
-      }
-      return true; // Allow navigation if validation method not available
-    }
-    
-    if (currentPage === "Details") {
-      // Get current data directly from AttributeDetails component if available
-      if (attributeDetailsRef.current && typeof attributeDetailsRef.current.getCurrentData === "function") {
-        const currentData = attributeDetailsRef.current.getCurrentData();
-        if (!currentData || currentData.length === 0) {
-          return true; // Allow navigation if no data
-        }
-        const hasBlankTypes = currentData.some(
-          (attr) => !attr?.Type || attr.Type === ""
-        );
-        if (hasBlankTypes) {
-          setValidationErrors(["There are one or more blank entries in the Type column. Please provide valid data types for all attributes before proceeding."]);
-          return false;
-        }
-        return true;
-      }
-      
-      // Fallback to schema state if component method not available
-      const currentSchemaState = getSchemaState(currentSchemaId);
-      if (!currentSchemaState || !currentSchemaState.attributes) {
-        return true; // Allow navigation if no schema state
-      }
-      const hasBlankTypes = currentSchemaState.attributes.some(
-        (attr) => !attr?.Type || attr.Type === ""
-      );
-      if (hasBlankTypes) {
-        setValidationErrors(["There are one or more blank entries in the Type column. Please provide valid data types for all attributes before proceeding."]);
-        return false;
-      }
-      return true;
-    }
-    return true; // Allow navigation for other steps
-  };
-
   const handleStepClick = (index) => {
     const target = steps[index];
     if (target?.page) {
-      // If we're currently on the Metadata step, validate before allowing navigation
+      // If we're currently on the Metadata step, validate and show popup if needed
       if (currentPage === "Metadata") {
-        if (!validateNavigation()) {
-          setPendingTargetPage(target.page);
-          setShowValidationPopup(true);
-          return; // Prevent navigation
+        if (schemaMetadataRef.current && typeof schemaMetadataRef.current.showValidationPopup === "function") {
+          const isValid = schemaMetadataRef.current.showValidationPopup();
+          if (!isValid) {
+            return; // Validation failed, component will show its popup
+          }
         }
       }
 
-      // If we're currently on the Details step, validate before allowing navigation
+      // If we're currently on the Details step, save and validate before navigation
       if (currentPage === "Details") {
         // Persist edits before validating/navigation
-        if (
-          attributeDetailsRef.current &&
-          typeof attributeDetailsRef.current.save === "function"
-        ) {
+        if (attributeDetailsRef.current && typeof attributeDetailsRef.current.save === "function") {
           attributeDetailsRef.current.save();
         }
-        if (!validateNavigation()) {
-          setPendingTargetPage(target.page);
-          setShowValidationPopup(true);
-          return; // Prevent navigation
+        // Show validation popup if validation fails
+        if (attributeDetailsRef.current && typeof attributeDetailsRef.current.showValidationPopup === "function") {
+          const isValid = attributeDetailsRef.current.showValidationPopup();
+          if (!isValid) {
+            return; // Validation failed, component will show its popup
+          }
         }
       }
 
@@ -349,28 +296,6 @@ const Home = ({
   return (
     <>
       <Header currentPage={currentPage} />
-
-      {/* Validation Popup for stepper navigation */}
-      {showValidationPopup && (
-        <NavigationCard
-          fieldArray={validationErrors}
-          setShowCard={(show) => {
-            setShowValidationPopup(show);
-            if (!show) {
-              setValidationErrors([]);
-              setPendingTargetPage(null);
-            }
-          }}
-          handleForward={() => {
-            setShowValidationPopup(false);
-            setValidationErrors([]);
-            if (pendingTargetPage) {
-              setCurrentPage(pendingTargetPage);
-              setPendingTargetPage(null);
-            }
-          }}
-        />
-      )}
 
       <Box sx={{ flex: 1 }}>
         {/* debug logs removed to prevent noisy renders */}

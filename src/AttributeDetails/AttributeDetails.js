@@ -4,7 +4,8 @@ import React, {
   useState,
   useEffect,
   forwardRef,
-  useImperativeHandle
+  useImperativeHandle,
+  useCallback
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Box, Typography } from "@mui/material";
@@ -421,10 +422,41 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     }
   };
 
-  // Expose save and getCurrentData to parent (Home) so stepper click can persist before navigation
+  // Validate without side effects - returns validation result
+  const validate = useCallback(() => {
+    // Check for blank types
+    if (!attributeRowData || attributeRowData.length === 0) {
+      return { isValid: true, errors: [] }; // No data to validate
+    }
+    
+    const hasBlankTypes = attributeRowData.some(
+      (attr) => !attr?.Type || attr.Type === ""
+    );
+    
+    if (hasBlankTypes) {
+      return {
+        isValid: false,
+        errors: [t("There are one or more blank entries in the Type column. Please provide valid data types for all attributes.")]
+      };
+    }
+    
+    return { isValid: true, errors: [] };
+  }, [attributeRowData, t]);
+
+  // Expose methods to parent (Home) for navigation handling
   useImperativeHandle(ref, () => ({
     save: handleSave,
-    getCurrentData: () => attributeRowData
+    getCurrentData: () => attributeRowData,
+    validate: validate,
+    showValidationPopup: () => {
+      // Trigger the same popup as NEXT button
+      const result = validate();
+      if (!result.isValid) {
+        setShowCard(true);
+        return false;
+      }
+      return true;
+    }
   }));
 
   const pageForwardSave = () => {
