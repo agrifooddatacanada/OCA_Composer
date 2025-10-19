@@ -284,8 +284,11 @@ export default function ViewSchema({
       try {
         setLoading(true);
 
-        if (OCAPackage && currentSchemaId) {
-          const schemaState = getSchemaState(currentSchemaId);
+        // Use effectiveSchemaId for both OCA packages and manual creation
+        const effectiveSchemaId = currentSchemaId || "temp-schema";
+        const schemaState = getSchemaState(effectiveSchemaId);
+        
+        if ((OCAPackage && currentSchemaId) || (!OCAPackage && schemaState && schemaState.attributes)) {
 
           // Convert schema state back to the format expected by ViewGrid
           const schemaAttributes = schemaState.attributes || [];

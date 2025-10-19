@@ -170,6 +170,19 @@ const Home = ({
   // Validation function to check if navigation should be allowed
   const validateNavigation = () => {
     if (currentPage === "Details") {
+      // Get current data directly from AttributeDetails component if available
+      if (attributeDetailsRef.current && typeof attributeDetailsRef.current.getCurrentData === "function") {
+        const currentData = attributeDetailsRef.current.getCurrentData();
+        if (!currentData || currentData.length === 0) {
+          return true; // Allow navigation if no data
+        }
+        const hasBlankTypes = currentData.some(
+          (attr) => !attr?.Type || attr.Type === ""
+        );
+        return !hasBlankTypes;
+      }
+      
+      // Fallback to schema state if component method not available
       const currentSchemaState = getSchemaState(currentSchemaId);
       if (!currentSchemaState || !currentSchemaState.attributes) {
         return true; // Allow navigation if no schema state

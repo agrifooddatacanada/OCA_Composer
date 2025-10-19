@@ -92,17 +92,17 @@ export default function CreateManually() {
   };
 
   useEffect(() => {
-    const allRowData = [];
-    if (attributesList.length > 0) {
-      attributesList.forEach((item) => {
-        allRowData.push({ Name: item });
-      });
-    } else {
-      allRowData.push({ Name: "" });
+    // Only initialize rowData if it's empty or if we have actual saved attributes
+    // Don't reset if user is already editing
+    if (rowData.length === 1 && rowData[0].Name === "" && attributesList.length > 0) {
+      // Initialize from saved attributes
+      const allRowData = attributesList.map((item) => ({ Name: item }));
+      setRowData(allRowData);
+    } else if (attributesList.length === 0 && rowData.length > 1) {
+      // Reset to single empty row only if we had data before
+      setRowData([{ Name: "" }]);
     }
-
-    setRowData(allRowData);
-  }, [attributesList]);
+  }, [attributesList, rowData]);
 
   const columnDefs = [
     { field: "Drag", headerName: "", width: 50, rowDrag: true },

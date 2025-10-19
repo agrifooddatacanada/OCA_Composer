@@ -240,6 +240,13 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       gridRef.current.api.stopEditing();
     }
 
+    // Always save current attribute data to schema state first, so validation can check current data
+    const effectiveSchemaId = currentSchemaId || "temp-schema";
+    updateSchemaState(effectiveSchemaId, {
+      attributes: attributeRowData,
+      attributesList: attributesList
+    });
+
     const validateForward = () => {
       const allAttributes = [];
       const duplicateAttributes = [];
@@ -369,20 +376,50 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       }
 
       // Persist attributes and list to MultiSchemaContext in one place to avoid flicker
-      if (currentSchemaId) {
-        updateSchemaState(currentSchemaId, {
-          attributes: attributeRowData,
-          attributesList: validationResult,
-          attributesWithLists: newAttributesWithLists
+      const effectiveSchemaId = currentSchemaId || "temp-schema";
+      
+      // Initialize lanAttributeRowData for all attributes if not already present
+      const schemaState = getSchemaState(effectiveSchemaId);
+      const currentLanAttributeRowData = schemaState?.lanAttributeRowData || {};
+      
+      // Get available languages (fallback to default if none set)
+      const availableLanguages = schemaState?.metadata?.languages || ['English'];
+      
+      // Initialize rows for each language and attribute
+      const updatedLanAttributeRowData = { ...currentLanAttributeRowData };
+      availableLanguages.forEach(language => {
+        if (!updatedLanAttributeRowData[language]) {
+          updatedLanAttributeRowData[language] = [];
+        }
+        
+        // Ensure all attributes have entries in lanAttributeRowData
+        const languageData = updatedLanAttributeRowData[language];
+        attributeRowData.forEach(attr => {
+          const existingEntry = languageData.find(item => item.Attribute === attr.Attribute);
+          if (!existingEntry) {
+            languageData.push({
+              Attribute: attr.Attribute,
+              Label: attr.Attribute, // Default label is attribute name
+              Description: attr.Description || ""
+            });
+          }
         });
-      }
+      });
+      
+      updateSchemaState(effectiveSchemaId, {
+        attributes: attributeRowData,
+        attributesList: validationResult,
+        attributesWithLists: newAttributesWithLists,
+        lanAttributeRowData: updatedLanAttributeRowData
+      });
       navigationSafe.current = true;
     }
   };
 
-  // Expose save to parent (Home) so stepper click can persist before navigation
+  // Expose save and getCurrentData to parent (Home) so stepper click can persist before navigation
   useImperativeHandle(ref, () => ({
-    save: handleSave
+    save: handleSave,
+    getCurrentData: () => attributeRowData
   }));
 
   const pageForwardSave = () => {
