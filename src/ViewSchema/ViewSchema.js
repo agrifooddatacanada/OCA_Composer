@@ -445,19 +445,19 @@ export default function ViewSchema({
           </Button>
         )}
 
-        {/* Next button for page forward */}
-        {isPageForward && pageForward && (
-          <Button
-            color="navButton"
-            onClick={pageForward}
-            sx={{ color: CustomPalette.PRIMARY }}
-          >
-            {t("Next")} <ArrowForwardIosIcon />
-          </Button>
-        )}
-        
         <Box sx={{ display: "flex", gap: 2 }}>
-          {isZip && (
+          {/* Next button for page forward */}
+          {isPageForward && pageForward && (
+            <Button
+              color="navButton"
+              onClick={pageForward}
+              sx={{ color: CustomPalette.PRIMARY }}
+            >
+              {t("Next")} <ArrowForwardIosIcon />
+            </Button>
+          )}
+          
+          {isZip && isExport && (
             <>
               <Button
                 color="button"
