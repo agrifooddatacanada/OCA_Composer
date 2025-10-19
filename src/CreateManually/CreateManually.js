@@ -76,8 +76,7 @@ export default function CreateManually() {
   const [forwardErrorMessage, setForwardErrorMessage] = useState("");
   const [backErrorMessage, setBackErrorMessage] = useState("");
   // Get current attributes from MultiSchemaContext
-  const effectiveSchemaId = currentSchemaId || "temp-schema";
-  const schemaState = getSchemaState(effectiveSchemaId);
+  const schemaState = getSchemaState(currentSchemaId);
   const attributesList = schemaState?.attributesList || [];
   
   const [canDelete, setCanDelete] = useState(attributesList.length > 1);
@@ -255,7 +254,6 @@ export default function CreateManually() {
 
   const pageForwardSuccess = (attributes) => {
     // Save to MultiSchemaContext only
-    const effectiveSchemaId = currentSchemaId || "temp-schema";
     const attributeRowData = attributes.map(attr => ({
       Attribute: attr,
       Type: "", // Will be filled in AttributeDetails
@@ -265,7 +263,7 @@ export default function CreateManually() {
       List: false
     }));
     
-    updateSchemaState(effectiveSchemaId, {
+    updateSchemaState(currentSchemaId, {
       attributes: attributeRowData,
       attributesList: attributes
     });
@@ -279,7 +277,6 @@ export default function CreateManually() {
 
   const pageBackSuccess = (attributes) => {
     // Save to MultiSchemaContext only
-    const effectiveSchemaId = currentSchemaId || "temp-schema";
     const attributeRowData = attributes.map(attr => ({
       Attribute: attr,
       Type: "",
@@ -289,7 +286,7 @@ export default function CreateManually() {
       List: false
     }));
     
-    updateSchemaState(effectiveSchemaId, {
+    updateSchemaState(currentSchemaId, {
       attributes: attributeRowData,
       attributesList: attributes
     });
@@ -298,8 +295,7 @@ export default function CreateManually() {
 
   const pageBackReset = () => {
     // Clear MultiSchemaContext data
-    const effectiveSchemaId = currentSchemaId || "temp-schema";
-    updateSchemaState(effectiveSchemaId, {
+    updateSchemaState(currentSchemaId, {
       attributes: [],
       attributesList: []
     });
@@ -312,8 +308,7 @@ export default function CreateManually() {
 
   const handleClearAll = () => {
     // Clear MultiSchemaContext data
-    const effectiveSchemaId = currentSchemaId || "temp-schema";
-    updateSchemaState(effectiveSchemaId, {
+    updateSchemaState(currentSchemaId, {
       attributes: [],
       attributesList: []
     });

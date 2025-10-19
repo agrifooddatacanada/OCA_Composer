@@ -284,9 +284,8 @@ export default function ViewSchema({
       try {
         setLoading(true);
 
-        // Use effectiveSchemaId for both OCA packages and manual creation
-        const effectiveSchemaId = currentSchemaId || "temp-schema";
-        const schemaState = getSchemaState(effectiveSchemaId);
+        // Use currentSchemaId for both OCA packages and manual creation
+        const schemaState = getSchemaState(currentSchemaId);
         
         if ((OCAPackage && currentSchemaId) || (!OCAPackage && schemaState && schemaState.attributes)) {
 

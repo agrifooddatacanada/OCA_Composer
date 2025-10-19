@@ -41,7 +41,8 @@ const SchemaMetadata = forwardRef(({
 
   // Local component state
   const [showLanguages, setShowLanguages] = useState(false);
-  // Removed: showCard, setShowCard, fieldArray, setFieldArray (handled by parent)
+  const [showCard, setShowCard] = useState(false);
+  const [fieldArray, setFieldArray] = useState([]);
   const [showIsoInput, setShowIsoInput] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState("");
 
@@ -159,9 +160,12 @@ const SchemaMetadata = forwardRef(({
     }
   }));
 
-  // Use parent-provided handler for NEXT (validation and navigation handled by Home.js)
   const handleForward = () => {
-    if (typeof pageForward === 'function') {
+    const validationErrors = validateSchemaMetadata();
+    if (validationErrors.length >= 1) {
+      setFieldArray(validationErrors);
+      setShowCard(true);
+    } else {
       pageForward();
     }
   };
@@ -206,7 +210,13 @@ const SchemaMetadata = forwardRef(({
       isForward
       pageForward={handleForward}
     >
-      {/* Validation popup handled by parent (Home.js) */}
+      {showCard && (
+        <NavigationCard
+          fieldArray={fieldArray}
+          setShowCard={setShowCard}
+          handleForward={pageForward}
+        />
+      )}
       {showIntroCard && <IntroCard setShowIntroCard={setShowIntroCard} />}
       {showIsoInput && (
         <IsoCard

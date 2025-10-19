@@ -35,6 +35,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     getOverlaySelections,
     updateOverlaySelection
   } = useMultiSchema();
+  
 
   // Local state for the current editing session
   const [attributeRowData, setAttributeRowData] = useState([]);
@@ -78,20 +79,23 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     // Get schema state (MultiSchemaContext handles the fallback internally)
     const schemaState = getSchemaState(currentSchemaId);
     
+    
     // Get current language code for schema data
     const schemaLanguageName = LanguageUtils.getSchemaLanguageFromUI(i18n.language);
     const languageCode = LanguageUtils.getOCALanguageCode(schemaLanguageName);
     // NEW UNIFIED APPROACH: Get complete schema data directly
     const completeSchema = getCompleteSchema(currentSchemaId);
 
-    // Skip if already initialized for this schema
-    if (initializedSchemaRef.current === currentSchemaId) {
+    // Skip if already initialized for this schema AND data hasn't changed
+    if (initializedSchemaRef.current === currentSchemaId && 
+        schemaState?.attributes && 
+        JSON.stringify(schemaState.attributes) === JSON.stringify(attributeRowData)) {
       setLoading(false);
       return;
     }
 
     // Check if existing state exists (should take precedence over complete schema)
-    if (schemaState?.attributes && schemaState.attributes.length >= 0) {
+    if (schemaState?.attributes && schemaState.attributes.length > 0) {
       // Use existing state (preserves user-added/deleted attributes and edits)
       // Avoid redundant updates to prevent flicker
       const sameAttrs =
@@ -102,12 +106,17 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       
       // If attributes don't match, merge carefully to preserve _rid values
       if (!sameAttrs) {
-        const mergedAttributes = schemaState.attributes.map((schemaAttr) => {
-          const existingAttr = attributeRowData.find(existing => existing.Attribute === schemaAttr.Attribute);
-          // Preserve _rid if it exists in current data
-          return existingAttr?._rid ? { ...schemaAttr, _rid: existingAttr._rid } : schemaAttr;
-        });
-        setAttributeRowData(mergedAttributes);
+        // If attributeRowData is empty, just use schemaState.attributes directly
+        if (attributeRowData.length === 0) {
+          setAttributeRowData(schemaState.attributes);
+        } else {
+          const mergedAttributes = schemaState.attributes.map((schemaAttr) => {
+            const existingAttr = attributeRowData.find(existing => existing.Attribute === schemaAttr.Attribute);
+            // Preserve _rid if it exists in current data
+            return existingAttr?._rid ? { ...schemaAttr, _rid: existingAttr._rid } : schemaAttr;
+          });
+          setAttributeRowData(mergedAttributes);
+        }
       }
       
       if (!sameList) setAttributesList(schemaState.attributesList || []);
@@ -117,7 +126,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     }
 
     // Initialize from complete schema if available and no existing state
-    if (completeSchema && !schemaState?.attributes) {
+    if (completeSchema && (!schemaState?.attributes || schemaState.attributes.length === 0)) {
       const schemaAttributes = completeSchema.attributes || {};
       const newAttributeRowData = Object.entries(schemaAttributes).map(([key, value]) => {
         // Check if this attribute has entry codes (is a list)
@@ -168,7 +177,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       if (!sameList) setAttributesList(nextList);
 
       // Save to MultiSchemaContext
-      updateSchemaState(effectiveSchemaId, {
+      updateSchemaState(currentSchemaId, {
         attributes: newAttributeRowData,
         attributesList: Object.keys(schemaAttributes)
       });
@@ -176,7 +185,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       // Note: Overlay data is now managed per-schema in MultiSchemaContext
 
       setLoading(false);
-      initializedSchemaRef.current = effectiveSchemaId;
+      initializedSchemaRef.current = currentSchemaId;
     } else if (!schemaState?.attributes || schemaState.attributes.length === 0) {
       // Handle manual schema creation case (no completeSchema but also no existing attributes)
       // Initialize with empty arrays to allow user to start adding attributes
@@ -187,17 +196,17 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       setAttributesList(emptyAttributesList);
 
       // Save empty state to MultiSchemaContext
-      updateSchemaState(effectiveSchemaId, {
+      updateSchemaState(currentSchemaId, {
         attributes: emptyAttributeRowData,
         attributesList: emptyAttributesList
       });
 
       setLoading(false);
-      initializedSchemaRef.current = effectiveSchemaId;
+      initializedSchemaRef.current = currentSchemaId;
     } else {
       // Some other case - just stop loading
       setLoading(false);
-      initializedSchemaRef.current = effectiveSchemaId;
+      initializedSchemaRef.current = currentSchemaId;
     }
   }, [currentSchemaId, i18n.language]); // Removed function dependencies that cause infinite loops
 
@@ -323,8 +332,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       setAttributeRowData(noSpacesArray);
 
       // Check range overlay selection using MultiSchemaContext
-      const effectiveSchemaId = currentSchemaId || "temp-schema";
-      const overlaySelections = getOverlaySelections(effectiveSchemaId);
+      const overlaySelections = getOverlaySelections(currentSchemaId);
       
       if (overlaySelections && overlaySelections[FIELD_RANGE_OVERLAY]?.selected) {
         const hasValidAttribute = noSpacesArray.some(
@@ -332,7 +340,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         );
 
         if (!hasValidAttribute) {
-          updateOverlaySelection(effectiveSchemaId, FIELD_RANGE_OVERLAY, { selected: false });
+          updateOverlaySelection(currentSchemaId, FIELD_RANGE_OVERLAY, { selected: false });
         }
       }
 
@@ -374,10 +382,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       }
 
       // Persist attributes and list to MultiSchemaContext in one place to avoid flicker
-      const effectiveSchemaId = currentSchemaId || "temp-schema";
-      
       // Initialize lanAttributeRowData for all attributes if not already present
-      const schemaState = getSchemaState(effectiveSchemaId);
+      const schemaState = getSchemaState(currentSchemaId);
       const currentLanAttributeRowData = schemaState?.lanAttributeRowData || {};
       
       // Get available languages (fallback to default if none set)
@@ -398,17 +404,19 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
             languageData.push({
               Attribute: attr.Attribute,
               Label: attr.Attribute, // Default label is attribute name
-              Description: attr.Description || ""
+              Description: attr.Description || "",
+              List: "Not a List" // Default list value
             });
           }
         });
       });
       
-      updateSchemaState(effectiveSchemaId, {
+      updateSchemaState(currentSchemaId, {
         attributes: attributeRowData,
         attributesList: validationResult,
         attributesWithLists: newAttributesWithLists,
-        lanAttributeRowData: updatedLanAttributeRowData
+        lanAttributeRowData: updatedLanAttributeRowData,
+        initialized: true
       });
       navigationSafe.current = true;
     }

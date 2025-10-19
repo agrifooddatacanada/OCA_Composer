@@ -346,21 +346,6 @@ const Home = ({
     prevShouldShowRef.current = shouldShow;
   }, [currentSchemaId, schemaStates, getSchemaState, currentPage, setCurrentPage]);
 
-  // DRY handler for NEXT from SchemaMetadata (and can be reused for BACK if needed)
-  function handleNextFromMetadata() {
-    if (schemaMetadataRef.current && typeof schemaMetadataRef.current.validateSchemaMetadata === "function") {
-      const errors = schemaMetadataRef.current.validateSchemaMetadata();
-      if (errors.length > 0) {
-        setValidationErrors(errors);
-        setShowValidationPopup(true);
-        setPendingTargetPage(null); // Don't navigate, just show error
-        return;
-      }
-    }
-    // If validation passes, go to next step
-    pageForward();
-  }
-
   return (
     <>
       <Header currentPage={currentPage} />
@@ -401,25 +386,11 @@ const Home = ({
           <SchemaMetadata
             ref={schemaMetadataRef}
             pageBack={pageBack}
-            pageForward={handleNextFromMetadata}
+            pageForward={pageForward}
             showIntroCard={showIntroCard}
             setShowIntroCard={setShowIntroCard}
           />
         )}
-  // DRY handler for NEXT from SchemaMetadata (and can be reused for BACK if needed)
-  function handleNextFromMetadata() {
-    if (schemaMetadataRef.current && typeof schemaMetadataRef.current.validateSchemaMetadata === "function") {
-      const errors = schemaMetadataRef.current.validateSchemaMetadata();
-      if (errors.length > 0) {
-        setValidationErrors(errors);
-        setShowValidationPopup(true);
-        setPendingTargetPage(null); // Don't navigate, just show error
-        return;
-      }
-    }
-    // If validation passes, go to next step
-    pageForward();
-  }
         {currentPage === "Details" && (
           <AttributeDetails
             ref={attributeDetailsRef}

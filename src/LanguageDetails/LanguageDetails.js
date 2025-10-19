@@ -57,7 +57,6 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
 
   // Reset global language-dependent data when switching schemas to avoid stale rows from previous schema
   useEffect(() => {
-    const effectiveId = currentSchemaId || "temp-schema";
     setLanAttributeRowData({});
   }, [currentSchemaId, setLanAttributeRowData]);
 
