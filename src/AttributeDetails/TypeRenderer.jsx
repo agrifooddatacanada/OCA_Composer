@@ -12,14 +12,14 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs }) => {
     { value: "Boolean", label: "Boolean" },
     { value: "DateTime", label: "DateTime" },
     { value: "Numeric", label: "Numeric" },
-    { value: "Child Schema", label: "Child Schema" },
+    // { value: "Child Schema", label: "Child Schema" },
     { value: "Text", label: "Text" },
     { value: "Array[Binary]", label: "Array[Binaryfile]" },
     { value: "Array[Boolean]", label: "Array[Boolean]" },
     { value: "Array[DateTime]", label: "Array[DateTime]" },
     { value: "Array[Numeric]", label: "Array[Numeric]" },
     { value: "Array[Text]", label: "Array[Text]" },
-    { value: "Array[Child Schema]", label: "Array[Child Schema]" }
+    // { value: "Array[Child Schema]", label: "Array[Child Schema]" }
   ];
 
   const attributeName = data.Attribute;
