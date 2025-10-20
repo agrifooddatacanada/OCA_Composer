@@ -13,10 +13,25 @@ import {
   formatCodeDateDescription,
   formatCodeNumericDescription,
   formatCodeTextDescription,
-  ALLOWED_BOOLEAN_VALUES,
   MAX_ATTR_LABEL_CHARS
 } from "../../../constants/constants";
 import { getDateTimePickerConfig } from "../utils/getDateTimePickerConfig";
+
+// Boolean value pairs for form inputs
+const BOOLEAN_VALUE_PAIRS = [
+  { id: "true-false", label: "True / False", trueValue: "True", falseValue: "False" },
+  { id: "true-false-lower", label: "true / false", trueValue: "true", falseValue: "false" },
+  { id: "true-false-upper", label: "TRUE / FALSE", trueValue: "TRUE", falseValue: "FALSE" },
+  { id: "t-f", label: "T / F", trueValue: "T", falseValue: "F" },
+  { id: "yes-no", label: "Yes / No", trueValue: "Yes", falseValue: "No" },
+  { id: "yes-no-lower", label: "yes / no", trueValue: "yes", falseValue: "no" },
+  { id: "yes-no-upper", label: "YES / NO", trueValue: "YES", falseValue: "NO" },
+  { id: "y-n", label: "Y / N", trueValue: "Y", falseValue: "N" },
+  { id: "1-0", label: "1 / 0", trueValue: "1", falseValue: "0" },
+  { id: "1.0-0.0", label: "1.0 / 0.0", trueValue: "1.0", falseValue: "0.0" },
+  { id: "oui-non", label: "Oui / Non (French)", trueValue: "Oui", falseValue: "Non" },
+  { id: "oui-non-lower", label: "oui / non (French)", trueValue: "oui", falseValue: "non" }
+];
 
 const findDescription = (formatText, attributeType) => {
   if (!formatText) return "";
@@ -67,6 +82,21 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
         // Use existing placeholder or DateTime default
         defaultPlaceholder[lang] = question.placeholder?.[lang] || (isDateTimeType ? dateTimeDefaultPlaceholder : '');
       });
+      
+      let booleanPairId = question.booleanPairId || 'true-false';
+      let booleanPairIds = question.booleanPairIds || ['true-false'];
+      
+      if (question.booleanValues && question.booleanValues.length === 2 && !question.booleanPairId) {
+        const [val1, val2] = question.booleanValues;
+        const matchingPair = BOOLEAN_VALUE_PAIRS.find(
+          pair => (pair.trueValue === val1 && pair.falseValue === val2) || 
+                  (pair.falseValue === val1 && pair.trueValue === val2)
+        );
+        if (matchingPair) {
+          booleanPairId = matchingPair.id;
+        }
+      }
+      
       setFormData({ 
         title: defaultTitle,
         placeholder: defaultPlaceholder,
@@ -74,7 +104,9 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
         attributeType: question.attributeType || '', 
         attribute: question.attribute || '',
         required: question.required || false, 
-        options: question.options || [], 
+        options: question.options || [],
+        booleanPairId,
+        booleanPairIds,
         ...question 
       }); 
     }
@@ -205,90 +237,83 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
               </Typography>
               <Typography variant="caption" sx={{ color: CustomPalette.GREY_600, display: 'block', mb: 2 }}>
                 {formData.attributeType === 'Boolean' 
-                  ? t("Select any two values from the allowed boolean values") 
-                  : t("Select which boolean values to show as options")}
+                  ? t("Select a pair of boolean values for true/false options") 
+                  : t("Select which boolean value pairs to show as options")}
               </Typography>
               
               {formData.attributeType === 'Boolean' ? (
-                // For Boolean: Select exactly 2 values
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>{t("First Option")}</InputLabel>
-                    <Select
-                      value={formData.booleanValues?.[0] || 'True'}
-                      label={t("First Option")}
-                      onChange={(e) => {
-                        const newValues = formData.booleanValues ? [...formData.booleanValues] : ['True', 'False'];
-                        newValues[0] = e.target.value;
-                        setFormData(prev => ({ ...prev, booleanValues: newValues }));
-                      }}
-                    >
-                      {ALLOWED_BOOLEAN_VALUES.map((value) => (
-                        <MenuItem 
-                          key={value} 
-                          value={value}
-                          disabled={formData.booleanValues?.[1] === value}
-                        >
-                          {value}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  
-                  <FormControl fullWidth size="small">
-                    <InputLabel>{t("Second Option")}</InputLabel>
-                    <Select
-                      value={formData.booleanValues?.[1] || 'False'}
-                      label={t("Second Option")}
-                      onChange={(e) => {
-                        const newValues = formData.booleanValues ? [...formData.booleanValues] : ['True', 'False'];
-                        newValues[1] = e.target.value;
-                        setFormData(prev => ({ ...prev, booleanValues: newValues }));
-                      }}
-                    >
-                      {ALLOWED_BOOLEAN_VALUES.map((value) => (
-                        <MenuItem 
-                          key={value} 
-                          value={value}
-                          disabled={formData.booleanValues?.[0] === value}
-                        >
-                          {value}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
+                // For Boolean: Select one pair
+                <FormControl fullWidth size="small">
+                  <InputLabel>{t("Select Boolean Pair")}</InputLabel>
+                  <Select
+                    value={formData.booleanPairId || 'true-false'}
+                    label={t("Select Boolean Pair")}
+                    onChange={(e) => {
+                      const selectedPair = BOOLEAN_VALUE_PAIRS.find(pair => pair.id === e.target.value);
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        booleanPairId: e.target.value,
+                        booleanValues: [selectedPair.trueValue, selectedPair.falseValue]
+                      }));
+                    }}
+                  >
+                    {BOOLEAN_VALUE_PAIRS.map((pair) => (
+                      <MenuItem key={pair.id} value={pair.id}>
+                        {pair.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               ) : (
-                // For Array[Boolean]: Select multiple values
+                // For Array[Boolean]: Select multiple pairs
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {ALLOWED_BOOLEAN_VALUES.map((value) => (
-                    <FormControlLabel
-                      key={value}
-                      control={
-                        <Checkbox
-                          checked={formData.booleanValues ? formData.booleanValues.includes(value) : ['True', 'False', 'Yes', 'No', '1', '0'].includes(value)}
-                          onChange={(e) => {
-                            const currentValues = formData.booleanValues || ['True', 'False', 'Yes', 'No', '1', '0'];
-                            const newValues = e.target.checked 
-                              ? [...currentValues, value]
-                              : currentValues.filter(v => v !== value);
-                            setFormData(prev => ({ ...prev, booleanValues: newValues }));
-                          }}
-                          sx={{
-                            color: CustomPalette.PRIMARY,
-                            '&.Mui-checked': {
-                              color: CustomPalette.PRIMARY
-                            }
-                          }}
-                        />
-                      }
-                      label={
-                        <Typography variant="body2">
-                          {value}
-                        </Typography>
-                      }
-                    />
-                  ))}
+                  {BOOLEAN_VALUE_PAIRS.map((pair) => {
+                    const isChecked = formData.booleanPairIds ? formData.booleanPairIds.includes(pair.id) : pair.id === 'true-false';
+                    return (
+                      <FormControlLabel
+                        key={pair.id}
+                        control={
+                          <Checkbox
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const currentPairIds = formData.booleanPairIds || ['true-false'];
+                              let newPairIds;
+                              if (e.target.checked) {
+                                newPairIds = [...currentPairIds, pair.id];
+                              } else {
+                                newPairIds = currentPairIds.filter(id => id !== pair.id);
+                                if (newPairIds.length === 0) {
+                                  newPairIds = ['true-false'];
+                                }
+                              }
+                              
+                              const allValues = newPairIds.flatMap(pairId => {
+                                const p = BOOLEAN_VALUE_PAIRS.find(bp => bp.id === pairId);
+                                return [p.trueValue, p.falseValue];
+                              });
+                              
+                              setFormData(prev => ({ 
+                                ...prev, 
+                                booleanPairIds: newPairIds,
+                                booleanValues: allValues
+                              }));
+                            }}
+                            sx={{
+                              color: CustomPalette.PRIMARY,
+                              '&.Mui-checked': {
+                                color: CustomPalette.PRIMARY
+                              }
+                            }}
+                          />
+                        }
+                        label={
+                          <Typography variant="body2">
+                            {pair.label}
+                          </Typography>
+                        }
+                      />
+                    );
+                  })}
                 </Box>
               )}
             </Box>
