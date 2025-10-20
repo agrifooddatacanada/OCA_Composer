@@ -1,11 +1,25 @@
+import React, { useContext } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Box, Button } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CustomPalette } from "../constants/customPalette";
-import { useTranslation } from "react-i18next";
+import { Context } from "../App";
 
-const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForward = false, pageForward, children, backText = 'Back', middleText, nextText = 'Next' }) => {
+const BackNextSkeleton = ({
+  errorMessage = "",
+  isBack = false,
+  pageBack,
+  isForward = false,
+  pageForward,
+  children,
+  backText = "Back",
+  middleText,
+  nextText = "Next",
+  disableForward = false
+}) => {
   const { t } = useTranslation();
+  const { currentTheme } = useContext(Context);
   return (
     <Box>
       <Box
@@ -17,46 +31,63 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
           margin: "auto",
           pr: 10,
           pl: 10,
-          marginTop: 2,
+          marginTop: 2
         }}
       >
         <Box
           sx={{
             width: "100%",
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "space-between"
           }}
         >
-          {isBack ? <Button
-            color="navButton"
-            sx={{ textAlign: "left", alignSelf: "flex-start" }}
-            onClick={pageBack}
-          >
-            <ArrowBackIosIcon /> {t(backText)}
-          </Button> : <Box />}
-          {middleText && <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: CustomPalette.GREY_200,
-
-              marginLeft: "2rem",
-              marginRight: "2rem",
-              paddingLeft: "1rem",
-              paddingRight: "1rem",
-            }}
-          >
-            <p>{middleText}</p>
-          </Box>}
-          <Box>
-            {isForward && <Button
+          {isBack ? (
+            <Button
               color="navButton"
-              onClick={pageForward}
-              sx={{ color: CustomPalette.PRIMARY }}
+              sx={{
+                textAlign: "left",
+                alignSelf: "flex-start",
+                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}
+              onClick={pageBack}
             >
-              {t(nextText)} <ArrowForwardIosIcon />
-            </Button>}
+              <ArrowBackIosIcon /> {t(backText)}
+            </Button>
+          ) : (
+            <Box />
+          )}
+          {middleText && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: CustomPalette.GREY_200,
+
+                marginLeft: "2rem",
+                marginRight: "2rem",
+                paddingLeft: "1rem",
+                paddingRight: "1rem"
+              }}
+            >
+              <p>{middleText}</p>
+            </Box>
+          )}
+          <Box>
+            {isForward && (
+              <Button
+                color="navButton"
+                onClick={pageForward}
+                disabled={disableForward}
+                sx={{
+                  color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                }}
+              >
+                {t(nextText)} <ArrowForwardIosIcon />
+              </Button>
+            )}
             {errorMessage.length > 0 && (
               <Alert
                 severity="error"
@@ -64,7 +95,7 @@ const BackNextSkeleton = ({ errorMessage = '', isBack = false, pageBack, isForwa
                   position: "absolute",
                   zIndex: 9999,
                   right: "20%",
-                  transform: "translateY(-90%)",
+                  transform: "translateY(-90%)"
                 }}
               >
                 {errorMessage}

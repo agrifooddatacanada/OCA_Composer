@@ -4,7 +4,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { styled } from "@mui/material/styles";
 import Popper from "@mui/material/Popper";
 
-const CustomPopper = styled(Popper)(({ theme }) => ({ width: "100%" }));
+const CustomPopper = styled(Popper)(() => ({ width: "100%" }));
 
 const AutoCompleteEditor = forwardRef((props, ref) => {
   const inputRef = useRef(props.value);

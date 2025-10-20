@@ -82,7 +82,9 @@ export default function LanguageSelection({
 
     // quotes at start or end of language name can create export errors
     if (
+      // eslint-disable-next-line quotes
       languageToAdd.startsWith('"') ||
+      // eslint-disable-next-line quotes
       languageToAdd.endsWith('"') ||
       languageToAdd.startsWith("'") ||
       languageToAdd.endsWith("'") ||

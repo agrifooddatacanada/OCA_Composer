@@ -1,9 +1,8 @@
 import React, { useRef, useState, useEffect, createContext } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ReactGA from "react-ga4";
-import { Box, ThemeProvider } from "@mui/material";
+import { Box, createTheme, ThemeProvider } from "@mui/material";
 import "./App.css";
-import { CustomTheme } from "./constants/theme";
 import Home from "./Home";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import getListOfSelectedOverlays from "./constants/getListOfSelectedOverlays";
@@ -13,6 +12,8 @@ import OCADataValidator from "./OCADataValidator/OCADataValidator";
 import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
+import { getCurrentTheme } from "./utils/themeDetector";
+import { CustomPalette } from "./constants/customPalette";
 // import Tutorial from "./Tutorial/Tutorial";
 import useUnitFramingUpdater from "./hooks/useUnitFramingUpdater";
 import {
@@ -32,6 +33,8 @@ import {
   hasUnitFramingOverlay,
   hasAttributeFramingOverlay
 } from "./constants/utils";
+
+// import { environVariables } from "./components/environmentConfig";
 
 export const Context = createContext();
 
@@ -162,6 +165,30 @@ function App() {
   // Ordering extension overlay for OCA package
   const [OCAPackage, setOCAPackage] = useState(null);
 
+  // Theme state
+  const [currentTheme, setCurrentTheme] = useState(getCurrentTheme());
+
+  // Custom theme for the MUI components like buttons, etc.
+  const customTheme = createTheme({
+    status: {
+      danger: "#e53e3e"
+    },
+    palette: {
+      button: {
+        light: CustomPalette.DARK,
+        main: currentTheme?.buttonStyles?.primary ?? CustomPalette.PRIMARY,
+        dark: currentTheme?.buttonStyles?.secondary ?? CustomPalette.SECONDARY,
+        contrastText: currentTheme?.buttonStyles?.contrastText ?? CustomPalette.WHITE
+      },
+      navButton: {
+        light: CustomPalette.DARK,
+        main: currentTheme?.buttonStyles?.primary ?? CustomPalette.PRIMARY,
+        dark: currentTheme?.buttonStyles?.secondary ?? CustomPalette.SECONDARY,
+        contrastText: currentTheme?.buttonStyles?.contrastText ?? CustomPalette.WHITE
+      }
+    }
+  });
+
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
     if (currentIndex >= 0 && currentIndex < pagesArray.length - 1) {
@@ -179,6 +206,15 @@ function App() {
       setHistory((prev) => prev.slice(0, prev.length - 1));
     }
   };
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setCurrentTheme(getCurrentTheme());
+    };
+
+    window.addEventListener("popstate", handleThemeChange);
+    return () => window.removeEventListener("popstate", handleThemeChange);
+  }, []);
 
   useEffect(() => {
     if (
@@ -511,7 +547,7 @@ function App() {
   useEffect(() => {
     if (jsonRawFile.length > 0) {
       const newMatchingRowData = [];
-      attributesList.forEach((item, index) => {
+      attributesList.forEach((item) => {
         // if matchingRowData has data, use it
         const matchingRow = matchingRowData.find((obj) => obj.Attribute === item);
         const newObj = {
@@ -522,7 +558,9 @@ function App() {
           newObj.Dataset = matchingRow.Dataset;
         }
         languages.forEach((lang) => {
-          newObj[lang] = lanAttributeRowData?.[lang]?.[index]?.Label;
+          const languageRows = lanAttributeRowData?.[lang] || [];
+          const matchingLangRow = languageRows.find((row) => row?.Attribute === item);
+          newObj[lang] = matchingLangRow?.Label || "";
         });
         newMatchingRowData.push(newObj);
       });
@@ -602,9 +640,44 @@ function App() {
     setOCAPackage(null);
   }, [fileData, jsonRawFile]);
 
+  // Add state for environmental variables
+  // const [env, setEnv] = useState(environVariables);
+
+  // Function to handle file download
+  // const handleDownload = () => {
+  //   const textData = "sampleText file";
+  //   const blob = new Blob([textData], { type: "text/plain" });
+  //   const url = window.URL.createObjectURL(blob);
+  //   const link = document.createElement("a");
+  //   link.href = url;
+  //   link.download = "sample.txt";
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  //   window.URL.revokeObjectURL(url);
+  // };
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      // console.log("React: Received message from R Shiny:", {
+      //   origin: event.origin,
+      //   data: event.data
+      // });
+
+      if (event.data?.schema && event.data?.data) {
+        console.log("React: Processing schema data");
+        setJsonRawFile(event.data.data);
+        setJsonIsParsed(true);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
   return (
     <div className="App">
-      <ThemeProvider theme={CustomTheme}>
+      <ThemeProvider theme={customTheme}>
         <Context.Provider
           // eslint-disable-next-line react/jsx-no-constructed-context-values
           value={{
@@ -722,6 +795,9 @@ function App() {
             setNotToVerifyAttributes,
             OCAPackage,
             setOCAPackage,
+            currentTheme,
+            setCurrentTheme,
+
             rangeRowData,
             setRangeRowData,
             unitRowData,
