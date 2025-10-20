@@ -57,15 +57,30 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
     >
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DragIcon sx={{ color: CustomPalette.PRIMARY }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800 }}>{getSectionTitle()}</Typography>
-          <Box sx={{ flexGrow: 1 }} />
-          <IconButton size="small" onClick={() => onEdit(section, index, pageIndex)} sx={{ color: CustomPalette.GREY_600 }}>
-            <EditIcon />
-          </IconButton>
-          <IconButton size="small" onClick={() => onDelete(index, pageIndex)} sx={{ color: CustomPalette.SECONDARY }}>
-            <DeleteIcon />
-          </IconButton>
+          <DragIcon sx={{ color: CustomPalette.PRIMARY, flexShrink: 0 }} />
+          <Typography 
+            variant="subtitle1" 
+            sx={{ 
+              fontWeight: 'bold', 
+              color: CustomPalette.GREY_800,
+              flexGrow: 1,
+              minWidth: 0,
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'normal',
+              lineHeight: 1.4
+            }}
+          >
+            {getSectionTitle()}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+            <IconButton size="small" onClick={() => onEdit(section, index, pageIndex)} sx={{ color: CustomPalette.GREY_600 }}>
+              <EditIcon />
+            </IconButton>
+            <IconButton size="small" onClick={() => onDelete(index, pageIndex)} sx={{ color: CustomPalette.SECONDARY }}>
+              <DeleteIcon />
+            </IconButton>
+          </Box>
         </Box>
 
         <Box sx={{ mt: 1 }}>

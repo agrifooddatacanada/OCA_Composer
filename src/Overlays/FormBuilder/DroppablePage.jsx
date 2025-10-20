@@ -96,13 +96,21 @@ const DroppablePage = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            mb: 2
+            mb: 2,
+            gap: 1
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexGrow: 1, minWidth: 0 }}>
             <Typography
               variant="h5"
-              sx={{ fontWeight: "bold", color: CustomPalette.GREY_800 }}
+              sx={{ 
+                fontWeight: "bold", 
+                color: CustomPalette.GREY_800,
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                whiteSpace: 'normal',
+                lineHeight: 1.4
+              }}
             >
               {getPageTitle()}
             </Typography>
@@ -111,11 +119,12 @@ const DroppablePage = ({
               size="small"
               sx={{
                 backgroundColor: CustomPalette.PINK_200,
-                color: CustomPalette.GREY_800
+                color: CustomPalette.GREY_800,
+                flexShrink: 0
               }}
             />
           </Box>
-          <Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
             <IconButton
               size="small"
               onClick={() => onEditPage(page, pageIndex)}

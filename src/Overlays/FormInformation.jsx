@@ -14,7 +14,8 @@ import {
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
-  formatCodeTextDescription
+  formatCodeTextDescription,
+  MAX_ATTR_LABEL_CHARS
 } from "../constants/constants";
 import { FIELD_FORM_INFORMATION_OVERLAY } from "../constants/constants";
 import { getDateTimePickerConfig } from "./FormBuilder/utils/getDateTimePickerConfig";
@@ -390,10 +391,10 @@ const FormInformation = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Label"),
-          constraint: t("max 100 chars"),
+          constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
           helpText: t("This is the language specific label for an attribute")
         },
-        cellEditorParams: { maxLength: 100 }
+        cellEditorParams: { maxLength: MAX_ATTR_LABEL_CHARS }
       },
       {
         field: "Placeholder",
@@ -414,12 +415,12 @@ const FormInformation = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Placeholder"),
-          constraint: t("max 100 chars"),
+          constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
           helpText: t(
             "Shown to users in forms. Available for Text, Array[Text], DateTime, Array[DateTime], Numeric, and Array[Numeric] types."
           )
         },
-        cellEditorParams: { maxLength: 100 },
+        cellEditorParams: { maxLength: MAX_ATTR_LABEL_CHARS },
         valueSetter: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";

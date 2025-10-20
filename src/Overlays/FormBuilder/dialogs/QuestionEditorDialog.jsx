@@ -13,7 +13,8 @@ import {
   formatCodeDateDescription,
   formatCodeNumericDescription,
   formatCodeTextDescription,
-  ALLOWED_BOOLEAN_VALUES
+  ALLOWED_BOOLEAN_VALUES,
+  MAX_ATTR_LABEL_CHARS
 } from "../../../constants/constants";
 import { getDateTimePickerConfig } from "../utils/getDateTimePickerConfig";
 
@@ -311,6 +312,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
                 onChange={(e) => handleFieldChange(lang, 'title', e.target.value)} 
                 fullWidth 
                 size="small"
+                inputProps={{ maxLength: MAX_ATTR_LABEL_CHARS }}
                 // helperText={t("Question label for this language")}
               />
               
@@ -321,6 +323,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
                   onChange={(e) => handleFieldChange(lang, 'placeholder', e.target.value)} 
                   fullWidth 
                   size="small"
+                  inputProps={{ maxLength: MAX_ATTR_LABEL_CHARS }}
                   helperText={
                     (formData.attributeType === "DateTime" || formData.attributeType === "Array[DateTime]")
                       ? t("Example format to show in the date field")

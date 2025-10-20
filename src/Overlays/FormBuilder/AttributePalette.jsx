@@ -37,8 +37,34 @@ const DraggablePaletteItem = ({ attribute, labels, type, attributeType, placehol
       }}
     >
       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, color: CustomPalette.GREY_800 }}>{displayLabel}</Typography>
-        {displayLabel !== attribute && (<Typography variant="caption" sx={{ color: CustomPalette.GREY_600 }}>{attribute}</Typography>)}
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            fontWeight: 600, 
+            color: CustomPalette.GREY_800,
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+            whiteSpace: 'normal',
+            lineHeight: 1.4
+          }}
+        >
+          {displayLabel}
+        </Typography>
+        {displayLabel !== attribute && (
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              color: CustomPalette.GREY_600,
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'normal',
+              display: 'block',
+              lineHeight: 1.4
+            }}
+          >
+            {attribute}
+          </Typography>
+        )}
       </CardContent>
     </Card>
   );

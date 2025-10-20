@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Box, Button, TextField, Typography, Divider } from "@mui/material";
 import { CustomPalette } from "../../../constants/customPalette";
 import { useTranslation } from "react-i18next";
+import { MAX_ATTR_LABEL_CHARS, MAX_ATTR_DESCRIPTION_CHARS } from "../../../constants/constants";
 
 const PageEditorDialog = ({ open, onClose, page, onSave, languages = ['English'] }) => {
   const { t } = useTranslation();
@@ -59,6 +60,7 @@ const PageEditorDialog = ({ open, onClose, page, onSave, languages = ['English']
                 onChange={(e) => handleLabelChange(lang, 'labels', e.target.value)} 
                 fullWidth 
                 size="small"
+                inputProps={{ maxLength: MAX_ATTR_LABEL_CHARS }}
                 // helperText={t("Full page label with page number")}
               />
               
@@ -68,6 +70,7 @@ const PageEditorDialog = ({ open, onClose, page, onSave, languages = ['English']
                 onChange={(e) => handleLabelChange(lang, 'sidebarLabels', e.target.value)} 
                 fullWidth 
                 size="small"
+                inputProps={{ maxLength: MAX_ATTR_LABEL_CHARS }}
                 // helperText={t("Short label for sidebar navigation")}
               />
               
@@ -79,6 +82,7 @@ const PageEditorDialog = ({ open, onClose, page, onSave, languages = ['English']
                 size="small"
                 multiline
                 rows={2}
+                inputProps={{ maxLength: MAX_ATTR_DESCRIPTION_CHARS }}
                 // helperText={t("Descriptive description text")}
               />
             </Box>

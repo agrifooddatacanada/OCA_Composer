@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Box, Button, TextField, Typography, Divider } from "@mui/material";
 import { CustomPalette } from "../../../constants/customPalette";
 import { useTranslation } from "react-i18next";
+import { MAX_ATTR_LABEL_CHARS, MAX_ATTR_DESCRIPTION_CHARS } from "../../../constants/constants";
 
 const SectionEditorDialog = ({ open, onClose, section, onSave, languages = ['English'] }) => {
   const { t } = useTranslation();
@@ -55,6 +56,7 @@ const SectionEditorDialog = ({ open, onClose, section, onSave, languages = ['Eng
                 onChange={(e) => handleLabelChange(lang, 'labels', e.target.value)} 
                 fullWidth 
                 size="small"
+                inputProps={{ maxLength: MAX_ATTR_LABEL_CHARS }}
                 // helperText={t("Section label for this language")}
               />
               
@@ -66,6 +68,7 @@ const SectionEditorDialog = ({ open, onClose, section, onSave, languages = ['Eng
                 size="small"
                 multiline
                 rows={2}
+                inputProps={{ maxLength: MAX_ATTR_DESCRIPTION_CHARS }}
                 // helperText={t("Descriptive description text")}
               />
             </Box>

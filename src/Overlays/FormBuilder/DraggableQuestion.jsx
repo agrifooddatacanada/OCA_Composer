@@ -74,29 +74,43 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
     >
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-          <DragIcon sx={{ color: CustomPalette.GREY_600, mt: 0.5 }} />
-          <Box sx={{ flexGrow: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800, flexGrow: 1 }}>
-                {getQuestionTitle()}
-              </Typography>
-              <IconButton 
-                size="small" 
-                onClick={() => setExpanded(!expanded)}
+          <DragIcon sx={{ color: CustomPalette.GREY_600, mt: 0.5, flexShrink: 0 }} />
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.5 }}>
+              <Typography 
+                variant="subtitle1" 
                 sx={{ 
-                  color: CustomPalette.GREY_600,
-                  transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.3s'
+                  fontWeight: 'bold', 
+                  color: CustomPalette.GREY_800, 
+                  flexGrow: 1,
+                  minWidth: 0,
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  whiteSpace: 'normal',
+                  lineHeight: 1.4
                 }}
               >
-                <ExpandMoreIcon fontSize="small" />
-              </IconButton>
-              <IconButton size="small" onClick={() => onEdit(question, index, pageIndex, sectionIndex)} sx={{ color: CustomPalette.GREY_600 }}>
-                <EditIcon fontSize="small" />
-              </IconButton>
-              <IconButton size="small" onClick={() => onDelete(index, pageIndex, sectionIndex)} sx={{ color: CustomPalette.SECONDARY }}>
-                <DeleteIcon fontSize="small" />
-              </IconButton>
+                {getQuestionTitle()}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                <IconButton 
+                  size="small" 
+                  onClick={() => setExpanded(!expanded)}
+                  sx={{ 
+                    color: CustomPalette.GREY_600,
+                    transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.3s'
+                  }}
+                >
+                  <ExpandMoreIcon fontSize="small" />
+                </IconButton>
+                <IconButton size="small" onClick={() => onEdit(question, index, pageIndex, sectionIndex)} sx={{ color: CustomPalette.GREY_600 }}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton size="small" onClick={() => onDelete(index, pageIndex, sectionIndex)} sx={{ color: CustomPalette.SECONDARY }}>
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
             </Box>
             <Typography variant="body2" sx={{ color: CustomPalette.GREY_600, mb: 1 }}>
               {formatRuleDescription || question.attributeType || 'No format rule'}
