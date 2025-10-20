@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
-import { languageCodesObject } from "../constants/isoCodes";
+import { languageCodesObject, languageNameToAlpha3Codes } from "../constants/isoCodes";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -509,15 +509,20 @@ const useExportLogicV2 = () => {
         ...(overlay[FIELD_FORM_INFORMATION_OVERLAY].selected &&
           formBuilderPages &&
           formBuilderPages.length > 0 && (() => {
-            // Create schemaName object from schemaDescription
+            const threeLetterCodes = languages.map(lang => 
+              languageNameToAlpha3Codes[lang.toLowerCase()] || lang
+            );
+            
             const schemaName = {};
-            languages.forEach(lang => {
-              schemaName[lang] = schemaDescription[lang]?.name || '';
+            languages.forEach((lang, index) => {
+              const threeLetterCode = threeLetterCodes[index];
+              schemaName[threeLetterCode] = schemaDescription[lang]?.name || '';
             });
+            
             return {
               form_information_overlay: {
                 type: FORM_INFORMATION,
-                ...convertToFormInformationOverlay(formBuilderPages, languages, schemaName)
+                ...convertToFormInformationOverlay(formBuilderPages, threeLetterCodes, schemaName)
               }
             };
           })())

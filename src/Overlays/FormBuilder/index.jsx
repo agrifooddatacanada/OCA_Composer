@@ -9,7 +9,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuidv4 } from 'uuid';
-import { codesToLanguages } from "../../constants/isoCodes";
+import { codesToLanguages, languageNameToAlpha3Codes } from "../../constants/isoCodes";
 import i18next from "i18next";
 
 import AttributePalette from "./AttributePalette";
@@ -345,12 +345,17 @@ const FormBuilder = () => {
     // Convert pages to form information format
     const formData = convertToFormInformation(pages);
     
+    const threeLetterCodes = languages.map(lang => 
+      languageNameToAlpha3Codes[lang.toLowerCase()] || lang
+    );
+    
     const schemaName = {};
-    languages.forEach(lang => {
-      schemaName[lang] = schemaDescription[lang]?.name || '';
+    languages.forEach((lang, index) => {
+      const threeLetterCode = threeLetterCodes[index];
+      schemaName[threeLetterCode] = schemaDescription[lang]?.name || '';
     });
     
-    const formDataOverlay = convertToFormInformationOverlay(pages, languages, schemaName);
+    const formDataOverlay = convertToFormInformationOverlay(pages, threeLetterCodes, schemaName);
     console.log(formDataOverlay);
     setFormInformationRowData(formData);
     
