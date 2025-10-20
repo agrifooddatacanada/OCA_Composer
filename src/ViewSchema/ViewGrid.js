@@ -286,14 +286,15 @@ export default function ViewGrid({ displayArray, currentLanguage, setLoading }) 
         } else if (feature === FIELD_FORM_INFORMATION_OVERLAY) {
           predefinedColumns.push({
             field: "Add Form Information",
-            headerName: `${t("Placeholder")} (${currentLanguage || ""})`,
-            width: 200,
+            headerName: t("Form"),
+            width: 98,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {
-              headerText: t("Placeholder"),
-              helpText: t("Shown to users in forms when expecting free text input")
-            }
+              headerText: t("Form"),
+              helpText: t("Indicates whether this attribute is included in the form")
+            },
+            cellRenderer: CheckboxRenderer
           });
         } else {
           predefinedColumns.push({
