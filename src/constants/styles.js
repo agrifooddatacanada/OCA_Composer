@@ -47,4 +47,12 @@ export const gridStyles = `
 .ag-center-cols-clipper {
   min-height: unset !important;
 }
+
+.ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) {
+  min-height: 100px !important;
+}
+
+.ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
+  min-height: 100px !important;
+}
 `;
