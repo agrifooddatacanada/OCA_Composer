@@ -399,7 +399,8 @@ export default function ViewSchema({
     i18next.language,
     getSchemaState,
     filteredLanguages,
-    schemaStates // Add this to ensure updates when schema state changes
+    schemaStates, // Ensure updates when schema state changes
+    getSchemaState(currentSchemaId)?.formatRuleData // Explicitly watch formatRuleData changes
   ]);
 
   if (loading) {

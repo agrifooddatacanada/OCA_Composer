@@ -71,9 +71,13 @@ export const FormatRuleTypeRenderer = memo(
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const hasCustomFormatRule = Boolean(props.node.data[CUSTOM_FORMAT_RULE]);
 
-    const handleClick = () => {
-      if (hasCustomFormatRule) return;
-      setIsDropdownOpen(!isDropdownOpen);
+    const handleClick = (e) => {
+      // If custom format rule exists, prevent the dropdown from opening
+      if (hasCustomFormatRule) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      // Otherwise, do nothing - let Material UI's onOpen/onClose handle the state
     };
 
     const findCode = (value) =>
@@ -92,7 +96,9 @@ export const FormatRuleTypeRenderer = memo(
         ...props.node.data,
         "Format Rule": findCode(e.target.value)
       });
+      // Close dropdown immediately
       setIsDropdownOpen(false);
+      // Save to context
       props.onRefresh();
     };
 

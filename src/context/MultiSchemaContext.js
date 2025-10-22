@@ -196,20 +196,21 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       // If no schemaId provided, use manual creation schema
       const targetId = schemaId || MANUAL_CREATION_SCHEMA_ID;
       
-      const currentState = getSchemaState(targetId);
-      
       setSchemaStates((prev) => {
-        const newState = {
+        // CRITICAL: Use prev (latest state) instead of getSchemaState (potentially stale)
+        // This prevents race conditions when multiple components update state simultaneously
+        const currentState = prev[targetId] || createDefaultSchemaState();
+        
+        return {
           ...prev,
           [targetId]: {
             ...currentState,
             ...updates
           }
         };
-        return newState;
       });
     },
-    [getSchemaState]
+    [] // No dependencies needed - using functional setState
   );
 
   // Get current working schema ID (with fallback to temp)

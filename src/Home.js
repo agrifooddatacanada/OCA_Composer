@@ -165,6 +165,19 @@ const Home = ({
   const attributeDetailsRef = useRef(null);
   const languageDetailsRef = useRef(null);
   const schemaMetadataRef = useRef(null);
+  const formatRulesRef = useRef(null);
+
+  // List of overlay pages that use AG Grid and need their data saved on navigation
+  const overlayPagesWithGrids = [
+    "FormatRules",
+    "Cardinality", 
+    "Range",
+    "UnitFraming",
+    "DataStandards",
+    "AttributeFraming",
+    "CharacterEncoding",
+    "RequiredEntries"
+  ];
 
   const handleStepClick = (index) => {
     const target = steps[index];
@@ -210,6 +223,13 @@ const Home = ({
         typeof languageDetailsRef.current.save === "function"
       ) {
         languageDetailsRef.current.save();
+      }
+
+      // Save overlay data when navigating away from overlay pages with grids
+      // All overlays use unmount effects for saving, so they auto-save on navigation
+      // FormatRules has an exposed save method for immediate save if needed
+      if (currentPage === "FormatRules" && formatRulesRef.current && typeof formatRulesRef.current.save === "function") {
+        formatRulesRef.current.save();
       }
 
       setCurrentPage(target.page);
@@ -352,7 +372,7 @@ const Home = ({
         {currentPage === "DataStandards" && <DataStandards />}
         {currentPage === "Range" && <Range />}
         {currentPage === "AttributeFraming" && <AttributeFraming />}
-        {currentPage === "FormatRules" && <FormatRuleV2 />}
+        {currentPage === "FormatRules" && <FormatRuleV2 ref={formatRulesRef} />}
       </Box>
       <Footer />
     </>

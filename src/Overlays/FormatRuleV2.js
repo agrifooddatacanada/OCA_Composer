@@ -1,5 +1,5 @@
 import { Box, Link } from "@mui/material";
-import React, { useCallback, useContext, useMemo, useRef, useState, useEffect } from "react";
+import React, { useCallback, useContext, useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
@@ -23,7 +23,7 @@ const allowOverflowStyle = {
   overflow: "auto"
 };
 
-const FormatRulesV2 = () => {
+const FormatRulesV2 = forwardRef((props, ref) => {
   const { t } = useTranslation();
   const {
     setCurrentPage
@@ -48,18 +48,21 @@ const FormatRulesV2 = () => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
+  const [gridRowData, setGridRowData] = useState([]);
   
-  // Get format rule data from schema state
-  const formatRuleRowData = useMemo(() => {
-    if (!schemaState?.attributes) return [];
-    
+  // Initialize grid data ONCE when schema loads
+  useEffect(() => {
+    if (!schemaState?.attributes) {
+      setGridRowData([]);
+      return;
+    }
+
     // Get existing format rules from formatRuleData or initialize from attributes
     const existingFormatRules = schemaState.formatRuleData || [];
     const existingRulesMap = new Map(existingFormatRules.map(rule => [rule.Attribute, rule]));
-    
-    return schemaState.attributes.map(attr => {
+
+    const initialData = schemaState.attributes.map(attr => {
       const existingRule = existingRulesMap.get(attr.Attribute);
-      // Always merge with current attribute data to ensure Type is present
       return {
         Attribute: attr.Attribute,
         Type: attr.Type || "Text",
@@ -67,7 +70,9 @@ const FormatRulesV2 = () => {
         [CUSTOM_FORMAT_RULE]: existingRule?.[CUSTOM_FORMAT_RULE] || ""
       };
     });
-  }, [schemaState?.attributes, schemaState?.formatRuleData]);
+
+    setGridRowData(initialData);
+  }, [schemaState?.attributes, currentSchemaId]); // Only re-init when attributes change, NOT when formatRuleData changes
   
   const rangeRowData = useMemo(() => 
     schemaState?.rangeData || []
@@ -90,7 +95,9 @@ const FormatRulesV2 = () => {
   }, [schemaState]);
 
   const handleSave = useCallback(() => {
-    if (!gridRef.current) return;
+    if (!gridRef.current) {
+      return;
+    }
     
     gridRef.current.api.stopEditing();
     const newFormatRuleRowData = gridRef.current.api
@@ -149,23 +156,27 @@ const FormatRulesV2 = () => {
     setCurrentPage("Overlays");
   }, [handleSave, setSelectedOverlay, currentSchemaId, setCurrentPage]);
 
+  // Expose save method to parent (Home) for navigation handling
+  useImperativeHandle(ref, () => ({
+    save: handleSave
+  }));
+
   // Save changes when component unmounts (user navigates away)
   useEffect(() => {
-    const currentGridRef = gridRef.current;
     return () => {
-      // Only save on unmount if we have valid data to prevent clearing existing format rules
-      if (currentGridRef?.api) {
-        const newFormatRuleRowData = currentGridRef.api
+      // Save on unmount - capture the grid data at unmount time
+      if (gridRef.current?.api) {
+        const newFormatRuleRowData = gridRef.current.api
           .getRenderedNodes()
           ?.map((node) => node?.data);
         // Only update if we actually have data and it's not empty
-        // This prevents clearing format rules when grid is being destroyed
         if (newFormatRuleRowData && newFormatRuleRowData.length > 0) {
-          setFormatRuleRowData(newFormatRuleRowData);
+          updateCurrentSchema({ formatRuleData: newFormatRuleRowData });
         }
       }
     };
-  }, [setFormatRuleRowData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount
 
   const columnDefs = useMemo(
     () => [
@@ -201,18 +212,12 @@ const FormatRulesV2 = () => {
             "Select the formatting rule that applies to data for each attribute"
           )
         },
-        cellRendererFramework: FormatRuleTypeRenderer,
+        cellRenderer: FormatRuleTypeRenderer,
         width: 200,
-        cellRendererParams: (params) => ({
+        cellRendererParams: () => ({
           onRefresh: () => {
-            // Immediately save the current grid data to schema context
-            const newFormatRuleRowData = gridRef.current.api
-              .getRenderedNodes()
-              ?.map((node) => node?.data);
-            if (newFormatRuleRowData) {
-              setFormatRuleRowData(newFormatRuleRowData);
-            }
-            gridRef.current.api.redrawRows({ rowNodes: [params.node] });
+            // Do nothing - let grid handle data updates
+            // Data will be saved on navigation via handleSave
           }
         })
       },
@@ -232,18 +237,12 @@ const FormatRulesV2 = () => {
       {
         headerName: "",
         field: "Delete",
-        cellRendererFramework: TrashCanButton,
+        cellRenderer: TrashCanButton,
         width: 60,
-        cellRendererParams: (params) => ({
+        cellRendererParams: () => ({
           onRefresh: () => {
-            // Immediately save the current grid data to schema context
-            const newFormatRuleRowData = gridRef.current.api
-              .getRenderedNodes()
-              ?.map((node) => node?.data);
-            if (newFormatRuleRowData) {
-              setFormatRuleRowData(newFormatRuleRowData);
-            }
-            gridRef.current.api.redrawRows({ rowNodes: [params.node] });
+            // Do nothing - let grid handle data updates
+            // Data will be saved on navigation via handleSave
           }
         })
       }
@@ -282,7 +281,7 @@ const FormatRulesV2 = () => {
       pageBack={() => setShowDeleteConfirmation(true)}
       backText="Remove overlay"
     >
-      {loading && formatRuleRowData?.length > 40 && <Loading />}
+      {loading && gridRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={deleteHandler}
@@ -302,7 +301,7 @@ const FormatRulesV2 = () => {
           <style>{gridStyles}</style>
           <AgGridReact
             ref={gridRef}
-            rowData={formatRuleRowData}
+            rowData={gridRowData}
             columnDefs={columnDefs}
             domLayout="autoHeight"
             suppressHorizontalScroll
@@ -338,6 +337,8 @@ const FormatRulesV2 = () => {
       </Box>
     </BackNextSkeleton>
   );
-};
+});
+
+FormatRulesV2.displayName = 'FormatRulesV2';
 
 export default FormatRulesV2;

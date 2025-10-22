@@ -45,8 +45,8 @@ const gridOptions = {
 };
 
 const TrashCanButton = memo(
-  forwardRef((props) => (
-    <div>
+  forwardRef((props, ref) => (
+    <div ref={ref}>
       {props.node.data?.Type?.includes("Array") && (
         <IconButton
           sx={{
