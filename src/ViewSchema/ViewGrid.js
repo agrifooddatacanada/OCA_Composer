@@ -62,6 +62,10 @@ const gridStyles = `
 .ag-center-cols-clipper {
   min-height: unset !important;
 }
+
+.ag-root-wrapper-body.ag-layout-auto-height {
+  min-height: 80px !important;
+}
 `;
 
 const defaultColDef = {
