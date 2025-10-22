@@ -232,7 +232,7 @@ export default function ViewGrid({
           headerName: t("List"),
           flex: 2,
           minWidth: 320,
-          autoHeight: true,
+          wrapText: false,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("List"),
