@@ -127,7 +127,11 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     }
 
     // Initialize from complete schema if available and no existing state
-    if (completeSchema && (!schemaState?.attributes || schemaState.attributes.length === 0)) {
+    // BUT: Don't re-initialize if:
+    // 1. The schema was already initialized (user may have deleted all attributes)
+    // 2. SchemaState already has attributes array (OCAParser already initialized it, even if empty)
+    const hasAttributesArray = schemaState?.attributes !== undefined;
+    if (completeSchema && !hasAttributesArray && !schemaState?.initialized) {
       const schemaAttributes = completeSchema.attributes || {};
       const newAttributeRowData = Object.entries(schemaAttributes).map(([key, value]) => {
         // Check if this attribute has entry codes (is a list)

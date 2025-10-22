@@ -346,7 +346,8 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         }
 
         // Apply attribute changes - rebuild attributes map to reflect additions/removals
-        if (schemaState.attributes && schemaState.attributes.length > 0) {
+        // Include the case where attributes array exists but is empty (all attributes deleted)
+        if (schemaState.attributes) {
           const originalAttributes = targetSchema.capture_base.attributes || {};
           const rebuiltAttributes = {};
 
@@ -363,6 +364,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             }
           });
 
+          // Even if rebuiltAttributes is empty (all deleted), update to reflect that
           targetSchema.capture_base.attributes = rebuiltAttributes;
         }
 
