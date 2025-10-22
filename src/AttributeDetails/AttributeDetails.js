@@ -74,6 +74,36 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   // No need for separate overlay initialization as it's handled in the schema state
 
   // Initialize or refresh data when switching to edit a schema
+  /**
+   * Initialization and Data Synchronization Effect
+   * 
+   * This effect handles loading attribute data from MultiSchemaContext and displaying it in the grid.
+   * It runs when the component mounts or when currentSchemaId/completeSchema changes.
+   * 
+   * DATA SOURCE PRIORITY (in order):
+   * 1. schemaState.attributes (if non-empty) - User's working copy, preserves edits/deletions
+   * 2. completeSchema.attributes (if no schemaState.attributes) - Original OCA data from file
+   * 
+   * CRITICAL SCENARIOS:
+   * A. File Upload (OCAParser initialized):
+   *    - OCAParser already created schemaState.attributes=[] (even if empty)
+   *    - hasAttributesArray=true, so we SKIP completeSchema initialization
+   *    - This preserves labels in lanAttributeRowData from OCAParser
+   * 
+   * B. Manual Creation:
+   *    - User enters attributes in CreateManually
+   *    - schemaState.attributes=[] initially, populated as user adds
+   *    - hasAttributesArray=true, so we use schemaState.attributes
+   * 
+   * C. User Deleted All Attributes:
+   *    - schemaState.attributes=[], schemaState.initialized=true
+   *    - hasAttributesArray=true, so we don't re-populate from completeSchema
+   *    - Empty state is intentional and should be preserved
+   * 
+   * D. Brand New Schema (never touched):
+   *    - schemaState.attributes=undefined (not set)
+   *    - hasAttributesArray=false, so we CAN initialize from completeSchema
+   */
   useEffect(() => {
     setLoading(true);
 
@@ -95,7 +125,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       return;
     }
 
-    // Check if existing state exists (should take precedence over complete schema)
+    // PRIORITY 1: Use existing schemaState.attributes if present (non-empty)
+    // This preserves user edits, additions, and deletions
     if (schemaState?.attributes && schemaState.attributes.length > 0) {
       // Use existing state (preserves user-added/deleted attributes and edits)
       // Avoid redundant updates to prevent flicker
@@ -126,10 +157,11 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       return;
     }
 
-    // Initialize from complete schema if available and no existing state
-    // BUT: Don't re-initialize if:
-    // 1. The schema was already initialized (user may have deleted all attributes)
-    // 2. SchemaState already has attributes array (OCAParser already initialized it, even if empty)
+    // PRIORITY 2: Initialize from completeSchema ONLY if attributes array doesn't exist
+    // CRITICAL: Check if schemaState.attributes is undefined (not just empty)
+    // - If attributes=[] (defined but empty), don't re-initialize (might be OCAParser or user deletion)
+    // - If attributes=undefined (never set), OK to initialize from completeSchema
+    // - If initialized=true, never re-initialize (user intentionally deleted all)
     const hasAttributesArray = schemaState?.attributes !== undefined;
     if (completeSchema && !hasAttributesArray && !schemaState?.initialized) {
       const schemaAttributes = completeSchema.attributes || {};

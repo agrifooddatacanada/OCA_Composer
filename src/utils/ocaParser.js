@@ -16,14 +16,34 @@ import { LanguageUtils, LanguageConstants } from "./languageUtils";
  * 
  * Extracts and transforms OCA (Overlays Capture Architecture) package data
  * into the format expected by the schema editing components.
+ * 
+ * PRIMARY PURPOSE:
+ * When a user uploads an OCA file, this parser converts the raw OCA format
+ * into the schemaState structure used by React components.
+ * 
+ * Called by: MultiSchemaContext.initializeSchemaFromOCA()
+ * 
+ * KEY EXTRACTIONS:
+ * - attributes: Array of {Attribute, Type, List, Required, ...}
+ * - lanAttributeRowData: Labels/descriptions by language from label overlays
+ * - entryCodes: Entry code definitions for list attributes
+ * - overlayData: Character encoding, format rules, cardinality, etc.
  */
 export class OCAParser {
   
   /**
    * Parse OCA package data for a specific schema
+   * 
    * @param {string} schemaId - The schema identifier
    * @param {Object} ocaPackage - The OCA package data
    * @returns {Object} Parsed schema state data ready for React components
+   * 
+   * IMPORTANT OUTPUTS:
+   * - attributes: Always an array (even if empty: [])
+   * - lanAttributeRowData: Object mapping language -> array of {Attribute, Label, Description, List}
+   * - initialized: Always set to true (signals this schema has been parsed)
+   * 
+   * This ensures components don't need to re-parse from completeSchema.
    */
   static parseSchemaData(schemaId, ocaPackage) {
     const schemaData = getSchemaDataById(ocaPackage, schemaId);
@@ -31,7 +51,7 @@ export class OCAParser {
       return null;
     }
 
-    // Build attributes
+    // Build attributes array from OCA attributes object
     const attributes = this._buildAttributes(schemaData.attributes || {});
 
     // Parse entry overlays to mark lists and construct entry codes
@@ -42,7 +62,9 @@ export class OCAParser {
       List: listSet.has(a.Attribute)
     }));
 
-    // Parse label overlays for language-specific data
+    // CRITICAL: Parse label overlays to extract Labels and Descriptions
+    // This creates lanAttributeRowData with proper labels from the OCA file
+    // If we don't do this, components will default to using Attribute names as Labels
     const lanAttributeRowData = this._parseLabelOverlays(
       schemaData.overlays?.label, 
       attributesWithLists
@@ -65,7 +87,7 @@ export class OCAParser {
 
     return {
       metadata,
-      attributes: attributesWithLists,
+      attributes: attributesWithLists,  // Always an array, even if empty: []
       attributesList: attributesWithLists.map((a) => a.Attribute),
       overlays: schemaData.overlays || {},
       overlaySelections,
@@ -73,7 +95,7 @@ export class OCAParser {
       attributesWithLists: attributesWithLists
         .filter((a) => a.List)
         .map((a) => a.Attribute),
-      lanAttributeRowData,
+      lanAttributeRowData,  // Preserves labels from label overlays
       // Populated display-friendly overlay data for components
       ...overlayData,
       frameAllUnits: false,
@@ -81,7 +103,7 @@ export class OCAParser {
       unframedUnitList: [],
       unframedAttributeList: [],
       unitFramedThatAlreadyExist: {},
-      initialized: true
+      initialized: true  // CRITICAL: Marks schema as parsed (don't re-parse)
     };
   }
 

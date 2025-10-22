@@ -21,6 +21,62 @@ import { OCAParser } from "../utils/ocaParser";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 import { LanguageConstants } from "../utils/languageUtils";
 
+/**
+ * Multi-Schema Context
+ * 
+ * This context manages the state of multiple schemas within a single OCA package.
+ * Each schema can be independently edited while maintaining a reference to its original OCA data.
+ * 
+ * STATE ARCHITECTURE:
+ * -------------------
+ * 1. `schemaStates` - Map of schemaId -> schemaState, where each schemaState contains:
+ *    - `completeSchema`: Original OCA data (read-only reference, used for viewing/comparison)
+ *    - `attributes`: Array of edited attributes (working copy for user edits)
+ *    - `lanAttributeRowData`: Language-specific labels/descriptions extracted from label overlays
+ *    - `overlays`: User-edited overlay data (character encoding, format rules, etc.)
+ *    - `initialized`: Flag indicating if the schema has been processed (see lifecycle below)
+ * 
+ * 2. `currentSchemaId` - The schema currently being edited (null for manual creation flow)
+ * 
+ * INITIALIZATION LIFECYCLE:
+ * -------------------------
+ * A. Manual Creation (user starts from scratch):
+ *    1. User enters attribute names in CreateManually component
+ *    2. currentSchemaId = null (uses "manual-creation-schema" internally)
+ *    3. attributes = [] initially, populated as user adds attributes
+ *    4. initialized = false until first save in AttributeDetails
+ *    5. When saved, initialized = true to prevent re-population
+ * 
+ * B. File Upload (user loads an OCA package):
+ *    1. initializeFromOCAPackage() is called with the uploaded OCA data
+ *    2. For each schema in the package, addSchemaFromOCA() is called:
+ *       a. OCAParser.parseSchemaData() extracts attributes, labels, overlays from OCA format
+ *       b. attributes array is populated with parsed data (even if empty: [])
+ *       c. lanAttributeRowData is populated with labels from label overlays
+ *       d. initialized = true (schema is ready to edit, don't re-parse)
+ *    3. currentSchemaId is set to the root schema
+ *    4. Components load the parsed data and display it
+ * 
+ * C. Attribute Deletion:
+ *    1. User deletes attributes in AttributeDetails
+ *    2. attributes array shrinks (can become empty: [])
+ *    3. initialized = true (prevents re-population from completeSchema)
+ *    4. Deleted attribute names are tracked in deletedAttributes array
+ * 
+ * IMPORTANT: The `initialized` flag distinguishes between:
+ *   - "Never touched" (initialized=false, attributes=undefined) → Can init from completeSchema
+ *   - "Parsed from file" (initialized=true, attributes=[...]) → Don't re-parse
+ *   - "User deleted all" (initialized=true, attributes=[]) → Don't re-populate
+ * 
+ * EXPORT FLOW:
+ * ------------
+ * exportSchemaChanges() rebuilds the OCA package by:
+ *   1. Only processing schemas where initialized=true (skip untouched schemas)
+ *   2. Rebuilding capture_base.attributes from schemaState.attributes array
+ *   3. Applying overlay changes from schemaState.overlays
+ *   4. If attributes=[], the exported schema will have empty attributes (deletion persisted)
+ */
+
 // Create the multi-schema context
 const MultiSchemaContext = createContext();
 
@@ -100,10 +156,10 @@ const createDefaultSchemaState = () => ({
   unframedUnitList: [],
   unframedAttributeList: [],
   unitFramedThatAlreadyExist: {},
-  // Lifecycle
-  initialized: false,
+  // Lifecycle flags
+  initialized: false,  // true = schema has been processed by OCAParser or saved by user (don't re-parse)
   // Persisted user removals
-  deletedAttributes: []
+  deletedAttributes: []  // Track attribute names that user explicitly deleted
 });
 
 // Multi-schema provider component
@@ -201,7 +257,18 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     [getSchemaState]
   );
 
-  // Initialize schema from OCA package
+  /**
+   * Initialize schema from OCA package (low-level parser call)
+   * 
+   * Called by: addSchemaFromOCA() and switchToSchema()
+   * 
+   * What it does:
+   * - Calls OCAParser.parseSchemaData() to extract attributes, labels, overlays from OCA format
+   * - Sets the parsed state in schemaStates
+   * - Does NOT set initialized=true (caller is responsible for that)
+   * 
+   * Note: Prefer using addSchemaFromOCA() instead, which also sets initialized=true
+   */
   const initializeSchemaFromOCA = useCallback((schemaId, ocaPackage) => {
     const parsedState = OCAParser.parseSchemaData(schemaId, ocaPackage);
     if (!parsedState) {
@@ -277,7 +344,22 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     [initializeSchemaFromOCA]
   );
 
-  // Export schema changes back to OCA package format
+  /**
+   * Export schema changes back to OCA package format
+   * 
+   * Called by: ViewSchema (for visualization and export), useMultiSchemaExport
+   * 
+   * What it does:
+   * - Takes the original OCA package and applies all user edits from schemaStates
+   * - Only processes schemas where initialized=true (skips untouched schemas)
+   * - Rebuilds capture_base.attributes from schemaState.attributes array
+   * - Applies overlay changes from schemaState.overlays
+   * 
+   * Important behavior:
+   * - If schemaState.attributes=[], the exported schema will have empty attributes {}
+   * - This ensures attribute deletions are persisted in exports
+   * - If schemaState.attributes is undefined/null, rebuilding is skipped (use original)
+   */
   const exportSchemaChanges = useCallback(
     (ocaPackage) => {
       if (!ocaPackage) {
@@ -289,7 +371,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       // Apply changes to all schemas that have been initialized
       Object.keys(schemaStates).forEach((schemaId) => {
         const schemaState = getSchemaState(schemaId);
-        if (!schemaState.initialized) return;
+        if (!schemaState.initialized) return;  // Skip untouched schemas
 
         // Find the schema in the package
         let targetSchema = null;
@@ -346,8 +428,11 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         }
 
         // Apply attribute changes - rebuild attributes map to reflect additions/removals
-        // Include the case where attributes array exists but is empty (all attributes deleted)
-        if (schemaState.attributes) {
+        // CRITICAL: Check if schemaState.attributes is defined (not undefined/null)
+        // - If attributes=[], rebuiltAttributes will be {} (all attributes deleted - persist this!)
+        // - If attributes=[{...}], rebuiltAttributes will have the edited attributes
+        // - If attributes is undefined, skip rebuilding (use original OCA data)
+        if (schemaState.attributes !== undefined && schemaState.attributes !== null) {
           const originalAttributes = targetSchema.capture_base.attributes || {};
           const rebuiltAttributes = {};
 
@@ -364,7 +449,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             }
           });
 
-          // Even if rebuiltAttributes is empty (all deleted), update to reflect that
+          // Set the rebuilt attributes (even if empty - this persists deletions)
           targetSchema.capture_base.attributes = rebuiltAttributes;
         }
 
@@ -551,7 +636,22 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
     // === SIMPLIFIED: Direct field access with proper initialization ===
   
-  // Add complete schema from OCA package
+  /**
+   * Add complete schema from OCA package (high-level initialization)
+   * 
+   * Called by: initializeFromOCAPackage() when user uploads an OCA file
+   * 
+   * What it does:
+   * 1. Extracts schema metadata and structure from OCA package
+   * 2. Calls initializeSchemaFromOCA() to parse attributes, labels, overlays
+   * 3. Sets initialized=true to mark schema as ready for editing
+   * 
+   * This is the PRIMARY way schemas are loaded from files.
+   * After this runs:
+   * - attributes array is populated (even if empty: [])
+   * - lanAttributeRowData has labels from label overlays
+   * - initialized=true (components won't re-parse)
+   */
   const addSchemaFromOCA = useCallback((ocaPackage, schemaId) => {
     if (!ocaPackage || !schemaId) return null;
     
@@ -577,26 +677,26 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     
     // If this is the first time initializing, use the existing initialization but add complete schema
     if (!existingState.initialized) {
-      // First initialize using existing logic
+      // First initialize using existing logic (calls OCAParser)
       initializeSchemaFromOCA(schemaId, ocaPackage);
       
-      // Then immediately update with complete schema data
+      // Then immediately update with complete schema data and mark as initialized
       setSchemaStates((prev) => ({
         ...prev,
         [schemaId]: {
           ...prev[schemaId],
           completeSchema,
-          initialized: true
+          initialized: true  // CRITICAL: Prevents components from re-parsing this schema
         }
       }));
     } else {
-      // Just update the complete schema data
+      // Schema was already initialized, just update the complete schema reference
       setSchemaStates((prev) => ({
         ...prev,
         [schemaId]: {
           ...prev[schemaId],
           completeSchema,
-          initialized: true
+          initialized: true  // Ensure it stays marked as initialized
         }
       }));
     }
