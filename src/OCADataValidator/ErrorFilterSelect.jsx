@@ -45,7 +45,7 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
     } else {
       setErrorNameList([SHOW_NO_ERRORS]);
     }
-  }
+  };
   const handleShowOnlyErrors = () => {
     if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
       setErrorNameList([SHOW_ALL_DATA]);
