@@ -15,7 +15,8 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY,
   FIELD_RANGE_OVERLAY,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  CUSTOM_FORMAT_RULE
 } from "../constants/constants";
 import { OCAParser } from "../utils/ocaParser";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
@@ -484,6 +485,147 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
           targetSchema.overlays.meta = metaArray;
         }
 
+        // Rebuild conformance overlay from Required flags in attributes
+        if (schemaState.attributes && schemaState.attributes.length > 0) {
+          const hasRequiredFlags = schemaState.attributes.some((attr) => attr.Required === true || attr.Required === false);
+          
+          if (hasRequiredFlags) {
+            const conformanceOverlay = {
+              d: targetSchema.overlays?.conformance?.d || `conformance_${Date.now()}`,
+              capture_base: targetSchema.capture_base.d,
+              type: "spec/overlays/conformance/1.1",
+              attribute_conformance: {}
+            };
+
+            schemaState.attributes.forEach((attr) => {
+              if (attr.Attribute && (attr.Required === true || attr.Required === false)) {
+                conformanceOverlay.attribute_conformance[attr.Attribute] = attr.Required ? "M" : "O";
+              }
+            });
+
+            if (Object.keys(conformanceOverlay.attribute_conformance).length > 0) {
+              if (!targetSchema.overlays) targetSchema.overlays = {};
+              targetSchema.overlays.conformance = conformanceOverlay;
+            }
+          }
+        }
+
+        // Rebuild format overlay from formatRuleData
+        if (schemaState.formatRuleData && schemaState.formatRuleData.length > 0) {
+          const formatOverlay = {
+            d: targetSchema.overlays?.format?.d || `format_${Date.now()}`,
+            capture_base: targetSchema.capture_base.d,
+            type: "spec/overlays/format/1.1",
+            attribute_formats: {}
+          };
+
+          schemaState.formatRuleData.forEach((rule) => {
+            if (rule.Attribute) {
+              const formatRule = rule["Format Rule"] || rule[CUSTOM_FORMAT_RULE] || rule.FormatText;
+              if (formatRule) {
+                formatOverlay.attribute_formats[rule.Attribute] = formatRule;
+              }
+            }
+          });
+
+          if (Object.keys(formatOverlay.attribute_formats).length > 0) {
+            if (!targetSchema.overlays) targetSchema.overlays = {};
+            targetSchema.overlays.format = formatOverlay;
+          }
+        }
+
+        // Rebuild character_encoding overlay from characterEncodingData
+        if (schemaState.characterEncodingData && Object.keys(schemaState.characterEncodingData).length > 0) {
+          const charEncodingOverlay = {
+            d: targetSchema.overlays?.character_encoding?.d || `character_encoding_${Date.now()}`,
+            capture_base: targetSchema.capture_base.d,
+            type: "spec/overlays/character_encoding/1.1",
+            attribute_character_encoding: {}
+          };
+
+          Object.entries(schemaState.characterEncodingData).forEach(([attr, encoding]) => {
+            if (encoding) {
+              charEncodingOverlay.attribute_character_encoding[attr] = encoding;
+            }
+          });
+
+          if (Object.keys(charEncodingOverlay.attribute_character_encoding).length > 0) {
+            if (!targetSchema.overlays) targetSchema.overlays = {};
+            targetSchema.overlays.character_encoding = charEncodingOverlay;
+          }
+        }
+
+        // Rebuild cardinality overlay from cardinalityData
+        if (schemaState.cardinalityData && schemaState.cardinalityData.length > 0) {
+          const cardinalityOverlay = {
+            d: targetSchema.overlays?.cardinality?.d || `cardinality_${Date.now()}`,
+            capture_base: targetSchema.capture_base.d,
+            type: "spec/overlays/cardinality/1.1",
+            attribute_cardinality: {}
+          };
+
+          schemaState.cardinalityData.forEach((card) => {
+            if (card.Attribute) {
+              const cardinalityValue = card.Cardinality || card.EntryLimit;
+              if (cardinalityValue) {
+                cardinalityOverlay.attribute_cardinality[card.Attribute] = cardinalityValue;
+              }
+            }
+          });
+
+          if (Object.keys(cardinalityOverlay.attribute_cardinality).length > 0) {
+            if (!targetSchema.overlays) targetSchema.overlays = {};
+            targetSchema.overlays.cardinality = cardinalityOverlay;
+          }
+        }
+
+        // Rebuild standard overlay from dataStandardsData
+        if (schemaState.dataStandardsData && schemaState.dataStandardsData.length > 0) {
+          const standardOverlay = {
+            d: targetSchema.overlays?.standard?.d || `standard_${Date.now()}`,
+            capture_base: targetSchema.capture_base.d,
+            type: "spec/overlays/standard/1.1",
+            attr_standards: {}
+          };
+
+          schemaState.dataStandardsData.forEach((std) => {
+            if (std.Attribute && std.DataStandard) {
+              standardOverlay.attr_standards[std.Attribute] = std.DataStandard;
+            }
+          });
+
+          if (Object.keys(standardOverlay.attr_standards).length > 0) {
+            if (!targetSchema.overlays) targetSchema.overlays = {};
+            targetSchema.overlays.standard = standardOverlay;
+          }
+        }
+
+        // Rebuild range overlay from rangeData
+        if (schemaState.rangeData && schemaState.rangeData.length > 0) {
+          const rangeOverlay = {
+            d: targetSchema.overlays?.range?.d || `range_${Date.now()}`,
+            capture_base: targetSchema.capture_base.d,
+            type: "spec/overlays/range/1.1",
+            attributes: {}
+          };
+
+          schemaState.rangeData.forEach((range) => {
+            if (range.Attribute && (range.LowerBound || range.UpperBound)) {
+              rangeOverlay.attributes[range.Attribute] = {
+                lower: range.LowerBound || "",
+                lower_inclusive: range.LowerInclusive || false,
+                upper: range.UpperBound || "",
+                upper_inclusive: range.UpperInclusive || false
+              };
+            }
+          });
+
+          if (Object.keys(rangeOverlay.attributes).length > 0) {
+            if (!targetSchema.overlays) targetSchema.overlays = {};
+            targetSchema.overlays.range = rangeOverlay;
+          }
+        }
+
         // Apply entry codes
         if (schemaState.entryCodes && Object.keys(schemaState.entryCodes).length > 0) {
           // Reconstruct entry overlay from entry codes
@@ -571,6 +713,147 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
                     Object.entries(childSchemaState.overlays).forEach(([overlayType, overlayData]) => {
                       if (overlayData) newDependency.overlays[overlayType] = overlayData;
                     });
+                  }
+
+                  // Rebuild conformance overlay from Required flags in child schema attributes
+                  if (childSchemaState.attributes && childSchemaState.attributes.length > 0) {
+                    const hasRequiredFlags = childSchemaState.attributes.some((attr) => attr.Required === true || attr.Required === false);
+                    
+                    if (hasRequiredFlags) {
+                      const conformanceOverlay = {
+                        d: `conformance_${childSchemaName}_${Date.now()}`,
+                        capture_base: newDependency.capture_base.d,
+                        type: "spec/overlays/conformance/1.1",
+                        attribute_conformance: {}
+                      };
+
+                      childSchemaState.attributes.forEach((attr) => {
+                        if (attr.Attribute && (attr.Required === true || attr.Required === false)) {
+                          conformanceOverlay.attribute_conformance[attr.Attribute] = attr.Required ? "M" : "O";
+                        }
+                      });
+
+                      if (Object.keys(conformanceOverlay.attribute_conformance).length > 0) {
+                        if (!newDependency.overlays) newDependency.overlays = {};
+                        newDependency.overlays.conformance = conformanceOverlay;
+                      }
+                    }
+                  }
+
+                  // Rebuild format overlay from formatRuleData
+                  if (childSchemaState.formatRuleData && childSchemaState.formatRuleData.length > 0) {
+                    const formatOverlay = {
+                      d: `format_${childSchemaName}_${Date.now()}`,
+                      capture_base: newDependency.capture_base.d,
+                      type: "spec/overlays/format/1.1",
+                      attribute_formats: {}
+                    };
+
+                    childSchemaState.formatRuleData.forEach((rule) => {
+                      if (rule.Attribute) {
+                        const formatRule = rule["Format Rule"] || rule[CUSTOM_FORMAT_RULE] || rule.FormatText;
+                        if (formatRule) {
+                          formatOverlay.attribute_formats[rule.Attribute] = formatRule;
+                        }
+                      }
+                    });
+
+                    if (Object.keys(formatOverlay.attribute_formats).length > 0) {
+                      if (!newDependency.overlays) newDependency.overlays = {};
+                      newDependency.overlays.format = formatOverlay;
+                    }
+                  }
+
+                  // Rebuild character_encoding overlay from characterEncodingData
+                  if (childSchemaState.characterEncodingData && Object.keys(childSchemaState.characterEncodingData).length > 0) {
+                    const charEncodingOverlay = {
+                      d: `character_encoding_${childSchemaName}_${Date.now()}`,
+                      capture_base: newDependency.capture_base.d,
+                      type: "spec/overlays/character_encoding/1.1",
+                      attribute_character_encoding: {}
+                    };
+
+                    Object.entries(childSchemaState.characterEncodingData).forEach(([attr, encoding]) => {
+                      if (encoding) {
+                        charEncodingOverlay.attribute_character_encoding[attr] = encoding;
+                      }
+                    });
+
+                    if (Object.keys(charEncodingOverlay.attribute_character_encoding).length > 0) {
+                      if (!newDependency.overlays) newDependency.overlays = {};
+                      newDependency.overlays.character_encoding = charEncodingOverlay;
+                    }
+                  }
+
+                  // Rebuild cardinality overlay from cardinalityData
+                  if (childSchemaState.cardinalityData && childSchemaState.cardinalityData.length > 0) {
+                    const cardinalityOverlay = {
+                      d: `cardinality_${childSchemaName}_${Date.now()}`,
+                      capture_base: newDependency.capture_base.d,
+                      type: "spec/overlays/cardinality/1.1",
+                      attribute_cardinality: {}
+                    };
+
+                    childSchemaState.cardinalityData.forEach((card) => {
+                      if (card.Attribute) {
+                        const cardinalityValue = card.Cardinality || card.EntryLimit;
+                        if (cardinalityValue) {
+                          cardinalityOverlay.attribute_cardinality[card.Attribute] = cardinalityValue;
+                        }
+                      }
+                    });
+
+                    if (Object.keys(cardinalityOverlay.attribute_cardinality).length > 0) {
+                      if (!newDependency.overlays) newDependency.overlays = {};
+                      newDependency.overlays.cardinality = cardinalityOverlay;
+                    }
+                  }
+
+                  // Rebuild standard overlay from dataStandardsData
+                  if (childSchemaState.dataStandardsData && childSchemaState.dataStandardsData.length > 0) {
+                    const standardOverlay = {
+                      d: `standard_${childSchemaName}_${Date.now()}`,
+                      capture_base: newDependency.capture_base.d,
+                      type: "spec/overlays/standard/1.1",
+                      attr_standards: {}
+                    };
+
+                    childSchemaState.dataStandardsData.forEach((std) => {
+                      if (std.Attribute && std.DataStandard) {
+                        standardOverlay.attr_standards[std.Attribute] = std.DataStandard;
+                      }
+                    });
+
+                    if (Object.keys(standardOverlay.attr_standards).length > 0) {
+                      if (!newDependency.overlays) newDependency.overlays = {};
+                      newDependency.overlays.standard = standardOverlay;
+                    }
+                  }
+
+                  // Rebuild range overlay from rangeData
+                  if (childSchemaState.rangeData && childSchemaState.rangeData.length > 0) {
+                    const rangeOverlay = {
+                      d: `range_${childSchemaName}_${Date.now()}`,
+                      capture_base: newDependency.capture_base.d,
+                      type: "spec/overlays/range/1.1",
+                      attributes: {}
+                    };
+
+                    childSchemaState.rangeData.forEach((range) => {
+                      if (range.Attribute && (range.LowerBound || range.UpperBound)) {
+                        rangeOverlay.attributes[range.Attribute] = {
+                          lower: range.LowerBound || "",
+                          lower_inclusive: range.LowerInclusive || false,
+                          upper: range.UpperBound || "",
+                          upper_inclusive: range.UpperInclusive || false
+                        };
+                      }
+                    });
+
+                    if (Object.keys(rangeOverlay.attributes).length > 0) {
+                      if (!newDependency.overlays) newDependency.overlays = {};
+                      newDependency.overlays.range = rangeOverlay;
+                    }
                   }
 
                   // Add entry codes if present
