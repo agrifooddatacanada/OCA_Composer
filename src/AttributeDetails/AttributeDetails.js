@@ -418,33 +418,36 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       }
 
       // Persist attributes and list to MultiSchemaContext in one place to avoid flicker
-      // Initialize lanAttributeRowData for all attributes if not already present
+      // Sync lanAttributeRowData: filter out deleted attributes while preserving existing labels
       const schemaState = getSchemaState(currentSchemaId);
       const currentLanAttributeRowData = schemaState?.lanAttributeRowData || {};
       
-      // Get available languages (fallback to default if none set)
-      const availableLanguages = schemaState?.metadata?.languages || ['English'];
+      // Create a set of current attribute names for fast lookup
+      const currentAttributeNames = new Set(attributeRowData.map(attr => attr.Attribute));
       
-      // Initialize rows for each language and attribute
-      const updatedLanAttributeRowData = { ...currentLanAttributeRowData };
-      availableLanguages.forEach(language => {
-        if (!updatedLanAttributeRowData[language]) {
-          updatedLanAttributeRowData[language] = [];
-        }
+      // Filter each language's data to only include current attributes
+      // This preserves the original labels/descriptions while removing deleted attributes
+      const updatedLanAttributeRowData = {};
+      Object.keys(currentLanAttributeRowData).forEach(langKey => {
+        const filteredData = currentLanAttributeRowData[langKey].filter(
+          item => currentAttributeNames.has(item.Attribute)
+        );
         
-        // Ensure all attributes have entries in lanAttributeRowData
-        const languageData = updatedLanAttributeRowData[language];
+        // Only add new entries if an attribute doesn't already have label data
         attributeRowData.forEach(attr => {
-          const existingEntry = languageData.find(item => item.Attribute === attr.Attribute);
+          const existingEntry = filteredData.find(item => item.Attribute === attr.Attribute);
           if (!existingEntry) {
-            languageData.push({
+            // New attribute - add with default label
+            filteredData.push({
               Attribute: attr.Attribute,
               Label: attr.Attribute, // Default label is attribute name
               Description: attr.Description || "",
-              List: "Not a List" // Default list value
+              List: "Not a List"
             });
           }
         });
+        
+        updatedLanAttributeRowData[langKey] = filteredData;
       });
       
       updateSchemaState(currentSchemaId, {

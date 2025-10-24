@@ -834,51 +834,6 @@ export default function ViewSchema({
         />
       </Box>
 
-      {/* Note about downloading files */}
-      {isPageForward && isExport && (
-        <Box
-          sx={{
-            padding: 2,
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            backgroundColor: "#f9f9f9",
-            width: "300px",
-            textAlign: "left",
-            position: "absolute",
-            right: 0,
-            marginRight: "4rem"
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: 16,
-              color: "#333"
-            }}
-          >
-            {t("Note: Downloading two files")}
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: 14,
-              marginTop: 1
-            }}
-          >
-            {t("1) Schema in .txt format, readable and archivable.")}
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: 14,
-              marginTop: 1
-            }}
-          >
-            {t(
-              "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine."
-            )}
-          </Typography>
-        </Box>
-      )}
-
-
       {/* Confirm Reset Dialog */}
       {showConfirmReset && (
         <ConfirmResetCard
