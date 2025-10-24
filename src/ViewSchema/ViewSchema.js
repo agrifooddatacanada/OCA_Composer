@@ -195,7 +195,7 @@ export default function ViewSchema({
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const [loading, setLoading] = useState(true);
-  const [visualizationMode, setVisualizationMode] = useState("tree"); // "tree" for simplified, "detailed" for detailed
+  const [visualizationMode, setVisualizationMode] = useState("detailed"); // "detailed" for left-right, "tree" for top-down
   const [updatedOCAPackage, setUpdatedOCAPackage] = useState(OCAPackage);
   const [vizVersion, setVizVersion] = useState(0);
 
@@ -771,10 +771,10 @@ export default function ViewSchema({
                   }}
                 >
                   <ToggleButton value="detailed">
-                    {t("Detailed", { defaultValue: "Detailed" })}
+                    {t("Left-Right", { defaultValue: "Left-Right" })}
                   </ToggleButton>
                   <ToggleButton value="tree">
-                    {t("Overview", { defaultValue: "Overview" })}
+                    {t("Top-Down", { defaultValue: "Top-Down" })}
                   </ToggleButton>
                 </ToggleButtonGroup>
               </Box>
