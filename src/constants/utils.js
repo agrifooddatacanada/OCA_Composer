@@ -778,6 +778,23 @@ export const shouldDisableRangeOverlay = (
   );
 };
 
+export const getRangeOverlayDisabledReason = (
+  overlayText,
+  selectedFeatures,
+  attributes,
+  rangeRowData
+) =>
+  overlayText !== "Add range rule for data"
+    ? ""
+    : rangeRowData.length === 0
+      ? i18next.t("No attributes available for range overlay")
+      : !selectedFeatures.includes(FIELD_FORMAT_OVERLAY)
+        ? i18next.t("Range overlay requires format overlay to be selected")
+        : !attributes.some((attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime")
+          ? i18next.t("Range overlay requires Numeric or DateTime attributes")
+          : "";
+
+
 export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();
 export const isValidNumber = (value) => !Number.isNaN(Number.parseFloat(value));
 

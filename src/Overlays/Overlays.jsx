@@ -2,14 +2,15 @@ import React, { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { Box, Button, List, ListItemButton, ListItemText } from "@mui/material";
+import { Box, Button, List, ListItemButton, ListItemText, Tooltip } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
-import { shouldDisableRangeOverlay } from "../constants/utils";
+import { shouldDisableRangeOverlay, getRangeOverlayDisabledReason } from "../constants/utils";
 import { FIELD_FORMAT_OVERLAY, FIELD_RANGE_OVERLAY } from "../constants/constants";
 
 const Overlays = ({ pageBack, pageForward }) => {
@@ -42,6 +43,10 @@ const Overlays = ({ pageBack, pageForward }) => {
 
   // Convert overlay into a list of features
   const { selectedFeatures, unselectedFeatures } = getListOfSelectedOverlays(overlay);
+
+  const getDisabledReason = (featureName) =>
+  getRangeOverlayDisabledReason(featureName, selectedFeatures, attributeRowData, rangeRowData) ||
+  "";
 
   const addToSelected = (item) => {
     // Range overlay can be selected only if format overlay is selected
@@ -193,21 +198,32 @@ const Overlays = ({ pageBack, pageForward }) => {
             >
               {unselectedFeatures
                 .filter((text) => text && text.trim() !== "") // Filter out empty/null features
-                .map((text) => (
-                <ListItemButton
-                  key={text}
-                  onClick={() => addToSelected(text)}
-                  disabled={shouldDisableRangeOverlay(
-                    text,
-                    selectedFeatures,
-                    attributeRowData,
-                    rangeRowData
-                  )}
-                >
-                  <AddCircleIcon sx={{ color: CustomPalette.PRIMARY }} />
-                  <ListItemText primary={t(text)} sx={{ marginLeft: 2 }} />
-                </ListItemButton>
-              ))}
+                .map((text) => {
+                const isDisabled = shouldDisableRangeOverlay(
+                  text,
+                  selectedFeatures,
+                  attributeRowData,
+                  rangeRowData
+                );
+                const disabledReason = isDisabled ? getDisabledReason(text) : "";
+                
+                return (
+                  <Tooltip key={text} title={disabledReason} placement="right" arrow>
+                    <span>
+                      <ListItemButton
+                        onClick={() => addToSelected(text)}
+                        disabled={isDisabled}
+                      >
+                        <AddCircleIcon sx={{ color: CustomPalette.PRIMARY}} />
+                        <ListItemText primary={t(text)} sx={{ marginLeft: 2 }} />
+                        {isDisabled && (
+                          <HelpOutlineIcon sx={{ fontSize: 18, marginLeft: "6px", color: "#6b7280" }} />
+                        )}
+                      </ListItemButton>
+                    </span>
+                  </Tooltip>
+                );
+              })}
             </List>
           </Box>
         </Box>

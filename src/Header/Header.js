@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LanguageUtils } from "../utils/languageUtils";
@@ -6,10 +6,12 @@ import { Typography, Tooltip, Button, Box, useMediaQuery } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 import { CustomPalette } from "../constants/customPalette";
-import logo from "../assets/agri-logo.png";
-import logoWhite from "../assets/agri-logo-white.png";
+// import logo from "../assets/agri-logo.png";
+// import logoWhite from "../assets/agri-logo-white.png";
 import HeaderWrapper from "./HeaderWrapper";
 import logoSE from "../assets/se-logo.png";
+import { themes } from "../constants/themeConstants";
+import { Context } from "../App";
 
 export default function Header({ currentPage }) {
   const { t } = useTranslation();
@@ -22,7 +24,7 @@ export default function Header({ currentPage }) {
   const [selectedLanguage, setSelectedLanguage] = useState(
     LanguageUtils.normalizeUILanguageCode(LanguageUtils.getCurrentUILanguage())
   );
-
+  const { currentTheme } = useContext(Context);
   useEffect(() => {
     setSelectedLanguage(LanguageUtils.normalizeUILanguageCode(LanguageUtils.getCurrentUILanguage()));
   }, []);
@@ -247,27 +249,29 @@ export default function Header({ currentPage }) {
               }}
             />
             <a
-              href="https://agrifooddatacanada.ca/"
+              // href="https://agrifooddatacanada.ca/"
+              href={currentTheme.logos.primaryLogo.website}
               target="_blank"
               rel="noopener noreferrer"
             >
               <img
-                src={logo}
+                src={currentTheme.logos.primaryLogo.url}
                 style={{
                   display: "block",
                   width: isMobile ? "100px" : "150px",
                   marginRight: "20px",
                   cursor: "pointer"
                 }}
-                alt="Agri-food Data Canada"
+                alt={currentTheme.logos.primaryLogo.alt}
               />
             </a>
             <Typography
               sx={{
                 fontSize: 25,
                 fontWeight: "bold",
-                color: CustomPalette.PRIMARY,
-                alignSelf: "center"
+                color: currentTheme?.primaryColor || CustomPalette.PRIMARY,
+                alignSelf: "center",
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
               }}
             >
               {header}
@@ -318,6 +322,7 @@ export default function Header({ currentPage }) {
               </select>
             </div> */}
 
+            {/* Landing page header */}
             <div>
               <select
                 id="language-select"
@@ -336,12 +341,12 @@ export default function Header({ currentPage }) {
               </select>
             </div>
             <a
-              href="https://agrifooddatacanada.ca/"
+              href={themes.default.logos.homeNavLogo.website}
               target="_blank"
               rel="noopener noreferrer"
             >
               <img
-                src={logoWhite}
+                src={themes.default.logos.homeNavLogo.url}
                 style={{
                   display: "block",
                   width: isMobile ? "auto" : "250px",
@@ -349,12 +354,13 @@ export default function Header({ currentPage }) {
                   marginRight: isMobile ? "unset" : "20px",
                   cursor: "pointer"
                 }}
-                alt="Agri-food Data Canada"
+                alt={themes.default.logos.homeNavLogo.alt}
               />
             </a>
           </Box>
         ) : (
           <>
+            {/* DEW page header */}
             {!location.pathname.includes("_help") && helpLink !== "" && (
               <Button
                 color="button"
@@ -379,7 +385,8 @@ export default function Header({ currentPage }) {
                 style={{
                   border: "none",
                   fontSize: "20px",
-                  color: CustomPalette.PRIMARY
+                  color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
                 }}
                 value={selectedLanguage}
                 onChange={changeLanguage}

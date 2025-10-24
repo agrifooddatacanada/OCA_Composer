@@ -17,6 +17,7 @@ import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { CreateDataEntryExcel } from "./CreateDataEntryExcel";
 import { getDescriptiveFileName } from "../constants/utils";
+import { useTranslation } from "react-i18next";
 
 const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) => {
   let workbook = null;
@@ -56,6 +57,7 @@ const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) =>
 };
 
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
+  const { t } = useTranslation();
   const { languages, schemaDescription } = useContext(Context);
   const appearAnimation =
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
@@ -99,7 +101,7 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
         }}
         disabled={disableButtonCheck}
       >
-        Generate Data Entry Excel
+        {t("Generate Data Entry Excel")}
       </Button>
       <Dialog
         open={open}

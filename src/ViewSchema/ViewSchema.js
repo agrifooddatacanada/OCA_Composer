@@ -32,6 +32,8 @@ import { codesToLanguages } from "../constants/isoCodes";
 
 import ErrorPopup from "./ErrorPopup";
 import CustomRouterLink from "../components/CustomRouterLink";
+import ConfirmResetCard from "./ConfirmResetCard";
+import LinkCard from "./LinkCard";
 
 // Lazy load the schema visualization component to avoid React hook issues
 const SchemaVisualizationEmbed = React.lazy(
@@ -50,10 +52,13 @@ export default function ViewSchema({
   const { t } = useTranslation();
 
   const { 
-    languages, 
-    schemaDescription, 
+    currentTheme,
+    languages,
+    schemaDescription,
+    attributeRowData,
+    lanAttributeRowData,
     isZip, 
-    isZipEdited, 
+    isZipEdited,
     setIsZipEdited,
     setCurrentPage, 
     history,
@@ -155,12 +160,12 @@ export default function ViewSchema({
           sx={{
             backgroundColor:
               getCurrentLanguage() === language
-                ? CustomPalette.PRIMARY
-                : CustomPalette.SECONDARY,
+                ? (currentTheme?.buttonStyles?.primary ?? CustomPalette.PRIMARY)
+                : (currentTheme?.buttonStyles?.secondary ?? CustomPalette.SECONDARY),
             borderRadius,
             minWidth: languages.length < 5 ? "12rem" : "10rem",
             boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.PRIMARY}`
+            border: `0.5px solid ${currentTheme?.primaryColor ?? CustomPalette.PRIMARY}`
           }}
         >
           <Typography variant="button">{minimizedLanguage}</Typography>
@@ -173,6 +178,9 @@ export default function ViewSchema({
   const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
     <Box key={languageSegment.join(",")}>{createLanguageRow(languageSegment, index)}</Box>
   ));
+  
+  const [showLink, setShowLink] = useState(false);
+  const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [displayArray, setDisplayArray] = useState([]);
   const { resetToDefaults, exportDisabled } = useExportLogic();
   const {
@@ -425,7 +433,8 @@ export default function ViewSchema({
             sx={{
               textAlign: "left",
               alignSelf: "flex-start",
-              color: CustomPalette.PRIMARY
+              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
             }}
             onClick={pageBack}
           >
@@ -435,12 +444,13 @@ export default function ViewSchema({
         {isPageForward && !pageForward && (
           <Button
             color="navButton"
+            onClick={moveBackward}
             sx={{
               textAlign: "left",
               alignSelf: "flex-start",
-              color: CustomPalette.PRIMARY
+              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
             }}
-            onClick={moveBackward}
           >
             <ArrowBackIosIcon /> {t("Back")}
           </Button>
@@ -452,7 +462,10 @@ export default function ViewSchema({
             <Button
               color="navButton"
               onClick={pageForward}
-              sx={{ color: CustomPalette.PRIMARY }}
+              sx={{
+                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              }}
             >
               {t("Next")} <ArrowForwardIosIcon />
             </Button>
@@ -493,6 +506,367 @@ export default function ViewSchema({
             </>
           )}
           {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+            <Box sx={{ display: "flex", flexDirection: "row", gap: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "row", gap: 3 }}>
+                {isZip && (
+                  <>
+                    <Button
+                      color="button"
+                      variant="contained"
+                      onClick={() => {
+                        setCurrentPage("Metadata");
+                        setIsZipEdited(true);
+                      }}
+                      sx={{
+                        alignSelf: "flex-end",
+                        display: "flex",
+                        justifyContent: "space-around",
+                        padding: "0.5rem 1rem"
+                      }}
+                    >
+                      {t("Edit Schema")}
+                    </Button>
+                    <Button
+                      color="button"
+                      variant="contained"
+                      onClick={downloadReadMe}
+                      sx={{
+                        alignSelf: "flex-end",
+                        display: "flex",
+                        justifyContent: "space-around",
+                        padding: "0.5rem 1rem"
+                      }}
+                      disabled={exportDisabled}
+                    >
+                      {t("Download ReadMe")}
+                    </Button>
+                  </>
+                )}
+                {isExport && (!isZip || (isZip && isZipEdited)) ? (
+                  <Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: CustomPalette.GREY_600
+                      }}
+                    >
+                      <Button
+                        color="button"
+                        variant="contained"
+                        onClick={handleClickDownload}
+                        sx={{
+                          alignSelf: "flex-end",
+                          width: "13rem",
+                          display: "flex",
+                          justifyContent: "space-around",
+                          p: 1
+                        }}
+                        disabled={exportDisabled}
+                      >
+                        {t("Finish and Download")} <CheckCircleIcon />
+                      </Button>
+                      <Box sx={{ marginLeft: "1rem" }}>
+                        <Tooltip
+                          title={t(
+                            "Export your schema in a .json machine-readable version and..."
+                          )}
+                          placement="left"
+                          arrow
+                        >
+                          <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                        </Tooltip>
+                      </Box>
+                    </Box>
+                  </Box>
+                ) : (
+                  <></>
+                )}
+              </Box>
+            </Box>
+          )}
+        </Box>
+      </Box>
+      
+      {showLink && <LinkCard setShowLink={setShowLink} />}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          margin: "2rem 2rem 4rem 2rem"
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            width: "100%"
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              width: "100%"
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center"
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: 22,
+                  fontWeight: "bold",
+                  color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                }}
+              >
+                {t("Schema Language")}
+              </Typography>
+              <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
+                <Tooltip
+                  title={t(
+                    "Toggles between the one or more languages used in the schema"
+                  )}
+                  placement="right"
+                  arrow
+                >
+                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                </Tooltip>
+              </Box>
+            </Box>
+            <Box sx={{ mb: 4, width: "70rem" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column-reverse",
+                  alignItems: "flex-start"
+                }}
+              >
+                {languageButtonDisplay}
+              </Box>
+            </Box>
+          </Box>
+          {isPageForward && isExport && (
+            <Box
+              sx={{
+                padding: 2,
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                backgroundColor: "#f9f9f9",
+                width: "300px",
+                textAlign: "left",
+                position: "absolute",
+                right: 0,
+                marginRight: "4rem"
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: 16,
+                  color: "#333"
+                }}
+              >
+                {t("Note: Downloading two files")}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  marginTop: 1
+                }}
+              >
+                {t("1) Schema in .txt format, readable and archivable.")}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  marginTop: 1
+                }}
+              >
+                {t(
+                  "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine."
+                )}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+        {/* <Typography
+          sx={{
+            fontSize: 28,
+            fontWeight: "bold",
+            color: CustomPalette.PRIMARY,
+            mb: 2,
+            wordWrap: "break-word",
+            textAlign: "left",
+            maxWidth: "35rem",
+          }}
+        >
+          {currentLanguage.replace(/\b\w/g, (match) => match.toUpperCase())}
+        </Typography> */}
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            marginTop: 2
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 22,
+              fontWeight: "bold",
+              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+            }}
+          >
+            {t("Schema Metadata")}
+          </Typography>
+          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
+            <Tooltip
+              title={t(
+                "Language specific information describing general schema information"
+              )}
+              placement="right"
+              arrow
+            >
+              <HelpOutlineIcon sx={{ fontSize: 15 }} />
+            </Tooltip>
+          </Box>
+        </Box>
+        <SchemaDescription currentLanguage={getCurrentLanguage()} />
+
+        {/* Multi-Schema Visualization */}
+        {hasHierarchy && (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                marginTop: 4,
+                marginBottom: 1
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: 22,
+                  fontWeight: "bold",
+                  color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                }}
+              >
+                {t("Multi-Schema Visualization", {
+                  defaultValue: "Multi-Schema Visualization"
+                })}
+              </Typography>
+              <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
+                <Tooltip
+                  title={t("Visual representation of references between schemas", {
+                    defaultValue: "Visual representation of references between schemas"
+                  })}
+                  placement="right"
+                  arrow
+                >
+                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                </Tooltip>
+              </Box>
+            </Box>
+
+            {/* Mode toggle switch */}
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <ToggleButtonGroup
+                  exclusive
+                  value={visualizationMode}
+                  onChange={(_e, val) => {
+                    if (val) setVisualizationMode(val);
+                  }}
+                  size="small"
+                  color="primary"
+                  sx={{
+                    "& .MuiToggleButton-root": {
+                      border: `1px solid ${CustomPalette.PRIMARY}`,
+                      color: CustomPalette.PRIMARY,
+                      backgroundColor: CustomPalette.PINK_100,
+                      "&.Mui-selected": {
+                        backgroundColor: CustomPalette.PRIMARY,
+                        color: "white",
+                        "&:hover": {
+                          backgroundColor: CustomPalette.SECONDARY
+                        }
+                      }
+                    }
+                  }}
+                >
+                  <ToggleButton value="detailed">
+                    {t("Detailed", { defaultValue: "Detailed" })}
+                  </ToggleButton>
+                  <ToggleButton value="simplified">
+                    {t("Simplified", { defaultValue: "Simplified" })}
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+            </Box>
+
+            {/* Visualization embed */}
+            <Box sx={{ marginBottom: "2rem", width: "100%", minHeight: "400px" }}>
+              <Suspense fallback={<Loading />}>
+                <SchemaVisualizationEmbed
+                  key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
+                  schemaDescription={schemaDescription}
+                  language={getCurrentLanguage()}
+                  OCAPackage={updatedOCAPackage}
+                  viewMode={visualizationMode}
+                  currentSchemaId={currentSchemaId}
+                  setCurrentSchemaId={handleSchemaSwitch}
+                />
+              </Suspense>
+            </Box>
+          </>
+        )}
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            marginTop: 4,
+            marginBottom: 2
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 22,
+              fontWeight: "bold",
+              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+            }}
+          >
+            {t("Schema Details")}
+          </Typography>
+          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
+            <Tooltip
+              title={t(
+                "The details of the schema including attribute names and their features as well as language specific information"
+              )}
+              placement="right"
+              arrow
+            >
+              <HelpOutlineIcon sx={{ fontSize: 15 }} />
+            </Tooltip>
+          </Box>
+        </Box>
+        <ViewGrid
+          displayArray={displayArray}
+          currentLanguage={getCurrentLanguage()}
+          setLoading={setLoading}
+        />
+      </Box>
+      {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Box>
             <Button
               color="button"
               variant="contained"
@@ -508,26 +882,26 @@ export default function ViewSchema({
               {t("Finish and Download", { defaultValue: "Finish and Download" })}{" "}
               <CheckCircleIcon />
             </Button>
-          )}
-          {addClearButton && (
-            <Button
-              color="warning"
-              variant="outlined"
-              onClick={resetToDefaults}
-              sx={{
-                width: "20rem",
-                display: "flex",
-                justifyContent: "space-around",
-                p: 1
-              }}
-            >
-              {t("Clear All Data and Restart", {
-                defaultValue: "Clear All Data and Restart"
-              })}
-            </Button>
-          )}
+            {addClearButton && (
+              <Button
+                color="warning"
+                variant="outlined"
+                onClick={resetToDefaults}
+                sx={{
+                  width: "20rem",
+                  display: "flex",
+                  justifyContent: "space-around",
+                  p: 1
+                }}
+              >
+                {t("Clear All Data and Restart", {
+                  defaultValue: "Clear All Data and Restart"
+                })}
+              </Button>
+            )}
+          </Box>
         </Box>
-      </Box>
+      )}
 
       {/* Note about downloading files */}
       {isPageForward && isExport && (
@@ -573,227 +947,17 @@ export default function ViewSchema({
         </Box>
       )}
 
-      {/* Language selector */}
-      <Box sx={{ marginTop: 4 }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center"
+
+      {/* Confirm Reset Dialog */}
+      {showConfirmReset && (
+        <ConfirmResetCard
+          onConfirm={() => {
+            setShowConfirmReset(false);
+            resetToDefaults();
           }}
-        >
-          <Typography
-            sx={{
-              fontSize: 22,
-              fontWeight: "bold",
-              color: CustomPalette.PRIMARY
-            }}
-          >
-            {t("Schema Language")}
-          </Typography>
-          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
-            <Tooltip
-              title={t(
-                "Toggles between the one or more languages used in the schema"
-              )}
-              placement="right"
-              arrow
-            >
-              <HelpOutlineIcon sx={{ fontSize: 15 }} />
-            </Tooltip>
-          </Box>
-        </Box>
-        <Box sx={{ mb: 4, width: "70rem" }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column-reverse",
-              alignItems: "flex-start"
-            }}
-          >
-            {languageButtonDisplay}
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Schema Metadata section */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          marginTop: 2
-        }}
-      >
-        <Typography
-          sx={{
-            fontSize: 22,
-            fontWeight: "bold",
-            color: CustomPalette.PRIMARY
-          }}
-        >
-          {t("Schema Metadata")}
-        </Typography>
-        <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
-          <Tooltip
-            title={t(
-              "Language specific information describing general schema information"
-            )}
-            placement="right"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </Box>
-      </Box>
-      <SchemaDescription key={getCurrentLanguage()} currentLanguage={getCurrentLanguage()} />
-
-      {/* Multi-Schema Visualization */}
-      {hasHierarchy && (
-        <>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              marginTop: 2,
-              marginBottom: 1
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: 22,
-                fontWeight: "bold",
-                color: CustomPalette.PRIMARY
-              }}
-            >
-              {t("Multi-Schema Visualization", {
-                defaultValue: "Multi-Schema Visualization"
-              })}
-            </Typography>
-            <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
-              <Tooltip
-                title={t("Visual representation of references between schemas", {
-                  defaultValue: "Visual representation of references between schemas"
-                })}
-                placement="right"
-                arrow
-              >
-                <HelpOutlineIcon sx={{ fontSize: 15 }} />
-              </Tooltip>
-            </Box>
-          </Box>
-
-          {/* Mode toggle switch */}
-          <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
-            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <ToggleButtonGroup
-                exclusive
-                value={visualizationMode}
-                onChange={(_e, val) => {
-                  if (val) setVisualizationMode(val);
-                }}
-                size="small"
-                color="primary"
-                sx={{
-                  "& .MuiToggleButton-root": {
-                    border: `1px solid ${CustomPalette.PRIMARY}`,
-                    color: CustomPalette.PRIMARY,
-                    backgroundColor: CustomPalette.PINK_100,
-                    textTransform: "none",
-                    fontWeight: 600,
-                    "&:hover": {
-                      backgroundColor: CustomPalette.PINK_200
-                    }
-                  },
-                  "& .MuiToggleButton-root.Mui-selected": {
-                    color: CustomPalette.WHITE,
-                    backgroundColor: CustomPalette.PRIMARY,
-                    "&:hover": {
-                      backgroundColor: CustomPalette.SECONDARY
-                    }
-                  }
-                }}
-              >
-                <ToggleButton value="detailed">Attribute-to-Schema</ToggleButton>
-                <ToggleButton value="tree">Schema-to-Schema</ToggleButton>
-              </ToggleButtonGroup>
-            </Box>
-          </Box>
-
-          <Box sx={{ mb: 4, width: "100%" }}>
-            <Suspense
-              fallback={
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "70vh"
-                  }}
-                >
-                  <Loading />
-                </Box>
-              }
-            >
-              <SchemaVisualizationEmbed
-                key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
-                attributeRowData={(() => {
-                  // Get attribute data from MultiSchema context for visualization
-                  const schemaState = getSchemaState(currentSchemaId);
-                  return schemaState?.attributes || [];
-                })()}
-                schemaDescription={schemaDescription}
-                languages={filteredLanguages}
-                schemaLanguageOverride={schemaLanguageOverride}
-                OCAPackage={updatedOCAPackage}
-                viewMode={visualizationMode}
-                height="70vh"
-                currentSchemaId={currentSchemaId}
-                setCurrentSchemaId={handleSchemaSwitch}
-              />
-            </Suspense>
-          </Box>
-        </>
-      )}
-
-      {/* Schema Details header and grid */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          marginTop: 4,
-          marginBottom: 2
-        }}
-      >
-        <Typography
-          sx={{
-            fontSize: 22,
-            fontWeight: "bold",
-            color: CustomPalette.PRIMARY
-          }}
-        >
-          {t("Schema Details")}
-        </Typography>
-        <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
-          <Tooltip
-            title={t(
-              "The details of the schema including attribute names and their features as well as language specific information"
-            )}
-            placement="right"
-            arrow
-          >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
-        </Box>
-      </Box>
-      <Box sx={{ marginBottom: "2rem" }}>
-        <ViewGrid
-          currentLanguage={getCurrentLanguage()}
-          setCurrentLanguage={setSchemaLanguageOverride}
-          displayArray={displayArray}
-          setDisplayArray={setDisplayArray}
+          onCancel={() => setShowConfirmReset(false)}
         />
-      </Box>
-
-      {/* Moved action buttons to header above */}
+      )}
 
       {/* Error Popup */}
       {(exportError || multiSchemaExportError) && (

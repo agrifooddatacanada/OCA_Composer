@@ -1,16 +1,17 @@
-import React from "react";
+import React, { useContext } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, Typography, Alert, Tooltip, Box } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import LoopIcon from "@mui/icons-material/Loop";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { useTranslation } from "react-i18next";
+import { CustomPalette } from "../constants/customPalette";
 import {
   defaultNoteDescription,
   defaultTooltip,
   defaultUploadedDescription
 } from "../constants/constants";
-import { CustomPalette } from "../constants/customPalette";
+import { Context } from "../App";
 
 export default function DropCard({
   loading,
@@ -30,6 +31,7 @@ export default function DropCard({
   noteDescription = defaultNoteDescription
 }) {
   const { t } = useTranslation();
+  const { currentTheme } = useContext(Context);
   return (
     <section
       className="container"
@@ -120,11 +122,13 @@ export default function DropCard({
                 sx={{
                   fontSize: 14,
                   mb: 2,
-                  color:
-                    dropDisabled === false
-                      ? CustomPalette.PRIMARY
-                      : CustomPalette.GREY_600,
-                  whiteSpace: "pre-line"
+                color:
+                  dropDisabled === false
+                    ? (currentTheme?.primaryColor ?? CustomPalette.PRIMARY)
+                    : CustomPalette.GREY_600,
+                fontFamily:
+                  currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif",
+                whiteSpace: "pre-line"
                 }}
                 gutterBottom
               >
@@ -137,7 +141,13 @@ export default function DropCard({
                   </>
                 )}
               </Typography>
-              <Typography sx={{ fontSize: 12, color: CustomPalette.GREY_600 }}>
+              <Typography
+                sx={{
+                  fontSize: 12,
+                  color: CustomPalette.GREY_600,
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                }}
+              >
                 {t(noteDescription)}
               </Typography>
             </CardContent>

@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, createContext } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ReactGA from "react-ga4";
-import { Box, ThemeProvider } from "@mui/material";
+import { Box, createTheme, ThemeProvider } from "@mui/material";
 import "./App.css";
 import CustomTheme from "./constants/theme";
 import Home from "./Home";
@@ -16,6 +16,8 @@ import OCAMerge from "./OCAMerge/OCAMerge";
 import SchemaVisualization from "./SchemaVisualization/SchemaVisualization";
 import { getSchemaDataById } from "./SchemaVisualization/dataUtils";
 import { MultiSchemaProvider } from "./context/MultiSchemaContext";
+import { getCurrentTheme } from "./utils/themeDetector";
+import { CustomPalette } from "./constants/customPalette";
 // import Tutorial from "./Tutorial/Tutorial";
 import useUnitFramingUpdater from "./hooks/useUnitFramingUpdater";
 import { LanguageConstants } from "./utils/languageUtils";
@@ -36,6 +38,8 @@ import {
   hasUnitFramingOverlay,
   hasAttributeFramingOverlay
 } from "./constants/utils";
+
+// import { environVariables } from "./components/environmentConfig";
 
 export const Context = createContext();
 
@@ -168,7 +172,29 @@ function App() {
   // Ordering extension overlay for OCA package
   const [OCAPackage, setOCAPackage] = useState(null);
 
+  // Theme state
+  const [currentTheme, setCurrentTheme] = useState(getCurrentTheme());
 
+  // Custom theme for the MUI components like buttons, etc.
+  const customTheme = createTheme({
+    status: {
+      danger: "#e53e3e"
+    },
+    palette: {
+      button: {
+        light: CustomPalette.DARK,
+        main: currentTheme?.buttonStyles?.primary ?? CustomPalette.PRIMARY,
+        dark: currentTheme?.buttonStyles?.secondary ?? CustomPalette.SECONDARY,
+        contrastText: currentTheme?.buttonStyles?.contrastText ?? CustomPalette.WHITE
+      },
+      navButton: {
+        light: CustomPalette.DARK,
+        main: currentTheme?.buttonStyles?.primary ?? CustomPalette.PRIMARY,
+        dark: currentTheme?.buttonStyles?.secondary ?? CustomPalette.SECONDARY,
+        contrastText: currentTheme?.buttonStyles?.contrastText ?? CustomPalette.WHITE
+      }
+    }
+  });
 
   const pageForward = () => {
     let currentIndex = pagesArray.indexOf(currentPage);
@@ -187,6 +213,15 @@ function App() {
       setHistory((prev) => prev.slice(0, prev.length - 1));
     }
   };
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setCurrentTheme(getCurrentTheme());
+    };
+
+    window.addEventListener("popstate", handleThemeChange);
+    return () => window.removeEventListener("popstate", handleThemeChange);
+  }, []);
 
   useEffect(() => {
     if (
@@ -519,7 +554,7 @@ function App() {
   useEffect(() => {
     if (jsonRawFile.length > 0) {
       const newMatchingRowData = [];
-      attributesList.forEach((item, index) => {
+      attributesList.forEach((item) => {
         // if matchingRowData has data, use it
         const matchingRow = matchingRowData.find((obj) => obj.Attribute === item);
         const newObj = {
@@ -530,7 +565,9 @@ function App() {
           newObj.Dataset = matchingRow.Dataset;
         }
         languages.forEach((lang) => {
-          newObj[lang] = lanAttributeRowData?.[lang]?.[index]?.Label;
+          const languageRows = lanAttributeRowData?.[lang] || [];
+          const matchingLangRow = languageRows.find((row) => row?.Attribute === item);
+          newObj[lang] = matchingLangRow?.Label || "";
         });
         newMatchingRowData.push(newObj);
       });
@@ -629,7 +666,7 @@ function App() {
 
   return (
     <div className="App">
-      <ThemeProvider theme={CustomTheme}>
+      <ThemeProvider theme={customTheme}>
         <MultiSchemaProvider OCAPackage={OCAPackage}>
           <Context.Provider
             // eslint-disable-next-line react/jsx-no-constructed-context-values
@@ -773,7 +810,8 @@ function App() {
               currentSchemaId,
               setCurrentSchemaId,
               editingSchemaId,
-              setEditingSchemaId
+              setEditingSchemaId,
+              currentTheme
             }}
           >
             <Box

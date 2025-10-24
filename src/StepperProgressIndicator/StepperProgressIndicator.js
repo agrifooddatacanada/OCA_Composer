@@ -1,8 +1,10 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Box, Step, StepLabel, Stepper } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 
 export default function StepperProgressIndicator({ activeStep, steps }) {
+  const { t } = useTranslation();
   return (
     <Box sx={{ px: 10, py: 4 }}>
       <Stepper activeStep={activeStep} alternativeLabel>
@@ -18,7 +20,7 @@ export default function StepperProgressIndicator({ activeStep, steps }) {
               }
             }}
           >
-            <StepLabel>{step.label}</StepLabel>
+            <StepLabel>{t(step.label)}</StepLabel>
           </Step>
         ))}
       </Stepper>

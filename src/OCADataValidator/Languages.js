@@ -1,7 +1,8 @@
-import { Box, FormControl, MenuItem, Select } from '@mui/material';
-import React from 'react';
-import { CustomPalette } from '../constants/customPalette';
-import { useTranslation } from 'react-i18next';
+import React, { useContext } from "react";
+import { useTranslation } from "react-i18next";
+import { Box, FormControl, MenuItem, Select } from "@mui/material";
+import { CustomPalette } from "../constants/customPalette";
+import { Context } from "../App";
 
 const Languages = ({
   languages,
@@ -9,37 +10,40 @@ const Languages = ({
   handleChange,
   handleClick,
   isDropdownOpen,
-  setIsDropdownOpen,
+  setIsDropdownOpen
 }) => {
   const { t } = useTranslation();
-  const typesDisplay = languages.map((value, index) => (
-    <MenuItem
-      key={index + "_" + value}
-      value={value}
-      sx={{ border: "none", height: "2rem" }}
-    >
+  const { currentTheme } = useContext(Context);
+  const typesDisplay = languages.map((value) => (
+    <MenuItem key={value} value={value} sx={{ border: "none", height: "2rem" }}>
       {value}
     </MenuItem>
   ));
   return (
-    <Box sx={{
-      alignContent: 'start',
-      display: 'flex',
-      height: "wrap-content",
-    }}>
-      <Box sx={{
-        color: CustomPalette.PRIMARY,
-        fontWeight: 'bold',
-        alignSelf: 'center',
-        textAlign: 'center',
-      }}>{t('Language')}: &nbsp;&nbsp;</Box>
-      {" "}
+    <Box
+      sx={{
+        alignContent: "start",
+        display: "flex",
+        height: "wrap-content"
+      }}
+    >
+      <Box
+        sx={{
+          color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+          fontWeight: "bold",
+          alignSelf: "center",
+          textAlign: "center",
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+        }}
+      >
+        {t("Language")}: &nbsp;&nbsp;
+      </Box>{" "}
       <Box>
         <FormControl
           fullWidth
           variant="standard"
           sx={{
-            height: "100%",
+            height: "100%"
           }}
         >
           <Select
@@ -48,7 +52,7 @@ const Languages = ({
             label="Type"
             onChange={handleChange}
             sx={{
-              height: "100%",
+              height: "100%"
               // fontSize: "small",
             }}
             onClick={handleClick}

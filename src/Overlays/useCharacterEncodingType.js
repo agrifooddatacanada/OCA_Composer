@@ -3,8 +3,8 @@ import { MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { displayValues } from "../constants/constants";
 
-export const CharacterEncodingTypeRenderer = (props) => {
-  const [type, setType] = useState(props?.value);
+export const CharacterEncodingTypeRenderer = ({ value, node }) => {
+  const [type, setType] = useState(value);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleChange = (e) => {

@@ -85,21 +85,6 @@ const CharacterEncoding = () => {
     setCharacterEncodingRowData
   );
 
-  // Define header components as functions, not JSX elements
-  const AttributeHeaderComponent = () => (
-    <CellHeader
-      headerText={t("Attributes")}
-      helpText="This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
-    />
-  );
-
-  const CharacterEncodingHeaderComponent = () => (
-    <CellHeader
-      headerText={t("Character Encoding")}
-      helpText="Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here."
-    />
-  );
-
   const columnDefs = useMemo(
     () => [
       {
@@ -108,11 +93,21 @@ const CharacterEncoding = () => {
         width: 180,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
-        headerComponent: AttributeHeaderComponent
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Attributes"),
+          helpText:
+            "This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
+        }
       },
       {
         field: "Character Encoding",
-        headerComponent: CharacterEncodingHeaderComponent,
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Character Encoding"),
+          helpText:
+            "Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here."
+        },
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
           attr: params.data.Attribute
@@ -120,7 +115,7 @@ const CharacterEncoding = () => {
         width: 200
       }
     ],
-    [t, AttributeHeaderComponent, CharacterEncodingHeaderComponent]
+    [t]
   );
 
   const handleForward = useCallback(() => {
