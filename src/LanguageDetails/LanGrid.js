@@ -587,7 +587,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   }, [updateListColumn]);
 
   return (
-    <div className="ag-theme-balham" style={{ width: 890 }}>
+    <div className="ag-theme-balham" style={{ width: 890, height: 'auto' }}>
       <style>{gridStyles}</style>
       {lanAttributeRowData[currentLanguage] &&
       lanAttributeRowData[currentLanguage].length > 0 ? (
