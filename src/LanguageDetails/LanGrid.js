@@ -587,8 +587,18 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   }, [updateListColumn]);
 
   return (
-    <div className="ag-theme-balham" style={{ width: 890, height: 'auto' }}>
-      <style>{gridStyles}</style>
+    <div className="ag-theme-balham" style={{ width: 890 }}>
+      <style>
+        {gridStyles}
+        {`
+          .ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height {
+            min-height: unset !important;
+          }
+          .ag-theme-balham.ag-layout-auto-height {
+            height: auto !important;
+          }
+        `}
+      </style>
       {lanAttributeRowData[currentLanguage] &&
       lanAttributeRowData[currentLanguage].length > 0 ? (
         <AgGridReact
