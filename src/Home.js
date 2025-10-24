@@ -40,7 +40,7 @@ const Home = ({
     loadFromLocalStorage,
     switchToSchema
   } = useMultiSchema();
-  const { OCAPackage, overlay, setOverlay } = useContext(Context);
+  const { OCAPackage, overlay, setOverlay, isZip, setIsZipEdited } = useContext(Context);
 
   // Try to load saved state when package is loaded
   useEffect(() => {
@@ -182,6 +182,11 @@ const Home = ({
   const handleStepClick = (index) => {
     const target = steps[index];
     if (target?.page) {
+      // If navigating from View page via stepper to make edits, mark zip as edited
+      if (currentPage === "View" && target.page !== "View" && isZip) {
+        setIsZipEdited(true);
+      }
+
       // If we're currently on the Metadata step, validate and show popup if needed
       if (currentPage === "Metadata") {
         if (schemaMetadataRef.current && typeof schemaMetadataRef.current.showValidationPopup === "function") {
@@ -360,7 +365,14 @@ const Home = ({
             pageForward={pageForward} 
           />
         )}
-        {currentPage === "View" && <ViewSchema pageBack={pageBack} addClearButton />}
+        {currentPage === "View" && (
+          <ViewSchema 
+            pageBack={pageBack} 
+            addClearButton 
+            isExport 
+            isPageForward 
+          />
+        )}
         {currentPage === "Create" && <CreateManually />}
         {currentPage === "Overlays" && (
           <Overlays pageBack={pageBack} pageForward={pageForward} />

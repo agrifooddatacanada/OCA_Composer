@@ -456,7 +456,7 @@ export default function ViewSchema({
           </Button>
         )}
 
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           {/* Next button for page forward */}
           {isPageForward && pageForward && (
             <Button
@@ -471,7 +471,7 @@ export default function ViewSchema({
             </Button>
           )}
           
-          {isZip && isExport && (
+          {isZip && isExport && !isZipEdited && (
             <>
               <Button
                 color="button"
@@ -505,85 +505,54 @@ export default function ViewSchema({
               </Button>
             </>
           )}
+
+          {/* Finish and Download button - moved to top */}
           {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
-            <Box sx={{ display: "flex", flexDirection: "row", gap: 3 }}>
-              <Box sx={{ display: "flex", flexDirection: "row", gap: 3 }}>
-                {isZip && (
-                  <>
-                    <Button
-                      color="button"
-                      variant="contained"
-                      onClick={() => {
-                        setCurrentPage("Metadata");
-                        setIsZipEdited(true);
-                      }}
-                      sx={{
-                        alignSelf: "flex-end",
-                        display: "flex",
-                        justifyContent: "space-around",
-                        padding: "0.5rem 1rem"
-                      }}
-                    >
-                      {t("Edit Schema")}
-                    </Button>
-                    <Button
-                      color="button"
-                      variant="contained"
-                      onClick={downloadReadMe}
-                      sx={{
-                        alignSelf: "flex-end",
-                        display: "flex",
-                        justifyContent: "space-around",
-                        padding: "0.5rem 1rem"
-                      }}
-                      disabled={exportDisabled}
-                    >
-                      {t("Download ReadMe")}
-                    </Button>
-                  </>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Button
+                color="button"
+                variant="contained"
+                onClick={handleClickDownload}
+                sx={{
+                  width: "13rem",
+                  display: "flex",
+                  justifyContent: "space-around",
+                  p: 1
+                }}
+                disabled={exportDisabled}
+              >
+                {t("Finish and Download", { defaultValue: "Finish and Download" })}{" "}
+                <CheckCircleIcon />
+              </Button>
+              <Tooltip
+                title={t(
+                  "Export your schema in a .json machine-readable version and..."
                 )}
-                {isExport && (!isZip || (isZip && isZipEdited)) ? (
-                  <Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        color: CustomPalette.GREY_600
-                      }}
-                    >
-                      <Button
-                        color="button"
-                        variant="contained"
-                        onClick={handleClickDownload}
-                        sx={{
-                          alignSelf: "flex-end",
-                          width: "13rem",
-                          display: "flex",
-                          justifyContent: "space-around",
-                          p: 1
-                        }}
-                        disabled={exportDisabled}
-                      >
-                        {t("Finish and Download")} <CheckCircleIcon />
-                      </Button>
-                      <Box sx={{ marginLeft: "1rem" }}>
-                        <Tooltip
-                          title={t(
-                            "Export your schema in a .json machine-readable version and..."
-                          )}
-                          placement="left"
-                          arrow
-                        >
-                          <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                        </Tooltip>
-                      </Box>
-                    </Box>
-                  </Box>
-                ) : (
-                  <></>
-                )}
-              </Box>
+                placement="right"
+                arrow
+              >
+                <HelpOutlineIcon sx={{ fontSize: 18, color: CustomPalette.GREY_600 }} />
+              </Tooltip>
             </Box>
+          )}
+
+          {/* Clear All Data button - moved to top */}
+          {addClearButton && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+            <Button
+              color="warning"
+              variant="outlined"
+              onClick={resetToDefaults}
+              sx={{
+                width: "20rem",
+                display: "flex",
+                justifyContent: "space-around",
+                p: 1
+              }}
+            >
+              {t("Clear All Data and Restart", {
+                defaultValue: "Clear All Data and Restart"
+              })}
+            </Button>
           )}
         </Box>
       </Box>
@@ -817,7 +786,7 @@ export default function ViewSchema({
                 <SchemaVisualizationEmbed
                   key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
                   schemaDescription={schemaDescription}
-                  language={getCurrentLanguage()}
+                  schemaLanguageOverride={getCurrentLanguage()}
                   OCAPackage={updatedOCAPackage}
                   viewMode={visualizationMode}
                   currentSchemaId={currentSchemaId}
@@ -864,44 +833,6 @@ export default function ViewSchema({
           setLoading={setLoading}
         />
       </Box>
-      {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-          <Box>
-            <Button
-              color="button"
-              variant="contained"
-              onClick={handleClickDownload}
-              sx={{
-                width: "13rem",
-                display: "flex",
-                justifyContent: "space-around",
-                p: 1
-              }}
-              disabled={exportDisabled}
-            >
-              {t("Finish and Download", { defaultValue: "Finish and Download" })}{" "}
-              <CheckCircleIcon />
-            </Button>
-            {addClearButton && (
-              <Button
-                color="warning"
-                variant="outlined"
-                onClick={resetToDefaults}
-                sx={{
-                  width: "20rem",
-                  display: "flex",
-                  justifyContent: "space-around",
-                  p: 1
-                }}
-              >
-                {t("Clear All Data and Restart", {
-                  defaultValue: "Clear All Data and Restart"
-                })}
-              </Button>
-            )}
-          </Box>
-        </Box>
-      )}
 
       {/* Note about downloading files */}
       {isPageForward && isExport && (
