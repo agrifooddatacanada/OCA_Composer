@@ -32,6 +32,7 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
   });
 
   const sectionTitle = getMultilingualText(section.labels, currentLanguage, section.id || `Section ${index + 1}`);
+  const sectionDescription = getMultilingualText(section.descriptions, currentLanguage, '');
 
   return (
     <Card 
@@ -46,7 +47,7 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
       }}
     >
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: sectionDescription ? 1 : 0 }}>
           <DragIcon sx={{ color: CustomPalette.PRIMARY, flexShrink: 0 }} />
           <Typography 
             variant="subtitle1" 
@@ -69,6 +70,22 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
             </IconButton>
           </Box>
         </Box>
+
+        {sectionDescription && (
+          <Box sx={{ mb: 1, ml: 4 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: CustomPalette.GREY_600,
+                fontStyle: 'italic',
+                fontSize: '0.875rem',
+                ...textWrapStyle
+              }}
+            >
+              {sectionDescription}
+            </Typography>
+          </Box>
+        )}
 
         <Box sx={{ mt: 1 }}>
           {(section.questions || []).map((question, questionIndex) => (

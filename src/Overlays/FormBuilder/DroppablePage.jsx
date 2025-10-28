@@ -63,6 +63,7 @@ const DroppablePage = ({
   });
 
   const pageTitle = getMultilingualText(page.labels, currentLanguage, page.id || `Page ${pageIndex + 1}`);
+  const pageDescription = getMultilingualText(page.descriptions, currentLanguage, '');
 
   return (
     <Card
@@ -82,7 +83,7 @@ const DroppablePage = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            mb: 2,
+            mb: pageDescription ? 1 : 2,
             gap: 1
           }}
         >
@@ -124,6 +125,21 @@ const DroppablePage = ({
             </IconButton>
           </Box>
         </Box>
+
+        {pageDescription && (
+          <Box sx={{ mb: 2 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: CustomPalette.GREY_600,
+                fontStyle: 'italic',
+                ...textWrapStyle
+              }}
+            >
+              {pageDescription}
+            </Typography>
+          </Box>
+        )}
 
         <Box sx={{ minHeight: 100 }}>
           {page.sections?.map((section, sectionIndex) => (
