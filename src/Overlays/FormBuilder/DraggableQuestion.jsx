@@ -3,8 +3,6 @@ import { Card, CardContent, Box, Typography, IconButton, Collapse } from "@mui/m
 import { useDrag, useDrop } from 'react-dnd';
 import { DragIndicator as DragIcon, Edit as EditIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
-import { codesToLanguages } from "../../constants/isoCodes";
-import i18next from "i18next";
 import {
   formatCodeBinaryDescription,
   formatCodeDateDescription,
@@ -12,6 +10,8 @@ import {
   formatCodeTextDescription
 } from "../../constants/constants";
 import QuestionAnswerPreview from "./QuestionAnswerPreview";
+import getMultilingualText from "./utils/getMultilingualText";
+import { textWrapStyle } from "../../constants/styles";
 
 const findDescription = (formatText, attributeType) => {
   if (!formatText) return "";
@@ -43,20 +43,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
 
   
   const formatRuleDescription = findDescription(question.formatText, question.attributeType);
-  
-  // Get the question title - prioritize currentLanguage tab, then user's global UI language, then fallback
-  const getQuestionTitle = () => {
-    if (typeof question.title === 'object' && question.title !== null) {
-      if (currentLanguage && question.title[currentLanguage]) return question.title[currentLanguage];
-      
-      const userLanguage = codesToLanguages?.[i18next.language];
-      if (userLanguage && question.title[userLanguage]) return question.title[userLanguage];
-      
-      const firstLang = Object.keys(question.title)[0];
-      if (firstLang && question.title[firstLang]) return question.title[firstLang];
-    }
-    return question.title || 'Untitled Question';
-  };
+  const questionTitle = getMultilingualText(question.title, currentLanguage, question.attribute || 'Untitled Question');
 
   return (
     <Card 
@@ -84,13 +71,10 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
                   color: CustomPalette.GREY_800, 
                   flexGrow: 1,
                   minWidth: 0,
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                  whiteSpace: 'normal',
-                  lineHeight: 1.4
+                  ...textWrapStyle
                 }}
               >
-                {getQuestionTitle()}
+                {questionTitle}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
                 <IconButton 

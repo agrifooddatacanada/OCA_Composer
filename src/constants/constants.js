@@ -462,7 +462,7 @@ export const CARDINALITY = "cardinality";
 export const ORDERING = "ordering";
 
 // Form Information Overlay
-export const FORM_INFORMATION = "form_information";
+export const FORM = "form";
 
 // Unit Framing Overlay
 export const UNIT_FRAMING = "unit_framing";

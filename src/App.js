@@ -104,7 +104,7 @@ function App() {
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [FormInformationRowData, setFormInformationRowData] = useState([]);
-  const [formBuilderPages, setFormBuilderPages] = useState(null); // Persistent form builder state
+  const [formBuilderPages, setFormBuilderPages] = useState(null);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(overlayItems);
   const [selectedOverlay, setSelectedOverlay] = useState("");

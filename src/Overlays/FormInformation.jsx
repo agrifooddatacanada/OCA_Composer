@@ -15,11 +15,10 @@ import {
   formatCodeDateDescription,
   formatCodeNumericDescription,
   formatCodeTextDescription,
-  MAX_ATTR_LABEL_CHARS
+  MAX_ATTR_LABEL_CHARS,
+  FIELD_FORM_INFORMATION_OVERLAY
 } from "../constants/constants";
-import { FIELD_FORM_INFORMATION_OVERLAY } from "../constants/constants";
 import { getDateTimePickerConfig } from "./FormBuilder/utils/getDateTimePickerConfig";
-import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 
@@ -36,13 +35,14 @@ const findDescription = (formatText, attributeType) => {
   return formatText;
 };
 
+const PLACEHOLDER_EDITABLE_TYPES = ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"];
+
 
 const FormInformation = () => {
   const { t } = useTranslation();
   const {
     FormInformationRowData,
     setFormInformationRowData,
-    formBuilderPages,
     setFormBuilderPages,
     languages,
     setCurrentPage,
@@ -51,10 +51,8 @@ const FormInformation = () => {
     setLanAttributeRowData,
     attributesList,
     setAttributesList,
-    attributesWithLists,
     formatRuleRowData,
     setSelectedOverlay,
-    overlay,
     setOverlay
   } = useContext(Context);
 
@@ -92,7 +90,6 @@ const FormInformation = () => {
             const attr = item.Attribute;
             const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
             
-            // Clear placeholder for Binary and Boolean types
             if (attrType.includes("Binary") || attrType.includes("Boolean")) {
               return {
                 ...item,
@@ -124,10 +121,10 @@ const FormInformation = () => {
                 if (formatDescription) {
                   switch (formatDescription) {
                     case "any integer or decimal number, may begin with + or -":
-                      numericDefaultPlaceholder = "Any integer or decimal number";
+                      numericDefaultPlaceholder = "Enter any integer or decimal number";
                       break;
                     case "any integer":
-                      numericDefaultPlaceholder = "Any integer";
+                      numericDefaultPlaceholder = "Enter any integer";
                       break;
                     default:
                       numericDefaultPlaceholder = formatDescription;
@@ -141,12 +138,12 @@ const FormInformation = () => {
             let basePlaceholder = "";
             if (typeof basePlaceholderValue === 'object' && basePlaceholderValue !== null) {
               basePlaceholder = basePlaceholderValue[language] || "";
-            } else if (typeof basePlaceholderValue === 'string') {
-              basePlaceholder = basePlaceholderValue;
+            } else {
+              basePlaceholder = basePlaceholderValue || "";
             }
             
             let finalPlaceholder = item.Placeholder;
-            if (finalPlaceholder === null || finalPlaceholder === undefined || finalPlaceholder === "") {
+            if (!finalPlaceholder) {
               if (basePlaceholder) {
                 finalPlaceholder = basePlaceholder;
               } else if (isDateTimeType) {
@@ -402,14 +399,14 @@ const FormInformation = () => {
         editable: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
-          return ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"].includes(attrType);
+          return PLACEHOLDER_EDITABLE_TYPES.includes(attrType);
         },
         width: 240,
         autoHeight: true,
         cellStyle: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
-          const isEditable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"].includes(attrType);
+          const isEditable = PLACEHOLDER_EDITABLE_TYPES.includes(attrType);
           return isEditable ? preWrapWordBreak : greyCellStyle;
         },
         headerComponent: CellHeader,
@@ -424,7 +421,7 @@ const FormInformation = () => {
         valueSetter: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
-          const isEditable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"].includes(attrType);
+          const isEditable = PLACEHOLDER_EDITABLE_TYPES.includes(attrType);
           if (!isEditable) return true;
           params.data.Placeholder = params.newValue || "";
           return true;

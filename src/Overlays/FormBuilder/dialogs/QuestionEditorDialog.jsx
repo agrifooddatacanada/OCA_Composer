@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { 
-  Dialog, DialogTitle, DialogContent, DialogActions, Box, Button, TextField, 
-  Typography, IconButton, Divider, FormControl, InputLabel, Select, MenuItem,
-  FormControlLabel, Checkbox
+  Box, TextField, Typography, Divider, FormControl, InputLabel, 
+  Select, MenuItem, FormControlLabel, Checkbox
 } from "@mui/material";
-import { v4 as uuidv4 } from 'uuid';
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import { CustomPalette } from "../../../constants/customPalette";
 import { useTranslation } from "react-i18next";
+import BaseEditorDialog from "./BaseEditorDialog";
+import MultilingualFieldGroup from "./MultilingualFieldGroup";
 import {
   formatCodeBinaryDescription,
   formatCodeDateDescription,
@@ -15,6 +13,7 @@ import {
   formatCodeTextDescription,
   MAX_ATTR_LABEL_CHARS
 } from "../../../constants/constants";
+import { CustomPalette } from "../../../constants/customPalette";
 import { getDateTimePickerConfig } from "../utils/getDateTimePickerConfig";
 
 // Boolean value pairs for form inputs
@@ -56,7 +55,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
     attribute: '',
     required: false, 
     options: [],
-    booleanValues: null, // For custom boolean value selection
+    booleanValues: null, 
     ...question 
   });
   
@@ -121,9 +120,6 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
     }));
   };
   
-  const handleAddOption = () => setFormData(prev => ({ ...prev, options: [...prev.options, { id: uuidv4(), label: '', value: '' }] }));
-  const handleRemoveOption = (index) => setFormData(prev => ({ ...prev, options: prev.options.filter((_, i) => i !== index) }));
-  const handleOptionChange = (index, field, value) => setFormData(prev => ({ ...prev, options: prev.options.map((o, i) => i === index ? { ...o, [field]: value } : o) }));
   const needsOptions = [QUESTION_TYPES.MULTIPLE_CHOICE, QUESTION_TYPES.CHECKBOX, QUESTION_TYPES.RADIO, QUESTION_TYPES.DROPDOWN].includes(formData.type);
   
   const formatRuleDescription = findDescription(formData.formatText, formData.attributeType);
@@ -160,11 +156,12 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
   };
   
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ backgroundColor: CustomPalette.GREY_200, color: CustomPalette.GREY_800 }}>
-        {t("Edit Question")}
-      </DialogTitle>
-      <DialogContent>
+    <BaseEditorDialog
+      open={open}
+      onClose={onClose}
+      title={t("Edit Question")}
+      onSave={handleSave}
+    >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
           {/* Read-only fields */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
@@ -207,7 +204,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
                       disabled 
                       sx={{ 
                         fontWeight: 600, 
-                        backgroundColor: CustomPalette.GREY_100,
+                        backgroundColor: '#f5f5f5',
                         '&.Mui-disabled': {
                           opacity: 1
                         }
@@ -298,12 +295,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
                                 booleanValues: allValues
                               }));
                             }}
-                            sx={{
-                              color: CustomPalette.PRIMARY,
-                              '&.Mui-checked': {
-                                color: CustomPalette.PRIMARY
-                              }
-                            }}
+                            color="primary"
                           />
                         }
                         label={
@@ -325,41 +317,30 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
           <Divider />
           
           {/* Editable multilingual fields */}
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: CustomPalette.GREY_800 }}>{t("Question Labels")}</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{t("Question Labels")}</Typography>
           
-          {languages.map(lang => (
-            <Box key={lang} sx={{ pl: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 500, color: CustomPalette.PRIMARY }}>{lang}</Typography>
-              
-              <TextField 
-                label={`${t("Question Label")}`}
-                value={formData.title?.[lang] || ''} 
-                onChange={(e) => handleFieldChange(lang, 'title', e.target.value)} 
-                fullWidth 
-                size="small"
-                inputProps={{ maxLength: MAX_ATTR_LABEL_CHARS }}
-                // helperText={t("Question label for this language")}
-              />
-              
-              {isPlaceholderAvailable && (
-                <TextField 
-                  label={`${t("Placeholder")}`}
-                  value={formData.placeholder?.[lang] || ''} 
-                  onChange={(e) => handleFieldChange(lang, 'placeholder', e.target.value)} 
-                  fullWidth 
-                  size="small"
-                  inputProps={{ maxLength: MAX_ATTR_LABEL_CHARS }}
-                  helperText={
-                    (formData.attributeType === "DateTime" || formData.attributeType === "Array[DateTime]")
-                      ? t("Example format to show in the date field")
-                      : (formData.attributeType === "Numeric" || formData.attributeType === "Array[Numeric]")
-                      ? t("Example value or hint to show in the number field")
-                      : t("Placeholder text to display when field is empty")
-                  }
-                />
-              )}
-            </Box>
-          ))}
+          <MultilingualFieldGroup
+            languages={languages}
+            formData={formData}
+            fields={[
+              { 
+                name: 'title', 
+                label: t("Question Label"), 
+                maxLength: MAX_ATTR_LABEL_CHARS 
+              },
+              ...(isPlaceholderAvailable ? [{
+                name: 'placeholder', 
+                label: t("Placeholder"), 
+                maxLength: MAX_ATTR_LABEL_CHARS,
+                helperText: (formData.attributeType === "DateTime" || formData.attributeType === "Array[DateTime]")
+                  ? t("Example format to show in the date field")
+                  : (formData.attributeType === "Numeric" || formData.attributeType === "Array[Numeric]")
+                  ? t("Example value or hint to show in the number field")
+                  : t("Placeholder text to display when field is empty")
+              }] : [])
+            ]}
+            onChange={handleFieldChange}
+          />
           
           {needsOptions && formData.options && formData.options.length > 0 && (
             <>
@@ -376,29 +357,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
             </>
           )}
         </Box>
-      </DialogContent>
-      <DialogActions sx={{ backgroundColor: CustomPalette.GREY_200, px: 3, py: 2 }}>
-        <Button 
-          onClick={onClose}
-          sx={{ color: CustomPalette.GREY_600 }}
-        >
-          {t("Cancel")}
-        </Button>
-        <Button 
-          onClick={handleSave} 
-          variant="contained" 
-          color="button"
-          sx={{ 
-            backgroundColor: CustomPalette.PRIMARY,
-            '&:hover': {
-              backgroundColor: CustomPalette.DARK
-            }
-          }}
-        >
-          {t("Save")}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    </BaseEditorDialog>
   );
 };
 

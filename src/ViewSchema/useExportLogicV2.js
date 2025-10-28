@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
-import { languageCodesObject, languageNameToAlpha3Codes } from "../constants/isoCodes";
+import { languageCodesObject } from "../constants/isoCodes";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -18,7 +18,7 @@ import {
   FIELD_RANGE_OVERLAY,
   RANGE,
   ATTRIBUTE_FRAMING,
-  FORM_INFORMATION,
+  FORM,
   FIELD_FORM_INFORMATION_OVERLAY
 } from "../constants/constants";
 import {
@@ -27,10 +27,10 @@ import {
   getRangeOverlayInput,
   getTransformedEntryCodes,
   getUnitFramingInput,
-  getAttributeFramingInput
+  getAttributeFramingInput,
+  getFormInformationInput
 } from "../constants/utils";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
-import { convertToFormInformationOverlay } from "../Overlays/FormBuilder/utils/convertToFormInformation";
 
 const currentEnv = process.env.REACT_APP_ENV;
 
@@ -452,6 +452,7 @@ const useExportLogicV2 = () => {
       - unit framing overlay
       - ordering overlay
       - entry code overlay
+      - form overlay
       */
 
       const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
@@ -508,24 +509,17 @@ const useExportLogicV2 = () => {
           }),
         ...(overlay[FIELD_FORM_INFORMATION_OVERLAY].selected &&
           formBuilderPages &&
-          formBuilderPages.length > 0 && (() => {
-            const threeLetterCodes = languages.map(lang => 
-              languageNameToAlpha3Codes[lang.toLowerCase()] || lang
-            );
-            
-            const schemaName = {};
-            languages.forEach((lang, index) => {
-              const threeLetterCode = threeLetterCodes[index];
-              schemaName[threeLetterCode] = schemaDescription[lang]?.name || '';
-            });
-            
-            return {
-              form_information_overlay: {
-                type: FORM_INFORMATION,
-                ...convertToFormInformationOverlay(formBuilderPages, threeLetterCodes, schemaName)
-              }
-            };
-          })())
+          formBuilderPages.length > 0 && {
+            form_overlay: {
+              type: FORM,
+              ...getFormInformationInput(
+                formBuilderPages,
+                languages,
+                schemaDescription,
+                bundle.bundle.d
+              )
+            }
+          })
       };
 
       const extension_overlays = [extension_overlay_object];
@@ -562,6 +556,7 @@ const useExportLogicV2 = () => {
         );
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Error downloading OCA package:", error);
       setError("Could not download OCA package");
       downloadTextFile(

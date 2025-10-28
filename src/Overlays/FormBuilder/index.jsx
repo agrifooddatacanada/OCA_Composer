@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo, useRef, useState, useEffect } from "react";
+import React, { useCallback, useContext, useState, useEffect } from "react";
 import { Context } from "../../App";
 import BackNextSkeleton from "../../components/BackNextSkeleton";
 import { Box, Button, Typography, Tooltip } from "@mui/material";
@@ -9,7 +9,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuidv4 } from 'uuid';
-import { codesToLanguages, languageNameToAlpha3Codes } from "../../constants/isoCodes";
+import { codesToLanguages } from "../../constants/isoCodes";
 import i18next from "i18next";
 
 import AttributePalette from "./AttributePalette";
@@ -18,7 +18,7 @@ import QuestionEditorDialog from "./dialogs/QuestionEditorDialog";
 import SectionEditorDialog from "./dialogs/SectionEditorDialog";
 import PageEditorDialog from "./dialogs/PageEditorDialog";
 import { useUsedAttributes } from "./hooks/useUsedAttributes";
-import { convertToFormInformation, convertToFormInformationOverlay } from "./utils/convertToFormInformation";
+import { convertToFormInformation } from "./utils/convertToFormInformation";
 import { moveQuestionToPage, moveQuestionToSection, moveSectionBetweenPages, reorderQuestionInContainer, reorderSectionInPage } from "./utils/moves";
 
 const FormBuilder = () => {
@@ -104,7 +104,6 @@ const FormBuilder = () => {
   const [editingSectionIndex, setEditingSectionIndex] = useState(-1);
   const [targetPageIndex, setTargetPageIndex] = useState(-1);
   const [targetSectionIndex, setTargetSectionIndex] = useState(null);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const usedAttributes = useUsedAttributes(pages);
 
@@ -214,7 +213,6 @@ const FormBuilder = () => {
     setPages(prev => prev.map((p, i) => i === targetPageIndex ? { ...p, sections: p.sections.map((s, si) => si === editingSectionIndex ? { ...s, ...sectionData } : s) } : p));
   };
 
-  const handleAddQuestion = (pageIndex) => { setTargetPageIndex(pageIndex); setEditingQuestion(null); setEditingQuestionIndex(-1); setShowQuestionDialog(true); };
   const handleEditQuestion = (question, questionIndex, pageIndex, sectionIndex = null) => { setEditingQuestion(question); setEditingQuestionIndex(questionIndex); setTargetPageIndex(pageIndex); setTargetSectionIndex(sectionIndex); setShowQuestionDialog(true); };
   const handleDeleteQuestion = (questionIndex, pageIndex, sectionIndex = null) => {
     setPages(prev => prev.map((p, i) => {
@@ -344,19 +342,6 @@ const FormBuilder = () => {
     
     // Convert pages to form information format
     const formData = convertToFormInformation(pages);
-    
-    const threeLetterCodes = languages.map(lang => 
-      languageNameToAlpha3Codes[lang.toLowerCase()] || lang
-    );
-    
-    const schemaName = {};
-    languages.forEach((lang, index) => {
-      const threeLetterCode = threeLetterCodes[index];
-      schemaName[threeLetterCode] = schemaDescription[lang]?.name || '';
-    });
-    
-    const formDataOverlay = convertToFormInformationOverlay(pages, threeLetterCodes, schemaName);
-    console.log(formDataOverlay);
     setFormInformationRowData(formData);
     
     syncPlaceholdersToLanData();

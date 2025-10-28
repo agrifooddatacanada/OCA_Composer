@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import { useDrop } from "react-dnd";
 import {
-  Title as TitleIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Add as SectionIcon
@@ -18,9 +17,9 @@ import {
 import DraggableSection from "./DraggableSection";
 import DraggableQuestion from "./DraggableQuestion";
 import { CustomPalette } from "../../constants/customPalette";
-import { codesToLanguages } from "../../constants/isoCodes";
-import i18next from "i18next";
 import { useTranslation } from "react-i18next";
+import getMultilingualText from "./utils/getMultilingualText";
+import { textWrapStyle } from "../../constants/styles";
 
 const DroppablePage = ({
   page,
@@ -63,20 +62,7 @@ const DroppablePage = ({
     collect: (monitor) => ({ isOver: monitor.isOver() })
   });
 
-  // Get the page title - prioritize currentLanguage tab, then user's global UI language, then fallback
-  const getPageTitle = () => {
-    if (page.labels) {
-      if (currentLanguage && page.labels[currentLanguage])
-        return page.labels[currentLanguage];
-
-      const userLanguage = codesToLanguages?.[i18next.language];
-      if (userLanguage && page.labels[userLanguage]) return page.labels[userLanguage];
-
-      const firstLang = Object.keys(page.labels)[0];
-      if (firstLang && page.labels[firstLang]) return page.labels[firstLang];
-    }
-    return page.id || `Page ${pageIndex + 1}`;
-  };
+  const pageTitle = getMultilingualText(page.labels, currentLanguage, page.id || `Page ${pageIndex + 1}`);
 
   return (
     <Card
@@ -106,13 +92,10 @@ const DroppablePage = ({
               sx={{ 
                 fontWeight: "bold", 
                 color: CustomPalette.GREY_800,
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-                whiteSpace: 'normal',
-                lineHeight: 1.4
+                ...textWrapStyle
               }}
             >
-              {getPageTitle()}
+              {pageTitle}
             </Typography>
             <Chip
               label={`${(page.questions?.length || 0) + (page.sections?.reduce((acc, s) => acc + (s.questions?.length || 0), 0) || 0)} ${t("questions")}`}

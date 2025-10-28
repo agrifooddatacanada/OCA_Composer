@@ -1,7 +1,11 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
-import { codesToLanguages, alpha3CodesToTwoLetterCodes } from "./isoCodes";
+import {
+  codesToLanguages,
+  alpha3CodesToTwoLetterCodes,
+  languageNameToAlpha3Codes
+} from "./isoCodes";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -18,6 +22,8 @@ import {
   RANGE,
   SSSOM_MAPPER_API_URL
 } from "./constants";
+
+import { convertToFormInformationOverlay } from "../Overlays/FormBuilder/utils/convertToFormInformation";
 import ucumUnits from "./ucumUnits";
 
 export const getCurrentData = (currentApi, includedError) => {
@@ -503,6 +509,43 @@ export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {
   return rangeOverlayInput;
 };
 
+export const getFormInformationInput = (
+  formBuilderPages,
+  languages,
+  schemaDescription,
+  captureBase
+) => {
+  const threeLetterCodes = languages.map(
+    (lang) => languageNameToAlpha3Codes[lang.toLowerCase()] || lang
+  );
+
+  const schemaName = {};
+  languages.forEach((lang, index) => {
+    const threeLetterCode = threeLetterCodes[index];
+    schemaName[threeLetterCode] = schemaDescription[lang]?.name || "";
+  });
+
+  const baseFormInfo = convertToFormInformationOverlay(
+    formBuilderPages,
+    languages,
+    schemaName
+  );
+
+  const formOverlays = threeLetterCodes.map((langCode) => ({
+    language: langCode,
+    capture_base: captureBase,
+    pages: baseFormInfo.pages,
+    page_order: baseFormInfo.page_order,
+    page_labels: baseFormInfo.page_labels,
+    sidebar_label: baseFormInfo.sidebar_label,
+    description: baseFormInfo.description,
+    title: baseFormInfo.title,
+    interaction: baseFormInfo.interaction
+  }));
+
+  return { form_overlays: formOverlays };
+};
+
 /*
 "attribute_entries": {
   "d_attr": {
@@ -563,6 +606,7 @@ export const generateOCABundle = async (OCAFileData) => {
 
     return bundle;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Error generating OCA bundle from OCA file:", error);
     throw error;
   }
@@ -779,17 +823,11 @@ export const shouldDisableRangeOverlay = (
   );
 };
 
-export const shouldDisableFormInformationOverlay = (
-  overlayText,
-  selectedFeatures
-) =>
+export const shouldDisableFormInformationOverlay = (overlayText, selectedFeatures) =>
   overlayText === FIELD_FORM_INFORMATION_OVERLAY &&
   !selectedFeatures.includes(FIELD_FORMAT_OVERLAY);
 
-export const getFormInformationDisabledReason = (
-  overlayText,
-  selectedFeatures
-) =>
+export const getFormInformationDisabledReason = (overlayText, selectedFeatures) =>
   shouldDisableFormInformationOverlay(overlayText, selectedFeatures)
     ? i18next.t("Form Information prerequisite tooltip")
     : "";

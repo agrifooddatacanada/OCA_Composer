@@ -1,3 +1,61 @@
+import { languageNameToAlpha3Codes } from "../../../constants/isoCodes";
+
+const getQuestionTypeInfo = (attributeType) => {
+  const type = attributeType || "";
+  return {
+    attributeType: type,
+    isBooleanType: type === "Boolean" || type === "Array[Boolean]",
+    isTextType: type === "Text" || type === "Array[Text]",
+    isNumericType: type === "Numeric" || type === "Array[Numeric]",
+    isDateTimeType: type === "DateTime" || type === "Array[DateTime]"
+  };
+};
+
+const processPlaceholder = (question, threeLetterCodes, languages) => {
+  const placeholderObj = {};
+  const { isTextType, isNumericType, isDateTimeType } = getQuestionTypeInfo(
+    question.attributeType || question.type
+  );
+  const supportsPlaceholder = isTextType || isNumericType || isDateTimeType;
+
+  if (supportsPlaceholder) {
+    threeLetterCodes.forEach((lang, index) => {
+      const originalLang = languages[index];
+      if (typeof question.placeholder === "object" && question.placeholder !== null) {
+        placeholderObj[lang] = question.placeholder[originalLang] || "";
+      } else {
+        placeholderObj[lang] = question.placeholder || "";
+      }
+    });
+  }
+
+  return { placeholderObj, supportsPlaceholder };
+};
+
+const processQuestionForInteraction = (question, threeLetterCodes, languages) => {
+  const { attributeType, isBooleanType } = getQuestionTypeInfo(
+    question.attributeType || question.type
+  );
+  const { placeholderObj, supportsPlaceholder } = processPlaceholder(
+    question,
+    threeLetterCodes,
+    languages
+  );
+  const booleanOptions = isBooleanType
+    ? question.booleanValues || ["True", "False"]
+    : null;
+  const hasOptions =
+    question.options && Array.isArray(question.options) && question.options.length > 0;
+
+  return {
+    type: attributeType,
+    ...(supportsPlaceholder &&
+      Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
+    ...(booleanOptions && { options: booleanOptions }),
+    ...(hasOptions && question.inputType && { input_type: question.inputType })
+  };
+};
+
 export const convertToFormInformation = (pages) => {
   const formData = [];
   (pages || []).forEach((page) => {
@@ -7,7 +65,7 @@ export const convertToFormInformation = (pages) => {
       formData.push({
         Attribute: q.attribute,
         Label: q.title || q.attribute,
-        Placeholder: q.placeholder || '',
+        Placeholder: q.placeholder || "",
         Type: q.type,
         Required: q.required || false,
         Options: q.options || [],
@@ -20,8 +78,11 @@ export const convertToFormInformation = (pages) => {
   return formData;
 };
 
-
-export const convertToFormInformationOverlay = (pages, languages = ['eng'], schemaName = {}) => {
+export const convertToFormInformationOverlay = (
+  pages,
+  languages = ["English"],
+  schemaName = {}
+) => {
   const pagesStructure = [];
   const pageOrder = [];
   const pageLabels = {};
@@ -30,21 +91,30 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
   const title = {};
   const interaction = [{ arguments: {} }];
 
-  languages.forEach(lang => {
+  // Convert language names to three-letter codes for the overlay structure
+  const threeLetterCodes = languages.map((lang) => {
+    if (lang.length === 3) return lang;
+    return languageNameToAlpha3Codes[lang.toLowerCase()] || lang;
+  });
+
+  threeLetterCodes.forEach((lang) => {
     pageLabels[lang] = {};
     sidebarLabel[lang] = {};
     description[lang] = {};
-    title[lang] = schemaName[lang] || '';
+    title[lang] = schemaName[lang] || "";
   });
 
   pages.forEach((page, pageIdx) => {
     const pageId = page.id || `page-${pageIdx + 1}`;
     pageOrder.push(pageId);
 
-    languages.forEach(lang => {
-      pageLabels[lang][pageId] = page.labels?.[lang] || `Page ${pageIdx + 1}`;
-      sidebarLabel[lang][pageId] = page.sidebarLabels?.[lang] || `Page ${pageIdx + 1}`;
-      description[lang][pageId] = page.descriptions?.[lang] || `Page ${pageIdx + 1}`;
+    threeLetterCodes.forEach((lang, index) => {
+      const originalLang = languages[index];
+      pageLabels[lang][pageId] = page.labels?.[originalLang] || `Page ${pageIdx + 1}`;
+      sidebarLabel[lang][pageId] =
+        page.sidebarLabels?.[originalLang] || `Page ${pageIdx + 1}`;
+      description[lang][pageId] =
+        page.descriptions?.[originalLang] || `Page ${pageIdx + 1}`;
     });
 
     const pageStructure = {
@@ -54,7 +124,9 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
 
     (page.sections || []).forEach((section, sectionIdx) => {
       const sectionId = section.id || `section-${sectionIdx + 1}`;
-      const sectionQuestions = (section.questions || []).map(q => q.attribute).filter(Boolean);
+      const sectionQuestions = (section.questions || [])
+        .map((q) => q.attribute)
+        .filter(Boolean);
 
       if (sectionQuestions.length > 0) {
         pageStructure.attribute_order.push({
@@ -62,42 +134,21 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
           attribute_order: sectionQuestions
         });
 
-        languages.forEach(lang => {
-          pageLabels[lang][sectionId] = section.labels?.[lang] || `Section ${sectionIdx + 1}`;
-          description[lang][sectionId] = section.descriptions?.[lang] || `Section ${sectionIdx + 1}`;
+        threeLetterCodes.forEach((lang, index) => {
+          const originalLang = languages[index];
+          pageLabels[lang][sectionId] =
+            section.labels?.[originalLang] || `Section ${sectionIdx + 1}`;
+          description[lang][sectionId] =
+            section.descriptions?.[originalLang] || `Section ${sectionIdx + 1}`;
         });
 
-        section.questions.forEach(q => {
+        section.questions.forEach((q) => {
           if (q?.attribute) {
-            const attributeType = q.attributeType || q.type;
-            const isBooleanType = attributeType === 'Boolean' || attributeType === 'Array[Boolean]';
-            const isTextType = attributeType === 'Text' || attributeType === 'Array[Text]';
-            const isNumericType = attributeType === 'Numeric' || attributeType === 'Array[Numeric]';
-            const isDateTimeType = attributeType === 'DateTime' || attributeType === 'Array[DateTime]';
-            
-            const placeholderObj = {};
-            const supportsPlaceholder = isTextType || isNumericType || isDateTimeType;
-            if (supportsPlaceholder) {
-              languages.forEach(lang => {
-                if (typeof q.placeholder === 'object' && q.placeholder !== null) {
-                  placeholderObj[lang] = q.placeholder[lang] || '';
-                } else {
-                  placeholderObj[lang] = q.placeholder || '';
-                }
-              });
-            }
-
-            // For Boolean types, include the selected boolean value options (default to ['True', 'False'])
-            const booleanOptions = isBooleanType ? (q.booleanValues || ['True', 'False']) : null;
-            
-            const hasOptions = q.options && Array.isArray(q.options) && q.options.length > 0;
-
-            interaction[0].arguments[q.attribute] = {
-              type: attributeType,
-              ...(supportsPlaceholder && Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
-              ...(booleanOptions && { options: booleanOptions }),
-              ...(hasOptions && q.inputType && { input_type: q.inputType })
-            };
+            interaction[0].arguments[q.attribute] = processQuestionForInteraction(
+              q,
+              threeLetterCodes,
+              languages
+            );
           }
         });
       }
@@ -105,44 +156,20 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
 
     // Process direct page questions (not in sections)
     const directQuestions = (page.questions || [])
-      .filter(q => !q.sectionId)
-      .map(q => q.attribute)
+      .filter((q) => !q.sectionId)
+      .map((q) => q.attribute)
       .filter(Boolean);
 
     if (directQuestions.length > 0) {
       pageStructure.attribute_order.push(...directQuestions);
 
-      page.questions.forEach(q => {
+      page.questions.forEach((q) => {
         if (q?.attribute && !q.sectionId) {
-          const attributeType = q.attributeType || q.type;
-          const isBooleanType = attributeType === 'Boolean' || attributeType === 'Array[Boolean]';
-          const isTextType = attributeType === 'Text' || attributeType === 'Array[Text]';
-          const isNumericType = attributeType === 'Numeric' || attributeType === 'Array[Numeric]';
-          const isDateTimeType = attributeType === 'DateTime' || attributeType === 'Array[DateTime]';
-          
-          const placeholderObj = {};
-          const supportsPlaceholder = isTextType || isNumericType || isDateTimeType;
-          if (supportsPlaceholder) {
-            languages.forEach(lang => {
-              if (typeof q.placeholder === 'object' && q.placeholder !== null) {
-                placeholderObj[lang] = q.placeholder[lang] || '';
-              } else {
-                placeholderObj[lang] = q.placeholder || '';
-              }
-            });
-          }
-
-          // For Boolean types, include the selected boolean value options (default to ['True', 'False'])
-          const booleanOptions = isBooleanType ? (q.booleanValues || ['True', 'False']) : null;
-          
-          const hasOptions = q.options && Array.isArray(q.options) && q.options.length > 0;
-
-          interaction[0].arguments[q.attribute] = {
-            type: attributeType,
-            ...(supportsPlaceholder && Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
-            ...(booleanOptions && { options: booleanOptions }),
-            ...(hasOptions && q.inputType && { input_type: q.inputType })
-          };
+          interaction[0].arguments[q.attribute] = processQuestionForInteraction(
+            q,
+            threeLetterCodes,
+            languages
+          );
         }
       });
     }
@@ -155,10 +182,8 @@ export const convertToFormInformationOverlay = (pages, languages = ['eng'], sche
     page_order: pageOrder,
     page_labels: pageLabels,
     sidebar_label: sidebarLabel,
-    description: description,
-    interaction: interaction,
-    title: title
+    description,
+    interaction,
+    title
   };
 };
-
-

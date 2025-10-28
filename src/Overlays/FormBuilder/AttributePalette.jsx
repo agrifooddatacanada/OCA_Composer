@@ -2,18 +2,12 @@ import React from "react";
 import { Card, CardContent, Box, Typography } from "@mui/material";
 import { useDrag } from 'react-dnd';
 import { CustomPalette } from "../../constants/customPalette";
-import { codesToLanguages } from "../../constants/isoCodes";
-import i18next from "i18next";
 import { useTranslation } from "react-i18next";
+import getMultilingualText from "./utils/getMultilingualText";
+import { textWrapStyle } from "../../constants/styles";
 
 const DraggablePaletteItem = ({ attribute, labels, type, attributeType, placeholders, currentLanguage }) => {
-  // Prioritize currentLanguage tab, then user's global UI language, then fallback
-  const userLanguage = codesToLanguages?.[i18next.language];
-  const displayLabel = 
-    labels?.[currentLanguage] || 
-    (userLanguage && labels?.[userLanguage]) || 
-    labels?.['default'] || 
-    attribute;
+  const displayLabel = getMultilingualText(labels, currentLanguage, attribute);
   
   const [{ isDragging }, drag] = useDrag({
     type: 'palette-question',
@@ -42,10 +36,7 @@ const DraggablePaletteItem = ({ attribute, labels, type, attributeType, placehol
           sx={{ 
             fontWeight: 600, 
             color: CustomPalette.GREY_800,
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-            whiteSpace: 'normal',
-            lineHeight: 1.4
+            ...textWrapStyle
           }}
         >
           {displayLabel}
@@ -55,11 +46,8 @@ const DraggablePaletteItem = ({ attribute, labels, type, attributeType, placehol
             variant="caption" 
             sx={{ 
               color: CustomPalette.GREY_600,
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              whiteSpace: 'normal',
               display: 'block',
-              lineHeight: 1.4
+              ...textWrapStyle
             }}
           >
             {attribute}
@@ -103,6 +91,10 @@ const AttributePalette = ({
           const labels = {};
           const placeholders = {};
           
+          const attributeInfo = (attributeRowData || []).find((r) => r.Attribute === attr);
+          const formatRule = (formatRuleRowData || []).find((r) => r.Attribute === attr);
+          const baseInfo = (FormInformationRowData || []).find((r) => r.Attribute === attr);
+          
           (languages || []).forEach(lang => {
             const lanData = lanAttributeRowData?.[lang];
             const langItem = lanData?.find(r => r.Attribute === attr);
@@ -110,15 +102,12 @@ const AttributePalette = ({
             placeholders[lang] = langItem?.Placeholder || '';
           });
           
-          // Fallback to FormInformationRowData if lanAttributeRowData is empty
-          if (Object.keys(labels).length === 0) {
-            const base = (FormInformationRowData || []).find((r) => r.Attribute === attr);
-            labels['default'] = base?.Label || attr;
-            placeholders['default'] = base?.Placeholder || '';
+          if (Object.keys(labels).length === 0 && baseInfo) {
+            labels['default'] = baseInfo.Label || attr;
+            placeholders['default'] = baseInfo.Placeholder || '';
           }
           
-          const formatRule = (formatRuleRowData || []).find((r) => r.Attribute === attr);
-          const attributeType = (attributeRowData || []).find((r) => r.Attribute === attr)?.Type || '';
+          const attributeType = attributeInfo?.Type || '';
           const formatText = formatRule?.FormatText || '';
           
           return (

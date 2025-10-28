@@ -3,9 +3,9 @@ import { Card, CardContent, Box, Typography, IconButton } from "@mui/material";
 import { useDrag, useDrop } from 'react-dnd';
 import { DragIndicator as DragIcon, Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
-import { codesToLanguages } from "../../constants/isoCodes";
-import i18next from "i18next";
 import DraggableQuestion from "./DraggableQuestion";
+import getMultilingualText from "./utils/getMultilingualText";
+import { textWrapStyle } from "../../constants/styles";
 
 const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, onDelete, onReorder, onMoveQuestionToSection, onDropPaletteQuestionToSection, onEditQuestion, onDeleteQuestion, onReorderQuestion }) => {
   const [{ isDragging }, drag] = useDrag({ type: 'section', item: { type: 'section', index, section, pageIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
@@ -31,17 +31,7 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
     collect: (monitor) => ({ isOver: monitor.isOver() })
   });
 
-  // Get the section title - prioritize currentLanguage tab, then user's global UI language, then fallback
-  const getSectionTitle = () => {
-    if (section.labels) {
-      if (currentLanguage && section.labels[currentLanguage]) return section.labels[currentLanguage];
-      const userLanguage = codesToLanguages?.[i18next.language];
-      if (userLanguage && section.labels[userLanguage]) return section.labels[userLanguage];
-      const firstLang = Object.keys(section.labels)[0];
-      if (firstLang && section.labels[firstLang]) return section.labels[firstLang];
-    }
-    return section.id || `Section ${index + 1}`;
-  };
+  const sectionTitle = getMultilingualText(section.labels, currentLanguage, section.id || `Section ${index + 1}`);
 
   return (
     <Card 
@@ -65,13 +55,10 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
               color: CustomPalette.GREY_800,
               flexGrow: 1,
               minWidth: 0,
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              whiteSpace: 'normal',
-              lineHeight: 1.4
+              ...textWrapStyle
             }}
           >
-            {getSectionTitle()}
+            {sectionTitle}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
             <IconButton size="small" onClick={() => onEdit(section, index, pageIndex)} sx={{ color: CustomPalette.GREY_600 }}>
