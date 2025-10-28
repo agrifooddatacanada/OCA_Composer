@@ -19,7 +19,7 @@ import SectionEditorDialog from "./dialogs/SectionEditorDialog";
 import PageEditorDialog from "./dialogs/PageEditorDialog";
 import { useUsedAttributes } from "./hooks/useUsedAttributes";
 import { convertToFormInformation } from "./utils/convertToFormInformation";
-import { moveQuestionToPage, moveQuestionToSection, moveSectionBetweenPages, reorderQuestionInContainer, reorderSectionInPage } from "./utils/moves";
+import { moveQuestionToPage, moveQuestionToSection, moveSectionBetweenPages, reorderQuestionInContainer, reorderSectionInPage, reorderPages } from "./utils/moves";
 
 const FormBuilder = () => {
   const { t } = useTranslation();
@@ -239,6 +239,7 @@ const FormBuilder = () => {
   const handleMoveQuestionToSection = (fromPageIndex, fromQuestionIndex, toPageIndex, toSectionIndex, fromSectionIndex = null) => setPages(prev => moveQuestionToSection(prev, fromPageIndex, fromQuestionIndex, toPageIndex, toSectionIndex, fromSectionIndex));
   const handleReorderQuestion = (pageIndex, sectionIndexOrNull, fromIndex, toIndex) => setPages(prev => reorderQuestionInContainer(prev, pageIndex, sectionIndexOrNull, fromIndex, toIndex));
   const handleReorderSection = (pageIndex, fromIndex, toIndex) => setPages(prev => reorderSectionInPage(prev, pageIndex, fromIndex, toIndex));
+  const handleReorderPage = (fromIndex, toIndex) => setPages(prev => reorderPages(prev, fromIndex, toIndex));
 
   const createQuestionFromPaletteItem = (item) => {
     const { attribute, labels, formatText, attributeType, placeholders } = item;
@@ -508,6 +509,7 @@ const FormBuilder = () => {
                   onReorderQuestion={handleReorderQuestion}
                   onDropPaletteQuestion={handleDropPaletteQuestion}
                   onDropPaletteQuestionToSection={handleDropPaletteQuestionToSection}
+                  onReorderPage={handleReorderPage}
                 />
               ))}
             </Box>

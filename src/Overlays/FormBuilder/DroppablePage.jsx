@@ -8,11 +8,12 @@ import {
   Chip,
   Button
 } from "@mui/material";
-import { useDrop } from "react-dnd";
+import { useDrop, useDrag } from "react-dnd";
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Add as SectionIcon
+  Add as SectionIcon,
+  DragIndicator as DragIcon
 } from "@mui/icons-material";
 import DraggableSection from "./DraggableSection";
 import DraggableQuestion from "./DraggableQuestion";
@@ -38,12 +39,21 @@ const DroppablePage = ({
   onMoveQuestionToSection,
   onReorderQuestion,
   onDropPaletteQuestion,
-  onDropPaletteQuestionToSection
+  onDropPaletteQuestionToSection,
+  onReorderPage
 }) => {
   const { t } = useTranslation();
 
+  const [{ isDragging }, drag] = useDrag({
+    type: 'page',
+    item: { type: 'page', index: pageIndex, page },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging()
+    })
+  });
+
   const [{ isOver }, drop] = useDrop({
-    accept: ["question", "section", "palette-question"],
+    accept: ["question", "section", "palette-question", "page"],
     drop: (item, monitor) => {
       if (monitor.didDrop()) return;
       if (item.source === "palette") {
@@ -59,6 +69,14 @@ const DroppablePage = ({
           onMoveSection(item.pageIndex, item.index, pageIndex);
       }
     },
+    hover: (item, monitor) => {
+      if (item.type !== 'page') return;
+      if (!monitor.isOver({ shallow: true })) return;
+      if (item.index === pageIndex) return;
+      
+      onReorderPage(item.index, pageIndex);
+      item.index = pageIndex;
+    },
     collect: (monitor) => ({ isOver: monitor.isOver() })
   });
 
@@ -67,14 +85,16 @@ const DroppablePage = ({
 
   return (
     <Card
-      ref={drop}
+      ref={(node) => drag(drop(node))}
       sx={{
         mb: 2,
         border: isOver
           ? `2px dashed ${CustomPalette.PRIMARY}`
           : `1px solid ${CustomPalette.GREY_300}`,
         minHeight: 200,
-        boxShadow: 2
+        boxShadow: 2,
+        opacity: isDragging ? 0.5 : 1,
+        cursor: isDragging ? 'grabbing' : 'grab'
       }}
     >
       <CardContent>
@@ -88,6 +108,7 @@ const DroppablePage = ({
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexGrow: 1, minWidth: 0 }}>
+            <DragIcon sx={{ color: CustomPalette.GREY_600, cursor: 'grab' }} />
             <Typography
               variant="h5"
               sx={{ 

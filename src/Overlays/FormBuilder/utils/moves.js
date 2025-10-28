@@ -100,3 +100,6 @@ export const reorderSectionInPage = (pages, pageIndex, fromIndex, toIndex) =>
     if (i !== pageIndex) return p;
     return { ...p, sections: reorderArray(p.sections || [], fromIndex, toIndex) };
   });
+
+export const reorderPages = (pages, fromIndex, toIndex) =>
+  reorderArray(pages, fromIndex, toIndex);
