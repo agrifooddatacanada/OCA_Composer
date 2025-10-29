@@ -12,7 +12,7 @@ import {
 import QuestionAnswerPreview from "./QuestionAnswerPreview";
 import getMultilingualText from "./utils/getMultilingualText";
 import { textWrapStyle } from "../../constants/styles";
-import { DND_TYPES } from './dnd/types';
+import DND_TYPES from './dnd/types';
 
 const findDescription = (formatText, attributeType) => {
   if (!formatText) return "";
