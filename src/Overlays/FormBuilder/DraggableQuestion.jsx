@@ -12,6 +12,7 @@ import {
 import QuestionAnswerPreview from "./QuestionAnswerPreview";
 import getMultilingualText from "./utils/getMultilingualText";
 import { textWrapStyle } from "../../constants/styles";
+import { DND_TYPES } from './dnd/types';
 
 const findDescription = (formatText, attributeType) => {
   if (!formatText) return "";
@@ -24,26 +25,40 @@ const findDescription = (formatText, attributeType) => {
   return formatText;
 };
 
-const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLanguage, onEdit, onDelete, onReorder }) => {
+const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLanguage, onEdit, onDelete, onReorder, indexInItems, onReorderPageItem }) => {
   const [expanded, setExpanded] = React.useState(true);
-  const [{ isDragging }, drag] = useDrag({ type: 'question', item: { type: 'question', index, question, pageIndex, sectionIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
+  const isTopLevel = (sectionIndex ?? null) === null;
+  const [{ isDragging }, drag] = useDrag({ type: isTopLevel ? DND_TYPES.PAGE_ITEM : DND_TYPES.QUESTION, item: isTopLevel ? { type: DND_TYPES.PAGE_ITEM, kind: 'question', index, indexInItems, question, pageIndex, sectionIndex } : { type: DND_TYPES.QUESTION, index, question, pageIndex, sectionIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
   const [{ }, drop] = useDrop({
-    accept: 'question',
-    canDrop: (item) => item.pageIndex === pageIndex && (item.sectionIndex ?? null) === (sectionIndex ?? null) && item.index !== index,
+    accept: isTopLevel ? [DND_TYPES.PAGE_ITEM] : [DND_TYPES.QUESTION],
+    canDrop: (item) => {
+      if (!isTopLevel) {
+        return item.pageIndex === pageIndex && (item.sectionIndex ?? null) === (sectionIndex ?? null) && item.index !== index;
+      }
+      return item.pageIndex === pageIndex && item.indexInItems !== indexInItems;
+    },
     hover: (item, monitor) => {
       if (!monitor.isOver({ shallow: true })) return;
       if (item.pageIndex !== pageIndex) return;
-      const sameContainer = (item.sectionIndex ?? null) === (sectionIndex ?? null);
-      if (!sameContainer) return;
-      if (item.index === index) return;
-      onReorder(pageIndex, sectionIndex ?? null, item.index, index);
-      item.index = index;
+      if (!isTopLevel) {
+        const sameContainer = (item.sectionIndex ?? null) === (sectionIndex ?? null);
+        if (!sameContainer) return;
+        if (item.index === index) return;
+        onReorder(pageIndex, sectionIndex ?? null, item.index, index);
+        item.index = index;
+        return;
+      }
+      if (item.indexInItems === indexInItems) return;
+      onReorderPageItem(pageIndex, item.indexInItems, indexInItems);
+      item.indexInItems = indexInItems;
     }
   });
 
   
   const formatRuleDescription = findDescription(question.formatText, question.attributeType);
   const questionTitle = getMultilingualText(question.title, currentLanguage, question.attribute || 'Untitled Question');
+  const questionDescription = getMultilingualText(question.description, currentLanguage, '');
+  const hasDescription = questionDescription && typeof questionDescription === 'string' && questionDescription.trim().length > 0;
 
   return (
     <Card 
@@ -63,7 +78,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
           <DragIcon sx={{ color: CustomPalette.GREY_600, mt: 0.5, flexShrink: 0 }} />
           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: hasDescription ? 0.5 : 0 }}>
               <Typography 
                 variant="subtitle1" 
                 sx={{ 
@@ -96,6 +111,23 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
                 </IconButton>
               </Box>
             </Box>
+
+            {hasDescription && (
+              <Box sx={{ mb: 1, ml: 4 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: CustomPalette.GREY_600,
+                    fontStyle: 'italic',
+                    fontSize: '0.875rem',
+                    ...textWrapStyle
+                  }}
+                >
+                  {questionDescription}
+                </Typography>
+              </Box>
+            )}
+
             <Typography variant="body2" sx={{ color: CustomPalette.GREY_600, mb: 1 }}>
               {formatRuleDescription || question.attributeType || 'No format rule'}
             </Typography>

@@ -21,6 +21,7 @@ import { CustomPalette } from "../../constants/customPalette";
 import { useTranslation } from "react-i18next";
 import getMultilingualText from "./utils/getMultilingualText";
 import { textWrapStyle } from "../../constants/styles";
+import DND_TYPES from './dnd/types';
 
 const DroppablePage = ({
   page,
@@ -31,16 +32,15 @@ const DroppablePage = ({
   onAddSection,
   onEditSection,
   onDeleteSection,
-  onMoveSection,
-  onReorderSection,
   onEditQuestion,
   onDeleteQuestion,
-  onMoveQuestion,
   onMoveQuestionToSection,
   onReorderQuestion,
   onDropPaletteQuestion,
   onDropPaletteQuestionToSection,
-  onReorderPage
+  onReorderPage,
+  onReorderPageItem,
+  onMovePageItem
 }) => {
   const { t } = useTranslation();
 
@@ -53,20 +53,14 @@ const DroppablePage = ({
   });
 
   const [{ isOver }, drop] = useDrop({
-    accept: ["question", "section", "palette-question", "page"],
+    accept: [DND_TYPES.PAGE_ITEM, DND_TYPES.PALETTE_QUESTION, 'page'],
     drop: (item, monitor) => {
       if (monitor.didDrop()) return;
-      if (item.source === "palette") {
-        onDropPaletteQuestion(pageIndex, item);
-        return;
-      }
-      if (item.type === "question") {
-        if (item.pageIndex !== pageIndex || item.sectionIndex !== null) {
-          onMoveQuestion(item.pageIndex, item.index, pageIndex, item.sectionIndex);
+      if (item.source === "palette") { onDropPaletteQuestion(pageIndex, item); return; }
+      if (item.type === DND_TYPES.PAGE_ITEM) {
+        if (item.pageIndex !== pageIndex) {
+          onMovePageItem(item.pageIndex, item.indexInItems, pageIndex);
         }
-      } else if (item.type === "section") {
-        if (item.pageIndex !== pageIndex)
-          onMoveSection(item.pageIndex, item.index, pageIndex);
       }
     },
     hover: (item, monitor) => {
@@ -163,42 +157,54 @@ const DroppablePage = ({
         )}
 
         <Box sx={{ minHeight: 100 }}>
-          {page.sections?.map((section, sectionIndex) => (
-            <DraggableSection
-              key={section.id}
-              section={section}
-              index={sectionIndex}
-              pageIndex={pageIndex}
-              currentLanguage={currentLanguage}
-              onEdit={onEditSection}
-              onDelete={onDeleteSection}
-              onReorder={onReorderSection}
-              onMoveQuestionToSection={onMoveQuestionToSection}
-              onDropPaletteQuestionToSection={onDropPaletteQuestionToSection}
-              onEditQuestion={onEditQuestion}
-              onDeleteQuestion={onDeleteQuestion}
-              onReorderQuestion={onReorderQuestion}
-            />
-          ))}
+          {(page.items || []).map((it, idx) => {
+            if (it.kind === 'section') {
+              const sectionIndex = (page.sections || []).findIndex(s => s.id === it.id);
+              if (sectionIndex === -1) return null;
+              const section = page.sections[sectionIndex];
+              return (
+                <DraggableSection
+                  key={`section-${it.id}`}
+                  section={section}
+                  index={sectionIndex}
+                  pageIndex={pageIndex}
+                  currentLanguage={currentLanguage}
+                  onEdit={onEditSection}
+                  onDelete={onDeleteSection}
+                  onMoveQuestionToSection={onMoveQuestionToSection}
+                  onDropPaletteQuestionToSection={onDropPaletteQuestionToSection}
+                  onEditQuestion={onEditQuestion}
+                  onDeleteQuestion={onDeleteQuestion}
+                  onReorderQuestion={onReorderQuestion}
+                  indexInItems={idx}
+                  onReorderPageItem={onReorderPageItem}
+                />
+              );
+            }
+            if (it.kind === 'question') {
+              const questionIndex = (page.questions || []).findIndex(q => q.id === it.id);
+              if (questionIndex === -1) return null;
+              const question = page.questions[questionIndex];
+              return (
+                <DraggableQuestion
+                  key={`question-${it.id}`}
+                  question={question}
+                  index={questionIndex}
+                  pageIndex={pageIndex}
+                  sectionIndex={null}
+                  currentLanguage={currentLanguage}
+                  onEdit={onEditQuestion}
+                  onDelete={onDeleteQuestion}
+                  onReorder={onReorderQuestion}
+                  indexInItems={idx}
+                  onReorderPageItem={onReorderPageItem}
+                />
+              );
+            }
+            return null;
+          })}
 
-          {page.questions
-            ?.filter((q) => !q.sectionId)
-            .map((question, questionIndex) => (
-              <DraggableQuestion
-                key={question.id}
-                question={question}
-                index={questionIndex}
-                pageIndex={pageIndex}
-                sectionIndex={null}
-                currentLanguage={currentLanguage}
-                onEdit={onEditQuestion}
-                onDelete={onDeleteQuestion}
-                onReorder={onReorderQuestion}
-              />
-            ))}
-
-          {(page.sections?.length === 0 || !page.sections) &&
-            (page.questions?.length === 0 || !page.questions) && (
+          {((page.items?.length || 0) === 0) && (
               <Box
                 sx={{
                   textAlign: "center",

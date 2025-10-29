@@ -6,27 +6,29 @@ import { CustomPalette } from "../../constants/customPalette";
 import DraggableQuestion from "./DraggableQuestion";
 import getMultilingualText from "./utils/getMultilingualText";
 import { textWrapStyle } from "../../constants/styles";
+import DND_TYPES from './dnd/types';
 
-const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, onDelete, onReorder, onMoveQuestionToSection, onDropPaletteQuestionToSection, onEditQuestion, onDeleteQuestion, onReorderQuestion }) => {
-  const [{ isDragging }, drag] = useDrag({ type: 'section', item: { type: 'section', index, section, pageIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
+const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, onDelete, onMoveQuestionToSection, onDropPaletteQuestionToSection, onEditQuestion, onDeleteQuestion, onReorderQuestion, indexInItems, onReorderPageItem }) => {
+  const [{ isDragging }, drag] = useDrag({ type: DND_TYPES.PAGE_ITEM, item: { type: DND_TYPES.PAGE_ITEM, kind: 'section', index, indexInItems, section, pageIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
   const [{ isOver }, drop] = useDrop({
-    accept: ['question', 'palette-question', 'section'],
+    accept: [DND_TYPES.QUESTION, DND_TYPES.PALETTE_QUESTION, DND_TYPES.PAGE_ITEM],
     drop: (item, monitor) => {
       if (monitor.didDrop()) return;
       if (item.source === 'palette') { onDropPaletteQuestionToSection(pageIndex, index, item); return; }
-      if (item.type === 'question') {
+      if (item.type === DND_TYPES.QUESTION) {
         const fromPageIndex = item.pageIndex;
         const fromSectionIndex = item.sectionIndex ?? null;
         onMoveQuestionToSection(fromPageIndex, item.index, pageIndex, index, fromSectionIndex);
       }
     },
     hover: (item, monitor) => {
-      if (item.type !== 'section') return;
       if (!monitor.isOver({ shallow: true })) return;
-      if (item.pageIndex !== pageIndex) return;
-      if (item.index === index) return;
-      onReorder(pageIndex, item.index, index);
-      item.index = index;
+      if (item.type === DND_TYPES.PAGE_ITEM) {
+        if (item.pageIndex !== pageIndex) return;
+        if (item.indexInItems === indexInItems) return;
+        onReorderPageItem(pageIndex, item.indexInItems, indexInItems);
+        item.indexInItems = indexInItems;
+      }
     },
     collect: (monitor) => ({ isOver: monitor.isOver() })
   });

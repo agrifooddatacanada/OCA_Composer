@@ -11,7 +11,8 @@ import {
   formatCodeDateDescription,
   formatCodeNumericDescription,
   formatCodeTextDescription,
-  MAX_ATTR_LABEL_CHARS
+  MAX_ATTR_LABEL_CHARS,
+  MAX_ATTR_DESCRIPTION_CHARS
 } from "../../../constants/constants";
 import { CustomPalette } from "../../../constants/customPalette";
 import { getDateTimePickerConfig } from "../utils/getDateTimePickerConfig";
@@ -50,6 +51,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
   const [formData, setFormData] = useState({ 
     title: {}, 
     placeholder: {}, 
+    description: {},
     formatText: '', 
     attributeType: '', 
     attribute: '',
@@ -76,10 +78,12 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
         }
       }
       
+      const defaultDescription = {};
       languages.forEach(lang => {
         defaultTitle[lang] = question.title?.[lang] || '';
         // Use existing placeholder or DateTime default
         defaultPlaceholder[lang] = question.placeholder?.[lang] || (isDateTimeType ? dateTimeDefaultPlaceholder : '');
+        defaultDescription[lang] = question.description?.[lang] || '';
       });
       
       let booleanPairId = question.booleanPairId || 'true-false';
@@ -99,6 +103,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
       setFormData({ 
         title: defaultTitle,
         placeholder: defaultPlaceholder,
+        description: defaultDescription,
         formatText: question.formatText || '', 
         attributeType: question.attributeType || '', 
         attribute: question.attribute || '',
@@ -327,6 +332,14 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
                 name: 'title', 
                 label: t("Question Label"), 
                 maxLength: MAX_ATTR_LABEL_CHARS 
+              },
+              { 
+                name: 'description', 
+                label: t("Instructions/Commentary"), 
+                maxLength: MAX_ATTR_DESCRIPTION_CHARS,
+                multiline: true,
+                rows: 3,
+                helperText: t("Additional instructions or commentary text that appears below the question label.")
               },
               ...(isPlaceholderAvailable ? [{
                 name: 'placeholder', 
