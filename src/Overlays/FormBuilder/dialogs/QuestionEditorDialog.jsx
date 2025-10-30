@@ -12,7 +12,7 @@ import {
   formatCodeNumericDescription,
   formatCodeTextDescription,
   MAX_ATTR_LABEL_CHARS,
-  MAX_ATTR_DESCRIPTION_CHARS
+  MAX_QUESTION_DESCRIPTION_CHARS
 } from "../../../constants/constants";
 import { CustomPalette } from "../../../constants/customPalette";
 import { getDateTimePickerConfig } from "../utils/getDateTimePickerConfig";
@@ -336,7 +336,7 @@ const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['E
               { 
                 name: 'description', 
                 label: t("Instructions/Commentary"), 
-                maxLength: MAX_ATTR_DESCRIPTION_CHARS,
+                maxLength: MAX_QUESTION_DESCRIPTION_CHARS,
                 multiline: true,
                 rows: 3,
                 helperText: t("Additional instructions or commentary text that appears below the question label.")

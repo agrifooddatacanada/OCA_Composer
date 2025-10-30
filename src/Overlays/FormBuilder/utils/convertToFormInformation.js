@@ -32,11 +32,37 @@ const processPlaceholder = (question, threeLetterCodes, languages) => {
   return { placeholderObj, supportsPlaceholder };
 };
 
+const processDescription = (question, threeLetterCodes, languages) => {
+  const descriptionObj = {};
+
+  threeLetterCodes.forEach((langCode, index) => {
+    const originalLang = languages[index];
+
+    if (typeof question.description === "object" && question.description !== null) {
+      descriptionObj[langCode] = question.description[originalLang] || "";
+    } else {
+      descriptionObj[langCode] = question.description || "";
+    }
+  });
+
+  // Only return description if at least one language has non-empty content
+  const hasDescription = Object.values(descriptionObj).some(
+    (desc) => desc && typeof desc === "string" && desc.trim().length > 0
+  );
+
+  return { descriptionObj, hasDescription };
+};
+
 const processQuestionForInteraction = (question, threeLetterCodes, languages) => {
   const { attributeType, isBooleanType } = getQuestionTypeInfo(
     question.attributeType || question.type
   );
   const { placeholderObj, supportsPlaceholder } = processPlaceholder(
+    question,
+    threeLetterCodes,
+    languages
+  );
+  const { descriptionObj, hasDescription } = processDescription(
     question,
     threeLetterCodes,
     languages
@@ -51,9 +77,36 @@ const processQuestionForInteraction = (question, threeLetterCodes, languages) =>
     type: attributeType,
     ...(supportsPlaceholder &&
       Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
+    ...(hasDescription && { description: descriptionObj }),
     ...(booleanOptions && { options: booleanOptions }),
     ...(hasOptions && question.inputType && { input_type: question.inputType })
   };
+};
+
+const addQuestionDescriptionToObject = (
+  question,
+  description,
+  threeLetterCodes,
+  languages
+) => {
+  if (!question?.attribute) return;
+
+  threeLetterCodes.forEach((langCode, index) => {
+    const originalLang = languages[index];
+    const questionDesc = question.description?.[originalLang];
+
+    // Only add if description exists and is not empty after trimming
+    if (
+      questionDesc &&
+      typeof questionDesc === "string" &&
+      questionDesc.trim().length > 0
+    ) {
+      // Don't overwrite existing descriptions (defensive check)
+      if (!description[langCode][question.attribute]) {
+        description[langCode][question.attribute] = questionDesc;
+      }
+    }
+  });
 };
 
 export const convertToFormInformation = (pages) => {
@@ -149,6 +202,7 @@ export const convertToFormInformationOverlay = (
               threeLetterCodes,
               languages
             );
+            addQuestionDescriptionToObject(q, description, threeLetterCodes, languages);
           }
         });
       }
@@ -170,6 +224,7 @@ export const convertToFormInformationOverlay = (
             threeLetterCodes,
             languages
           );
+          addQuestionDescriptionToObject(q, description, threeLetterCodes, languages);
         }
       });
     }

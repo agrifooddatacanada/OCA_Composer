@@ -18,6 +18,7 @@ import {
 import DraggableSection from "./DraggableSection";
 import DraggableQuestion from "./DraggableQuestion";
 import { CustomPalette } from "../../constants/customPalette";
+import { FORM_BUILDER_CARD_WIDTH } from "../../constants/constants";
 import { useTranslation } from "react-i18next";
 import getMultilingualText from "./utils/getMultilingualText";
 import { textWrapStyle } from "../../constants/styles";
@@ -88,7 +89,10 @@ const DroppablePage = ({
         minHeight: 200,
         boxShadow: 2,
         opacity: isDragging ? 0.5 : 1,
-        cursor: isDragging ? 'grabbing' : 'grab'
+        cursor: isDragging ? 'grabbing' : 'grab',
+        width: '100%',
+        maxWidth: `${FORM_BUILDER_CARD_WIDTH}px`,
+        flexShrink: 0
       }}
     >
       <CardContent>

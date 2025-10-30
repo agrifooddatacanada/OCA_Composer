@@ -3,6 +3,7 @@ import { Card, CardContent, Box, Typography, IconButton, Collapse } from "@mui/m
 import { useDrag, useDrop } from 'react-dnd';
 import { DragIndicator as DragIcon, Edit as EditIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
+import { FORM_BUILDER_CARD_WIDTH } from "../../constants/constants";
 import {
   formatCodeBinaryDescription,
   formatCodeDateDescription,
@@ -58,7 +59,8 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
   const formatRuleDescription = findDescription(question.formatText, question.attributeType);
   const questionTitle = getMultilingualText(question.title, currentLanguage, question.attribute || 'Untitled Question');
   const questionDescription = getMultilingualText(question.description, currentLanguage, '');
-  const hasDescription = questionDescription && typeof questionDescription === 'string' && questionDescription.trim().length > 0;
+  const isLongDescription = questionDescription && questionDescription.length > 180;
+  const [descExpanded, setDescExpanded] = React.useState(false);
 
   return (
     <Card 
@@ -71,14 +73,17 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
         '&:hover': {
           boxShadow: 2,
           borderColor: CustomPalette.PRIMARY
-        }
+        },
+        width: '100%',
+        maxWidth: `${FORM_BUILDER_CARD_WIDTH}px`,
+        flexShrink: 0
       }}
     >
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
           <DragIcon sx={{ color: CustomPalette.GREY_600, mt: 0.5, flexShrink: 0 }} />
           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: hasDescription ? 0.5 : 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0 }}>
               <Typography 
                 variant="subtitle1" 
                 sx={{ 
@@ -112,19 +117,42 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
               </Box>
             </Box>
 
-            {hasDescription && (
-              <Box sx={{ mb: 1, ml: 4 }}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: CustomPalette.GREY_600,
-                    fontStyle: 'italic',
-                    fontSize: '0.875rem',
-                    ...textWrapStyle
-                  }}
+            {questionDescription && (
+              <Box sx={{ mb: 1 }}>
+                <Collapse 
+                  in={descExpanded || !isLongDescription} 
+                  collapsedSize={isLongDescription ? 56 : undefined}
                 >
-                  {questionDescription}
-                </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ display: 'block', whiteSpace: 'normal', wordBreak: 'break-word', textAlign: 'left' }}
+                  >
+                    {questionDescription}
+                  </Typography>
+                </Collapse>
+                {isLongDescription && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mt: 0.5 }}>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => setDescExpanded(!descExpanded)}
+                      sx={{ 
+                        color: CustomPalette.GREY_600,
+                        transform: descExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s'
+                      }}
+                      aria-label={descExpanded ? 'Collapse instructions' : 'Expand instructions'}
+                    >
+                      <ExpandMoreIcon fontSize="small" />
+                    </IconButton>
+                    <Typography 
+                      variant="caption" 
+                      onClick={() => setDescExpanded(!descExpanded)}
+                      sx={{ color: CustomPalette.GREY_600, cursor: 'pointer', userSelect: 'none' }}
+                    >
+                      {descExpanded ? 'Show less' : 'Show more'}
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             )}
 

@@ -5,6 +5,9 @@ export const DEFAULT_THREE_LETTER_LANGUAGE_CODE = "eng";
 export const DEFAULT_LANGUAGE = "English";
 export const MAX_ATTR_LABEL_CHARS = 250;
 export const MAX_ATTR_DESCRIPTION_CHARS = 250;
+export const MAX_QUESTION_DESCRIPTION_CHARS = 1000;
+
+export const FORM_BUILDER_CARD_WIDTH = 720;
 
 export const SCHEMA_MODE_SINGLE = "single";
 export const SCHEMA_MODE_MULTI_LEVEL = "multi-level";

@@ -19,7 +19,7 @@ import SectionEditorDialog from "./dialogs/SectionEditorDialog";
 import PageEditorDialog from "./dialogs/PageEditorDialog";
 import { useUsedAttributes } from "./hooks/useUsedAttributes";
 import { convertToFormInformation } from "./utils/convertToFormInformation";
-import { moveQuestionToPage, moveQuestionToSection, moveSectionBetweenPages, reorderQuestionInContainer, reorderSectionInPage, reorderPages } from "./utils/moves";
+import { moveQuestionToPage, moveQuestionToSection, moveSectionBetweenPages, reorderQuestionInContainer, reorderPages, reorderPageItems, movePageItemToPage } from "./utils/moves";
 
 const FormBuilder = () => {
   const { t } = useTranslation();
@@ -51,7 +51,6 @@ const FormBuilder = () => {
     filteredLanguages.unshift(removedLanguage[0]);
   }
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
-  const primaryLanguage = languages?.[0];
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {
@@ -85,12 +84,21 @@ const FormBuilder = () => {
     return { labels, descriptions };
   };
 
+  const ensurePageItems = (page) => {
+    if (page.items && Array.isArray(page.items) && page.items.length > 0) {
+      return page;
+    }
+    const sectionItems = (page.sections || []).map(s => ({ kind: 'section', id: s.id }));
+    const questionItems = (page.questions || []).filter(q => !q.sectionId).map(q => ({ kind: 'question', id: q.id }));
+    return { ...page, items: [...sectionItems, ...questionItems] };
+  };
+
   const [pages, setPages] = useState(() => {
     if (formBuilderPages && formBuilderPages.length > 0) {
-      return formBuilderPages;
+      return formBuilderPages.map(ensurePageItems);
     }
     return [
-      { id: uuidv4(), ...initializePageLabels(1, languages), questions: [], sections: [] }
+      { id: uuidv4(), ...initializePageLabels(1, languages), questions: [], sections: [], items: [] }
     ];
   });
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
@@ -136,6 +144,11 @@ const FormBuilder = () => {
         updatedPlaceholder[lang] = langData?.Placeholder || question.placeholder?.[lang] || '';
       });
 
+      const updatedDescription = {};
+      languages.forEach(lang => {
+        updatedDescription[lang] = question.description?.[lang] || '';
+      });
+
       let updatedOptions = question.options || [];
       if (attributesWithLists?.includes(attribute) && savedEntryCodes?.[attribute]) {
         updatedOptions = savedEntryCodes[attribute].map((entryCode) => {
@@ -160,6 +173,7 @@ const FormBuilder = () => {
         ...question,
         title: updatedTitle,
         placeholder: updatedPlaceholder,
+        description: updatedDescription,
         formatText,
         attributeType,
         options: updatedOptions
@@ -191,14 +205,14 @@ const FormBuilder = () => {
 
   const handleAddPage = () => {
     const pageNumber = pages.length + 1;
-    const newPage = { id: uuidv4(), ...initializePageLabels(pageNumber, languages), questions: [], sections: [] };
+    const newPage = { id: uuidv4(), ...initializePageLabels(pageNumber, languages), questions: [], sections: [], items: [] };
     setPages(prev => [...prev, newPage]);
   };
 
   const handleAddSection = (pageIndex) => {
     const sectionNumber = (pages[pageIndex].sections?.length || 0) + 1;
     const newSection = { id: uuidv4(), ...initializeSectionLabels(sectionNumber, languages), questions: [] };
-    setPages(prev => prev.map((p, i) => i === pageIndex ? { ...p, sections: [...(p.sections || []), newSection] } : p));
+    setPages(prev => prev.map((p, i) => i === pageIndex ? { ...p, sections: [...(p.sections || []), newSection], items: [ ...(p.items || []), { kind: 'section', id: newSection.id } ] } : p));
   };
 
   const handleEditPage = (page, pageIndex) => { setEditingPage(page); setEditingPageIndex(pageIndex); setShowPageDialog(true); };
@@ -207,7 +221,13 @@ const FormBuilder = () => {
 
   const handleEditSection = (section, sectionIndex, pageIndex) => { setEditingSection(section); setEditingSectionIndex(sectionIndex); setTargetPageIndex(pageIndex); setShowSectionDialog(true); };
   const handleDeleteSection = (sectionIndex, pageIndex) => {
-    setPages(prev => prev.map((p, i) => i === pageIndex ? { ...p, sections: (p.sections || []).filter((_, s) => s !== sectionIndex) } : p));
+    setPages(prev => prev.map((p, i) => {
+      if (i !== pageIndex) return p;
+      const section = p.sections[sectionIndex];
+      const newSections = (p.sections || []).filter((_, s) => s !== sectionIndex);
+      const newItems = (p.items || []).filter(it => !(it.kind === 'section' && it.id === section.id));
+      return { ...p, sections: newSections, items: newItems };
+    }));
   };
   const handleSaveSection = (sectionData) => {
     setPages(prev => prev.map((p, i) => i === targetPageIndex ? { ...p, sections: p.sections.map((s, si) => si === editingSectionIndex ? { ...s, ...sectionData } : s) } : p));
@@ -215,10 +235,37 @@ const FormBuilder = () => {
 
   const handleEditQuestion = (question, questionIndex, pageIndex, sectionIndex = null) => { setEditingQuestion(question); setEditingQuestionIndex(questionIndex); setTargetPageIndex(pageIndex); setTargetSectionIndex(sectionIndex); setShowQuestionDialog(true); };
   const handleDeleteQuestion = (questionIndex, pageIndex, sectionIndex = null) => {
+
+    const page = pages[pageIndex];
+    let q;
+    if (sectionIndex !== null) {
+      q = page?.sections?.[sectionIndex]?.questions?.[questionIndex];
+    } else {
+      q = page?.questions?.[questionIndex];
+    }
+    if (q?.attribute) {
+      setLanAttributeRowData((prev) => {
+        const updated = { ...prev };
+        languages.forEach((lang) => {
+          const arr = updated[lang] || [];
+          const idx = arr.findIndex((it) => it.Attribute === q.attribute);
+          if (idx !== -1) {
+            const existing = arr[idx];
+            const newPlaceholder = typeof q.placeholder === 'object' && q.placeholder !== null ? (q.placeholder[lang] || existing.Placeholder || '') : (q.placeholder || existing.Placeholder || '');
+            const newDescription = typeof q.description === 'object' && q.description !== null ? (q.description[lang] || existing.Description || '') : (q.description || existing.Description || '');
+            const newLabel = typeof q.title === 'object' && q.title !== null ? (q.title[lang] || existing.Label || q.attribute) : (q.title || existing.Label || q.attribute);
+            arr[idx] = { ...existing, Label: newLabel, Placeholder: newPlaceholder, Description: newDescription };
+          }
+        });
+        return updated;
+      });
+    }
+
     setPages(prev => prev.map((p, i) => {
       if (i !== pageIndex) return p;
       if (sectionIndex !== null) return { ...p, sections: p.sections.map((s, si) => si === sectionIndex ? { ...s, questions: (s.questions || []).filter((_, qi) => qi !== questionIndex) } : s) };
-      return { ...p, questions: p.questions.filter((_, qi) => qi !== questionIndex) };
+      const qLocal = p.questions[questionIndex];
+      return { ...p, questions: p.questions.filter((_, qi) => qi !== questionIndex), items: (p.items || []).filter(it => !(it.kind === 'question' && it.id === qLocal.id)) };
     }));
   };
   const handleSaveQuestion = (questionData) => {
@@ -230,7 +277,7 @@ const FormBuilder = () => {
         return { ...p, questions: p.questions.map((q, qi) => qi === editingQuestionIndex ? question : q) };
       }
       if (targetSectionIndex !== null) return { ...p, sections: p.sections.map((s, si) => si === targetSectionIndex ? { ...s, questions: [ ...(s.questions || []), question ] } : s) };
-      return { ...p, questions: [...p.questions, question] };
+      return { ...p, questions: [...p.questions, question], items: [ ...(p.items || []), { kind: 'question', id: question.id } ] };
     }));
   };
 
@@ -238,17 +285,21 @@ const FormBuilder = () => {
   const handleMoveQuestion = (fromPageIndex, fromQuestionIndex, toPageIndex, fromSectionIndex = null) => setPages(prev => moveQuestionToPage(prev, fromPageIndex, fromQuestionIndex, toPageIndex, fromSectionIndex));
   const handleMoveQuestionToSection = (fromPageIndex, fromQuestionIndex, toPageIndex, toSectionIndex, fromSectionIndex = null) => setPages(prev => moveQuestionToSection(prev, fromPageIndex, fromQuestionIndex, toPageIndex, toSectionIndex, fromSectionIndex));
   const handleReorderQuestion = (pageIndex, sectionIndexOrNull, fromIndex, toIndex) => setPages(prev => reorderQuestionInContainer(prev, pageIndex, sectionIndexOrNull, fromIndex, toIndex));
-  const handleReorderSection = (pageIndex, fromIndex, toIndex) => setPages(prev => reorderSectionInPage(prev, pageIndex, fromIndex, toIndex));
   const handleReorderPage = (fromIndex, toIndex) => setPages(prev => reorderPages(prev, fromIndex, toIndex));
+  const handleReorderPageItem = (pageIndex, fromIndexInItems, toIndexInItems) => setPages(prev => reorderPageItems(prev, pageIndex, fromIndexInItems, toIndexInItems));
+  const handleMovePageItem = (fromPageIndex, fromIndexInItems, toPageIndex) => setPages(prev => movePageItemToPage(prev, fromPageIndex, fromIndexInItems, toPageIndex));
 
   const createQuestionFromPaletteItem = (item) => {
     const { attribute, labels, formatText, attributeType, placeholders } = item;
     const formFieldType = attributeType?.includes('Text') ? 'textarea' : 'text';
     const title = {};
     const placeholder = {};
+    const description = {};
     languages.forEach(lang => {
       title[lang] = labels?.[lang] || labels?.['default'] || attribute;
       placeholder[lang] = placeholders?.[lang] || placeholders?.['default'] || '';
+      const langData = lanAttributeRowData?.[lang]?.find(r => r.Attribute === attribute);
+      description[lang] = langData?.Description || '';
     });
     
     // Convert entry codes (list options) to options format
@@ -277,6 +328,7 @@ const FormBuilder = () => {
       attributeType: attributeType || '', 
       type: formFieldType, 
       placeholder, 
+      description,
       required: false, 
       options 
     };
@@ -285,7 +337,7 @@ const FormBuilder = () => {
   const handleDropPaletteQuestion = (pageIndex, item) => {
     if (usedAttributes.has(item.attribute)) return;
     const newQuestion = createQuestionFromPaletteItem(item);
-    setPages(prev => prev.map((p, i) => i === pageIndex ? { ...p, questions: [...(p.questions || []), newQuestion] } : p));
+    setPages(prev => prev.map((p, i) => i === pageIndex ? { ...p, questions: [...(p.questions || []), newQuestion], items: [ ...(p.items || []), { kind: 'question', id: newQuestion.id } ] } : p));
   };
   
   const handleDropPaletteQuestionToSection = (pageIndex, sectionIndex, item) => {
@@ -294,15 +346,23 @@ const FormBuilder = () => {
     setPages(prev => prev.map((p, pi) => pi !== pageIndex ? p : ({ ...p, sections: p.sections.map((s, si) => si !== sectionIndex ? s : ({ ...s, questions: [ ...(s.questions || []), newQuestion ] })) })));
   };
 
-  // Helper function to sync placeholder changes back to lanAttributeRowData
-  const syncPlaceholdersToLanData = useCallback(() => {
+  // Helper function to sync label, placeholder and description changes back to lanAttributeRowData
+  const syncQuestionFieldsToLanData = useCallback(() => {
     const updatedLanData = { ...lanAttributeRowData };
     
     const questionsByAttribute = {};
+    const descriptionsByAttribute = {};
+    const titlesByAttribute = {};
     pages.forEach(page => {
       [...(page.questions || []), ...(page.sections || []).flatMap(s => s.questions || [])].forEach(q => {
         if (q?.attribute && q.placeholder) {
           questionsByAttribute[q.attribute] = q.placeholder;
+        }
+        if (q?.attribute && q.description) {
+          descriptionsByAttribute[q.attribute] = q.description;
+        }
+        if (q?.attribute && q.title) {
+          titlesByAttribute[q.attribute] = q.title;
         }
       });
     });
@@ -312,28 +372,45 @@ const FormBuilder = () => {
         updatedLanData[lang] = updatedLanData[lang].map(item => {
           const attr = item.Attribute;
           const questionPlaceholder = questionsByAttribute[attr];
-          
+          const questionDescription = descriptionsByAttribute[attr];
+          const questionTitle = titlesByAttribute[attr];
+          let newItem = { ...item };
+
           if (questionPlaceholder) {
-            let newPlaceholder = '';
             if (typeof questionPlaceholder === 'object' && questionPlaceholder !== null) {
-              newPlaceholder = questionPlaceholder[lang] || '';
+              newItem.Placeholder = questionPlaceholder[lang] || '';
             } else if (typeof questionPlaceholder === 'string') {
-              newPlaceholder = questionPlaceholder;
+              newItem.Placeholder = questionPlaceholder;
             }
-            
-            return {
-              ...item,
-              Placeholder: newPlaceholder
-            };
           }
-          
-          return item;
+
+          if (questionDescription) {
+            if (typeof questionDescription === 'object' && questionDescription !== null) {
+              newItem.Description = questionDescription[lang] || '';
+            } else if (typeof questionDescription === 'string') {
+              newItem.Description = questionDescription;
+            }
+          }
+
+          if (questionTitle) {
+            if (typeof questionTitle === 'object' && questionTitle !== null) {
+              newItem.Label = questionTitle[lang] || newItem.Label || attr;
+            } else if (typeof questionTitle === 'string') {
+              newItem.Label = questionTitle || newItem.Label || attr;
+            }
+          }
+
+          return newItem;
         });
       }
     });
     
     setLanAttributeRowData(updatedLanData);
   }, [pages, languages, lanAttributeRowData, setLanAttributeRowData]);
+
+  useEffect(() => {
+    syncQuestionFieldsToLanData();
+  }, [pages, syncQuestionFieldsToLanData]);
 
   const validateForm = useCallback(() => ({ ok: true }), []);
 
@@ -344,17 +421,14 @@ const FormBuilder = () => {
     // Convert pages to form information format
     const formData = convertToFormInformation(pages);
     setFormInformationRowData(formData);
-    
-    syncPlaceholdersToLanData();
-    
+
     setSelectedOverlay("");
     setCurrentPage("Overlays");
-  }, [validateForm, pages, setFormInformationRowData, setSelectedOverlay, setCurrentPage, languages, schemaDescription, syncPlaceholdersToLanData]);
+  }, [validateForm, pages, setFormInformationRowData, setSelectedOverlay, setCurrentPage, languages, schemaDescription]);
 
   const handleBack = useCallback(() => {
-    syncPlaceholdersToLanData();
     setCurrentPage("FormInformation");
-  }, [setCurrentPage, syncPlaceholdersToLanData]);
+  }, [setCurrentPage]);
 
   // Build Language Tabs
   const displayLanguageArray = [];
@@ -476,7 +550,14 @@ const FormBuilder = () => {
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 3 }}>
+          <Box 
+            sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', md: '320px 1fr' }, 
+              gap: 3, 
+              alignItems: 'start'
+            }}
+          >
             <AttributePalette
               attributesList={attributesList}
               FormInformationRowData={FormInformationRowData}
@@ -488,9 +569,9 @@ const FormBuilder = () => {
               languages={languages}
             />
 
-            <Box>
+            <Box sx={{ width: '100%' }}>
               {pages.map((page, pageIndex) => (
-                <DroppablePage
+              <DroppablePage
                   key={page.id}
                   page={page}
                   pageIndex={pageIndex}
@@ -501,7 +582,6 @@ const FormBuilder = () => {
                   onEditSection={handleEditSection}
                   onDeleteSection={handleDeleteSection}
                   onMoveSection={handleMoveSection}
-                  onReorderSection={handleReorderSection}
                   onEditQuestion={handleEditQuestion}
                   onDeleteQuestion={handleDeleteQuestion}
                   onMoveQuestion={handleMoveQuestion}
@@ -510,6 +590,8 @@ const FormBuilder = () => {
                   onDropPaletteQuestion={handleDropPaletteQuestion}
                   onDropPaletteQuestionToSection={handleDropPaletteQuestionToSection}
                   onReorderPage={handleReorderPage}
+                  onReorderPageItem={handleReorderPageItem}
+                  onMovePageItem={handleMovePageItem}
                 />
               ))}
             </Box>

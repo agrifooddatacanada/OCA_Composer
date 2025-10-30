@@ -3,6 +3,7 @@ import { Card, CardContent, Box, Typography, IconButton } from "@mui/material";
 import { useDrag, useDrop } from 'react-dnd';
 import { DragIndicator as DragIcon, Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
+import { FORM_BUILDER_CARD_WIDTH } from "../../constants/constants";
 import DraggableQuestion from "./DraggableQuestion";
 import getMultilingualText from "./utils/getMultilingualText";
 import { textWrapStyle } from "../../constants/styles";
@@ -37,7 +38,7 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
   const sectionDescription = getMultilingualText(section.descriptions, currentLanguage, '');
 
   return (
-    <Card 
+  <Card 
       ref={(node) => drag(drop(node))} 
       sx={{ 
         mb: 1, 
@@ -45,7 +46,10 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
         cursor: 'move', 
         border: isOver ? `2px dashed ${CustomPalette.PRIMARY}` : `2px solid ${CustomPalette.PRIMARY}`,
         backgroundColor: CustomPalette.PINK_200,
-        boxShadow: 1
+        boxShadow: 1,
+        width: '100%',
+        maxWidth: `${FORM_BUILDER_CARD_WIDTH}px`,
+        flexShrink: 0
       }}
     >
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
