@@ -139,6 +139,26 @@ function buildEntryOverlays(slots, enums) {
 export function buildOverlays(slots, enums, linkmlSchema) {
   const overlays = {};
 
+  // Conformance overlay: required -> 'M', optional -> 'O'
+  const attribute_conformance = {};
+  Object.entries(slots).forEach(([slotName, slotDef]) => {
+    if (slotDef.required === true) {
+      attribute_conformance[slotName] = 'M';
+    } else {
+      attribute_conformance[slotName] = 'O';
+    }
+  });
+  if (Object.keys(attribute_conformance).length > 0) {
+    overlays.conformance = [
+      {
+        type: "spec/overlays/conformance/1.0",
+        capture_base: "",
+        language: "en",
+        attribute_conformance
+      }
+    ];
+  }
+
   const overlaySpecs = [
     {
       name: "format",
