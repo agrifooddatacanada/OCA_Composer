@@ -252,9 +252,9 @@ const FormBuilder = () => {
           if (idx !== -1) {
             const existing = arr[idx];
             const newPlaceholder = typeof q.placeholder === 'object' && q.placeholder !== null ? (q.placeholder[lang] || existing.Placeholder || '') : (q.placeholder || existing.Placeholder || '');
-            const newDescription = typeof q.description === 'object' && q.description !== null ? (q.description[lang] || existing.Description || '') : (q.description || existing.Description || '');
+            const newFormDescription = typeof q.description === 'object' && q.description !== null ? (q.description[lang] || existing.FormDescription || '') : (q.description || existing.FormDescription || '');
             const newLabel = typeof q.title === 'object' && q.title !== null ? (q.title[lang] || existing.Label || q.attribute) : (q.title || existing.Label || q.attribute);
-            arr[idx] = { ...existing, Label: newLabel, Placeholder: newPlaceholder, Description: newDescription };
+            arr[idx] = { ...existing, Label: newLabel, Placeholder: newPlaceholder, FormDescription: newFormDescription };
           }
         });
         return updated;
@@ -299,7 +299,7 @@ const FormBuilder = () => {
       title[lang] = labels?.[lang] || labels?.['default'] || attribute;
       placeholder[lang] = placeholders?.[lang] || placeholders?.['default'] || '';
       const langData = lanAttributeRowData?.[lang]?.find(r => r.Attribute === attribute);
-      description[lang] = langData?.Description || '';
+      description[lang] = langData?.FormDescription || '';
     });
     
     // Convert entry codes (list options) to options format
@@ -346,12 +346,12 @@ const FormBuilder = () => {
     setPages(prev => prev.map((p, pi) => pi !== pageIndex ? p : ({ ...p, sections: p.sections.map((s, si) => si !== sectionIndex ? s : ({ ...s, questions: [ ...(s.questions || []), newQuestion ] })) })));
   };
 
-  // Helper function to sync label, placeholder and description changes back to lanAttributeRowData
+  // Helper function to sync label, placeholder and FORM description back to lanAttributeRowData
   const syncQuestionFieldsToLanData = useCallback(() => {
     const updatedLanData = { ...lanAttributeRowData };
     
     const questionsByAttribute = {};
-    const descriptionsByAttribute = {};
+    const formDescriptionsByAttribute = {};
     const titlesByAttribute = {};
     pages.forEach(page => {
       [...(page.questions || []), ...(page.sections || []).flatMap(s => s.questions || [])].forEach(q => {
@@ -359,7 +359,7 @@ const FormBuilder = () => {
           questionsByAttribute[q.attribute] = q.placeholder;
         }
         if (q?.attribute && q.description) {
-          descriptionsByAttribute[q.attribute] = q.description;
+          formDescriptionsByAttribute[q.attribute] = q.description;
         }
         if (q?.attribute && q.title) {
           titlesByAttribute[q.attribute] = q.title;
@@ -372,7 +372,7 @@ const FormBuilder = () => {
         updatedLanData[lang] = updatedLanData[lang].map(item => {
           const attr = item.Attribute;
           const questionPlaceholder = questionsByAttribute[attr];
-          const questionDescription = descriptionsByAttribute[attr];
+          const questionDescription = formDescriptionsByAttribute[attr];
           const questionTitle = titlesByAttribute[attr];
           let newItem = { ...item };
 
@@ -384,11 +384,12 @@ const FormBuilder = () => {
             }
           }
 
+     
           if (questionDescription) {
             if (typeof questionDescription === 'object' && questionDescription !== null) {
-              newItem.Description = questionDescription[lang] || '';
+              newItem.FormDescription = questionDescription[lang] || '';
             } else if (typeof questionDescription === 'string') {
-              newItem.Description = questionDescription;
+              newItem.FormDescription = questionDescription;
             }
           }
 
