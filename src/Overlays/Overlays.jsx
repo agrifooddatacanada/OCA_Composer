@@ -9,7 +9,7 @@ import { Context } from "../App";
 import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
-import { shouldDisableRangeOverlay, shouldDisableFormInformationOverlay, getFormInformationDisabledReason } from "../constants/utils";
+import { shouldDisableRangeOverlay, getRangeOverlayDisabledReason, shouldDisableFormInformationOverlay, getFormInformationDisabledReason } from "../constants/utils";
 import { FIELD_FORMAT_OVERLAY, FIELD_RANGE_OVERLAY, FIELD_FORM_INFORMATION_OVERLAY } from "../constants/constants";
 
 const Overlays = ({ pageBack, pageForward }) => {
@@ -30,8 +30,18 @@ const Overlays = ({ pageBack, pageForward }) => {
   // Convert overlay into a list of features
   const { selectedFeatures, unselectedFeatures } = getListOfSelectedOverlays(overlay);
 
-  const getDisabledReason = (featureName) =>
-    getFormInformationDisabledReason(featureName, selectedFeatures) || "";
+  const getDisabledReason = (featureName) => {
+    return (
+      getFormInformationDisabledReason(featureName, selectedFeatures) ||
+      getRangeOverlayDisabledReason(
+        featureName,
+        selectedFeatures,
+        attributeRowData,
+        rangeRowData
+      ) ||
+      ""
+    );
+  };
 
   const addToSelected = (item) => {
     // Range overlay can be selected only if format overlay is selected

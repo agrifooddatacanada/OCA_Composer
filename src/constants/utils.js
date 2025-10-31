@@ -827,6 +827,24 @@ export const shouldDisableFormInformationOverlay = (overlayText, selectedFeature
   overlayText === FIELD_FORM_INFORMATION_OVERLAY &&
   !selectedFeatures.includes(FIELD_FORMAT_OVERLAY);
 
+export const getRangeOverlayDisabledReason = (
+  overlayText,
+  selectedFeatures,
+  attributes,
+  rangeRowData
+) =>
+  overlayText !== "Add range rule for data"
+    ? ""
+    : rangeRowData.length === 0
+      ? i18next.t("No attributes available for range overlay")
+      : !selectedFeatures.includes(FIELD_FORMAT_OVERLAY)
+        ? i18next.t("Range overlay requires format overlay to be selected")
+        : !attributes.some(
+              (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
+            )
+          ? i18next.t("Range overlay requires Numeric or DateTime attributes")
+          : "";
+
 export const getFormInformationDisabledReason = (overlayText, selectedFeatures) =>
   shouldDisableFormInformationOverlay(overlayText, selectedFeatures)
     ? i18next.t("Form Information prerequisite tooltip")
