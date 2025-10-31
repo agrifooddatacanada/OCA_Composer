@@ -336,6 +336,7 @@ export default function Header({ currentPage }) {
               </select>
             </div> */}
 
+            {/* Landing page header */}
             <div>
               <select
                 id="language-select"
@@ -373,6 +374,7 @@ export default function Header({ currentPage }) {
           </Box>
         ) : (
           <>
+            {/* DEW page header */}
             {!location.pathname.includes("_help") && helpLink !== "" && (
               <Button
                 color="button"

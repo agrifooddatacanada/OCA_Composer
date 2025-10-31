@@ -467,6 +467,7 @@ const OCADataValidatorCheck = ({
     return headerToString + convertToCSV(newData, newHeader);
   };
 
+  // helper that sends the data back to the parent frame
   const uploadData = async () => {
     try {
       const csvString = await generateCSVFile(false);
@@ -483,6 +484,7 @@ const OCADataValidatorCheck = ({
     }
   };
 
+  // helper that checks if all cells pass validation
   const allCellsPassValidation = async () => {
     try {
       let currData = [];
@@ -496,6 +498,8 @@ const OCADataValidatorCheck = ({
         // edge case for no dataset file uploaded
         return false;
       }
+
+      // check if all cells pass validation
       return currData.every((row) => {
         if (!row.error) return true;
         return Object.values(row.error).every(
@@ -508,6 +512,7 @@ const OCADataValidatorCheck = ({
     }
   };
 
+  // helper that calls the allCellsPassValidation function and updates the state of the data validation variable
   const updateDataValidationState = async () => {
     const isValid = await allCellsPassValidation();
     setIsDataValid(isValid);
@@ -879,7 +884,7 @@ const OCADataValidatorCheck = ({
     if (datasetRawFile.length === 0) {
       setSchemaDataConformantHeader(attributesList);
     }
-    if (variableToCheck && variableToCheck?.length > 1) {
+    if (variableToCheck && variableToCheck?.length >= 1) {
       variableToCheck.forEach((header) => {
         if (
           header in SavedEntryCodesWithNoArrayType &&

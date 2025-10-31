@@ -335,43 +335,61 @@ export default class OCABundle {
 
       try {
         for (let i = 0; i < dataset[attr]?.length; i++) {
-          let dataEntry = dataset[attr][i];
-          if (
-            (dataEntry === undefined || dataEntry === null || dataEntry === "") &&
-            attrConformance === "O"
-          ) {
-            dataEntry = "";
+          const dataEntry = dataset[attr][i];
+          const isEmpty =
+            dataEntry === undefined ||
+            dataEntry === null ||
+            String(dataEntry).trim() === "";
+
+          // Early empty handling: mandatory empties are missing, optional empties are allowed
+          if (isEmpty) {
+            if (attrConformance === "M") {
+              rslt.errs[attr][i] = {
+                type: "FE",
+                detail: `${MISSING_MSG} Supported format: ${attrFormat}.`
+              };
+              continue;
+            }
+            if (attrConformance === "O") {
+              continue;
+            }
           }
+
           // Verifying the data entries for attributes with Array data type.
           if (attrType.includes("Array") || Array.isArray(attrType)) {
             const dataEntryWithErrors = [];
             try {
               const dataArr = this.processEntries(dataEntry);
-              for (let j = 0; j < dataArr.length; j++) {
+              const nonEmptyDataArr = dataArr.filter((v) => String(v).trim() !== "");
+
+              // Mandatory arrays must contain at least one non-empty item
+              if (attrConformance === "M" && nonEmptyDataArr.length === 0) {
+                rslt.errs[attr][i] = {
+                  type: "FE",
+                  detail: `${MISSING_MSG} Supported format: ${attrFormat}.`
+                };
+                continue;
+              }
+              // Optional arrays can be empty
+              if (attrConformance === "O" && nonEmptyDataArr.length === 0) {
+                continue;
+              }
+
+              for (let j = 0; j < nonEmptyDataArr.length; j++) {
                 if (
-                  !matchFormat(attrType[0], attrFormat, String(dataArr[j]), hasEntryCodes)
+                  !matchFormat(
+                    attrType[0],
+                    attrFormat,
+                    String(nonEmptyDataArr[j]),
+                    hasEntryCodes
+                  )
                 ) {
-                  dataEntryWithErrors.push(dataArr[j]);
+                  dataEntryWithErrors.push(nonEmptyDataArr[j]);
                 }
-                if (attrConformance === "M" && dataEntryWithErrors.length === 0) {
-                  if (hasEntryCodes) {
-                    this.errorForEntryCodesForArrayEntries(
-                      dataEntryWithErrors,
-                      rslt,
-                      attr,
-                      i,
-                      attrFormat,
-                      attrEntryCodes
-                    );
-                  } else {
-                    rslt.errs[attr][i] = {
-                      type: "FE",
-                      detail: `${MISSING_MSG} Supported format: ${attrFormat}.`
-                    };
-                  }
-                } else if (attrConformance === "O" && dataEntryWithErrors.length === 0) {
-                  continue;
-                } else if (attrType[0].includes("Boolean") && attrConformance === "M") {
+              }
+
+              if (dataEntryWithErrors.length > 0) {
+                if (attrType[0].includes("Boolean") && attrConformance === "M") {
                   if (hasEntryCodes) {
                     this.errorForEntryCodesForArrayEntries(
                       dataEntryWithErrors,
@@ -426,9 +444,9 @@ export default class OCABundle {
           } else if (
             !matchFormat(attrType, attrFormat, String(dataEntry), hasEntryCodes)
           ) {
-            if (attrConformance === "O" && dataEntry === "") {
+            if (attrConformance === "O" && String(dataEntry).trim() === "") {
               continue;
-            } else if (attrConformance === "M" && dataEntry === "") {
+            } else if (attrConformance === "M" && String(dataEntry).trim() === "") {
               rslt.errs[attr][i] = {
                 type: "FE",
                 detail: `${MISSING_MSG} Supported format: ${attrFormat}.`

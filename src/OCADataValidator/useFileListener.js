@@ -11,11 +11,11 @@ const useFileListener = (setFile) => {
             type: "application/json"
           });
           Object.defineProperty(file, "path", {
-            value: "oca_bundle.json", // Set the desired path value
+            value: "oca_bundle.json", // Set the desired path value for the file
             writable: false
           });
           if (file) {
-            setFile([file]); // Wrap in an array if setFile expects an array
+            setFile([file]); // Wrap in an array because setFile expects an array
           }
         } catch (error) {
           console.error("Error processing postMessage file:", error);
