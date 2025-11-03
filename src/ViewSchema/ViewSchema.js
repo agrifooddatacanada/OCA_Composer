@@ -58,7 +58,9 @@ export default function ViewSchema({
     jsonToReadme,
     OCAPackage,
     rangeRowData,
-    attributeFramingRowData
+    overlay,
+    attributeFramingRowData,
+    formBuilderPages
   } = useContext(Context);
   const languageIndex = languages.findIndex(
     (item) => codesToLanguages?.[i18next.language] === item
@@ -170,6 +172,16 @@ export default function ViewSchema({
     attributeRowData,
     currentUnitFramedRowData
   );
+  
+  const usedAttributesInForm = React.useMemo(() => {
+    const used = new Set();
+    (formBuilderPages || []).forEach((page) => {
+      (page.questions || []).forEach((q) => q?.attribute && used.add(q.attribute));
+      (page.sections || []).forEach((s) => (s.questions || []).forEach((q) => q?.attribute && used.add(q.attribute)));
+    });
+    return used;
+  }, [formBuilderPages]);
+  
   // Creates display array with all captured data
   useEffect(() => {
     const newDisplayArray = [];
@@ -235,6 +247,9 @@ export default function ViewSchema({
         }
       }
 
+      // Add form information - check if attribute is included in form
+      dataObject["Add Form Information"] = usedAttributesInForm.has(attributeName);
+
       // Add data standard information
       const attrWithDataStandard = dataStandardsRowData.find(
         (row) => row.Attribute === attributeName
@@ -286,7 +301,7 @@ export default function ViewSchema({
     });
 
     setDisplayArray(newDisplayArray);
-  }, [attributeRowData, lanAttributeRowData]);
+  }, [attributeRowData, lanAttributeRowData, usedAttributesInForm]);
 
   const moveBackward = () => {
     if (history.length > 1 && history[history.length - 2] === "Landing") {

@@ -5,6 +5,9 @@ export const DEFAULT_THREE_LETTER_LANGUAGE_CODE = "eng";
 export const DEFAULT_LANGUAGE = "English";
 export const MAX_ATTR_LABEL_CHARS = 250;
 export const MAX_ATTR_DESCRIPTION_CHARS = 250;
+export const MAX_QUESTION_DESCRIPTION_CHARS = 1000;
+
+export const FORM_BUILDER_CARD_WIDTH = 720;
 
 export const SCHEMA_MODE_SINGLE = "single";
 export const SCHEMA_MODE_MULTI_LEVEL = "multi-level";
@@ -461,6 +464,9 @@ export const CARDINALITY = "cardinality";
 
 export const ORDERING = "ordering";
 
+// Form Information Overlay
+export const FORM = "form";
+
 // Unit Framing Overlay
 export const UNIT_FRAMING = "unit_framing";
 export const UNIT_FRAME_ID = "UCUM";
@@ -538,6 +544,7 @@ export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
 export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
 export const FIELD_RANGE_OVERLAY = "Add range rule for data";
 export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
+export const FIELD_FORM_INFORMATION_OVERLAY = "Add Form Information";
 
 // Attribute Framing Overlay Dropdown Options
 export const ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS = {
