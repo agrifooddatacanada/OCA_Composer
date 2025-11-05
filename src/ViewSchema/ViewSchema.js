@@ -58,7 +58,6 @@ export default function ViewSchema({
     jsonToReadme,
     OCAPackage,
     rangeRowData,
-    overlay,
     attributeFramingRowData,
     formBuilderPages
   } = useContext(Context);
@@ -172,16 +171,18 @@ export default function ViewSchema({
     attributeRowData,
     currentUnitFramedRowData
   );
-  
+
   const usedAttributesInForm = React.useMemo(() => {
     const used = new Set();
     (formBuilderPages || []).forEach((page) => {
       (page.questions || []).forEach((q) => q?.attribute && used.add(q.attribute));
-      (page.sections || []).forEach((s) => (s.questions || []).forEach((q) => q?.attribute && used.add(q.attribute)));
+      (page.sections || []).forEach((s) =>
+        (s.questions || []).forEach((q) => q?.attribute && used.add(q.attribute))
+      );
     });
     return used;
   }, [formBuilderPages]);
-  
+
   // Creates display array with all captured data
   useEffect(() => {
     const newDisplayArray = [];

@@ -18,16 +18,8 @@ import { CustomPalette } from "./constants/customPalette";
 import useUnitFramingUpdater from "./hooks/useUnitFramingUpdater";
 import {
   CUSTOM_FORMAT_RULE,
-  FIELD_CARDINALITY_OVERLAY,
-  FIELD_CHARACTER_ENCODING_OVERLAY,
-  FIELD_CONFORMANCE_OVERLAY,
-  FIELD_DATA_STANDARDS_OVERLAY,
-  FIELD_FORMAT_OVERLAY,
-  FIELD_FORM_INFORMATION_OVERLAY,
-  FIELD_RANGE_OVERLAY,
-  FIELD_UNIT_FRAMING_OVERLAY,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-  SCHEMA_MODE_SINGLE
+  SCHEMA_MODE_SINGLE,
+  overlayItems
 } from "./constants/constants";
 import {
   getUnitsFramedThatAlreadyExistInOcaPackage,
@@ -43,24 +35,6 @@ export const Context = createContext();
 if (process.env.REACT_APP_GA_ID) {
   ReactGA.initialize(process.env.REACT_APP_GA_ID);
 }
-
-const overlayItems = {
-  [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
-  [FIELD_CONFORMANCE_OVERLAY]: {
-    feature: "Make selected entries required",
-    selected: false
-  },
-  [FIELD_FORMAT_OVERLAY]: {
-    feature: "Add format rule for data",
-    selected: false
-  },
-  [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
-  [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
-  [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
-  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
-  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false },
-  [FIELD_FORM_INFORMATION_OVERLAY]: { feature: "Add Form Information", selected: false }
-};
 
 export const pagesArray = [
   "Start",

@@ -12,6 +12,35 @@ export const FORM_BUILDER_CARD_WIDTH = 720;
 export const SCHEMA_MODE_SINGLE = "single";
 export const SCHEMA_MODE_MULTI_LEVEL = "multi-level";
 
+// Fields for overlay items
+export const FIELD_CHARACTER_ENCODING_OVERLAY = "Character Encoding";
+export const FIELD_FORMAT_OVERLAY = "Add format rule for data";
+export const FIELD_CONFORMANCE_OVERLAY = "Make selected entries required";
+export const FIELD_CARDINALITY_OVERLAY = "Cardinality";
+export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
+export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
+export const FIELD_RANGE_OVERLAY = "Add range rule for data";
+export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
+export const FIELD_FORM_INFORMATION_OVERLAY = "Add Form Information";
+
+export const overlayItems = {
+  [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
+  [FIELD_CONFORMANCE_OVERLAY]: {
+    feature: "Make selected entries required",
+    selected: false
+  },
+  [FIELD_FORMAT_OVERLAY]: {
+    feature: "Add format rule for data",
+    selected: false
+  },
+  [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
+  [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
+  [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
+  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
+  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false },
+  [FIELD_FORM_INFORMATION_OVERLAY]: { feature: "Add Form Information", selected: false }
+};
+
 export const classification = {
   "": [""],
   "Natural sciences": [
@@ -534,17 +563,6 @@ export const MAX_FILE_SIZE = 10485760;
 export const DISALLOWED_CHARACTERS = [",", " ", "\\", "/", "(", ")", "'", "+", "%"];
 export const ADC = "adc";
 export const CUSTOM_FORMAT_RULE = "CustomFormatRule";
-
-// Fields for overlay items
-export const FIELD_CHARACTER_ENCODING_OVERLAY = "Character Encoding";
-export const FIELD_FORMAT_OVERLAY = "Add format rule for data";
-export const FIELD_CONFORMANCE_OVERLAY = "Make selected entries required";
-export const FIELD_CARDINALITY_OVERLAY = "Cardinality";
-export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
-export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
-export const FIELD_RANGE_OVERLAY = "Add range rule for data";
-export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
-export const FIELD_FORM_INFORMATION_OVERLAY = "Add Form Information";
 
 // Attribute Framing Overlay Dropdown Options
 export const ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS = {
