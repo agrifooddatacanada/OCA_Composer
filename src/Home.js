@@ -14,6 +14,8 @@ import RequiredEntries from "./Overlays/RequiredEntries";
 import { pagesArray } from "./App";
 import Cardinality from "./Overlays/Cardinality";
 import UnitFraming from "./Overlays/UnitFraming";
+import FormInformation from "./Overlays/FormInformation";
+import FormBuilder from "./Overlays/FormBuilder";
 import FormatRulesV2 from "./Overlays/FormatRuleV2";
 import Header from "./Header/Header";
 import Footer from "./Footer/Footer";
@@ -82,7 +84,9 @@ const Home = ({
       "MatchingJSONEntryCodes",
       "DataStandards",
       "Range",
-      "AttributeFraming"
+      "AttributeFraming",
+      "FormInformation",
+      "FormBuilder"
     ],
     []
   );
@@ -141,6 +145,8 @@ const Home = ({
         {currentPage === "FormatRules" && <FormatRulesV2 />}
         {currentPage === "Cardinality" && <Cardinality />}
         {currentPage === "UnitFraming" && <UnitFraming />}
+        {currentPage === "FormInformation" && <FormInformation />}
+        {currentPage === "FormBuilder" && <FormBuilder />}
         {currentPage === "UploadEntryCodes" && <UploadPage />}
         {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
         {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}

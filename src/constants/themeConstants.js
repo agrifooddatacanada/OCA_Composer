@@ -15,7 +15,7 @@ export const themes = {
         alt: "Agri-food Data Canada",
         style: { width: "200px", cursor: "pointer" }
       },
-
+      // logo for the landing page header
       homeNavLogo: {
         // eslint-disable-next-line global-require
         url: require("../assets/agri-logo-white.png"),

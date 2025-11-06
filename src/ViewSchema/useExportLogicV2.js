@@ -17,7 +17,9 @@ import {
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
   RANGE,
-  ATTRIBUTE_FRAMING
+  ATTRIBUTE_FRAMING,
+  FORM,
+  FIELD_FORM_INFORMATION_OVERLAY
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -25,7 +27,8 @@ import {
   getRangeOverlayInput,
   getTransformedEntryCodes,
   getUnitFramingInput,
-  getAttributeFramingInput
+  getAttributeFramingInput,
+  getFormInformationInput
 } from "../constants/utils";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 
@@ -47,7 +50,8 @@ const useExportLogicV2 = () => {
     overlay,
     cardinalityData,
     rangeRowData,
-    attributeFramingRowData
+    attributeFramingRowData,
+    formBuilderPages
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -448,6 +452,7 @@ const useExportLogicV2 = () => {
       - unit framing overlay
       - ordering overlay
       - entry code overlay
+      - form overlay
       */
 
       const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
@@ -501,6 +506,19 @@ const useExportLogicV2 = () => {
               },
               attributes: getAttributeFramingInput(attributeFramingRowData)
             }
+          }),
+        ...(overlay[FIELD_FORM_INFORMATION_OVERLAY].selected &&
+          formBuilderPages &&
+          formBuilderPages.length > 0 && {
+            form_overlay: {
+              type: FORM,
+              ...getFormInformationInput(
+                formBuilderPages,
+                languages,
+                schemaDescription,
+                bundle.bundle.d
+              )
+            }
           })
       };
 
@@ -538,6 +556,7 @@ const useExportLogicV2 = () => {
         );
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Error downloading OCA package:", error);
       setError("Could not download OCA package");
       downloadTextFile(
