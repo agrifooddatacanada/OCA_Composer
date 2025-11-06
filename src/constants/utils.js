@@ -20,7 +20,7 @@ import {
   formatCodeTextDescription,
   OCA_REPOSITORY_API_URL,
   RANGE,
-  SSSOM_MAPPER_API_URL
+  SSSOM_FRAMING_API_URL_DEV
 } from "./constants";
 
 import { convertToFormInformationOverlay } from "../Overlays/FormBuilder/utils/convertToFormInformation";
@@ -613,9 +613,15 @@ export const generateOCABundle = async (OCAFileData) => {
 };
 
 export const searchPredicates = async (data) => {
-  // http://localhost:8080/search/?page=1&page_size=10&query=beans
+  // http://localhost:8080/search/?page=1&page_size=10&query=beans -- old
+  // http://localhost:8080/api/v1/search/?q=farm&page=1&pageSize=20 -- new
+
+  // the fields parameter is used to specify the fields to return in the response.
+  // for example: field=label,definition (those are the indexed field in solr)
+  // the fields parameter is optional, if not provided, all fields will be returned.
+
   const response = await fetch(
-    `${SSSOM_MAPPER_API_URL}/search/?page=${data.page}&page_size=${data.page_size}&query=${data.query}`,
+    `${SSSOM_FRAMING_API_URL_DEV}/search/?q=${data.query}&page=${data.page}&pageSize=${data.pageSize}&fields=label,definition`,
     {
       method: "GET",
       headers: {
@@ -628,7 +634,7 @@ export const searchPredicates = async (data) => {
 };
 
 export const matchedSubjectAndPredicate = async (data) => {
-  // return the first result, i,e first rdf triple that matches the query.
+  // return the first result, i,e first rdf triple (mainly: class) that matches the query.
   // using this for the very first time the attribute framing is added (the page is loaded).
   const response = await searchPredicates(data);
 
@@ -636,9 +642,10 @@ export const matchedSubjectAndPredicate = async (data) => {
   return results[0];
 };
 
+// TODO: adjust this the graph api response
 export const getLabelofParentClass = async (uri) => {
   // return the label of the parent class of the given uri
-  const response = await fetch(`${SSSOM_MAPPER_API_URL}/search/?query=${uri}`, {
+  const response = await fetch(`${SSSOM_FRAMING_API_URL_DEV}/search/?q=${uri}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json"

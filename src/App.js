@@ -539,9 +539,6 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attributeRowData]);
 
-  // skos:exactMatch
-  // semapv:ManualMappingCuratio
-
   useEffect(() => {
     if (jsonRawFile.length > 0) {
       const newMatchingRowData = [];

@@ -549,7 +549,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [allpages, setAllpages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [selectedTermForExploring, setSelectedTermForExploring] = useState(null);
   const gridRef = useRef();
@@ -559,7 +559,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
       setSearchTerm(editingRowData.Attribute);
       setSearchResults([]);
       setCurrentPage(1);
-      setTotalPages(1);
+      setAllpages(1);
       setTotalResults(0);
     }
   }, [editingRowData]);
@@ -574,18 +574,18 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
     try {
       const response = await searchPredicates({
         page,
-        page_size: 17,
+        pageSize: 17,
         query: searchTerm
       });
 
-      const { results, count } = response;
+      const { results, totalResults } = response;
       const resultsData = toDisplayRowData(results);
-      const calculatedTotalPages = Math.ceil(count / 17);
+      const calculatedAllpages = Math.ceil(totalResults / 15);
 
       setSearchResults(resultsData);
       setCurrentPage(page);
-      setTotalPages(calculatedTotalPages);
-      setTotalResults(count);
+      setAllpages(calculatedAllpages);
+      setTotalResults(totalResults);
       globalGridRef = gridRef;
     } catch (error) {
       console.error("Search failed:", error);
@@ -600,7 +600,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
   };
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
+    if (currentPage < allpages) {
       handleSearch(currentPage + 1);
     }
   };
@@ -842,7 +842,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                   }}
                 >
                   <Typography variant="body2" color="textSecondary" mt={4}>
-                    Page {currentPage} of {totalPages} ({totalResults} total results)
+                    Page {currentPage} of {allpages} ({totalResults} total results)
                   </Typography>
                   <Box sx={{ display: "flex", gap: 1, mt: 4 }}>
                     <Button
@@ -869,7 +869,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                       variant="outlined"
                       size="small"
                       onClick={handleNextPage}
-                      disabled={currentPage >= totalPages}
+                      disabled={currentPage >= allpages}
                       sx={{
                         borderColor: CustomPalette.PRIMARY,
                         color: CustomPalette.PRIMARY,
@@ -1141,7 +1141,7 @@ const AttributeFraming = () => {
         try {
           const matchedResult = await matchedSubjectAndPredicate({
             page: 1,
-            page_size: 1,
+            pageSize: 1,
             query: row.Attribute
           });
 
