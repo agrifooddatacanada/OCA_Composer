@@ -34,6 +34,7 @@ import { Context } from "../App";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
 import Spinner from "../components/Spinner";
+import OntologyTreeView from "../components/OntologyTreeView";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import DeleteConfirmation from "./DeleteConfirmation";
 import {
@@ -44,7 +45,7 @@ import { CustomPalette } from "../constants/customPalette";
 import {
   matchedSubjectAndPredicate,
   searchPredicates,
-  getLabelofParentClass
+  fetchClassHierarchy
 } from "../constants/utils";
 
 let globalGridRef = null;
@@ -61,6 +62,20 @@ const buttonDisabledStyles = {
   "&:disabled": {
     backgroundColor: "grey.400 !important",
     color: "grey.600 !important"
+  }
+};
+
+const logError = (message, error) => {
+  if (process.env.NODE_ENV !== "production") {
+    // eslint-disable-next-line no-console
+    console.error(message, error);
+  }
+};
+
+const logWarn = (message, error) => {
+  if (process.env.NODE_ENV !== "production") {
+    // eslint-disable-next-line no-console
+    console.warn(message, error);
   }
 };
 
@@ -239,309 +254,15 @@ const CheckboxRenderer = (props) => {
 
 const toDisplayRowData = (results) =>
   results.map((result) => ({
+    id: result?.id || result?.uri || "",
     term: result.label || result.term || "",
     description: result.definition || result.description || "",
     typeOfMatch: ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.typeOfMatch[0]?.value,
     mappingJustification:
       ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS.mappingJustification[0]?.value,
-    uri: result?.uri,
+    uri: result?.uri || result?.id || "",
     subClassOf: result?.subClassOf || []
   }));
-
-// Tree node component for ontology hierarchy
-const TreeNode = ({
-  node,
-  level = 0,
-  isParent = false,
-  isChild = false,
-  isSelected = false,
-  expandedNodes,
-  toggleNode
-}) => {
-  const { id, label, hasChildren } = node;
-  const nodeId = id || "root";
-  const isExpanded = expandedNodes.includes(nodeId);
-
-  return (
-    <Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          py: 0.3,
-          px: 0.5,
-          ml: level * 2,
-          cursor: hasChildren ? "pointer" : "default",
-          "&:hover": {
-            backgroundColor: "#f5f5f5"
-          },
-          backgroundColor: isSelected ? CustomPalette.PINK_100 : "transparent",
-          borderLeft: isSelected ? `3px solid ${CustomPalette.PRIMARY}` : "none",
-          pl: isSelected ? 1 : 0.5
-        }}
-        onClick={hasChildren ? () => toggleNode(nodeId) : undefined}
-      >
-        {hasChildren ? (
-          <Typography
-            variant="body2"
-            sx={{
-              mr: 0.5,
-              fontSize: "12px",
-              color: "#666",
-              fontFamily: "monospace",
-              fontWeight: "bold"
-            }}
-          >
-            {isExpanded ? "−" : "+"}
-          </Typography>
-        ) : (
-          <Box sx={{ width: 8, mr: 0.5 }} />
-        )}
-
-        <Typography
-          variant="body2"
-          sx={{
-            fontSize: "13px",
-            fontWeight: isSelected ? "500" : "normal",
-            color: isSelected ? CustomPalette.PRIMARY : "#333",
-            flexGrow: 1
-          }}
-        >
-          {label}
-        </Typography>
-
-        {isParent && (
-          <Typography
-            variant="caption"
-            sx={{
-              ml: 1,
-              color: "#666",
-              fontSize: "11px"
-            }}
-          >
-            (parent)
-          </Typography>
-        )}
-        {isChild && (
-          <Typography
-            variant="caption"
-            sx={{
-              ml: 1,
-              color: "#666",
-              fontSize: "11px"
-            }}
-          >
-            (subclass)
-          </Typography>
-        )}
-      </Box>
-    </Box>
-  );
-};
-
-const CustomTreeView = ({ selectedTerm }) => {
-  const [expandedNodes, setExpandedNodes] = useState(["root"]);
-  const [hierarchyData, setHierarchyData] = useState({ parents: [], children: [] });
-  const [isLoadingHierarchy, setIsLoadingHierarchy] = useState(false);
-
-  const toggleNode = (nodeId) => {
-    setExpandedNodes((prev) =>
-      prev.includes(nodeId) ? prev.filter((id) => id !== nodeId) : [...prev, nodeId]
-    );
-  };
-
-  const fetchParentClassLabels = async (subClassOfArray) => {
-    if (!subClassOfArray || subClassOfArray.length === 0) return [];
-
-    setIsLoadingHierarchy(true);
-
-    try {
-      const promises = subClassOfArray.map(async (uri) => {
-        try {
-          const response = await getLabelofParentClass(uri);
-          const { results } = response;
-          return {
-            id: results[0]?.uri,
-            label: results[0]?.label,
-            uri,
-            hasChildren: false
-          };
-        } catch (error) {
-          return {
-            id: uri,
-            label: uri,
-            uri,
-            hasChildren: false
-          };
-        }
-      });
-
-      const results = await Promise.all(promises);
-      return results.filter(Boolean);
-    } catch (error) {
-      return [];
-    } finally {
-      setIsLoadingHierarchy(false);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedTerm?.subClassOf && selectedTerm.subClassOf.length > 0) {
-      fetchParentClassLabels(selectedTerm.subClassOf).then((parents) => {
-        setHierarchyData({
-          parents,
-          children: [] // TODO: Implement children fetching if needed
-        });
-      });
-    } else {
-      setHierarchyData({ parents: [], children: [] });
-    }
-  }, [selectedTerm]);
-
-  if (!selectedTerm) return null;
-  return (
-    <Box sx={{ maxHeight: "100%", overflow: "auto" }}>
-      {/* Loading state */}
-      {isLoadingHierarchy && (
-        <Box sx={{ textAlign: "center", py: 3 }}>
-          <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}>
-            <Box
-              sx={{
-                width: 16,
-                height: 16,
-                border: "2px solid #e0e0e0",
-                borderTop: `2px solid ${CustomPalette.PRIMARY}`,
-                borderRadius: "50%",
-                animation: "spin 1s linear infinite",
-                "@keyframes spin": {
-                  "0%": { transform: "rotate(0deg)" },
-                  "100%": { transform: "rotate(360deg)" }
-                }
-              }}
-            />
-            <Typography variant="body2" sx={{ color: "#666", fontSize: "13px" }}>
-              Loading hierarchy...
-            </Typography>
-          </Box>
-        </Box>
-      )}
-
-      {/* Parent classes with selected term as children */}
-      {!isLoadingHierarchy && hierarchyData.parents.length > 0 && (
-        <Box sx={{ mb: 2 }}>
-          <Typography
-            variant="body2"
-            sx={{
-              color: "#666",
-              fontWeight: "500",
-              mb: 1,
-              fontSize: "12px",
-              textTransform: "uppercase",
-              letterSpacing: 0.5
-            }}
-          >
-            Ontology Hierarchy
-          </Typography>
-          {hierarchyData.parents.map((parent) => (
-            <Box key={parent.id}>
-              <TreeNode
-                node={{ ...parent, hasChildren: true }}
-                level={0}
-                isParent
-                expandedNodes={expandedNodes}
-                toggleNode={toggleNode}
-              />
-              {/* Show selected term under expanded parent */}
-              {expandedNodes.includes(parent.id) && (
-                <TreeNode
-                  node={{ id: "selected", label: selectedTerm.term, hasChildren: false }}
-                  level={1}
-                  isSelected
-                  expandedNodes={expandedNodes}
-                  toggleNode={toggleNode}
-                />
-              )}
-            </Box>
-          ))}
-        </Box>
-      )}
-
-      {/* Child classes */}
-      {hierarchyData.children.length > 0 && (
-        <Box>
-          <Typography
-            variant="body2"
-            sx={{
-              color: "#666",
-              fontWeight: "500",
-              mb: 1,
-              fontSize: "12px",
-              textTransform: "uppercase",
-              letterSpacing: 0.5
-            }}
-          >
-            Subclasses
-          </Typography>
-          {hierarchyData.children.map((child) => (
-            <TreeNode
-              key={child.id}
-              node={child}
-              level={0}
-              isChild
-              expandedNodes={expandedNodes}
-              toggleNode={toggleNode}
-            />
-          ))}
-        </Box>
-      )}
-
-      {/* URI References */}
-      {!isLoadingHierarchy && hierarchyData.parents.length > 0 && (
-        <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid #e0e0e0" }}>
-          <Typography
-            variant="body2"
-            sx={{
-              color: "#666",
-              fontWeight: "500",
-              mb: 1,
-              fontSize: "12px",
-              textTransform: "uppercase",
-              letterSpacing: 0.5
-            }}
-          >
-            uris
-          </Typography>
-          {hierarchyData.parents.map((parent) => (
-            <Box key={`ref-${parent.id}`} sx={{ mb: 1, pl: 1 }}>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "#888",
-                  fontSize: "11px",
-                  fontFamily: "monospace",
-                  wordBreak: "break-all"
-                }}
-              >
-                {parent.label}: {parent.uri}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-      )}
-
-      {/* Empty state */}
-      {!isLoadingHierarchy &&
-        hierarchyData.parents.length === 0 &&
-        hierarchyData.children.length === 0 && (
-          <Box sx={{ textAlign: "center", py: 4 }}>
-            <Typography variant="body2" color="text.secondary">
-              No hierarchy data available for this term
-            </Typography>
-          </Box>
-        )}
-    </Box>
-  );
-};
 
 const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) => {
   const { t } = useTranslation();
@@ -552,7 +273,18 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
   const [allpages, setAllpages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [selectedTermForExploring, setSelectedTermForExploring] = useState(null);
+  const [hierarchyData, setHierarchyData] = useState(null);
+  const [hierarchyError, setHierarchyError] = useState(null);
+  const [isLoadingHierarchy, setIsLoadingHierarchy] = useState(false);
   const gridRef = useRef();
+  const selectedHierarchyNode = hierarchyData?.selected;
+  const displayTermLabel =
+    selectedHierarchyNode?.label || selectedTermForExploring?.term || "";
+  const displayTermDescription =
+    selectedHierarchyNode?.definition ||
+    selectedHierarchyNode?.description ||
+    selectedTermForExploring?.description ||
+    "";
 
   useEffect(() => {
     if (editingRowData && editingRowData.Attribute) {
@@ -563,6 +295,57 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
       setTotalResults(0);
     }
   }, [editingRowData]);
+
+  // Fetch hierarchy data when a term is selected
+  useEffect(() => {
+    const classId =
+      selectedTermForExploring?.uri ||
+      selectedTermForExploring?.id ||
+      selectedTermForExploring?.objectId ||
+      "";
+
+    if (!classId) {
+      setHierarchyData(null);
+      setHierarchyError(null);
+      setIsLoadingHierarchy(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const loadHierarchy = async () => {
+      setIsLoadingHierarchy(true);
+      setHierarchyError(null);
+
+      try {
+        const response = await fetchClassHierarchy({
+          classId,
+          maxDepth: 2,
+          includeSiblings: true,
+          signal: controller.signal
+        });
+
+        if (!controller.signal.aborted) {
+          setHierarchyData(response);
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        logError("Failed to fetch class hierarchy:", error);
+        setHierarchyData(null);
+        setHierarchyError(error?.message || "Unable to load hierarchy data");
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingHierarchy(false);
+        }
+      }
+    };
+
+    loadHierarchy();
+
+    return () => {
+      controller.abort();
+    };
+  }, [selectedTermForExploring]);
 
   const handleSearch = async (page = 1) => {
     if (!searchTerm.trim()) {
@@ -588,7 +371,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
       setTotalResults(totalResults);
       globalGridRef = gridRef;
     } catch (error) {
-      console.error("Search failed:", error);
+      logError("Search failed:", error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -908,64 +691,50 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
               >
                 {t("Explore Terms")}
               </Typography>
-              {selectedTermForExploring ? (
-                <Box sx={{ height: "calc(70vh - 80px)", overflow: "auto" }}>
-                  <Typography variant="h6" sx={{ mb: 2 }}>
-                    {selectedTermForExploring.term}
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
-                    {selectedTermForExploring.description}
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      border: `1px solid ${CustomPalette.GREY_300}`,
-                      borderRadius: 1,
-                      backgroundColor: CustomPalette.PINK_100
-                    }}
-                  >
-                    <CustomTreeView selectedTerm={selectedTermForExploring} />
+              <Box
+                sx={{
+                  height: "calc(70vh - 80px)",
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column"
+                }}
+              >
+                {selectedTermForExploring && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="h6" sx={{ mb: 0.5 }}>
+                      {displayTermLabel}
+                    </Typography>
+                    {displayTermDescription && (
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "text.secondary", mb: 0.5 }}
+                      >
+                        {displayTermDescription}
+                      </Typography>
+                    )}
+                    {selectedHierarchyNode?.id && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#888",
+                          fontFamily: "monospace",
+                          display: "block"
+                        }}
+                      >
+                        {selectedHierarchyNode.id}
+                      </Typography>
+                    )}
                   </Box>
+                )}
+                <Box sx={{ flexGrow: 1 }}>
+                  <OntologyTreeView
+                    selectedTerm={selectedTermForExploring}
+                    hierarchyData={hierarchyData}
+                    isLoading={isLoadingHierarchy}
+                    errorMessage={hierarchyError}
+                  />
                 </Box>
-              ) : (
-                <Box
-                  sx={{
-                    height: "calc(70vh - 80px)",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center"
-                  }}
-                >
-                  <Box
-                    sx={{
-                      mb: 3,
-                      fontFamily: "monospace",
-                      fontSize: "14px",
-                      color: "#bbb",
-                      lineHeight: 1.2,
-                      textAlign: "left"
-                    }}
-                  >
-                    <div>├── Parent Class</div>
-                    <div>│ └── Selected Term</div>
-                    <div>│ ├── Subclass 1</div>
-                    <div>│ └── Subclass 2</div>
-                    <div>└── Another Parent</div>
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#888",
-                      textAlign: "center",
-                      maxWidth: "80%"
-                    }}
-                  >
-                    Select a term from the search results to explore its ontological
-                    hierarchy
-                  </Typography>
-                </Box>
-              )}
+              </Box>
             </Paper>
           </Grid>
         </Grid>
@@ -1114,7 +883,7 @@ const AttributeFraming = () => {
 
   const handleFrameAllAttributes = useCallback(async () => {
     if (!gridReady || !gridRef.current?.api) {
-      console.warn("Grid not ready for frame all attributes operation");
+      logWarn("Grid not ready for frame all attributes operation");
       return;
     }
 
@@ -1123,7 +892,7 @@ const AttributeFraming = () => {
     try {
       gridRef.current.api.stopEditing();
     } catch (error) {
-      console.warn("Error stopping grid editing:", error);
+      logWarn("Error stopping grid editing:", error);
     }
 
     const displayedFramedAttributes =
@@ -1176,22 +945,25 @@ const AttributeFraming = () => {
     gridReady
   ]);
 
-  const handleEdit = (rowIndex) => {
+  const handleEdit = useCallback((rowIndex) => {
     setEditingRowIndex(rowIndex);
     setShowEditModal(true);
-  };
+  }, []);
 
-  const handleDelete = (rowIndex) => {
-    const updatedRowData = attributeFramingRowData.filter(
-      (_, index) => index !== rowIndex
-    );
+  const handleDelete = useCallback(
+    (rowIndex) => {
+      const updatedRowData = attributeFramingRowData.filter(
+        (_, index) => index !== rowIndex
+      );
 
-    setAttributeFramingRowData(updatedRowData);
+      setAttributeFramingRowData(updatedRowData);
 
-    if (editingRowIndex !== null && editingRowIndex > rowIndex) {
-      setEditingRowIndex(editingRowIndex - 1);
-    }
-  };
+      if (editingRowIndex !== null && editingRowIndex > rowIndex) {
+        setEditingRowIndex(editingRowIndex - 1);
+      }
+    },
+    [attributeFramingRowData, editingRowIndex, setAttributeFramingRowData]
+  );
 
   const handleEditSave = (selectedItem) => {
     if (selectedItem && editingRowIndex !== null) {
@@ -1305,7 +1077,7 @@ const AttributeFraming = () => {
         })
       }
     ],
-    [t]
+    [t, handleEdit, handleDelete]
   );
 
   const unframedAttributesText = frameAllAttributes
@@ -1329,7 +1101,7 @@ const AttributeFraming = () => {
 
   const handleSave = () => {
     if (!gridReady || !gridRef.current?.api) {
-      console.warn("Grid not ready for save operation");
+      logWarn("Grid not ready for save operation");
       return;
     }
 
@@ -1340,7 +1112,7 @@ const AttributeFraming = () => {
         setAttributeFramingRowData(rowData);
       }
     } catch (error) {
-      console.error("Error saving grid data:", error);
+      logError("Error saving grid data:", error);
     }
   };
 

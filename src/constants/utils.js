@@ -643,14 +643,38 @@ export const matchedSubjectAndPredicate = async (data) => {
 };
 
 // TODO: adjust this the graph api response
-export const getLabelofParentClass = async (uri) => {
-  // return the label of the parent class of the given uri
-  const response = await fetch(`${SSSOM_FRAMING_API_URL_DEV}/search/?q=${uri}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json"
-    }
+export const fetchClassHierarchy = async ({
+  classId,
+  maxDepth = 2,
+  includeSiblings = true,
+  signal
+} = {}) => {
+  if (!classId) {
+    throw new Error("classId is required to fetch class hierarchy");
+  }
+
+  const params = new URLSearchParams({
+    class_id: classId,
+    max_depth: String(maxDepth),
+    include_siblings: String(includeSiblings)
   });
+
+  const response = await fetch(
+    `${SSSOM_FRAMING_API_URL_DEV}/graph/class/hierarchy?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      signal
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch class hierarchy: ${response.statusText}`);
+  }
+
   const responseData = await response.json();
   return responseData;
 };
