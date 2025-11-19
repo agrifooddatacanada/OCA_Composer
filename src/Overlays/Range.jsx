@@ -34,12 +34,12 @@ const Range = () => {
   
   // Get range data from schema state
   const rangeRowData = useMemo(() => {
-    return schemaState?.rangeRowData || [];
-  }, [schemaState?.rangeRowData]);
+    return schemaState?.rangeData || [];
+  }, [schemaState?.rangeData]);
   
   const setRangeRowData = useCallback((newData) => {
     updateCurrentSchema({
-      rangeRowData: newData
+      rangeData: newData
     });
   }, [updateCurrentSchema]);
   const { t } = useTranslation();

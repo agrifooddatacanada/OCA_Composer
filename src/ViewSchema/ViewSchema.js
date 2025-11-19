@@ -381,6 +381,11 @@ export default function ViewSchema({
 
             const charEncoding = (schemaState.characterEncodingData || {})[attr.Attribute] || "";
             
+            // Find range data for this attribute
+            const rangeData = (schemaState.rangeData || []).find(
+              (r) => r.Attribute === attr.Attribute
+            );
+            
             return {
               Attribute: attr.Attribute,
               Type: displayType,
@@ -391,7 +396,12 @@ export default function ViewSchema({
               "Character Encoding": charEncoding,
               List: listObj,
               Unit: attr.Unit || "",
-              Flagged: attr.Flagged || false
+              Flagged: attr.Flagged || false,
+              // Add range overlay fields
+              LowerBound: rangeData?.LowerBound || "",
+              UpperBound: rangeData?.UpperBound || "",
+              LowerInclusive: rangeData?.LowerInclusive !== undefined ? rangeData.LowerInclusive : true,
+              UpperInclusive: rangeData?.UpperInclusive !== undefined ? rangeData.UpperInclusive : true
             };
           });
 

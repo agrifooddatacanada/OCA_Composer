@@ -74,7 +74,7 @@ export class OCAParser {
     );
 
     // Parse overlays and populate display-friendly arrays for components
-    const overlayData = this._parseOverlayData(schemaData.overlays);
+    const overlayData = this._parseOverlayData(schemaData.overlays, attributesWithLists);
 
     // Process conformance overlay for Required field in attributes
     this._processConformanceOverlay(
@@ -261,10 +261,11 @@ export class OCAParser {
    * Parse various overlay types into display-friendly arrays
    * @private
    */
-  static _parseOverlayData(overlays) {
+  static _parseOverlayData(overlays, attributes = []) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
+    const rangeOverlay = overlays?.range;
 
     // Character encoding data for components
     const characterEncodingData = [];
@@ -314,8 +315,32 @@ export class OCAParser {
       );
     }
 
-    // Initialize empty arrays for other overlay types
+    // Range data for components
     const rangeData = [];
+    if (rangeOverlay?.attribute_ranges) {
+      console.log("OCAParser: Found range overlay with attributes:", Object.keys(rangeOverlay.attribute_ranges));
+      Object.entries(rangeOverlay.attribute_ranges).forEach(([attr, range]) => {
+        // Find the attribute to get its Type
+        const attribute = attributes.find((a) => a.Attribute === attr);
+        // Find the format rule for this attribute
+        const formatRule = formatOverlay?.attribute_formats?.[attr] || "";
+        
+        const rangeEntry = {
+          Attribute: attr,
+          Type: attribute?.Type || "",
+          FormatRule: formatRule,
+          LowerBound: range.lower_bound || "",
+          UpperBound: range.upper_bound || "",
+          LowerInclusive: range.lower_inclusive !== undefined ? range.lower_inclusive : true,
+          UpperInclusive: range.upper_inclusive !== undefined ? range.upper_inclusive : true
+        };
+        console.log("OCAParser: Parsed range entry:", rangeEntry);
+        rangeData.push(rangeEntry);
+      });
+    }
+    console.log("OCAParser: Final rangeData array:", rangeData);
+
+    // Initialize empty arrays for other overlay types
     const unitData = [];
     const dataStandardsData = [];
     const unitFramedData = [];
@@ -360,6 +385,7 @@ export class OCAParser {
     const cardinalityOverlay = overlays?.cardinality;
     const conformanceOverlay = overlays?.conformance;
     const unitOverlay = overlays?.unit;
+    const rangeOverlay = overlays?.range;
 
     return {
       [FIELD_CHARACTER_ENCODING_OVERLAY]: { 
@@ -388,7 +414,7 @@ export class OCAParser {
       },
       [FIELD_RANGE_OVERLAY]: { 
         feature: "Add range rule for data", 
-        selected: false 
+        selected: !!rangeOverlay?.attribute_ranges 
       },
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { 
         feature: "Attribute Framing", 

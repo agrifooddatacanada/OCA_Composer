@@ -259,11 +259,11 @@ export default function ViewGrid({
 
           predefinedColumns.push({
             field: "LowerInclusive",
-            width: 120,
+            width: 140,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {
-              headerText: t("Inclusive"),
+              headerText: t("Lower Inclusive"),
               helpText: t("Whether or not the lower bound is included in the range")
             },
             cellRenderer: CheckboxRenderer
@@ -282,11 +282,11 @@ export default function ViewGrid({
 
           predefinedColumns.push({
             field: "UpperInclusive",
-            width: 120,
+            width: 140,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {
-              headerText: t("Inclusive"),
+              headerText: t("Upper Inclusive"),
               helpText: t("Whether or not the upper bound is included in the range")
             },
             cellRenderer: CheckboxRenderer
