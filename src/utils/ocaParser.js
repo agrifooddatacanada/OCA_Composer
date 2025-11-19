@@ -7,10 +7,7 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY,
   FIELD_RANGE_OVERLAY,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-  formatCodeTextDescription,
-  formatCodeNumericDescription,
-  formatCodeDateDescription
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY
 } from "../constants/constants";
 import { LanguageUtils, LanguageConstants } from "./languageUtils";
 
@@ -284,20 +281,9 @@ export class OCAParser {
     const formatRuleData = [];
     if (formatOverlay?.attribute_formats) {
       Object.entries(formatOverlay.attribute_formats).forEach(([attr, format]) => {
-        // Convert regex to human-readable description if possible
-        let formatRule = format || "";
-        let humanReadable = formatCodeTextDescription[format] || 
-                           formatCodeNumericDescription[format] ||
-                           formatCodeDateDescription[format];
-        
-        // If we found a human-readable description, use it; otherwise keep the regex
-        if (humanReadable) {
-          formatRule = humanReadable;
-        }
-        
         formatRuleData.push({
           Attribute: attr,
-          "Format Rule": formatRule
+          "Format Rule": format || ""
         });
       });
     }

@@ -10,6 +10,7 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import CellHeader from "../components/CellHeader";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
+import { getFormatRuleDescription } from "../constants/utils";
 import {
   ADC,
   FIELD_RANGE_OVERLAY,
@@ -312,7 +313,9 @@ export default function ViewGrid({
             headerComponent: SelectedFeatureHeader,
             headerComponentParams: {
               feature
-            }
+            },
+            valueFormatter: (params) =>
+              getFormatRuleDescription(params.data.Type, params.value) || params.value
           });
         } else if (feature === FIELD_UNIT_FRAMING_OVERLAY) {
           let helpText = "";
