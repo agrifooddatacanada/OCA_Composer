@@ -304,7 +304,6 @@ export class OCAParser {
     // Range data for components
     const rangeData = [];
     if (rangeOverlay?.attribute_ranges) {
-      console.log("OCAParser: Found range overlay with attributes:", Object.keys(rangeOverlay.attribute_ranges));
       Object.entries(rangeOverlay.attribute_ranges).forEach(([attr, range]) => {
         // Find the attribute to get its Type
         const attribute = attributes.find((a) => a.Attribute === attr);
@@ -320,11 +319,9 @@ export class OCAParser {
           LowerInclusive: range.lower_inclusive !== undefined ? range.lower_inclusive : true,
           UpperInclusive: range.upper_inclusive !== undefined ? range.upper_inclusive : true
         };
-        console.log("OCAParser: Parsed range entry:", rangeEntry);
         rangeData.push(rangeEntry);
       });
     }
-    console.log("OCAParser: Final rangeData array:", rangeData);
 
     // Initialize empty arrays for other overlay types
     const unitData = [];
