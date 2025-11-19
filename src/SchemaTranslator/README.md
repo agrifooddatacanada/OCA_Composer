@@ -10,7 +10,7 @@ This module provides functionality to translate LinkML schemas to OCA (Overlays 
 
 | LinkML Feature                     | OCA Output                             | Notes                |
 | ---------------------------------- | -------------------------------------- | -------------------- |
-| `range: float`                   | `attributes: { "field": "Numeric" }` | Numeric type mapping |
+| `range: float`                   | `attributes: { "field": "Numeric" }` |  |
 | Any other range                    | `attributes: { "field": "Text" }`    | Default type mapping |
 | `annotations: { flagged: true }` | `flagged_attributes: ["field"]`      | For sensitive data   |
 
@@ -25,23 +25,23 @@ This module provides functionality to translate LinkML schemas to OCA (Overlays 
 
 | LinkML Feature       | OCA Output                                  | Notes                      |
 | -------------------- | ------------------------------------------- | -------------------------- |
-| `pattern: "regex"` | `attribute_formats: { "field": "regex" }` | Only if pattern is defined |
+| `pattern: "regex"` | `attribute_formats: { "field": "regex" }` |  |
 
 ### Optional OCA Overlays
-
-#### Information & Labels
-
-| LinkML Feature       | OCA Output                                            | Notes                 |
-| -------------------- | ----------------------------------------------------- | --------------------- |
-| Slot `description` | `attribute_information: { "field": "description" }` | Field descriptions    |
-| Slot `title`       | `attribute_labels: { "field": "title" }`            | Human-readable labels |
 
 #### Meta
 
 | LinkML Feature         | OCA Output                           | Notes              |
 | ---------------------- | ------------------------------------ | ------------------ |
-| Schema `name`        | `meta: { "name": "value" }`        | Schema identifier  |
-| Schema `description` | `meta: { "description": "value" }` | Schema description |
+| Schema `name`        | `meta: { "name": "value" }`        |   |
+| Schema `description` | `meta: { "description": "value" }` |   |
+
+#### Information & Labels
+
+| LinkML Feature       | OCA Output                                            | Notes                 |
+| -------------------- | ----------------------------------------------------- | --------------------- |
+| Slot `description` | `attribute_information: { "field": "description" }` |  |
+| Slot `title`       | `attribute_labels: { "field": "title" }`            |  |
 
 #### Standards & Units
 
@@ -164,34 +164,6 @@ slots:
     unit:
       ucum_code: cm
 ```
-
-## Directory Structure
-
-```
-SchemaTranslator/
-├── components/          # React components for the translator UI
-├── processors/         # Core processing logic for schema translation
-│   ├── index.ts              # Processor exports
-│   ├── mapLinkMLToOCABundle.ts    # Main LinkML to OCA mapping
-├── constants.ts       # Shared constants and configuration
-├── linkMLToOCA.ts     # Main translation logic
-├── linkmlLint.ts      # LinkML schema linting
-├── types.ts          # TypeScript type definitions
-├── utils.ts          # Utility functions
-└── validation.ts     # Schema validation functions
-```
-
-## Core Files
-
-- `linkMLToOCA.ts`: Main entry point for schema translation
-- `types.ts`: TypeScript interfaces and types for LinkML and OCA schemas
-- `validation.ts`: Schema validation and error checking
-- `constants.ts`: Shared constants and configuration values
-- `utils.ts`: Helper functions and utilities
-
-## Components
-
-The `components/` directory contains React components for the translator UI interface.
 
 ## LinkML Schema Validation
 
