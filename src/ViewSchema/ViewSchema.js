@@ -65,7 +65,10 @@ export default function ViewSchema({
     setHistory,
     zipToReadme,
     jsonToReadme,
-    OCAPackage 
+    OCAPackage,
+    rangeRowData,
+    attributeFramingRowData,
+    formBuilderPages
   } = useContext(Context);
 
   // Multi-schema context
@@ -199,7 +202,17 @@ export default function ViewSchema({
   const [updatedOCAPackage, setUpdatedOCAPackage] = useState(OCAPackage);
   const [vizVersion, setVizVersion] = useState(0);
 
-  // (unused helper removed)
+  // Helper for form information - check which attributes are used in forms
+  const usedAttributesInForm = React.useMemo(() => {
+    const used = new Set();
+    (formBuilderPages || []).forEach((page) => {
+      (page.questions || []).forEach((q) => q?.attribute && used.add(q.attribute));
+      (page.sections || []).forEach((s) =>
+        (s.questions || []).forEach((q) => q?.attribute && used.add(q.attribute))
+      );
+    });
+    return used;
+  }, [formBuilderPages]);
 
   // Enhanced schema switching with proper navigation
   const handleSchemaSwitch = useCallback(

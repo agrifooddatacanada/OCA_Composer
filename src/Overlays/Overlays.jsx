@@ -10,8 +10,8 @@ import { useMultiSchema } from "../context/MultiSchemaContext";
 import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
-import { shouldDisableRangeOverlay, getRangeOverlayDisabledReason } from "../constants/utils";
-import { FIELD_FORMAT_OVERLAY, FIELD_RANGE_OVERLAY } from "../constants/constants";
+import { shouldDisableRangeOverlay, getRangeOverlayDisabledReason, shouldDisableFormInformationOverlay, getFormInformationDisabledReason } from "../constants/utils";
+import { FIELD_FORMAT_OVERLAY, FIELD_RANGE_OVERLAY, FIELD_FORM_INFORMATION_OVERLAY } from "../constants/constants";
 
 const Overlays = ({ pageBack, pageForward }) => {
   const { t } = useTranslation();
@@ -44,14 +44,26 @@ const Overlays = ({ pageBack, pageForward }) => {
   // Convert overlay into a list of features
   const { selectedFeatures, unselectedFeatures } = getListOfSelectedOverlays(overlay);
 
-  const getDisabledReason = (featureName) =>
-  getRangeOverlayDisabledReason(featureName, selectedFeatures, attributeRowData, rangeRowData) ||
-  "";
+  const getDisabledReason = (featureName) => {
+    return (
+      getFormInformationDisabledReason(featureName, selectedFeatures) ||
+      getRangeOverlayDisabledReason(
+        featureName,
+        selectedFeatures,
+        attributeRowData,
+        rangeRowData
+      ) ||
+      ""
+    );
+  };
 
   const addToSelected = (item) => {
     // Range overlay can be selected only if format overlay is selected
     if (shouldDisableRangeOverlay(item, selectedFeatures, attributeRowData, rangeRowData))
       return;
+
+    // Form Information overlay can be selected only if format overlay is selected
+    if (shouldDisableFormInformationOverlay(item, selectedFeatures)) return;
 
     // Get current overlay selections
     const currentSelections = getOverlaySelections(currentSchemaId);
@@ -68,13 +80,14 @@ const Overlays = ({ pageBack, pageForward }) => {
       overlaySelections: updatedSelections,
       selectedOverlay: item
     });
-    
     if (item === "Character Encoding") {
       setCurrentPage("CharacterEncoding");
     } else if (item === "Make selected entries required") {
       setCurrentPage("RequiredEntries");
     } else if (item === "Cardinality") {
       setCurrentPage("Cardinality");
+    } else if (item === "Add Form Information") {
+      setCurrentPage("FormInformation");
     } else if (item === "Unit Framing") {
       setCurrentPage("UnitFraming");
     } else if (item === "Data Standards") {
@@ -99,10 +112,14 @@ const Overlays = ({ pageBack, pageForward }) => {
       }
     };
 
-    // Also remove range overlay if format overlay is being removed
+    // Also remove range overlay and form information overlay if format overlay is being removed
     if (selectedItemToDelete === FIELD_FORMAT_OVERLAY) {
       updatedSelections[FIELD_RANGE_OVERLAY] = {
         ...currentSelections[FIELD_RANGE_OVERLAY],
+        selected: false
+      };
+      updatedSelections[FIELD_FORM_INFORMATION_OVERLAY] = {
+        ...currentSelections[FIELD_FORM_INFORMATION_OVERLAY],
         selected: false
       };
     }
@@ -129,6 +146,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("RequiredEntries");
     } else if (overlayName === "Cardinality") {
       setCurrentPage("Cardinality");
+    } else if (overlayName === "Add Form Information") {
+      setCurrentPage("FormInformation");
     } else if (overlayName === "Data Standards") {
       setCurrentPage("DataStandards");
     } else if (overlayName === "Unit Framing") {
@@ -199,16 +218,17 @@ const Overlays = ({ pageBack, pageForward }) => {
               {unselectedFeatures
                 .filter((text) => text && text.trim() !== "") // Filter out empty/null features
                 .map((text) => {
-                const isDisabled = shouldDisableRangeOverlay(
-                  text,
-                  selectedFeatures,
-                  attributeRowData,
-                  rangeRowData
-                );
+                const isDisabled =
+                  shouldDisableRangeOverlay(
+                    text,
+                    selectedFeatures,
+                    attributeRowData,
+                    rangeRowData
+                  ) || shouldDisableFormInformationOverlay(text, selectedFeatures);
                 const disabledReason = isDisabled ? getDisabledReason(text) : "";
                 
                 return (
-                  <Tooltip key={text} title={disabledReason} placement="right" arrow>
+                  <Tooltip key={text} title={isDisabled ? disabledReason : ""} placement="right" arrow>
                     <span>
                       <ListItemButton
                         onClick={() => addToSelected(text)}

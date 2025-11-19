@@ -4,7 +4,12 @@ import JSZip from "jszip";
 import { Context } from "../App";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
 import { languageCodesObject } from "../constants/isoCodes";
-import { divisionCodes, groupCodes, SCHEMA_MODE_SINGLE } from "../constants/constants";
+import {
+  divisionCodes,
+  groupCodes,
+  overlayItems,
+  SCHEMA_MODE_SINGLE
+} from "../constants/constants";
 // import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 import useGenerateReadMe from "./useGenerateReadMe";
 import { getDescriptiveFileName } from "../constants/utils";
@@ -47,6 +52,8 @@ const useExportLogic = () => {
     customIsos,
     characterEncodingRowData,
     overlay,
+    setOverlay,
+    setSelectedOverlay,
     // setJsonToReadme,
     setIsZip,
     setRawFile,
@@ -651,6 +658,8 @@ const useExportLogic = () => {
     setRawFile([]);
     setOCAPackage(null);
     setSchemaMode(SCHEMA_MODE_SINGLE);
+    setOverlay(overlayItems);
+    setSelectedOverlay("");
     setCurrentPage("Landing");
     navigate("/");
   };

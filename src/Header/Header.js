@@ -121,6 +121,20 @@ export default function Header({ currentPage }) {
           `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/FormatText/`
         );
         break;
+      case "FormInformation":
+        setHeader(t("Add Form Information"));
+        setToolTipText("");
+        setHelpLink(
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/FormInformation/`
+        );
+        break;
+      case "FormBuilder":
+        setHeader(t("Form Builder"));
+        setToolTipText(t("Create interactive forms using drag-and-drop interface"));
+        setHelpLink(
+          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/FormBuilder/`
+        );
+        break;
       case "Cardinality":
         setHeader(t("Add Entry Limit Rules for Data Entry"));
         setToolTipText("");

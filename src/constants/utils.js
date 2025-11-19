@@ -1,7 +1,11 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
-import { codesToLanguages, alpha3CodesToTwoLetterCodes } from "./isoCodes";
+import {
+  codesToLanguages,
+  alpha3CodesToTwoLetterCodes,
+  languageNameToAlpha3Codes
+} from "./isoCodes";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -9,6 +13,7 @@ import {
   DEFAULT_LANGUAGE,
   DISALLOWED_CHARACTERS,
   FIELD_FORMAT_OVERLAY,
+  FIELD_FORM_INFORMATION_OVERLAY,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
@@ -17,6 +22,8 @@ import {
   RANGE,
   SSSOM_MAPPER_API_URL
 } from "./constants";
+
+import { convertToFormInformationOverlay } from "../Overlays/FormBuilder/utils/convertToFormInformation";
 import ucumUnits from "./ucumUnits";
 
 export const getCurrentData = (currentApi, includedError) => {
@@ -502,6 +509,43 @@ export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {
   return rangeOverlayInput;
 };
 
+export const getFormInformationInput = (
+  formBuilderPages,
+  languages,
+  schemaDescription,
+  captureBase
+) => {
+  const threeLetterCodes = languages.map(
+    (lang) => languageNameToAlpha3Codes[lang.toLowerCase()] || lang
+  );
+
+  const schemaName = {};
+  languages.forEach((lang, index) => {
+    const threeLetterCode = threeLetterCodes[index];
+    schemaName[threeLetterCode] = schemaDescription[lang]?.name || "";
+  });
+
+  const baseFormInfo = convertToFormInformationOverlay(
+    formBuilderPages,
+    languages,
+    schemaName
+  );
+
+  const formOverlays = threeLetterCodes.map((langCode) => ({
+    language: langCode,
+    capture_base: captureBase,
+    pages: baseFormInfo.pages,
+    page_order: baseFormInfo.page_order,
+    page_labels: baseFormInfo.page_labels,
+    sidebar_label: baseFormInfo.sidebar_label,
+    description: baseFormInfo.description,
+    title: baseFormInfo.title,
+    interaction: baseFormInfo.interaction
+  }));
+
+  return { form_overlays: formOverlays };
+};
+
 /*
 "attribute_entries": {
   "d_attr": {
@@ -562,6 +606,7 @@ export const generateOCABundle = async (OCAFileData) => {
 
     return bundle;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Error generating OCA bundle from OCA file:", error);
     throw error;
   }
@@ -778,6 +823,10 @@ export const shouldDisableRangeOverlay = (
   );
 };
 
+export const shouldDisableFormInformationOverlay = (overlayText, selectedFeatures) =>
+  overlayText === FIELD_FORM_INFORMATION_OVERLAY &&
+  !selectedFeatures.includes(FIELD_FORMAT_OVERLAY);
+
 export const getRangeOverlayDisabledReason = (
   overlayText,
   selectedFeatures,
@@ -790,10 +839,16 @@ export const getRangeOverlayDisabledReason = (
       ? i18next.t("No attributes available for range overlay")
       : !selectedFeatures.includes(FIELD_FORMAT_OVERLAY)
         ? i18next.t("Range overlay requires format overlay to be selected")
-        : !attributes.some((attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime")
+        : !attributes.some(
+              (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
+            )
           ? i18next.t("Range overlay requires Numeric or DateTime attributes")
           : "";
 
+export const getFormInformationDisabledReason = (overlayText, selectedFeatures) =>
+  shouldDisableFormInformationOverlay(overlayText, selectedFeatures)
+    ? i18next.t("Form Information prerequisite tooltip")
+    : "";
 
 export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();
 export const isValidNumber = (value) => !Number.isNaN(Number.parseFloat(value));

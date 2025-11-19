@@ -13,6 +13,8 @@ import CharacterEncoding from "./Overlays/CharacterEncoding";
 import RequiredEntries from "./Overlays/RequiredEntries";
 import Cardinality from "./Overlays/Cardinality";
 import UnitFraming from "./Overlays/UnitFraming";
+import FormInformation from "./Overlays/FormInformation";
+import FormBuilder from "./Overlays/FormBuilder";
 import DataStandards from "./Overlays/DataStandards";
 import Range from "./Overlays/Range";
 import AttributeFraming from "./Overlays/AttributeFraming";
@@ -381,6 +383,8 @@ const Home = ({
         {currentPage === "RequiredEntries" && <RequiredEntries />}
         {currentPage === "Cardinality" && <Cardinality />}
         {currentPage === "UnitFraming" && <UnitFraming />}
+        {currentPage === "FormInformation" && <FormInformation />}
+        {currentPage === "FormBuilder" && <FormBuilder />}
         {currentPage === "DataStandards" && <DataStandards />}
         {currentPage === "Range" && <Range />}
         {currentPage === "AttributeFraming" && <AttributeFraming />}
