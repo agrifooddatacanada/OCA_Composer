@@ -386,6 +386,11 @@ export default function ViewSchema({
               (r) => r.Attribute === attr.Attribute
             );
             
+            // Find unit framing data for this attribute
+            const unitFramingData = (schemaState.unitFramedData || []).find(
+              (u) => u.Attribute === attr.Attribute
+            );
+            
             return {
               Attribute: attr.Attribute,
               Type: displayType,
@@ -401,7 +406,9 @@ export default function ViewSchema({
               LowerBound: rangeData?.LowerBound || "",
               UpperBound: rangeData?.UpperBound || "",
               LowerInclusive: rangeData?.LowerInclusive !== undefined ? rangeData.LowerInclusive : true,
-              UpperInclusive: rangeData?.UpperInclusive !== undefined ? rangeData.UpperInclusive : true
+              UpperInclusive: rangeData?.UpperInclusive !== undefined ? rangeData.UpperInclusive : true,
+              // Add unit framing field (UCUM code)
+              "Unit Framing": unitFramingData?.["UCUM Code"] || ""
             };
           });
 

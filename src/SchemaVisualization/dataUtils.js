@@ -143,15 +143,16 @@ export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
 const normalizeOCAPackage = (ocaPackage) => {
   if (!ocaPackage) return null;
   
-  // Handle oca_package format: { oca_bundle: { bundle: {...}, dependencies: [...] } }
+  // Handle oca_package format: { oca_bundle: { bundle: {...}, dependencies: [...] }, extensions: {...} }
   if (ocaPackage.oca_bundle) {
     return {
       bundle: ocaPackage.oca_bundle.bundle,
-      dependencies: ocaPackage.oca_bundle.dependencies || []
+      dependencies: ocaPackage.oca_bundle.dependencies || [],
+      extensions: ocaPackage.extensions || ocaPackage.oca_bundle.extensions || {}
     };
   }
   
-  // Handle direct format: { bundle: {...}, dependencies: [...] }
+  // Handle direct format: { bundle: {...}, dependencies: [...], extensions: {...} }
   return ocaPackage;
 };
 

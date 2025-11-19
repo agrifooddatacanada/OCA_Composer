@@ -368,7 +368,7 @@ const UnitFraming = () => {
 
   // Get unit framing data from schema state, initialize with attributes if empty
   const unitFramedRowData = useMemo(() => {
-    const existing = schemaState?.unitFramedRowData;
+    const existing = schemaState?.unitFramedData;
     if (existing && existing.length > 0) {
       return existing;
     }
@@ -382,12 +382,12 @@ const UnitFraming = () => {
       "UCUM Label": "",
       Description: ""
     }));
-  }, [schemaState?.unitFramedRowData, schemaState?.attributes]);
+  }, [schemaState?.unitFramedData, schemaState?.attributes]);
 
   const setUnitFramedRowData = useCallback(
     (newData) => {
       updateCurrentSchema({
-        unitFramedRowData: newData
+        unitFramedData: newData
       });
     },
     [updateCurrentSchema]

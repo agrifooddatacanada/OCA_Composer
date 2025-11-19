@@ -124,5 +124,50 @@
         }
       ]
     }
+  },
+  "extensions": {
+    "adc": {
+      "EK2EbGdxi56FIUqT42NP2wl31eSCld97wJao9dhkDr9O": {
+        "overlays": {
+          "unit_framing": {
+            "d": "EUnitFraming12345678901234567890123456789012",
+            "type": "spec/overlays/unit_framing/1.1",
+            "framing_metadata": {
+              "id": "UCUM",
+              "label": "Unified Code for Units of Measure",
+              "location": "https://ucum.org/",
+              "version": "2.1"
+            },
+            "units": {
+              "years": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "a"
+              },
+              "Celsius": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "Cel"
+              },
+              "kg": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "kg"
+              },
+              "cm": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "cm"
+              },
+              "points": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "{points}"
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

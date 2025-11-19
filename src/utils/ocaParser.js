@@ -51,6 +51,25 @@ export class OCAParser {
       return null;
     }
 
+    // Get the capture_base ID for looking up extensions
+    // Extensions are keyed by capture_base.d, not bundle.d
+    // For root schema, use bundle.capture_base.d
+    // For child schemas in dependencies, find the matching dependency's capture_base.d
+    let captureBaseId = ocaPackage?.bundle?.capture_base?.d;
+    
+    // Check if this is a child schema by looking in dependencies
+    if (ocaPackage?.dependencies) {
+      const dependency = ocaPackage.dependencies.find(
+        dep => dep.d === schemaId || dep.capture_base?.d === schemaId
+      );
+      if (dependency) {
+        captureBaseId = dependency.capture_base?.d || schemaId;
+      }
+    }
+    
+    // Fallback to schemaId if we couldn't determine capture_base ID
+    captureBaseId = captureBaseId || schemaId;
+
     // Build attributes array from OCA attributes object
     const attributes = this._buildAttributes(schemaData.attributes || {});
 
@@ -71,7 +90,13 @@ export class OCAParser {
     );
 
     // Parse overlays and populate display-friendly arrays for components
-    const overlayData = this._parseOverlayData(schemaData.overlays, attributesWithLists);
+    // Pass captureBaseId for extension lookups
+    const overlayData = this._parseOverlayData(
+      schemaData.overlays, 
+      attributesWithLists,
+      ocaPackage,
+      captureBaseId
+    );
 
     // Process conformance overlay for Required field in attributes
     this._processConformanceOverlay(
@@ -79,8 +104,19 @@ export class OCAParser {
       attributesWithLists
     );
 
+    // Process unit overlay to populate Unit field in attributes
+    this._processUnitOverlay(
+      schemaData.overlays?.unit,
+      attributesWithLists
+    );
+
     // Initialize overlay selections based on which overlays are present
-    const overlaySelections = this._buildOverlaySelections(schemaData.overlays);
+    // Check if unit framing extension exists
+    const hasUnitFramingExtension = !!ocaPackage?.extensions?.adc?.[captureBaseId]?.overlays?.unit_framing;
+    const overlaySelections = this._buildOverlaySelections(
+      schemaData.overlays, 
+      hasUnitFramingExtension
+    );
 
     // Build localized metadata from meta overlays
     const metadata = this._buildMetadata(schemaData, schemaId);
@@ -258,12 +294,15 @@ export class OCAParser {
    * Parse various overlay types into display-friendly arrays
    * @private
    */
-  static _parseOverlayData(overlays, attributes = []) {
+  static _parseOverlayData(overlays, attributes = [], ocaPackage = null, schemaId = null) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
     const rangeOverlay = overlays?.range;
     const unitOverlay = overlays?.unit;
+    
+    // Get unit framing extension if it exists
+    const unitFramingExtension = ocaPackage?.extensions?.adc?.[schemaId]?.overlays?.unit_framing;
 
     // Character encoding data for components
     const characterEncodingData = [];
@@ -325,12 +364,19 @@ export class OCAParser {
     }
 
     // Unit framing data for components
+    // Combines basic unit data from unit overlay with UCUM data from unit framing extension
     const unitFramedData = [];
     if (unitOverlay?.attribute_units) {
       Object.entries(unitOverlay.attribute_units).forEach(([attr, unit]) => {
+        // Get UCUM framing data for this unit if it exists
+        const unitFraming = unitFramingExtension?.units?.[unit];
+        
         unitFramedData.push({
           Attribute: attr,
-          Unit: unit || ""
+          Unit: unit || "",
+          "UCUM Code": unitFraming?.term_id || "",
+          "UCUM Label": "", // Label not stored in extension, would come from UCUM lookup
+          Description: ""  // Description not stored in extension
         });
       });
     }
@@ -370,10 +416,27 @@ export class OCAParser {
   }
 
   /**
+   * Process unit overlay to populate Unit field in attributes
+   * @private
+   */
+  static _processUnitOverlay(unitOverlay, attributesWithLists) {
+    if (unitOverlay?.attribute_units) {
+      Object.entries(unitOverlay.attribute_units).forEach(
+        ([attr, unit]) => {
+          const attrData = attributesWithLists.find((a) => a.Attribute === attr);
+          if (attrData) {
+            attrData.Unit = unit || "";
+          }
+        }
+      );
+    }
+  }
+
+  /**
    * Build overlay selections based on present overlays
    * @private
    */
-  static _buildOverlaySelections(overlays) {
+  static _buildOverlaySelections(overlays, hasUnitFramingExtension = false) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
@@ -404,7 +467,7 @@ export class OCAParser {
       },
       [FIELD_UNIT_FRAMING_OVERLAY]: { 
         feature: "Unit Framing", 
-        selected: !!unitOverlay?.attribute_units 
+        selected: !!unitOverlay?.attribute_units && hasUnitFramingExtension 
       },
       [FIELD_RANGE_OVERLAY]: { 
         feature: "Add range rule for data", 
