@@ -90,18 +90,18 @@ export default function CreateManually() {
     }
   };
 
+  // Only sync from context when navigating BACK to this page with existing data
+  // Don't interfere with fresh manual creation (when attributesList is empty)
   useEffect(() => {
-    // Only initialize rowData if it's empty or if we have actual saved attributes
-    // Don't reset if user is already editing
-    if (rowData.length === 1 && rowData[0].Name === "" && attributesList.length > 0) {
-      // Initialize from saved attributes
+    if (attributesList.length > 0) {
+      // User navigated back to this page with saved attributes
       const allRowData = attributesList.map((item) => ({ Name: item }));
       setRowData(allRowData);
-    } else if (attributesList.length === 0 && rowData.length > 1) {
-      // Reset to single empty row only if we had data before
-      setRowData([{ Name: "" }]);
+      setCanDelete(allRowData.length > 1);
     }
-  }, [attributesList, rowData]);
+    // Only run when attributesList length changes (navigating back to page)
+    // Don't watch rowData - let it be managed by user actions only
+  }, [attributesList.length]);
 
   const columnDefs = [
     { field: "Drag", headerName: "", width: 50, rowDrag: true },
