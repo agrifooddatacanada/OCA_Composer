@@ -83,6 +83,19 @@
           }
         }
       },
+      "unit": {
+        "d": "EUnit1234567890123456789012345678901234567890",
+        "type": "spec/overlays/unit/1.0",
+        "capture_base": "EK2EbGdxi56FIUqT42NP2wl31eSCld97wJao9dhkDr9O",
+        "measurement_system": "Metric",
+        "attribute_units": {
+          "Age": "years",
+          "Temperature": "Celsius",
+          "Weight": "kg",
+          "Height": "cm",
+          "Score": "points"
+        }
+      },
       "label": [
         {
           "d": "ELabel1234567890123456789012345678901234567890",

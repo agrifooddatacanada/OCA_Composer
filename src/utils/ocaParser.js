@@ -263,6 +263,7 @@ export class OCAParser {
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
     const rangeOverlay = overlays?.range;
+    const unitOverlay = overlays?.unit;
 
     // Character encoding data for components
     const characterEncodingData = [];
@@ -323,10 +324,20 @@ export class OCAParser {
       });
     }
 
+    // Unit framing data for components
+    const unitFramedData = [];
+    if (unitOverlay?.attribute_units) {
+      Object.entries(unitOverlay.attribute_units).forEach(([attr, unit]) => {
+        unitFramedData.push({
+          Attribute: attr,
+          Unit: unit || ""
+        });
+      });
+    }
+
     // Initialize empty arrays for other overlay types
     const unitData = [];
     const dataStandardsData = [];
-    const unitFramedData = [];
     const attributeFramingData = [];
 
     return {
