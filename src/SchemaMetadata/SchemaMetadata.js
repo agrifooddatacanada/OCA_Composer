@@ -211,6 +211,10 @@ const SchemaMetadata = forwardRef(({
       setHistory((prev) => prev.slice(0, prev.length - 1));
       setCurrentPage("Landing");
       navigate("/");
+    } else if (history.length > 1 && history[history.length - 2] === "Create") {
+      // User came from CREATE MANUALLY flow
+      setHistory((prev) => prev.slice(0, prev.length - 1));
+      setCurrentPage("Create");
     } else {
       pageBack();
     }
