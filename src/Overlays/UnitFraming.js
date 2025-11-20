@@ -440,6 +440,24 @@ const UnitFraming = () => {
     setCurrentPage("Overlays");
   }, [handleSave, setSelectedOverlay, currentSchemaId, setCurrentPage]);
 
+  // Save changes when component unmounts (user navigates away)
+  useEffect(() => {
+    return () => {
+      if (gridRef.current?.api) {
+        gridRef.current.api.stopEditing();
+        const displayedFramedUnits =
+          gridRef.current.api.getRenderedNodes()?.map((node) => node?.data) || [];
+        
+        if (displayedFramedUnits.length > 0) {
+          // Update both currentUnitFramedRowData and unitFramedRowData
+          const updatedData = updateUnits(unitFramedRowData, displayedFramedUnits);
+          setUnitFramedRowData(updatedData);
+        }
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount
+
   const handleFrameAllUnits = useCallback(() => {
     gridRef.current?.api?.stopEditing();
     const displayedFramedUnits =

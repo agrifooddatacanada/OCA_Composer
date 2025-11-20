@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useRef, useState, useCallback } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Box } from "@mui/material";
 import { AgGridReact } from "ag-grid-react";
@@ -65,6 +65,20 @@ const DataStandards = () => {
     setSelectedOverlay("");
     setCurrentPage("Overlays");
   };
+
+  // Save changes when component unmounts (user navigates away)
+  useEffect(() => {
+    return () => {
+      if (gridRef.current?.api) {
+        gridRef.current.api.stopEditing();
+        const rowData = gridRef.current.api.getRenderedNodes()?.map((rowNode) => rowNode?.data);
+        if (rowData && rowData.length > 0) {
+          setDataStandardsRowData(rowData);
+        }
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount
 
   const handleBack = () => {
     setShowDeleteConfirmation(true);

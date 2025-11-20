@@ -1350,6 +1350,29 @@ const AttributeFraming = () => {
     setCurrentPage("Overlays");
   };
 
+  // Save changes when component unmounts (user navigates away)
+  useEffect(() => {
+    return () => {
+      if (gridRef.current?.api) {
+        try {
+          gridRef.current.api.stopEditing();
+          const rowData = [];
+          gridRef.current.api.forEachNode((node) => {
+            if (node.data) {
+              rowData.push(node.data);
+            }
+          });
+          if (rowData.length > 0) {
+            setAttributeFramingRowData(rowData);
+          }
+        } catch (error) {
+          console.error("Error saving on unmount:", error);
+        }
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount
+
   const handleBack = () => {
     setShowDeleteConfirmation(true);
   };

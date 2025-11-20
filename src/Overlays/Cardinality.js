@@ -174,6 +174,22 @@ const Cardinality = () => {
     setCurrentPage("Overlays");
   }, [handleSave, setCurrentPage, setSelectedOverlay, currentSchemaId]);
 
+  // Save changes when component unmounts (user navigates away)
+  useEffect(() => {
+    return () => {
+      if (cardinalityRef.current?.api) {
+        cardinalityRef.current.api.stopEditing();
+        const newCardinalityData = cardinalityRef.current.api
+          .getRenderedNodes()
+          ?.map((node) => node?.data);
+        if (newCardinalityData && newCardinalityData.length > 0) {
+          setCardinalityData(newCardinalityData);
+        }
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount
+
   const handleCellClick = useCallback((params) => {
     if (params.data?.Type?.includes("Array")) {
       const entryLimit = params?.data.EntryLimit;
