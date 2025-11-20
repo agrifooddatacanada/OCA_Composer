@@ -305,14 +305,12 @@ export class OCAParser {
     const unitFramingExtension = ocaPackage?.extensions?.adc?.[schemaId]?.overlays?.unit_framing;
 
     // Character encoding data for components
-    const characterEncodingData = [];
+    // Store as object { attributeName: encoding } for easy lookup
+    const characterEncodingData = {};
     if (charEncodingOverlay?.attribute_character_encoding) {
       Object.entries(charEncodingOverlay.attribute_character_encoding).forEach(
         ([attr, encoding]) => {
-          characterEncodingData.push({
-            Attribute: attr,
-            "Character Encoding": encoding || ""
-          });
+          characterEncodingData[attr] = encoding || "";
         }
       );
     }

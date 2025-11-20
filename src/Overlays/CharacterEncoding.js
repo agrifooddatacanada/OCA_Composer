@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import React, { useCallback, useContext, useMemo, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
@@ -85,6 +85,15 @@ const CharacterEncoding = () => {
     setCharacterEncodingRowData
   );
 
+  // Callback to save data when cell renderer changes a value
+  const handleCellRendererChange = useCallback(() => {
+    if (gridRef.current?.api) {
+      const allRowData = [];
+      gridRef.current.api.forEachNode((node) => allRowData.push(node.data));
+      setCharacterEncodingRowData(allRowData);
+    }
+  }, [setCharacterEncodingRowData]);
+
   const columnDefs = useMemo(
     () => [
       {
@@ -110,12 +119,13 @@ const CharacterEncoding = () => {
         },
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
-          attr: params.data.Attribute
+          attr: params.data.Attribute,
+          onValueChange: handleCellRendererChange
         }),
         width: 200
       }
     ],
-    [t]
+    [t, handleCellRendererChange]
   );
 
   const handleForward = useCallback(() => {
@@ -124,7 +134,30 @@ const CharacterEncoding = () => {
     setCurrentPage("Overlays");
   }, [handleSave, setCurrentPage, setSelectedOverlay, currentSchemaId]);
 
-
+  // Save changes when component unmounts (user navigates away)
+  useEffect(() => {
+    return () => {
+      // Save on unmount - capture the grid data at unmount time
+      if (gridRef.current?.api) {
+        gridRef.current.api.stopEditing();
+        const attributeWithCharacterEncoding = gridRef.current.api
+          .getRenderedNodes()
+          ?.map((node) => node?.data);
+        
+        // Transform UI data to simple object format
+        if (attributeWithCharacterEncoding && attributeWithCharacterEncoding.length > 0) {
+          const characterEncodingData = {};
+          attributeWithCharacterEncoding.forEach(row => {
+            if (row.Attribute && row["Character Encoding"]) {
+              characterEncodingData[row.Attribute] = row["Character Encoding"];
+            }
+          });
+          updateCurrentSchema({ characterEncodingData });
+        }
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount
 
   const onGridReady = useCallback(() => {
     setLoading(false);

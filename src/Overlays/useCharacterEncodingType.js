@@ -3,18 +3,22 @@ import { MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { displayValues } from "../constants/constants";
 
-export const CharacterEncodingTypeRenderer = ({ value, node }) => {
+export const CharacterEncodingTypeRenderer = ({ value, node, onValueChange }) => {
   const [type, setType] = useState(value);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleChange = (e) => {
-    const { node } = props;
     setType(e.target.value);
     node.updateData({
       ...node.data,
       "Character Encoding": e.target.value
     });
     setIsDropdownOpen(false);
+    
+    // Notify parent component that value changed
+    if (onValueChange) {
+      onValueChange();
+    }
   };
 
   const handleClick = () => {
