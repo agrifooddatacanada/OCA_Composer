@@ -236,7 +236,7 @@ const createCellEditorParams = (searchUnits, key) => ({
   }
 });
 
-const createOnCellValueChanged = (searchUnits, key) => (params) => {
+const createOnCellValueChanged = (searchUnits, key, onSave) => (params) => {
   const selectedValue = params.newValue;
   const { results } = searchUnits(selectedValue || "");
 
@@ -249,6 +249,11 @@ const createOnCellValueChanged = (searchUnits, key) => (params) => {
       "UCUM Label": selectedItem.label,
       Description: selectedItem.description
     });
+    
+    // Trigger save after updating the grid
+    if (onSave) {
+      onSave();
+    }
   }
 };
 
@@ -268,7 +273,7 @@ const updateUnits = (unitFramedRowData, displayedFramedUnits) =>
       : row;
   });
 
-const useColumnDefs = (gridRef, t) =>
+const useColumnDefs = (gridRef, t, onCellChanged) =>
   useMemo(
     () => [
       {
@@ -292,7 +297,7 @@ const useColumnDefs = (gridRef, t) =>
         cellEditorParams: createCellEditorParams(searchUnits, "code"),
         singleClickEdit: true,
         editable: true,
-        onCellValueChanged: createOnCellValueChanged(searchUnits, "code"),
+        onCellValueChanged: createOnCellValueChanged(searchUnits, "code", onCellChanged),
         headerComponent: () => (
           <CellHeader headerText={t("UCUM Code")} helpText={t("UCUM Code")} />
         )
@@ -306,7 +311,7 @@ const useColumnDefs = (gridRef, t) =>
         cellEditorParams: createCellEditorParams(searchUnits, "label"),
         singleClickEdit: true,
         editable: true,
-        onCellValueChanged: createOnCellValueChanged(searchUnits, "label"),
+        onCellValueChanged: createOnCellValueChanged(searchUnits, "label", onCellChanged),
         headerComponent: () => (
           <CellHeader headerText={t("UCUM Label")} helpText={t("UCUM Label")} />
         )
@@ -320,7 +325,7 @@ const useColumnDefs = (gridRef, t) =>
         cellEditorParams: createCellEditorParams(searchUnits, "description"),
         singleClickEdit: true,
         editable: true,
-        onCellValueChanged: createOnCellValueChanged(searchUnits, "description"),
+        onCellValueChanged: createOnCellValueChanged(searchUnits, "description", onCellChanged),
         headerComponent: () => (
           <CellHeader
             headerText={t("UCUM Description")}
@@ -340,7 +345,7 @@ const useColumnDefs = (gridRef, t) =>
         })
       }
     ],
-    [t, gridRef]
+    [t, gridRef, onCellChanged]
   );
 
 const UnitFraming = () => {
@@ -370,7 +375,22 @@ const UnitFraming = () => {
   const unitFramedRowData = useMemo(() => {
     const existing = schemaState?.unitFramedData;
     if (existing && existing.length > 0) {
-      return existing;
+      // Populate labels and descriptions from UCUM lookup if missing
+      return existing.map((row) => {
+        // If we have a UCUM Code but missing label/description, look it up
+        if (row["UCUM Code"] && (!row["UCUM Label"] || !row.Description)) {
+          const { results } = searchUnits(row["UCUM Code"]);
+          const match = results.find((item) => item.code === row["UCUM Code"]);
+          if (match) {
+            return {
+              ...row,
+              "UCUM Label": match.label || row["UCUM Label"] || "",
+              Description: match.description || row.Description || ""
+            };
+          }
+        }
+        return row;
+      });
     }
 
     // Initialize with current schema attributes if no data exists
@@ -417,7 +437,22 @@ const UnitFraming = () => {
     currentUnitFramedRowData
   );
 
-  const columnDefs = useColumnDefs(gridRef, t);
+  // Callback to save data when cell value changes via autocomplete
+  const handleCellChanged = useCallback(() => {
+    if (gridRef.current?.api) {
+      const displayedFramedUnits =
+        gridRef.current.api.getRenderedNodes()?.map((node) => node?.data) || [];
+      
+      if (displayedFramedUnits.length > 0) {
+        // Update both currentUnitFramedRowData and unitFramedRowData
+        setCurrentUnitFramedRowData((prev) => updateUnits(prev, displayedFramedUnits));
+        const finalUnitFramedRowData = updateUnits(unitFramedRowData, displayedFramedUnits);
+        setUnitFramedRowData(finalUnitFramedRowData);
+      }
+    }
+  }, [unitFramedRowData, setUnitFramedRowData, setCurrentUnitFramedRowData]);
+
+  const columnDefs = useColumnDefs(gridRef, t, handleCellChanged);
 
 
 
