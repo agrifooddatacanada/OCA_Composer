@@ -27,6 +27,7 @@ import useExportLogicV2 from "./useExportLogicV2";
 import useMultiSchemaExport from "../hooks/useMultiSchemaExport";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
+import { getDescriptiveFileName } from "../constants/utils";
 
 import { codesToLanguages } from "../constants/isoCodes";
 
@@ -284,7 +285,7 @@ export default function ViewSchema({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "oca_bundle.json";
+      a.download = getDescriptiveFileName(schemaDescription, "OCA_package.json");
       document.body.appendChild(a);
       a.click();
       a.remove();
