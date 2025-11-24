@@ -1,0 +1,414 @@
+{
+  "v": "OCAA11JSON0058a4_",
+  "bundle": {
+    "v": "OCAS11JSON0016a1_",
+    "d": "EL6pEeD1nMih-nEAJ0tq5eIP6MEwzSfQKQ1wlQM2UfrL",
+    "capture_base": {
+      "d": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+      "type": "spec/capture_base/1.1",
+      "attributes": {
+        "temperature": "Numeric",
+        "pressure": "Numeric",
+        "volume": "Numeric",
+        "mass": "Numeric",
+        "length": "Numeric",
+        "person": "refs:EFuYncE54X7PckIdYjE5I568R7FdU4_9Dkp1M40fR7Ud",
+        "measurements": "refs:EGH_IV2vxXrH32bsOH8IVXkRHV0Io45uAtqAvO0UxE1x"
+      },
+      "classification": "RDF509",
+      "flagged_attributes": []
+    },
+    "overlays": {
+      "character_encoding": {
+        "d": "EBYoU06hkb2QUDuASqJmTvhbNJJcQMFmdfvNQl0MwJD6",
+        "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+        "type": "spec/overlays/character_encoding/1.1",
+        "attribute_character_encoding": {
+          "temperature": "utf-8",
+          "pressure": "utf-8",
+          "volume": "utf-8",
+          "mass": "utf-8",
+          "length": "utf-8",
+          "person": "utf-8",
+          "measurements": "utf-8"
+        }
+      },
+      "conformance": {
+        "d": "ENeUNp_XQQ2LSAVebaswEd6NdbpKpjOWKUYb0Z6yWmh1",
+        "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+        "type": "spec/overlays/conformance/1.1",
+        "attribute_conformance": {
+          "temperature": "M",
+          "pressure": "M",
+          "volume": "O",
+          "mass": "O",
+          "length": "M"
+        }
+      },
+      "format": {
+        "d": "EDonQCCCHtEKi6VAhfO4nK2upR299FVGqlG2-IXyVuaf",
+        "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+        "type": "spec/overlays/format/1.1",
+        "attribute_formats": {
+          "temperature": "^[-+]?\\d*\\.?\\d+$",
+          "pressure": "^[-+]?\\d*\\.?\\d+$",
+          "volume": "^[-+]?\\d*\\.?\\d+$",
+          "mass": "^[-+]?\\d*\\.?\\d+$",
+          "length": "^[-+]?\\d*\\.?\\d+$"
+        }
+      },
+      "unit": {
+        "d": "EUnit1234567890123456789012345678901234567890",
+        "type": "spec/overlays/unit/1.0",
+        "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+        "measurement_system": "Metric",
+        "attribute_units": {
+          "temperature": "Celsius",
+          "pressure": "pascals",
+          "volume": "liters",
+          "mass": "kilograms",
+          "length": "meters"
+        }
+      },
+      "label": [
+        {
+          "d": "ECofnB_bEkV4RwWmAnkZSgjLK-r2msJpPfm75p_9L6rV",
+          "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+          "type": "spec/overlays/label/1.1",
+          "language": "eng",
+          "attribute_categories": [],
+          "attribute_labels": {
+            "temperature": "Temperature in Celsius",
+            "pressure": "Pressure in pascals",
+            "volume": "Volume in liters",
+            "mass": "Mass in kilograms",
+            "length": "Length in meters",
+            "person": "Person details",
+            "measurements": "Measurement records"
+          },
+          "category_labels": {}
+        },
+        {
+          "d": "ELaycksqscFwA0g1xaOLkTDyXlT7_V2LSxw6Y0rXY5Go",
+          "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+          "type": "spec/overlays/label/1.1",
+          "language": "fra",
+          "attribute_categories": [],
+          "attribute_labels": {
+            "temperature": "Température en Celsius",
+            "pressure": "Pression en pascals",
+            "volume": "Volume en litres",
+            "mass": "Masse en kilogrammes",
+            "length": "Longueur en mètres",
+            "person": "Détails de la personne",
+            "measurements": "Enregistrements de mesure"
+          },
+          "category_labels": {}
+        }
+      ],
+      "meta": [
+        {
+          "d": "EAj6Vbm-syEb_u0dFLJ3Ouolp-Vk3GvYJfXTcilDvVeu",
+          "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+          "type": "spec/overlays/meta/1.1",
+          "language": "fra",
+          "description": "Un schéma de test avec unités et structure multi-niveaux.",
+          "name": "test_multilevel_unités"
+        },
+        {
+          "d": "EI9eeuOpI4EJ0cbHJZnQlQearXLk3APpVcTfQ-qpw5ts",
+          "capture_base": "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp",
+          "type": "spec/overlays/meta/1.1",
+          "language": "eng",
+          "description": "A test schema with units and multilevel structure.",
+          "name": "test_multilevel_units"
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "adc": {
+      "EIR0UZxO4Xwdvsdt8tcqk-m7ZLHCbRh3BBkboMh-gAzp": {
+        "overlays": {
+          "unit_framing": {
+            "d": "EUnitFraming12345678901234567890123456789012",
+            "type": "spec/overlays/unit_framing/1.1",
+            "framing_metadata": {
+              "id": "UCUM",
+              "label": "Unified Code for Units of Measure",
+              "location": "https://ucum.org/",
+              "version": "2.1"
+            },
+            "units": {
+              "Celsius": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "Cel"
+              },
+              "pascals": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "Pa"
+              },
+              "liters": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "L"
+              },
+              "kilograms": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "kg"
+              },
+              "meters": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "m"
+              }
+            }
+          }
+        }
+      },
+      "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg": {
+        "overlays": {
+          "unit_framing": {
+            "d": "EUnitFraming22345678901234567890123456789012",
+            "type": "spec/overlays/unit_framing/1.1",
+            "framing_metadata": {
+              "id": "UCUM",
+              "label": "Unified Code for Units of Measure",
+              "location": "https://ucum.org/",
+              "version": "2.1"
+            },
+            "units": {
+              "centimeters": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "cm"
+              },
+              "years": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "a"
+              }
+            }
+          }
+        }
+      },
+      "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w": {
+        "overlays": {
+          "unit_framing": {
+            "d": "EUnitFraming32345678901234567890123456789012",
+            "type": "spec/overlays/unit_framing/1.1",
+            "framing_metadata": {
+              "id": "UCUM",
+              "label": "Unified Code for Units of Measure",
+              "location": "https://ucum.org/",
+              "version": "2.1"
+            },
+            "units": {
+              "milliseconds": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "ms"
+              },
+              "seconds": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "s"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "dependencies": [
+    {
+      "v": "OCAS11JSON00072d_",
+      "d": "EFuYncE54X7PckIdYjE5I568R7FdU4_9Dkp1M40fR7Ud",
+      "capture_base": {
+        "d": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "name": "Text",
+          "age": "Numeric",
+          "height": "Numeric"
+        },
+        "classification": "RDF508",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "character_encoding": {
+          "d": "EHGQPnikaH7JNiLkOE7UWDBoMiNaoZS6kgu2jibMKrZG",
+          "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "name": "utf-8",
+            "age": "utf-8",
+            "height": "utf-8"
+          }
+        },
+        "format": {
+          "d": "EFdVtOLTxmZSeHcdYQEnF-XA7NZtXn-kdUc2-_Q5MKd7",
+          "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "name": "^.{0,50}$",
+            "age": "^-?[0-9]+$",
+            "height": "^[-+]?\\d*\\.?\\d+$"
+          }
+        },
+        "unit": {
+          "d": "EUnit2234567890123456789012345678901234567890",
+          "type": "spec/overlays/unit/1.0",
+          "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+          "measurement_system": "Metric",
+          "attribute_units": {
+            "age": "years",
+            "height": "centimeters"
+          }
+        },
+        "label": [
+          {
+            "d": "EG_uB2flJIVRLDt_4JsBZ2xxs_1rkMdlGQvpDDD9AoIc",
+            "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "name": "Full name",
+              "age": "Age in years",
+              "height": "Height in centimeters"
+            },
+            "category_labels": {}
+          },
+          {
+            "d": "EIUsRRAnUiGUJ3f7_d9lHxPdXgei1dM0VdBKJ-JmteYZ",
+            "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+            "type": "spec/overlays/label/1.1",
+            "language": "fra",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "name": "Nom complet",
+              "age": "Âge en années",
+              "height": "Taille en centimètres"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EJyPhYXlP7XSOPNEUF7Y6X0rDaEpEnF74A8zrKMVEAdW",
+            "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+            "type": "spec/overlays/meta/1.1",
+            "language": "fra",
+            "description": "Détails sur la personne",
+            "name": "personne"
+          },
+          {
+            "d": "EKe4WsCQJ-Qm_A0jvPGSibNnVmD0NbQbMXK5nJzIy7j3",
+            "capture_base": "EK4JAqZbK_k-qyVmVGheCVX-wkS2jjFrPn-DGYK9zolg",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Details about person",
+            "name": "person"
+          }
+        ]
+      }
+    },
+    {
+      "v": "OCAS11JSON0007c7_",
+      "d": "EGH_IV2vxXrH32bsOH8IVXkRHV0Io45uAtqAvO0UxE1x",
+      "capture_base": {
+        "d": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "timestamp": "DateTime",
+          "duration": "Numeric",
+          "interval": "Numeric"
+        },
+        "classification": "RDF508",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "character_encoding": {
+          "d": "EOOppxTz5bPQKrylWtqsVDJRNd1H2DGRCBi7LDyi7GZB",
+          "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "timestamp": "utf-8",
+            "duration": "utf-8",
+            "interval": "utf-8"
+          }
+        },
+        "format": {
+          "d": "EHidnr9yweIkUEA9CW1OxQfHo8wDjjMVu4nivnzVmnDf",
+          "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "timestamp": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])T([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$",
+            "duration": "^[-+]?\\d*\\.?\\d+$",
+            "interval": "^[-+]?\\d*\\.?\\d+$"
+          }
+        },
+        "unit": {
+          "d": "EUnit3234567890123456789012345678901234567890",
+          "type": "spec/overlays/unit/1.0",
+          "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+          "measurement_system": "SI",
+          "attribute_units": {
+            "duration": "seconds",
+            "interval": "milliseconds"
+          }
+        },
+        "label": [
+          {
+            "d": "EA_MEkUknnuxLaQFvhQh7s7I7JsDligD-SxTDCxKMoXP",
+            "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "timestamp": "Measurement timestamp",
+              "duration": "Duration in seconds",
+              "interval": "Interval in milliseconds"
+            },
+            "category_labels": {}
+          },
+          {
+            "d": "EDuaInAX94tCUNVf1e3gVNadxmU3aeuCTt8SgzvqB3ZN",
+            "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+            "type": "spec/overlays/label/1.1",
+            "language": "fra",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "timestamp": "Horodatage de la mesure",
+              "duration": "Durée en secondes",
+              "interval": "Intervalle en millisecondes"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EAxM7v3xqq_49CPNAJEtpUimsyjeKUwHAhzvjMvRR9oQ",
+            "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Time-based measurements",
+            "name": "measurements"
+          },
+          {
+            "d": "EMUHax60kHQW3VsFrxSViCNkMnZlazSqTwxz0Z7-iSHQ",
+            "capture_base": "EMs5a1uNiys8o7N7X2qOE4oAimQkaVLdkKs8NBgbx81w",
+            "type": "spec/overlays/meta/1.1",
+            "language": "fra",
+            "description": "Mesures temporelles",
+            "name": "mesures"
+          }
+        ]
+      }
+    }
+  ]
+}
