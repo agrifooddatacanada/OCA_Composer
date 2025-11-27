@@ -510,15 +510,15 @@ const useExportLogicV2 = () => {
         ...(overlay[FIELD_FORM_INFORMATION_OVERLAY].selected &&
           formBuilderPages &&
           formBuilderPages.length > 0 && {
-            form_overlay: {
+            form: getFormInformationInput(
+              formBuilderPages,
+              languages,
+              schemaDescription,
+              bundle.bundle.d
+            ).map((fo) => ({
               type: FORM,
-              ...getFormInformationInput(
-                formBuilderPages,
-                languages,
-                schemaDescription,
-                bundle.bundle.d
-              )
-            }
+              ...fo
+            }))
           })
       };
 

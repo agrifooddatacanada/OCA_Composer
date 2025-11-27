@@ -8,6 +8,7 @@ import {
   CUSTOM_FORMAT_RULE,
   dataTypes,
   FIELD_RANGE_OVERLAY,
+  FIELD_FORM_INFORMATION_OVERLAY,
   RANGE,
   SCHEMA_MODE_MULTI_LEVEL,
   SCHEMA_MODE_SINGLE,
@@ -475,6 +476,25 @@ const useZipParser = () => {
           selected: true
         }
       }));
+    }
+
+    // Parse form information (form overlay) from ADC extensions, if present
+    if (ocaPackageData) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const extensionOverlays =
+        ocaPackageData.extensions?.[ADC]?.[captureBaseSaid]?.overlays || {};
+
+      const formOverlayArray = extensionOverlays.form;
+
+      if (Array.isArray(formOverlayArray) && formOverlayArray.length > 0) {
+        setOverlay((prev) => ({
+          ...prev,
+          [FIELD_FORM_INFORMATION_OVERLAY]: {
+            ...prev[FIELD_FORM_INFORMATION_OVERLAY],
+            selected: true
+          }
+        }));
+      }
     }
 
     if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {

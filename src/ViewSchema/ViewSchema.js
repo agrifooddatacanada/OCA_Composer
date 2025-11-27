@@ -58,7 +58,6 @@ export default function ViewSchema({
     jsonToReadme,
     OCAPackage,
     rangeRowData,
-    overlay,
     attributeFramingRowData,
     formBuilderPages
   } = useContext(Context);
@@ -172,16 +171,39 @@ export default function ViewSchema({
     attributeRowData,
     currentUnitFramedRowData
   );
-  
+
   const usedAttributesInForm = React.useMemo(() => {
     const used = new Set();
-    (formBuilderPages || []).forEach((page) => {
-      (page.questions || []).forEach((q) => q?.attribute && used.add(q.attribute));
-      (page.sections || []).forEach((s) => (s.questions || []).forEach((q) => q?.attribute && used.add(q.attribute)));
-    });
+
+    // Prefer formBuilderPages (created/edited via the Form Builder UI)
+    if (formBuilderPages && formBuilderPages.length > 0) {
+      formBuilderPages.forEach((page) => {
+        (page.questions || []).forEach((q) => q?.attribute && used.add(q.attribute));
+        (page.sections || []).forEach((s) =>
+          (s.questions || []).forEach((q) => q?.attribute && used.add(q.attribute))
+        );
+      });
+      return used;
+    }
+
+    const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+    const extensionOverlays =
+      OCAPackage?.extensions?.adc?.[captureBaseSaid]?.overlays || {};
+
+    const formOverlayArray = extensionOverlays.form;
+
+    if (Array.isArray(formOverlayArray)) {
+      formOverlayArray.forEach((fo) => {
+        const interactionArgs = fo?.interaction?.[0]?.arguments || {};
+        Object.keys(interactionArgs).forEach((attr) => {
+          if (attr) used.add(attr);
+        });
+      });
+    }
+
     return used;
-  }, [formBuilderPages]);
-  
+  }, [formBuilderPages, OCAPackage]);
+
   // Creates display array with all captured data
   useEffect(() => {
     const newDisplayArray = [];
