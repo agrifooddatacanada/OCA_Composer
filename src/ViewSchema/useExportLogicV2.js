@@ -1,6 +1,7 @@
 import { useContext, useMemo, useState } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import { languageCodesObject } from "../constants/isoCodes";
 import {
   ADC,
@@ -36,24 +37,60 @@ const currentEnv = process.env.REACT_APP_ENV;
 
 const useExportLogicV2 = () => {
   const {
-    languages,
-    attributeRowData,
-    lanAttributeRowData,
-    attributesList,
-    schemaDescription,
+    languages: contextLanguages,
+    attributeRowData: contextAttributeRowData,
+    lanAttributeRowData: contextLanAttributeRowData,
+    attributesList: contextAttributesList,
+    schemaDescription: legacySchemaDescription,
     divisionGroup,
-    savedEntryCodes,
-    formatRuleRowData,
+    savedEntryCodes: contextSavedEntryCodes,
+    formatRuleRowData: contextFormatRuleRowData,
     currentUnitFramedRowData,
     customIsos,
-    characterEncodingRowData,
+    characterEncodingRowData: contextCharacterEncodingRowData,
     overlay,
-    cardinalityData,
-    rangeRowData,
-    attributeFramingRowData,
+    cardinalityData: contextCardinalityData,
+    rangeRowData: contextRangeRowData,
+    attributeFramingRowData: contextAttributeFramingRowData,
     OCAPackage,
     formBuilderPages
   } = useContext(Context);
+
+  // Get schema-specific data from MultiSchemaContext
+  const { getCurrentSchemaId, getSchemaState } = useMultiSchema();
+  const currentSchemaId = getCurrentSchemaId();
+  const schemaState = getSchemaState(currentSchemaId);
+  const metadata = schemaState?.metadata || {};
+
+  // Use schema-specific data from MultiSchemaContext, fallback to Context
+  const languages = metadata.languages || contextLanguages;
+  const attributeRowData = schemaState?.attributes || contextAttributeRowData;
+  const attributesList = schemaState?.attributesList || contextAttributesList;
+  const lanAttributeRowData = schemaState?.lanAttributeRowData || contextLanAttributeRowData;
+  const savedEntryCodes = schemaState?.entryCodes || contextSavedEntryCodes;
+  const formatRuleRowData = schemaState?.formatRuleData || contextFormatRuleRowData;
+  const characterEncodingRowData = schemaState?.characterEncodingData || contextCharacterEncodingRowData;
+  const cardinalityData = schemaState?.cardinalityData || contextCardinalityData;
+  const rangeRowData = schemaState?.rangeData || contextRangeRowData;
+  const attributeFramingRowData = schemaState?.attributeFramingData || contextAttributeFramingRowData;
+
+  // Build schemaDescription from MultiSchemaContext metadata
+  // Supports both localized (multi-language) and single name/description
+  const schemaDescription = useMemo(() => {
+    const result = {};
+    languages.forEach((language) => {
+      const langKey = language.toLowerCase().substring(0, 3);
+      const localized = metadata.localized?.[langKey] || {};
+      result[language] = {
+        name: localized.name || metadata.name || "",
+        description: localized.description || metadata.description || ""
+      };
+    });
+    // Fallback to legacy if MultiSchemaContext metadata is empty
+    return Object.keys(result).length > 0 && (metadata.name || metadata.description || metadata.localized)
+      ? result
+      : legacySchemaDescription || {};
+  }, [languages, metadata, legacySchemaDescription]);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
 
@@ -548,11 +585,22 @@ const useExportLogicV2 = () => {
         }
       };
 
+      // Validate bundle structure before creating package
+      if (!bundle || !bundle.bundle || !bundle.bundle.capture_base) {
+        throw new Error("Invalid bundle structure - missing capture_base");
+      }
+
       const ocaPackageService = new OcaPackage(extension, bundle);
       const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
 
-      // Generate and download text readme
-      jsonToTextFile(bundle.bundle, ocaPackage);
+      // Generate and download text readme (wrapped in try-catch to not block the download)
+      try {
+        if (bundle?.bundle?.capture_base) {
+          await jsonToTextFile(bundle.bundle, ocaPackage);
+        }
+      } catch (readmeError) {
+        console.warn("Could not generate README:", readmeError);
+      }
 
       downloadJsonFile(
         ocaPackage,

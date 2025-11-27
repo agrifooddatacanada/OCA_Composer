@@ -188,6 +188,7 @@ export default function ViewSchema({
   const [displayArray, setDisplayArray] = useState([]);
   const { resetToDefaults, exportDisabled } = useExportLogic();
   const {
+    exportData,
     error: exportError,
     clearError
   } = useExportLogicV2();
@@ -271,25 +272,36 @@ export default function ViewSchema({
   const handleClickDownload = async () => {
     try {
       setLoading(true);
-      // Always export the complete package with all schema changes
-      const pkg = updatedOCAPackage || exportSchemaChanges(OCAPackage);
-      try {
-        await multiSchemaExportData(pkg);
-      } catch (exportError) {
-        // If the main export fails, we'll use our fallback
+      
+      // Check if this is a manually created schema (no OCAPackage) or imported schema
+      if (!OCAPackage) {
+        // Manual creation: use useExportLogicV2
+        await exportData();
+      } else {
+        // Imported schema with multi-schema structure: use multi-schema export
+        const pkg = updatedOCAPackage || exportSchemaChanges(OCAPackage);
+        
+        if (pkg) {
+          try {
+            await multiSchemaExportData(pkg);
+          } catch (exportError) {
+            // If the main export fails, we'll use our fallback
+          }
+          // Fallback: trigger a JSON download if the exporter didn't prompt a file save
+          const blob = new Blob([JSON.stringify(pkg, null, 2)], {
+            type: "application/json"
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = getDescriptiveFileName(schemaDescription, "OCA_package.json");
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }
       }
-      // Fallback: trigger a JSON download if the exporter didn't prompt a file save
-      const blob = new Blob([JSON.stringify(pkg, null, 2)], {
-        type: "application/json"
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = getDescriptiveFileName(schemaDescription, "OCA_package.json");
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      
       // Clear any export errors since we successfully downloaded
       clearError();
       clearMultiSchemaError();

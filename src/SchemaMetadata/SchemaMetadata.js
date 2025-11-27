@@ -56,22 +56,31 @@ const SchemaMetadata = forwardRef(({
   } = useContext(Context);
 
   // Use schema state directly - no fallback needed
-  const rawSchemaDescription = schemaState?.metadata?.description || globalSchemaDescription;
   const languages = schemaState?.metadata?.languages || globalLanguages;
   
-  // Ensure schemaDescription is always in the correct format (object with language keys)
-  const schemaDescription = typeof rawSchemaDescription === 'string' 
-    ? (() => {
-        const result = {};
-        languages.forEach(lang => {
-          result[lang] = { 
-            name: schemaState?.metadata?.name || "", 
-            description: rawSchemaDescription 
-          };
-        });
-        return result;
-      })()
-    : rawSchemaDescription;
+  // Build schemaDescription from MultiSchemaContext metadata
+  // Structure: { English: { name: "...", description: "..." }, French: { ... } }
+  const schemaDescription = (() => {
+    const result = {};
+    const metadata = schemaState?.metadata || {};
+    
+    languages.forEach(lang => {
+      const langKey = lang.toLowerCase().substring(0, 3);
+      const localized = metadata.localized?.[langKey] || {};
+      
+      result[lang] = { 
+        name: localized.name || (lang.toLowerCase() === 'english' ? metadata.name : "") || "", 
+        description: localized.description || (lang.toLowerCase() === 'english' ? metadata.description : "") || ""
+      };
+    });
+    
+    // Fallback to global context if metadata is empty
+    if (!metadata.name && !metadata.description && !metadata.localized) {
+      return globalSchemaDescription || result;
+    }
+    
+    return result;
+  })();
 
   const setSchemaDescription = (newDescription) => {
     // Convert the language object format to proper localized structure
@@ -138,7 +147,9 @@ const SchemaMetadata = forwardRef(({
       if (languageData && typeof languageData === 'object') {
         // Check each field individually and report which field is blank
         Object.entries(languageData).forEach(([fieldName, value]) => {
-          if (!value) {
+          // Check for empty, null, undefined, or whitespace-only strings
+          const trimmedValue = typeof value === 'string' ? value.trim() : value;
+          if (!trimmedValue || trimmedValue === '') {
             const fieldDisplayName = fieldName === 'name' ? 'Name of Schema' : 
                                    fieldName === 'description' ? 'Description' : 
                                    toTitleCase(fieldName);
