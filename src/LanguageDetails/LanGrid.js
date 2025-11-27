@@ -85,11 +85,14 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   // Use MultiSchemaContext
   const {
-    currentSchemaId,
+    getCurrentSchemaId,
     getSchemaState,
     updateSchemaState,
     getCompleteSchema
   } = useMultiSchema();
+  
+  // Get the current schema ID (handles manual creation case where currentSchemaId from context is null)
+  const currentSchemaId = getCurrentSchemaId();
 
   // Global context (for languages only)
   const { languages } = useContext(Context);
@@ -160,12 +163,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     return [];
   }, [attributesList, attributeRowData]);
 
-  // Memoize entry codes to prevent unnecessary re-renders, only when schema is initialized
+  // Memoize entry codes to prevent unnecessary re-renders
+  // Return entry codes regardless of initialized status to support manually created schemas
   const stableEntryCodes = useMemo(() => {
     if (!currentSchemaId) return {};
     const currentSchemaState = getSchemaState(currentSchemaId);
-    // Only return entry codes if the schema is fully initialized to prevent flickering
-    if (!currentSchemaState?.initialized) return {};
     return currentSchemaState?.entryCodes || {};
   }, [currentSchemaId, getSchemaState]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -180,9 +182,15 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   useEffect(() => {
     if (!currentSchemaId) return;
 
-    // Check if schema is initialized before updating to prevent flickering
+    // Get current schema state
     const currentSchemaState = getSchemaState(currentSchemaId);
-    if (!currentSchemaState?.initialized) return;
+    
+    // For manually created schemas (not initialized yet but has attributes),
+    // we still need to populate the language data.
+    // Skip update ONLY if there are no attributes to populate from.
+    const hasAttributes = effectiveAttributesList && effectiveAttributesList.length > 0;
+    
+    if (!hasAttributes) return;
 
     // Debounce the update to prevent flickering during rapid state changes
     const timeoutId = setTimeout(() => {
@@ -259,132 +267,55 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       languages.forEach((language) => {
         const overlayLang =
           languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
-        if (!newLanAttributeRowData[language]) {
-          const newLanguageList = [];
-          effectiveAttributesList.forEach((item) => {
-            // Use saved entry codes for List display (no fallback to avoid flickering)
-            const overlayLangKey =
-              languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
-            const entryCodesForItem = entryCodesMap?.[item] || [];
+        
+        const newLanguageList = [];
+        effectiveAttributesList.forEach((item) => {
+          // Use saved entry codes for List display (no fallback to avoid flickering)
+          const overlayLangKey =
+            languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
+          const entryCodesForItem = entryCodesMap?.[item] || [];
 
-
-
-            const listDisplayArray = entryCodesForItem
-              .map((row) => {
-                // Prioritize human-readable text over raw codes
-                const displayValue =
-                  row?.[language] || row?.[overlayLangKey] || row?.English || row?.eng;
-                // Only use Code as last resort and only if it's meaningful text
-                return (
-                  displayValue ||
-                  (row?.Code && row.Code !== displayValue ? row.Code : null)
-                );
-              })
-              .filter((txt) => txt && txt.trim() !== "");
-
-            // Only show list if we have actual entry codes (prevents flickering on initial load)
-            const listDisplayString = listDisplayArray.join(" | ");
-
-            // Check if this attribute should have entry codes
-            const shouldHaveEntryCodes =
-              Object.prototype.hasOwnProperty.call(entryCodesMap, item) ||
-              effectiveAttributesList?.some(
-                (attr) => attr.name === item && attr.type === "array"
+          const listDisplayArray = entryCodesForItem
+            .map((row) => {
+              // Prioritize human-readable text over raw codes
+              const displayValue =
+                row?.[language] || row?.[overlayLangKey] || row?.English || row?.eng;
+              // Only use Code as last resort and only if it's meaningful text
+              return (
+                displayValue ||
+                (row?.Code && row.Code !== displayValue ? row.Code : null)
               );
+            })
+            .filter((txt) => txt && txt.trim() !== "");
 
-            let listDisplay = listDisplayString;
-            if (!listDisplayString) {
-              listDisplay = shouldHaveEntryCodes ? "Loading..." : "Not a List";
-            }
+          // Only show list if we have actual entry codes (prevents flickering on initial load)
+          const listDisplayString = listDisplayArray.join(" | ");
 
-            if (listDisplayArray.length > 3) {
-              const shown = listDisplayArray.slice(0, 3).join(" | ");
-              const remaining = listDisplayArray.length - 3;
-              listDisplay = `${shown} +${remaining} more`;
-            }
-            newLanguageList.push({
-              Attribute: item,
-              Label: labelByLang?.[overlayLang]?.[item] || "",
-              Description: "",
-              List: listDisplay
-            });
-          });
-          newLanAttributeRowData[language] = newLanguageList;
-        } else {
-          const newLanguageList = [];
-          attributeRowData.forEach((item) => {
-            // Find existing data for this attribute in this language from the persisted schema state
-            const existingData = lanAttributeRowData[language]?.find(
-              (i) => i.Attribute === item.Attribute
+          // Check if this attribute should have entry codes
+          const shouldHaveEntryCodes =
+            Object.prototype.hasOwnProperty.call(entryCodesMap, item) ||
+            effectiveAttributesList?.some(
+              (attr) => attr.name === item && attr.type === "array"
             );
 
-            // Preserve user edits - use existing Label/Description if available, fallback to overlay
-            const overlayLangKey = languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
-            const newLabel = existingData?.Label || labelByLang?.[overlayLangKey]?.[item.Attribute] || "";
-            const newDescription = existingData?.Description || "";
-            // Prefer saved entry codes (user edits) for List display; fallback to overlays
-            let listDisplayArray = (entryCodesMap?.[item.Attribute] || [])
-              .map((row) => {
-                // Prioritize human-readable text over raw codes
-                const displayValue =
-                  row?.[language] || row?.[overlayLangKey] || row?.English || row?.eng;
-                // Only show the Code if no human-readable text is available, and only if it's different from raw codes
-                return (
-                  displayValue ||
-                  (row?.Code && row.Code !== row?.[language] ? row.Code : null)
-                );
-              })
-              .filter((txt) => txt && txt.trim() !== "");
-            if (listDisplayArray.length === 0) {
-              // Use same logic as ViewSchema - entryCodesMap contains arrays of objects
-              const codesForAttr = Array.isArray(entryCodesMap[item.Attribute])
-                ? entryCodesMap[item.Attribute]
-                : [];
-              const labelForLang = (row) => {
-                // Prioritize human-readable text, avoid showing raw codes unless necessary
-                const displayValue =
-                  row[language] || row[overlayLangKey] || row.English || row.eng;
-                return (
-                  displayValue ||
-                  (row.Code && displayValue !== row.Code ? row.Code : null)
-                );
-              };
-              listDisplayArray = codesForAttr
-                .map((row) => labelForLang(row))
-                .filter(Boolean);
-            }
-            const listDisplayString = listDisplayArray.join(" | ");
+          let listDisplay = listDisplayString;
+          if (!listDisplayString) {
+            listDisplay = shouldHaveEntryCodes ? "Loading..." : "Not a List";
+          }
 
-            // Only show "Not a List" if we're sure there are no entry codes for this attribute
-            // Check both the entry codes map and the schema's attributes to determine if this should have a list
-            const hasEntryCodesStructure =
-              item.Type === "array" ||
-              Object.prototype.hasOwnProperty.call(entryCodesMap, item.Attribute) ||
-              effectiveAttributesList?.some(
-                (attr) => attr.name === item.Attribute && attr.type === "array"
-              );
-
-            let listDisplay = listDisplayString;
-            if (!listDisplayString) {
-              listDisplay = hasEntryCodesStructure ? "Loading..." : "Not a List";
-            }
-
-            if (listDisplayArray.length > 3) {
-              const shown = listDisplayArray.slice(0, 3).join(" | ");
-              const remaining = listDisplayArray.length - 3;
-              listDisplay = `${shown} +${remaining} more`;
-            }
-
-            const newObj = {
-              Attribute: item.Attribute,
-              Label: newLabel,
-              Description: newDescription,
-              List: listDisplay
-            };
-            newLanguageList.push(newObj);
+          if (listDisplayArray.length > 3) {
+            const shown = listDisplayArray.slice(0, 3).join(" | ");
+            const remaining = listDisplayArray.length - 3;
+            listDisplay = `${shown} +${remaining} more`;
+          }
+          newLanguageList.push({
+            Attribute: item,
+            Label: labelByLang?.[overlayLang]?.[item] || "",
+            Description: "",
+            List: listDisplay
           });
-          newLanAttributeRowData[language] = newLanguageList;
-        }
+        });
+        newLanAttributeRowData[language] = newLanguageList;
       });
 
       // Save to schema state only if data has changed to prevent infinite loops
@@ -507,7 +438,6 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       );
 
       // Update schema state
-      // MultiSchemaContext handles null schemaId internally
       updateSchemaState(currentSchemaId, {
         lanAttributeRowData: updatedLanAttributeRowData
       });
@@ -579,7 +509,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         lanAttributeRowData: updatedLanAttributeRowData
       });
     }
-  }, [currentLanguage, currentSchemaId, getSchemaState, updateSchemaState]);
+  }, [currentLanguage, currentSchemaId, getSchemaState, updateSchemaState, effectiveAttributesList]);
 
   // Refresh List data when currentLanguage changes
   useEffect(() => {

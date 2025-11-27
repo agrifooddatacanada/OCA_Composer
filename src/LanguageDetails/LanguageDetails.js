@@ -18,10 +18,13 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   
   // Use MultiSchemaContext
   const {
-    currentSchemaId,
+    getCurrentSchemaId,
     getSchemaState,
     updateSchemaState
   } = useMultiSchema();
+  
+  // Get the current schema ID (handles manual creation case where currentSchemaId from context is null)
+  const currentSchemaId = getCurrentSchemaId();
 
   // Global context
   const {
