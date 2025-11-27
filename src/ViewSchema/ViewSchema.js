@@ -190,9 +190,12 @@ export default function ViewSchema({
     const extensionOverlays =
       OCAPackage?.extensions?.adc?.[captureBaseSaid]?.overlays || {};
 
-    const formOverlayArray = extensionOverlays.form;
+    const formOverlayData = extensionOverlays.form_overlay || extensionOverlays.form;
+    const formOverlayArray = Array.isArray(formOverlayData)
+      ? formOverlayData
+      : formOverlayData?.form_overlays || [];
 
-    if (Array.isArray(formOverlayArray)) {
+    if (Array.isArray(formOverlayArray) && formOverlayArray.length > 0) {
       formOverlayArray.forEach((fo) => {
         const interactionArgs = fo?.interaction?.[0]?.arguments || {};
         Object.keys(interactionArgs).forEach((attr) => {

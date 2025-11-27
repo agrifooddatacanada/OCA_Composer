@@ -528,7 +528,13 @@ const useGenerateReadMeV2 = () => {
       }
 
       // Form overlay (ADC extension)
-      const formOverlayArray = extensionOverlays[FORM] || extensionOverlays.form;
+      const formOverlayData =
+        extensionOverlays.form_overlay ||
+        extensionOverlays.form ||
+        extensionOverlays[FORM];
+      const formOverlayArray = Array.isArray(formOverlayData)
+        ? formOverlayData
+        : formOverlayData?.form_overlays || [];
 
       if (Array.isArray(formOverlayArray) && formOverlayArray.length > 0) {
         // Handle form overlays as an array (language-specific) - add to manifest

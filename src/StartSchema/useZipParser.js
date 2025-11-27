@@ -484,7 +484,10 @@ const useZipParser = () => {
       const extensionOverlays =
         ocaPackageData.extensions?.[ADC]?.[captureBaseSaid]?.overlays || {};
 
-      const formOverlayArray = extensionOverlays.form;
+      const formOverlayData = extensionOverlays.form_overlay || extensionOverlays.form;
+      const formOverlayArray = Array.isArray(formOverlayData)
+        ? formOverlayData
+        : formOverlayData?.form_overlays || [];
 
       if (Array.isArray(formOverlayArray) && formOverlayArray.length > 0) {
         setOverlay((prev) => ({
