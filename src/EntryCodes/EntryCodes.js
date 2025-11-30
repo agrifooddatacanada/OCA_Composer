@@ -69,18 +69,11 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
 
   // Prefill entry codes from overlays on first load if schema state is empty
   useEffect(() => {
-    console.log('DEBUG EntryCodes useEffect START', {
-      attributeRowData,
-      schemaState,
-      entryCodeRowData
-    });
     try {
       const attrList = attributeRowData
         .filter((a) => a.List === true)
         .map((a) => a.Attribute);
-      console.log('DEBUG attrList:', attrList);
       if (!attrList || attrList.length === 0) {
-        console.log('DEBUG: No list attributes, returning early');
         return;
       }
 
@@ -105,13 +98,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
           }
         });
       }
-      
-      console.log('DEBUG EntryCodes prefill:', {
-        languages,
-        overlayEntriesKeys: Object.keys(overlayEntries),
-        overlayEntries,
-        attrList
-      });
 
       // Determine if we already have an entryCodes array allocated for any list attributes
       // Treat an existing empty array as intentional (user toggled list -> start empty)

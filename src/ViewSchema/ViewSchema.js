@@ -23,8 +23,7 @@ import { LanguageUtils } from "../utils/languageUtils";
 
 import useExportLogic from "./useExportLogic";
 import Loading from "../components/Loading";
-import useExportLogicV2 from "./useExportLogicV2";
-import useMultiSchemaExport from "../hooks/useMultiSchemaExport";
+import useOCAExport from "../hooks/useOCAExport";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 import { getDescriptiveFileName } from "../constants/utils";
@@ -190,13 +189,10 @@ export default function ViewSchema({
   const {
     exportData,
     error: exportError,
-    clearError
-  } = useExportLogicV2();
-  const {
-    exportData: multiSchemaExportData,
-    error: multiSchemaExportError,
-    clearError: clearMultiSchemaError
-  } = useMultiSchemaExport();
+    clearError,
+    hasNestedSchemas,
+    isImportedPackage
+  } = useOCAExport();
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const [loading, setLoading] = useState(true);
@@ -273,40 +269,16 @@ export default function ViewSchema({
     try {
       setLoading(true);
       
-      // Check if this is a manually created schema (no OCAPackage) or imported schema
-      if (!OCAPackage) {
-        // Manual creation: use useExportLogicV2
-        await exportData();
-      } else {
-        // Imported schema with multi-schema structure: use multi-schema export
-        const pkg = updatedOCAPackage || exportSchemaChanges(OCAPackage);
-        
-        if (pkg) {
-          try {
-            await multiSchemaExportData(pkg);
-          } catch (exportError) {
-            // If the main export fails, we'll use our fallback
-          }
-          // Fallback: trigger a JSON download if the exporter didn't prompt a file save
-          const blob = new Blob([JSON.stringify(pkg, null, 2)], {
-            type: "application/json"
-          });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = getDescriptiveFileName(schemaDescription, "OCA_package.json");
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-        }
-      }
+      // Unified export hook handles all scenarios:
+      // - Imported packages (flat or nested) via exportSchemaChanges()
+      // - Manual flat schemas via text DSL generation
+      // - Manual nested schemas (throws helpful error - not yet supported)
+      await exportData();
       
       // Clear any export errors since we successfully downloaded
       clearError();
-      clearMultiSchemaError();
     } catch (error) {
-      // console.error("Export failed:", error);
+      console.error("Export failed:", error);
     } finally {
       setLoading(false);
     }
@@ -889,11 +861,10 @@ export default function ViewSchema({
       )}
 
       {/* Error Popup */}
-      {(exportError || multiSchemaExportError) && (
+      {exportError && (
         <ErrorPopup
           onClose={() => {
             clearError();
-            clearMultiSchemaError();
           }}
         >
           <Typography variant="h5" sx={{ p: 1 }}>

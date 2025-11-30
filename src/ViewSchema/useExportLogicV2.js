@@ -36,43 +36,33 @@ import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 const currentEnv = process.env.REACT_APP_ENV;
 
 const useExportLogicV2 = () => {
+  // Global settings (not schema-specific)
   const {
-    languages: contextLanguages,
-    attributeRowData: contextAttributeRowData,
-    lanAttributeRowData: contextLanAttributeRowData,
-    attributesList: contextAttributesList,
-    schemaDescription: legacySchemaDescription,
     divisionGroup,
-    savedEntryCodes: contextSavedEntryCodes,
-    formatRuleRowData: contextFormatRuleRowData,
-    currentUnitFramedRowData,
     customIsos,
-    characterEncodingRowData: contextCharacterEncodingRowData,
     overlay,
-    cardinalityData: contextCardinalityData,
-    rangeRowData: contextRangeRowData,
-    attributeFramingRowData: contextAttributeFramingRowData,
     OCAPackage,
     formBuilderPages
   } = useContext(Context);
 
-  // Get schema-specific data from MultiSchemaContext
+  // Get schema-specific data from MultiSchemaContext (single source of truth)
   const { getCurrentSchemaId, getSchemaState } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchemaState(currentSchemaId);
   const metadata = schemaState?.metadata || {};
 
-  // Use schema-specific data from MultiSchemaContext, fallback to Context
-  const languages = metadata.languages || contextLanguages;
-  const attributeRowData = schemaState?.attributes || contextAttributeRowData;
-  const attributesList = schemaState?.attributesList || contextAttributesList;
-  const lanAttributeRowData = schemaState?.lanAttributeRowData || contextLanAttributeRowData;
-  const savedEntryCodes = schemaState?.entryCodes || contextSavedEntryCodes;
-  const formatRuleRowData = schemaState?.formatRuleData || contextFormatRuleRowData;
-  const characterEncodingRowData = schemaState?.characterEncodingData || contextCharacterEncodingRowData;
-  const cardinalityData = schemaState?.cardinalityData || contextCardinalityData;
-  const rangeRowData = schemaState?.rangeData || contextRangeRowData;
-  const attributeFramingRowData = schemaState?.attributeFramingData || contextAttributeFramingRowData;
+  // All schema-specific data comes from MultiSchemaContext only
+  const languages = metadata.languages || ["English"];
+  const attributeRowData = schemaState?.attributes || [];
+  const attributesList = schemaState?.attributesList || [];
+  const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
+  const savedEntryCodes = schemaState?.entryCodes || {};
+  const formatRuleRowData = schemaState?.formatRuleData || [];
+  const characterEncodingRowData = schemaState?.characterEncodingData || {};
+  const cardinalityData = schemaState?.cardinalityData || [];
+  const rangeRowData = schemaState?.rangeData || [];
+  const attributeFramingRowData = schemaState?.attributeFramingData || [];
+  const currentUnitFramedRowData = schemaState?.unitFramingData || [];
 
   // Build schemaDescription from MultiSchemaContext metadata
   // Supports both localized (multi-language) and single name/description
@@ -86,11 +76,8 @@ const useExportLogicV2 = () => {
         description: localized.description || metadata.description || ""
       };
     });
-    // Fallback to legacy if MultiSchemaContext metadata is empty
-    return Object.keys(result).length > 0 && (metadata.name || metadata.description || metadata.localized)
-      ? result
-      : legacySchemaDescription || {};
-  }, [languages, metadata, legacySchemaDescription]);
+    return result;
+  }, [languages, metadata]);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
 
