@@ -1,0 +1,381 @@
+{
+  "d": "EDufHr3gohfEGCGwe5UgwgB6OHBOIz7jjAIxQdnbDdvH",
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "v": "OCAA11JSON00202d_",
+    "bundle": {
+      "v": "OCAS11JSON002010_",
+      "d": "ECD5UW4X_8isqiq2bvDRaRkkcM8wlnbh2G3BtEk7ugb4",
+      "capture_base": {
+        "d": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "collect_date": "DateTime",
+          "collect_time": "DateTime",
+          "date_in": "DateTime",
+          "date_out": "DateTime",
+          "duration": "DateTime",
+          "farm": "Text",
+          "final_mass": "Numeric",
+          "initial_mass": "Numeric",
+          "latitude": "Text",
+          "longitude": "Text",
+          "moisture": "Numeric",
+          "paddock_id": "Numeric",
+          "sample_id": "Text",
+          "sample_type": "Text",
+          "samplers": ["Text"],
+          "temperature": "Numeric",
+          "time_in": "DateTime",
+          "time_out": "DateTime"
+        },
+        "classification": "RDF401",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "cardinality": {
+          "d": "ELZEAN8WLZ_BoO0WTEyC3yyoXUfXFgs41WuK8p_gMz7B",
+          "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+          "type": "spec/overlays/cardinality/1.1",
+          "attribute_cardinality": { "samplers": "-6" }
+        },
+        "conformance": {
+          "d": "ED5KEcUrNHS7HkLQ45lqqH9vzsKrt38_Q3gxPjHyPXH8",
+          "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+          "type": "spec/overlays/conformance/1.1",
+          "attribute_conformance": {
+            "collect_date": "M",
+            "collect_time": "O",
+            "date_in": "O",
+            "date_out": "O",
+            "duration": "O",
+            "farm": "M",
+            "final_mass": "O",
+            "initial_mass": "O",
+            "latitude": "O",
+            "longitude": "O",
+            "moisture": "O",
+            "paddock_id": "O",
+            "sample_id": "O",
+            "sample_type": "O",
+            "samplers": "O",
+            "temperature": "O",
+            "time_in": "O",
+            "time_out": "O"
+          }
+        },
+        "entry": [
+          {
+            "d": "ECUgIzLlZXBMhFbx-AdPxhBnfpN189yyup4yK4GoX3tU",
+            "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "farm": {
+                "A": "Hensall farm",
+                "B": "Guelph farm north",
+                "C": "Guelph farm south",
+                "D": "Lakeridge farm"
+              },
+              "samplers": {
+                "Aedan": "Aedan",
+                "Isabella": "Isabella",
+                "Lila": "Lila",
+                "Makhi": "Makhi",
+                "Nathan": "Nathan",
+                "Zara": "Zara"
+              }
+            }
+          },
+          {
+            "d": "EDnLflWG_tivtEnJiWHmQe4dI9l1c2IOoTTB0sBjPSZo",
+            "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+            "type": "spec/overlays/entry/1.1",
+            "language": "fra",
+            "attribute_entries": {
+              "farm": {
+                "A": "Ferme Hensall",
+                "B": "Ferme Guelph nord",
+                "C": "Ferme Guelph sud",
+                "D": "Ferme Lakeridge"
+              },
+              "samplers": {
+                "Aedan": "Aedan",
+                "Isabella": "Isabella",
+                "Lila": "Lila",
+                "Makhi": "Makhi",
+                "Nathan": "Nathan",
+                "Zara": "Zara"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "EDsl7KOkieN90UXtCedSIUsCtJIiqHTK8Ii-hwFw84Ls",
+          "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "farm": ["A", "B", "C", "D"],
+            "samplers": ["Aedan", "Isabella", "Lila", "Makhi", "Nathan", "Zara"]
+          }
+        },
+        "format": {
+          "d": "EE9m3B-pSvlfqJEOi2nyIOMsgBJjEfx3KSsSdoYNodeg",
+          "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "collect_date": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "collect_time": "^([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$",
+            "date_in": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "date_out": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "duration": "^P(?!$)((\\d+Y)|(\\d+\\.\\d+Y))?((\\d+M)|(\\d+\\.\\d+M))?((\\d+W)|(\\d+\\.\\d+W))?((\\d+D)|(\\d+\\.\\d+D))?(T(?=\\d)((\\d+H)|(\\d+\\.\\d+H))?((\\d+M)|(\\d+\\.\\d+M))?(\\d+(\\.\\d+)?S)?)?$",
+            "farm": "^[A-Z]*$",
+            "final_mass": "^[-+]?\\d*\\.?\\d+$",
+            "initial_mass": "^[-+]?\\d*\\.?\\d+$",
+            "latitude": "^[NS]\\s?(?:[0-8]?\\d)°\\s?(?:[0-5]?\\d)'?\\s?(?:[0-5]?\\d(?:\\.\\d+)?)\\\"?$",
+            "longitude": "^[EW]\\s?(?:1[0-7]\\d|0?\\d{1,2})°\\s?(?:[0-5]?\\d)'?\\s?(?:[0-5]?\\d(?:\\.\\d+)?)\\\"?$",
+            "moisture": "^[-+]?\\d*\\.?\\d+$",
+            "paddock_id": "^-?[0-9]+$",
+            "sample_id": "^.{0,250}$",
+            "sample_type": "^.{0,50}$",
+            "temperature": "^[-+]?\\d*\\.?\\d+$",
+            "time_in": "^([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$",
+            "time_out": "^([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$"
+          }
+        },
+        "information": [
+          {
+            "d": "EB1kgm36RL2mcqcpMb8k__N2Usow9ipQquc-wHTcllDP",
+            "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+            "type": "spec/overlays/information/1.1",
+            "language": "fra",
+            "attribute_information": {
+              "collect_date": "La date de prélèvement de l\\'échantillon",
+              "collect_time": "L\\'heure de prélèvement de l\\'échantillon",
+              "date_in": "La date d\\'entrée de l\\'échantillon au laboratoire",
+              "date_out": "La date de sortie de l\\'échantillon du laboratoire",
+              "duration": "La durée du prélèvement de l\\'échantillon",
+              "farm": "La ferme où l\\'échantillon a été prélevé",
+              "final_mass": "La masse finale de l\\'échantillon",
+              "initial_mass": "La masse initiale de l\\'échantillon",
+              "latitude": "La latitude où l\\'échantillon a été prélevé",
+              "longitude": "La longitude où l\\'échantillon a été prélevé",
+              "moisture": "Le contenu en eau de l\\'échantillon",
+              "paddock_id": "L\\'ID du paddock où l\\'échantillon a été prélevé",
+              "sample_id": "L\\'identifiant unique de l\\'échantillon",
+              "sample_type": "Le type d\\'échantillon",
+              "samplers": "Les personnes ayant prélevé l\\'échantillon",
+              "temperature": "La température au moment du prélèvement de l\\'échantillon",
+              "time_in": "L\\'heure d\\'entrée de l\\'échantillon au laboratoire",
+              "time_out": "L\\'heure de sortie de l\\'échantillon du laboratoire"
+            }
+          },
+          {
+            "d": "EM_eBnd5d7Td0hvEn1URDvQDVcyOgisRf-EaMakdpLv8",
+            "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+            "type": "spec/overlays/information/1.1",
+            "language": "eng",
+            "attribute_information": {
+              "collect_date": "The date of sample collection",
+              "collect_time": "The time of sample collection",
+              "date_in": "The date the sample entered the lab",
+              "date_out": "The date the sample left the lab",
+              "duration": "The duration of the sample collection",
+              "farm": "The farm where the sample was collected",
+              "final_mass": "The final mass of the sample",
+              "initial_mass": "The initial mass of the sample",
+              "latitude": "The latitude where the sample was taken",
+              "longitude": "The longitude where the sample was taken",
+              "moisture": "The moisture content of the sample",
+              "paddock_id": "The paddock ID where the sample was collected",
+              "sample_id": "The unique identifier for the sample",
+              "sample_type": "The type of sample",
+              "samplers": "The people who collected the sample",
+              "temperature": "The temperature at the time of sample collection",
+              "time_in": "The time the sample entered the lab",
+              "time_out": "The time the sample left the lab"
+            }
+          }
+        ],
+        "label": [
+          {
+            "d": "EArvPW6E1RUpmeRvCo860ccC0uYuR8yeg9fEWBXhkvG9",
+            "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+            "type": "spec/overlays/label/1.1",
+            "language": "fra",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "collect_date": "Date de collecte",
+              "collect_time": "Heure de collecte",
+              "date_in": "Date d'entrée",
+              "date_out": "Date de sortie",
+              "duration": "Durée",
+              "farm": "Ferme",
+              "final_mass": "Masse finale",
+              "initial_mass": "Masse initiale",
+              "latitude": "Latitude",
+              "longitude": "Longitude",
+              "moisture": "Humidité",
+              "paddock_id": "ID de paddock",
+              "sample_id": "ID de l'échantillon",
+              "sample_type": "Type d'échantillon",
+              "samplers": "Préleveurs",
+              "temperature": "Température",
+              "time_in": "Heure d'entrée",
+              "time_out": "Heure de sortie"
+            },
+            "category_labels": {}
+          },
+          {
+            "d": "EM4mKhHhuYtz7Rycrw1K289IxxXwOHyqLy8A60FUZOg_",
+            "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "collect_date": "Collection Date",
+              "collect_time": "Collection Time",
+              "date_in": "Date In",
+              "date_out": "Date Out",
+              "duration": "Duration",
+              "farm": "Farm",
+              "final_mass": "Final Mass",
+              "initial_mass": "Initial Mass",
+              "latitude": "Latitude",
+              "longitude": "Longitude",
+              "moisture": "Moisture",
+              "paddock_id": "Paddock ID",
+              "sample_id": "Sample ID",
+              "sample_type": "Sample Type",
+              "samplers": "Samplers",
+              "temperature": "Temperature",
+              "time_in": "Time In",
+              "time_out": "Time Out"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EBVzszq4ZBC9E_hL6vQagqvFMTX6QLL5i8LO2a7FmB1V",
+            "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+            "type": "spec/overlays/meta/1.1",
+            "language": "fra",
+            "description": "Un schéma décrivant des échantillons de sol avec des mesures de contenu en eau.",
+            "name": "sol"
+          },
+          {
+            "d": "EMKwjHRm8hIF8GK0dOGioXgwZfqf_zcPszXj_6s_mMQ7",
+            "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "A schema describing soil samples together with water content measurements.",
+            "name": "soil"
+          }
+        ],
+        "unit": {
+          "d": "EImDY_3mk8FMbXm6h1e0MDDx7JkMEvxgJJaKUfvqwAqO",
+          "capture_base": "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt",
+          "type": "spec/overlays/unit/1.1",
+          "attribute_unit": {
+            "final_mass": "lb",
+            "initial_mass": "lb",
+            "moisture": "%",
+            "temperature": "K"
+          }
+        }
+      }
+    },
+    "dependencies": []
+  },
+  "extensions": {
+    "adc": {
+      "EEs4WAywiDY8ScSrCWsw4fm75q9sdHeEnfP6S60cTsCt": {
+        "d": "EDKriXYvy9YUxM88kdyq5fi0IeJvCJUWRkXijv1MZzZw",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "ordering": {
+            "d": "EPOY9fKzN2jfV3xjCWW7XotenGgQsQryS5KfI6vJyedK",
+            "type": "community/overlays/adc/ordering/1.1",
+            "attribute_ordering": [
+              "farm",
+              "sample_type",
+              "collect_date",
+              "collect_time",
+              "latitude",
+              "longitude",
+              "duration",
+              "paddock_id",
+              "samplers",
+              "sample_id",
+              "date_in",
+              "temperature",
+              "time_in",
+              "initial_mass",
+              "date_out",
+              "final_mass",
+              "time_out",
+              "moisture"
+            ],
+            "entry_code_ordering": {
+              "farm": ["A", "B", "C", "D"],
+              "samplers": [
+                "Aedan",
+                "Isabella",
+                "Lila",
+                "Makhi",
+                "Nathan",
+                "Zara"
+              ]
+            }
+          },
+          "unit_framing": {
+            "d": "ECfrZroi1_51O2ylB9T2ZZA7vxQbM08b4n3bbP4dITxJ",
+            "type": "community/overlays/adc/unit_framing/1.1",
+            "framing_metadata": {
+              "id": "UCUM",
+              "label": "Unified Code for Units of Measure",
+              "location": "https://ucum.org/",
+              "version": ""
+            },
+            "units": {
+              "%": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "%"
+              },
+              "K": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "K/W"
+              },
+              "lb": {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "[lb_av]"
+              }
+            }
+          },
+          "range": {
+            "d": "EHAGsljpci_rzTG0qvjzYXvDFuVN83z3oNgotTQFv2RL",
+            "type": "community/overlays/adc/range/1.1",
+            "attributes": {
+              "final_mass": {
+                "lower": "1",
+                "lower_inclusive": true,
+                "upper": "",
+                "upper_inclusive": false
+              },
+              "initial_mass": {
+                "lower": "1",
+                "lower_inclusive": true,
+                "upper": "",
+                "upper_inclusive": false
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
