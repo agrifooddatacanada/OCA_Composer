@@ -1,5 +1,5 @@
 import i18next from "i18next";
-import { languageCodesObject, codesToLanguages } from "../constants/isoCodes";
+import { languageCodesObject, codesToLanguages, languageNameToAlpha3Codes } from "../constants/isoCodes";
 
 /**
  * Language Manager - Centralized language utilities for OCA Composer
@@ -42,7 +42,26 @@ export const LanguageUtils = {
     if (!schemaLanguageName) return "eng";
     
     const normalizedName = schemaLanguageName.toLowerCase();
-    return languageCodesObject[normalizedName] || "eng";
+    return languageNameToAlpha3Codes[normalizedName] || "eng";
+  },
+
+  /**
+   * Convert 3-letter OCA language code to schema language name
+   * @param {string} ocaLanguageCode - 3-letter code like "eng", "fra"
+   * @returns {string|null} Schema language name like "English", "French" or null if not found
+   */
+  getSchemaLanguageFromOCA(ocaLanguageCode) {
+    if (!ocaLanguageCode) return null;
+    
+    const normalizedCode = ocaLanguageCode.toLowerCase();
+    // Build reverse lookup from languageNameToAlpha3Codes
+    for (const [languageName, code] of Object.entries(languageNameToAlpha3Codes)) {
+      if (code === normalizedCode) {
+        // Capitalize first letter
+        return languageName.charAt(0).toUpperCase() + languageName.slice(1);
+      }
+    }
+    return null;
   },
 
     /**

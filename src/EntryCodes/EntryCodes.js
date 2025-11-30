@@ -16,10 +16,7 @@ import { removeSpacesAndColonFromArrayOfObjects } from "../constants/removeSpace
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import {
-  languageNameToAlpha3Codes,
-  alpha3CodesToTwoLetterCodes
-} from "../constants/isoCodes";
+import { LanguageUtils } from "../utils/languageUtils";
 
 const errorMessages = {
   fieldEmpty: "Please fill out all fields",
@@ -66,23 +63,55 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   const codeRefs = useRef();
   const pageForwardDisabledRef = useRef(false);
   const [showWarning, setShowWarning] = useState(false);
-  const { overlay } = useContext(Context);
   
   // Local state for entry code grid data (schema-specific)
   const [localEntryCodeRowData, setLocalEntryCodeRowData] = useState([]);
 
   // Prefill entry codes from overlays on first load if schema state is empty
   useEffect(() => {
+    console.log('DEBUG EntryCodes useEffect START', {
+      attributeRowData,
+      schemaState,
+      entryCodeRowData
+    });
     try {
       const attrList = attributeRowData
         .filter((a) => a.List === true)
         .map((a) => a.Attribute);
-      if (!attrList || attrList.length === 0) return;
+      console.log('DEBUG attrList:', attrList);
+      if (!attrList || attrList.length === 0) {
+        console.log('DEBUG: No list attributes, returning early');
+        return;
+      }
 
-      const overlayCodes = overlay?.entry_code?.attribute_entry_codes || {};
-      const overlayEntries = overlay?.entry || {};
+      // Get overlays from the complete schema (works for both bundles and packages)
+      const completeSchema = schemaState?.completeSchema;
+      if (!completeSchema) return;
+      
+      // Navigate to the bundle overlays (handles both bundle and oca_bundle wrapper)
+      const bundleData = completeSchema.oca_bundle?.bundle || completeSchema.bundle || completeSchema;
+      const overlays = bundleData?.overlays;
+      if (!overlays) return;
 
-      // Debug info removed
+      const overlayCodes = overlays?.entry_code?.attribute_entry_codes || {};
+      
+      // Convert entry overlay array to object keyed by language code
+      const overlayEntries = {};
+      if (Array.isArray(overlays?.entry)) {
+        overlays.entry.forEach((entryOverlay) => {
+          const lang = entryOverlay.language;
+          if (lang && entryOverlay.attribute_entries) {
+            overlayEntries[lang] = entryOverlay.attribute_entries;
+          }
+        });
+      }
+      
+      console.log('DEBUG EntryCodes prefill:', {
+        languages,
+        overlayEntriesKeys: Object.keys(overlayEntries),
+        overlayEntries,
+        attrList
+      });
 
       // Determine if we already have an entryCodes array allocated for any list attributes
       // Treat an existing empty array as intentional (user toggled list -> start empty)
@@ -91,18 +120,9 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       );
       if (hasExisting) return;
 
+      // Convert schema language name (e.g., "English") to OCA code (e.g., "eng")
       const resolveAlpha3 = (lang) => {
-        if (!lang) return undefined;
-        const lower = String(lang).toLowerCase();
-        if (lower.length === 3) return lower;
-        if (lower.length === 2) {
-          // map 2-letter to 3-letter via reverse table
-          const match = Object.entries(alpha3CodesToTwoLetterCodes).find(
-            ([, two]) => two === lower
-          );
-          return match ? match[0] : undefined;
-        }
-        return languageNameToAlpha3Codes[lower];
+        return LanguageUtils.getOCALanguageCode(lang);
       };
 
       const initialized = {};
@@ -155,7 +175,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     attributeRowData,
     entryCodeRowData,
     languages,
-    overlay,
+    schemaState,
     updateCurrentSchema
   ]);
 
@@ -177,39 +197,45 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     // Source of truth for existing codes is the schema state's entryCodeRowData (object keyed by attribute)
     const emptyRow = (() => {
       const row = { Code: "" };
-      languages.forEach((lang) => {
-        row[lang] = "";
+      // Use OCA codes as field keys
+      languages.forEach((languageName) => {
+        const ocaCode = LanguageUtils.getOCALanguageCode(languageName);
+        row[ocaCode] = "";
       });
       return row;
     })();
-    const overlayCodes = overlay?.entry_code?.attribute_entry_codes || {};
-    const overlayEntries = overlay?.entry || {};
-    const resolveAlpha3 = (lang) => {
-      if (!lang) return undefined;
-      const lower = String(lang).toLowerCase();
-      if (lower.length === 3) return lower;
-      if (lower.length === 2) {
-        const match = Object.entries(alpha3CodesToTwoLetterCodes).find(
-          ([, two]) => two === lower
-        );
-        return match ? match[0] : undefined;
-      }
-      return languageNameToAlpha3Codes[lower];
-    };
+    // Get overlays from the complete schema (works for both bundles and packages)
+    const completeSchema = schemaState?.completeSchema;
+    const bundleData = completeSchema?.oca_bundle?.bundle || completeSchema?.bundle || completeSchema || {};
+    const overlays = bundleData?.overlays || {};
+    
+    const overlayCodes = overlays?.entry_code?.attribute_entry_codes || {};
+    
+    // Convert entry overlay array to object keyed by OCA language code
+    const overlayEntries = {};
+    if (Array.isArray(overlays?.entry)) {
+      overlays.entry.forEach((entryOverlay) => {
+        const ocaCode = entryOverlay.language;
+        if (ocaCode && entryOverlay.attribute_entries) {
+          overlayEntries[ocaCode] = entryOverlay.attribute_entries;
+        }
+      });
+    }
 
     const alignedEntryCodesArray = attributeArray.map((attr) => {
       let rowsForAttr = Array.isArray(entryCodeRowData[attr])
         ? entryCodeRowData[attr]
         : null;
-      // If current rows exist but labels are missing, backfill labels from overlays
+      // If current rows exist but labels are missing, backfill from overlays
       if (Array.isArray(rowsForAttr) && rowsForAttr.length > 0) {
         rowsForAttr = rowsForAttr.map((r) => {
           const result = { ...r };
+          // Ensure all current languages have entries (use OCA codes as keys)
           languages.forEach((languageName) => {
-            if (!result[languageName]) {
-              const alpha3 = resolveAlpha3(languageName);
-              const label = (alpha3 && overlayEntries?.[alpha3]?.[attr]?.[r.Code]) || "";
-              result[languageName] = label;
+            const ocaCode = LanguageUtils.getOCALanguageCode(languageName);
+            if (!result[ocaCode]) {
+              const label = overlayEntries?.[ocaCode]?.[attr]?.[r.Code] || "";
+              result[ocaCode] = label;
             }
           });
           return result;
@@ -222,19 +248,20 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
           rowsForAttr = codes.map((code) => {
             const row = { Code: code };
             
-            // Add all available overlay translations (preserve ISO codes like fra, eng, etc.)
-            Object.keys(overlayEntries).forEach((langCode) => {
-              const label = overlayEntries[langCode]?.[attr]?.[code];
+            // Add labels for all available overlay translations (using OCA codes as keys)
+            Object.keys(overlayEntries).forEach((ocaCode) => {
+              const label = overlayEntries[ocaCode]?.[attr]?.[code];
               if (label) {
-                row[langCode] = label;
+                row[ocaCode] = label;
               }
             });
             
-            // Also ensure current language names have properties (even if empty)
+            // Ensure all current languages have properties (even if empty)
             languages.forEach((languageName) => {
-              const alpha3 = resolveAlpha3(languageName);
-              const label = (alpha3 && overlayEntries?.[alpha3]?.[attr]?.[code]) || "";
-              row[languageName] = label || "";
+              const ocaCode = LanguageUtils.getOCALanguageCode(languageName);
+              if (!row[ocaCode]) {
+                row[ocaCode] = overlayEntries?.[ocaCode]?.[attr]?.[code] || "";
+              }
             });
             return row;
           });
@@ -262,7 +289,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     attributeRowData,
     languages,
     entryCodeRowData,
-    overlay,
+    schemaState,
     currentSchemaId
   ]);
 
