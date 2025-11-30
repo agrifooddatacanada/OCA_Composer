@@ -199,9 +199,9 @@ const UserSelection = () => {
       let overlayData1 = null;
       let overlayData2 = null;
       if (item.key === UNIT) {
-        // In case of zip bundle, the unit is in attribute_units
-        overlayData1 = value1?.[comparisonObj] || value1?.attribute_units || {};
-        overlayData2 = value2?.[comparisonObj] || value2?.attribute_units || {};
+        // OCA spec uses attribute_unit (singular)
+        overlayData1 = value1?.[comparisonObj] || value1?.attribute_unit || {};
+        overlayData2 = value2?.[comparisonObj] || value2?.attribute_unit || {};
       } else if (item.key.includes(INFORMATION)) {
         const informationOverlayData1 = value1?.[comparisonObj] || {};
         const informationOverlayData2 = value2?.[comparisonObj] || {};

@@ -128,7 +128,7 @@ export function buildOverlays(slots, enums, linkmlSchema) {
     {
       name: "unit",
       type: "spec/overlays/unit/1.0",
-      key: "attribute_units",
+      key: "attribute_unit",
       data: Object.fromEntries(
         Object.entries(slots)
           .filter(([, slot]) => slot.unit?.ucum_code)

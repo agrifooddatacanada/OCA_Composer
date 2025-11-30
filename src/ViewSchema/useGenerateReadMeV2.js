@@ -174,8 +174,8 @@ const useGenerateReadMeV2 = () => {
       const layer_name = json_bundle.overlays.unit.type;
       const { measurement_system } = json_bundle.overlays.unit;
       const attributeUnits =
-        json_bundle.overlays.unit.attribute_units ||
         json_bundle.overlays.unit.attribute_unit ||
+        json_bundle.overlays.unit.attribute_units ||
         {};
       const schema_attributes = hasAttributeOrdering
         ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, attributeUnits)
@@ -489,8 +489,8 @@ const useGenerateReadMeV2 = () => {
         const unitFramingOverlay = extensionOverlays[UNIT_FRAMING];
 
         const unitOverlayData =
-          json_bundle.overlays.unit?.attribute_units ||
           json_bundle.overlays.unit?.attribute_unit ||
+          json_bundle.overlays.unit?.attribute_units ||
           {};
 
         if (Object.keys(unitFramingOverlay?.units || {}).length > 0) {

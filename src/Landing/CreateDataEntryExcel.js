@@ -866,7 +866,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
   if (Object.keys(unitFramingOverlay?.units || {}).length > 0) {
     const unitOverlay = jsonData.find((overlay) => overlay.type.includes("/unit/"));
-    const attributeUnitMap = unitOverlay?.attribute_units || unitOverlay?.attribute_unit;
+    const attributeUnitMap = unitOverlay?.attribute_unit || unitOverlay?.attribute_units;
     if (attributeUnitMap) {
       const columns = ["Unit Framing"];
       const startColumnIndex =

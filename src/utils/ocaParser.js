@@ -46,7 +46,15 @@ export class OCAParser {
    * This ensures components don't need to re-parse from completeSchema.
    */
   static parseSchemaData(schemaId, ocaPackage) {
-    const schemaData = getSchemaDataById(ocaPackage, schemaId);
+    // Normalize the OCA package format first
+    // Handle oca_package format: { oca_bundle: { bundle, dependencies }, extensions }
+    const normalizedPackage = ocaPackage?.oca_bundle ? {
+      bundle: ocaPackage.oca_bundle.bundle,
+      dependencies: ocaPackage.oca_bundle.dependencies || [],
+      extensions: ocaPackage.extensions || ocaPackage.oca_bundle.extensions || {}
+    } : ocaPackage;
+    
+    const schemaData = getSchemaDataById(normalizedPackage, schemaId);
     if (!schemaData) {
       return null;
     }
@@ -55,11 +63,11 @@ export class OCAParser {
     // Extensions are keyed by capture_base.d, not bundle.d
     // For root schema, use bundle.capture_base.d
     // For child schemas in dependencies, find the matching dependency's capture_base.d
-    let captureBaseId = ocaPackage?.bundle?.capture_base?.d;
+    let captureBaseId = normalizedPackage?.bundle?.capture_base?.d;
     
     // Check if this is a child schema by looking in dependencies
-    if (ocaPackage?.dependencies) {
-      const dependency = ocaPackage.dependencies.find(
+    if (normalizedPackage?.dependencies) {
+      const dependency = normalizedPackage.dependencies.find(
         dep => dep.d === schemaId || dep.capture_base?.d === schemaId
       );
       if (dependency) {
@@ -94,7 +102,7 @@ export class OCAParser {
     const overlayData = this._parseOverlayData(
       schemaData.overlays, 
       attributesWithLists,
-      ocaPackage,
+      normalizedPackage,
       captureBaseId
     );
 
@@ -111,11 +119,13 @@ export class OCAParser {
     );
 
     // Initialize overlay selections based on which overlays are present
-    // Check if unit framing extension exists
-    const hasUnitFramingExtension = !!ocaPackage?.extensions?.adc?.[captureBaseId]?.overlays?.unit_framing;
+    // Check if ADC extensions exist
+    const hasUnitFramingExtension = !!normalizedPackage?.extensions?.adc?.[captureBaseId]?.overlays?.unit_framing;
+    const hasRangeExtension = !!normalizedPackage?.extensions?.adc?.[captureBaseId]?.overlays?.range;
     const overlaySelections = this._buildOverlaySelections(
       schemaData.overlays, 
-      hasUnitFramingExtension
+      hasUnitFramingExtension,
+      hasRangeExtension
     );
 
     // Build localized metadata from meta overlays
@@ -298,11 +308,11 @@ export class OCAParser {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
-    const rangeOverlay = overlays?.range;
     const unitOverlay = overlays?.unit;
     
-    // Get unit framing extension if it exists
+    // Get ADC extension overlays (ADC spec format)
     const unitFramingExtension = ocaPackage?.extensions?.adc?.[schemaId]?.overlays?.unit_framing;
+    const rangeOverlay = ocaPackage?.extensions?.adc?.[schemaId]?.overlays?.range;
 
     // Character encoding data for components
     // Store as object { attributeName: encoding } for easy lookup
@@ -339,10 +349,10 @@ export class OCAParser {
       );
     }
 
-    // Range data for components
+    // Range data for components (ADC spec format)
     const rangeData = [];
-    if (rangeOverlay?.attribute_ranges) {
-      Object.entries(rangeOverlay.attribute_ranges).forEach(([attr, range]) => {
+    if (rangeOverlay?.attributes) {
+      Object.entries(rangeOverlay.attributes).forEach(([attr, range]) => {
         // Find the attribute to get its Type
         const attribute = attributes.find((a) => a.Attribute === attr);
         // Find the format rule for this attribute
@@ -352,8 +362,8 @@ export class OCAParser {
           Attribute: attr,
           Type: attribute?.Type || "",
           FormatRule: formatRule,
-          LowerBound: range.lower_bound || "",
-          UpperBound: range.upper_bound || "",
+          LowerBound: range.lower || "",
+          UpperBound: range.upper || "",
           LowerInclusive: range.lower_inclusive !== undefined ? range.lower_inclusive : true,
           UpperInclusive: range.upper_inclusive !== undefined ? range.upper_inclusive : true
         };
@@ -364,8 +374,8 @@ export class OCAParser {
     // Unit framing data for components
     // Combines basic unit data from unit overlay with UCUM data from unit framing extension
     const unitFramedData = [];
-    if (unitOverlay?.attribute_units) {
-      Object.entries(unitOverlay.attribute_units).forEach(([attr, unit]) => {
+    if (unitOverlay?.attribute_unit) {
+      Object.entries(unitOverlay.attribute_unit).forEach(([attr, unit]) => {
         // Get UCUM framing data for this unit if it exists
         const unitFraming = unitFramingExtension?.units?.[unit];
         
@@ -414,12 +424,12 @@ export class OCAParser {
   }
 
   /**
-   * Process unit overlay to populate Unit field in attributes
+   * Process unit overlay and add units to attributes
    * @private
    */
   static _processUnitOverlay(unitOverlay, attributesWithLists) {
-    if (unitOverlay?.attribute_units) {
-      Object.entries(unitOverlay.attribute_units).forEach(
+    if (unitOverlay?.attribute_unit) {
+      Object.entries(unitOverlay.attribute_unit).forEach(
         ([attr, unit]) => {
           const attrData = attributesWithLists.find((a) => a.Attribute === attr);
           if (attrData) {
@@ -434,13 +444,12 @@ export class OCAParser {
    * Build overlay selections based on present overlays
    * @private
    */
-  static _buildOverlaySelections(overlays, hasUnitFramingExtension = false) {
+  static _buildOverlaySelections(overlays, hasUnitFramingExtension = false, hasRangeExtension = false) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
     const conformanceOverlay = overlays?.conformance;
     const unitOverlay = overlays?.unit;
-    const rangeOverlay = overlays?.range;
 
     return {
       [FIELD_CHARACTER_ENCODING_OVERLAY]: { 
@@ -465,11 +474,11 @@ export class OCAParser {
       },
       [FIELD_UNIT_FRAMING_OVERLAY]: { 
         feature: "Unit Framing", 
-        selected: !!unitOverlay?.attribute_units && hasUnitFramingExtension 
+        selected: !!unitOverlay?.attribute_unit && hasUnitFramingExtension 
       },
       [FIELD_RANGE_OVERLAY]: { 
         feature: "Add range rule for data", 
-        selected: !!rangeOverlay?.attribute_ranges 
+        selected: hasRangeExtension
       },
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { 
         feature: "Attribute Framing", 
