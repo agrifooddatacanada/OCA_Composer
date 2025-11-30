@@ -320,29 +320,30 @@ const useHandleAllDrop = (pageForward) => {
   const handleZipDrop = useCallback((acceptedFiles) => {
     try {
       setLoading(true);
+      // Clear multi-schema context when uploading a new file
+      clearAllSchemas();
+
       const reader = new FileReader();
 
       reader.onload = async (e) => {
         const zip = await JSZip.loadAsync(e.target.result);
-        const languageList = [];
-        const informationList = [];
-        const labelList = [];
-        const metaList = [];
-        const entryList = [];
         const allZipFiles = [];
-        let entryCodeSummary = {};
-        let conformance;
-        let characterEncoding;
-        let loadUnits;
-        let formatRules;
-        let cardinalityData;
-        let dataStandards;
 
         // load up metadata file in OCA bundle
         const loadMetadataFile = await zip.files["meta.json"].async("text");
         const metadataJson = JSON.parse(loadMetadataFile);
         const { root } = metadataJson;
         allZipFiles.push(loadMetadataFile);
+
+        // Reconstruct OCA bundle structure from zip files
+        const captureBase = JSON.parse(
+          replaceAttributeCharsInJsonString(
+            await zip.files[`${root}.json`].async("text")
+          )
+        );
+        allZipFiles.push(JSON.stringify(captureBase));
+
+        const overlays = {};
 
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
@@ -351,75 +352,64 @@ const useHandleAllDrop = (pageForward) => {
           // Sanitize attributes in JSON content; replace disallowed characters in attribute names
           const convertedContent = replaceAttributeCharsInJsonString(content);
           const parsedData = JSON.parse(convertedContent);
-
-          if (key.includes("meta")) {
-            metaList.push(parsedData);
-            languageList.push(key.substring(6, 8));
-          }
-
-          if (key.includes("information")) {
-            informationList.push(parsedData);
-          } else if (key.includes("format")) {
-            // Format word is inside Information word, so we need to check if it is a format or information
-            formatRules = parsedData;
-          }
-
-          if (key === "standard") {
-            dataStandards = parsedData;
-          }
-
-          if (key.includes("label")) {
-            labelList.push(parsedData);
-          }
-
-          if (key.includes("entry (")) {
-            entryList.push(parsedData);
-          }
-
-          if (key.includes("entry_code")) {
-            entryCodeSummary = parsedData;
-          }
-
-          if (key.includes("conformance")) {
-            conformance = parsedData;
-          }
-
-          if (key.includes("character_encoding")) {
-            characterEncoding = parsedData;
-          }
-
-          if (key.includes("unit")) {
-            loadUnits = parsedData;
-          }
-
-          if (key.includes("cardinality")) {
-            cardinalityData = parsedData;
-          }
-
           allZipFiles.push(convertedContent);
+
+          // Group overlays by type
+          if (key.includes("meta")) {
+            overlays.meta = overlays.meta || [];
+            overlays.meta.push(parsedData);
+          } else if (key.includes("information")) {
+            overlays.information = overlays.information || [];
+            overlays.information.push(parsedData);
+          } else if (key.includes("label")) {
+            overlays.label = overlays.label || [];
+            overlays.label.push(parsedData);
+          } else if (key.includes("entry (")) {
+            overlays.entry = overlays.entry || [];
+            overlays.entry.push(parsedData);
+          } else if (key.includes("entry_code")) {
+            overlays.entry_code = parsedData;
+          } else if (key.includes("conformance")) {
+            overlays.conformance = parsedData;
+          } else if (key.includes("character_encoding")) {
+            overlays.character_encoding = parsedData;
+          } else if (key.includes("unit")) {
+            overlays.unit = parsedData;
+          } else if (key.includes("cardinality")) {
+            overlays.cardinality = parsedData;
+          } else if (key.includes("format")) {
+            overlays.format = parsedData;
+          } else if (key === "standard") {
+            overlays.standard = parsedData;
+          }
         }
 
-        const loadRoot = await zip.files[`${metadataJson.root}.json`].async("text");
-        const convertedLoadRoot = replaceAttributeCharsInJsonString(loadRoot);
-        allZipFiles.push(convertedLoadRoot);
+        // Construct OCA package structure
+        const ocaBundle = {
+          d: root,
+          bundle: {
+            d: root,
+            capture_base: captureBase,
+            overlays
+          }
+        };
 
-        processLanguages(languageList);
-        processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(
-          labelList,
-          informationList,
-          JSON.parse(convertedLoadRoot),
-          loadUnits,
-          entryCodeSummary,
-          entryList,
-          conformance,
-          characterEncoding,
-          languageList,
-          formatRules,
-          cardinalityData,
-          dataStandards
-        );
+        const ocaPackage = {
+          oca_bundle: ocaBundle
+        };
+
+        // Set OCA package in context
+        setOCAPackage(ocaPackage);
         setZipToReadme(allZipFiles);
+
+        // NEW: Initialize MultiSchemaContext with complete package data
+        initializeFromOCAPackage(ocaPackage);
+
+        // Set editing schema to root schema
+        switchToSchema(root, ocaPackage);
+
+        // Use the existing bundle handler (with sanitized bundle)
+        handleBundleJSONDrop(ocaBundle.bundle, ocaPackage);
       };
 
       reader.readAsArrayBuffer(acceptedFiles[0]);
@@ -431,12 +421,14 @@ const useHandleAllDrop = (pageForward) => {
         setSwitchToLastPage(true);
       }, 900);
     } catch (error) {
+      console.error("Zip upload error:", error);
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
       setTimeout(() => {
         setDropMessage({ message: "", type: "" });
       }, [2500]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleBundleJSONDrop = useCallback(
