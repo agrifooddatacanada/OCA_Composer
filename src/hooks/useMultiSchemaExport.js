@@ -121,7 +121,7 @@ const useMultiSchemaExport = () => {
       const rootSchemaName = exportPackage.bundle?.d || "schema";
       const fileName = getDescriptiveFileName(rootSchemaName);
 
-      // Download the file
+      // Download OCA_package.json
       const blob = new Blob([packageBuffer], { type: "application/octet-stream" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -132,9 +132,25 @@ const useMultiSchemaExport = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Also generate README
+      // Generate README_OCA_schema.txt
       if (exportPackage.bundle?.overlays?.meta) {
-        jsonToTextFile(exportPackage, exportPackage);
+        jsonToTextFile(exportPackage.bundle, exportPackage);
+      }
+
+      // Download OCA_bundle.json only on testing site
+      const currentEnv = process.env.REACT_APP_ENV;
+      if (currentEnv === "DEV" && exportPackage.bundle) {
+        const bundleBlob = new Blob([JSON.stringify(exportPackage.bundle, null, 2)], {
+          type: "application/json"
+        });
+        const bundleUrl = URL.createObjectURL(bundleBlob);
+        const bundleLink = document.createElement("a");
+        bundleLink.href = bundleUrl;
+        bundleLink.download = getDescriptiveFileName(rootSchemaName, "OCA_bundle.json");
+        document.body.appendChild(bundleLink);
+        bundleLink.click();
+        document.body.removeChild(bundleLink);
+        URL.revokeObjectURL(bundleUrl);
       }
 
       return true;
