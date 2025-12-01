@@ -279,14 +279,17 @@ const SchemaVisualizationEmbed = ({
   useEffect(() => {
     const ocaPackage = getOCAPackage();
 
-    if (ocaPackage && ocaPackage.bundle) {
+    // Handle both package formats: { bundle, dependencies } or { oca_bundle: { bundle, dependencies } }
+    const bundle = ocaPackage?.oca_bundle?.bundle || ocaPackage?.bundle;
+
+    if (ocaPackage && bundle) {
       generateLayout();
 
       // Set initial currentSchemaId to the root schema if not already set
       // Only set if we're not already on a specific schema
-      if (!currentSchemaId && setCurrentSchemaId && ocaPackage.bundle?.d) {
+      if (!currentSchemaId && setCurrentSchemaId && bundle?.d) {
         // Don't automatically set currentSchemaId as it might cause unwanted navigation
-        // setCurrentSchemaId(ocaPackage.bundle.d);
+        // setCurrentSchemaId(bundle.d);
       }
     } else {
       // Fallback test nodes if no multilevel schema data

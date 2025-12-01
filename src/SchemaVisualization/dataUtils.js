@@ -101,41 +101,6 @@ export const getDependencyInfo = (depId, dependencyMap, language = "eng") => {
 };
 
 /**
- * Extract schema data directly from OCA package for visualization
- * @param {Object} ocaPackage - OCA package object
- * @param {string} language - Language code (optional)
- * @param {Object} lanAttributeRowData - Updated language attribute data from LDAD
- * @returns {Object} Processed schema data for visualization
- */
-export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
-  if (!ocaPackage) {
-    return null;
-  }
-
-  // Extract labels from the bundle's overlays - no LDAD merging needed
-  // LDAD changes will be saved directly to overlays by the Language Details component
-  const labelOverlay =
-    ocaPackage.bundle.overlays?.label?.find((l) => l.language === language) ||
-    ocaPackage.bundle.overlays?.label?.[0] ||
-    {};
-  const labels = labelOverlay.attribute_labels || {};
-
-  return {
-    dependencies: ocaPackage.dependencies || [],
-    attributes: ocaPackage.bundle.capture_base?.attributes || {},
-    overlays: ocaPackage.bundle.overlays || {},
-    labels
-  };
-};
-
-/**
- * Get schema data for a specific schema ID
- * @param {Object} ocaPackage - OCA package object
- * @param {string} schemaId - Schema ID to get data for
- * @param {string} language - Language code (optional)
- * @returns {Object} Schema data for the specified schema
- */
-/**
  * Normalize OCA package structure to handle different formats
  * @param {Object} ocaPackage - Raw OCA package 
  * @returns {Object} Normalized package with consistent structure
@@ -155,6 +120,48 @@ const normalizeOCAPackage = (ocaPackage) => {
   // Handle direct format: { bundle: {...}, dependencies: [...], extensions: {...} }
   return ocaPackage;
 };
+
+/**
+ * Extract schema data directly from OCA package for visualization
+ * @param {Object} ocaPackage - OCA package object
+ * @param {string} language - Language code (optional)
+ * @param {Object} lanAttributeRowData - Updated language attribute data from LDAD
+ * @returns {Object} Processed schema data for visualization
+ */
+export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
+  if (!ocaPackage) {
+    return null;
+  }
+
+  // Normalize package structure to handle both formats
+  const normalizedPackage = normalizeOCAPackage(ocaPackage);
+  if (!normalizedPackage) {
+    return null;
+  }
+
+  // Extract labels from the bundle's overlays - no LDAD merging needed
+  // LDAD changes will be saved directly to overlays by the Language Details component
+  const labelOverlay =
+    normalizedPackage.bundle.overlays?.label?.find((l) => l.language === language) ||
+    normalizedPackage.bundle.overlays?.label?.[0] ||
+    {};
+  const labels = labelOverlay.attribute_labels || {};
+
+  return {
+    dependencies: normalizedPackage.dependencies || [],
+    attributes: normalizedPackage.bundle.capture_base?.attributes || {},
+    overlays: normalizedPackage.bundle.overlays || {},
+    labels
+  };
+};
+
+/**
+ * Get schema data for a specific schema ID
+ * @param {Object} ocaPackage - OCA package object
+ * @param {string} schemaId - Schema ID to get data for
+ * @param {string} language - Language code (optional)
+ * @returns {Object} Schema data for the specified schema
+ */
 
 export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
   if (!ocaPackage || !schemaId) {

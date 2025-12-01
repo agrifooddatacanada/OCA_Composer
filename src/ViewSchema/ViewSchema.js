@@ -249,12 +249,8 @@ export default function ViewSchema({
 
   // readme hooks not used on this page
   // Only show multi-schema visualization if we have child schemas (refs: or refn: types)
-  const hasHierarchy = React.useMemo(() => {
-    if (!OCAPackage) return false;
-    
-    // Simple check: if the OCA package has dependencies, it's a multi-schema structure
-    return OCAPackage.dependencies && OCAPackage.dependencies.length > 0;
-  }, [OCAPackage]);
+  // Use hasNestedSchemas from useOCAExport which checks attributeRowData for Child Schema types
+  const hasHierarchy = hasNestedSchemas;
 
   // Update the package data when schemas are modified
   useEffect(() => {
@@ -264,7 +260,7 @@ export default function ViewSchema({
 
     setUpdatedOCAPackage(modifiedPackage);
     setVizVersion((v) => v + 1);
-  }, [OCAPackage, schemaStates, exportSchemaChanges]);
+  }, [OCAPackage, schemaStates, exportSchemaChanges, currentSchemaId, getSchemaState]);
 
   // Removed in favor of global language toggle (EN/FR)
 

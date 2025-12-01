@@ -376,6 +376,10 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
       const modifiedPackage = JSON.parse(JSON.stringify(ocaPackage));
 
+      // Handle both package formats: direct { bundle, dependencies } or wrapped { oca_bundle: { bundle, dependencies } }
+      const bundle = modifiedPackage.oca_bundle?.bundle || modifiedPackage.bundle;
+      const dependencies = modifiedPackage.oca_bundle?.dependencies || modifiedPackage.dependencies;
+
       // Apply changes to all schemas that have been initialized
       Object.keys(schemaStates).forEach((schemaId) => {
         const schemaState = getSchemaState(schemaId);
@@ -383,16 +387,16 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
         // Find the schema in the package
         let targetSchema = null;
-        if (schemaId === modifiedPackage.bundle?.d) {
-          targetSchema = modifiedPackage.bundle;
+        if (schemaId === bundle?.d) {
+          targetSchema = bundle;
         } else {
-          targetSchema = modifiedPackage.dependencies?.find((dep) => dep.d === schemaId);
+          targetSchema = dependencies?.find((dep) => dep.d === schemaId);
         }
 
         // If targetSchema is not found, it might be a placeholder schema that needs to be created
         if (!targetSchema) {
           // Check if this is a placeholder schema by looking at the root schema's attributes
-          const rootAttributes = modifiedPackage.bundle?.capture_base?.attributes || {};
+          const rootAttributes = bundle?.capture_base?.attributes || {};
           const isPlaceholder = Object.entries(rootAttributes).some(
             ([key, value]) =>
               key === schemaId && typeof value === "string" && value.startsWith("refn:")
@@ -424,10 +428,17 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             };
 
             // Add the new dependency to the package
-            if (!modifiedPackage.dependencies) {
-              modifiedPackage.dependencies = [];
+            if (modifiedPackage.oca_bundle) {
+              if (!modifiedPackage.oca_bundle.dependencies) {
+                modifiedPackage.oca_bundle.dependencies = [];
+              }
+              modifiedPackage.oca_bundle.dependencies.push(newDependency);
+            } else {
+              if (!modifiedPackage.dependencies) {
+                modifiedPackage.dependencies = [];
+              }
+              modifiedPackage.dependencies.push(newDependency);
             }
-            modifiedPackage.dependencies.push(newDependency);
             targetSchema = newDependency;
           } else {
             // Not a placeholder schema, skip
@@ -449,9 +460,14 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             const name = attr.Attribute;
             const type = attr.Type;
             if (type === "Child Schema") {
-              // Preserve original reference value if present; otherwise create a placeholder ref
-              rebuiltAttributes[name] =
-                originalAttributes[name] || `refn:placeholder_${name}`;
+              // Always create a placeholder reference for Child Schema types
+              // Check if original was already a reference (refn: or refs:), preserve that format
+              const originalValue = originalAttributes[name];
+              if (typeof originalValue === 'string' && (originalValue.startsWith('refn:') || originalValue.startsWith('refs:'))) {
+                rebuiltAttributes[name] = originalValue;
+              } else {
+                rebuiltAttributes[name] = `refn:placeholder_${name}`;
+              }
             } else {
               rebuiltAttributes[name] = type || "Text";
             }
@@ -900,6 +916,75 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         }
       });
 
+      // After processing all schemas, scan for refn:placeholder_* references and create missing child schema dependencies
+      const existingDepIds = new Set((dependencies || []).map(dep => dep.d));
+      const placeholdersToCreate = new Set();
+
+      // Scan root schema attributes
+      if (bundle?.capture_base?.attributes) {
+        Object.entries(bundle.capture_base.attributes).forEach(([attrName, attrType]) => {
+          if (typeof attrType === 'string' && attrType.startsWith('refn:placeholder_')) {
+            const placeholderId = attrType.replace('refn:placeholder_', '');
+            if (!existingDepIds.has(placeholderId)) {
+              placeholdersToCreate.add(placeholderId);
+            }
+          }
+        });
+      }
+
+      // Scan dependency schema attributes
+      (dependencies || []).forEach(dep => {
+        if (dep?.capture_base?.attributes) {
+          Object.entries(dep.capture_base.attributes).forEach(([attrName, attrType]) => {
+            if (typeof attrType === 'string' && attrType.startsWith('refn:placeholder_')) {
+              const placeholderId = attrType.replace('refn:placeholder_', '');
+              if (!existingDepIds.has(placeholderId)) {
+                placeholdersToCreate.add(placeholderId);
+              }
+            }
+          });
+        }
+      });
+
+      // Create placeholder child schema dependencies
+      placeholdersToCreate.forEach(placeholderId => {
+        const newDependency = {
+          d: placeholderId,
+          capture_base: {
+            d: `capture_base_${placeholderId}_${Date.now()}`,
+            type: "spec/capture_base/1.1",
+            attributes: {},
+            classification: "RDF508",
+            flagged_attributes: []
+          },
+          overlays: {
+            meta: [
+              {
+                d: `meta_${placeholderId}_${Date.now()}`,
+                capture_base: `capture_base_${placeholderId}_${Date.now()}`,
+                type: "spec/overlays/meta/1.1",
+                language: "eng",
+                name: placeholderId,
+                description: `Placeholder child schema for ${placeholderId}`
+              }
+            ]
+          }
+        };
+
+        // Add to both wrapped and unwrapped package formats
+        if (modifiedPackage.oca_bundle) {
+          if (!modifiedPackage.oca_bundle.dependencies) {
+            modifiedPackage.oca_bundle.dependencies = [];
+          }
+          modifiedPackage.oca_bundle.dependencies.push(newDependency);
+        } else {
+          if (!modifiedPackage.dependencies) {
+            modifiedPackage.dependencies = [];
+          }
+          modifiedPackage.dependencies.push(newDependency);
+        }
+      });
+
       return modifiedPackage;
     },
     [getSchemaState, schemaStates]
@@ -1170,19 +1255,18 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   }, [schemaStates, saveToLocalStorage]);
 
   // Auto-initialize from OCA package when it changes
-  useEffect(() => {
-    if (OCAPackage && Object.keys(schemaStates).length === 0) {
-      // Only initialize if we don't have any schemas yet
-      // This prevents re-initialization when user is actively editing
-      console.log("MultiSchemaContext: Auto-initializing from OCA package");
-      const schemaIds = initializeFromOCAPackage(OCAPackage);
-      
-      // Set the first schema as active if none is set
-      if (schemaIds.length > 0 && !currentSchemaId) {
-        setCurrentSchemaId(schemaIds[0]);
-      }
-    }
-  }, [OCAPackage, initializeFromOCAPackage, schemaStates, currentSchemaId]);
+  // DISABLED: This was causing re-initialization and data loss when navigating between pages
+  // Now initialization is handled explicitly by components that need it (StartSchema, SchemaUpload)
+  // useEffect(() => {
+  //   if (OCAPackage && Object.keys(schemaStates).length === 0) {
+  //     console.log("MultiSchemaContext: Auto-initializing from OCA package");
+  //     const schemaIds = initializeFromOCAPackage(OCAPackage);
+  //     
+  //     if (schemaIds.length > 0 && !currentSchemaId) {
+  //       setCurrentSchemaId(schemaIds[0]);
+  //     }
+  //   }
+  // }, [OCAPackage, initializeFromOCAPackage, schemaStates, currentSchemaId]);
 
   // Context value
   const contextValue = useMemo(

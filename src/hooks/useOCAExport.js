@@ -103,11 +103,16 @@ const useOCAExport = () => {
     return divisionCodes[divisionGroup.division];
   }, [divisionGroup.division, divisionGroup.group]);
 
-  // Check if schema has nested child schemas (refs: or refn: types)
+  // Check if schema has nested child schemas (refs: or refn: types, or "Child Schema" display format)
   const hasNestedSchemas = useMemo(() => {
     return attributeRowData.some((attr) => {
       const type = attr.Type;
-      return typeof type === "string" && (type.startsWith("refs:") || type.startsWith("refn:"));
+      return typeof type === "string" && (
+        type.startsWith("refs:") || 
+        type.startsWith("refn:") || 
+        type === "Child Schema" || 
+        type === "Array[Child Schema]"
+      );
     });
   }, [attributeRowData]);
 
