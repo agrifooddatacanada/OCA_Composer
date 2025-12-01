@@ -55,7 +55,25 @@ const useZipParser = () => {
       }
       return codesToLanguages[language];
     });
-    setLanguages(newLanguages);
+    
+    // Sort languages to ensure English appears first
+    const sortedLanguages = [...newLanguages].sort((a, b) => {
+      const aLower = a.toLowerCase();
+      const bLower = b.toLowerCase();
+      
+      // English always comes first
+      if (aLower === 'english') return -1;
+      if (bLower === 'english') return 1;
+      
+      // French comes second (if present)
+      if (aLower === 'french') return -1;
+      if (bLower === 'french') return 1;
+      
+      // Rest alphabetically
+      return a.localeCompare(b);
+    });
+    
+    setLanguages(sortedLanguages);
   };
 
   const processMetadata = (metadata) => {

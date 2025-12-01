@@ -137,32 +137,79 @@ const SchemaMetadata = forwardRef(({
 
   // Reusable validation function
   const validateSchemaMetadata = useCallback(() => {
-    const noSpacesObject = removeSpacesFromObjectOfObjects(schemaDescription);
-    setSchemaDescription(noSpacesObject);
     const spacesArray = [];
 
-    languages.forEach((language) => {
-      // Check if noSpacesObject[language] exists and is an object before calling Object.values
-      const languageData = noSpacesObject[language];
-      if (languageData && typeof languageData === 'object') {
-        // Check each field individually and report which field is blank
-        Object.entries(languageData).forEach(([fieldName, value]) => {
-          // Check for empty, null, undefined, or whitespace-only strings
-          const trimmedValue = typeof value === 'string' ? value.trim() : value;
-          if (!trimmedValue || trimmedValue === '') {
-            const fieldDisplayName = fieldName === 'name' ? 'Name of Schema' : 
-                                   fieldName === 'description' ? 'Description' : 
-                                   toTitleCase(fieldName);
-            if (!spacesArray.includes(fieldDisplayName)) {
-              spacesArray.push(fieldDisplayName);
-            }
+    // Check metadata from schema state directly to handle both formats
+    const metadata = schemaState?.metadata || {};
+    const localized = metadata.localized || {};
+    
+    // For uploaded schemas, check the localized metadata structure
+    if (Object.keys(localized).length > 0) {
+      // Validate that at least one language has both name and description filled
+      let hasValidLanguage = false;
+      
+      Object.entries(localized).forEach(([langCode, langData]) => {
+        if (langData && typeof langData === 'object') {
+          const name = typeof langData.name === 'string' ? langData.name.trim() : langData.name;
+          const description = typeof langData.description === 'string' ? langData.description.trim() : langData.description;
+          
+          // If this language has both fields filled, mark as valid
+          if (name && name !== '' && description && description !== '') {
+            hasValidLanguage = true;
+          }
+        }
+      });
+      
+      // Only report errors if NO language has complete data
+      if (!hasValidLanguage) {
+        // Check what's specifically missing
+        let missingName = true;
+        let missingDescription = true;
+        
+        Object.entries(localized).forEach(([langCode, langData]) => {
+          if (langData && typeof langData === 'object') {
+            const name = typeof langData.name === 'string' ? langData.name.trim() : langData.name;
+            const description = typeof langData.description === 'string' ? langData.description.trim() : langData.description;
+            
+            if (name && name !== '') missingName = false;
+            if (description && description !== '') missingDescription = false;
           }
         });
+        
+        if (missingName) spacesArray.push('Name of Schema');
+        if (missingDescription) spacesArray.push('Description');
       }
-    });
+    } else {
+      // Fallback: check schemaDescription object for manual creation
+      const noSpacesObject = removeSpacesFromObjectOfObjects(schemaDescription);
+      
+      languages.forEach((language) => {
+        const languageData = noSpacesObject[language];
+        if (languageData && typeof languageData === 'object') {
+          // Check each field individually and report which field is blank
+          Object.entries(languageData).forEach(([fieldName, value]) => {
+            // Check for empty, null, undefined, or whitespace-only strings
+            const trimmedValue = typeof value === 'string' ? value.trim() : value;
+            if (!trimmedValue || trimmedValue === '') {
+              const fieldDisplayName = fieldName === 'name' ? 'Name of Schema' : 
+                                     fieldName === 'description' ? 'Description' : 
+                                     toTitleCase(fieldName);
+              if (!spacesArray.includes(fieldDisplayName)) {
+                spacesArray.push(fieldDisplayName);
+              }
+            }
+          });
+        }
+      });
+      
+      // Trim spaces and update state only if there were changes
+      if (JSON.stringify(noSpacesObject) !== JSON.stringify(schemaDescription)) {
+        setSchemaDescription(noSpacesObject);
+      }
+    }
     
     return spacesArray;
-  }, [schemaDescription, languages]);
+  }, [schemaDescription, languages, schemaState, setSchemaDescription]);
 
   const [pendingNavigationTarget, setPendingNavigationTarget] = useState(null);
 
@@ -344,6 +391,8 @@ const SchemaMetadata = forwardRef(({
           setShowIsoInput={setShowIsoInput}
           setEditingLanguage={setEditingLanguage}
           languages={languages}
+          schemaDescription={schemaDescription}
+          setSchemaDescription={setSchemaDescription}
         />
       </Box>
     </BackNextSkeleton>

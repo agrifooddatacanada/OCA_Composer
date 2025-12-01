@@ -19,8 +19,6 @@ export default function SchemaInput({
 }) {
   const { t } = useTranslation();
   const {
-    schemaDescription,
-    setSchemaDescription,
     languages,
     setLanguages,
     customIsos,
@@ -39,22 +37,27 @@ export default function SchemaInput({
         ? "fra"
         : language?.toLowerCase();
 
-  // Get the schema data for the currently editing schema
-  const currentSchemaData = currentSchemaId
-    ? getSchemaDataById(OCAPackage, currentSchemaId, langKey)
-    : null;
-
-  // If we're editing a specific schema, use the schema name and description from the data
+  // Get the schema state metadata - this is the source of truth for edits
   const metaState = currentSchemaId ? getSchemaState(currentSchemaId)?.metadata : null;
   const metaLocalized = metaState?.localized || {};
 
   // Get the schema name and description for the current language
-  const schemaName = currentSchemaId
-    ? metaLocalized?.[langKey]?.name || currentSchemaData?.schemaName || currentSchemaId
-    : currentSchemaData?.schemaName || currentSchemaData?.fieldName || "";
-  const currentSchemaDescription = currentSchemaId
-    ? metaLocalized?.[langKey]?.description || currentSchemaData?.schemaDescription || ""
-    : currentSchemaData?.schemaDescription || "";
+  // Use metadata.localized as the primary source, only fall back to OCA package on initial load
+  const hasLocalizedData = metaLocalized && Object.keys(metaLocalized).length > 0;
+  
+  let schemaName = "";
+  let currentSchemaDescription = "";
+  
+  if (hasLocalizedData) {
+    // If we have localized metadata, use it (this includes user edits, even if empty string)
+    schemaName = metaLocalized[langKey]?.name !== undefined ? metaLocalized[langKey].name : "";
+    currentSchemaDescription = metaLocalized[langKey]?.description !== undefined ? metaLocalized[langKey].description : "";
+  } else if (currentSchemaId) {
+    // Only on initial load, fall back to OCA package data
+    const currentSchemaData = getSchemaDataById(OCAPackage, currentSchemaId, langKey);
+    schemaName = currentSchemaData?.schemaName || currentSchemaId;
+    currentSchemaDescription = currentSchemaData?.schemaDescription || "";
+  }
 
   // Debug logs removed to reduce console noise during schema-aware editing
 
@@ -63,17 +66,7 @@ export default function SchemaInput({
 
     const newText = e.target.value;
 
-    // Only update global context if we're not editing a specific schema
-    if (!currentSchemaId) {
-      let newSchema = JSON.parse(JSON.stringify(schemaDescription));
-      newSchema = {
-        ...newSchema,
-        [language]: { ...newSchema[language], name: newText }
-      };
-      setSchemaDescription(newSchema);
-    }
-
-    // Always update multi-schema context if we have a target schema
+    // Always update multi-schema context
     const targetId = currentSchemaId;
     if (targetId) {
       const st = getSchemaState(targetId) || {};
@@ -104,17 +97,7 @@ export default function SchemaInput({
 
     const newText = e.target.value;
 
-    // Only update global context if we're not editing a specific schema
-    if (!currentSchemaId) {
-      let newSchema = JSON.parse(JSON.stringify(schemaDescription));
-      newSchema = {
-        ...newSchema,
-        [language]: { ...newSchema[language], description: newText }
-      };
-      setSchemaDescription(newSchema);
-    }
-
-    // Always update multi-schema context if we have a target schema
+    // Always update multi-schema context
     const targetId = currentSchemaId;
     if (targetId) {
       const st = getSchemaState(targetId) || {};
@@ -145,9 +128,23 @@ export default function SchemaInput({
     const newLanguageArray = [...languages];
     newLanguageArray.splice(languageIndex, 1);
     setLanguages(newLanguageArray);
-    const newSchemaDescription = JSON.parse(JSON.stringify(schemaDescription));
-    delete newSchemaDescription[language];
-    setSchemaDescription(newSchemaDescription);
+    
+    // Also remove from schema metadata
+    if (currentSchemaId) {
+      const st = getSchemaState(currentSchemaId) || {};
+      const prevMeta = st.metadata || {};
+      const prevLoc = prevMeta.localized || {};
+      const nextLocalized = { ...prevLoc };
+      delete nextLocalized[langKey];
+      
+      updateSchemaState(currentSchemaId, {
+        metadata: {
+          ...prevMeta,
+          localized: nextLocalized,
+          languages: newLanguageArray
+        }
+      });
+    }
   };
 
   return (
@@ -282,11 +279,7 @@ export default function SchemaInput({
               height: "0.2rem"
             }
           }}
-          value={
-            currentSchemaId
-              ? schemaName || ""
-              : schemaDescription[language] && schemaDescription[language].name
-          }
+          value={schemaName || ""}
         />
         <Box
           sx={{
@@ -323,11 +316,7 @@ export default function SchemaInput({
           id={descriptionFieldId}
           type="text"
           onChange={handleDescriptionField}
-          value={
-            currentSchemaId
-              ? currentSchemaDescription
-              : schemaDescription[language] && schemaDescription[language].description
-          }
+          value={currentSchemaDescription || ""}
         />
       </Box>
     </Box>
