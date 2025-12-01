@@ -162,12 +162,26 @@ export default function ViewSchema({
           sx={{
             backgroundColor:
               getCurrentLanguage() === language
-                ? (currentTheme?.buttonStyles?.primary ?? CustomPalette.PRIMARY)
-                : (currentTheme?.buttonStyles?.secondary ?? CustomPalette.SECONDARY),
+                ? CustomPalette.PRIMARY
+                : CustomPalette.WHITE,
+            color:
+              getCurrentLanguage() === language
+                ? "white"
+                : CustomPalette.PRIMARY,
             borderRadius,
             minWidth: languages.length < 5 ? "12rem" : "10rem",
             boxShadow: "none",
-            border: `0.5px solid ${currentTheme?.primaryColor ?? CustomPalette.PRIMARY}`
+            border: `1px solid ${CustomPalette.PRIMARY}`,
+            "&:hover": {
+              backgroundColor:
+                getCurrentLanguage() === language
+                  ? CustomPalette.PRIMARY
+                  : CustomPalette.WHITE,
+              boxShadow:
+                getCurrentLanguage() === language
+                  ? "none"
+                  : undefined
+            }
           }}
         >
           <Typography variant="button">{minimizedLanguage}</Typography>
@@ -789,13 +803,27 @@ export default function ViewSchema({
                     "& .MuiToggleButton-root": {
                       border: `1px solid ${CustomPalette.PRIMARY}`,
                       color: CustomPalette.PRIMARY,
-                      backgroundColor: CustomPalette.PINK_100,
+                      backgroundColor: CustomPalette.WHITE,
+                      boxShadow: "none",
+                      minWidth: languages.length < 5 ? "12rem" : "10rem",
+                      "&:hover": {
+                        boxShadow: "0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)"
+                      },
                       "&.Mui-selected": {
                         backgroundColor: CustomPalette.PRIMARY,
                         color: "white",
                         "&:hover": {
-                          backgroundColor: CustomPalette.SECONDARY
+                          backgroundColor: CustomPalette.PRIMARY,
+                          boxShadow: "none"
                         }
+                      },
+                      "&:first-of-type": {
+                        borderTopLeftRadius: "8px",
+                        borderBottomLeftRadius: "8px"
+                      },
+                      "&:last-of-type": {
+                        borderTopRightRadius: "8px",
+                        borderBottomRightRadius: "8px"
                       }
                     }
                   }}

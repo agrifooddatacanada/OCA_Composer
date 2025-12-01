@@ -46,8 +46,9 @@ export default function ClickableStepperProgressIndicator({
                   wordBreak: "break-word",
                   transition: "all 0.15s ease",
                   "&:hover": {
-                    backgroundColor: i === activeStep ? CustomPalette.SECONDARY : CustomPalette.PINK_100,
+                    backgroundColor: i === activeStep ? CustomPalette.PRIMARY : CustomPalette.WHITE,
                     color: i === activeStep ? "white" : CustomPalette.PRIMARY,
+                    boxShadow: i === activeStep ? "none" : "0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)",
                     transform: "translateY(-1px)"
                   }
                 }}

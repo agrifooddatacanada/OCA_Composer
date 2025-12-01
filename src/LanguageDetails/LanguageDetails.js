@@ -219,11 +219,25 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
             backgroundColor:
               currentLanguage === language
                 ? CustomPalette.PRIMARY
-                : CustomPalette.SECONDARY,
+                : CustomPalette.WHITE,
+            color:
+              currentLanguage === language
+                ? "white"
+                : CustomPalette.PRIMARY,
             borderRadius,
             width: languages.length < 5 ? "12rem" : "8.335rem",
             boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.PRIMARY}`
+            border: `1px solid ${CustomPalette.PRIMARY}`,
+            "&:hover": {
+              backgroundColor:
+                currentLanguage === language
+                  ? CustomPalette.PRIMARY
+                  : CustomPalette.WHITE,
+              boxShadow:
+                currentLanguage === language
+                  ? "none"
+                  : undefined
+            }
           }}
         >
           {" "}
