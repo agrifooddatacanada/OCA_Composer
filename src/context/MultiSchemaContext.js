@@ -674,6 +674,69 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
           if (!targetSchema.overlays) targetSchema.overlays = {};
           targetSchema.overlays.entry = [entryOverlay];
         }
+
+        // Rebuild label and information overlays from lanAttributeRowData
+        if (schemaState.lanAttributeRowData && Object.keys(schemaState.lanAttributeRowData).length > 0) {
+          const labelOverlays = [];
+          const informationOverlays = [];
+
+          Object.entries(schemaState.lanAttributeRowData).forEach(([language, rows]) => {
+            // Map language names to codes (English -> eng, French -> fra)
+            const langCodeMap = { 
+              'English': 'eng', 'French': 'fra', 'German': 'deu', 'Spanish': 'spa',
+              'eng': 'eng', 'fra': 'fra', 'deu': 'deu', 'spa': 'spa'
+            };
+            const langCode = langCodeMap[language] || language;
+
+            // Build label overlay for this language
+            const labelOverlay = {
+              d: targetSchema.overlays?.label?.find(l => l.language === langCode)?.d || `label_${langCode}_${Date.now()}`,
+              capture_base: targetSchema.capture_base.d,
+              type: "spec/overlays/label/1.0",
+              language: langCode,
+              attribute_labels: {}
+            };
+
+            // Build information overlay for this language
+            const informationOverlay = {
+              d: targetSchema.overlays?.information?.find(i => i.language === langCode)?.d || `information_${langCode}_${Date.now()}`,
+              capture_base: targetSchema.capture_base.d,
+              type: "spec/overlays/information/1.0",
+              language: langCode,
+              attribute_information: {}
+            };
+
+            if (Array.isArray(rows)) {
+              rows.forEach((row) => {
+                if (row.Attribute) {
+                  if (row.Label) {
+                    labelOverlay.attribute_labels[row.Attribute] = row.Label;
+                  }
+                  if (row.Description) {
+                    informationOverlay.attribute_information[row.Attribute] = row.Description;
+                  }
+                }
+              });
+            }
+
+            // Only add overlays if they have data
+            if (Object.keys(labelOverlay.attribute_labels).length > 0) {
+              labelOverlays.push(labelOverlay);
+            }
+            if (Object.keys(informationOverlay.attribute_information).length > 0) {
+              informationOverlays.push(informationOverlay);
+            }
+          });
+
+          if (labelOverlays.length > 0) {
+            if (!targetSchema.overlays) targetSchema.overlays = {};
+            targetSchema.overlays.label = labelOverlays;
+          }
+          if (informationOverlays.length > 0) {
+            if (!targetSchema.overlays) targetSchema.overlays = {};
+            targetSchema.overlays.information = informationOverlays;
+          }
+        }
       });
 
       // After processing all schemas, check for child schemas that need to be added as dependencies
@@ -947,7 +1010,22 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       });
 
       // Create placeholder child schema dependencies
+      // Inherit languages from root schema
+      const rootMetaOverlays = bundle?.overlays?.meta || [];
+      const parentLanguages = rootMetaOverlays.map(m => m.language).filter(Boolean);
+      const languagesToUse = parentLanguages.length > 0 ? parentLanguages : ['eng'];
+      
       placeholdersToCreate.forEach(placeholderId => {
+        // Create meta overlays for each language that the parent has
+        const metaOverlays = languagesToUse.map(lang => ({
+          d: `meta_${placeholderId}_${lang}_${Date.now()}`,
+          capture_base: `capture_base_${placeholderId}_${Date.now()}`,
+          type: "spec/overlays/meta/1.1",
+          language: lang,
+          name: placeholderId,
+          description: `Placeholder child schema for ${placeholderId}`
+        }));
+        
         const newDependency = {
           d: placeholderId,
           capture_base: {
@@ -958,16 +1036,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             flagged_attributes: []
           },
           overlays: {
-            meta: [
-              {
-                d: `meta_${placeholderId}_${Date.now()}`,
-                capture_base: `capture_base_${placeholderId}_${Date.now()}`,
-                type: "spec/overlays/meta/1.1",
-                language: "eng",
-                name: placeholderId,
-                description: `Placeholder child schema for ${placeholderId}`
-              }
-            ]
+            meta: metaOverlays
           }
         };
 

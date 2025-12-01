@@ -57,8 +57,8 @@ const SchemaMetadata = forwardRef(({
     setCurrentPage
   } = useContext(Context);
 
-  // Use schema state directly - no fallback needed
-  const languages = schemaState?.metadata?.languages || globalLanguages;
+  // Use schema-specific languages (each schema has its own independent language list)
+  const languages = schemaState?.metadata?.languages || [];
   
   // Build schemaDescription from MultiSchemaContext metadata
   // Structure: { English: { name: "...", description: "..." }, French: { ... } }

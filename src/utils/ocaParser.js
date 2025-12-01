@@ -515,9 +515,27 @@ export class OCAParser {
       };
     }
 
+    // Extract actual languages from meta overlays
+    const detectedLanguages = Object.keys(localized);
+    
+    // Sort languages with English first, then alphabetically
+    const sortedLanguages = detectedLanguages.sort((a, b) => {
+      if (a === 'eng') return -1;
+      if (b === 'eng') return 1;
+      return a.localeCompare(b);
+    });
+    
+    const languages = sortedLanguages.length > 0 
+      ? sortedLanguages.map(code => {
+          // Convert language codes to full names (eng -> English, fra -> French)
+          const codeMap = { eng: 'English', fra: 'French', deu: 'German', spa: 'Spanish' };
+          return codeMap[code] || code;
+        })
+      : LanguageConstants.FALLBACK_LANGUAGES;
+
     return {
       localized,
-      languages: LanguageConstants.FALLBACK_LANGUAGES
+      languages
     };
   }
 }

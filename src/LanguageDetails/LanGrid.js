@@ -20,14 +20,18 @@ import { MAX_ATTR_DESCRIPTION_CHARS, MAX_ATTR_LABEL_CHARS } from "../constants/c
 import { languageNameToAlpha3Codes } from "../constants/isoCodes";
 
 const textareaStyle = {
-  width: "98%",
+  width: "100%",
   height: "100%",
   resize: "none",
   outline: "none",
+  border: "none",
   fontFamily:
     // eslint-disable-next-line quotes
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
-  fontSize: "12px"
+  fontSize: "12px",
+  padding: "4px 6px",
+  boxSizing: "border-box",
+  lineHeight: "1.4"
 };
 
 // Compact renderer moved to module scope to avoid defining components during render
@@ -51,10 +55,23 @@ const CompactListRenderer = ({ value }) => {
 
 const TextareaCellEditor = forwardRef((props, ref) => {
   const [value, setValue] = useState(props.value);
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     setValue(props.value);
   }, [props.value]);
+
+  // Auto-focus the textarea when editor opens
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+      // Move cursor to end of text
+      textareaRef.current.setSelectionRange(
+        textareaRef.current.value.length,
+        textareaRef.current.value.length
+      );
+    }
+  }, []);
 
   useImperativeHandle(ref, () => ({
     getValue() {
@@ -72,6 +89,7 @@ const TextareaCellEditor = forwardRef((props, ref) => {
 
   return (
     <textarea
+      ref={textareaRef}
       maxLength={MAX_ATTR_DESCRIPTION_CHARS}
       style={textareaStyle}
       value={value}
@@ -93,9 +111,10 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   
   // Get the current schema ID (handles manual creation case where currentSchemaId from context is null)
   const currentSchemaId = getCurrentSchemaId();
-
-  // Global context (for languages only)
-  const { languages } = useContext(Context);
+  
+  // Get schema-specific languages from per-schema metadata
+  const schemaState = getSchemaState(currentSchemaId);
+  const languages = schemaState?.metadata?.languages || [];
 
   // Get schema-specific overlay data from unified context, formatted for LanGrid
   const schemaOverlay = useMemo(() => {
@@ -109,6 +128,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     // Transform OCA overlay format to LanGrid expected format
     const transformedOverlay = {
       label: {},
+      information: {},
       entry: {}
     };
 
@@ -118,6 +138,16 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         const lang = labelOverlay.language;
         if (lang && labelOverlay.attribute_labels) {
           transformedOverlay.label[lang] = labelOverlay.attribute_labels;
+        }
+      });
+    }
+
+    // Process information overlays (for Description)
+    if (rawOverlays.information && Array.isArray(rawOverlays.information)) {
+      rawOverlays.information.forEach((infoOverlay) => {
+        const lang = infoOverlay.language;
+        if (lang && infoOverlay.attribute_information) {
+          transformedOverlay.information[lang] = infoOverlay.attribute_information;
         }
       });
     }
@@ -136,7 +166,6 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   }, [getCompleteSchema, currentSchemaId]);
 
   // Get schema state data with stable references
-  const schemaState = getSchemaState(currentSchemaId);
   const attributesList = useMemo(
     () => schemaState?.attributesList || [],
     [schemaState?.attributesList]
@@ -240,10 +269,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           effectiveAttributesList.forEach((attr) => {
             if (!existingAttributes.includes(attr)) {
               const overlayLangKey = languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
+              const infoByLang = schemaOverlay.information || {};
               updatedLanData[language].push({
                 Attribute: attr,
                 Label: labelByLang?.[overlayLangKey]?.[attr] || "",
-                Description: "",
+                Description: infoByLang?.[overlayLangKey]?.[attr] || "",
                 List: "Not a List"
               });
             }
@@ -308,10 +338,14 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
             const remaining = listDisplayArray.length - 3;
             listDisplay = `${shown} +${remaining} more`;
           }
+          
+          // Get information (description) for this language
+          const infoByLang = schemaOverlay.information || {};
+          
           newLanguageList.push({
             Attribute: item,
             Label: labelByLang?.[overlayLang]?.[item] || "",
-            Description: "",
+            Description: infoByLang?.[overlayLang]?.[item] || "",
             List: listDisplay
           });
         });
@@ -350,6 +384,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         field: "Attribute",
         editable: false,
         width: 120,
+        wrapText: true,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
         headerComponent: CellHeader,
@@ -362,6 +397,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         field: "Label",
         editable: true,
         width: 250,
+        wrapText: true,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
         headerComponent: CellHeader,
@@ -379,6 +415,10 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         editable: true,
         width: 260,
         cellEditor: TextareaCellEditor,
+        cellEditorParams: {
+          maxLength: MAX_ATTR_DESCRIPTION_CHARS
+        },
+        wrapText: true,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
         headerComponent: CellHeader,
@@ -421,6 +461,9 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   const onCellValueChanged = useCallback(
     (event) => {
+      // Only update state after editing is complete, not during typing
+      if (event.source !== "edit") return;
+      
       const { colDef, data, newValue } = event;
       const attributeName = data.Attribute;
       const { field } = colDef;
@@ -543,6 +586,8 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           onCellValueChanged={onCellValueChanged}
           domLayout="autoHeight"
           onGridReady={onGridReady}
+          getRowId={(params) => params.data.Attribute}
+          immutableData={true}
         />
       ) : (
         <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>

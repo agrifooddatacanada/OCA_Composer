@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useCallback, Suspense } from "react";
+import React, { useContext, useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import i18next from "i18next";
@@ -220,13 +220,14 @@ export default function ViewSchema({
     (schemaId) => {
       if (!schemaId) return;
       // Switch only if different, but always navigate to the editor
+      // Use updatedOCAPackage which includes the latest changes and placeholder dependencies
       if (schemaId !== currentSchemaId) {
-        switchToSchema(schemaId, OCAPackage);
+        switchToSchema(schemaId, updatedOCAPackage || OCAPackage);
       }
       setCurrentPage("Details");
       navigate("/start");
     },
-    [currentSchemaId, switchToSchema, OCAPackage, setCurrentPage, navigate]
+    [currentSchemaId, switchToSchema, updatedOCAPackage, OCAPackage, setCurrentPage, navigate]
   );
 
   const downloadReadMe = () => {
@@ -248,9 +249,24 @@ export default function ViewSchema({
   };
 
   // readme hooks not used on this page
-  // Only show multi-schema visualization if we have child schemas (refs: or refn: types)
-  // Use hasNestedSchemas from useOCAExport which checks attributeRowData for Child Schema types
-  const hasHierarchy = hasNestedSchemas;
+  // Show multi-schema visualization if:
+  // 1. Current schema has Child Schema types (hasNestedSchemas)
+  // 2. Package has dependencies (viewing a child schema or multi-schema package)
+  // 3. There are multiple schemas in schemaStates
+  const hasHierarchy = useMemo(() => {
+    if (hasNestedSchemas) return true;
+    
+    // Check if package has dependencies
+    const hasDependencies = updatedOCAPackage?.dependencies?.length > 0 || 
+                           updatedOCAPackage?.oca_bundle?.dependencies?.length > 0;
+    if (hasDependencies) return true;
+    
+    // Check if there are multiple schemas in the system
+    const schemaCount = Object.keys(schemaStates || {}).length;
+    if (schemaCount > 1) return true;
+    
+    return false;
+  }, [hasNestedSchemas, updatedOCAPackage, schemaStates]);
 
   // Update the package data when schemas are modified
   useEffect(() => {
