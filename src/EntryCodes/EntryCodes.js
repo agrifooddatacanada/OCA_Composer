@@ -38,7 +38,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
 
   // Global context
   const {
-    setSavedEntryCodes,
     setCurrentPage,
     languages,
     OCAPackage
@@ -334,9 +333,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     updateCurrentSchema({
       entryCodes: newEntryCodesObject
     });
-
-    // Also save to global context for compatibility
-    setSavedEntryCodes(newEntryCodesObject);
   };
 
   const pageBackSave = () => {

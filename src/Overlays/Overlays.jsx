@@ -18,11 +18,7 @@ const Overlays = ({ pageBack, pageForward }) => {
   
   // Global context (for non-schema-specific data)
   const {
-    setCurrentPage,
-    characterEncodingRowData,
-    setCharacterEncodingRowData,
-    rangeRowData,
-    attributeRowData
+    setCurrentPage
   } = useContext(Context);
 
   // Schema-specific overlay state from MultiSchemaContext
@@ -32,8 +28,14 @@ const Overlays = ({ pageBack, pageForward }) => {
     updateOverlaySelection,
     updateSchemaState,
     setSelectedOverlay,
-    getSelectedOverlay
+    getSelectedOverlay,
+    getSchemaState
   } = useMultiSchema();
+  
+  // Get schema-specific data from MultiSchemaContext
+  const schemaState = getSchemaState(currentSchemaId);
+  const rangeRowData = schemaState?.rangeData || [];
+  const attributeRowData = schemaState?.attributes || [];
 
   const overlay = getOverlaySelections(currentSchemaId);
   const selectedOverlay = getSelectedOverlay(currentSchemaId);
@@ -129,12 +131,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       overlaySelections: updatedSelections
     });
 
-    // Delete attribute from characterEncodingRowData
-    const newCharacterEncodingRowData = characterEncodingRowData.map((row) => {
-      delete row[selectedItemToDelete];
-      return row;
-    });
-    setCharacterEncodingRowData(newCharacterEncodingRowData);
+    // Note: Overlay data deletion is handled by the individual overlay components
+    // via the deleteHandler hook when they unmount
     setShowDeleteConfirmation(false);
   };
 

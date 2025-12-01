@@ -29,7 +29,6 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   // Global context
   const {
     languages,
-    setLanAttributeRowData,
     setCurrentPage
   } = useContext(Context);
 
@@ -58,10 +57,8 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   const refContainer = useRef();
   const entryCodesRef = useRef();
 
-  // Reset global language-dependent data when switching schemas to avoid stale rows from previous schema
-  useEffect(() => {
-    setLanAttributeRowData({});
-  }, [currentSchemaId, setLanAttributeRowData]);
+  // Note: lanAttributeRowData is now managed per-schema in MultiSchemaContext
+  // No need to reset global state when switching schemas
 
   // Stops grid editing when clicking outside grid
   useEffect(() => {
@@ -150,8 +147,6 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       }
     });
     
-    // Also save to global context for compatibility
-    setLanAttributeRowData(noSpacesObject);
     entryCodesRef.current = attributesWithLists.length > 0;
   };
   const handlePageBack = () => {
@@ -255,7 +250,11 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
         item.Label = item.Attribute;
       });
     }
-    setLanAttributeRowData(newLanAttributeRowData);
+    
+    // Update schema state with the modified data
+    updateSchemaState(currentSchemaId, {
+      lanAttributeRowData: newLanAttributeRowData
+    });
   };
 
   return (
