@@ -13,6 +13,7 @@ import NavigationCard from "../constants/NavigationCard";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
+import { languageNameToAlpha3Codes } from "../constants/isoCodes";
 import { removeSpacesFromObjectOfObjects } from "../constants/removeSpaces";
 import IntroCard from "./IntroCard";
 import IsoCard from "./IsoCard";
@@ -50,6 +51,7 @@ const SchemaMetadata = forwardRef(({
   const {
     schemaDescription: globalSchemaDescription,
     languages: globalLanguages,
+    setLanguages: globalSetLanguages,
     history,
     setHistory,
     setCurrentPage
@@ -65,8 +67,10 @@ const SchemaMetadata = forwardRef(({
     const metadata = schemaState?.metadata || {};
     
     languages.forEach(lang => {
-      const langKey = lang.toLowerCase().substring(0, 3);
-      const localized = metadata.localized?.[langKey] || {};
+      // Use the same ISO code conversion as when writing
+      const langKey = lang.toLowerCase();
+      const langCode = languageNameToAlpha3Codes[langKey] || langKey.substring(0, 3);
+      const localized = metadata.localized?.[langCode] || {};
       
       result[lang] = { 
         name: localized.name || (lang.toLowerCase() === 'english' ? metadata.name : "") || "", 
@@ -85,13 +89,17 @@ const SchemaMetadata = forwardRef(({
   const setSchemaDescription = (newDescription) => {
     // Convert the language object format to proper localized structure
     if (typeof newDescription === 'object' && !Array.isArray(newDescription)) {
-      const localized = {};
-      let rootName = "";
-      let rootDescription = "";
+      // Start with existing localized data to preserve all languages
+      const currentLocalized = schemaState?.metadata?.localized || {};
+      const localized = { ...currentLocalized };
+      let rootName = schemaState?.metadata?.name || "";
+      let rootDescription = schemaState?.metadata?.description || "";
       
       Object.entries(newDescription).forEach(([langName, data]) => {
-        const langCode = langName.toLowerCase() === 'english' ? 'eng' : 
-                        langName.toLowerCase() === 'french' ? 'fra' : langName;
+        // Use proper ISO 639-3 code conversion with fallback
+        const langKey = langName.toLowerCase();
+        const langCode = languageNameToAlpha3Codes[langKey] || langKey.substring(0, 3);
+        
         localized[langCode] = {
           name: data.name || "",
           description: data.description || ""
@@ -106,7 +114,6 @@ const SchemaMetadata = forwardRef(({
       
       updateCurrentSchema({
         metadata: {
-          ...schemaState?.metadata,
           name: rootName,
           description: rootDescription,
           localized: localized
@@ -124,12 +131,34 @@ const SchemaMetadata = forwardRef(({
   };
 
   const setLanguages = (newLanguages) => {
-    updateCurrentSchema({
-      metadata: {
-        ...schemaState?.metadata,
-        languages: newLanguages
+    // Initialize localized entries for any new languages that don't have them yet
+    const currentLocalized = schemaState?.metadata?.localized || {};
+    const updatedLocalized = { ...currentLocalized };
+    
+    newLanguages.forEach(langName => {
+      const langKey = langName.toLowerCase();
+      const langCode = languageNameToAlpha3Codes[langKey] || langKey.substring(0, 3);
+      
+      // Only initialize if this language doesn't have an entry yet
+      if (!updatedLocalized[langCode]) {
+        updatedLocalized[langCode] = {
+          name: "",
+          description: ""
+        };
       }
     });
+    
+    const metadataUpdate = {
+      metadata: {
+        languages: newLanguages,
+        localized: updatedLocalized
+      }
+    };
+    
+    updateCurrentSchema(metadataUpdate);
+    
+    // Also update global context for components that still read from it
+    globalSetLanguages(newLanguages);
   };
 
   const toTitleCase = (str) =>

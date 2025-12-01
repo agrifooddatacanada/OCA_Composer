@@ -202,12 +202,18 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         // This prevents race conditions when multiple components update state simultaneously
         const currentState = prev[targetId] || createDefaultSchemaState();
         
+        // Deep merge metadata to prevent race conditions
+        const updatedState = { ...currentState, ...updates };
+        if (updates.metadata) {
+          updatedState.metadata = {
+            ...currentState.metadata,
+            ...updates.metadata
+          };
+        }
+        
         return {
           ...prev,
-          [targetId]: {
-            ...currentState,
-            ...updates
-          }
+          [targetId]: updatedState
         };
       });
     },

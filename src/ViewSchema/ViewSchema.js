@@ -21,7 +21,6 @@ import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
 import { LanguageUtils } from "../utils/languageUtils";
 
-import useExportLogic from "./useExportLogic";
 import Loading from "../components/Loading";
 import useOCAExport from "../hooks/useOCAExport";
 import useGenerateReadMe from "./useGenerateReadMe";
@@ -185,7 +184,6 @@ export default function ViewSchema({
   const [showLink, setShowLink] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [displayArray, setDisplayArray] = useState([]);
-  const { resetToDefaults, exportDisabled } = useExportLogic();
   const {
     exportData,
     error: exportError,
@@ -193,6 +191,11 @@ export default function ViewSchema({
     hasNestedSchemas,
     isImportedPackage
   } = useOCAExport();
+  
+  // Export is never disabled in view mode
+  const exportDisabled = false;
+  // Reset functionality not needed in ViewSchema
+  const resetToDefaults = () => {};
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const [loading, setLoading] = useState(true);

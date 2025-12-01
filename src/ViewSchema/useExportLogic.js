@@ -96,6 +96,11 @@ const useExportLogic = () => {
   // CAPTURE ATTRIBUTE SHEET DATA
   if (Object.keys(lanAttributeRowData).length > 0) {
     languages.forEach((language) => {
+      // Skip languages that don't have attribute data yet
+      if (!lanAttributeRowData[language]) {
+        return;
+      }
+      
       const rowData = [];
 
       attributesList.forEach((item, index) => {
