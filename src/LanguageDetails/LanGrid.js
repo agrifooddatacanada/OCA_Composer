@@ -445,9 +445,12 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     [lanAttributeRowData, currentLanguage, currentSchemaId, updateSchemaState]
   );
 
-  // Memoized function to update List column data
-  const updateListColumn = useCallback(() => {
-    if (!currentLanguage || !currentSchemaId) return;
+  // Refresh List data when currentLanguage changes or entry codes update
+  // Use a ref to track if we've already updated to prevent infinite loops
+  const listUpdateInProgressRef = useRef(false);
+  
+  useEffect(() => {
+    if (!currentLanguage || !currentSchemaId || listUpdateInProgressRef.current) return;
 
     const schemaState = getSchemaState(currentSchemaId);
     const savedEntryCodes = schemaState?.entryCodes || {};
@@ -500,6 +503,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     });
 
     if (listDataChanged) {
+      listUpdateInProgressRef.current = true;
       const updatedLanAttributeRowData = {
         ...schemaState.lanAttributeRowData,
         [currentLanguage]: updatedLangData
@@ -508,13 +512,13 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       updateSchemaState(currentSchemaId, {
         lanAttributeRowData: updatedLanAttributeRowData
       });
+      
+      // Reset the flag after state update completes
+      setTimeout(() => {
+        listUpdateInProgressRef.current = false;
+      }, 0);
     }
-  }, [currentLanguage, currentSchemaId, getSchemaState, updateSchemaState, effectiveAttributesList]);
-
-  // Refresh List data when currentLanguage changes
-  useEffect(() => {
-    updateListColumn();
-  }, [updateListColumn]);
+  }, [currentLanguage, currentSchemaId, stableEntryCodes]);
 
   return (
     <div className="ag-theme-balham" style={{ width: 890 }}>
