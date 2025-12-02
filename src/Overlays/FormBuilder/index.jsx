@@ -348,8 +348,6 @@ const FormBuilder = () => {
 
   // Helper function to sync label, placeholder and FORM description back to lanAttributeRowData
   const syncQuestionFieldsToLanData = useCallback(() => {
-    const updatedLanData = { ...lanAttributeRowData };
-    
     const questionsByAttribute = {};
     const formDescriptionsByAttribute = {};
     const titlesByAttribute = {};
@@ -367,47 +365,51 @@ const FormBuilder = () => {
       });
     });
     
-    languages.forEach(lang => {
-      if (updatedLanData[lang]) {
-        updatedLanData[lang] = updatedLanData[lang].map(item => {
-          const attr = item.Attribute;
-          const questionPlaceholder = questionsByAttribute[attr];
-          const questionDescription = formDescriptionsByAttribute[attr];
-          const questionTitle = titlesByAttribute[attr];
-          let newItem = { ...item };
+    setLanAttributeRowData(prevLanData => {
+      const updatedLanData = { ...prevLanData };
+      
+      languages.forEach(lang => {
+        if (updatedLanData[lang]) {
+          updatedLanData[lang] = updatedLanData[lang].map(item => {
+            const attr = item.Attribute;
+            const questionPlaceholder = questionsByAttribute[attr];
+            const questionDescription = formDescriptionsByAttribute[attr];
+            const questionTitle = titlesByAttribute[attr];
+            let newItem = { ...item };
 
-          if (questionPlaceholder) {
-            if (typeof questionPlaceholder === 'object' && questionPlaceholder !== null) {
-              newItem.Placeholder = questionPlaceholder[lang] || '';
-            } else if (typeof questionPlaceholder === 'string') {
-              newItem.Placeholder = questionPlaceholder;
+            if (questionPlaceholder) {
+              if (typeof questionPlaceholder === 'object' && questionPlaceholder !== null) {
+                newItem.Placeholder = questionPlaceholder[lang] || '';
+              } else if (typeof questionPlaceholder === 'string') {
+                newItem.Placeholder = questionPlaceholder;
+              }
             }
-          }
 
-     
-          if (questionDescription) {
-            if (typeof questionDescription === 'object' && questionDescription !== null) {
-              newItem.FormDescription = questionDescription[lang] || '';
-            } else if (typeof questionDescription === 'string') {
-              newItem.FormDescription = questionDescription;
+       
+            if (questionDescription) {
+              if (typeof questionDescription === 'object' && questionDescription !== null) {
+                newItem.FormDescription = questionDescription[lang] || '';
+              } else if (typeof questionDescription === 'string') {
+                newItem.FormDescription = questionDescription;
+              }
             }
-          }
 
-          if (questionTitle) {
-            if (typeof questionTitle === 'object' && questionTitle !== null) {
-              newItem.Label = questionTitle[lang] || newItem.Label || attr;
-            } else if (typeof questionTitle === 'string') {
-              newItem.Label = questionTitle || newItem.Label || attr;
+            if (questionTitle) {
+              if (typeof questionTitle === 'object' && questionTitle !== null) {
+                newItem.Label = questionTitle[lang] || newItem.Label || attr;
+              } else if (typeof questionTitle === 'string') {
+                newItem.Label = questionTitle || newItem.Label || attr;
+              }
             }
-          }
 
-          return newItem;
-        });
-      }
+            return newItem;
+          });
+        }
+      });
+      
+      return updatedLanData;
     });
-    
-    setLanAttributeRowData(updatedLanData);
-  }, [pages, languages, lanAttributeRowData, setLanAttributeRowData]);
+  }, [pages, languages, setLanAttributeRowData]);
 
   useEffect(() => {
     syncQuestionFieldsToLanData();
