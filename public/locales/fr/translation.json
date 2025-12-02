@@ -421,5 +421,12 @@
   "Section Label": "Étiquette de section",
   "Section label for this language": "Étiquette de section pour cette langue",
   "Drag into the form": "Faire glisser dans le formulaire",
-  "Create interactive forms using drag-and-drop interface": "Créer des formulaires interactifs à l'aide d'une interface de glisser-déposer"
+  "Create interactive forms using drag-and-drop interface": "Créer des formulaires interactifs à l'aide d'une interface de glisser-déposer",
+  "Shown to users in forms. Available for Text, Array[Text], DateTime, Array[DateTime], Numeric, and Array[Numeric] types.": "Affiché aux utilisateurs dans les formulaires. Disponible pour les types Text, Array[Text], DateTime, Array[DateTime], Numeric et Array[Numeric].",
+  "Question Labels": "Étiquettes de question",
+  "Instructions/Commentary": "Instructions/Commentaire",
+  "Additional instructions or commentary text that appears below the question label.": "Instructions supplémentaires ou texte de commentaire qui apparaît sous l'étiquette de la question.",
+  "Section Labels": "Étiquettes de section",
+  "Page Labels": "Étiquettes de page",
+  "Placeholder text to display when field is empty": "Texte d'espace réservé à afficher lorsque le champ est vide"
 }
