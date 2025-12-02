@@ -605,7 +605,7 @@ const useGenerateReadMeV2 = () => {
               }
 
               if (page.named_section) {
-                formText += `        named_section: ${page.named_section}\n`;
+                formText += `          - named_section: ${page.named_section}\n`;
               }
             });
           }
@@ -620,21 +620,21 @@ const useGenerateReadMeV2 = () => {
           if (overlay.page_labels && Object.keys(overlay.page_labels).length > 0) {
             formText += "    page_labels:\n";
             Object.entries(overlay.page_labels).forEach(([pageId, label]) => {
-              formText += `      ${pageId}: ${label}\n`;
+              formText += `      - ${pageId}: ${label}\n`;
             });
           }
 
           if (overlay.sidebar_label && Object.keys(overlay.sidebar_label).length > 0) {
             formText += "    sidebar_label:\n";
             Object.entries(overlay.sidebar_label).forEach(([pageId, label]) => {
-              formText += `      ${pageId}: ${label}\n`;
+              formText += `      - ${pageId}: ${label}\n`;
             });
           }
 
           if (overlay.description && Object.keys(overlay.description).length > 0) {
             formText += "    description:\n";
             Object.entries(overlay.description).forEach(([pageId, desc]) => {
-              formText += `      ${pageId}: ${desc}\n`;
+              formText += `      - ${pageId}: ${desc}\n`;
             });
           }
 
@@ -696,7 +696,7 @@ const useGenerateReadMeV2 = () => {
           const layer_name = firstOverlay?.type || FORM;
           const firstSaid = firstOverlay?.d;
           text_file.push(
-            `Layer name: ${layer_name}\n${firstSaid ? `SAID/digest: ${firstSaid}\n` : ""}\nform:\n`
+            `Layer name: ${layer_name}\n${firstSaid ? `SAID/digest: ${firstSaid}\n` : ""}\n`
           );
           text_file.push(form_overlays_txt.join(""));
           text_file.push(
