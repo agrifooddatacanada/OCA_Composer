@@ -557,62 +557,152 @@ const useGenerateReadMeV2 = () => {
 
         const form_overlays_txt = [];
         for (const overlay of formOverlayArray) {
-          const said = overlay.d;
-          const layer_name = overlay.type || FORM;
           const lang = overlay.language || "unknown";
+          const captureBase = overlay.capture_base || "";
 
-          let formAttributesText = "";
-          if (Array.isArray(overlay.page_order) && overlay.page_order.length > 0) {
-            formAttributesText += `Page order: ${overlay.page_order.join(", ")}\n`;
+          let formText = "-\n";
+
+          if (captureBase) {
+            formText += `capture_base: ${captureBase}\n`;
+          }
+          formText += `language: ${lang}\n`;
+
+          if (overlay.title) {
+            formText += `title: ${overlay.title}\n`;
           }
 
           if (Array.isArray(overlay.pages) && overlay.pages.length > 0) {
-            const pageAttributes = [];
-            const sectionAttributes = [];
-
+            formText += "    pages:\n";
             overlay.pages.forEach((page) => {
-              const sectionId = page.named_section || "unnamed_section";
-              const attrOrder = page.attribute_order || [];
+              formText += "      -";
 
-              if (Array.isArray(attrOrder)) {
-                if (attrOrder.length > 0 && typeof attrOrder[0] === "object") {
-                  attrOrder.forEach((subSection) => {
-                    const subId = subSection.named_section || sectionId;
-                    const subAttrs = Array.isArray(subSection.attribute_order)
-                      ? subSection.attribute_order.join(", ")
-                      : JSON.stringify(subSection.attribute_order || []);
-                    sectionAttributes.push(`   ${subId}: ${subAttrs}\n`);
-                  });
-                } else if (attrOrder.length > 0) {
-                  pageAttributes.push(`   ${sectionId}: ${attrOrder.join(", ")}\n`);
+              if (page.attribute_order) {
+                const attrOrder = page.attribute_order;
+                if (Array.isArray(attrOrder) && attrOrder.length > 0) {
+                  if (typeof attrOrder[0] === "object") {
+                    formText += "attribute_order:\n";
+                    attrOrder.forEach((subSection) => {
+                      if (subSection.named_section) {
+                        formText += `          - named_section: ${subSection.named_section}\n`;
+                      }
+                      if (
+                        Array.isArray(subSection.attribute_order) &&
+                        subSection.attribute_order.length > 0
+                      ) {
+                        formText += "attribute_order:\n";
+                        subSection.attribute_order.forEach((attr) => {
+                          formText += `              - ${attr}\n`;
+                        });
+                      }
+                    });
+                  } else {
+                    formText += "attribute_order:\n";
+                    attrOrder.forEach((attr) => {
+                      formText += `          - ${attr}\n`;
+                    });
+                  }
                 }
-              } else if (attrOrder) {
-                pageAttributes.push(`   ${sectionId}: ${JSON.stringify(attrOrder)}\n`);
+              }
+
+              if (page.named_section) {
+                formText += `        named_section: ${page.named_section}\n`;
               }
             });
-
-            if (pageAttributes.length > 0) {
-              formAttributesText += "Form attributes by page:\n";
-              formAttributesText += pageAttributes.join("");
-            }
-
-            if (sectionAttributes.length > 0) {
-              if (pageAttributes.length > 0) {
-                formAttributesText += "\n";
-              }
-              formAttributesText += "Form attributes by section:\n";
-              formAttributesText += sectionAttributes.join("");
-            }
           }
 
-          form_overlays_txt.push(
-            `Layer name: ${layer_name}\n${said ? `SAID/digest: ${said}\n` : ""}Language: ${lang}\n${formAttributesText}\n`
+          if (Array.isArray(overlay.page_order) && overlay.page_order.length > 0) {
+            formText += "    page_order:\n";
+            overlay.page_order.forEach((pageId) => {
+              formText += `      - ${pageId}\n`;
+            });
+          }
+
+          if (overlay.page_labels && Object.keys(overlay.page_labels).length > 0) {
+            formText += "    page_labels:\n";
+            Object.entries(overlay.page_labels).forEach(([pageId, label]) => {
+              formText += `      ${pageId}: ${label}\n`;
+            });
+          }
+
+          if (overlay.sidebar_label && Object.keys(overlay.sidebar_label).length > 0) {
+            formText += "    sidebar_label:\n";
+            Object.entries(overlay.sidebar_label).forEach(([pageId, label]) => {
+              formText += `      ${pageId}: ${label}\n`;
+            });
+          }
+
+          if (overlay.description && Object.keys(overlay.description).length > 0) {
+            formText += "    description:\n";
+            Object.entries(overlay.description).forEach(([pageId, desc]) => {
+              formText += `      ${pageId}: ${desc}\n`;
+            });
+          }
+
+          if (Array.isArray(overlay.interaction) && overlay.interaction.length > 0) {
+            formText += "    interaction:\n";
+            overlay.interaction.forEach((interaction) => {
+              formText += "      -";
+              if (
+                interaction.arguments &&
+                Object.keys(interaction.arguments).length > 0
+              ) {
+                formText += "arguments:\n";
+                Object.entries(interaction.arguments).forEach(([attr, config]) => {
+                  formText += `          ${attr}:\n`;
+                  if (config.type) {
+                    formText += `            type: ${config.type}\n`;
+                  }
+                  if (config.placeholder) {
+                    formText += `            placeholder: ${config.placeholder}\n`;
+                  }
+                  if (Array.isArray(config.options) && config.options.length > 0) {
+                    formText += "            options:\n";
+                    config.options.forEach((option) => {
+                      formText += `              - '${option}'\n`;
+                    });
+                  }
+                  Object.keys(config).forEach((key) => {
+                    if (!["type", "placeholder", "options"].includes(key)) {
+                      const value = config[key];
+                      if (typeof value === "string") {
+                        formText += `            ${key}: ${value}\n`;
+                      } else if (
+                        typeof value === "boolean" ||
+                        typeof value === "number"
+                      ) {
+                        formText += `            ${key}: ${value}\n`;
+                      } else if (Array.isArray(value)) {
+                        formText += `            ${key}:\n`;
+                        value.forEach((item) => {
+                          formText += `              - ${item}\n`;
+                        });
+                      } else if (typeof value === "object" && value !== null) {
+                        formText += `            ${key}:\n`;
+                        Object.entries(value).forEach(([k, v]) => {
+                          formText += `              ${k}: ${v}\n`;
+                        });
+                      }
+                    }
+                  });
+                });
+              }
+            });
+          }
+
+          form_overlays_txt.push(formText);
+        }
+        if (form_overlays_txt.length > 0) {
+          const firstOverlay = formOverlayArray[0];
+          const layer_name = firstOverlay?.type || FORM;
+          const firstSaid = firstOverlay?.d;
+          text_file.push(
+            `Layer name: ${layer_name}\n${firstSaid ? `SAID/digest: ${firstSaid}\n` : ""}\nform:\n`
+          );
+          text_file.push(form_overlays_txt.join(""));
+          text_file.push(
+            "\n******************************************************************\n"
           );
         }
-        text_file.push(form_overlays_txt.join(""));
-        text_file.push(
-          "******************************************************************\n"
-        );
       }
 
       text_file.push("END_OCA_PACKAGE_EXTENSIONS\n");
