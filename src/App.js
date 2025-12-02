@@ -72,6 +72,7 @@ function App() {
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
   const [attributesWithLists, setAttributesWithLists] = useState([]);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
+  const [formPlaceholdersByLanguage, setFormPlaceholdersByLanguage] = useState({});
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
 
@@ -704,6 +705,8 @@ function App() {
             setSavedEntryCodes,
             lanAttributeRowData,
             setLanAttributeRowData,
+            formPlaceholdersByLanguage,
+            setFormPlaceholdersByLanguage,
             setCurrentPage,
             history,
             setHistory,
