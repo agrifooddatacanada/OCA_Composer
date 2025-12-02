@@ -4,6 +4,7 @@ import yaml from "js-yaml";
 import { messages } from "../constants/messages";
 import { ADC, SENSITIVE } from "../constants/constants";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import useZipParser from "../StartSchema/useZipParser";
 import {
   replaceAttributeCharsInJsonString,
@@ -39,6 +40,7 @@ export const useHandleJsonDrop = (
     setTargetResult,
     setOCAPackage
   } = useContext(Context);
+  const { clearAllSchemas, switchToSchema, initializeFromOCAPackage } = useMultiSchema();
   const { processLanguages, processMetadata, processLabelsDescriptionRootUnitsEntries } =
     useZipParser();
 
@@ -435,6 +437,9 @@ export const useHandleJsonDrop = (
     (acceptedFiles) => {
       try {
         setJsonLoading(true);
+        // Note: Do NOT call clearAllSchemas() here - it causes race conditions
+        // initializeFromOCAPackage() will properly add the schemas to state
+        
         const reader = new FileReader();
 
         reader.onload = async (e) => {
@@ -451,6 +456,16 @@ export const useHandleJsonDrop = (
 
             // Create OCA package
             const ocaPackage = transformToPackage(bundle);
+
+            // Store OCA package in context
+            setOCAPackage(ocaPackage);
+
+            // Initialize MultiSchemaContext with complete package data
+            const schemaIds = initializeFromOCAPackage(ocaPackage);
+
+            // Set editing schema to root schema
+            const rootSchemaId = ocaPackage.oca_bundle?.bundle?.d || ocaPackage.oca_bundle?.bundle?.capture_base?.d || 'generated_schema';
+            switchToSchema(rootSchemaId, ocaPackage);
 
             // Extract the bundle for processing - exactly the same structure expected by JSON processing
             const jsonFile = ocaPackage.oca_bundle.bundle;
@@ -643,7 +658,9 @@ export const useHandleJsonDrop = (
       }
     },
     [
+      clearAllSchemas,
       datasetRawFile.length,
+      initializeFromOCAPackage,
       jsonIsParsed,
       processLabelsDescriptionRootUnitsEntries,
       processLanguages,
@@ -655,9 +672,11 @@ export const useHandleJsonDrop = (
       setJsonIsParsed,
       setJsonLoading,
       setJsonParsedFile,
+      setOCAPackage,
       setShowWarningCard,
       setTargetResult,
-      setZipToReadme
+      setZipToReadme,
+      switchToSchema
     ]
   );
 

@@ -55,6 +55,7 @@ export class OCAParser {
     } : ocaPackage;
     
     const schemaData = getSchemaDataById(normalizedPackage, schemaId);
+    
     if (!schemaData) {
       return null;
     }
@@ -78,6 +79,20 @@ export class OCAParser {
     // Fallback to schemaId if we couldn't determine capture_base ID
     captureBaseId = captureBaseId || schemaId;
 
+    // Extract flagged_attributes from capture_base (for root schema)
+    // For child schemas, get from dependencies
+    let flaggedAttributes = [];
+    if (schemaId === normalizedPackage.bundle?.d || schemaId === normalizedPackage.bundle?.capture_base?.d || schemaId === "root") {
+      flaggedAttributes = normalizedPackage.bundle?.capture_base?.flagged_attributes || [];
+    } else if (normalizedPackage?.dependencies) {
+      const dependency = normalizedPackage.dependencies.find(
+        dep => dep.d === schemaId || dep.capture_base?.d === schemaId
+      );
+      if (dependency) {
+        flaggedAttributes = dependency.capture_base?.flagged_attributes || [];
+      }
+    }
+
     // Build attributes array from OCA attributes object
     const attributes = this._buildAttributes(schemaData.attributes || {});
 
@@ -89,13 +104,26 @@ export class OCAParser {
       List: listSet.has(a.Attribute)
     }));
 
-    // CRITICAL: Parse label overlays to extract Labels and Descriptions
+    // CRITICAL: Parse label and information overlays to extract Labels and Descriptions
     // This creates lanAttributeRowData with proper labels from the OCA file
     // If we don't do this, components will default to using Attribute names as Labels
     const lanAttributeRowData = this._parseLabelOverlays(
-      schemaData.overlays?.label, 
+      schemaData.overlays?.label,
+      schemaData.overlays?.information,
       attributesWithLists
     );
+
+    // Copy descriptions from language data to main attributes for Attribute Details display
+    // Use the first available language's description
+    const firstLang = Object.keys(lanAttributeRowData)[0];
+    if (firstLang && lanAttributeRowData[firstLang]) {
+      attributesWithLists.forEach(attr => {
+        const lanData = lanAttributeRowData[firstLang].find(lan => lan.Attribute === attr.Attribute);
+        if (lanData?.Description) {
+          attr.Description = lanData.Description;
+        }
+      });
+    }
 
     // Parse overlays and populate display-friendly arrays for components
     // Pass captureBaseId for extension lookups
@@ -115,6 +143,12 @@ export class OCAParser {
     // Process unit overlay to populate Unit field in attributes
     this._processUnitOverlay(
       schemaData.overlays?.unit,
+      attributesWithLists
+    );
+
+    // Process flagged_attributes to populate Sensitive field
+    this._processFlaggedAttributes(
+      flaggedAttributes,
       attributesWithLists
     );
 
@@ -164,7 +198,8 @@ export class OCAParser {
       Description: "",
       Required: false,
       List: false,
-      Unit: ""
+      Unit: "",
+      Sensitive: false
     }));
   }
 
@@ -266,36 +301,62 @@ export class OCAParser {
   }
 
   /**
-   * Parse label overlays for language-specific data
+   * Parse label and information overlays for language-specific data
    * @private
    */
-  static _parseLabelOverlays(labelOverlays, attributesWithLists) {
+  static _parseLabelOverlays(labelOverlays, informationOverlays, attributesWithLists) {
     const lanAttributeRowData = {};
     
+    // First, process label overlays for labels
+    const labelsByLang = {};
     if (Array.isArray(labelOverlays)) {
       labelOverlays.forEach((overlay) => {
         if (overlay && overlay.language) {
-          const lang = overlay.language;
-          lanAttributeRowData[lang] = attributesWithLists.map((attr) => ({
-            Attribute: attr.Attribute,
-            Label: overlay.attribute_labels?.[attr.Attribute] || "",
-            Description: overlay.attribute_descriptions?.[attr.Attribute] || "",
-            List: attr.List
-          }));
+          labelsByLang[overlay.language] = overlay.attribute_labels || {};
         }
       });
     } else if (labelOverlays && typeof labelOverlays === "object") {
       Object.entries(labelOverlays).forEach(([lang, overlay]) => {
         if (overlay) {
-          lanAttributeRowData[lang] = attributesWithLists.map((attr) => ({
-            Attribute: attr.Attribute,
-            Label: overlay.attribute_labels?.[attr.Attribute] || "",
-            Description: overlay.attribute_descriptions?.[attr.Attribute] || "",
-            List: attr.List
-          }));
+          labelsByLang[lang] = overlay.attribute_labels || {};
         }
       });
     }
+
+    // Then, process information overlays for descriptions
+    const descriptionsByLang = {};
+    if (Array.isArray(informationOverlays)) {
+      informationOverlays.forEach((overlay) => {
+        if (overlay && overlay.language) {
+          descriptionsByLang[overlay.language] = overlay.attribute_information || {};
+        }
+      });
+    } else if (informationOverlays && typeof informationOverlays === "object") {
+      Object.entries(informationOverlays).forEach(([lang, overlay]) => {
+        if (overlay) {
+          descriptionsByLang[lang] = overlay.attribute_information || {};
+        }
+      });
+    }
+
+    // Combine both into lanAttributeRowData
+    // Convert language codes to language names for consistency with UI
+    const allLanguages = new Set([...Object.keys(labelsByLang), ...Object.keys(descriptionsByLang)]);
+    allLanguages.forEach((langCode) => {
+      const labels = labelsByLang[langCode] || {};
+      const descriptions = descriptionsByLang[langCode] || {};
+      
+      // Convert 2-letter OCA code (e.g., "en") to schema language name (e.g., "English")
+      // This ensures lanAttributeRowData keys match what LanguageDetails expects
+      const languageName = LanguageUtils.getSchemaLanguageFromUI(langCode) || langCode;
+      
+      lanAttributeRowData[languageName] = attributesWithLists.map((attr) => ({
+        Attribute: attr.Attribute,
+        Label: labels[attr.Attribute] || "",
+        Description: descriptions[attr.Attribute] || "",
+        List: attr.List
+      }));
+    });
 
     return lanAttributeRowData;
   }
@@ -428,8 +489,11 @@ export class OCAParser {
    * @private
    */
   static _processUnitOverlay(unitOverlay, attributesWithLists) {
-    if (unitOverlay?.attribute_unit) {
-      Object.entries(unitOverlay.attribute_unit).forEach(
+    // Standard OCA format: {attribute_units: {...}}
+    const unitData = unitOverlay?.attribute_units;
+    
+    if (unitData) {
+      Object.entries(unitData).forEach(
         ([attr, unit]) => {
           const attrData = attributesWithLists.find((a) => a.Attribute === attr);
           if (attrData) {
@@ -437,6 +501,21 @@ export class OCAParser {
           }
         }
       );
+    }
+  }
+
+  /**
+   * Process flagged_attributes to populate Sensitive field
+   * @private
+   */
+  static _processFlaggedAttributes(flaggedAttributes, attributesWithLists) {
+    if (Array.isArray(flaggedAttributes)) {
+      flaggedAttributes.forEach((attrName) => {
+        const attrData = attributesWithLists.find((a) => a.Attribute === attrName);
+        if (attrData) {
+          attrData.Sensitive = true;
+        }
+      });
     }
   }
 

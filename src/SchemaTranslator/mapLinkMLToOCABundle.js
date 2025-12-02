@@ -128,7 +128,7 @@ export function buildOverlays(slots, enums, linkmlSchema) {
     {
       name: "unit",
       type: "spec/overlays/unit/1.0",
-      key: "attribute_unit",
+      key: "attribute_units",  // Correct OCA spec field name (plural)
       data: Object.fromEntries(
         Object.entries(slots)
           .filter(([, slot]) => slot.unit?.ucum_code)
@@ -138,9 +138,22 @@ export function buildOverlays(slots, enums, linkmlSchema) {
   ];
 
   overlaySpecs.forEach(({ name, type, key, data }) => {
-    const overlay = buildOverlay(type, key, data);
-    if (overlay) {
-      overlays[name] = [overlay];
+    // Unit overlay is language-independent and not wrapped in array
+    if (name === "unit") {
+      if (Object.keys(data).length > 0) {
+        overlays[name] = {
+          type,
+          capture_base: "",
+          measurement_system: "Metric",  // Default to Metric for LinkML
+          [key]: data
+        };
+      }
+    } else {
+      // Language-dependent overlays (label, information, etc.) use buildOverlay
+      const overlay = buildOverlay(type, key, data);
+      if (overlay) {
+        overlays[name] = [overlay];
+      }
     }
   });
 
@@ -199,8 +212,16 @@ export function mapLinkMLToOCABundle(linkmlSchema) {
     .filter(([, slot]) => slot.annotations?.flagged)
     .map(([key]) => key);
 
-  // Define capture_base separately
+  // Generate a deterministic ID based on schema name or timestamp
+  const schemaId = linkmlSchema.name 
+    ? `linkml_${linkmlSchema.name}_${Date.now()}` 
+    : `linkml_schema_${Date.now()}`;
+  
+  const captureBaseId = `${schemaId}_capture_base`;
+
+  // Define capture_base separately with digest
   const capture_base = {
+    d: captureBaseId,
     type: "spec/capture_base/1.0",
     language: "en",
     attributes,
@@ -210,6 +231,7 @@ export function mapLinkMLToOCABundle(linkmlSchema) {
   const { overlays } = buildOverlays(slots, enums, linkmlSchema);
 
   return {
+    d: schemaId,
     capture_base,
     overlays
   };

@@ -120,7 +120,7 @@ export default function Grid({
         width: 150
       },
       {
-        field: "Flagged",
+        field: "Sensitive",
         headerComponent: FlaggedHeader,
         headerComponentParams: {
           gridRef

@@ -265,22 +265,21 @@ export default function ViewSchema({
   // readme hooks not used on this page
   // Show multi-schema visualization if:
   // 1. Current schema has Child Schema types (hasNestedSchemas)
-  // 2. Package has dependencies (viewing a child schema or multi-schema package)
-  // 3. There are multiple schemas in schemaStates
+  // 2. Package has actual dependencies (not just placeholder/empty dependencies)
   const hasHierarchy = useMemo(() => {
     if (hasNestedSchemas) return true;
     
-    // Check if package has dependencies
-    const hasDependencies = updatedOCAPackage?.dependencies?.length > 0 || 
-                           updatedOCAPackage?.oca_bundle?.dependencies?.length > 0;
-    if (hasDependencies) return true;
-    
-    // Check if there are multiple schemas in the system
-    const schemaCount = Object.keys(schemaStates || {}).length;
-    if (schemaCount > 1) return true;
+    // Check if package has dependencies with actual attributes
+    // Only show visualization if dependencies exist AND have actual content
+    const dependencies = updatedOCAPackage?.dependencies || updatedOCAPackage?.oca_bundle?.dependencies || [];
+    const hasActualDependencies = dependencies.length > 0 && dependencies.some(dep => {
+      const attributes = dep?.capture_base?.attributes || {};
+      return Object.keys(attributes).length > 0;
+    });
+    if (hasActualDependencies) return true;
     
     return false;
-  }, [hasNestedSchemas, updatedOCAPackage, schemaStates]);
+  }, [hasNestedSchemas, updatedOCAPackage]);
 
   // Update the package data when schemas are modified
   useEffect(() => {
@@ -315,12 +314,29 @@ export default function ViewSchema({
 
   // Load schema data when component mounts or when active schema changes
   useEffect(() => {
+    
     const loadSchemaData = async () => {
       try {
+        // Wait for schema initialization if OCA package exists but no currentSchemaId yet
+        if (OCAPackage && !currentSchemaId) {
+          setLoading(true);
+          return;
+        }
+
+        // CRITICAL FIX: Wait for schemaStates to contain the currentSchemaId
+        // When OCA package is uploaded, schemaStates updates asynchronously
+        // Use direct lookup to avoid stale getSchemaState closure
+        const currentSchema = schemaStates[currentSchemaId];
+        
+        if (OCAPackage && currentSchemaId && !currentSchema) {
+          setLoading(true);
+          return;
+        }
+
         setLoading(true);
 
-        // Use currentSchemaId for both OCA packages and manual creation
-        const schemaState = getSchemaState(currentSchemaId);
+        // Use direct lookup instead of getSchemaState to avoid stale closures
+        const schemaState = currentSchema || getSchemaState(currentSchemaId);
         
         if ((OCAPackage && currentSchemaId) || (!OCAPackage && schemaState && schemaState.attributes)) {
 
@@ -415,7 +431,7 @@ export default function ViewSchema({
               "Character Encoding": charEncoding,
               List: listObj,
               Unit: attr.Unit || "",
-              Flagged: attr.Flagged || false,
+              Flagged: attr.Sensitive || false,
               // Add range overlay fields
               LowerBound: rangeData?.LowerBound || "",
               UpperBound: rangeData?.UpperBound || "",
@@ -439,11 +455,9 @@ export default function ViewSchema({
       }
     };
 
-    const timer = setTimeout(() => {
-      loadSchemaData();
-    }, 100);
-
-    return () => clearTimeout(timer);
+    // Run immediately - no setTimeout
+    // The dependency array will cause re-runs when schemaStates updates
+    loadSchemaData();
   }, [
     currentSchemaId,
     OCAPackage,

@@ -167,9 +167,26 @@ const createDefaultSchemaState = () => ({
 export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   const PERSIST_VERSION = 2;
 
-  // Multi-schema state
-  const [schemaStates, setSchemaStates] = useState({});
+  // Multi-schema state - Use ref to persist across StrictMode remounts
+  const schemaStatesRef = useRef({});
+  const [schemaStates, _setSchemaStates] = useState({});
   const [currentSchemaId, setCurrentSchemaId] = useState(null);
+  
+  // Wrapper to keep ref in sync with state
+  const setSchemaStates = useCallback((updater) => {
+    _setSchemaStates(prevState => {
+      const newState = typeof updater === 'function' ? updater(prevState) : updater;
+      schemaStatesRef.current = newState; // Keep ref in sync
+      return newState;
+    });
+  }, []);
+  
+  // CRITICAL FIX: Restore from ref on mount (survives StrictMode remounts)
+  useEffect(() => {
+    if (Object.keys(schemaStates).length === 0 && Object.keys(schemaStatesRef.current).length > 0) {
+      _setSchemaStates(schemaStatesRef.current);
+    }
+  }, []); // Run only on mount
 
   // Step management callback
 
@@ -1161,20 +1178,25 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
     const schemaIds = [];
     
+    // Normalize package structure - handle both wrapped and unwrapped formats
+    const normalizedPackage = ocaPackage.oca_bundle ? ocaPackage : { oca_bundle: ocaPackage };
+    const bundle = normalizedPackage.oca_bundle?.bundle || ocaPackage.bundle;
+    const dependencies = normalizedPackage.oca_bundle?.dependencies || ocaPackage.dependencies;
+    
     // Add root schema
-    if (ocaPackage.bundle) {
-      const rootId = ocaPackage.bundle.d;
+    if (bundle) {
+      const rootId = bundle.d;
       if (rootId) {
-        addSchemaFromOCA(ocaPackage, rootId);
+        addSchemaFromOCA(normalizedPackage, rootId);
         schemaIds.push(rootId);
       }
     }
 
     // Add dependency schemas
-    if (ocaPackage.dependencies && Array.isArray(ocaPackage.dependencies)) {
-      ocaPackage.dependencies.forEach((dep) => {
+    if (dependencies && Array.isArray(dependencies)) {
+      dependencies.forEach((dep) => {
         if (dep.d) {
-          addSchemaFromOCA(ocaPackage, dep.d);
+          addSchemaFromOCA(normalizedPackage, dep.d);
           schemaIds.push(dep.d);
         }
       });
@@ -1274,9 +1296,17 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
   // Persistence functions
   const saveToLocalStorage = useCallback(() => {
+    // CRITICAL FIX: Use ref to get current value and don't save empty state during StrictMode remount
+    const currentSchemaStates = schemaStatesRef.current;
+    
+    // Don't save if schemaStates is empty (likely during StrictMode remount)
+    if (Object.keys(currentSchemaStates).length === 0) {
+      return;
+    }
+    
     const stateToSave = {
       version: PERSIST_VERSION,
-      schemaStates
+      schemaStates: currentSchemaStates
     };
 
     try {
@@ -1287,7 +1317,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     } catch (error) {
       // console.warn("Failed to save multi-schema state to localStorage:", error);
     }
-  }, [schemaStates]);
+  }, []); // No dependencies - using ref
 
   const loadFromLocalStorage = useCallback(() => {
     try {
@@ -1297,8 +1327,15 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       const parsed = JSON.parse(saved);
       if (parsed.version !== PERSIST_VERSION) return false;
 
-      setSchemaStates(parsed.schemaStates || {});
-
+      const savedSchemas = parsed.schemaStates || {};
+      const currentSchemas = schemaStatesRef.current;
+      
+      // CRITICAL FIX: Don't overwrite existing schemas with empty state
+      if (Object.keys(savedSchemas).length === 0 && Object.keys(currentSchemas).length > 0) {
+        return false;
+      }
+      
+      setSchemaStates(savedSchemas);
       return true;
     } catch (error) {
       // console.warn("Failed to load multi-schema state from localStorage:", error);

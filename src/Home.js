@@ -44,12 +44,9 @@ const Home = ({
   } = useMultiSchema();
   const { OCAPackage, overlay, setOverlay, isZip, setIsZipEdited } = useContext(Context);
 
-  // Try to load saved state when package is loaded
-  useEffect(() => {
-    if (OCAPackage) {
-      loadFromLocalStorage();
-    }
-  }, [OCAPackage, loadFromLocalStorage]);
+  // REMOVED: Auto-loading from localStorage on OCAPackage change
+  // This was causing newly uploaded schemas to be overwritten with old localStorage data
+  // The MultiSchemaContext now handles persistence automatically via auto-save/restore on mount
 
   // Ensure schema is initialized when entering via EDIT SCHEMA (old flow)
   useEffect(() => {
