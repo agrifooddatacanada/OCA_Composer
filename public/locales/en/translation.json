@@ -421,5 +421,12 @@
   "Section Label": "Section Label",
   "Section label for this language": "Section label for this language",
   "Drag into the form": "Drag into the form",
-  "Create interactive forms using drag-and-drop interface": "Create interactive forms using drag-and-drop interface"
+  "Create interactive forms using drag-and-drop interface": "Create interactive forms using drag-and-drop interface",
+  "Shown to users in forms. Available for Text, Array[Text], DateTime, Array[DateTime], Numeric, and Array[Numeric] types.": "Shown to users in forms. Available for Text, Array[Text], DateTime, Array[DateTime], Numeric, and Array[Numeric] types.",
+  "Question Labels": "Question Labels",
+  "Instructions/Commentary": "Instructions/Commentary",
+  "Additional instructions or commentary text that appears below the question label.": "Additional instructions or commentary text that appears below the question label.",
+  "Section Labels": "Section Labels",
+  "Page Labels": "Page Labels",
+  "Placeholder text to display when field is empty": "Placeholder text to display when field is empty"
 }
