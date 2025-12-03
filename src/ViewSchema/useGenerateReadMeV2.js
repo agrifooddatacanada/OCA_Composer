@@ -580,7 +580,7 @@ const useGenerateReadMeV2 = () => {
                 const attrOrder = page.attribute_order;
                 if (Array.isArray(attrOrder) && attrOrder.length > 0) {
                   if (typeof attrOrder[0] === "object") {
-                    formText += "attribute_order:\n";
+                    formText += "    attribute_order:\n";
                     attrOrder.forEach((subSection) => {
                       if (subSection.named_section) {
                         formText += `          - named_section: ${subSection.named_section}\n`;
@@ -589,14 +589,14 @@ const useGenerateReadMeV2 = () => {
                         Array.isArray(subSection.attribute_order) &&
                         subSection.attribute_order.length > 0
                       ) {
-                        formText += "attribute_order:\n";
+                        formText += "    attribute_order:\n";
                         subSection.attribute_order.forEach((attr) => {
                           formText += `              - ${attr}\n`;
                         });
                       }
                     });
                   } else {
-                    formText += "attribute_order:\n";
+                    formText += "    attribute_order:\n";
                     attrOrder.forEach((attr) => {
                       formText += `          - ${attr}\n`;
                     });
