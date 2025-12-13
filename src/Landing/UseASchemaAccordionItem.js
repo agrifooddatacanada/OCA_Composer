@@ -22,6 +22,7 @@ import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdown
 import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
+import { hasMultiSchemaStructure } from "../utils/schemaUtils";
 
 const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   const navigate = useNavigate();
@@ -46,8 +47,11 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
 
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
-  const navigateToMetadataPage = () => {
-    setCurrentPage("Metadata");
+  const navigateToEditSchema = () => {
+    // Multi-schema: show visualization to let user choose which schema to edit
+    // Single schema: go directly to editing
+    const targetPage = hasMultiSchemaStructure(OCAPackage) ? "View" : "Metadata";
+    setCurrentPage(targetPage);
     navigate("/start");
   };
 
@@ -151,7 +155,7 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
           <Button
             variant="contained"
             color="navButton"
-            onClick={navigateToMetadataPage}
+            onClick={navigateToEditSchema}
             sx={buttonStyles}
             disabled={disableButtonCheck}
           >

@@ -25,6 +25,7 @@ import CatalogueInfo from "../CatalogueInfo/CatalogueInfo";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
+import { hasMultiSchemaStructure } from "../utils/schemaUtils";
 
 const buttonStyles = {
   backgroundColor: CustomPalette.PRIMARY,
@@ -66,9 +67,12 @@ const AccordionList = () => {
     navigate("/start");
   };
 
-  const navigateToMetadataPage = () => {
+  const navigateToEditSchema = () => {
     setIsZip(false);
-    setCurrentPage("Metadata");
+    // Multi-schema: show visualization to let user choose which schema to edit
+    // Single schema: go directly to editing
+    const targetPage = hasMultiSchemaStructure(OCAPackage) ? "View" : "Metadata";
+    setCurrentPage(targetPage);
     navigate("/start");
   };
 
@@ -250,7 +254,7 @@ const AccordionList = () => {
             <Button
               variant="contained"
               color="navButton"
-              onClick={navigateToMetadataPage}
+              onClick={navigateToEditSchema}
               sx={buttonStyles}
               disabled={disableButtonCheck}
             >

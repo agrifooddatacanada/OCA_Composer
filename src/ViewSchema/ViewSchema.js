@@ -20,6 +20,7 @@ import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
 import { LanguageUtils } from "../utils/languageUtils";
+import { hasActualDependencies } from "../utils/schemaUtils";
 
 import Loading from "../components/Loading";
 import useOCAExport from "../hooks/useOCAExport";
@@ -268,17 +269,7 @@ export default function ViewSchema({
   // 2. Package has actual dependencies (not just placeholder/empty dependencies)
   const hasHierarchy = useMemo(() => {
     if (hasNestedSchemas) return true;
-    
-    // Check if package has dependencies with actual attributes
-    // Only show visualization if dependencies exist AND have actual content
-    const dependencies = updatedOCAPackage?.dependencies || updatedOCAPackage?.oca_bundle?.dependencies || [];
-    const hasActualDependencies = dependencies.length > 0 && dependencies.some(dep => {
-      const attributes = dep?.capture_base?.attributes || {};
-      return Object.keys(attributes).length > 0;
-    });
-    if (hasActualDependencies) return true;
-    
-    return false;
+    return hasActualDependencies(updatedOCAPackage);
   }, [hasNestedSchemas, updatedOCAPackage]);
 
   // Update the package data when schemas are modified

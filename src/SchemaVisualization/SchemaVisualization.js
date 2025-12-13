@@ -15,6 +15,7 @@ import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import SchemaVisualizationEmbed from "./SchemaVisualizationEmbed";
 import CustomPalette from "../constants/customPalette";
+import { hasMultiSchemaStructure } from "../utils/schemaUtils";
 import "./SchemaVisualization.css";
 
 /**
@@ -80,10 +81,7 @@ const SchemaVisualization = () => {
 
     // If we have a schema, process it
     if (currentSchema) {
-      const hasHierarchy =
-        currentSchema.dependencies && currentSchema.dependencies.length > 0;
-
-      if (!hasHierarchy) {
+      if (!hasMultiSchemaStructure(currentSchema)) {
         // No hierarchical structure, redirect to regular View Schema page (step 6)
         // Ensure the OCA package is set in context if we loaded from navigation state
         if (loadedSchema && !OCAPackage) {
