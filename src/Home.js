@@ -211,13 +211,17 @@ const Home = ({
         }
       }
 
-      // If leaving Entry Codes step, persist any edits before navigation
-      if (
-        currentPage === "Codes" &&
-        entryCodesRef.current &&
-        typeof entryCodesRef.current.save === "function"
-      ) {
-        entryCodesRef.current.save();
+      // If leaving Entry Codes step, validate and persist any edits before navigation
+      if (currentPage === "Codes") {
+        if (entryCodesRef.current && typeof entryCodesRef.current.validate === "function") {
+          const isValid = entryCodesRef.current.validate();
+          if (!isValid) {
+            return; // Validation failed, stay on current page
+          }
+        }
+        if (entryCodesRef.current && typeof entryCodesRef.current.save === "function") {
+          entryCodesRef.current.save();
+        }
       }
 
       // If leaving Language Details step, persist any edits before navigation

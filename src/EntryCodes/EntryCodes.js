@@ -62,12 +62,16 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   const codeRefs = useRef();
   const pageForwardDisabledRef = useRef(false);
   const [showWarning, setShowWarning] = useState(false);
+  const hasInitializedFromOverlays = useRef(false);
   
   // Local state for entry code grid data (schema-specific)
   const [localEntryCodeRowData, setLocalEntryCodeRowData] = useState([]);
 
   // Prefill entry codes from overlays on first load if schema state is empty
   useEffect(() => {
+    // Only run once - prevent repopulation when user edits data
+    if (hasInitializedFromOverlays.current) return;
+    
     try {
       const attrList = attributeRowData
         .filter((a) => a.List === true)
@@ -153,6 +157,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       });
       // Use local state instead of global
       setLocalEntryCodeRowData(alignedEntryCodesArray);
+      hasInitializedFromOverlays.current = true;
     } catch (_) {
       // silent
     }
@@ -211,20 +216,9 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       let rowsForAttr = Array.isArray(entryCodeRowData[attr])
         ? entryCodeRowData[attr]
         : null;
-      // If current rows exist but labels are missing, backfill from overlays
+      // If current rows exist, use them as-is (don't backfill from overlays to preserve user edits)
       if (Array.isArray(rowsForAttr) && rowsForAttr.length > 0) {
-        rowsForAttr = rowsForAttr.map((r) => {
-          const result = { ...r };
-          // Ensure all current languages have entries (use OCA codes as keys)
-          languages.forEach((languageName) => {
-            const ocaCode = LanguageUtils.getOCALanguageCode(languageName);
-            if (!result[ocaCode]) {
-              const label = overlayEntries?.[ocaCode]?.[attr]?.[r.Code] || "";
-              result[ocaCode] = label;
-            }
-          });
-          return result;
-        });
+        rowsForAttr = rowsForAttr.map((r) => ({ ...r }));
       }
       // If still no rows, try to build from overlays entirely
       if (!rowsForAttr) {
@@ -305,12 +299,23 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     });
 
     // setSavedEntryCodes(newEntryCodeObject);
+    // Validate only the "Code" field and the languages currently in the schema
     const values = Object.values(newEntryCodeObject);
     values.forEach((item) => {
       item.forEach((obj) => {
-        const values = Object.values(obj);
-        values.forEach((value) => {
-          if (!value) {
+        // Check Code field
+        if (!obj.Code) {
+          pageForwardDisabledRef.current = true;
+          setErrorMessage(t(errorMessages.fieldEmpty));
+          setTimeout(() => {
+            setErrorMessage("");
+          }, [2000]);
+          return;
+        }
+        // Check each language field - convert display name to OCA code (eng, fra, etc.)
+        languages.forEach((language) => {
+          const ocaCode = LanguageUtils.getOCALanguageCode(language);
+          if (!obj[ocaCode]) {
             pageForwardDisabledRef.current = true;
             setErrorMessage(t(errorMessages.fieldEmpty));
             setTimeout(() => {
@@ -349,9 +354,17 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     }
   };
 
-  // expose save method to parent (Home) so it can persist edits on navigation
+  // Validation method that can be called by parent - reuses handleSave validation
+  const validate = () => {
+    pageForwardDisabledRef.current = false;
+    handleSave();
+    return !pageForwardDisabledRef.current;
+  };
+
+  // expose save and validate methods to parent (Home) so it can persist edits and validate on navigation
   useImperativeHandle(ref, () => ({
-    save: handleSave
+    save: handleSave,
+    validate: validate
   }));
 
   const allCodesDisplay = selectedAttributesList.map((item, index) => (
