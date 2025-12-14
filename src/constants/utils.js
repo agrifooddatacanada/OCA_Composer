@@ -589,6 +589,8 @@ const fetchOCABundle = async (said) => {
 
 export const generateOCABundle = async (OCAFileData) => {
   try {
+    console.log("Sending text DSL to OCA repository:", OCAFileData.substring(0, 200) + "...");
+    
     const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles`, {
       method: "POST",
       headers: {
@@ -597,11 +599,28 @@ export const generateOCABundle = async (OCAFileData) => {
       body: OCAFileData
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to generate OCA bundle: ${response.statusText}`);
+    const responseData = await response.json();
+    console.log("OCA repository response:", responseData);
+
+    // Check for API-level errors (even with 200 status)
+    if (responseData.success === false || responseData.errors) {
+      console.error("API returned error response:", responseData);
+      const errorMessages = responseData.errors ? responseData.errors.join(", ") : "Unknown error";
+      throw new Error(`OCA Bundle generation failed: ${errorMessages}`);
     }
 
-    const { said } = await response.json();
+    if (!response.ok) {
+      console.error("API returned error status:", response.status, responseData);
+      throw new Error(`Failed to generate OCA bundle: ${response.statusText} - ${JSON.stringify(responseData)}`);
+    }
+
+    const { said } = responseData;
+    
+    if (!said) {
+      console.error("No SAID in response:", responseData);
+      throw new Error("API response missing SAID field");
+    }
+
     const bundle = await fetchOCABundle(said);
 
     return bundle;

@@ -3,6 +3,7 @@ import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import { languageCodesObject } from "../constants/isoCodes";
+import { LanguageUtils } from "../utils/languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -17,6 +18,10 @@ import {
   SENSITIVE,
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
+  FIELD_CHARACTER_ENCODING_OVERLAY,
+  FIELD_UNIT_FRAMING_OVERLAY,
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  FIELD_CARDINALITY_OVERLAY,
   RANGE,
   ATTRIBUTE_FRAMING,
   FORM,
@@ -56,7 +61,7 @@ const useOCAExport = () => {
   } = useContext(Context);
 
   // Get schema-specific data from MultiSchemaContext (single source of truth)
-  const { getCurrentSchemaId, getSchemaState, exportSchemaChanges } = useMultiSchema();
+  const { getCurrentSchemaId, getSchemaState, exportSchemaChanges, schemaStates, currentSchemaId: activeSchemaId } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchemaState(currentSchemaId);
   const metadata = schemaState?.metadata || {};
@@ -141,15 +146,94 @@ const useOCAExport = () => {
     URL.revokeObjectURL(url);
   };
 
-  // TEXT DSL GENERATION (from useExportLogicV2)
-  const buildOCAText = (data) => {
-    const OCADescriptionData = data[0];
-    const OCADataArray = data;
+  // Build OCA package from schema state using text DSL generation
+  // Works for both single schemas and multi-schema packages
+  const buildPackageFromTextDSL = async (targetSchemaId) => {
+    const targetState = getSchemaState(targetSchemaId);
+    const targetMetadata = targetState?.metadata || {};
     
+    // Extract data from target schema state
+    const targetLanguages = targetMetadata.languages || ["English"];
+    const targetAttributeRowData = targetState?.attributes || [];
+    const targetAttributesList = targetState?.attributesList || [];
+    const targetLanAttributeRowData = targetState?.lanAttributeRowData || {};
+    const targetSavedEntryCodes = targetState?.entryCodes || {};
+    const targetFormatRuleRowData = targetState?.formatRuleData || [];
+    const targetCharacterEncodingRowData = targetState?.characterEncodingData || {};
+    const cardinalityData = targetState?.cardinalityData || [];
+    const targetRangeRowData = targetState?.rangeData || [];
+    const targetAttributeFramingRowData = targetState?.attributeFramingData || [];
+    const targetUnitFramedRowData = targetState?.unitFramingData || [];
+    const targetOverlaySelections = targetState?.overlaySelections || overlay;
+    
+    // Get the actual schema from OCAPackage to find reference types
+    let targetSchema = null;
+    if (OCAPackage) {
+      if (OCAPackage.bundle?.d === targetSchemaId) {
+        targetSchema = OCAPackage.bundle;
+      } else if (OCAPackage.dependencies) {
+        targetSchema = OCAPackage.dependencies.find(dep => dep.d === targetSchemaId);
+      }
+    }
+    
+    // Build schemaDescription for target
+    const targetSchemaDescription = {};
+    targetLanguages.forEach((language) => {
+      const langKey = language.toLowerCase().substring(0, 3);
+      const localized = targetMetadata.localized?.[langKey] || {};
+      targetSchemaDescription[language] = {
+        name: localized.name || targetMetadata.name || "",
+        description: localized.description || targetMetadata.description || ""
+      };
+    });
+    
+    const targetAttributeListMap = targetAttributeRowData.reduce((acc, attr) => {
+      acc[attr.Attribute] = attr.List;
+      return acc;
+    }, {});
+    
+    // Prepare OCA data array for target schema
+    const OCADataArray = [];
+    const descriptionRow = targetLanguages.map((language) => ({
+      Language: language,
+      Name: targetSchemaDescription[language]?.name || "",
+      Description: targetSchemaDescription[language]?.description || ""
+    }));
+    OCADataArray.push(descriptionRow);
+
+    targetLanguages.forEach((language) => {
+      const rowData = [];
+      const lanRows = targetLanAttributeRowData[language] || [];
+      targetAttributeRowData.forEach((attrRow, index) => {
+        const rowObject = { Language: language, Attribute: attrRow.Attribute || "" };
+        const lanRow = lanRows[index] || {};
+        rowObject.Flagged = attrRow.Flagged ? "Y" : "";
+        rowObject.Unit = attrRow.Unit || "";
+        
+        // Convert "Child Schema" display type to OCA spec "Reference" type
+        let attrType = attrRow.Type || "";
+        if (attrType === "Child Schema") {
+          attrType = "Reference";
+        } else if (attrType === "Array[Child Schema]") {
+          attrType = "Array[Reference]";
+        }
+        rowObject.Type = attrType;
+        
+        rowObject.Label = lanRow.Label || "";
+        rowObject.Description = lanRow.Description || "";
+        rowObject.List = lanRow.List || (attrRow.List ? "" : "Not a List");
+        rowObject.Language = language;
+        rowData.push(rowObject);
+      });
+      OCADataArray.push(rowData);
+    });
+    
+    // Build text DSL for target schema (inline simplified version)
+    const OCADescriptionData = OCADataArray[0];
     const languagesWithCode = [];
     const allLanguageCodes = [];
 
-    languages.forEach((language) => {
+    targetLanguages.forEach((language) => {
       const languageObject = {};
       languageObject.language = language;
       languageObject.code =
@@ -176,10 +260,26 @@ const useOCAExport = () => {
     // Add attributes (capture base)
     buildText += "# add attributes (capture base) \n";
     buildText += "ADD Attribute";
-    attributesList.forEach((item, index) => {
-      const attributeType = Array.isArray(data[1][index].Type)
-        ? `Array[${data[1][index].Type[0]}]`
-        : data[1][index].Type;
+    targetAttributesList.forEach((item, index) => {
+      let attributeType = Array.isArray(OCADataArray[1][index].Type)
+        ? `Array[${OCADataArray[1][index].Type[0]}]`
+        : OCADataArray[1][index].Type;
+      
+      // Handle reference types - get actual refs:SAID or refn:name from original schema
+      if (attributeType === "Reference" || attributeType === "Array[Reference]") {
+        const originalValue = targetSchema?.capture_base?.attributes?.[item];
+        if (originalValue) {
+          // Use the actual refs:SAID or refn:name value from the schema
+          if (Array.isArray(originalValue)) {
+            // Array of references: ["refs:SAID"] or originalValue[0] is the ref string
+            attributeType = `Array[${originalValue[0]}]`;
+          } else {
+            // Single reference: just the refs:SAID or refn:name string
+            attributeType = originalValue;
+          }
+        }
+      }
+      
       buildText += ` ${item}=${attributeType}`;
     });
     buildText += "\n";
@@ -208,12 +308,12 @@ const useOCAExport = () => {
 
     // Add Format Overlay
     buildText += "# Add Format Overlay\n";
-    if (overlay[FIELD_FORMAT_OVERLAY].selected) {
+    if (targetOverlaySelections[FIELD_FORMAT_OVERLAY]?.selected) {
       let tempText = "";
-      formatRuleRowData.forEach((item, index) => {
-        const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText;
-        if (formatRule) {
-          tempText += ` ${attributesList[index]}="${formatRule.replace(/"/g, '\\"')}"`;
+      targetFormatRuleRowData.forEach((item) => {
+        const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText || item["Format Rule"];
+        if (formatRule && item.Attribute) {
+          tempText += ` ${item.Attribute}="${formatRule.replace(/"/g, '\\"')}"`;
         }
       });
       if (tempText !== "") {
@@ -225,25 +325,43 @@ const useOCAExport = () => {
 
     // Add Conformance Overlay
     buildText += "# Add Conformance Overlay\n";
-    let conformanceText = "";
-    attributesList.forEach((item, index) => {
-      if (overlay["Make selected entries required"].selected) {
-        conformanceText += ` ${item}=${characterEncodingRowData[index]["Make selected entries required"] ? "M" : "O"}`;
+    if (targetOverlaySelections["Make selected entries required"]?.selected) {
+      let conformanceText = "";
+      // Required status is stored in the attributes array
+      targetAttributesList.forEach((item) => {
+        const attr = targetAttributeRowData.find(a => a.Attribute === item);
+        const isRequired = attr?.Required;
+        conformanceText += ` ${item}=${isRequired ? "M" : "O"}`;
+      });
+      if (conformanceText !== "") {
+        buildText += `ADD CONFORMANCE ATTRS${conformanceText}\n`;
       }
-    });
-    if (conformanceText !== "") {
-      buildText += `ADD CONFORMANCE ATTRS${conformanceText}\n`;
+    }
+
+    // Add Cardinality Overlay
+    buildText += "# Add Cardinality Overlay\n";
+    if (targetOverlaySelections[FIELD_CARDINALITY_OVERLAY]?.selected && cardinalityData.length > 0) {
+      let cardinalityText = "";
+      cardinalityData.forEach((item) => {
+        const cardinalityValue = item.Cardinality || item.EntryLimit;
+        if (cardinalityValue && item.Attribute) {
+          cardinalityText += ` ${item.Attribute}="${cardinalityValue}"`;
+        }
+      });
+      if (cardinalityText !== "") {
+        buildText += `ADD CARDINALITY ATTRS${cardinalityText}\n`;
+      }
     }
 
     // Add label overlay
     buildText += "# Add label overlay";
     languagesWithCode.forEach((language) => {
       let labelText = "";
-      attributesList.forEach((item, index) => {
+      targetAttributesList.forEach((item, index) => {
         const languageIndex =
-          data.slice(1).findIndex((element) => element[0].Language === language.language) + 1;
-        if (data[languageIndex][index].Label && data[languageIndex][index].Label !== "") {
-          labelText += ` ${item}="${data[languageIndex][index].Label}"`;
+          OCADataArray.slice(1).findIndex((element) => element[0].Language === language.language) + 1;
+        if (OCADataArray[languageIndex][index].Label && OCADataArray[languageIndex][index].Label !== "") {
+          labelText += ` ${item}="${OCADataArray[languageIndex][index].Label}"`;
         }
       });
       if (labelText !== "") {
@@ -255,233 +373,179 @@ const useOCAExport = () => {
     // Add information overlay
     buildText += "# Add information overlay";
     languagesWithCode.forEach((language) => {
-      let infoText = "";
-      attributesList.forEach((item, index) => {
+      let informationText = "";
+      targetAttributesList.forEach((item, index) => {
         const languageIndex =
-          data.slice(1).findIndex((element) => element[0].Language === language.language) + 1;
-        if (data[languageIndex][index].Description && data[languageIndex][index].Description !== "") {
-          const parsedDescription = data[languageIndex][index].Description
-            .replace(/"/g, '\\"')
-            .replace(/'/g, "\\'");
-          infoText += ` ${item}="${parsedDescription}"`;
+          OCADataArray.slice(1).findIndex((element) => element[0].Language === language.language) + 1;
+        if (OCADataArray[languageIndex][index].Description && OCADataArray[languageIndex][index].Description !== "") {
+          informationText += ` ${item}="${OCADataArray[languageIndex][index].Description}"`;
         }
       });
-      if (infoText !== "") {
-        buildText += `\nADD Information ${language.code} ATTRS${infoText}`;
+      if (informationText !== "") {
+        buildText += `\nADD Information ${language.code} ATTRS${informationText}`;
       }
     });
     buildText += "\n";
 
     // Add entry code overlay
     buildText += "# Add entry code overlay\n";
+    
+    // First add ENTRY_CODE overlay with just the codes
     let entryCodesText = "";
-    attributesList.forEach((item) => {
-      let entryCodes = "";
-      if (attributeListMap[item] && savedEntryCodes[item]) {
-        for (const entry of savedEntryCodes[item]) {
-          entryCodes += `, "${entry.Code}"`;
-        }
-        entryCodesText += ` ${item}=[${entryCodes.slice(2)}]`;
+    targetAttributesList.forEach((item) => {
+      if (targetAttributeListMap[item] && targetSavedEntryCodes[item] && targetSavedEntryCodes[item].length > 0) {
+        const codes = targetSavedEntryCodes[item].map((entry) => `"${entry.Code}"`).join(", ");
+        entryCodesText += ` ${item}=[${codes}]`;
       }
     });
+    
     if (entryCodesText !== "") {
       buildText += `ADD ENTRY_CODE ATTRS${entryCodesText}\n`;
+      
+      // Then add ENTRY language overlays with code-to-label mappings
       languagesWithCode.forEach((language) => {
-        buildText += `ADD ENTRY ${language.code} ATTRS`;
-        attributesList.forEach((item) => {
-          if (savedEntryCodes[item]) {
+        let entryText = "";
+        targetAttributesList.forEach((item) => {
+          if (targetSavedEntryCodes[item] && targetSavedEntryCodes[item].length > 0) {
+            // Entry codes are stored with 3-letter OCA language codes (eng, fra, etc.)
+            // Use LanguageUtils to get the proper 3-letter code from schema language name
+            const threeLetterCode = LanguageUtils.getOCALanguageCode(language.language);
+            
             let entryString = "";
-            for (const entry of savedEntryCodes[item]) {
-              entryString += `, "${entry.Code}": "${entry[language.language]}"`;
+            for (const entry of targetSavedEntryCodes[item]) {
+              // Look up label using 3-letter OCA code
+              const label = entry[threeLetterCode] || "";
+              if (label) {
+                entryString += `, "${entry.Code}": "${label}"`;
+              }
             }
-            buildText += ` ${item}={${entryString.slice(2)}}`;
+            if (entryString) {
+              entryText += ` ${item}={${entryString.slice(2)}}`;
+            }
           }
         });
-        buildText += "\n";
+        // Only add the ENTRY line if there's actual content
+        if (entryText !== "") {
+          buildText += `ADD ENTRY ${language.code} ATTRS${entryText}\n`;
+        }
       });
     }
+    buildText += "\n";
 
-    // Add cardinality overlay
-    buildText += "# Add cardinality overlay\n";
-    if (overlay.Cardinality.selected) {
-      let isAdd = false;
-      let buildNewText = "";
-      if (cardinalityData.length > 0) {
-        cardinalityData.forEach((item) => {
-          if (item.EntryLimit && item.EntryLimit !== "") {
-            isAdd = true;
-            buildNewText += ` ${item.Attribute}="${item.EntryLimit}"`;
-          }
-        });
-      }
-      if (isAdd) {
-        buildText += "ADD CARDINALITY ATTRS";
-        buildText += buildNewText;
-        buildText += "\n";
-      }
-    }
-
-    // Add units overlay
-    buildText += "# Add units overlay\n";
-    let isAdd = false;
-    let buildNewText = "";
-    attributesList.forEach((item, index) => {
-      if (data[1][index].Unit && data[1][index].Unit !== "undefined") {
-        isAdd = true;
-        buildNewText += ` ${item}="${data[1][index].Unit}"`;
-      }
-    });
-    if (isAdd) {
-      buildText += "ADD Unit ATTRS";
-      buildText += buildNewText;
-      buildText += "\n";
-    }
-
-    // Add character encoding
-    buildText += "# Add character encoding\n";
-    isAdd = false;
-    buildNewText = "";
-    attributesList.forEach((item, index) => {
-      if (
-        characterEncodingRowData?.[index] &&
-        characterEncodingRowData?.[index]?.["Character Encoding"]
-      ) {
-        isAdd = true;
-        buildNewText += ` ${item}="${characterEncodingRowData[index]["Character Encoding"]}"`;
-      }
-    });
-    if (isAdd) {
-      buildText += "ADD CHARACTER_ENCODING ATTRS";
-      buildText += buildNewText;
-      buildText += "\n";
-    }
-
-    return buildText;
-  };
-
-  // Prepare OCA data array for text DSL generation
-  const prepareOCADataArray = () => {
-    const OCADataArray = [];
-    const OCADescriptionData = [];
-
-    // CAPTURE SHEET DESCRIPTIONS DATA
-    languages.forEach((language) => {
-      const rowObject = {};
-      rowObject.Language = language;
-      if (schemaDescription && schemaDescription[language]) {
-        rowObject.Name = schemaDescription[language].name || "Unknown";
-        rowObject.Description = schemaDescription[language].description || "Unknown";
-      } else {
-        rowObject.Name = "Unknown";
-        rowObject.Description = "Unknown";
-      }
-      OCADescriptionData.push(rowObject);
-    });
-    OCADataArray.push(OCADescriptionData);
-
-    // CAPTURE ATTRIBUTE SHEET DATA
-    languages.forEach((language) => {
-      const rowData = [];
-      attributesList.forEach((item, index) => {
-        const rowObject = {};
-        rowObject.Attribute = item;
-        const attrRow = attributeRowData[index] || {};
-        const lanRows = lanAttributeRowData?.[language] || [];
-        const lanRow = lanRows[index] || {};
-        rowObject.Flagged = attrRow.Flagged ? "Y" : "";
-        rowObject.Unit = attrRow.Unit || "";
-        rowObject.Type = attrRow.Type || "";
-        rowObject.Label = lanRow.Label || "";
-        rowObject.Description = lanRow.Description || "";
-        rowObject.List = lanRow.List || (attrRow.List ? "" : "Not a List");
-        rowObject.Language = language;
-        rowData.push(rowObject);
+    // Add character encoding overlay
+    buildText += "# Add character encoding overlay\n";
+    if (targetOverlaySelections[FIELD_CHARACTER_ENCODING_OVERLAY]?.selected) {
+      let encodingText = "";
+      targetAttributesList.forEach((item, index) => {
+        encodingText += ` ${item}=utf-8`;
       });
-      OCADataArray.push(rowData);
-    });
+      if (encodingText !== "") {
+        buildText += `ADD CHARACTER_ENCODING ATTRS${encodingText}\n`;
+      }
+    }
 
-    return OCADataArray;
-  };
-
-  // Build OCA package from current schema state using text DSL generation
-  const buildPackageFromTextDSL = async () => {
-    const OCADataArray = prepareOCADataArray();
-    const data = buildOCAText(OCADataArray);
+    const data = buildText;
 
     const filteredEntryCodes = {};
-    Object.entries(attributeListMap).forEach(([attribute, isList]) => {
-      if (isList && savedEntryCodes[attribute]) {
-        filteredEntryCodes[attribute] = savedEntryCodes[attribute];
+    Object.entries(targetAttributeListMap).forEach(([attribute, isList]) => {
+      if (isList && targetSavedEntryCodes[attribute]) {
+        filteredEntryCodes[attribute] = targetSavedEntryCodes[attribute];
       }
     });
 
     // Generate bundle from text DSL
     const bundle = await generateOCABundle(data);
 
-    const sensitiveAttributes = attributeRowData
+    // Debug logging
+    if (!bundle) {
+      console.error("generateOCABundle returned null/undefined");
+      console.error("Text DSL sent:", data);
+      throw new Error("generateOCABundle returned empty response");
+    }
+    
+    if (!bundle.bundle) {
+      console.error("Bundle structure missing .bundle property:", bundle);
+      throw new Error("Invalid bundle structure - missing .bundle property");
+    }
+
+    if (!bundle.bundle.capture_base) {
+      console.error("Bundle missing capture_base:", bundle.bundle);
+      throw new Error("Invalid bundle structure - missing capture_base");
+    }
+
+    const sensitiveAttributes = targetAttributeRowData
       .filter((item) => item.Flagged)
       .map((item) => item.Attribute);
 
-    const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
-    const retainedUniqueFramedUnits = currentUnitFramedRowData.filter((row) => !row.deleted);
+    const rangeOverlayInput = getRangeOverlayInput(targetRangeRowData, targetFormatRuleRowData);
+    const retainedUniqueFramedUnits = targetUnitFramedRowData.filter((row) => !row.deleted);
 
-    // Build extension overlays
     const extension_overlay_object = {
       ordering_overlay: {
         type: ORDERING,
-        attribute_ordering: attributesList,
+        attribute_ordering: targetAttributesList,
         entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
       },
-      ...(overlay["Unit Framing"].selected && {
-        unit_framing_overlay: {
-          type: UNIT_FRAMING,
-          properties: {
-            id: UNIT_FRAME_ID,
-            label: UNIT_FRAME_LABEL,
-            location: UNIT_FRAME_LOCATION,
-            version: UNIT_FRAME_VERSION
-          },
-          units: getUnitFramingInput(retainedUniqueFramedUnits)
-        }
-      }),
-      ...(overlay[FIELD_RANGE_OVERLAY].selected && {
-        range_overlay: {
-          type: RANGE,
-          attributes: rangeOverlayInput
-        }
-      }),
-      ...(sensitiveAttributes.length > 0 && {
-        sensitive_overlay: {
-          type: SENSITIVE,
-          sensitive_attributes: sensitiveAttributes
-        }
-      }),
-      ...(overlay["Attribute Framing"].selected &&
-        Object.keys(getAttributeFramingInput(attributeFramingRowData)).length > 0 && {
-          attribute_framing_overlay: {
-            type: ATTRIBUTE_FRAMING,
-            framing_metadata: {
-              id: "FOODON",
-              label: "Food Ontology",
-              location: "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl",
-              version: "1.0"
-            },
-            attributes: getAttributeFramingInput(attributeFramingRowData)
-          }
-        }),
-      ...(overlay[FIELD_FORM_INFORMATION_OVERLAY].selected &&
-        formBuilderPages &&
-        formBuilderPages.length > 0 && {
-          form_overlay: {
-            type: FORM,
-            ...getFormInformationInput(
-              formBuilderPages,
-              languages,
-              schemaDescription,
-              bundle.bundle.d
-            )
-          }
-        })
+      ...(targetOverlaySelections[FIELD_UNIT_FRAMING_OVERLAY]?.selected && retainedUniqueFramedUnits.length > 0
+        ? [
+            {
+              unit_framing_overlay: {
+                type: UNIT_FRAMING,
+                properties: {
+                  id: UNIT_FRAME_ID,
+                  label: UNIT_FRAME_LABEL,
+                  location: UNIT_FRAME_LOCATION,
+                  version: UNIT_FRAME_VERSION
+                },
+                units: getUnitFramingInput(retainedUniqueFramedUnits)
+              }
+            }
+          ]
+        : []),
+      ...(targetOverlaySelections[FIELD_RANGE_OVERLAY]?.selected
+        ? [
+            {
+              range_overlay: {
+                type: RANGE,
+                attributes: rangeOverlayInput
+              }
+            }
+          ]
+        : []),
+      ...(sensitiveAttributes.length > 0
+        ? [
+            {
+              sensitive_overlay: {
+                type: SENSITIVE,
+                sensitive_attributes: sensitiveAttributes
+              }
+            }
+          ]
+        : []),
+      ...(targetOverlaySelections[FIELD_ATTRIBUTE_FRAMING_OVERLAY]?.selected
+        ? [
+            {
+              attribute_framing_overlay: {
+                type: ATTRIBUTE_FRAMING,
+                attributes: getAttributeFramingInput(targetAttributeFramingRowData)
+              }
+            }
+          ]
+        : []),
+      ...(targetOverlaySelections[FIELD_FORM_INFORMATION_OVERLAY]?.selected
+        ? [
+            {
+              form_information_overlay: {
+                type: FORM,
+                pages: formBuilderPages.map((page) => ({
+                  ...page,
+                  schemaName: targetSchemaDescription[targetLanguages[0]]?.name || targetMetadata.name || "",
+                  schemaDigest: bundle.bundle.d
+                }))
+              }
+            }
+          ]
+        : [])
     };
 
     const extension_overlays = [extension_overlay_object];
@@ -493,11 +557,6 @@ const useOCAExport = () => {
       }
     };
 
-    // Validate bundle structure before creating package
-    if (!bundle || !bundle.bundle || !bundle.bundle.capture_base) {
-      throw new Error("Invalid bundle structure - missing capture_base");
-    }
-
     return { bundle, extension, textDSL: data };
   };
 
@@ -506,12 +565,39 @@ const useOCAExport = () => {
     try {
       setError("");
 
-      // For imported packages: Use exportSchemaChanges to merge edits into existing structure
+      // For imported packages: Build ALL schemas from UI state to get fresh SAID digests
+      // This matches agreeable-mushroom behavior - decompose bundle to UI state,
+      // then rebuild from scratch which naturally generates new SAIDs
       if (OCAPackage) {
-        const exportPackage = exportSchemaChanges(OCAPackage);
+        // Build package for each schema from its UI state (generates fresh SAIDs)
+        const schemaIds = Object.keys(schemaStates);
+        const schemaResults = await Promise.all(
+          schemaIds.map(async (schemaId) => {
+            const { bundle, extension, textDSL } = await buildPackageFromTextDSL(schemaId);
+            return { schemaId, bundle, extension, textDSL };
+          })
+        );
+
+        // Find root schema (always use the original package root, not current view)
+        const originalRootId = OCAPackage.bundle?.d;
+        const rootResult = schemaResults.find(r => r.schemaId === originalRootId);
+        const depResults = schemaResults.filter(r => r.schemaId !== originalRootId);
+
+        if (!rootResult) {
+          throw new Error("Could not find root schema");
+        }
+
+        // Build final export package with fresh SAIDs for all schemas
+        const exportPackage = {
+          oca_bundle: {
+            bundle: rootResult.bundle.bundle,
+            dependencies: depResults.map(dep => dep.bundle.bundle)
+          },
+          extensions: rootResult.extension.extensions
+        };
         
-        // Handle both package formats: {bundle: ...} and {oca_bundle: {bundle: ...}}
-        const bundle = exportPackage.oca_bundle?.bundle || exportPackage.bundle;
+        // Use root bundle for filename extraction
+        const bundle = rootResult.bundle.bundle;
         
         // Extract schema name from meta overlays for filename
         const metaOverlays = bundle?.overlays?.meta;
@@ -520,7 +606,7 @@ const useOCAExport = () => {
           : null;
         const schemaName = engMeta?.name || bundle?.d || "schema";
         
-        // Download OCA_package.json (the exportPackage already has the correct structure)
+        // Download OCA_package.json with regenerated digests
         const packageFileName = schemaName.split(" ")[0] + "_OCA_package.json";
         downloadJsonFile(exportPackage, packageFileName);
         
@@ -539,7 +625,7 @@ const useOCAExport = () => {
       }
 
       // For manual creation (flat OR nested): Build from text DSL + use exportSchemaChanges for child schemas
-      const { bundle, extension, textDSL } = await buildPackageFromTextDSL();
+      const { bundle, extension, textDSL } = await buildPackageFromTextDSL(currentSchemaId);
       
       // Create a temporary package structure for text DSL-based schema
       const tempPackage = {

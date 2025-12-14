@@ -318,10 +318,17 @@ const useGenerateReadMeV2 = () => {
       // TODO: Add support for extension overlays of nested schema bundles
       const overlays =
         ocaPackage.extensions?.[ADC]?.[json_bundle.capture_base.d]?.overlays;
-      manifest.push("\n");
-      Object.values(overlays).forEach((overlay) => {
-        manifest.push(`${overlay.type} SAID/digest: "${overlay.d}"\n`);
-      });
+      
+      // Extension overlays are in an array and don't have SAIDs
+      // Only add to manifest if overlays exist and have the old structure with SAIDs
+      if (overlays && !Array.isArray(overlays)) {
+        manifest.push("\n");
+        Object.values(overlays).forEach((overlay) => {
+          if (overlay.d) {
+            manifest.push(`${overlay.type} SAID/digest: "${overlay.d}"\n`);
+          }
+        });
+      }
     }
 
     text_file.push(...manifest);
@@ -401,8 +408,24 @@ const useGenerateReadMeV2 = () => {
 
       // For now, use the first set of ADC community extension overlays (associated with the main/top-level schema bundle)
       // TODO: Add support for extension overlays of nested schema bundle
-      const extensionOverlays =
-        ocaPackage.extensions[ADC][json_bundle.capture_base.d].overlays;
+      const extensionArray =
+        ocaPackage.extensions[ADC][json_bundle.capture_base.d];
+      
+      // Convert array of overlay objects to a flat object for backwards compatibility
+      const extensionOverlays = {};
+      if (Array.isArray(extensionArray)) {
+        extensionArray.forEach(overlayObj => {
+          Object.entries(overlayObj).forEach(([key, value]) => {
+            // Extract the overlay type from the key (e.g., "ordering_overlay" -> "ordering")
+            const overlayType = key.replace(/_overlay$/, '');
+            extensionOverlays[overlayType] = value;
+          });
+        });
+      } else if (extensionArray?.overlays) {
+        // Legacy structure with .overlays property
+        Object.assign(extensionOverlays, extensionArray.overlays);
+      }
+      
       if (Object.prototype.hasOwnProperty.call(extensionOverlays, "ordering")) {
         const orderingOverlay = extensionOverlays.ordering;
         const entryCodeOrdering = orderingOverlay?.entry_code_ordering || {};
