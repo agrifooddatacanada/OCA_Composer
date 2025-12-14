@@ -13,7 +13,7 @@ import NavigationCard from "../constants/NavigationCard";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import { languageNameToAlpha3Codes } from "../constants/isoCodes";
+import { LanguageUtils } from "../utils/languageUtils";
 import { removeSpacesFromObjectOfObjects } from "../constants/removeSpaces";
 import IntroCard from "./IntroCard";
 import IsoCard from "./IsoCard";
@@ -69,7 +69,7 @@ const SchemaMetadata = forwardRef(({
     languages.forEach(lang => {
       // Use the same ISO code conversion as when writing
       const langKey = lang.toLowerCase();
-      const langCode = languageNameToAlpha3Codes[langKey] || langKey.substring(0, 3);
+      const langCode = LanguageUtils.getOCALanguageCode(lang);
       const localized = metadata.localized?.[langCode] || {};
       
       result[lang] = { 
@@ -98,7 +98,7 @@ const SchemaMetadata = forwardRef(({
       Object.entries(newDescription).forEach(([langName, data]) => {
         // Use proper ISO 639-3 code conversion with fallback
         const langKey = langName.toLowerCase();
-        const langCode = languageNameToAlpha3Codes[langKey] || langKey.substring(0, 3);
+        const langCode = LanguageUtils.getOCALanguageCode(langName);
         
         localized[langCode] = {
           name: data.name || "",
@@ -137,7 +137,7 @@ const SchemaMetadata = forwardRef(({
     
     newLanguages.forEach(langName => {
       const langKey = langName.toLowerCase();
-      const langCode = languageNameToAlpha3Codes[langKey] || langKey.substring(0, 3);
+      const langCode = LanguageUtils.getOCALanguageCode(langName);
       
       // Only initialize if this language doesn't have an entry yet
       if (!updatedLocalized[langCode]) {

@@ -3,7 +3,8 @@
 import { useContext } from "react";
 import i18next from "i18next";
 import { Context } from "../App";
-import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
+import { codesToLanguages } from "../constants/isoCodes";
+import { LanguageUtils } from "../utils/languageUtils";
 import { DEFAULT_LANGUAGE_CODE } from "../constants/constants";
 import {
   downloadMarkdownFile,
@@ -62,6 +63,12 @@ const useGenerateMarkdownReadMe = () => {
     );
     const attributeNames = Object.keys(captureBaseOverlay.attributes);
 
+    // Build language code lookup map using LanguageUtils
+    const languageCodeLookupMap = {};
+    languages.forEach(lang => {
+      languageCodeLookupMap[lang.toLowerCase()] = LanguageUtils.getUILanguageCode(lang);
+    });
+
     fileContent += generateFrontMatter(metaOverlayCurrentLanguage, catalogueData);
     fileContent += generateSchemaInformation(
       metaOverlayCurrentLanguage,
@@ -77,9 +84,9 @@ const useGenerateMarkdownReadMe = () => {
     fileContent += generateInternationalSchemaInformation(
       layers,
       languages,
-      languageCodesObject
+      languageCodeLookupMap
     );
-    fileContent += generateEntryCodeTables(layers, languages, languageCodesObject);
+    fileContent += generateEntryCodeTables(layers, languages, languageCodeLookupMap);
     fileContent += generateLanguageIndependentSchemaDetailsTable({
       layers,
       captureBaseOverlay,
@@ -89,7 +96,7 @@ const useGenerateMarkdownReadMe = () => {
       layers,
       attributeNames,
       languages,
-      languageCodeLookupMap: languageCodesObject
+      languageCodeLookupMap
     });
     fileContent += generateSAIDTable(captureBaseSAID, layerToSAIDMap);
     fileContent += generateCreationTimestamp();

@@ -2,7 +2,6 @@ import { useContext, useMemo, useState } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import { languageCodesObject } from "../constants/isoCodes";
 import { LanguageUtils } from "../utils/languageUtils";
 import {
   ADC,
@@ -237,7 +236,7 @@ const useOCAExport = () => {
       const languageObject = {};
       languageObject.language = language;
       languageObject.code =
-        languageCodesObject[language.toLowerCase()] ||
+        LanguageUtils.getUILanguageCode(language) ||
         customIsos[language.toLowerCase()] ||
         "unknown";
 

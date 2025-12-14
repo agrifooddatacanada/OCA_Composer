@@ -3,9 +3,9 @@ import i18next from "i18next";
 import { Context } from "../App";
 import {
   codesToLanguages,
-  languageNameToAlpha3Codes,
   toThreeLetterCode
 } from "../constants/isoCodes";
+import { LanguageUtils } from "../utils/languageUtils";
 import {
   ADC,
   DEFAULT_THREE_LETTER_LANGUAGE_CODE,
@@ -133,6 +133,12 @@ const useGenerateMarkdownReadMeFromJson = () => {
       catalogueData,
       OCAPackage
     );
+    // Build language code lookup map using LanguageUtils
+    const languageCodeLookupMap = {};
+    languages.forEach(lang => {
+      languageCodeLookupMap[lang.toLowerCase()] = LanguageUtils.getOCALanguageCode(lang);
+    });
+
     fileContent += generateSchemaQuickView({
       layers,
       attributeNames,
@@ -142,12 +148,12 @@ const useGenerateMarkdownReadMeFromJson = () => {
     fileContent += generateInternationalSchemaInformation(
       layers,
       languages,
-      languageNameToAlpha3Codes
+      languageCodeLookupMap
     );
     fileContent += generateEntryCodeTables(
       layers,
       languages,
-      languageNameToAlpha3Codes,
+      languageCodeLookupMap,
       orderingOverlay
     );
     fileContent += generateLanguageIndependentSchemaDetailsTable({
@@ -167,7 +173,7 @@ const useGenerateMarkdownReadMeFromJson = () => {
       layers,
       attributeNames,
       languages,
-      languageCodeLookupMap: languageNameToAlpha3Codes,
+      languageCodeLookupMap,
       orderingOverlay
     });
     fileContent += generateSAIDTableForJson(

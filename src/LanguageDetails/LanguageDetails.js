@@ -9,7 +9,7 @@ import CustomPalette from "../constants/customPalette";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
-import { codesToLanguages, languageNameToAlpha3Codes } from "../constants/isoCodes";
+import { codesToLanguages } from "../constants/isoCodes";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import { LanguageUtils } from "../utils/languageUtils";
 
@@ -114,7 +114,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       if (langData.length > 0) {
         // Convert language name to ISO 639-2 (3-letter) code for overlay
         // Use the existing languageNameToAlpha3Codes mapping
-        const languageCode = languageNameToAlpha3Codes[language.toLowerCase()] || 
+        const languageCode = LanguageUtils.getOCALanguageCode(language) || 
                              language.toLowerCase().slice(0, 3); // Fallback to first 3 chars
         
         const attributeLabels = {};

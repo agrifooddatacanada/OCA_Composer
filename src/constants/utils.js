@@ -3,9 +3,9 @@ import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
 import {
   codesToLanguages,
-  alpha3CodesToTwoLetterCodes,
-  languageNameToAlpha3Codes
+  alpha3CodesToTwoLetterCodes
 } from "./isoCodes";
+import { LanguageUtils } from "../utils/languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -516,7 +516,7 @@ export const getFormInformationInput = (
   captureBase
 ) => {
   const threeLetterCodes = languages.map(
-    (lang) => languageNameToAlpha3Codes[lang.toLowerCase()] || lang
+    (lang) => LanguageUtils.getOCALanguageCode(lang)
   );
 
   const schemaName = {};

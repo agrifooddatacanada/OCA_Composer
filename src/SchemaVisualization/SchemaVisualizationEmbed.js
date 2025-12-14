@@ -17,7 +17,8 @@ import { useTranslation } from "react-i18next";
 import { PlaceholderNode, DetailedNode, TreeNode } from "./CustomNodes";
 import { generateTreeLayout, generateDetailedLayout } from "./layoutGenerators";
 import { extractSchemaDataFromPackage } from "./dataUtils";
-import { toThreeLetterCode, codesToLanguages, languageNameToAlpha3Codes } from "../constants/isoCodes";
+import { toThreeLetterCode, codesToLanguages } from "../constants/isoCodes";
+import { LanguageUtils } from "../utils/languageUtils";
 import CustomPalette from "../constants/customPalette";
 import Spinner from "../components/Spinner";
 
@@ -157,13 +158,12 @@ const SchemaVisualizationEmbed = ({
     if (schemaLanguageOverride) {
       // Schema-specific language override (from schema language buttons)
       // schemaLanguageOverride is a full language name like "French", "English"
-      // Convert to lowercase for lookup in languageNameToAlpha3Codes
-      languageCode = languageNameToAlpha3Codes[schemaLanguageOverride.toLowerCase()] || "eng";
+      languageCode = LanguageUtils.getOCALanguageCode(schemaLanguageOverride);
     } else {
       // Primary: Use i18n app language (from EN/FR toggle)
       const i18nLanguageName = codesToLanguages?.[i18n.language.split("-")[0]];
       if (i18nLanguageName) {
-        languageCode = languageNameToAlpha3Codes[i18nLanguageName.toLowerCase()] || "eng";
+        languageCode = LanguageUtils.getOCALanguageCode(i18nLanguageName);
       } else {
         languageCode = toThreeLetterCode(i18n.language.split("-")[0]) || "eng";
       }

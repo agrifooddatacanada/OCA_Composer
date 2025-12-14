@@ -17,7 +17,7 @@ import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { MAX_ATTR_DESCRIPTION_CHARS, MAX_ATTR_LABEL_CHARS } from "../constants/constants";
-import { languageNameToAlpha3Codes } from "../constants/isoCodes";
+import { LanguageUtils } from "../utils/languageUtils";
 
 const textareaStyle = {
   width: "100%",
@@ -268,7 +268,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           const existingAttributes = updatedLanData[language].map(item => item.Attribute);
           effectiveAttributesList.forEach((attr) => {
             if (!existingAttributes.includes(attr)) {
-              const overlayLangKey = languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
+              const overlayLangKey = LanguageUtils.getOCALanguageCode(language);
               const infoByLang = schemaOverlay.information || {};
               updatedLanData[language].push({
                 Attribute: attr,
@@ -295,14 +295,13 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       // Recompute from scratch for the current schema to avoid leaking rows across schemas
       const newLanAttributeRowData = {};
       languages.forEach((language) => {
-        const overlayLang =
-          languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
+        const overlayLang = LanguageUtils.getOCALanguageCode(language);
         
         const newLanguageList = [];
         effectiveAttributesList.forEach((item) => {
           // Use saved entry codes for List display (no fallback to avoid flickering)
           const overlayLangKey =
-            languageNameToAlpha3Codes[`${language}`.toLowerCase()] || language;
+            LanguageUtils.getOCALanguageCode(language);
           const entryCodesForItem = entryCodesMap?.[item] || [];
 
           const listDisplayArray = entryCodesForItem

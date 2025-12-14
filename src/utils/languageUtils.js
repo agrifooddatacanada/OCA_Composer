@@ -34,6 +34,18 @@ export const LanguageUtils = {
   },
 
   /**
+   * Convert schema language name to 2-letter UI language code
+   * @param {string} schemaLanguageName - Full name like "English", "French"
+   * @returns {string} 2-letter code like "en", "fr", defaults to "en"
+   */
+  getUILanguageCode(schemaLanguageName) {
+    if (!schemaLanguageName) return "en";
+    
+    const normalizedName = schemaLanguageName.toLowerCase();
+    return languageCodesObject[normalizedName] || "en";
+  },
+
+  /**
    * Convert schema language name to 3-letter OCA language code
    * @param {string} schemaLanguageName - Full name like "English", "French"
    * @returns {string} 3-letter code like "eng", "fra", defaults to "eng"

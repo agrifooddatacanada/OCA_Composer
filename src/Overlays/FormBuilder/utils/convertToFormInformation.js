@@ -1,4 +1,4 @@
-import { languageNameToAlpha3Codes } from "../../../constants/isoCodes";
+import { LanguageUtils } from "../../../utils/languageUtils";
 
 const getQuestionTypeInfo = (attributeType) => {
   const type = attributeType || "";
@@ -147,7 +147,7 @@ export const convertToFormInformationOverlay = (
   // Convert language names to three-letter codes for the overlay structure
   const threeLetterCodes = languages.map((lang) => {
     if (lang.length === 3) return lang;
-    return languageNameToAlpha3Codes[lang.toLowerCase()] || lang;
+    return LanguageUtils.getOCALanguageCode(lang);
   });
 
   threeLetterCodes.forEach((lang) => {
