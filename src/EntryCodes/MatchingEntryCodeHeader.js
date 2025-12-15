@@ -1,6 +1,8 @@
 import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { Context } from '../App';
+import { useMultiSchema } from '../context/MultiSchemaContext';
+import { LanguageUtils } from '../utils/languageUtils';
 import { Box, MenuItem } from '@mui/material';
 import { gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
@@ -59,7 +61,17 @@ export const DataHeaderRenderer = memo(
 );
 
 const MatchingEntryCodeHeader = () => {
-  const { setCurrentPage, entryCodeHeaders, languages, tempEntryCodeRowData, chosenEntryCodeIndex, setEntryCodeRowData } = useContext(Context);
+  const { setCurrentPage, entryCodeHeaders, languages, tempEntryCodeRowData, chosenEntryCodeIndex } = useContext(Context);
+  
+  // Use MultiSchemaContext for schema-specific entry codes
+  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState(currentSchemaId);
+  const attributeRowData = schemaState?.attributes || [];
+  
+  // Get the attribute name for the chosen index
+  const listAttributes = attributeRowData.filter(attr => attr.List === true);
+  const targetAttributeName = listAttributes[chosenEntryCodeIndex]?.Attribute;
+  
   const [matchingEntryCodes, setMatchingEntryCodes] = useState([]);
   const gridRef = useRef();
 
@@ -88,22 +100,33 @@ const MatchingEntryCodeHeader = () => {
         const newRow = {};
         for (const assign of assignedData) {
           for (const lang of matchingEntryCodeMap[assign]) {
-            newRow[lang] = row[assign];
+            // Convert language name to OCA code (e.g., "English" -> "eng")
+            // Keep "Code" as is
+            const langKey = lang === "Code" ? "Code" : LanguageUtils.getOCALanguageCode(lang);
+            newRow[langKey] = row[assign];
           }
         }
+        // Ensure all languages have a key (using OCA codes)
         for (const lang of newLanguages) {
-          if (!(lang in newRow)) {
-            newRow[lang] = '';
+          const langKey = lang === "Code" ? "Code" : LanguageUtils.getOCALanguageCode(lang);
+          if (!(langKey in newRow)) {
+            newRow[langKey] = '';
           }
         }
         newRowData.push(newRow);
       }
     }
-    setEntryCodeRowData(prev => {
-      const newEntryCodeRowData = [...prev];
-      newEntryCodeRowData[chosenEntryCodeIndex] = newRowData;
-      return newEntryCodeRowData;
-    });
+    
+    // Save to MultiSchemaContext using attribute name as key
+    if (targetAttributeName) {
+      const currentEntryCodes = schemaState?.entryCodes || {};
+      updateSchemaState(currentSchemaId, {
+        entryCodes: {
+          ...currentEntryCodes,
+          [targetAttributeName]: newRowData
+        }
+      });
+    }
     setCurrentPage('Codes');
   };
 

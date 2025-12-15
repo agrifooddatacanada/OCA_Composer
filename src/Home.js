@@ -6,6 +6,9 @@ import StartSchema from "./StartSchema/StartSchema";
 import SchemaMetadata from "./SchemaMetadata/SchemaMetadata";
 import AttributeDetails from "./AttributeDetails/AttributeDetails";
 import EntryCodes from "./EntryCodes/EntryCodes";
+import UploadEntryCodesPage from "./EntryCodes/UploadPage";
+import MatchingEntryCodeHeader from "./EntryCodes/MatchingEntryCodeHeader";
+import MatchingJSONEntryCodeHeader from "./EntryCodes/MatchingJSONEntryCodeHeader";
 import LanguageDetails from "./LanguageDetails/LanguageDetails";
 import ViewSchema from "./ViewSchema/ViewSchema";
 import CreateManually from "./CreateManually/CreateManually";
@@ -362,6 +365,9 @@ const Home = ({
             pageForward={pageForward}
           />
         )}
+        {currentPage === "UploadEntryCodes" && <UploadEntryCodesPage />}
+        {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
+        {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
 
         {currentPage === "LanguageDetails" && (
           <LanguageDetails 

@@ -1,6 +1,8 @@
 import React, { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContext } from 'react';
 import { Context } from '../App';
+import { useMultiSchema } from '../context/MultiSchemaContext';
+import { LanguageUtils } from '../utils/languageUtils';
 import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { AgGridReact } from 'ag-grid-react';
@@ -60,7 +62,17 @@ export const DataHeaderRenderer = memo(
 );
 
 const MatchingJSONEntryCodeHeader = () => {
-  const { tempEntryCodeSummary, tempEntryList, languages, setCurrentPage, setEntryCodeRowData, chosenEntryCodeIndex, attributeRowData } = useContext(Context);
+  const { tempEntryCodeSummary, tempEntryList, languages, setCurrentPage, chosenEntryCodeIndex } = useContext(Context);
+  
+  // Use MultiSchemaContext for schema-specific data
+  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState(currentSchemaId);
+  const attributeRowData = schemaState?.attributes || [];
+  
+  // Get the attribute name for the chosen index
+  const listAttributes = attributeRowData.filter(attr => attr.List === true);
+  const targetAttributeName = listAttributes[chosenEntryCodeIndex]?.Attribute;
+  
   const [languageList, setLanguageList] = useState([]);
   const [attributeList, setAttributeList] = useState([]);
   const [matchingLanguages, setMatchingLanguages] = useState([]);
@@ -124,18 +136,26 @@ const MatchingJSONEntryCodeHeader = () => {
       for (const code of entryCodes) {
         const newObj = { Code: code };
         for (const lang of languages) {
+          // Convert language name to OCA code (e.g., "English" -> "eng")
+          const langKey = LanguageUtils.getOCALanguageCode(lang);
           const correspondingHeader = matchingData.find(item => item.lang === lang)?.matchingDataHeader;
           const correspondingEntryCodes = tempEntryList.find(item => item.language === correspondingHeader);
           const value = correspondingEntryCodes?.['attribute_entries']?.[attrValue]?.[code];
-          newObj[lang] = value ? value : '';
+          newObj[langKey] = value ? value : '';
         }
         newEntryCodeRowData.push(newObj);
       }
-      setEntryCodeRowData(prev => {
-        const newData = [...prev];
-        newData[chosenEntryCodeIndex] = newEntryCodeRowData;
-        return newData;
-      });
+      
+      // Save to MultiSchemaContext using attribute name as key
+      if (targetAttributeName) {
+        const currentEntryCodes = schemaState?.entryCodes || {};
+        updateSchemaState(currentSchemaId, {
+          entryCodes: {
+            ...currentEntryCodes,
+            [targetAttributeName]: newEntryCodeRowData
+          }
+        });
+      }
       setCurrentPage('Codes');
     }
   };
