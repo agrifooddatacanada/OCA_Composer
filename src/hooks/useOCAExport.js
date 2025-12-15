@@ -608,7 +608,7 @@ const useOCAExport = () => {
         
         // Generate README_OCA_schema.txt
         if (bundle?.overlays?.meta) {
-          await jsonToTextFile(bundle, exportPackage);
+          await jsonToTextFile(bundle, exportPackage, schemaDescription);
         }
         
         // Download OCA_bundle.json only on testing site
@@ -640,7 +640,7 @@ const useOCAExport = () => {
       // Generate and download text readme
       try {
         if (finalPackage.bundle?.capture_base) {
-          await jsonToTextFile(finalPackage.bundle, ocaPackage);
+          await jsonToTextFile(finalPackage.bundle, ocaPackage, schemaDescription);
         }
       } catch (readmeError) {
         console.warn("Could not generate README:", readmeError);

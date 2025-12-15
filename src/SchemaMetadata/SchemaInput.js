@@ -37,90 +37,82 @@ export default function SchemaInput({
         ? "fra"
         : language?.toLowerCase();
 
-  // Get the schema state metadata - this is the source of truth for edits
-  const metaState = currentSchemaId ? getSchemaState(currentSchemaId)?.metadata : null;
-  const metaLocalized = metaState?.localized || {};
-
-  // Get the schema name and description for the current language
-  // Use metadata.localized as the primary source, only fall back to OCA package on initial load
-  const hasLocalizedData = metaLocalized && Object.keys(metaLocalized).length > 0;
+  // Get schema data from MultiSchemaContext (works for both manual and imported schemas)
+  // MultiSchemaContext handles null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
+  const schemaState = getSchemaState(currentSchemaId) || {};
+  const metaState = schemaState.metadata || {};
+  const metaLocalized = metaState.localized || {};
   
+  // Priority: localized metadata > OCA package data (on initial load) > empty string
   let schemaName = "";
   let currentSchemaDescription = "";
   
-  if (hasLocalizedData) {
-    // If we have localized metadata, use it (this includes user edits, even if empty string)
-    schemaName = metaLocalized[langKey]?.name !== undefined ? metaLocalized[langKey].name : "";
-    currentSchemaDescription = metaLocalized[langKey]?.description !== undefined ? metaLocalized[langKey].description : "";
-  } else if (currentSchemaId) {
-    // Only on initial load, fall back to OCA package data
+  if (metaLocalized[langKey]) {
+    // Use localized data for this language from schema state
+    schemaName = metaLocalized[langKey]?.name ?? "";
+    currentSchemaDescription = metaLocalized[langKey]?.description ?? "";
+  } else if (OCAPackage && currentSchemaId) {
+    // Fall back to OCA package data on initial load (imported schemas only)
     const currentSchemaData = getSchemaDataById(OCAPackage, currentSchemaId, langKey);
-    schemaName = currentSchemaData?.schemaName || currentSchemaId;
+    schemaName = currentSchemaData?.schemaName || "";
     currentSchemaDescription = currentSchemaData?.schemaDescription || "";
   }
+  // else: both remain empty strings (brand new, no data yet)
 
   // Debug logs removed to reduce console noise during schema-aware editing
 
   const handleNameField = (e) => {
-    e.preventDefault();
-
     const newText = e.target.value;
-
-    // Always update multi-schema context
-    const targetId = currentSchemaId;
-    if (targetId) {
-      const st = getSchemaState(targetId) || {};
-      const prevMeta = st.metadata || {};
-      const prevLoc = prevMeta.localized || {};
-      const nextLocalized = {
-        ...prevLoc,
-        [langKey]: { ...(prevLoc[langKey] || {}), name: newText }
+    
+    // Trust MultiSchemaContext to handle null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
+    const st = getSchemaState(currentSchemaId) || {};
+    const prevMeta = st.metadata || {};
+    const prevLoc = prevMeta.localized || {};
+    const nextLocalized = {
+      ...prevLoc,
+      [langKey]: { ...(prevLoc[langKey] || {}), name: newText }
+    };
+    // Ensure we always have localized structure, initialize English if missing
+    if (!nextLocalized.eng) {
+      nextLocalized.eng = {
+        name: prevMeta.name || newText,
+        description: prevMeta.description || ""
       };
-      // Ensure we always have localized structure, initialize English if missing
-      if (!nextLocalized.eng) {
-        nextLocalized.eng = {
-          name: prevMeta.name || newText,
-          description: prevMeta.description || ""
-        };
-      }
-      // Only update the global name field if editing English (primary language)
-      const nextMeta =
-        langKey === "eng"
-          ? { ...prevMeta, name: newText, localized: nextLocalized }
-          : { ...prevMeta, localized: nextLocalized };
-      updateSchemaState(targetId, { metadata: nextMeta });
     }
+    // Only update the global name field if editing English (primary language)
+    const nextMeta =
+      langKey === "eng"
+        ? { ...prevMeta, name: newText, localized: nextLocalized }
+        : { ...prevMeta, localized: nextLocalized };
+    
+    updateSchemaState(currentSchemaId, { metadata: nextMeta });
   };
 
   const handleDescriptionField = (e) => {
-    e.preventDefault();
-
     const newText = e.target.value;
-
-    // Always update multi-schema context
-    const targetId = currentSchemaId;
-    if (targetId) {
-      const st = getSchemaState(targetId) || {};
-      const prevMeta = st.metadata || {};
-      const prevLoc = prevMeta.localized || {};
-      const nextLocalized = {
-        ...prevLoc,
-        [langKey]: { ...(prevLoc[langKey] || {}), description: newText }
+    
+    // Trust MultiSchemaContext to handle null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
+    const st = getSchemaState(currentSchemaId) || {};
+    const prevMeta = st.metadata || {};
+    const prevLoc = prevMeta.localized || {};
+    const nextLocalized = {
+      ...prevLoc,
+      [langKey]: { ...(prevLoc[langKey] || {}), description: newText }
+    };
+    // Ensure we always have localized structure, initialize English if missing
+    if (!nextLocalized.eng) {
+      nextLocalized.eng = {
+        name: prevMeta.name || "",
+        description: prevMeta.description || newText
       };
-      // Ensure we always have localized structure, initialize English if missing
-      if (!nextLocalized.eng) {
-        nextLocalized.eng = {
-          name: prevMeta.name || "",
-          description: prevMeta.description || newText
-        };
-      }
-      // Only update the global description field if editing English (primary language)
-      const nextMeta =
-        langKey === "eng"
-          ? { ...prevMeta, description: newText, localized: nextLocalized }
-          : { ...prevMeta, localized: nextLocalized };
-      updateSchemaState(targetId, { metadata: nextMeta });
     }
+    // Only update the global description field if editing English (primary language)
+    const nextMeta =
+      langKey === "eng"
+        ? { ...prevMeta, description: newText, localized: nextLocalized }
+        : { ...prevMeta, localized: nextLocalized };
+    
+    updateSchemaState(currentSchemaId, { metadata: nextMeta });
   };
 
   const handleDelete = () => {

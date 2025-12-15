@@ -168,11 +168,11 @@ const SchemaMetadata = forwardRef(({
   const validateSchemaMetadata = useCallback(() => {
     const spacesArray = [];
 
-    // Check metadata from schema state directly to handle both formats
+    // MultiSchemaContext handles both manual (null schemaId) and imported schemas
+    // via MANUAL_CREATION_SCHEMA_ID fallback
     const metadata = schemaState?.metadata || {};
     const localized = metadata.localized || {};
     
-    // For uploaded schemas, check the localized metadata structure
     if (Object.keys(localized).length > 0) {
       // Validate that at least one language has both name and description filled
       let hasValidLanguage = false;
@@ -207,33 +207,6 @@ const SchemaMetadata = forwardRef(({
         
         if (missingName) spacesArray.push('Name of Schema');
         if (missingDescription) spacesArray.push('Description');
-      }
-    } else {
-      // Fallback: check schemaDescription object for manual creation
-      const noSpacesObject = removeSpacesFromObjectOfObjects(schemaDescription);
-      
-      languages.forEach((language) => {
-        const languageData = noSpacesObject[language];
-        if (languageData && typeof languageData === 'object') {
-          // Check each field individually and report which field is blank
-          Object.entries(languageData).forEach(([fieldName, value]) => {
-            // Check for empty, null, undefined, or whitespace-only strings
-            const trimmedValue = typeof value === 'string' ? value.trim() : value;
-            if (!trimmedValue || trimmedValue === '') {
-              const fieldDisplayName = fieldName === 'name' ? 'Name of Schema' : 
-                                     fieldName === 'description' ? 'Description' : 
-                                     toTitleCase(fieldName);
-              if (!spacesArray.includes(fieldDisplayName)) {
-                spacesArray.push(fieldDisplayName);
-              }
-            }
-          });
-        }
-      });
-      
-      // Trim spaces and update state only if there were changes
-      if (JSON.stringify(noSpacesObject) !== JSON.stringify(schemaDescription)) {
-        setSchemaDescription(noSpacesObject);
       }
     }
     

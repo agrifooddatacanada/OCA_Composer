@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useMemo } from "react";
 import {
   Button,
   Dialog,
@@ -18,6 +18,8 @@ import { Context } from "../App";
 import { CreateDataEntryExcel } from "./CreateDataEntryExcel";
 import { getDescriptiveFileName } from "../constants/utils";
 import { useTranslation } from "react-i18next";
+import { useMultiSchema } from "../context/MultiSchemaContext";
+import { LanguageUtils } from "../utils/languageUtils";
 
 const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) => {
   let workbook = null;
@@ -58,7 +60,24 @@ const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) =>
 
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
   const { t } = useTranslation();
-  const { languages, schemaDescription } = useContext(Context);
+  const { languages } = useContext(Context);
+  const { currentSchemaId, getSchemaState } = useMultiSchema();
+  
+  // Build schemaDescription from MultiSchemaContext
+  const schemaDescription = useMemo(() => {
+    const schemaState = getSchemaState(currentSchemaId) || {};
+    const metadata = schemaState.metadata || {};
+    const result = {};
+    languages.forEach((language) => {
+      const langKey = LanguageUtils.getOCALanguageCode(language);
+      const localized = metadata.localized?.[langKey] || {};
+      result[language] = {
+        name: localized.name || metadata.name || "",
+        description: localized.description || metadata.description || ""
+      };
+    });
+    return result;
+  }, [currentSchemaId, getSchemaState, languages]);
   const appearAnimation =
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
 

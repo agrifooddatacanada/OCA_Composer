@@ -584,7 +584,7 @@ const useExportLogicV2 = () => {
       // Generate and download text readme (wrapped in try-catch to not block the download)
       try {
         if (bundle?.bundle?.capture_base) {
-          await jsonToTextFile(bundle.bundle, ocaPackage);
+          await jsonToTextFile(bundle.bundle, ocaPackage, schemaDescription);
         }
       } catch (readmeError) {
         console.warn("Could not generate README:", readmeError);

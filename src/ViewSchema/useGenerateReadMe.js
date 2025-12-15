@@ -26,8 +26,7 @@ For the OCA_BUNDLE, each section between rows of ****'s contains the details of 
 END_REFERENCE_MATERIAL\n\n`;
 
 const useGenerateReadMe = () => {
-  const { schemaDescription } = useContext(Context);
-  const toTextFile = async (jsonFilesArray) => {
+  const toTextFile = async (jsonFilesArray, schemaDescription = null) => {
     // declare the variables
     const textFile = [];
     const variablesArray = [];

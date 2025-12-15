@@ -31,8 +31,7 @@ For the OCA_BUNDLE, each section between rows of ****'s contains the details of 
 END_REFERENCE_MATERIAL\n\n`;
 
 const useGenerateReadMeV2 = () => {
-  const { schemaDescription } = useContext(Context);
-  const jsonToTextFile = async (jsonData, ocaPackage = null) => {
+  const jsonToTextFile = async (jsonData, ocaPackage = null, schemaDescription = null) => {
     // Step 1: --- Read json schema bundle
     const json_bundle = jsonData;
 
