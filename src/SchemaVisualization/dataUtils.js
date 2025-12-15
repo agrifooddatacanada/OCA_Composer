@@ -141,10 +141,10 @@ export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
 
   // Extract labels from the bundle's overlays - no LDAD merging needed
   // LDAD changes will be saved directly to overlays by the Language Details component
-  const labelOverlay =
-    normalizedPackage.bundle.overlays?.label?.find((l) => l.language === language) ||
-    normalizedPackage.bundle.overlays?.label?.[0] ||
-    {};
+  const labelOverlays = normalizedPackage.bundle.overlays?.label;
+  const labelOverlay = Array.isArray(labelOverlays)
+    ? (labelOverlays.find((l) => l.language === language) || labelOverlays[0] || {})
+    : (labelOverlays || {});
   const labels = labelOverlay.attribute_labels || {};
 
   return {

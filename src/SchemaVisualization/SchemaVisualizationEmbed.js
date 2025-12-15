@@ -293,54 +293,14 @@ const SchemaVisualizationEmbed = ({
         // setCurrentSchemaId(bundle.d);
       }
     } else {
-      // Fallback test nodes if no multilevel schema data
-      const testNodes = [
-        {
-          id: "root",
-          type: "detailedLR",
-          position: { x: 0, y: 0 },
-          data: {
-            title: "Parent Schema",
-            fields: [
-              { name: "attribute1", type: "Text" },
-              { name: "child_ref", type: "Child Schema" }
-            ],
-            nodeType: "root"
-          }
-        },
-        {
-          id: "child",
-          type: "detailedLR",
-          position: { x: 300, y: 100 },
-          data: {
-            title: "Child Schema",
-            fields: [
-              { name: "child_attr1", type: "Text" },
-              { name: "child_attr2", type: "Numeric" }
-            ],
-            nodeType: "reference"
-          }
-        }
-      ];
-      const testEdges = [
-        {
-          id: "root-child",
-          source: "root",
-          target: "child",
-          sourceHandle: "child_ref",
-          type: "default"
-        }
-      ];
-      setNodes(testNodes);
-      setEdges(testEdges);
-      setHasData(true);
-      setTimeout(() => {
-        if (reactFlowInstanceRef.current) {
-          reactFlowInstanceRef.current.fitView({ padding: 0.1, duration: 300 });
-        }
-      }, 150);
+      // No OCA package available - show message or empty state
+      // This should not happen if ViewSchema properly exports schema changes
+      console.warn("SchemaVisualizationEmbed: No valid OCA package data available for visualization");
+      setNodes([]);
+      setEdges([]);
+      setHasData(false);
     }
-  }, [getOCAPackage, generateLayout, OCAPackage]);
+  }, [getOCAPackage, generateLayout, OCAPackage, currentSchemaId, setCurrentSchemaId]);
 
   return (
     <Box
