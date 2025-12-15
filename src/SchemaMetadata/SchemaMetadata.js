@@ -173,41 +173,46 @@ const SchemaMetadata = forwardRef(({
     const metadata = schemaState?.metadata || {};
     const localized = metadata.localized || {};
     
-    if (Object.keys(localized).length > 0) {
-      // Validate that at least one language has both name and description filled
-      let hasValidLanguage = false;
+    // If no localized data exists yet, both name and description are missing
+    if (Object.keys(localized).length === 0) {
+      spacesArray.push('Name of Schema');
+      spacesArray.push('Description');
+      return spacesArray;
+    }
+    
+    // Validate that at least one language has both name and description filled
+    let hasValidLanguage = false;
+    
+    Object.entries(localized).forEach(([langCode, langData]) => {
+      if (langData && typeof langData === 'object') {
+        const name = typeof langData.name === 'string' ? langData.name.trim() : langData.name;
+        const description = typeof langData.description === 'string' ? langData.description.trim() : langData.description;
+        
+        // If this language has both fields filled, mark as valid
+        if (name && name !== '' && description && description !== '') {
+          hasValidLanguage = true;
+        }
+      }
+    });
+    
+    // Only report errors if NO language has complete data
+    if (!hasValidLanguage) {
+      // Check what's specifically missing
+      let missingName = true;
+      let missingDescription = true;
       
       Object.entries(localized).forEach(([langCode, langData]) => {
         if (langData && typeof langData === 'object') {
           const name = typeof langData.name === 'string' ? langData.name.trim() : langData.name;
           const description = typeof langData.description === 'string' ? langData.description.trim() : langData.description;
           
-          // If this language has both fields filled, mark as valid
-          if (name && name !== '' && description && description !== '') {
-            hasValidLanguage = true;
-          }
+          if (name && name !== '') missingName = false;
+          if (description && description !== '') missingDescription = false;
         }
       });
       
-      // Only report errors if NO language has complete data
-      if (!hasValidLanguage) {
-        // Check what's specifically missing
-        let missingName = true;
-        let missingDescription = true;
-        
-        Object.entries(localized).forEach(([langCode, langData]) => {
-          if (langData && typeof langData === 'object') {
-            const name = typeof langData.name === 'string' ? langData.name.trim() : langData.name;
-            const description = typeof langData.description === 'string' ? langData.description.trim() : langData.description;
-            
-            if (name && name !== '') missingName = false;
-            if (description && description !== '') missingDescription = false;
-          }
-        });
-        
-        if (missingName) spacesArray.push('Name of Schema');
-        if (missingDescription) spacesArray.push('Description');
-      }
+      if (missingName) spacesArray.push('Name of Schema');
+      if (missingDescription) spacesArray.push('Description');
     }
     
     return spacesArray;
