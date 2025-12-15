@@ -26,7 +26,6 @@ import Loading from "../components/Loading";
 import useOCAExport from "../hooks/useOCAExport";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
-import { getDescriptiveFileName } from "../constants/utils";
 
 import { codesToLanguages } from "../constants/isoCodes";
 
@@ -54,9 +53,6 @@ export default function ViewSchema({
   const { 
     currentTheme,
     languages,
-    schemaDescription,
-    attributeRowData,
-    lanAttributeRowData,
     isZip, 
     isZipEdited,
     setIsZipEdited,
@@ -65,10 +61,7 @@ export default function ViewSchema({
     setHistory,
     zipToReadme,
     jsonToReadme,
-    OCAPackage,
-    rangeRowData,
-    attributeFramingRowData,
-    formBuilderPages
+    OCAPackage
   } = useContext(Context);
 
   // Multi-schema context
@@ -204,8 +197,7 @@ export default function ViewSchema({
     exportData,
     error: exportError,
     clearError,
-    hasNestedSchemas,
-    isImportedPackage
+    hasNestedSchemas
   } = useOCAExport();
   
   // Export is never disabled in view mode
@@ -218,18 +210,6 @@ export default function ViewSchema({
   const [visualizationMode, setVisualizationMode] = useState("detailed"); // "detailed" for left-right, "tree" for top-down
   const [updatedOCAPackage, setUpdatedOCAPackage] = useState(OCAPackage);
   const [vizVersion, setVizVersion] = useState(0);
-
-  // Helper for form information - check which attributes are used in forms
-  const usedAttributesInForm = React.useMemo(() => {
-    const used = new Set();
-    (formBuilderPages || []).forEach((page) => {
-      (page.questions || []).forEach((q) => q?.attribute && used.add(q.attribute));
-      (page.sections || []).forEach((s) =>
-        (s.questions || []).forEach((q) => q?.attribute && used.add(q.attribute))
-      );
-    });
-    return used;
-  }, [formBuilderPages]);
 
   // Enhanced schema switching with proper navigation
   const handleSchemaSwitch = useCallback(
