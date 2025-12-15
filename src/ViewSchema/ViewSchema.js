@@ -77,6 +77,7 @@ export default function ViewSchema({
     switchToSchema,
     exportSchemaChanges,
     getSchemaState,
+    updateSchemaState,
     schemaStates
   } = useMultiSchema();
 
@@ -274,13 +275,59 @@ export default function ViewSchema({
 
   // Update the package data when schemas are modified
   useEffect(() => {
-    if (!OCAPackage) return;
-    // Always regenerate a derived package from current multi-schema state
-    const modifiedPackage = exportSchemaChanges(OCAPackage);
+    let basePackage = OCAPackage;
+    
+    // If no OCA package exists (manual creation), create a minimal skeleton
+    if (!basePackage) {
+      // CRITICAL: Always use "manual-creation-schema" as the root for manual creation
+      // Do NOT use currentSchemaId here - that could be a child schema if user is editing one
+      // The hierarchy must always start from the root schema
+      const rootSchemaId = "manual-creation-schema";
+      const rootState = schemaStates[rootSchemaId];
+      
+      if (!rootState) {
+        setUpdatedOCAPackage(null);
+        return;
+      }
 
+      // Mark schema as initialized so exportSchemaChanges will process it
+      if (!rootState.initialized) {
+        updateSchemaState(rootSchemaId, { initialized: true });
+        // Since state update is async, also update the local ref for immediate use
+        schemaStates[rootSchemaId] = { ...rootState, initialized: true };
+      }
+
+      // Create minimal skeleton package - exportSchemaChanges will populate it
+      basePackage = {
+        bundle: {
+          d: rootSchemaId,
+          capture_base: {
+            d: rootSchemaId,
+            type: "spec/capture_base/1.0",
+            classification: "",
+            attributes: {}  // Empty - will be filled by exportSchemaChanges
+          },
+          overlays: {
+            meta: [{
+              type: "spec/overlays/meta/1.0",
+              language: "eng",
+              name: "",
+              description: ""
+            }],
+            label: [],  // Empty array to prevent .find() errors
+            information: []  // Empty array to prevent .find() errors
+          }
+        },
+        dependencies: []
+      };
+    }
+
+    // UNIFIED CODE PATH: exportSchemaChanges handles both imported and manual schemas
+    // It converts "Child Schema" -> refn:name and builds dependencies automatically
+    const modifiedPackage = exportSchemaChanges(basePackage);
     setUpdatedOCAPackage(modifiedPackage);
     setVizVersion((v) => v + 1);
-  }, [OCAPackage, schemaStates, exportSchemaChanges, currentSchemaId, getSchemaState]);
+  }, [OCAPackage, schemaStates, exportSchemaChanges, currentSchemaId, updateSchemaState]);
 
   // Removed in favor of global language toggle (EN/FR)
 
@@ -848,7 +895,6 @@ export default function ViewSchema({
               <Suspense fallback={<Loading />}>
                 <SchemaVisualizationEmbed
                   key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
-                  schemaDescription={schemaDescription}
                   schemaLanguageOverride={getCurrentLanguage()}
                   OCAPackage={updatedOCAPackage}
                   viewMode={visualizationMode}
