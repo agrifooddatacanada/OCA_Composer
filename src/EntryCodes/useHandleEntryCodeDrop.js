@@ -12,6 +12,7 @@ import Papa from "papaparse";
 import { MenuItem } from "@mui/material";
 import { messages } from "../constants/messages";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import { getCurrentData } from "../constants/utils";
 import { ADC } from "../constants/constants";
 
@@ -28,11 +29,29 @@ const useHandleEntryCodeDrop = () => {
     setChosenEntryCodeIndex,
     setTempEntryCodeSummary,
     setTempEntryList,
-    attributeRowData,
-    entryCodeRowData,
-    setEntryCodeRowData,
     chosenEntryCodeIndex
   } = useContext(Context);
+  
+  // Use MultiSchemaContext for schema-specific data
+  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState(currentSchemaId);
+  
+  // Get attribute and entry code data from schema state
+  const attributeRowData = useMemo(
+    () => schemaState?.attributes || [],
+    [schemaState?.attributes]
+  );
+  const entryCodeRowData = useMemo(
+    () => schemaState?.entryCodes || {},
+    [schemaState?.entryCodes]
+  );
+  
+  // Update entry codes in schema state
+  const setEntryCodeRowData = useCallback((updater) => {
+    const currentEntryCodes = schemaState?.entryCodes || {};
+    const newEntryCodes = typeof updater === 'function' ? updater(currentEntryCodes) : updater;
+    updateSchemaState(currentSchemaId, { entryCodes: newEntryCodes });
+  }, [currentSchemaId, schemaState?.entryCodes, updateSchemaState]);
   const [rawFile, setRawFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
@@ -219,12 +238,15 @@ const useHandleEntryCodeDrop = () => {
         setCurrentPage("MatchingJSONEntryCodes");
       }
     } else {
-      const fromIndex = unfilteredAttrRef.current.indexOf(selectedAttrToCopy);
-      setEntryCodeRowData((prev) => {
-        const newObj = [...prev];
-        newObj[chosenEntryCodeIndex] = newObj[fromIndex].map((obj) => ({ ...obj }));
-        return newObj;
-      });
+      // Copy entry codes from one attribute to another (using attribute names as keys)
+      const targetAttr = unfilteredAttrRef.current[chosenEntryCodeIndex];
+      const sourceEntryCodes = entryCodeRowData[selectedAttrToCopy];
+      if (targetAttr && Array.isArray(sourceEntryCodes)) {
+        setEntryCodeRowData((prev) => ({
+          ...prev,
+          [targetAttr]: sourceEntryCodes.map((obj) => ({ ...obj }))
+        }));
+      }
       setCurrentPage("Codes");
     }
   };
@@ -291,14 +313,20 @@ const useHandleEntryCodeDrop = () => {
 
   useEffect(() => {
     const unfilteredAttributes = attributeRowData.filter((item) => item.List === true);
+    // Filter to only show attributes that have entry codes and aren't the currently selected one
     const filteredAttributes = unfilteredAttributes.filter(
-      (_, index) =>
-        index !== chosenEntryCodeIndex && entryCodeRowData[index]?.[0]?.Code !== ""
+      (item, index) => {
+        const attrEntryCodes = entryCodeRowData[item.Attribute];
+        return index !== chosenEntryCodeIndex && 
+               Array.isArray(attrEntryCodes) && 
+               attrEntryCodes.length > 0 && 
+               attrEntryCodes[0]?.Code !== "";
+      }
     );
     const attributeArray = filteredAttributes.map((item) => item.Attribute);
     unfilteredAttrRef.current = unfilteredAttributes.map((item) => item.Attribute);
     setSelectedAttributesList(attributeArray);
-  }, [attributeRowData]);
+  }, [attributeRowData, entryCodeRowData, chosenEntryCodeIndex]);
 
   return {
     rawFile,
