@@ -264,12 +264,16 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
   }
 
   // If it's a placeholder field name (like q9) - check if it exists in the root schema's refn fields
-  if (ocaPackage.bundle?.capture_base?.attributes) {
-    const rootAttributes = ocaPackage.bundle.capture_base.attributes;
+  const { getPackageBundle, getPackageDependencies } = require("../utils/packageUtils");
+  const bundle = getPackageBundle(ocaPackage);
+  const deps = getPackageDependencies(ocaPackage);
+  
+  if (bundle?.capture_base?.attributes) {
+    const rootAttributes = bundle.capture_base.attributes;
     for (const [key, value] of Object.entries(rootAttributes)) {
       if (typeof value === "string" && value.startsWith("refn:") && key === schemaId) {
         // Check if this placeholder schema now has actual attributes in dependencies
-        const dependencyWithAttributes = ocaPackage.dependencies?.find((dep) => {
+        const dependencyWithAttributes = deps?.find((dep) => {
           const metaOverlay =
             dep.overlays?.meta?.find((m) => m.language === language) ||
             dep.overlays?.meta?.[0];

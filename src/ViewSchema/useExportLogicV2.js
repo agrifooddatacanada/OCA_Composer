@@ -1,6 +1,7 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useCallback, useState } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
+import { getPackageBundle } from "../utils/packageUtils";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import { LanguageUtils } from "../utils/languageUtils";
 import {
@@ -468,8 +469,8 @@ const useExportLogicV2 = () => {
       // Check if we're working with a pre-existing OCA package from upload
       // Note: Even for existing packages, we regenerate on export to ensure consistency
       // and avoid digest verification issues with the oca_package library
-      const hasExistingOCAPackage =
-        OCAPackage && OCAPackage.bundle && OCAPackage.bundle.d;
+      const existingBundle = getPackageBundle(OCAPackage);
+      const hasExistingOCAPackage = OCAPackage && existingBundle && existingBundle.d;
 
       if (hasExistingOCAPackage) {
         // console.log("Regenerating OCA package for export to ensure consistency");

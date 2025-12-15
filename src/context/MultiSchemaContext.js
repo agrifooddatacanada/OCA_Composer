@@ -394,7 +394,8 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       const modifiedPackage = JSON.parse(JSON.stringify(ocaPackage));
 
       // Handle both package formats: direct { bundle, dependencies } or wrapped { oca_bundle: { bundle, dependencies } }
-      const bundle = modifiedPackage.oca_bundle?.bundle || modifiedPackage.bundle;
+      const { getPackageBundle } = require("../utils/packageUtils");
+      const bundle = getPackageBundle(modifiedPackage);
       const dependencies = modifiedPackage.oca_bundle?.dependencies || modifiedPackage.dependencies;
 
       // Apply changes to all schemas that have been initialized

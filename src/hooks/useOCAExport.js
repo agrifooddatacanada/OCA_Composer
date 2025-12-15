@@ -3,6 +3,7 @@ import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import { LanguageUtils } from "../utils/languageUtils";
+import { getPackageBundle, getPackageDependencies, findSchemaById, getPackageBundleId } from "../utils/packageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -168,11 +169,7 @@ const useOCAExport = () => {
     // Get the actual schema from OCAPackage to find reference types
     let targetSchema = null;
     if (OCAPackage) {
-      if (OCAPackage.bundle?.d === targetSchemaId) {
-        targetSchema = OCAPackage.bundle;
-      } else if (OCAPackage.dependencies) {
-        targetSchema = OCAPackage.dependencies.find(dep => dep.d === targetSchemaId);
-      }
+      targetSchema = findSchemaById(OCAPackage, targetSchemaId);
     }
     
     // Build schemaDescription for target
@@ -578,7 +575,7 @@ const useOCAExport = () => {
         );
 
         // Find root schema (always use the original package root, not current view)
-        const originalRootId = OCAPackage.bundle?.d;
+        const originalRootId = getPackageBundleId(OCAPackage);
         const rootResult = schemaResults.find(r => r.schemaId === originalRootId);
         const depResults = schemaResults.filter(r => r.schemaId !== originalRootId);
 

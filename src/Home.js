@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
 import "./App.css";
 import { Box, Typography } from "@mui/material";
+import { getPackageBundle, getPackageBundleId } from "./utils/packageUtils";
 import StartSchema from "./StartSchema/StartSchema";
 import SchemaMetadata from "./SchemaMetadata/SchemaMetadata";
 import AttributeDetails from "./AttributeDetails/AttributeDetails";
@@ -51,7 +52,7 @@ const Home = ({
   // Ensure schema is initialized when entering via EDIT SCHEMA (old flow)
   useEffect(() => {
     if (OCAPackage && !currentSchemaId) {
-      const rootSchemaId = OCAPackage.bundle?.d;
+      const rootSchemaId = getPackageBundleId(OCAPackage);
       if (rootSchemaId) {
         switchToSchema(rootSchemaId, OCAPackage);
       }
@@ -60,8 +61,9 @@ const Home = ({
 
   // Normalize and load overlay data from OCAPackage so LanguageDetails has labels/lists
   useEffect(() => {
-    if (!OCAPackage?.bundle?.overlays) return;
-    const pkgOverlays = OCAPackage.bundle.overlays;
+    const bundle = getPackageBundle(OCAPackage);
+    if (!bundle?.overlays) return;
+    const pkgOverlays = bundle.overlays;
     const newOverlay = {};
 
     // Labels: array to { lang3: { attr: label } }

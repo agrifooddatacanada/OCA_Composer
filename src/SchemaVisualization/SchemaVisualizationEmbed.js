@@ -280,7 +280,8 @@ const SchemaVisualizationEmbed = ({
     const ocaPackage = getOCAPackage();
 
     // Handle both package formats: { bundle, dependencies } or { oca_bundle: { bundle, dependencies } }
-    const bundle = ocaPackage?.oca_bundle?.bundle || ocaPackage?.bundle;
+    const { getPackageBundle } = require("../utils/packageUtils");
+    const bundle = getPackageBundle(ocaPackage);
 
     if (ocaPackage && bundle) {
       generateLayout();

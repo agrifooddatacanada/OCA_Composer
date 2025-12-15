@@ -85,7 +85,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       if (!completeSchema) return;
       
       // Navigate to the bundle overlays (handles both bundle and oca_bundle wrapper)
-      const bundleData = completeSchema.oca_bundle?.bundle || completeSchema.bundle || completeSchema;
+      const { getPackageBundle } = require("../utils/packageUtils");
+      const bundleData = getPackageBundle(completeSchema) || completeSchema;
       const overlays = bundleData?.overlays;
       if (!overlays) return;
 
