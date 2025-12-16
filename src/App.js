@@ -101,6 +101,7 @@ function App() {
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
   const [attributesWithLists, setAttributesWithLists] = useState([]);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
+  const [formPlaceholdersByLanguage, setFormPlaceholdersByLanguage] = useState({});
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
   const [currentSchemaId, setCurrentSchemaId] = useState(null);
@@ -108,6 +109,8 @@ function App() {
 
   // Use for Overlays
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
+  const [FormInformationRowData, setFormInformationRowData] = useState([]);
+  const [formBuilderPages, setFormBuilderPages] = useState([]);
   const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(overlayItems);
   const [selectedOverlay, setSelectedOverlay] = useState("");
@@ -695,6 +698,8 @@ function App() {
               setSavedEntryCodes,
               lanAttributeRowData,
               setLanAttributeRowData,
+              formPlaceholdersByLanguage,
+              setFormPlaceholdersByLanguage,
               setCurrentPage,
               history,
               setHistory,
@@ -704,6 +709,10 @@ function App() {
               setIsZip,
               characterEncodingRowData,
               setCharacterEncodingRowData,
+              FormInformationRowData,
+              setFormInformationRowData,
+              formBuilderPages,
+              setFormBuilderPages,
               formatRuleRowData,
               setFormatRuleRowData,
               dataStandardsRowData,
@@ -811,7 +820,8 @@ function App() {
               setCurrentSchemaId,
               editingSchemaId,
               setEditingSchemaId,
-              currentTheme
+              currentTheme,
+              setCurrentTheme
             }}
           >
             <Box

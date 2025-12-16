@@ -337,7 +337,7 @@
   "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine.": "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine.",
   "Download legacy .zip bundle": "Download legacy .zip bundle",
   "In March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip.": "In March, OCA package is coming to the Semantic Engine. All tools still work the same way, but you will download your OCA schema as a .json instead of .zip.",
-  "AttributeDisallowedCharErrorMessage": "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes, plus, percent",
+  "AttributeDisallowedCharErrorMessage": "Attribute names cannot have the following characters: spaces, commas, slashes, parentheses, apostrophes, colon, plus, percent",
   "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: .": "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: .",
   "Clear OCA File": "Clear OCA File",
   "Click here to select an OCA File (.txt) or drag and drop one here": "Click here to select an OCA File (.txt) or drag and drop one here",
@@ -464,5 +464,12 @@
   "Section Label": "Section Label",
   "Section label for this language": "Section label for this language",
   "Drag into the form": "Drag into the form",
-  "Create interactive forms using drag-and-drop interface": "Create interactive forms using drag-and-drop interface"
+  "Create interactive forms using drag-and-drop interface": "Create interactive forms using drag-and-drop interface",
+  "Shown to users in forms. Available for Text, Array[Text], DateTime, Array[DateTime], Numeric, and Array[Numeric] types.": "Shown to users in forms. Available for Text, Array[Text], DateTime, Array[DateTime], Numeric, and Array[Numeric] types.",
+  "Question Labels": "Question Labels",
+  "Instructions/Commentary": "Instructions/Commentary",
+  "Additional instructions or commentary text that appears below the question label.": "Additional instructions or commentary text that appears below the question label.",
+  "Section Labels": "Section Labels",
+  "Page Labels": "Page Labels",
+  "Placeholder text to display when field is empty": "Placeholder text to display when field is empty"
 }

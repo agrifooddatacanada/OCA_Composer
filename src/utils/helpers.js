@@ -539,7 +539,7 @@ export const getFormInformationInput = (
     interaction: baseFormInfo.interaction
   }));
 
-  return { form_overlays: formOverlays };
+  return formOverlays;
 };
 
 /*

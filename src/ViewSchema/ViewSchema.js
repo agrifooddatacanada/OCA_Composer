@@ -64,7 +64,8 @@ export default function ViewSchema({
     setHistory,
     zipToReadme,
     jsonToReadme,
-    OCAPackage
+    OCAPackage,
+    formBuilderPages
   } = useContext(Context);
 
   // Multi-schema context
@@ -236,6 +237,42 @@ export default function ViewSchema({
       toTextFile(zipToReadme);
     }
   };
+
+  // Compute which attributes are used in form overlays
+  const usedAttributesInForm = React.useMemo(() => {
+    const used = new Set();
+
+    // Prefer formBuilderPages (created/edited via the Form Builder UI)
+    if (formBuilderPages && formBuilderPages.length > 0) {
+      formBuilderPages.forEach((page) => {
+        (page.questions || []).forEach((q) => q?.attribute && used.add(q.attribute));
+        (page.sections || []).forEach((s) =>
+          (s.questions || []).forEach((q) => q?.attribute && used.add(q.attribute))
+        );
+      });
+      return used;
+    }
+
+    const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+    const extensionOverlays =
+      OCAPackage?.extensions?.adc?.[captureBaseSaid]?.overlays || {};
+
+    const formOverlayData = extensionOverlays.form_overlay || extensionOverlays.form;
+    const formOverlayArray = Array.isArray(formOverlayData)
+      ? formOverlayData
+      : formOverlayData?.form_overlays || [];
+
+    if (Array.isArray(formOverlayArray) && formOverlayArray.length > 0) {
+      formOverlayArray.forEach((fo) => {
+        const interactionArgs = fo?.interaction?.[0]?.arguments || {};
+        Object.keys(interactionArgs).forEach((attr) => {
+          if (attr) used.add(attr);
+        });
+      });
+    }
+
+    return used;
+  }, [formBuilderPages, OCAPackage]);
 
   const moveBackward = () => {
     if (history.length > 1 && history[history.length - 2] === "Landing") {
