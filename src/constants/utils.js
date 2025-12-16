@@ -1,8 +1,7 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
-import { alpha3CodesToTwoLetterCodes } from "./isoCodes";
-import { getSchemaLanguageFromUI, getOCALanguageCode } from "../utils/languageUtils";
+import { getSchemaLanguageFromUI, getOCALanguageCode, getUICodeFromOCA } from "../utils/languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -689,7 +688,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Meta overlay
   fileContent += "# Add meta overlay";
   coreOverlays.meta.forEach((item) => {
-    fileContent += `\nADD META ${alpha3CodesToTwoLetterCodes[item.language]} PROPS name="${item.name}" description="${item.description}"`;
+    fileContent += `\nADD META ${getUICodeFromOCA(item.language)} PROPS name="${item.name}" description="${item.description}"`;
   });
   fileContent += "\n";
 
@@ -717,7 +716,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   fileContent += "# Add label overlay";
   if (coreOverlays.label) {
     coreOverlays.label.forEach((item) => {
-      fileContent += `\nADD LABEL ${alpha3CodesToTwoLetterCodes[item.language]} ATTRS`;
+      fileContent += `\nADD LABEL ${getUICodeFromOCA(item.language)} ATTRS`;
       Object.keys(item.attribute_labels).forEach((attribute) => {
         fileContent += ` ${attribute}="${item.attribute_labels[attribute]}"`;
       });
@@ -729,7 +728,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   fileContent += "# Add information overlay";
   if (coreOverlays.information) {
     coreOverlays.information.forEach((item) => {
-      fileContent += `\nADD INFORMATION ${alpha3CodesToTwoLetterCodes[item.language]} ATTRS`;
+      fileContent += `\nADD INFORMATION ${getUICodeFromOCA(item.language)} ATTRS`;
       Object.keys(item.attribute_information).forEach((attribute) => {
         fileContent += ` ${attribute}="${item.attribute_information[attribute]}"`;
       });
@@ -750,7 +749,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
 
     if (coreOverlays.entry) {
       coreOverlays.entry.forEach((item) => {
-        fileContent += `ADD ENTRY ${alpha3CodesToTwoLetterCodes[item.language]} ATTRS`;
+        fileContent += `ADD ENTRY ${getUICodeFromOCA(item.language)} ATTRS`;
         Object.keys(item.attribute_entries).forEach((attribute) => {
           const entries = item.attribute_entries[attribute];
           const entriesText = Object.keys(entries)

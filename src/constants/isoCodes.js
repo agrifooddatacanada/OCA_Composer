@@ -582,7 +582,4 @@ export const alpha3CodesToTwoLetterCodes = {
   zul: "zu"
 };
 
-export const toThreeLetterCode = (twoLetterCode) => {
-  const languageName = codesToLanguages[twoLetterCode];
-  return languageNameToAlpha3Codes[languageName];
-};
+// toThreeLetterCode moved to utils/languageUtils.js as toOCACode()

@@ -316,3 +316,13 @@ export const getSchemaLanguageFromOCA = (ocaLanguageCode) => {
   }
   return null;
 };
+
+/**
+ * Convert 3-letter OCA code to 2-letter UI code
+ * "eng" → "en", "fra" → "fr"
+ * (Used for generating OCA DSL files)
+ */
+export const getUICodeFromOCA = (ocaLanguageCode) => {
+  const schemaLang = getSchemaLanguageFromOCA(ocaLanguageCode);
+  return schemaLang ? getUILanguageCode(schemaLang) : "en";
+};
