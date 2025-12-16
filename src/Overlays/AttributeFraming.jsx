@@ -45,7 +45,7 @@ import {
   matchedSubjectAndPredicate,
   searchPredicates,
   getLabelofParentClass
-} from "../constants/utils";
+} from "../utils/helpers";
 
 let globalGridRef = null;
 

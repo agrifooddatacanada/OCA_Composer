@@ -15,10 +15,10 @@ import { useMultiSchema } from "../context/MultiSchemaContext";
 import {
   removeSpacesFromString,
   removeSpacesFromArrayOfObjects
-} from "../constants/removeSpaces";
+} from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
-import { hasDisallowedChars } from "../constants/utils";
+import { hasDisallowedChars } from "../utils/helpers";
 import { FIELD_RANGE_OVERLAY } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";

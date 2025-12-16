@@ -35,7 +35,7 @@ import {
   getUnitFramingInput,
   getAttributeFramingInput,
   getFormInformationInput
-} from "../constants/utils";
+} from "../utils/helpers";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 
 const currentEnv = process.env.REACT_APP_ENV;

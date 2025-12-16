@@ -26,7 +26,7 @@ import {
   getTransformedEntryCodes,
   getUnitFramingInput,
   getAttributeFramingInput
-} from "../constants/utils";
+} from "../utils/helpers";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 
 /**

@@ -18,7 +18,7 @@ import {
   UNIT,
   overlays
 } from "../constants/constants";
-import { replaceAttributeCharsInParsedJson } from "../constants/utils";
+import { replaceAttributeCharsInParsedJson } from "../utils/helpers";
 
 const useHandleOCAFileUpload = () => {
   const {

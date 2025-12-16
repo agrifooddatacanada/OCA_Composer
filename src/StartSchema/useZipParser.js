@@ -23,7 +23,7 @@ import {
   hasAttributeFramingOverlay,
   isMultiLevelSchema,
   replaceCharsInKeys
-} from "../constants/utils";
+} from "../utils/helpers";
 
 const useZipParser = () => {
   const {

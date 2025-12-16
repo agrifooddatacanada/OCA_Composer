@@ -8,7 +8,7 @@ import LandingDropZone from "../Landing/LandingDropZone";
 import { Context } from "../App";
 import { lightenColor } from "../utils/colorUtils";
 import { MAX_FILE_SIZE } from "../constants/constants";
-import { toMegabytes } from "../constants/utils";
+import { toMegabytes } from "../utils/helpers";
 
 export default function Drop({
   setFile,

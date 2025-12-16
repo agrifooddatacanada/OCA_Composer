@@ -9,7 +9,7 @@ import useZipParser from "../StartSchema/useZipParser";
 import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
-} from "../constants/utils";
+} from "../utils/helpers";
 import { mapLinkMLToOCABundle } from "../SchemaTranslator/mapLinkMLToOCABundle";
 import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
 

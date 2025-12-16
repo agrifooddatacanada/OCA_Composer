@@ -6,7 +6,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "react-i18next";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import { removeSpacesFromString } from "../constants/removeSpaces";
+import { removeSpacesFromString } from "../utils/stringUtils";
 import CustomPalette from "../constants/customPalette";
 
 export default function AddAttribute({

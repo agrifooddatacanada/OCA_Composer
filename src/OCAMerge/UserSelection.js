@@ -33,7 +33,7 @@ import {
   generateOCABundle,
   generateOCAFileFromMergedOverlays,
   searchUnits
-} from "../constants/utils";
+} from "../utils/helpers";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 
 const checkIfKeyInList = (key, list) => {

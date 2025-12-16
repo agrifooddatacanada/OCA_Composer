@@ -3,7 +3,7 @@ import { Box, Button, Typography, Input, Alert } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { removeSpacesFromString } from "../constants/removeSpaces";
+import { removeSpacesFromString } from "../utils/stringUtils";
 
 export default function IsoCard({
   setShowIsoInput,

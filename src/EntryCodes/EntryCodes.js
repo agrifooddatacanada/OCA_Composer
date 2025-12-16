@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import { Box, Typography } from "@mui/material";
 import { Context } from "../App";
 import SingleTable from "./SingleTable";
-import { removeSpacesAndColonFromArrayOfObjects } from "../constants/removeSpaces";
+import { removeSpacesAndColonFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 import { useMultiSchema } from "../context/MultiSchemaContext";

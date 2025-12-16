@@ -4,7 +4,7 @@ import { getUICodeFromLangName } from "../utils/languageUtils";
 import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
-} from "../constants/utils";
+} from "../utils/helpers";
 import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
 
 // Custom error-handling function

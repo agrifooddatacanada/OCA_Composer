@@ -7,10 +7,10 @@ import { useMultiSchema } from "../context/MultiSchemaContext";
 import { greyCellStyle } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
+import { getListOfSelectedOverlays } from "../utils/overlayUtils";
 import CellHeader from "../components/CellHeader";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
-import { getFormatRuleDescription } from "../constants/utils";
+import { getFormatRuleDescription } from "../utils/helpers";
 import {
   ADC,
   FIELD_RANGE_OVERLAY,

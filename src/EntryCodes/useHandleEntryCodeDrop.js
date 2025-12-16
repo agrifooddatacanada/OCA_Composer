@@ -13,7 +13,7 @@ import { MenuItem } from "@mui/material";
 import { messages } from "../constants/messages";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import { getCurrentData } from "../constants/utils";
+import { getCurrentData } from "../utils/helpers";
 import { ADC } from "../constants/constants";
 
 const userSelectionDropdown = ["Copy from other entry codes", "Upload"];

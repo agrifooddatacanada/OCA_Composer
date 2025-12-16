@@ -4,7 +4,7 @@ import {
   getDescriptiveFileName,
   getOrderedAttributeMap,
   getOrderedEntries
-} from "../constants/utils";
+} from "../utils/helpers";
 import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
 
 const readmeText = `

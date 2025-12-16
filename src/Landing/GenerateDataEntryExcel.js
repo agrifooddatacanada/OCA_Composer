@@ -17,7 +17,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { CreateDataEntryExcel } from "./CreateDataEntryExcel";
-import { getDescriptiveFileName } from "../constants/utils";
+import { getDescriptiveFileName } from "../utils/helpers";
 import { useTranslation } from "react-i18next";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import { getOCACodeFromLangName } from "../utils/languageUtils";

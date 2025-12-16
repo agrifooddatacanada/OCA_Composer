@@ -12,7 +12,7 @@ import { flexCenter, gridStyles, preWrapWordBreak } from "../constants/styles";
 import CheckboxHeader from "../components/CheckboxHeader";
 import Loading from "../components/Loading";
 import CheckboxRenderer from "../AttributeDetails/CheckboxRenderer";
-import { getCurrentData, getFormatRuleDescription } from "../constants/utils";
+import { getCurrentData, getFormatRuleDescription } from "../utils/helpers";
 import { FIELD_RANGE_OVERLAY } from "../constants/constants";
 import { matchFormat } from "../OCADataValidator/utils/matchRules";
 

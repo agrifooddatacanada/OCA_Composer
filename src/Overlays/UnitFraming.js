@@ -29,7 +29,7 @@ import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
-import { searchUnits } from "../constants/utils";
+import { searchUnits } from "../utils/helpers";
 import { FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { Context } from "../App";

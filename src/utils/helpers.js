@@ -1,7 +1,7 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
-import { getLangNameFromUICode, getOCACodeFromLangName, getUICodeFromOCACode } from "../utils/languageUtils";
+import { getLangNameFromUICode, getOCACodeFromLangName, getUICodeFromOCACode } from "./languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -17,10 +17,10 @@ import {
   OCA_REPOSITORY_API_URL,
   RANGE,
   SSSOM_MAPPER_API_URL
-} from "./constants";
+} from "../constants/constants";
 
 import { convertToFormInformationOverlay } from "../Overlays/FormBuilder/utils/convertToFormInformation";
-import ucumUnits from "./ucumUnits";
+import ucumUnits from "../constants/ucumUnits";
 
 export const getCurrentData = (currentApi, includedError) => {
   const newData = [];

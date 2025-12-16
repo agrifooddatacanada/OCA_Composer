@@ -1,6 +1,7 @@
 /**
- * Overlay data clearing utilities
- * Centralized knowledge of what data fields each overlay type uses
+ * Overlay utilities
+ * - Selection state helpers
+ * - Data clearing utilities
  */
 
 import {
@@ -96,4 +97,27 @@ export const useDeleteOverlayHandler = (overlayType) => {
     // Always navigate back to overlays page
     setCurrentPage("Overlays");
   }, [overlayType, updateCurrentSchema, updateOverlaySelection, currentSchemaId, getSchemaState, setCurrentPage]);
+};
+
+/**
+ * Get lists of selected and unselected overlay features
+ * @param {Object} overlay - Overlay selection state object
+ * @returns {Object} { selectedFeatures: string[], unselectedFeatures: string[] }
+ */
+export const getListOfSelectedOverlays = (overlay) => {
+  const selectedFeatures = [];
+  const unselectedFeatures = [];
+  // Temporarily excluding these features
+  const featuresToExclude = ["Data Standards"];
+
+  Object.values(overlay).forEach((item) => {
+    if (featuresToExclude.includes(item.feature)) return;
+    if (item.selected) {
+      selectedFeatures.push(item.feature);
+    } else {
+      unselectedFeatures.push(item.feature);
+    }
+  });
+
+  return { selectedFeatures, unselectedFeatures };
 };

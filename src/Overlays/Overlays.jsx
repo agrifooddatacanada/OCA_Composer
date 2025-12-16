@@ -7,10 +7,10 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
+import { getListOfSelectedOverlays } from "../utils/overlayUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
-import { shouldDisableRangeOverlay, getRangeOverlayDisabledReason, shouldDisableFormInformationOverlay, getFormInformationDisabledReason } from "../constants/utils";
+import { shouldDisableRangeOverlay, getRangeOverlayDisabledReason, shouldDisableFormInformationOverlay, getFormInformationDisabledReason } from "../utils/helpers";
 import { FIELD_FORMAT_OVERLAY, FIELD_RANGE_OVERLAY, FIELD_FORM_INFORMATION_OVERLAY } from "../constants/constants";
 
 const Overlays = ({ pageBack, pageForward }) => {

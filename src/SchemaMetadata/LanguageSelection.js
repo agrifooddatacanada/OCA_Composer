@@ -1,7 +1,7 @@
 import { Box, Button, Alert } from "@mui/material";
 import React, { useState } from "react";
 import { CustomPalette } from "../constants/customPalette";
-import { removeSpacesFromString } from "../constants/removeSpaces";
+import { removeSpacesFromString } from "../utils/stringUtils";
 import { allLanguagesWithCodesArray } from "../constants/isoCodes";
 
 const languageList = [

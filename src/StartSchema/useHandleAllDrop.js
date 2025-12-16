@@ -4,13 +4,13 @@ import JSZip from "jszip";
 import Papa from "papaparse";
 import { Context } from "../App";
 import useZipParser from "./useZipParser";
-import { removeSpacesFromString } from "../constants/removeSpaces";
+import { removeSpacesFromString } from "../utils/stringUtils";
 import { messages } from "../constants/messages";
 import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
   // getUnitsFramedThatAlreadyExistInOcaPackage
-} from "../constants/utils";
+} from "../utils/helpers";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 
 const useHandleAllDrop = (pageForward) => {

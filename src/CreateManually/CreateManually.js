@@ -12,11 +12,11 @@ import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 
 import { CustomPalette } from "../constants/customPalette";
-import { removeSpacesFromString } from "../constants/removeSpaces";
+import { removeSpacesFromString } from "../utils/stringUtils";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import { hasDisallowedChars } from "../constants/utils";
+import { hasDisallowedChars } from "../utils/helpers";
 
 // !important overrides default grid style that sets the minimum height of the grid container
 // Without the min-height, it looks awkward when the component is empty or has only a couple attributes

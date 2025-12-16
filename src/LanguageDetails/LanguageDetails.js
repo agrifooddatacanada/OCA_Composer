@@ -6,7 +6,7 @@ import i18next from "i18next";
 import { Context } from "../App";
 import LanGrid from "./LanGrid";
 import CustomPalette from "../constants/customPalette";
-import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
+import { removeSpacesFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { useMultiSchema } from "../context/MultiSchemaContext";

@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { Context } from "../App";
-import { getDescriptiveFileName } from "../constants/utils";
+import { getDescriptiveFileName } from "../utils/helpers";
 
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL

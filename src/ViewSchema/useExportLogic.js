@@ -12,7 +12,7 @@ import {
 } from "../constants/constants";
 // import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 import useGenerateReadMe from "./useGenerateReadMe";
-import { getDescriptiveFileName } from "../constants/utils";
+import { getDescriptiveFileName } from "../utils/helpers";
 
 const ExcelJS = require("exceljs");
 
