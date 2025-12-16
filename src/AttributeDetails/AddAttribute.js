@@ -1,11 +1,10 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useCallback } from "react";
 
 import { Box, Button, TextField } from "@mui/material";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "react-i18next";
-import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import { removeSpacesFromString } from "../constants/removeSpaces";
 import CustomPalette from "../constants/customPalette";
@@ -25,8 +24,12 @@ export default function AddAttribute({
   setAttributeRowData
 }) {
   const { t } = useTranslation();
-  const { setAttributesList } = useContext(Context);
   const { currentSchemaId, updateSchemaState } = useMultiSchema();
+  
+  // Callback to update attributesList in MultiSchemaContext
+  const setAttributesList = useCallback((newList) => {
+    updateSchemaState(currentSchemaId, { attributesList: newList });
+  }, [currentSchemaId, updateSchemaState]);
   const [newAttribute, setNewAttribute] = useState("");
 
   const handleLanguageField = (e) => {

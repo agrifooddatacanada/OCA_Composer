@@ -1,8 +1,6 @@
-import React, { useState, useRef, useEffect, useContext, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
-
-import { Context } from "../App";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
@@ -15,6 +13,7 @@ import FlaggedHeader from "./FlaggedHeader";
 import ListHeader from "./ListHeader";
 import DeleteRenderer from "./DeleteRenderer";
 import TypeRenderer from "./TypeRenderer";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 
 // styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
 const gridStyle = `
@@ -56,17 +55,28 @@ export default function Grid({
   setAttributeRowData
 }) {
   const { t } = useTranslation();
-  const {
-    attributesList,
-    setAttributesList,
-    lanAttributeRowData,
-    setLanAttributeRowData,
-    setCharacterEncodingRowData,
-    setFormatRuleRowData,
-    setCardinalityData,
-    setAttributesWithLists,
-    setSavedEntryCodes
-  } = useContext(Context);
+  
+  // Use MultiSchemaContext for schema-specific data
+  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  
+  // Derive attributesList from attributeRowData (single source of truth)
+  const attributesList = useMemo(
+    () => attributeRowData.map((item) => item.Attribute),
+    [attributeRowData]
+  );
+  
+  // Get schema state data
+  const schemaState = getSchemaState(currentSchemaId);
+  const lanAttributeRowData = useMemo(
+    () => schemaState?.lanAttributeRowData || {},
+    [schemaState?.lanAttributeRowData]
+  );
+  
+  // Callback to update attributesList in MultiSchemaContext
+  const setAttributesList = useCallback((newList) => {
+    updateSchemaState(currentSchemaId, { attributesList: newList });
+  }, [currentSchemaId, updateSchemaState]);
+  
   const [columnDefs, setColumnDefs] = useState([]);
   const canDrag = useRef(true);
 
@@ -200,7 +210,7 @@ export default function Grid({
         width: 60
       }
     ]);
-  }, [attributesList, attributeRowData, canDelete, typesObjectRef]);
+  }, [attributesList, attributeRowData, canDelete, typesObjectRef, setAttributesList]);
 
   const defaultColDef = {
     width: 125
@@ -434,83 +444,82 @@ export default function Grid({
     typesObjectRef.current = updatedTypesObjRefValue;
   };
 
-  // Update attribute in language-specific row data
-  const updateLanAttributeRowData = (oldAttributeValue, newAttributeValue) => {
+  // Update attribute in language-specific row data (MultiSchemaContext)
+  const updateLanAttributeRowData = useCallback((oldAttributeValue, newAttributeValue) => {
+    const currentLanData = schemaState?.lanAttributeRowData || {};
     const updatedLanAttributeRowData = {};
-    for (const lang in lanAttributeRowData) {
-      if (Object.prototype.hasOwnProperty.call(lanAttributeRowData, lang)) {
-        const attributes = lanAttributeRowData[lang];
-        const attributeIndex = attributes.findIndex(
-          (row) => row.Attribute === oldAttributeValue
-        );
-        const attribute = attributes[attributeIndex];
-        const updatedAttributes = attributes.map((row, i) => {
-          if (i === attributeIndex) {
-            return { ...attribute, Attribute: newAttributeValue };
+    for (const lang in currentLanData) {
+      if (Object.prototype.hasOwnProperty.call(currentLanData, lang)) {
+        const attributes = currentLanData[lang] || [];
+        const updatedAttributes = attributes.map((row) => {
+          if (row.Attribute === oldAttributeValue) {
+            return { ...row, Attribute: newAttributeValue };
           }
           return row;
         });
         updatedLanAttributeRowData[lang] = updatedAttributes;
       }
     }
-    setLanAttributeRowData(updatedLanAttributeRowData);
-  };
+    updateSchemaState(currentSchemaId, { lanAttributeRowData: updatedLanAttributeRowData });
+  }, [currentSchemaId, schemaState?.lanAttributeRowData, updateSchemaState]);
 
-  const updateCharacterEncodingRowData = (oldAttributeValue, newAttributeValue) => {
-    setCharacterEncodingRowData((prevData) =>
-      prevData.map((row) => {
-        if (row.Attribute === oldAttributeValue) {
-          return { ...row, Attribute: newAttributeValue };
-        }
-        return row;
-      })
-    );
-  };
+  // Update character encoding row data (MultiSchemaContext)
+  const updateCharacterEncodingRowData = useCallback((oldAttributeValue, newAttributeValue) => {
+    const currentData = schemaState?.characterEncodingData || {};
+    if (currentData[oldAttributeValue]) {
+      const updatedData = { ...currentData };
+      updatedData[newAttributeValue] = updatedData[oldAttributeValue];
+      delete updatedData[oldAttributeValue];
+      updateSchemaState(currentSchemaId, { characterEncodingData: updatedData });
+    }
+  }, [currentSchemaId, schemaState?.characterEncodingData, updateSchemaState]);
 
-  const updateFormatRuleRowData = (oldAttributeValue, newAttributeValue) => {
-    setFormatRuleRowData((prevData) =>
-      prevData.map((row) => {
-        if (row.Attribute === oldAttributeValue) {
-          return { ...row, Attribute: newAttributeValue };
-        }
-        return row;
-      })
-    );
-  };
-
-  const updateCardinalityData = (oldAttributeValue, newAttributeValue) => {
-    setCardinalityData((prevData) =>
-      prevData.map((row) => {
-        if (row.Attribute === oldAttributeValue) {
-          return { ...row, Attribute: newAttributeValue };
-        }
-        return row;
-      })
-    );
-  };
-
-  const updateAttributesWithLists = (oldAttributeValue, newAttributeValue) => {
-    setAttributesWithLists((prevData) =>
-      prevData.map((attributeName) => {
-        if (attributeName === oldAttributeValue) {
-          return newAttributeValue;
-        }
-        return attributeName;
-      })
-    );
-  };
-
-  const updateSavedEntryCodes = (oldAttributeValue, newAttributeValue) => {
-    setSavedEntryCodes((prevData) => {
-      const updatedSavedEntryCodes = { ...prevData };
-      if (updatedSavedEntryCodes[oldAttributeValue]) {
-        updatedSavedEntryCodes[newAttributeValue] =
-          updatedSavedEntryCodes[oldAttributeValue];
-        delete updatedSavedEntryCodes[oldAttributeValue];
+  // Update format rule row data (MultiSchemaContext)
+  const updateFormatRuleRowData = useCallback((oldAttributeValue, newAttributeValue) => {
+    const currentData = schemaState?.formatRuleData || [];
+    const updatedData = currentData.map((row) => {
+      if (row.Attribute === oldAttributeValue) {
+        return { ...row, Attribute: newAttributeValue };
       }
-      return updatedSavedEntryCodes;
+      return row;
     });
-  };
+    updateSchemaState(currentSchemaId, { formatRuleData: updatedData });
+  }, [currentSchemaId, schemaState?.formatRuleData, updateSchemaState]);
+
+  // Update cardinality data (MultiSchemaContext)
+  const updateCardinalityData = useCallback((oldAttributeValue, newAttributeValue) => {
+    const currentData = schemaState?.cardinalityData || [];
+    const updatedData = currentData.map((row) => {
+      if (row.Attribute === oldAttributeValue) {
+        return { ...row, Attribute: newAttributeValue };
+      }
+      return row;
+    });
+    updateSchemaState(currentSchemaId, { cardinalityData: updatedData });
+  }, [currentSchemaId, schemaState?.cardinalityData, updateSchemaState]);
+
+  // Update attributes with lists (MultiSchemaContext)
+  const updateAttributesWithLists = useCallback((oldAttributeValue, newAttributeValue) => {
+    const currentData = schemaState?.attributesWithLists || [];
+    const updatedData = currentData.map((attributeName) => {
+      if (attributeName === oldAttributeValue) {
+        return newAttributeValue;
+      }
+      return attributeName;
+    });
+    updateSchemaState(currentSchemaId, { attributesWithLists: updatedData });
+  }, [currentSchemaId, schemaState?.attributesWithLists, updateSchemaState]);
+
+  // Update entry codes (MultiSchemaContext)
+  const updateSavedEntryCodes = useCallback((oldAttributeValue, newAttributeValue) => {
+    const currentData = schemaState?.entryCodes || {};
+    if (currentData[oldAttributeValue]) {
+      const updatedData = { ...currentData };
+      updatedData[newAttributeValue] = updatedData[oldAttributeValue];
+      delete updatedData[oldAttributeValue];
+      updateSchemaState(currentSchemaId, { entryCodes: updatedData });
+    }
+  }, [currentSchemaId, schemaState?.entryCodes, updateSchemaState]);
 
   const handleCellValueChanged = (e) => {
     // Only handle event if the user changed the attribute name; do not handle programmatic update
