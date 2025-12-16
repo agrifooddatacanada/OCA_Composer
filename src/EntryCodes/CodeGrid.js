@@ -18,7 +18,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
 import { preWrapWordBreak } from "../constants/styles";
-import { LanguageUtils } from "../utils/languageUtils";
+import { getOCALanguageCode } from "../utils/languageUtils";
 
 // Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
 const gridStyle = `
@@ -141,7 +141,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     const newEntryCodeRow = { Code: "" };
     // Use OCA codes as field keys
     languages.forEach((languageName) => {
-      const ocaCode = LanguageUtils.getOCALanguageCode(languageName);
+      const ocaCode = getOCALanguageCode(languageName);
       newEntryCodeRow[ocaCode] = "";
     });
 
@@ -177,7 +177,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   const columnDefs = useMemo(() => {
     // Use OCA codes as field keys, but display language names in headers
     const languageHeaders = languages.map((languageName) => {
-      const ocaCode = LanguageUtils.getOCALanguageCode(languageName);
+      const ocaCode = getOCALanguageCode(languageName);
       return {
         field: ocaCode, // Use OCA code for data binding (e.g., "eng", "fra")
         editable: true,

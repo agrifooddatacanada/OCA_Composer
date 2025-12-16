@@ -10,7 +10,12 @@ import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import { LanguageUtils } from "../utils/languageUtils";
+import { 
+  getPrioritizedSchemaLanguages, 
+  getBestSchemaLanguage, 
+  getCurrentUILanguage, 
+  getOCALanguageCode 
+} from "../utils/languageUtils";
 
 const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForward }, ref) {
   const { t } = useTranslation();
@@ -37,14 +42,14 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   const attributesWithLists = schemaState?.attributesWithLists || [];
 
   const filteredLanguages = useMemo(() => {
-    return LanguageUtils.getPrioritizedSchemaLanguages(languages);
+    return getPrioritizedSchemaLanguages(languages);
   }, [languages]);
 
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   
   // Update currentLanguage when UI language changes
   useEffect(() => {
-    const bestLanguage = LanguageUtils.getBestSchemaLanguage(LanguageUtils.getCurrentUILanguage(), languages);
+    const bestLanguage = getBestSchemaLanguage(getCurrentUILanguage(), languages);
     setCurrentLanguage(bestLanguage);
   }, [t, languages]); // Use 't' to track language changes
 
@@ -113,7 +118,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       if (langData.length > 0) {
         // Convert language name to ISO 639-2 (3-letter) code for overlay
         // Use the existing languageNameToAlpha3Codes mapping
-        const languageCode = LanguageUtils.getOCALanguageCode(language) || 
+        const languageCode = getOCALanguageCode(language) || 
                              language.toLowerCase().slice(0, 3); // Fallback to first 3 chars
         
         const attributeLabels = {};

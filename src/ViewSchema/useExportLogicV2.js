@@ -3,7 +3,7 @@ import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { getPackageBundle } from "../utils/packageUtils";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import { LanguageUtils } from "../utils/languageUtils";
+import { getOCALanguageCode, getUILanguageCode } from "../utils/languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -70,7 +70,7 @@ const useExportLogicV2 = () => {
   const schemaDescription = useMemo(() => {
     const result = {};
     languages.forEach((language) => {
-      const langKey = LanguageUtils.getOCALanguageCode(language);
+      const langKey = getOCALanguageCode(language);
       const localized = metadata.localized?.[langKey] || {};
       result[language] = {
         name: localized.name || metadata.name || "",
@@ -121,7 +121,7 @@ const useExportLogicV2 = () => {
     const languageObject = {};
     languageObject.language = language;
     languageObject.code =
-      LanguageUtils.getUILanguageCode(language) ||
+      getUILanguageCode(language) ||
       customIsos[language.toLowerCase()] ||
       "unknown";
 

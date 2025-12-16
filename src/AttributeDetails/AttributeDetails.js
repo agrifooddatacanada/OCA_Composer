@@ -22,7 +22,7 @@ import { hasDisallowedChars } from "../constants/utils";
 import { FIELD_RANGE_OVERLAY } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
-import { LanguageUtils } from "../utils/languageUtils";
+import { getSchemaLanguageFromUI, getOCALanguageCode } from "../utils/languageUtils";
 
 const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, removeStep }, ref) => {
   const { t, i18n } = useTranslation();
@@ -112,8 +112,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     
     
     // Get current language code for schema data
-    const schemaLanguageName = LanguageUtils.getSchemaLanguageFromUI(i18n.language);
-    const languageCode = LanguageUtils.getOCALanguageCode(schemaLanguageName);
+    const schemaLanguageName = getSchemaLanguageFromUI(i18n.language);
+    const languageCode = getOCALanguageCode(schemaLanguageName);
     // NEW UNIFIED APPROACH: Get complete schema data directly
     const completeSchema = getCompleteSchema(currentSchemaId);
 

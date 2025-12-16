@@ -19,7 +19,11 @@ import { useMultiSchema } from "../context/MultiSchemaContext";
 import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
-import { LanguageUtils } from "../utils/languageUtils";
+import { 
+  getPrioritizedSchemaLanguages,
+  getEffectiveSchemaLanguage,
+  getOCALanguageCode 
+} from "../utils/languageUtils";
 import { hasActualDependencies } from "../utils/schemaUtils";
 
 import Loading from "../components/Loading";
@@ -74,7 +78,7 @@ export default function ViewSchema({
   } = useMultiSchema();
 
   const filteredLanguages = React.useMemo(() => {
-    return LanguageUtils.getPrioritizedSchemaLanguages(languages);
+    return getPrioritizedSchemaLanguages(languages);
   }, [languages]);
 
   // Schema language state - defaults to null (use i18n), can be overridden by schema buttons
@@ -82,7 +86,7 @@ export default function ViewSchema({
   
   // Helper to get current effective language (standardized approach)
   const getCurrentLanguage = () => {
-    return LanguageUtils.getEffectiveSchemaLanguage(schemaLanguageOverride, filteredLanguages);
+    return getEffectiveSchemaLanguage(schemaLanguageOverride, filteredLanguages);
   };
 
   // Reset schema language override when app language changes (i18n primary approach)
@@ -380,7 +384,7 @@ export default function ViewSchema({
             const listObj = {};
 
             // Convert language name to OCA code
-            const toLangKey = (l) => LanguageUtils.getOCALanguageCode(l);
+            const toLangKey = (l) => getOCALanguageCode(l);
 
             // Build a map of attribute -> entryCodes array once
             const entryCodesMap = schemaState.entryCodes || {};

@@ -13,7 +13,7 @@ import NavigationCard from "../constants/NavigationCard";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import { LanguageUtils } from "../utils/languageUtils";
+import { getOCALanguageCode } from "../utils/languageUtils";
 import { removeSpacesFromObjectOfObjects } from "../constants/removeSpaces";
 import IntroCard from "./IntroCard";
 import IsoCard from "./IsoCard";
@@ -68,7 +68,7 @@ const SchemaMetadata = forwardRef(({
     
     languages.forEach(lang => {
       // Use OCA language code for storage lookup
-      const langCode = LanguageUtils.getOCALanguageCode(lang);
+      const langCode = getOCALanguageCode(lang);
       const localized = metadata.localized?.[langCode] || {};
       
       // Use English root metadata as fallback for English language
@@ -98,7 +98,7 @@ const SchemaMetadata = forwardRef(({
       
       Object.entries(newDescription).forEach(([langName, data]) => {
         // Use OCA language code for storage
-        const langCode = LanguageUtils.getOCALanguageCode(langName);
+        const langCode = getOCALanguageCode(langName);
         
         localized[langCode] = {
           name: data.name || "",
@@ -137,7 +137,7 @@ const SchemaMetadata = forwardRef(({
     
     newLanguages.forEach(langName => {
       // Use OCA language code for storage
-      const langCode = LanguageUtils.getOCALanguageCode(langName);
+      const langCode = getOCALanguageCode(langName);
       
       // Only initialize if this language doesn't have an entry yet
       if (!updatedLocalized[langCode]) {

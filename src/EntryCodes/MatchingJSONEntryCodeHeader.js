@@ -2,7 +2,7 @@ import React, { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useSt
 import { useContext } from 'react';
 import { Context } from '../App';
 import { useMultiSchema } from '../context/MultiSchemaContext';
-import { LanguageUtils } from '../utils/languageUtils';
+import { getOCALanguageCode } from '../utils/languageUtils';
 import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { AgGridReact } from 'ag-grid-react';
@@ -137,7 +137,7 @@ const MatchingJSONEntryCodeHeader = () => {
         const newObj = { Code: code };
         for (const lang of languages) {
           // Convert language name to OCA code (e.g., "English" -> "eng")
-          const langKey = LanguageUtils.getOCALanguageCode(lang);
+          const langKey = getOCALanguageCode(lang);
           const correspondingHeader = matchingData.find(item => item.lang === lang)?.matchingDataHeader;
           const correspondingEntryCodes = tempEntryList.find(item => item.language === correspondingHeader);
           const value = correspondingEntryCodes?.['attribute_entries']?.[attrValue]?.[code];

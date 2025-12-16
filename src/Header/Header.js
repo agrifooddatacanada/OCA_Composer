@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LanguageUtils } from "../utils/languageUtils";
+import { normalizeUILanguageCode, getCurrentUILanguage, switchUILanguage } from "../utils/languageUtils";
 import { Typography, Tooltip, Button, Box, useMediaQuery } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
@@ -22,17 +22,17 @@ export default function Header({ currentPage }) {
   // Detecting mobile screens with 'isMobile'
   const isMobile = useMediaQuery("(max-width:736px)");
   const [selectedLanguage, setSelectedLanguage] = useState(
-    LanguageUtils.normalizeUILanguageCode(LanguageUtils.getCurrentUILanguage())
+    normalizeUILanguageCode(getCurrentUILanguage())
   );
   const { currentTheme } = useContext(Context);
   useEffect(() => {
-    setSelectedLanguage(LanguageUtils.normalizeUILanguageCode(LanguageUtils.getCurrentUILanguage()));
+    setSelectedLanguage(normalizeUILanguageCode(getCurrentUILanguage()));
   }, []);
 
   const changeLanguage = (event) => {
     const lng = event.target.value;
     setSelectedLanguage(lng);
-    LanguageUtils.switchUILanguage(lng);
+    switchUILanguage(lng);
   };
 
   // Sets headers and tooltip Text based on current page
