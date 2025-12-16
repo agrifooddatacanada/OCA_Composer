@@ -1,4 +1,4 @@
-import { getOCALanguageCode } from "../../../utils/languageUtils";
+import { getOCACodeFromLangName } from "../../../utils/languageUtils";
 
 const getQuestionTypeInfo = (attributeType) => {
   const type = attributeType || "";
@@ -147,7 +147,7 @@ export const convertToFormInformationOverlay = (
   // Convert language names to three-letter codes for the overlay structure
   const threeLetterCodes = languages.map((lang) => {
     if (lang.length === 3) return lang;
-    return getOCALanguageCode(lang);
+    return getOCACodeFromLangName(lang);
   });
 
   threeLetterCodes.forEach((lang) => {

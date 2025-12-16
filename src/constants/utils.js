@@ -1,7 +1,7 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
-import { getSchemaLanguageFromUI, getOCALanguageCode, getUICodeFromOCA } from "../utils/languageUtils";
+import { getLangNameFromUICode, getOCACodeFromLangName, getUICodeFromOCACode } from "../utils/languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -35,7 +35,7 @@ export const getCurrentData = (currentApi, includedError) => {
 };
 
 export const getDescriptiveFileName = (schemaDescription, commonFileName) => {
-  const currentLanguage = getSchemaLanguageFromUI(i18next.language) || DEFAULT_LANGUAGE;
+  const currentLanguage = getLangNameFromUICode(i18next.language) || DEFAULT_LANGUAGE;
   const schemaName = schemaDescription[currentLanguage]?.name;
   const fileName = `${schemaName ? `${schemaName.split(" ")[0]}_` : ""}${commonFileName}`;
   return fileName;
@@ -512,7 +512,7 @@ export const getFormInformationInput = (
   captureBase
 ) => {
   const threeLetterCodes = languages.map(
-    (lang) => getOCALanguageCode(lang)
+    (lang) => getOCACodeFromLangName(lang)
   );
 
   const schemaName = {};
@@ -688,7 +688,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Meta overlay
   fileContent += "# Add meta overlay";
   coreOverlays.meta.forEach((item) => {
-    fileContent += `\nADD META ${getUICodeFromOCA(item.language)} PROPS name="${item.name}" description="${item.description}"`;
+    fileContent += `\nADD META ${getUICodeFromOCACode(item.language)} PROPS name="${item.name}" description="${item.description}"`;
   });
   fileContent += "\n";
 
@@ -716,7 +716,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   fileContent += "# Add label overlay";
   if (coreOverlays.label) {
     coreOverlays.label.forEach((item) => {
-      fileContent += `\nADD LABEL ${getUICodeFromOCA(item.language)} ATTRS`;
+      fileContent += `\nADD LABEL ${getUICodeFromOCACode(item.language)} ATTRS`;
       Object.keys(item.attribute_labels).forEach((attribute) => {
         fileContent += ` ${attribute}="${item.attribute_labels[attribute]}"`;
       });
@@ -728,7 +728,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   fileContent += "# Add information overlay";
   if (coreOverlays.information) {
     coreOverlays.information.forEach((item) => {
-      fileContent += `\nADD INFORMATION ${getUICodeFromOCA(item.language)} ATTRS`;
+      fileContent += `\nADD INFORMATION ${getUICodeFromOCACode(item.language)} ATTRS`;
       Object.keys(item.attribute_information).forEach((attribute) => {
         fileContent += ` ${attribute}="${item.attribute_information[attribute]}"`;
       });
@@ -749,7 +749,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
 
     if (coreOverlays.entry) {
       coreOverlays.entry.forEach((item) => {
-        fileContent += `ADD ENTRY ${getUICodeFromOCA(item.language)} ATTRS`;
+        fileContent += `ADD ENTRY ${getUICodeFromOCACode(item.language)} ATTRS`;
         Object.keys(item.attribute_entries).forEach((attribute) => {
           const entries = item.attribute_entries[attribute];
           const entriesText = Object.keys(entries)

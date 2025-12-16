@@ -4,172 +4,182 @@ import { languageCodesObject, codesToLanguages, languageNameToAlpha3Codes } from
 /**
  * Language Utilities for OCA Composer
  * 
- * All functions are exported directly for cleaner imports:
- *   import { getOCALanguageCode, getUILanguageCode } from '../utils/languageUtils'
+ * Three language formats:
+ *   - UI Code (2-letter): "en", "fr" - used by i18next
+ *   - Lang Name (word): "English", "French" - display names
+ *   - OCA Code (3-letter): "eng", "fra" - used in OCA overlays
  * 
- * Handles:
- * - Language Code Conversion: UI (2-letter) ↔ Schema name ↔ OCA (3-letter)
- * - UI Language Management: App interface language switching  
- * - Schema Language Logic: Multi-language schema context resolution
+ * Naming convention:
+ *   - get[Output]From[Input]() for all conversions
+ *   - All acronyms (UI, OCA) are CAPS
  */
 
 /**
  * Language Constants
- * Common default values used throughout the app
  */
 export const LanguageConstants = {
-  DEFAULT_UI_LANGUAGE: "en",
-  DEFAULT_SCHEMA_LANGUAGE: "English", 
+  DEFAULT_UI_CODE: "en",
+  DEFAULT_LANG_NAME: "English", 
   DEFAULT_OCA_CODE: "eng",
-  FALLBACK_LANGUAGES: ["English", "French"],
-  SUPPORTED_UI_LANGUAGES: ["en", "fr"],
-  SUPPORTED_SCHEMA_LANGUAGES: ["English", "French"]
+  FALLBACK_LANG_NAMES: ["English", "French"],
+  SUPPORTED_UI_CODES: ["en", "fr"],
+  SUPPORTED_LANG_NAMES: ["English", "French"]
 };
 
-// === FUNCTION EXPORTS ===
+// =============================================================================
+// STATE ACCESSORS (i18next)
+// =============================================================================
 
 /**
- * Convert UI language code (2-letter) to schema language name
- * "en" → "English", "fr" → "French"
+ * Get current UI language code from i18next
+ * @returns {string} "en", "fr", etc.
  */
-export const getSchemaLanguageFromUI = (uiLanguageCode) => {
-  if (!uiLanguageCode) return null;
-  const normalizedCode = uiLanguageCode.split("-")[0];
-  return codesToLanguages[normalizedCode] || null;
-};
-
-/**
- * Convert schema language name to 2-letter UI code
- * "English" → "en", "French" → "fr"
- */
-export const getUILanguageCode = (schemaLanguageName) => {
-  if (!schemaLanguageName) return "en";
-  const normalizedName = schemaLanguageName.toLowerCase();
-  return languageCodesObject[normalizedName] || "en";
+export const getUICode = () => {
+  return i18next.language;
 };
 
 /**
- * Convert schema language name to 3-letter OCA code
- * "English" → "eng", "French" → "fra"
+ * Set the application UI language
+ * @param {string} uiCode - "en", "fr", etc.
  */
-export const getOCALanguageCode = (schemaLanguageName) => {
-  if (!schemaLanguageName) return "eng";
-  const normalizedName = schemaLanguageName.toLowerCase();
-  return languageNameToAlpha3Codes[normalizedName] || "eng";
+export const setUICode = (uiCode) => {
+  const normalized = getNormalizedUICode(uiCode);
+  return i18next.changeLanguage(normalized);
+};
+
+// =============================================================================
+// PURE TRANSFORMATIONS
+// =============================================================================
+
+/**
+ * Normalize UI code (handles variants like "en-US" → "en")
+ * @param {string} uiCode - "en-US", "en", etc.
+ * @returns {string} "en"
+ */
+export const getNormalizedUICode = (uiCode) => {
+  if (!uiCode) return "en";
+  return uiCode.split("-")[0];
 };
 
 /**
- * Convert 2-letter UI code to 3-letter OCA code
- * "en" → "eng", "fr" → "fra"
- * (Replaces toThreeLetterCode from isoCodes.js)
+ * Get language name from UI code
+ * @param {string} uiCode - "en", "fr"
+ * @returns {string|null} "English", "French", or null
  */
-export const toOCACode = (uiLanguageCode) => {
-  const schemaLang = getSchemaLanguageFromUI(uiLanguageCode);
-  return schemaLang ? getOCALanguageCode(schemaLang) : "eng";
+export const getLangNameFromUICode = (uiCode) => {
+  if (!uiCode) return null;
+  const normalized = uiCode.split("-")[0];
+  return codesToLanguages[normalized] || null;
 };
 
 /**
- * Convert 3-letter OCA code to schema language name
- * "eng" → "English", "fra" → "French"
+ * Get language name from OCA code
+ * @param {string} ocaCode - "eng", "fra"
+ * @returns {string|null} "English", "French", or null
  */
-export const getSchemaLanguageFromOCA = (ocaLanguageCode) => {
-  if (!ocaLanguageCode) return null;
-  const normalizedCode = ocaLanguageCode.toLowerCase();
-  for (const [languageName, code] of Object.entries(languageNameToAlpha3Codes)) {
-    if (code === normalizedCode) {
-      return languageName.charAt(0).toUpperCase() + languageName.slice(1);
+export const getLangNameFromOCACode = (ocaCode) => {
+  if (!ocaCode) return null;
+  const normalized = ocaCode.toLowerCase();
+  for (const [langName, code] of Object.entries(languageNameToAlpha3Codes)) {
+    if (code === normalized) {
+      return langName.charAt(0).toUpperCase() + langName.slice(1);
     }
   }
   return null;
 };
 
 /**
- * Convert 3-letter OCA code to 2-letter UI code
- * "eng" → "en", "fra" → "fr"
- * (Used for generating OCA DSL files)
+ * Get UI code from language name
+ * @param {string} langName - "English", "French"
+ * @returns {string} "en", "fr" (defaults to "en")
  */
-export const getUICodeFromOCA = (ocaLanguageCode) => {
-  const schemaLang = getSchemaLanguageFromOCA(ocaLanguageCode);
-  return schemaLang ? getUILanguageCode(schemaLang) : "en";
-};
-
-// === UI-AWARE DIRECT EXPORTS ===
-// These access i18next state
-
-/**
- * Normalize UI language code (handles variants like en-US, en-CA)
- * "en-US" → "en"
- */
-export const normalizeUILanguageCode = (uiLanguageCode) => {
-  if (!uiLanguageCode) return "en";
-  return uiLanguageCode.split("-")[0];
+export const getUICodeFromLangName = (langName) => {
+  if (!langName) return "en";
+  const normalized = langName.toLowerCase();
+  return languageCodesObject[normalized] || "en";
 };
 
 /**
- * Get current UI language from i18next
+ * Get OCA code from language name
+ * @param {string} langName - "English", "French"
+ * @returns {string} "eng", "fra" (defaults to "eng")
  */
-export const getCurrentUILanguage = () => {
-  return i18next.language;
+export const getOCACodeFromLangName = (langName) => {
+  if (!langName) return "eng";
+  const normalized = langName.toLowerCase();
+  return languageNameToAlpha3Codes[normalized] || "eng";
 };
 
 /**
- * Switch the application UI language
+ * Get OCA code from UI code (shortcut)
+ * @param {string} uiCode - "en", "fr"
+ * @returns {string} "eng", "fra"
  */
-export const switchUILanguage = (uiLanguageCode) => {
-  const normalizedCode = normalizeUILanguageCode(uiLanguageCode);
-  return i18next.changeLanguage(normalizedCode);
+export const getOCACodeFromUICode = (uiCode) => {
+  const langName = getLangNameFromUICode(uiCode);
+  return langName ? getOCACodeFromLangName(langName) : "eng";
 };
 
 /**
- * Get best available language from schema, with UI language preference
+ * Get UI code from OCA code (shortcut)
+ * @param {string} ocaCode - "eng", "fra"
+ * @returns {string} "en", "fr"
  */
-export const getBestSchemaLanguage = (schema, preferredUILanguage) => {
+export const getUICodeFromOCACode = (ocaCode) => {
+  const langName = getLangNameFromOCACode(ocaCode);
+  return langName ? getUICodeFromLangName(langName) : "en";
+};
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+/**
+ * Get best language name from available options, preferring UI language
+ * @param {Object} schema - Object with languages array: { languages: ["English", "French"] }
+ * @param {string} [preferredUICode] - Optional UI code preference
+ * @returns {string} Best language name like "English"
+ */
+export const getBestLangName = (schema, preferredUICode) => {
   if (!schema?.languages || !Array.isArray(schema.languages)) {
-    return LanguageConstants.DEFAULT_SCHEMA_LANGUAGE;
+    return LanguageConstants.DEFAULT_LANG_NAME;
   }
 
-  if (preferredUILanguage) {
-    const preferredSchemaLanguage = getSchemaLanguageFromUI(preferredUILanguage);
-    if (schema.languages.includes(preferredSchemaLanguage)) {
-      return preferredSchemaLanguage;
+  if (preferredUICode) {
+    const preferredLangName = getLangNameFromUICode(preferredUICode);
+    if (schema.languages.includes(preferredLangName)) {
+      return preferredLangName;
     }
   }
 
-  if (schema.languages.includes(LanguageConstants.DEFAULT_SCHEMA_LANGUAGE)) {
-    return LanguageConstants.DEFAULT_SCHEMA_LANGUAGE;
+  if (schema.languages.includes(LanguageConstants.DEFAULT_LANG_NAME)) {
+    return LanguageConstants.DEFAULT_LANG_NAME;
   }
 
   return schema.languages[0];
 };
 
 /**
- * Get prioritized schema languages with UI language preference first
+ * Get language names array with UI-preferred language first
+ * @param {string[]} langNames - ["English", "French", "Spanish"]
+ * @param {string} [uiCode] - Optional UI code (defaults to current)
+ * @returns {string[]} Reordered array like ["French", "English", "Spanish"]
  */
-export const getPrioritizedSchemaLanguages = (schemaLanguages, uiLanguageCode = null) => {
-  if (!schemaLanguages?.length) return [];
+export const getPrioritizedLangNames = (langNames, uiCode = null) => {
+  if (!langNames?.length) return [];
   
-  const currentUILang = uiLanguageCode || getCurrentUILanguage();
-  const matchingSchemaLang = getSchemaLanguageFromUI(currentUILang);
+  const currentUICode = uiCode || getUICode();
+  const matchingLangName = getLangNameFromUICode(currentUICode);
   
-  if (!matchingSchemaLang || !schemaLanguages.includes(matchingSchemaLang)) {
-    return [...schemaLanguages];
+  if (!matchingLangName || !langNames.includes(matchingLangName)) {
+    return [...langNames];
   }
   
-  const arr = [...schemaLanguages];
-  const langIndex = arr.indexOf(matchingSchemaLang);
-  if (langIndex > 0) {
-    const [removed] = arr.splice(langIndex, 1);
+  const arr = [...langNames];
+  const idx = arr.indexOf(matchingLangName);
+  if (idx > 0) {
+    const [removed] = arr.splice(idx, 1);
     arr.unshift(removed);
   }
   return arr;
-};
-
-/**
- * Resolve effective schema language with override support
- */
-export const getEffectiveSchemaLanguage = (schemaLanguageOverride, availableLanguages, uiLanguageCode = null) => {
-  if (schemaLanguageOverride) return schemaLanguageOverride;
-  
-  const currentUILang = uiLanguageCode || getCurrentUILanguage();
-  return getBestSchemaLanguage({ languages: availableLanguages }, currentUILang);
 };

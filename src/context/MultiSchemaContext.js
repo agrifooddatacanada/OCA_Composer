@@ -89,7 +89,7 @@ const createDefaultSchemaState = () => ({
     metadata: {
       name: "",
       description: "",
-      languages: [LanguageConstants.DEFAULT_SCHEMA_LANGUAGE],
+      languages: [LanguageConstants.DEFAULT_LANG_NAME],
       digest: ""
     },
     attributes: {}, // Raw attribute definitions from OCA
@@ -110,7 +110,7 @@ const createDefaultSchemaState = () => ({
   metadata: {
     name: "",
     description: "",
-    languages: [LanguageConstants.DEFAULT_SCHEMA_LANGUAGE]
+    languages: [LanguageConstants.DEFAULT_LANG_NAME]
   },
   // Schema attributes
   attributes: [],

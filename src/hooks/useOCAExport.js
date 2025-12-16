@@ -2,7 +2,7 @@ import { useContext, useMemo, useState } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import { getOCALanguageCode, getUILanguageCode } from "../utils/languageUtils";
+import { getOCACodeFromLangName, getUICodeFromLangName } from "../utils/languageUtils";
 import { getPackageBundle, getPackageDependencies, findSchemaById, getPackageBundleId } from "../utils/packageUtils";
 import {
   ADC,
@@ -83,7 +83,7 @@ const useOCAExport = () => {
   const schemaDescription = useMemo(() => {
     const result = {};
     languages.forEach((language) => {
-      const langKey = getOCALanguageCode(language);
+      const langKey = getOCACodeFromLangName(language);
       const localized = metadata.localized?.[langKey] || {};
       result[language] = {
         name: localized.name || metadata.name || "",
@@ -175,7 +175,7 @@ const useOCAExport = () => {
     // Build schemaDescription for target
     const targetSchemaDescription = {};
     targetLanguages.forEach((language) => {
-      const langKey = getOCALanguageCode(language);
+      const langKey = getOCACodeFromLangName(language);
       const localized = targetMetadata.localized?.[langKey] || {};
       targetSchemaDescription[language] = {
         name: localized.name || targetMetadata.name || "",
@@ -233,7 +233,7 @@ const useOCAExport = () => {
       const languageObject = {};
       languageObject.language = language;
       languageObject.code =
-        getUILanguageCode(language) ||
+        getUICodeFromLangName(language) ||
         customIsos[language.toLowerCase()] ||
         "unknown";
 
@@ -405,7 +405,7 @@ const useOCAExport = () => {
           if (targetSavedEntryCodes[item] && targetSavedEntryCodes[item].length > 0) {
             // Entry codes are stored with 3-letter OCA language codes (eng, fra, etc.)
             // Get the proper 3-letter OCA code from schema language name
-            const threeLetterCode = getOCALanguageCode(language.language);
+            const threeLetterCode = getOCACodeFromLangName(language.language);
             
             let entryString = "";
             for (const entry of targetSavedEntryCodes[item]) {

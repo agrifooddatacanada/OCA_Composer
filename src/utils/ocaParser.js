@@ -9,7 +9,7 @@ import {
   FIELD_RANGE_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY
 } from "../constants/constants";
-import { getSchemaLanguageFromUI, LanguageConstants } from "./languageUtils";
+import { getLangNameFromUICode, LanguageConstants } from "./languageUtils";
 
 /**
  * OCA Package Parser Utility
@@ -348,7 +348,7 @@ export class OCAParser {
       
       // Convert 2-letter OCA code (e.g., "en") to schema language name (e.g., "English")
       // This ensures lanAttributeRowData keys match what LanguageDetails expects
-      const languageName = getSchemaLanguageFromUI(langCode) || langCode;
+      const languageName = getLangNameFromUICode(langCode) || langCode;
       
       lanAttributeRowData[languageName] = attributesWithLists.map((attr) => ({
         Attribute: attr.Attribute,
@@ -610,7 +610,7 @@ export class OCAParser {
           const codeMap = { eng: 'English', fra: 'French', deu: 'German', spa: 'Spanish' };
           return codeMap[code] || code;
         })
-      : LanguageConstants.FALLBACK_LANGUAGES;
+      : LanguageConstants.FALLBACK_LANG_NAMES;
 
     return {
       localized,

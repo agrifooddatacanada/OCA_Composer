@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import JSZip from "jszip";
 import { Context } from "../App";
 import { dataFormatsArray, documentationArray } from "./documentationArray";
-import { getUILanguageCode } from "../utils/languageUtils";
+import { getUICodeFromLangName } from "../utils/languageUtils";
 import {
   divisionCodes,
   groupCodes,
@@ -225,7 +225,7 @@ const useExportLogic = () => {
         const languageObject = {};
         languageObject.language = language;
         languageObject.code =
-          getUILanguageCode(language) ||
+          getUICodeFromLangName(language) ||
           customIsos[language.toLowerCase()];
         if (!languageObject.code) {
           languageObject.code = "unknown";

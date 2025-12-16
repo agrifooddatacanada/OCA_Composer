@@ -16,7 +16,7 @@ import { removeSpacesAndColonFromArrayOfObjects } from "../constants/removeSpace
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import { getOCALanguageCode } from "../utils/languageUtils";
+import { getOCACodeFromLangName } from "../utils/languageUtils";
 
 const errorMessages = {
   fieldEmpty: "Please fill out all fields",
@@ -112,7 +112,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
 
       // Convert schema language name (e.g., "English") to OCA code (e.g., "eng")
       const resolveAlpha3 = (lang) => {
-        return getOCALanguageCode(lang);
+        return getOCACodeFromLangName(lang);
       };
 
       const initialized = {};
@@ -190,7 +190,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       const row = { Code: "" };
       // Use OCA codes as field keys
       languages.forEach((languageName) => {
-        const ocaCode = getOCALanguageCode(languageName);
+        const ocaCode = getOCACodeFromLangName(languageName);
         row[ocaCode] = "";
       });
       return row;
@@ -238,7 +238,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
             
             // Ensure all current languages have properties (even if empty)
             languages.forEach((languageName) => {
-              const ocaCode = getOCALanguageCode(languageName);
+              const ocaCode = getOCACodeFromLangName(languageName);
               if (!row[ocaCode]) {
                 row[ocaCode] = overlayEntries?.[ocaCode]?.[attr]?.[code] || "";
               }
@@ -315,7 +315,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
         }
         // Check each language field - convert display name to OCA code (eng, fra, etc.)
         languages.forEach((language) => {
-          const ocaCode = getOCALanguageCode(language);
+          const ocaCode = getOCACodeFromLangName(language);
           if (!obj[ocaCode]) {
             pageForwardDisabledRef.current = true;
             setErrorMessage(t(errorMessages.fieldEmpty));

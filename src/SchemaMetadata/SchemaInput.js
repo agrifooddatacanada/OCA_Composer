@@ -6,7 +6,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { getOCALanguageCode, getUILanguageCode } from "../utils/languageUtils";
+import { getOCACodeFromLangName, getUICodeFromLangName } from "../utils/languageUtils";
 import Classification from "./Classification";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 import { useMultiSchema } from "../context/MultiSchemaContext";
@@ -30,8 +30,8 @@ export default function SchemaInput({
   const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
 
   // Define language key - use proper OCA language code for all languages
-  // No fallback - if getOCALanguageCode returns "eng" default, that's intentional
-  const langKey = getOCALanguageCode(language);
+  // No fallback - if getOCACodeFromLangName returns "eng" default, that's intentional
+  const langKey = getOCACodeFromLangName(language);
 
   // Get schema data from MultiSchemaContext (works for both manual and imported schemas)
   // MultiSchemaContext handles null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
@@ -206,11 +206,11 @@ export default function SchemaInput({
           <Box>
             <Typography variant="body2" sx={{ fontStyle: "italic" }}>
               ISO Code:{" "}
-              {getUILanguageCode(language) ||
+              {getUICodeFromLangName(language) ||
                 customIsos[language.toLowerCase()]}
             </Typography>
           </Box>
-          {!getUILanguageCode(language) && (
+          {!getUICodeFromLangName(language) && (
             <Button
               variant="contained"
               color="button"

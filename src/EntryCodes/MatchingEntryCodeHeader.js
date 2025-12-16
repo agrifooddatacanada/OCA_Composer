@@ -2,7 +2,7 @@ import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, u
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { Context } from '../App';
 import { useMultiSchema } from '../context/MultiSchemaContext';
-import { getOCALanguageCode } from '../utils/languageUtils';
+import { getOCACodeFromLangName } from '../utils/languageUtils';
 import { Box, MenuItem } from '@mui/material';
 import { gridStyles } from '../constants/styles';
 import { AgGridReact } from 'ag-grid-react';
@@ -102,13 +102,13 @@ const MatchingEntryCodeHeader = () => {
           for (const lang of matchingEntryCodeMap[assign]) {
             // Convert language name to OCA code (e.g., "English" -> "eng")
             // Keep "Code" as is
-            const langKey = lang === "Code" ? "Code" : getOCALanguageCode(lang);
+            const langKey = lang === "Code" ? "Code" : getOCACodeFromLangName(lang);
             newRow[langKey] = row[assign];
           }
         }
         // Ensure all languages have a key (using OCA codes)
         for (const lang of newLanguages) {
-          const langKey = lang === "Code" ? "Code" : getOCALanguageCode(lang);
+          const langKey = lang === "Code" ? "Code" : getOCACodeFromLangName(lang);
           if (!(langKey in newRow)) {
             newRow[langKey] = '';
           }

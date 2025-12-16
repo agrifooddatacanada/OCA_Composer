@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import i18next from "i18next";
 import { Context } from "../App";
-import { getSchemaLanguageFromUI, getOCALanguageCode, toOCACode } from "../utils/languageUtils";
+import { getLangNameFromUICode, getOCACodeFromLangName, getOCACodeFromUICode } from "../utils/languageUtils";
 import {
   ADC,
   DEFAULT_THREE_LETTER_LANGUAGE_CODE,
@@ -57,9 +57,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
 
   // Ensuring that the currently selected site language is one of the languages of the schema
   const currentLanguageCode = languages.some(
-    (language) => language === getSchemaLanguageFromUI(i18next.language)
+    (language) => language === getLangNameFromUICode(i18next.language)
   )
-    ? toOCACode(i18next.language)
+    ? getOCACodeFromUICode(i18next.language)
     : DEFAULT_THREE_LETTER_LANGUAGE_CODE;
 
   const generateMarkdownReadMeFromJson = (schemaData, catalogueData) => {
@@ -132,7 +132,7 @@ const useGenerateMarkdownReadMeFromJson = () => {
     // Build language code lookup map
     const languageCodeLookupMap = {};
     languages.forEach(lang => {
-      languageCodeLookupMap[lang.toLowerCase()] = getOCALanguageCode(lang);
+      languageCodeLookupMap[lang.toLowerCase()] = getOCACodeFromLangName(lang);
     });
 
     fileContent += generateSchemaQuickView({

@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import { PlaceholderNode, DetailedNode, TreeNode } from "./CustomNodes";
 import { generateTreeLayout, generateDetailedLayout } from "./layoutGenerators";
 import { extractSchemaDataFromPackage } from "./dataUtils";
-import { getSchemaLanguageFromUI, getOCALanguageCode, toOCACode } from "../utils/languageUtils";
+import { getLangNameFromUICode, getOCACodeFromLangName, getOCACodeFromUICode } from "../utils/languageUtils";
 import CustomPalette from "../constants/customPalette";
 import Spinner from "../components/Spinner";
 
@@ -157,14 +157,14 @@ const SchemaVisualizationEmbed = ({
     if (schemaLanguageOverride) {
       // Schema-specific language override (from schema language buttons)
       // schemaLanguageOverride is a full language name like "French", "English"
-      languageCode = getOCALanguageCode(schemaLanguageOverride);
+      languageCode = getOCACodeFromLangName(schemaLanguageOverride);
     } else {
       // Primary: Use i18n app language (from EN/FR toggle)
-      const i18nLanguageName = getSchemaLanguageFromUI(i18n.language);
+      const i18nLanguageName = getLangNameFromUICode(i18n.language);
       if (i18nLanguageName) {
-        languageCode = getOCALanguageCode(i18nLanguageName);
+        languageCode = getOCACodeFromLangName(i18nLanguageName);
       } else {
-        languageCode = toOCACode(i18n.language) || "eng";
+        languageCode = getOCACodeFromUICode(i18n.language) || "eng";
       }
     }
     

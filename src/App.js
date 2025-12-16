@@ -95,7 +95,7 @@ function App() {
     division: "",
     group: ""
   });
-  const [languages, setLanguages] = useState([LanguageConstants.DEFAULT_SCHEMA_LANGUAGE]);
+  const [languages, setLanguages] = useState([LanguageConstants.DEFAULT_LANG_NAME]);
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
@@ -636,7 +636,7 @@ function App() {
       group: ""
     });
 
-    setLanguages([LanguageConstants.DEFAULT_SCHEMA_LANGUAGE]);
+    setLanguages([LanguageConstants.DEFAULT_LANG_NAME]);
     setAttributeRowData([]);
     setEntryCodeRowData([]);
     setAttributesWithLists([]);
