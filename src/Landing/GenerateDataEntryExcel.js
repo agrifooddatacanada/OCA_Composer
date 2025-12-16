@@ -10,7 +10,8 @@ import {
   FormControl,
   InputLabel,
   Box,
-  Typography
+  Typography,
+  Tooltip
 } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CustomPalette } from "../constants/customPalette";
@@ -58,7 +59,7 @@ const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) =>
   }
 };
 
-const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
+const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck, isMultiSchema }) => {
   const { t } = useTranslation();
   const { languages } = useContext(Context);
   const { currentSchemaId, getSchemaState } = useMultiSchema();
@@ -107,21 +108,26 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => 
 
   return (
     <>
-      <Button
-        variant="contained"
-        color="navButton"
-        onClick={handleClickOpen}
-        sx={{
-          backgroundColor: CustomPalette.PRIMARY,
-          ":hover": { backgroundColor: CustomPalette.SECONDARY },
-          width: "100%",
-          maxWidth: "300px",
-          marginTop: "30px"
-        }}
-        disabled={disableButtonCheck}
+      <Tooltip
+        title={isMultiSchema ? t("Not available for multi-level schemas") : ""}
+        arrow
       >
-        {t("Generate Data Entry Excel")}
-      </Button>
+        <span style={{ width: "100%", maxWidth: "300px", display: "inline-block", marginTop: "30px" }}>
+          <Button
+            variant="contained"
+            color="navButton"
+            onClick={handleClickOpen}
+            sx={{
+              backgroundColor: CustomPalette.PRIMARY,
+              ":hover": { backgroundColor: CustomPalette.SECONDARY },
+              width: "100%"
+            }}
+            disabled={disableButtonCheck}
+          >
+            {t("Generate Data Entry Excel")}
+          </Button>
+        </span>
+      </Tooltip>
       <Dialog
         open={open}
         onClose={() => handleClose(false)}

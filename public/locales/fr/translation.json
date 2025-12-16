@@ -292,6 +292,7 @@
   "To make it easier to create a schema you can drag and drop your existing dataset that...": "Pour faciliter la création d'un schéma, vous pouvez faire glisser et déposer votre ensemble de données existant pour lequel vous créez le schéma. Cet ensemble de données doit être sous forme de tableau au format Excel ou .csv. La première ligne doit contenir les en-têtes de colonnes (c'est-à-dire les noms d'attributs). \n \n Notez qu'aucune donnée ne quitte votre appareil et qu'aucune donnée n'est téléchargée sur un serveur. Tout le traitement pour copier les en-têtes de colonnes (noms d'attributs) dans le brouillon de schéma se produit sur votre appareil.",
   "Required": "Requis",
   "Enter/Verify Data in Webpage": "Saisir/vérifier les données dans la page Web",
+  "Not available for multi-level schemas": "Non disponible pour les schémas multi-niveaux",
   "Upload Data (optional)": "Télécharger des données (facultatif)",
   "Skip Upload Data": "Ignorer les données de téléchargement",
   "Data Standard": "Norme de données",

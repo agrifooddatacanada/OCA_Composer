@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Box, Button, Typography, useMediaQuery } from "@mui/material";
+import { Box, Button, Typography, useMediaQuery, Tooltip } from "@mui/material";
 import { VerifyOcaPackage } from "oca_package";
 import UseASchemaAccordionItem from "./UseASchemaAccordionItem";
 import UseASchemaWithDataAccordionItem from "./UseASchemaWithDataAccordionItem";
@@ -106,6 +106,7 @@ const AccordionList = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
+  const isMultiSchema = hasMultiSchemaStructure(OCAPackage);
   let isInvalidOcaPackage = false;
 
   if (OCAPackage) {
@@ -299,20 +300,29 @@ const AccordionList = () => {
             <GenerateDataEntryExcel
               rawFile={rawFile}
               setLoading={setLoading}
-              disableButtonCheck={disableAdditionalSchemaTools}
+              disableButtonCheck={disableAdditionalSchemaTools || isMultiSchema}
+              isMultiSchema={isMultiSchema}
             />
-            <Button
-              variant="contained"
-              color="navButton"
-              onClick={navigateToPreviewSchema}
-              sx={{
-                ...buttonStyles,
-                marginBottom: "30px"
-              }}
-              disabled={disableAdditionalSchemaTools}
+            <Tooltip
+              title={isMultiSchema ? t("Not available for multi-level schemas") : ""}
+              arrow
             >
-              {t("Enter/Verify Data in Webpage")}
-            </Button>
+              <span style={{ width: "100%", maxWidth: "300px", display: "inline-block", marginTop: "30px", marginBottom: "30px" }}>
+                <Button
+                  variant="contained"
+                  color="navButton"
+                  onClick={navigateToPreviewSchema}
+                  sx={{
+                    backgroundColor: CustomPalette.PRIMARY,
+                    ":hover": { backgroundColor: CustomPalette.SECONDARY },
+                    width: "100%"
+                  }}
+                  disabled={disableAdditionalSchemaTools || isMultiSchema}
+                >
+                  {t("Enter/Verify Data in Webpage")}
+                </Button>
+              </span>
+            </Tooltip>
           </Box>
         </Box>
       </Box>

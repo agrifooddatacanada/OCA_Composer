@@ -3,7 +3,8 @@ import {
   AccordionSummary,
   Box,
   Button,
-  Typography
+  Typography,
+  Tooltip
 } from "@mui/material";
 import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,11 +20,13 @@ import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
 import { Context } from "../App";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
+import { hasMultiSchemaStructure } from "../utils/schemaUtils";
 
 const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setCurrentDataValidatorPage } = useContext(Context);
+  const { setCurrentDataValidatorPage, OCAPackage } = useContext(Context);
+  const isMultiSchema = hasMultiSchemaStructure(OCAPackage);
   const {
     jsonRawFile,
     setJsonRawFile,
@@ -98,24 +101,29 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
           <GenerateDataEntryExcel
             rawFile={jsonRawFile}
             setLoading={setJsonLoading}
-            disableButtonCheck={disableAdditionalSchemaTools}
+            disableButtonCheck={disableAdditionalSchemaTools || isMultiSchema}
+            isMultiSchema={isMultiSchema}
           />
-          <Button
-            variant="contained"
-            color="navButton"
-            onClick={handleMoveToPreviewSchema}
-            sx={{
-              backgroundColor: CustomPalette.PRIMARY,
-              ":hover": { backgroundColor: CustomPalette.SECONDARY },
-              width: "100%",
-              maxWidth: "300px",
-              marginTop: "20px",
-              marginBottom: "20px"
-            }}
-            disabled={disableAdditionalSchemaTools}
+          <Tooltip
+            title={isMultiSchema ? t("Not available for multi-level schemas") : ""}
+            arrow
           >
-            {t("Enter/Verify Data in Webpage")}
-          </Button>
+            <span style={{ width: "100%", maxWidth: "300px", display: "inline-block", marginTop: "20px", marginBottom: "20px" }}>
+              <Button
+                variant="contained"
+                color="navButton"
+                onClick={handleMoveToPreviewSchema}
+                sx={{
+                  backgroundColor: CustomPalette.PRIMARY,
+                  ":hover": { backgroundColor: CustomPalette.SECONDARY },
+                  width: "100%"
+                }}
+                disabled={disableAdditionalSchemaTools || isMultiSchema}
+              >
+                {t("Enter/Verify Data in Webpage")}
+              </Button>
+            </span>
+          </Tooltip>
         </Box>
 
         <div
