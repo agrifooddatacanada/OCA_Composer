@@ -9,7 +9,7 @@ import Languages from "./Languages";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
-import { codesToLanguages } from "../constants/isoCodes";
+import { getSchemaLanguageFromUI } from "../utils/languageUtils";
 
 export const DataHeaderRenderer = memo((props) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -93,7 +93,7 @@ const AttributeMatch = () => {
   const [type, setType] = useState(() => {
     // split the language code into the base language code (e.g. from US-en to en)
     const siteLanguageCode = (i18next.resolvedLanguage || i18next.language).split("-")[0];
-    const siteLanguage = codesToLanguages[siteLanguageCode];
+    const siteLanguage = getSchemaLanguageFromUI(siteLanguageCode);
     return siteLanguage === "English"
       ? languages[0]
       : languages.find((language) => language.includes(siteLanguage));
@@ -197,7 +197,7 @@ const AttributeMatch = () => {
   useEffect(() => {
     // split the language code into the base language code (e.g. from US-en to en)
     const siteLanguageCode = (i18next.resolvedLanguage || i18next.language).split("-")[0];
-    const siteLanguage = codesToLanguages[siteLanguageCode];
+    const siteLanguage = getSchemaLanguageFromUI(siteLanguageCode);
     setType(
       siteLanguage === "English"
         ? languages[0]

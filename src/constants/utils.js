@@ -1,11 +1,8 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
-import {
-  codesToLanguages,
-  alpha3CodesToTwoLetterCodes
-} from "./isoCodes";
-import { LanguageUtils } from "../utils/languageUtils";
+import { alpha3CodesToTwoLetterCodes } from "./isoCodes";
+import { getSchemaLanguageFromUI, getOCALanguageCode } from "../utils/languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -39,7 +36,7 @@ export const getCurrentData = (currentApi, includedError) => {
 };
 
 export const getDescriptiveFileName = (schemaDescription, commonFileName) => {
-  const currentLanguage = codesToLanguages[i18next.language] || DEFAULT_LANGUAGE;
+  const currentLanguage = getSchemaLanguageFromUI(i18next.language) || DEFAULT_LANGUAGE;
   const schemaName = schemaDescription[currentLanguage]?.name;
   const fileName = `${schemaName ? `${schemaName.split(" ")[0]}_` : ""}${commonFileName}`;
   return fileName;
@@ -516,7 +513,7 @@ export const getFormInformationInput = (
   captureBase
 ) => {
   const threeLetterCodes = languages.map(
-    (lang) => LanguageUtils.getOCALanguageCode(lang)
+    (lang) => getOCALanguageCode(lang)
   );
 
   const schemaName = {};

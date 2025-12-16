@@ -257,3 +257,62 @@ export const LanguageConstants = {
   SUPPORTED_UI_LANGUAGES: ["en", "fr"],
   SUPPORTED_SCHEMA_LANGUAGES: ["English", "French"]
 };
+
+// === DIRECT FUNCTION EXPORTS ===
+// For cleaner imports: import { getSchemaLanguageFromUI } from '../utils/languageUtils'
+// Instead of: import { LanguageUtils } from '../utils/languageUtils'; LanguageUtils.getSchemaLanguageFromUI()
+
+/**
+ * Convert UI language code (2-letter) to schema language name
+ * "en" → "English", "fr" → "French"
+ */
+export const getSchemaLanguageFromUI = (uiLanguageCode) => {
+  if (!uiLanguageCode) return null;
+  const normalizedCode = uiLanguageCode.split("-")[0];
+  return codesToLanguages[normalizedCode] || null;
+};
+
+/**
+ * Convert schema language name to 2-letter UI code
+ * "English" → "en", "French" → "fr"
+ */
+export const getUILanguageCode = (schemaLanguageName) => {
+  if (!schemaLanguageName) return "en";
+  const normalizedName = schemaLanguageName.toLowerCase();
+  return languageCodesObject[normalizedName] || "en";
+};
+
+/**
+ * Convert schema language name to 3-letter OCA code
+ * "English" → "eng", "French" → "fra"
+ */
+export const getOCALanguageCode = (schemaLanguageName) => {
+  if (!schemaLanguageName) return "eng";
+  const normalizedName = schemaLanguageName.toLowerCase();
+  return languageNameToAlpha3Codes[normalizedName] || "eng";
+};
+
+/**
+ * Convert 2-letter UI code to 3-letter OCA code
+ * "en" → "eng", "fr" → "fra"
+ * (Replaces toThreeLetterCode from isoCodes.js)
+ */
+export const toOCACode = (uiLanguageCode) => {
+  const schemaLang = getSchemaLanguageFromUI(uiLanguageCode);
+  return schemaLang ? getOCALanguageCode(schemaLang) : "eng";
+};
+
+/**
+ * Convert 3-letter OCA code to schema language name
+ * "eng" → "English", "fra" → "French"
+ */
+export const getSchemaLanguageFromOCA = (ocaLanguageCode) => {
+  if (!ocaLanguageCode) return null;
+  const normalizedCode = ocaLanguageCode.toLowerCase();
+  for (const [languageName, code] of Object.entries(languageNameToAlpha3Codes)) {
+    if (code === normalizedCode) {
+      return languageName.charAt(0).toUpperCase() + languageName.slice(1);
+    }
+  }
+  return null;
+};

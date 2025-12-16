@@ -3,8 +3,7 @@
 import { useContext } from "react";
 import i18next from "i18next";
 import { Context } from "../App";
-import { codesToLanguages } from "../constants/isoCodes";
-import { LanguageUtils } from "../utils/languageUtils";
+import { getSchemaLanguageFromUI, getUILanguageCode } from "../utils/languageUtils";
 import { DEFAULT_LANGUAGE_CODE } from "../constants/constants";
 import {
   downloadMarkdownFile,
@@ -23,7 +22,7 @@ const useGenerateMarkdownReadMe = () => {
   const { languages } = useContext(Context);
   // Ensuring that the currently selected site language is one of the languages of the schema
   const currentLanguageCode = languages.some(
-    (language) => language === codesToLanguages[i18next.language]
+    (language) => language === getSchemaLanguageFromUI(i18next.language)
   )
     ? i18next.language
     : "en";
@@ -63,10 +62,10 @@ const useGenerateMarkdownReadMe = () => {
     );
     const attributeNames = Object.keys(captureBaseOverlay.attributes);
 
-    // Build language code lookup map using LanguageUtils
+    // Build language code lookup map
     const languageCodeLookupMap = {};
     languages.forEach(lang => {
-      languageCodeLookupMap[lang.toLowerCase()] = LanguageUtils.getUILanguageCode(lang);
+      languageCodeLookupMap[lang.toLowerCase()] = getUILanguageCode(lang);
     });
 
     fileContent += generateFrontMatter(metaOverlayCurrentLanguage, catalogueData);
