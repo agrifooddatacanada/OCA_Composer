@@ -478,13 +478,26 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             const name = attr.Attribute;
             const type = attr.Type;
             if (type === "Child Schema") {
-              // Always create a placeholder reference for Child Schema types
-              // Check if original was already a reference (refn: or refs:), preserve that format
-              const originalValue = originalAttributes[name];
-              if (typeof originalValue === 'string' && (originalValue.startsWith('refn:') || originalValue.startsWith('refs:'))) {
-                rebuiltAttributes[name] = originalValue;
+              // Check if the child schema has been initialized with attributes
+              // If so, convert from placeholder (refn:) to proper reference (refs:)
+              const childSchemaState = schemaStatesRef.current[name];
+              const childHasData = childSchemaState && 
+                (childSchemaState.initialized || 
+                 (childSchemaState.attributes && childSchemaState.attributes.length > 0));
+              
+              if (childHasData) {
+                // Child schema has data - use refs: to make it a proper reference
+                rebuiltAttributes[name] = `refs:${name}`;
               } else {
-                rebuiltAttributes[name] = `refn:placeholder_${name}`;
+                // Child schema is still a placeholder - keep refn:
+                const originalValue = originalAttributes[name];
+                if (typeof originalValue === 'string' && (originalValue.startsWith('refn:') || originalValue.startsWith('refs:'))) {
+                  // If original was refs: but child no longer has data, keep it as refs:
+                  // (this handles the case where child was imported with data)
+                  rebuiltAttributes[name] = originalValue;
+                } else {
+                  rebuiltAttributes[name] = `refn:placeholder_${name}`;
+                }
               }
             } else {
               rebuiltAttributes[name] = type || "Text";
