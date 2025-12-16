@@ -8,7 +8,7 @@ import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { codesToLanguages } from "../constants/isoCodes";
+import { getSchemaLanguageFromUI } from "../utils/languageUtils";
 import i18next from "i18next";
 import {
   formatCodeBinaryDescription,
@@ -63,7 +63,7 @@ const FormInformation = () => {
   const [loading, setLoading] = useState(true);
 
   const languageIndex = languages.findIndex(
-    (item) => codesToLanguages?.[i18next.language] === item
+    (item) => getSchemaLanguageFromUI(i18next.language) === item
   );
   const filteredLanguages = [...languages];
   if (languageIndex !== -1 && languageIndex !== 0) {
@@ -75,7 +75,7 @@ const FormInformation = () => {
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {
-    const userLanguage = codesToLanguages?.[i18next.language];
+    const userLanguage = getSchemaLanguageFromUI(i18next.language);
     if (userLanguage && languages.includes(userLanguage)) {
       setCurrentLanguage(userLanguage);
     }

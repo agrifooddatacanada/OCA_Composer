@@ -9,7 +9,6 @@ import CustomPalette from "../constants/customPalette";
 import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
-import { codesToLanguages } from "../constants/isoCodes";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import { LanguageUtils } from "../utils/languageUtils";
 

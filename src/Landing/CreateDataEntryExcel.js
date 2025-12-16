@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import JSZip from "jszip";
-import { codesToLanguages } from "../constants/isoCodes";
+import { getUILanguageCode } from "../utils/languageUtils";
 import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
@@ -95,9 +95,8 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   if (selectedLang === "English") {
     selectedLang = DEFAULT_LANGUAGE;
   } else {
-    selectedLang = Object.keys(codesToLanguages).find(
-      (key) => codesToLanguages[key] === selectedLang
-    );
+    // Convert language name (e.g. "English") to 2-letter code (e.g. "en")
+    selectedLang = getUILanguageCode(selectedLang);
   }
 
   let inPutJsonResult = null;
