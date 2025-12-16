@@ -83,7 +83,7 @@ const useOCAExport = () => {
   const schemaDescription = useMemo(() => {
     const result = {};
     languages.forEach((language) => {
-      const langKey = language.toLowerCase().substring(0, 3);
+      const langKey = LanguageUtils.getOCALanguageCode(language);
       const localized = metadata.localized?.[langKey] || {};
       result[language] = {
         name: localized.name || metadata.name || "",
@@ -175,7 +175,7 @@ const useOCAExport = () => {
     // Build schemaDescription for target
     const targetSchemaDescription = {};
     targetLanguages.forEach((language) => {
-      const langKey = language.toLowerCase().substring(0, 3);
+      const langKey = LanguageUtils.getOCALanguageCode(language);
       const localized = targetMetadata.localized?.[langKey] || {};
       targetSchemaDescription[language] = {
         name: localized.name || targetMetadata.name || "",

@@ -165,6 +165,11 @@ export const generateTreeLayout = (
   const labelOverlay =
     overlays?.label?.find((l) => l.language === language) || overlays?.label?.[0] || {};
 
+  // Get meta overlay for root schema name using the specified language
+  const rootMetaOverlay = Array.isArray(overlays?.meta)
+    ? (overlays.meta.find((m) => m.language === language) || overlays.meta[0])
+    : null;
+
   // Recursive function to build hierarchical structure
   const buildHierarchy = ({
     nodeId,
@@ -232,7 +237,7 @@ export const generateTreeLayout = (
     nodeId: "root",
     attributes,
     labelOverlay,
-    metaOverlay: null,
+    metaOverlay: rootMetaOverlay,
     nodeType: "root"
   });
 

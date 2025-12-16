@@ -70,7 +70,7 @@ const useExportLogicV2 = () => {
   const schemaDescription = useMemo(() => {
     const result = {};
     languages.forEach((language) => {
-      const langKey = language.toLowerCase().substring(0, 3);
+      const langKey = LanguageUtils.getOCALanguageCode(language);
       const localized = metadata.localized?.[langKey] || {};
       result[language] = {
         name: localized.name || metadata.name || "",

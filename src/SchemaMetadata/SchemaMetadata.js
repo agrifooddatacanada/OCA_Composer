@@ -67,14 +67,15 @@ const SchemaMetadata = forwardRef(({
     const metadata = schemaState?.metadata || {};
     
     languages.forEach(lang => {
-      // Use the same ISO code conversion as when writing
-      const langKey = lang.toLowerCase();
+      // Use OCA language code for storage lookup
       const langCode = LanguageUtils.getOCALanguageCode(lang);
       const localized = metadata.localized?.[langCode] || {};
       
+      // Use English root metadata as fallback for English language
+      const isEnglish = langCode === 'eng';
       result[lang] = { 
-        name: localized.name || (lang.toLowerCase() === 'english' ? metadata.name : "") || "", 
-        description: localized.description || (lang.toLowerCase() === 'english' ? metadata.description : "") || ""
+        name: localized.name || (isEnglish ? metadata.name : "") || "", 
+        description: localized.description || (isEnglish ? metadata.description : "") || ""
       };
     });
     
@@ -96,8 +97,7 @@ const SchemaMetadata = forwardRef(({
       let rootDescription = schemaState?.metadata?.description || "";
       
       Object.entries(newDescription).forEach(([langName, data]) => {
-        // Use proper ISO 639-3 code conversion with fallback
-        const langKey = langName.toLowerCase();
+        // Use OCA language code for storage
         const langCode = LanguageUtils.getOCALanguageCode(langName);
         
         localized[langCode] = {
@@ -106,7 +106,7 @@ const SchemaMetadata = forwardRef(({
         };
         
         // Use English as the root name/description if available
-        if (langName.toLowerCase() === 'english') {
+        if (langCode === 'eng') {
           rootName = data.name || "";
           rootDescription = data.description || "";
         }
@@ -136,7 +136,7 @@ const SchemaMetadata = forwardRef(({
     const updatedLocalized = { ...currentLocalized };
     
     newLanguages.forEach(langName => {
-      const langKey = langName.toLowerCase();
+      // Use OCA language code for storage
       const langCode = LanguageUtils.getOCALanguageCode(langName);
       
       // Only initialize if this language doesn't have an entry yet

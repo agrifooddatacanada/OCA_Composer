@@ -379,13 +379,8 @@ export default function ViewSchema({
             const labelObj = {};
             const listObj = {};
 
-            // Quick helper to derive overlay language code from UI language name
-            const toLangKey = (l) =>
-              l === "English"
-                ? "eng"
-                : l === "French"
-                  ? "fra"
-                  : (l || "").toLowerCase();
+            // Convert language name to OCA code
+            const toLangKey = (l) => LanguageUtils.getOCALanguageCode(l);
 
             // Build a map of attribute -> entryCodes array once
             const entryCodesMap = schemaState.entryCodes || {};

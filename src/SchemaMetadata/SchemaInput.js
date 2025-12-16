@@ -30,7 +30,8 @@ export default function SchemaInput({
   const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
 
   // Define language key - use proper OCA language code for all languages
-  const langKey = LanguageUtils.getOCALanguageCode(language) || language?.toLowerCase();
+  // No fallback - if getOCALanguageCode returns "eng" default, that's intentional
+  const langKey = LanguageUtils.getOCALanguageCode(language);
 
   // Get schema data from MultiSchemaContext (works for both manual and imported schemas)
   // MultiSchemaContext handles null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
