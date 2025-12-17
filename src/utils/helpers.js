@@ -585,8 +585,6 @@ const fetchOCABundle = async (said) => {
 
 export const generateOCABundle = async (OCAFileData) => {
   try {
-    console.log("Sending text DSL to OCA repository:", OCAFileData.substring(0, 200) + "...");
-    
     const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles`, {
       method: "POST",
       headers: {
@@ -596,12 +594,23 @@ export const generateOCABundle = async (OCAFileData) => {
     });
 
     const responseData = await response.json();
-    console.log("OCA repository response:", responseData);
 
     // Check for API-level errors (even with 200 status)
     if (responseData.success === false || responseData.errors) {
       console.error("API returned error response:", responseData);
-      const errorMessages = responseData.errors ? responseData.errors.join(", ") : "Unknown error";
+      // Properly serialize errors - handle arrays of strings, arrays of objects, or single objects
+      let errorMessages = "Unknown error";
+      if (responseData.errors) {
+        if (Array.isArray(responseData.errors)) {
+          errorMessages = responseData.errors
+            .map(e => (typeof e === "object" ? JSON.stringify(e) : String(e)))
+            .join(", ");
+        } else if (typeof responseData.errors === "object") {
+          errorMessages = JSON.stringify(responseData.errors);
+        } else {
+          errorMessages = String(responseData.errors);
+        }
+      }
       throw new Error(`OCA Bundle generation failed: ${errorMessages}`);
     }
 
@@ -688,7 +697,10 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Meta overlay
   fileContent += "# Add meta overlay";
   coreOverlays.meta.forEach((item) => {
-    fileContent += `\nADD META ${getUICodeFromOCACode(item.language)} PROPS name="${item.name}" description="${item.description}"`;
+    // Escape quotes in name and description
+    const escapedName = (item.name || "").replace(/\\"/g, '"').replace(/"/g, '\\"');
+    const escapedDesc = (item.description || "").replace(/\\"/g, '"').replace(/"/g, '\\"');
+    fileContent += `\nADD META ${getUICodeFromOCACode(item.language)} PROPS name="${escapedName}" description="${escapedDesc}"`;
   });
   fileContent += "\n";
 
@@ -697,7 +709,10 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   if (coreOverlays.format) {
     fileContent += "ADD FORMAT ATTRS";
     Object.keys(coreOverlays.format.attribute_formats).forEach((attribute) => {
-      fileContent += ` ${attribute}="${coreOverlays.format.attribute_formats[attribute]}"`;
+      // Normalize and escape quotes to prevent double-escaping issues
+      const formatRule = coreOverlays.format.attribute_formats[attribute];
+      const escapedRule = formatRule.replace(/\\"/g, '"').replace(/"/g, '\\"');
+      fileContent += ` ${attribute}="${escapedRule}"`;
     });
     fileContent += "\n";
   }
@@ -718,7 +733,9 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
     coreOverlays.label.forEach((item) => {
       fileContent += `\nADD LABEL ${getUICodeFromOCACode(item.language)} ATTRS`;
       Object.keys(item.attribute_labels).forEach((attribute) => {
-        fileContent += ` ${attribute}="${item.attribute_labels[attribute]}"`;
+        // Escape quotes in labels
+        const escapedLabel = (item.attribute_labels[attribute] || "").replace(/\\"/g, '"').replace(/"/g, '\\"');
+        fileContent += ` ${attribute}="${escapedLabel}"`;
       });
     });
   }
@@ -730,7 +747,9 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
     coreOverlays.information.forEach((item) => {
       fileContent += `\nADD INFORMATION ${getUICodeFromOCACode(item.language)} ATTRS`;
       Object.keys(item.attribute_information).forEach((attribute) => {
-        fileContent += ` ${attribute}="${item.attribute_information[attribute]}"`;
+        // Escape quotes in information/descriptions
+        const escapedInfo = (item.attribute_information[attribute] || "").replace(/\\"/g, '"').replace(/"/g, '\\"');
+        fileContent += ` ${attribute}="${escapedInfo}"`;
       });
     });
   }

@@ -486,10 +486,11 @@ export default function ViewSchema({
               Unit: attr.Unit || "",
               Flagged: attr.Sensitive || false,
               // Add range overlay fields
+              // Default to false when no range data exists (matches useZipParser behavior)
               LowerBound: rangeData?.LowerBound || "",
               UpperBound: rangeData?.UpperBound || "",
-              LowerInclusive: rangeData?.LowerInclusive !== undefined ? rangeData.LowerInclusive : true,
-              UpperInclusive: rangeData?.UpperInclusive !== undefined ? rangeData.UpperInclusive : true,
+              LowerInclusive: rangeData?.LowerInclusive ?? false,
+              UpperInclusive: rangeData?.UpperInclusive ?? false,
               // Add unit framing field (UCUM code)
               "Unit Framing": unitFramingData?.["UCUM Code"] || ""
             };

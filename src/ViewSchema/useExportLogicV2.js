@@ -217,9 +217,10 @@ const useExportLogicV2 = () => {
       formatRuleRowData.forEach((item, index) => {
         const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText;
         if (formatRule) {
-          // Any " in the format text needs to be escaped for OCA file
-          // eslint-disable-next-line quotes
-          tempText += ` ${attributesList[index]}="${formatRule.replace(/"/g, '\\"')}"`;
+          // Normalize first (unescape any already-escaped quotes), then escape all quotes
+          // This prevents double-escaping when format rules contain \" from the original OCA file
+          const escapedRule = formatRule.replace(/\\"/g, '"').replace(/"/g, '\\"');
+          tempText += ` ${attributesList[index]}="${escapedRule}"`;
         }
       });
 
