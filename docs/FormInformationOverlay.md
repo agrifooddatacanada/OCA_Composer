@@ -151,7 +151,7 @@ The Form Builder writes normalized `formBuilderPages` to context for export.
 
 ## Export: OCA Package Integration
 
-File: `src/ViewSchema/useExportLogicV2.js`
+File: `src/hooks/useOCAExport.js`
 
 Export flow includes multiple overlays and extensions. The Form Information overlay is conditionally added when selected and data exists.
 

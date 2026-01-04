@@ -14,7 +14,7 @@ import Drop from "../StartSchema/Drop";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
 import { Context } from "../App";
-import useExportLogic from "../ViewSchema/useExportLogic";
+import useOCAExport from "../hooks/useOCAExport";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
 import CollaborateOnASchema from "./CollaborateOnASchema";
@@ -58,7 +58,7 @@ const AccordionList = () => {
   } = useHandleAllDrop();
 
   const { setJsonRawFile } = useHandleJsonDrop();
-  const { resetToDefaults } = useExportLogic();
+  const { resetToDefaults } = useOCAExport();
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
   const navigateToStartPage = () => {

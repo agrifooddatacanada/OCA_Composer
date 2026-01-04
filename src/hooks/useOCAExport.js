@@ -1,4 +1,5 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
@@ -25,7 +26,9 @@ import {
   RANGE,
   ATTRIBUTE_FRAMING,
   FORM,
-  FIELD_FORM_INFORMATION_OVERLAY
+  FIELD_FORM_INFORMATION_OVERLAY,
+  overlayItems,
+  SCHEMA_MODE_SINGLE
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -48,20 +51,39 @@ const currentEnv = process.env.REACT_APP_ENV;
  * 2. Manually created schemas (flat) - builds from scratch using text DSL
  * 3. Manually created schemas (nested) - builds and merges child schemas
  * 
- * Consolidates useExportLogicV2 and useMultiSchemaExport into single export system.
+ * Unified export hook - handles export and reset functionality for all schema types.
  */
 const useOCAExport = () => {
+  const navigate = useNavigate();
+  
   // Global settings (not schema-specific)
   const {
     divisionGroup,
     customIsos,
     overlay,
     OCAPackage,
-    formBuilderPages
+    formBuilderPages,
+    // Setters needed for resetToDefaults
+    setFileData,
+    setAttributesList,
+    setSchemaDescription,
+    setLanguages,
+    setAttributeRowData,
+    setEntryCodeRowData,
+    setLanAttributeRowData,
+    setAttributesWithLists,
+    setSavedEntryCodes,
+    setIsZip,
+    setRawFile,
+    setOCAPackage,
+    setSchemaMode,
+    setOverlay,
+    setSelectedOverlay,
+    setCurrentPage
   } = useContext(Context);
 
   // Get schema-specific data from MultiSchemaContext (single source of truth)
-  const { getCurrentSchemaId, getSchemaState, exportSchemaChanges, schemaStates, currentSchemaId: activeSchemaId } = useMultiSchema();
+  const { getCurrentSchemaId, getSchemaState, exportSchemaChanges, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchemaState(currentSchemaId);
   const metadata = schemaState?.metadata || {};
@@ -665,12 +687,49 @@ const useOCAExport = () => {
     }
   };
 
+  /**
+   * Reset all application state to defaults and navigate to landing page
+   */
+  const resetToDefaults = useCallback(() => {
+    // Clear legacy Context state
+    setFileData([]);
+    setAttributesList([]);
+    setSchemaDescription({
+      English: { name: "", description: "" }
+    });
+    setLanguages(["English"]);
+    setAttributeRowData([]);
+    setEntryCodeRowData([]);
+    setLanAttributeRowData([]);
+    setAttributesWithLists([]);
+    setSavedEntryCodes({});
+    setIsZip(false);
+    setRawFile([]);
+    setOCAPackage(null);
+    setSchemaMode(SCHEMA_MODE_SINGLE);
+    setOverlay(overlayItems);
+    setSelectedOverlay("");
+    
+    // Clear MultiSchemaContext state (schema states and localStorage)
+    clearAllSchemas();
+    
+    setCurrentPage("Landing");
+    navigate("/");
+  }, [
+    setFileData, setAttributesList, setSchemaDescription, setLanguages,
+    setAttributeRowData, setEntryCodeRowData, setLanAttributeRowData,
+    setAttributesWithLists, setSavedEntryCodes, setIsZip, setRawFile,
+    setOCAPackage, setSchemaMode, setOverlay, setSelectedOverlay,
+    clearAllSchemas, setCurrentPage, navigate
+  ]);
+
   return {
     exportData,
     error,
     clearError: () => setError(""),
     hasNestedSchemas,
-    isImportedPackage: !!OCAPackage
+    isImportedPackage: !!OCAPackage,
+    resetToDefaults
   };
 };
 

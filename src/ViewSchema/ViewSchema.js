@@ -201,13 +201,12 @@ export default function ViewSchema({
     exportData,
     error: exportError,
     clearError,
-    hasNestedSchemas
+    hasNestedSchemas,
+    resetToDefaults
   } = useOCAExport();
   
   // Export is never disabled in view mode
   const exportDisabled = false;
-  // Reset functionality not needed in ViewSchema
-  const resetToDefaults = () => {};
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const [loading, setLoading] = useState(true);
@@ -653,7 +652,7 @@ export default function ViewSchema({
             <Button
               color="warning"
               variant="outlined"
-              onClick={resetToDefaults}
+              onClick={() => setShowConfirmReset(true)}
               sx={{
                 width: "20rem",
                 display: "flex",
