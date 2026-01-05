@@ -62,21 +62,36 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   const codeRefs = useRef();
   const pageForwardDisabledRef = useRef(false);
   const [showWarning, setShowWarning] = useState(false);
-  const hasInitializedFromOverlays = useRef(false);
+  const hasInitializedFromOverlays = useRef({});
   
   // Local state for entry code grid data (schema-specific)
   const [localEntryCodeRowData, setLocalEntryCodeRowData] = useState([]);
 
   // Prefill entry codes from overlays on first load if schema state is empty
+  // Use a ref object keyed by currentSchemaId to track per-schema initialization
   useEffect(() => {
-    // Only run once - prevent repopulation when user edits data
-    if (hasInitializedFromOverlays.current) return;
+    // Only run once per schema - prevent repopulation when user edits data
+    if (hasInitializedFromOverlays.current[currentSchemaId]) return;
     
     try {
       const attrList = attributeRowData
         .filter((a) => a.List === true)
         .map((a) => a.Attribute);
       if (!attrList || attrList.length === 0) {
+        hasInitializedFromOverlays.current[currentSchemaId] = true;
+        return;
+      }
+
+      // Check if schema state already has entry codes with actual data
+      // If so, don't overwrite - the user or parser already set them
+      const hasExistingData = attrList.some((attr) => {
+        const rows = entryCodeRowData?.[attr];
+        return Array.isArray(rows) && rows.length > 0 && rows.some(row => 
+          row.Code || Object.keys(row).some(k => k !== 'Code' && row[k])
+        );
+      });
+      if (hasExistingData) {
+        updateCurrentSchema({ hasLoadedFromOverlays: true });
         return;
       }
 
@@ -102,13 +117,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
           }
         });
       }
-
-      // Determine if we already have an entryCodes array allocated for any list attributes
-      // Treat an existing empty array as intentional (user toggled list -> start empty)
-      const hasExisting = attrList.some((attr) =>
-        Array.isArray(entryCodeRowData?.[attr])
-      );
-      if (hasExisting) return;
 
       // Convert schema language name (e.g., "English") to OCA code (e.g., "eng")
       const resolveAlpha3 = (lang) => {
@@ -145,7 +153,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
 
       // Update schema state
       updateCurrentSchema({
-        entryCodes: { ...entryCodeRowData, ...initialized }
+        entryCodes: { ...entryCodeRowData, ...initialized },
+        hasLoadedFromOverlays: true
       });
 
       // Always update the visible grid rows too for immediate UI feedback
@@ -158,7 +167,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       });
       // Use local state instead of global
       setLocalEntryCodeRowData(alignedEntryCodesArray);
-      hasInitializedFromOverlays.current = true;
+      updateCurrentSchema({ hasLoadedFromOverlays: true });
     } catch (_) {
       // silent
     }
@@ -167,7 +176,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     entryCodeRowData,
     languages,
     schemaState,
-    updateCurrentSchema
+    updateCurrentSchema,
+    currentSchemaId
   ]);
 
   // Create codeRefs so there can be multiple grids on the page

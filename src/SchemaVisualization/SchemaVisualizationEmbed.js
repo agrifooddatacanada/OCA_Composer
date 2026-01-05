@@ -38,8 +38,7 @@ const SchemaVisualizationEmbed = ({
   height = "500px",
   showDebug = false,
   currentSchemaId,
-  setCurrentSchemaId,
-  lanAttributeRowData
+  setCurrentSchemaId
 }) => {
   const { t, i18n } = useTranslation();
   const [nodes, setNodes] = useState([]);
@@ -170,7 +169,7 @@ const SchemaVisualizationEmbed = ({
       }
     }
     
-    const processedSchemaData = extractSchemaDataFromPackage(ocaPackage, languageCode, lanAttributeRowData);
+    const processedSchemaData = extractSchemaDataFromPackage(ocaPackage, languageCode);
     if (!processedSchemaData) {
       return;
     }
@@ -214,10 +213,12 @@ const SchemaVisualizationEmbed = ({
 
       // Add click handlers and normalized highlighting to nodes
       if (result?.nodes) {
-        const rootId = ocaPackage?.bundle?.d;
+        // Handle both package structures: direct and wrapped in oca_bundle
+        const rootId = ocaPackage?.bundle?.d || ocaPackage?.oca_bundle?.bundle?.d;
         // Build a name -> digest map from dependency meta overlays
         const nameToId = new Map();
-        (ocaPackage?.dependencies || []).forEach((dep) => {
+        const dependencies = ocaPackage?.dependencies || ocaPackage?.oca_bundle?.dependencies || [];
+        dependencies.forEach((dep) => {
           const meta = dep?.overlays?.meta;
           if (Array.isArray(meta)) {
             meta.forEach((m) => {
@@ -228,9 +229,14 @@ const SchemaVisualizationEmbed = ({
 
         // Normalize current id: if it's a display name map to digest; default to root
         let normalizedCurrentId = currentSchemaId;
+        // If no currentSchemaId is set, default to the root schema for initial highlighting
         if (!normalizedCurrentId && rootId) normalizedCurrentId = rootId;
         if (normalizedCurrentId && nameToId.has(normalizedCurrentId)) {
           normalizedCurrentId = nameToId.get(normalizedCurrentId);
+        }
+        // Also handle case where currentSchemaId is "root" string
+        if (normalizedCurrentId === "root" && rootId) {
+          normalizedCurrentId = rootId;
         }
 
         result.nodes = result.nodes.map((node) => {

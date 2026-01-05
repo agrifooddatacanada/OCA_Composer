@@ -412,11 +412,13 @@ export const generateDetailedLayout = (
           //   attributes: dependencyWithAttributes?.capture_base?.attributes
           // });
 
-          if (
-            dependencyWithAttributes &&
-            dependencyWithAttributes.capture_base?.attributes
-          ) {
-            // This placeholder now has attributes, use them
+          // Check if it has actual attributes (not just an empty object)
+          const hasRealAttributes = dependencyWithAttributes &&
+            dependencyWithAttributes.capture_base?.attributes &&
+            Object.keys(dependencyWithAttributes.capture_base.attributes).length > 0;
+
+          if (hasRealAttributes) {
+            // This placeholder now has real attributes, use them
             const labelOverlays = dependencyWithAttributes.overlays?.label;
             const labelAttributes = Array.isArray(labelOverlays) 
               ? (labelOverlays.find((l) => l.language === language)?.attribute_labels || {})

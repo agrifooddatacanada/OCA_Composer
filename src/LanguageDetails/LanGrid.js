@@ -204,8 +204,8 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
 
 
-  // Track last computed data to prevent infinite updates
-  const lastDataHashRef = useRef("");
+  // Track last computed data per schema to prevent infinite updates
+  const lastDataHashRef = useRef({});
 
   // Sets Language Dependent Attribute row data
   useEffect(() => {
@@ -355,9 +355,9 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       // MultiSchemaContext handles null schemaId internally
       const newDataHash = JSON.stringify(newLanAttributeRowData);
 
-      // Only update if the data has actually changed
-      if (lastDataHashRef.current !== newDataHash) {
-        lastDataHashRef.current = newDataHash;
+      // Only update if the data has actually changed for this specific schema
+      if (lastDataHashRef.current[currentSchemaId] !== newDataHash) {
+        lastDataHashRef.current[currentSchemaId] = newDataHash;
         updateSchemaState(currentSchemaId, {
           lanAttributeRowData: newLanAttributeRowData
         });

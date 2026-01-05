@@ -219,13 +219,43 @@ export default function ViewSchema({
   const [updatedOCAPackage, setUpdatedOCAPackage] = useState(OCAPackage);
   const [vizVersion, setVizVersion] = useState(0);
 
+  // Sync currentSchemaId when package structure changes (e.g., adding child schemas)
+  useEffect(() => {
+    const pkg = updatedOCAPackage || OCAPackage;
+    const rootDigest = pkg?.bundle?.d || pkg?.oca_bundle?.bundle?.d;
+    
+    // If we have a package and a root digest, ensure currentSchemaId is set to it
+    // This handles the case where the user modifies the schema structure (adds child schemas)
+    // and then navigates to View Schema - we want to highlight the current root
+    if (rootDigest && currentSchemaId !== rootDigest) {
+      // Check if currentSchemaId is unset or refers to an old/invalid digest
+      // If the current ID is a valid child schema, keep it; otherwise reset to root
+      const isValidChild = pkg?.bundle?.overlays?.attributes && 
+        Object.values(pkg.bundle.overlays.attributes).some(attr => 
+          attr && typeof attr === 'string' && attr.startsWith('refs:') && attr.includes(currentSchemaId)
+        );
+      
+      if (!currentSchemaId || (!isValidChild && currentSchemaId !== rootDigest)) {
+        console.log('[ViewSchema] Syncing currentSchemaId to root digest:', rootDigest);
+        switchToSchema(rootDigest, pkg);
+      }
+    }
+  }, [updatedOCAPackage, OCAPackage, currentSchemaId, switchToSchema]);
+
   // Enhanced schema switching with proper navigation
   const handleSchemaSwitch = useCallback(
     (schemaId) => {
       if (!schemaId) return;
+      
+      // Canonicalize the incoming schemaId to match how it's stored in the context
+      // "root" should map to bundle.d
+      const pkg = updatedOCAPackage || OCAPackage;
+      const rootDigest = pkg?.bundle?.d || pkg?.oca_bundle?.bundle?.d;
+      const canonicalSchemaId = (schemaId === "root" && rootDigest) ? rootDigest : schemaId;
+      
       // Switch only if different, but always navigate to the editor
       // Use updatedOCAPackage which includes the latest changes and placeholder dependencies
-      if (schemaId !== currentSchemaId) {
+      if (canonicalSchemaId !== currentSchemaId) {
         switchToSchema(schemaId, updatedOCAPackage || OCAPackage);
       }
       setCurrentPage("Details");
@@ -932,7 +962,6 @@ export default function ViewSchema({
                   viewMode={visualizationMode}
                   currentSchemaId={currentSchemaId}
                   setCurrentSchemaId={handleSchemaSwitch}
-                  lanAttributeRowData={getSchemaState(currentSchemaId)?.lanAttributeRowData}
                 />
               </Suspense>
             </Box>

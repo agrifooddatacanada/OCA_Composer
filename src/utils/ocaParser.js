@@ -185,7 +185,8 @@ export class OCAParser {
       unframedUnitList: [],
       unframedAttributeList: [],
       unitFramedThatAlreadyExist: {},
-      initialized: true  // CRITICAL: Marks schema as parsed (don't re-parse)
+      initialized: true,  // CRITICAL: Marks schema as parsed (don't re-parse)
+      hasLoadedFromOverlays: true  // Parser already extracted entry codes and language data from overlays
     };
   }
 
