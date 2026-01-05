@@ -295,6 +295,14 @@ const useOCAExport = () => {
             // Single reference: just the refs:SAID or refn:name string
             attributeType = originalValue;
           }
+        } else {
+          // For manually created schemas without OCAPackage, use refn:placeholder format
+          // The attribute name IS the child schema name in manual creation flow
+          if (attributeType === "Array[Reference]") {
+            attributeType = `Array[refn:placeholder_${item}]`;
+          } else {
+            attributeType = `refn:placeholder_${item}`;
+          }
         }
       }
       
@@ -508,65 +516,55 @@ const useOCAExport = () => {
         entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
       },
       ...(targetOverlaySelections[FIELD_UNIT_FRAMING_OVERLAY]?.selected && retainedUniqueFramedUnits.length > 0
-        ? [
-            {
-              unit_framing_overlay: {
-                type: UNIT_FRAMING,
-                properties: {
-                  id: UNIT_FRAME_ID,
-                  label: UNIT_FRAME_LABEL,
-                  location: UNIT_FRAME_LOCATION,
-                  version: UNIT_FRAME_VERSION
-                },
-                units: getUnitFramingInput(retainedUniqueFramedUnits)
-              }
+        ? {
+            unit_framing_overlay: {
+              type: UNIT_FRAMING,
+              properties: {
+                id: UNIT_FRAME_ID,
+                label: UNIT_FRAME_LABEL,
+                location: UNIT_FRAME_LOCATION,
+                version: UNIT_FRAME_VERSION
+              },
+              units: getUnitFramingInput(retainedUniqueFramedUnits)
             }
-          ]
-        : []),
+          }
+        : {}),
       ...(targetOverlaySelections[FIELD_RANGE_OVERLAY]?.selected
-        ? [
-            {
-              range_overlay: {
-                type: RANGE,
-                attributes: rangeOverlayInput
-              }
+        ? {
+            range_overlay: {
+              type: RANGE,
+              attributes: rangeOverlayInput
             }
-          ]
-        : []),
+          }
+        : {}),
       ...(sensitiveAttributes.length > 0
-        ? [
-            {
-              sensitive_overlay: {
-                type: SENSITIVE,
-                sensitive_attributes: sensitiveAttributes
-              }
+        ? {
+            sensitive_overlay: {
+              type: SENSITIVE,
+              sensitive_attributes: sensitiveAttributes
             }
-          ]
-        : []),
+          }
+        : {}),
       ...(targetOverlaySelections[FIELD_ATTRIBUTE_FRAMING_OVERLAY]?.selected
-        ? [
-            {
-              attribute_framing_overlay: {
-                type: ATTRIBUTE_FRAMING,
-                attributes: getAttributeFramingInput(targetAttributeFramingRowData)
-              }
+        ? {
+            attribute_framing_overlay: {
+              type: ATTRIBUTE_FRAMING,
+              attributes: getAttributeFramingInput(targetAttributeFramingRowData)
             }
-          ]
-        : []),
+          }
+        : {}),
       ...(targetOverlaySelections[FIELD_FORM_INFORMATION_OVERLAY]?.selected
-        ? [
-            {
-              form_information_overlay: {
-                type: FORM,
-                pages: formBuilderPages.map((page) => ({
-                  ...page,
-                  schemaName: targetSchemaDescription[targetLanguages[0]]?.name || targetMetadata.name || "",
-                  schemaDigest: bundle.bundle.d
-                }))
-              }
+        ? {
+            form_information_overlay: {
+              type: FORM,
+              pages: formBuilderPages.map((page) => ({
+                ...page,
+                schemaName: targetSchemaDescription[targetLanguages[0]]?.name || targetMetadata.name || "",
+                schemaDigest: bundle.bundle.d
+              }))
             }
-          ]
-        : [])
+          }
+        : {})
     };
 
     const extension_overlays = [extension_overlay_object];
