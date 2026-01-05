@@ -4,12 +4,15 @@ import { MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { Context } from "../App";
 import { useMultiSchema } from "../context/MultiSchemaContext";
+import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA } from "../constants/constants";
 
 const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAttributeRowData }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t } = useTranslation();
   const { currentSchemaId, updateSchemaState, getSchemaState } = useMultiSchema();
   
+  // Type dropdown options
+  // Note: TYPE_CHILD_SCHEMA ("Child Schema") is converted to refs:/refn: at export time
   const displayValues = [
     { value: "", label: "" },
     { value: "Text", label: "Text" },
@@ -17,13 +20,13 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     { value: "Boolean", label: "Boolean" },
     { value: "DateTime", label: "DateTime" },
     { value: "Numeric", label: "Numeric" },
-    { value: "Child Schema", label: "Child Schema" },
+    { value: TYPE_CHILD_SCHEMA, label: TYPE_CHILD_SCHEMA },
     { value: "Array[Binary]", label: "Array[Binaryfile]" },
     { value: "Array[Boolean]", label: "Array[Boolean]" },
     { value: "Array[DateTime]", label: "Array[DateTime]" },
     { value: "Array[Numeric]", label: "Array[Numeric]" },
     { value: "Array[Text]", label: "Array[Text]" },
-    { value: "Array[Child Schema]", label: "Array[Child Schema]" }
+    { value: TYPE_ARRAY_CHILD_SCHEMA, label: TYPE_ARRAY_CHILD_SCHEMA }
   ];
 
   const attributeName = data.Attribute;

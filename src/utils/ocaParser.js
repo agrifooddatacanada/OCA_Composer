@@ -7,7 +7,9 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY,
   FIELD_RANGE_OVERLAY,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  TYPE_CHILD_SCHEMA,
+  TYPE_ARRAY_CHILD_SCHEMA
 } from "../constants/constants";
 import { getLangNameFromUICode, LanguageConstants } from "./languageUtils";
 
@@ -210,12 +212,14 @@ export class OCAParser {
   static _normalizeType(rawType) {
     if (!rawType) return "";
     
+    // Handle array types (OCA arrays are represented as single-element arrays)
     if (Array.isArray(rawType)) {
       const first = rawType[0];
       if (typeof first === "string") {
         const inner = first.trim();
+        // refs:/refn: = child schema reference in OCA spec
         if (inner.startsWith("refn:") || inner.startsWith("refs:"))
-          return "Array[Child Schema]";
+          return TYPE_ARRAY_CHILD_SCHEMA;
         const mapped = this._getTypeMapping()[inner.toLowerCase()] || inner;
         return `Array[${mapped}]`;
       }
@@ -225,7 +229,8 @@ export class OCAParser {
     if (typeof rawType !== "string") return "";
     
     const t = rawType.trim();
-    if (t.startsWith("refn:") || t.startsWith("refs:")) return "Child Schema";
+    // refs:/refn: = child schema reference in OCA spec → display as "Child Schema"
+    if (t.startsWith("refn:") || t.startsWith("refs:")) return TYPE_CHILD_SCHEMA;
     
     const arrayMatch = t.match(/^array\[(.+)\]$/i);
     if (arrayMatch) {
@@ -234,7 +239,7 @@ export class OCAParser {
         inner.toLowerCase().startsWith("refn:") ||
         inner.toLowerCase().startsWith("refs:")
       )
-        return "Array[Child Schema]";
+        return TYPE_ARRAY_CHILD_SCHEMA;
       const mapped = this._getTypeMapping()[inner.toLowerCase()] || inner;
       return `Array[${mapped}]`;
     }

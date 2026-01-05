@@ -16,7 +16,9 @@ import {
   RANGE,
   SCHEMA_MODE_MULTI_LEVEL,
   SCHEMA_MODE_SINGLE,
-  SENSITIVE
+  SENSITIVE,
+  TYPE_CHILD_SCHEMA,
+  TYPE_ARRAY_CHILD_SCHEMA
 } from "../constants/constants";
 import {
   getFormatRuleDescription,
@@ -275,12 +277,13 @@ const useZipParser = () => {
         Attribute: item,
         Flagged: sensitiveAttributes.includes(item),
         List: attributesWithListType.includes(item),
+        // Convert refs:/refn: OCA types to "Child Schema" for UI display
         Type: dataTypes.includes(attributeType)
           ? attributeType
           : attributeType.includes("Array[ref")
-            ? "Array[Child Schema]"
+            ? TYPE_ARRAY_CHILD_SCHEMA
             : attributeType.includes("ref")
-              ? "Child Schema"
+              ? TYPE_CHILD_SCHEMA
               : "",
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });

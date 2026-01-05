@@ -25,6 +25,11 @@ import {
   getOCACodeFromLangName 
 } from "../utils/languageUtils";
 import { hasActualDependencies } from "../utils/schemaUtils";
+import { 
+  TYPE_CHILD_SCHEMA, 
+  TYPE_ARRAY_CHILD_SCHEMA, 
+  isChildSchemaType 
+} from "../constants/constants";
 
 import Loading from "../components/Loading";
 import useOCAExport from "../hooks/useOCAExport";
@@ -292,12 +297,7 @@ export default function ViewSchema({
     const anySchemaHasChildren = Object.values(schemaStates).some(state => {
       return state?.attributes?.some(attr => {
         const type = attr?.Type;
-        return typeof type === "string" && (
-          type.startsWith("refs:") || 
-          type.startsWith("refn:") || 
-          type === "Child Schema" || 
-          type === "Array[Child Schema]"
-        );
+        return isChildSchemaType(type);
       });
     });
     
@@ -472,10 +472,10 @@ export default function ViewSchema({
               }
             });
 
-            // Handle schema references (refs/refn) - these should be "Child Schema" not a type
+            // Handle schema references (refs/refn) - display as "Child Schema"
             let displayType = attr.Type || "";
             if (displayType.startsWith("refs:") || displayType.startsWith("refn:")) {
-              displayType = "Child Schema";
+              displayType = TYPE_CHILD_SCHEMA;
             }
 
             const charEncoding = (schemaState.characterEncodingData || {})[attr.Attribute] || "";

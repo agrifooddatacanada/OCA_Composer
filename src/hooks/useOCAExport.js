@@ -227,15 +227,8 @@ const useOCAExport = () => {
         const lanRow = lanRows[index] || {};
         rowObject.Flagged = attrRow.Flagged ? "Y" : "";
         rowObject.Unit = attrRow.Unit || "";
-        
-        // Convert "Child Schema" display type to OCA spec "Reference" type
-        let attrType = attrRow.Type || "";
-        if (attrType === "Child Schema") {
-          attrType = "Reference";
-        } else if (attrType === "Array[Child Schema]") {
-          attrType = "Array[Reference]";
-        }
-        rowObject.Type = attrType;
+        // Keep "Child Schema" type as-is; conversion to refs:/refn: happens at DSL generation
+        rowObject.Type = attrRow.Type || "";
         
         rowObject.Label = lanRow.Label || "";
         rowObject.Description = lanRow.Description || "";
@@ -283,37 +276,28 @@ const useOCAExport = () => {
         ? `Array[${OCADataArray[1][index].Type[0]}]`
         : OCADataArray[1][index].Type;
       
-      // Handle reference types - get actual refs:SAID or refn:name
-      // UI displays these as "Child Schema" or "Reference" depending on context
-      const isReference = attributeType === "Reference" || attributeType === "Array[Reference]";
-      const isChildSchema = attributeType === "Child Schema" || attributeType === "Array[Child Schema]";
+      // Convert "Child Schema" UI type to OCA spec refs:/refn: format
+      // - refs:SAID = child schema with cryptographic identifier (has been built)
+      // - refn:name = named reference placeholder (not yet built)
+      const isArray = attributeType === "Array[Child Schema]";
+      const isChildSchema = attributeType === "Child Schema" || isArray;
       
-      if (isReference || isChildSchema) {
+      if (isChildSchema) {
         const originalValue = targetSchema?.capture_base?.attributes?.[item];
-        
-        // Check if we have a pre-built SAID for this child schema
         const childSaid = childSaidMap[item];
         
         if (childSaid) {
-          // Use the actual SAID from the pre-built child schema
-          if (attributeType === "Array[Child Schema]" || attributeType === "Array[Reference]") {
-            attributeType = `Array[refs:${childSaid}]`;
-          } else {
-            attributeType = `refs:${childSaid}`;
-          }
+          // Child schema was pre-built, use its SAID
+          attributeType = isArray ? `Array[refs:${childSaid}]` : `refs:${childSaid}`;
         } else if (originalValue && typeof originalValue === 'string' && (originalValue.startsWith('refs:') || originalValue.startsWith('refn:'))) {
-          // Use the actual refs:SAID or refn:name value from the original schema
+          // Use existing refs:/refn: from original schema
           attributeType = originalValue;
-        } else if (originalValue && Array.isArray(originalValue) && originalValue[0] && (originalValue[0].startsWith('refs:') || originalValue[0].startsWith('refn:'))) {
-          // Array of references: ["refs:SAID"]
+        } else if (originalValue && Array.isArray(originalValue) && originalValue[0]?.startsWith?.('refs:') || originalValue?.[0]?.startsWith?.('refn:')) {
+          // Array of references from original schema
           attributeType = `Array[${originalValue[0]}]`;
         } else {
-          // Fallback: use refn: (named reference) - child schema not yet built or no data
-          if (attributeType === "Array[Child Schema]" || attributeType === "Array[Reference]") {
-            attributeType = `Array[refn:${item}]`;
-          } else {
-            attributeType = `refn:${item}`;
-          }
+          // Fallback: named reference placeholder (child not yet built)
+          attributeType = isArray ? `Array[refn:${item}]` : `refn:${item}`;
         }
       }
       

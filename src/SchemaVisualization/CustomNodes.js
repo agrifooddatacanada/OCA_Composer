@@ -1,19 +1,28 @@
 /**
  * Custom node components for schema visualization
+ * 
+ * TERMINOLOGY:
+ * - isReference: true when the field type is refs:SAID (linked child schema)
+ * - isPlaceholder: true when the field type is refn:name (placeholder child schema)
+ * - Both display as "Child Schema" variants to the user
  */
 import React from "react";
 import { Handle, Position, NodeToolbar } from "@xyflow/react";
 import EditIcon from "@mui/icons-material/Edit";
 import "./SchemaVisualization.css";
 import { useTranslation } from "react-i18next";
+import { TYPE_CHILD_SCHEMA } from "../constants/constants";
 
-// Constants
 // Constants
 const FIELD_NAME_MAX_LENGTH = 35;
 
-// Helper function to get display type for fields
+/**
+ * Get display type for a field in the visualization
+ * @param {Object} field - Field object with isReference, isPlaceholder, and type properties
+ * @returns {string} Human-readable type for display
+ */
 const getFieldDisplayType = (field) => {
-  if (field.isReference) return "Child Schema";
+  if (field.isReference) return TYPE_CHILD_SCHEMA;
   if (field.isPlaceholder) return "Placeholder Child Schema";
   return field.type;
 };

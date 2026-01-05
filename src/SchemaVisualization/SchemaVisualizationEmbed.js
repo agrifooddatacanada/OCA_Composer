@@ -18,6 +18,7 @@ import { PlaceholderNode, DetailedNode, TreeNode } from "./CustomNodes";
 import { generateTreeLayout, generateDetailedLayout } from "./layoutGenerators";
 import { extractSchemaDataFromPackage } from "./dataUtils";
 import { getLangNameFromUICode, getOCACodeFromLangName, getOCACodeFromUICode } from "../utils/languageUtils";
+import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA } from "../constants/constants";
 import CustomPalette from "../constants/customPalette";
 import Spinner from "../components/Spinner";
 
@@ -99,7 +100,7 @@ const SchemaVisualizationEmbed = ({
     const dependencies = [];
     attributeRowData.forEach((attr) => {
       const attrType = attr.Type;
-      if (attrType === "Child Schema" || attrType === "Array[Child Schema]") {
+      if (attrType === TYPE_CHILD_SCHEMA || attrType === TYPE_ARRAY_CHILD_SCHEMA) {
         const attrName = attr.Attributes || attr.Attribute;
         dependencies.push({
           d: attrName,

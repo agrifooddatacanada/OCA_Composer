@@ -16,7 +16,10 @@ import {
   FIELD_UNIT_FRAMING_OVERLAY,
   FIELD_RANGE_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-  CUSTOM_FORMAT_RULE
+  CUSTOM_FORMAT_RULE,
+  TYPE_CHILD_SCHEMA,
+  TYPE_ARRAY_CHILD_SCHEMA,
+  isChildSchemaType
 } from "../constants/constants";
 import { OCAParser } from "../utils/ocaParser";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
@@ -477,7 +480,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             if (!attr || !attr.Attribute) return;
             const name = attr.Attribute;
             const type = attr.Type;
-            if (type === "Child Schema") {
+            if (type === TYPE_CHILD_SCHEMA) {
               // Check if the child schema has been initialized with attributes
               // If so, convert from placeholder (refn:) to proper reference (refs:)
               const childSchemaState = schemaStatesRef.current[name];
@@ -775,10 +778,10 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         const schemaState = getSchemaState(schemaId);
         if (!schemaState.initialized) return;
 
-        // Look for "Child Schema" type attributes in this schema
+        // Look for child schema type attributes in this schema
         if (schemaState.attributes) {
           schemaState.attributes.forEach((attr) => {
-            if (attr.Type === "Child Schema" || attr.Type === "Array[Child Schema]") {
+            if (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_ARRAY_CHILD_SCHEMA) {
               const childSchemaName = attr.Attribute;
               
               // Check if there's a schema state for this child schema
@@ -793,7 +796,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
                   const childAttributes = {};
                   childSchemaState.attributes?.forEach((childAttr) => {
                     if (childAttr.Attribute) {
-                      if (childAttr.Type === "Child Schema") {
+                      if (childAttr.Type === TYPE_CHILD_SCHEMA) {
                         childAttributes[childAttr.Attribute] = `refn:placeholder_${childAttr.Attribute}`;
                       } else {
                         childAttributes[childAttr.Attribute] = childAttr.Type || "Text";

@@ -19,7 +19,7 @@ import {
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { hasDisallowedChars } from "../utils/helpers";
-import { FIELD_RANGE_OVERLAY } from "../constants/constants";
+import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 import { getLangNameFromUICode, getOCACodeFromLangName } from "../utils/languageUtils";
@@ -182,7 +182,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
               : completeSchema.overlays.entry_code.attribute_entry_codes &&
                 completeSchema.overlays.entry_code.attribute_entry_codes[key]));
 
-        // Handle schema references (refs/refn) - these should be "Child Schema" not a type
+        // Handle schema references (refs/refn) - display as "Child Schema"
         let displayType = value;
         if (Array.isArray(value)) {
           const arrayType = value[0] || "Unknown";
@@ -192,7 +192,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
           displayType &&
           (displayType.startsWith("refs:") || displayType.startsWith("refn:"))
         ) {
-          displayType = "Child Schema";
+          displayType = TYPE_CHILD_SCHEMA;
         }
 
         return {

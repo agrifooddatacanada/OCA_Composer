@@ -12,6 +12,40 @@ export const FORM_BUILDER_CARD_WIDTH = 720;
 export const SCHEMA_MODE_SINGLE = "single";
 export const SCHEMA_MODE_MULTI_LEVEL = "multi-level";
 
+/**
+ * Schema Type Constants
+ * 
+ * TERMINOLOGY GUIDE:
+ * - "Child Schema" = UI term shown to users in the type dropdown
+ * - `refs:SAID`    = OCA spec: linked schema with cryptographic SAID identifier
+ * - `refn:name`    = OCA spec: named reference (placeholder for schema not yet defined)
+ * 
+ * INTERNAL CONVENTION:
+ * - Use TYPE_CHILD_SCHEMA ("Child Schema") throughout the codebase
+ * - Convert to refs:/refn: ONLY at export time in useOCAExport.js
+ * - When parsing OCA packages, convert refs:/refn: → "Child Schema" immediately
+ */
+export const TYPE_CHILD_SCHEMA = "Child Schema";
+export const TYPE_ARRAY_CHILD_SCHEMA = "Array[Child Schema]";
+
+/**
+ * Check if a type represents a child/nested schema
+ * @param {string} type - The attribute type to check
+ * @returns {boolean} True if the type is a child schema reference
+ */
+export const isChildSchemaType = (type) => {
+  if (!type || typeof type !== "string") return false;
+  const t = type.trim();
+  return (
+    t === TYPE_CHILD_SCHEMA ||
+    t === TYPE_ARRAY_CHILD_SCHEMA ||
+    t.startsWith("refs:") ||
+    t.startsWith("refn:") ||
+    t.startsWith("Array[refs:") ||
+    t.startsWith("Array[refn:")
+  );
+};
+
 // Fields for overlay items
 export const FIELD_CHARACTER_ENCODING_OVERLAY = "Character Encoding";
 export const FIELD_FORMAT_OVERLAY = "Add format rule for data";
