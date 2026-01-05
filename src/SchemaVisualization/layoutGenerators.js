@@ -363,10 +363,14 @@ export const generateDetailedLayout = (
         const referencedId = field.type.replace("refs:", "");
         const referencedInfo = getDependencyInfo(referencedId, dependencyMap, language);
 
+        // Use parent schema's label (field.originalName) as the display title
+        // Fall back to dependency's meta name only if no label exists
+        const displayTitle = field.originalName || referencedInfo.name;
+
         processNode(
           referencedId,
           "reference",
-          referencedInfo.name,
+          displayTitle,
           referencedInfo.fields,
           level + 1
         );
@@ -378,11 +382,13 @@ export const generateDetailedLayout = (
           target: referencedId
         });
       } else if (field.isPlaceholder) {
-        const placeholderId = field.attributeKey || field.originalName || field.name; // Use the attribute key as the placeholder ID
+        // Use attribute key for internal ID (for lookups), but label for display
+        const placeholderId = field.attributeKey || field.originalName || field.name;
 
         // Check if this placeholder schema now has actual attributes
         let placeholderFields = [];
-        let placeholderTitle = field.name;
+        // Default title is the label (field.originalName), not the attribute key
+        let placeholderTitle = field.originalName || field.name;
 
         // Look for the schema in dependencies to see if it has attributes
         // Check by dependency ID first (matches attribute key), then by name
@@ -423,11 +429,10 @@ export const generateDetailedLayout = (
             
 
             
-            const metaOverlays = dependencyWithAttributes.overlays?.meta;
-            const metaOverlay = Array.isArray(metaOverlays)
-              ? (metaOverlays.find((m) => m.language === language) || metaOverlays[0])
-              : null;
-            placeholderTitle = metaOverlay?.name || placeholderId;
+            // Prefer field label (from parent schema), then meta overlay name, then attribute key
+            // field.originalName is the human-readable label from the parent schema's label overlay
+            // metaOverlay.name is often just the attribute key (e.g., "collect_date"), not the label
+            // So we prefer the label we already have
           }
         }
 

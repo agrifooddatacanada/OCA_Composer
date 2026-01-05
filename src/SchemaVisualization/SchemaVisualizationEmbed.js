@@ -38,7 +38,8 @@ const SchemaVisualizationEmbed = ({
   height = "500px",
   showDebug = false,
   currentSchemaId,
-  setCurrentSchemaId
+  setCurrentSchemaId,
+  lanAttributeRowData
 }) => {
   const { t, i18n } = useTranslation();
   const [nodes, setNodes] = useState([]);
@@ -169,7 +170,7 @@ const SchemaVisualizationEmbed = ({
       }
     }
     
-    const processedSchemaData = extractSchemaDataFromPackage(ocaPackage, languageCode);
+    const processedSchemaData = extractSchemaDataFromPackage(ocaPackage, languageCode, lanAttributeRowData);
     if (!processedSchemaData) {
       return;
     }

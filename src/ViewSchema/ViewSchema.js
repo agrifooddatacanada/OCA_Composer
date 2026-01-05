@@ -932,6 +932,7 @@ export default function ViewSchema({
                   viewMode={visualizationMode}
                   currentSchemaId={currentSchemaId}
                   setCurrentSchemaId={handleSchemaSwitch}
+                  lanAttributeRowData={getSchemaState(currentSchemaId)?.lanAttributeRowData}
                 />
               </Suspense>
             </Box>

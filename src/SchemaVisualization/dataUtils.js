@@ -126,10 +126,10 @@ const normalizeOCAPackage = (ocaPackage) => {
  * Extract schema data directly from OCA package for visualization
  * @param {Object} ocaPackage - OCA package object
  * @param {string} language - Language code (optional)
- * @param {Object} lanAttributeRowData - Updated language attribute data from LDAD
+ * @param {Object} lanAttributeRowData - Fallback labels from schema state (keyed by language name)
  * @returns {Object} Processed schema data for visualization
  */
-export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
+export const extractSchemaDataFromPackage = (ocaPackage, language = "eng", lanAttributeRowData = null) => {
   if (!ocaPackage) {
     return null;
   }
@@ -140,13 +140,27 @@ export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
     return null;
   }
 
-  // Extract labels from the bundle's overlays - no LDAD merging needed
-  // LDAD changes will be saved directly to overlays by the Language Details component
+  // Extract labels from the bundle's overlays
   const labelOverlays = normalizedPackage.bundle.overlays?.label;
   const labelOverlay = Array.isArray(labelOverlays)
     ? (labelOverlays.find((l) => l.language === language) || labelOverlays[0] || {})
     : (labelOverlays || {});
-  const labels = labelOverlay.attribute_labels || {};
+  let labels = labelOverlay.attribute_labels || {};
+
+  // If no labels in package, try to get them from lanAttributeRowData (fallback)
+  // NOTE: lanAttributeRowData is keyed by OCA 3-letter codes (e.g., "eng", "fra")
+  if (Object.keys(labels).length === 0 && lanAttributeRowData) {
+    const langRows = lanAttributeRowData[language] || lanAttributeRowData["eng"] || [];
+    
+    if (Array.isArray(langRows)) {
+      labels = {};
+      langRows.forEach(row => {
+        if (row.Attribute && row.Label) {
+          labels[row.Attribute] = row.Label;
+        }
+      });
+    }
+  }
 
   return {
     dependencies: normalizedPackage.dependencies || [],

@@ -424,6 +424,15 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
           );
 
           if (isPlaceholder) {
+            // Get the label for this attribute from the parent schema
+            // The parent is typically the root schema (bundle.d)
+            const rootSchemaState = getSchemaState(bundle?.d);
+            const rootLanData = rootSchemaState?.lanAttributeRowData || {};
+            // lanAttributeRowData is keyed by OCA code (eng, fra)
+            const engLabels = rootLanData["eng"] || rootLanData["English"] || [];
+            const labelRow = engLabels.find(row => row.Attribute === schemaId);
+            const displayName = labelRow?.Label || schemaId;
+
             // Create a new dependency schema for this placeholder
             const newDependency = {
               d: schemaId,
@@ -441,7 +450,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
                     capture_base: `placeholder_${schemaId}_${Date.now()}`,
                     type: "spec/overlays/meta/1.1",
                     language: "eng",
-                    name: schemaId,
+                    name: displayName,
                     description: ""
                   }
                 ]
