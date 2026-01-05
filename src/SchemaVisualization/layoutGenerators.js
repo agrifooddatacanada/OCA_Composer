@@ -352,6 +352,7 @@ export const generateDetailedLayout = (
         currentSchemaId,
         nodeId
       },
+      className: nodeType, // Add className for CSS styling (placeholder/reference/root)
       level
     };
 
@@ -389,6 +390,7 @@ export const generateDetailedLayout = (
         let placeholderFields = [];
         // Default title is the label (field.originalName), not the attribute key
         let placeholderTitle = field.originalName || field.name;
+        let hasRealAttributes = false; // Track if placeholder has real attributes
 
         // Look for the schema in dependencies to see if it has attributes
         // Check by dependency ID first (matches attribute key), then by name
@@ -413,7 +415,7 @@ export const generateDetailedLayout = (
           // });
 
           // Check if it has actual attributes (not just an empty object)
-          const hasRealAttributes = dependencyWithAttributes &&
+          hasRealAttributes = dependencyWithAttributes &&
             dependencyWithAttributes.capture_base?.attributes &&
             Object.keys(dependencyWithAttributes.capture_base.attributes).length > 0;
 
@@ -438,9 +440,12 @@ export const generateDetailedLayout = (
           }
         }
 
+        // Node type: "placeholder" if no attributes, "reference" if it has attributes
+        const nodeType = hasRealAttributes ? "reference" : "placeholder";
+
         processNode(
           placeholderId,
-          "placeholder",
+          nodeType,
           placeholderTitle,
           placeholderFields,
           level + 1

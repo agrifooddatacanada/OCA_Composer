@@ -313,17 +313,11 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   // Switch to editing a different schema
   const switchToSchema = useCallback(
     (schemaId, ocaPackage) => {
-      console.log(`[switchToSchema] Called with:`, { schemaId });
-      
       // Canonicalize schema id so root aliases ("root", name) map to the same key
       const canonicalizeSchemaId = (pkg, id) => {
-        if (!pkg) {
-          console.log('[canonicalize] No package provided');
-          return id;
-        }
+        if (!pkg) return id;
         // Handle both pkg.bundle.d and pkg.oca_bundle.bundle.d structures
         const rootDigest = pkg.bundle?.d || pkg.oca_bundle?.bundle?.d;
-        console.log('[canonicalize] Input:', { id, rootDigest, hasPkgBundle: !!pkg.bundle, hasOcaBundle: !!pkg.oca_bundle });
         // Collect possible root names from meta overlays if present (handle array or object)
         const rootNames = new Set();
         const metaOverlay = pkg.bundle?.overlays?.meta || pkg.oca_bundle?.bundle?.overlays?.meta;
@@ -346,16 +340,12 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
           });
         }
         if (id === "root" || (rootDigest && id === rootDigest) || rootNames.has(id)) {
-          const result = rootDigest || "root";
-          console.log('[canonicalize] Mapping to root:', { id, result });
-          return result;
+          return rootDigest || "root";
         }
-        console.log('[canonicalize] Keeping as-is:', { id });
         return id;
       };
 
       const resolvedId = canonicalizeSchemaId(ocaPackage, schemaId);
-      console.log(`[switchToSchema] Resolved ID:`, { resolvedId });
 
       // If state exists under the original id and not under resolved id, migrate it.
       // Also determine if initialization is needed based on current state snapshot.
@@ -365,20 +355,6 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
           schemaId !== resolvedId && prev[schemaId] && !prev[resolvedId];
         const hasExisting = !!(prev[resolvedId] || prev[schemaId]);
         shouldInitialize = !hasExisting;
-        
-        console.log(`[switchToSchema] State check:`, {
-          schemaId,
-          resolvedId,
-          hasExisting,
-          shouldInitialize,
-          existingKeys: Object.keys(prev),
-          resolvedState: prev[resolvedId] ? {
-            hasLoadedFromOverlays: prev[resolvedId].hasLoadedFromOverlays,
-            hasEntryCodes: !!prev[resolvedId].entryCodes,
-            hasLanData: !!prev[resolvedId].lanAttributeRowData
-          } : null
-        });
-        
         if (willMigrate) {
           return {
             ...prev,
@@ -392,10 +368,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
       // Initialize schema if it doesn't exist (based on snapshot above)
       if (shouldInitialize && ocaPackage) {
-        console.log(`[switchToSchema] Initializing new schema from OCA:`, { resolvedId });
         initializeSchemaFromOCA(resolvedId, ocaPackage);
-      } else {
-        console.log(`[switchToSchema] Using existing schema state:`, { resolvedId, shouldInitialize });
       }
     },
     [initializeSchemaFromOCA]
@@ -519,12 +492,12 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             const name = attr.Attribute;
             const type = attr.Type;
             if (type === TYPE_CHILD_SCHEMA) {
-              // Check if the child schema has been initialized with attributes
-              // If so, convert from placeholder (refn:) to proper reference (refs:)
+              // Check if the child schema has actual attributes (not just initialized)
+              // Only convert from placeholder (refn:) to proper reference (refs:) if it has data
               const childSchemaState = schemaStatesRef.current[name];
               const childHasData = childSchemaState && 
-                (childSchemaState.initialized || 
-                 (childSchemaState.attributes && childSchemaState.attributes.length > 0));
+                childSchemaState.attributes && 
+                childSchemaState.attributes.length > 0;
               
               if (childHasData) {
                 // Child schema has data - use refs: to make it a proper reference

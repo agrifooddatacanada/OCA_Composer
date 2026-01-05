@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useCallback, useMemo, Suspense } from "react";
+import React, { useContext, useState, useEffect, useCallback, useMemo, Suspense, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import i18next from "i18next";
@@ -219,28 +219,23 @@ export default function ViewSchema({
   const [updatedOCAPackage, setUpdatedOCAPackage] = useState(OCAPackage);
   const [vizVersion, setVizVersion] = useState(0);
 
-  // Sync currentSchemaId when package structure changes (e.g., adding child schemas)
+  // Track the last known root digest to detect when package structure actually changes
+  const lastRootDigestRef = useRef(null);
+
+  // Sync currentSchemaId ONLY when package structure changes (e.g., adding first child schema)
+  // Don't interfere with normal navigation to child schemas
   useEffect(() => {
     const pkg = updatedOCAPackage || OCAPackage;
     const rootDigest = pkg?.bundle?.d || pkg?.oca_bundle?.bundle?.d;
     
-    // If we have a package and a root digest, ensure currentSchemaId is set to it
-    // This handles the case where the user modifies the schema structure (adds child schemas)
-    // and then navigates to View Schema - we want to highlight the current root
-    if (rootDigest && currentSchemaId !== rootDigest) {
-      // Check if currentSchemaId is unset or refers to an old/invalid digest
-      // If the current ID is a valid child schema, keep it; otherwise reset to root
-      const isValidChild = pkg?.bundle?.overlays?.attributes && 
-        Object.values(pkg.bundle.overlays.attributes).some(attr => 
-          attr && typeof attr === 'string' && attr.startsWith('refs:') && attr.includes(currentSchemaId)
-        );
-      
-      if (!currentSchemaId || (!isValidChild && currentSchemaId !== rootDigest)) {
-        console.log('[ViewSchema] Syncing currentSchemaId to root digest:', rootDigest);
-        switchToSchema(rootDigest, pkg);
-      }
+    // Only sync if the root digest has changed (package structure modified)
+    if (rootDigest && lastRootDigestRef.current && rootDigest !== lastRootDigestRef.current) {
+      switchToSchema(rootDigest, pkg);
     }
-  }, [updatedOCAPackage, OCAPackage, currentSchemaId, switchToSchema]);
+    
+    // Update the ref for next comparison
+    lastRootDigestRef.current = rootDigest;
+  }, [updatedOCAPackage, OCAPackage, switchToSchema]);
 
   // Enhanced schema switching with proper navigation
   const handleSchemaSwitch = useCallback(
