@@ -829,16 +829,21 @@ export const downloadJsonFile = (data, fileName) => {
   URL.revokeObjectURL(url);
 };
 
-export const getFormatRuleDescription = (attributeType, formatRule) =>
-  attributeType.includes("Date")
-    ? formatCodeDateDescription[formatRule]
+export const getFormatRuleDescription = (attributeType, formatRule) => {
+  // Normalize escaped quotes in format rules for consistent lookup
+  // JSON files may store \" while constants use unescaped "
+  const normalizedRule = formatRule?.replace(/\\"/g, '"') || formatRule;
+  
+  return attributeType.includes("Date")
+    ? formatCodeDateDescription[normalizedRule]
     : attributeType.includes("Numeric")
-      ? formatCodeNumericDescription[formatRule]
+      ? formatCodeNumericDescription[normalizedRule]
       : attributeType.includes("Binary")
-        ? formatCodeBinaryDescription[formatRule]
+        ? formatCodeBinaryDescription[normalizedRule]
         : attributeType.includes("Text")
-          ? formatCodeTextDescription[formatRule]
+          ? formatCodeTextDescription[normalizedRule]
           : "";
+};
 
 export const shouldDisableRangeOverlay = (
   overlayText,
