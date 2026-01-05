@@ -56,6 +56,7 @@ export const processAttributes = (attributes, labels = {}) => {
     return {
       name: truncatedName,
       originalName: fieldName,
+      attributeKey: key,  // The actual attribute key for schema lookups
       type: value,
       isReference,
       isPlaceholder

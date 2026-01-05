@@ -378,15 +378,20 @@ export const generateDetailedLayout = (
           target: referencedId
         });
       } else if (field.isPlaceholder) {
-        const placeholderId = field.originalName || field.name; // Use the field name as the placeholder ID
+        const placeholderId = field.attributeKey || field.originalName || field.name; // Use the attribute key as the placeholder ID
 
         // Check if this placeholder schema now has actual attributes
         let placeholderFields = [];
         let placeholderTitle = field.name;
 
         // Look for the schema in dependencies to see if it has attributes
+        // Check by dependency ID first (matches attribute key), then by name
         if (dependencies) {
           const dependencyWithAttributes = dependencies.find((dep) => {
+            // First check if the dependency's d field matches the placeholder ID (attribute key)
+            if (dep.d === placeholderId) return true;
+            
+            // Fall back to checking the meta overlay name
             const metaOverlays = dep.overlays?.meta;
             const metaOverlay = Array.isArray(metaOverlays)
               ? (metaOverlays.find((m) => m.language === language) || metaOverlays[0])

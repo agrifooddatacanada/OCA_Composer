@@ -285,12 +285,29 @@ export default function ViewSchema({
 
   // readme hooks not used on this page
   // Show multi-schema visualization if:
-  // 1. Current schema has Child Schema types (hasNestedSchemas)
-  // 2. Package has actual dependencies (not just placeholder/empty dependencies)
+  // 1. ANY schema in the hierarchy has Child Schema types (check schemaStates)
+  // 2. Package has any dependencies (including empty placeholder schemas)
   const hasHierarchy = useMemo(() => {
-    if (hasNestedSchemas) return true;
-    return hasActualDependencies(updatedOCAPackage);
-  }, [hasNestedSchemas, updatedOCAPackage]);
+    // Check if ANY schema in schemaStates has Child Schema types
+    const anySchemaHasChildren = Object.values(schemaStates).some(state => {
+      return state?.attributes?.some(attr => {
+        const type = attr?.Type;
+        return typeof type === "string" && (
+          type.startsWith("refs:") || 
+          type.startsWith("refn:") || 
+          type === "Child Schema" || 
+          type === "Array[Child Schema]"
+        );
+      });
+    });
+    
+    // Check if package has any dependencies (even empty ones)
+    const dependencies = updatedOCAPackage?.oca_bundle?.dependencies || 
+                        updatedOCAPackage?.dependencies || [];
+    const hasDependencies = dependencies.length > 0;
+    
+    return anySchemaHasChildren || hasDependencies;
+  }, [schemaStates, updatedOCAPackage]);
 
   // Update the package data when schemas are modified
   useEffect(() => {

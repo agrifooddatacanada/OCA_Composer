@@ -999,10 +999,17 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
                   }
 
                   // Add the new dependency to the package
-                  if (!modifiedPackage.dependencies) {
-                    modifiedPackage.dependencies = [];
+                  if (modifiedPackage.oca_bundle) {
+                    if (!modifiedPackage.oca_bundle.dependencies) {
+                      modifiedPackage.oca_bundle.dependencies = [];
+                    }
+                    modifiedPackage.oca_bundle.dependencies.push(newDependency);
+                  } else {
+                    if (!modifiedPackage.dependencies) {
+                      modifiedPackage.dependencies = [];
+                    }
+                    modifiedPackage.dependencies.push(newDependency);
                   }
-                  modifiedPackage.dependencies.push(newDependency);
                 }
               }
             }

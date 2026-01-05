@@ -170,7 +170,7 @@ const useOCAExport = () => {
 
   // Build OCA package from schema state using text DSL generation
   // Works for both single schemas and multi-schema packages
-  const buildPackageFromTextDSL = async (targetSchemaId) => {
+  const buildPackageFromTextDSL = async (targetSchemaId, childSaidMap = {}) => {
     const targetState = getSchemaState(targetSchemaId);
     const targetMetadata = targetState?.metadata || {};
     
@@ -283,25 +283,36 @@ const useOCAExport = () => {
         ? `Array[${OCADataArray[1][index].Type[0]}]`
         : OCADataArray[1][index].Type;
       
-      // Handle reference types - get actual refs:SAID or refn:name from original schema
-      if (attributeType === "Reference" || attributeType === "Array[Reference]") {
+      // Handle reference types - get actual refs:SAID or refn:name
+      // UI displays these as "Child Schema" or "Reference" depending on context
+      const isReference = attributeType === "Reference" || attributeType === "Array[Reference]";
+      const isChildSchema = attributeType === "Child Schema" || attributeType === "Array[Child Schema]";
+      
+      if (isReference || isChildSchema) {
         const originalValue = targetSchema?.capture_base?.attributes?.[item];
-        if (originalValue) {
-          // Use the actual refs:SAID or refn:name value from the schema
-          if (Array.isArray(originalValue)) {
-            // Array of references: ["refs:SAID"] or originalValue[0] is the ref string
-            attributeType = `Array[${originalValue[0]}]`;
+        
+        // Check if we have a pre-built SAID for this child schema
+        const childSaid = childSaidMap[item];
+        
+        if (childSaid) {
+          // Use the actual SAID from the pre-built child schema
+          if (attributeType === "Array[Child Schema]" || attributeType === "Array[Reference]") {
+            attributeType = `Array[refs:${childSaid}]`;
           } else {
-            // Single reference: just the refs:SAID or refn:name string
-            attributeType = originalValue;
+            attributeType = `refs:${childSaid}`;
           }
+        } else if (originalValue && typeof originalValue === 'string' && (originalValue.startsWith('refs:') || originalValue.startsWith('refn:'))) {
+          // Use the actual refs:SAID or refn:name value from the original schema
+          attributeType = originalValue;
+        } else if (originalValue && Array.isArray(originalValue) && originalValue[0] && (originalValue[0].startsWith('refs:') || originalValue[0].startsWith('refn:'))) {
+          // Array of references: ["refs:SAID"]
+          attributeType = `Array[${originalValue[0]}]`;
         } else {
-          // For manually created schemas without OCAPackage, use refn:placeholder format
-          // The attribute name IS the child schema name in manual creation flow
-          if (attributeType === "Array[Reference]") {
-            attributeType = `Array[refn:placeholder_${item}]`;
+          // Fallback: use refn: (named reference) - child schema not yet built or no data
+          if (attributeType === "Array[Child Schema]" || attributeType === "Array[Reference]") {
+            attributeType = `Array[refn:${item}]`;
           } else {
-            attributeType = `refn:placeholder_${item}`;
+            attributeType = `refn:${item}`;
           }
         }
       }
@@ -588,35 +599,44 @@ const useOCAExport = () => {
       // This matches agreeable-mushroom behavior - decompose bundle to UI state,
       // then rebuild from scratch which naturally generates new SAIDs
       if (OCAPackage) {
-        // Build package for each schema from its UI state (generates fresh SAIDs)
-        const schemaIds = Object.keys(schemaStates);
-        const schemaResults = await Promise.all(
-          schemaIds.map(async (schemaId) => {
-            const { bundle, extension, textDSL } = await buildPackageFromTextDSL(schemaId);
-            return { schemaId, bundle, extension, textDSL };
-          })
-        );
-
-        // Find root schema (always use the original package root, not current view)
         const originalRootId = getPackageBundleId(OCAPackage);
-        const rootResult = schemaResults.find(r => r.schemaId === originalRootId);
-        const depResults = schemaResults.filter(r => r.schemaId !== originalRootId);
+        const schemaIds = Object.keys(schemaStates);
+        
+        // Separate root from dependencies
+        const dependencyIds = schemaIds.filter(id => id !== originalRootId);
+        
+        // Step 1: Build all dependency schemas FIRST to get their SAIDs
+        const childSaidMap = {};
+        const depResults = [];
+        
+        for (const depId of dependencyIds) {
+          const { bundle, extension, textDSL } = await buildPackageFromTextDSL(depId);
+          const said = bundle?.bundle?.d;
+          if (said) {
+            childSaidMap[depId] = said;
+          }
+          depResults.push({ schemaId: depId, bundle, extension, textDSL });
+        }
+        
+        // Step 2: Build root schema WITH child SAIDs so it can use refs:SAID
+        const { bundle: rootBundle, extension: rootExtension, textDSL: rootTextDSL } = 
+          await buildPackageFromTextDSL(originalRootId, childSaidMap);
 
-        if (!rootResult) {
+        if (!rootBundle) {
           throw new Error("Could not find root schema");
         }
 
         // Build final export package with fresh SAIDs for all schemas
         const exportPackage = {
           oca_bundle: {
-            bundle: rootResult.bundle.bundle,
+            bundle: rootBundle.bundle,
             dependencies: depResults.map(dep => dep.bundle.bundle)
           },
-          extensions: rootResult.extension.extensions
+          extensions: rootExtension.extensions
         };
         
         // Use root bundle for filename extraction
-        const bundle = rootResult.bundle.bundle;
+        const bundle = rootBundle.bundle;
         
         // Extract schema name from meta overlays for filename
         const metaOverlays = bundle?.overlays?.meta;
@@ -643,18 +663,36 @@ const useOCAExport = () => {
         return true;
       }
 
-      // For manual creation (flat OR nested): Build from text DSL + use exportSchemaChanges for child schemas
-      const { bundle, extension, textDSL } = await buildPackageFromTextDSL(currentSchemaId);
+      // For manual creation (flat OR nested): Build child schemas first to get SAIDs
+      const rootSchemaId = currentSchemaId || "manual-creation-schema";
+      const allSchemaIds = Object.keys(schemaStates);
+      const childSchemaIds = allSchemaIds.filter(id => id !== rootSchemaId);
       
-      // Create a temporary package structure for text DSL-based schema
-      const tempPackage = {
+      // Step 1: Build all child schemas first to get their SAIDs
+      const childSaidMap = {};
+      const childBundles = [];
+      
+      for (const childId of childSchemaIds) {
+        const childState = schemaStates[childId];
+        // Only build if the child has been initialized (user actually created it)
+        if (childState?.initialized || (childState?.attributes && childState.attributes.length > 0)) {
+          const { bundle: childBundle } = await buildPackageFromTextDSL(childId);
+          const said = childBundle?.bundle?.d;
+          if (said) {
+            childSaidMap[childId] = said;
+            childBundles.push(childBundle.bundle);
+          }
+        }
+      }
+      
+      // Step 2: Build root schema with child SAIDs
+      const { bundle, extension, textDSL } = await buildPackageFromTextDSL(rootSchemaId, childSaidMap);
+      
+      // Create final package with root and dependencies
+      const finalPackage = {
         bundle: bundle.bundle,
-        dependencies: []
+        dependencies: childBundles
       };
-      
-      // Use exportSchemaChanges to add any child schemas from MultiSchemaContext
-      // This handles both manually created nested schemas AND manually created flat schemas
-      const finalPackage = exportSchemaChanges(tempPackage) || tempPackage;
       
       // Merge extensions into the final package
       const ocaPackageService = new OcaPackage(extension, { bundle: finalPackage.bundle, dependencies: finalPackage.dependencies });
