@@ -49,6 +49,8 @@ const FormInformation = () => {
     attributeRowData,
     lanAttributeRowData,
     setLanAttributeRowData,
+    formPlaceholdersByLanguage,
+    setFormPlaceholdersByLanguage,
     attributesList,
     setAttributesList,
     formatRuleRowData,
@@ -86,6 +88,7 @@ const FormInformation = () => {
       const newLan = JSON.parse(JSON.stringify(prevLanData || {}));
       languages.forEach((language) => {
         if (newLan[language]) {
+          const langPlaceholders = formPlaceholdersByLanguage?.[language] || {};
           newLan[language] = newLan[language].map((item, idx) => {
             const attr = item.Attribute;
             const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
@@ -103,7 +106,8 @@ const FormInformation = () => {
             if (isDateTimeType) {
               const formatRule = formatRuleRowData.find((rule) => rule.Attribute === attr);
               if (formatRule?.FormatText) {
-                const formatDescription = formatCodeDateDescription[formatRule.FormatText] || "";
+                const formatDescription =
+                  formatCodeDateDescription[formatRule.FormatText] || "";
                 if (formatDescription) {
                   const config = getDateTimePickerConfig(formatDescription);
                   dateTimeDefaultPlaceholder = config.displayFormat;
@@ -117,7 +121,8 @@ const FormInformation = () => {
             if (isNumericType) {
               const formatRule = formatRuleRowData.find((rule) => rule.Attribute === attr);
               if (formatRule?.FormatText) {
-                const formatDescription = formatCodeNumericDescription[formatRule.FormatText] || "";
+                const formatDescription =
+                  formatCodeNumericDescription[formatRule.FormatText] || "";
                 if (formatDescription) {
                   switch (formatDescription) {
                     case "any integer or decimal number, may begin with + or -":
@@ -133,13 +138,19 @@ const FormInformation = () => {
                 }
               }
             }
-            
-            const basePlaceholderValue = FormInformationRowData?.[idx]?.Placeholder;
-            let basePlaceholder = "";
-            if (typeof basePlaceholderValue === 'object' && basePlaceholderValue !== null) {
-              basePlaceholder = basePlaceholderValue[language] || "";
-            } else {
-              basePlaceholder = basePlaceholderValue || "";
+
+            let basePlaceholder = langPlaceholders[attr] || "";
+
+            if (!basePlaceholder) {
+              const basePlaceholderValue = FormInformationRowData?.[idx]?.Placeholder;
+              if (
+                typeof basePlaceholderValue === "object" &&
+                basePlaceholderValue !== null
+              ) {
+                basePlaceholder = basePlaceholderValue[language] || "";
+              } else {
+                basePlaceholder = basePlaceholderValue || "";
+              }
             }
             
             let finalPlaceholder = item.Placeholder;
@@ -156,7 +167,7 @@ const FormInformation = () => {
             }
             
             return {
-              ...item, 
+              ...item,
               Placeholder: finalPlaceholder
             };
           });
@@ -165,7 +176,14 @@ const FormInformation = () => {
       return newLan;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [languages, attributesList, FormInformationRowData, attributeRowData, formatRuleRowData]);
+  }, [
+    languages,
+    attributesList,
+    FormInformationRowData,
+    attributeRowData,
+    formatRuleRowData,
+    formPlaceholdersByLanguage
+  ]);
 
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
@@ -423,7 +441,16 @@ const FormInformation = () => {
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
           const isEditable = PLACEHOLDER_EDITABLE_TYPES.includes(attrType);
           if (!isEditable) return true;
-          params.data.Placeholder = params.newValue || "";
+          const newValue = params.newValue || "";
+          params.data.Placeholder = newValue;
+
+          setFormPlaceholdersByLanguage((prev) => {
+            const next = { ...(prev || {}) };
+            const langMap = { ...(next[currentLanguage] || {}) };
+            langMap[attr] = newValue;
+            next[currentLanguage] = langMap;
+            return next;
+          });
           return true;
         },
         valueGetter: (params) => {

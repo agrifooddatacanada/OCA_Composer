@@ -1,6 +1,10 @@
 import { useContext } from "react";
 import { Context } from "../App";
-import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
+import {
+  codesToLanguages,
+  languageCodesObject,
+  languageNameToAlpha3Codes
+} from "../constants/isoCodes";
 import {
   ADC,
   codeToDivision,
@@ -8,6 +12,7 @@ import {
   CUSTOM_FORMAT_RULE,
   dataTypes,
   FIELD_RANGE_OVERLAY,
+  FIELD_FORM_INFORMATION_OVERLAY,
   RANGE,
   SCHEMA_MODE_MULTI_LEVEL,
   SCHEMA_MODE_SINGLE,
@@ -24,6 +29,7 @@ import {
   isMultiLevelSchema,
   replaceCharsInKeys
 } from "../constants/utils";
+import convertOverlayToFormBuilder from "../Overlays/FormBuilder/utils/convertOverlayToFormBuilder";
 
 const useZipParser = () => {
   const {
@@ -43,7 +49,9 @@ const useZipParser = () => {
     setUnitRowData,
     setRangeRowData,
     setAttributeFramingRowData,
-    setSchemaMode
+    setSchemaMode,
+    setFormBuilderPages,
+    setFormPlaceholdersByLanguage
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -99,6 +107,7 @@ const useZipParser = () => {
     let attributesWithListType = [];
     const newUnitFramingRowData = [];
     const newRangeRowData = [];
+    const newFormPlaceholdersByLanguage = {};
     const newAttributeFramingRowData = [];
 
     if (isMultiLevelSchema(root?.attributes || {})) {
@@ -477,6 +486,30 @@ const useZipParser = () => {
       }));
     }
 
+    // Parse form information (form overlay) from ADC extensions, if present
+    let formOverlayForConversion = null;
+    if (ocaPackageData) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const extensionOverlays =
+        ocaPackageData.extensions?.[ADC]?.[captureBaseSaid]?.overlays || {};
+
+      const formOverlayData = extensionOverlays.form_overlay || extensionOverlays.form;
+      const formOverlayArray = Array.isArray(formOverlayData)
+        ? formOverlayData
+        : formOverlayData?.form_overlays || [];
+
+      if (Array.isArray(formOverlayArray) && formOverlayArray.length > 0) {
+        setOverlay((prev) => ({
+          ...prev,
+          [FIELD_FORM_INFORMATION_OVERLAY]: {
+            ...prev[FIELD_FORM_INFORMATION_OVERLAY],
+            selected: true
+          }
+        }));
+        formOverlayForConversion = formOverlayArray;
+      }
+    }
+
     if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {
       const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
       const attributeOrdering = replaceCharsInKeys(
@@ -494,11 +527,130 @@ const useZipParser = () => {
       setAttributeRowData(newAttributeRowData);
     }
 
+    // Extract placeholders from form overlay interaction arguments
+    if (formOverlayForConversion && Array.isArray(formOverlayForConversion)) {
+      const interactionArgs = {};
+      formOverlayForConversion.forEach((overlay) => {
+        const overlayLang = overlay.language || "eng";
+        if (overlay.interaction?.[0]?.arguments) {
+          if (!interactionArgs[overlayLang]) {
+            interactionArgs[overlayLang] = {};
+          }
+          Object.assign(interactionArgs[overlayLang], overlay.interaction[0].arguments);
+        }
+      });
+
+      languageList.forEach((lang) => {
+        const uiLanguageName = codesToLanguages[lang];
+        if (!uiLanguageName || !newLangAttributeRowData[uiLanguageName]) return;
+
+        const langCode3 =
+          languageNameToAlpha3Codes[uiLanguageName?.toLowerCase()] || lang;
+
+        const overlayLangKeys = Object.keys(interactionArgs);
+
+        if (!newFormPlaceholdersByLanguage[uiLanguageName]) {
+          newFormPlaceholdersByLanguage[uiLanguageName] = {};
+        }
+
+        newLangAttributeRowData[uiLanguageName] = newLangAttributeRowData[
+          uiLanguageName
+        ].map((item) => {
+          const attr = item.Attribute;
+          let placeholderValue = "";
+
+          if (interactionArgs[langCode3]?.[attr]?.placeholder !== undefined) {
+            const { placeholder } = interactionArgs[langCode3][attr];
+
+            if (typeof placeholder === "string" && placeholder) {
+              placeholderValue = placeholder;
+            } else if (typeof placeholder === "object" && placeholder !== null) {
+              placeholderValue = placeholder[langCode3] || placeholder[lang] || "";
+              if (!placeholderValue) {
+                const firstKey = Object.keys(placeholder)[0];
+                placeholderValue = firstKey ? placeholder[firstKey] : "";
+              }
+            }
+          }
+
+          if (!placeholderValue) {
+            for (const overlayLangKey of overlayLangKeys) {
+              if (interactionArgs[overlayLangKey]?.[attr]?.placeholder !== undefined) {
+                const { placeholder } = interactionArgs[overlayLangKey][attr];
+
+                if (typeof placeholder === "string" && placeholder) {
+                  placeholderValue = placeholder;
+                  break;
+                } else if (typeof placeholder === "object" && placeholder !== null) {
+                  placeholderValue = placeholder[langCode3] || placeholder[lang] || "";
+                  if (placeholderValue) break;
+                  const firstKey = Object.keys(placeholder)[0];
+                  if (firstKey) {
+                    placeholderValue = placeholder[firstKey];
+                    break;
+                  }
+                }
+              }
+            }
+          }
+
+          if (placeholderValue) {
+            newFormPlaceholdersByLanguage[uiLanguageName][attr] = placeholderValue;
+          }
+
+          return {
+            ...item
+          };
+        });
+      });
+    } else {
+      // No form overlay present; leave formPlaceholdersByLanguage empty
+    }
+
     setFormatRuleRowData(newFormatRuleRowData);
     setDataStandardsRowData(newDataStandardsRowData);
     setCharacterEncodingRowData(newCharacterEncodingRowData);
+
     setLanAttributeRowData(newLangAttributeRowData);
+    setFormPlaceholdersByLanguage(newFormPlaceholdersByLanguage);
+
     setRangeRowData(newRangeRowData);
+
+    // Convert form overlay to form builder pages format
+    const processedLanguages = languageList.map((lang) => codesToLanguages[lang] || lang);
+    if (formOverlayForConversion && processedLanguages && processedLanguages.length > 0) {
+      try {
+        const finalAttributeRowData =
+          ocaPackageData && hasAttributeOrdering(ocaPackageData)
+            ? getOrderedAttributeRowData(
+                newAttributeRowData,
+                replaceCharsInKeys(
+                  ocaPackageData.extensions[ADC][
+                    ocaPackageData?.oca_bundle?.bundle?.capture_base?.d
+                  ].overlays.ordering.attribute_ordering
+                )
+              )
+            : newAttributeRowData;
+
+        const convertedPages = convertOverlayToFormBuilder(
+          formOverlayForConversion,
+          processedLanguages,
+          finalAttributeRowData,
+          newFormatRuleRowData,
+          newSavedEntryCodes,
+          attributesWithListType,
+          newLangAttributeRowData,
+          newFormPlaceholdersByLanguage
+        );
+
+        if (convertedPages && convertedPages.length > 0) {
+          setFormBuilderPages(convertedPages);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.warn("Failed to convert form overlay to form builder format:", error);
+      }
+    }
   };
 
   return {
