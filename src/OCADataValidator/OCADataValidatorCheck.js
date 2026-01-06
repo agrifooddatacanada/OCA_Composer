@@ -1006,8 +1006,8 @@ const OCADataValidatorCheck = ({
           return false;
         })
       : rowData;
-  function filterRowData() {
-    updateDataValidationState();
+
+  const filterRowData = useMemo(() => {
     if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
       const selectedErrors = errorName.filter(
         (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
@@ -1030,7 +1030,7 @@ const OCADataValidatorCheck = ({
       );
     }
     return initialRowData;
-  }
+  }, [errorName, initialRowData]);
 
   return (
     <Box sx={{ overflowX: "auto" }}>
@@ -1111,15 +1111,13 @@ const OCADataValidatorCheck = ({
             </Box>
           </Box>
         </Box>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          minWidth: "900px"
-        }}
-      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1
+          }}
+        >
         <Box
           sx={{
             display: "flex",
@@ -1315,7 +1313,7 @@ const OCADataValidatorCheck = ({
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
-              rowData={filterRowData()}
+              rowData={filterRowData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               overlayLoadingTemplate='<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
@@ -1361,6 +1359,7 @@ const OCADataValidatorCheck = ({
         <WarningPopup action={handleDismissWarning} />
       )}
       <Drawer open={open}>{DrawerList}</Drawer>
+    </Box>
     </Box>
   );
 };
