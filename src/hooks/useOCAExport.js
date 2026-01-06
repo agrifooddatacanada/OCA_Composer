@@ -505,16 +505,18 @@ const useOCAExport = () => {
     const retainedUniqueFramedUnits = targetUnitFramedRowData.filter((row) => !row.deleted);
 
     const extension_overlay_object = {
-      ordering_overlay: {
-        type: ORDERING,
+      ordering: {
+        d: `ordering_${Date.now()}`,
+        type: "community/overlays/adc/ordering/1.1",
         attribute_ordering: targetAttributesList,
         entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
       },
       ...(targetOverlaySelections[FIELD_UNIT_FRAMING_OVERLAY]?.selected && retainedUniqueFramedUnits.length > 0
         ? {
-            unit_framing_overlay: {
-              type: UNIT_FRAMING,
-              properties: {
+            unit_framing: {
+              d: `unit_framing_${Date.now()}`,
+              type: "community/overlays/adc/unit_framing/1.1",
+              framing_metadata: {
                 id: UNIT_FRAME_ID,
                 label: UNIT_FRAME_LABEL,
                 location: UNIT_FRAME_LOCATION,
@@ -524,34 +526,38 @@ const useOCAExport = () => {
             }
           }
         : {}),
-      ...(targetOverlaySelections[FIELD_RANGE_OVERLAY]?.selected
+      ...(targetOverlaySelections[FIELD_RANGE_OVERLAY]?.selected && Object.keys(rangeOverlayInput).length > 0
         ? {
-            range_overlay: {
-              type: RANGE,
+            range: {
+              d: `range_${Date.now()}`,
+              type: "community/overlays/adc/range/1.1",
               attributes: rangeOverlayInput
             }
           }
         : {}),
       ...(sensitiveAttributes.length > 0
         ? {
-            sensitive_overlay: {
-              type: SENSITIVE,
+            sensitive: {
+              d: `sensitive_${Date.now()}`,
+              type: "community/overlays/adc/sensitive/1.1",
               sensitive_attributes: sensitiveAttributes
             }
           }
         : {}),
       ...(targetOverlaySelections[FIELD_ATTRIBUTE_FRAMING_OVERLAY]?.selected
         ? {
-            attribute_framing_overlay: {
-              type: ATTRIBUTE_FRAMING,
+            attribute_framing: {
+              d: `attribute_framing_${Date.now()}`,
+              type: "community/overlays/adc/attribute_framing/1.1",
               attributes: getAttributeFramingInput(targetAttributeFramingRowData)
             }
           }
         : {}),
       ...(targetOverlaySelections[FIELD_FORM_INFORMATION_OVERLAY]?.selected
         ? {
-            form_information_overlay: {
-              type: FORM,
+            form_information: {
+              d: `form_information_${Date.now()}`,
+              type: "community/overlays/adc/form_information/1.1",
               pages: formBuilderPages.map((page) => ({
                 ...page,
                 schemaName: targetSchemaDescription[targetLanguages[0]]?.name || targetMetadata.name || "",
@@ -562,11 +568,14 @@ const useOCAExport = () => {
         : {})
     };
 
-    const extension_overlays = [extension_overlay_object];
     const extension = {
       extensions: {
         [ADC]: {
-          [bundle?.bundle?.d || "bundle_id"]: extension_overlays
+          [bundle?.bundle?.capture_base?.d || "capture_base_id"]: {
+            d: `extension_${Date.now()}`,
+            type: "community/adc/extension/1.0",
+            overlays: extension_overlay_object
+          }
         }
       }
     };
@@ -612,6 +621,8 @@ const useOCAExport = () => {
 
         // Build final export package with fresh SAIDs for all schemas
         const exportPackage = {
+          d: `package_${Date.now()}`,
+          type: "oca_package/1.0",
           oca_bundle: {
             bundle: rootBundle.bundle,
             dependencies: depResults.map(dep => dep.bundle.bundle)
