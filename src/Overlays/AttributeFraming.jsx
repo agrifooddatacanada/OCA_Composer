@@ -31,11 +31,13 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import SearchIcon from "@mui/icons-material/Search";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
 import Spinner from "../components/Spinner";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import DeleteConfirmation from "./DeleteConfirmation";
+import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import {
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS
@@ -1073,16 +1075,34 @@ const updateFramedAttributes = (attributeFramingRowData, displayedFramedAttribut
 
 const AttributeFraming = () => {
   const {
-    attributeFramingRowData,
-    setAttributeFramingRowData,
-    setCurrentPage,
-    setSelectedOverlay,
-    setOverlay,
-    frameAllAttributes,
-    setFrameAllAttributes,
-    unframedAttributeList,
-    setUnframedAttributeList
+    setCurrentPage
   } = useContext(Context);
+
+  // Use MultiSchema context for schema-specific state
+  const {
+    currentSchemaId,
+    getSchemaState,
+    updateSchemaState,
+    setSelectedOverlay
+  } = useMultiSchema();
+  
+  const schemaState = getSchemaState(currentSchemaId);
+  const attributeFramingRowData = schemaState?.attributeFramingData || [];
+  const frameAllAttributes = schemaState?.frameAllAttributes || false;
+  const unframedAttributeList = schemaState?.unframedAttributeList || [];
+  
+  // Setter functions that update MultiSchemaContext
+  const setAttributeFramingRowData = useCallback((data) => {
+    updateSchemaState(currentSchemaId, { attributeFramingData: data });
+  }, [currentSchemaId, updateSchemaState]);
+  
+  const setFrameAllAttributes = useCallback((value) => {
+    updateSchemaState(currentSchemaId, { frameAllAttributes: value });
+  }, [currentSchemaId, updateSchemaState]);
+  
+  const setUnframedAttributeList = useCallback((list) => {
+    updateSchemaState(currentSchemaId, { unframedAttributeList: list });
+  }, [currentSchemaId, updateSchemaState]);
 
   const { t } = useTranslation();
   const gridRef = useRef();
@@ -1091,6 +1111,9 @@ const AttributeFraming = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [gridReady, setGridReady] = useState(false);
+  
+  // Use centralized delete handler
+  const deleteHandler = useDeleteOverlayHandler(FIELD_ATTRIBUTE_FRAMING_OVERLAY);
 
   const hasUnframedAttributes = unframedAttributeList && unframedAttributeList.length > 0;
 
@@ -1314,19 +1337,6 @@ const AttributeFraming = () => {
       ? `${t("Unframed attributes")}: [${unframedAttributeList.join(", ")}]`
       : t("No attributes to frame");
 
-  const useDeleteOverlayHandler = () => {
-    setOverlay((prev) => ({
-      ...prev,
-      [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: {
-        ...prev[FIELD_ATTRIBUTE_FRAMING_OVERLAY],
-        selected: false
-      }
-    }));
-
-    setSelectedOverlay("");
-    setCurrentPage("Overlays");
-  };
-
   const handleSave = () => {
     if (!gridReady || !gridRef.current?.api) {
       console.warn("Grid not ready for save operation");
@@ -1346,7 +1356,7 @@ const AttributeFraming = () => {
 
   const handleForward = () => {
     handleSave();
-    setSelectedOverlay("");
+    setSelectedOverlay(currentSchemaId, "");
     setCurrentPage("Overlays");
   };
 
@@ -1387,7 +1397,7 @@ const AttributeFraming = () => {
     >
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={useDeleteOverlayHandler}
+          removeFromSelected={deleteHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}
