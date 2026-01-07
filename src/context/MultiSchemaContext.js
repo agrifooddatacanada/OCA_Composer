@@ -1284,7 +1284,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   const updateOverlaySelection = useCallback((schemaId, overlayKey, updates) => {
     // Use setSchemaStates to get fresh state at update time
     setSchemaStates(prevStates => {
-      const targetId = schemaId || currentSchemaId;
+      const targetId = schemaId || currentSchemaId || MANUAL_CREATION_SCHEMA_ID;
       const currentState = prevStates[targetId] || createDefaultSchemaState();
       const currentSelections = currentState.overlaySelections || {
         [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },

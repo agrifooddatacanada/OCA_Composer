@@ -55,48 +55,61 @@ export const resetOverlayValues = (overlayType) => {
  * @param {string} overlayType - The overlay type constant
  * @returns {Function} Complete deletion handler that clears data and navigates to Overlays
  */
-export const useDeleteOverlayHandler = (overlayType) => {
+/**
+ * Core deletion logic extracted for reuse
+ * @param {string} overlayType - The overlay type constant
+ * @param {Object} context - Required context methods
+ */
+export const deleteOverlayData = (overlayType, { updateSchemaState, updateOverlaySelection, currentSchemaId, getSchemaState }) => {
+  // Clear the overlay data
+  const resetValues = resetOverlayValues(overlayType);
+  
+  // Handle special case for conformance overlay (Required Entries)
+  if (overlayType === FIELD_CONFORMANCE_OVERLAY) {
+    const schemaState = getSchemaState(currentSchemaId);
+    
+    // Clear Required flags from all attributes
+    const updatedAttributes = schemaState?.attributes?.map((attr) => ({
+      ...attr,
+      Required: false
+    })) || [];
+    
+    updateSchemaState(currentSchemaId, {
+      ...resetValues,
+      attributes: updatedAttributes
+    });
+  } else if (Object.keys(resetValues).length > 0) {
+    updateSchemaState(currentSchemaId, resetValues);
+  }
+  
+  // Update selection state to deselected
+  updateOverlaySelection(currentSchemaId, overlayType, { selected: false });
+  
+  // Special case: Format overlay also affects range overlay
+  if (overlayType === FIELD_FORMAT_OVERLAY) {
+    updateOverlaySelection(currentSchemaId, FIELD_RANGE_OVERLAY, { selected: false });
+  }
+};
+
+/**
+ * Hook for overlay deletion with optional navigation
+ * @param {string} overlayType - The overlay type constant  
+ * @param {boolean} shouldNavigate - Whether to navigate back to Overlays page (default: true)
+ * @returns {Function} Delete handler function
+ */
+export const useDeleteOverlayHandler = (overlayType, shouldNavigate = true) => {
   const { updateSchemaState, updateOverlaySelection, currentSchemaId, getSchemaState } = useMultiSchema();
   const { setCurrentPage } = useContext(Context);
   
-  const updateCurrentSchema = (updates) => {
-    // MultiSchemaContext handles null schemaId internally
-    updateSchemaState(currentSchemaId, updates);
-  };
-  
   return useCallback(() => {
-    // Clear the overlay data
-    const resetValues = resetOverlayValues(overlayType);
+    // Execute core deletion logic
+    deleteOverlayData(overlayType, { updateSchemaState, updateOverlaySelection, currentSchemaId, getSchemaState });
     
-    // Handle special case for conformance overlay (Required Entries)
-    if (overlayType === FIELD_CONFORMANCE_OVERLAY) {
-      const schemaState = getSchemaState(currentSchemaId);
-      
-      // Clear Required flags from all attributes
-      const updatedAttributes = schemaState?.attributes?.map((attr) => ({
-        ...attr,
-        Required: false
-      })) || [];
-      
-      updateCurrentSchema({
-        ...resetValues,
-        attributes: updatedAttributes
-      });
-    } else if (Object.keys(resetValues).length > 0) {
-      updateCurrentSchema(resetValues);
+    // Navigate back to overlays page if requested
+    if (shouldNavigate) {
+      setCurrentPage("Overlays");
     }
-    
-    // Update selection state to deselected
-    updateOverlaySelection(currentSchemaId, overlayType, { selected: false });
-    
-    // Special case: Format overlay also affects range overlay
-    if (overlayType === FIELD_FORMAT_OVERLAY) {
-      updateOverlaySelection(currentSchemaId, FIELD_RANGE_OVERLAY, { selected: false });
-    }
-    
-    // Always navigate back to overlays page
-    setCurrentPage("Overlays");
-  }, [overlayType, updateCurrentSchema, updateOverlaySelection, currentSchemaId, getSchemaState, setCurrentPage]);
+  }, [overlayType, shouldNavigate, updateSchemaState, updateOverlaySelection, currentSchemaId, getSchemaState, setCurrentPage]);
 };
 
 /**

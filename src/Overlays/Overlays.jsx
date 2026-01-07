@@ -12,6 +12,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { shouldDisableRangeOverlay, getRangeOverlayDisabledReason, shouldDisableFormInformationOverlay, getFormInformationDisabledReason } from "../utils/helpers";
 import { FIELD_FORMAT_OVERLAY, FIELD_RANGE_OVERLAY, FIELD_FORM_INFORMATION_OVERLAY } from "../constants/constants";
+import { deleteOverlayData } from "../utils/overlayUtils";
 
 const Overlays = ({ pageBack, pageForward }) => {
   const { t } = useTranslation();
@@ -104,35 +105,13 @@ const Overlays = ({ pageBack, pageForward }) => {
   };
 
   const removeFromSelected = () => {
-    // Get current overlay selections
-    const currentSelections = getOverlaySelections(currentSchemaId);
-    const updatedSelections = {
-      ...currentSelections,
-      [selectedItemToDelete]: {
-        ...currentSelections[selectedItemToDelete],
-        selected: false
-      }
-    };
-
-    // Also remove range overlay and form information overlay if format overlay is being removed
-    if (selectedItemToDelete === FIELD_FORMAT_OVERLAY) {
-      updatedSelections[FIELD_RANGE_OVERLAY] = {
-        ...currentSelections[FIELD_RANGE_OVERLAY],
-        selected: false
-      };
-      updatedSelections[FIELD_FORM_INFORMATION_OVERLAY] = {
-        ...currentSelections[FIELD_FORM_INFORMATION_OVERLAY],
-        selected: false
-      };
-    }
-
-    // Update overlay selections in a single call to avoid race condition
-    updateSchemaState(currentSchemaId, {
-      overlaySelections: updatedSelections
+    // Use centralized deletion logic (no navigation since we're already on Overlays page)
+    deleteOverlayData(selectedItemToDelete, { 
+      updateSchemaState, 
+      updateOverlaySelection, 
+      currentSchemaId, 
+      getSchemaState 
     });
-
-    // Note: Overlay data deletion is handled by the individual overlay components
-    // via the deleteHandler hook when they unmount
     setShowDeleteConfirmation(false);
   };
 
