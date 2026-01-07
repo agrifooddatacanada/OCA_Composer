@@ -505,18 +505,16 @@ const useOCAExport = () => {
     const retainedUniqueFramedUnits = targetUnitFramedRowData.filter((row) => !row.deleted);
 
     const extension_overlay_object = {
-      ordering: {
-        d: `ordering_${Date.now()}`,
-        type: "community/overlays/adc/ordering/1.1",
+      ordering_overlay: {
+        type: ORDERING,
         attribute_ordering: targetAttributesList,
         entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
       },
       ...(targetOverlaySelections[FIELD_UNIT_FRAMING_OVERLAY]?.selected && retainedUniqueFramedUnits.length > 0
         ? {
-            unit_framing: {
-              d: `unit_framing_${Date.now()}`,
-              type: "community/overlays/adc/unit_framing/1.1",
-              framing_metadata: {
+            unit_framing_overlay: {
+              type: UNIT_FRAMING,
+              properties: {
                 id: UNIT_FRAME_ID,
                 label: UNIT_FRAME_LABEL,
                 location: UNIT_FRAME_LOCATION,
@@ -528,37 +526,39 @@ const useOCAExport = () => {
         : {}),
       ...(targetOverlaySelections[FIELD_RANGE_OVERLAY]?.selected && Object.keys(rangeOverlayInput).length > 0
         ? {
-            range: {
-              d: `range_${Date.now()}`,
-              type: "community/overlays/adc/range/1.1",
+            range_overlay: {
+              type: RANGE,
               attributes: rangeOverlayInput
             }
           }
         : {}),
       ...(sensitiveAttributes.length > 0
         ? {
-            sensitive: {
-              d: `sensitive_${Date.now()}`,
-              type: "community/overlays/adc/sensitive/1.1",
+            sensitive_overlay: {
+              type: SENSITIVE,
               sensitive_attributes: sensitiveAttributes
             }
           }
         : {}),
       ...(targetOverlaySelections[FIELD_ATTRIBUTE_FRAMING_OVERLAY]?.selected
         ? {
-            attribute_framing: {
-              d: `attribute_framing_${Date.now()}`,
-              type: "community/overlays/adc/attribute_framing/1.1",
+            attribute_framing_overlay: {
+              type: ATTRIBUTE_FRAMING,
+              framing_metadata: {
+                id: "FOODON",
+                label: "Food Ontology",
+                location: "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl",
+                version: "1.0"
+              },
               attributes: getAttributeFramingInput(targetAttributeFramingRowData)
             }
           }
         : {}),
       ...(targetOverlaySelections[FIELD_FORM_INFORMATION_OVERLAY]?.selected
         ? {
-            form_information: {
-              d: `form_information_${Date.now()}`,
-              type: "community/overlays/adc/form_information/1.1",
-              pages: formBuilderPages.map((page) => ({
+            form_overlay: {
+              form_overlays: formBuilderPages.map((page) => ({
+                type: FORM,
                 ...page,
                 schemaName: targetSchemaDescription[targetLanguages[0]]?.name || targetMetadata.name || "",
                 schemaDigest: bundle.bundle.d
@@ -568,14 +568,11 @@ const useOCAExport = () => {
         : {})
     };
 
+    const extension_overlays = [extension_overlay_object];
     const extension = {
       extensions: {
         [ADC]: {
-          [bundle?.bundle?.capture_base?.d || "capture_base_id"]: {
-            d: `extension_${Date.now()}`,
-            type: "community/adc/extension/1.0",
-            overlays: extension_overlay_object
-          }
+          [bundle?.bundle?.d || "bundle_id"]: extension_overlays
         }
       }
     };
@@ -619,16 +616,9 @@ const useOCAExport = () => {
           throw new Error("Could not find root schema");
         }
 
-        // Build final export package with fresh SAIDs for all schemas
-        const exportPackage = {
-          d: `package_${Date.now()}`,
-          type: "oca_package/1.0",
-          oca_bundle: {
-            bundle: rootBundle.bundle,
-            dependencies: depResults.map(dep => dep.bundle.bundle)
-          },
-          extensions: rootExtension.extensions
-        };
+        // Use OcaPackage library to generate package with correct digests
+        const ocaPackageService = new OcaPackage(rootExtension, rootBundle);
+        const exportPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
         
         // Use root bundle for filename extraction
         const bundle = rootBundle.bundle;
