@@ -13,8 +13,6 @@ const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalTogg
   const handleChange = (event) => {
     const { checked } = event.target;
     const colId = colDef.field;
-    // eslint-disable-next-line no-console
-    console.log("CheckboxRenderer: toggle", { attr: data?.Attribute, colId, checked });
     
     if (node && typeof node.setDataValue === "function") {
       node.setDataValue(colId, checked);
@@ -27,8 +25,10 @@ const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalTogg
     }
 
     // Immediately reflect list toggles in MultiSchemaContext so Home can add/remove the Entry Codes step
-    if (colId === "List" && currentSchemaId && data && data.Attribute) {
-      const schemaState = getSchemaState(currentSchemaId) || {};
+    if (colId === "List" && data && data.Attribute) {
+      // Use fallback schema ID when currentSchemaId is null
+      const targetSchemaId = currentSchemaId || "manual-creation-schema";
+      const schemaState = getSchemaState(targetSchemaId) || {};
       const prevLists = Array.isArray(schemaState.attributesWithLists)
         ? schemaState.attributesWithLists
         : [];
@@ -61,13 +61,7 @@ const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalTogg
         }
       }
 
-      // eslint-disable-next-line no-console
-      console.log("CheckboxRenderer: updateSchemaState", {
-        schema: currentSchemaId,
-        nextLists,
-        nextEntryCodesKeys: Object.keys(nextEntryCodes)
-      });
-      updateSchemaState(currentSchemaId, {
+      updateSchemaState(targetSchemaId, {
         attributes: nextAttributes,
         attributesWithLists: nextLists,
         entryCodes: nextEntryCodes

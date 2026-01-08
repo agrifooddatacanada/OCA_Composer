@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useContext, useRef, useCallback } from "react";
 import "./App.css";
 import { Box, Typography } from "@mui/material";
 import { getPackageBundle, getPackageBundleId } from "./utils/packageUtils";
@@ -135,18 +135,18 @@ const Home = ({
    * @param {{label: string, page: string}} step - object containing step label and the step's associated page
    * @returns
    */
-  const insertStep = (position, step) => {
+  const insertStep = useCallback((position, step) => {
     setSteps((currentSteps) => {
       // Prevent duplicates even if called multiple times rapidly
       const exists = currentSteps.some((s) => s.label === step.label);
       if (exists) return currentSteps;
       return [...currentSteps.slice(0, position), step, ...currentSteps.slice(position)];
     });
-  };
+  }, []);
 
-  const removeStep = (stepLabel) => {
+  const removeStep = useCallback((stepLabel) => {
     setSteps((currentSteps) => currentSteps.filter((step) => step.label !== stepLabel));
-  };
+  }, []);
 
   // Custom navigation functions that use dynamic steps array instead of static pagesArray
   const pageForward = () => {
@@ -191,41 +191,60 @@ const Home = ({
         setIsZipEdited(true);
       }
 
-      // If we're currently on the Metadata step, validate and show popup if needed
-      if (currentPage === "Metadata") {
-        if (schemaMetadataRef.current && typeof schemaMetadataRef.current.showValidationPopup === "function") {
-          const isValid = schemaMetadataRef.current.showValidationPopup(target.page);
-          if (!isValid) {
-            return; // Validation failed, component will show its popup with target page
-          }
-        }
-      }
+      // Determine if we're navigating forward or backward
+      const currentIndex = steps.findIndex((step) => step.page === currentPage);
+      const isForwardNavigation = index > currentIndex;
 
-      // If we're currently on the Details step, save and validate before navigation
-      if (currentPage === "Details") {
-        // Persist edits before validating/navigation
-        if (attributeDetailsRef.current && typeof attributeDetailsRef.current.save === "function") {
-          attributeDetailsRef.current.save();
-        }
-        // Show validation popup if validation fails
-        if (attributeDetailsRef.current && typeof attributeDetailsRef.current.showValidationPopup === "function") {
-          const isValid = attributeDetailsRef.current.showValidationPopup();
-          if (!isValid) {
-            return; // Validation failed, component will show its popup
+      // Only validate when navigating FORWARD
+      if (isForwardNavigation) {
+        // If we're currently on the Metadata step, validate and show popup if needed
+        if (currentPage === "Metadata") {
+          if (schemaMetadataRef.current && typeof schemaMetadataRef.current.showValidationPopup === "function") {
+            const isValid = schemaMetadataRef.current.showValidationPopup(target.page);
+            if (!isValid) {
+              return; // Validation failed, component will show its popup with target page
+            }
           }
         }
-      }
 
-      // If leaving Entry Codes step, validate and persist any edits before navigation
-      if (currentPage === "Codes") {
-        if (entryCodesRef.current && typeof entryCodesRef.current.validate === "function") {
-          const isValid = entryCodesRef.current.validate();
-          if (!isValid) {
-            return; // Validation failed, stay on current page
+        // If we're currently on the Details step, save and validate before navigation
+        if (currentPage === "Details") {
+          // Persist edits before validating/navigation
+          if (attributeDetailsRef.current && typeof attributeDetailsRef.current.save === "function") {
+            attributeDetailsRef.current.save();
+          }
+          // Show validation popup if validation fails
+          if (attributeDetailsRef.current && typeof attributeDetailsRef.current.showValidationPopup === "function") {
+            const isValid = attributeDetailsRef.current.showValidationPopup();
+            if (!isValid) {
+              return; // Validation failed, component will show its popup
+            }
           }
         }
-        if (entryCodesRef.current && typeof entryCodesRef.current.save === "function") {
-          entryCodesRef.current.save();
+
+        // If leaving Entry Codes step, validate and persist any edits before navigation
+        if (currentPage === "Codes") {
+          if (entryCodesRef.current && typeof entryCodesRef.current.validate === "function") {
+            const isValid = entryCodesRef.current.validate();
+            if (!isValid) {
+              return; // Validation failed, stay on current page
+            }
+          }
+          if (entryCodesRef.current && typeof entryCodesRef.current.save === "function") {
+            entryCodesRef.current.save();
+          }
+        }
+      } else {
+        // When navigating BACKWARD, save without validation
+        if (currentPage === "Details") {
+          if (attributeDetailsRef.current && typeof attributeDetailsRef.current.save === "function") {
+            attributeDetailsRef.current.save();
+          }
+        }
+        if (currentPage === "Codes") {
+          if (entryCodesRef.current && typeof entryCodesRef.current.save === "function") {
+            entryCodesRef.current.save();
+          }
         }
       }
 
@@ -293,38 +312,47 @@ const Home = ({
   }, [currentPage, steps]);
 
   // Ensure Entry Codes step reflects the currently active schema (root or dependency)
-  const prevShouldShowRef = React.useRef(false);
+  const prevShouldShowRef = React.useRef(null); // null = uninitialized
   useEffect(() => {
-    if (!currentSchemaId) return;
-    const state = getSchemaState(currentSchemaId);
+    // Use fallback schema ID when currentSchemaId is null (manual creation flow)
+    const targetSchemaId = currentSchemaId || "manual-creation-schema";
+    
+    // Read directly from schemaStates to avoid memoization issues
+    const state = schemaStates[targetSchemaId] || {};
     const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
-    const hasExplicitListFlags = attributesArray.some(
-      (a) => a && (a.List === true || a.List === false)
-    );
-    const hasList = attributesArray.some((a) => a && a.List === true);
+    const attributesWithLists = state?.attributesWithLists || [];
+    
+    // Check if any attributes are marked as lists
+    const hasList = Array.isArray(attributesWithLists) && attributesWithLists.length > 0;
+    
     const hasEntryCodes = state?.entryCodes && Object.keys(state.entryCodes).length > 0;
     const hasArrayTypes = attributesArray.some(
       (a) => typeof a?.Type === "string" && a.Type.startsWith("Array[")
     );
 
-    // Rule:
-    // - If explicit List flags exist, rely ONLY on (hasList || hasEntryCodes)
-    // - If no explicit flags yet (fresh import), fall back to array type heuristic
-    const shouldShow = hasExplicitListFlags
-      ? hasList || hasEntryCodes
-      : hasList || hasEntryCodes || hasArrayTypes;
+    // Show Entry Codes step if:
+    // - Any attributes are marked as lists (attributesWithLists has items)
+    // - Entry codes exist
+    // - Array types exist (fallback for imports) BUT only if attributesWithLists is uninitialized
+    //   (once user starts toggling List checkboxes, trust attributesWithLists over Type field)
+    const isAttributesWithListsInitialized = state?.attributesWithLists !== undefined;
+    const shouldShow = hasList || hasEntryCodes || (!isAttributesWithListsInitialized && hasArrayTypes);
 
-    if (shouldShow) {
-      insertStep(2, { label: "Entry Codes", page: "Codes" });
-    } else {
-      removeStep("Entry Codes");
-      if (currentPage === "Codes") {
-        setCurrentPage("LanguageDetails");
+    // Initialize on first run or update if visibility changed
+    if (prevShouldShowRef.current === null || shouldShow !== prevShouldShowRef.current) {
+      
+      if (shouldShow) {
+        insertStep(2, { label: "Entry Codes", page: "Codes" });
+      } else {
+        removeStep("Entry Codes");
+        if (currentPage === "Codes") {
+          setCurrentPage("LanguageDetails");
+        }
       }
-    }
 
-    prevShouldShowRef.current = shouldShow;
-  }, [currentSchemaId, schemaStates, getSchemaState, currentPage, setCurrentPage]);
+      prevShouldShowRef.current = shouldShow;
+    }
+  }, [currentSchemaId, schemaStates, currentPage, setCurrentPage, insertStep, removeStep]);
 
   return (
     <>

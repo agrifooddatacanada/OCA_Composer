@@ -2,15 +2,44 @@ import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 
 const ListHeader = ({ gridRef }) => {
   const { t } = useTranslation();
   const inputRef = useRef();
+  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
 
   const handleCheckboxChange = (event) => {
     const { checked } = event.target;
+    
     gridRef.current.api.forEachNode((node) => {
       node.setDataValue("List", checked);
+    });
+    
+    // Update schema state when Select All is toggled
+    const targetSchemaId = currentSchemaId || "manual-creation-schema";
+    const schemaState = getSchemaState(targetSchemaId) || {};
+    const prevAttributes = Array.isArray(schemaState.attributes) ? schemaState.attributes : [];
+    const prevEntryCodes = schemaState.entryCodes || {};
+    
+    // Update all attributes and build new lists array
+    const nextAttributes = prevAttributes.map(attr => ({ ...attr, List: checked }));
+    const nextLists = checked ? prevAttributes.map(attr => attr.Attribute).filter(Boolean) : [];
+    const nextEntryCodes = checked ? { ...prevEntryCodes } : {};
+    
+    // Initialize empty entry codes for newly checked attributes
+    if (checked) {
+      nextLists.forEach(attrName => {
+        if (!Array.isArray(nextEntryCodes[attrName])) {
+          nextEntryCodes[attrName] = [];
+        }
+      });
+    }
+    
+    updateSchemaState(targetSchemaId, {
+      attributes: nextAttributes,
+      attributesWithLists: nextLists,
+      entryCodes: nextEntryCodes
     });
   };
 

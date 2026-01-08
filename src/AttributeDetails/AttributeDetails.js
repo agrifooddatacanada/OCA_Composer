@@ -482,9 +482,40 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     return { isValid: true, errors: [] };
   }, [attributeRowData, t]);
 
+  // Save without validation - used for backward navigation
+  const saveWithoutValidation = () => {
+    if (gridRef.current && gridRef.current.api) {
+      gridRef.current.api.stopEditing();
+    }
+
+    // Get the latest data from the grid (not from state which might be stale)
+    let currentData = attributeRowData;
+    if (gridRef.current && gridRef.current.api) {
+      const rowData = [];
+      gridRef.current.api.forEachNode((node) => rowData.push(node.data));
+      currentData = rowData;
+    }
+
+    // Calculate attributesWithLists from current grid data
+    const newAttributesWithLists = [];
+    currentData.forEach((item) => {
+      if (item.List === true) {
+        newAttributesWithLists.push(item.Attribute);
+      }
+    });
+
+    // Save current attribute data to schema state, including attributesWithLists
+    // so step visibility can update properly
+    updateSchemaState(currentSchemaId, {
+      attributes: currentData,
+      attributesList: attributesList,
+      attributesWithLists: newAttributesWithLists
+    });
+  };
+
   // Expose methods to parent (Home) for navigation handling
   useImperativeHandle(ref, () => ({
-    save: handleSave,
+    save: saveWithoutValidation, // Changed from handleSave to avoid validation on backward navigation
     getCurrentData: () => attributeRowData,
     validate: validate,
     showValidationPopup: () => {
@@ -513,10 +544,19 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   };
 
   const pageBackSave = () => {
-    handleSave();
-    if (navigationSafe.current === true) {
-      pageBack();
+    // Save data without validation when going backwards
+    if (gridRef.current && gridRef.current.api) {
+      gridRef.current.api.stopEditing();
     }
+
+    // Save current attribute data to schema state without validation
+    updateSchemaState(currentSchemaId, {
+      attributes: attributeRowData,
+      attributesList: attributesList
+    });
+    
+    // Always allow backward navigation
+    pageBack();
   };
 
   return (

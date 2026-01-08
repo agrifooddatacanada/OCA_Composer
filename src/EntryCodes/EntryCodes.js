@@ -351,8 +351,42 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     });
   };
 
+  const saveWithoutValidation = () => {
+    codeRefs.current.forEach((grid) => {
+      grid.current.api.stopEditing();
+    });
+
+    const rowsArray = Array.isArray(localEntryCodeRowData) ? localEntryCodeRowData : [];
+    const newEntryCodeObject = {};
+    selectedAttributesList.forEach((attrName, index) => {
+      const sourceRows = Array.isArray(rowsArray[index]) ? rowsArray[index] : [];
+      const normalizedRows = sourceRows.map((obj) => {
+        const normalized = { ...obj };
+        languages.forEach((language) => {
+          if (!(language in normalized)) {
+            normalized[language] = "";
+          }
+        });
+        return normalized;
+      });
+      newEntryCodeObject[attrName] = normalizedRows;
+    });
+
+    const keys = Object.keys(newEntryCodeObject);
+    const newEntryCodesObject = {};
+    keys.forEach((item) => {
+      newEntryCodesObject[item] = removeSpacesAndColonFromArrayOfObjects(
+        newEntryCodeObject[item]
+      );
+    });
+
+    updateCurrentSchema({
+      entryCodes: newEntryCodesObject
+    });
+  };
+
   const pageBackSave = () => {
-    handleSave();
+    saveWithoutValidation();
     pageBack();
   };
 
@@ -374,7 +408,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
 
   // expose save and validate methods to parent (Home) so it can persist edits and validate on navigation
   useImperativeHandle(ref, () => ({
-    save: handleSave,
+    save: saveWithoutValidation, // Changed from handleSave to avoid validation on backward navigation
     validate: validate
   }));
 
