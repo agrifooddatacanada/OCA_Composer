@@ -220,10 +220,32 @@ export default function ViewSchema({
     return currentSchema.attributes.filter(attr => !attr.Type || attr.Type === "");
   }, [schemaStates, currentSchemaId]);
   
+  // Validation: Check if any list attributes are missing entry codes
+  const missingEntryCodeAttributes = useMemo(() => {
+    const schemaId = currentSchemaId || "manual-creation-schema";
+    const currentSchema = schemaStates[schemaId];
+    if (!currentSchema?.attributes) return [];
+    
+    const attributesWithLists = currentSchema.attributesWithLists || [];
+    const entryCodes = currentSchema.entryCodes || {};
+    
+    // Find attributes marked as lists but with no entry codes
+    // attributesWithLists can be either an array of names or an object {name: true}
+    return currentSchema.attributes.filter(attr => {
+      const isList = Array.isArray(attributesWithLists) 
+        ? attributesWithLists.includes(attr.Attribute)
+        : attributesWithLists[attr.Attribute];
+      const codes = entryCodes[attr.Attribute];
+      const hasNoCodes = !codes || codes.length === 0;
+      return isList && hasNoCodes;
+    });
+  }, [schemaStates, currentSchemaId]);
+  
   const hasInvalidAttributes = missingTypeAttributes.length > 0;
+  const hasMissingEntryCodes = missingEntryCodeAttributes.length > 0;
   
   // Export is disabled if there are validation errors
-  const exportDisabled = hasInvalidAttributes;
+  const exportDisabled = hasInvalidAttributes || hasMissingEntryCodes;
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const [loading, setLoading] = useState(true);
@@ -671,7 +693,7 @@ export default function ViewSchema({
             </>
           )}
 
-          {/* Validation Alert */}
+          {/* Validation Alerts */}
           {hasInvalidAttributes && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
             <Alert severity="warning" sx={{ mb: 2 }}>
               {missingTypeAttributes.length === 1
@@ -681,6 +703,19 @@ export default function ViewSchema({
                 : t("{{count}} attributes are missing types. Visit Attribute Details to complete your schema.", {
                     defaultValue: `${missingTypeAttributes.length} attributes are missing types. Visit Attribute Details to complete your schema.`,
                     count: missingTypeAttributes.length
+                  })}
+            </Alert>
+          )}
+          
+          {hasMissingEntryCodes && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              {missingEntryCodeAttributes.length === 1
+                ? t("1 attribute is marked as a List but has no entry codes. Visit Entry Codes to add codes.", {
+                    defaultValue: "1 attribute is marked as a List but has no entry codes. Visit Entry Codes to add codes."
+                  })
+                : t("{{count}} attributes are marked as Lists but have no entry codes. Visit Entry Codes to add codes.", {
+                    defaultValue: `${missingEntryCodeAttributes.length} attributes are marked as Lists but have no entry codes. Visit Entry Codes to add codes.`,
+                    count: missingEntryCodeAttributes.length
                   })}
             </Alert>
           )}
@@ -699,7 +734,7 @@ export default function ViewSchema({
                   p: 1
                 }}
                 disabled={exportDisabled}
-                title={hasInvalidAttributes ? t("Complete all required fields to enable download", { defaultValue: "Complete all required fields to enable download" }) : ""}
+                title={(hasInvalidAttributes || hasMissingEntryCodes) ? t("Complete all required fields to enable download", { defaultValue: "Complete all required fields to enable download" }) : ""}
               >
                 {t("Finish and Download", { defaultValue: "Finish and Download" })}{" "}
                 <CheckCircleIcon />
