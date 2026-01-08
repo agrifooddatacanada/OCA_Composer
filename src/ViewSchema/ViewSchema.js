@@ -8,7 +8,8 @@ import {
   Typography,
   Tooltip,
   ToggleButton,
-  ToggleButtonGroup
+  ToggleButtonGroup,
+  Alert
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -210,8 +211,19 @@ export default function ViewSchema({
     resetToDefaults
   } = useOCAExport();
   
-  // Export is never disabled in view mode
-  const exportDisabled = false;
+  // Validation: Check if any attributes are missing types
+  const missingTypeAttributes = useMemo(() => {
+    // Use fallback ID for manual creation when currentSchemaId is null
+    const schemaId = currentSchemaId || "manual-creation-schema";
+    const currentSchema = schemaStates[schemaId];
+    if (!currentSchema?.attributes) return [];
+    return currentSchema.attributes.filter(attr => !attr.Type || attr.Type === "");
+  }, [schemaStates, currentSchemaId]);
+  
+  const hasInvalidAttributes = missingTypeAttributes.length > 0;
+  
+  // Export is disabled if there are validation errors
+  const exportDisabled = hasInvalidAttributes;
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const [loading, setLoading] = useState(true);
@@ -659,6 +671,20 @@ export default function ViewSchema({
             </>
           )}
 
+          {/* Validation Alert */}
+          {hasInvalidAttributes && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              {missingTypeAttributes.length === 1
+                ? t("1 attribute is missing a type. Visit Attribute Details to complete your schema.", {
+                    defaultValue: "1 attribute is missing a type. Visit Attribute Details to complete your schema."
+                  })
+                : t("{{count}} attributes are missing types. Visit Attribute Details to complete your schema.", {
+                    defaultValue: `${missingTypeAttributes.length} attributes are missing types. Visit Attribute Details to complete your schema.`,
+                    count: missingTypeAttributes.length
+                  })}
+            </Alert>
+          )}
+
           {/* Finish and Download button - moved to top */}
           {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -673,6 +699,7 @@ export default function ViewSchema({
                   p: 1
                 }}
                 disabled={exportDisabled}
+                title={hasInvalidAttributes ? t("Complete all required fields to enable download", { defaultValue: "Complete all required fields to enable download" }) : ""}
               >
                 {t("Finish and Download", { defaultValue: "Finish and Download" })}{" "}
                 <CheckCircleIcon />
