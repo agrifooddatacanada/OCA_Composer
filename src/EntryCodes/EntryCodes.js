@@ -66,6 +66,9 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   
   // Local state for entry code grid data (schema-specific)
   const [localEntryCodeRowData, setLocalEntryCodeRowData] = useState([]);
+  
+  // Memoize the complete schema to avoid triggering useEffect unnecessarily
+  const completeSchema = useMemo(() => schemaState?.completeSchema, [schemaState?.completeSchema]);
 
   // Prefill entry codes from overlays on first load if schema state is empty
   // Use a ref object keyed by currentSchemaId to track per-schema initialization
@@ -96,7 +99,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       }
 
       // Get overlays from the complete schema (works for both bundles and packages)
-      const completeSchema = schemaState?.completeSchema;
+      // Use memoized completeSchema from below to avoid schemaState dependency
       if (!completeSchema) return;
       
       // Navigate to the bundle overlays (handles both bundle and oca_bundle wrapper)
@@ -171,13 +174,16 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     } catch (_) {
       // silent
     }
+    // Mark as initialized after first run to prevent re-running
+    hasInitializedFromOverlays.current[currentSchemaId] = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     attributeRowData,
     entryCodeRowData,
     languages,
-    schemaState,
-    updateCurrentSchema,
+    completeSchema,
     currentSchemaId
+    // updateCurrentSchema and schemaState intentionally omitted to prevent infinite loop
   ]);
 
   // Create codeRefs so there can be multiple grids on the page
@@ -206,7 +212,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       return row;
     })();
     // Get overlays from the complete schema (works for both bundles and packages)
-    const completeSchema = schemaState?.completeSchema;
     const bundleData = completeSchema?.oca_bundle?.bundle || completeSchema?.bundle || completeSchema || {};
     const overlays = bundleData?.overlays || {};
     
@@ -279,8 +284,9 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     attributeRowData,
     languages,
     entryCodeRowData,
-    schemaState,
-    currentSchemaId
+    completeSchema,
+    currentSchemaId,
+    setCurrentPage
   ]);
 
   const handleSave = () => {
