@@ -571,7 +571,8 @@ export const DISALLOWED_CHARACTERS = [
   "+",
   "%",
   ":",
-  "#"
+  "#",
+  "&"
 ];
 export const ADC = "adc";
 export const CUSTOM_FORMAT_RULE = "CustomFormatRule";
