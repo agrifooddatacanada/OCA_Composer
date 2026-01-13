@@ -849,16 +849,24 @@ export const shouldDisableRangeOverlay = (
   overlayText,
   selectedFeatures,
   attributes,
-  rangeRowData
+  rangeRowData,
+  formatRuleData = []
 ) => {
-  const hasValidAttribute = attributes.some(
-    (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
-  );
+  if (overlayText !== "Add range rule for data") return false;
+  
+  // Check if there are any Numeric/DateTime attributes with format rules
+  // Need to match formatRuleData against attributes to get Type info
+  const hasAttributesWithFormatRules = formatRuleData.some((rule) => {
+    if (!rule["Format Rule"] && !rule[CUSTOM_FORMAT_RULE]) return false;
+    
+    // Find the corresponding attribute to get its Type
+    const attribute = attributes.find(attr => attr.Attribute === rule.Attribute);
+    return attribute && (attribute.Type === "Numeric" || attribute.Type === "DateTime");
+  });
+  
   return (
-    overlayText === "Add range rule for data" &&
-    (rangeRowData.length === 0 ||
-      !selectedFeatures.includes(FIELD_FORMAT_OVERLAY) ||
-      !hasValidAttribute)
+    !hasAttributesWithFormatRules ||
+    !selectedFeatures.includes(FIELD_FORMAT_OVERLAY)
   );
 };
 
@@ -870,19 +878,40 @@ export const getRangeOverlayDisabledReason = (
   overlayText,
   selectedFeatures,
   attributes,
-  rangeRowData
-) =>
-  overlayText !== "Add range rule for data"
-    ? ""
-    : rangeRowData.length === 0
-      ? i18next.t("No attributes available for range overlay")
-      : !selectedFeatures.includes(FIELD_FORMAT_OVERLAY)
-        ? i18next.t("Range overlay requires format overlay to be selected")
-        : !attributes.some(
-              (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
-            )
-          ? i18next.t("Range overlay requires Numeric or DateTime attributes")
-          : "";
+  rangeRowData,
+  formatRuleData = []
+) => {
+  if (overlayText !== "Add range rule for data") return "";
+  
+  if (!selectedFeatures.includes(FIELD_FORMAT_OVERLAY)) {
+    return i18next.t("Range overlay requires format overlay to be selected");
+  }
+  
+  // Check if there are any Numeric/DateTime attributes
+  const hasNumericOrDateTimeAttributes = attributes.some(
+    (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
+  );
+  
+  if (!hasNumericOrDateTimeAttributes) {
+    return i18next.t("Range overlay requires Numeric or DateTime attributes");
+  }
+  
+  // Check if any Numeric/DateTime attributes have format rules
+  // Need to match formatRuleData against attributes to get Type info
+  const hasAttributesWithFormatRules = formatRuleData.some((rule) => {
+    if (!rule["Format Rule"] && !rule[CUSTOM_FORMAT_RULE]) return false;
+    
+    // Find the corresponding attribute to get its Type
+    const attribute = attributes.find(attr => attr.Attribute === rule.Attribute);
+    return attribute && (attribute.Type === "Numeric" || attribute.Type === "DateTime");
+  });
+  
+  if (!hasAttributesWithFormatRules) {
+    return i18next.t("No attributes available for range overlay");
+  }
+  
+  return "";
+};
 
 export const getFormInformationDisabledReason = (overlayText, selectedFeatures) =>
   shouldDisableFormInformationOverlay(overlayText, selectedFeatures)

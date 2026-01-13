@@ -15,6 +15,7 @@ import CheckboxRenderer from "../AttributeDetails/CheckboxRenderer";
 import { getCurrentData, getFormatRuleDescription } from "../utils/helpers";
 import { FIELD_RANGE_OVERLAY } from "../constants/constants";
 import { matchFormat } from "../OCADataValidator/utils/matchRules";
+import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 
 const Range = () => {
   const {
@@ -26,6 +27,7 @@ const Range = () => {
   const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
   
   const schemaState = getSchemaState(currentSchemaId);
+  const deleteHandler = useDeleteOverlayHandler(FIELD_RANGE_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
     // MultiSchemaContext handles null schemaId internally
@@ -196,24 +198,47 @@ const Range = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount/unmount
 
+  // Initialize rangeData from formatRuleData if empty (e.g., after deletion and re-adding)
+  useEffect(() => {
+    const formatRuleData = schemaState?.formatRuleData || [];
+    const attributes = schemaState?.attributes || [];
+    const currentRangeData = schemaState?.rangeData || [];
+    
+    // Only initialize if rangeData is empty but formatRuleData exists
+    if (currentRangeData.length === 0 && formatRuleData.length > 0 && attributes.length > 0) {
+      const newRangeRowData = [];
+      
+      formatRuleData.forEach((row) => {
+        // Find the corresponding attribute to get its Type
+        const attribute = attributes.find(attr => attr.Attribute === row.Attribute);
+        if (!attribute) return;
+        
+        if (
+          (attribute.Type !== "Numeric" && attribute.Type !== "DateTime") ||
+          (!row["Format Rule"] && !row["Custom format rule"])
+        ) {
+          return;
+        }
+
+        newRangeRowData.push({
+          Attribute: row.Attribute,
+          Type: attribute.Type,
+          FormatRule: row["Format Rule"] || row["Custom format rule"],
+          LowerBound: "",
+          LowerInclusive: false,
+          UpperBound: "",
+          UpperInclusive: false
+        });
+      });
+
+      if (newRangeRowData.length > 0) {
+        setRangeRowData(newRangeRowData);
+      }
+    }
+  }, [schemaState?.formatRuleData, schemaState?.rangeData, schemaState?.attributes, setRangeRowData]);
+
   const handleBack = () => {
     setShowDeleteConfirmation(true);
-  };
-
-  const useDeleteOverlayHandler = () => {
-    updateCurrentSchema({
-      rangeRowData: [],
-      overlays: {
-        ...schemaState.overlays,
-        [FIELD_RANGE_OVERLAY]: {
-          ...schemaState.overlays?.[FIELD_RANGE_OVERLAY],
-          selected: false
-        }
-      }
-    });
-
-    setSelectedOverlay("");
-    setCurrentPage("Overlays");
   };
 
   const onCellValueChanged = (params) => {
@@ -270,7 +295,7 @@ const Range = () => {
       {loading && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={useDeleteOverlayHandler}
+          removeFromSelected={deleteHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}

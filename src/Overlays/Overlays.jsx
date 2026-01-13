@@ -37,6 +37,7 @@ const Overlays = ({ pageBack, pageForward }) => {
   const schemaState = getSchemaState(currentSchemaId);
   const rangeRowData = schemaState?.rangeData || [];
   const attributeRowData = schemaState?.attributes || [];
+  const formatRuleData = schemaState?.formatRuleData || [];
 
   const overlay = getOverlaySelections(currentSchemaId);
   const selectedOverlay = getSelectedOverlay(currentSchemaId);
@@ -54,7 +55,8 @@ const Overlays = ({ pageBack, pageForward }) => {
         featureName,
         selectedFeatures,
         attributeRowData,
-        rangeRowData
+        rangeRowData,
+        formatRuleData
       ) ||
       ""
     );
@@ -62,7 +64,7 @@ const Overlays = ({ pageBack, pageForward }) => {
 
   const addToSelected = (item) => {
     // Range overlay can be selected only if format overlay is selected
-    if (shouldDisableRangeOverlay(item, selectedFeatures, attributeRowData, rangeRowData))
+    if (shouldDisableRangeOverlay(item, selectedFeatures, attributeRowData, rangeRowData, formatRuleData))
       return;
 
     // Form Information overlay can be selected only if format overlay is selected
@@ -200,7 +202,8 @@ const Overlays = ({ pageBack, pageForward }) => {
                     text,
                     selectedFeatures,
                     attributeRowData,
-                    rangeRowData
+                    rangeRowData,
+                    formatRuleData
                   ) || shouldDisableFormInformationOverlay(text, selectedFeatures);
                 const disabledReason = isDisabled ? getDisabledReason(text) : "";
                 
