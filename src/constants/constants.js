@@ -594,7 +594,20 @@ export const ALLOWED_BOOLEAN_VALUES = [
 ];
 
 export const MAX_FILE_SIZE = 10485760;
-export const DISALLOWED_CHARACTERS = [",", " ", "\\", "/", "(", ")", "'", "+", "%", ":"];
+export const DISALLOWED_CHARACTERS = [
+  ",",
+  " ",
+  "\\",
+  "/",
+  "(",
+  ")",
+  "'",
+  "+",
+  "%",
+  ":",
+  "#",
+  "&"
+];
 export const ADC = "adc";
 export const CUSTOM_FORMAT_RULE = "CustomFormatRule";
 
