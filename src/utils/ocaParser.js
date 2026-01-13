@@ -498,8 +498,8 @@ export class OCAParser {
    * @private
    */
   static _processUnitOverlay(unitOverlay, attributesWithLists) {
-    // Standard OCA format: {attribute_units: {...}}
-    const unitData = unitOverlay?.attribute_units;
+    // OCA spec uses attribute_units (plural) but some packages use attribute_unit (singular)
+    const unitData = unitOverlay?.attribute_units || unitOverlay?.attribute_unit;
     
     if (unitData) {
       Object.entries(unitData).forEach(
