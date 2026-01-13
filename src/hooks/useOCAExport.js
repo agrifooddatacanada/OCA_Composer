@@ -99,7 +99,7 @@ const useOCAExport = () => {
   const cardinalityData = schemaState?.cardinalityData || [];
   const rangeRowData = schemaState?.rangeData || [];
   const attributeFramingRowData = schemaState?.attributeFramingData || [];
-  const currentUnitFramedRowData = schemaState?.unitFramingData || [];
+  const currentUnitFramedRowData = schemaState?.unitFramedData || [];
 
   // Build schemaDescription from MultiSchemaContext metadata
   const schemaDescription = useMemo(() => {
@@ -185,7 +185,7 @@ const useOCAExport = () => {
     const cardinalityData = targetState?.cardinalityData || [];
     const targetRangeRowData = targetState?.rangeData || [];
     const targetAttributeFramingRowData = targetState?.attributeFramingData || [];
-    const targetUnitFramedRowData = targetState?.unitFramingData || [];
+    const targetUnitFramedRowData = targetState?.unitFramedData || [];
     const targetOverlaySelections = targetState?.overlaySelections || overlay;
     
     // Get the actual schema from OCAPackage to find reference types
