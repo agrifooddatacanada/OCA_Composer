@@ -622,8 +622,33 @@ const useOCAExport = () => {
           throw new Error("Could not find root schema");
         }
 
+        // Merge all extensions (root + all children) into one extension object
+        const mergedExtension = {
+          extensions: {
+            adc: {
+              ...rootExtension.extensions.adc, // Root schema extensions
+              // Add all child schema extensions
+              ...depResults.reduce((acc, dep) => {
+                if (dep.extension?.extensions?.adc) {
+                  return { ...acc, ...dep.extension.extensions.adc };
+                }
+                return acc;
+              }, {})
+            }
+          }
+        };
+
+        // Collect child bundles for dependencies
+        const childBundles = depResults.map(dep => dep.bundle.bundle);
+        
+        // Create bundle with dependencies
+        const bundleWithDeps = {
+          bundle: rootBundle.bundle,
+          dependencies: childBundles
+        };
+
         // Use OcaPackage library to generate package with correct digests
-        const ocaPackageService = new OcaPackage(rootExtension, rootBundle);
+        const ocaPackageService = new OcaPackage(mergedExtension, bundleWithDeps);
         const exportPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
         
         // Use root bundle for filename extraction
@@ -662,22 +687,40 @@ const useOCAExport = () => {
       // Step 1: Build all child schemas first to get their SAIDs
       const childSaidMap = {};
       const childBundles = [];
+      const childExtensions = []; // Store child extensions
       
       for (const childId of childSchemaIds) {
         const childState = schemaStates[childId];
         // Only build if the child has been initialized (user actually created it)
         if (childState?.initialized || (childState?.attributes && childState.attributes.length > 0)) {
-          const { bundle: childBundle } = await buildPackageFromTextDSL(childId);
+          const { bundle: childBundle, extension: childExtension } = await buildPackageFromTextDSL(childId);
           const said = childBundle?.bundle?.d;
           if (said) {
             childSaidMap[childId] = said;
             childBundles.push(childBundle.bundle);
+            childExtensions.push(childExtension);
           }
         }
       }
       
       // Step 2: Build root schema with child SAIDs
       const { bundle, extension, textDSL } = await buildPackageFromTextDSL(rootSchemaId, childSaidMap);
+      
+      // Merge all extensions (root + all children)
+      const mergedExtension = {
+        extensions: {
+          adc: {
+            ...extension.extensions.adc, // Root schema extensions
+            // Add all child schema extensions
+            ...childExtensions.reduce((acc, childExt) => {
+              if (childExt?.extensions?.adc) {
+                return { ...acc, ...childExt.extensions.adc };
+              }
+              return acc;
+            }, {})
+          }
+        }
+      };
       
       // Create final package with root and dependencies
       const finalPackage = {
@@ -686,7 +729,7 @@ const useOCAExport = () => {
       };
       
       // Merge extensions into the final package
-      const ocaPackageService = new OcaPackage(extension, { bundle: finalPackage.bundle, dependencies: finalPackage.dependencies });
+      const ocaPackageService = new OcaPackage(mergedExtension, { bundle: finalPackage.bundle, dependencies: finalPackage.dependencies });
       const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
 
       // Generate and download text readme
