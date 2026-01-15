@@ -117,7 +117,7 @@ const createDefaultSchemaState = () => ({
   },
   // Schema attributes
   attributes: [],
-  attributesList: [],
+  // Note: attributesList is now computed via getAttributesList() - not stored
   // Schema overlays
   overlays: {
     label: {},
@@ -282,6 +282,16 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     (schemaId) => {
       const state = getSchemaState(schemaId);
       return new Set(state.deletedAttributes || []);
+    },
+    [getSchemaState]
+  );
+
+  // Computed getter - derives attributesList from attributes array (single source of truth)
+  const getAttributesList = useCallback(
+    (schemaId) => {
+      const state = getSchemaState(schemaId);
+      const attributes = state?.attributes || [];
+      return attributes.map(attr => attr.Attribute);
     },
     [getSchemaState]
   );
@@ -1431,6 +1441,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       ensureSchemaExists,
       addDeletedAttributes,
       getDeletedAttributes,
+      getAttributesList,
       initializeSchemaFromOCA,
       switchToSchema,
       exportSchemaChanges,
@@ -1461,6 +1472,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       ensureSchemaExists,
       addDeletedAttributes,
       getDeletedAttributes,
+      getAttributesList,
       initializeSchemaFromOCA,
       switchToSchema,
       exportSchemaChanges,

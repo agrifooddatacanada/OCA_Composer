@@ -74,18 +74,18 @@ const MatchingJSONEntryCodeHeader = () => {
   const targetAttributeName = listAttributes[chosenEntryCodeIndex]?.Attribute;
   
   const [languageList, setLanguageList] = useState([]);
-  const [attributeList, setAttributeList] = useState([]);
+  const [uploadedFileAttributes, setUploadedFileAttributes] = useState([]);
   const [matchingLanguages, setMatchingLanguages] = useState([]);
   const [attrValue, setAttrValue] = useState([]);
   const gridRef = useRef();
 
   const attributeListDropdown = useMemo(() => {
-    return attributeList.map((division) => {
+    return uploadedFileAttributes.map((division) => {
       return (
         <MenuItem sx={{ height: '38px' }} key={division} value={division}>{division}</MenuItem>
       );
     });
-  }, [attributeList]);
+  }, [uploadedFileAttributes]);
 
   const changeDataFromTable = useCallback((e, params) => {
     let saveNode = undefined;
@@ -191,7 +191,7 @@ const MatchingJSONEntryCodeHeader = () => {
     });
     const matchingIndex = matchingFunction(attrList, chosenAttribute);
     setMatchingLanguages(matchingValues);
-    setAttributeList(attrList);
+    setUploadedFileAttributes(attrList);
     setAttrValue(matchingIndex !== -1 ? attrList[matchingIndex] : attrList[0]);
     setLanguageList(tempLanguagesList);
   }, []);
@@ -203,9 +203,9 @@ const MatchingJSONEntryCodeHeader = () => {
         pageBack={() => {
           setCurrentPage('UploadEntryCodes');
         }}
-        isForward={attributeList?.length > 0}
+        isForward={uploadedFileAttributes?.length > 0}
         pageForward={handleSave} />
-      {attributeList?.length > 0 ?
+      {uploadedFileAttributes?.length > 0 ?
         <Box
           sx={{
             // margin: '2rem',

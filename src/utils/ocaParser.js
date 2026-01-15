@@ -170,7 +170,7 @@ export class OCAParser {
     return {
       metadata,
       attributes: attributesWithLists,  // Always an array, even if empty: []
-      attributesList: attributesWithLists.map((a) => a.Attribute),
+      // Note: attributesList removed - now computed via getAttributesList() in MultiSchemaContext
       overlays: schemaData.overlays || {},
       overlaySelections,
       entryCodes,

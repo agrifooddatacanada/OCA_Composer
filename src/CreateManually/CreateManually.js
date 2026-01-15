@@ -69,15 +69,14 @@ export default function CreateManually() {
   const { setCurrentPage, setFileData } = useContext(Context);
 
   // Use MultiSchemaContext for all attribute management
-  const { currentSchemaId, updateSchemaState, getSchemaState } = useMultiSchema();
+  const { currentSchemaId, updateSchemaState, getSchemaState, getAttributesList } = useMultiSchema();
 
   const [rowData, setRowData] = useState([{ Name: "" }]);
   const [addErrorMessage, setAddErrorMessage] = useState("");
   const [forwardErrorMessage, setForwardErrorMessage] = useState("");
   const [backErrorMessage, setBackErrorMessage] = useState("");
-  // Get current attributes from MultiSchemaContext
-  const schemaState = getSchemaState(currentSchemaId);
-  const attributesList = schemaState?.attributesList || [];
+  // Get current attributes from MultiSchemaContext (computed from attributes array)
+  const attributesList = getAttributesList(currentSchemaId);
   
   const [canDelete, setCanDelete] = useState(attributesList.length > 1);
 
@@ -263,9 +262,9 @@ export default function CreateManually() {
       List: false
     }));
     
+    // attributesList is computed automatically from attributes
     updateSchemaState(currentSchemaId, {
-      attributes: attributeRowData,
-      attributesList: attributes
+      attributes: attributeRowData
     });
     
     setCurrentPage("Metadata");
@@ -286,18 +285,17 @@ export default function CreateManually() {
       List: false
     }));
     
+    // attributesList is computed automatically from attributes
     updateSchemaState(currentSchemaId, {
-      attributes: attributeRowData,
-      attributesList: attributes
+      attributes: attributeRowData
     });
     setCurrentPage("Start");
   };
 
   const pageBackReset = () => {
-    // Clear MultiSchemaContext data
+    // Clear MultiSchemaContext data (attributesList is computed automatically)
     updateSchemaState(currentSchemaId, {
-      attributes: [],
-      attributesList: []
+      attributes: []
     });
     setCurrentPage("Start");
   };
@@ -307,10 +305,9 @@ export default function CreateManually() {
   };
 
   const handleClearAll = () => {
-    // Clear MultiSchemaContext data
+    // Clear MultiSchemaContext data (attributesList is computed automatically)
     updateSchemaState(currentSchemaId, {
-      attributes: [],
-      attributesList: []
+      attributes: []
     });
     setFileData([]); // Still needed for file data clearing
     setRowData([{ Name: "" }]);

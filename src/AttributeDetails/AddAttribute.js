@@ -26,10 +26,7 @@ export default function AddAttribute({
   const { t } = useTranslation();
   const { currentSchemaId, updateSchemaState } = useMultiSchema();
   
-  // Callback to update attributesList in MultiSchemaContext
-  const setAttributesList = useCallback((newList) => {
-    updateSchemaState(currentSchemaId, { attributesList: newList });
-  }, [currentSchemaId, updateSchemaState]);
+  // Note: attributesList is now computed - no need to update it separately
   const [newAttribute, setNewAttribute] = useState("");
 
   const handleLanguageField = (e) => {
@@ -94,7 +91,7 @@ export default function AddAttribute({
         }, [2000]);
         return;
       }
-      setAttributesList([...newAttributesList, attributeToAdd]);
+      // attributesList is now computed from attributes - no need to set separately
       setShowAddAttribute(false);
       const newAttributeObj = {
         Attribute: attributeToAdd,
@@ -117,9 +114,9 @@ export default function AddAttribute({
         return existingAttr?._rid ? { ...attr, _rid: existingAttr._rid } : attr;
       });
       
+      // Update only attributes - attributesList is computed automatically
       updateSchemaState(currentSchemaId, {
-        attributes: attributesWithIds,
-        attributesList: [...newAttributesList, attributeToAdd]
+        attributes: attributesWithIds
       });
       
       setCanDelete(true);

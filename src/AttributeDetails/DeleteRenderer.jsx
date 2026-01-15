@@ -7,7 +7,6 @@ const DeleteRenderer = ({
   data,
   gridRef,
   typesObjectRef,
-  setAttributesList,
   setAttributeRowData,
   canDelete,
   setCanDelete,
@@ -32,15 +31,15 @@ const DeleteRenderer = ({
     
     if (index > -1) {
       newAttributeRowData.splice(index, 1);
-      const updatedAttributesList = newAttributeRowData.map((row) => row.Attribute);
       
-      setAttributesList(updatedAttributesList);
+      // Update local state (attributesList is computed automatically from attributes)
       setAttributeRowData(newAttributeRowData);
       
       // Update canDelete based on remaining attributes (allow deletion down to 0)
       setCanDelete(newAttributeRowData.length > 0);
 
-      // Sync MultiSchema state: remove from attributes, attributesList, attributesWithLists, entryCodes, and lanAttributeRowData
+      // Sync MultiSchema state: remove from attributes, attributesWithLists, entryCodes, and lanAttributeRowData
+      // Note: attributesList is computed automatically from attributes array
       // MultiSchemaContext handles null schemaId internally
       const schemaState = getSchemaState(currentSchemaId) || {};
       const nextEntryCodes = { ...(schemaState.entryCodes || {}) };
@@ -82,9 +81,9 @@ const DeleteRenderer = ({
       const nextCharacterEncodingData = { ...(schemaState.characterEncodingData || {}) };
       delete nextCharacterEncodingData[data.Attribute];
 
+      // Update schema state (attributesList is computed automatically from attributes)
       updateSchemaState(currentSchemaId, {
         attributes: newAttributeRowData,
-        attributesList: updatedAttributesList,
         entryCodes: nextEntryCodes,
         attributesWithLists: nextLists,
         lanAttributeRowData: nextLanData,

@@ -39,7 +39,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
 
   // Local state for the current editing session
   const [attributeRowData, setAttributeRowData] = useState([]);
-  const [attributesList, setAttributesList] = useState([]);
 
   const [errorMessage, setErrorMessage] = useState("");
   const [canDelete, setCanDelete] = useState(false);
@@ -128,9 +127,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       // Avoid redundant updates to prevent flicker
       const sameAttrs =
         JSON.stringify(attributeRowData) === JSON.stringify(schemaState.attributes);
-      const sameList =
-        JSON.stringify(attributesList) ===
-        JSON.stringify(schemaState.attributesList || []);
       
       // If attributes don't match, merge carefully to preserve _rid values
       if (!sameAttrs) {
@@ -147,7 +143,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         }
       }
       
-      if (!sameList) setAttributesList(schemaState.attributesList || []);
       initializedSchemaRef.current = currentSchemaId;
       return;
     }
@@ -201,17 +196,13 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       });
 
       // Avoid redundant updates to prevent flicker
-      const nextList = Object.keys(schemaAttributes);
       const sameAttrs =
         JSON.stringify(attributeRowData) === JSON.stringify(newAttributeRowData);
-      const sameList = JSON.stringify(attributesList) === JSON.stringify(nextList);
       if (!sameAttrs) setAttributeRowData(newAttributeRowData);
-      if (!sameList) setAttributesList(nextList);
 
-      // Save to MultiSchemaContext
+      // Save to MultiSchemaContext (attributesList is computed automatically)
       updateSchemaState(currentSchemaId, {
-        attributes: newAttributeRowData,
-        attributesList: Object.keys(schemaAttributes)
+        attributes: newAttributeRowData
       });
 
       // Note: Overlay data is now managed per-schema in MultiSchemaContext
@@ -221,15 +212,12 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       // Handle manual schema creation case (no completeSchema but also no existing attributes)
       // Initialize with empty arrays to allow user to start adding attributes
       const emptyAttributeRowData = [];
-      const emptyAttributesList = [];
       
       setAttributeRowData(emptyAttributeRowData);
-      setAttributesList(emptyAttributesList);
 
-      // Save empty state to MultiSchemaContext
+      // Save empty state to MultiSchemaContext (attributesList is computed automatically)
       updateSchemaState(currentSchemaId, {
-        attributes: emptyAttributeRowData,
-        attributesList: emptyAttributesList
+        attributes: emptyAttributeRowData
       });
 
       initializedSchemaRef.current = currentSchemaId;
@@ -278,9 +266,9 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     }
 
     // Always save current attribute data to schema state first, so validation can check current data
+    // attributesList is computed automatically from attributes
     updateSchemaState(currentSchemaId, {
-      attributes: attributeRowData,
-      attributesList: attributesList
+      attributes: attributeRowData
     });
 
     const validateForward = () => {
@@ -384,8 +372,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         setErrorMessage("");
       }, [2000]);
     } else {
-      setAttributesList(validationResult);
-
       const newAttributesWithLists = [];
       attributeRowData.forEach((item) => {
         if (item.List === true) {
@@ -395,9 +381,9 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
 
       // Save attributesWithLists to schema state instead of global state
       // MultiSchemaContext handles null schemaId internally
+      // attributesList is computed automatically from attributes
       updateSchemaState(currentSchemaId, {
         attributes: attributeRowData,
-        attributesList: validationResult,
         attributesWithLists: newAttributesWithLists
       });
       
@@ -442,9 +428,9 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         updatedLanAttributeRowData[langKey] = filteredData;
       });
       
+      // attributesList is computed automatically from attributes
       updateSchemaState(currentSchemaId, {
         attributes: attributeRowData,
-        attributesList: validationResult,
         attributesWithLists: newAttributesWithLists,
         lanAttributeRowData: updatedLanAttributeRowData,
         initialized: true
@@ -498,9 +484,9 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
 
     // Save current attribute data to schema state, including attributesWithLists
     // so step visibility can update properly
+    // attributesList is computed automatically from attributes
     updateSchemaState(currentSchemaId, {
       attributes: currentData,
-      attributesList: attributesList,
       attributesWithLists: newAttributesWithLists
     });
   };
@@ -542,9 +528,9 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     }
 
     // Save current attribute data to schema state without validation
+    // attributesList is computed automatically from attributes
     updateSchemaState(currentSchemaId, {
-      attributes: attributeRowData,
-      attributesList: attributesList
+      attributes: attributeRowData
     });
     
     // Always allow backward navigation

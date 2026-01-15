@@ -105,6 +105,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const {
     getCurrentSchemaId,
     getSchemaState,
+    getAttributesList,
     updateSchemaState,
     getCompleteSchema
   } = useMultiSchema();
@@ -167,8 +168,8 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   // Get schema state data with stable references
   const attributesList = useMemo(
-    () => schemaState?.attributesList || [],
-    [schemaState?.attributesList]
+    () => getAttributesList(currentSchemaId), // Computed from attributes
+    [getAttributesList, currentSchemaId, schemaState?.attributes] // Re-compute when attributes change
   );
   const lanAttributeRowData = useMemo(
     () => schemaState?.lanAttributeRowData || {},
@@ -183,14 +184,8 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     [schemaState?.attributesWithLists]
   );
 
-  // Fallback: if attributesList not persisted for this schema yet, derive from attributes
-  const effectiveAttributesList = useMemo(() => {
-    if (Array.isArray(attributesList) && attributesList.length > 0) return attributesList;
-    if (Array.isArray(attributeRowData) && attributeRowData.length > 0) {
-      return attributeRowData.map((r) => r.Attribute);
-    }
-    return [];
-  }, [attributesList, attributeRowData]);
+  // effectiveAttributesList is now just attributesList (already computed correctly)
+  const effectiveAttributesList = attributesList;
 
   // Memoize entry codes to prevent unnecessary re-renders
   // Return entry codes regardless of initialized status to support manually created schemas

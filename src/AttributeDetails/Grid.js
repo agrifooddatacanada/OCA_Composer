@@ -72,10 +72,7 @@ export default function Grid({
     [schemaState?.lanAttributeRowData]
   );
   
-  // Callback to update attributesList in MultiSchemaContext
-  const setAttributesList = useCallback((newList) => {
-    updateSchemaState(currentSchemaId, { attributesList: newList });
-  }, [currentSchemaId, updateSchemaState]);
+  // Note: attributesList is now computed - no need to update it separately
   
   const [columnDefs, setColumnDefs] = useState([]);
   const canDrag = useRef(true);
@@ -201,7 +198,6 @@ export default function Grid({
           gridRef,
           typesObjectRef,
           currentRows: attributeRowData,
-          setAttributesList,
           setAttributeRowData,
           canDelete,
           setCanDelete
@@ -210,7 +206,7 @@ export default function Grid({
         width: 60
       }
     ]);
-  }, [attributesList, attributeRowData, canDelete, typesObjectRef, setAttributesList]);
+  }, [attributesList, attributeRowData, canDelete, typesObjectRef]);
 
   const defaultColDef = {
     width: 125

@@ -83,7 +83,7 @@ const useOCAExport = () => {
   } = useContext(Context);
 
   // Get schema-specific data from MultiSchemaContext (single source of truth)
-  const { getCurrentSchemaId, getSchemaState, exportSchemaChanges, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas } = useMultiSchema();
+  const { getCurrentSchemaId, getSchemaState, getAttributesList, exportSchemaChanges, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchemaState(currentSchemaId);
   const metadata = schemaState?.metadata || {};
@@ -91,7 +91,7 @@ const useOCAExport = () => {
   // All schema-specific data comes from MultiSchemaContext only
   const languages = metadata.languages || ["English"];
   const attributeRowData = schemaState?.attributes || [];
-  const attributesList = schemaState?.attributesList || [];
+  const attributesList = getAttributesList(currentSchemaId); // Computed from attributes
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const savedEntryCodes = schemaState?.entryCodes || {};
   const formatRuleRowData = schemaState?.formatRuleData || [];
@@ -179,16 +179,6 @@ const useOCAExport = () => {
     const targetAttributeRowData = targetState?.attributes || [];
     // Always derive attributesList from attributes array - it's the source of truth
     const targetAttributesList = targetAttributeRowData.map(attr => attr.Attribute);
-    
-    // DEBUG: Log attribute sync state
-    console.log('=== EXPORT DEBUG ===');
-    console.log('Schema ID:', targetSchemaId);
-    console.log('Attributes from state:', targetAttributeRowData.map(a => a.Attribute));
-    console.log('AttributesList from state:', targetState?.attributesList);
-    console.log('Derived attributesList:', targetAttributesList);
-    console.log('Range data:', targetState?.rangeData?.map(r => ({ attr: r.Attribute, lower: r.LowerBound, upper: r.UpperBound })));
-    console.log('Format data:', targetState?.formatRuleData?.map(f => ({ attr: f.Attribute, rule: f["Format Rule"] || f[CUSTOM_FORMAT_RULE] })));
-    console.log('===================');
     
     const targetLanAttributeRowData = targetState?.lanAttributeRowData || {};
     const targetSavedEntryCodes = targetState?.entryCodes || {};
