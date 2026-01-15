@@ -58,12 +58,44 @@ const DeleteRenderer = ({
         );
       });
 
+      // Clean up overlay data - remove the deleted attribute from all overlay arrays/objects
+      const nextFormatRuleData = (schemaState.formatRuleData || []).filter(
+        (rule) => rule.Attribute !== data.Attribute
+      );
+      const nextRangeData = (schemaState.rangeData || []).filter(
+        (range) => range.Attribute !== data.Attribute
+      );
+      const nextCardinalityData = (schemaState.cardinalityData || []).filter(
+        (card) => card.Attribute !== data.Attribute
+      );
+      const nextDataStandardsData = (schemaState.dataStandardsData || []).filter(
+        (std) => std.Attribute !== data.Attribute
+      );
+      const nextUnitFramedData = (schemaState.unitFramedData || []).filter(
+        (unit) => unit.Attribute !== data.Attribute
+      );
+      const nextAttributeFramingData = (schemaState.attributeFramingData || []).filter(
+        (framing) => framing.Attribute !== data.Attribute
+      );
+      
+      // Clean up characterEncodingData (object format)
+      const nextCharacterEncodingData = { ...(schemaState.characterEncodingData || {}) };
+      delete nextCharacterEncodingData[data.Attribute];
+
       updateSchemaState(currentSchemaId, {
         attributes: newAttributeRowData,
         attributesList: updatedAttributesList,
         entryCodes: nextEntryCodes,
         attributesWithLists: nextLists,
-        lanAttributeRowData: nextLanData
+        lanAttributeRowData: nextLanData,
+        // Clean all overlay data
+        formatRuleData: nextFormatRuleData,
+        rangeData: nextRangeData,
+        cardinalityData: nextCardinalityData,
+        dataStandardsData: nextDataStandardsData,
+        unitFramedData: nextUnitFramedData,
+        attributeFramingData: nextAttributeFramingData,
+        characterEncodingData: nextCharacterEncodingData
       });
     }
   };

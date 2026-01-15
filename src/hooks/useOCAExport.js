@@ -177,7 +177,19 @@ const useOCAExport = () => {
     // Extract data from target schema state
     const targetLanguages = targetMetadata.languages || ["English"];
     const targetAttributeRowData = targetState?.attributes || [];
-    const targetAttributesList = targetState?.attributesList || [];
+    // Always derive attributesList from attributes array - it's the source of truth
+    const targetAttributesList = targetAttributeRowData.map(attr => attr.Attribute);
+    
+    // DEBUG: Log attribute sync state
+    console.log('=== EXPORT DEBUG ===');
+    console.log('Schema ID:', targetSchemaId);
+    console.log('Attributes from state:', targetAttributeRowData.map(a => a.Attribute));
+    console.log('AttributesList from state:', targetState?.attributesList);
+    console.log('Derived attributesList:', targetAttributesList);
+    console.log('Range data:', targetState?.rangeData?.map(r => ({ attr: r.Attribute, lower: r.LowerBound, upper: r.UpperBound })));
+    console.log('Format data:', targetState?.formatRuleData?.map(f => ({ attr: f.Attribute, rule: f["Format Rule"] || f[CUSTOM_FORMAT_RULE] })));
+    console.log('===================');
+    
     const targetLanAttributeRowData = targetState?.lanAttributeRowData || {};
     const targetSavedEntryCodes = targetState?.entryCodes || {};
     const targetFormatRuleRowData = targetState?.formatRuleData || [];
@@ -331,7 +343,11 @@ const useOCAExport = () => {
     buildText += "# Add Format Overlay\n";
     if (targetOverlaySelections[FIELD_FORMAT_OVERLAY]?.selected) {
       let tempText = "";
-      targetFormatRuleRowData.forEach((item) => {
+      // Filter to only include attributes that exist in the current schema
+      const validFormatRules = targetFormatRuleRowData.filter(item => 
+        targetAttributesList.includes(item.Attribute)
+      );
+      validFormatRules.forEach((item) => {
         const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText || item["Format Rule"];
         if (formatRule && item.Attribute) {
           // Normalize first (unescape any already-escaped quotes), then escape all quotes
@@ -501,7 +517,7 @@ const useOCAExport = () => {
       .filter((item) => item.Flagged)
       .map((item) => item.Attribute);
 
-    const rangeOverlayInput = getRangeOverlayInput(targetRangeRowData, targetFormatRuleRowData);
+    const rangeOverlayInput = getRangeOverlayInput(targetRangeRowData, targetFormatRuleRowData, targetAttributesList);
     const retainedUniqueFramedUnits = targetUnitFramedRowData.filter((row) => !row.deleted);
 
     const extension_overlay_object = {
@@ -550,7 +566,7 @@ const useOCAExport = () => {
                 location: "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl",
                 version: "1.0"
               },
-              attributes: getAttributeFramingInput(targetAttributeFramingRowData)
+              attributes: getAttributeFramingInput(targetAttributeFramingRowData, targetAttributesList)
             }
           }
         : {}),

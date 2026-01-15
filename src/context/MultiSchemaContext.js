@@ -586,7 +586,9 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             attribute_formats: {}
           };
 
-          schemaState.formatRuleData.forEach((rule) => {
+          // Filter to only valid attributes to prevent stale data
+          const validAttributeNames = new Set(schemaState.attributes.map(a => a.Attribute));
+          schemaState.formatRuleData.filter(rule => validAttributeNames.has(rule.Attribute)).forEach((rule) => {
             if (rule.Attribute) {
               const formatRule = rule["Format Rule"] || rule[CUSTOM_FORMAT_RULE] || rule.FormatText;
               if (formatRule) {
@@ -631,7 +633,9 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             attribute_cardinality: {}
           };
 
-          schemaState.cardinalityData.forEach((card) => {
+          // Filter to only valid attributes to prevent stale data
+          const validAttributeNames = new Set(schemaState.attributes.map(a => a.Attribute));
+          schemaState.cardinalityData.filter(card => validAttributeNames.has(card.Attribute)).forEach((card) => {
             if (card.Attribute) {
               const cardinalityValue = card.Cardinality || card.EntryLimit;
               if (cardinalityValue) {
@@ -655,7 +659,9 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             attr_standards: {}
           };
 
-          schemaState.dataStandardsData.forEach((std) => {
+          // Filter to only valid attributes to prevent stale data
+          const validAttributeNames = new Set(schemaState.attributes.map(a => a.Attribute));
+          schemaState.dataStandardsData.filter(std => validAttributeNames.has(std.Attribute)).forEach((std) => {
             if (std.Attribute && std.DataStandard) {
               standardOverlay.attr_standards[std.Attribute] = std.DataStandard;
             }
@@ -676,7 +682,9 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
             attributes: {}
           };
 
-          schemaState.rangeData.forEach((range) => {
+          // Filter to only valid attributes to prevent stale data
+          const validAttributeNames = new Set(schemaState.attributes.map(a => a.Attribute));
+          schemaState.rangeData.filter(range => validAttributeNames.has(range.Attribute)).forEach((range) => {
             if (range.Attribute && (range.LowerBound || range.UpperBound)) {
               rangeOverlay.attributes[range.Attribute] = {
                 lower: range.LowerBound || "",

@@ -469,10 +469,16 @@ export const getCurrentUnitFramingRowData = (
   return unitRowDataWhenNoFrameAll;
 };
 
-export const getAttributeFramingInput = (attributeFramingRowData) => {
+export const getAttributeFramingInput = (attributeFramingRowData, attributesList = null) => {
   const attributeFramingInput = {};
+  // Create a Set of valid attributes if provided for O(1) lookup
+  const validAttributes = attributesList ? new Set(attributesList) : null;
+  
   for (const row of attributeFramingRowData) {
     if (!row.objectId) continue;
+    
+    // Skip if attribute doesn't exist in the schema
+    if (validAttributes && !validAttributes.has(row.Attribute)) continue;
 
     attributeFramingInput[row.Attribute] = {
       description: row.description,
@@ -484,15 +490,21 @@ export const getAttributeFramingInput = (attributeFramingRowData) => {
   return attributeFramingInput;
 };
 
-export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {
+export const getRangeOverlayInput = (rangeRowData, formatRuleRowData, attributesList = null) => {
   const rangeOverlayInput = {};
+  // Create a Set of valid attributes if provided for O(1) lookup
+  const validAttributes = attributesList ? new Set(attributesList) : null;
+  
   rangeRowData.forEach((row) => {
     if (row.LowerBound === "" && row.UpperBound === "") return;
+
+    // Skip if attribute doesn't exist in the schema
+    if (validAttributes && !validAttributes.has(row.Attribute)) return;
 
     const attributeFormatData = formatRuleRowData.find(
       (item) => item.Attribute === row.Attribute
     );
-    if (!attributeFormatData?.FormatText && !attributeFormatData?.[CUSTOM_FORMAT_RULE])
+    if (!attributeFormatData?.FormatText && !attributeFormatData?.[CUSTOM_FORMAT_RULE] && !attributeFormatData?.["Format Rule"])
       return;
 
     rangeOverlayInput[row.Attribute] = {

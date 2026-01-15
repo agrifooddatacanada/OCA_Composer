@@ -17,7 +17,6 @@ import {
   removeSpacesFromArrayOfObjects
 } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import Loading from "../components/Loading";
 import { hasDisallowedChars } from "../utils/helpers";
 import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
@@ -47,7 +46,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   const [showAddAttribute, setShowAddAttribute] = useState(false);
   const [addByTab, setAddByTab] = useState(false);
   const [showCard, setShowCard] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const navigationSafe = useRef();
   const gridRef = useRef();
@@ -105,8 +104,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
    *    - hasAttributesArray=false, so we CAN initialize from completeSchema
    */
   useEffect(() => {
-    setLoading(true);
-
     // Get schema state (MultiSchemaContext handles the fallback internally)
     const schemaState = getSchemaState(currentSchemaId);
     
@@ -121,7 +118,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     if (initializedSchemaRef.current === currentSchemaId && 
         schemaState?.attributes && 
         JSON.stringify(schemaState.attributes) === JSON.stringify(attributeRowData)) {
-      setLoading(false);
       return;
     }
 
@@ -152,7 +148,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       }
       
       if (!sameList) setAttributesList(schemaState.attributesList || []);
-      setLoading(false);
       initializedSchemaRef.current = currentSchemaId;
       return;
     }
@@ -221,7 +216,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
 
       // Note: Overlay data is now managed per-schema in MultiSchemaContext
 
-      setLoading(false);
       initializedSchemaRef.current = currentSchemaId;
     } else if (!schemaState?.attributes || schemaState.attributes.length === 0) {
       // Handle manual schema creation case (no completeSchema but also no existing attributes)
@@ -238,11 +232,9 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         attributesList: emptyAttributesList
       });
 
-      setLoading(false);
       initializedSchemaRef.current = currentSchemaId;
     } else {
-      // Some other case - just stop loading
-      setLoading(false);
+      // Some other case
       initializedSchemaRef.current = currentSchemaId;
     }
   }, [currentSchemaId, i18n.language]); // Removed function dependencies that cause infinite loops
@@ -566,7 +558,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       isForward
       pageForward={pageForwardSave}
     >
-      {loading && <Loading />}
       {showCard && (
         <ErrorPopup onClose={() => setShowCard(false)}>
           <Box>
@@ -594,21 +585,19 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         </Alert>
       )}
       <div ref={refContainer}>
-        {!loading && (
-          <Grid
-            gridRef={gridRef}
-            addButton1={addButton1}
-            addButton2={addButton2}
-            setErrorMessage={setErrorMessage}
-            canDelete={canDelete}
-            setCanDelete={setCanDelete}
-            setAddByTab={setAddByTab}
-            typesObjectRef={typesObjectRef}
-            setLoading={setLoading}
-            attributeRowData={attributeRowData}
-            setAttributeRowData={setAttributeRowData}
-          />
-        )}
+        <Grid
+          gridRef={gridRef}
+          addButton1={addButton1}
+          addButton2={addButton2}
+          setErrorMessage={setErrorMessage}
+          canDelete={canDelete}
+          setCanDelete={setCanDelete}
+          setAddByTab={setAddByTab}
+          typesObjectRef={typesObjectRef}
+          setLoading={setLoading}
+          attributeRowData={attributeRowData}
+          setAttributeRowData={setAttributeRowData}
+        />
       </div>
       <AddAttribute
         addButton1={addButton1}

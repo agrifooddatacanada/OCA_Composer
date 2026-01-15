@@ -521,6 +521,54 @@ export default function Grid({
     }
   }, [currentSchemaId, schemaState?.entryCodes, updateSchemaState]);
 
+  // Update range data (MultiSchemaContext)
+  const updateRangeData = useCallback((oldAttributeValue, newAttributeValue) => {
+    const currentData = schemaState?.rangeData || [];
+    const updatedData = currentData.map((row) => {
+      if (row.Attribute === oldAttributeValue) {
+        return { ...row, Attribute: newAttributeValue };
+      }
+      return row;
+    });
+    updateSchemaState(currentSchemaId, { rangeData: updatedData });
+  }, [currentSchemaId, schemaState?.rangeData, updateSchemaState]);
+
+  // Update unit framed data (MultiSchemaContext)
+  const updateUnitFramedData = useCallback((oldAttributeValue, newAttributeValue) => {
+    const currentData = schemaState?.unitFramedData || [];
+    const updatedData = currentData.map((row) => {
+      if (row.Attribute === oldAttributeValue) {
+        return { ...row, Attribute: newAttributeValue };
+      }
+      return row;
+    });
+    updateSchemaState(currentSchemaId, { unitFramedData: updatedData });
+  }, [currentSchemaId, schemaState?.unitFramedData, updateSchemaState]);
+
+  // Update attribute framing data (MultiSchemaContext)
+  const updateAttributeFramingData = useCallback((oldAttributeValue, newAttributeValue) => {
+    const currentData = schemaState?.attributeFramingData || [];
+    const updatedData = currentData.map((row) => {
+      if (row.Attribute === oldAttributeValue) {
+        return { ...row, Attribute: newAttributeValue };
+      }
+      return row;
+    });
+    updateSchemaState(currentSchemaId, { attributeFramingData: updatedData });
+  }, [currentSchemaId, schemaState?.attributeFramingData, updateSchemaState]);
+
+  // Update data standards data (MultiSchemaContext)
+  const updateDataStandardsData = useCallback((oldAttributeValue, newAttributeValue) => {
+    const currentData = schemaState?.dataStandardsData || [];
+    const updatedData = currentData.map((row) => {
+      if (row.Attribute === oldAttributeValue) {
+        return { ...row, Attribute: newAttributeValue };
+      }
+      return row;
+    });
+    updateSchemaState(currentSchemaId, { dataStandardsData: updatedData });
+  }, [currentSchemaId, schemaState?.dataStandardsData, updateSchemaState]);
+
   const handleCellValueChanged = (e) => {
     // Only handle event if the user changed the attribute name; do not handle programmatic update
     if (e.source !== "edit") return;
@@ -560,6 +608,10 @@ export default function Grid({
           updateCharacterEncodingRowData(oldAttributeName, newAttributeName);
           updateFormatRuleRowData(oldAttributeName, newAttributeName);
           updateCardinalityData(oldAttributeName, newAttributeName);
+          updateRangeData(oldAttributeName, newAttributeName);
+          updateUnitFramedData(oldAttributeName, newAttributeName);
+          updateAttributeFramingData(oldAttributeName, newAttributeName);
+          updateDataStandardsData(oldAttributeName, newAttributeName);
           updateAttributesWithLists(oldAttributeName, newAttributeName);
           updateSavedEntryCodes(oldAttributeName, newAttributeName);
         } else {
@@ -579,6 +631,10 @@ export default function Grid({
             updateCharacterEncodingRowData(oldAttributeName, newAttributeName);
             updateFormatRuleRowData(oldAttributeName, newAttributeName);
             updateCardinalityData(oldAttributeName, newAttributeName);
+            updateRangeData(oldAttributeName, newAttributeName);
+            updateUnitFramedData(oldAttributeName, newAttributeName);
+            updateAttributeFramingData(oldAttributeName, newAttributeName);
+            updateDataStandardsData(oldAttributeName, newAttributeName);
             updateAttributesWithLists(oldAttributeName, newAttributeName);
             updateSavedEntryCodes(oldAttributeName, newAttributeName);
           }
