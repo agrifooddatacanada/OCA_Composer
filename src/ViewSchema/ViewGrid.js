@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext, useCallback, memo } from "react";
+import React, { useState, useRef, useEffect, useContext, useCallback, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
 import { Box, Tooltip } from "@mui/material";
@@ -118,12 +118,15 @@ export default function ViewGrid({
   const { OCAPackage } = useContext(Context);
   
   // Get overlay data from MultiSchemaContext
-  const { currentSchemaId, getOverlaySelections, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { currentSchemaId, getOverlaySelections, getSchemaState, updateSchemaState, getCardinalityData } = useMultiSchema();
   const overlay = getOverlaySelections(currentSchemaId);
   const schemaState = getSchemaState(currentSchemaId);
   
-  // Get cardinality data from MultiSchema context instead of legacy context
-  const cardinalityData = schemaState?.cardinalityData || [];
+  // Get cardinality data - computed from attributes + attributeCardinality
+  const cardinalityData = useMemo(
+    () => getCardinalityData(currentSchemaId),
+    [getCardinalityData, currentSchemaId, schemaState?.attributes, schemaState?.attributeCardinality]
+  );
   
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
@@ -393,7 +396,7 @@ export default function ViewGrid({
 
   useEffect(() => {
     const newRowData = JSON.parse(JSON.stringify(displayArray));
-    const newCardinalityData = JSON.parse(JSON.stringify(cardinalityData));
+    const attributeCardinality = schemaState?.attributeCardinality || {};
 
     // Initialize format rule data in schema state if overlay is selected but data doesn't exist
     if (overlay && overlay[FIELD_FORMAT_OVERLAY]?.selected && !schemaState?.formatRuleData && newRowData.length > 0) {
@@ -419,10 +422,10 @@ export default function ViewGrid({
           ? item.List[currentLanguage]
           : "Not a List";
 
-      // Find cardinality data by attribute name instead of index to ensure correct mapping
-      const cardinalityItem = newCardinalityData.find(card => card.Attribute === item.Attribute);
-      if (cardinalityItem && (cardinalityItem.EntryLimit || cardinalityItem.Cardinality)) {
-        item.Cardinality = cardinalityItem.EntryLimit || cardinalityItem.Cardinality;
+      // Get cardinality value from object
+      const cardinalityValue = attributeCardinality[item.Attribute];
+      if (cardinalityValue) {
+        item.Cardinality = cardinalityValue;
       }
       
       // Add Required and Format Rule data from overlay selections
@@ -455,7 +458,7 @@ export default function ViewGrid({
     });
 
     setRowData(newRowData);
-  }, [displayArray, cardinalityData, currentLanguage, overlay, schemaState?.formatRuleData, schemaState?.requiredOverlayData, currentSchemaId, updateSchemaState]);
+  }, [displayArray, currentLanguage, overlay, schemaState?.formatRuleData, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, currentSchemaId, updateSchemaState]);
 
   return (
     <div className="ag-theme-balham" style={{ width: "100%" }}>

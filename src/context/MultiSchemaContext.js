@@ -148,7 +148,7 @@ const createDefaultSchemaState = () => ({
   // Overlay display data (populated during initialization)
   characterEncodingData: {},  // Object mapping attribute name to encoding
   formatRuleData: [],
-  cardinalityData: [],
+  attributeCardinality: {},  // Object mapping attribute name to cardinality value
   dataStandardsData: [],
   rangeData: [],
   unitData: [],
@@ -292,6 +292,22 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       const state = getSchemaState(schemaId);
       const attributes = state?.attributes || [];
       return attributes.map(attr => attr.Attribute);
+    },
+    [getSchemaState]
+  );
+
+  // Computed getter - derives cardinalityData grid rows from attributes + attributeCardinality
+  const getCardinalityData = useCallback(
+    (schemaId) => {
+      const state = getSchemaState(schemaId);
+      const attributes = state?.attributes || [];
+      const attributeCardinality = state?.attributeCardinality || {};
+      
+      return attributes.map(attr => ({
+        Attribute: attr.Attribute,
+        Type: attr.Type,
+        Cardinality: attributeCardinality[attr.Attribute] || ""
+      }));
     },
     [getSchemaState]
   );
@@ -1442,6 +1458,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       addDeletedAttributes,
       getDeletedAttributes,
       getAttributesList,
+      getCardinalityData,
       initializeSchemaFromOCA,
       switchToSchema,
       exportSchemaChanges,

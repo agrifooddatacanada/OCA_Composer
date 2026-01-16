@@ -403,15 +403,12 @@ export class OCAParser {
       });
     }
 
-    // Cardinality data for components
-    const cardinalityData = [];
+    // Cardinality - store as object mapping attribute name to cardinality value
+    const attributeCardinality = {};
     if (cardinalityOverlay?.attribute_cardinality) {
       Object.entries(cardinalityOverlay.attribute_cardinality).forEach(
         ([attr, cardinality]) => {
-          cardinalityData.push({
-            Attribute: attr,
-            Cardinality: cardinality || ""
-          });
+          attributeCardinality[attr] = cardinality || "";
         }
       );
     }
@@ -467,7 +464,7 @@ export class OCAParser {
     return {
       characterEncodingData,
       formatRuleData,
-      cardinalityData,
+      attributeCardinality,
       dataStandardsData,
       rangeData,
       unitData,

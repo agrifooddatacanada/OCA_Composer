@@ -71,12 +71,13 @@ const Cardinality = () => {
   } = useContext(Context);
   
   // Use MultiSchema context with standard pattern
-  const { 
-    currentSchemaId, 
-    getSchemaState, 
+  const {
+    currentSchemaId,
+    getSchemaState,
     updateSchemaState,
     updateOverlaySelection,
-    setSelectedOverlay
+    setSelectedOverlay,
+    getCardinalityData
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
   const deleteHandler = useDeleteOverlayHandler(FIELD_CARDINALITY_OVERLAY);
@@ -86,38 +87,35 @@ const Cardinality = () => {
     updateSchemaState(currentSchemaId, updates);
   }, [currentSchemaId, updateSchemaState]);
   
-  // Always get data from schema state - no fallback needed
+  // Get cardinality data - computed from attributes + attributeCardinality
   const cardinalityData = useMemo(() => {
-    const rawData = schemaState?.cardinalityData || [];
-    // console.log("Raw cardinality data from schema state:", rawData);
+    const computed = getCardinalityData(currentSchemaId);
+    const currentLanguage = i18next.language.startsWith("fr") ? "fra" : "eng";
+    const labelData = schemaState?.lanAttributeRowData?.[currentLanguage] || [];
     
-    // If we have data but it's in the old format (Cardinality field), convert it
-    if (rawData.length > 0 && schemaState?.attributes) {
-      const currentLanguage = i18next.language.startsWith("fr") ? "fra" : "eng";
-      const labelData = schemaState?.lanAttributeRowData?.[currentLanguage] || [];
-      
-      const normalizedData = rawData.map((item) => {
-        const attr = schemaState.attributes.find((a) => a.Attribute === item.Attribute);
-        const labelInfo = labelData.find((l) => l.Attribute === item.Attribute);
-        
-        return {
-          Attribute: item.Attribute,
-          Type: attr?.Type || item.Type || "Text",
-          EntryLimit: item.EntryLimit || item.Cardinality || "", // Convert Cardinality to EntryLimit
-          Label: item.Label || labelInfo?.Label || ""
-        };
-      });
-      
-      // console.log("Normalized cardinality data:", normalizedData);
-      return normalizedData;
-    }
-    
-    return rawData;
-  }, [schemaState?.cardinalityData, schemaState?.attributes, schemaState?.lanAttributeRowData]);
+    // Add Label and convert Cardinality field name to EntryLimit for UI compatibility
+    return computed.map(item => {
+      const labelInfo = labelData.find((l) => l.Attribute === item.Attribute);
+      return {
+        ...item,
+        EntryLimit: item.Cardinality || "",  // UI uses EntryLimit field name
+        Label: labelInfo?.Label || ""
+      };
+    });
+  }, [getCardinalityData, currentSchemaId, schemaState?.attributes, schemaState?.attributeCardinality, schemaState?.lanAttributeRowData]);
     
   const setCardinalityData = useCallback((newData) => {
+    // Convert from array format (with EntryLimit) to object format (attributeCardinality)
+    const attributeCardinality = {};
+    newData.forEach(item => {
+      const cardinalityValue = item.EntryLimit || item.Cardinality || "";
+      if (cardinalityValue) {
+        attributeCardinality[item.Attribute] = cardinalityValue;
+      }
+    });
+    
     updateCurrentSchema({
-      cardinalityData: newData
+      attributeCardinality
     });
   }, [updateCurrentSchema]);
   
@@ -130,31 +128,17 @@ const Cardinality = () => {
   const [maxValue, setMaxValue] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
 
-  // Initialize cardinality data from schema attributes if not exists
+  // Initialize attributeCardinality if not exists (empty object is fine)
   useEffect(() => {
-    // Only initialize if cardinalityData doesn't exist yet
-    if (schemaState?.attributes && typeof schemaState?.cardinalityData === 'undefined') {
-      // Get current language for labels - use ISO codes that match the data structure
-      const currentLanguage = i18next.language.startsWith("fr") ? "fra" : "eng";
-      const labelData = schemaState?.lanAttributeRowData?.[currentLanguage] || [];
-      
-      const newCardinalityData = schemaState.attributes.map((attr) => {
-        const labelInfo = labelData.find((l) => l.Attribute === attr.Attribute);
-        const cardinalityItem = {
-          Attribute: attr.Attribute,
-          Type: attr.Type || "Text",
-          EntryLimit: "",
-          Label: labelInfo?.Label || ""
-        };
-        return cardinalityItem;
-      });
-      updateCurrentSchema({ cardinalityData: newCardinalityData });
+    // Only initialize if attributeCardinality doesn't exist yet
+    if (schemaState?.attributes && typeof schemaState?.attributeCardinality === 'undefined') {
+      updateCurrentSchema({ attributeCardinality: {} });
     }
-  }, [schemaState?.attributes, schemaState?.lanAttributeRowData, schemaState?.cardinalityData, updateCurrentSchema]);
+  }, [schemaState?.attributes, schemaState?.attributeCardinality, updateCurrentSchema]);
 
   // Set loading state
   useEffect(() => {
-    if (schemaState?.cardinalityData || schemaState?.attributes) {
+    if (schemaState?.attributeCardinality !== undefined || schemaState?.attributes) {
       setLoading(false);
     }
   }, [schemaState?.cardinalityData, schemaState?.attributes]);

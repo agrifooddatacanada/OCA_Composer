@@ -96,7 +96,7 @@ const useOCAExport = () => {
   const savedEntryCodes = schemaState?.entryCodes || {};
   const formatRuleRowData = schemaState?.formatRuleData || [];
   const characterEncodingRowData = schemaState?.characterEncodingData || {};
-  const cardinalityData = schemaState?.cardinalityData || [];
+  const attributeCardinality = schemaState?.attributeCardinality || {};
   const rangeRowData = schemaState?.rangeData || [];
   const attributeFramingRowData = schemaState?.attributeFramingData || [];
   const currentUnitFramedRowData = schemaState?.unitFramedData || [];
@@ -184,7 +184,7 @@ const useOCAExport = () => {
     const targetSavedEntryCodes = targetState?.entryCodes || {};
     const targetFormatRuleRowData = targetState?.formatRuleData || [];
     const targetCharacterEncodingRowData = targetState?.characterEncodingData || {};
-    const cardinalityData = targetState?.cardinalityData || [];
+    const targetAttributeCardinality = targetState?.attributeCardinality || {};
     const targetRangeRowData = targetState?.rangeData || [];
     const targetAttributeFramingRowData = targetState?.attributeFramingData || [];
     const targetUnitFramedRowData = targetState?.unitFramedData || [];
@@ -370,12 +370,11 @@ const useOCAExport = () => {
 
     // Add Cardinality Overlay
     buildText += "# Add Cardinality Overlay\n";
-    if (targetOverlaySelections[FIELD_CARDINALITY_OVERLAY]?.selected && cardinalityData.length > 0) {
+    if (targetOverlaySelections[FIELD_CARDINALITY_OVERLAY]?.selected && Object.keys(targetAttributeCardinality).length > 0) {
       let cardinalityText = "";
-      cardinalityData.forEach((item) => {
-        const cardinalityValue = item.Cardinality || item.EntryLimit;
-        if (cardinalityValue && item.Attribute) {
-          cardinalityText += ` ${item.Attribute}="${cardinalityValue}"`;
+      Object.entries(targetAttributeCardinality).forEach(([attrName, cardinalityValue]) => {
+        if (cardinalityValue && attrName) {
+          cardinalityText += ` ${attrName}="${cardinalityValue}"`;
         }
       });
       if (cardinalityText !== "") {
