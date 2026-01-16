@@ -147,7 +147,7 @@ const createDefaultSchemaState = () => ({
   lanAttributeRowData: {},
   // Overlay display data (populated during initialization)
   characterEncodingData: {},  // Object mapping attribute name to encoding
-  formatRuleData: [],
+  attributeFormats: {},  // Object mapping attribute name to format rule string
   attributeCardinality: {},  // Object mapping attribute name to cardinality value
   dataStandardsData: [],
   rangeData: [],
@@ -307,6 +307,22 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         Attribute: attr.Attribute,
         Type: attr.Type,
         Cardinality: attributeCardinality[attr.Attribute] || ""
+      }));
+    },
+    [getSchemaState]
+  );
+
+  // Computed getter - derives formatRuleData grid rows from attributes + attributeFormats
+  const getFormatRuleData = useCallback(
+    (schemaId) => {
+      const state = getSchemaState(schemaId);
+      const attributes = state?.attributes || [];
+      const attributeFormats = state?.attributeFormats || {};
+      
+      return attributes.map(attr => ({
+        Attribute: attr.Attribute,
+        Type: attr.Type,
+        "Format Rule": attributeFormats[attr.Attribute] || ""
       }));
     },
     [getSchemaState]
@@ -1459,6 +1475,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       getDeletedAttributes,
       getAttributesList,
       getCardinalityData,
+      getFormatRuleData,
       initializeSchemaFromOCA,
       switchToSchema,
       exportSchemaChanges,

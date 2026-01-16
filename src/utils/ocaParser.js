@@ -392,14 +392,11 @@ export class OCAParser {
       );
     }
 
-    // Format rule data for components
-    const formatRuleData = [];
+    // Format rules - store as object mapping attribute name to format rule string
+    const attributeFormats = {};
     if (formatOverlay?.attribute_formats) {
       Object.entries(formatOverlay.attribute_formats).forEach(([attr, format]) => {
-        formatRuleData.push({
-          Attribute: attr,
-          "Format Rule": format || ""
-        });
+        attributeFormats[attr] = format || "";
       });
     }
 
@@ -463,7 +460,7 @@ export class OCAParser {
 
     return {
       characterEncodingData,
-      formatRuleData,
+      attributeFormats,
       attributeCardinality,
       dataStandardsData,
       rangeData,

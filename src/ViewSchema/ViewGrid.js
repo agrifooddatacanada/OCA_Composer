@@ -397,16 +397,11 @@ export default function ViewGrid({
   useEffect(() => {
     const newRowData = JSON.parse(JSON.stringify(displayArray));
     const attributeCardinality = schemaState?.attributeCardinality || {};
+    const attributeFormats = schemaState?.attributeFormats || {};
 
-    // Initialize format rule data in schema state if overlay is selected but data doesn't exist
-    if (overlay && overlay[FIELD_FORMAT_OVERLAY]?.selected && !schemaState?.formatRuleData && newRowData.length > 0) {
-      const initialFormatRuleData = newRowData.map((item) => ({
-        Attribute: item.Attribute,
-        Type: item.Type || "Text",
-        "Format Rule": "",
-        [CUSTOM_FORMAT_RULE]: ""
-      }));
-      updateSchemaState(currentSchemaId, { formatRuleData: initialFormatRuleData });
+    // Initialize attributeFormats if overlay is selected but data doesn't exist
+    if (overlay && overlay[FIELD_FORMAT_OVERLAY]?.selected && typeof schemaState?.attributeFormats === 'undefined') {
+      updateSchemaState(currentSchemaId, { attributeFormats: {} });
     }
 
     newRowData.forEach((item, index) => {
@@ -444,21 +439,14 @@ export default function ViewGrid({
         
         // Add Format Rule field data
         if (overlay[FIELD_FORMAT_OVERLAY]?.selected) {
-          // Load format rule data from schema state
-          const formatRuleData = schemaState?.formatRuleData;
-          if (formatRuleData) {
-            const formatRuleItem = formatRuleData.find((rule) => rule.Attribute === item.Attribute);
-            // Handle both legacy FormatText field and new "Format Rule" field
-            item["Format Rule"] = formatRuleItem ? (formatRuleItem["Format Rule"] || formatRuleItem.FormatText || "") : "";
-          } else {
-            item["Format Rule"] = item["Format Rule"] || ""; // Default to empty if not set
-          }
+          // Get format rule from object
+          item["Format Rule"] = attributeFormats[item.Attribute] || "";
         }
       }
     });
 
     setRowData(newRowData);
-  }, [displayArray, currentLanguage, overlay, schemaState?.formatRuleData, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, currentSchemaId, updateSchemaState]);
+  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, currentSchemaId, updateSchemaState]);
 
   return (
     <div className="ag-theme-balham" style={{ width: "100%" }}>

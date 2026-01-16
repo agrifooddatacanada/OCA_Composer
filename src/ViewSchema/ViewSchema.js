@@ -475,15 +475,7 @@ export default function ViewSchema({
 
           // Convert schema state back to the format expected by ViewGrid
           const schemaAttributes = schemaState.attributes || [];
-          const formatRuleData = schemaState.formatRuleData || [];
-
-          const formatRuleIndex = new Map(
-            formatRuleData.map((r) => [
-              r.Attribute,
-              // Handle both legacy FormatText field and new "Format Rule" field
-              r["Format Rule"] || r.FormatText || ""
-            ])
-          );
+          const attributeFormats = schemaState.attributeFormats || {};
 
           // Create the display array in the format expected by ViewGrid
           const newDisplayArray = schemaAttributes.map((attr) => {
@@ -555,7 +547,7 @@ export default function ViewSchema({
               Description: descriptionObj,
               Label: labelObj,
               Required: !!attr.Required,
-              "Format Rule": formatRuleIndex.get(attr.Attribute) || "",
+              "Format Rule": attributeFormats[attr.Attribute] || "",
               "Character Encoding": charEncoding,
               List: listObj,
               Unit: attr.Unit || "",
@@ -595,7 +587,7 @@ export default function ViewSchema({
     getSchemaState,
     filteredLanguages,
     schemaStates, // Ensure updates when schema state changes
-    getSchemaState(currentSchemaId)?.formatRuleData // Explicitly watch formatRuleData changes
+    getSchemaState(currentSchemaId)?.attributeFormats // Explicitly watch attributeFormats changes
   ]);
 
   if (loading) {

@@ -94,7 +94,7 @@ const useOCAExport = () => {
   const attributesList = getAttributesList(currentSchemaId); // Computed from attributes
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const savedEntryCodes = schemaState?.entryCodes || {};
-  const formatRuleRowData = schemaState?.formatRuleData || [];
+  const attributeFormats = schemaState?.attributeFormats || {};
   const characterEncodingRowData = schemaState?.characterEncodingData || {};
   const attributeCardinality = schemaState?.attributeCardinality || {};
   const rangeRowData = schemaState?.rangeData || [];
@@ -182,7 +182,7 @@ const useOCAExport = () => {
     
     const targetLanAttributeRowData = targetState?.lanAttributeRowData || {};
     const targetSavedEntryCodes = targetState?.entryCodes || {};
-    const targetFormatRuleRowData = targetState?.formatRuleData || [];
+    const targetAttributeFormats = targetState?.attributeFormats || {};
     const targetCharacterEncodingRowData = targetState?.characterEncodingData || {};
     const targetAttributeCardinality = targetState?.attributeCardinality || {};
     const targetRangeRowData = targetState?.rangeData || [];
@@ -331,19 +331,15 @@ const useOCAExport = () => {
 
     // Add Format Overlay
     buildText += "# Add Format Overlay\n";
-    if (targetOverlaySelections[FIELD_FORMAT_OVERLAY]?.selected) {
+    if (targetOverlaySelections[FIELD_FORMAT_OVERLAY]?.selected && Object.keys(targetAttributeFormats).length > 0) {
       let tempText = "";
       // Filter to only include attributes that exist in the current schema
-      const validFormatRules = targetFormatRuleRowData.filter(item => 
-        targetAttributesList.includes(item.Attribute)
-      );
-      validFormatRules.forEach((item) => {
-        const formatRule = item[CUSTOM_FORMAT_RULE] || item.FormatText || item["Format Rule"];
-        if (formatRule && item.Attribute) {
+      Object.entries(targetAttributeFormats).forEach(([attrName, formatRule]) => {
+        if (formatRule && targetAttributesList.includes(attrName)) {
           // Normalize first (unescape any already-escaped quotes), then escape all quotes
           // This prevents double-escaping when format rules contain \" from the original OCA file
           const escapedRule = formatRule.replace(/\\"/g, '"').replace(/"/g, '\\"');
-          tempText += ` ${item.Attribute}="${escapedRule}"`;
+          tempText += ` ${attrName}="${escapedRule}"`;
         }
       });
       if (tempText !== "") {
@@ -505,6 +501,12 @@ const useOCAExport = () => {
     const sensitiveAttributes = targetAttributeRowData
       .filter((item) => item.Flagged)
       .map((item) => item.Attribute);
+
+    // Convert attributeFormats object to array format for helper functions
+    const targetFormatRuleRowData = targetAttributeRowData.map(attr => ({
+      Attribute: attr.Attribute,
+      "Format Rule": targetAttributeFormats[attr.Attribute] || ""
+    }));
 
     const rangeOverlayInput = getRangeOverlayInput(targetRangeRowData, targetFormatRuleRowData, targetAttributesList);
     const retainedUniqueFramedUnits = targetUnitFramedRowData.filter((row) => !row.deleted);
