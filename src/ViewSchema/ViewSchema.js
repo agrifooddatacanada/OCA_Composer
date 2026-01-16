@@ -476,6 +476,7 @@ export default function ViewSchema({
           // Convert schema state back to the format expected by ViewGrid
           const schemaAttributes = schemaState.attributes || [];
           const attributeFormats = schemaState.attributeFormats || {};
+          const attributeRanges = schemaState.attributeRanges || {};
 
           // Create the display array in the format expected by ViewGrid
           const newDisplayArray = schemaAttributes.map((attr) => {
@@ -531,10 +532,8 @@ export default function ViewSchema({
 
             const charEncoding = (schemaState.characterEncodingData || {})[attr.Attribute] || "";
             
-            // Find range data for this attribute
-            const rangeData = (schemaState.rangeData || []).find(
-              (r) => r.Attribute === attr.Attribute
-            );
+            // Get range data for this attribute from object
+            const range = attributeRanges[attr.Attribute] || {};
             
             // Find unit framing data for this attribute
             const unitFramingData = (schemaState.unitFramedData || []).find(
@@ -552,12 +551,11 @@ export default function ViewSchema({
               List: listObj,
               Unit: attr.Unit || "",
               Flagged: attr.Sensitive || false,
-              // Add range overlay fields
-              // Default to false when no range data exists (matches useZipParser behavior)
-              LowerBound: rangeData?.LowerBound || "",
-              UpperBound: rangeData?.UpperBound || "",
-              LowerInclusive: rangeData?.LowerInclusive ?? false,
-              UpperInclusive: rangeData?.UpperInclusive ?? false,
+              // Add range overlay fields from object
+              LowerBound: range.lower || "",
+              UpperBound: range.upper || "",
+              LowerInclusive: range.lower_inclusive ?? false,
+              UpperInclusive: range.upper_inclusive ?? false,
               // Add unit framing field (UCUM code)
               "Unit Framing": unitFramingData?.["UCUM Code"] || ""
             };

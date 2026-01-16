@@ -97,7 +97,7 @@ const useOCAExport = () => {
   const attributeFormats = schemaState?.attributeFormats || {};
   const characterEncodingRowData = schemaState?.characterEncodingData || {};
   const attributeCardinality = schemaState?.attributeCardinality || {};
-  const rangeRowData = schemaState?.rangeData || [];
+  const attributeRanges = schemaState?.attributeRanges || {};
   const attributeFramingRowData = schemaState?.attributeFramingData || [];
   const currentUnitFramedRowData = schemaState?.unitFramedData || [];
 
@@ -185,7 +185,7 @@ const useOCAExport = () => {
     const targetAttributeFormats = targetState?.attributeFormats || {};
     const targetCharacterEncodingRowData = targetState?.characterEncodingData || {};
     const targetAttributeCardinality = targetState?.attributeCardinality || {};
-    const targetRangeRowData = targetState?.rangeData || [];
+    const targetAttributeRanges = targetState?.attributeRanges || {};
     const targetAttributeFramingRowData = targetState?.attributeFramingData || [];
     const targetUnitFramedRowData = targetState?.unitFramedData || [];
     const targetOverlaySelections = targetState?.overlaySelections || overlay;
@@ -507,6 +507,22 @@ const useOCAExport = () => {
       Attribute: attr.Attribute,
       "Format Rule": targetAttributeFormats[attr.Attribute] || ""
     }));
+
+    // Convert attributeRanges object to array format for helper functions
+    const targetRangeRowData = targetAttributeRowData
+      .filter(attr => attr.Type === "Numeric" || attr.Type === "DateTime")
+      .map(attr => {
+        const range = targetAttributeRanges[attr.Attribute] || {};
+        return {
+          Attribute: attr.Attribute,
+          Type: attr.Type,
+          FormatRule: targetAttributeFormats[attr.Attribute] || "",
+          LowerBound: range.lower || "",
+          UpperBound: range.upper || "",
+          LowerInclusive: range.lower_inclusive ?? false,
+          UpperInclusive: range.upper_inclusive ?? false
+        };
+      });
 
     const rangeOverlayInput = getRangeOverlayInput(targetRangeRowData, targetFormatRuleRowData, targetAttributesList);
     const retainedUniqueFramedUnits = targetUnitFramedRowData.filter((row) => !row.deleted);

@@ -410,30 +410,19 @@ export class OCAParser {
       );
     }
 
-    // Range data for components (ADC spec format)
-    // Add ALL eligible attributes (Numeric and DateTime), not just those with existing ranges
-    // This matches useZipParser behavior and allows users to add ranges to any eligible attribute
-    const rangeData = [];
-    attributes.forEach((attribute) => {
-      const attrType = attribute.Type || "";
-      // Only Numeric and DateTime attributes can have range rules
-      if (attrType === "Numeric" || attrType === "DateTime") {
-        const formatRule = formatOverlay?.attribute_formats?.[attribute.Attribute] || "";
-        // Check if this attribute has existing range data
-        const existingRange = rangeOverlay?.attributes?.[attribute.Attribute];
-        
-        rangeData.push({
-          Attribute: attribute.Attribute,
-          Type: attrType,
-          FormatRule: formatRule,
-          LowerBound: existingRange?.lower || "",
-          UpperBound: existingRange?.upper || "",
-          // Default to false (matches useZipParser), override with actual values if they exist
-          LowerInclusive: existingRange?.lower_inclusive !== undefined ? existingRange.lower_inclusive : false,
-          UpperInclusive: existingRange?.upper_inclusive !== undefined ? existingRange.upper_inclusive : false
-        });
-      }
-    });
+    // Range data - store as object mapping attribute name to range values
+    // Only store ranges that actually exist in the range overlay
+    const attributeRanges = {};
+    if (rangeOverlay?.attributes) {
+      Object.entries(rangeOverlay.attributes).forEach(([attr, rangeValues]) => {
+        attributeRanges[attr] = {
+          lower: rangeValues.lower || "",
+          upper: rangeValues.upper || "",
+          lower_inclusive: rangeValues.lower_inclusive ?? false,
+          upper_inclusive: rangeValues.upper_inclusive ?? false
+        };
+      });
+    }
 
     // Unit framing data for components
     // Combines basic unit data from unit overlay with UCUM data from unit framing extension
@@ -463,7 +452,7 @@ export class OCAParser {
       attributeFormats,
       attributeCardinality,
       dataStandardsData,
-      rangeData,
+      attributeRanges,
       unitData,
       unitFramedData,
       attributeFramingData

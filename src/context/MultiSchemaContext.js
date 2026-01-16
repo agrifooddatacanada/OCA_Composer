@@ -150,7 +150,7 @@ const createDefaultSchemaState = () => ({
   attributeFormats: {},  // Object mapping attribute name to format rule string
   attributeCardinality: {},  // Object mapping attribute name to cardinality value
   dataStandardsData: [],
-  rangeData: [],
+  attributeRanges: {},  // Object mapping attribute name to {lower, upper, lower_inclusive, upper_inclusive}
   unitData: [],
   unitFramedData: [],
   attributeFramingData: [],
@@ -324,6 +324,33 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         Type: attr.Type,
         "Format Rule": attributeFormats[attr.Attribute] || ""
       }));
+    },
+    [getSchemaState]
+  );
+
+  // Computed getter - derives rangeData grid rows from attributes + attributeRanges
+  const getRangeData = useCallback(
+    (schemaId) => {
+      const state = getSchemaState(schemaId);
+      const attributes = state?.attributes || [];
+      const attributeRanges = state?.attributeRanges || {};
+      const attributeFormats = state?.attributeFormats || {};
+      
+      // Only include Numeric and DateTime attributes (range-eligible)
+      return attributes
+        .filter(attr => attr.Type === "Numeric" || attr.Type === "DateTime")
+        .map(attr => {
+          const range = attributeRanges[attr.Attribute] || {};
+          return {
+            Attribute: attr.Attribute,
+            Type: attr.Type,
+            FormatRule: attributeFormats[attr.Attribute] || "",
+            LowerBound: range.lower || "",
+            UpperBound: range.upper || "",
+            LowerInclusive: range.lower_inclusive ?? false,
+            UpperInclusive: range.upper_inclusive ?? false
+          };
+        });
     },
     [getSchemaState]
   );
@@ -1476,6 +1503,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       getAttributesList,
       getCardinalityData,
       getFormatRuleData,
+      getRangeData,
       initializeSchemaFromOCA,
       switchToSchema,
       exportSchemaChanges,
