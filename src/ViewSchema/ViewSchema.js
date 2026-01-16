@@ -585,7 +585,8 @@ export default function ViewSchema({
     getSchemaState,
     filteredLanguages,
     schemaStates, // Ensure updates when schema state changes
-    getSchemaState(currentSchemaId)?.attributeFormats // Explicitly watch attributeFormats changes
+    getSchemaState(currentSchemaId)?.attributeFormats, // Explicitly watch attributeFormats changes
+    getSchemaState(currentSchemaId)?.attributeRanges // Explicitly watch attributeRanges changes
   ]);
 
   if (loading) {

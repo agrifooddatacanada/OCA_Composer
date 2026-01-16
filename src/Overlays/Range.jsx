@@ -24,7 +24,7 @@ const Range = () => {
   } = useContext(Context);
   
   // Use MultiSchema context with standard pattern
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { currentSchemaId, getSchemaState, updateSchemaState, getRangeData } = useMultiSchema();
   
   const schemaState = getSchemaState(currentSchemaId);
   const deleteHandler = useDeleteOverlayHandler(FIELD_RANGE_OVERLAY);
@@ -34,15 +34,25 @@ const Range = () => {
     updateSchemaState(currentSchemaId, updates);
   }, [currentSchemaId, updateSchemaState]);
   
-  // Get range data from schema state
+  // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(() => {
-    return schemaState?.rangeData || [];
-  }, [schemaState?.rangeData]);
+    return getRangeData(currentSchemaId) || [];
+  }, [getRangeData, currentSchemaId, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
   
   const setRangeRowData = useCallback((newData) => {
-    updateCurrentSchema({
-      rangeData: newData
+    // Convert array to object format {attrName: {lower, upper, lower_inclusive, upper_inclusive}}
+    const attributeRanges = {};
+    newData.forEach(row => {
+      if (row.LowerBound || row.UpperBound) {
+        attributeRanges[row.Attribute] = {
+          lower: row.LowerBound || "",
+          upper: row.UpperBound || "",
+          lower_inclusive: row.LowerInclusive ?? false,
+          upper_inclusive: row.UpperInclusive ?? false
+        };
+      }
     });
+    updateCurrentSchema({ attributeRanges });
   }, [updateCurrentSchema]);
   const { t } = useTranslation();
   const gridRef = useRef();
@@ -198,44 +208,40 @@ const Range = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount/unmount
 
-  // Initialize rangeData from formatRuleData if empty (e.g., after deletion and re-adding)
+  // Initialize attributeRanges from attributeFormats if empty (e.g., after deletion and re-adding)
   useEffect(() => {
-    const formatRuleData = schemaState?.formatRuleData || [];
+    const attributeFormats = schemaState?.attributeFormats || {};
+    const attributeRanges = schemaState?.attributeRanges || {};
     const attributes = schemaState?.attributes || [];
-    const currentRangeData = schemaState?.rangeData || [];
     
-    // Only initialize if rangeData is empty but formatRuleData exists
-    if (currentRangeData.length === 0 && formatRuleData.length > 0 && attributes.length > 0) {
-      const newRangeRowData = [];
+    // Only initialize if attributeRanges is empty but attributeFormats exists
+    if (Object.keys(attributeRanges).length === 0 && Object.keys(attributeFormats).length > 0 && attributes.length > 0) {
+      const newRanges = {};
       
-      formatRuleData.forEach((row) => {
-        // Find the corresponding attribute to get its Type
-        const attribute = attributes.find(attr => attr.Attribute === row.Attribute);
-        if (!attribute) return;
+      attributes.forEach((attribute) => {
+        const formatRule = attributeFormats[attribute.Attribute];
         
         if (
           (attribute.Type !== "Numeric" && attribute.Type !== "DateTime") ||
-          (!row["Format Rule"] && !row["Custom format rule"])
+          !formatRule
         ) {
           return;
         }
 
-        newRangeRowData.push({
-          Attribute: row.Attribute,
-          Type: attribute.Type,
-          FormatRule: row["Format Rule"] || row["Custom format rule"],
-          LowerBound: "",
-          LowerInclusive: false,
-          UpperBound: "",
-          UpperInclusive: false
-        });
+        // Initialize with empty range bounds
+        newRanges[attribute.Attribute] = {
+          lower: "",
+          upper: "",
+          lower_inclusive: false,
+          upper_inclusive: false
+        };
       });
 
-      if (newRangeRowData.length > 0) {
-        setRangeRowData(newRangeRowData);
+      if (Object.keys(newRanges).length > 0) {
+        updateCurrentSchema({ attributeRanges: newRanges });
       }
     }
-  }, [schemaState?.formatRuleData, schemaState?.rangeData, schemaState?.attributes, setRangeRowData]);
+  }, [schemaState?.attributeFormats, schemaState?.attributeRanges, schemaState?.attributes, updateCurrentSchema]);
 
   const handleBack = () => {
     setShowDeleteConfirmation(true);

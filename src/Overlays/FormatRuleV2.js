@@ -17,6 +17,7 @@ import {
   FIELD_FORMAT_OVERLAY
 } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
+import { getFormatRuleDescription } from "../utils/helpers";
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -35,7 +36,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     getSchemaState, 
     updateSchemaState,
     updateOverlaySelection,
-    setSelectedOverlay
+    setSelectedOverlay,
+    getFormatRuleData,
+    getRangeData
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORMAT_OVERLAY);
@@ -57,34 +60,58 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       return;
     }
 
-    // Get existing format rules from formatRuleData or initialize from attributes
-    const existingFormatRules = schemaState.formatRuleData || [];
-    const existingRulesMap = new Map(existingFormatRules.map(rule => [rule.Attribute, rule]));
+    // Get existing format rules from attributeFormats object
+    const attributeFormats = schemaState.attributeFormats || {};
 
     const initialData = schemaState.attributes.map(attr => {
-      const existingRule = existingRulesMap.get(attr.Attribute);
+      const formatRegex = attributeFormats[attr.Attribute] || "";
+      
+      // Check if this regex matches a built-in format
+      const description = formatRegex ? getFormatRuleDescription(attr.Type, formatRegex) : "";
+      const isCustom = !description;
+      
       return {
         Attribute: attr.Attribute,
         Type: attr.Type || "Text",
-        "Format Rule": existingRule?.["Format Rule"] || "",
-        [CUSTOM_FORMAT_RULE]: existingRule?.[CUSTOM_FORMAT_RULE] || ""
+        "Format Rule": isCustom ? "" : formatRegex,
+        [CUSTOM_FORMAT_RULE]: isCustom ? formatRegex : ""
       };
     });
 
     setGridRowData(initialData);
-  }, [schemaState?.attributes, currentSchemaId]); // Only re-init when attributes change, NOT when formatRuleData changes
+  }, [schemaState?.attributes, schemaState?.attributeFormats, currentSchemaId]); // Re-init when attributes or formats change
   
+  // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(() => 
-    schemaState?.rangeData || []
-  , [schemaState?.rangeData]);
+    getRangeData(currentSchemaId) || []
+  , [getRangeData, currentSchemaId, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
   
-  // Simple setter that only updates MultiSchema context
+  // Save format rules as object {attrName: "formatRule"}
   const setFormatRuleRowData = useCallback((newData) => {
-    updateCurrentSchema({ formatRuleData: newData });
+    const attributeFormats = {};
+    newData.forEach(row => {
+      const formatRule = row["Format Rule"] || row[CUSTOM_FORMAT_RULE];
+      if (formatRule) {
+        attributeFormats[row.Attribute] = formatRule;
+      }
+    });
+    updateCurrentSchema({ attributeFormats });
   }, [updateCurrentSchema]);
   
+  // Save range data as object {attrName: {lower, upper, lower_inclusive, upper_inclusive}}
   const setRangeRowData = useCallback((newData) => {
-    updateCurrentSchema({ rangeData: newData });
+    const attributeRanges = {};
+    newData.forEach(row => {
+      if (row.LowerBound || row.UpperBound) {
+        attributeRanges[row.Attribute] = {
+          lower: row.LowerBound || "",
+          upper: row.UpperBound || "",
+          lower_inclusive: row.LowerInclusive ?? false,
+          upper_inclusive: row.UpperInclusive ?? false
+        };
+      }
+    });
+    updateCurrentSchema({ attributeRanges });
   }, [updateCurrentSchema]);
 
   // Set loading false when we have schema state
@@ -169,9 +196,16 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         const newFormatRuleRowData = gridRef.current.api
           .getRenderedNodes()
           ?.map((node) => node?.data);
-        // Only update if we actually have data and it's not empty
+        // Convert to object format and save
         if (newFormatRuleRowData && newFormatRuleRowData.length > 0) {
-          updateCurrentSchema({ formatRuleData: newFormatRuleRowData });
+          const attributeFormats = {};
+          newFormatRuleRowData.forEach(row => {
+            const formatRule = row["Format Rule"] || row[CUSTOM_FORMAT_RULE];
+            if (formatRule) {
+              attributeFormats[row.Attribute] = formatRule;
+            }
+          });
+          updateCurrentSchema({ attributeFormats });
         }
       }
     };
