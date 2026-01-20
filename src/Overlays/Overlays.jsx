@@ -11,8 +11,32 @@ import { getListOfSelectedOverlays } from "../utils/overlayUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { shouldDisableRangeOverlay, getRangeOverlayDisabledReason, shouldDisableFormInformationOverlay, getFormInformationDisabledReason } from "../utils/helpers";
-import { FIELD_FORMAT_OVERLAY, FIELD_RANGE_OVERLAY, FIELD_FORM_INFORMATION_OVERLAY } from "../constants/constants";
+import {
+  FIELD_CHARACTER_ENCODING_OVERLAY,
+  FIELD_CONFORMANCE_OVERLAY,
+  FIELD_CARDINALITY_OVERLAY,
+  FIELD_FORM_INFORMATION_OVERLAY,
+  FIELD_UNIT_FRAMING_OVERLAY,
+  FIELD_DATA_STANDARDS_OVERLAY,
+  FIELD_RANGE_OVERLAY,
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  FIELD_FORMAT_OVERLAY
+} from "../constants/constants";
 import { deleteOverlayData } from "../utils/overlayUtils";
+
+// Centralized overlay key to page mapping
+// Uses constant keys (FIELD_*_OVERLAY) instead of display strings
+const OVERLAY_TO_PAGE = {
+  [FIELD_CHARACTER_ENCODING_OVERLAY]: "CharacterEncoding",
+  [FIELD_CONFORMANCE_OVERLAY]: "RequiredEntries",
+  [FIELD_CARDINALITY_OVERLAY]: "Cardinality",
+  [FIELD_FORM_INFORMATION_OVERLAY]: "FormInformation",
+  [FIELD_UNIT_FRAMING_OVERLAY]: "UnitFraming",
+  [FIELD_DATA_STANDARDS_OVERLAY]: "DataStandards",
+  [FIELD_RANGE_OVERLAY]: "Range",
+  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: "AttributeFraming",
+  [FIELD_FORMAT_OVERLAY]: "FormatRules"
+};
 
 const Overlays = ({ pageBack, pageForward }) => {
   const { t } = useTranslation();
@@ -48,15 +72,15 @@ const Overlays = ({ pageBack, pageForward }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedItemToDelete, setSelectedItemToDelete] = useState("");
 
-  // Convert overlay into a list of features
-  const { selectedFeatures, unselectedFeatures } = getListOfSelectedOverlays(overlay);
+  // Convert overlay into a list of keys (constant identifiers)
+  const { selectedKeys, unselectedKeys } = getListOfSelectedOverlays(overlay);
 
-  const getDisabledReason = (featureName) => {
+  const getDisabledReason = (overlayKey) => {
     return (
-      getFormInformationDisabledReason(featureName, selectedFeatures) ||
+      getFormInformationDisabledReason(overlayKey, selectedKeys) ||
       getRangeOverlayDisabledReason(
-        featureName,
-        selectedFeatures,
+        overlayKey,
+        selectedKeys,
         attributeRowData,
         rangeRowData,
         formatRuleData
@@ -65,20 +89,20 @@ const Overlays = ({ pageBack, pageForward }) => {
     );
   };
 
-  const addToSelected = (item) => {
+  const addToSelected = (overlayKey) => {
     // Range overlay can be selected only if format overlay is selected
-    if (shouldDisableRangeOverlay(item, selectedFeatures, attributeRowData, rangeRowData, formatRuleData))
+    if (shouldDisableRangeOverlay(overlayKey, selectedKeys, attributeRowData, rangeRowData, formatRuleData))
       return;
 
     // Form Information overlay can be selected only if format overlay is selected
-    if (shouldDisableFormInformationOverlay(item, selectedFeatures)) return;
+    if (shouldDisableFormInformationOverlay(overlayKey, selectedKeys)) return;
 
     // Get current overlay selections
     const currentSelections = getOverlaySelections(currentSchemaId);
     const updatedSelections = {
       ...currentSelections,
-      [item]: {
-        ...currentSelections[item],
+      [overlayKey]: {
+        ...currentSelections[overlayKey],
         selected: true
       }
     };
@@ -86,31 +110,16 @@ const Overlays = ({ pageBack, pageForward }) => {
     // Combine both updates into a single updateSchemaState call to avoid race condition
     updateSchemaState(currentSchemaId, {
       overlaySelections: updatedSelections,
-      selectedOverlay: item
+      selectedOverlay: overlayKey
     });
-    if (item === "Character Encoding") {
-      setCurrentPage("CharacterEncoding");
-    } else if (item === "Make selected entries required") {
-      setCurrentPage("RequiredEntries");
-    } else if (item === "Cardinality") {
-      setCurrentPage("Cardinality");
-    } else if (item === "Add Form Information") {
-      setCurrentPage("FormInformation");
-    } else if (item === "Unit Framing") {
-      setCurrentPage("UnitFraming");
-    } else if (item === "Data Standards") {
-      setCurrentPage("DataStandards");
-    } else if (item === "Add range rule for data") {
-      setCurrentPage("Range");
-    } else if (item === "Attribute Framing") {
-      setCurrentPage("AttributeFraming");
-    } else {
-      setCurrentPage("FormatRules");
-    }
+    
+    // Route to the appropriate page using centralized mapping
+    const page = OVERLAY_TO_PAGE[overlayKey] || "FormatRules"; // Default to FormatRules
+    setCurrentPage(page);
   };
 
   const removeFromSelected = () => {
-    // Use centralized deletion logic (no navigation since we're already on Overlays page)
+    // selectedItemToDelete is already a constant key (from selectedKeys array)
     deleteOverlayData(selectedItemToDelete, { 
       updateSchemaState, 
       updateOverlaySelection, 
@@ -120,27 +129,12 @@ const Overlays = ({ pageBack, pageForward }) => {
     setShowDeleteConfirmation(false);
   };
 
-  const handleEditOverlay = (overlayName) => {
-    setSelectedOverlay(currentSchemaId, overlayName);
-    if (overlayName === "Character Encoding") {
-      setCurrentPage("CharacterEncoding");
-    } else if (overlayName === "Make selected entries required") {
-      setCurrentPage("RequiredEntries");
-    } else if (overlayName === "Cardinality") {
-      setCurrentPage("Cardinality");
-    } else if (overlayName === "Add Form Information") {
-      setCurrentPage("FormInformation");
-    } else if (overlayName === "Data Standards") {
-      setCurrentPage("DataStandards");
-    } else if (overlayName === "Unit Framing") {
-      setCurrentPage("UnitFraming");
-    } else if (overlayName === "Add range rule for data") {
-      setCurrentPage("Range");
-    } else if (overlayName === "Attribute Framing") {
-      setCurrentPage("AttributeFraming");
-    } else {
-      setCurrentPage("FormatRules");
-    }
+  const handleEditOverlay = (overlayKey) => {
+    setSelectedOverlay(currentSchemaId, overlayKey);
+    
+    // Route to the appropriate page using centralized mapping
+    const page = OVERLAY_TO_PAGE[overlayKey] || "FormatRules"; // Default to FormatRules
+    setCurrentPage(page);
   };
 
   return (
@@ -197,28 +191,29 @@ const Overlays = ({ pageBack, pageForward }) => {
                 }
               }}
             >
-              {unselectedFeatures
-                .filter((text) => text && text.trim() !== "") // Filter out empty/null features
-                .map((text) => {
+              {unselectedKeys
+                .filter((overlayKey) => overlayKey && overlayKey.trim() !== "") // Filter out empty/null keys
+                .map((overlayKey) => {
+                const displayName = overlay[overlayKey]?.feature || overlayKey;
                 const isDisabled =
                   shouldDisableRangeOverlay(
-                    text,
-                    selectedFeatures,
+                    overlayKey,
+                    selectedKeys,
                     attributeRowData,
                     rangeRowData,
                     formatRuleData
-                  ) || shouldDisableFormInformationOverlay(text, selectedFeatures);
-                const disabledReason = isDisabled ? getDisabledReason(text) : "";
+                  ) || shouldDisableFormInformationOverlay(overlayKey, selectedKeys);
+                const disabledReason = isDisabled ? getDisabledReason(overlayKey) : "";
                 
                 return (
-                  <Tooltip key={text} title={isDisabled ? disabledReason : ""} placement="right" arrow>
+                  <Tooltip key={overlayKey} title={isDisabled ? disabledReason : ""} placement="right" arrow>
                     <span>
                       <ListItemButton
-                        onClick={() => addToSelected(text)}
+                        onClick={() => addToSelected(overlayKey)}
                         disabled={isDisabled}
                       >
                         <AddCircleIcon sx={{ color: CustomPalette.PRIMARY}} />
-                        <ListItemText primary={t(text)} sx={{ marginLeft: 2 }} />
+                        <ListItemText primary={t(displayName)} sx={{ marginLeft: 2 }} />
                         {isDisabled && (
                           <HelpOutlineIcon sx={{ fontSize: 18, marginLeft: "6px", color: "#6b7280" }} />
                         )}
@@ -268,40 +263,43 @@ const Overlays = ({ pageBack, pageForward }) => {
                 }
               }}
             >
-              {selectedFeatures.map((text) => (
-                <Box
-                  key={text}
-                  sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center"
-                  }}
-                >
-                  <ListItemText
-                    primary={t(text)}
+              {selectedKeys.map((overlayKey) => {
+                const displayName = overlay[overlayKey]?.feature || overlayKey;
+                return (
+                  <Box
+                    key={overlayKey}
                     sx={{
                       display: "flex",
-                      paddingLeft: "1rem",
-                      textAlign: "left",
-                      width: "240px",
-                      paddingRight: "1rem"
+                      flexDirection: "row",
+                      alignItems: "center"
                     }}
-                  />
-                  <DeleteForeverIcon
-                    sx={{ cursor: "pointer", color: CustomPalette.PRIMARY }}
-                    onClick={() => {
-                      setSelectedItemToDelete(text);
-                      setShowDeleteConfirmation(true);
-                    }}
-                  />
-                  <Button
-                    sx={{ color: CustomPalette.PRIMARY }}
-                    onClick={() => handleEditOverlay(text)}
                   >
-                    {t("Edit")}
-                  </Button>
-                </Box>
-              ))}
+                    <ListItemText
+                      primary={t(displayName)}
+                      sx={{
+                        display: "flex",
+                        paddingLeft: "1rem",
+                        textAlign: "left",
+                        width: "240px",
+                        paddingRight: "1rem"
+                      }}
+                    />
+                    <DeleteForeverIcon
+                      sx={{ cursor: "pointer", color: CustomPalette.PRIMARY }}
+                      onClick={() => {
+                        setSelectedItemToDelete(overlayKey);
+                        setShowDeleteConfirmation(true);
+                      }}
+                    />
+                    <Button
+                      sx={{ color: CustomPalette.PRIMARY }}
+                      onClick={() => handleEditOverlay(overlayKey)}
+                    >
+                      {t("Edit")}
+                    </Button>
+                  </Box>
+                );
+              })}
             </List>
           </Box>
         </Box>

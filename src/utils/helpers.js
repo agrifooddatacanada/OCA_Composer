@@ -10,6 +10,7 @@ import {
   DISALLOWED_CHARACTERS,
   FIELD_FORMAT_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
+  FIELD_RANGE_OVERLAY,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
@@ -858,13 +859,13 @@ export const getFormatRuleDescription = (attributeType, formatRule) => {
 };
 
 export const shouldDisableRangeOverlay = (
-  overlayText,
-  selectedFeatures,
+  overlayKey,
+  selectedKeys,
   attributes,
   rangeRowData,
   formatRuleData = []
 ) => {
-  if (overlayText !== "Add range rule for data") return false;
+  if (overlayKey !== FIELD_RANGE_OVERLAY) return false;
   
   // Check if there are any Numeric/DateTime attributes with format rules
   // Need to match formatRuleData against attributes to get Type info
@@ -878,24 +879,24 @@ export const shouldDisableRangeOverlay = (
   
   return (
     !hasAttributesWithFormatRules ||
-    !selectedFeatures.includes(FIELD_FORMAT_OVERLAY)
+    !selectedKeys.includes(FIELD_FORMAT_OVERLAY)
   );
 };
 
-export const shouldDisableFormInformationOverlay = (overlayText, selectedFeatures) =>
-  overlayText === FIELD_FORM_INFORMATION_OVERLAY &&
-  !selectedFeatures.includes(FIELD_FORMAT_OVERLAY);
+export const shouldDisableFormInformationOverlay = (overlayKey, selectedKeys) =>
+  overlayKey === FIELD_FORM_INFORMATION_OVERLAY &&
+  !selectedKeys.includes(FIELD_FORMAT_OVERLAY);
 
 export const getRangeOverlayDisabledReason = (
-  overlayText,
-  selectedFeatures,
+  overlayKey,
+  selectedKeys,
   attributes,
   rangeRowData,
   formatRuleData = []
 ) => {
-  if (overlayText !== "Add range rule for data") return "";
+  if (overlayKey !== FIELD_RANGE_OVERLAY) return "";
   
-  if (!selectedFeatures.includes(FIELD_FORMAT_OVERLAY)) {
+  if (!selectedKeys.includes(FIELD_FORMAT_OVERLAY)) {
     return i18next.t("Range overlay requires format overlay to be selected");
   }
   
@@ -925,8 +926,8 @@ export const getRangeOverlayDisabledReason = (
   return "";
 };
 
-export const getFormInformationDisabledReason = (overlayText, selectedFeatures) =>
-  shouldDisableFormInformationOverlay(overlayText, selectedFeatures)
+export const getFormInformationDisabledReason = (overlayKey, selectedKeys) =>
+  shouldDisableFormInformationOverlay(overlayKey, selectedKeys)
     ? i18next.t("Form Information prerequisite tooltip")
     : "";
 

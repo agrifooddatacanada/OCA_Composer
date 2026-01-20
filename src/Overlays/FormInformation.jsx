@@ -43,13 +43,9 @@ const PLACEHOLDER_EDITABLE_TYPES = ["Text", "Array[Text]", "DateTime", "Array[Da
 const FormInformation = () => {
   const { t } = useTranslation();
   const {
-    FormInformationRowData,
-    setFormInformationRowData,
     setFormBuilderPages,
     languages,
     setCurrentPage,
-    formPlaceholdersByLanguage,
-    setFormPlaceholdersByLanguage,
     setSelectedOverlay,
     setOverlay
   } = useContext(Context);
@@ -74,8 +70,10 @@ const FormInformation = () => {
   );
   const attributeRowData = schemaState?.attributes || [];
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
+  const FormInformationRowData = schemaState?.FormInformationRowData || [];
+  const formPlaceholdersByLanguage = schemaState?.formPlaceholdersByLanguage || {};
   
-  // Setter wrapper for lanAttributeRowData to update MultiSchemaContext
+  // Setter wrappers to update MultiSchemaContext
   const setLanAttributeRowData = useCallback((updater) => {
     const newData = typeof updater === 'function' 
       ? updater(lanAttributeRowData) 
@@ -83,14 +81,25 @@ const FormInformation = () => {
     updateSchemaState(currentSchemaId, { lanAttributeRowData: newData });
   }, [lanAttributeRowData, updateSchemaState, currentSchemaId]);
 
+  const setFormInformationRowData = useCallback((updater) => {
+    const newData = typeof updater === 'function'
+      ? updater(FormInformationRowData)
+      : updater;
+    updateSchemaState(currentSchemaId, { FormInformationRowData: newData });
+  }, [FormInformationRowData, updateSchemaState, currentSchemaId]);
+
+  const setFormPlaceholdersByLanguage = useCallback((updater) => {
+    const newData = typeof updater === 'function'
+      ? updater(formPlaceholdersByLanguage)
+      : updater;
+    updateSchemaState(currentSchemaId, { formPlaceholdersByLanguage: newData });
+  }, [formPlaceholdersByLanguage, updateSchemaState, currentSchemaId]);
+
   const gridRef = useRef();
   const refContainer = useRef();
   const [errorMessage, setErrorMessage] = useState("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [loading, setLoading] = useState(true);
-  
-  // Use standard deletion handler
-  const deleteHandler = useDeleteOverlayHandler(FIELD_FORM_INFORMATION_OVERLAY);
+  const [loading, setLoading] = useState(false);
   
   // Use standard deletion handler
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORM_INFORMATION_OVERLAY);
@@ -104,7 +113,69 @@ const FormInformation = () => {
     filteredLanguages.unshift(removedLanguage[0]);
   }
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
+  const currentRows = lanAttributeRowData?.[currentLanguage] || [];
   const primaryLanguage = languages?.[0];
+
+  // Ensure lanAttributeRowData has rows for all languages (import or fresh init)
+  useEffect(() => {
+    // If we already have rows for the current language, do nothing
+    if (currentRows && currentRows.length > 0) return;
+    if (!attributesList || attributesList.length === 0) return;
+
+    // Build base rows per language from attributes + FormInformationRowData + placeholders
+    const newLan = { ...(lanAttributeRowData || {}) };
+    languages.forEach((lang) => {
+      const existing = newLan[lang];
+      if (existing && existing.length > 0) return; // don't overwrite existing data
+
+      const langPlaceholders = formPlaceholdersByLanguage?.[lang] || {};
+      const rows = attributesList.map((attrName, idx) => {
+        const attrType = attributeRowData.find((r) => r.Attribute === attrName)?.Type || "";
+        const baseRow = FormInformationRowData[idx] || {};
+
+        // Pick label: prefer per-language FormInformationRowData label if object, else string, else attr name
+        let label = attrName;
+        const baseLabel = baseRow?.Label;
+        if (baseLabel && typeof baseLabel === "object" && baseLabel !== null) {
+          label = baseLabel[lang] || label;
+        } else if (typeof baseLabel === "string" && baseLabel.trim()) {
+          label = baseLabel;
+        }
+
+        // Pick placeholder: prefer formPlaceholdersByLanguage, else FormInformationRowData placeholder (object or string)
+        let placeholder = langPlaceholders[attrName] || "";
+        if (!placeholder) {
+          const basePlaceholder = baseRow?.Placeholder;
+          if (basePlaceholder && typeof basePlaceholder === "object" && basePlaceholder !== null) {
+            placeholder = basePlaceholder[lang] || "";
+          } else if (typeof basePlaceholder === "string") {
+            placeholder = basePlaceholder;
+          }
+        }
+
+        // Clear placeholder for Binary/Boolean types
+        if (attrType.includes("Binary") || attrType.includes("Boolean")) {
+          placeholder = "";
+        }
+
+        return {
+          Attribute: attrName,
+          Label: label,
+          Placeholder: placeholder,
+          Description: baseRow?.Description || "",
+          List: baseRow?.List || ""
+        };
+      });
+
+      newLan[lang] = rows;
+    });
+
+    // Only update if we actually added data
+    const didAdd = languages.some((lang) => !(lanAttributeRowData?.[lang]?.length > 0) && newLan[lang]?.length > 0);
+    if (didAdd) {
+      updateSchemaState(currentSchemaId, { lanAttributeRowData: newLan });
+    }
+  }, [attributesList, attributeRowData, currentRows, languages, FormInformationRowData, formPlaceholdersByLanguage, lanAttributeRowData, updateSchemaState, currentSchemaId]);
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {
@@ -271,11 +342,25 @@ const FormInformation = () => {
             backgroundColor:
               currentLanguage === language
                 ? CustomPalette.PRIMARY
-                : CustomPalette.SECONDARY,
+                : CustomPalette.WHITE,
+            color:
+              currentLanguage === language
+                ? "white"
+                : CustomPalette.PRIMARY,
             borderRadius,
             width: languages.length < 5 ? "12rem" : "8.335rem",
             boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.PRIMARY}`
+            border: `1px solid ${CustomPalette.PRIMARY}`,
+            "&:hover": {
+              backgroundColor:
+                currentLanguage === language
+                  ? CustomPalette.PRIMARY
+                  : CustomPalette.WHITE,
+              boxShadow:
+                currentLanguage === language
+                  ? "none"
+                  : undefined
+            }
           }}
         >
           <Typography noWrap={true} variant="button">
@@ -608,7 +693,7 @@ const FormInformation = () => {
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
-              rowData={lanAttributeRowData[currentLanguage]}
+              rowData={currentRows}
               columnDefs={columnDefs}
               domLayout="autoHeight"
               suppressHorizontalScroll

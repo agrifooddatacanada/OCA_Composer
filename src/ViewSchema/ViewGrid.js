@@ -247,9 +247,9 @@ export default function ViewGrid({
         }
       ];
 
-      const { selectedFeatures } = getListOfSelectedOverlays(overlay);
-      selectedFeatures.forEach((feature) => {
-        if (feature === FIELD_RANGE_OVERLAY) {
+      const { selectedKeys } = getListOfSelectedOverlays(overlay);
+      selectedKeys.forEach((overlayKey) => {
+        if (overlayKey === FIELD_RANGE_OVERLAY) {
           predefinedColumns.push({
             field: "LowerBound",
             width: 130,

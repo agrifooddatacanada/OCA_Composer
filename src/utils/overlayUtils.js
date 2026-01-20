@@ -115,24 +115,24 @@ export const useDeleteOverlayHandler = (overlayType, shouldNavigate = true) => {
 };
 
 /**
- * Get lists of selected and unselected overlay features
+ * Get lists of selected and unselected overlay keys
  * @param {Object} overlay - Overlay selection state object
- * @returns {Object} { selectedFeatures: string[], unselectedFeatures: string[] }
+ * @returns {Object} { selectedKeys: string[], unselectedKeys: string[] }
  */
 export const getListOfSelectedOverlays = (overlay) => {
-  const selectedFeatures = [];
-  const unselectedFeatures = [];
+  const selectedKeys = [];
+  const unselectedKeys = [];
   // Temporarily excluding these features
-  const featuresToExclude = ["Data Standards"];
+  const keysToExclude = [FIELD_DATA_STANDARDS_OVERLAY];
 
-  Object.values(overlay).forEach((item) => {
-    if (featuresToExclude.includes(item.feature)) return;
+  Object.entries(overlay).forEach(([key, item]) => {
+    if (keysToExclude.includes(key)) return;
     if (item.selected) {
-      selectedFeatures.push(item.feature);
+      selectedKeys.push(key);
     } else {
-      unselectedFeatures.push(item.feature);
+      unselectedKeys.push(key);
     }
   });
 
-  return { selectedFeatures, unselectedFeatures };
+  return { selectedKeys, unselectedKeys };
 };
