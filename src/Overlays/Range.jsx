@@ -24,7 +24,13 @@ const Range = () => {
   } = useContext(Context);
   
   // Use MultiSchema context with standard pattern
-  const { currentSchemaId, getSchemaState, updateSchemaState, getRangeData } = useMultiSchema();
+  const { 
+    currentSchemaId, 
+    getSchemaState, 
+    updateSchemaState, 
+    getRangeData,
+    setRangeRowData
+  } = useMultiSchema();
   
   const schemaState = getSchemaState(currentSchemaId);
   const deleteHandler = useDeleteOverlayHandler(FIELD_RANGE_OVERLAY);
@@ -36,24 +42,9 @@ const Range = () => {
   
   // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(() => {
-    return getRangeData(currentSchemaId) || [];
+    return getRangeData() || [];
   }, [getRangeData, currentSchemaId, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
   
-  const setRangeRowData = useCallback((newData) => {
-    // Convert array to object format {attrName: {lower, upper, lower_inclusive, upper_inclusive}}
-    const attributeRanges = {};
-    newData.forEach(row => {
-      if (row.LowerBound || row.UpperBound) {
-        attributeRanges[row.Attribute] = {
-          lower: row.LowerBound || "",
-          upper: row.UpperBound || "",
-          lower_inclusive: row.LowerInclusive ?? false,
-          upper_inclusive: row.UpperInclusive ?? false
-        };
-      }
-    });
-    updateCurrentSchema({ attributeRanges });
-  }, [updateCurrentSchema]);
   const { t } = useTranslation();
   const gridRef = useRef();
   const [loading, setLoading] = useState(true);

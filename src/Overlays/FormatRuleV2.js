@@ -38,7 +38,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     updateOverlaySelection,
     setSelectedOverlay,
     getFormatRuleData,
-    getRangeData
+    getRangeData,
+    setFormatRuleRowData,
+    setRangeRowData
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORMAT_OVERLAY);
@@ -83,36 +85,8 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   
   // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(() => 
-    getRangeData(currentSchemaId) || []
+    getRangeData() || []
   , [getRangeData, currentSchemaId, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
-  
-  // Save format rules as object {attrName: "formatRule"}
-  const setFormatRuleRowData = useCallback((newData) => {
-    const attributeFormats = {};
-    newData.forEach(row => {
-      const formatRule = row["Format Rule"] || row[CUSTOM_FORMAT_RULE];
-      if (formatRule) {
-        attributeFormats[row.Attribute] = formatRule;
-      }
-    });
-    updateCurrentSchema({ attributeFormats });
-  }, [updateCurrentSchema]);
-  
-  // Save range data as object {attrName: {lower, upper, lower_inclusive, upper_inclusive}}
-  const setRangeRowData = useCallback((newData) => {
-    const attributeRanges = {};
-    newData.forEach(row => {
-      if (row.LowerBound || row.UpperBound) {
-        attributeRanges[row.Attribute] = {
-          lower: row.LowerBound || "",
-          upper: row.UpperBound || "",
-          lower_inclusive: row.LowerInclusive ?? false,
-          upper_inclusive: row.UpperInclusive ?? false
-        };
-      }
-    });
-    updateCurrentSchema({ attributeRanges });
-  }, [updateCurrentSchema]);
 
   // Set loading false when we have schema state
   useEffect(() => {

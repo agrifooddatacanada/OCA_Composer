@@ -76,7 +76,7 @@ export default function CreateManually() {
   const [forwardErrorMessage, setForwardErrorMessage] = useState("");
   const [backErrorMessage, setBackErrorMessage] = useState("");
   // Get current attributes from MultiSchemaContext (computed from attributes array)
-  const attributesList = getAttributesList(currentSchemaId);
+  const attributesList = getAttributesList();
   
   const [canDelete, setCanDelete] = useState(attributesList.length > 1);
 

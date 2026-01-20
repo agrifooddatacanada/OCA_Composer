@@ -35,7 +35,6 @@ import convertOverlayToFormBuilder from "../Overlays/FormBuilder/utils/convertOv
 
 const useZipParser = () => {
   const {
-    setAttributesList,
     setSchemaDescription,
     setDivisionGroup,
     setLanguages,
@@ -45,11 +44,8 @@ const useZipParser = () => {
     setSavedEntryCodes,
     setCharacterEncodingRowData,
     setOverlay,
-    setFormatRuleRowData,
     setDataStandardsRowData,
-    setCardinalityData,
     setUnitRowData,
-    setRangeRowData,
     setAttributeFramingRowData,
     setSchemaMode,
     setFormBuilderPages,
@@ -404,7 +400,7 @@ const useZipParser = () => {
           selected: true
         }
       }));
-      setCardinalityData(cardinalityDataToParse);
+      // Removed: setCardinalityData - managed by MultiSchemaContext during import
     }
 
     // Parse unit framing
@@ -541,9 +537,9 @@ const useZipParser = () => {
         attributeOrdering
       );
       setAttributeRowData(orderedAttributeRowData);
-      setAttributesList(attributeOrdering);
+      // attributesList removed - it's now derived from attributeRowData
     } else {
-      setAttributesList(attributeList);
+      // attributesList removed - it's now derived from attributeRowData
       setAttributeRowData(newAttributeRowData);
     }
 
@@ -627,14 +623,13 @@ const useZipParser = () => {
       // No form overlay present; leave formPlaceholdersByLanguage empty
     }
 
-    setFormatRuleRowData(newFormatRuleRowData);
+    // Removed: setFormatRuleRowData, setCardinalityData, setRangeRowData calls
+    // These are now managed by MultiSchemaContext during OCA package import
     setDataStandardsRowData(newDataStandardsRowData);
     setCharacterEncodingRowData(newCharacterEncodingRowData);
 
     setLanAttributeRowData(newLangAttributeRowData);
     setFormPlaceholdersByLanguage(newFormPlaceholdersByLanguage);
-
-    setRangeRowData(newRangeRowData);
 
     // Convert form overlay to form builder pages format
     const processedLanguages = languageList.map((lang) => codesToLanguages[lang] || lang);

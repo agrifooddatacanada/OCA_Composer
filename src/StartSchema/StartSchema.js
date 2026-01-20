@@ -11,7 +11,6 @@ import ExcelSheetSelection from "../components/ExcelSheetSelection";
 export default function StartSchema({ pageForward }) {
   const { t } = useTranslation();
   const {
-    setAttributesList,
     setRawFile,
     attributesList,
     setLoading,
@@ -96,8 +95,7 @@ export default function StartSchema({ pageForward }) {
               color="button"
               onClick={() => {
                 setDropDisabled(false);
-                setFileData([]);
-                setAttributesList([]);
+                setFileData([]);  // attributesList derived from fileData
                 setExcelSheetChoice(-1);
                 setExcelSheetNames([]);
               }}

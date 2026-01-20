@@ -168,7 +168,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   // Get schema state data with stable references
   const attributesList = useMemo(
-    () => getAttributesList(currentSchemaId), // Computed from attributes
+    () => getAttributesList(), // Computed from attributes
     [getAttributesList, currentSchemaId, schemaState?.attributes] // Re-compute when attributes change
   );
   const lanAttributeRowData = useMemo(

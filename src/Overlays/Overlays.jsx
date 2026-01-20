@@ -30,14 +30,17 @@ const Overlays = ({ pageBack, pageForward }) => {
     updateSchemaState,
     setSelectedOverlay,
     getSelectedOverlay,
-    getSchemaState
+    getSchemaState,
+    getRangeData,
+    getAttributesList,
+    getFormatRuleData
   } = useMultiSchema();
   
-  // Get schema-specific data from MultiSchemaContext
+  // Get schema-specific data from MultiSchemaContext using getter functions
   const schemaState = getSchemaState(currentSchemaId);
-  const rangeRowData = schemaState?.rangeData || [];
-  const attributeRowData = schemaState?.attributes || [];
-  const formatRuleData = schemaState?.formatRuleData || [];
+  const rangeRowData = getRangeData();
+  const attributeRowData = schemaState?.attributes || []; // Full attribute objects with Type field
+  const formatRuleData = getFormatRuleData();
 
   const overlay = getOverlaySelections(currentSchemaId);
   const selectedOverlay = getSelectedOverlay(currentSchemaId);

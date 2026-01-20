@@ -15,7 +15,7 @@ import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerific
 import OCAMerge from "./OCAMerge/OCAMerge";
 import SchemaVisualization from "./SchemaVisualization/SchemaVisualization";
 import { getSchemaDataById } from "./SchemaVisualization/dataUtils";
-import { MultiSchemaProvider } from "./context/MultiSchemaContext";
+import { MultiSchemaProvider, useMultiSchema } from "./context/MultiSchemaContext";
 import { getCurrentTheme } from "./utils/themeDetector";
 import { CustomPalette } from "./constants/customPalette";
 // import Tutorial from "./Tutorial/Tutorial";
@@ -82,7 +82,6 @@ function App() {
   const [jsonToReadme, setJsonToReadme] = useState({});
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
-  const [attributesList, setAttributesList] = useState([]);
   const [currentPage, setCurrentPage] = useState("Landing");
   const [currentDataValidatorPage, setCurrentDataValidatorPage] =
     useState("StartDataValidator");
@@ -111,12 +110,9 @@ function App() {
   const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
   const [FormInformationRowData, setFormInformationRowData] = useState([]);
   const [formBuilderPages, setFormBuilderPages] = useState([]);
-  const [formatRuleRowData, setFormatRuleRowData] = useState([]);
   const [overlay, setOverlay] = useState(overlayItems);
   const [selectedOverlay, setSelectedOverlay] = useState("");
-  const [cardinalityData, setCardinalityData] = useState([]);
   const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
-  const [rangeRowData, setRangeRowData] = useState([]);
   // the current state of units from attributeRowData
   const [unitRowData, setUnitRowData] = useState([]);
   const [currentUnitFramedRowData, setCurrentUnitFramedRowData] = useState([]);
@@ -250,75 +246,8 @@ function App() {
     ReactGA.send({ hitType: "pageview", page: window.location.pathname });
   }, []);
 
-  // Create Attributes List from File Data
-  useEffect(() => {
-    const fileAttributes = [];
-    fileData.forEach((item) => {
-      fileAttributes.push(item[0]);
-    });
-    setAttributesList(fileAttributes);
-  }, [fileData]);
-
-  // Create Attribute Row Data object when Attributes List updates
-
-  useEffect(() => {
-    const newAttributesArray = [];
-    const newCharacterEncodingArray = [];
-    if (attributesList.length > 0) {
-      const { selectedFeatures } = getListOfSelectedOverlays(overlay);
-
-      attributesList.forEach((item) => {
-        const attributeObject = attributeRowData.find((obj) => obj.Attribute === item);
-        if (attributeObject) {
-          newAttributesArray.push(attributeObject);
-        } else {
-          newAttributesArray.push({
-            Attribute: item,
-            Flagged: false,
-            Unit: "",
-            Type: "",
-            List: false
-          });
-        }
-
-        const characterEncodingObject = characterEncodingRowData.find(
-          (obj) => obj.Attribute === item
-        );
-        if (characterEncodingObject) {
-          newCharacterEncodingArray.push(characterEncodingObject);
-        } else {
-          const newCharacterEncodingRow = { Attribute: item };
-          selectedFeatures.forEach((feature) => {
-            newCharacterEncodingRow[feature] = "";
-          });
-          newCharacterEncodingArray.push(newCharacterEncodingRow);
-        }
-      });
-      setAttributeRowData(newAttributesArray);
-      setCharacterEncodingRowData(newCharacterEncodingArray);
-    }
-  }, [attributesList]);
-
-  useEffect(() => {
-    const newFormatRuleArray = [];
-    attributeRowData.forEach((item) => {
-      const formatRuleObject = formatRuleRowData.find(
-        (obj) => obj.Attribute === item.Attribute
-      );
-
-      if (formatRuleObject && formatRuleObject.Type === item.Type) {
-        newFormatRuleArray.push(formatRuleObject);
-      } else {
-        newFormatRuleArray.push({
-          Attribute: item.Attribute,
-          Type: item.Type,
-          FormatText: "",
-          [CUSTOM_FORMAT_RULE]: ""
-        });
-      }
-    });
-    setFormatRuleRowData(newFormatRuleArray);
-  }, [attributeRowData]);
+  // REMOVED: Legacy useEffects for attributesList, formatRuleRowData management
+  // These are now handled by MultiSchemaContext with normalized storage
 
   useEffect(() => {
     const newDataStandardsArray = [];
@@ -494,36 +423,6 @@ function App() {
     }
   }, [frameAllUnits, unitFramedRowData, unitRowDataWhenNoFrameAll]);
 
-  useEffect(() => {
-    const newRangeArray = [];
-
-    attributeRowData.forEach((attributeRowItem) => {
-      const rangeObject = rangeRowData.find(
-        (rangeRowItem) => attributeRowItem.Attribute === rangeRowItem.Attribute
-      );
-
-      if (rangeObject) {
-        newRangeArray.push(rangeObject);
-      } else if (
-        attributeRowItem.Type === "Numeric" ||
-        attributeRowItem.Type === "DateTime"
-      ) {
-        newRangeArray.push({
-          Attribute: attributeRowItem.Attribute,
-          Type: attributeRowItem.Type,
-          FormatRule: "",
-          LowerBound: "",
-          LowerInclusive: false,
-          UpperBound: "",
-          UpperInclusive: false
-        });
-      }
-    });
-
-    setRangeRowData(newRangeArray);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attributeRowData]);
-
   /*
   Attribute Framing starts here.
   */
@@ -554,8 +453,12 @@ function App() {
   // skos:exactMatch
   // semapv:ManualMappingCuratio
 
+  // Data Validator: Match CSV columns to schema attributes
   useEffect(() => {
     if (jsonRawFile.length > 0) {
+      // Derive attributesList from attributeRowData (no separate state needed)
+      const attributesList = attributeRowData.map(attr => attr.Attribute);
+      
       const newMatchingRowData = [];
       attributesList.forEach((item) => {
         // if matchingRowData has data, use it
@@ -577,7 +480,7 @@ function App() {
       setMatchingRowData(newMatchingRowData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datasetRawFile, jsonRawFile, attributesList]);
+  }, [datasetRawFile, jsonRawFile, attributeRowData, languages, lanAttributeRowData]);
 
   function createEntryCodeRowData(languages, attributesWithLists, savedEntryCodes) {
     const newEntryCodesArray = [];
@@ -650,22 +553,8 @@ function App() {
     setOCAPackage(null);
   }, [fileData, jsonRawFile]);
 
-  // Keep attributesList in sync with the schema currently being edited
-  useEffect(() => {
-    try {
-      if (!OCAPackage || !editingSchemaId) {
-        return;
-      }
-      const schemaData = getSchemaDataById(OCAPackage, editingSchemaId);
-      const attrs = schemaData?.attributes ? Object.keys(schemaData.attributes) : [];
-      // Only update if attributesList is empty (avoid overwriting schema-aware state)
-      if (attributesList.length === 0 && JSON.stringify(attrs) !== JSON.stringify(attributesList)) {
-        setAttributesList(attrs);
-      }
-    } catch (e) {
-      // no-op: defensive guard
-    }
-  }, [OCAPackage, editingSchemaId]);
+  // REMOVED: Legacy useEffect that synced attributesList with editingSchemaId
+  // This is now handled by MultiSchemaContext
 
   return (
     <div className="App">
@@ -680,8 +569,6 @@ function App() {
               setFileData,
               rawFile,
               setRawFile,
-              attributesList,
-              setAttributesList,
               schemaDescription,
               setSchemaDescription,
               divisionGroup,
@@ -713,8 +600,6 @@ function App() {
               setFormInformationRowData,
               formBuilderPages,
               setFormBuilderPages,
-              formatRuleRowData,
-              setFormatRuleRowData,
               dataStandardsRowData,
               setDataStandardsRowData,
               overlay,
@@ -727,8 +612,6 @@ function App() {
               setJsonToReadme,
               isZipEdited,
               setIsZipEdited,
-              cardinalityData,
-              setCardinalityData,
               setCurrentDataValidatorPage,
               currentDataValidatorPage,
               jsonLoading,
@@ -794,8 +677,6 @@ function App() {
               setNotToVerifyAttributes,
               OCAPackage,
               setOCAPackage,
-              rangeRowData,
-              setRangeRowData,
               unitRowData,
               setUnitRowData,
               unitFramedRowData,

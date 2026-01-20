@@ -124,7 +124,7 @@ export default function ViewGrid({
   
   // Get cardinality data - computed from attributes + attributeCardinality
   const cardinalityData = useMemo(
-    () => getCardinalityData(currentSchemaId),
+    () => getCardinalityData(),
     [getCardinalityData, currentSchemaId, schemaState?.attributes, schemaState?.attributeCardinality]
   );
   

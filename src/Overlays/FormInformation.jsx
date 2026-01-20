@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useMemo, useRef, useState, useEffect } from "react";
 import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { AgGridReact } from "ag-grid-react";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
@@ -51,12 +52,18 @@ const FormInformation = () => {
     setLanAttributeRowData,
     formPlaceholdersByLanguage,
     setFormPlaceholdersByLanguage,
-    attributesList,
-    setAttributesList,
     formatRuleRowData,
     setSelectedOverlay,
     setOverlay
   } = useContext(Context);
+
+  // Get attributesList from MultiSchemaContext (single source of truth)
+  const { getCurrentSchemaId, getAttributesList, updateSchemaState } = useMultiSchema();
+  const currentSchemaId = getCurrentSchemaId();
+  const attributesList = useMemo(
+    () => getAttributesList(),
+    [getAttributesList, currentSchemaId]
+  );
 
   const gridRef = useRef();
   const refContainer = useRef();
@@ -276,39 +283,47 @@ const FormInformation = () => {
       const newIndex = event.node.rowIndex;
       gridRef.current.api.stopEditing();
       
-      const newAttributesList = [...attributesList];
-      newAttributesList.splice(newIndex, 0, newAttributesList.splice(oldIndex, 1)[0]);
-      setAttributesList(newAttributesList);
-      
-      // Reorder FormInformationRowData based on new attributesList order
-      const newFormData = [];
-      newAttributesList.forEach((attrName) => {
-        const existingData = FormInformationRowData.find(item => item.Attribute === attrName);
-        if (existingData) {
-          newFormData.push(existingData);
-        }
-      });
-      setFormInformationRowData(newFormData);
+      // Reorder attributes in MultiSchemaContext (source of truth)
+      updateSchemaState(currentSchemaId, (prevState) => {
+        const currentAttrs = prevState.attributes || [];
+        const newAttrs = [...currentAttrs];
+        newAttrs.splice(newIndex, 0, newAttrs.splice(oldIndex, 1)[0]);
+        
+        // Reorder FormInformationRowData to match
+        const newFormData = [];
+        newAttrs.forEach((attr) => {
+          const existingData = FormInformationRowData.find(item => item.Attribute === attr.Attribute);
+          if (existingData) {
+            newFormData.push(existingData);
+          }
+        });
+        setFormInformationRowData(newFormData);
 
-      // Reorder lanAttributeRowData for all languages
-      const newLanData = JSON.parse(JSON.stringify(lanAttributeRowData || {}));
-      Object.keys(newLanData).forEach((language) => {
-        if (newLanData[language] && Array.isArray(newLanData[language])) {
-          const reorderedLangData = [];
-          newAttributesList.forEach((attrName) => {
-            const existingLangData = newLanData[language].find(item => item.Attribute === attrName);
-            if (existingLangData) {
-              reorderedLangData.push(existingLangData);
-            }
-          });
-          newLanData[language] = reorderedLangData;
-        }
+        // Reorder lanAttributeRowData for all languages
+        const newLanData = JSON.parse(JSON.stringify(lanAttributeRowData || {}));
+        Object.keys(newLanData).forEach((language) => {
+          if (newLanData[language] && Array.isArray(newLanData[language])) {
+            const reorderedLangData = [];
+            newAttrs.forEach((attr) => {
+              const existingLangData = newLanData[language].find(item => item.Attribute === attr.Attribute);
+              if (existingLangData) {
+                reorderedLangData.push(existingLangData);
+              }
+            });
+            newLanData[language] = reorderedLangData;
+          }
+        });
+        
+        return {
+          attributes: newAttrs,
+          lanAttributeRowData: newLanData
+        };
       });
-      setLanAttributeRowData(newLanData);
     },
     [
       attributesList,
-      setAttributesList,
+      currentSchemaId,
+      updateSchemaState,
       FormInformationRowData,
       setFormInformationRowData,
       lanAttributeRowData,

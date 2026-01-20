@@ -65,7 +65,6 @@ const useOCAExport = () => {
     formBuilderPages,
     // Setters needed for resetToDefaults
     setFileData,
-    setAttributesList,
     setSchemaDescription,
     setLanguages,
     setAttributeRowData,
@@ -91,7 +90,7 @@ const useOCAExport = () => {
   // All schema-specific data comes from MultiSchemaContext only
   const languages = metadata.languages || ["English"];
   const attributeRowData = schemaState?.attributes || [];
-  const attributesList = getAttributesList(currentSchemaId); // Computed from attributes
+  const attributesList = getAttributesList(); // Computed from attributes
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const savedEntryCodes = schemaState?.entryCodes || {};
   const attributeFormats = schemaState?.attributeFormats || {};
@@ -780,7 +779,6 @@ const useOCAExport = () => {
   const resetToDefaults = useCallback(() => {
     // Clear legacy Context state
     setFileData([]);
-    setAttributesList([]);
     setSchemaDescription({
       English: { name: "", description: "" }
     });
@@ -803,7 +801,7 @@ const useOCAExport = () => {
     setCurrentPage("Landing");
     navigate("/");
   }, [
-    setFileData, setAttributesList, setSchemaDescription, setLanguages,
+    setFileData, setSchemaDescription, setLanguages,
     setAttributeRowData, setEntryCodeRowData, setLanAttributeRowData,
     setAttributesWithLists, setSavedEntryCodes, setIsZip, setRawFile,
     setOCAPackage, setSchemaMode, setOverlay, setSelectedOverlay,

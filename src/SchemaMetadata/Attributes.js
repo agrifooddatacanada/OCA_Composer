@@ -1,10 +1,15 @@
-import React, { useContext } from "react";
+import React, { useMemo } from "react";
 import { Box, Typography } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
-import { Context } from "../App";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 
 export default function Attributes() {
-  const { attributesList } = useContext(Context);
+  const { getCurrentSchemaId, getAttributesList } = useMultiSchema();
+  const currentSchemaId = getCurrentSchemaId();
+  const attributesList = useMemo(
+    () => getAttributesList(),
+    [getAttributesList, currentSchemaId]
+  );
   return (
     <Box sx={{ width: "100%", overflow: "auto", display: "flex" }}>
       {attributesList.map((value, index) => (

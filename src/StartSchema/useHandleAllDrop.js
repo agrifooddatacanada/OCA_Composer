@@ -18,8 +18,6 @@ const useHandleAllDrop = (pageForward) => {
     setFileData,
     fileData,
     setCurrentPage,
-    attributesList,
-    setAttributesList,
     setIsZip,
     setZipToReadme,
     setJsonToReadme,
@@ -641,8 +639,11 @@ const useHandleAllDrop = (pageForward) => {
     }
   }, [rawFile, handleExcelDrop, handleZipDrop, processCSVFile, setFileData]);
 
+  // Derive attributesList from fileData
+  const attributesList = fileData.map(item => item[0]);
+  
   useEffect(() => {
-    if (fileData.length > 0 || attributesList.length > 0) {
+    if (fileData.length > 0) {
       setDropDisabled(true);
     }
   }, [fileData]);
@@ -671,7 +672,6 @@ const useHandleAllDrop = (pageForward) => {
   }, [loading]);
 
   return {
-    setAttributesList,
     rawFile,
     setRawFile,
     attributesList,

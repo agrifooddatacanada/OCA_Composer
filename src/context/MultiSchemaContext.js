@@ -287,18 +287,20 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   );
 
   // Computed getter - derives attributesList from attributes array (single source of truth)
+  // Uses currentSchemaId by default, but allows override for reading other schemas
   const getAttributesList = useCallback(
-    (schemaId) => {
+    (schemaId = currentSchemaId) => {
       const state = getSchemaState(schemaId);
       const attributes = state?.attributes || [];
       return attributes.map(attr => attr.Attribute);
     },
-    [getSchemaState]
+    [getSchemaState, currentSchemaId]
   );
 
   // Computed getter - derives cardinalityData grid rows from attributes + attributeCardinality
+  // Uses currentSchemaId by default, but allows override for reading other schemas
   const getCardinalityData = useCallback(
-    (schemaId) => {
+    (schemaId = currentSchemaId) => {
       const state = getSchemaState(schemaId);
       const attributes = state?.attributes || [];
       const attributeCardinality = state?.attributeCardinality || {};
@@ -309,12 +311,13 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         Cardinality: attributeCardinality[attr.Attribute] || ""
       }));
     },
-    [getSchemaState]
+    [getSchemaState, currentSchemaId]
   );
 
   // Computed getter - derives formatRuleData grid rows from attributes + attributeFormats
+  // Uses currentSchemaId by default, but allows override for reading other schemas
   const getFormatRuleData = useCallback(
-    (schemaId) => {
+    (schemaId = currentSchemaId) => {
       const state = getSchemaState(schemaId);
       const attributes = state?.attributes || [];
       const attributeFormats = state?.attributeFormats || {};
@@ -325,12 +328,13 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
         "Format Rule": attributeFormats[attr.Attribute] || ""
       }));
     },
-    [getSchemaState]
+    [getSchemaState, currentSchemaId]
   );
 
   // Computed getter - derives rangeData grid rows from attributes + attributeRanges
+  // Uses currentSchemaId by default, but allows override for reading other schemas
   const getRangeData = useCallback(
-    (schemaId) => {
+    (schemaId = currentSchemaId) => {
       const state = getSchemaState(schemaId);
       const attributes = state?.attributes || [];
       const attributeRanges = state?.attributeRanges || {};
@@ -354,6 +358,45 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     },
     [getSchemaState]
   );
+
+  // Centralized setter functions - accept array format, convert to normalized object storage
+  // These use currentSchemaId internally since overlays always edit the current schema
+  const setFormatRuleRowData = useCallback((newData) => {
+    const attributeFormats = {};
+    newData.forEach(row => {
+      const formatRule = row["Format Rule"] || row["Custom Format Rule"];
+      if (formatRule) {
+        attributeFormats[row.Attribute] = formatRule;
+      }
+    });
+    updateSchemaState(currentSchemaId, { attributeFormats });
+  }, [updateSchemaState, currentSchemaId]);
+
+  const setCardinalityData = useCallback((newData) => {
+    const attributeCardinality = {};
+    newData.forEach(item => {
+      const cardinalityValue = item.EntryLimit || item.Cardinality || "";
+      if (cardinalityValue) {
+        attributeCardinality[item.Attribute] = cardinalityValue;
+      }
+    });
+    updateSchemaState(currentSchemaId, { attributeCardinality });
+  }, [updateSchemaState, currentSchemaId]);
+
+  const setRangeRowData = useCallback((newData) => {
+    const attributeRanges = {};
+    newData.forEach(row => {
+      if (row.LowerBound || row.UpperBound) {
+        attributeRanges[row.Attribute] = {
+          lower: row.LowerBound || "",
+          upper: row.UpperBound || "",
+          lower_inclusive: row.LowerInclusive ?? false,
+          upper_inclusive: row.UpperInclusive ?? false
+        };
+      }
+    });
+    updateSchemaState(currentSchemaId, { attributeRanges });
+  }, [updateSchemaState, currentSchemaId]);
 
   /**
    * Initialize schema from OCA package (low-level parser call)
@@ -1504,6 +1547,9 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       getCardinalityData,
       getFormatRuleData,
       getRangeData,
+      setFormatRuleRowData,
+      setCardinalityData,
+      setRangeRowData,
       initializeSchemaFromOCA,
       switchToSchema,
       exportSchemaChanges,
@@ -1535,6 +1581,12 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       addDeletedAttributes,
       getDeletedAttributes,
       getAttributesList,
+      getCardinalityData,
+      getFormatRuleData,
+      getRangeData,
+      setFormatRuleRowData,
+      setCardinalityData,
+      setRangeRowData,
       initializeSchemaFromOCA,
       switchToSchema,
       exportSchemaChanges,

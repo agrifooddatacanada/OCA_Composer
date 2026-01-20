@@ -77,7 +77,8 @@ const Cardinality = () => {
     updateSchemaState,
     updateOverlaySelection,
     setSelectedOverlay,
-    getCardinalityData
+    getCardinalityData,
+    setCardinalityData
   } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
   const deleteHandler = useDeleteOverlayHandler(FIELD_CARDINALITY_OVERLAY);
@@ -89,7 +90,7 @@ const Cardinality = () => {
   
   // Get cardinality data - computed from attributes + attributeCardinality
   const cardinalityData = useMemo(() => {
-    const computed = getCardinalityData(currentSchemaId);
+    const computed = getCardinalityData();
     const currentLanguage = i18next.language.startsWith("fr") ? "fra" : "eng";
     const labelData = schemaState?.lanAttributeRowData?.[currentLanguage] || [];
     
@@ -103,21 +104,6 @@ const Cardinality = () => {
       };
     });
   }, [getCardinalityData, currentSchemaId, schemaState?.attributes, schemaState?.attributeCardinality, schemaState?.lanAttributeRowData]);
-    
-  const setCardinalityData = useCallback((newData) => {
-    // Convert from array format (with EntryLimit) to object format (attributeCardinality)
-    const attributeCardinality = {};
-    newData.forEach(item => {
-      const cardinalityValue = item.EntryLimit || item.Cardinality || "";
-      if (cardinalityValue) {
-        attributeCardinality[item.Attribute] = cardinalityValue;
-      }
-    });
-    
-    updateCurrentSchema({
-      attributeCardinality
-    });
-  }, [updateCurrentSchema]);
   
   const cardinalityRef = useRef();
   const [loading, setLoading] = useState(true);
