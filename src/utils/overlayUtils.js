@@ -7,6 +7,7 @@
 import {
   FIELD_CHARACTER_ENCODING_OVERLAY,
   FIELD_FORMAT_OVERLAY,
+  FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_RANGE_OVERLAY,
   FIELD_CARDINALITY_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY,
@@ -28,6 +29,7 @@ export const resetOverlayValues = (overlayType) => {
   const overlayConfig = {
     [FIELD_CHARACTER_ENCODING_OVERLAY]: { characterEncodingData: {} },
     [FIELD_FORMAT_OVERLAY]: { formatRuleData: [], rangeData: [] },
+    [FIELD_FORM_INFORMATION_OVERLAY]: { FormInformationRowData: [] },
     [FIELD_RANGE_OVERLAY]: { rangeData: [] },
     [FIELD_CARDINALITY_OVERLAY]: { cardinalityData: undefined }, // undefined = uninitialized state
     [FIELD_UNIT_FRAMING_OVERLAY]: { unitFramedRowData: undefined, frameAllUnits: false, unframedUnitList: [] },

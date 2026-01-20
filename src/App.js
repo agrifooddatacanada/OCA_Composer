@@ -23,14 +23,7 @@ import useUnitFramingUpdater from "./hooks/useUnitFramingUpdater";
 import { LanguageConstants } from "./utils/languageUtils";
 import {
   CUSTOM_FORMAT_RULE,
-  FIELD_CARDINALITY_OVERLAY,
-  FIELD_CHARACTER_ENCODING_OVERLAY,
-  FIELD_CONFORMANCE_OVERLAY,
-  FIELD_DATA_STANDARDS_OVERLAY,
-  FIELD_FORMAT_OVERLAY,
-  FIELD_RANGE_OVERLAY,
-  FIELD_UNIT_FRAMING_OVERLAY,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  overlayItems,
   SCHEMA_MODE_SINGLE
 } from "./constants/constants";
 import {
@@ -47,23 +40,6 @@ export const Context = createContext();
 if (process.env.REACT_APP_GA_ID) {
   ReactGA.initialize(process.env.REACT_APP_GA_ID);
 }
-
-const overlayItems = {
-  [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
-  [FIELD_CONFORMANCE_OVERLAY]: {
-    feature: "Make selected entries required",
-    selected: false
-  },
-  [FIELD_FORMAT_OVERLAY]: {
-    feature: "Add format rule for data",
-    selected: false
-  },
-  [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
-  [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
-  [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
-  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
-  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false }
-};
 
 export const pagesArray = [
   "Start",
@@ -111,6 +87,7 @@ function App() {
   const [FormInformationRowData, setFormInformationRowData] = useState([]);
   const [formBuilderPages, setFormBuilderPages] = useState([]);
   const [overlay, setOverlay] = useState(overlayItems);
+  
   const [selectedOverlay, setSelectedOverlay] = useState("");
   const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
   // the current state of units from attributeRowData

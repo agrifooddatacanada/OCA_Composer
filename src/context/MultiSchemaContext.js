@@ -8,14 +8,7 @@ import React, {
   useMemo
 } from "react";
 import {
-  FIELD_CHARACTER_ENCODING_OVERLAY,
-  FIELD_CONFORMANCE_OVERLAY,
-  FIELD_FORMAT_OVERLAY,
-  FIELD_CARDINALITY_OVERLAY,
-  FIELD_DATA_STANDARDS_OVERLAY,
-  FIELD_UNIT_FRAMING_OVERLAY,
-  FIELD_RANGE_OVERLAY,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  overlayItems,
   CUSTOM_FORMAT_RULE,
   TYPE_CHILD_SCHEMA,
   TYPE_ARRAY_CHILD_SCHEMA,
@@ -131,17 +124,8 @@ const createDefaultSchemaState = () => ({
   // Entry codes
   entryCodes: {},
   attributesWithLists: [],
-  // Overlay selection state (per-schema)
-  overlaySelections: {
-    [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
-    [FIELD_CONFORMANCE_OVERLAY]: { feature: "Make selected entries required", selected: false },
-    [FIELD_FORMAT_OVERLAY]: { feature: "Add format rule for data", selected: false },
-    [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
-    [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
-    [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
-    [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
-    [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false }
-  },
+  // Overlay selection state (per-schema) - generated from overlayItems
+  overlaySelections: overlayItems,
   selectedOverlay: "",
   // Language-specific data
   lanAttributeRowData: {},

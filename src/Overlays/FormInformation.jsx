@@ -22,6 +22,7 @@ import {
 import { getDateTimePickerConfig } from "./FormBuilder/utils/getDateTimePickerConfig";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
+import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 
 import "ag-grid-community/styles/ag-theme-balham.css";
 
@@ -47,29 +48,52 @@ const FormInformation = () => {
     setFormBuilderPages,
     languages,
     setCurrentPage,
-    attributeRowData,
-    lanAttributeRowData,
-    setLanAttributeRowData,
     formPlaceholdersByLanguage,
     setFormPlaceholdersByLanguage,
-    formatRuleRowData,
     setSelectedOverlay,
     setOverlay
   } = useContext(Context);
 
-  // Get attributesList from MultiSchemaContext (single source of truth)
-  const { getCurrentSchemaId, getAttributesList, updateSchemaState } = useMultiSchema();
+  // Get data from MultiSchemaContext (single source of truth)
+  const { 
+    getCurrentSchemaId, 
+    getAttributesList, 
+    getFormatRuleData,
+    getSchemaState,
+    updateSchemaState 
+  } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
+  const schemaState = getSchemaState(currentSchemaId);
   const attributesList = useMemo(
     () => getAttributesList(),
     [getAttributesList, currentSchemaId]
   );
+  const formatRuleRowData = useMemo(
+    () => getFormatRuleData(),
+    [getFormatRuleData, currentSchemaId]
+  );
+  const attributeRowData = schemaState?.attributes || [];
+  const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
+  
+  // Setter wrapper for lanAttributeRowData to update MultiSchemaContext
+  const setLanAttributeRowData = useCallback((updater) => {
+    const newData = typeof updater === 'function' 
+      ? updater(lanAttributeRowData) 
+      : updater;
+    updateSchemaState(currentSchemaId, { lanAttributeRowData: newData });
+  }, [lanAttributeRowData, updateSchemaState, currentSchemaId]);
 
   const gridRef = useRef();
   const refContainer = useRef();
   const [errorMessage, setErrorMessage] = useState("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Use standard deletion handler
+  const deleteHandler = useDeleteOverlayHandler(FIELD_FORM_INFORMATION_OVERLAY);
+  
+  // Use standard deletion handler
+  const deleteHandler = useDeleteOverlayHandler(FIELD_FORM_INFORMATION_OVERLAY);
 
   const languageIndex = languages.findIndex(
     (item) => getLangNameFromUICode(i18next.language) === item
@@ -528,17 +552,11 @@ const FormInformation = () => {
   }, []);
 
   const handleDeleteCurrentOverlay = useCallback(() => {
-    setOverlay((prev) => ({
-      ...prev,
-      [FIELD_FORM_INFORMATION_OVERLAY]: {
-        ...prev[FIELD_FORM_INFORMATION_OVERLAY],
-        selected: false
-      }
-    }));
-    setSelectedOverlay("");
+    // Clean up FormBuilder data before deletion
     setFormBuilderPages(null);
-    setCurrentPage("Overlays");
-  }, [setOverlay, setSelectedOverlay, setCurrentPage, setFormBuilderPages]);
+    // Use standard deletion handler
+    deleteHandler();
+  }, [deleteHandler, setFormBuilderPages]);
 
   return (
     <BackNextSkeleton
