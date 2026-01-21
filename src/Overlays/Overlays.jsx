@@ -73,6 +73,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("Range");
     } else if (item === "Attribute Framing") {
       setCurrentPage("AttributeFraming");
+    } else if(item === "Data Separator") {
+      setCurrentPage("DataSeparator");
     } else {
       setCurrentPage("FormatRules");
     }
@@ -124,6 +126,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("Range");
     } else if (overlayName === "Attribute Framing") {
       setCurrentPage("AttributeFraming");
+    } else if (overlayName === "Data Separator") {
+      setCurrentPage("DataSeparator");
     } else {
       setCurrentPage("FormatRules");
     }

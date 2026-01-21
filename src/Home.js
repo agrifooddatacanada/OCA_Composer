@@ -26,6 +26,7 @@ import StepperProgressIndicator from "./StepperProgressIndicator/StepperProgress
 import DataStandards from "./Overlays/DataStandards";
 import Range from "./Overlays/Range";
 import AttributeFraming from "./Overlays/AttributeFraming";
+import DataSeparator from "./Overlays/DataSeparator";
 
 const Home = ({
   currentPage,
@@ -86,7 +87,8 @@ const Home = ({
       "Range",
       "AttributeFraming",
       "FormInformation",
-      "FormBuilder"
+      "FormBuilder",
+      "DataSeparator"
     ],
     []
   );
@@ -153,6 +155,7 @@ const Home = ({
         {currentPage === "DataStandards" && <DataStandards />}
         {currentPage === "Range" && <Range />}
         {currentPage === "AttributeFraming" && <AttributeFraming />}
+        {currentPage === "DataSeparator" && <DataSeparator />}
       </Box>
       <Footer currentPage={currentPage} />
     </>

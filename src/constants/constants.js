@@ -22,6 +22,7 @@ export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
 export const FIELD_RANGE_OVERLAY = "Add range rule for data";
 export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
 export const FIELD_FORM_INFORMATION_OVERLAY = "Add Form Information";
+export const FIELD_DATA_SEPARATOR_OVERLAY = "Data Separator";
 
 export const overlayItems = {
   [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
@@ -38,7 +39,8 @@ export const overlayItems = {
   [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
   [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
   [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false },
-  [FIELD_FORM_INFORMATION_OVERLAY]: { feature: "Add Form Information", selected: false }
+  [FIELD_FORM_INFORMATION_OVERLAY]: { feature: "Add Form Information", selected: false },
+  [FIELD_DATA_SEPARATOR_OVERLAY]: { feature: "Data Separator", selected: false }
 };
 
 export const classification = {
