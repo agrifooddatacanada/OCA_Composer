@@ -17,13 +17,14 @@ import DND_TYPES from './dnd/types';
 
 const findDescription = (formatText, attributeType) => {
   if (!formatText) return "";
-  if (attributeType?.includes("Date")) return formatCodeDateDescription[formatText] || "";
+  const normalized = String(formatText).replace(/\\"/g, '"');
+  if (attributeType?.includes("Date")) return formatCodeDateDescription[normalized] || "";
   if (attributeType?.includes("Numeric"))
-    return formatCodeNumericDescription[formatText] || "";
+    return formatCodeNumericDescription[normalized] || "";
   if (attributeType?.includes("Binary"))
-    return formatCodeBinaryDescription[formatText] || "";
-  if (attributeType?.includes("Text")) return formatCodeTextDescription[formatText] || "";
-  return formatText;
+    return formatCodeBinaryDescription[normalized] || "";
+  if (attributeType?.includes("Text")) return formatCodeTextDescription[normalized] || "";
+  return normalized;
 };
 
 const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLanguage, onEdit, onDelete, onReorder, indexInItems, onReorderPageItem }) => {

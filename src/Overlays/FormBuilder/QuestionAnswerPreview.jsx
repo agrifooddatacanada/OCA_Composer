@@ -87,15 +87,15 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
   
   const getFormatDescription = (formatRegex, type) => {
     if (!formatRegex) return '';
-    
+    const normalized = String(formatRegex).replace(/\\"/g, '"');
     if (type?.includes('DateTime')) {
-      return formatCodeDateDescription[formatRegex] || '';
+      return formatCodeDateDescription[normalized] || '';
     } else if (type?.includes('Numeric')) {
-      return formatCodeNumericDescription[formatRegex] || '';
+      return formatCodeNumericDescription[normalized] || '';
     } else if (type?.includes('Binary')) {
-      return formatCodeBinaryDescription[formatRegex] || '';
+      return formatCodeBinaryDescription[normalized] || '';
     } else if (type?.includes('Text')) {
-      return formatCodeTextDescription[formatRegex] || '';
+      return formatCodeTextDescription[normalized] || '';
     }
     return '';
   };

@@ -9,7 +9,7 @@ import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { getLangNameFromUICode } from "../utils/languageUtils";
+import { getLangNameFromUICode, getLangNameFromOCACode, getOCACodeFromLangName, getUICode } from "../utils/languageUtils";
 import i18next from "i18next";
 import {
   formatCodeBinaryDescription,
@@ -28,13 +28,15 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 
 const findDescription = (formatText, attributeType) => {
   if (!formatText) return "";
-  if (attributeType.includes("Date")) return formatCodeDateDescription[formatText] || "";
+  // Normalize escaped quotes (OCA often escapes "). This mirrors behavior in FormatRuleCellRender
+  const normalized = String(formatText).replace(/\\"/g, '"');
+  if (attributeType.includes("Date")) return formatCodeDateDescription[normalized] || "";
   if (attributeType.includes("Numeric"))
-    return formatCodeNumericDescription[formatText] || "";
+    return formatCodeNumericDescription[normalized] || "";
   if (attributeType.includes("Binary"))
-    return formatCodeBinaryDescription[formatText] || "";
-  if (attributeType.includes("Text")) return formatCodeTextDescription[formatText] || "";
-  return formatText;
+    return formatCodeBinaryDescription[normalized] || "";
+  if (attributeType.includes("Text")) return formatCodeTextDescription[normalized] || "";
+  return normalized;
 };
 
 const PLACEHOLDER_EDITABLE_TYPES = ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"];
@@ -100,6 +102,7 @@ const FormInformation = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
+  const initializationRef = useRef(false);
   
   // Use standard deletion handler
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORM_INFORMATION_OVERLAY);
@@ -113,14 +116,74 @@ const FormInformation = () => {
     filteredLanguages.unshift(removedLanguage[0]);
   }
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
-  const currentRows = lanAttributeRowData?.[currentLanguage] || [];
+  // Resolve current rows robustly: accept either language names (English) or OCA codes (eng)
+  const resolveRowsForLanguage = (lanData, langName) => {
+    if (!lanData || !langName) return [];
+    // direct lookup by language name
+    if (Array.isArray(lanData[langName])) return lanData[langName];
+    // try OCA alpha3 code for the language name (eng, fra)
+    const ocaCode = (getOCACodeFromLangName && getOCACodeFromLangName(langName)) || null;
+    if (ocaCode && Array.isArray(lanData[ocaCode])) return lanData[ocaCode];
+    // try UI code (en, fr)
+    const uiCode = getUICode();
+    const uiLangName = getLangNameFromUICode(uiCode);
+    if (uiLangName && Array.isArray(lanData[uiLangName])) return lanData[uiLangName];
+    return [];
+  };
+
+  const currentRows = resolveRowsForLanguage(lanAttributeRowData, currentLanguage);
   const primaryLanguage = languages?.[0];
+
+  // Normalize any lan/form placeholder keys that use OCA 3-letter codes (e.g., 'eng') into UI language names (e.g., 'English')
+  useEffect(() => {
+    const hasOcaKeys = Object.keys(lanAttributeRowData || {}).some(k => /^[a-z]{3}$/.test(k));
+    const hasOcaPlaceholders = Object.keys(formPlaceholdersByLanguage || {}).some(k => /^[a-z]{3}$/.test(k));
+    if (!hasOcaKeys && !hasOcaPlaceholders) return;
+
+    const normalizedLan = {};
+    Object.entries(lanAttributeRowData || {}).forEach(([k, v]) => {
+      const name = getLangNameFromOCACode(k) || getLangNameFromUICode(k) || k;
+      normalizedLan[name] = v;
+    });
+
+    const normalizedPlaceholders = {};
+    Object.entries(formPlaceholdersByLanguage || {}).forEach(([k, v]) => {
+      const name = getLangNameFromOCACode(k) || getLangNameFromUICode(k) || k;
+      normalizedPlaceholders[name] = v;
+    });
+
+    console.log('[FormInformation] Normalizing OCA language keys to names:', { normalizedLanKeys: Object.keys(normalizedLan), normalizedPlaceholderKeys: Object.keys(normalizedPlaceholders) });
+    updateSchemaState(currentSchemaId, { lanAttributeRowData: normalizedLan, formPlaceholdersByLanguage: normalizedPlaceholders });
+    // also update grid immediately (resolve robustly) and refresh cells so Format column updates
+    try {
+      if (gridRef.current?.api) {
+        gridRef.current.api.setRowData(resolveRowsForLanguage(normalizedLan, currentLanguage));
+        gridRef.current.api.refreshCells({ force: true });
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [lanAttributeRowData, formPlaceholdersByLanguage, currentLanguage, currentSchemaId, updateSchemaState]);
 
   // Ensure lanAttributeRowData has rows for all languages (import or fresh init)
   useEffect(() => {
-    // If we already have rows for the current language, do nothing
-    if (currentRows && currentRows.length > 0) return;
+    // Prevent repeated initialization runs
+    if (initializationRef.current) return;
+
+    // If we already have rows for every language, do nothing
+    const hasAllLanguages = languages && languages.length > 0 &&
+      languages.every((lang) => Array.isArray(lanAttributeRowData?.[lang]) && lanAttributeRowData[lang].length > 0);
+    if (hasAllLanguages) return;
     if (!attributesList || attributesList.length === 0) return;
+
+    console.log('[FormInformation] Initializing rows:', {
+      attributesList: attributesList.length,
+      formPlaceholdersByLanguage,
+      currentLanguage,
+      languages
+    });
+
+    console.log('[FormInformation] currentSchemaId at init:', currentSchemaId);
 
     // Build base rows per language from attributes + FormInformationRowData + placeholders
     const newLan = { ...(lanAttributeRowData || {}) };
@@ -171,11 +234,52 @@ const FormInformation = () => {
     });
 
     // Only update if we actually added data
-    const didAdd = languages.some((lang) => !(lanAttributeRowData?.[lang]?.length > 0) && newLan[lang]?.length > 0);
-    if (didAdd) {
-      updateSchemaState(currentSchemaId, { lanAttributeRowData: newLan });
+    // If any language is missing and we built rows for it, update the schema state
+    const didAdd = languages.some(
+      (lang) => Array.isArray(newLan[lang]) && newLan[lang].length > 0 && !(Array.isArray(lanAttributeRowData?.[lang]) && lanAttributeRowData[lang].length > 0)
+    );
+
+    // Debug: show existing vs new lan data sizes for troubleshooting
+    try {
+      console.log('[FormInformation] lanAttributeRowData sizes before update:', languages.map(l => ({ lang: l, existing: (lanAttributeRowData?.[l]?.length||0), built: (newLan[l]?.length||0) })));
+    } catch (e) {
+      // ignore
     }
-  }, [attributesList, attributeRowData, currentRows, languages, FormInformationRowData, formPlaceholdersByLanguage, lanAttributeRowData, updateSchemaState, currentSchemaId]);
+
+    // Only perform the update once per component mount to avoid loops
+    if (didAdd && !initializationRef.current) {
+      initializationRef.current = true;
+      console.log('[FormInformation] performing initial lanAttributeRowData update for schema', currentSchemaId);
+      updateSchemaState(currentSchemaId, { lanAttributeRowData: newLan });
+      // Immediately update grid so UI shows rows even if context update hasn't propagated
+      try {
+        if (gridRef.current?.api) {
+          gridRef.current.api.setRowData(resolveRowsForLanguage(newLan, currentLanguage));
+        }
+      } catch (e) {
+        // ignore grid errors during initialization
+      }
+
+      // Check shortly after to confirm the update persisted in context
+      setTimeout(() => {
+        try {
+          const stateAfter = getSchemaState(currentSchemaId);
+          console.log('[FormInformation] lanAttributeRowData after update (context):', stateAfter?.lanAttributeRowData || {});
+          console.log('[FormInformation] attributeFormats after update (context):', stateAfter?.attributeFormats || {});
+          // If attributeFormats exist, force a refresh of cells so Format column renders descriptions
+          try {
+            if (gridRef.current?.api && stateAfter?.attributeFormats && Object.keys(stateAfter.attributeFormats).length > 0) {
+              gridRef.current.api.refreshCells({ force: true });
+            }
+          } catch (e) {
+            // ignore
+          }
+        } catch (e) {
+          console.error('[FormInformation] error reading schema state after update', e);
+        }
+      }, 50);
+    }
+  }, [attributesList, attributeRowData, currentLanguage, languages, FormInformationRowData, formPlaceholdersByLanguage, lanAttributeRowData, updateSchemaState, currentSchemaId]);
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {
@@ -187,44 +291,41 @@ const FormInformation = () => {
 
   useEffect(() => {
     setLanAttributeRowData((prevLanData) => {
-      const newLan = JSON.parse(JSON.stringify(prevLanData || {}));
+      const prev = prevLanData || {};
+      const newLan = JSON.parse(JSON.stringify(prev));
       languages.forEach((language) => {
         if (newLan[language]) {
           const langPlaceholders = formPlaceholdersByLanguage?.[language] || {};
           newLan[language] = newLan[language].map((item, idx) => {
             const attr = item.Attribute;
             const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
-            
+
             if (attrType.includes("Binary") || attrType.includes("Boolean")) {
               return {
                 ...item,
                 Placeholder: ""
               };
             }
-            
-            // For DateTime types, get default placeholder from format rule
+
             let dateTimeDefaultPlaceholder = "";
             const isDateTimeType = attrType === "DateTime" || attrType === "Array[DateTime]";
             if (isDateTimeType) {
               const formatRule = formatRuleRowData.find((rule) => rule.Attribute === attr);
               if (formatRule?.FormatText) {
-                const formatDescription =
-                  formatCodeDateDescription[formatRule.FormatText] || "";
+                const formatDescription = formatCodeDateDescription[formatRule.FormatText] || "";
                 if (formatDescription) {
                   const config = getDateTimePickerConfig(formatDescription);
                   dateTimeDefaultPlaceholder = config.displayFormat;
                 }
               }
             }
-            
-            // For Numeric types, get default placeholder from format rule
+
             let numericDefaultPlaceholder = "";
             const isNumericType = attrType === "Numeric" || attrType === "Array[Numeric]";
             if (isNumericType) {
               const formatRule = formatRuleRowData.find((rule) => rule.Attribute === attr);
               if (formatRule?.FormatText) {
-                const formatDescription =
-                  formatCodeNumericDescription[formatRule.FormatText] || "";
+                const formatDescription = formatCodeNumericDescription[formatRule.FormatText] || "";
                 if (formatDescription) {
                   switch (formatDescription) {
                     case "any integer or decimal number, may begin with + or -":
@@ -242,19 +343,15 @@ const FormInformation = () => {
             }
 
             let basePlaceholder = langPlaceholders[attr] || "";
-
             if (!basePlaceholder) {
               const basePlaceholderValue = FormInformationRowData?.[idx]?.Placeholder;
-              if (
-                typeof basePlaceholderValue === "object" &&
-                basePlaceholderValue !== null
-              ) {
+              if (typeof basePlaceholderValue === "object" && basePlaceholderValue !== null) {
                 basePlaceholder = basePlaceholderValue[language] || "";
               } else {
                 basePlaceholder = basePlaceholderValue || "";
               }
             }
-            
+
             let finalPlaceholder = item.Placeholder;
             if (!finalPlaceholder) {
               if (basePlaceholder) {
@@ -267,7 +364,8 @@ const FormInformation = () => {
                 finalPlaceholder = "";
               }
             }
-            
+
+
             return {
               ...item,
               Placeholder: finalPlaceholder
@@ -275,6 +373,25 @@ const FormInformation = () => {
           });
         }
       });
+
+      // Only return a new object if something actually changed to avoid rerender loops
+      try {
+        if (JSON.stringify(prev) === JSON.stringify(newLan)) {
+          return prevLanData; // unchanged
+        }
+      } catch (e) {
+        // fallback: return newLan if compare fails
+      }
+
+      // After we update lanAttributeRowData, schedule a refresh of grid cell renderers
+      setTimeout(() => {
+        try {
+          if (gridRef.current?.api) gridRef.current.api.refreshCells({ force: true });
+        } catch (e) {
+          // ignore
+        }
+      }, 40);
+
       return newLan;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -642,6 +759,13 @@ const FormInformation = () => {
     // Use standard deletion handler
     deleteHandler();
   }, [deleteHandler, setFormBuilderPages]);
+
+  // Ensure grid row data updates when lanAttributeRowData changes
+  useEffect(() => {
+    if (gridRef.current?.api) {
+      gridRef.current.api.setRowData(resolveRowsForLanguage(lanAttributeRowData, currentLanguage));
+    }
+  }, [lanAttributeRowData, currentLanguage]);
 
   return (
     <BackNextSkeleton

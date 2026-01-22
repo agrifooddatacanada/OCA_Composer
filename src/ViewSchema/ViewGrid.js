@@ -295,7 +295,7 @@ export default function ViewGrid({
             },
             cellRenderer: CheckboxRenderer
           });
-        } else if (feature === FIELD_CONFORMANCE_OVERLAY) {
+        } else if (overlayKey === FIELD_CONFORMANCE_OVERLAY) {
           // Handle Required column
           predefinedColumns.push({
             field: "Required",
@@ -303,11 +303,11 @@ export default function ViewGrid({
             autoHeight: true,
             headerComponent: SelectedFeatureHeader,
             headerComponentParams: {
-              feature
+              feature: overlayKey
             },
             cellRenderer: CheckboxRenderer
           });
-        } else if (feature === FIELD_FORMAT_OVERLAY) {
+        } else if (overlayKey === FIELD_FORMAT_OVERLAY) {
           // Handle Format Rule column
           predefinedColumns.push({
             field: "Format Rule",
@@ -315,12 +315,12 @@ export default function ViewGrid({
             autoHeight: true,
             headerComponent: SelectedFeatureHeader,
             headerComponentParams: {
-              feature
+              feature: overlayKey
             },
             valueFormatter: (params) =>
               getFormatRuleDescription(params.data.Type, params.value) || params.value
           });
-        } else if (feature === FIELD_UNIT_FRAMING_OVERLAY) {
+        } else if (overlayKey === FIELD_UNIT_FRAMING_OVERLAY) {
           let helpText = "";
           if (unitFramingOverlay?.framing_metadata) {
             const helpTextElements = Object.entries(
@@ -344,7 +344,7 @@ export default function ViewGrid({
               helpText
             }
           });
-        } else if (feature === FIELD_FORM_INFORMATION_OVERLAY) {
+        } else if (overlayKey === FIELD_FORM_INFORMATION_OVERLAY) {
           predefinedColumns.push({
             field: "Add Form Information",
             headerName: t("Form"),
@@ -359,7 +359,7 @@ export default function ViewGrid({
           });
         } else {
           // Map overlay feature names to actual data fields when needed
-          const normalized = (feature || "").toString().toLowerCase();
+          const normalized = (overlayKey || "").toString().toLowerCase();
           const isFormat =
             normalized === "format rules" ||
             normalized === "format rule" ||
@@ -372,8 +372,8 @@ export default function ViewGrid({
             ? "Format Rule"
             : isRequired
               ? "Required"
-              : feature;
-          const useCheckbox = isRequired || feature === "Make selected entries required";
+              : overlayKey;
+          const useCheckbox = isRequired || overlayKey === "Make selected entries required";
 
           predefinedColumns.push({
             field: mappedField,
@@ -381,7 +381,7 @@ export default function ViewGrid({
             autoHeight: true,
             headerComponent: SelectedFeatureHeader,
             headerComponentParams: {
-              feature
+              feature: overlayKey
             },
             cellRenderer: useCheckbox ? CheckboxRenderer : null
           });
@@ -442,11 +442,21 @@ export default function ViewGrid({
           // Get format rule from object
           item["Format Rule"] = attributeFormats[item.Attribute] || "";
         }
+        
+        // Add Form Information checkbox data
+        if (overlay[FIELD_FORM_INFORMATION_OVERLAY]?.selected) {
+          // Check if this attribute has a placeholder defined in any language
+          const formPlaceholders = schemaState?.formPlaceholdersByLanguage || {};
+          const hasPlaceholder = Object.values(formPlaceholders).some(
+            langPlaceholders => langPlaceholders && langPlaceholders[item.Attribute]
+          );
+          item["Add Form Information"] = hasPlaceholder;
+        }
       }
     });
 
     setRowData(newRowData);
-  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, currentSchemaId, updateSchemaState]);
+  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, currentSchemaId, updateSchemaState]);
 
   return (
     <div className="ag-theme-balham" style={{ width: "100%" }}>

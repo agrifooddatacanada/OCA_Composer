@@ -8,10 +8,12 @@ import {
   FIELD_UNIT_FRAMING_OVERLAY,
   FIELD_RANGE_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  FIELD_FORM_INFORMATION_OVERLAY,
+  ADC,
   TYPE_CHILD_SCHEMA,
   TYPE_ARRAY_CHILD_SCHEMA
 } from "../constants/constants";
-import { getLangNameFromUICode, LanguageConstants } from "./languageUtils";
+import { getLangNameFromUICode, getLangNameFromOCACode, LanguageConstants } from "./languageUtils";
 
 /**
  * OCA Package Parser Utility
@@ -158,10 +160,14 @@ export class OCAParser {
     // Check if ADC extensions exist
     const hasUnitFramingExtension = !!normalizedPackage?.extensions?.adc?.[captureBaseId]?.overlays?.unit_framing;
     const hasRangeExtension = !!normalizedPackage?.extensions?.adc?.[captureBaseId]?.overlays?.range;
+    const formOverlayData = normalizedPackage?.extensions?.adc?.[captureBaseId]?.overlays?.form_overlay || 
+                           normalizedPackage?.extensions?.adc?.[captureBaseId]?.overlays?.form;
+    const hasFormExtension = !!formOverlayData && (Array.isArray(formOverlayData) ? formOverlayData.length > 0 : !!formOverlayData.form_overlays);
     const overlaySelections = this._buildOverlaySelections(
       schemaData.overlays, 
       hasUnitFramingExtension,
-      hasRangeExtension
+      hasRangeExtension,
+      hasFormExtension
     );
 
     // Build localized metadata from meta overlays
@@ -352,9 +358,9 @@ export class OCAParser {
       const labels = labelsByLang[langCode] || {};
       const descriptions = descriptionsByLang[langCode] || {};
       
-      // Convert 2-letter OCA code (e.g., "en") to schema language name (e.g., "English")
-      // This ensures lanAttributeRowData keys match what LanguageDetails expects
-      const languageName = getLangNameFromUICode(langCode) || langCode;
+      // Convert OCA code (e.g., "eng") to schema language name (e.g., "English")
+      // Prefer OCA->Name mapping, then UI code mapping, then fallback to raw code
+      const languageName = getLangNameFromOCACode(langCode) || getLangNameFromUICode(langCode) || langCode;
       
       lanAttributeRowData[languageName] = attributesWithLists.map((attr) => ({
         Attribute: attr.Attribute,
@@ -447,6 +453,9 @@ export class OCAParser {
     const dataStandardsData = [];
     const attributeFramingData = [];
 
+    // Parse form overlay placeholders (ADC extension)
+    const formPlaceholders = this._parseFormOverlay(ocaPackage, schemaId);
+
     return {
       characterEncodingData,
       attributeFormats,
@@ -455,8 +464,85 @@ export class OCAParser {
       attributeRanges,
       unitData,
       unitFramedData,
-      attributeFramingData
+      attributeFramingData,
+      formPlaceholdersByLanguage: formPlaceholders
     };
+  }
+
+  /**
+   * Parse form overlay placeholders from ADC extensions
+   * @private
+   * 
+   * Form overlay structure in ADC extensions:
+   * extensions.adc[captureBaseId].overlays.form = [
+   *   {
+   *     language: "eng",
+   *     interaction: [{
+   *       arguments: {
+   *         attributeName: { placeholder: "text" },
+   *         ...
+   *       }
+   *     }]
+   *   },
+   *   ...
+   * ]
+   * 
+   * Returns: { UILanguageName: { attributeName: "placeholder text", ... }, ... }
+   */
+  static _parseFormOverlay(ocaPackage, schemaId) {
+    const formPlaceholdersByLanguage = {};
+    
+    if (!ocaPackage?.extensions?.adc?.[schemaId]?.overlays) {
+      return formPlaceholdersByLanguage;
+    }
+
+    const formOverlayData = ocaPackage.extensions.adc[schemaId].overlays.form_overlay || 
+                           ocaPackage.extensions.adc[schemaId].overlays.form;
+    
+    const formOverlayArray = Array.isArray(formOverlayData)
+      ? formOverlayData
+      : formOverlayData?.form_overlays || [];
+
+    if (!Array.isArray(formOverlayArray) || formOverlayArray.length === 0) {
+      return formPlaceholdersByLanguage;
+    }
+
+    // Extract placeholders from interaction.arguments
+    formOverlayArray.forEach((overlay) => {
+      const langCode = overlay.language || "eng";  // 3-letter ISO code
+      // Prefer OCA->language name conversion, then UI code mapping, then fallback
+      const langName = getLangNameFromOCACode(langCode) || getLangNameFromUICode(langCode) || langCode;
+      
+      if (!overlay.interaction?.[0]?.arguments) {
+        return;
+      }
+
+      if (!formPlaceholdersByLanguage[langName]) {
+        formPlaceholdersByLanguage[langName] = {};
+      }
+
+      // overlay.interaction[0].arguments = { attributeName: { placeholder: "text" }, ... }
+      Object.entries(overlay.interaction[0].arguments).forEach(([attr, argData]) => {
+        if (argData?.placeholder) {
+          const placeholder = argData.placeholder;
+          
+          // Placeholder can be a string or object
+          if (typeof placeholder === "string") {
+            formPlaceholdersByLanguage[langName][attr] = placeholder;
+          } else if (typeof placeholder === "object" && placeholder !== null) {
+            // If object, try to find matching language or use first available
+            const placeholderValue = placeholder[langCode] || 
+                                    placeholder[langName] || 
+                                    Object.values(placeholder)[0] || "";
+            if (placeholderValue) {
+              formPlaceholdersByLanguage[langName][attr] = placeholderValue;
+            }
+          }
+        }
+      });
+    });
+
+    return formPlaceholdersByLanguage;
   }
 
   /**
@@ -515,7 +601,7 @@ export class OCAParser {
    * Build overlay selections based on present overlays
    * @private
    */
-  static _buildOverlaySelections(overlays, hasUnitFramingExtension = false, hasRangeExtension = false) {
+  static _buildOverlaySelections(overlays, hasUnitFramingExtension = false, hasRangeExtension = false, hasFormExtension = false) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
@@ -554,6 +640,10 @@ export class OCAParser {
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { 
         feature: "Attribute Framing", 
         selected: false 
+      },
+      [FIELD_FORM_INFORMATION_OVERLAY]: { 
+        feature: "Form Information", 
+        selected: hasFormExtension
       }
     };
   }

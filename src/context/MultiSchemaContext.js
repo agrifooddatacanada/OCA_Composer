@@ -129,6 +129,9 @@ const createDefaultSchemaState = () => ({
   selectedOverlay: "",
   // Language-specific data
   lanAttributeRowData: {},
+  // Form Information overlay data (per-schema)
+  FormInformationRowData: [],
+  formPlaceholdersByLanguage: {},  // Placeholder text by language for form fields (parsed from form overlay)
   // Overlay display data (populated during initialization)
   characterEncodingData: {},  // Object mapping attribute name to encoding
   attributeFormats: {},  // Object mapping attribute name to format rule string
@@ -309,7 +312,8 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       return attributes.map(attr => ({
         Attribute: attr.Attribute,
         Type: attr.Type,
-        "Format Rule": attributeFormats[attr.Attribute] || ""
+        "Format Rule": attributeFormats[attr.Attribute] || "",
+        FormatText: attributeFormats[attr.Attribute] || "" // legacy key used by some components
       }));
     },
     [getSchemaState, currentSchemaId]

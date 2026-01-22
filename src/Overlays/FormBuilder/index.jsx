@@ -1,5 +1,6 @@
-import React, { useCallback, useContext, useState, useEffect } from "react";
+import React, { useCallback, useContext, useState, useEffect, useMemo } from "react";
 import { Context } from "../../App";
+import { useMultiSchema } from "../../context/MultiSchemaContext";
 import BackNextSkeleton from "../../components/BackNextSkeleton";
 import { Box, Button, Typography, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
@@ -24,22 +25,52 @@ import { moveQuestionToPage, moveQuestionToSection, moveSectionBetweenPages, reo
 const FormBuilder = () => {
   const { t } = useTranslation();
   const {
-    FormInformationRowData,
-    setFormInformationRowData,
     formBuilderPages,
     setFormBuilderPages,
     setCurrentPage,
-    attributesList,
     setSelectedOverlay,
     languages,
-    formatRuleRowData,
-    attributeRowData,
-    lanAttributeRowData,
-    setLanAttributeRowData,
     savedEntryCodes,
     attributesWithLists,
     schemaDescription
   } = useContext(Context);
+
+  // Get data from MultiSchemaContext
+  const {
+    getCurrentSchemaId,
+    getSchemaState,
+    updateSchemaState,
+    getAttributesList,
+    getFormatRuleData
+  } = useMultiSchema();
+  const currentSchemaId = getCurrentSchemaId();
+  const schemaState = getSchemaState(currentSchemaId);
+  
+  const attributesList = useMemo(
+    () => getAttributesList(),
+    [getAttributesList, currentSchemaId]
+  );
+  const formatRuleRowData = useMemo(
+    () => getFormatRuleData(),
+    [getFormatRuleData, currentSchemaId]
+  );
+  const attributeRowData = schemaState?.attributes || [];
+  const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
+  const FormInformationRowData = schemaState?.FormInformationRowData || [];
+  
+  const setFormInformationRowData = useCallback((updater) => {
+    const newData = typeof updater === 'function'
+      ? updater(FormInformationRowData)
+      : updater;
+    updateSchemaState(currentSchemaId, { FormInformationRowData: newData });
+  }, [FormInformationRowData, updateSchemaState, currentSchemaId]);
+
+  const setLanAttributeRowData = useCallback((updater) => {
+    const newData = typeof updater === 'function'
+      ? updater(lanAttributeRowData)
+      : updater;
+    updateSchemaState(currentSchemaId, { lanAttributeRowData: newData });
+  }, [lanAttributeRowData, updateSchemaState, currentSchemaId]);
 
   
   const languageIndex = languages.findIndex(

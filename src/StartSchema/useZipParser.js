@@ -48,8 +48,7 @@ const useZipParser = () => {
     setUnitRowData,
     setAttributeFramingRowData,
     setSchemaMode,
-    setFormBuilderPages,
-    setFormPlaceholdersByLanguage
+    setFormBuilderPages
   } = useContext(Context);
 
   const processLanguages = (languages) => {
@@ -123,7 +122,6 @@ const useZipParser = () => {
     let attributesWithListType = [];
     const newUnitFramingRowData = [];
     const newRangeRowData = [];
-    const newFormPlaceholdersByLanguage = {};
     const newAttributeFramingRowData = [];
 
     if (isMultiLevelSchema(root?.attributes || {})) {
@@ -543,85 +541,8 @@ const useZipParser = () => {
       setAttributeRowData(newAttributeRowData);
     }
 
-    // Extract placeholders from form overlay interaction arguments
-    if (formOverlayForConversion && Array.isArray(formOverlayForConversion)) {
-      const interactionArgs = {};
-      formOverlayForConversion.forEach((overlay) => {
-        const overlayLang = overlay.language || "eng";
-        if (overlay.interaction?.[0]?.arguments) {
-          if (!interactionArgs[overlayLang]) {
-            interactionArgs[overlayLang] = {};
-          }
-          Object.assign(interactionArgs[overlayLang], overlay.interaction[0].arguments);
-        }
-      });
-
-      languageList.forEach((lang) => {
-        const uiLanguageName = codesToLanguages[lang];
-        if (!uiLanguageName || !newLangAttributeRowData[uiLanguageName]) return;
-
-        const langCode3 =
-          languageNameToAlpha3Codes[uiLanguageName?.toLowerCase()] || lang;
-
-        const overlayLangKeys = Object.keys(interactionArgs);
-
-        if (!newFormPlaceholdersByLanguage[uiLanguageName]) {
-          newFormPlaceholdersByLanguage[uiLanguageName] = {};
-        }
-
-        newLangAttributeRowData[uiLanguageName] = newLangAttributeRowData[
-          uiLanguageName
-        ].map((item) => {
-          const attr = item.Attribute;
-          let placeholderValue = "";
-
-          if (interactionArgs[langCode3]?.[attr]?.placeholder !== undefined) {
-            const { placeholder } = interactionArgs[langCode3][attr];
-
-            if (typeof placeholder === "string" && placeholder) {
-              placeholderValue = placeholder;
-            } else if (typeof placeholder === "object" && placeholder !== null) {
-              placeholderValue = placeholder[langCode3] || placeholder[lang] || "";
-              if (!placeholderValue) {
-                const firstKey = Object.keys(placeholder)[0];
-                placeholderValue = firstKey ? placeholder[firstKey] : "";
-              }
-            }
-          }
-
-          if (!placeholderValue) {
-            for (const overlayLangKey of overlayLangKeys) {
-              if (interactionArgs[overlayLangKey]?.[attr]?.placeholder !== undefined) {
-                const { placeholder } = interactionArgs[overlayLangKey][attr];
-
-                if (typeof placeholder === "string" && placeholder) {
-                  placeholderValue = placeholder;
-                  break;
-                } else if (typeof placeholder === "object" && placeholder !== null) {
-                  placeholderValue = placeholder[langCode3] || placeholder[lang] || "";
-                  if (placeholderValue) break;
-                  const firstKey = Object.keys(placeholder)[0];
-                  if (firstKey) {
-                    placeholderValue = placeholder[firstKey];
-                    break;
-                  }
-                }
-              }
-            }
-          }
-
-          if (placeholderValue) {
-            newFormPlaceholdersByLanguage[uiLanguageName][attr] = placeholderValue;
-          }
-
-          return {
-            ...item
-          };
-        });
-      });
-    } else {
-      // No form overlay present; leave formPlaceholdersByLanguage empty
-    }
+    // Form overlay placeholders are now parsed by OCAParser and managed by MultiSchemaContext
+    // Removed: placeholder extraction code (lines 545-624)
 
     // Removed: setFormatRuleRowData, setCardinalityData, setRangeRowData calls
     // These are now managed by MultiSchemaContext during OCA package import
@@ -629,9 +550,12 @@ const useZipParser = () => {
     setCharacterEncodingRowData(newCharacterEncodingRowData);
 
     setLanAttributeRowData(newLangAttributeRowData);
-    setFormPlaceholdersByLanguage(newFormPlaceholdersByLanguage);
+    // Removed: setFormPlaceholdersByLanguage - now parsed by OCAParser and managed by MultiSchemaContext
 
     // Convert form overlay to form builder pages format
+    // Note: convertOverlayToFormBuilder expects placeholders but they're now in MultiSchemaContext
+    // Pass empty object for now - form builder will get placeholders from MultiSchemaContext
+    const newFormPlaceholdersByLanguage = {};
     const processedLanguages = languageList.map((lang) => codesToLanguages[lang] || lang);
     if (formOverlayForConversion && processedLanguages && processedLanguages.length > 0) {
       try {

@@ -35,13 +35,15 @@ const BOOLEAN_VALUE_PAIRS = [
 
 const findDescription = (formatText, attributeType) => {
   if (!formatText) return "";
-  if (attributeType.includes("Date")) return formatCodeDateDescription[formatText] || "";
+  // Normalize escaped quotes (OCA often escapes "). Match logic in FormatRuleCellRender
+  const normalized = String(formatText).replace(/\\"/g, '"');
+  if (attributeType.includes("Date")) return formatCodeDateDescription[normalized] || "";
   if (attributeType.includes("Numeric"))
-    return formatCodeNumericDescription[formatText] || "";
+    return formatCodeNumericDescription[normalized] || "";
   if (attributeType.includes("Binary"))
-    return formatCodeBinaryDescription[formatText] || "";
-  if (attributeType.includes("Text")) return formatCodeTextDescription[formatText] || "";
-  return formatText;
+    return formatCodeBinaryDescription[normalized] || "";
+  if (attributeType.includes("Text")) return formatCodeTextDescription[normalized] || "";
+  return normalized;
 };
 
 const QUESTION_TYPES = { TEXT: 'text', MULTIPLE_CHOICE: 'multiple_choice', CHECKBOX: 'checkbox', RADIO: 'radio', DROPDOWN: 'dropdown', NUMBER: 'number', EMAIL: 'email', DATE: 'date', TEXTAREA: 'textarea' };
