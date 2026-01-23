@@ -16,6 +16,7 @@ import {
 } from "../../../constants/constants";
 import { CustomPalette } from "../../../constants/customPalette";
 import { getDateTimePickerConfig } from "../utils/getDateTimePickerConfig";
+import { getFormatRuleDescription } from "../../../utils/helpers";
 
 // Boolean value pairs for form inputs
 const BOOLEAN_VALUE_PAIRS = [
@@ -34,16 +35,7 @@ const BOOLEAN_VALUE_PAIRS = [
 ];
 
 const findDescription = (formatText, attributeType) => {
-  if (!formatText) return "";
-  // Normalize escaped quotes (OCA often escapes "). Match logic in FormatRuleCellRender
-  const normalized = String(formatText).replace(/\\"/g, '"');
-  if (attributeType.includes("Date")) return formatCodeDateDescription[normalized] || "";
-  if (attributeType.includes("Numeric"))
-    return formatCodeNumericDescription[normalized] || "";
-  if (attributeType.includes("Binary"))
-    return formatCodeBinaryDescription[normalized] || "";
-  if (attributeType.includes("Text")) return formatCodeTextDescription[normalized] || "";
-  return normalized;
+  return getFormatRuleDescription(attributeType, formatText) || "";
 };
 
 const QUESTION_TYPES = { TEXT: 'text', MULTIPLE_CHOICE: 'multiple_choice', CHECKBOX: 'checkbox', RADIO: 'radio', DROPDOWN: 'dropdown', NUMBER: 'number', EMAIL: 'email', DATE: 'date', TEXTAREA: 'textarea' };

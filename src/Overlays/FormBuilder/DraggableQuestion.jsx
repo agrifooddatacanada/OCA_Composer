@@ -15,16 +15,10 @@ import getMultilingualText from "./utils/getMultilingualText";
 import { textWrapStyle } from "../../constants/styles";
 import DND_TYPES from './dnd/types';
 
+import { getFormatRuleDescription } from "../../utils/helpers";
+
 const findDescription = (formatText, attributeType) => {
-  if (!formatText) return "";
-  const normalized = String(formatText).replace(/\\"/g, '"');
-  if (attributeType?.includes("Date")) return formatCodeDateDescription[normalized] || "";
-  if (attributeType?.includes("Numeric"))
-    return formatCodeNumericDescription[normalized] || "";
-  if (attributeType?.includes("Binary"))
-    return formatCodeBinaryDescription[normalized] || "";
-  if (attributeType?.includes("Text")) return formatCodeTextDescription[normalized] || "";
-  return normalized;
+  return getFormatRuleDescription(attributeType, formatText) || "";
 };
 
 const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLanguage, onEdit, onDelete, onReorder, indexInItems, onReorderPageItem }) => {

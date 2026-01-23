@@ -25,6 +25,7 @@ import {
 } from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
 import { getLangNameFromUICode } from "../../utils/languageUtils";
+import { getFormatRuleDescription } from "../../utils/helpers";
 import i18next from "i18next";
 import {
   formatCodeTextDescription,
@@ -86,18 +87,7 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
   const { attributeType, formatText, options = [], placeholder, title, inputType } = question;
   
   const getFormatDescription = (formatRegex, type) => {
-    if (!formatRegex) return '';
-    const normalized = String(formatRegex).replace(/\\"/g, '"');
-    if (type?.includes('DateTime')) {
-      return formatCodeDateDescription[normalized] || '';
-    } else if (type?.includes('Numeric')) {
-      return formatCodeNumericDescription[normalized] || '';
-    } else if (type?.includes('Binary')) {
-      return formatCodeBinaryDescription[normalized] || '';
-    } else if (type?.includes('Text')) {
-      return formatCodeTextDescription[normalized] || '';
-    }
-    return '';
+    return getFormatRuleDescription(type, formatRegex) || '';
   };
   
   const formatDescription = getFormatDescription(formatText, attributeType);
