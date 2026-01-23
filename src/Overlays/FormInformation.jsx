@@ -152,7 +152,6 @@ const FormInformation = () => {
       normalizedPlaceholders[name] = v;
     });
 
-    console.log('[FormInformation] Normalizing OCA language keys to names:', { normalizedLanKeys: Object.keys(normalizedLan), normalizedPlaceholderKeys: Object.keys(normalizedPlaceholders) });
     updateSchemaState(currentSchemaId, { lanAttributeRowData: normalizedLan, formPlaceholdersByLanguage: normalizedPlaceholders });
     // also update grid immediately (resolve robustly) and refresh cells so Format column updates
     try {
@@ -176,14 +175,7 @@ const FormInformation = () => {
     if (hasAllLanguages) return;
     if (!attributesList || attributesList.length === 0) return;
 
-    console.log('[FormInformation] Initializing rows:', {
-      attributesList: attributesList.length,
-      formPlaceholdersByLanguage,
-      currentLanguage,
-      languages
-    });
 
-    console.log('[FormInformation] currentSchemaId at init:', currentSchemaId);
 
     // Build base rows per language from attributes + FormInformationRowData + placeholders
     const newLan = { ...(lanAttributeRowData || {}) };
@@ -240,16 +232,11 @@ const FormInformation = () => {
     );
 
     // Debug: show existing vs new lan data sizes for troubleshooting
-    try {
-      console.log('[FormInformation] lanAttributeRowData sizes before update:', languages.map(l => ({ lang: l, existing: (lanAttributeRowData?.[l]?.length||0), built: (newLan[l]?.length||0) })));
-    } catch (e) {
-      // ignore
-    }
+
 
     // Only perform the update once per component mount to avoid loops
     if (didAdd && !initializationRef.current) {
       initializationRef.current = true;
-      console.log('[FormInformation] performing initial lanAttributeRowData update for schema', currentSchemaId);
       updateSchemaState(currentSchemaId, { lanAttributeRowData: newLan });
       // Immediately update grid so UI shows rows even if context update hasn't propagated
       try {
@@ -264,8 +251,6 @@ const FormInformation = () => {
       setTimeout(() => {
         try {
           const stateAfter = getSchemaState(currentSchemaId);
-          console.log('[FormInformation] lanAttributeRowData after update (context):', stateAfter?.lanAttributeRowData || {});
-          console.log('[FormInformation] attributeFormats after update (context):', stateAfter?.attributeFormats || {});
           // If attributeFormats exist, force a refresh of cells so Format column renders descriptions
           try {
             if (gridRef.current?.api && stateAfter?.attributeFormats && Object.keys(stateAfter.attributeFormats).length > 0) {

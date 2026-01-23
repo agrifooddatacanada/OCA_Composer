@@ -208,18 +208,12 @@ const UserSelection = () => {
 
         // Removing any escape characters for " and '
         overlayData1 = Object.keys(informationOverlayData1).reduce((acc, key) => {
-          acc[key] = informationOverlayData1[key]
-            // eslint-disable-next-line quotes
-            .replace(/\\"/g, '"')
-            .replace(/\\'/g, "'");
+          acc[key] = normalizeEscapedQuotes(informationOverlayData1[key]);
           return acc;
         }, {});
 
         overlayData2 = Object.keys(informationOverlayData2).reduce((acc, key) => {
-          acc[key] = informationOverlayData2[key]
-            // eslint-disable-next-line quotes
-            .replace(/\\"/g, '"')
-            .replace(/\\'/g, "'");
+          acc[key] = normalizeEscapedQuotes(informationOverlayData2[key]);
           return acc;
         }, {});
       } else {
@@ -706,18 +700,12 @@ const UserSelection = () => {
     if (key.includes(INFORMATION)) {
       // Removing any escape characters for " and '
       const parsedValue1 = Object.keys(value1).reduce((acc, key) => {
-        acc[key] = value1[key]
-          // eslint-disable-next-line quotes
-          .replace(/\\"/g, '"')
-          .replace(/\\'/g, "'");
+        acc[key] = normalizeEscapedQuotes(value1[key]);
         return acc;
       }, {});
 
       const parsedValue2 = Object.keys(value2).reduce((acc, key) => {
-        acc[key] = value2[key]
-          // eslint-disable-next-line quotes
-          .replace(/\\"/g, '"')
-          .replace(/\\'/g, "'");
+        acc[key] = normalizeEscapedQuotes(value2[key]);
         return acc;
       }, {});
 

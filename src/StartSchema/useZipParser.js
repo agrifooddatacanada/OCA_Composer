@@ -5,6 +5,7 @@ import {
   languageCodesObject,
   languageNameToAlpha3Codes
 } from "../constants/isoCodes";
+import { normalizeEscapedQuotes } from "../utils/helpers";
 import {
   ADC,
   codeToDivision,
@@ -87,7 +88,7 @@ const useZipParser = () => {
       // Removing any escape characters for " and '
       const formattedDescription = description
         ? // eslint-disable-next-line quotes
-          description.replace(/\\"/g, '"').replace(/\\'/g, "'")
+          normalizeEscapedQuotes(description)
         : "";
       newMetadata[codesToLanguages[language.slice(0, 2)]] = {
         name,
@@ -225,7 +226,7 @@ const useZipParser = () => {
         // Removing any escape characters for " and '
         const formattedDescription = languageDescriptionMap?.[lang]?.[attr]
           ? // eslint-disable-next-line quotes
-            languageDescriptionMap[lang][attr].replace(/\\"/g, '"').replace(/\\'/g, "'")
+            normalizeEscapedQuotes(languageDescriptionMap[lang][attr])
           : "";
         if (
           label &&
@@ -287,7 +288,7 @@ const useZipParser = () => {
       if (attributeType === "Numeric" || attributeType === "DateTime") {
         const formatRule =
           // eslint-disable-next-line quotes
-          formatRules?.attribute_formats?.[item]?.replace(/\\"/g, '"') || "";
+          normalizeEscapedQuotes(formatRules?.attribute_formats?.[item]) || "";
         newRangeRowData.push({
           Attribute: item,
           Type: attributeType,
@@ -336,7 +337,7 @@ const useZipParser = () => {
         // However, in other situtations, the escape character is not needed
         const formatRule =
           // eslint-disable-next-line quotes
-          formatRules?.attribute_formats?.[item.Attribute]?.replace(/\\"/g, '"') || "";
+          normalizeEscapedQuotes(formatRules?.attribute_formats?.[item.Attribute]) || "";
         const formatRuleDescription = getFormatRuleDescription(item?.Type, formatRule);
 
         // If format rule has a description, then it's not a custom format rule

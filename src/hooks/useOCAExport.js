@@ -319,12 +319,11 @@ const useOCAExport = () => {
       const languageIndex = OCADescriptionData.findIndex(
         (obj) => obj.Language === language.language
       );
-      const parsedDescription = OCADescriptionData[languageIndex].Description
-        .replace(/"/g, '\\"')
-        .replace(/'/g, "\\'");
+      const parsedDescription = normalizeEscapedQuotes(OCADescriptionData[languageIndex].Description || "");
+      const escapedDescription = escapeForOCAString(parsedDescription);
       buildText += `\nADD Meta ${language.code} PROPS`;
-      buildText += ` name="${OCADescriptionData[languageIndex].Name}"`;
-      buildText += ` description="${parsedDescription}"`;
+      buildText += ` name="${escapeForOCAString(normalizeEscapedQuotes(OCADescriptionData[languageIndex].Name || ""))}"`;
+      buildText += ` description="${escapedDescription}"`;
     });
     buildText += "\n";
 
@@ -337,7 +336,7 @@ const useOCAExport = () => {
         if (formatRule && targetAttributesList.includes(attrName)) {
           // Normalize first (unescape any already-escaped quotes), then escape all quotes
           // This prevents double-escaping when format rules contain \" from the original OCA file
-          const escapedRule = formatRule.replace(/\\"/g, '"').replace(/"/g, '\\"');
+          const escapedRule = escapeForOCAString(normalizeEscapedQuotes(formatRule));
           tempText += ` ${attrName}="${escapedRule}"`;
         }
       });

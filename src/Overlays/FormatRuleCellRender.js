@@ -113,8 +113,8 @@ export const FormatRuleTypeRenderer = memo(
       // Remove the escape character for " in regex patterns
       // OCA file requires " to be escaped, that's why the escape character needs to be added when creating OCA file
       // However, in other situtations, the escape character is not needed
-      // eslint-disable-next-line quotes
-      const formattedValue = value?.replace(/\\"/g, '"');
+      // Normalize escaped quotes in stored regexes
+      const formattedValue = normalizeEscapedQuotes(value);
       return baseType.includes("Date")
         ? formatCodeDateDescription[formattedValue]
         : baseType.includes("Numeric")

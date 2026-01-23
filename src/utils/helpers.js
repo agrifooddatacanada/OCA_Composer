@@ -711,8 +711,8 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   fileContent += "# Add meta overlay";
   coreOverlays.meta.forEach((item) => {
     // Escape quotes in name and description
-    const escapedName = (item.name || "").replace(/\\"/g, '"').replace(/"/g, '\\"');
-    const escapedDesc = (item.description || "").replace(/\\"/g, '"').replace(/"/g, '\\"');
+    const escapedName = escapeForOCAString(normalizeEscapedQuotes(item.name || ""));
+    const escapedDesc = escapeForOCAString(normalizeEscapedQuotes(item.description || ""));
     fileContent += `\nADD META ${getUICodeFromOCACode(item.language)} PROPS name="${escapedName}" description="${escapedDesc}"`;
   });
   fileContent += "\n";
@@ -724,7 +724,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
     Object.keys(coreOverlays.format.attribute_formats).forEach((attribute) => {
       // Normalize and escape quotes to prevent double-escaping issues
       const formatRule = coreOverlays.format.attribute_formats[attribute];
-      const escapedRule = formatRule.replace(/\\"/g, '"').replace(/"/g, '\\"');
+      const escapedRule = escapeForOCAString(normalizeEscapedQuotes(formatRule));
       fileContent += ` ${attribute}="${escapedRule}"`;
     });
     fileContent += "\n";
@@ -747,7 +747,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
       fileContent += `\nADD LABEL ${getUICodeFromOCACode(item.language)} ATTRS`;
       Object.keys(item.attribute_labels).forEach((attribute) => {
         // Escape quotes in labels
-        const escapedLabel = (item.attribute_labels[attribute] || "").replace(/\\"/g, '"').replace(/"/g, '\\"');
+        const escapedLabel = escapeForOCAString(normalizeEscapedQuotes(item.attribute_labels[attribute] || ""));
         fileContent += ` ${attribute}="${escapedLabel}"`;
       });
     });
@@ -761,7 +761,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
       fileContent += `\nADD INFORMATION ${getUICodeFromOCACode(item.language)} ATTRS`;
       Object.keys(item.attribute_information).forEach((attribute) => {
         // Escape quotes in information/descriptions
-        const escapedInfo = (item.attribute_information[attribute] || "").replace(/\\"/g, '"').replace(/"/g, '\\"');
+        const escapedInfo = escapeForOCAString(normalizeEscapedQuotes(item.attribute_information[attribute] || ""));
         fileContent += ` ${attribute}="${escapedInfo}"`;
       });
     });
@@ -842,10 +842,17 @@ export const downloadJsonFile = (data, fileName) => {
   URL.revokeObjectURL(url);
 };
 
+export const normalizeEscapedQuotes = (s) => (typeof s === 'string' ? s.replace(/\\"/g, '"').replace(/\\'/g, "'") : s);
+
+export const escapeForOCAString = (s) => {
+  if (typeof s !== 'string') return s;
+  // First escape backslashes, then escape double and single quotes for OCA output
+  return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'");
+};
+
 export const getFormatRuleDescription = (attributeType, formatRule) => {
-  // Normalize escaped quotes in format rules for consistent lookup
-  // JSON files may store \" while constants use unescaped "
-  const normalizedRule = formatRule?.replace(/\\"/g, '"') || formatRule;
+  // Use centralized normalization for consistent lookup
+  const normalizedRule = normalizeEscapedQuotes(formatRule);
   
   return attributeType.includes("Date")
     ? formatCodeDateDescription[normalizedRule]
