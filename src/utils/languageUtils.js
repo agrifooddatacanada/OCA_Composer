@@ -183,3 +183,41 @@ export const getPrioritizedLangNames = (langNames, uiCode = null) => {
   }
   return arr;
 };
+
+// =============================================================================
+// DATA RESOLUTION UTILITIES
+// =============================================================================
+
+/**
+ * Resolve language-keyed data with flexible key matching
+ * 
+ * Handles data objects keyed by any language format:
+ *   - Language name: { English: [...], French: [...] }
+ *   - OCA code: { eng: [...], fra: [...] }
+ *   - UI code: { en: [...], fr: [...] }
+ * 
+ * @param {Object} dataObj - Object with language keys
+ * @param {string} languageName - Language name to look up (e.g., "English")
+ * @returns {any} Value for the language, or null if not found
+ * 
+ * @example
+ * const data = { English: [1,2,3], eng: [4,5,6] };
+ * resolveLanguageData(data, "English") // => [1,2,3]
+ * resolveLanguageData(data, "French")  // => null
+ */
+export const resolveLanguageData = (dataObj, languageName) => {
+  if (!dataObj || !languageName) return null;
+  
+  // Try direct lookup by language name
+  if (dataObj[languageName] !== undefined) return dataObj[languageName];
+  
+  // Try OCA code (3-letter: eng, fra)
+  const ocaCode = getOCACodeFromLangName(languageName);
+  if (ocaCode && dataObj[ocaCode] !== undefined) return dataObj[ocaCode];
+  
+  // Try UI code (2-letter: en, fr)
+  const uiCode = getUICodeFromLangName(languageName);
+  if (uiCode && dataObj[uiCode] !== undefined) return dataObj[uiCode];
+  
+  return null;
+};

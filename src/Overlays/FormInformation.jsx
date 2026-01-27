@@ -9,7 +9,7 @@ import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { getLangNameFromUICode, getLangNameFromOCACode, getOCACodeFromLangName, getUICode, LanguageConstants } from "../utils/languageUtils";
+import { getLangNameFromUICode, getLangNameFromOCACode, getOCACodeFromLangName, getUICode, LanguageConstants, resolveLanguageData } from "../utils/languageUtils";
 import i18next from "i18next";
 import {
   formatCodeBinaryDescription,
@@ -124,22 +124,9 @@ const FormInformation = () => {
     filteredLanguages.unshift(removedLanguage[0]);
   }
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
-  // Resolve current rows robustly: accept either language names (English) or OCA codes (eng)
-  const resolveRowsForLanguage = (lanData, langName) => {
-    if (!lanData || !langName) return [];
-    // direct lookup by language name
-    if (Array.isArray(lanData[langName])) return lanData[langName];
-    // try OCA alpha3 code for the language name (eng, fra)
-    const ocaCode = (getOCACodeFromLangName && getOCACodeFromLangName(langName)) || null;
-    if (ocaCode && Array.isArray(lanData[ocaCode])) return lanData[ocaCode];
-    // try UI code (en, fr)
-    const uiCode = getUICode();
-    const uiLangName = getLangNameFromUICode(uiCode);
-    if (uiLangName && Array.isArray(lanData[uiLangName])) return lanData[uiLangName];
-    return [];
-  };
-
-  const currentRows = resolveRowsForLanguage(lanAttributeRowData, currentLanguage);
+  
+  // Get rows for current language, handling various language key formats
+  const currentRows = resolveLanguageData(lanAttributeRowData, currentLanguage) || [];
   const primaryLanguage = languages?.[0];
 
   // Normalize any lan/form placeholder keys that use OCA 3-letter codes (e.g., 'eng') into UI language names (e.g., 'English')
@@ -164,7 +151,8 @@ const FormInformation = () => {
     // also update grid immediately (resolve robustly) and refresh cells so Format column updates
     try {
       if (gridRef.current?.api) {
-        gridRef.current.api.setRowData(resolveRowsForLanguage(normalizedLan, currentLanguage));
+        const normalizedRows = resolveLanguageData(normalizedLan, currentLanguage) || [];
+        gridRef.current.api.setRowData(normalizedRows);
         gridRef.current.api.refreshCells({ force: true });
       }
     } catch (e) {
@@ -244,7 +232,8 @@ const FormInformation = () => {
       // Immediately update grid so UI shows rows even if context update hasn't propagated
       try {
         if (gridRef.current?.api) {
-          gridRef.current.api.setRowData(resolveRowsForLanguage(newLan, currentLanguage));
+          const newRows = resolveLanguageData(newLan, currentLanguage) || [];
+          gridRef.current.api.setRowData(newRows);
         }
       } catch (e) {
         // ignore grid errors during initialization
@@ -751,7 +740,8 @@ const FormInformation = () => {
   // Ensure grid row data updates when lanAttributeRowData changes
   useEffect(() => {
     if (gridRef.current?.api) {
-      gridRef.current.api.setRowData(resolveRowsForLanguage(lanAttributeRowData, currentLanguage));
+      const rows = resolveLanguageData(lanAttributeRowData, currentLanguage) || [];
+      gridRef.current.api.setRowData(rows);
     }
   }, [lanAttributeRowData, currentLanguage]);
 
