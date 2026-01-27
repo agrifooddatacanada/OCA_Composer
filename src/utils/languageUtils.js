@@ -39,6 +39,14 @@ export const getUICode = () => {
 };
 
 /**
+ * Get current UI language name from i18next
+ * @returns {string} "English", "French", etc.
+ */
+export const getUILangName = () => {
+  return getLangNameFromUICode(getUICode()) || LanguageConstants.DEFAULT_LANG_NAME;
+};
+
+/**
  * Set the application UI language
  * @param {string} uiCode - "en", "fr", etc.
  */

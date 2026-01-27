@@ -9,7 +9,7 @@ import Languages from "./Languages";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
-import { getLangNameFromUICode } from "../utils/languageUtils";
+import { getLangNameFromUICode, getUILangName } from "../utils/languageUtils";
 
 export const DataHeaderRenderer = memo((props) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -91,9 +91,7 @@ const AttributeMatch = () => {
     setNotToVerifyAttributes
   } = useContext(Context);
   const [type, setType] = useState(() => {
-    // split the language code into the base language code (e.g. from US-en to en)
-    const siteLanguageCode = (i18next.resolvedLanguage || i18next.language).split("-")[0];
-    const siteLanguage = getLangNameFromUICode(siteLanguageCode);
+    const siteLanguage = getUILangName();
     return siteLanguage === "English"
       ? languages[0]
       : languages.find((language) => language.includes(siteLanguage));
@@ -195,9 +193,7 @@ const AttributeMatch = () => {
 
   // Change selected language when site language changes
   useEffect(() => {
-    // split the language code into the base language code (e.g. from US-en to en)
-    const siteLanguageCode = (i18next.resolvedLanguage || i18next.language).split("-")[0];
-    const siteLanguage = getLangNameFromUICode(siteLanguageCode);
+    const siteLanguage = getUILangName();
     setType(
       siteLanguage === "English"
         ? languages[0]
