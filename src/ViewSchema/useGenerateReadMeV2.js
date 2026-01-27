@@ -3,7 +3,8 @@ import { Context } from "../App";
 import {
   getDescriptiveFileName,
   getOrderedAttributeMap,
-  getOrderedEntries
+  getOrderedEntries,
+  normalizeEscapedQuotes
 } from "../utils/helpers";
 import { ADC, FORM, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
 

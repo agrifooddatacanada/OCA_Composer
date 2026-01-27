@@ -32,7 +32,8 @@ import MergeDifferenceModal from "./MergeDifferenceModal";
 import {
   generateOCABundle,
   generateOCAFileFromMergedOverlays,
-  searchUnits
+  searchUnits,
+  normalizeEscapedQuotes
 } from "../utils/helpers";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 

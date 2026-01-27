@@ -3,7 +3,8 @@ import JSZip from "jszip";
 import { getUICodeFromLangName } from "../utils/languageUtils";
 import {
   replaceAttributeCharsInJsonString,
-  replaceAttributeCharsInParsedJson
+  replaceAttributeCharsInParsedJson,
+  normalizeEscapedQuotes
 } from "../utils/helpers";
 import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
 

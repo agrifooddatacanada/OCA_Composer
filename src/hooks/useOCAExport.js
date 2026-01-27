@@ -37,7 +37,9 @@ import {
   getTransformedEntryCodes,
   getUnitFramingInput,
   getAttributeFramingInput,
-  getFormInformationInput
+  getFormInformationInput,
+  normalizeEscapedQuotes,
+  escapeForOCAString
 } from "../utils/helpers";
 import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 

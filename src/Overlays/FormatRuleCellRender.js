@@ -18,6 +18,7 @@ import {
   formatCodeText,
   formatCodeTextDescription
 } from "../constants/constants";
+import { normalizeEscapedQuotes } from "../utils/helpers";
 
 export const TrashCanButton = memo(
   // eslint-disable-next-line no-unused-vars
