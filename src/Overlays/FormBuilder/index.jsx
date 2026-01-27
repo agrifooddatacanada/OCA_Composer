@@ -10,7 +10,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuidv4 } from 'uuid';
-import { getLangNameFromUICode } from "../../utils/languageUtils";
+import { getLangNameFromUICode, LanguageConstants } from "../../utils/languageUtils";
 import i18next from "i18next";
 
 import AttributePalette from "./AttributePalette";
@@ -29,7 +29,6 @@ const FormBuilder = () => {
     setFormBuilderPages,
     setCurrentPage,
     setSelectedOverlay,
-    languages,
     savedEntryCodes,
     attributesWithLists,
     schemaDescription
@@ -45,6 +44,9 @@ const FormBuilder = () => {
   } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchemaState(currentSchemaId);
+  
+  // Get schema-specific languages (not global)
+  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
   
   const attributesList = useMemo(
     () => getAttributesList(),

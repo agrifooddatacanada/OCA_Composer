@@ -9,7 +9,7 @@ import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { getLangNameFromUICode, getLangNameFromOCACode, getOCACodeFromLangName, getUICode } from "../utils/languageUtils";
+import { getLangNameFromUICode, getLangNameFromOCACode, getOCACodeFromLangName, getUICode, LanguageConstants } from "../utils/languageUtils";
 import i18next from "i18next";
 import {
   formatCodeBinaryDescription,
@@ -46,7 +46,6 @@ const FormInformation = () => {
   const { t } = useTranslation();
   const {
     setFormBuilderPages,
-    languages,
     setCurrentPage,
     setSelectedOverlay,
     setOverlay
@@ -62,6 +61,10 @@ const FormInformation = () => {
   } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchemaState(currentSchemaId);
+  
+  // Get schema-specific languages (not global)
+  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
+  
   const attributesList = useMemo(
     () => getAttributesList(),
     [getAttributesList, currentSchemaId]
@@ -106,6 +109,11 @@ const FormInformation = () => {
   
   // Use standard deletion handler
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORM_INFORMATION_OVERLAY);
+  
+  // Reset initialization flag when schema changes
+  useEffect(() => {
+    initializationRef.current = false;
+  }, [currentSchemaId]);
 
   const languageIndex = languages.findIndex(
     (item) => getLangNameFromUICode(i18next.language) === item
@@ -175,8 +183,6 @@ const FormInformation = () => {
     if (hasAllLanguages) return;
     if (!attributesList || attributesList.length === 0) return;
 
-
-
     // Build base rows per language from attributes + FormInformationRowData + placeholders
     const newLan = { ...(lanAttributeRowData || {}) };
     languages.forEach((lang) => {
@@ -230,9 +236,6 @@ const FormInformation = () => {
     const didAdd = languages.some(
       (lang) => Array.isArray(newLan[lang]) && newLan[lang].length > 0 && !(Array.isArray(lanAttributeRowData?.[lang]) && lanAttributeRowData[lang].length > 0)
     );
-
-    // Debug: show existing vs new lan data sizes for troubleshooting
-
 
     // Only perform the update once per component mount to avoid loops
     if (didAdd && !initializationRef.current) {
