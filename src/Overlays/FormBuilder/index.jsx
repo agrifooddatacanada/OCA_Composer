@@ -28,10 +28,7 @@ const FormBuilder = () => {
     formBuilderPages,
     setFormBuilderPages,
     setCurrentPage,
-    setSelectedOverlay,
-    savedEntryCodes,
-    attributesWithLists,
-    schemaDescription
+    setSelectedOverlay
   } = useContext(Context);
 
   // Get data from MultiSchemaContext
@@ -45,8 +42,10 @@ const FormBuilder = () => {
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchemaState(currentSchemaId);
   
-  // Get schema-specific languages (not global)
+  // Get schema-specific data (not global)
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
+  const savedEntryCodes = schemaState?.entryCodes || {};
+  const attributesWithLists = schemaState?.attributesWithLists || [];
   
   const attributesList = useMemo(
     () => getAttributesList(),
@@ -460,7 +459,7 @@ const FormBuilder = () => {
 
     setSelectedOverlay("");
     setCurrentPage("Overlays");
-  }, [validateForm, pages, setFormInformationRowData, setSelectedOverlay, setCurrentPage, languages, schemaDescription]);
+  }, [validateForm, pages, setFormInformationRowData, setSelectedOverlay, setCurrentPage, languages]);
 
   const handleBack = useCallback(() => {
     setCurrentPage("FormInformation");
