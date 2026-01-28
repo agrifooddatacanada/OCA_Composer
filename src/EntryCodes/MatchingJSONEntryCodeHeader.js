@@ -2,7 +2,7 @@ import React, { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useSt
 import { useContext } from 'react';
 import { Context } from '../App';
 import { useMultiSchema } from '../context/MultiSchemaContext';
-import { getOCACodeFromLangName } from '../utils/languageUtils';
+import { getOCACodeFromLangName, LanguageConstants } from '../utils/languageUtils';
 import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { AgGridReact } from 'ag-grid-react';
@@ -62,12 +62,15 @@ export const DataHeaderRenderer = memo(
 );
 
 const MatchingJSONEntryCodeHeader = () => {
-  const { tempEntryCodeSummary, tempEntryList, languages, setCurrentPage, chosenEntryCodeIndex } = useContext(Context);
+  const { tempEntryCodeSummary, tempEntryList, setCurrentPage, chosenEntryCodeIndex } = useContext(Context);
   
   // Use MultiSchemaContext for schema-specific data
   const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
   const schemaState = getSchemaState(currentSchemaId);
   const attributeRowData = schemaState?.attributes || [];
+  
+  // Get schema-specific languages (not global)
+  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
   
   // Get the attribute name for the chosen index
   const listAttributes = attributeRowData.filter(attr => attr.List === true);
