@@ -26,7 +26,7 @@ import { hasMultiSchemaStructure } from "../utils/schemaUtils";
 
 const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, OCAPackage } = useContext(Context);
+  const { zipToReadme, jsonToReadme, OCAPackage, schemaDescription } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
@@ -166,7 +166,7 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
             color="navButton"
             onClick={() => {
               if (Object.keys(jsonToReadme).length > 0) {
-                jsonToTextFile(jsonToReadme, OCAPackage);
+                jsonToTextFile(jsonToReadme, OCAPackage, schemaDescription);
               } else if (zipToReadme.length > 0) {
                 toTextFile(zipToReadme);
               }

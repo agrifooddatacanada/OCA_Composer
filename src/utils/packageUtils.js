@@ -9,6 +9,8 @@
  * These utilities provide a consistent interface to access package data regardless of format.
  */
 
+import { getLangNameFromUICode } from './languageUtils';
+
 /**
  * Get the root bundle from an OCA package, handling both format variations
  * @param {Object} ocaPackage - The OCA package object
@@ -74,4 +76,59 @@ export const findSchemaById = (ocaPackage, schemaId) => {
  */
 export const isOfficialPackageFormat = (ocaPackage) => {
   return ocaPackage?.oca_bundle !== undefined;
+};
+
+/**
+ * Extract all unique languages from an OCA package (parent + all child schemas)
+ * @param {Object} ocaPackage - The OCA package object
+ * @returns {Array<string>} Array of language names (e.g., ["English", "French"])
+ */
+export const getPackageLanguages = (ocaPackage) => {
+  const languageSet = new Set();
+  
+  // Helper to extract languages from a schema
+  const extractFromSchema = (schemaData) => {
+    if (!schemaData?.overlays) return;
+    
+    // Check meta overlays for languages
+    if (Array.isArray(schemaData.overlays.meta)) {
+      schemaData.overlays.meta.forEach(metaOverlay => {
+        if (metaOverlay.language) {
+          // Convert OCA code (eng, fra) to language name (English, French)
+          const langName = getLangNameFromUICode(metaOverlay.language) || 
+                          (metaOverlay.language === 'eng' ? 'English' : metaOverlay.language);
+          languageSet.add(langName);
+        }
+      });
+    }
+    
+    // Check other language-specific overlays
+    ['label', 'information', 'entry'].forEach(overlayType => {
+      const overlay = schemaData.overlays[overlayType];
+      if (Array.isArray(overlay)) {
+        overlay.forEach(item => {
+          if (item.language) {
+            const langName = getLangNameFromUICode(item.language) || 
+                            (item.language === 'eng' ? 'English' : item.language);
+            languageSet.add(langName);
+          }
+        });
+      }
+    });
+  };
+  
+  // Extract from parent schema
+  const bundle = getPackageBundle(ocaPackage);
+  if (bundle) {
+    extractFromSchema(bundle);
+  }
+  
+  // Extract from child schemas
+  if (Array.isArray(ocaPackage?.oca_bundle?.schema)) {
+    ocaPackage.oca_bundle.schema.forEach(childSchema => {
+      extractFromSchema(childSchema.bundle);
+    });
+  }
+  
+  return Array.from(languageSet);
 };

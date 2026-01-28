@@ -1,8 +1,6 @@
 // Generate markdown readme from schema bundle zip
 
-import { useContext } from "react";
 import i18next from "i18next";
-import { Context } from "../App";
 import { getLangNameFromUICode, getUICodeFromLangName } from "../utils/languageUtils";
 import { DEFAULT_LANGUAGE_CODE } from "../constants/constants";
 import {
@@ -19,14 +17,6 @@ import {
 } from "./markdownReadmeUtils";
 
 const useGenerateMarkdownReadMe = () => {
-  const { languages } = useContext(Context);
-  // Ensuring that the currently selected site language is one of the languages of the schema
-  const currentLanguageCode = languages.some(
-    (language) => language === getLangNameFromUICode(i18next.language)
-  )
-    ? i18next.language
-    : "en";
-
   // The schema bundle items are in JSON
   const generateMarkdownReadMe = (schemaBundleItems, catalogueData) => {
     let fileContent = "";
@@ -50,6 +40,25 @@ const useGenerateMarkdownReadMe = () => {
         ...rest
       });
     });
+    
+    // Extract languages from the bundle itself (look at meta, label, information, entry overlays)
+    const languageSet = new Set();
+    layers.forEach(layer => {
+      if (layer.language) {
+        // Convert UI code (en, fr) to language name (English, French)
+        const langName = getLangNameFromUICode(layer.language) || 
+                        (layer.language === 'en' ? 'English' : layer.language);
+        languageSet.add(langName);
+      }
+    });
+    const languages = Array.from(languageSet);
+    
+    // Ensuring that the currently selected site language is one of the languages of the schema
+    const currentLanguageCode = languages.some(
+      (language) => language === getLangNameFromUICode(i18next.language)
+    )
+      ? i18next.language
+      : "en";
 
     const metaOverlayCurrentLanguage = layers.find(
       (layer) =>

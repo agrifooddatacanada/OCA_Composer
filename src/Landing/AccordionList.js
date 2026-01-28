@@ -39,7 +39,7 @@ const AccordionList = () => {
   const isMobile = useMediaQuery("(max-width: 736px)");
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, OCAPackage } =
+  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, OCAPackage, schemaDescription } =
     useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -266,7 +266,7 @@ const AccordionList = () => {
               color="navButton"
               onClick={() => {
                 if (Object.keys(jsonToReadme).length > 0) {
-                  jsonToTextFile(jsonToReadme, OCAPackage);
+                  jsonToTextFile(jsonToReadme, OCAPackage, schemaDescription);
                 } else if (zipToReadme.length > 0) {
                   toTextFile(zipToReadme);
                 }

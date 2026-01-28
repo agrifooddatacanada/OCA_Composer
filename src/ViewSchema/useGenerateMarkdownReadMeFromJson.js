@@ -2,6 +2,7 @@ import { useContext } from "react";
 import i18next from "i18next";
 import { Context } from "../App";
 import { getLangNameFromUICode, getOCACodeFromLangName, getOCACodeFromUICode } from "../utils/languageUtils";
+import { getPackageLanguages } from "../utils/packageUtils";
 import {
   ADC,
   DEFAULT_THREE_LETTER_LANGUAGE_CODE,
@@ -33,7 +34,7 @@ const getModifiedLayer = (overlay) => {
 };
 
 const useGenerateMarkdownReadMeFromJson = () => {
-  const { languages, OCAPackage } = useContext(Context);
+  const { OCAPackage } = useContext(Context);
   // For now, use ADC extension overlays for the top-level/main schema bundle
   const orderingOverlay =
     OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
@@ -55,14 +56,17 @@ const useGenerateMarkdownReadMeFromJson = () => {
     OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[UNIT_FRAMING];
 
-  // Ensuring that the currently selected site language is one of the languages of the schema
-  const currentLanguageCode = languages.some(
-    (language) => language === getLangNameFromUICode(i18next.language)
-  )
-    ? getOCACodeFromUICode(i18next.language)
-    : DEFAULT_THREE_LETTER_LANGUAGE_CODE;
-
   const generateMarkdownReadMeFromJson = (schemaData, catalogueData) => {
+    // Extract languages from the entire package
+    const languages = getPackageLanguages(OCAPackage);
+    
+    // Ensuring that the currently selected site language is one of the languages of the schema
+    const currentLanguageCode = languages.some(
+      (language) => language === getLangNameFromUICode(i18next.language)
+    )
+      ? getOCACodeFromUICode(i18next.language)
+      : DEFAULT_THREE_LETTER_LANGUAGE_CODE;
+    
     let fileContent = "";
     const captureBaseOverlay = schemaData.capture_base;
     const captureBaseSAID = captureBaseOverlay.d;
@@ -180,6 +184,74 @@ const useGenerateMarkdownReadMeFromJson = () => {
       },
       layersForSaidTable
     );
+    
+    // Process child schemas if any
+    if (Array.isArray(OCAPackage?.oca_bundle?.schema) && OCAPackage.oca_bundle.schema.length > 0) {
+      fileContent += "\n\n";
+      fileContent += "BEGIN_CHILD_SCHEMAS\n";
+      fileContent += "******************************************************************\n";
+      
+      OCAPackage.oca_bundle.schema.forEach((childSchemaWrapper, index) => {
+        const childSchemaData = childSchemaWrapper.bundle;
+        const childCaptureBase = childSchemaData.capture_base;
+        const childLayers = [];
+        const childLayersForSaidTable = [];
+        
+        // Process child schema overlays
+        for (const overlayName of Object.keys(childSchemaData.overlays || {})) {
+          const overlay = childSchemaData.overlays[overlayName];
+          if (Array.isArray(overlay)) {
+            overlay.forEach((langSpecificOverlay) => {
+              const modifiedLayer = getModifiedLayer(langSpecificOverlay);
+              childLayers.push(modifiedLayer);
+            });
+          } else {
+            const modifiedLayer = getModifiedLayer(overlay);
+            childLayers.push(modifiedLayer);
+          }
+        }
+        
+        const childMetaOverlay = childLayers.find(
+          (layer) =>
+            layer.layerName.includes("meta") &&
+            (layer.language === currentLanguageCode ||
+              layer.language === DEFAULT_THREE_LETTER_LANGUAGE_CODE)
+        );
+        
+        const childAttributeNames = Object.keys(childCaptureBase.attributes || {});
+        
+        fileContent += `\nCHILD SCHEMA ${index + 1}\n`;
+        fileContent += "******************************************************************\n";
+        fileContent += `Schema SAID: ${childCaptureBase.d}\n`;
+        fileContent += `Schema Name: ${childMetaOverlay?.name || 'Unnamed Child Schema'}\n`;
+        fileContent += `Description: ${childMetaOverlay?.description || ''}\n\n`;
+        
+        fileContent += "Schema attributes: data type\n";
+        childAttributeNames.forEach(attrName => {
+          const attrType = childCaptureBase.attributes[attrName];
+          fileContent += `    ${attrName}: ${Array.isArray(attrType) ? `Array[${attrType[0]}]` : attrType}\n`;
+        });
+        
+        // Add child schema overlays details
+        childLayers.forEach(layer => {
+          if (layer.layerName !== 'meta/1.1') {
+            fileContent += "\n******************************************************************\n";
+            fileContent += `Layer name: spec/overlays/${layer.layerName}\n`;
+            fileContent += `SAID/digest: ${layer.digest}\n`;
+            if (layer.language) {
+              fileContent += `Language: ${layer.language}\n`;
+            }
+            fileContent += "\n";
+          }
+        });
+        
+        fileContent += "******************************************************************\n";
+      });
+      
+      fileContent += "END_CHILD_SCHEMAS\n";
+      fileContent += "******************************************************************\n";
+    }
+    
     fileContent += generateCreationTimestamp();
 
     const fileName = `${metaOverlayCurrentLanguage.name.split(" ")[0]}_OCA_schema.md`;

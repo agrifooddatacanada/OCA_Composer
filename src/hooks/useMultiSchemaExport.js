@@ -40,7 +40,8 @@ const useMultiSchemaExport = () => {
     OCAPackage,
     languages,
     customIsos,
-    divisionGroup
+    divisionGroup,
+    schemaDescription
   } = useContext(Context);
 
   const { 
@@ -133,7 +134,7 @@ const useMultiSchemaExport = () => {
 
       // Generate README_OCA_schema.txt
       if (exportPackage.bundle?.overlays?.meta) {
-        jsonToTextFile(exportPackage.bundle, exportPackage);
+        jsonToTextFile(exportPackage.bundle, exportPackage, schemaDescription);
       }
 
       // Download OCA_bundle.json only on testing site

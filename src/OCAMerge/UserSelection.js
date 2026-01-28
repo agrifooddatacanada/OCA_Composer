@@ -126,7 +126,8 @@ const UserSelection = () => {
     selectedOverlaysOCAFile2,
     parsedOCAFile1,
     OCAFile1Raw,
-    OCAFile2Raw
+    OCAFile2Raw,
+    schemaDescription
   } = useContext(Context);
   const [data, setData] = useState([]);
   const [showDifference, setShowDifference] = useState(false);
@@ -552,7 +553,7 @@ const UserSelection = () => {
     const ocaPackageService = new OcaPackage(extension, bundle);
     const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
 
-    jsonToTextFile(bundle.bundle, ocaPackage);
+    jsonToTextFile(bundle.bundle, ocaPackage, schemaDescription);
 
     exportToJsonFile(ocaPackage);
   };

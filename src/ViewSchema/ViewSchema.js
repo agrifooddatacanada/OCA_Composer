@@ -71,7 +71,8 @@ export default function ViewSchema({
     zipToReadme,
     jsonToReadme,
     OCAPackage,
-    formBuilderPages
+    formBuilderPages,
+    schemaDescription
   } = useContext(Context);
 
   // Multi-schema context
@@ -295,7 +296,7 @@ export default function ViewSchema({
 
   const downloadReadMe = () => {
     if (Object.keys(jsonToReadme).length > 0) {
-      jsonToTextFile(jsonToReadme, OCAPackage);
+      jsonToTextFile(jsonToReadme, OCAPackage, schemaDescription);
     } else if (zipToReadme.length > 0) {
       toTextFile(zipToReadme);
     }
