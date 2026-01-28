@@ -1,5 +1,4 @@
 import React, {
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -15,10 +14,10 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
 import { preWrapWordBreak } from "../constants/styles";
-import { getOCACodeFromLangName } from "../utils/languageUtils";
+import { getOCACodeFromLangName, LanguageConstants } from "../utils/languageUtils";
+import { useMultiSchema } from "../context/MultiSchemaContext";
 
 // Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
 const gridStyle = `
@@ -112,7 +111,12 @@ const LanguageHeader = ({ languages, language }) => {
 
 export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable, entryCodeData = [], setEntryCodeData }) {
   const { t } = useTranslation();
-  const { languages } = useContext(Context);
+  
+  // Get schema-specific languages (not global)
+  const { currentSchemaId, getSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState(currentSchemaId);
+  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
+  
   const [buttonArray, setButtonArray] = useState([]);
   const [gridWidth, setGridWidth] = useState(500);
   const [hoveredRowIndex, setHoveredRowIndex] = useState(-1);
