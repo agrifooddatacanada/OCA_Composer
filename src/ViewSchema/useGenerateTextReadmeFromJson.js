@@ -742,19 +742,14 @@ const useGenerateTextReadmeFromJson = () => {
       text_file.push("END_OCA_PACKAGE_EXTENSIONS\n");
     }
 
-    // Document child schemas if any
-    // Handle both package formats:
-    // - oca_bundle.schema (array with {bundle: {...}} wrappers)
-    // - oca_bundle.dependencies (array of bundles directly)
-    const childSchemas = ocaPackage?.oca_bundle?.schema || ocaPackage?.oca_bundle?.dependencies || [];
+    // Document child schemas if any (stored in dependencies array)
+    const childSchemas = ocaPackage?.oca_bundle?.dependencies || [];
     
     if (Array.isArray(childSchemas) && childSchemas.length > 0) {
       text_file.push("\nBEGIN_CHILD_SCHEMAS\n");
       text_file.push("******************************************************************\n");
       
-      childSchemas.forEach((childSchemaItem, index) => {
-        // Handle both formats: {bundle: {...}} or {...} directly
-        const childBundle = childSchemaItem.bundle || childSchemaItem;
+      childSchemas.forEach((childBundle, index) => {
         const childCaptureBase = childBundle?.capture_base;
         
         if (!childCaptureBase) return;

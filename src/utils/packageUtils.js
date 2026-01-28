@@ -9,13 +9,8 @@
  * These utilities provide a consistent interface to access package data regardless of format.
  * 
  * CHILD SCHEMA STORAGE:
- * This app ONLY generates packages using oca_bundle.dependencies format (array of bundles).
- * However, we support reading both:
- * - oca_bundle.dependencies (array of bundles directly) - what we generate
- * - oca_bundle.schema (array with {bundle: {...}} wrappers) - for compatibility with external tools
- * 
- * The dual format support is defensive - it allows reading packages from other OCA tools
- * that may use different conventions, while maintaining our own consistent export format.
+ * Child schemas are stored in oca_bundle.dependencies as an array of bundles.
+ * Format: { oca_bundle: { bundle: {...}, dependencies: [{...bundle...}, {...bundle...}] } }
  */
 
 import { getLangNameFromUICode } from './languageUtils';
@@ -132,16 +127,11 @@ export const getPackageLanguages = (ocaPackage) => {
     extractFromSchema(bundle);
   }
   
-  // Extract from child schemas
-  // Handle both package formats:
-  // - oca_bundle.schema (array with {bundle: {...}} wrappers)
-  // - oca_bundle.dependencies (array of bundles directly)
-  const childSchemas = ocaPackage?.oca_bundle?.schema || ocaPackage?.oca_bundle?.dependencies || [];
+  // Extract from child schemas (stored in dependencies array)
+  const childSchemas = ocaPackage?.oca_bundle?.dependencies || [];
   
   if (Array.isArray(childSchemas)) {
-    childSchemas.forEach(childSchemaItem => {
-      // Handle both formats: {bundle: {...}} or {...} directly
-      const childBundle = childSchemaItem.bundle || childSchemaItem;
+    childSchemas.forEach(childBundle => {
       extractFromSchema(childBundle);
     });
   }
