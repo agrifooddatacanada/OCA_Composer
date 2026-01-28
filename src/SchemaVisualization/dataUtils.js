@@ -271,11 +271,11 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
   }
 
   // If it's a placeholder field name (like q9) - check if it exists in the root schema's refn fields
-  const bundle = getPackageBundle(ocaPackage);
+  const rawBundle = getPackageBundle(ocaPackage);
   const deps = getPackageDependencies(ocaPackage);
   
-  if (bundle?.capture_base?.attributes) {
-    const rootAttributes = bundle.capture_base.attributes;
+  if (rawBundle?.capture_base?.attributes) {
+    const rootAttributes = rawBundle.capture_base.attributes;
     for (const [key, value] of Object.entries(rootAttributes)) {
       if (typeof value === "string" && value.startsWith("refn:") && key === schemaId) {
         // Check if this placeholder schema now has actual attributes in dependencies
