@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Button,
   Dialog,
@@ -15,12 +15,11 @@ import {
 } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CustomPalette } from "../constants/customPalette";
-import { Context } from "../App";
 import { CreateDataEntryExcel } from "./CreateDataEntryExcel";
 import { getDescriptiveFileName } from "../utils/helpers";
 import { useTranslation } from "react-i18next";
 import { useMultiSchema } from "../context/MultiSchemaContext";
-import { getOCACodeFromLangName } from "../utils/languageUtils";
+import { getOCACodeFromLangName, LanguageConstants } from "../utils/languageUtils";
 
 const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) => {
   let workbook = null;
@@ -61,13 +60,15 @@ const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) =>
 
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck, isMultiSchema }) => {
   const { t } = useTranslation();
-  const { languages } = useContext(Context);
   const { currentSchemaId, getSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState(currentSchemaId);
+  
+  // Get schema-specific languages (not global)
+  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
   
   // Build schemaDescription from MultiSchemaContext
   const schemaDescription = useMemo(() => {
-    const schemaState = getSchemaState(currentSchemaId) || {};
-    const metadata = schemaState.metadata || {};
+    const metadata = schemaState?.metadata || {};
     const result = {};
     languages.forEach((language) => {
       const langKey = getOCACodeFromLangName(language);
@@ -78,7 +79,7 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck, isMul
       };
     });
     return result;
-  }, [currentSchemaId, getSchemaState, languages]);
+  }, [schemaState, languages]);
   const appearAnimation =
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
 
