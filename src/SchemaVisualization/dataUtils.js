@@ -2,6 +2,8 @@
  * Utility functions for processing OCA schema data for visualization
  */
 
+import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "../utils/packageUtils";
+
 /**
  * Universal truncation function for all text in the application
  * @param {string} text - Text to truncate
@@ -109,8 +111,6 @@ export const getDependencyInfo = (depId, dependencyMap, language = "eng") => {
 const normalizeOCAPackage = (ocaPackage) => {
   if (!ocaPackage) return null;
   
-  const { getPackageBundle, getPackageDependencies } = require("./packageUtils");
-  
   // Handle oca_package format: { oca_bundle: { bundle: {...}, dependencies: [...] }, extensions: {...} }
   if (ocaPackage.oca_bundle) {
     return {
@@ -149,7 +149,6 @@ export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
     : (labelOverlays || {});
   const labels = labelOverlay.attribute_labels || {};
 
-  const { getPackageDependencies, getPackageBundle } = require("./packageUtils");
   const bundle = getPackageBundle(normalizedPackage);
   
   return {
@@ -179,7 +178,6 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
     return null;
   }
 
-  const { getPackageBundle, getPackageBundleId } = require("./packageUtils");
   const bundle = getPackageBundle(normalizedPackage);
   const bundleId = getPackageBundleId(normalizedPackage);
   
@@ -273,7 +271,6 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
   }
 
   // If it's a placeholder field name (like q9) - check if it exists in the root schema's refn fields
-  const { getPackageBundle, getPackageDependencies } = require("../utils/packageUtils");
   const bundle = getPackageBundle(ocaPackage);
   const deps = getPackageDependencies(ocaPackage);
   
