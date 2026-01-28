@@ -731,6 +731,44 @@ const useGenerateReadMeV2 = () => {
       text_file.push("END_OCA_PACKAGE_EXTENSIONS\n");
     }
 
+    // Document child schemas if any
+    if (Array.isArray(ocaPackage?.oca_bundle?.schema) && ocaPackage.oca_bundle.schema.length > 0) {
+      text_file.push("\nBEGIN_CHILD_SCHEMAS\n");
+      text_file.push("******************************************************************\n");
+      
+      ocaPackage.oca_bundle.schema.forEach((childSchemaWrapper, index) => {
+        const childBundle = childSchemaWrapper.bundle;
+        const childCaptureBase = childBundle?.capture_base;
+        
+        if (!childCaptureBase) return;
+        
+        // Get child meta overlay for name/description
+        const childMetaOverlays = childBundle?.overlays?.meta || [];
+        const childMetaOverlay = Array.isArray(childMetaOverlays) 
+          ? childMetaOverlays[0] 
+          : childMetaOverlays;
+        
+        text_file.push(`\nCHILD SCHEMA ${index + 1}\n`);
+        text_file.push("******************************************************************\n");
+        text_file.push(`Schema SAID: ${childCaptureBase.d}\n`);
+        text_file.push(`Schema Name: ${childMetaOverlay?.name || 'Unnamed Child Schema'}\n`);
+        text_file.push(`Description: ${childMetaOverlay?.description || ''}\n\n`);
+        
+        text_file.push("Schema attributes: data type\n");
+        const childAttributes = childCaptureBase.attributes || {};
+        Object.keys(childAttributes).forEach(attrName => {
+          const attrType = childAttributes[attrName];
+          const typeDisplay = Array.isArray(attrType) ? `Array[${attrType[0]}]` : attrType;
+          text_file.push(`    ${attrName}: ${typeDisplay}\n`);
+        });
+        
+        text_file.push("\n******************************************************************\n");
+      });
+      
+      text_file.push("END_CHILD_SCHEMAS\n");
+      text_file.push("******************************************************************\n");
+    }
+
     const text = text_file.join("");
     const textBlob = new Blob([text], { type: "text/plain" });
     const downloadUrl = URL.createObjectURL(textBlob);
