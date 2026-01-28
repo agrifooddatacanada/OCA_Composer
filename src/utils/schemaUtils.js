@@ -10,10 +10,8 @@
 export const hasMultiSchemaStructure = (ocaPackage) => {
   if (!ocaPackage) return false;
   
-  const dependencies = 
-    ocaPackage?.dependencies || 
-    ocaPackage?.oca_bundle?.dependencies || 
-    [];
+  const { getPackageDependencies } = require("./packageUtils");
+  const dependencies = getPackageDependencies(ocaPackage);
   
   return dependencies.length > 0;
 };
@@ -27,10 +25,8 @@ export const hasMultiSchemaStructure = (ocaPackage) => {
 export const hasActualDependencies = (ocaPackage) => {
   if (!ocaPackage) return false;
   
-  const dependencies = 
-    ocaPackage?.dependencies || 
-    ocaPackage?.oca_bundle?.dependencies || 
-    [];
+  const { getPackageDependencies } = require("./packageUtils");
+  const dependencies = getPackageDependencies(ocaPackage);
   
   return dependencies.length > 0 && dependencies.some(dep => {
     const attributes = dep?.capture_base?.attributes || {};

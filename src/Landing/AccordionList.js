@@ -110,9 +110,10 @@ const AccordionList = () => {
   let isInvalidOcaPackage = false;
 
   if (OCAPackage) {
+    const { getPackageBundle, getPackageBundleId } = require("../utils/packageUtils");
     // Only verify if this is actually an OCA package with proper structure
-    const hasOcaStructure = OCAPackage.bundle || OCAPackage.oca_bundle;
-    const digest = OCAPackage.d || OCAPackage?.bundle?.d || OCAPackage?.oca_bundle?.d;
+    const hasOcaStructure = getPackageBundle(OCAPackage);
+    const digest = OCAPackage.d || getPackageBundleId(OCAPackage);
 
     if (hasOcaStructure && digest) {
       try {

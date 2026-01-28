@@ -595,7 +595,7 @@ const useOCAExport = () => {
     const extension = {
       extensions: {
         [ADC]: {
-          [bundle?.bundle?.d || "bundle_id"]: extension_overlays
+          [getPackageBundleId(bundle) || "bundle_id"]: extension_overlays
         }
       }
     };
@@ -676,7 +676,7 @@ const useOCAExport = () => {
         const engMeta = Array.isArray(metaOverlays) 
           ? metaOverlays.find(m => m.language === 'eng') || metaOverlays[0]
           : null;
-        const schemaName = engMeta?.name || bundle?.d || "schema";
+        const schemaName = engMeta?.name || getPackageBundleId(bundle) || "schema";
         
         // Download OCA_package.json with regenerated digests
         const packageFileName = schemaName.split(" ")[0] + "_OCA_package.json";

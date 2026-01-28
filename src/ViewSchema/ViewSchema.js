@@ -36,6 +36,7 @@ import Loading from "../components/Loading";
 import useOCAExport from "../hooks/useOCAExport";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateTextReadmeFromJson from "./useGenerateTextReadmeFromJson";
+import { getPackageBundleId, getPackageDependencies } from "../utils/packageUtils";
 
 
 import ErrorPopup from "./ErrorPopup";
@@ -261,7 +262,7 @@ export default function ViewSchema({
   // Don't interfere with normal navigation to child schemas
   useEffect(() => {
     const pkg = updatedOCAPackage || OCAPackage;
-    const rootDigest = pkg?.bundle?.d || pkg?.oca_bundle?.bundle?.d;
+    const rootDigest = getPackageBundleId(pkg);
     
     // Only sync if the root digest has changed (package structure modified)
     if (rootDigest && lastRootDigestRef.current && rootDigest !== lastRootDigestRef.current) {
@@ -280,7 +281,7 @@ export default function ViewSchema({
       // Canonicalize the incoming schemaId to match how it's stored in the context
       // "root" should map to bundle.d
       const pkg = updatedOCAPackage || OCAPackage;
-      const rootDigest = pkg?.bundle?.d || pkg?.oca_bundle?.bundle?.d;
+      const rootDigest = getPackageBundleId(pkg);
       const canonicalSchemaId = (schemaId === "root" && rootDigest) ? rootDigest : schemaId;
       
       // Switch only if different, but always navigate to the editor
@@ -362,8 +363,7 @@ export default function ViewSchema({
     });
     
     // Check if package has any dependencies (even empty ones)
-    const dependencies = updatedOCAPackage?.oca_bundle?.dependencies || 
-                        updatedOCAPackage?.dependencies || [];
+    const dependencies = getPackageDependencies(updatedOCAPackage);
     const hasDependencies = dependencies.length > 0;
     
     return anySchemaHasChildren || hasDependencies;
@@ -1005,7 +1005,7 @@ export default function ViewSchema({
             <Box sx={{ marginBottom: "2rem", width: "100%", minHeight: "400px" }}>
               <Suspense fallback={<Loading />}>
                 <SchemaVisualizationEmbed
-                  key={`viz-${vizVersion}-${updatedOCAPackage?.bundle?.d}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
+                  key={`viz-${vizVersion}-${getPackageBundleId(updatedOCAPackage)}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
                   schemaLanguageOverride={getCurrentLanguage()}
                   OCAPackage={updatedOCAPackage}
                   viewMode={visualizationMode}

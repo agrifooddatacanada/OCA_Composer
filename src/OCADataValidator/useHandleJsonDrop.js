@@ -464,7 +464,9 @@ export const useHandleJsonDrop = (
             const schemaIds = initializeFromOCAPackage(ocaPackage);
 
             // Set editing schema to root schema
-            const rootSchemaId = ocaPackage.oca_bundle?.bundle?.d || ocaPackage.oca_bundle?.bundle?.capture_base?.d || 'generated_schema';
+            const { getPackageBundleId, getPackageBundle } = require("../utils/packageUtils");
+            const bundle = getPackageBundle(ocaPackage);
+            const rootSchemaId = getPackageBundleId(ocaPackage) || bundle?.capture_base?.d || 'generated_schema';
             switchToSchema(rootSchemaId, ocaPackage);
 
             // Extract the bundle for processing - exactly the same structure expected by JSON processing

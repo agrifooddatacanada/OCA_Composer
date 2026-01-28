@@ -118,7 +118,8 @@ const useMultiSchemaExport = () => {
       const packageBuffer = await ocaPackage.toBuffer();
 
       // Create filename
-      const rootSchemaName = exportPackage.bundle?.d || "schema";
+      const { getPackageBundleId } = require("../utils/packageUtils");
+      const rootSchemaName = getPackageBundleId(exportPackage) || "schema";
       const fileName = getDescriptiveFileName(rootSchemaName);
 
       // Download OCA_package.json

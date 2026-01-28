@@ -213,11 +213,12 @@ const SchemaVisualizationEmbed = ({
 
       // Add click handlers and normalized highlighting to nodes
       if (result?.nodes) {
+        const { getPackageBundleId, getPackageDependencies } = require("../utils/packageUtils");
         // Handle both package structures: direct and wrapped in oca_bundle
-        const rootId = ocaPackage?.bundle?.d || ocaPackage?.oca_bundle?.bundle?.d;
+        const rootId = getPackageBundleId(ocaPackage);
         // Build a name -> digest map from dependency meta overlays
         const nameToId = new Map();
-        const dependencies = ocaPackage?.dependencies || ocaPackage?.oca_bundle?.dependencies || [];
+        const dependencies = getPackageDependencies(ocaPackage);
         dependencies.forEach((dep) => {
           const meta = dep?.overlays?.meta;
           if (Array.isArray(meta)) {

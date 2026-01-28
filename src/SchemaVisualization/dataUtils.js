@@ -109,11 +109,13 @@ export const getDependencyInfo = (depId, dependencyMap, language = "eng") => {
 const normalizeOCAPackage = (ocaPackage) => {
   if (!ocaPackage) return null;
   
+  const { getPackageBundle, getPackageDependencies } = require("./packageUtils");
+  
   // Handle oca_package format: { oca_bundle: { bundle: {...}, dependencies: [...] }, extensions: {...} }
   if (ocaPackage.oca_bundle) {
     return {
-      bundle: ocaPackage.oca_bundle.bundle,
-      dependencies: ocaPackage.oca_bundle.dependencies || [],
+      bundle: getPackageBundle(ocaPackage),
+      dependencies: getPackageDependencies(ocaPackage),
       extensions: ocaPackage.extensions || ocaPackage.oca_bundle.extensions || {}
     };
   }
@@ -147,10 +149,13 @@ export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
     : (labelOverlays || {});
   const labels = labelOverlay.attribute_labels || {};
 
+  const { getPackageDependencies, getPackageBundle } = require("./packageUtils");
+  const bundle = getPackageBundle(normalizedPackage);
+  
   return {
-    dependencies: normalizedPackage.dependencies || [],
-    attributes: normalizedPackage.bundle.capture_base?.attributes || {},
-    overlays: normalizedPackage.bundle.overlays || {},
+    dependencies: getPackageDependencies(normalizedPackage),
+    attributes: bundle?.capture_base?.attributes || {},
+    overlays: bundle?.overlays || {},
     labels
   };
 };
@@ -174,44 +179,48 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
     return null;
   }
 
+  const { getPackageBundle, getPackageBundleId } = require("./packageUtils");
+  const bundle = getPackageBundle(normalizedPackage);
+  const bundleId = getPackageBundleId(normalizedPackage);
+  
   // If it's the root schema (either by bundle digest, capture base digest, by "root" ID, or by schema name)
   if (
-    schemaId === normalizedPackage.bundle?.d ||
-    schemaId === normalizedPackage.bundle?.capture_base?.d ||
+    schemaId === bundleId ||
+    schemaId === bundle?.capture_base?.d ||
     schemaId === "root"
   ) {
     // Get the schema name and description from meta overlays
     const metaOverlay =
-      normalizedPackage.bundle.overlays?.meta?.find((m) => m.language === language) ||
-      normalizedPackage.bundle.overlays?.meta?.[0];
-    const schemaName = metaOverlay?.name || normalizedPackage.bundle?.d || "root";
+      bundle?.overlays?.meta?.find((m) => m.language === language) ||
+      bundle?.overlays?.meta?.[0];
+    const schemaName = metaOverlay?.name || bundleId || "root";
     const schemaDescription = metaOverlay?.description || "";
 
     return {
-      schemaId: normalizedPackage.bundle.d || "root",
+      schemaId: bundleId || "root",
       schemaName,
       schemaDescription,
-      attributes: normalizedPackage.bundle.capture_base?.attributes || {},
-      overlays: normalizedPackage.bundle.overlays || {},
+      attributes: bundle?.capture_base?.attributes || {},
+      overlays: bundle?.overlays || {},
       labels:
-        normalizedPackage.bundle.overlays?.label?.find((l) => l.language === language)
+        bundle?.overlays?.label?.find((l) => l.language === language)
           ?.attribute_labels || {}
     };
   }
 
   // Check if it's the root schema by name (e.g., "sample_questionnaire")
   const rootMetaOverlay =
-    normalizedPackage.bundle.overlays?.meta?.find((m) => m.language === language) ||
-    normalizedPackage.bundle.overlays?.meta?.[0];
+    bundle?.overlays?.meta?.find((m) => m.language === language) ||
+    bundle?.overlays?.meta?.[0];
   if (rootMetaOverlay?.name === schemaId) {
     return {
-      schemaId: normalizedPackage.bundle.d || "root",
+      schemaId: bundleId || "root",
       schemaName: rootMetaOverlay.name,
       schemaDescription: rootMetaOverlay.description || "",
-      attributes: normalizedPackage.bundle.capture_base?.attributes || {},
-      overlays: normalizedPackage.bundle.overlays || {},
+      attributes: bundle?.capture_base?.attributes || {},
+      overlays: bundle?.overlays || {},
       labels:
-        normalizedPackage.bundle.overlays?.label?.find((l) => l.language === language)
+        bundle?.overlays?.label?.find((l) => l.language === language)
           ?.attribute_labels || {}
     };
   }

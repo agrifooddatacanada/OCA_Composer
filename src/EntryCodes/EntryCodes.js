@@ -212,7 +212,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       return row;
     })();
     // Get overlays from the complete schema (works for both bundles and packages)
-    const bundleData = completeSchema?.oca_bundle?.bundle || completeSchema?.bundle || completeSchema || {};
+    const { getPackageBundle } = require("../utils/packageUtils");
+    const bundleData = getPackageBundle(completeSchema) || completeSchema || {};
     const overlays = bundleData?.overlays || {};
     
     const overlayCodes = overlays?.entry_code?.attribute_entry_codes || {};

@@ -273,7 +273,9 @@ const Home = ({
     if (!OCAPackage) return;
 
     const hasArrayAttributes = (() => {
-      const attrs = OCAPackage?.bundle?.capture_base?.attributes || {};
+      const { getPackageBundle } = require("./utils/packageUtils");
+      const bundle = getPackageBundle(OCAPackage);
+      const attrs = bundle?.capture_base?.attributes || {};
       return Object.values(attrs).some((v) => Array.isArray(v));
     })();
 

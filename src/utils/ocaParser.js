@@ -50,11 +50,12 @@ export class OCAParser {
    * This ensures components don't need to re-parse from completeSchema.
    */
   static parseSchemaData(schemaId, ocaPackage) {
+    const { getPackageBundle, getPackageDependencies } = require("./packageUtils");
     // Normalize the OCA package format first
     // Handle oca_package format: { oca_bundle: { bundle, dependencies }, extensions }
     const normalizedPackage = ocaPackage?.oca_bundle ? {
-      bundle: ocaPackage.oca_bundle.bundle,
-      dependencies: ocaPackage.oca_bundle.dependencies || [],
+      bundle: getPackageBundle(ocaPackage),
+      dependencies: getPackageDependencies(ocaPackage),
       extensions: ocaPackage.extensions || ocaPackage.oca_bundle.extensions || {}
     } : ocaPackage;
     
@@ -85,8 +86,10 @@ export class OCAParser {
 
     // Extract flagged_attributes from capture_base (for root schema)
     // For child schemas, get from dependencies
+    const { getPackageBundleId } = require("./packageUtils");
     let flaggedAttributes = [];
-    if (schemaId === normalizedPackage.bundle?.d || schemaId === normalizedPackage.bundle?.capture_base?.d || schemaId === "root") {
+    const bundleId = getPackageBundleId(normalizedPackage);
+    if (schemaId === bundleId || schemaId === normalizedPackage.bundle?.capture_base?.d || schemaId === "root") {
       flaggedAttributes = normalizedPackage.bundle?.capture_base?.flagged_attributes || [];
     } else if (normalizedPackage?.dependencies) {
       const dependency = normalizedPackage.dependencies.find(

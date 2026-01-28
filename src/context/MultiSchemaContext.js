@@ -416,11 +416,13 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       // Canonicalize schema id so root aliases ("root", name) map to the same key
       const canonicalizeSchemaId = (pkg, id) => {
         if (!pkg) return id;
+        const { getPackageBundleId, getPackageBundle } = require("../utils/packageUtils");
         // Handle both pkg.bundle.d and pkg.oca_bundle.bundle.d structures
-        const rootDigest = pkg.bundle?.d || pkg.oca_bundle?.bundle?.d;
+        const rootDigest = getPackageBundleId(pkg);
         // Collect possible root names from meta overlays if present (handle array or object)
         const rootNames = new Set();
-        const metaOverlay = pkg.bundle?.overlays?.meta || pkg.oca_bundle?.bundle?.overlays?.meta;
+        const bundle = getPackageBundle(pkg);
+        const metaOverlay = bundle?.overlays?.meta;
         if (Array.isArray(metaOverlay)) {
           metaOverlay.forEach((m) => {
             if (m && typeof m.name === "string") {
@@ -499,9 +501,9 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       const modifiedPackage = JSON.parse(JSON.stringify(ocaPackage));
 
       // Handle both package formats: direct { bundle, dependencies } or wrapped { oca_bundle: { bundle, dependencies } }
-      const { getPackageBundle } = require("../utils/packageUtils");
+      const { getPackageBundle, getPackageDependencies } = require("../utils/packageUtils");
       const bundle = getPackageBundle(modifiedPackage);
-      const dependencies = modifiedPackage.oca_bundle?.dependencies || modifiedPackage.dependencies;
+      const dependencies = getPackageDependencies(modifiedPackage);
 
       // Apply changes to all schemas that have been initialized
       Object.keys(schemaStates).forEach((schemaId) => {
@@ -1171,6 +1173,8 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
       // Create placeholder child schema dependencies
       // Inherit languages from root schema
+      const { getPackageBundle } = require("../utils/packageUtils");
+      const bundle = getPackageBundle(modifiedPackage);
       const rootMetaOverlays = bundle?.overlays?.meta || [];
       const parentLanguages = rootMetaOverlays.map(m => m.language).filter(Boolean);
       const languagesToUse = parentLanguages.length > 0 ? parentLanguages : ['eng'];
@@ -1322,9 +1326,10 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     const schemaIds = [];
     
     // Normalize package structure - handle both wrapped and unwrapped formats
+    const { getPackageBundle, getPackageDependencies } = require("../utils/packageUtils");
     const normalizedPackage = ocaPackage.oca_bundle ? ocaPackage : { oca_bundle: ocaPackage };
-    const bundle = normalizedPackage.oca_bundle?.bundle || ocaPackage.bundle;
-    const dependencies = normalizedPackage.oca_bundle?.dependencies || ocaPackage.dependencies;
+    const bundle = getPackageBundle(normalizedPackage);
+    const dependencies = getPackageDependencies(normalizedPackage);
     
     // Add root schema
     if (bundle) {
