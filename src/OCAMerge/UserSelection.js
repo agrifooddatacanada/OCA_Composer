@@ -35,7 +35,7 @@ import {
   searchUnits,
   normalizeEscapedQuotes
 } from "../utils/helpers";
-import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
+import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 
 const checkIfKeyInList = (key, list) => {
   const lowercaseSearchString = key.toLowerCase();
@@ -136,7 +136,7 @@ const UserSelection = () => {
     rowData: []
   });
 
-  const { jsonToTextFile } = useGenerateReadMeV2();
+  const { jsonToTextFile } = useGenerateTextReadmeFromJson();
 
   const fileName1 = OCAFile1Raw[0].path;
   const fileName1WithoutExt = fileName1.substring(0, fileName1.lastIndexOf("."));

@@ -27,7 +27,7 @@ import {
   getUnitFramingInput,
   getAttributeFramingInput
 } from "../utils/helpers";
-import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
+import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 
 /**
  * Multi-Schema Export Hook
@@ -50,7 +50,7 @@ const useMultiSchemaExport = () => {
     exportSchemaChanges
   } = useMultiSchema();
 
-  const { jsonToTextFile } = useGenerateReadMeV2();
+  const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [error, setError] = useState("");
 
   // Clear error

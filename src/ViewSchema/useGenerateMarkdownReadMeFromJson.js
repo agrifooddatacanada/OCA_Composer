@@ -1,3 +1,15 @@
+/**
+ * Hook to generate Markdown README from JSON OCA packages.
+ * 
+ * Used by:
+ * - "Generate Markdown Readme" button when a JSON file was uploaded
+ * 
+ * Input: JSON OCA package (already parsed)
+ * Output: Markdown file (.md) with formatted schema documentation including child schemas
+ * 
+ * Note: For ZIP files, see useGenerateMarkdownReadMe.
+ */
+
 import { useContext } from "react";
 import i18next from "i18next";
 import { Context } from "../App";

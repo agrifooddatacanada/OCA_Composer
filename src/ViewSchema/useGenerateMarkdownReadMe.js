@@ -1,4 +1,14 @@
-// Generate markdown readme from schema bundle zip
+/**
+ * Hook to generate Markdown README from ZIP schema bundles.
+ * 
+ * Used by:
+ * - "Generate Markdown Readme" button when a ZIP file was uploaded
+ * 
+ * Input: ZIP file contents (array of files)
+ * Output: Markdown file (.md) with formatted schema documentation
+ * 
+ * Note: For JSON packages, see useGenerateMarkdownReadmeFromJson.
+ */
 
 import i18next from "i18next";
 import { getLangNameFromUICode, getUICodeFromLangName } from "../utils/languageUtils";

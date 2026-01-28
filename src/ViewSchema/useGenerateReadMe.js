@@ -1,3 +1,15 @@
+/**
+ * Hook to generate text-based README (OCA_READ_ME/1.0 format) from ZIP schema bundles.
+ * 
+ * Used by:
+ * - "Download README" button when a ZIP file was uploaded
+ * 
+ * Input: ZIP file contents (array of files)
+ * Output: Text file (.txt) with human-readable schema documentation
+ * 
+ * Note: This is the legacy/ZIP version. For JSON packages, see useGenerateTextReadmeFromJson.
+ */
+
 import { useContext } from "react";
 import { Context } from "../App";
 import { getDescriptiveFileName } from "../utils/helpers";

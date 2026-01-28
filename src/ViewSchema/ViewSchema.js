@@ -35,7 +35,7 @@ import {
 import Loading from "../components/Loading";
 import useOCAExport from "../hooks/useOCAExport";
 import useGenerateReadMe from "./useGenerateReadMe";
-import useGenerateReadMeV2 from "./useGenerateReadMeV2";
+import useGenerateTextReadmeFromJson from "./useGenerateTextReadmeFromJson";
 
 
 import ErrorPopup from "./ErrorPopup";
@@ -248,7 +248,7 @@ export default function ViewSchema({
   // Export is disabled if there are validation errors
   const exportDisabled = hasInvalidAttributes || hasMissingEntryCodes;
   const { toTextFile } = useGenerateReadMe();
-  const { jsonToTextFile } = useGenerateReadMeV2();
+  const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [loading, setLoading] = useState(true);
   const [visualizationMode, setVisualizationMode] = useState("detailed"); // "detailed" for left-right, "tree" for top-down
   const [updatedOCAPackage, setUpdatedOCAPackage] = useState(OCAPackage);

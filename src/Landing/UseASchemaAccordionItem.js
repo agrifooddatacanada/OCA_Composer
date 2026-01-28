@@ -15,7 +15,7 @@ import Drop from "../StartSchema/Drop";
 import { Context } from "../App";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
-import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
+import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
@@ -28,7 +28,7 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme, OCAPackage, schemaDescription } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
-  const { jsonToTextFile } = useGenerateReadMeV2();
+  const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
   const { generateMarkdownReadMeFromJson } = useGenerateMarkdownReadMeFromJson();
   const { t } = useTranslation();

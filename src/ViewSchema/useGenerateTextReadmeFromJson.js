@@ -31,7 +31,18 @@ For the OCA_BUNDLE, each section between rows of ****'s contains the details of 
 ******************************************************************
 END_REFERENCE_MATERIAL\n\n`;
 
-const useGenerateReadMeV2 = () => {
+/**
+ * Hook to generate text-based README (OCA_READ_ME/1.0 format) from JSON OCA packages.
+ * 
+ * Used by:
+ * - "Download README" button in ViewSchema
+ * - "Download README" button in Landing page accordions
+ * - Export flow in useOCAExport and useMultiSchemaExport
+ * 
+ * Input: JSON OCA package (already parsed)
+ * Output: Text file (.txt) with human-readable schema documentation
+ */
+const useGenerateTextReadmeFromJson = () => {
   const jsonToTextFile = async (jsonData, ocaPackage = null, schemaDescription = null) => {
     // Step 1: --- Read json schema bundle
     const json_bundle = jsonData;
@@ -793,4 +804,4 @@ const useGenerateReadMeV2 = () => {
   return { jsonToTextFile };
 };
 
-export default useGenerateReadMeV2;
+export default useGenerateTextReadmeFromJson;

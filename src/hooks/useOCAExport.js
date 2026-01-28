@@ -41,7 +41,7 @@ import {
   normalizeEscapedQuotes,
   escapeForOCAString
 } from "../utils/helpers";
-import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
+import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 
 const currentEnv = process.env.REACT_APP_ENV;
 
@@ -116,7 +116,7 @@ const useOCAExport = () => {
     return result;
   }, [languages, metadata]);
 
-  const { jsonToTextFile } = useGenerateReadMeV2();
+  const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [error, setError] = useState("");
 
   const attributeListMap = attributeRowData.reduce((acc, attr) => {

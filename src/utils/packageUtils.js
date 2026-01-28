@@ -7,6 +7,15 @@
  * Format 2 (Official): { type: "oca_package/1.0", oca_bundle: { bundle: {...}, dependencies: [...] }, extensions: {...} }
  * 
  * These utilities provide a consistent interface to access package data regardless of format.
+ * 
+ * CHILD SCHEMA STORAGE:
+ * This app ONLY generates packages using oca_bundle.dependencies format (array of bundles).
+ * However, we support reading both:
+ * - oca_bundle.dependencies (array of bundles directly) - what we generate
+ * - oca_bundle.schema (array with {bundle: {...}} wrappers) - for compatibility with external tools
+ * 
+ * The dual format support is defensive - it allows reading packages from other OCA tools
+ * that may use different conventions, while maintaining our own consistent export format.
  */
 
 import { getLangNameFromUICode } from './languageUtils';

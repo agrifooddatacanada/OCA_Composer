@@ -15,7 +15,7 @@ import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
 import { Context } from "../App";
 import useOCAExport from "../hooks/useOCAExport";
-import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
+import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
 import CollaborateOnASchema from "./CollaborateOnASchema";
 import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
@@ -42,7 +42,7 @@ const AccordionList = () => {
   const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, OCAPackage, schemaDescription } =
     useContext(Context);
   const { toTextFile } = useGenerateReadMe();
-  const { jsonToTextFile } = useGenerateReadMeV2();
+  const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
   const { generateMarkdownReadMeFromJson } = useGenerateMarkdownReadMeFromJson();
   const {
