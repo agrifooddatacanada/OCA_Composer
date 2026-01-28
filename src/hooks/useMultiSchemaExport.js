@@ -28,6 +28,7 @@ import {
   getAttributeFramingInput
 } from "../utils/helpers";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
+import { getPackageBundleId } from "../utils/packageUtils";
 
 /**
  * Multi-Schema Export Hook
@@ -118,7 +119,6 @@ const useMultiSchemaExport = () => {
       const packageBuffer = await ocaPackage.toBuffer();
 
       // Create filename
-      const { getPackageBundleId } = require("../utils/packageUtils");
       const rootSchemaName = getPackageBundleId(exportPackage) || "schema";
       const fileName = getDescriptiveFileName(rootSchemaName);
 

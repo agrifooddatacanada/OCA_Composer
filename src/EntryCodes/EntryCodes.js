@@ -17,6 +17,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 import { useMultiSchema } from "../context/MultiSchemaContext";
 import { getOCACodeFromLangName } from "../utils/languageUtils";
+import { getPackageBundle } from "../utils/packageUtils";
 
 const errorMessages = {
   fieldEmpty: "Please fill out all fields",
@@ -103,7 +104,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       if (!completeSchema) return;
       
       // Navigate to the bundle overlays (handles both bundle and oca_bundle wrapper)
-      const { getPackageBundle } = require("../utils/packageUtils");
       const bundleData = getPackageBundle(completeSchema) || completeSchema;
       const overlays = bundleData?.overlays;
       if (!overlays) return;
@@ -212,7 +212,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       return row;
     })();
     // Get overlays from the complete schema (works for both bundles and packages)
-    const { getPackageBundle } = require("../utils/packageUtils");
     const bundleData = getPackageBundle(completeSchema) || completeSchema || {};
     const overlays = bundleData?.overlays || {};
     

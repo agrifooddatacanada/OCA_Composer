@@ -12,6 +12,7 @@ import {
 } from "../utils/helpers";
 import { mapLinkMLToOCABundle } from "../SchemaTranslator/mapLinkMLToOCABundle";
 import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
+import { getPackageBundleId, getPackageBundle } from "../utils/packageUtils";
 
 const neededOverlays = ["format", "character_encoding", "conformance", "entry_code"];
 // eslint-disable-next-line import/prefer-default-export
@@ -464,7 +465,6 @@ export const useHandleJsonDrop = (
             const schemaIds = initializeFromOCAPackage(ocaPackage);
 
             // Set editing schema to root schema
-            const { getPackageBundleId, getPackageBundle } = require("../utils/packageUtils");
             const pkgBundle = getPackageBundle(ocaPackage);
             const rootSchemaId = getPackageBundleId(ocaPackage) || pkgBundle?.capture_base?.d || 'generated_schema';
             switchToSchema(rootSchemaId, ocaPackage);

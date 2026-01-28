@@ -23,6 +23,7 @@ import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
 import CatalogueInfo from "../CatalogueInfo/CatalogueInfo";
 import useLocalStorage from "../hooks/useLocalStorage";
+import { getPackageBundle, getPackageBundleId } from "../utils/packageUtils";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 import { hasMultiSchemaStructure } from "../utils/schemaUtils";
@@ -110,7 +111,6 @@ const AccordionList = () => {
   let isInvalidOcaPackage = false;
 
   if (OCAPackage) {
-    const { getPackageBundle, getPackageBundleId } = require("../utils/packageUtils");
     // Only verify if this is actually an OCA package with proper structure
     const hasOcaStructure = getPackageBundle(OCAPackage);
     const digest = OCAPackage.d || getPackageBundleId(OCAPackage);

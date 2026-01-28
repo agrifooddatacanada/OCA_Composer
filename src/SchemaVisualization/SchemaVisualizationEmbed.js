@@ -21,6 +21,7 @@ import { getLangNameFromUICode, getOCACodeFromLangName, getOCACodeFromUICode } f
 import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA } from "../constants/constants";
 import CustomPalette from "../constants/customPalette";
 import Spinner from "../components/Spinner";
+import { getPackageBundleId, getPackageDependencies, getPackageBundle } from "../utils/packageUtils";
 
 const nodeTypes = {
   placeholderNode: PlaceholderNode,
@@ -213,7 +214,6 @@ const SchemaVisualizationEmbed = ({
 
       // Add click handlers and normalized highlighting to nodes
       if (result?.nodes) {
-        const { getPackageBundleId, getPackageDependencies } = require("../utils/packageUtils");
         // Handle both package structures: direct and wrapped in oca_bundle
         const rootId = getPackageBundleId(ocaPackage);
         // Build a name -> digest map from dependency meta overlays
@@ -288,7 +288,6 @@ const SchemaVisualizationEmbed = ({
     const ocaPackage = getOCAPackage();
 
     // Handle both package formats: { bundle, dependencies } or { oca_bundle: { bundle, dependencies } }
-    const { getPackageBundle } = require("../utils/packageUtils");
     const bundle = getPackageBundle(ocaPackage);
 
     if (ocaPackage && bundle) {

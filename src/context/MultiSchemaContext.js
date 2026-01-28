@@ -1172,7 +1172,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
       // Create placeholder child schema dependencies
       // Inherit languages from root schema
-      const bundle = getPackageBundle(modifiedPackage);
+      // (bundle is already available from line 504)
       const rootMetaOverlays = bundle?.overlays?.meta || [];
       const parentLanguages = rootMetaOverlays.map(m => m.language).filter(Boolean);
       const languagesToUse = parentLanguages.length > 0 ? parentLanguages : ['eng'];

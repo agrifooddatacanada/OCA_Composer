@@ -14,6 +14,7 @@ import {
   TYPE_ARRAY_CHILD_SCHEMA
 } from "../constants/constants";
 import { getLangNameFromUICode, getLangNameFromOCACode, LanguageConstants } from "./languageUtils";
+import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
 
 /**
  * OCA Package Parser Utility
@@ -50,7 +51,6 @@ export class OCAParser {
    * This ensures components don't need to re-parse from completeSchema.
    */
   static parseSchemaData(schemaId, ocaPackage) {
-    const { getPackageBundle, getPackageDependencies } = require("./packageUtils");
     // Normalize the OCA package format first
     // Handle oca_package format: { oca_bundle: { bundle, dependencies }, extensions }
     const normalizedPackage = ocaPackage?.oca_bundle ? {
@@ -86,7 +86,6 @@ export class OCAParser {
 
     // Extract flagged_attributes from capture_base (for root schema)
     // For child schemas, get from dependencies
-    const { getPackageBundleId } = require("./packageUtils");
     let flaggedAttributes = [];
     const bundleId = getPackageBundleId(normalizedPackage);
     if (schemaId === bundleId || schemaId === normalizedPackage.bundle?.capture_base?.d || schemaId === "root") {
