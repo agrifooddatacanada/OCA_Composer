@@ -17,6 +17,7 @@ import {
 import { OCAParser } from "../utils/ocaParser";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 import { LanguageConstants } from "../utils/languageUtils";
+import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "../utils/packageUtils";
 
 /**
  * Multi-Schema Context
@@ -416,7 +417,6 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       // Canonicalize schema id so root aliases ("root", name) map to the same key
       const canonicalizeSchemaId = (pkg, id) => {
         if (!pkg) return id;
-        const { getPackageBundleId, getPackageBundle } = require("../utils/packageUtils");
         // Handle both pkg.bundle.d and pkg.oca_bundle.bundle.d structures
         const rootDigest = getPackageBundleId(pkg);
         // Collect possible root names from meta overlays if present (handle array or object)
@@ -501,7 +501,6 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       const modifiedPackage = JSON.parse(JSON.stringify(ocaPackage));
 
       // Handle both package formats: direct { bundle, dependencies } or wrapped { oca_bundle: { bundle, dependencies } }
-      const { getPackageBundle, getPackageDependencies } = require("../utils/packageUtils");
       const bundle = getPackageBundle(modifiedPackage);
       const dependencies = getPackageDependencies(modifiedPackage);
 
@@ -1173,7 +1172,6 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
       // Create placeholder child schema dependencies
       // Inherit languages from root schema
-      const { getPackageBundle } = require("../utils/packageUtils");
       const bundle = getPackageBundle(modifiedPackage);
       const rootMetaOverlays = bundle?.overlays?.meta || [];
       const parentLanguages = rootMetaOverlays.map(m => m.language).filter(Boolean);
@@ -1326,7 +1324,6 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     const schemaIds = [];
     
     // Normalize package structure - handle both wrapped and unwrapped formats
-    const { getPackageBundle, getPackageDependencies } = require("../utils/packageUtils");
     const normalizedPackage = ocaPackage.oca_bundle ? ocaPackage : { oca_bundle: ocaPackage };
     const bundle = getPackageBundle(normalizedPackage);
     const dependencies = getPackageDependencies(normalizedPackage);
