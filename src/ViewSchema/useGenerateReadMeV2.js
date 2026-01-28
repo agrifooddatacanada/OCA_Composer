@@ -732,12 +732,18 @@ const useGenerateReadMeV2 = () => {
     }
 
     // Document child schemas if any
-    if (Array.isArray(ocaPackage?.oca_bundle?.schema) && ocaPackage.oca_bundle.schema.length > 0) {
+    // Handle both package formats:
+    // - oca_bundle.schema (array with {bundle: {...}} wrappers)
+    // - oca_bundle.dependencies (array of bundles directly)
+    const childSchemas = ocaPackage?.oca_bundle?.schema || ocaPackage?.oca_bundle?.dependencies || [];
+    
+    if (Array.isArray(childSchemas) && childSchemas.length > 0) {
       text_file.push("\nBEGIN_CHILD_SCHEMAS\n");
       text_file.push("******************************************************************\n");
       
-      ocaPackage.oca_bundle.schema.forEach((childSchemaWrapper, index) => {
-        const childBundle = childSchemaWrapper.bundle;
+      childSchemas.forEach((childSchemaItem, index) => {
+        // Handle both formats: {bundle: {...}} or {...} directly
+        const childBundle = childSchemaItem.bundle || childSchemaItem;
         const childCaptureBase = childBundle?.capture_base;
         
         if (!childCaptureBase) return;

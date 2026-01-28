@@ -186,13 +186,19 @@ const useGenerateMarkdownReadMeFromJson = () => {
     );
     
     // Process child schemas if any
-    if (Array.isArray(OCAPackage?.oca_bundle?.schema) && OCAPackage.oca_bundle.schema.length > 0) {
+    // Handle both package formats:
+    // - oca_bundle.schema (array with {bundle: {...}} wrappers)
+    // - oca_bundle.dependencies (array of bundles directly)
+    const childSchemas = OCAPackage?.oca_bundle?.schema || OCAPackage?.oca_bundle?.dependencies || [];
+    
+    if (Array.isArray(childSchemas) && childSchemas.length > 0) {
       fileContent += "\n\n";
       fileContent += "BEGIN_CHILD_SCHEMAS\n";
       fileContent += "******************************************************************\n";
       
-      OCAPackage.oca_bundle.schema.forEach((childSchemaWrapper, index) => {
-        const childSchemaData = childSchemaWrapper.bundle;
+      childSchemas.forEach((childSchemaItem, index) => {
+        // Handle both formats: {bundle: {...}} or {...} directly
+        const childSchemaData = childSchemaItem.bundle || childSchemaItem;
         const childCaptureBase = childSchemaData.capture_base;
         const childLayers = [];
         const childLayersForSaidTable = [];

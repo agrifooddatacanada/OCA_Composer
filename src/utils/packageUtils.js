@@ -124,9 +124,16 @@ export const getPackageLanguages = (ocaPackage) => {
   }
   
   // Extract from child schemas
-  if (Array.isArray(ocaPackage?.oca_bundle?.schema)) {
-    ocaPackage.oca_bundle.schema.forEach(childSchema => {
-      extractFromSchema(childSchema.bundle);
+  // Handle both package formats:
+  // - oca_bundle.schema (array with {bundle: {...}} wrappers)
+  // - oca_bundle.dependencies (array of bundles directly)
+  const childSchemas = ocaPackage?.oca_bundle?.schema || ocaPackage?.oca_bundle?.dependencies || [];
+  
+  if (Array.isArray(childSchemas)) {
+    childSchemas.forEach(childSchemaItem => {
+      // Handle both formats: {bundle: {...}} or {...} directly
+      const childBundle = childSchemaItem.bundle || childSchemaItem;
+      extractFromSchema(childBundle);
     });
   }
   
