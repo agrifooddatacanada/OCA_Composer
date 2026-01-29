@@ -12,11 +12,19 @@ import {
   CUSTOM_FORMAT_RULE,
   TYPE_CHILD_SCHEMA,
   TYPE_ARRAY_CHILD_SCHEMA,
-  isChildSchemaType
+  isChildSchemaType,
+  FIELD_CHARACTER_ENCODING_OVERLAY,
+  FIELD_FORMAT_OVERLAY,
+  FIELD_CONFORMANCE_OVERLAY,
+  FIELD_CARDINALITY_OVERLAY,
+  FIELD_DATA_STANDARDS_OVERLAY,
+  FIELD_UNIT_FRAMING_OVERLAY,
+  FIELD_RANGE_OVERLAY,
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY
 } from "../constants/constants";
 import { OCAParser } from "../utils/ocaParser";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
-import { LanguageConstants } from "../utils/languageUtils";
+import { LanguageConstants, getOCACodeFromLangName } from "../utils/languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "../utils/packageUtils";
 
 /**
@@ -1240,6 +1248,66 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     }
   }, []);
 
+  /**
+   * Create a placeholder child schema during manual schema creation
+   * 
+   * Called by: TypeRenderer when user sets attribute type to "Child Schema"
+   * 
+   * What it does:
+   * - Creates an empty schema state for the child schema
+   * - Inherits languages from parent schema
+   * - Initializes with minimal metadata (name based on attribute name)
+   * - Sets initialized=false (will be properly initialized when user navigates to it)
+   * 
+   * This enables users to immediately navigate to and edit child schemas during
+   * manual creation, without needing to export and re-upload first.
+   */
+  const createChildSchemaPlaceholder = useCallback((childSchemaId, parentSchemaId) => {
+    if (!childSchemaId) return;
+    
+    // Check if child schema already exists
+    const existingChild = schemaStatesRef.current[childSchemaId];
+    if (existingChild) {
+      // Already exists, no need to create
+      return;
+    }
+    
+    // Get parent schema to inherit languages
+    const parentSchema = schemaStatesRef.current[parentSchemaId || MANUAL_CREATION_SCHEMA_ID];
+    const parentLanguages = parentSchema?.metadata?.languages || ['English'];
+    
+    // Create minimal child schema state
+    const childSchemaState = {
+      metadata: {
+        name: childSchemaId,
+        description: `Child schema for ${childSchemaId}`,
+        languages: parentLanguages,
+        localized: {}
+      },
+      attributes: [],
+      lanAttributeRowData: {},
+      savedEntryCodes: {},
+      attributesWithLists: [],
+      overlays: {},
+      initialized: false
+    };
+    
+    // Initialize localized entries for each parent language
+    parentLanguages.forEach(langName => {
+      const langCode = getOCACodeFromLangName(langName);
+      childSchemaState.metadata.localized[langCode] = {
+        name: childSchemaId,
+        description: `Child schema for ${childSchemaId}`
+      };
+    });
+    
+    // Add to schema states
+    setSchemaStates(prev => ({
+      ...prev,
+      [childSchemaId]: childSchemaState
+    }));
+  }, []);
+
     // === SIMPLIFIED: Direct field access with proper initialization ===
   
   /**
@@ -1544,6 +1612,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       switchToSchema,
       exportSchemaChanges,
       clearAllSchemas,
+      createChildSchemaPlaceholder,
 
       // NEW: Unified schema methods
       addSchemaFromOCA,
@@ -1581,6 +1650,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       switchToSchema,
       exportSchemaChanges,
       clearAllSchemas,
+      createChildSchemaPlaceholder,
       addSchemaFromOCA,
       getCompleteSchema,
       initializeFromOCAPackage,

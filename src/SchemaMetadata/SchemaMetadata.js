@@ -398,8 +398,7 @@ const SchemaMetadata = forwardRef(({
           setShowIsoInput={setShowIsoInput}
           setEditingLanguage={setEditingLanguage}
           languages={languages}
-          schemaDescription={schemaDescription}
-          setSchemaDescription={setSchemaDescription}
+          setLanguages={setLanguages}
         />
       </Box>
     </BackNextSkeleton>

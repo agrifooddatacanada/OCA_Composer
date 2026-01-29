@@ -9,7 +9,7 @@ import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA } from "../constants/constan
 const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAttributeRowData }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t } = useTranslation();
-  const { currentSchemaId, updateSchemaState, getSchemaState } = useMultiSchema();
+  const { currentSchemaId, updateSchemaState, getSchemaState, createChildSchemaPlaceholder } = useMultiSchema();
   
   // Type dropdown options
   // Note: TYPE_CHILD_SCHEMA ("Child Schema") is converted to refs:/refn: at export time
@@ -72,6 +72,12 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     updateSchemaState(currentSchemaId, {
       attributes: updatedAttributeRowData
     });
+    
+    // If setting type to Child Schema, create a placeholder child schema
+    // so user can immediately navigate to edit it
+    if (newType === TYPE_CHILD_SCHEMA || newType === TYPE_ARRAY_CHILD_SCHEMA) {
+      createChildSchemaPlaceholder(attributeName, currentSchemaId);
+    }
     
     setIsDropdownOpen(false);
   };

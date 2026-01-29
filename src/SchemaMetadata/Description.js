@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import { Context } from "../App";
 import SchemaInput from "./SchemaInput";
 
-export default function Description({ setShowIsoInput, setEditingLanguage, languages }) {
+export default function Description({ setShowIsoInput, setEditingLanguage, languages, setLanguages }) {
   return (
     <Box
       sx={{
@@ -21,6 +21,8 @@ export default function Description({ setShowIsoInput, setEditingLanguage, langu
             setShowIsoInput={setShowIsoInput}
             setEditingLanguage={setEditingLanguage}
             index={index}
+            languages={languages}
+            setLanguages={setLanguages}
           />
         ))}
       </Box>

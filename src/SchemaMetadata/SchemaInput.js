@@ -15,12 +15,12 @@ export default function SchemaInput({
   language,
   setShowIsoInput,
   setEditingLanguage,
-  index
+  index,
+  languages,
+  setLanguages
 }) {
   const { t } = useTranslation();
   const {
-    languages,
-    setLanguages,
     customIsos,
     OCAPackage
   } = useContext(Context);
