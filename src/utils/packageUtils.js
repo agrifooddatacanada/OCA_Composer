@@ -1,16 +1,28 @@
 /**
  * Utilities for handling OCA package structure variations
  * 
- * The OCA ecosystem has evolved to include two package formats:
+ * The OCA ecosystem supports multiple package formats:
  * 
- * Format 1 (Legacy/Internal): { bundle: {...}, dependencies: [...] }
- * Format 2 (Official): { type: "oca_package/1.0", oca_bundle: { bundle: {...}, dependencies: [...] }, extensions: {...} }
+ * Format 1 (HCF Endpoint): { type: "oca_package/1.0", oca_bundle: { bundle: {...}, dependencies: [...] }, extensions: {...} }
+ *   - Returned by HCF schema generation endpoint
+ *   - Base structure for OCA packages with oca_bundle wrapper
+ * 
+ * Format 2 (Draft): { bundle: {...}, dependencies: [...] }
+ *   - Internal draft format used during initial multi-schema development
+ *   - Direct bundle structure without oca_bundle wrapper
+ *   - Still supported for backward compatibility
+ * 
+ * Format 3 (OCA Package Standard): { d: "SAID", type: "oca_package/1.0", oca_bundle: {...}, extensions: {...} }
+ *   - Full OCA Package standard: https://github.com/agrifooddatacanada/OCA_package_standard
+ *   - Includes top-level SAID (d) for package integrity
+ *   - Supports community extensions following OCA Package Design Requirements
+ *   - This app generates Format 1/3 packages (with extensions, may not include top-level SAID)
  * 
  * These utilities provide a consistent interface to access package data regardless of format.
  * 
  * CHILD SCHEMA STORAGE:
- * Child schemas are stored in oca_bundle.dependencies as an array of bundles.
- * Format: { oca_bundle: { bundle: {...}, dependencies: [{...bundle...}, {...bundle...}] } }
+ * Child schemas are stored in oca_bundle.dependencies (Format 1/3) or dependencies (Format 2) as an array of bundles.
+ * Each dependency is a complete OCA bundle that can be referenced by the parent schema.
  */
 
 import { getLangNameFromUICode } from './languageUtils';
