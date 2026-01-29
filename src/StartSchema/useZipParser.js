@@ -69,10 +69,10 @@ const useZipParser = () => {
   const processMetadata = (metadata) => {
     const newMetadata = {};
     for (const { language, name, description } of metadata) {
-      // Removing any escape characters for " and '
+      // Removing any escape characters for ", ', and -
       const formattedDescription = description
         ? // eslint-disable-next-line quotes
-          description.replace(/\\"/g, '"').replace(/\\'/g, "'")
+          description.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\-/g, "-")
         : "";
       newMetadata[codesToLanguages[language.slice(0, 2)]] = {
         name,
@@ -211,7 +211,10 @@ const useZipParser = () => {
         // Removing any escape characters for " and '
         const formattedDescription = languageDescriptionMap?.[lang]?.[attr]
           ? // eslint-disable-next-line quotes
-            languageDescriptionMap[lang][attr].replace(/\\"/g, '"').replace(/\\'/g, "'")
+            languageDescriptionMap[lang][attr]
+              .replace(/\\"/g, '"')
+              .replace(/\\'/g, "'")
+              .replace(/\\-/g, "-")
           : "";
         if (
           label &&

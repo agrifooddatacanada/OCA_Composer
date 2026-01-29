@@ -104,7 +104,7 @@ const useGenerateReadMeV2 = () => {
             `SAID/digest: ${said}\n` +
             `Language: ${lang}\n` +
             // eslint-disable-next-line quotes
-            `Description: ${description ? description.replace(/\\"/g, '"').replace(/\\'/g, "'") : ""}\n` +
+            `Description: ${description ? description.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\-/g, "-") : ""}\n` +
             "\n"
         );
       }
@@ -160,7 +160,7 @@ const useGenerateReadMeV2 = () => {
               .map(
                 ([key, value]) =>
                   // eslint-disable-next-line quotes
-                  `    ${key}: ${value.replace(/\\"/g, '"').replace(/\\'/g, "'")}`
+                  `    ${key}: ${value.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\-/g, "-")}`
               )
               .join("\n")}\n` +
             "\n"
