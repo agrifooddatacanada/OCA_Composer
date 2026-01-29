@@ -6,6 +6,7 @@ import {
   getOrderedEntries,
   normalizeEscapedQuotes
 } from "../utils/helpers";
+import { getPackageDependencies } from "../utils/packageUtils";
 import { ADC, FORM, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
 
 const readmeText = `
@@ -41,9 +42,13 @@ END_REFERENCE_MATERIAL\n\n`;
  * 
  * Input: JSON OCA package (already parsed)
  * Output: Text file (.txt) with human-readable schema documentation
+ * 
+ * @param {Object} jsonData - The JSON bundle data
+ * @param {Object} ocaPackage - The full OCA package (optional, used for ordering/extensions)
+ * @param {string|Object} schemaNameOrDescription - Optional: schema name string or legacy schemaDescription object
  */
 const useGenerateTextReadmeFromJson = () => {
-  const jsonToTextFile = async (jsonData, ocaPackage = null, schemaDescription = null) => {
+  const jsonToTextFile = async (jsonData, ocaPackage = null, schemaNameOrDescription = null) => {
     // Step 1: --- Read json schema bundle
     const json_bundle = jsonData;
 
@@ -743,7 +748,8 @@ const useGenerateTextReadmeFromJson = () => {
     }
 
     // Document child schemas if any (stored in dependencies array)
-    const childSchemas = ocaPackage?.oca_bundle?.dependencies || [];
+    // Use helper to handle both package formats: {dependencies: [...]} and {oca_bundle: {dependencies: [...]}}
+    const childSchemas = getPackageDependencies(ocaPackage);
     
     if (Array.isArray(childSchemas) && childSchemas.length > 0) {
       text_file.push("\nBEGIN_CHILD_SCHEMAS\n");
@@ -784,8 +790,20 @@ const useGenerateTextReadmeFromJson = () => {
     const text = text_file.join("");
     const textBlob = new Blob([text], { type: "text/plain" });
     const downloadUrl = URL.createObjectURL(textBlob);
+    
+    // Extract schema name from JSON bundle if not provided
+    let nameForFile = schemaNameOrDescription;
+    if (!nameForFile && json_bundle?.overlays?.meta) {
+      // Get English meta overlay or first available
+      const metaOverlays = Array.isArray(json_bundle.overlays.meta) 
+        ? json_bundle.overlays.meta 
+        : [json_bundle.overlays.meta];
+      const engMeta = metaOverlays.find(m => m.language === 'eng') || metaOverlays[0];
+      nameForFile = engMeta?.name || null;
+    }
+    
     const descriptiveFileName = getDescriptiveFileName(
-      schemaDescription,
+      nameForFile,
       "README_OCA_schema.txt"
     );
 

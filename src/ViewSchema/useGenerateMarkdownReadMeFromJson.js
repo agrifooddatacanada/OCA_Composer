@@ -14,7 +14,7 @@ import { useContext } from "react";
 import i18next from "i18next";
 import { Context } from "../App";
 import { getLangNameFromUICode, getOCACodeFromLangName, getOCACodeFromUICode } from "../utils/languageUtils";
-import { getPackageLanguages } from "../utils/packageUtils";
+import { getPackageLanguages, getPackageDependencies } from "../utils/packageUtils";
 import {
   ADC,
   DEFAULT_THREE_LETTER_LANGUAGE_CODE,
@@ -198,7 +198,8 @@ const useGenerateMarkdownReadMeFromJson = () => {
     );
     
     // Process child schemas if any (stored in dependencies array)
-    const childSchemas = OCAPackage?.oca_bundle?.dependencies || [];
+    // Use helper to handle both package formats: {dependencies: [...]} and {oca_bundle: {dependencies: [...]}}
+    const childSchemas = getPackageDependencies(OCAPackage);
     
     if (Array.isArray(childSchemas) && childSchemas.length > 0) {
       fileContent += "\n\n";

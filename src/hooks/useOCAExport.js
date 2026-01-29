@@ -102,20 +102,8 @@ const useOCAExport = () => {
   const attributeFramingRowData = schemaState?.attributeFramingData || [];
   const currentUnitFramedRowData = schemaState?.unitFramedData || [];
 
-  // Build schemaDescription from MultiSchemaContext metadata
-  const schemaDescription = useMemo(() => {
-    const result = {};
-    languages.forEach((language) => {
-      const langKey = getOCACodeFromLangName(language);
-      const localized = metadata.localized?.[langKey] || {};
-      result[language] = {
-        name: localized.name || metadata.name || "",
-        description: localized.description || metadata.description || ""
-      };
-    });
-    return result;
-  }, [languages, metadata]);
-
+  // REMOVED: schemaDescription - no longer needed, schema name extracted from bundles directly
+  
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [error, setError] = useState("");
 
@@ -682,9 +670,9 @@ const useOCAExport = () => {
         const packageFileName = schemaName.split(" ")[0] + "_OCA_package.json";
         downloadJsonFile(exportPackage, packageFileName);
         
-        // Generate README_OCA_schema.txt
+        // Generate README_OCA_schema.txt (schema name extracted from bundle automatically)
         if (bundle?.overlays?.meta) {
-          await jsonToTextFile(bundle, exportPackage, schemaDescription);
+          await jsonToTextFile(bundle, exportPackage);
         }
         
         // Download OCA_bundle.json only on testing site
@@ -749,21 +737,24 @@ const useOCAExport = () => {
       const ocaPackageService = new OcaPackage(mergedExtension, { bundle: finalPackage.bundle, dependencies: finalPackage.dependencies });
       const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
 
-      // Generate and download text readme
+      // Generate and download text readme (schema name extracted from bundle automatically)
       try {
         if (finalPackage.bundle?.capture_base) {
-          await jsonToTextFile(finalPackage.bundle, ocaPackage, schemaDescription);
+          await jsonToTextFile(finalPackage.bundle, ocaPackage);
         }
       } catch (readmeError) {
         console.warn("Could not generate README:", readmeError);
       }
 
+      // Get schema name for filenames (extract from metadata)
+      const schemaNameForFile = metadata?.name || metadata?.localized?.eng?.name || null;
+
       // Download files
-      downloadJsonFile(ocaPackage, getDescriptiveFileName(schemaDescription, "OCA_package.json"));
+      downloadJsonFile(ocaPackage, getDescriptiveFileName(schemaNameForFile, "OCA_package.json"));
 
       if (currentEnv === "DEV") {
-        downloadTextFile(textDSL, getDescriptiveFileName(schemaDescription, "OCA_file.txt"));
-        downloadJsonFile(finalPackage, getDescriptiveFileName(schemaDescription, "OCA_bundle.json"));
+        downloadTextFile(textDSL, getDescriptiveFileName(schemaNameForFile, "OCA_file.txt"));
+        downloadJsonFile(finalPackage, getDescriptiveFileName(schemaNameForFile, "OCA_bundle.json"));
       }
 
       return true;

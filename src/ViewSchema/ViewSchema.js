@@ -23,7 +23,8 @@ import ViewGrid from "./ViewGrid";
 import { 
   getPrioritizedLangNames,
   getBestLangName,
-  getOCACodeFromLangName 
+  getOCACodeFromLangName,
+  LanguageConstants
 } from "../utils/languageUtils";
 import { hasActualDependencies } from "../utils/schemaUtils";
 import { 
@@ -62,7 +63,6 @@ export default function ViewSchema({
 
   const { 
     currentTheme,
-    languages,
     isZip, 
     isZipEdited,
     setIsZipEdited,
@@ -72,8 +72,7 @@ export default function ViewSchema({
     zipToReadme,
     jsonToReadme,
     OCAPackage,
-    formBuilderPages,
-    schemaDescription
+    formBuilderPages
   } = useContext(Context);
 
   // Multi-schema context
@@ -85,6 +84,10 @@ export default function ViewSchema({
     updateSchemaState,
     schemaStates
   } = useMultiSchema();
+
+  // Get languages from current schema's metadata (per-schema languages)
+  const schemaState = getSchemaState(currentSchemaId);
+  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
 
   const filteredLanguages = React.useMemo(() => {
     return getPrioritizedLangNames(languages);
@@ -297,7 +300,8 @@ export default function ViewSchema({
 
   const downloadReadMe = () => {
     if (Object.keys(jsonToReadme).length > 0) {
-      jsonToTextFile(jsonToReadme, OCAPackage, schemaDescription);
+      // Schema name will be extracted from jsonToReadme automatically
+      jsonToTextFile(jsonToReadme, OCAPackage);
     } else if (zipToReadme.length > 0) {
       toTextFile(zipToReadme);
     }

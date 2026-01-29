@@ -63,6 +63,8 @@ function App() {
     useState("StartDataValidator");
   const [currentOCAMergePage, setCurrentOCAMergePage] = useState("StartOCAMerge");
   const [history, setHistory] = useState([currentPage]);
+  // TODO: schemaDescription - now per-schema in MultiSchemaContext (schemaState.metadata.name/description)
+  // Kept for legacy schema creation flow, but no longer used for reading
   const [schemaDescription, setSchemaDescription] = useState({
     English: { name: "", description: "" }
   });
@@ -70,9 +72,14 @@ function App() {
     division: "",
     group: ""
   });
-  const [languages, setLanguages] = useState([LanguageConstants.DEFAULT_LANG_NAME]);
+  // REMOVED: languages state - now per-schema in MultiSchemaContext (schemaState.metadata.languages)
+  // Keeping deprecated setLanguages stub for backwards compatibility with legacy code
+  const setLanguages = () => {
+    console.warn('setLanguages is deprecated - languages are now per-schema in MultiSchemaContext');
+  };
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
+  // TODO: These are now per-schema in MultiSchemaContext - kept for legacy single-schema creation flow
   const [savedEntryCodes, setSavedEntryCodes] = useState({});
   const [attributesWithLists, setAttributesWithLists] = useState([]);
   const [lanAttributeRowData, setLanAttributeRowData] = useState({});
@@ -431,6 +438,7 @@ function App() {
   // semapv:ManualMappingCuratio
 
   // Data Validator: Match CSV columns to schema attributes
+  // TODO: This is legacy code for data validation - should use per-schema languages from MultiSchemaContext
   useEffect(() => {
     if (jsonRawFile.length > 0) {
       // Derive attributesList from attributeRowData (no separate state needed)
@@ -447,7 +455,9 @@ function App() {
         if (matchingRow) {
           newObj.Dataset = matchingRow.Dataset;
         }
-        languages.forEach((lang) => {
+        // Get languages from lanAttributeRowData keys (legacy approach)
+        const availableLanguages = Object.keys(lanAttributeRowData || {});
+        availableLanguages.forEach((lang) => {
           const languageRows = lanAttributeRowData?.[lang] || [];
           const matchingLangRow = languageRows.find((row) => row?.Attribute === item);
           newObj[lang] = matchingLangRow?.Label || "";
@@ -457,7 +467,7 @@ function App() {
       setMatchingRowData(newMatchingRowData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datasetRawFile, jsonRawFile, attributeRowData, languages, lanAttributeRowData]);
+  }, [datasetRawFile, jsonRawFile, attributeRowData, lanAttributeRowData]);
 
   function createEntryCodeRowData(languages, attributesWithLists, savedEntryCodes) {
     const newEntryCodesArray = [];
@@ -499,14 +509,18 @@ function App() {
   }
 
   // Re-set Entry Code Row Data when items update
+  // TODO: This is legacy code - entry codes are now per-schema in MultiSchemaContext
   useEffect(() => {
+    // Get languages from lanAttributeRowData keys (legacy approach)
+    const availableLanguages = Object.keys(lanAttributeRowData || {});
     const newEntryCodesArray = createEntryCodeRowData(
-      languages,
+      availableLanguages,
       attributesWithLists,
       savedEntryCodes
     );
     setEntryCodeRowData(newEntryCodesArray);
-  }, [languages, attributesWithLists, savedEntryCodes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attributesWithLists, savedEntryCodes, lanAttributeRowData]);
 
   // Re-set all fields when fileData updates
   useEffect(() => {
@@ -550,8 +564,7 @@ function App() {
               setSchemaDescription,
               divisionGroup,
               setDivisionGroup,
-              languages,
-              setLanguages,
+              setLanguages, // DEPRECATED: no-op for backwards compat, languages are per-schema now
               attributeRowData,
               setAttributeRowData,
               entryCodeRowData,

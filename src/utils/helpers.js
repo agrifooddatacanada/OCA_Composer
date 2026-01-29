@@ -35,9 +35,25 @@ export const getCurrentData = (currentApi, includedError) => {
   return newData;
 };
 
-export const getDescriptiveFileName = (schemaDescription, commonFileName) => {
-  const currentLanguage = getLangNameFromUICode(i18next.language) || DEFAULT_LANGUAGE;
-  const schemaName = schemaDescription[currentLanguage]?.name;
+/**
+ * Generate a descriptive filename with optional schema name prefix
+ * @param {string|Object} schemaNameOrDescription - Either a string name or legacy schemaDescription object
+ * @param {string} commonFileName - Base filename (e.g., "README_OCA_schema.txt")
+ * @returns {string} Filename with schema name prefix if available
+ */
+export const getDescriptiveFileName = (schemaNameOrDescription, commonFileName) => {
+  let schemaName = null;
+  
+  // Handle string input (new format)
+  if (typeof schemaNameOrDescription === 'string') {
+    schemaName = schemaNameOrDescription;
+  }
+  // Handle legacy schemaDescription object format
+  else if (schemaNameOrDescription && typeof schemaNameOrDescription === 'object') {
+    const currentLanguage = getLangNameFromUICode(i18next.language) || DEFAULT_LANGUAGE;
+    schemaName = schemaNameOrDescription[currentLanguage]?.name;
+  }
+  
   const fileName = `${schemaName ? `${schemaName.split(" ")[0]}_` : ""}${commonFileName}`;
   return fileName;
 };
