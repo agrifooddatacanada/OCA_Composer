@@ -332,7 +332,10 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     schemaTitle = metaOverlays[0].name;
     schemaDescription = metaOverlays[0].description
       ? // eslint-disable-next-line quotes
-        metaOverlays[0].description.replace(/\\"/g, '"').replace(/\\'/g, "'")
+        metaOverlays[0].description
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'")
+          .replace(/\\-/g, "-")
       : "";
     schemaLanguage = metaOverlays[0].language;
     schemaClassification = jsonData.find(
