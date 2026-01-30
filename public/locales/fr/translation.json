@@ -428,5 +428,6 @@
   "Additional instructions or commentary text that appears below the question label.": "Instructions supplémentaires ou texte de commentaire qui apparaît sous l'étiquette de la question.",
   "Section Labels": "Étiquettes de section",
   "Page Labels": "Étiquettes de page",
+  "Semantic Engine is currently undergoing maintenance and schemas cannot be exported at this time": "Semantic Engine est actuellement en maintenance et les schémas ne peuvent pas être exportés pour le moment",
   "Placeholder text to display when field is empty": "Texte d'espace réservé à afficher lorsque le champ est vide"
 }

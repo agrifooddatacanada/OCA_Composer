@@ -164,11 +164,12 @@ const useExportLogicV2 = () => {
         (obj) => obj.Language === language.language
       );
 
-      // Need to escape " and ' for OCA file
+      // Need to escape ", ', and -- for OCA file
       const parsedDescription = OCADataArray[0][languageIndex].Description
         // eslint-disable-next-line quotes
         .replace(/"/g, '\\"')
-        .replace(/'/g, "\\'");
+        .replace(/'/g, "\\'")
+        .replace(/-/g, "\\-");
 
       buildText += `\nADD Meta ${language.code} PROPS`;
       buildText += ` name="${OCADataArray[0][languageIndex].Name}"`;
@@ -255,11 +256,12 @@ const useExportLogicV2 = () => {
           data[languageIndex][index].Description &&
           data[languageIndex][index].Description !== ""
         ) {
-          // Need to escape " and ' for OCA file
+          // Need to escape ", ', and -- for OCA file
           const parsedDescription = data[languageIndex][index].Description
             // eslint-disable-next-line quotes
             .replace(/"/g, '\\"')
-            .replace(/'/g, "\\'");
+            .replace(/'/g, "\\'")
+            .replace(/-/g, "\\-");
           infoText += ` ${item}="${parsedDescription}"`;
         }
       });

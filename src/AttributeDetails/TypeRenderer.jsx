@@ -18,7 +18,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs }) => {
     { value: "Array[Boolean]", label: "Array[Boolean]" },
     { value: "Array[DateTime]", label: "Array[DateTime]" },
     { value: "Array[Numeric]", label: "Array[Numeric]" },
-    { value: "Array[Text]", label: "Array[Text]" },
+    { value: "Array[Text]", label: "Array[Text]" }
     // { value: "Array[Child Schema]", label: "Array[Child Schema]" }
   ];
 
