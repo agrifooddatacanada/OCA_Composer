@@ -209,13 +209,14 @@ const useZipParser = () => {
 
       for (const attr of attributeList) {
         // Removing any escape characters for " and '
+        /* eslint-disable quotes */
         const formattedDescription = languageDescriptionMap?.[lang]?.[attr]
-          ? // eslint-disable-next-line quotes
-            languageDescriptionMap[lang][attr]
+          ? languageDescriptionMap[lang][attr]
               .replace(/\\"/g, '"')
               .replace(/\\'/g, "'")
               .replace(/\\-/g, "-")
           : "";
+        /* eslint-enable quotes */
         if (
           label &&
           label.attribute_labels &&
@@ -260,14 +261,14 @@ const useZipParser = () => {
         Attribute: item,
         Flagged: sensitiveAttributes.includes(item),
         List: attributesWithListType.includes(item),
-        Type: dataTypes.includes(attributeType)
-          ? attributeType
-          : attributeType.includes("Array[ref")
-            ? "Array[Child Schema]"
-            : attributeType.includes("ref")
-              ? "Child Schema"
-              : "",
-        // Type: dataTypes.includes(attributeType) ? attributeType : "",
+        // Type: dataTypes.includes(attributeType)
+        //   ? attributeType
+        //   : attributeType.includes("Array[ref")
+        //     ? "Array[Child Schema]"
+        //     : attributeType.includes("ref")
+        //       ? "Child Schema"
+        //       : "",
+        Type: dataTypes.includes(attributeType) ? attributeType : "",
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
