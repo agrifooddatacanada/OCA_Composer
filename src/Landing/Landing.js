@@ -1,6 +1,5 @@
 import { Box } from "@mui/material";
 import React, { useContext, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { CustomPalette } from "../constants/customPalette";
 import QuickStart from "./Quick_Start";
@@ -9,11 +8,9 @@ import AccordionList from "./AccordionList";
 import { Context } from "../App";
 import Footer from "../Footer/Footer";
 import Header from "../Header/Header";
-import GeneralAnnouncementBanner from "./AnnouncementBanner";
 
 const Landing = () => {
   const path = useLocation();
-  const { t } = useTranslation();
   const { setCurrentPage } = useContext(Context);
 
   useEffect(() => {
@@ -24,11 +21,6 @@ const Landing = () => {
 
   return (
     <>
-      <GeneralAnnouncementBanner
-        message={t(
-          "Semantic Engine is currently undergoing maintenance and schemas cannot be exported at this time"
-        )}
-      />
       <Header currentPage="Landing" />
       <Box
         sx={{
