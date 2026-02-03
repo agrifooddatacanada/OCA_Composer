@@ -98,6 +98,11 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     return allStates[schemaId] || createDefaultSchemaState();
   };
 
+  const getSchemaStateById = (schemaId) => {
+    const allStates = getAllSchemaStates();
+    return allStates[schemaId] || null;
+  };
+
   // ============================================================================
   // STATE MUTATIONS (SETTERS)
   // ============================================================================
@@ -230,6 +235,11 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     return attributes.map((attr) => attr.Attribute);
   };
 
+  const getLanguages = () => {
+    const state = getSchemaState();
+    return state?.metadata?.languages || [];
+  };
+
   const getCardinalityData = () => {
     const state = getSchemaState();
     const attributes = state?.attributes || [];
@@ -283,7 +293,8 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   return { 
     // Core state access
     getSchemaState,
-    
+    getSchemaStateById,
+
     // State mutations
     updateSchemaState,
     addDeletedAttributes,
@@ -300,6 +311,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     // Computed/derived data
     getDeletedAttributes,
     getAttributesList,
+    getLanguages,
     getCardinalityData,
     getFormatRuleData,
     getRangeData,

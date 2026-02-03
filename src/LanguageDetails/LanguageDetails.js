@@ -23,14 +23,17 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   // Use MultiSchemaContext
   const {
     getSchemaState,
-    updateSchemaState
+    updateSchemaState,
+    getLanguages
   } = useMultiSchema();
 
   // Global context
   const {
-    languages,
     setCurrentPage
   } = useContext(Context);
+
+  // Get schema-specific languages
+  const languages = getLanguages();
 
   // Get schema state data
   const schemaState = getSchemaState();

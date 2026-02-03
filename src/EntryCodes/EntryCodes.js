@@ -28,18 +28,18 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const { getSchemaState, updateSchemaState } = useMultiSchema();
+  const { currentSchemaId, getSchemaState, updateSchemaState, getLanguages } = useMultiSchema();
   const schemaState = getSchemaState();
+  
+  // Get languages from schema state (per-schema)
+  const languages = getLanguages();
   
   // Global context
   const {
     setCurrentPage,
-    languages,
     OCAPackage
   } = useContext(Context);
   
-
-
   // Use schema state data directly - no fallback needed
   const attributeRowData = useMemo(
     () => schemaState?.attributes || [],

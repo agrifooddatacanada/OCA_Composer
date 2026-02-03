@@ -439,7 +439,7 @@ const UnitFraming = () => {
     (value) => {
       updateSchemaState({ frameAllUnits: value });
     },
-    [updateCurrentSchema]
+    [updateSchemaState]
   );
 
   // Get unframed unit list - calculate from unitFramedRowData

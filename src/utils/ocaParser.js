@@ -610,7 +610,7 @@ export class OCAParser {
     const conformanceOverlay = overlays?.conformance;
     const unitOverlay = overlays?.unit;
 
-    return {
+    const selections = {
       [FIELD_CHARACTER_ENCODING_OVERLAY]: !!charEncodingOverlay?.attribute_character_encoding,
       [FIELD_CONFORMANCE_OVERLAY]: !!conformanceOverlay?.attribute_conformance,
       [FIELD_FORMAT_OVERLAY]: !!formatOverlay?.attribute_formats,
@@ -621,6 +621,8 @@ export class OCAParser {
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
       [FIELD_FORM_INFORMATION_OVERLAY]: hasFormExtension
     };
+    console.log('[OCAParser] Built overlaySelections:', selections);
+    return selections;
   }
 
   /**

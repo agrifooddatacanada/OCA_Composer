@@ -125,9 +125,10 @@ export const getListOfSelectedOverlays = (overlay) => {
   // Temporarily excluding these features
   const keysToExclude = [FIELD_DATA_STANDARDS_OVERLAY];
 
-  Object.entries(overlay).forEach(([key, item]) => {
+  Object.entries(overlay).forEach(([key, value]) => {
     if (keysToExclude.includes(key)) return;
-    if (item.selected) {
+    
+    if (value) {
       selectedKeys.push(key);
     } else {
       unselectedKeys.push(key);

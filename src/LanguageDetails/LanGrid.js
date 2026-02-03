@@ -107,7 +107,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     getSchemaState,
     getAttributesList,
     updateSchemaState,
-    getCompleteSchema
+    getLanguages
   } = useMultiSchema();
   
   // Get the current schema ID (handles manual creation case where currentSchemaId from context is null)
@@ -119,7 +119,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   // Get schema-specific overlay data from unified context, formatted for LanGrid
   const schemaOverlay = useMemo(() => {
-    const completeSchema = getCompleteSchema(currentSchemaId);
+    const completeSchema = getSchemaState();
     const rawOverlays = completeSchema?.overlays;
 
     if (!rawOverlays) {
@@ -164,7 +164,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     }
 
     return transformedOverlay;
-  }, [getCompleteSchema, currentSchemaId]);
+  }, [getSchemaState, currentSchemaId]);
 
   // Get schema state data with stable references
   const attributesList = useMemo(

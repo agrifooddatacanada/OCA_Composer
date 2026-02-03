@@ -83,6 +83,11 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     [store]
   );
 
+  const getSchemaStateById = useCallback(
+    (schemaId) => store.getSchemaStateById(schemaId),
+    [store]
+  );
+
   // Switch to editing a different schema
   const switchToSchema = useCallback(
     (schemaId, ocaPackage) => {
@@ -129,8 +134,8 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     });
 
   const oca = useMemo(
-    () => createOcaLoader({getSchemaState, setSchemaStates}),
-    [getSchemaState, setSchemaStates]
+    () => createOcaLoader({getSchemaStateById, setSchemaStates}),
+    [getSchemaStateById, setSchemaStates]
   );
 
   // Auto-initialize from OCA package when it changes

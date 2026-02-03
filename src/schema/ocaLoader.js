@@ -21,7 +21,7 @@ import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 export { getPackageBundle, getPackageBundleId } from "../utils/packageUtils";
 
 export function createOcaLoader({
-  getSchemaState,
+  getSchemaStateById,
   setSchemaStates,
 }) {
   /**
@@ -53,13 +53,15 @@ export function createOcaLoader({
       overlays: schemaData.overlays || {}
     };
 
-    const existingState = getSchemaState(schemaId);
-
+    const existingState = getSchemaStateById(schemaId);
+    console.log('[ocaLoader] existingState:', existingState?.initialized, 'for schema:', schemaId);
     // Only parse if schema not already initialized
     const parsedState =
-      existingState.initialized ? null : parseSchemaFromOCA(schemaId, ocaPackage);
+      existingState?.initialized ? null : parseSchemaFromOCA(schemaId, ocaPackage);
+    console.log('[ocaLoader] parsedState overlaySelections:', parsedState?.overlaySelections);
 
-    setSchemaStates(prev => ({
+    setSchemaStates(prev => {
+      const newState = {
         ...prev,
         [schemaId]: {
             ...prev[schemaId],
@@ -67,18 +69,14 @@ export function createOcaLoader({
             completeSchema,
             initialized: true
         }
-    }));
+      };
+      console.log('[ocaLoader] Updated state overlaySelections:', newState[schemaId]?.overlaySelections);
+      return newState;
+    });
 
     return completeSchema;
   };
-  /**
-   * Get schema reference
-   */
-  const getCompleteSchema = (schemaId) => {
-    if (!schemaId) return null;
-    const state = getSchemaState(schemaId);
-    return state.completeSchema || null;
-  };
+
   /**
    * Load all schemas from package
    */
@@ -113,7 +111,6 @@ export function createOcaLoader({
 
   return {
     addSchemaFromOCA,
-    getCompleteSchema,
     initializeFromOCAPackage
   };
 }

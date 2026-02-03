@@ -46,26 +46,21 @@ const Overlays = ({ pageBack, pageForward }) => {
     setCurrentPage
   } = useContext(Context);
 
-  // Schema-specific overlay state from MultiSchemaContext
   const {
     getOverlaySelections,
     updateOverlaySelection,
     updateSchemaState,
     setSelectedOverlay,
-    getSelectedOverlay,
     getSchemaState,
     getRangeData,
     getFormatRuleData
   } = useMultiSchema();
   
-  // Get schema-specific data from MultiSchemaContext using getter functions
   const schemaState = getSchemaState();
   const rangeRowData = getRangeData();
   const attributeRowData = schemaState?.attributes || []; // Full attribute objects with Type field
   const formatRuleData = getFormatRuleData();
-
   const overlay = getOverlaySelections();
-  const selectedOverlay = getSelectedOverlay();
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedItemToDelete, setSelectedItemToDelete] = useState("");

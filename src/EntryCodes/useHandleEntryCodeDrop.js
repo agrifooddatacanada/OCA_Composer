@@ -51,7 +51,7 @@ const useHandleEntryCodeDrop = () => {
     const currentEntryCodes = schemaState?.entryCodes || {};
     const newEntryCodes = typeof updater === 'function' ? updater(currentEntryCodes) : updater;
     updateSchemaState({ entryCodes: newEntryCodes });
-  }, [currentSchemaId, schemaState?.entryCodes, updateSchemaState]);
+  }, [schemaState?.entryCodes, updateSchemaState]);
   const [rawFile, setRawFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);

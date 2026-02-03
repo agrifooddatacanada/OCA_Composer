@@ -31,7 +31,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     currentSchemaId,
     getSchemaState,
     updateSchemaState,
-    getCompleteSchema,
     getOverlaySelections,
     updateOverlaySelection
   } = useMultiSchema();
@@ -111,7 +110,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     const schemaLanguageName = getLangNameFromUICode(i18n.language);
     const languageCode = getOCACodeFromLangName(schemaLanguageName);
     // NEW UNIFIED APPROACH: Get complete schema data directly
-    const completeSchema = getCompleteSchema(currentSchemaId);
+    const completeSchema = getSchemaState();
 
     // Skip if already initialized for this schema AND data hasn't changed
     if (initializedSchemaRef.current === currentSchemaId && 
