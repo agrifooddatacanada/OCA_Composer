@@ -199,176 +199,83 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
 
 
-  // Track last computed data per schema to prevent infinite updates
-  const lastDataHashRef = useRef({});
-
-  // Sets Language Dependent Attribute row data
+  // Sets Language Dependent Attribute row data - simplified version
   useEffect(() => {
-    if (!currentSchemaId) return;
-
-    // Get current schema state
-    const currentSchemaState = getSchemaState();
+    const newLanAttributeRowData = JSON.parse(JSON.stringify(lanAttributeRowData));
     
-    // For manually created schemas (not initialized yet but has attributes),
-    // we still need to populate the language data.
-    // Skip update ONLY if there are no attributes to populate from.
-    const hasAttributes = effectiveAttributesList && effectiveAttributesList.length > 0;
-    
-    if (!hasAttributes) return;
-
-    // Debounce the update to prevent flickering during rapid state changes
-    const timeoutId = setTimeout(() => {
-      // Get entry codes from memoized value
-      const entryCodesMap = stableEntryCodes;
-
-      // Build schema-scoped overlay maps (labels, entries, codes) from overlay context first
-      const labelByLang = {};
-      const entriesByLang = {};
-
-      // Use overlay data from context
-      if (schemaOverlay?.label) {
-        Object.keys(schemaOverlay.label).forEach((lang) => {
-          labelByLang[lang] = schemaOverlay.label[lang] || {};
-        });
-      }
-      if (schemaOverlay?.entry) {
-        Object.keys(schemaOverlay.entry).forEach((lang) => {
-          entriesByLang[lang] = schemaOverlay.entry[lang] || {};
-        });
-      }
-
-      // Check if we have existing language attribute data - if so, we should preserve user edits
-      const existingLanData = lanAttributeRowData;
-      const hasExistingUserData = existingLanData && Object.keys(existingLanData).length > 0 && 
-        Object.values(existingLanData).some(langData => 
-          Array.isArray(langData) && langData.some(item => item.Label && item.Label.trim() !== "")
-        );
-
-      // If user has made edits, don't regenerate from scratch - just ensure all attributes are present
-      if (hasExistingUserData) {
-        // Only add missing attributes, don't overwrite existing ones, and remove deleted attributes
-        const updatedLanData = { ...existingLanData };
-        
-        languages.forEach((language) => {
-          if (!updatedLanData[language]) {
-            updatedLanData[language] = [];
-          }
-          
-          // Remove attributes that are no longer in the effective attributes list
-          updatedLanData[language] = updatedLanData[language].filter(item => 
-            effectiveAttributesList.includes(item.Attribute)
-          );
-          
-          // Add any new attributes that aren't already present
-          const existingAttributes = updatedLanData[language].map(item => item.Attribute);
-          effectiveAttributesList.forEach((attr) => {
-            if (!existingAttributes.includes(attr)) {
-              const overlayLangKey = getOCACodeFromLangName(language);
-              const infoByLang = schemaOverlay.information || {};
-              updatedLanData[language].push({
-                Attribute: attr,
-                Label: labelByLang?.[overlayLangKey]?.[attr] || "",
-                Description: infoByLang?.[overlayLangKey]?.[attr] || "",
-                List: "Not a List"
-              });
-            }
-          });
-        });
-        
-        // Update schema state with preserved user data
-        // MultiSchemaContext handles null schemaId internally
-        const newDataHash = JSON.stringify(updatedLanData);
-        if (lastDataHashRef.current !== newDataHash) {
-          lastDataHashRef.current = newDataHash;
-          updateSchemaState({
-            lanAttributeRowData: updatedLanData
-          });
-        }
-        return;
-      }
-
-      // Recompute from scratch for the current schema to avoid leaking rows across schemas
-      const newLanAttributeRowData = {};
-      languages.forEach((language) => {
-        const overlayLang = getOCACodeFromLangName(language);
-        
+    languages.forEach((language) => {
+      if (!newLanAttributeRowData[language]) {
+        // Generate initial data for this language
         const newLanguageList = [];
         effectiveAttributesList.forEach((item) => {
-          // Use saved entry codes for List display (no fallback to avoid flickering)
-          const overlayLangKey =
-            getOCACodeFromLangName(language);
-          const entryCodesForItem = entryCodesMap?.[item] || [];
-
-          const listDisplayArray = entryCodesForItem
-            .map((row) => {
-              // Prioritize human-readable text over raw codes
-              const displayValue =
-                row?.[language] || row?.[overlayLangKey] || row?.English || row?.eng;
-              // Only use Code as last resort and only if it's meaningful text
-              return (
-                displayValue ||
-                (row?.Code && row.Code !== displayValue ? row.Code : null)
-              );
-            })
-            .filter((txt) => txt && txt.trim() !== "");
-
-          // Only show list if we have actual entry codes (prevents flickering on initial load)
-          const listDisplayString = listDisplayArray.join(" | ");
-
-          // Check if this attribute should have entry codes
-          const shouldHaveEntryCodes =
-            Object.prototype.hasOwnProperty.call(entryCodesMap, item) ||
-            effectiveAttributesList?.some(
-              (attr) => attr.name === item && attr.type === "array"
-            );
-
-          let listDisplay = listDisplayString;
-          if (!listDisplayString) {
-            listDisplay = shouldHaveEntryCodes ? "Loading..." : "Not a List";
-          }
-
-          if (listDisplayArray.length > 3) {
-            const shown = listDisplayArray.slice(0, 3).join(" | ");
-            const remaining = listDisplayArray.length - 3;
-            listDisplay = `${shown} +${remaining} more`;
+          let listDisplay = attributeRowData.find((obj) => obj.Attribute === item)?.List;
+          if (!listDisplay) {
+            listDisplay = "Not a List";
+          } else {
+            const overlayLangKey = getOCACodeFromLangName(language);
+            const listDisplayArray = [];
+            stableEntryCodes[item]?.forEach((i) => {
+              const value = i[language] || i[overlayLangKey] || i.English || i.eng || i.Code;
+              if (value) listDisplayArray.push(value);
+            });
+            const listDisplayString = listDisplayArray.join(" | ");
+            listDisplay = listDisplayString || "Not a List";
           }
           
-          // Get information (description) for this language
-          const infoByLang = schemaOverlay.information || {};
-          
+          const overlayLangKey = getOCACodeFromLangName(language);
           newLanguageList.push({
             Attribute: item,
-            Label: labelByLang?.[overlayLang]?.[item] || "",
-            Description: infoByLang?.[overlayLang]?.[item] || "",
+            Label: schemaOverlay?.label?.[overlayLangKey]?.[item] || "",
+            Description: schemaOverlay?.information?.[overlayLangKey]?.[item] || "",
             List: listDisplay
           });
         });
         newLanAttributeRowData[language] = newLanguageList;
-      });
+      } else {
+        // Update existing data for this language
+        const newLanguageList = [];
+        attributeRowData.forEach((item) => {
+          let newLabel = "";
+          let newDescription = "";
+          
+          const existingItem = newLanAttributeRowData[language]?.find(
+            (i) => i.Attribute === item.Attribute
+          );
+          
+          if (existingItem) {
+            newLabel = existingItem.Label;
+            newDescription = existingItem.Description;
+          }
+          
+          let listDisplay = item.List;
+          if (!listDisplay) {
+            listDisplay = "Not a List";
+          } else {
+            const overlayLangKey = getOCACodeFromLangName(language);
+            const listDisplayArray = [];
+            stableEntryCodes[item.Attribute]?.forEach((i) => {
+              const value = i[language] || i[overlayLangKey] || i.English || i.eng || i.Code;
+              if (value) listDisplayArray.push(value);
+            });
+            const listDisplayString = listDisplayArray.join(" | ");
+            listDisplay = listDisplayString || "Not a List";
+          }
 
-      // Save to schema state only if data has changed to prevent infinite loops
-      // MultiSchemaContext handles null schemaId internally
-      const newDataHash = JSON.stringify(newLanAttributeRowData);
-
-      // Only update if the data has actually changed for this specific schema
-      if (lastDataHashRef.current[currentSchemaId] !== newDataHash) {
-        lastDataHashRef.current[currentSchemaId] = newDataHash;
-        updateSchemaState({
-          lanAttributeRowData: newLanAttributeRowData
+          newLanguageList.push({
+            Attribute: item.Attribute,
+            Label: newLabel,
+            Description: newDescription,
+            List: listDisplay
+          });
         });
+        newLanAttributeRowData[language] = newLanguageList;
       }
-    }, 100); // 100ms debounce to prevent flickering
-
-    // Cleanup timeout on unmount or dependency change
-    return () => clearTimeout(timeoutId);
-  }, [
-    languages,
-    attributeRowData,
-    schemaOverlay,
-    currentSchemaId,
-    effectiveAttributesList,
-    stableEntryCodes
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+    });
+    
+    updateSchemaState({
+      lanAttributeRowData: newLanAttributeRowData
+    });
+  }, [languages, stableEntryCodes, attributeRowData]);
 
   const [columnDefs, setColumnDefs] = useState([]);
 
@@ -481,81 +388,6 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     },
     [lanAttributeRowData, currentLanguage, updateSchemaState]
   );
-
-  // Refresh List data when currentLanguage changes or entry codes update
-  // Use a ref to track if we've already updated to prevent infinite loops
-  const listUpdateInProgressRef = useRef(false);
-  
-  useEffect(() => {
-    if (!currentLanguage || !currentSchemaId || listUpdateInProgressRef.current) return;
-
-    const schemaState = getSchemaState();
-    const savedEntryCodes = schemaState?.entryCodes || {};
-    const currentLangData = schemaState?.lanAttributeRowData?.[currentLanguage] || [];
-
-    // Update List column for current language
-    const updatedLangData = currentLangData.map((row) => {
-      const attrName = row.Attribute;
-      const entryCodesForAttr = savedEntryCodes[attrName] || [];
-
-      if (entryCodesForAttr.length > 0) {
-        const listItems = entryCodesForAttr
-          .map((codeRow) => {
-            // Prioritize human-readable text over raw codes
-            const displayValue =
-              codeRow[currentLanguage] || codeRow.English || codeRow.eng;
-            // Only use Code as last resort if it's meaningful
-            return (
-              displayValue ||
-              (codeRow.Code && codeRow.Code !== displayValue ? codeRow.Code : null)
-            );
-          })
-          .filter(Boolean);
-
-        let listDisplay = listItems.join(" | ") || "Loading...";
-        if (listItems.length > 3) {
-          const shown = listItems.slice(0, 3).join(" | ");
-          const remaining = listItems.length - 3;
-          listDisplay = `${shown} +${remaining} more`;
-        }
-
-        return { ...row, List: listDisplay };
-      }
-
-      // Check if this attribute should have entry codes
-      const shouldHaveEntryCodes =
-        Object.prototype.hasOwnProperty.call(savedEntryCodes, attrName) ||
-        effectiveAttributesList?.some(
-          (attr) => attr.name === attrName && attr.type === "array"
-        );
-
-      const listDisplay = shouldHaveEntryCodes ? "Loading..." : "Not a List";
-      return { ...row, List: listDisplay };
-    });
-
-    // Only update if the List values actually changed (to prevent infinite loops)
-    const listDataChanged = currentLangData.some((row, index) => {
-      const newRow = updatedLangData[index];
-      return newRow && row.List !== newRow.List;
-    });
-
-    if (listDataChanged) {
-      listUpdateInProgressRef.current = true;
-      const updatedLanAttributeRowData = {
-        ...schemaState.lanAttributeRowData,
-        [currentLanguage]: updatedLangData
-      };
-
-      updateSchemaState({
-        lanAttributeRowData: updatedLanAttributeRowData
-      });
-      
-      // Reset the flag after state update completes
-      setTimeout(() => {
-        listUpdateInProgressRef.current = false;
-      }, 0);
-    }
-  }, [currentLanguage, stableEntryCodes]);
 
   return (
     <div className="ag-theme-balham" style={{ width: 890 }}>

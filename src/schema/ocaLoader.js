@@ -70,7 +70,6 @@ export function createOcaLoader({
             initialized: true
         }
       };
-      console.log('[ocaLoader] Updated state overlaySelections:', newState[schemaId]?.overlaySelections);
       return newState;
     });
 
