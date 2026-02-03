@@ -279,7 +279,7 @@ export class OCAParser {
     const entryCodes = {};
     const listSet = new Set();
     
-    const addEntry = (attrName, code, lang, text) => {
+    const addEntry = (attrName, code, langCode, text) => {
       listSet.add(attrName);
       if (!entryCodes[attrName]) entryCodes[attrName] = [];
       let row = entryCodes[attrName].find((r) => r.Code === code);
@@ -287,7 +287,9 @@ export class OCAParser {
         row = { Code: code };
         entryCodes[attrName].push(row);
       }
-      row[lang] = text || "";
+      // Normalize language code to full name (eng -> English, fra -> French)
+      const langName = getLangNameFromOCACode(langCode) || langCode;
+      row[langName] = text || "";
     };
 
     if (Array.isArray(entryOverlay)) {

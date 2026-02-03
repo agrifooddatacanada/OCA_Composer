@@ -212,10 +212,10 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           if (!listDisplay) {
             listDisplay = "Not a List";
           } else {
-            const overlayLangKey = getOCACodeFromLangName(language);
             const listDisplayArray = [];
-            stableEntryCodes[item]?.forEach((i) => {
-              const value = i[language] || i[overlayLangKey] || i.English || i.eng || i.Code;
+            stableEntryCodes[item]?.forEach((row) => {
+              // Entry codes are normalized at source to use language names
+              const value = row[language] || row.Code;
               if (value) listDisplayArray.push(value);
             });
             const listDisplayString = listDisplayArray.join(" | ");
@@ -251,10 +251,10 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           if (!listDisplay) {
             listDisplay = "Not a List";
           } else {
-            const overlayLangKey = getOCACodeFromLangName(language);
             const listDisplayArray = [];
-            stableEntryCodes[item.Attribute]?.forEach((i) => {
-              const value = i[language] || i[overlayLangKey] || i.English || i.eng || i.Code;
+            stableEntryCodes[item.Attribute]?.forEach((row) => {
+              // Entry codes are normalized at source to use language names
+              const value = row[language] || row.Code;
               if (value) listDisplayArray.push(value);
             });
             const listDisplayString = listDisplayArray.join(" | ");

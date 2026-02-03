@@ -16,7 +16,7 @@ import { removeSpacesAndColonFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 import { useMultiSchema } from "../schema/schemaContext";
-import { getOCACodeFromLangName } from "../utils/languageUtils";
+import { getOCACodeFromLangName, getLangNameFromOCACode } from "../utils/languageUtils";
 import { getPackageBundle } from "../utils/packageUtils";
 
 const errorMessages = {
@@ -127,19 +127,21 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
         const rows = codes.map((code) => {
           const row = { Code: code };
           
-          // Add all available overlay translations (preserve ISO codes like fra, eng, etc.)
+          // Add translations using full language names (normalize OCA codes to names)
           Object.keys(overlayEntries).forEach((langCode) => {
             const label = overlayEntries[langCode]?.[attr]?.[code];
             if (label) {
-              row[langCode] = label;
+              // Convert OCA code (eng, fra) to language name (English, French)
+              const langName = getLangNameFromOCACode(langCode) || langCode;
+              row[langName] = label;
             }
           });
           
-          // Also ensure current language names have properties (even if empty)
+          // Ensure all schema languages have properties (even if empty)
           languages.forEach((languageName) => {
-            const alpha3 = resolveAlpha3(languageName);
-            const label = (alpha3 && overlayEntries?.[alpha3]?.[attr]?.[code]) || "";
-            row[languageName] = label || "";
+            if (!row[languageName]) {
+              row[languageName] = "";
+            }
           });
           return row;
         });

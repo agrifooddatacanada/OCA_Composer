@@ -518,10 +518,11 @@ export default function ViewSchema({
 
               // Build list text from entry codes for this language, or Not a List
               if (codesForAttr.length > 0) {
-                const labelForLang = (row) =>
-                  row[lang] || row[langKey] || row.English || row.eng || row.Code;
                 const items = codesForAttr
-                  .map((row) => labelForLang(row))
+                  .map((row) => {
+                    // Entry codes are normalized at source to use language names
+                    return row[lang] || row.Code;
+                  })
                   .filter(Boolean);
                 listObj[lang] = items.length > 0 ? items.join(" | ") : t("Not a List");
               } else {
