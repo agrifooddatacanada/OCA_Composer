@@ -21,22 +21,14 @@ const CharacterEncoding = () => {
   const { t } = useTranslation();
   const { setCurrentPage } = useContext(Context);
 
-  // Use MultiSchema context - no need to pass currentSchemaId around
   const {
     getSchemaState,
     updateSchemaState,
     updateOverlaySelection,
     setSelectedOverlay
   } = useMultiSchema();
-  const schemaState = getSchemaState(); // Gets current schema automatically
+  const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CHARACTER_ENCODING_OVERLAY);
-
-  const updateCurrentSchema = useCallback(
-    (updates) => {
-      updateSchemaState(updates); // Uses current schema automatically
-    },
-    [updateSchemaState]
-  );
 
   // Get character encoding data, initialize with attributes if empty
   const characterEncodingRowData = useMemo(() => {
@@ -69,9 +61,9 @@ const CharacterEncoding = () => {
         }
       });
 
-      updateCurrentSchema({ characterEncodingData });
+      updateSchemaState({ characterEncodingData });
     },
-    [updateCurrentSchema, currentSchemaId]
+    [updateSchemaState]
   );
 
   const [loading, setLoading] = useState(true);
@@ -128,9 +120,9 @@ const CharacterEncoding = () => {
 
   const handleForward = useCallback(() => {
     handleSave();
-    setSelectedOverlay(currentSchemaId, "");
+    setSelectedOverlay("");
     setCurrentPage("Overlays");
-  }, [handleSave, setCurrentPage, setSelectedOverlay, currentSchemaId]);
+  }, [handleSave, setCurrentPage, setSelectedOverlay]);
 
   // Save changes when component unmounts (user navigates away)
   useEffect(() => {
@@ -150,7 +142,7 @@ const CharacterEncoding = () => {
               characterEncodingData[row.Attribute] = row["Character Encoding"];
             }
           });
-          updateCurrentSchema({ characterEncodingData });
+          updateSchemaState({ characterEncodingData });
         }
       }
     };

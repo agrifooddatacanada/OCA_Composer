@@ -1078,9 +1078,7 @@ const AttributeFraming = () => {
     setCurrentPage
   } = useContext(Context);
 
-  // Use MultiSchema context for schema-specific state
   const {
-    currentSchemaId,
     getSchemaState,
     updateSchemaState,
     setSelectedOverlay
@@ -1094,16 +1092,16 @@ const AttributeFraming = () => {
   // Setter functions that update MultiSchemaContext
   const setAttributeFramingRowData = useCallback((data) => {
     updateSchemaState({ attributeFramingData: data });
-  }, [currentSchemaId, updateSchemaState]);
+  }, [updateSchemaState]);
   
   const setFrameAllAttributes = useCallback((value) => {
     updateSchemaState({ frameAllAttributes: value });
-  }, [currentSchemaId, updateSchemaState]);
+  }, [updateSchemaState]);
   
   const setUnframedAttributeList = useCallback((list) => {
     updateSchemaState({ unframedAttributeList: list });
-  }, [currentSchemaId, updateSchemaState]);
-
+  }, [updateSchemaState]);
+  
   const { t } = useTranslation();
   const gridRef = useRef();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -1356,7 +1354,7 @@ const AttributeFraming = () => {
 
   const handleForward = () => {
     handleSave();
-    setSelectedOverlay(currentSchemaId, "");
+    setSelectedOverlay("");
     setCurrentPage("Overlays");
   };
 

@@ -28,15 +28,9 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  // Use MultiSchema context with standard pattern
   const { getSchemaState, updateSchemaState } = useMultiSchema();
   const schemaState = getSchemaState();
   
-  const updateCurrentSchema = useCallback((updates) => {
-    // MultiSchemaContext handles null schemaId internally
-    updateSchemaState(currentSchemaId, updates);
-  }, [currentSchemaId, updateSchemaState]);
-
   // Global context
   const {
     setCurrentPage,
@@ -95,7 +89,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
         );
       });
       if (hasExistingData) {
-        updateCurrentSchema({ hasLoadedFromOverlays: true });
+        updateSchemaState({ hasLoadedFromOverlays: true });
         return;
       }
 
@@ -155,7 +149,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       if (Object.keys(initialized).length === 0) return;
 
       // Update schema state
-      updateCurrentSchema({
+      updateSchemaState({
         entryCodes: { ...entryCodeRowData, ...initialized },
         hasLoadedFromOverlays: true
       });
@@ -170,7 +164,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       });
       // Use local state instead of global
       setLocalEntryCodeRowData(alignedEntryCodesArray);
-      updateCurrentSchema({ hasLoadedFromOverlays: true });
+      updateSchemaState({ hasLoadedFromOverlays: true });
     } catch (_) {
       // silent
     }
@@ -182,7 +176,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     entryCodeRowData,
     languages,
     completeSchema,
-    currentSchemaId
     // updateCurrentSchema and schemaState intentionally omitted to prevent infinite loop
   ]);
 
@@ -352,7 +345,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     });
 
     // Save to schema state
-    updateCurrentSchema({
+    updateSchemaState({
       entryCodes: newEntryCodesObject
     });
   };
@@ -386,7 +379,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       );
     });
 
-    updateCurrentSchema({
+    updateSchemaState({
       entryCodes: newEntryCodesObject
     });
   };

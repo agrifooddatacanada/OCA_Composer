@@ -48,7 +48,6 @@ const Overlays = ({ pageBack, pageForward }) => {
 
   // Schema-specific overlay state from MultiSchemaContext
   const {
-    currentSchemaId,
     getOverlaySelections,
     updateOverlaySelection,
     updateSchemaState,
@@ -56,7 +55,6 @@ const Overlays = ({ pageBack, pageForward }) => {
     getSelectedOverlay,
     getSchemaState,
     getRangeData,
-    getAttributesList,
     getFormatRuleData
   } = useMultiSchema();
   
@@ -66,8 +64,8 @@ const Overlays = ({ pageBack, pageForward }) => {
   const attributeRowData = schemaState?.attributes || []; // Full attribute objects with Type field
   const formatRuleData = getFormatRuleData();
 
-  const overlay = getOverlaySelections(currentSchemaId);
-  const selectedOverlay = getSelectedOverlay(currentSchemaId);
+  const overlay = getOverlaySelections();
+  const selectedOverlay = getSelectedOverlay();
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedItemToDelete, setSelectedItemToDelete] = useState("");
@@ -98,7 +96,7 @@ const Overlays = ({ pageBack, pageForward }) => {
     if (shouldDisableFormInformationOverlay(overlayKey, selectedKeys)) return;
 
     // Get current overlay selections
-    const currentSelections = getOverlaySelections(currentSchemaId);
+    const currentSelections = getOverlaySelections();
     const updatedSelections = {
       ...currentSelections,
       [overlayKey]: true
@@ -120,14 +118,13 @@ const Overlays = ({ pageBack, pageForward }) => {
     deleteOverlayData(selectedItemToDelete, { 
       updateSchemaState, 
       updateOverlaySelection, 
-      currentSchemaId, 
       getSchemaState 
     });
     setShowDeleteConfirmation(false);
   };
 
   const handleEditOverlay = (overlayKey) => {
-    setSelectedOverlay(currentSchemaId, overlayKey);
+    setSelectedOverlay(overlayKey);
     
     // Route to the appropriate page using centralized mapping
     const page = OVERLAY_TO_PAGE[overlayKey] || "FormatRules"; // Default to FormatRules

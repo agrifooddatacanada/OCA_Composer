@@ -4,12 +4,8 @@ import { CustomPalette } from "../constants/customPalette";
 import { useMultiSchema } from "../schema/schemaContext";
 
 export default function Attributes() {
-  const { getCurrentSchemaId, getAttributesList } = useMultiSchema();
-  const currentSchemaId = getCurrentSchemaId();
-  const attributesList = useMemo(
-    () => getAttributesList(),
-    [getAttributesList, currentSchemaId]
-  );
+  const { getAttributesList } = useMultiSchema();
+  const attributesList = getAttributesList();
   return (
     <Box sx={{ width: "100%", overflow: "auto", display: "flex" }}>
       {attributesList.map((value, index) => (

@@ -22,7 +22,6 @@ const DataStandards = () => {
   
   // Use MultiSchema context with standard pattern
   const { 
-    currentSchemaId, 
     getSchemaState, 
     updateSchemaState,
     updateOverlaySelection
@@ -30,21 +29,10 @@ const DataStandards = () => {
   const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_DATA_STANDARDS_OVERLAY);
   
-  const updateCurrentSchema = useCallback((updates) => {
-    // MultiSchemaContext handles null schemaId internally
-    updateSchemaState( updates);
-  }, [currentSchemaId, updateSchemaState]);
-  
   // Always get data from schema state - no fallback needed
   const dataStandardsRowData = useMemo(() => 
     schemaState?.dataStandardsData || []
   , [schemaState?.dataStandardsData]);
-  
-  const setDataStandardsRowData = useCallback((newData) => {
-    updateCurrentSchema({
-      dataStandardsData: newData
-    });
-  }, [updateCurrentSchema]);
   
   const { t } = useTranslation();
   const gridRef = useRef();
@@ -57,7 +45,7 @@ const DataStandards = () => {
   const handleSave = () => {
     gridRef.current.api.stopEditing();
     const rowData = gridRef.current.api.getRenderedNodes()?.map((rowNode) => rowNode?.data);
-    setDataStandardsRowData(rowData);
+    updateSchemaState({dataStandardsData: rowData});
   };
 
   const handleForward = () => {
@@ -73,7 +61,7 @@ const DataStandards = () => {
         gridRef.current.api.stopEditing();
         const rowData = gridRef.current.api.getRenderedNodes()?.map((rowNode) => rowNode?.data);
         if (rowData && rowData.length > 0) {
-          setDataStandardsRowData(rowData);
+          updateSchemaState({dataStandardsData: rowData});
         }
       }
     };

@@ -65,14 +65,8 @@ const FormInformation = () => {
   // Get schema-specific languages (not global)
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
   
-  const attributesList = useMemo(
-    () => getAttributesList(),
-    [getAttributesList, currentSchemaId]
-  );
-  const formatRuleRowData = useMemo(
-    () => getFormatRuleData(),
-    [getFormatRuleData, currentSchemaId]
-  );
+  const attributesList = getAttributesList();
+  const formatRuleRowData = getFormatRuleData();
   const attributeRowData = schemaState?.attributes || [];
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const FormInformationRowData = schemaState?.FormInformationRowData || [];
@@ -84,21 +78,21 @@ const FormInformation = () => {
       ? updater(lanAttributeRowData) 
       : updater;
     updateSchemaState({ lanAttributeRowData: newData });
-  }, [lanAttributeRowData, updateSchemaState, currentSchemaId]);
+  }, [lanAttributeRowData, updateSchemaState]);
 
   const setFormInformationRowData = useCallback((updater) => {
     const newData = typeof updater === 'function'
       ? updater(FormInformationRowData)
       : updater;
     updateSchemaState({ FormInformationRowData: newData });
-  }, [FormInformationRowData, updateSchemaState, currentSchemaId]);
+  }, [FormInformationRowData, updateSchemaState]);
 
   const setFormPlaceholdersByLanguage = useCallback((updater) => {
     const newData = typeof updater === 'function'
       ? updater(formPlaceholdersByLanguage)
       : updater;
     updateSchemaState({ formPlaceholdersByLanguage: newData });
-  }, [formPlaceholdersByLanguage, updateSchemaState, currentSchemaId]);
+  }, [formPlaceholdersByLanguage, updateSchemaState]);
 
   const gridRef = useRef();
   const refContainer = useRef();
@@ -256,7 +250,15 @@ const FormInformation = () => {
         }
       }, 50);
     }
-  }, [attributesList, attributeRowData, currentLanguage, languages, FormInformationRowData, formPlaceholdersByLanguage, lanAttributeRowData, updateSchemaState, currentSchemaId]);
+  }, [attributesList,
+     attributeRowData, 
+     currentLanguage, 
+     languages, 
+     FormInformationRowData, 
+     formPlaceholdersByLanguage, 
+     lanAttributeRowData, 
+     updateSchemaState, 
+     currentSchemaId]);
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {

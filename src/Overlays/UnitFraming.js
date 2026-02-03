@@ -354,22 +354,12 @@ const UnitFraming = () => {
 
   // Use MultiSchema context with standard pattern
   const {
-    currentSchemaId,
     getSchemaState,
     updateSchemaState,
-    updateOverlaySelection,
     setSelectedOverlay
   } = useMultiSchema();
   const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_UNIT_FRAMING_OVERLAY);
-
-  const updateCurrentSchema = useCallback(
-    (updates) => {
-      // MultiSchemaContext handles null schemaId internally
-      updateSchemaState( updates);
-    },
-    [currentSchemaId, updateSchemaState]
-  );
 
   // Get unit framing data from schema state, sync with current attributes
   const unitFramedRowData = useMemo(() => {
@@ -432,11 +422,11 @@ const UnitFraming = () => {
 
   const setUnitFramedRowData = useCallback(
     (newData) => {
-      updateCurrentSchema({
+      updateSchemaState({
         unitFramedData: newData
       });
     },
-    [updateCurrentSchema]
+    [updateSchemaState]
   );
 
   // For compatibility, use the same data for currentUnitFramedRowData
@@ -447,7 +437,7 @@ const UnitFraming = () => {
   const frameAllUnits = schemaState?.frameAllUnits || false;
   const setFrameAllUnits = useCallback(
     (value) => {
-      updateCurrentSchema({ frameAllUnits: value });
+      updateSchemaState({ frameAllUnits: value });
     },
     [updateCurrentSchema]
   );
@@ -511,7 +501,7 @@ const UnitFraming = () => {
 
   const handleForward = useCallback(() => {
     handleSave();
-    setSelectedOverlay(currentSchemaId, "");
+    setSelectedOverlay("");
     setCurrentPage("Overlays");
   }, [handleSave, setSelectedOverlay, setCurrentPage]);
 

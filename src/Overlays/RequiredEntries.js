@@ -75,11 +75,6 @@ const RequiredEntries = () => {
   const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CONFORMANCE_OVERLAY);
   
-  const updateCurrentSchema = useCallback((updates) => {
-    // MultiSchemaContext handles null schemaId internally
-    updateSchemaState( updates);
-  }, [currentSchemaId, updateSchemaState]);
-  
   // Get attributes data with Required status from schema state
   const requiredEntriesRowData = useMemo(() => {
     if (!schemaState?.attributes) return [];
@@ -101,10 +96,10 @@ const RequiredEntries = () => {
       };
     });
     
-    updateCurrentSchema({
+    updateSchemaState({
       attributes: updatedAttributes
     });
-  }, [schemaState?.attributes, updateCurrentSchema]);
+  }, [schemaState?.attributes, updateSchemaState]);
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);

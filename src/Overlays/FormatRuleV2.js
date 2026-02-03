@@ -33,7 +33,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   
   // Use MultiSchema context with standard pattern
   const { 
-    currentSchemaId, 
     getSchemaState, 
     updateSchemaState,
     updateOverlaySelection,
@@ -45,11 +44,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   } = useMultiSchema();
   const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORMAT_OVERLAY);
-  
-  const updateCurrentSchema = useCallback((updates) => {
-    // MultiSchemaContext handles null schemaId internally
-    updateSchemaState( updates);
-  }, [currentSchemaId, updateSchemaState]);
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -82,7 +76,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     });
 
     setGridRowData(initialData);
-  }, [schemaState?.attributes, schemaState?.attributeFormats, currentSchemaId]); // Re-init when attributes or formats change
+  }, [schemaState?.attributes, schemaState?.attributeFormats]); // Re-init when attributes or formats change
   
   // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(() => 
@@ -148,13 +142,11 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     if (newRangeRowData.length === 0) {
       updateOverlaySelection(FIELD_RANGE_OVERLAY, false);
     }
-  }, [rangeRowData, setFormatRuleRowData, setRangeRowData, updateOverlaySelection, currentSchemaId]);
-
-
+  }, [rangeRowData, setFormatRuleRowData, setRangeRowData, updateOverlaySelection]);
 
   const handleForward = useCallback(() => {
     handleSave();
-    setSelectedOverlay(currentSchemaId, "");
+    setSelectedOverlay("");
     setCurrentPage("Overlays");
   }, [handleSave, setSelectedOverlay, setCurrentPage]);
 
@@ -180,7 +172,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
               attributeFormats[row.Attribute] = formatRule;
             }
           });
-          updateCurrentSchema({ attributeFormats });
+          updateSchemaState({ attributeFormats });
         }
       }
     };

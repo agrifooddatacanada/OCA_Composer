@@ -33,13 +33,11 @@ const FormBuilder = () => {
 
   // Get data from MultiSchemaContext
   const {
-    getCurrentSchemaId,
     getSchemaState,
     updateSchemaState,
     getAttributesList,
     getFormatRuleData
   } = useMultiSchema();
-  const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchemaState();
   
   // Get schema-specific data (not global)
@@ -47,14 +45,8 @@ const FormBuilder = () => {
   const savedEntryCodes = schemaState?.entryCodes || {};
   const attributesWithLists = schemaState?.attributesWithLists || [];
   
-  const attributesList = useMemo(
-    () => getAttributesList(),
-    [getAttributesList, currentSchemaId]
-  );
-  const formatRuleRowData = useMemo(
-    () => getFormatRuleData(),
-    [getFormatRuleData, currentSchemaId]
-  );
+  const attributesList = getAttributesList();
+  const formatRuleRowData = getFormatRuleData();
   const attributeRowData = schemaState?.attributes || [];
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const FormInformationRowData = schemaState?.FormInformationRowData || [];
@@ -64,14 +56,14 @@ const FormBuilder = () => {
       ? updater(FormInformationRowData)
       : updater;
     updateSchemaState({ FormInformationRowData: newData });
-  }, [FormInformationRowData, updateSchemaState, currentSchemaId]);
+  }, [FormInformationRowData, updateSchemaState]);
 
   const setLanAttributeRowData = useCallback((updater) => {
     const newData = typeof updater === 'function'
       ? updater(lanAttributeRowData)
       : updater;
     updateSchemaState({ lanAttributeRowData: newData });
-  }, [lanAttributeRowData, updateSchemaState, currentSchemaId]);
+  }, [lanAttributeRowData, updateSchemaState]);
 
   
   const languageIndex = languages.findIndex(

@@ -72,7 +72,6 @@ const Cardinality = () => {
   
   // Use MultiSchema context with standard pattern
   const {
-    currentSchemaId,
     getSchemaState,
     updateSchemaState,
     updateOverlaySelection,
@@ -82,11 +81,6 @@ const Cardinality = () => {
   } = useMultiSchema();
   const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CARDINALITY_OVERLAY);
-  
-  const updateCurrentSchema = useCallback((updates) => {
-    // MultiSchemaContext handles null schemaId internally
-    updateSchemaState( updates);
-  }, [currentSchemaId, updateSchemaState]);
   
   // Get cardinality data - computed from attributes + attributeCardinality
   const cardinalityData = useMemo(() => {
@@ -118,16 +112,16 @@ const Cardinality = () => {
   useEffect(() => {
     // Only initialize if attributeCardinality doesn't exist yet
     if (schemaState?.attributes && typeof schemaState?.attributeCardinality === 'undefined') {
-      updateCurrentSchema({ attributeCardinality: {} });
+      updateSchemaState({ attributeCardinality: {} });
     }
-  }, [schemaState?.attributes, schemaState?.attributeCardinality, updateCurrentSchema]);
+  }, [schemaState?.attributes, schemaState?.attributeCardinality, updateSchemaState]);
 
   // Set loading state
   useEffect(() => {
     if (schemaState?.attributeCardinality !== undefined || schemaState?.attributes) {
       setLoading(false);
     }
-  }, [schemaState?.cardinalityData, schemaState?.attributes]);
+  }, [schemaState?.attributeCardinality, schemaState?.attributes]);
   const [dialogMessage, setDialogMessage] = useState("");
 
   const handleSave = useCallback(() => {
@@ -140,9 +134,9 @@ const Cardinality = () => {
 
   const handleForward = useCallback(() => {
     handleSave();
-    setSelectedOverlay(currentSchemaId, "");
+    setSelectedOverlay("");
     setCurrentPage("Overlays");
-  }, [handleSave, setCurrentPage, setSelectedOverlay, currentSchemaId]);
+  }, [handleSave, setCurrentPage, setSelectedOverlay]);
 
   // Save changes when component unmounts (user navigates away)
   useEffect(() => {

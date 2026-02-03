@@ -60,7 +60,7 @@ const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) =>
 
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck, isMultiSchema }) => {
   const { t } = useTranslation();
-  const { currentSchemaId, getSchemaState } = useMultiSchema();
+  const { getSchemaState } = useMultiSchema();
   const schemaState = getSchemaState();
   
   // Get schema-specific languages (not global)

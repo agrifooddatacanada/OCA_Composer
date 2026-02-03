@@ -25,7 +25,6 @@ const Range = () => {
   
   // Use MultiSchema context with standard pattern
   const { 
-    currentSchemaId, 
     getSchemaState, 
     updateSchemaState, 
     getRangeData,
@@ -34,11 +33,6 @@ const Range = () => {
   
   const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_RANGE_OVERLAY);
-  
-  const updateCurrentSchema = useCallback((updates) => {
-    // MultiSchemaContext handles null schemaId internally
-    updateSchemaState( updates);
-  }, [currentSchemaId, updateSchemaState]);
   
   // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(() => {
@@ -229,10 +223,10 @@ const Range = () => {
       });
 
       if (Object.keys(newRanges).length > 0) {
-        updateCurrentSchema({ attributeRanges: newRanges });
+        updateSchemaState({ attributeRanges: newRanges });
       }
     }
-  }, [schemaState?.attributeFormats, schemaState?.attributeRanges, schemaState?.attributes, updateCurrentSchema]);
+  }, [schemaState?.attributeFormats, schemaState?.attributeRanges, schemaState?.attributes, updateSchemaState]);
 
   const handleBack = () => {
     setShowDeleteConfirmation(true);
