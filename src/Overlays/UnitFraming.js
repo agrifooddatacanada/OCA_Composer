@@ -33,7 +33,7 @@ import { searchUnits } from "../utils/helpers";
 import { FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 
 const GRID_WIDTH = 705;
 const LOADING_THRESHOLD = 40;
@@ -360,13 +360,13 @@ const UnitFraming = () => {
     updateOverlaySelection,
     setSelectedOverlay
   } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_UNIT_FRAMING_OVERLAY);
 
   const updateCurrentSchema = useCallback(
     (updates) => {
       // MultiSchemaContext handles null schemaId internally
-      updateSchemaState(currentSchemaId, updates);
+      updateSchemaState( updates);
     },
     [currentSchemaId, updateSchemaState]
   );
@@ -513,7 +513,7 @@ const UnitFraming = () => {
     handleSave();
     setSelectedOverlay(currentSchemaId, "");
     setCurrentPage("Overlays");
-  }, [handleSave, setSelectedOverlay, currentSchemaId, setCurrentPage]);
+  }, [handleSave, setSelectedOverlay, setCurrentPage]);
 
   // Save changes when component unmounts (user navigates away)
   useEffect(() => {

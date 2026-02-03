@@ -15,7 +15,7 @@ import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerific
 import OCAMerge from "./OCAMerge/OCAMerge";
 import SchemaVisualization from "./SchemaVisualization/SchemaVisualization";
 import { getSchemaDataById } from "./SchemaVisualization/dataUtils";
-import { MultiSchemaProvider, useMultiSchema } from "./context/MultiSchemaContext";
+import { MultiSchemaProvider, useMultiSchema } from "./schema/schemaContext";
 import { getCurrentTheme } from "./utils/themeDetector";
 import { CustomPalette } from "./constants/customPalette";
 // import Tutorial from "./Tutorial/Tutorial";

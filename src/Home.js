@@ -26,7 +26,7 @@ import FormatRuleV2 from "./Overlays/FormatRuleV2";
 import { Context } from "./App";
 import Header from "./Header/Header";
 import Footer from "./Footer/Footer";
-import { useMultiSchema } from "./context/MultiSchemaContext";
+import { useMultiSchema } from "./schema/schemaContext";
 import ClickableStepperProgressIndicator from "./StepperProgressIndicator/ClickableStepperProgressIndicator";
 
 const Home = ({
@@ -60,7 +60,7 @@ const Home = ({
         switchToSchema(rootSchemaId, OCAPackage);
       }
     }
-  }, [OCAPackage, currentSchemaId, switchToSchema]);
+  }, [OCAPackage, switchToSchema]);
 
   // Normalize and load overlay data from OCAPackage so LanguageDetails has labels/lists
   useEffect(() => {

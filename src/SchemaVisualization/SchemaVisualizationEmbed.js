@@ -307,7 +307,7 @@ const SchemaVisualizationEmbed = ({
       setEdges([]);
       setHasData(false);
     }
-  }, [getOCAPackage, generateLayout, OCAPackage, currentSchemaId, setCurrentSchemaId]);
+  }, [getOCAPackage, generateLayout, OCAPackage, setCurrentSchemaId]);
 
   return (
     <Box

@@ -9,7 +9,7 @@ import { Context } from "../App";
 import { getOCACodeFromLangName, getUICodeFromLangName } from "../utils/languageUtils";
 import Classification from "./Classification";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 
 export default function SchemaInput({
   language,
@@ -27,7 +27,7 @@ export default function SchemaInput({
   const [deleteHover, setDeleteHover] = useState(false);
   const nameFieldId = `schema-name${language}`;
   const descriptionFieldId = `schema-description${language}`;
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { getSchemaState, updateSchemaState } = useMultiSchema();
 
   // Define language key - use proper OCA language code for all languages
   // No fallback - if getOCACodeFromLangName returns "eng" default, that's intentional
@@ -35,7 +35,7 @@ export default function SchemaInput({
 
   // Get schema data from MultiSchemaContext (works for both manual and imported schemas)
   // MultiSchemaContext handles null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
-  const schemaState = getSchemaState(currentSchemaId) || {};
+  const schemaState = getSchemaState() || {};
   const metaState = schemaState.metadata || {};
   const metaLocalized = metaState.localized || {};
   
@@ -49,7 +49,7 @@ export default function SchemaInput({
     currentSchemaDescription = metaLocalized[langKey]?.description ?? "";
   } else if (OCAPackage && currentSchemaId) {
     // Fall back to OCA package data on initial load (imported schemas only)
-    const currentSchemaData = getSchemaDataById(OCAPackage, currentSchemaId, langKey);
+    const currentSchemaData = getSchemaDataById(OCAPackage, langKey);
     schemaName = currentSchemaData?.schemaName || "";
     currentSchemaDescription = currentSchemaData?.schemaDescription || "";
   }
@@ -61,7 +61,7 @@ export default function SchemaInput({
     const newText = e.target.value;
     
     // Trust MultiSchemaContext to handle null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
-    const st = getSchemaState(currentSchemaId) || {};
+    const st = getSchemaState() || {};
     const prevMeta = st.metadata || {};
     const prevLoc = prevMeta.localized || {};
     const nextLocalized = {
@@ -81,14 +81,14 @@ export default function SchemaInput({
         ? { ...prevMeta, name: newText, localized: nextLocalized }
         : { ...prevMeta, localized: nextLocalized };
     
-    updateSchemaState(currentSchemaId, { metadata: nextMeta });
+    updateSchemaState({ metadata: nextMeta });
   };
 
   const handleDescriptionField = (e) => {
     const newText = e.target.value;
     
     // Trust MultiSchemaContext to handle null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
-    const st = getSchemaState(currentSchemaId) || {};
+    const st = getSchemaState() || {};
     const prevMeta = st.metadata || {};
     const prevLoc = prevMeta.localized || {};
     const nextLocalized = {
@@ -108,7 +108,7 @@ export default function SchemaInput({
         ? { ...prevMeta, description: newText, localized: nextLocalized }
         : { ...prevMeta, localized: nextLocalized };
     
-    updateSchemaState(currentSchemaId, { metadata: nextMeta });
+    updateSchemaState({ metadata: nextMeta });
   };
 
   const handleDelete = () => {
@@ -119,13 +119,13 @@ export default function SchemaInput({
     
     // Also remove from schema metadata
     if (currentSchemaId) {
-      const st = getSchemaState(currentSchemaId) || {};
+      const st = getSchemaState() || {};
       const prevMeta = st.metadata || {};
       const prevLoc = prevMeta.localized || {};
       const nextLocalized = { ...prevLoc };
       delete nextLocalized[langKey];
       
-      updateSchemaState(currentSchemaId, {
+      updateSchemaState({
         metadata: {
           ...prevMeta,
           localized: nextLocalized,

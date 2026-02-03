@@ -31,7 +31,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import SearchIcon from "@mui/icons-material/Search";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
 import Spinner from "../components/Spinner";
@@ -1086,22 +1086,22 @@ const AttributeFraming = () => {
     setSelectedOverlay
   } = useMultiSchema();
   
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const attributeFramingRowData = schemaState?.attributeFramingData || [];
   const frameAllAttributes = schemaState?.frameAllAttributes || false;
   const unframedAttributeList = schemaState?.unframedAttributeList || [];
   
   // Setter functions that update MultiSchemaContext
   const setAttributeFramingRowData = useCallback((data) => {
-    updateSchemaState(currentSchemaId, { attributeFramingData: data });
+    updateSchemaState({ attributeFramingData: data });
   }, [currentSchemaId, updateSchemaState]);
   
   const setFrameAllAttributes = useCallback((value) => {
-    updateSchemaState(currentSchemaId, { frameAllAttributes: value });
+    updateSchemaState({ frameAllAttributes: value });
   }, [currentSchemaId, updateSchemaState]);
   
   const setUnframedAttributeList = useCallback((list) => {
-    updateSchemaState(currentSchemaId, { unframedAttributeList: list });
+    updateSchemaState({ unframedAttributeList: list });
   }, [currentSchemaId, updateSchemaState]);
 
   const { t } = useTranslation();

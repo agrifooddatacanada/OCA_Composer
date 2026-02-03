@@ -16,7 +16,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
@@ -86,7 +86,7 @@ export default function ViewSchema({
   } = useMultiSchema();
 
   // Get languages from current schema's metadata (per-schema languages)
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
 
   const filteredLanguages = React.useMemo(() => {
@@ -427,7 +427,7 @@ export default function ViewSchema({
     const modifiedPackage = exportSchemaChanges(basePackage);
     setUpdatedOCAPackage(modifiedPackage);
     setVizVersion((v) => v + 1);
-  }, [OCAPackage, schemaStates, exportSchemaChanges, currentSchemaId, updateSchemaState]);
+  }, [OCAPackage, schemaStates, exportSchemaChanges, updateSchemaState]);
 
   // Removed in favor of global language toggle (EN/FR)
 
@@ -474,7 +474,7 @@ export default function ViewSchema({
         setLoading(true);
 
         // Use direct lookup instead of getSchemaState to avoid stale closures
-        const schemaState = currentSchema || getSchemaState(currentSchemaId);
+        const schemaState = currentSchema || getSchemaState();
         
         if ((OCAPackage && currentSchemaId) || (!OCAPackage && schemaState && schemaState.attributes)) {
 
@@ -590,8 +590,8 @@ export default function ViewSchema({
     getSchemaState,
     filteredLanguages,
     schemaStates, // Ensure updates when schema state changes
-    getSchemaState(currentSchemaId)?.attributeFormats, // Explicitly watch attributeFormats changes
-    getSchemaState(currentSchemaId)?.attributeRanges // Explicitly watch attributeRanges changes
+    getSchemaState()?.attributeFormats, // Explicitly watch attributeFormats changes
+    getSchemaState()?.attributeRanges // Explicitly watch attributeRanges changes
   ]);
 
   if (loading) {

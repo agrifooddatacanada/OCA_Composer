@@ -1,7 +1,7 @@
 import React from "react";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CustomPalette from "../constants/customPalette";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 
 const DeleteRenderer = ({
   data,
@@ -12,7 +12,7 @@ const DeleteRenderer = ({
   setCanDelete,
   currentRows
 }) => {
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { getSchemaState, updateSchemaState } = useMultiSchema();
   const handleDeleteClick = () => {
     gridRef.current.api.stopEditing();
     
@@ -40,8 +40,7 @@ const DeleteRenderer = ({
 
       // Sync MultiSchema state: remove from attributes, attributesWithLists, entryCodes, and lanAttributeRowData
       // Note: attributesList is computed automatically from attributes array
-      // MultiSchemaContext handles null schemaId internally
-      const schemaState = getSchemaState(currentSchemaId) || {};
+      const schemaState = getSchemaState() || {};
       const nextEntryCodes = { ...(schemaState.entryCodes || {}) };
       delete nextEntryCodes[data.Attribute];
 
@@ -82,7 +81,7 @@ const DeleteRenderer = ({
       delete nextCharacterEncodingData[data.Attribute];
 
       // Update schema state (attributesList is computed automatically from attributes)
-      updateSchemaState(currentSchemaId, {
+      updateSchemaState({
         attributes: newAttributeRowData,
         entryCodes: nextEntryCodes,
         attributesWithLists: nextLists,

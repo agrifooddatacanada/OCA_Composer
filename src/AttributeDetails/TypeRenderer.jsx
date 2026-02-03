@@ -3,13 +3,13 @@ import { useTranslation } from "react-i18next";
 import { MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA } from "../constants/constants";
 
 const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAttributeRowData }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t } = useTranslation();
-  const { currentSchemaId, updateSchemaState, getSchemaState, createChildSchemaPlaceholder } = useMultiSchema();
+  const { updateSchemaState, getSchemaState, createChildSchemaPlaceholder } = useMultiSchema();
   
   // Type dropdown options
   // Note: TYPE_CHILD_SCHEMA ("Child Schema") is converted to refs:/refn: at export time
@@ -68,15 +68,14 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     setAttributeRowData(updatedAttributeRowData);
     
     // Update MultiSchemaContext to persist the change
-    // MultiSchemaContext handles null schemaId internally
-    updateSchemaState(currentSchemaId, {
+    updateSchemaState({
       attributes: updatedAttributeRowData
     });
     
     // If setting type to Child Schema, create a placeholder child schema
     // so user can immediately navigate to edit it
     if (newType === TYPE_CHILD_SCHEMA || newType === TYPE_ARRAY_CHILD_SCHEMA) {
-      createChildSchemaPlaceholder(attributeName, currentSchemaId);
+      createChildSchemaPlaceholder(attributeName);
     }
     
     setIsDropdownOpen(false);
@@ -110,8 +109,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       setAttributeRowData(updatedAttributeRowData);
       
       // Update MultiSchemaContext to persist the change
-      // MultiSchemaContext handles null schemaId internally
-      updateSchemaState(currentSchemaId, {
+      updateSchemaState({
         attributes: updatedAttributeRowData
       });
     }

@@ -3,7 +3,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import useCharacterEncodingType, {
   CharacterEncodingTypeRenderer
@@ -21,23 +21,21 @@ const CharacterEncoding = () => {
   const { t } = useTranslation();
   const { setCurrentPage } = useContext(Context);
 
-  // Use MultiSchema context with standard pattern
+  // Use MultiSchema context - no need to pass currentSchemaId around
   const {
-    currentSchemaId,
     getSchemaState,
     updateSchemaState,
     updateOverlaySelection,
     setSelectedOverlay
   } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState(); // Gets current schema automatically
   const deleteHandler = useDeleteOverlayHandler(FIELD_CHARACTER_ENCODING_OVERLAY);
 
   const updateCurrentSchema = useCallback(
     (updates) => {
-      // Remove the if check - MultiSchemaContext handles null schemaId internally
-      updateSchemaState(currentSchemaId, updates);
+      updateSchemaState(updates); // Uses current schema automatically
     },
-    [currentSchemaId, updateSchemaState]
+    [updateSchemaState]
   );
 
   // Get character encoding data, initialize with attributes if empty

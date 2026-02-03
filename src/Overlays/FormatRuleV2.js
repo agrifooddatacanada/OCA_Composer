@@ -3,7 +3,7 @@ import React, { useCallback, useContext, useMemo, useRef, useState, useEffect, f
 import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
@@ -14,7 +14,8 @@ import { FormatRuleTypeRenderer, TrashCanButton } from "./FormatRuleCellRender";
 import Loading from "../components/Loading";
 import {
   CUSTOM_FORMAT_RULE,
-  FIELD_FORMAT_OVERLAY
+  FIELD_FORMAT_OVERLAY,
+  FIELD_RANGE_OVERLAY
 } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { getFormatRuleDescription } from "../utils/helpers";
@@ -42,12 +43,12 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     setFormatRuleRowData,
     setRangeRowData
   } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORMAT_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
     // MultiSchemaContext handles null schemaId internally
-    updateSchemaState(currentSchemaId, updates);
+    updateSchemaState( updates);
   }, [currentSchemaId, updateSchemaState]);
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -86,7 +87,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(() => 
     getRangeData() || []
-  , [getRangeData, currentSchemaId, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
+  , [getRangeData, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
 
   // Set loading false when we have schema state
   useEffect(() => {
@@ -145,7 +146,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     setRangeRowData(newRangeRowData);
 
     if (newRangeRowData.length === 0) {
-      updateOverlaySelection(currentSchemaId, "Add range rule for data", { selected: false });
+      updateOverlaySelection(FIELD_RANGE_OVERLAY, false);
     }
   }, [rangeRowData, setFormatRuleRowData, setRangeRowData, updateOverlaySelection, currentSchemaId]);
 
@@ -155,7 +156,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     handleSave();
     setSelectedOverlay(currentSchemaId, "");
     setCurrentPage("Overlays");
-  }, [handleSave, setSelectedOverlay, currentSchemaId, setCurrentPage]);
+  }, [handleSave, setSelectedOverlay, setCurrentPage]);
 
   // Expose save method to parent (Home) for navigation handling
   useImperativeHandle(ref, () => ({

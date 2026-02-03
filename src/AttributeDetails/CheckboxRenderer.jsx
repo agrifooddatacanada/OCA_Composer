@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from "react";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 
 // Use AG Grid's provided node to update the cell value, rather than looking up by rowIndex
 const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalToggle }) => {
   const inputRef = useRef();
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { getSchemaState, updateSchemaState } = useMultiSchema();
 
   useEffect(() => {
     inputRef.current.checked = value;

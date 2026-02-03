@@ -9,7 +9,7 @@ import CustomPalette from "../constants/customPalette";
 import { removeSpacesFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { 
   getPrioritizedLangNames, 
   getBestLangName, 
@@ -37,7 +37,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   } = useContext(Context);
 
   // Get schema state data
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const attributesWithLists = schemaState?.attributesWithLists || [];
 
@@ -107,7 +107,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
     
     // Save to MultiSchemaContext for both manual and loaded schemas
     // Convert LDAD data to schema overlays
-    const schemaState = getSchemaState(currentSchemaId);
+    const schemaState = getSchemaState();
     const currentSchema = schemaState?.completeSchema || {};
     const updatedOverlays = { ...currentSchema.overlays };
 
@@ -142,7 +142,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       updatedOverlays.label = labelOverlays;
     }
 
-    updateSchemaState(currentSchemaId, {
+    updateSchemaState({
       lanAttributeRowData: noSpacesObject, // Keep for compatibility during transition
       overlays: updatedOverlays,  // Save overlays directly to schema state
       completeSchema: {
@@ -270,7 +270,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
     }
     
     // Update schema state with the modified data
-    updateSchemaState(currentSchemaId, {
+    updateSchemaState({
       lanAttributeRowData: newLanAttributeRowData
     });
   };

@@ -13,7 +13,7 @@ import FlaggedHeader from "./FlaggedHeader";
 import ListHeader from "./ListHeader";
 import DeleteRenderer from "./DeleteRenderer";
 import TypeRenderer from "./TypeRenderer";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 
 // styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
 const gridStyle = `
@@ -57,7 +57,7 @@ export default function Grid({
   const { t } = useTranslation();
   
   // Use MultiSchemaContext for schema-specific data
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { getSchemaState, updateSchemaState } = useMultiSchema();
   
   // Derive attributesList from attributeRowData (single source of truth)
   const attributesList = useMemo(
@@ -66,7 +66,7 @@ export default function Grid({
   );
   
   // Get schema state data
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const lanAttributeRowData = useMemo(
     () => schemaState?.lanAttributeRowData || {},
     [schemaState?.lanAttributeRowData]
@@ -456,8 +456,8 @@ export default function Grid({
         updatedLanAttributeRowData[lang] = updatedAttributes;
       }
     }
-    updateSchemaState(currentSchemaId, { lanAttributeRowData: updatedLanAttributeRowData });
-  }, [currentSchemaId, schemaState?.lanAttributeRowData, updateSchemaState]);
+    updateSchemaState({ lanAttributeRowData: updatedLanAttributeRowData });
+  }, [schemaState?.lanAttributeRowData, updateSchemaState]);
 
   // Update character encoding row data (MultiSchemaContext)
   const updateCharacterEncodingRowData = useCallback((oldAttributeValue, newAttributeValue) => {
@@ -466,9 +466,9 @@ export default function Grid({
       const updatedData = { ...currentData };
       updatedData[newAttributeValue] = updatedData[oldAttributeValue];
       delete updatedData[oldAttributeValue];
-      updateSchemaState(currentSchemaId, { characterEncodingData: updatedData });
+      updateSchemaState({ characterEncodingData: updatedData });
     }
-  }, [currentSchemaId, schemaState?.characterEncodingData, updateSchemaState]);
+  }, [schemaState?.characterEncodingData, updateSchemaState]);
 
   // Update format rule row data (MultiSchemaContext)
   const updateFormatRuleRowData = useCallback((oldAttributeValue, newAttributeValue) => {
@@ -479,8 +479,8 @@ export default function Grid({
       }
       return row;
     });
-    updateSchemaState(currentSchemaId, { formatRuleData: updatedData });
-  }, [currentSchemaId, schemaState?.formatRuleData, updateSchemaState]);
+    updateSchemaState({ formatRuleData: updatedData });
+  }, [schemaState?.formatRuleData, updateSchemaState]);
 
   // Update cardinality data (MultiSchemaContext)
   const updateCardinalityData = useCallback((oldAttributeValue, newAttributeValue) => {
@@ -491,8 +491,8 @@ export default function Grid({
       }
       return row;
     });
-    updateSchemaState(currentSchemaId, { cardinalityData: updatedData });
-  }, [currentSchemaId, schemaState?.cardinalityData, updateSchemaState]);
+    updateSchemaState({ cardinalityData: updatedData });
+  }, [schemaState?.cardinalityData, updateSchemaState]);
 
   // Update attributes with lists (MultiSchemaContext)
   const updateAttributesWithLists = useCallback((oldAttributeValue, newAttributeValue) => {
@@ -503,8 +503,8 @@ export default function Grid({
       }
       return attributeName;
     });
-    updateSchemaState(currentSchemaId, { attributesWithLists: updatedData });
-  }, [currentSchemaId, schemaState?.attributesWithLists, updateSchemaState]);
+    updateSchemaState({ attributesWithLists: updatedData });
+  }, [schemaState?.attributesWithLists, updateSchemaState]);
 
   // Update entry codes (MultiSchemaContext)
   const updateSavedEntryCodes = useCallback((oldAttributeValue, newAttributeValue) => {
@@ -513,9 +513,9 @@ export default function Grid({
       const updatedData = { ...currentData };
       updatedData[newAttributeValue] = updatedData[oldAttributeValue];
       delete updatedData[oldAttributeValue];
-      updateSchemaState(currentSchemaId, { entryCodes: updatedData });
+      updateSchemaState({ entryCodes: updatedData });
     }
-  }, [currentSchemaId, schemaState?.entryCodes, updateSchemaState]);
+  }, [schemaState?.entryCodes, updateSchemaState]);
 
   // Update range data (MultiSchemaContext)
   const updateRangeData = useCallback((oldAttributeValue, newAttributeValue) => {
@@ -526,8 +526,8 @@ export default function Grid({
       }
       return row;
     });
-    updateSchemaState(currentSchemaId, { rangeData: updatedData });
-  }, [currentSchemaId, schemaState?.rangeData, updateSchemaState]);
+    updateSchemaState({ rangeData: updatedData });
+  }, [schemaState?.rangeData, updateSchemaState]);
 
   // Update unit framed data (MultiSchemaContext)
   const updateUnitFramedData = useCallback((oldAttributeValue, newAttributeValue) => {
@@ -538,8 +538,8 @@ export default function Grid({
       }
       return row;
     });
-    updateSchemaState(currentSchemaId, { unitFramedData: updatedData });
-  }, [currentSchemaId, schemaState?.unitFramedData, updateSchemaState]);
+    updateSchemaState({ unitFramedData: updatedData });
+  }, [schemaState?.unitFramedData, updateSchemaState]);
 
   // Update attribute framing data (MultiSchemaContext)
   const updateAttributeFramingData = useCallback((oldAttributeValue, newAttributeValue) => {
@@ -550,8 +550,8 @@ export default function Grid({
       }
       return row;
     });
-    updateSchemaState(currentSchemaId, { attributeFramingData: updatedData });
-  }, [currentSchemaId, schemaState?.attributeFramingData, updateSchemaState]);
+    updateSchemaState({ attributeFramingData: updatedData });
+  }, [schemaState?.attributeFramingData, updateSchemaState]);
 
   // Update data standards data (MultiSchemaContext)
   const updateDataStandardsData = useCallback((oldAttributeValue, newAttributeValue) => {
@@ -562,8 +562,8 @@ export default function Grid({
       }
       return row;
     });
-    updateSchemaState(currentSchemaId, { dataStandardsData: updatedData });
-  }, [currentSchemaId, schemaState?.dataStandardsData, updateSchemaState]);
+    updateSchemaState({ dataStandardsData: updatedData });
+  }, [schemaState?.dataStandardsData, updateSchemaState]);
 
   const handleCellValueChanged = (e) => {
     // Only handle event if the user changed the attribute name; do not handle programmatic update

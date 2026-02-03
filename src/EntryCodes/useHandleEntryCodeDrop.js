@@ -12,7 +12,7 @@ import Papa from "papaparse";
 import { MenuItem } from "@mui/material";
 import { messages } from "../constants/messages";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { getCurrentData } from "../utils/helpers";
 import { ADC } from "../constants/constants";
 
@@ -33,8 +33,8 @@ const useHandleEntryCodeDrop = () => {
   } = useContext(Context);
   
   // Use MultiSchemaContext for schema-specific data
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const { getSchemaState, updateSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState();
   
   // Get attribute and entry code data from schema state
   const attributeRowData = useMemo(
@@ -50,7 +50,7 @@ const useHandleEntryCodeDrop = () => {
   const setEntryCodeRowData = useCallback((updater) => {
     const currentEntryCodes = schemaState?.entryCodes || {};
     const newEntryCodes = typeof updater === 'function' ? updater(currentEntryCodes) : updater;
-    updateSchemaState(currentSchemaId, { entryCodes: newEntryCodes });
+    updateSchemaState({ entryCodes: newEntryCodes });
   }, [currentSchemaId, schemaState?.entryCodes, updateSchemaState]);
   const [rawFile, setRawFile] = useState(null);
   const [loading, setLoading] = useState(false);

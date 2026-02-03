@@ -12,7 +12,7 @@ import LanguageSelection from "./LanguageSelection";
 import NavigationCard from "../components/NavigationCard";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { getOCACodeFromLangName } from "../utils/languageUtils";
 import { removeSpacesFromObjectOfObjects } from "../utils/stringUtils";
 import IntroCard from "./IntroCard";
@@ -30,15 +30,8 @@ const SchemaMetadata = forwardRef(({
 
   // Schema data hook
   // Use MultiSchema context with standard pattern
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
-
-  const updateCurrentSchema = useCallback(
-    (updates) => {
-      updateSchemaState(currentSchemaId, updates);
-    },
-    [currentSchemaId, updateSchemaState]
-  );
+  const { getSchemaState, updateSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState();
 
   // Local component state
   const [showLanguages, setShowLanguages] = useState(false);
@@ -112,7 +105,7 @@ const SchemaMetadata = forwardRef(({
         }
       });
       
-      updateCurrentSchema({
+      updateSchemaState({
         metadata: {
           name: rootName,
           description: rootDescription,
@@ -121,7 +114,7 @@ const SchemaMetadata = forwardRef(({
       });
     } else {
       // Handle string or other formats
-      updateCurrentSchema({
+      updateSchemaState({
         metadata: {
           ...schemaState?.metadata,
           description: newDescription
@@ -155,7 +148,7 @@ const SchemaMetadata = forwardRef(({
       }
     };
     
-    updateCurrentSchema(metadataUpdate);
+    updateSchemaState(metadataUpdate);
     
     // Also update global context for components that still read from it
     globalSetLanguages(newLanguages);

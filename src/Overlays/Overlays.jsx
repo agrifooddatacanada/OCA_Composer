@@ -6,7 +6,7 @@ import { Box, Button, List, ListItemButton, ListItemText, Tooltip } from "@mui/m
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { getListOfSelectedOverlays } from "../utils/overlayUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
@@ -61,7 +61,7 @@ const Overlays = ({ pageBack, pageForward }) => {
   } = useMultiSchema();
   
   // Get schema-specific data from MultiSchemaContext using getter functions
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const rangeRowData = getRangeData();
   const attributeRowData = schemaState?.attributes || []; // Full attribute objects with Type field
   const formatRuleData = getFormatRuleData();
@@ -101,14 +101,11 @@ const Overlays = ({ pageBack, pageForward }) => {
     const currentSelections = getOverlaySelections(currentSchemaId);
     const updatedSelections = {
       ...currentSelections,
-      [overlayKey]: {
-        ...currentSelections[overlayKey],
-        selected: true
-      }
+      [overlayKey]: true
     };
     
     // Combine both updates into a single updateSchemaState call to avoid race condition
-    updateSchemaState(currentSchemaId, {
+    updateSchemaState({
       overlaySelections: updatedSelections,
       selectedOverlay: overlayKey
     });
@@ -194,7 +191,7 @@ const Overlays = ({ pageBack, pageForward }) => {
               {unselectedKeys
                 .filter((overlayKey) => overlayKey && overlayKey.trim() !== "") // Filter out empty/null keys
                 .map((overlayKey) => {
-                const displayName = overlay[overlayKey]?.feature || overlayKey;
+                const displayName = overlayKey;
                 const isDisabled =
                   shouldDisableRangeOverlay(
                     overlayKey,
@@ -264,7 +261,7 @@ const Overlays = ({ pageBack, pageForward }) => {
               }}
             >
               {selectedKeys.map((overlayKey) => {
-                const displayName = overlay[overlayKey]?.feature || overlayKey;
+                const displayName = overlayKey;
                 return (
                   <Box
                     key={overlayKey}

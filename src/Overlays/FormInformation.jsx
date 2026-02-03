@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useMemo, useRef, useState, useEffect } from "react";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { AgGridReact } from "ag-grid-react";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
@@ -60,7 +60,7 @@ const FormInformation = () => {
     updateSchemaState 
   } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   
   // Get schema-specific languages (not global)
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
@@ -83,21 +83,21 @@ const FormInformation = () => {
     const newData = typeof updater === 'function' 
       ? updater(lanAttributeRowData) 
       : updater;
-    updateSchemaState(currentSchemaId, { lanAttributeRowData: newData });
+    updateSchemaState({ lanAttributeRowData: newData });
   }, [lanAttributeRowData, updateSchemaState, currentSchemaId]);
 
   const setFormInformationRowData = useCallback((updater) => {
     const newData = typeof updater === 'function'
       ? updater(FormInformationRowData)
       : updater;
-    updateSchemaState(currentSchemaId, { FormInformationRowData: newData });
+    updateSchemaState({ FormInformationRowData: newData });
   }, [FormInformationRowData, updateSchemaState, currentSchemaId]);
 
   const setFormPlaceholdersByLanguage = useCallback((updater) => {
     const newData = typeof updater === 'function'
       ? updater(formPlaceholdersByLanguage)
       : updater;
-    updateSchemaState(currentSchemaId, { formPlaceholdersByLanguage: newData });
+    updateSchemaState({ formPlaceholdersByLanguage: newData });
   }, [formPlaceholdersByLanguage, updateSchemaState, currentSchemaId]);
 
   const gridRef = useRef();
@@ -147,7 +147,7 @@ const FormInformation = () => {
       normalizedPlaceholders[name] = v;
     });
 
-    updateSchemaState(currentSchemaId, { lanAttributeRowData: normalizedLan, formPlaceholdersByLanguage: normalizedPlaceholders });
+    updateSchemaState({ lanAttributeRowData: normalizedLan, formPlaceholdersByLanguage: normalizedPlaceholders });
     // also update grid immediately (resolve robustly) and refresh cells so Format column updates
     try {
       if (gridRef.current?.api) {
@@ -158,7 +158,7 @@ const FormInformation = () => {
     } catch (e) {
       // ignore
     }
-  }, [lanAttributeRowData, formPlaceholdersByLanguage, currentLanguage, currentSchemaId, updateSchemaState]);
+  }, [lanAttributeRowData, formPlaceholdersByLanguage, currentLanguage, updateSchemaState]);
 
   // Ensure lanAttributeRowData has rows for all languages (import or fresh init)
   useEffect(() => {
@@ -228,7 +228,7 @@ const FormInformation = () => {
     // Only perform the update once per component mount to avoid loops
     if (didAdd && !initializationRef.current) {
       initializationRef.current = true;
-      updateSchemaState(currentSchemaId, { lanAttributeRowData: newLan });
+      updateSchemaState({ lanAttributeRowData: newLan });
       // Immediately update grid so UI shows rows even if context update hasn't propagated
       try {
         if (gridRef.current?.api) {
@@ -242,7 +242,7 @@ const FormInformation = () => {
       // Check shortly after to confirm the update persisted in context
       setTimeout(() => {
         try {
-          const stateAfter = getSchemaState(currentSchemaId);
+          const stateAfter = getSchemaState();
           // If attributeFormats exist, force a refresh of cells so Format column renders descriptions
           try {
             if (gridRef.current?.api && stateAfter?.attributeFormats && Object.keys(stateAfter.attributeFormats).length > 0) {
@@ -487,7 +487,7 @@ const FormInformation = () => {
       gridRef.current.api.stopEditing();
       
       // Reorder attributes in MultiSchemaContext (source of truth)
-      updateSchemaState(currentSchemaId, (prevState) => {
+      updateSchemaState( (prevState) => {
         const currentAttrs = prevState.attributes || [];
         const newAttrs = [...currentAttrs];
         newAttrs.splice(newIndex, 0, newAttrs.splice(oldIndex, 1)[0]);

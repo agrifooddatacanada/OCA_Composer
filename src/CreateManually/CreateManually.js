@@ -9,7 +9,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 
 import { CustomPalette } from "../constants/customPalette";
 import { removeSpacesFromString } from "../utils/stringUtils";
@@ -69,7 +69,7 @@ export default function CreateManually() {
   const { setCurrentPage, setFileData } = useContext(Context);
 
   // Use MultiSchemaContext for all attribute management
-  const { currentSchemaId, updateSchemaState, getSchemaState, getAttributesList } = useMultiSchema();
+  const { updateSchemaState, getSchemaState, getAttributesList } = useMultiSchema();
 
   const [rowData, setRowData] = useState([{ Name: "" }]);
   const [addErrorMessage, setAddErrorMessage] = useState("");
@@ -263,7 +263,7 @@ export default function CreateManually() {
     }));
     
     // attributesList is computed automatically from attributes
-    updateSchemaState(currentSchemaId, {
+    updateSchemaState({
       attributes: attributeRowData
     });
     
@@ -286,7 +286,7 @@ export default function CreateManually() {
     }));
     
     // attributesList is computed automatically from attributes
-    updateSchemaState(currentSchemaId, {
+    updateSchemaState({
       attributes: attributeRowData
     });
     setCurrentPage("Start");
@@ -294,7 +294,7 @@ export default function CreateManually() {
 
   const pageBackReset = () => {
     // Clear MultiSchemaContext data (attributesList is computed automatically)
-    updateSchemaState(currentSchemaId, {
+    updateSchemaState({
       attributes: []
     });
     setCurrentPage("Start");
@@ -306,7 +306,7 @@ export default function CreateManually() {
 
   const handleClearAll = () => {
     // Clear MultiSchemaContext data (attributesList is computed automatically)
-    updateSchemaState(currentSchemaId, {
+    updateSchemaState({
       attributes: []
     });
     setFileData([]); // Still needed for file data clearing

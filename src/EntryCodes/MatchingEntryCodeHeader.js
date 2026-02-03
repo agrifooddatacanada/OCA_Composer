@@ -1,7 +1,7 @@
 import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { Context } from '../App';
-import { useMultiSchema } from '../context/MultiSchemaContext';
+import { useMultiSchema } from '../schema/schemaContext';
 import { getOCACodeFromLangName, LanguageConstants } from '../utils/languageUtils';
 import { Box, MenuItem } from '@mui/material';
 import { gridStyles } from '../constants/styles';
@@ -64,8 +64,8 @@ const MatchingEntryCodeHeader = () => {
   const { setCurrentPage, entryCodeHeaders, tempEntryCodeRowData, chosenEntryCodeIndex } = useContext(Context);
   
   // Use MultiSchemaContext for schema-specific data
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const { getSchemaState, updateSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState();
   const attributeRowData = schemaState?.attributes || [];
   
   // Get schema-specific languages (not global)
@@ -123,7 +123,7 @@ const MatchingEntryCodeHeader = () => {
     // Save to MultiSchemaContext using attribute name as key
     if (targetAttributeName) {
       const currentEntryCodes = schemaState?.entryCodes || {};
-      updateSchemaState(currentSchemaId, {
+      updateSchemaState({
         entryCodes: {
           ...currentEntryCodes,
           [targetAttributeName]: newRowData

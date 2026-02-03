@@ -17,7 +17,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { preWrapWordBreak } from "../constants/styles";
 import { getOCACodeFromLangName, LanguageConstants } from "../utils/languageUtils";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 
 // Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
 const gridStyle = `
@@ -114,7 +114,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   
   // Get schema-specific languages (not global)
   const { currentSchemaId, getSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
   
   const [buttonArray, setButtonArray] = useState([]);

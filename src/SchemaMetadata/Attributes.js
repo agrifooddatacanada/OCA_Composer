@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Box, Typography } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 
 export default function Attributes() {
   const { getCurrentSchemaId, getAttributesList } = useMultiSchema();

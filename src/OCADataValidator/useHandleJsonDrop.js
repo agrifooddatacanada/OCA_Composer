@@ -4,7 +4,7 @@ import yaml from "js-yaml";
 import { messages } from "../constants/messages";
 import { ADC, SENSITIVE } from "../constants/constants";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import useZipParser from "../StartSchema/useZipParser";
 import {
   replaceAttributeCharsInJsonString,

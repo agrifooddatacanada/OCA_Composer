@@ -15,7 +15,7 @@ import SingleTable from "./SingleTable";
 import { removeSpacesAndColonFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { getOCACodeFromLangName } from "../utils/languageUtils";
 import { getPackageBundle } from "../utils/packageUtils";
 
@@ -29,8 +29,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   // Use MultiSchema context with standard pattern
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const { getSchemaState, updateSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState();
   
   const updateCurrentSchema = useCallback((updates) => {
     // MultiSchemaContext handles null schemaId internally

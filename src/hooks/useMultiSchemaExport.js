@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from "react";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,

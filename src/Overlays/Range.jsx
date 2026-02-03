@@ -4,7 +4,7 @@ import { AgGridReact } from "ag-grid-react";
 import { Alert, Box, Button, Typography } from "@mui/material";
 
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
@@ -32,18 +32,18 @@ const Range = () => {
     setRangeRowData
   } = useMultiSchema();
   
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_RANGE_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
     // MultiSchemaContext handles null schemaId internally
-    updateSchemaState(currentSchemaId, updates);
+    updateSchemaState( updates);
   }, [currentSchemaId, updateSchemaState]);
   
   // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(() => {
     return getRangeData() || [];
-  }, [getRangeData, currentSchemaId, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
+  }, [getRangeData, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
   
   const { t } = useTranslation();
   const gridRef = useRef();

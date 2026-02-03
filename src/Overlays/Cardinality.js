@@ -27,7 +27,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
@@ -80,12 +80,12 @@ const Cardinality = () => {
     getCardinalityData,
     setCardinalityData
   } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CARDINALITY_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
     // MultiSchemaContext handles null schemaId internally
-    updateSchemaState(currentSchemaId, updates);
+    updateSchemaState( updates);
   }, [currentSchemaId, updateSchemaState]);
   
   // Get cardinality data - computed from attributes + attributeCardinality
@@ -103,7 +103,7 @@ const Cardinality = () => {
         Label: labelInfo?.Label || ""
       };
     });
-  }, [getCardinalityData, currentSchemaId, schemaState?.attributes, schemaState?.attributeCardinality, schemaState?.lanAttributeRowData]);
+  }, [getCardinalityData, schemaState?.attributes, schemaState?.attributeCardinality, schemaState?.lanAttributeRowData]);
   
   const cardinalityRef = useRef();
   const [loading, setLoading] = useState(true);

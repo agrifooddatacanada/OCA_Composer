@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { flexCenter, gridStyles, preWrapWordBreak } from "../constants/styles";
 import CellHeader from "../components/CellHeader";
@@ -70,14 +70,14 @@ const RequiredEntries = () => {
   } = useContext(Context);
   
   // Use MultiSchema context with standard pattern
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { getSchemaState, updateSchemaState } = useMultiSchema();
   
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CONFORMANCE_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
     // MultiSchemaContext handles null schemaId internally
-    updateSchemaState(currentSchemaId, updates);
+    updateSchemaState( updates);
   }, [currentSchemaId, updateSchemaState]);
   
   // Get attributes data with Required status from schema state

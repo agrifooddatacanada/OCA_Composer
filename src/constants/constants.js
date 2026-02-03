@@ -12,6 +12,9 @@ export const FORM_BUILDER_CARD_WIDTH = 720;
 export const SCHEMA_MODE_SINGLE = "single";
 export const SCHEMA_MODE_MULTI_LEVEL = "multi-level";
 
+// Internal schema ID for manual creation flow (before user sets a name)
+export const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
+
 /**
  * Schema Type Constants
  * 
@@ -58,21 +61,15 @@ export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
 export const FIELD_FORM_INFORMATION_OVERLAY = "Add Form Information";
 
 export const overlayItems = {
-  [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
-  [FIELD_CONFORMANCE_OVERLAY]: {
-    feature: "Make selected entries required",
-    selected: false
-  },
-  [FIELD_FORMAT_OVERLAY]: {
-    feature: "Add format rule for data",
-    selected: false
-  },
-  [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
-  [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
-  [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
-  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
-  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false },
-  [FIELD_FORM_INFORMATION_OVERLAY]: { feature: "Add Form Information", selected: false }
+  [FIELD_CHARACTER_ENCODING_OVERLAY]: false,
+  [FIELD_CONFORMANCE_OVERLAY]: false,
+  [FIELD_FORMAT_OVERLAY]: false,
+  [FIELD_CARDINALITY_OVERLAY]: false,
+  [FIELD_DATA_STANDARDS_OVERLAY]: false,
+  [FIELD_UNIT_FRAMING_OVERLAY]: false,
+  [FIELD_RANGE_OVERLAY]: false,
+  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
+  [FIELD_FORM_INFORMATION_OVERLAY]: false
 };
 
 export const classification = {

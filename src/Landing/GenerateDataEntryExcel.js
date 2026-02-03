@@ -18,7 +18,7 @@ import { CustomPalette } from "../constants/customPalette";
 import { CreateDataEntryExcel } from "./CreateDataEntryExcel";
 import { getDescriptiveFileName } from "../utils/helpers";
 import { useTranslation } from "react-i18next";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { getOCACodeFromLangName, LanguageConstants } from "../utils/languageUtils";
 
 const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) => {
@@ -61,7 +61,7 @@ const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) =>
 const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck, isMultiSchema }) => {
   const { t } = useTranslation();
   const { currentSchemaId, getSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   
   // Get schema-specific languages (not global)
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];

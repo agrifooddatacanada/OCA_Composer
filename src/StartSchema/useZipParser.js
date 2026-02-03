@@ -305,10 +305,7 @@ const useZipParser = () => {
           conformance?.attribute_conformance?.[item] === "M";
         setOverlay((prev) => ({
           ...prev,
-          "Make selected entries required": {
-            ...prev["Make selected entries required"],
-            selected: true
-          }
+          "Make selected entries required": true
         }));
       }
 
@@ -318,10 +315,7 @@ const useZipParser = () => {
           characterEncoding?.default_character_encoding;
         setOverlay((prev) => ({
           ...prev,
-          "Character Encoding": {
-            ...prev["Character Encoding"],
-            selected: true
-          }
+          "Character Encoding": true
         }));
       }
 
@@ -346,10 +340,7 @@ const useZipParser = () => {
 
         setOverlay((prev) => ({
           ...prev,
-          "Add format rule for data": {
-            ...prev["Add format rule for data"],
-            selected: true
-          }
+          "Add format rule for data": true
         }));
 
         newFormatRuleRowData.push(newFormatRuleData);
@@ -365,10 +356,7 @@ const useZipParser = () => {
 
         setOverlay((prev) => ({
           ...prev,
-          "Data Standards": {
-            ...prev["Data Standards"],
-            selected: true
-          }
+          "Data Standards": true
         }));
 
         newDataStandardsRowData.push(newRowForDataStandard);
@@ -394,10 +382,7 @@ const useZipParser = () => {
       }
       setOverlay((prev) => ({
         ...prev,
-        Cardinality: {
-          ...prev.Cardinality,
-          selected: true
-        }
+        Cardinality: true
       }));
       // Removed: setCardinalityData - managed by MultiSchemaContext during import
     }
@@ -422,10 +407,7 @@ const useZipParser = () => {
 
         setOverlay((prev) => ({
           ...prev,
-          "Unit Framing": {
-            ...prev["Unit Framing"],
-            selected: true
-          }
+          "Unit Framing": true
         }));
         setUnitRowData(newUnitFramingRowData);
       });
@@ -451,10 +433,7 @@ const useZipParser = () => {
 
         setOverlay((prev) => ({
           ...prev,
-          "Attribute Framing": {
-            ...prev["Attribute Framing"],
-            selected: true
-          }
+          "Attribute Framing": true
         }));
 
         setAttributeFramingRowData(newAttributeFramingRowData);
@@ -494,10 +473,7 @@ const useZipParser = () => {
 
       setOverlay((prev) => ({
         ...prev,
-        [FIELD_RANGE_OVERLAY]: {
-          ...prev[FIELD_RANGE_OVERLAY],
-          selected: true
-        }
+        [FIELD_RANGE_OVERLAY]: true
       }));
     }
 
@@ -516,10 +492,7 @@ const useZipParser = () => {
       if (Array.isArray(formOverlayArray) && formOverlayArray.length > 0) {
         setOverlay((prev) => ({
           ...prev,
-          [FIELD_FORM_INFORMATION_OVERLAY]: {
-            ...prev[FIELD_FORM_INFORMATION_OVERLAY],
-            selected: true
-          }
+          [FIELD_FORM_INFORMATION_OVERLAY]: true
         }));
         formOverlayForConversion = formOverlayArray;
       }

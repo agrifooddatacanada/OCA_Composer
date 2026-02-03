@@ -15,7 +15,7 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY
 } from '../constants/constants';
-import { useMultiSchema } from '../context/MultiSchemaContext';
+import { useMultiSchema } from '../schema/schemaContext';
 import { useContext, useCallback } from 'react';
 import { Context } from '../App';
 
@@ -62,13 +62,13 @@ export const resetOverlayValues = (overlayType) => {
  * @param {string} overlayType - The overlay type constant
  * @param {Object} context - Required context methods
  */
-export const deleteOverlayData = (overlayType, { updateSchemaState, updateOverlaySelection, currentSchemaId, getSchemaState }) => {
+export const deleteOverlayData = (overlayType, { updateSchemaState, updateOverlaySelection, getSchemaState }) => {
   // Clear the overlay data
   const resetValues = resetOverlayValues(overlayType);
   
   // Handle special case for conformance overlay (Required Entries)
   if (overlayType === FIELD_CONFORMANCE_OVERLAY) {
-    const schemaState = getSchemaState(currentSchemaId);
+    const schemaState = getSchemaState();
     
     // Clear Required flags from all attributes
     const updatedAttributes = schemaState?.attributes?.map((attr) => ({
@@ -76,20 +76,20 @@ export const deleteOverlayData = (overlayType, { updateSchemaState, updateOverla
       Required: false
     })) || [];
     
-    updateSchemaState(currentSchemaId, {
+    updateSchemaState({
       ...resetValues,
       attributes: updatedAttributes
     });
   } else if (Object.keys(resetValues).length > 0) {
-    updateSchemaState(currentSchemaId, resetValues);
+    updateSchemaState(resetValues);
   }
   
   // Update selection state to deselected
-  updateOverlaySelection(currentSchemaId, overlayType, { selected: false });
+  updateOverlaySelection(overlayType, false);
   
   // Special case: Format overlay also affects range overlay
   if (overlayType === FIELD_FORMAT_OVERLAY) {
-    updateOverlaySelection(currentSchemaId, FIELD_RANGE_OVERLAY, { selected: false });
+    updateOverlaySelection(FIELD_RANGE_OVERLAY, false);
   }
 };
 
@@ -100,18 +100,18 @@ export const deleteOverlayData = (overlayType, { updateSchemaState, updateOverla
  * @returns {Function} Delete handler function
  */
 export const useDeleteOverlayHandler = (overlayType, shouldNavigate = true) => {
-  const { updateSchemaState, updateOverlaySelection, currentSchemaId, getSchemaState } = useMultiSchema();
+  const { updateSchemaState, updateOverlaySelection, getSchemaState } = useMultiSchema();
   const { setCurrentPage } = useContext(Context);
   
   return useCallback(() => {
     // Execute core deletion logic
-    deleteOverlayData(overlayType, { updateSchemaState, updateOverlaySelection, currentSchemaId, getSchemaState });
+    deleteOverlayData(overlayType, { updateSchemaState, updateOverlaySelection, getSchemaState });
     
     // Navigate back to overlays page if requested
     if (shouldNavigate) {
       setCurrentPage("Overlays");
     }
-  }, [overlayType, shouldNavigate, updateSchemaState, updateOverlaySelection, currentSchemaId, getSchemaState, setCurrentPage]);
+  }, [overlayType, shouldNavigate, updateSchemaState, updateOverlaySelection, getSchemaState, setCurrentPage]);
 };
 
 /**

@@ -7,7 +7,7 @@ import CellHeader from "../components/CellHeader";
 import DataStandardAutocompleteEditor from "./DataStandards/DataStandardAutocompleteEditor";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 import { FIELD_DATA_STANDARDS_OVERLAY } from "../constants/constants";
@@ -27,12 +27,12 @@ const DataStandards = () => {
     updateSchemaState,
     updateOverlaySelection
   } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const deleteHandler = useDeleteOverlayHandler(FIELD_DATA_STANDARDS_OVERLAY);
   
   const updateCurrentSchema = useCallback((updates) => {
     // MultiSchemaContext handles null schemaId internally
-    updateSchemaState(currentSchemaId, updates);
+    updateSchemaState( updates);
   }, [currentSchemaId, updateSchemaState]);
   
   // Always get data from schema state - no fallback needed

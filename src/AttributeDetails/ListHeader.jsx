@@ -2,12 +2,12 @@ import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 
 const ListHeader = ({ gridRef }) => {
   const { t } = useTranslation();
   const inputRef = useRef();
-  const { currentSchemaId, getSchemaState, updateSchemaState } = useMultiSchema();
+  const { getSchemaState, updateSchemaState } = useMultiSchema();
 
   const handleCheckboxChange = (event) => {
     const { checked } = event.target;

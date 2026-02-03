@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
 import { Box, Tooltip } from "@mui/material";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { greyCellStyle } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
@@ -118,14 +118,14 @@ export default function ViewGrid({
   const { OCAPackage } = useContext(Context);
   
   // Get overlay data from MultiSchemaContext
-  const { currentSchemaId, getOverlaySelections, getSchemaState, updateSchemaState, getCardinalityData } = useMultiSchema();
-  const overlay = getOverlaySelections(currentSchemaId);
-  const schemaState = getSchemaState(currentSchemaId);
+  const { getOverlaySelections, getSchemaState, updateSchemaState, getCardinalityData } = useMultiSchema();
+  const overlay = getOverlaySelections();
+  const schemaState = getSchemaState();
   
   // Get cardinality data - computed from attributes + attributeCardinality
   const cardinalityData = useMemo(
     () => getCardinalityData(),
-    [getCardinalityData, currentSchemaId, schemaState?.attributes, schemaState?.attributeCardinality]
+    [getCardinalityData, schemaState?.attributes, schemaState?.attributeCardinality]
   );
   
   const [columnDefs, setColumnDefs] = useState([]);
@@ -400,8 +400,8 @@ export default function ViewGrid({
     const attributeFormats = schemaState?.attributeFormats || {};
 
     // Initialize attributeFormats if overlay is selected but data doesn't exist
-    if (overlay && overlay[FIELD_FORMAT_OVERLAY]?.selected && typeof schemaState?.attributeFormats === 'undefined') {
-      updateSchemaState(currentSchemaId, { attributeFormats: {} });
+    if (overlay && overlay[FIELD_FORMAT_OVERLAY] && typeof schemaState?.attributeFormats === 'undefined') {
+      updateSchemaState({ attributeFormats: {} });
     }
 
     newRowData.forEach((item, index) => {
@@ -426,7 +426,7 @@ export default function ViewGrid({
       // Add Required and Format Rule data from overlay selections
       if (overlay) {
         // Add Required field data
-        if (overlay[FIELD_CONFORMANCE_OVERLAY]?.selected) {
+        if (overlay[FIELD_CONFORMANCE_OVERLAY]) {
           // Load required data from schema state
           const requiredOverlayData = schemaState?.requiredOverlayData;
           if (requiredOverlayData) {
@@ -438,13 +438,13 @@ export default function ViewGrid({
         }
         
         // Add Format Rule field data
-        if (overlay[FIELD_FORMAT_OVERLAY]?.selected) {
+        if (overlay[FIELD_FORMAT_OVERLAY]) {
           // Get format rule from object
           item["Format Rule"] = attributeFormats[item.Attribute] || "";
         }
         
         // Add Form Information checkbox data
-        if (overlay[FIELD_FORM_INFORMATION_OVERLAY]?.selected) {
+        if (overlay[FIELD_FORM_INFORMATION_OVERLAY]) {
           // Check if this attribute has a placeholder defined in any language
           const formPlaceholders = schemaState?.formPlaceholdersByLanguage || {};
           const hasPlaceholder = Object.values(formPlaceholders).some(
@@ -456,7 +456,7 @@ export default function ViewGrid({
     });
 
     setRowData(newRowData);
-  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, currentSchemaId, updateSchemaState]);
+  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchemaState]);
 
   return (
     <div className="ag-theme-balham" style={{ width: "100%" }}>

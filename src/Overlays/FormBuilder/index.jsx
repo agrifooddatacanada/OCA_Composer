@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useState, useEffect, useMemo } from "react";
 import { Context } from "../../App";
-import { useMultiSchema } from "../../context/MultiSchemaContext";
+import { useMultiSchema } from "../../schema/schemaContext";
 import BackNextSkeleton from "../../components/BackNextSkeleton";
 import { Box, Button, Typography, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
@@ -40,7 +40,7 @@ const FormBuilder = () => {
     getFormatRuleData
   } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   
   // Get schema-specific data (not global)
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
@@ -63,14 +63,14 @@ const FormBuilder = () => {
     const newData = typeof updater === 'function'
       ? updater(FormInformationRowData)
       : updater;
-    updateSchemaState(currentSchemaId, { FormInformationRowData: newData });
+    updateSchemaState({ FormInformationRowData: newData });
   }, [FormInformationRowData, updateSchemaState, currentSchemaId]);
 
   const setLanAttributeRowData = useCallback((updater) => {
     const newData = typeof updater === 'function'
       ? updater(lanAttributeRowData)
       : updater;
-    updateSchemaState(currentSchemaId, { lanAttributeRowData: newData });
+    updateSchemaState({ lanAttributeRowData: newData });
   }, [lanAttributeRowData, updateSchemaState, currentSchemaId]);
 
   

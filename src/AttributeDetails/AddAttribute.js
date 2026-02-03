@@ -5,7 +5,7 @@ import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "react-i18next";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { removeSpacesFromString } from "../utils/stringUtils";
 import CustomPalette from "../constants/customPalette";
 
@@ -24,7 +24,7 @@ export default function AddAttribute({
   setAttributeRowData
 }) {
   const { t } = useTranslation();
-  const { currentSchemaId, updateSchemaState } = useMultiSchema();
+  const { updateSchemaState } = useMultiSchema();
   
   // Note: attributesList is now computed - no need to update it separately
   const [newAttribute, setNewAttribute] = useState("");
@@ -115,7 +115,7 @@ export default function AddAttribute({
       });
       
       // Update only attributes - attributesList is computed automatically
-      updateSchemaState(currentSchemaId, {
+      updateSchemaState({
         attributes: attributesWithIds
       });
       

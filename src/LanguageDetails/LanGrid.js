@@ -11,7 +11,7 @@ import React, {
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import CellHeader from "../components/CellHeader";
 import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
@@ -114,7 +114,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const currentSchemaId = getCurrentSchemaId();
   
   // Get schema-specific languages from per-schema metadata
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const languages = schemaState?.metadata?.languages || [];
 
   // Get schema-specific overlay data from unified context, formatted for LanGrid
@@ -169,7 +169,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   // Get schema state data with stable references
   const attributesList = useMemo(
     () => getAttributesList(), // Computed from attributes
-    [getAttributesList, currentSchemaId, schemaState?.attributes] // Re-compute when attributes change
+    [getAttributesList, schemaState?.attributes] // Re-compute when attributes change
   );
   const lanAttributeRowData = useMemo(
     () => schemaState?.lanAttributeRowData || {},
@@ -191,7 +191,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   // Return entry codes regardless of initialized status to support manually created schemas
   const stableEntryCodes = useMemo(() => {
     if (!currentSchemaId) return {};
-    const currentSchemaState = getSchemaState(currentSchemaId);
+    const currentSchemaState = getSchemaState();
     return currentSchemaState?.entryCodes || {};
   }, [currentSchemaId, getSchemaState]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -207,7 +207,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     if (!currentSchemaId) return;
 
     // Get current schema state
-    const currentSchemaState = getSchemaState(currentSchemaId);
+    const currentSchemaState = getSchemaState();
     
     // For manually created schemas (not initialized yet but has attributes),
     // we still need to populate the language data.
@@ -280,7 +280,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         const newDataHash = JSON.stringify(updatedLanData);
         if (lastDataHashRef.current !== newDataHash) {
           lastDataHashRef.current = newDataHash;
-          updateSchemaState(currentSchemaId, {
+          updateSchemaState({
             lanAttributeRowData: updatedLanData
           });
         }
@@ -353,7 +353,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       // Only update if the data has actually changed for this specific schema
       if (lastDataHashRef.current[currentSchemaId] !== newDataHash) {
         lastDataHashRef.current[currentSchemaId] = newDataHash;
-        updateSchemaState(currentSchemaId, {
+        updateSchemaState({
           lanAttributeRowData: newLanAttributeRowData
         });
       }
@@ -475,11 +475,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       );
 
       // Update schema state
-      updateSchemaState(currentSchemaId, {
+      updateSchemaState({
         lanAttributeRowData: updatedLanAttributeRowData
       });
     },
-    [lanAttributeRowData, currentLanguage, currentSchemaId, updateSchemaState]
+    [lanAttributeRowData, currentLanguage, updateSchemaState]
   );
 
   // Refresh List data when currentLanguage changes or entry codes update
@@ -489,7 +489,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   useEffect(() => {
     if (!currentLanguage || !currentSchemaId || listUpdateInProgressRef.current) return;
 
-    const schemaState = getSchemaState(currentSchemaId);
+    const schemaState = getSchemaState();
     const savedEntryCodes = schemaState?.entryCodes || {};
     const currentLangData = schemaState?.lanAttributeRowData?.[currentLanguage] || [];
 
@@ -546,7 +546,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         [currentLanguage]: updatedLangData
       };
 
-      updateSchemaState(currentSchemaId, {
+      updateSchemaState({
         lanAttributeRowData: updatedLanAttributeRowData
       });
       
@@ -555,7 +555,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         listUpdateInProgressRef.current = false;
       }, 0);
     }
-  }, [currentLanguage, currentSchemaId, stableEntryCodes]);
+  }, [currentLanguage, stableEntryCodes]);
 
   return (
     <div className="ag-theme-balham" style={{ width: 890 }}>

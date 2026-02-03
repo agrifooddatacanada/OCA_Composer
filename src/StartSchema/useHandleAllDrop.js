@@ -11,7 +11,7 @@ import {
   replaceAttributeCharsInParsedJson
   // getUnitsFramedThatAlreadyExistInOcaPackage
 } from "../utils/helpers";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 
 const useHandleAllDrop = (pageForward) => {
   const {

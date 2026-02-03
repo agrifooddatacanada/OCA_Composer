@@ -3,15 +3,15 @@ import { Box, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { getOCACodeFromLangName } from "../utils/languageUtils";
 
 export default function SchemaDescription({ currentLanguage }) {
   const { t, i18n } = useTranslation();
   const { divisionGroup, currentTheme } = useContext(Context);
   // Use MultiSchema context with standard pattern
-  const { currentSchemaId, getSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState(currentSchemaId);
+  const { getSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState();
 
   // Use current schema state's metadata
   const currentMeta = schemaState?.metadata || {};

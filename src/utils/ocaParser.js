@@ -611,42 +611,15 @@ export class OCAParser {
     const unitOverlay = overlays?.unit;
 
     return {
-      [FIELD_CHARACTER_ENCODING_OVERLAY]: { 
-        feature: "Character Encoding", 
-        selected: !!charEncodingOverlay?.attribute_character_encoding 
-      },
-      [FIELD_CONFORMANCE_OVERLAY]: { 
-        feature: "Make selected entries required", 
-        selected: !!conformanceOverlay?.attribute_conformance 
-      },
-      [FIELD_FORMAT_OVERLAY]: { 
-        feature: "Add format rule for data", 
-        selected: !!formatOverlay?.attribute_formats 
-      },
-      [FIELD_CARDINALITY_OVERLAY]: { 
-        feature: "Cardinality", 
-        selected: !!cardinalityOverlay?.attribute_cardinality 
-      },
-      [FIELD_DATA_STANDARDS_OVERLAY]: { 
-        feature: "Data Standards", 
-        selected: false 
-      },
-      [FIELD_UNIT_FRAMING_OVERLAY]: { 
-        feature: "Unit Framing", 
-        selected: !!unitOverlay?.attribute_unit && hasUnitFramingExtension 
-      },
-      [FIELD_RANGE_OVERLAY]: { 
-        feature: "Add range rule for data", 
-        selected: hasRangeExtension
-      },
-      [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { 
-        feature: "Attribute Framing", 
-        selected: false 
-      },
-      [FIELD_FORM_INFORMATION_OVERLAY]: { 
-        feature: "Form Information", 
-        selected: hasFormExtension
-      }
+      [FIELD_CHARACTER_ENCODING_OVERLAY]: !!charEncodingOverlay?.attribute_character_encoding,
+      [FIELD_CONFORMANCE_OVERLAY]: !!conformanceOverlay?.attribute_conformance,
+      [FIELD_FORMAT_OVERLAY]: !!formatOverlay?.attribute_formats,
+      [FIELD_CARDINALITY_OVERLAY]: !!cardinalityOverlay?.attribute_cardinality,
+      [FIELD_DATA_STANDARDS_OVERLAY]: false,
+      [FIELD_UNIT_FRAMING_OVERLAY]: !!unitOverlay?.attribute_unit && hasUnitFramingExtension,
+      [FIELD_RANGE_OVERLAY]: hasRangeExtension,
+      [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
+      [FIELD_FORM_INFORMATION_OVERLAY]: hasFormExtension
     };
   }
 

@@ -2,7 +2,7 @@ import { useContext, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
-import { useMultiSchema } from "../context/MultiSchemaContext";
+import { useMultiSchema } from "../schema/schemaContext";
 import { getOCACodeFromLangName, getUICodeFromLangName } from "../utils/languageUtils";
 import { getPackageBundle, getPackageDependencies, findSchemaById, getPackageBundleId } from "../utils/packageUtils";
 import {
@@ -86,7 +86,7 @@ const useOCAExport = () => {
   // Get schema-specific data from MultiSchemaContext (single source of truth)
   const { getCurrentSchemaId, getSchemaState, getAttributesList, exportSchemaChanges, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
-  const schemaState = getSchemaState(currentSchemaId);
+  const schemaState = getSchemaState();
   const metadata = schemaState?.metadata || {};
 
   // All schema-specific data comes from MultiSchemaContext only
@@ -319,7 +319,7 @@ const useOCAExport = () => {
 
     // Add Format Overlay
     buildText += "# Add Format Overlay\n";
-    if (targetOverlaySelections[FIELD_FORMAT_OVERLAY]?.selected && Object.keys(targetAttributeFormats).length > 0) {
+    if (targetOverlaySelections[FIELD_FORMAT_OVERLAY] && Object.keys(targetAttributeFormats).length > 0) {
       let tempText = "";
       // Filter to only include attributes that exist in the current schema
       Object.entries(targetAttributeFormats).forEach(([attrName, formatRule]) => {
@@ -339,7 +339,7 @@ const useOCAExport = () => {
 
     // Add Conformance Overlay
     buildText += "# Add Conformance Overlay\n";
-    if (targetOverlaySelections["Make selected entries required"]?.selected) {
+    if (targetOverlaySelections["Make selected entries required"]) {
       let conformanceText = "";
       // Required status is stored in the attributes array
       targetAttributesList.forEach((item) => {
@@ -354,7 +354,7 @@ const useOCAExport = () => {
 
     // Add Cardinality Overlay
     buildText += "# Add Cardinality Overlay\n";
-    if (targetOverlaySelections[FIELD_CARDINALITY_OVERLAY]?.selected && Object.keys(targetAttributeCardinality).length > 0) {
+    if (targetOverlaySelections[FIELD_CARDINALITY_OVERLAY] && Object.keys(targetAttributeCardinality).length > 0) {
       let cardinalityText = "";
       Object.entries(targetAttributeCardinality).forEach(([attrName, cardinalityValue]) => {
         if (cardinalityValue && attrName) {
@@ -447,7 +447,7 @@ const useOCAExport = () => {
 
     // Add character encoding overlay
     buildText += "# Add character encoding overlay\n";
-    if (targetOverlaySelections[FIELD_CHARACTER_ENCODING_OVERLAY]?.selected) {
+    if (targetOverlaySelections[FIELD_CHARACTER_ENCODING_OVERLAY]) {
       let encodingText = "";
       targetAttributesList.forEach((item, index) => {
         encodingText += ` ${item}=utf-8`;
@@ -521,7 +521,7 @@ const useOCAExport = () => {
         attribute_ordering: targetAttributesList,
         entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
       },
-      ...(targetOverlaySelections[FIELD_UNIT_FRAMING_OVERLAY]?.selected && retainedUniqueFramedUnits.length > 0
+      ...(targetOverlaySelections[FIELD_UNIT_FRAMING_OVERLAY] && retainedUniqueFramedUnits.length > 0
         ? {
             unit_framing_overlay: {
               type: UNIT_FRAMING,
@@ -535,7 +535,7 @@ const useOCAExport = () => {
             }
           }
         : {}),
-      ...(targetOverlaySelections[FIELD_RANGE_OVERLAY]?.selected && Object.keys(rangeOverlayInput).length > 0
+      ...(targetOverlaySelections[FIELD_RANGE_OVERLAY] && Object.keys(rangeOverlayInput).length > 0
         ? {
             range_overlay: {
               type: RANGE,
@@ -551,7 +551,7 @@ const useOCAExport = () => {
             }
           }
         : {}),
-      ...(targetOverlaySelections[FIELD_ATTRIBUTE_FRAMING_OVERLAY]?.selected
+      ...(targetOverlaySelections[FIELD_ATTRIBUTE_FRAMING_OVERLAY]
         ? {
             attribute_framing_overlay: {
               type: ATTRIBUTE_FRAMING,
@@ -565,7 +565,7 @@ const useOCAExport = () => {
             }
           }
         : {}),
-      ...(targetOverlaySelections[FIELD_FORM_INFORMATION_OVERLAY]?.selected
+      ...(targetOverlaySelections[FIELD_FORM_INFORMATION_OVERLAY]
         ? {
             form_overlay: {
               form_overlays: formBuilderPages.map((page) => ({
