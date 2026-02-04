@@ -60,7 +60,7 @@ const Home = ({
         switchToSchema(rootSchemaId, OCAPackage);
       }
     }
-  }, [OCAPackage, switchToSchema]);
+  }, [OCAPackage, currentSchemaId, switchToSchema]);
 
   // Normalize and load overlay data from OCAPackage so LanguageDetails has labels/lists
   useEffect(() => {
@@ -315,11 +315,7 @@ const Home = ({
   // Ensure Entry Codes step reflects the currently active schema (root or dependency)
   const prevShouldShowRef = React.useRef(null); // null = uninitialized
   useEffect(() => {
-    // Use fallback schema ID when currentSchemaId is null (manual creation flow)
-    const targetSchemaId = currentSchemaId || "manual-creation-schema";
-    
-    // Read directly from schemaStates to avoid memoization issues
-    const state = schemaStates[targetSchemaId] || {};
+    const state = schemaStates[currentSchemaId] || {};
     const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
     const attributesWithLists = state?.attributesWithLists || [];
     

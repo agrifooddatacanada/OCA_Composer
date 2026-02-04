@@ -684,10 +684,8 @@ const useOCAExport = () => {
         return true;
       }
 
-      // For manual creation (flat OR nested): Build child schemas first to get SAIDs
-      const rootSchemaId = currentSchemaId || "manual-creation-schema";
       const allSchemaIds = Object.keys(schemaStates);
-      const childSchemaIds = allSchemaIds.filter(id => id !== rootSchemaId);
+      const childSchemaIds = allSchemaIds.filter(id => id !== currentSchemaId);
       
       // Step 1: Build all child schemas first to get their SAIDs
       const childSaidMap = {};
@@ -709,7 +707,7 @@ const useOCAExport = () => {
       }
       
       // Step 2: Build root schema with child SAIDs
-      const { bundle, extension, textDSL } = await buildPackageFromTextDSL(rootSchemaId, childSaidMap);
+      const { bundle, extension, textDSL } = await buildPackageFromTextDSL(currentSchemaId, childSaidMap);
       
       // Merge all extensions (root + all children)
       const mergedExtension = {

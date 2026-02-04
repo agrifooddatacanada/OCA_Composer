@@ -42,7 +42,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   // Multi-schema state - Use ref to persist across StrictMode remounts
   const schemaStatesRef = useRef({});
   const [schemaStates, _setSchemaStates] = useState({});
-  const [currentSchemaId, setCurrentSchemaId] = useState(null);
+  const [currentSchemaId, setCurrentSchemaId] = useState();
   
   // Wrapper to keep ref in sync with state
   const setSchemaStates = useCallback((updater) => {
@@ -110,7 +110,7 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
   // Clear all schema states
   const clearAllSchemas = useCallback(() => {
     setSchemaStates({});
-    setCurrentSchemaId(null);
+    setCurrentSchemaId();
 
     // Clear localStorage for all multi-schema data
     try {

@@ -26,11 +26,10 @@ import {
   getOCACodeFromLangName,
   LanguageConstants
 } from "../utils/languageUtils";
-import { hasActualDependencies } from "../utils/schemaUtils";
 import { 
   TYPE_CHILD_SCHEMA, 
-  TYPE_ARRAY_CHILD_SCHEMA, 
-  isChildSchemaType 
+  isChildSchemaType, 
+  MANUAL_CREATION_SCHEMA_ID
 } from "../constants/constants";
 
 import Loading from "../components/Loading";
@@ -218,17 +217,14 @@ export default function ViewSchema({
   
   // Validation: Check if any attributes are missing types
   const missingTypeAttributes = useMemo(() => {
-    // Use fallback ID for manual creation when currentSchemaId is null
-    const schemaId = currentSchemaId || "manual-creation-schema";
-    const currentSchema = schemaStates[schemaId];
+    const currentSchema = schemaStates[currentSchemaId];
     if (!currentSchema?.attributes) return [];
     return currentSchema.attributes.filter(attr => !attr.Type || attr.Type === "");
   }, [schemaStates, currentSchemaId]);
   
   // Validation: Check if any list attributes are missing entry codes
   const missingEntryCodeAttributes = useMemo(() => {
-    const schemaId = currentSchemaId || "manual-creation-schema";
-    const currentSchema = schemaStates[schemaId];
+    const currentSchema = schemaStates[currentSchemaId];
     if (!currentSchema?.attributes) return [];
     
     const attributesWithLists = currentSchema.attributesWithLists || [];
@@ -379,10 +375,10 @@ export default function ViewSchema({
     
     // If no OCA package exists (manual creation), create a minimal skeleton
     if (!basePackage) {
-      // CRITICAL: Always use "manual-creation-schema" as the root for manual creation
+      // CRITICAL: Always use MANUAL_CREATION_SCHEMA_ID as the root for manual creation
       // Do NOT use currentSchemaId here - that could be a child schema if user is editing one
       // The hierarchy must always start from the root schema
-      const rootSchemaId = "manual-creation-schema";
+      const rootSchemaId = MANUAL_CREATION_SCHEMA_ID;
       const rootState = schemaStates[rootSchemaId];
       
       if (!rootState) {

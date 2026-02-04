@@ -27,7 +27,7 @@ export default function SchemaInput({
   const [deleteHover, setDeleteHover] = useState(false);
   const nameFieldId = `schema-name${language}`;
   const descriptionFieldId = `schema-description${language}`;
-  const { getSchemaState, updateSchemaState } = useMultiSchema();
+  const { getSchemaState, updateSchemaState, currentSchemaId } = useMultiSchema();
 
   // Define language key - use proper OCA language code for all languages
   // No fallback - if getOCACodeFromLangName returns "eng" default, that's intentional
