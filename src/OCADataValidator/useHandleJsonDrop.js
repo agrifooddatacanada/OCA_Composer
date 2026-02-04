@@ -231,7 +231,6 @@ export const useHandleJsonDrop = (
             throw new Error("No language found in the JSON file");
           }
 
-          // Language processing now handled by OCAParser
           processMetadata(metaList);
           processLabelsDescriptionRootUnitsEntries(
             labelList,
@@ -385,7 +384,6 @@ export const useHandleJsonDrop = (
         allZipFiles.push(convertedLoadRoot);
 
         setJsonParsedFile(bundleForValidator);
-        // Language processing now handled by OCAParser
         processMetadata(metaList);
         processLabelsDescriptionRootUnitsEntries(
           labelList,
@@ -605,7 +603,6 @@ export const useHandleJsonDrop = (
               languageList.push("en");
             }
 
-            // Language processing now handled by OCAParser
             processMetadata(metaList);
             processLabelsDescriptionRootUnitsEntries(
               labelList,

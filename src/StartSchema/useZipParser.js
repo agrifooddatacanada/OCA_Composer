@@ -51,9 +51,6 @@ const useZipParser = () => {
     setFormBuilderPages
   } = useContext(Context);
 
-  // processLanguages removed - language handling is now done by OCAParser
-  // and stored per-schema in MultiSchemaContext (metadata.languages)
-
   const processMetadata = (metadata) => {
     const newMetadata = {};
     for (const { language, name, description } of metadata) {
