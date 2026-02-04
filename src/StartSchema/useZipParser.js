@@ -38,7 +38,6 @@ const useZipParser = () => {
   const {
     setSchemaDescription,
     setDivisionGroup,
-    setLanguages,
     setAttributeRowData,
     setLanAttributeRowData,
     setAttributesWithLists,
@@ -52,35 +51,8 @@ const useZipParser = () => {
     setFormBuilderPages
   } = useContext(Context);
 
-  const processLanguages = (languages) => {
-    const newLanguages = languages.map((language) => {
-      if (!codesToLanguages?.[language]) {
-        const randomString = `lang_${language}`;
-        codesToLanguages[language] = randomString;
-        languageCodesObject[randomString] = language;
-      }
-      return codesToLanguages[language];
-    });
-    
-    // Sort languages to ensure English appears first
-    const sortedLanguages = [...newLanguages].sort((a, b) => {
-      const aLower = a.toLowerCase();
-      const bLower = b.toLowerCase();
-      
-      // English always comes first
-      if (aLower === 'english') return -1;
-      if (bLower === 'english') return 1;
-      
-      // French comes second (if present)
-      if (aLower === 'french') return -1;
-      if (bLower === 'french') return 1;
-      
-      // Rest alphabetically
-      return a.localeCompare(b);
-    });
-    
-    setLanguages(sortedLanguages);
-  };
+  // processLanguages removed - language handling is now done by OCAParser
+  // and stored per-schema in MultiSchemaContext (metadata.languages)
 
   const processMetadata = (metadata) => {
     const newMetadata = {};
@@ -567,7 +539,6 @@ const useZipParser = () => {
   };
 
   return {
-    processLanguages,
     processMetadata,
     processLabelsDescriptionRootUnitsEntries
   };

@@ -28,7 +28,7 @@ const useHandleAllDrop = (pageForward) => {
     setOCAPackage
   } = useContext(Context);
   const { clearAllSchemas, switchToSchema, initializeFromOCAPackage } = useMultiSchema();
-  const { processLanguages, processMetadata, processLabelsDescriptionRootUnitsEntries } =
+  const { processMetadata, processLabelsDescriptionRootUnitsEntries } =
     useZipParser();
 
   const [loading, setLoading] = useState(false);
@@ -502,7 +502,7 @@ const useHandleAllDrop = (pageForward) => {
         throw new Error("No language found in the JSON file");
       }
 
-      processLanguages(languageList);
+      // Language processing now handled by OCAParser and MultiSchemaContext
       processMetadata(metaList);
       processLabelsDescriptionRootUnitsEntries(
         labelList,
@@ -523,7 +523,6 @@ const useHandleAllDrop = (pageForward) => {
     },
     [
       processLabelsDescriptionRootUnitsEntries,
-      processLanguages,
       processMetadata,
       setZipToReadme
     ]

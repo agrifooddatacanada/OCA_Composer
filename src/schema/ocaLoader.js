@@ -54,11 +54,9 @@ export function createOcaLoader({
     };
 
     const existingState = getSchemaStateById(schemaId);
-    console.log('[ocaLoader] existingState:', existingState?.initialized, 'for schema:', schemaId);
     // Only parse if schema not already initialized
     const parsedState =
       existingState?.initialized ? null : parseSchemaFromOCA(schemaId, ocaPackage);
-    console.log('[ocaLoader] parsedState overlaySelections:', parsedState?.overlaySelections);
 
     setSchemaStates(prev => {
       const newState = {

@@ -143,15 +143,6 @@ export default function ViewGrid({
 
   useEffect(() => {
     const getColumns = () => {
-      // // eslint-disable-next-line no-console
-      // console.log("ViewGrid Debug - overlay:", overlay);
-      // // eslint-disable-next-line no-console  
-      // console.log("ViewGrid Debug - displayArray:", displayArray);
-      // // eslint-disable-next-line no-console
-      // console.log("ViewGrid Debug - Format Rules:", displayArray.map(item => ({ 
-      //   Attribute: item.Attribute, 
-      //   FormatRule: item["Format Rule"] 
-      // })));
       
       const predefinedColumns = [
         {

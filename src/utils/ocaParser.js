@@ -623,7 +623,6 @@ export class OCAParser {
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
       [FIELD_FORM_INFORMATION_OVERLAY]: hasFormExtension
     };
-    console.log('[OCAParser] Built overlaySelections:', selections);
     return selections;
   }
 

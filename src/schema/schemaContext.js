@@ -138,20 +138,6 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     [getSchemaStateById, setSchemaStates]
   );
 
-  // Auto-initialize from OCA package when it changes
-  // DISABLED: This was causing re-initialization and data loss when navigating between pages
-  // Now initialization is handled explicitly by components that need it (StartSchema, SchemaUpload)
-  // useEffect(() => {
-  //   if (OCAPackage && Object.keys(schemaStates).length === 0) {
-  //     console.log("MultiSchemaContext: Auto-initializing from OCA package");
-  //     const schemaIds = initializeFromOCAPackage(OCAPackage);
-  //     
-  //     if (schemaIds.length > 0 && !currentSchemaId) {
-  //       setCurrentSchemaId(schemaIds[0]);
-  //     }
-  //   }
-  // }, [OCAPackage, initializeFromOCAPackage, schemaStates, currentSchemaId]);
-
   // Context value
   const contextValue = useMemo(
     () => ({

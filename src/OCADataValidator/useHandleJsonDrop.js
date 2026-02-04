@@ -42,7 +42,7 @@ export const useHandleJsonDrop = (
     setOCAPackage
   } = useContext(Context);
   const { clearAllSchemas, switchToSchema, initializeFromOCAPackage } = useMultiSchema();
-  const { processLanguages, processMetadata, processLabelsDescriptionRootUnitsEntries } =
+  const { processMetadata, processLabelsDescriptionRootUnitsEntries } =
     useZipParser();
 
   const [jsonDropMessage, setJsonDropMessage] = useState({
@@ -231,7 +231,7 @@ export const useHandleJsonDrop = (
             throw new Error("No language found in the JSON file");
           }
 
-          processLanguages(languageList);
+          // Language processing now handled by OCAParser
           processMetadata(metaList);
           processLabelsDescriptionRootUnitsEntries(
             labelList,
@@ -385,7 +385,7 @@ export const useHandleJsonDrop = (
         allZipFiles.push(convertedLoadRoot);
 
         setJsonParsedFile(bundleForValidator);
-        processLanguages(languageList);
+        // Language processing now handled by OCAParser
         processMetadata(metaList);
         processLabelsDescriptionRootUnitsEntries(
           labelList,
@@ -605,7 +605,7 @@ export const useHandleJsonDrop = (
               languageList.push("en");
             }
 
-            processLanguages(languageList);
+            // Language processing now handled by OCAParser
             processMetadata(metaList);
             processLabelsDescriptionRootUnitsEntries(
               labelList,
@@ -665,7 +665,6 @@ export const useHandleJsonDrop = (
       initializeFromOCAPackage,
       jsonIsParsed,
       processLabelsDescriptionRootUnitsEntries,
-      processLanguages,
       processMetadata,
       setCurrentDataValidatorPage,
       setDatasetDropDisabled,

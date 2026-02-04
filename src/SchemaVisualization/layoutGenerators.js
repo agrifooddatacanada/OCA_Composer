@@ -335,12 +335,6 @@ export const generateDetailedLayout = (
   const processNode = (nodeId, nodeType, title, fields, level = 0) => {
     if (allNodes.has(nodeId)) return;
 
-    // console.log(`Processing node ${nodeId} (${nodeType}) at level ${level}:`, {
-    //   title,
-    //   fieldCount: fields.length,
-    //   fields: fields.map(f => ({ name: f.name, type: f.type, isReference: f.isReference, isPlaceholder: f.isPlaceholder }))
-    // });
-
     // No more field processing here - handled in UI component
     const nodeData = {
       id: nodeId,
@@ -406,13 +400,6 @@ export const generateDetailedLayout = (
               : null;
             return metaOverlay?.name === placeholderId;
           });
-
-          // console.log(`Processing placeholder ${placeholderId}:`, {
-          //   found: !!dependencyWithAttributes,
-          //   hasAttributes: !!dependencyWithAttributes?.capture_base?.attributes,
-          //   attributeCount: Object.keys(dependencyWithAttributes?.capture_base?.attributes || {}).length,
-          //   attributes: dependencyWithAttributes?.capture_base?.attributes
-          // });
 
           // Check if it has actual attributes (not just an empty object)
           hasRealAttributes = dependencyWithAttributes &&

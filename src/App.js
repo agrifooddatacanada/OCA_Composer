@@ -72,11 +72,6 @@ function App() {
     division: "",
     group: ""
   });
-  // REMOVED: languages state - now per-schema in MultiSchemaContext (schemaState.metadata.languages)
-  // Keeping deprecated setLanguages stub for backwards compatibility with legacy code
-  const setLanguages = () => {
-    console.warn('setLanguages is deprecated - languages are now per-schema in MultiSchemaContext');
-  };
   const [attributeRowData, setAttributeRowData] = useState([]);
   const [entryCodeRowData, setEntryCodeRowData] = useState([]);
   // TODO: These are now per-schema in MultiSchemaContext - kept for legacy single-schema creation flow
@@ -438,7 +433,6 @@ function App() {
   // semapv:ManualMappingCuratio
 
   // Data Validator: Match CSV columns to schema attributes
-  // TODO: This is legacy code for data validation - should use per-schema languages from MultiSchemaContext
   useEffect(() => {
     if (jsonRawFile.length > 0) {
       // Derive attributesList from attributeRowData (no separate state needed)
@@ -533,7 +527,6 @@ function App() {
       group: ""
     });
 
-    setLanguages([LanguageConstants.DEFAULT_LANG_NAME]);
     setAttributeRowData([]);
     setEntryCodeRowData([]);
     setAttributesWithLists([]);
@@ -564,7 +557,6 @@ function App() {
               setSchemaDescription,
               divisionGroup,
               setDivisionGroup,
-              setLanguages, // DEPRECATED: no-op for backwards compat, languages are per-schema now
               attributeRowData,
               setAttributeRowData,
               entryCodeRowData,
