@@ -17,6 +17,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import "../App.css";
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import OCABundle from "./validator";
 import Languages from "./Languages";
 import ErrorFilterSelect from "./ErrorFilterSelect";
@@ -309,22 +310,27 @@ const OCADataValidatorCheck = ({
     setCurrentDataValidatorPage,
     ogWorkbook,
     jsonParsedFile,
-    languages,
-    lanAttributeRowData,
     matchingRowData,
     datasetRawFile,
-    formatRuleRowData,
-    cardinalityData,
-    characterEncodingRowData,
-    attributesList,
     setSchemaDataConformantHeader,
-    savedEntryCodes,
     targetResult,
     notToVerifyAttributes,
-    schemaDescription,
     OCAPackage
-    // attributeRowData // Check to see sensitive data
   } = useContext(Context);
+
+  // Get schema data from MultiSchemaContext
+  const { currentSchemaId, getSchemaState } = useMultiSchema();
+  const schemaState = getSchemaState();
+  
+  // Extract data from schema state (single schema for Data Validator)
+  const languages = schemaState?.metadata?.languages || [];
+  const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
+  const savedEntryCodes = schemaState?.entryCodes || {};
+  const formatRuleRowData = schemaState?.formatRuleRowData || [];
+  const cardinalityData = schemaState?.cardinalityData || [];
+  const characterEncodingRowData = schemaState?.characterEncodingRowData || [];
+  const attributesList = schemaState?.attributes?.map(attr => attr.Attribute) || [];
+  const schemaDescription = schemaState?.metadata?.localized || {};
 
   const { t } = useTranslation();
   const { currentTheme } = useContext(Context);
