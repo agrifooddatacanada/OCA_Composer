@@ -350,7 +350,7 @@
   "There are one or more blank entries in the Type column.": "Il y a une ou plusieurs entrées vides dans la colonne Type.",
   "Please provide valid data types for all attributes.": "Veuillez fournir des types de données valides pour tous les attributs.",
   "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.": "Tous les outils ne sont pas disponibles pour les schémas non valides. Les schémas doivent d'abord être convertis par édition avant que d'autres outils ne soient disponibles.",
-  "FileSizeError": "Le fichier est trop volumineux. Veuillez télécharger un fichier de moins de {{maxFileSize}} Mo.",
+  "FileSizeError": "Le fichier est trop volumineux. Veuillez télécharger un fichier de moins de {{maxFileSize}} Mo. Envisagez de supprimer les données, de ne conserver que les en-têtes de la ligne 1, puis de les télécharger à nouveau.",
   "OCA Merge": "Fusion OCA",
   "Collaborate on a Schema": "Collaborer sur un schéma",
   "You can support multiple contributors to your schema and merge the final results together in:": "Vous pouvez prendre en charge plusieurs contributeurs à votre schéma et fusionner les résultats finaux dans :",
