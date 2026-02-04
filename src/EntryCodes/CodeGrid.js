@@ -16,7 +16,7 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { preWrapWordBreak } from "../constants/styles";
-import { getOCACodeFromLangName, LanguageConstants } from "../utils/languageUtils";
+import { LanguageConstants } from "../utils/languageUtils";
 import { useMultiSchema } from "../schema/schemaContext";
 
 // Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
@@ -143,10 +143,9 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     });
 
     const newEntryCodeRow = { Code: "" };
-    // Use OCA codes as field keys
-    languages.forEach((languageName) => {
-      const ocaCode = getOCACodeFromLangName(languageName);
-      newEntryCodeRow[ocaCode] = "";
+    // Use language names as field keys (normalized at source)
+    languages.forEach((lang) => {
+      newEntryCodeRow[lang] = "";
     });
 
     const newRowData = [...entryCodeData, { ...newEntryCodeRow }];
@@ -179,13 +178,12 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   };
 
   const columnDefs = useMemo(() => {
-    // Use OCA codes as field keys, but display language names in headers
-    const languageHeaders = languages.map((languageName) => {
-      const ocaCode = getOCACodeFromLangName(languageName);
+    // Use language names as field keys (normalized at source in ocaParser)
+    const languageHeaders = languages.map((lang) => {
       return {
-        field: ocaCode, // Use OCA code for data binding (e.g., "eng", "fra")
+        field: lang, // Use language name for data binding (e.g., "English", "French")
         editable: true,
-        headerComponent: () => LanguageHeader({ languages, language: languageName }), // Display friendly name
+        headerComponent: () => LanguageHeader({ languages, language: lang }),
         autoHeight: true,
         cellStyle: () => preWrapWordBreak
       };

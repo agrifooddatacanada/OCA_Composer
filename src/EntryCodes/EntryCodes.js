@@ -108,9 +108,9 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       const overlayEntries = {};
       if (Array.isArray(overlays?.entry)) {
         overlays.entry.forEach((entryOverlay) => {
-          const lang = entryOverlay.language;
-          if (lang && entryOverlay.attribute_entries) {
-            overlayEntries[lang] = entryOverlay.attribute_entries;
+          const ocaCode = entryOverlay.language;
+          if (ocaCode && entryOverlay.attribute_entries) {
+            overlayEntries[ocaCode] = entryOverlay.attribute_entries;
           }
         });
       }
@@ -128,12 +128,12 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
           const row = { Code: code };
           
           // Add translations using full language names (normalize OCA codes to names)
-          Object.keys(overlayEntries).forEach((langCode) => {
-            const label = overlayEntries[langCode]?.[attr]?.[code];
+          Object.keys(overlayEntries).forEach((ocaCode) => {
+            const label = overlayEntries[ocaCode]?.[attr]?.[code];
             if (label) {
               // Convert OCA code (eng, fra) to language name (English, French)
-              const langName = getLangNameFromOCACode(langCode) || langCode;
-              row[langName] = label;
+              const lang = getLangNameFromOCACode(ocaCode) || ocaCode;
+              row[lang] = label;
             }
           });
           
@@ -324,10 +324,9 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
           }, [2000]);
           return;
         }
-        // Check each language field - convert display name to OCA code (eng, fra, etc.)
-        languages.forEach((language) => {
-          const ocaCode = getOCACodeFromLangName(language);
-          if (!obj[ocaCode]) {
+        // Check each language field - data uses language names as keys
+        languages.forEach((languageName) => {
+          if (!obj[languageName]) {
             pageForwardDisabledRef.current = true;
             setErrorMessage(t(errorMessages.fieldEmpty));
             setTimeout(() => {

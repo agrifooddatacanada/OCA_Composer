@@ -134,11 +134,12 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     };
 
     // Process label overlays
+    // labelOverlay.language contains OCA code (e.g., "eng")
     if (rawOverlays.label && Array.isArray(rawOverlays.label)) {
       rawOverlays.label.forEach((labelOverlay) => {
-        const lang = labelOverlay.language;
-        if (lang && labelOverlay.attribute_labels) {
-          transformedOverlay.label[lang] = labelOverlay.attribute_labels;
+        const ocaCode = labelOverlay.language;
+        if (ocaCode && labelOverlay.attribute_labels) {
+          transformedOverlay.label[ocaCode] = labelOverlay.attribute_labels;
         }
       });
     }
@@ -146,9 +147,9 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     // Process information overlays (for Description)
     if (rawOverlays.information && Array.isArray(rawOverlays.information)) {
       rawOverlays.information.forEach((infoOverlay) => {
-        const lang = infoOverlay.language;
-        if (lang && infoOverlay.attribute_information) {
-          transformedOverlay.information[lang] = infoOverlay.attribute_information;
+        const ocaCode = infoOverlay.language;
+        if (ocaCode && infoOverlay.attribute_information) {
+          transformedOverlay.information[ocaCode] = infoOverlay.attribute_information;
         }
       });
     }
@@ -156,9 +157,9 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     // Process entry overlays
     if (rawOverlays.entry && Array.isArray(rawOverlays.entry)) {
       rawOverlays.entry.forEach((entryOverlay) => {
-        const lang = entryOverlay.language;
-        if (lang && entryOverlay.attribute_entries) {
-          transformedOverlay.entry[lang] = entryOverlay.attribute_entries;
+        const ocaCode = entryOverlay.language;
+        if (ocaCode && entryOverlay.attribute_entries) {
+          transformedOverlay.entry[ocaCode] = entryOverlay.attribute_entries;
         }
       });
     }
