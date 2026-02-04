@@ -10,6 +10,7 @@ import React, {
 import { useTranslation } from "react-i18next";
 import { Alert, Box, Typography } from "@mui/material";
 import Grid from "./Grid";
+import Loading from "../components/Loading";
 import AddAttribute from "./AddAttribute";
 import { useMultiSchema } from "../schema/schemaContext";
 import {
@@ -20,7 +21,6 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { hasDisallowedChars } from "../utils/helpers";
 import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
-import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 import { langNameFromCodeUI, langCodeOCAFromName } from "../utils/languageUtils";
 
 const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, removeStep }, ref) => {
@@ -44,7 +44,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   const [showAddAttribute, setShowAddAttribute] = useState(false);
   const [addByTab, setAddByTab] = useState(false);
   const [showCard, setShowCard] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const navigationSafe = useRef();
   const gridRef = useRef();
@@ -102,9 +102,9 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
    *    - hasAttributesArray=false, so we CAN initialize from completeSchema
    */
   useEffect(() => {
+    setLoading(true);
     // Get schema state (MultiSchemaContext handles the fallback internally)
     const schemaState = getSchemaState();
-    
     
     // Get current language code for schema data
     const schemaLanguageName = langNameFromCodeUI(i18n.language);
@@ -116,6 +116,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     if (initializedSchemaRef.current === currentSchemaId && 
         schemaState?.attributes && 
         JSON.stringify(schemaState.attributes) === JSON.stringify(attributeRowData)) {
+      setLoading(false);
       return;
     }
 
@@ -141,7 +142,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
           setAttributeRowData(mergedAttributes);
         }
       }
-      
+      setLoading(false);
       initializedSchemaRef.current = currentSchemaId;
       return;
     }
@@ -183,7 +184,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         ) {
           displayType = TYPE_CHILD_SCHEMA;
         }
-
+        setLoading(false);
         return {
           Attribute: key,
           Type: displayType,
@@ -198,6 +199,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       const sameAttrs =
         JSON.stringify(attributeRowData) === JSON.stringify(newAttributeRowData);
       if (!sameAttrs) setAttributeRowData(newAttributeRowData);
+      setLoading(false);
 
       // Save to MultiSchemaContext (attributesList is computed automatically)
       updateSchemaState({
@@ -218,10 +220,11 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       updateSchemaState({
         attributes: emptyAttributeRowData
       });
-
+      setLoading(false);
       initializedSchemaRef.current = currentSchemaId;
     } else {
       // Some other case
+      setLoading(false);
       initializedSchemaRef.current = currentSchemaId;
     }
   }, [currentSchemaId, i18n.language]); // Removed function dependencies that cause infinite loops
@@ -543,6 +546,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       isForward
       pageForward={pageForwardSave}
     >
+      {loading && <Loading />}
       {showCard && (
         <ErrorPopup onClose={() => setShowCard(false)}>
           <Box>
@@ -570,19 +574,21 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         </Alert>
       )}
       <div ref={refContainer}>
-        <Grid
-          gridRef={gridRef}
-          addButton1={addButton1}
-          addButton2={addButton2}
-          setErrorMessage={setErrorMessage}
-          canDelete={canDelete}
-          setCanDelete={setCanDelete}
-          setAddByTab={setAddByTab}
-          typesObjectRef={typesObjectRef}
-          setLoading={setLoading}
-          attributeRowData={attributeRowData}
-          setAttributeRowData={setAttributeRowData}
-        />
+        {!loading && (
+          <Grid
+            gridRef={gridRef}
+            addButton1={addButton1}
+            addButton2={addButton2}
+            setErrorMessage={setErrorMessage}
+            canDelete={canDelete}
+            setCanDelete={setCanDelete}
+            setAddByTab={setAddByTab}
+            typesObjectRef={typesObjectRef}
+            setLoading={setLoading}
+            attributeRowData={attributeRowData}
+            setAttributeRowData={setAttributeRowData}
+          />
+        )}
       </div>
       <AddAttribute
         addButton1={addButton1}
