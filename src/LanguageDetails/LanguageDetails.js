@@ -14,7 +14,7 @@ import {
   getPrioritizedLangNames, 
   getBestLangName, 
   getUICode, 
-  getOCACodeFromLangName 
+  langCodeOCAFromName 
 } from "../utils/languageUtils";
 
 const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForward }, ref) {
@@ -117,7 +117,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       if (langData.length > 0) {
         // Convert language name to ISO 639-2 (3-letter) code for overlay
         // Use the existing languageNameToAlpha3Codes mapping
-        const languageCode = getOCACodeFromLangName(language) || 
+        const languageCode = langCodeOCAFromName(language) || 
                              language.toLowerCase().slice(0, 3); // Fallback to first 3 chars
         
         const attributeLabels = {};

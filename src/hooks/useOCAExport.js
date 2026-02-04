@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import { getOCACodeFromLangName, getUICodeFromLangName } from "../utils/languageUtils";
+import { langCodeOCAFromName, langCodeUIFromName } from "../utils/languageUtils";
 import { getPackageBundle, getPackageDependencies, findSchemaById, getPackageBundleId } from "../utils/packageUtils";
 import {
   ADC,
@@ -188,8 +188,8 @@ const useOCAExport = () => {
     // Build schemaDescription for target
     const targetSchemaDescription = {};
     targetLanguages.forEach((language) => {
-      const langKey = getOCACodeFromLangName(language);
-      const localized = targetMetadata.localized?.[langKey] || {};
+      const langCodeOCA = langCodeOCAFromName(language);
+      const localized = targetMetadata.localized?.[langCodeOCA] || {};
       targetSchemaDescription[language] = {
         name: localized.name || targetMetadata.name || "",
         description: localized.description || targetMetadata.description || ""
@@ -239,7 +239,7 @@ const useOCAExport = () => {
       const languageObject = {};
       languageObject.language = language;
       languageObject.code =
-        getUICodeFromLangName(language) ||
+        langCodeUIFromName(language) ||
         customIsos[language.toLowerCase()] ||
         "unknown";
 
@@ -422,7 +422,7 @@ const useOCAExport = () => {
           if (targetSavedEntryCodes[item] && targetSavedEntryCodes[item].length > 0) {
             // Entry codes are stored with 3-letter OCA language codes (eng, fra, etc.)
             // Get the proper 3-letter OCA code from schema language name
-            const threeLetterCode = getOCACodeFromLangName(language.language);
+            const threeLetterCode = langCodeOCAFromName(language.language);
             
             let entryString = "";
             for (const entry of targetSavedEntryCodes[item]) {

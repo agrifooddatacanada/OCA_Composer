@@ -10,16 +10,16 @@ Conversion to/from OCA codes happens only at boundaries (import from/export to O
 
 - **`lang`** or **`language`** - Language name ("English", "French")
 - **`langs`** or **`languages`** - Array of language names
-- **`ocaCode`** - OCA 3-letter code ("eng", "fra")
-- **`ocaCodes`** - Array of OCA codes
+- **`langCodeOCA`** - OCA 3-letter code ("eng", "fra")
+- **`langCodeOCAs`** - Array of OCA codes
 
 ## OCA Bundle Structure
 When parsing OCA bundles, `overlay.language` contains the OCA code ("eng"), not the language name.
-Always assign to a variable named `ocaCode`:
+Always assign to a variable named `langCodeOCA`:
 ```javascript
-const ocaCode = overlay.language; // "eng", "fra", etc.
+const langCodeOCA = overlay.language; // "eng", "fra", etc.
 
-**Never use:** `langCode` (use `ocaCode`), `langName` (use `lang`)
+**Never use:** `langCode` (use `langCodeOCA`), `langName` (use `lang`)
 
 ## Data Structures
 
@@ -33,10 +33,10 @@ const ocaCode = overlay.language; // "eng", "fra", etc.
 
 ```javascript
 // Import (OCA bundle → app)
-const lang = getLangNameFromOCACode(ocaCode); // "eng" → "English"
+const lang = langNameFromCodeOCA(langCodeOCA); // "eng" → "English"
 
 // Export (app → OCA bundle)
-const ocaCode = getOCACodeFromLangName(lang); // "English" → "eng"
+const langCodeOCA = langCodeOCAFromName(lang); // "English" → "eng"
 ```
 
 ## Files Using Language Names Correctly

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { getOCACodeFromLangName } from "../utils/languageUtils";
+import { langCodeOCAFromName } from "../utils/languageUtils";
 
 /**
    * Create a placeholder child schema during manual schema creation
@@ -44,7 +44,7 @@ export function useCreateChildSchemaPlaceholder({
     };
 
     parentLanguages.forEach((langName) => {
-      const code = getOCACodeFromLangName(langName);
+      const code = langCodeOCAFromName(langName);
       childSchemaState.metadata.localized[code] = {
         name: childSchemaId,
         description: `Child schema for ${childSchemaId}`,

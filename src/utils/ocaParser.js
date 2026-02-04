@@ -13,7 +13,7 @@ import {
   TYPE_CHILD_SCHEMA,
   TYPE_ARRAY_CHILD_SCHEMA
 } from "../constants/constants";
-import { getLangNameFromUICode, getLangNameFromOCACode, LanguageConstants } from "./languageUtils";
+import { langNameFromCodeUI, langNameFromCodeOCA, LanguageConstants } from "./languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
 
 /**
@@ -288,7 +288,7 @@ export class OCAParser {
         entryCodes[attrName].push(row);
       }
       // Normalize language code to full name (eng -> English, fra -> French)
-      const langName = getLangNameFromOCACode(langCode) || langCode;
+      const langName = langNameFromCodeOCA(langCode) || langCode;
       row[langName] = text || "";
     };
 
@@ -364,7 +364,7 @@ export class OCAParser {
       
       // Convert OCA code (e.g., "eng") to schema language name (e.g., "English")
       // Prefer OCA->Name mapping, then UI code mapping, then fallback to raw code
-      const languageName = getLangNameFromOCACode(langCode) || getLangNameFromUICode(langCode) || langCode;
+      const languageName = langNameFromCodeOCA(langCode) || langNameFromCodeUI(langCode) || langCode;
       
       lanAttributeRowData[languageName] = attributesWithLists.map((attr) => ({
         Attribute: attr.Attribute,
@@ -515,7 +515,7 @@ export class OCAParser {
     formOverlayArray.forEach((overlay) => {
       const langCode = overlay.language || "eng";  // 3-letter ISO code
       // Prefer OCA->language name conversion, then UI code mapping, then fallback
-      const langName = getLangNameFromOCACode(langCode) || getLangNameFromUICode(langCode) || langCode;
+      const langName = langNameFromCodeOCA(langCode) || langNameFromCodeUI(langCode) || langCode;
       
       if (!overlay.interaction?.[0]?.arguments) {
         return;

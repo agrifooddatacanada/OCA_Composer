@@ -10,7 +10,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuidv4 } from 'uuid';
-import { getLangNameFromUICode, LanguageConstants } from "../../utils/languageUtils";
+import { langNameFromCodeUI, LanguageConstants } from "../../utils/languageUtils";
 import i18next from "i18next";
 
 import AttributePalette from "./AttributePalette";
@@ -67,7 +67,7 @@ const FormBuilder = () => {
 
   
   const languageIndex = languages.findIndex(
-    (item) => getLangNameFromUICode(i18next.language) === item
+    (item) => langNameFromCodeUI(i18next.language) === item
   );
   const filteredLanguages = [...languages];
   if (languageIndex !== -1 && languageIndex !== 0) {
@@ -78,7 +78,7 @@ const FormBuilder = () => {
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {
-    const userLanguage = getLangNameFromUICode(i18next.language);
+    const userLanguage = langNameFromCodeUI(i18next.language);
     if (userLanguage && languages.includes(userLanguage)) {
       setCurrentLanguage(userLanguage);
     }

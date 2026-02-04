@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import { getOCACodeFromLangName } from "../utils/languageUtils";
+import { langCodeOCAFromName } from "../utils/languageUtils";
 
 export default function SchemaDescription({ currentLanguage }) {
   const { t, i18n } = useTranslation();
@@ -17,13 +17,13 @@ export default function SchemaDescription({ currentLanguage }) {
   const currentMeta = schemaState?.metadata || {};
   
   // Convert display language name to 3-letter OCA code
-  const langKey = getOCACodeFromLangName(currentLanguage);
+  const langCodeOCA = langCodeOCAFromName(currentLanguage);
   
   // Get the current UI language to determine fallback behavior
   const uiLanguage = i18n.language; // "en" or "fr"
   
   // Get metadata for the current display language from localized structure
-  const localizedMeta = currentMeta.localized?.[langKey];
+  const localizedMeta = currentMeta.localized?.[langCodeOCA];
   
   const schemaName =
     localizedMeta?.name || 

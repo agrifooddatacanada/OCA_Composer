@@ -9,7 +9,7 @@ import Languages from "./Languages";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
-import { getLangNameFromUICode, getUILangName } from "../utils/languageUtils";
+import { langNameFromCodeUI, getUILangName } from "../utils/languageUtils";
 
 export const DataHeaderRenderer = memo((props) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

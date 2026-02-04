@@ -70,10 +70,10 @@ export const processAttributes = (attributes, labels = {}) => {
  * Get dependency information by ID
  * @param {string} depId - Dependency ID
  * @param {Object} dependencyMap - Map of dependencies
- * @param {string} language - Language code
+ * @param {string} langCodeOCA - OCA language code
  * @returns {Object} Dependency info with name and fields
  */
-export const getDependencyInfo = (depId, dependencyMap, language = "eng") => {
+export const getDependencyInfo = (depId, dependencyMap, langCodeOCA = "eng") => {
   const dependency = dependencyMap[depId];
   if (!dependency) {
     return {
@@ -84,13 +84,13 @@ export const getDependencyInfo = (depId, dependencyMap, language = "eng") => {
 
   // Get meta overlay for name
   const metaOverlay =
-    dependency.overlays?.meta?.find((m) => m.language === language) ||
+    dependency.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
     dependency.overlays?.meta?.[0];
   const name = metaOverlay?.name || depId;
 
   // Get label overlay for field labels - LDAD changes will be saved directly to overlays
   const labelOverlay =
-    dependency.overlays?.label?.find((l) => l.language === language) ||
+    dependency.overlays?.label?.find((l) => l.language === langCodeOCA) ||
     dependency.overlays?.label?.[0];
   const labels = labelOverlay?.attribute_labels || {};
 
@@ -127,10 +127,10 @@ const normalizeOCAPackage = (ocaPackage) => {
 /**
  * Extract schema data directly from OCA package for visualization
  * @param {Object} ocaPackage - OCA package object
- * @param {string} language - Language code (optional)
+ * @param {string} langCodeOCA - OCA language code (optional)
  * @returns {Object} Processed schema data for visualization
  */
-export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
+export const extractSchemaDataFromPackage = (ocaPackage, langCodeOCA = "eng") => {
   if (!ocaPackage) {
     return null;
   }
@@ -145,7 +145,7 @@ export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
   // Note: Labels are populated by exportSchemaChanges from lanAttributeRowData
   const labelOverlays = normalizedPackage.bundle.overlays?.label;
   const labelOverlay = Array.isArray(labelOverlays)
-    ? (labelOverlays.find((l) => l.language === language) || labelOverlays[0] || {})
+    ? (labelOverlays.find((l) => l.language === langCodeOCA) || labelOverlays[0] || {})
     : (labelOverlays || {});
   const labels = labelOverlay.attribute_labels || {};
 
@@ -163,11 +163,11 @@ export const extractSchemaDataFromPackage = (ocaPackage, language = "eng") => {
  * Get schema data for a specific schema ID
  * @param {Object} ocaPackage - OCA package object
  * @param {string} schemaId - Schema ID to get data for
- * @param {string} language - Language code (optional)
+ * @param {string} langCodeOCA - OCA language code (optional)
  * @returns {Object} Schema data for the specified schema
  */
 
-export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
+export const getSchemaDataById = (ocaPackage, schemaId, langCodeOCA = "eng") => {
   if (!ocaPackage || !schemaId) {
     return null;
   }
@@ -189,7 +189,7 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
   ) {
     // Get the schema name and description from meta overlays
     const metaOverlay =
-      bundle?.overlays?.meta?.find((m) => m.language === language) ||
+      bundle?.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
       bundle?.overlays?.meta?.[0];
     const schemaName = metaOverlay?.name || bundleId || "root";
     const schemaDescription = metaOverlay?.description || "";
@@ -201,14 +201,14 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
       attributes: bundle?.capture_base?.attributes || {},
       overlays: bundle?.overlays || {},
       labels:
-        bundle?.overlays?.label?.find((l) => l.language === language)
+        bundle?.overlays?.label?.find((l) => l.language === langCodeOCA)
           ?.attribute_labels || {}
     };
   }
 
   // Check if it's the root schema by name (e.g., "sample_questionnaire")
   const rootMetaOverlay =
-    bundle?.overlays?.meta?.find((m) => m.language === language) ||
+    bundle?.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
     bundle?.overlays?.meta?.[0];
   if (rootMetaOverlay?.name === schemaId) {
     return {
@@ -218,7 +218,7 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
       attributes: bundle?.capture_base?.attributes || {},
       overlays: bundle?.overlays || {},
       labels:
-        bundle?.overlays?.label?.find((l) => l.language === language)
+        bundle?.overlays?.label?.find((l) => l.language === langCodeOCA)
           ?.attribute_labels || {}
     };
   }
@@ -230,7 +230,7 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
   if (!dependency && normalizedPackage.dependencies) {
     dependency = normalizedPackage.dependencies.find((dep) => {
       const metaOverlay =
-        dep.overlays?.meta?.find((m) => m.language === language) ||
+        dep.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
         dep.overlays?.meta?.[0];
       return metaOverlay?.name === schemaId;
     });
@@ -239,7 +239,7 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
   if (dependency) {
     // Get the schema name and description from meta overlays
     const metaOverlay =
-      dependency.overlays?.meta?.find((m) => m.language === language) ||
+      dependency.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
       dependency.overlays?.meta?.[0];
     const schemaName = metaOverlay?.name || dependency.d;
     const schemaDescription = metaOverlay?.description || "";
@@ -251,7 +251,7 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
       attributes: dependency.capture_base?.attributes || {},
       overlays: dependency.overlays || {},
       labels:
-        dependency.overlays?.label?.find((l) => l.language === language)
+        dependency.overlays?.label?.find((l) => l.language === langCodeOCA)
           ?.attribute_labels || {}
     };
   }
@@ -281,7 +281,7 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
         // Check if this placeholder schema now has actual attributes in dependencies
         const dependencyWithAttributes = deps?.find((dep) => {
           const metaOverlay =
-            dep.overlays?.meta?.find((m) => m.language === language) ||
+            dep.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
             dep.overlays?.meta?.[0];
           return metaOverlay?.name === schemaId;
         });
@@ -293,7 +293,7 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
           // This placeholder schema now has attributes, treat it as a real schema
           const metaOverlay =
             dependencyWithAttributes.overlays?.meta?.find(
-              (m) => m.language === language
+              (m) => m.language === langCodeOCA
             ) || dependencyWithAttributes.overlays?.meta?.[0];
           const schemaName = metaOverlay?.name || dependencyWithAttributes.d;
           const schemaDescription = metaOverlay?.description || "";
@@ -306,7 +306,7 @@ export const getSchemaDataById = (ocaPackage, schemaId, language = "eng") => {
             overlays: dependencyWithAttributes.overlays || {},
             labels:
               dependencyWithAttributes.overlays?.label?.find(
-                (l) => l.language === language
+                (l) => l.language === langCodeOCA
               )?.attribute_labels || {}
           };
         }

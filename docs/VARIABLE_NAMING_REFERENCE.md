@@ -6,10 +6,8 @@
 |--------------|------|---------------|-------|
 | `lang` or `language` | string | `"English"` | Language name |
 | `langs` or `languages` | string[] | `["English", "French"]` | Array of language names |
-| `ocaCode` | string | `"eng"` | OCA 3-letter code |
-| `ocaCodes` | string[] | `["eng", "fra"]` | Array of OCA codes |
-
-**Never use:** `langCode` (use `ocaCode`), `langName` (use `lang`)
+| `langCodeOCA` | string | `"eng"` | OCA 3-letter code |
+| `langCodeOCAs` | string[] | `["eng", "fra"]` | Array of OCA codes |
 
 ## Entry Code Data
 
@@ -28,16 +26,16 @@ const entryCodeRow = {
 
 ```javascript
 // Import from OCA bundle (bundle uses codes)
-const lang = getLangNameFromOCACode(ocaCode);
+const lang = langNameFromCodeOCA(langCodeOCA);
 
 // Export to OCA bundle (bundle requires codes)  
-const ocaCode = getOCACodeFromLangName(lang);
+const langCodeOCA = langCodeOCAFromName(lang);
 ```
 
 ## Key Rule
 
 **The issue isn't the variable name - it's using the correct data type:**
-- When `overlay.language` gives you OCA code → store as `ocaCode`
+- When `overlay.language` gives you OCA code → store as `langCodeOCA`
 - When accessing entry code data → use language name as key
 - Variable name `lang` is fine if it holds a language name
 

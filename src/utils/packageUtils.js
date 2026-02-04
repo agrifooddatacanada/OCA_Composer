@@ -25,7 +25,7 @@
  * Each dependency is a complete OCA bundle that can be referenced by the parent schema.
  */
 
-import { getLangNameFromUICode } from './languageUtils';
+import { langNameFromCodeUI } from './languageUtils';
 
 /**
  * Get the root bundle from an OCA package, handling both format variations
@@ -111,7 +111,7 @@ export const getPackageLanguages = (ocaPackage) => {
       schemaData.overlays.meta.forEach(metaOverlay => {
         if (metaOverlay.language) {
           // Convert OCA code (eng, fra) to language name (English, French)
-          const langName = getLangNameFromUICode(metaOverlay.language) || 
+          const langName = langNameFromCodeUI(metaOverlay.language) || 
                           (metaOverlay.language === 'eng' ? 'English' : metaOverlay.language);
           languageSet.add(langName);
         }
@@ -124,7 +124,7 @@ export const getPackageLanguages = (ocaPackage) => {
       if (Array.isArray(overlay)) {
         overlay.forEach(item => {
           if (item.language) {
-            const langName = getLangNameFromUICode(item.language) || 
+            const langName = langNameFromCodeUI(item.language) || 
                             (item.language === 'eng' ? 'English' : item.language);
             languageSet.add(langName);
           }

@@ -17,7 +17,7 @@ import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { MAX_ATTR_DESCRIPTION_CHARS, MAX_ATTR_LABEL_CHARS } from "../constants/constants";
-import { getOCACodeFromLangName } from "../utils/languageUtils";
+import { langCodeOCAFromName } from "../utils/languageUtils";
 
 const textareaStyle = {
   width: "100%",
@@ -133,9 +133,9 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     // labelOverlay.language contains OCA code (e.g., "eng")
     if (rawOverlays.label && Array.isArray(rawOverlays.label)) {
       rawOverlays.label.forEach((labelOverlay) => {
-        const ocaCode = labelOverlay.language;
-        if (ocaCode && labelOverlay.attribute_labels) {
-          transformedOverlay.label[ocaCode] = labelOverlay.attribute_labels;
+        const langCodeOCA = labelOverlay.language;
+        if (langCodeOCA && labelOverlay.attribute_labels) {
+          transformedOverlay.label[langCodeOCA] = labelOverlay.attribute_labels;
         }
       });
     }
@@ -143,9 +143,9 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     // Process information overlays (for Description)
     if (rawOverlays.information && Array.isArray(rawOverlays.information)) {
       rawOverlays.information.forEach((infoOverlay) => {
-        const ocaCode = infoOverlay.language;
-        if (ocaCode && infoOverlay.attribute_information) {
-          transformedOverlay.information[ocaCode] = infoOverlay.attribute_information;
+        const langCodeOCA = infoOverlay.language;
+        if (langCodeOCA && infoOverlay.attribute_information) {
+          transformedOverlay.information[langCodeOCA] = infoOverlay.attribute_information;
         }
       });
     }
@@ -153,9 +153,9 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     // Process entry overlays
     if (rawOverlays.entry && Array.isArray(rawOverlays.entry)) {
       rawOverlays.entry.forEach((entryOverlay) => {
-        const ocaCode = entryOverlay.language;
-        if (ocaCode && entryOverlay.attribute_entries) {
-          transformedOverlay.entry[ocaCode] = entryOverlay.attribute_entries;
+        const langCodeOCA = entryOverlay.language;
+        if (langCodeOCA && entryOverlay.attribute_entries) {
+          transformedOverlay.entry[langCodeOCA] = entryOverlay.attribute_entries;
         }
       });
     }
@@ -212,11 +212,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
             listDisplay = listDisplayString || "Not a List";
           }
           
-          const overlayLangKey = getOCACodeFromLangName(language);
+          const overlaylangCodeOCA = langCodeOCAFromName(language);
           newLanguageList.push({
             Attribute: item,
-            Label: schemaOverlay?.label?.[overlayLangKey]?.[item] || "",
-            Description: schemaOverlay?.information?.[overlayLangKey]?.[item] || "",
+            Label: schemaOverlay?.label?.[overlaylangCodeOCA]?.[item] || "",
+            Description: schemaOverlay?.information?.[overlaylangCodeOCA]?.[item] || "",
             List: listDisplay
           });
         });

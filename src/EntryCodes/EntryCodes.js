@@ -16,7 +16,7 @@ import { removeSpacesAndColonFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 import { useMultiSchema } from "../schema/schemaContext";
-import { getOCACodeFromLangName, getLangNameFromOCACode } from "../utils/languageUtils";
+import { langCodeOCAFromName, langNameFromCodeOCA } from "../utils/languageUtils";
 import { getPackageBundle } from "../utils/packageUtils";
 
 const errorMessages = {
@@ -108,16 +108,16 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       const overlayEntries = {};
       if (Array.isArray(overlays?.entry)) {
         overlays.entry.forEach((entryOverlay) => {
-          const ocaCode = entryOverlay.language;
-          if (ocaCode && entryOverlay.attribute_entries) {
-            overlayEntries[ocaCode] = entryOverlay.attribute_entries;
+          const langCodeOCA = entryOverlay.language;
+          if (langCodeOCA && entryOverlay.attribute_entries) {
+            overlayEntries[langCodeOCA] = entryOverlay.attribute_entries;
           }
         });
       }
 
       // Convert schema language name (e.g., "English") to OCA code (e.g., "eng")
       const resolveAlpha3 = (lang) => {
-        return getOCACodeFromLangName(lang);
+        return langCodeOCAFromName(lang);
       };
 
       const initialized = {};
@@ -128,11 +128,11 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
           const row = { Code: code };
           
           // Add translations using full language names (normalize OCA codes to names)
-          Object.keys(overlayEntries).forEach((ocaCode) => {
-            const label = overlayEntries[ocaCode]?.[attr]?.[code];
+          Object.keys(overlayEntries).forEach((langCodeOCA) => {
+            const label = overlayEntries[langCodeOCA]?.[attr]?.[code];
             if (label) {
               // Convert OCA code (eng, fra) to language name (English, French)
-              const lang = getLangNameFromOCACode(ocaCode) || ocaCode;
+              const lang = langNameFromCodeOCA(langCodeOCA) || langCodeOCA;
               row[lang] = label;
             }
           });
@@ -201,8 +201,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       const row = { Code: "" };
       // Use OCA codes as field keys
       languages.forEach((languageName) => {
-        const ocaCode = getOCACodeFromLangName(languageName);
-        row[ocaCode] = "";
+        const langCodeOCA = langCodeOCAFromName(languageName);
+        row[langCodeOCA] = "";
       });
       return row;
     })();
@@ -216,9 +216,9 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     const overlayEntries = {};
     if (Array.isArray(overlays?.entry)) {
       overlays.entry.forEach((entryOverlay) => {
-        const ocaCode = entryOverlay.language;
-        if (ocaCode && entryOverlay.attribute_entries) {
-          overlayEntries[ocaCode] = entryOverlay.attribute_entries;
+        const langCodeOCA = entryOverlay.language;
+        if (langCodeOCA && entryOverlay.attribute_entries) {
+          overlayEntries[langCodeOCA] = entryOverlay.attribute_entries;
         }
       });
     }
@@ -239,18 +239,18 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
             const row = { Code: code };
             
             // Add labels for all available overlay translations (using OCA codes as keys)
-            Object.keys(overlayEntries).forEach((ocaCode) => {
-              const label = overlayEntries[ocaCode]?.[attr]?.[code];
+            Object.keys(overlayEntries).forEach((langCodeOCA) => {
+              const label = overlayEntries[langCodeOCA]?.[attr]?.[code];
               if (label) {
-                row[ocaCode] = label;
+                row[langCodeOCA] = label;
               }
             });
             
             // Ensure all current languages have properties (even if empty)
             languages.forEach((languageName) => {
-              const ocaCode = getOCACodeFromLangName(languageName);
-              if (!row[ocaCode]) {
-                row[ocaCode] = overlayEntries?.[ocaCode]?.[attr]?.[code] || "";
+              const langCodeOCA = langCodeOCAFromName(languageName);
+              if (!row[langCodeOCA]) {
+                row[langCodeOCA] = overlayEntries?.[langCodeOCA]?.[attr]?.[code] || "";
               }
             });
             return row;

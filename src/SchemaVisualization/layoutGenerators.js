@@ -143,13 +143,13 @@ const getLayoutedElements = (nodes, edges, direction = "TB", viewMode = "detaile
  * - No cycle detection needed as schema verification prevents cycles at earlier stage
  *
  * @param {Object} schemaData - Processed schema data with attributes, dependencies, and overlays
- * @param {string} language - Language code for labels (e.g., "eng", "fra")
+ * @param {string} langCodeOCA - OCA language code for labels (e.g., "eng", "fra")
  * @param {string} rootLabel - Translated label for the root node
  * @returns {Object} Object containing nodes and edges arrays
  */
 export const generateTreeLayout = (
   schemaData,
-  language = "eng",
+  langCodeOCA = "eng",
   rootLabel = "Parent Schema",
   currentSchemaId = null
 ) => {
@@ -163,11 +163,11 @@ export const generateTreeLayout = (
 
   // Get label overlay for attribute labels using the specified language
   const labelOverlay =
-    overlays?.label?.find((l) => l.language === language) || overlays?.label?.[0] || {};
+    overlays?.label?.find((l) => l.language === langCodeOCA) || overlays?.label?.[0] || {};
 
   // Get meta overlay for root schema name using the specified language
   const rootMetaOverlay = Array.isArray(overlays?.meta)
-    ? (overlays.meta.find((m) => m.language === language) || overlays.meta[0])
+    ? (overlays.meta.find((m) => m.language === langCodeOCA) || overlays.meta[0])
     : null;
 
   // Recursive function to build hierarchical structure
@@ -200,12 +200,12 @@ export const generateTreeLayout = (
         if (refDep) {
           const refLabelOverlays = refDep.overlays?.label;
           const refLabelOverlay = Array.isArray(refLabelOverlays)
-            ? (refLabelOverlays.find((l) => l.language === language) || refLabelOverlays[0])
+            ? (refLabelOverlays.find((l) => l.language === langCodeOCA) || refLabelOverlays[0])
             : null;
           
           const refMetaOverlays = refDep.overlays?.meta;
           const refMetaOverlay = Array.isArray(refMetaOverlays)
-            ? (refMetaOverlays.find((m) => m.language === language) || refMetaOverlays[0])
+            ? (refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0])
             : null;
 
           const childNode = buildHierarchy({
@@ -312,13 +312,13 @@ export const generateTreeLayout = (
  * - Results in network where schemas are separate nodes connected by field-to-schema edges
  *
  * @param {Object} schemaData - Processed schema data with attributes, dependencies, and overlays
- * @param {string} language - Language code for labels (e.g., "eng", "fra")
+ * @param {string} langCodeOCA - OCA language code for labels (e.g., "eng", "fra")
  * @param {string} rootLabel - Translated label for the root node
  * @returns {Object} Object containing nodes and edges arrays
  */
 export const generateDetailedLayout = (
   schemaData,
-  language = "eng",
+  langCodeOCA = "eng",
   rootLabel = "Parent Schema",
   currentSchemaId = null
 ) => {
@@ -362,7 +362,7 @@ export const generateDetailedLayout = (
     fields.forEach((field) => {
       if (field.isReference && field.type.startsWith("refs:")) {
         const referencedId = field.type.replace("refs:", "");
-        const referencedInfo = getDependencyInfo(referencedId, dependencyMap, language);
+        const referencedInfo = getDependencyInfo(referencedId, dependencyMap, langCodeOCA);
 
         // Use parent schema's label (field.originalName) as the display title
         // Fall back to dependency's meta name only if no label exists
@@ -402,7 +402,7 @@ export const generateDetailedLayout = (
             // Fall back to checking the meta overlay name
             const metaOverlays = dep.overlays?.meta;
             const metaOverlay = Array.isArray(metaOverlays)
-              ? (metaOverlays.find((m) => m.language === language) || metaOverlays[0])
+              ? (metaOverlays.find((m) => m.language === langCodeOCA) || metaOverlays[0])
               : null;
             return metaOverlay?.name === placeholderId;
           });
@@ -423,7 +423,7 @@ export const generateDetailedLayout = (
             // This placeholder now has real attributes, use them
             const labelOverlays = dependencyWithAttributes.overlays?.label;
             const labelAttributes = Array.isArray(labelOverlays) 
-              ? (labelOverlays.find((l) => l.language === language)?.attribute_labels || {})
+              ? (labelOverlays.find((l) => l.language === langCodeOCA)?.attribute_labels || {})
               : {};
             
             placeholderFields = processAttributes(

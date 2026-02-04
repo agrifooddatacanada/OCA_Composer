@@ -21,7 +21,7 @@ import { hasDisallowedChars } from "../utils/helpers";
 import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
-import { getLangNameFromUICode, getOCACodeFromLangName } from "../utils/languageUtils";
+import { langNameFromCodeUI, langCodeOCAFromName } from "../utils/languageUtils";
 
 const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, removeStep }, ref) => {
   const { t, i18n } = useTranslation();
@@ -107,8 +107,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     
     
     // Get current language code for schema data
-    const schemaLanguageName = getLangNameFromUICode(i18n.language);
-    const languageCode = getOCACodeFromLangName(schemaLanguageName);
+    const schemaLanguageName = langNameFromCodeUI(i18n.language);
+    const languageCode = langCodeOCAFromName(schemaLanguageName);
     // NEW UNIFIED APPROACH: Get complete schema data directly
     const completeSchema = getSchemaState();
 
@@ -405,8 +405,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       // Filter each language's data to only include current attributes
       // This preserves the original labels/descriptions while removing deleted attributes
       const updatedLanAttributeRowData = {};
-      Object.keys(currentLanAttributeRowData).forEach(langKey => {
-        const filteredData = currentLanAttributeRowData[langKey].filter(
+      Object.keys(currentLanAttributeRowData).forEach(langCodeOCA => {
+        const filteredData = currentLanAttributeRowData[langCodeOCA].filter(
           item => currentAttributeNames.has(item.Attribute)
         );
         
@@ -424,7 +424,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
           }
         });
         
-        updatedLanAttributeRowData[langKey] = filteredData;
+        updatedLanAttributeRowData[langCodeOCA] = filteredData;
       });
       
       // attributesList is computed automatically from attributes

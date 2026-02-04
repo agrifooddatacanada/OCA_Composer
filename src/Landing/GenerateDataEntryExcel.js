@@ -19,7 +19,7 @@ import { CreateDataEntryExcel } from "./CreateDataEntryExcel";
 import { getDescriptiveFileName } from "../utils/helpers";
 import { useTranslation } from "react-i18next";
 import { useMultiSchema } from "../schema/schemaContext";
-import { getOCACodeFromLangName, LanguageConstants } from "../utils/languageUtils";
+import { langCodeOCAFromName, LanguageConstants } from "../utils/languageUtils";
 
 const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) => {
   let workbook = null;
@@ -71,8 +71,8 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck, isMul
     const metadata = schemaState?.metadata || {};
     const result = {};
     languages.forEach((language) => {
-      const langKey = getOCACodeFromLangName(language);
-      const localized = metadata.localized?.[langKey] || {};
+      const langCodeOCA = langCodeOCAFromName(language);
+      const localized = metadata.localized?.[langCodeOCA] || {};
       result[language] = {
         name: localized.name || metadata.name || "",
         description: localized.description || metadata.description || ""

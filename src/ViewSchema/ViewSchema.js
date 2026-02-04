@@ -23,7 +23,7 @@ import ViewGrid from "./ViewGrid";
 import { 
   getPrioritizedLangNames,
   getBestLangName,
-  getOCACodeFromLangName,
+  langCodeOCAFromName,
   LanguageConstants
 } from "../utils/languageUtils";
 import { 
@@ -489,9 +489,6 @@ export default function ViewSchema({
             const labelObj = {};
             const listObj = {};
 
-            // Convert language name to OCA code
-            const toLangKey = (l) => getOCACodeFromLangName(l);
-
             // Build a map of attribute -> entryCodes array once
             const entryCodesMap = schemaState.entryCodes || {};
             const codesForAttr = Array.isArray(entryCodesMap[attr.Attribute])
@@ -500,10 +497,10 @@ export default function ViewSchema({
 
             // Initialize for all languages with proper data (accept either display name or 3-letter code)
             filteredLanguages.forEach((lang) => {
-              const langKey = toLangKey(lang);
+              const langCodeOCA = langCodeOCAFromName(lang);
               // Try to find language data using both full name and 3-letter code
               const rowsByName = lanAttributeData[lang] || [];
-              const rowsByCode = lanAttributeData[langKey] || [];
+              const rowsByCode = lanAttributeData[langCodeOCA] || [];
               const langDataRows = rowsByName.length > 0 ? rowsByName : rowsByCode;
               const langData = langDataRows.find(
                 (item) => item.Attribute === attr.Attribute

@@ -6,7 +6,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { getOCACodeFromLangName, getUICodeFromLangName } from "../utils/languageUtils";
+import { langCodeOCAFromName, langCodeUIFromName } from "../utils/languageUtils";
 import Classification from "./Classification";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -29,9 +29,8 @@ export default function SchemaInput({
   const descriptionFieldId = `schema-description${language}`;
   const { getSchemaState, updateSchemaState, currentSchemaId } = useMultiSchema();
 
-  // Define language key - use proper OCA language code for all languages
-  // No fallback - if getOCACodeFromLangName returns "eng" default, that's intentional
-  const langKey = getOCACodeFromLangName(language);
+  // Convert language name to OCA code for accessing overlays
+  const langCodeOCA = langCodeOCAFromName(language);
 
   // Get schema data from MultiSchemaContext (works for both manual and imported schemas)
   // MultiSchemaContext handles null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
@@ -43,13 +42,13 @@ export default function SchemaInput({
   let schemaName = "";
   let currentSchemaDescription = "";
   
-  if (metaLocalized[langKey]) {
+  if (metaLocalized[langCodeOCA]) {
     // Use localized data for this language from schema state
-    schemaName = metaLocalized[langKey]?.name ?? "";
-    currentSchemaDescription = metaLocalized[langKey]?.description ?? "";
+    schemaName = metaLocalized[langCodeOCA]?.name ?? "";
+    currentSchemaDescription = metaLocalized[langCodeOCA]?.description ?? "";
   } else if (OCAPackage && currentSchemaId) {
     // Fall back to OCA package data on initial load (imported schemas only)
-    const currentSchemaData = getSchemaDataById(OCAPackage, langKey);
+    const currentSchemaData = getSchemaDataById(OCAPackage, currentSchemaId, langCodeOCA);
     schemaName = currentSchemaData?.schemaName || "";
     currentSchemaDescription = currentSchemaData?.schemaDescription || "";
   }
@@ -66,7 +65,7 @@ export default function SchemaInput({
     const prevLoc = prevMeta.localized || {};
     const nextLocalized = {
       ...prevLoc,
-      [langKey]: { ...(prevLoc[langKey] || {}), name: newText }
+      [langCodeOCA]: { ...(prevLoc[langCodeOCA] || {}), name: newText }
     };
     // Ensure we always have localized structure, initialize English if missing
     if (!nextLocalized.eng) {
@@ -77,7 +76,7 @@ export default function SchemaInput({
     }
     // Only update the global name field if editing English (primary language)
     const nextMeta =
-      langKey === "eng"
+      langCodeOCA === "eng"
         ? { ...prevMeta, name: newText, localized: nextLocalized }
         : { ...prevMeta, localized: nextLocalized };
     
@@ -93,7 +92,7 @@ export default function SchemaInput({
     const prevLoc = prevMeta.localized || {};
     const nextLocalized = {
       ...prevLoc,
-      [langKey]: { ...(prevLoc[langKey] || {}), description: newText }
+      [langCodeOCA]: { ...(prevLoc[langCodeOCA] || {}), description: newText }
     };
     // Ensure we always have localized structure, initialize English if missing
     if (!nextLocalized.eng) {
@@ -104,7 +103,7 @@ export default function SchemaInput({
     }
     // Only update the global description field if editing English (primary language)
     const nextMeta =
-      langKey === "eng"
+      langCodeOCA === "eng"
         ? { ...prevMeta, description: newText, localized: nextLocalized }
         : { ...prevMeta, localized: nextLocalized };
     
@@ -123,7 +122,7 @@ export default function SchemaInput({
       const prevMeta = st.metadata || {};
       const prevLoc = prevMeta.localized || {};
       const nextLocalized = { ...prevLoc };
-      delete nextLocalized[langKey];
+      delete nextLocalized[langCodeOCA];
       
       updateSchemaState({
         metadata: {
@@ -206,11 +205,11 @@ export default function SchemaInput({
           <Box>
             <Typography variant="body2" sx={{ fontStyle: "italic" }}>
               ISO Code:{" "}
-              {getUICodeFromLangName(language) ||
+              {langCodeUIFromName(language) ||
                 customIsos[language.toLowerCase()]}
             </Typography>
           </Box>
-          {!getUICodeFromLangName(language) && (
+          {!langCodeUIFromName(language) && (
             <Button
               variant="contained"
               color="button"
