@@ -14,9 +14,8 @@ const CheckboxHeader = ({ gridRef, field, columnName, helpText }) => {
     });
     
     // Update schema state when List column Select All is toggled
-    if (field === "List" && currentSchemaId !== undefined) {
-      const targetSchemaId = currentSchemaId || "manual-creation-schema";
-      const schemaState = getSchemaState(targetSchemaId) || {};
+    if (field === "List") {
+      const schemaState = getSchemaState() || {};
       const prevAttributes = Array.isArray(schemaState.attributes) ? schemaState.attributes : [];
       const prevEntryCodes = schemaState.entryCodes || {};
       
@@ -34,7 +33,7 @@ const CheckboxHeader = ({ gridRef, field, columnName, helpText }) => {
         });
       }
       
-      updateSchemaState(targetSchemaId, {
+      updateSchemaState({
         attributes: nextAttributes,
         attributesWithLists: nextLists,
         entryCodes: nextEntryCodes

@@ -103,16 +103,12 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   // Use MultiSchemaContext
   const {
-    getCurrentSchemaId,
     getSchemaState,
     getAttributesList,
     updateSchemaState,
     getLanguages
   } = useMultiSchema();
-  
-  // Get the current schema ID (handles manual creation case where currentSchemaId from context is null)
-  const currentSchemaId = getCurrentSchemaId();
-  
+
   // Get schema-specific languages from per-schema metadata
   const schemaState = getSchemaState();
   const languages = schemaState?.metadata?.languages || [];
@@ -165,7 +161,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     }
 
     return transformedOverlay;
-  }, [getSchemaState, currentSchemaId]);
+  }, [getSchemaState]);
 
   // Get schema state data with stable references
   const attributesList = useMemo(
@@ -188,17 +184,10 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   // effectiveAttributesList is now just attributesList (already computed correctly)
   const effectiveAttributesList = attributesList;
 
-  // Memoize entry codes to prevent unnecessary re-renders
-  // Return entry codes regardless of initialized status to support manually created schemas
   const stableEntryCodes = useMemo(() => {
-    if (!currentSchemaId) return {};
-    const currentSchemaState = getSchemaState();
-    return currentSchemaState?.entryCodes || {};
-  }, [currentSchemaId, getSchemaState]); // eslint-disable-line react-hooks/exhaustive-deps
-
-
-
-
+    const schemaState = getSchemaState();
+    return schemaState?.entryCodes || {};
+  }, [getSchemaState]);
 
   // Sets Language Dependent Attribute row data - simplified version
   useEffect(() => {

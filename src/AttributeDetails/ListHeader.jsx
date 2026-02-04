@@ -17,8 +17,7 @@ const ListHeader = ({ gridRef }) => {
     });
     
     // Update schema state when Select All is toggled
-    const targetSchemaId = currentSchemaId || "manual-creation-schema";
-    const schemaState = getSchemaState(targetSchemaId) || {};
+    const schemaState = getSchemaState() || {};
     const prevAttributes = Array.isArray(schemaState.attributes) ? schemaState.attributes : [];
     const prevEntryCodes = schemaState.entryCodes || {};
     
@@ -36,7 +35,7 @@ const ListHeader = ({ gridRef }) => {
       });
     }
     
-    updateSchemaState(targetSchemaId, {
+    updateSchemaState({
       attributes: nextAttributes,
       attributesWithLists: nextLists,
       entryCodes: nextEntryCodes
