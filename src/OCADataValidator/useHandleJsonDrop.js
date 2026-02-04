@@ -5,7 +5,6 @@ import { messages } from "../constants/messages";
 import { ADC, SENSITIVE } from "../constants/constants";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import useZipParser from "../StartSchema/useZipParser";
 import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
@@ -42,8 +41,7 @@ export const useHandleJsonDrop = (
     setOCAPackage
   } = useContext(Context);
   const { clearAllSchemas, switchToSchema, initializeFromOCAPackage } = useMultiSchema();
-  const { processMetadata, processLabelsDescriptionRootUnitsEntries } =
-    useZipParser();
+  // useZipParser removed - data processing now handled by initializeFromOCAPackage -> OCAParser
 
   const [jsonDropMessage, setJsonDropMessage] = useState({
     message: "",
@@ -231,22 +229,9 @@ export const useHandleJsonDrop = (
             throw new Error("No language found in the JSON file");
           }
 
-          processMetadata(metaList);
-          processLabelsDescriptionRootUnitsEntries(
-            labelList,
-            informationList,
-            loadRoot,
-            loadUnits,
-            entryCodeSummary,
-            entryList,
-            conformance,
-            characterEncoding,
-            languageList,
-            formatRules,
-            cardinalityData,
-            dataStandards,
-            ocaPackageData
-          );
+          // Data processing handled by initializeFromOCAPackage (called during upload)
+          // which uses OCAParser to extract all schema data into MultiSchemaContext
+          
           setZipToReadme(allJSONFiles);
         };
 
@@ -384,21 +369,9 @@ export const useHandleJsonDrop = (
         allZipFiles.push(convertedLoadRoot);
 
         setJsonParsedFile(bundleForValidator);
-        processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(
-          labelList,
-          informationList,
-          JSON.parse(convertedLoadRoot),
-          loadUnits,
-          entryCodeSummary,
-          entryList,
-          conformance,
-          characterEncoding,
-          languageList,
-          formatRules,
-          cardinalityData,
-          dataStandards
-        );
+        // Data processing handled by initializeFromOCAPackage (called during upload)
+        // which uses OCAParser to extract all schema data into MultiSchemaContext
+        
         setZipToReadme(allZipFiles);
       };
 
@@ -603,21 +576,9 @@ export const useHandleJsonDrop = (
               languageList.push("en");
             }
 
-            processMetadata(metaList);
-            processLabelsDescriptionRootUnitsEntries(
-              labelList,
-              informationList,
-              loadRoot,
-              loadUnits,
-              entryCodeSummary,
-              entryList,
-              conformance,
-              characterEncoding,
-              languageList,
-              formatRules,
-              cardinalityData,
-              dataStandards
-            );
+            // Data processing handled by initializeFromOCAPackage -> OCAParser
+            // which already extracts all metadata, labels, descriptions, etc.
+            
             setZipToReadme(allJSONFiles);
           } catch (error) {
             throw new Error(`Invalid YAML file or conversion failed: ${error.message}`);
@@ -661,8 +622,6 @@ export const useHandleJsonDrop = (
       datasetRawFile.length,
       initializeFromOCAPackage,
       jsonIsParsed,
-      processLabelsDescriptionRootUnitsEntries,
-      processMetadata,
       setCurrentDataValidatorPage,
       setDatasetDropDisabled,
       setDatasetLoading,

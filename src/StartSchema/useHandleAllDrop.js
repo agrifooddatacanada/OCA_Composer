@@ -3,7 +3,6 @@ import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import Papa from "papaparse";
 import { Context } from "../App";
-import useZipParser from "./useZipParser";
 import { removeSpacesFromString } from "../utils/stringUtils";
 import { messages } from "../constants/messages";
 import {
@@ -28,8 +27,7 @@ const useHandleAllDrop = (pageForward) => {
     setOCAPackage
   } = useContext(Context);
   const { clearAllSchemas, switchToSchema, initializeFromOCAPackage } = useMultiSchema();
-  const { processMetadata, processLabelsDescriptionRootUnitsEntries } =
-    useZipParser();
+  // useZipParser removed - data processing now handled by initializeFromOCAPackage -> OCAParser
 
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
@@ -502,30 +500,13 @@ const useHandleAllDrop = (pageForward) => {
         throw new Error("No language found in the JSON file");
       }
 
-      // Language processing now handled by OCAParser and MultiSchemaContext
-      processMetadata(metaList);
-      processLabelsDescriptionRootUnitsEntries(
-        labelList,
-        informationList,
-        loadRoot,
-        loadUnits,
-        entryCodeSummary,
-        entryList,
-        conformance,
-        characterEncoding,
-        languageList,
-        formatRules,
-        cardinalityData,
-        dataStandards,
-        ocaPackageData
-      );
+      // Data processing now handled by initializeFromOCAPackage -> OCAParser
+      // which already extracts all metadata, labels, descriptions, entry codes, etc.
+      // into MultiSchemaContext per-schema storage
+      
       setJsonToReadme(jsonFile);
     },
-    [
-      processLabelsDescriptionRootUnitsEntries,
-      processMetadata,
-      setZipToReadme
-    ]
+    [setZipToReadme]
   );
 
   const handleJsonDrop = useCallback((acceptedFiles) => {
