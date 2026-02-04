@@ -67,13 +67,6 @@ const useOCAExport = () => {
     formBuilderPages,
     // Setters needed for resetToDefaults
     setFileData,
-    setSchemaDescription,
-    setLanguages,
-    setAttributeRowData,
-    setEntryCodeRowData,
-    setLanAttributeRowData,
-    setAttributesWithLists,
-    setSavedEntryCodes,
     setIsZip,
     setRawFile,
     setOCAPackage,
@@ -769,15 +762,6 @@ const useOCAExport = () => {
   const resetToDefaults = useCallback(() => {
     // Clear legacy Context state
     setFileData([]);
-    setSchemaDescription({
-      English: { name: "", description: "" }
-    });
-    setLanguages(["English"]);
-    setAttributeRowData([]);
-    setEntryCodeRowData([]);
-    setLanAttributeRowData([]);
-    setAttributesWithLists([]);
-    setSavedEntryCodes({});
     setIsZip(false);
     setRawFile([]);
     setOCAPackage(null);
@@ -785,15 +769,13 @@ const useOCAExport = () => {
     setOverlay(overlayItems);
     setSelectedOverlay("");
     
-    // Clear MultiSchemaContext state (schema states and localStorage)
+    // Clear MultiSchemaContext state (all schema data now managed here)
     clearAllSchemas();
     
     setCurrentPage("Landing");
     navigate("/");
   }, [
-    setFileData, setSchemaDescription, setLanguages,
-    setAttributeRowData, setEntryCodeRowData, setLanAttributeRowData,
-    setAttributesWithLists, setSavedEntryCodes, setIsZip, setRawFile,
+    setFileData, setIsZip, setRawFile,
     setOCAPackage, setSchemaMode, setOverlay, setSelectedOverlay,
     clearAllSchemas, setCurrentPage, navigate
   ]);

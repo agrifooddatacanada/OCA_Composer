@@ -63,21 +63,10 @@ function App() {
     useState("StartDataValidator");
   const [currentOCAMergePage, setCurrentOCAMergePage] = useState("StartOCAMerge");
   const [history, setHistory] = useState([currentPage]);
-  // TODO: schemaDescription - now per-schema in MultiSchemaContext (schemaState.metadata.name/description)
-  // Kept for legacy schema creation flow, but no longer used for reading
-  const [schemaDescription, setSchemaDescription] = useState({
-    English: { name: "", description: "" }
-  });
   const [divisionGroup, setDivisionGroup] = useState({
     division: "",
     group: ""
   });
-  const [attributeRowData, setAttributeRowData] = useState([]);
-  const [entryCodeRowData, setEntryCodeRowData] = useState([]);
-  // TODO: These are now per-schema in MultiSchemaContext - kept for legacy single-schema creation flow
-  const [savedEntryCodes, setSavedEntryCodes] = useState({});
-  const [attributesWithLists, setAttributesWithLists] = useState([]);
-  const [lanAttributeRowData, setLanAttributeRowData] = useState({});
   const [formPlaceholdersByLanguage, setFormPlaceholdersByLanguage] = useState({});
   const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
@@ -228,28 +217,6 @@ function App() {
   // REMOVED: Legacy useEffects for attributesList, formatRuleRowData management
   // These are now handled by MultiSchemaContext with normalized storage
 
-  useEffect(() => {
-    const newDataStandardsArray = [];
-
-    attributeRowData.forEach((attributeRowItem) => {
-      const dataStandardObject = dataStandardsRowData.find(
-        (dataStandardRowItem) =>
-          attributeRowItem.Attribute === dataStandardRowItem.Attribute
-      );
-
-      if (dataStandardObject) {
-        newDataStandardsArray.push(dataStandardObject);
-      } else {
-        newDataStandardsArray.push({
-          Attribute: attributeRowItem.Attribute,
-          DataStandard: ""
-        });
-      }
-    });
-
-    setDataStandardsRowData(newDataStandardsArray);
-  }, [attributeRowData]);
-
   // unit framing starts here
   useEffect(() => {
     if (OCAPackage) {
@@ -258,34 +225,6 @@ function App() {
       );
     }
   }, [OCAPackage]);
-
-  useEffect(() => {
-    const newUnitRowArray = [];
-    attributeRowData.forEach((item) => {
-      if (!item.Unit) {
-        return;
-      }
-
-      const unitRowObject = unitRowData.find(
-        (obj) => obj.Attribute === item.Attribute && obj.Unit === item.Unit
-      );
-      // the attribute unit exits and hasn't changed from the attributeRowData.
-      if (unitRowObject) {
-        newUnitRowArray.push(unitRowObject);
-      } else {
-        newUnitRowArray.push({
-          Attribute: item.Attribute,
-          Unit: item.Unit,
-          "UCUM Code": item["UCUM Code"] || "",
-          "UCUM Label": "",
-          Description: ""
-        });
-      }
-    });
-
-    setUnitRowData(newUnitRowArray);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attributeRowData]);
 
   /*
   Every time the unitRowData updates, we need to update the unitFramedRowData
@@ -402,136 +341,13 @@ function App() {
     }
   }, [frameAllUnits, unitFramedRowData, unitRowDataWhenNoFrameAll]);
 
-  /*
-  Attribute Framing starts here.
-  */
-  useEffect(() => {
-    const newAttributeFramingArray = [];
-
-    attributeRowData.forEach((attributeRowItem) => {
-      const attributeFramingObj = attributeFramingRowData.find(
-        (attributeFramingRowItem) =>
-          attributeRowItem.Attribute === attributeFramingRowItem.Attribute
-      );
-      if (attributeFramingObj) {
-        newAttributeFramingArray.push(attributeFramingObj);
-      } else {
-        newAttributeFramingArray.push({
-          Attribute: attributeRowItem.Attribute,
-          predicateId: "",
-          objectId: "",
-          description: "",
-          mappingJustification: ""
-        });
-      }
-    });
-    setAttributeFramingRowData(newAttributeFramingArray);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attributeRowData]);
-
-  // skos:exactMatch
-  // semapv:ManualMappingCuratio
-
-  // Data Validator: Match CSV columns to schema attributes
-  useEffect(() => {
-    if (jsonRawFile.length > 0) {
-      // Derive attributesList from attributeRowData (no separate state needed)
-      const attributesList = attributeRowData.map(attr => attr.Attribute);
-      
-      const newMatchingRowData = [];
-      attributesList.forEach((item) => {
-        // if matchingRowData has data, use it
-        const matchingRow = matchingRowData.find((obj) => obj.Attribute === item);
-        const newObj = {
-          Attribute: item,
-          Dataset: ""
-        };
-        if (matchingRow) {
-          newObj.Dataset = matchingRow.Dataset;
-        }
-        // Get languages from lanAttributeRowData keys (legacy approach)
-        const availableLanguages = Object.keys(lanAttributeRowData || {});
-        availableLanguages.forEach((lang) => {
-          const languageRows = lanAttributeRowData?.[lang] || [];
-          const matchingLangRow = languageRows.find((row) => row?.Attribute === item);
-          newObj[lang] = matchingLangRow?.Label || "";
-        });
-        newMatchingRowData.push(newObj);
-      });
-      setMatchingRowData(newMatchingRowData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datasetRawFile, jsonRawFile, attributeRowData, lanAttributeRowData]);
-
-  function createEntryCodeRowData(languages, attributesWithLists, savedEntryCodes) {
-    const newEntryCodesArray = [];
-
-    const newEntryCodeRow = { Code: "" };
-    languages.forEach((lang) => {
-      newEntryCodeRow[lang] = "";
-    });
-
-    if (attributesWithLists.length > 0) {
-      attributesWithLists.forEach((item) => {
-        const listEntryCodesArray = [];
-
-        if (Array.isArray(item)) {
-          item.forEach((subItem) => {
-            const entryCodeRows = savedEntryCodes[subItem]
-              ? savedEntryCodes[subItem]
-              : [{ ...newEntryCodeRow }];
-
-            entryCodeRows.forEach((entryCodeRow) => {
-              listEntryCodesArray.push(entryCodeRow);
-            });
-          });
-        } else {
-          const entryCodeRows = savedEntryCodes[item]
-            ? savedEntryCodes[item]
-            : [{ ...newEntryCodeRow }];
-
-          entryCodeRows.forEach((entryCodeRow) => {
-            listEntryCodesArray.push(entryCodeRow);
-          });
-        }
-
-        newEntryCodesArray.push(listEntryCodesArray);
-      });
-
-      return newEntryCodesArray;
-    }
-  }
-
-  // Re-set Entry Code Row Data when items update
-  // TODO: This is legacy code - entry codes are now per-schema in MultiSchemaContext
-  useEffect(() => {
-    // Get languages from lanAttributeRowData keys (legacy approach)
-    const availableLanguages = Object.keys(lanAttributeRowData || {});
-    const newEntryCodesArray = createEntryCodeRowData(
-      availableLanguages,
-      attributesWithLists,
-      savedEntryCodes
-    );
-    setEntryCodeRowData(newEntryCodesArray);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attributesWithLists, savedEntryCodes, lanAttributeRowData]);
-
   // Re-set all fields when fileData updates
   useEffect(() => {
-    setSchemaDescription({
-      English: { name: "", description: "" }
-    });
-
     setDivisionGroup({
       division: "",
       group: ""
     });
 
-    setAttributeRowData([]);
-    setEntryCodeRowData([]);
-    setAttributesWithLists([]);
-    setSavedEntryCodes({});
-    setLanAttributeRowData({});
     setIsZip(false);
     setZipToReadme([]);
     setOCAPackage(null);
@@ -553,20 +369,8 @@ function App() {
               setFileData,
               rawFile,
               setRawFile,
-              schemaDescription,
-              setSchemaDescription,
               divisionGroup,
               setDivisionGroup,
-              attributeRowData,
-              setAttributeRowData,
-              entryCodeRowData,
-              setEntryCodeRowData,
-              attributesWithLists,
-              setAttributesWithLists,
-              savedEntryCodes,
-              setSavedEntryCodes,
-              lanAttributeRowData,
-              setLanAttributeRowData,
               formPlaceholdersByLanguage,
               setFormPlaceholdersByLanguage,
               setCurrentPage,
