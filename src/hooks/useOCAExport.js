@@ -69,7 +69,6 @@ const useOCAExport = () => {
     setFileData,
     setIsZip,
     setRawFile,
-    setOCAPackage,
     setSchemaMode,
     setOverlay,
     setSelectedOverlay,
@@ -77,7 +76,7 @@ const useOCAExport = () => {
   } = useContext(Context);
 
   // Get schema-specific data from MultiSchemaContext (single source of truth)
-  const { getCurrentSchemaId, getSchema, getAttributesList, exportSchemaChanges, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas } = useMultiSchema();
+  const { getCurrentSchemaId, getSchema, getAttributesList, exportSchemaChanges, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, setOriginalPackage } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchema();
   const metadata = schemaState?.metadata || {};
@@ -764,7 +763,7 @@ const useOCAExport = () => {
     setFileData([]);
     setIsZip(false);
     setRawFile([]);
-    setOCAPackage(null);
+    setOriginalPackage(null);
     setSchemaMode(SCHEMA_MODE_SINGLE);
     setOverlay(overlayItems);
     setSelectedOverlay("");
@@ -776,7 +775,7 @@ const useOCAExport = () => {
     navigate("/");
   }, [
     setFileData, setIsZip, setRawFile,
-    setOCAPackage, setSchemaMode, setOverlay, setSelectedOverlay,
+    setOriginalPackage, setSchemaMode, setOverlay, setSelectedOverlay,
     clearAllSchemas, setCurrentPage, navigate
   ]);
 

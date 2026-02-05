@@ -115,10 +115,10 @@ export default function ViewGrid({
   setLoading = () => {}
 }) {
   const { t } = useTranslation();
-  const { OCAPackage } = useContext(Context);
   
   // Get overlay data from MultiSchemaContext
-  const { getOverlaySelections, getSchema, updateSchema, getCardinalityData } = useMultiSchema();
+  const { getOverlaySelections, getSchema, updateSchema, getCardinalityData, originalPackage } = useMultiSchema();
+  const OCAPackage = originalPackage;
   const overlay = getOverlaySelections();
   const schemaState = getSchema();
   

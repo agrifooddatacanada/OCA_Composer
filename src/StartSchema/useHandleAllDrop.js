@@ -23,10 +23,9 @@ const useHandleAllDrop = (pageForward) => {
     rawFile,
     setRawFile,
     excelSheetChoice,
-    setExcelSheetChoice,
-    setOCAPackage
+    setExcelSheetChoice
   } = useContext(Context);
-  const { clearAllSchemas, switchToSchema, initializeFromOCAPackage } = useMultiSchema();
+  const { clearAllSchemas, switchToSchema, initializeFromOCAPackage, setOriginalPackage } = useMultiSchema();
   // useZipParser removed - data processing now handled by initializeFromOCAPackage -> OCAParser
 
   const [loading, setLoading] = useState(false);
@@ -395,7 +394,7 @@ const useHandleAllDrop = (pageForward) => {
         };
 
         // Set OCA package in context
-        setOCAPackage(ocaPackage);
+        setOriginalPackage(ocaPackage);
         setZipToReadme(allZipFiles);
 
         // NEW: Initialize MultiSchemaContext with complete package data
@@ -527,7 +526,7 @@ const useHandleAllDrop = (pageForward) => {
           // setUnitFramedThatAlreadyExistInOcaPackage(
           //   getUnitsFramedThatAlreadyExistInOcaPackage(jsonFile)
           // );
-          setOCAPackage(jsonFile);
+          setOriginalPackage(jsonFile);
 
           // NEW: Initialize MultiSchemaContext with complete package data
           initializeFromOCAPackage(jsonFile);
@@ -540,7 +539,7 @@ const useHandleAllDrop = (pageForward) => {
           // If dependencies exist, keep the full OCA package in context for visualization
           if (jsonFile?.dependencies && Array.isArray(jsonFile.dependencies)) {
             const sanitizedOcaPackage = { ...jsonFile, bundle: modifiedJsonFile };
-            setOCAPackage(sanitizedOcaPackage);
+            setOriginalPackage(sanitizedOcaPackage);
 
             // NEW: Initialize MultiSchemaContext with complete package data
             initializeFromOCAPackage(sanitizedOcaPackage);
@@ -550,7 +549,7 @@ const useHandleAllDrop = (pageForward) => {
             handleBundleJSONDrop(modifiedJsonFile, sanitizedOcaPackage);
           } else {
             // Single schema package
-            setOCAPackage(jsonFile);
+            setOriginalPackage(jsonFile);
 
             // NEW: Initialize MultiSchemaContext
             initializeFromOCAPackage(jsonFile);

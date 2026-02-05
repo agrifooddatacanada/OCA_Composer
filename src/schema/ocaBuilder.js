@@ -53,8 +53,8 @@ export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaB
   });
 
   // Phase 2 & 3: Ensure (if not existing, add) missing dependencies
-  ensureChildSchemaDependencies({ packageOCA, schemaStates, getSchemaById });
-  ensurePlaceholderDependencies({ packageOCA });
+  ensureChildSchemaDependencies(packageOCA, schemaStates, getSchemaById);
+  ensurePlaceholderDependencies(packageOCA);
 
   return packageOCA;
 }
@@ -206,11 +206,11 @@ export function rebuildAttributes(schema, schemaState) {
  * Scans all schemas for Child Schema type attributes and creates dependency
  * structures in the package if they're missing.
  */
-export function ensureChildSchemaDependencies({
+export function ensureChildSchemaDependencies(
   packageOCA,
   getSchemaById,
   schemaStates,
-}) {
+) {
   const dependencies = getPackageDependencies(packageOCA);
   
   // Check each edited schema for child schema attributes
@@ -271,9 +271,7 @@ export function ensureChildSchemaDependencies({
  * Scan for refn:placeholder_* references and create missing child schema dependencies.
  * Keeps language inheritance from root meta overlays.
  */
-export function ensurePlaceholderDependencies({ 
-    packageOCA
- }) {
+export function ensurePlaceholderDependencies(packageOCA) {
   const dependencies = getPackageDependencies(packageOCA);
   const bundle = getPackageBundle(packageOCA);
   const existingDepIds = new Set((dependencies || []).map((dep) => dep.d));

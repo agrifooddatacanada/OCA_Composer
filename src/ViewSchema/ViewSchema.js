@@ -70,7 +70,6 @@ export default function ViewSchema({
     setHistory,
     zipToReadme,
     jsonToReadme,
-    OCAPackage,
     formBuilderPages
   } = useContext(Context);
 
@@ -81,8 +80,12 @@ export default function ViewSchema({
     exportSchemaChanges,
     getSchema,
     updateSchema,
-    schemaStates
+    schemaStates,
+    originalPackage
   } = useMultiSchema();
+
+  // OCAPackage from multi-schema context (source of truth for package structure)
+  const OCAPackage = originalPackage;
 
   // Get languages from current schema's metadata (per-schema languages)
   const schemaState = getSchema();

@@ -136,9 +136,6 @@ function App() {
   const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState({});
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
 
-  // Ordering extension overlay for OCA package
-  const [OCAPackage, setOCAPackage] = useState(null);
-
   // Theme state
   const [currentTheme, setCurrentTheme] = useState(getCurrentTheme());
 
@@ -217,14 +214,15 @@ function App() {
   // REMOVED: Legacy useEffects for attributesList, formatRuleRowData management
   // These are now handled by MultiSchemaContext with normalized storage
 
-  // unit framing starts here
-  useEffect(() => {
-    if (OCAPackage) {
-      setUnitFramedThatAlreadyExistInOcaPackage(
-        getUnitsFramedThatAlreadyExistInOcaPackage(OCAPackage)
-      );
-    }
-  }, [OCAPackage]);
+  // TODO: Unit framing logic needs to be refactored to work with multi-schema context
+  // For now, this useEffect is disabled since OCAPackage is no longer in App.js
+  // useEffect(() => {
+  //   if (OCAPackage) {
+  //     setUnitFramedThatAlreadyExistInOcaPackage(
+  //       getUnitsFramedThatAlreadyExistInOcaPackage(OCAPackage)
+  //     );
+  //   }
+  // }, [OCAPackage]);
 
   /*
   Every time the unitRowData updates, we need to update the unitFramedRowData
@@ -350,7 +348,7 @@ function App() {
 
     setIsZip(false);
     setZipToReadme([]);
-    setOCAPackage(null);
+    // Note: OCAPackage is now in multi-schema context, cleared via clearAllSchemas()
   }, [fileData, jsonRawFile]);
 
   // REMOVED: Legacy useEffect that synced attributesList with editingSchemaId
@@ -359,7 +357,7 @@ function App() {
   return (
     <div className="App">
       <ThemeProvider theme={customTheme}>
-        <MultiSchemaProvider OCAPackage={OCAPackage}>
+        <MultiSchemaProvider>
           <Context.Provider
             // eslint-disable-next-line react/jsx-no-constructed-context-values
             value={{
@@ -461,8 +459,6 @@ function App() {
               setDatasetDropMessage,
               notToVerifyAttributes,
               setNotToVerifyAttributes,
-              OCAPackage,
-              setOCAPackage,
               unitRowData,
               setUnitRowData,
               unitFramedRowData,

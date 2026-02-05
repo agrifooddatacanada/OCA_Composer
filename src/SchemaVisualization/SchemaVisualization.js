@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { Box, Button, Typography, ToggleButton, ToggleButtonGroup } from "@mui/material";
 
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import SchemaVisualizationEmbed from "./SchemaVisualizationEmbed";
@@ -25,7 +26,9 @@ const SchemaVisualization = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { OCAPackage, setOCAPackage, setCurrentPage } = useContext(Context);
+  const { setCurrentPage } = useContext(Context);
+  const { originalPackage, setOriginalPackage } = useMultiSchema();
+  const OCAPackage = originalPackage;
 
   const [loadedSchema, setLoadedSchema] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -85,7 +88,7 @@ const SchemaVisualization = () => {
         // No hierarchical structure, redirect to regular View Schema page (step 6)
         // Ensure the OCA package is set in context if we loaded from navigation state
         if (loadedSchema && !OCAPackage) {
-          setOCAPackage(loadedSchema);
+          setOriginalPackage(loadedSchema);
         }
         // Set the page to "View" to go directly to step 6
         setCurrentPage("View");
@@ -95,7 +98,7 @@ const SchemaVisualization = () => {
 
       setIsLoading(false);
     }
-  }, [OCAPackage, loadedSchema, navigate, setCurrentPage, setOCAPackage, location.state]);
+  }, [OCAPackage, loadedSchema, navigate, setCurrentPage, setOriginalPackage, location.state]);
 
   // Handle schema switching for edit functionality
   const handleSchemaSwitch = (schemaId) => {

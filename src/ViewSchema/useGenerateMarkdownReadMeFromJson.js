@@ -13,6 +13,7 @@
 import { useContext } from "react";
 import i18next from "i18next";
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import { langNameFromCodeUI, langCodeOCAFromName, langCodeOCAFromCodeUI } from "../utils/languageUtils";
 import { getPackageLanguages, getPackageDependencies } from "../utils/packageUtils";
 import {
@@ -46,7 +47,9 @@ const getModifiedLayer = (overlay) => {
 };
 
 const useGenerateMarkdownReadMeFromJson = () => {
-  const { OCAPackage } = useContext(Context);
+  const { originalPackage } = useMultiSchema();
+  const OCAPackage = originalPackage;
+  
   // For now, use ADC extension overlays for the top-level/main schema bundle
   const orderingOverlay =
     OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]

@@ -44,9 +44,13 @@ const Home = ({
     schemaStates, 
     updateSchema,
     loadFromLocalStorage,
-    switchToSchema
+    switchToSchema,
+    originalPackage
   } = useMultiSchema();
-  const { OCAPackage, overlay, setOverlay, isZip, setIsZipEdited } = useContext(Context);
+  const { overlay, setOverlay, isZip, setIsZipEdited } = useContext(Context);
+
+  // OCAPackage from multi-schema context (source of truth for package structure)
+  const OCAPackage = originalPackage;
 
   // REMOVED: Auto-loading from localStorage on OCAPackage change
   // This was causing newly uploaded schemas to be overwritten with old localStorage data

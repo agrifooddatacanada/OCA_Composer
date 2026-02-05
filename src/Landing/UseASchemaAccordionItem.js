@@ -13,6 +13,7 @@ import { CustomPalette } from "../constants/customPalette";
 import AccordionItemWrapper from "./AccordionItemWrapper";
 import Drop from "../StartSchema/Drop";
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
@@ -26,7 +27,9 @@ import { hasMultiSchemaStructure } from "../utils/schemaUtils";
 
 const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, OCAPackage } = useContext(Context);
+  const { zipToReadme, jsonToReadme } = useContext(Context);
+  const { originalPackage } = useMultiSchema();
+  const OCAPackage = originalPackage;
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();

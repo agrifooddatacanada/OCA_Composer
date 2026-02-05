@@ -18,6 +18,7 @@ import Drop from "../StartSchema/Drop";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
 import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 import { hasMultiSchemaStructure } from "../utils/schemaUtils";
@@ -25,7 +26,9 @@ import { hasMultiSchemaStructure } from "../utils/schemaUtils";
 const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setCurrentDataValidatorPage, OCAPackage } = useContext(Context);
+  const { setCurrentDataValidatorPage } = useContext(Context);
+  const { originalPackage } = useMultiSchema();
+  const OCAPackage = originalPackage;
   const isMultiSchema = hasMultiSchemaStructure(OCAPackage);
   const {
     jsonRawFile,

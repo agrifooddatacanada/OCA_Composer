@@ -37,10 +37,9 @@ export const useHandleJsonDrop = (
     setJsonParsedFile,
     firstTimeMatchingRef,
     targetResult,
-    setTargetResult,
-    setOCAPackage
+    setTargetResult
   } = useContext(Context);
-  const { clearAllSchemas, switchToSchema, initializeFromOCAPackage } = useMultiSchema();
+  const { clearAllSchemas, switchToSchema, initializeFromOCAPackage, setOriginalPackage } = useMultiSchema();
   // useZipParser removed - data processing now handled by initializeFromOCAPackage -> OCAParser
 
   const [jsonDropMessage, setJsonDropMessage] = useState({
@@ -80,7 +79,7 @@ export const useHandleJsonDrop = (
           if (rawParse?.oca_bundle?.bundle) {
             ocaPackageData = rawParse;
             jsonFile = rawParse?.oca_bundle?.bundle;
-            setOCAPackage(rawParse);
+            setOriginalPackage(rawParse);
           } else if (rawParse?.bundle) {
             jsonFile = rawParse?.bundle;
           } else if (rawParse?.schema?.[0]) {
@@ -430,7 +429,7 @@ export const useHandleJsonDrop = (
             const ocaPackage = transformToPackage(bundle);
 
             // Store OCA package in context
-            setOCAPackage(ocaPackage);
+            setOriginalPackage(ocaPackage);
 
             // Initialize MultiSchemaContext with complete package data
             const schemaIds = initializeFromOCAPackage(ocaPackage);
@@ -629,7 +628,7 @@ export const useHandleJsonDrop = (
       setJsonIsParsed,
       setJsonLoading,
       setJsonParsedFile,
-      setOCAPackage,
+      setOriginalPackage,
       setShowWarningCard,
       setTargetResult,
       setZipToReadme,
