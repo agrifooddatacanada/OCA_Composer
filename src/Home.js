@@ -47,7 +47,7 @@ const Home = ({
     switchToSchema,
     originalPackage
   } = useMultiSchema();
-  const { overlay, setOverlay, isZip, setIsZipEdited } = useContext(Context);
+  const { isZip, setIsZipEdited } = useContext(Context);
 
   // OCAPackage from multi-schema context (source of truth for package structure)
   const OCAPackage = originalPackage;
@@ -66,63 +66,10 @@ const Home = ({
     }
   }, [OCAPackage, currentSchemaId, switchToSchema]);
 
-  // Normalize and load overlay data from OCAPackage so LanguageDetails has labels/lists
-  useEffect(() => {
-    const bundle = getPackageBundle(OCAPackage);
-    if (!bundle?.overlays) return;
-    const pkgOverlays = bundle.overlays;
-    const newOverlay = {};
-
-    // Labels: array to { lang3: { attr: label } }
-    if (Array.isArray(pkgOverlays.label)) {
-      const labelOverlays = {};
-      pkgOverlays.label.forEach((labelOverlay) => {
-        const lang = labelOverlay?.language;
-        if (lang) {
-          labelOverlays[lang] = labelOverlay.attribute_labels || {};
-        }
-      });
-      newOverlay.label = labelOverlays;
-    }
-
-    // Entry overlays: array to { lang3: { attr: { code: text } } }
-    if (Array.isArray(pkgOverlays.entry)) {
-      const entryOverlays = {};
-      pkgOverlays.entry.forEach((entryOverlay) => {
-        const lang = entryOverlay?.language;
-        if (lang) {
-          entryOverlays[lang] = entryOverlay.attribute_entries || {};
-        }
-      });
-      newOverlay.entry = entryOverlays;
-    }
-
-    // Entry codes: object kept as-is
-    if (pkgOverlays.entry_code) {
-      newOverlay.entry_code = pkgOverlays.entry_code;
-    }
-
-    // Pass through other overlays if present
-    if (pkgOverlays.unit) newOverlay.unit = pkgOverlays.unit;
-    if (pkgOverlays.cardinality) newOverlay.cardinality = pkgOverlays.cardinality;
-    if (pkgOverlays.format) newOverlay.format = pkgOverlays.format;
-    if (pkgOverlays.character_encoding)
-      newOverlay.character_encoding = pkgOverlays.character_encoding;
-    if (pkgOverlays.conformance) newOverlay.conformance = pkgOverlays.conformance;
-
-    // Only update if the normalized overlay actually changed to prevent render loops
-    try {
-      const prev = JSON.stringify(overlay || {});
-      const next = JSON.stringify(newOverlay);
-      if (prev !== next) {
-        setOverlay(newOverlay);
-      }
-    } catch (_e) {
-      setOverlay(newOverlay);
-    }
-  }, [OCAPackage, overlay, setOverlay]);
-
-  // Determine if we should use schema-aware components
+  // REMOVED: Legacy overlay normalization effect
+  // Was reading from OCAPackage and normalizing to global overlay state
+  // Components now read overlay data directly from schemaStates (lanAttributeRowData, entryCodes, etc.)
+  // This prevented conflicts with user edits and eliminated stale data issues
 
   const [activeStep, setActiveStep] = useState(0);
   const [steps, setSteps] = useState([
