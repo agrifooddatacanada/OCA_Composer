@@ -27,9 +27,8 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setCurrentDataValidatorPage } = useContext(Context);
-  const { originalPackage } = useMultiSchema();
-  const OCAPackage = originalPackage;
-  const isMultiSchema = hasMultiSchemaStructure(OCAPackage);
+  const { packageUpload } = useMultiSchema();
+  const isMultiSchema = hasMultiSchemaStructure(packageUpload);
   const {
     jsonRawFile,
     setJsonRawFile,

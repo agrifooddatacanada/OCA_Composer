@@ -28,8 +28,7 @@ import { hasMultiSchemaStructure } from "../utils/schemaUtils";
 const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme } = useContext(Context);
-  const { originalPackage } = useMultiSchema();
-  const OCAPackage = originalPackage;
+  const { packageUpload } = useMultiSchema();
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
@@ -53,7 +52,7 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   const navigateToEditSchema = () => {
     // Multi-schema: show visualization to let user choose which schema to edit
     // Single schema: go directly to editing
-    const targetPage = hasMultiSchemaStructure(OCAPackage) ? "View" : "Metadata";
+    const targetPage = hasMultiSchemaStructure(packageUpload) ? "View" : "Metadata";
     setCurrentPage(targetPage);
     navigate("/start");
   };
@@ -170,7 +169,7 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
             onClick={() => {
               if (Object.keys(jsonToReadme).length > 0) {
                 // Schema name will be extracted from jsonToReadme automatically
-                jsonToTextFile(jsonToReadme, OCAPackage);
+                jsonToTextFile(jsonToReadme, packageUpload);
               } else if (zipToReadme.length > 0) {
                 toTextFile(zipToReadme);
               }

@@ -37,39 +37,23 @@ const Home = ({
   showIntroCard,
   setShowIntroCard
 }) => {
-  // Get context to check if we're editing a specific schema
   const { 
-    currentSchemaId, 
-    getSchema, 
+    currentSchemaId,
     schemaStates, 
-    updateSchema,
-    loadFromLocalStorage,
     switchToSchema,
-    originalPackage
+    packageUpload
   } = useMultiSchema();
   const { isZip, setIsZipEdited } = useContext(Context);
 
-  // OCAPackage from multi-schema context (source of truth for package structure)
-  const OCAPackage = originalPackage;
-
-  // REMOVED: Auto-loading from localStorage on OCAPackage change
-  // This was causing newly uploaded schemas to be overwritten with old localStorage data
-  // The MultiSchemaContext now handles persistence automatically via auto-save/restore on mount
-
   // Ensure schema is initialized when entering via EDIT SCHEMA (old flow)
   useEffect(() => {
-    if (OCAPackage && !currentSchemaId) {
-      const rootSchemaId = getPackageBundleId(OCAPackage);
+    if (packageUpload && !currentSchemaId) {
+      const rootSchemaId = getPackageBundleId(packageUpload);
       if (rootSchemaId) {
-        switchToSchema(rootSchemaId, OCAPackage);
+        switchToSchema(rootSchemaId, packageUpload);
       }
     }
-  }, [OCAPackage, currentSchemaId, switchToSchema]);
-
-  // REMOVED: Legacy overlay normalization effect
-  // Was reading from OCAPackage and normalizing to global overlay state
-  // Components now read overlay data directly from schemaStates (lanAttributeRowData, entryCodes, etc.)
-  // This prevented conflicts with user edits and eliminated stale data issues
+  }, [packageUpload, currentSchemaId, switchToSchema]);
 
   const [activeStep, setActiveStep] = useState(0);
   const [steps, setSteps] = useState([
@@ -221,16 +205,16 @@ const Home = ({
 
   // Show Entry Codes step immediately if schema contains list attributes or entry overlays
   useEffect(() => {
-    if (!OCAPackage) return;
+    if (!packageUpload) return;
 
     const hasArrayAttributes = (() => {
-      const bundle = getPackageBundle(OCAPackage);
+      const bundle = getPackageBundle(packageUpload);
       const attrs = bundle?.capture_base?.attributes || {};
       return Object.values(attrs).some((v) => Array.isArray(v));
     })();
 
     const hasEntryOverlay = (() => {
-      const entry = OCAPackage?.bundle?.overlays?.entry;
+      const entry = packageUpload?.bundle?.overlays?.entry;
       if (Array.isArray(entry)) {
         return entry.some((e) => {
           const ae = e?.attribute_entries || {};
@@ -241,7 +225,7 @@ const Home = ({
     })();
 
     const hasEntryCodeOverlay = (() => {
-      const ec = OCAPackage?.bundle?.overlays?.entry_code?.attribute_entry_codes;
+      const ec = packageUpload?.bundle?.overlays?.entry_code?.attribute_entry_codes;
       if (ec && typeof ec === "object") {
         return Object.keys(ec).length > 0;
       }
@@ -251,7 +235,7 @@ const Home = ({
     if (hasArrayAttributes || hasEntryOverlay || hasEntryCodeOverlay) {
       insertStep(2, { label: "Entry Codes", page: "Codes" });
     }
-  }, [OCAPackage]);
+  }, [packageUpload]);
 
   // Add new page to this list
 

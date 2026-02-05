@@ -13,8 +13,6 @@ import OCADataValidator from "./OCADataValidator/OCADataValidator";
 import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
-import SchemaVisualization from "./SchemaVisualization/SchemaVisualization";
-import { getSchemaDataById } from "./SchemaVisualization/dataUtils";
 import { MultiSchemaProvider, useMultiSchema } from "./schema/schemaContext";
 import { getCurrentTheme } from "./utils/themeDetector";
 import { CustomPalette } from "./constants/customPalette";
@@ -511,7 +509,6 @@ function App() {
                     }
                   />
                   <Route path="/oca-data-verifier" element={<OCADataValidator />} />
-                  <Route path="/schema-visualization" element={<SchemaVisualization />} />
                   {/* <Route
                     path='/help_designing_datasets'
                     element={<GuidanceForDesigningDataSets />}

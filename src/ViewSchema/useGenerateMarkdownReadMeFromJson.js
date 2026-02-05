@@ -47,33 +47,33 @@ const getModifiedLayer = (overlay) => {
 };
 
 const useGenerateMarkdownReadMeFromJson = () => {
-  const { originalPackage } = useMultiSchema();
-  const OCAPackage = originalPackage;
+  const { packageUpload } = useMultiSchema();
+  const pkg = packageUpload;
   
   // For now, use ADC extension overlays for the top-level/main schema bundle
   const orderingOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+    pkg?.extensions?.[ADC]?.[pkg?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.ordering;
   const hasAttributeOrdering = orderingOverlay?.attribute_ordering?.length > 0;
 
   const sensitiveOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+    pkg?.extensions?.[ADC]?.[pkg?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[SENSITIVE];
   const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
     ? sensitiveOverlay?.sensitive_attributes
     : [];
 
   const rangeOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+    pkg?.extensions?.[ADC]?.[pkg?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[RANGE];
 
   const unitFramingOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+    pkg?.extensions?.[ADC]?.[pkg?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[UNIT_FRAMING];
 
   const generateMarkdownReadMeFromJson = (schemaData, catalogueData) => {
     // Extract languages from the entire package
-    const languages = getPackageLanguages(OCAPackage);
+    const languages = getPackageLanguages(pkg);
     
     // Ensuring that the currently selected site language is one of the languages of the schema
     const currentLanguageCode = languages.some(
@@ -119,9 +119,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
 
     // Include extension overlays if any
     // For now, use ADC extension overlays for the top-level/main schema bundle
-    if (Object.keys(OCAPackage?.extensions || {}).length > 0) {
+    if (Object.keys(pkg?.extensions || {}).length > 0) {
       const overlays =
-        OCAPackage.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+        pkg.extensions?.[ADC]?.[pkg?.oca_bundle?.bundle?.capture_base?.d]
           ?.overlays;
       const overlayNames = Object.keys(overlays);
       overlayNames.forEach((overlayName) => {
@@ -146,7 +146,7 @@ const useGenerateMarkdownReadMeFromJson = () => {
       metaOverlayCurrentLanguage,
       captureBaseOverlay,
       catalogueData,
-      OCAPackage
+      pkg
     );
     // Build language code lookup map
     const languageCodeLookupMap = {};
@@ -195,14 +195,14 @@ const useGenerateMarkdownReadMeFromJson = () => {
       {
         captureBaseSAID,
         bundleSAID: schemaData.d,
-        ...(OCAPackage?.d && { packageSAID: OCAPackage.d })
+        ...(pkg?.d && { packageSAID: pkg.d })
       },
       layersForSaidTable
     );
     
     // Process child schemas if any (stored in dependencies array)
     // Use helper to handle both package formats: {dependencies: [...]} and {oca_bundle: {dependencies: [...]}}
-    const childSchemas = getPackageDependencies(OCAPackage);
+    const childSchemas = getPackageDependencies(pkg);
     
     if (Array.isArray(childSchemas) && childSchemas.length > 0) {
       fileContent += "\n\n";

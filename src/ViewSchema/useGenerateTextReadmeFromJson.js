@@ -1,5 +1,3 @@
-import { useContext } from "react";
-import { Context } from "../App";
 import {
   getDescriptiveFileName,
   getOrderedAttributeMap,

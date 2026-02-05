@@ -10,8 +10,6 @@
  * Note: This is the legacy/ZIP version. For JSON packages, see useGenerateTextReadmeFromJson.
  */
 
-import { useContext } from "react";
-import { Context } from "../App";
 import { getDescriptiveFileName } from "../utils/helpers";
 
 const readmeText = `

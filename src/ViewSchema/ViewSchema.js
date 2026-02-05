@@ -81,11 +81,11 @@ export default function ViewSchema({
     getSchema,
     updateSchema,
     schemaStates,
-    originalPackage
+    packageUpload
   } = useMultiSchema();
 
   // OCAPackage from multi-schema context (source of truth for package structure)
-  const OCAPackage = originalPackage;
+  const OCAPackage = packageUpload;
 
   // Get languages from current schema's metadata (per-schema languages)
   const schemaState = getSchema();
@@ -300,7 +300,7 @@ export default function ViewSchema({
   const downloadReadMe = () => {
     if (Object.keys(jsonToReadme).length > 0) {
       // Schema name will be extracted from jsonToReadme automatically
-      jsonToTextFile(jsonToReadme, OCAPackage);
+      jsonToTextFile(jsonToReadme, updatedOCAPackage);
     } else if (zipToReadme.length > 0) {
       toTextFile(zipToReadme);
     }
@@ -321,9 +321,9 @@ export default function ViewSchema({
       return used;
     }
 
-    const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+    const captureBaseSaid = updatedOCAPackage?.oca_bundle?.bundle?.capture_base?.d;
     const extensionOverlays =
-      OCAPackage?.extensions?.adc?.[captureBaseSaid]?.overlays || {};
+      updatedOCAPackage?.extensions?.adc?.[captureBaseSaid]?.overlays || {};
 
     const formOverlayData = extensionOverlays.form_overlay || extensionOverlays.form;
     const formOverlayArray = Array.isArray(formOverlayData)
@@ -340,7 +340,7 @@ export default function ViewSchema({
     }
 
     return used;
-  }, [formBuilderPages, OCAPackage]);
+  }, [formBuilderPages, updatedOCAPackage]);
 
   const moveBackward = () => {
     if (history.length > 1 && history[history.length - 2] === "Landing") {
@@ -374,13 +374,12 @@ export default function ViewSchema({
 
   // Update the package data when schemas are modified
   useEffect(() => {
-    let basePackage = OCAPackage;
+    // For manual creation, OCAPackage is null - exportSchemaChanges will create the structure
+    // For uploaded packages, OCAPackage contains the original structure
+    const basePackage = OCAPackage;
     
-    // If no OCA package exists (manual creation), create a minimal skeleton
+    // If manual creation, ensure root schema is initialized before building
     if (!basePackage) {
-      // CRITICAL: Always use MANUAL_CREATION_SCHEMA_ID as the root for manual creation
-      // Do NOT use currentSchemaId here - that could be a child schema if user is editing one
-      // The hierarchy must always start from the root schema
       const rootSchemaId = MANUAL_CREATION_SCHEMA_ID;
       const rootState = schemaStates[rootSchemaId];
       
@@ -395,34 +394,12 @@ export default function ViewSchema({
         // Since state update is async, also update the local ref for immediate use
         schemaStates[rootSchemaId] = { ...rootState, initialized: true };
       }
-
-      // Create minimal skeleton package - exportSchemaChanges will populate it
-      basePackage = {
-        bundle: {
-          d: rootSchemaId,
-          capture_base: {
-            d: rootSchemaId,
-            type: "spec/capture_base/1.0",
-            classification: "",
-            attributes: {}  // Empty - will be filled by exportSchemaChanges
-          },
-          overlays: {
-            meta: [{
-              type: "spec/overlays/meta/1.0",
-              language: "eng",
-              name: "",
-              description: ""
-            }],
-            label: [],  // Empty array to prevent .find() errors
-            information: []  // Empty array to prevent .find() errors
-          }
-        },
-        dependencies: []
-      };
     }
 
     // UNIFIED CODE PATH: exportSchemaChanges handles both imported and manual schemas
-    // It converts "Child Schema" -> refn:name and builds dependencies automatically
+    // - For uploads: clones basePackage and applies edits
+    // - For manual creation: creates fresh package structure from schemaStates
+    // - Converts "Child Schema" -> refn:name and builds dependencies automatically
     const modifiedPackage = exportSchemaChanges(basePackage);
     setUpdatedOCAPackage(modifiedPackage);
     setVizVersion((v) => v + 1);

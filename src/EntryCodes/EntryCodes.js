@@ -35,10 +35,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   const languages = getLanguages();
   
   // Global context
-  const {
-    setCurrentPage,
-    OCAPackage
-  } = useContext(Context);
+  const { setCurrentPage } = useContext(Context);
   
   // Use schema state data directly - no fallback needed
   const attributeRowData = useMemo(

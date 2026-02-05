@@ -18,26 +18,40 @@
 
 import { getPackageBundle, getPackageDependencies } from "../utils/packageUtils";
 import { applyAllOverlays } from "./ocaBuilderOverlays";
-import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA } from "../constants/constants";
+import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA, MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
+import { createMinimalOCASchema, createMetaOverlay } from "./createMinimalOCASchema";
 
 /**
  * Rebuilds entire OCA package by applying user edits from editor state.
  * 
- * @param {Object} packageOCAJSON - Original OCA package JSON structure
+ * @param {Object|null} packageOCAJSON - Original OCA package JSON structure (null for manual creation)
  * @param {Object} schemaStates - Map of schemaId -> editor state (UI changes)
  * @param {Function} getSchemaById - Function to get editor state by schema ID
  * @returns {Object} Modified OCA package with all edits applied
  * 
  * Process:
- * 1. Clone original package to avoid mutations
+ * 1. Clone original package (or create empty structure for manual creation)
  * 2. For each edited schema, find its OCA structure and apply editor changes
  * 3. Ensure child schemas exist as dependencies
  * 4. Create placeholder dependencies for referenced but undefined schemas
  */
 export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaById }) {
-  if (!packageOCAJSON) return packageOCAJSON;
-
-  const packageOCA = JSON.parse(JSON.stringify(packageOCAJSON));
+  // If no package provided (manual creation), create minimal structure
+  let packageOCA;
+  if (!packageOCAJSON) {
+    packageOCA = createMinimalOCASchema(MANUAL_CREATION_SCHEMA_ID, {
+      captureBaseType: "spec/capture_base/1.0",
+      classification: "",
+      overlays: {
+        meta: [],
+        label: [],
+        information: []
+      },
+      asBundle: true
+    });
+  } else {
+    packageOCA = JSON.parse(JSON.stringify(packageOCAJSON));
+  }
 
   // Phase 1: Apply edits to each schema
   Object.keys(schemaStates).forEach((schemaId) => {
@@ -125,28 +139,14 @@ export function findOrCreatePackageSchema({
   // 4) Build OCA package structure for the placeholder
   const captureBaseId = `placeholder_${schemaId}_${Date.now()}`;
 
-  const newDependency = { // New OCA schema structure
-    d: schemaId,
-    capture_base: {
-      d: captureBaseId,
-      type: "spec/capture_base/1.1",
-      attributes: {},
-      classification: "RDF508",
-      flagged_attributes: [],
-    },
+  const newDependency = createMinimalOCASchema(schemaId, {
+    captureBaseId,
     overlays: {
       meta: [
-        {
-          d: `meta_${schemaId}_${Date.now()}`,
-          capture_base: captureBaseId,
-          type: "spec/overlays/meta/1.1",
-          language: "eng",
-          name: displayName,
-          description: "",
-        },
+        createMetaOverlay(captureBaseId, "eng", displayName)
       ],
     },
-  };
+  });
 
   if (packageOCA.oca_bundle) {
     if (!packageOCA.oca_bundle.dependencies) packageOCA.oca_bundle.dependencies = [];
@@ -311,28 +311,21 @@ export function ensurePlaceholderDependencies(packageOCA) {
   placeholdersToCreate.forEach((placeholderId) => {
     const captureBaseId = `capture_base_${placeholderId}_${Date.now()}`;
 
-    const metaOverlays = languagesToUse.map((lang) => ({
-      d: `meta_${placeholderId}_${lang}_${Date.now()}`,
-      capture_base: captureBaseId,
-      type: "spec/overlays/meta/1.1",
-      language: lang,
-      name: placeholderId,
-      description: `Placeholder child schema for ${placeholderId}`,
-    }));
+    const metaOverlays = languagesToUse.map((lang) =>
+      createMetaOverlay(
+        captureBaseId,
+        lang,
+        placeholderId,
+        `Placeholder child schema for ${placeholderId}`
+      )
+    );
 
-    const newDependency = {
-      d: placeholderId,
-      capture_base: {
-        d: captureBaseId,
-        type: "spec/capture_base/1.1",
-        attributes: {},
-        classification: "RDF508",
-        flagged_attributes: [],
-      },
+    const newDependency = createMinimalOCASchema(placeholderId, {
+      captureBaseId,
       overlays: {
         meta: metaOverlays,
       },
-    };
+    });
 
     pushDependency(packageOCA, newDependency);
   });

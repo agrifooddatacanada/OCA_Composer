@@ -40,14 +40,14 @@ const MultiSchemaContext = createContext();
  * Multi-Schema Provider
  * @param {Object} props
  * @param {React.ReactNode} props.children - Child components
- * @param {Object} [props.packageOCA] - Optional OCA package for backward compatibility (deprecated - use setOriginalPackage instead)
+ * @param {Object} [props.packageOCA] - Optional OCA package for backward compatibility (deprecated - use setPackageUpload instead)
  */
 export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
   const PERSIST_VERSION = 2;
 
   // Store the original OCA package (source of truth for schema structure)
   // Initialize from prop if provided (for backward compatibility)
-  const [originalPackage, setOriginalPackage] = useState(packageOCA);
+  const [packageUpload, setPackageUpload] = useState(packageOCA);
 
   // Multi-schema state - Use ref to persist across StrictMode remounts
   const schemaStatesRef = useRef({});
@@ -100,21 +100,21 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
 
   // Switch to editing a different schema
   const switchToSchema = useCallback(
-    (schemaId, packageOCA = originalPackage) => {
+    (schemaId, packageOCA = packageUpload) => {
       const resolvedId = canonicalizeSchemaId(packageOCA, schemaId);
       setCurrentSchemaId(resolvedId);
     },
-    [originalPackage]
+    [packageUpload]
   );  
 
   const exportSchemaChanges = useCallback(
-    (packageOCAJSON = originalPackage) =>
+    (packageOCAJSON = packageUpload) =>
       buildPackageFromState({
         packageOCAJSON,
         schemaStates,
         getSchemaById,
       }),
-    [schemaStates, getSchemaById, originalPackage]
+    [schemaStates, getSchemaById, packageUpload]
   );
 
   // Clear all schema states
@@ -154,8 +154,8 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       // State
       schemaStates,
       currentSchemaId,
-      originalPackage,
-      setOriginalPackage,
+      packageUpload,
+      setPackageUpload,
 
       // Core actions
       getCurrentSchemaId,
@@ -174,7 +174,7 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
     [
       schemaStates,
       currentSchemaId,
-      originalPackage,
+      packageUpload,
       getCurrentSchemaId,
       store,
       oca,
