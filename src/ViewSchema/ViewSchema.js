@@ -1029,6 +1029,7 @@ export default function ViewSchema({
           displayArray={displayArray}
           currentLanguage={getCurrentLanguage()}
           setLoading={setLoading}
+          packageWithEdits={updatedOCAPackage}
         />
       </Box>
 

@@ -112,27 +112,22 @@ export const ListRenderer = memo((props) => {
 export default function ViewGrid({
   displayArray,
   currentLanguage,
-  setLoading = () => {}
+  setLoading = () => {},
+  packageWithEdits = null
 }) {
   const { t } = useTranslation();
   
   // Get overlay data from MultiSchemaContext
-  const { getOverlaySelections, getSchema, updateSchema, getCardinalityData, originalPackage } = useMultiSchema();
-  const OCAPackage = originalPackage;
+  const { getOverlaySelections, getSchema, updateSchema } = useMultiSchema();
   const overlay = getOverlaySelections();
   const schemaState = getSchema();
-  
-  // Get cardinality data - computed from attributes + attributeCardinality
-  const cardinalityData = useMemo(
-    () => getCardinalityData(),
-    [getCardinalityData, schemaState?.attributes, schemaState?.attributeCardinality]
-  );
   
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
 
+  // Extract unit framing metadata from built package (with edits)
   const unitFramingOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+    packageWithEdits?.extensions?.[ADC]?.[packageWithEdits?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[UNIT_FRAMING];
 
   const onGridReady = useCallback(() => {
