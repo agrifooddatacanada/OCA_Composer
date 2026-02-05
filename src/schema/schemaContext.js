@@ -26,7 +26,7 @@ import React, {
 import { MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { makeSchemaStore } from "./schemaStore";
 import { canonicalizeSchemaId } from "../utils/schemaId";
-import { buildOcaPackageFromState } from "./ocaBuilder";
+import { buildPackageFromState } from "./ocaBuilder";
 import { useSchemaPersistence } from "./schemaPersistence";
 import { useCreateChildSchemaPlaceholder } from "./createChildSchemaPlaceholder";
 
@@ -89,17 +89,17 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
 
   // Switch to editing a different schema
   const switchToSchema = useCallback(
-    (schemaId, ocaPackage) => {
-      const resolvedId = canonicalizeSchemaId(ocaPackage, schemaId);
+    (schemaId, packageOCA) => {
+      const resolvedId = canonicalizeSchemaId(packageOCA, schemaId);
       setCurrentSchemaId(resolvedId);
     },
     []
   );  
 
   const exportSchemaChanges = useCallback(
-    (ocaPackage) =>
-      buildOcaPackageFromState({
-        ocaPackage,
+    (packageOCAJSON) =>
+      buildPackageFromState({
+        packageOCAJSON,
         schemaStates,
         getSchemaById,
       }),

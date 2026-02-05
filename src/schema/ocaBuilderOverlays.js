@@ -1,31 +1,36 @@
 /**
- * Applies all overlay changes from schemaState to targetSchema
- * Reads from schemaStore maps (attributeFormats, attributeCardinality, etc.)
+ * Applies all overlay changes from editor state to OCA schema structure.
+ * 
+ * @param {Object} ocaSchema - OCA package schema to modify (bundle or dependency)
+ * @param {Object} editorState - UI editing state with overlay data maps
+ * 
+ * Converts UI editing state (flat maps like attributeFormats, attributeCardinality)
+ * into OCA overlay structures (format, cardinality, entry, label, etc.).
  */
-export function applyAllOverlays(targetSchema, schemaState) {
-  if (!targetSchema.overlays) targetSchema.overlays = {};
+export function applyAllOverlays(ocaSchema, editorState) {
+  if (!ocaSchema.overlays) ocaSchema.overlays = {};
 
-  const validAttributeNames = getValidAttributeNames(schemaState);
+  const validAttributeNames = getValidAttributeNames(editorState);
 
   // Apply each overlay type
-  applyDirectOverlays(targetSchema, schemaState);
-  applyMetaOverlays(targetSchema, schemaState);
-  applyConformanceOverlay(targetSchema, schemaState);
-  applyFormatOverlay(targetSchema, schemaState, validAttributeNames);
-  applyCharacterEncodingOverlay(targetSchema, schemaState);
-  applyCardinalityOverlay(targetSchema, schemaState, validAttributeNames);
-  applyStandardOverlay(targetSchema, schemaState, validAttributeNames);
-  applyRangeOverlay(targetSchema, schemaState, validAttributeNames);
-  applyEntryOverlay(targetSchema, schemaState);
-  applyLabelAndInfoOverlays(targetSchema, schemaState);
+  applyDirectOverlays(ocaSchema, editorState);
+  applyMetaOverlays(ocaSchema, editorState);
+  applyConformanceOverlay(ocaSchema, editorState);
+  applyFormatOverlay(ocaSchema, editorState, validAttributeNames);
+  applyCharacterEncodingOverlay(ocaSchema, editorState);
+  applyCardinalityOverlay(ocaSchema, editorState, validAttributeNames);
+  applyStandardOverlay(ocaSchema, editorState, validAttributeNames);
+  applyRangeOverlay(ocaSchema, editorState, validAttributeNames);
+  applyEntryOverlay(ocaSchema, editorState);
+  applyLabelAndInfoOverlays(ocaSchema, editorState);
 }
 
 // ============================================================================
 // HELPERS
 // ============================================================================
 
-function getValidAttributeNames(schemaState) {
-  const attrs = schemaState?.attributes || [];
+function getValidAttributeNames(editorState) {
+  const attrs = editorState?.attributes || [];
   return new Set(attrs.map((a) => a.Attribute));
 }
 
@@ -33,28 +38,28 @@ function getValidAttributeNames(schemaState) {
 // OVERLAY APPLIERS
 // ============================================================================
 
-function applyDirectOverlays(targetSchema, schemaState) {
-  // Direct overlay assignment from schemaState.overlays
-  if (schemaState.overlays) {
-    Object.entries(schemaState.overlays).forEach(([overlayType, overlayData]) => {
+function applyDirectOverlays(ocaSchema, editorState) {
+  // Direct overlay assignment from editorState.overlays
+  if (editorState.overlays) {
+    Object.entries(editorState.overlays).forEach(([overlayType, overlayData]) => {
       if (overlayData) {
-        targetSchema.overlays[overlayType] = overlayData;
+        ocaSchema.overlays[overlayType] = overlayData;
       }
     });
   }
 }
 
-function applyMetaOverlays(targetSchema, schemaState) {
-  const locMeta = schemaState.metadata?.localized || {};
+function applyMetaOverlays(ocaSchema, editorState) {
+  const locMeta = editorState.metadata?.localized || {};
   if (Object.keys(locMeta).length === 0) return;
 
-  const existingMeta = Array.isArray(targetSchema.overlays?.meta) ? targetSchema.overlays.meta : [];
+  const existingMeta = Array.isArray(ocaSchema.overlays?.meta) ? ocaSchema.overlays.meta : [];
   
   const metaArray = Object.entries(locMeta).map(([lang, obj]) => {
     const existingForLang = existingMeta.find((m) => m?.language === lang) || {};
     return {
       d: existingForLang.d,
-      capture_base: targetSchema.capture_base?.d,
+      capture_base: ocaSchema.capture_base?.d,
       type: "spec/overlays/meta/1.1",
       language: lang,
       name: obj?.name || "",
@@ -62,45 +67,44 @@ function applyMetaOverlays(targetSchema, schemaState) {
     };
   });
   
-  if (metaArray.length > 0) targetSchema.overlays.meta = metaArray;
+  if (metaArray.length > 0) ocaSchema.overlays.meta = metaArray;
 }
 
-function applyConformanceOverlay(targetSchema, schemaState) {
-  if (!schemaState.attributes?.length) return;
+function applyConformanceOverlay(ocaSchema, editorState) {
+  if (!editorState.attributes?.length) return;
   
-  const hasRequiredFlags = schemaState.attributes.some(
+  const hasRequiredFlags = editorState.attributes.some(
     (attr) => attr.Required === true || attr.Required === false
   );
 
   if (!hasRequiredFlags) return;
   
   const conformanceOverlay = {
-    d: targetSchema.overlays?.conformance?.d,
-    capture_base: targetSchema.capture_base.d,
+    d: ocaSchema.overlays?.conformance?.d,
+    capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/conformance/1.1",
     attribute_conformance: {},
   };
 
-  schemaState.attributes.forEach((attr) => {
+  editorState.attributes.forEach((attr) => {
     if (attr.Attribute && (attr.Required === true || attr.Required === false)) {
       conformanceOverlay.attribute_conformance[attr.Attribute] = attr.Required ? "M" : "O";
     }
   });
 
   if (Object.keys(conformanceOverlay.attribute_conformance).length > 0) {
-    targetSchema.overlays.conformance = conformanceOverlay;
+    ocaSchema.overlays.conformance = conformanceOverlay;
   }
 }
 
-function applyFormatOverlay(targetSchema, schemaState, validAttributeNames) {
-  // ✅ Read from schemaState.attributeFormats (map from schemaStore)
-  const attributeFormats = schemaState.attributeFormats || {};
+function applyFormatOverlay(ocaSchema, editorState, validAttributeNames) {
+  const attributeFormats = editorState.attributeFormats || {};
   
   if (Object.keys(attributeFormats).length === 0) return;
   
   const formatOverlay = {
-    d: targetSchema.overlays?.format?.d,
-    capture_base: targetSchema.capture_base.d,
+    d: ocaSchema.overlays?.format?.d,
+    capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/format/1.1",
     attribute_formats: {},
   };
@@ -112,17 +116,17 @@ function applyFormatOverlay(targetSchema, schemaState, validAttributeNames) {
   });
 
   if (Object.keys(formatOverlay.attribute_formats).length > 0) {
-    targetSchema.overlays.format = formatOverlay;
+    ocaSchema.overlays.format = formatOverlay;
   }
 }
 
-function applyCharacterEncodingOverlay(targetSchema, schemaState) {
-  const charEncoding = schemaState.characterEncodingData || {};
+function applyCharacterEncodingOverlay(ocaSchema, editorState) {
+  const charEncoding = editorState.characterEncodingData || {};
   if (Object.keys(charEncoding).length === 0) return;
   
   const charEncodingOverlay = {
-    d: targetSchema.overlays?.character_encoding?.d,
-    capture_base: targetSchema.capture_base.d,
+    d: ocaSchema.overlays?.character_encoding?.d,
+    capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/character_encoding/1.1",
     attribute_character_encoding: {},
   };
@@ -132,19 +136,18 @@ function applyCharacterEncodingOverlay(targetSchema, schemaState) {
   });
 
   if (Object.keys(charEncodingOverlay.attribute_character_encoding).length > 0) {
-    targetSchema.overlays.character_encoding = charEncodingOverlay;
-  }
+    ocaSchema.overlays.character_encoding = charEncodingOverlay;
+ }
 }
 
-function applyCardinalityOverlay(targetSchema, schemaState, validAttributeNames) {
-  // ✅ Read from schemaState.attributeCardinality (map from schemaStore)
-  const attributeCardinality = schemaState.attributeCardinality || {};
+function applyCardinalityOverlay(ocaSchema, editorState, validAttributeNames) {
+  const attributeCardinality = editorState.attributeCardinality || {};
   
   if (Object.keys(attributeCardinality).length === 0) return;
   
   const cardinalityOverlay = {
-    d: targetSchema.overlays?.cardinality?.d,
-    capture_base: targetSchema.capture_base.d,
+    d: ocaSchema.overlays?.cardinality?.d,
+    capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/cardinality/1.1",
     attribute_cardinality: {},
   };
@@ -156,17 +159,17 @@ function applyCardinalityOverlay(targetSchema, schemaState, validAttributeNames)
   });
 
   if (Object.keys(cardinalityOverlay.attribute_cardinality).length > 0) {
-    targetSchema.overlays.cardinality = cardinalityOverlay;
+    ocaSchema.overlays.cardinality = cardinalityOverlay;
   }
 }
 
-function applyStandardOverlay(targetSchema, schemaState, validAttributeNames) {
-  const dataStandards = schemaState.dataStandardsData || [];
+function applyStandardOverlay(ocaSchema, editorState, validAttributeNames) {
+  const dataStandards = editorState.dataStandardsData || [];
   if (dataStandards.length === 0) return;
   
   const standardOverlay = {
-    d: targetSchema.overlays?.standard?.d,
-    capture_base: targetSchema.capture_base.d,
+    d: ocaSchema.overlays?.standard?.d,
+    capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/standard/1.1",
     attr_standards: {},
   };
@@ -180,19 +183,18 @@ function applyStandardOverlay(targetSchema, schemaState, validAttributeNames) {
     });
 
   if (Object.keys(standardOverlay.attr_standards).length > 0) {
-    targetSchema.overlays.standard = standardOverlay;
+    ocaSchema.overlays.standard = standardOverlay;
   }
 }
 
-function applyRangeOverlay(targetSchema, schemaState, validAttributeNames) {
-  // ✅ Read from schemaState.attributeRanges (map from schemaStore)
-  const attributeRanges = schemaState.attributeRanges || {};
+function applyRangeOverlay(ocaSchema, editorState, validAttributeNames) {
+  const attributeRanges = editorState.attributeRanges || {};
   
   if (Object.keys(attributeRanges).length === 0) return;
   
   const rangeOverlay = {
-    d: targetSchema.overlays?.range?.d,
-    capture_base: targetSchema.capture_base.d,
+    d: ocaSchema.overlays?.range?.d,
+    capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/range/1.1",
     attributes: {},
   };
@@ -209,17 +211,17 @@ function applyRangeOverlay(targetSchema, schemaState, validAttributeNames) {
   });
 
   if (Object.keys(rangeOverlay.attributes).length > 0) {
-    targetSchema.overlays.range = rangeOverlay;
+    ocaSchema.overlays.range = rangeOverlay;
   }
 }
 
-function applyEntryOverlay(targetSchema, schemaState) {
-  const entryCodes = schemaState.entryCodes || {};
+function applyEntryOverlay(ocaSchema, editorState) {
+  const entryCodes = editorState.entryCodes || {};
   if (Object.keys(entryCodes).length === 0) return;
   
   const entryOverlay = {
-    d: targetSchema.overlays?.entry?.d,
-    capture_base: targetSchema.capture_base.d,
+    d: ocaSchema.overlays?.entry?.d,
+    capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/entry/1.1",
     language: "eng",
     attribute_entries: {},
@@ -237,12 +239,12 @@ function applyEntryOverlay(targetSchema, schemaState) {
   });
 
   if (Object.keys(entryOverlay.attribute_entries).length > 0) {
-    targetSchema.overlays.entry = [entryOverlay];
+    ocaSchema.overlays.entry = [entryOverlay];
   }
 }
 
-function applyLabelAndInfoOverlays(targetSchema, schemaState) {
-  const lanData = schemaState.lanAttributeRowData || {};
+function applyLabelAndInfoOverlays(ocaSchema, editorState) {
+  const lanData = editorState.lanAttributeRowData || {};
   if (Object.keys(lanData).length === 0) return;
 
   const labelOverlays = [];
@@ -261,12 +263,12 @@ function applyLabelAndInfoOverlays(targetSchema, schemaState) {
     };
     const langCode = langCodeMap[language] || language;
 
-    const existingLabel = targetSchema.overlays?.label?.find((l) => l.language === langCode);
-    const existingInfo = targetSchema.overlays?.information?.find((i) => i.language === langCode);
+    const existingLabel = ocaSchema.overlays?.label?.find((l) => l.language === langCode);
+    const existingInfo = ocaSchema.overlays?.information?.find((i) => i.language === langCode);
 
     const labelOverlay = {
       d: existingLabel?.d,
-      capture_base: targetSchema.capture_base.d,
+      capture_base: ocaSchema.capture_base.d,
       type: "spec/overlays/label/1.0",
       language: langCode,
       attribute_labels: {},
@@ -274,7 +276,7 @@ function applyLabelAndInfoOverlays(targetSchema, schemaState) {
 
     const informationOverlay = {
       d: existingInfo?.d,
-      capture_base: targetSchema.capture_base.d,
+      capture_base: ocaSchema.capture_base.d,
       type: "spec/overlays/information/1.0",
       language: langCode,
       attribute_information: {},
@@ -293,6 +295,6 @@ function applyLabelAndInfoOverlays(targetSchema, schemaState) {
     if (Object.keys(informationOverlay.attribute_information).length > 0) informationOverlays.push(informationOverlay);
   });
 
-  if (labelOverlays.length > 0) targetSchema.overlays.label = labelOverlays;
-  if (informationOverlays.length > 0) targetSchema.overlays.information = informationOverlays;
+  if (labelOverlays.length > 0) ocaSchema.overlays.label = labelOverlays;
+  if (informationOverlays.length > 0) ocaSchema.overlays.information = informationOverlays;
 }
