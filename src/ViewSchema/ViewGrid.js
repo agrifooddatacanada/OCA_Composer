@@ -118,9 +118,9 @@ export default function ViewGrid({
   const { OCAPackage } = useContext(Context);
   
   // Get overlay data from MultiSchemaContext
-  const { getOverlaySelections, getSchemaState, updateSchemaState, getCardinalityData } = useMultiSchema();
+  const { getOverlaySelections, getSchema, updateSchema, getCardinalityData } = useMultiSchema();
   const overlay = getOverlaySelections();
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   
   // Get cardinality data - computed from attributes + attributeCardinality
   const cardinalityData = useMemo(
@@ -392,7 +392,7 @@ export default function ViewGrid({
 
     // Initialize attributeFormats if overlay is selected but data doesn't exist
     if (overlay && overlay[FIELD_FORMAT_OVERLAY] && typeof schemaState?.attributeFormats === 'undefined') {
-      updateSchemaState({ attributeFormats: {} });
+      updateSchema({ attributeFormats: {} });
     }
 
     newRowData.forEach((item, index) => {
@@ -447,7 +447,7 @@ export default function ViewGrid({
     });
 
     setRowData(newRowData);
-  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchemaState]);
+  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchema]);
 
   return (
     <div className="ag-theme-balham" style={{ width: "100%" }}>

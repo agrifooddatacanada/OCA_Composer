@@ -9,7 +9,7 @@ import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA } from "../constants/constan
 const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAttributeRowData }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t } = useTranslation();
-  const { updateSchemaState, getSchemaState, createChildSchemaPlaceholder } = useMultiSchema();
+  const { updateSchema, getSchema, createChildSchemaPlaceholder } = useMultiSchema();
   
   // Type dropdown options
   // Note: TYPE_CHILD_SCHEMA ("Child Schema") is converted to refs:/refn: at export time
@@ -68,7 +68,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     setAttributeRowData(updatedAttributeRowData);
     
     // Update MultiSchemaContext to persist the change
-    updateSchemaState({
+    updateSchema({
       attributes: updatedAttributeRowData
     });
     
@@ -109,7 +109,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       setAttributeRowData(updatedAttributeRowData);
       
       // Update MultiSchemaContext to persist the change
-      updateSchemaState({
+      updateSchema({
         attributes: updatedAttributeRowData
       });
     }

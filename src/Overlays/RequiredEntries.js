@@ -70,9 +70,9 @@ const RequiredEntries = () => {
   } = useContext(Context);
   
   // Use MultiSchema context with standard pattern
-  const { getSchemaState, updateSchemaState } = useMultiSchema();
+  const { getSchema, updateSchema } = useMultiSchema();
   
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CONFORMANCE_OVERLAY);
   
   // Get attributes data with Required status from schema state
@@ -96,10 +96,10 @@ const RequiredEntries = () => {
       };
     });
     
-    updateSchemaState({
+    updateSchema({
       attributes: updatedAttributes
     });
-  }, [schemaState?.attributes, updateSchemaState]);
+  }, [schemaState?.attributes, updateSchema]);
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);

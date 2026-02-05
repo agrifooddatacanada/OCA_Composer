@@ -24,7 +24,7 @@ export default function AddAttribute({
   setAttributeRowData
 }) {
   const { t } = useTranslation();
-  const { updateSchemaState } = useMultiSchema();
+  const { updateSchema } = useMultiSchema();
   
   // Note: attributesList is now computed - no need to update it separately
   const [newAttribute, setNewAttribute] = useState("");
@@ -115,7 +115,7 @@ export default function AddAttribute({
       });
       
       // Update only attributes - attributesList is computed automatically
-      updateSchemaState({
+      updateSchema({
         attributes: attributesWithIds
       });
       

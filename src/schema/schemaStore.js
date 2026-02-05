@@ -92,13 +92,13 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   // CORE STATE ACCESS
   // ============================================================================
   
-  const getSchemaState = () => {
+  const getSchema = () => {
     const schemaId = getCurrentSchemaId();
     const allStates = getAllSchemaStates();
     return allStates[schemaId] || createDefaultSchemaState();
   };
 
-  const getSchemaStateById = (schemaId) => {
+  const getSchemaById = (schemaId) => {
     const allStates = getAllSchemaStates();
     return allStates[schemaId] || null;
   };
@@ -107,7 +107,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   // STATE MUTATIONS (SETTERS)
   // ============================================================================
   
-  const updateSchemaState = (updates) => {
+  const updateSchema = (updates) => {
     const schemaId = getCurrentSchemaId();
     
     setSchemaStates((prev) => {
@@ -158,7 +158,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
         };
       }
     });
-    updateSchemaState({ attributeRanges });
+    updateSchema({ attributeRanges });
   };
 
   const setFormatRuleRowData = (newData) => {
@@ -169,7 +169,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
         attributeFormats[row.Attribute] = formatRule;
       }
     });
-    updateSchemaState({ attributeFormats });
+    updateSchema({ attributeFormats });
   };
 
   const setCardinalityData = (newData) => {
@@ -180,7 +180,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
         attributeCardinality[item.Attribute] = cardinalityValue;
       }
     });
-    updateSchemaState({ attributeCardinality });
+    updateSchema({ attributeCardinality });
   };
 
   // ============================================================================
@@ -188,7 +188,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   // ============================================================================
   
   const getOverlaySelections = () => {
-    const state = getSchemaState();
+    const state = getSchema();
     return state?.overlaySelections || overlayItems;
   };
 
@@ -212,11 +212,11 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   };
 
   const setSelectedOverlay = (overlayKey) => {
-    updateSchemaState({ selectedOverlay: overlayKey });
+    updateSchema({ selectedOverlay: overlayKey });
   };
 
   const getSelectedOverlay = () => {
-    const state = getSchemaState();
+    const state = getSchema();
     return state.selectedOverlay || "";
   };
 
@@ -225,23 +225,23 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   // ============================================================================
   
   const getDeletedAttributes = () => {
-    const state = getSchemaState();
+    const state = getSchema();
     return new Set(state.deletedAttributes || []);
   };
 
   const getAttributesList = () => {
-    const state = getSchemaState();
+    const state = getSchema();
     const attributes = state?.attributes || [];
     return attributes.map((attr) => attr.Attribute);
   };
 
   const getLanguages = () => {
-    const state = getSchemaState();
+    const state = getSchema();
     return state?.metadata?.languages || [];
   };
 
   const getCardinalityData = () => {
-    const state = getSchemaState();
+    const state = getSchema();
     const attributes = state?.attributes || [];
     const map = state?.attributeCardinality || {};
 
@@ -253,7 +253,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   };
 
   const getFormatRuleData = () => {
-    const state = getSchemaState();
+    const state = getSchema();
     const attributes = state?.attributes || [];
     const attributeFormats = state?.attributeFormats || {};
 
@@ -269,7 +269,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   };
 
   const getRangeData = () => {
-    const state = getSchemaState();
+    const state = getSchema();
     const attributes = state?.attributes || [];
     const attributeRanges = state?.attributeRanges || {};
     const attributeFormats = state?.attributeFormats || {};
@@ -292,11 +292,11 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
 
   return { 
     // Core state access
-    getSchemaState,
-    getSchemaStateById,
+    getSchema,
+    getSchemaById,
 
     // State mutations
-    updateSchemaState,
+    updateSchema,
     addDeletedAttributes,
     setRangeRowData,
     setFormatRuleRowData, 

@@ -22,11 +22,11 @@ const DataStandards = () => {
   
   // Use MultiSchema context with standard pattern
   const { 
-    getSchemaState, 
-    updateSchemaState,
+    getSchema, 
+    updateSchema,
     updateOverlaySelection
   } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_DATA_STANDARDS_OVERLAY);
   
   // Always get data from schema state - no fallback needed
@@ -45,7 +45,7 @@ const DataStandards = () => {
   const handleSave = () => {
     gridRef.current.api.stopEditing();
     const rowData = gridRef.current.api.getRenderedNodes()?.map((rowNode) => rowNode?.data);
-    updateSchemaState({dataStandardsData: rowData});
+    updateSchema({dataStandardsData: rowData});
   };
 
   const handleForward = () => {
@@ -61,7 +61,7 @@ const DataStandards = () => {
         gridRef.current.api.stopEditing();
         const rowData = gridRef.current.api.getRenderedNodes()?.map((rowNode) => rowNode?.data);
         if (rowData && rowData.length > 0) {
-          updateSchemaState({dataStandardsData: rowData});
+          updateSchema({dataStandardsData: rowData});
         }
       }
     };

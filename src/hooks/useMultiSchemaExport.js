@@ -47,7 +47,7 @@ const useMultiSchemaExport = () => {
 
   const { 
     currentSchemaId,
-    getSchemaState,
+    getSchema,
     exportSchemaChanges
   } = useMultiSchema();
 
@@ -60,7 +60,7 @@ const useMultiSchemaExport = () => {
   // Export individual schema
   const exportIndividualSchema = async (schemaId) => {
     try {
-      const schemaState = getSchemaState(schemaId);
+      const schemaState = getSchema(schemaId);
       if (!schemaState) {
         throw new Error(`Schema ${schemaId} not found`);
       }

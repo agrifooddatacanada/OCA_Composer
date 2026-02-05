@@ -40,9 +40,9 @@ const Home = ({
   // Get context to check if we're editing a specific schema
   const { 
     currentSchemaId, 
-    getSchemaState, 
+    getSchema, 
     schemaStates, 
-    updateSchemaState,
+    updateSchema,
     loadFromLocalStorage,
     switchToSchema
   } = useMultiSchema();

@@ -29,8 +29,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   // Use only MultiSchemaContext - unified approach
   const {
     currentSchemaId,
-    getSchemaState,
-    updateSchemaState,
+    getSchema,
+    updateSchema,
     getOverlaySelections,
     updateOverlaySelection
   } = useMultiSchema();
@@ -104,13 +104,13 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   useEffect(() => {
     setLoading(true);
     // Get schema state (MultiSchemaContext handles the fallback internally)
-    const schemaState = getSchemaState();
+    const schemaState = getSchema();
     
     // Get current language code for schema data
     const schemaLanguageName = langNameFromCodeUI(i18n.language);
     const languageCode = langCodeOCAFromName(schemaLanguageName);
     // NEW UNIFIED APPROACH: Get complete schema data directly
-    const completeSchema = getSchemaState();
+    const completeSchema = getSchema();
 
     // Skip if already initialized for this schema AND data hasn't changed
     if (initializedSchemaRef.current === currentSchemaId && 
@@ -202,7 +202,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       setLoading(false);
 
       // Save to MultiSchemaContext (attributesList is computed automatically)
-      updateSchemaState({
+      updateSchema({
         attributes: newAttributeRowData
       });
 
@@ -217,7 +217,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       setAttributeRowData(emptyAttributeRowData);
 
       // Save empty state to MultiSchemaContext (attributesList is computed automatically)
-      updateSchemaState({
+      updateSchema({
         attributes: emptyAttributeRowData
       });
       setLoading(false);
@@ -269,7 +269,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
 
     // Always save current attribute data to schema state first, so validation can check current data
     // attributesList is computed automatically from attributes
-    updateSchemaState({
+    updateSchema({
       attributes: attributeRowData
     });
 
@@ -384,7 +384,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       // Save attributesWithLists to schema state instead of global state
       // MultiSchemaContext handles null schemaId internally
       // attributesList is computed automatically from attributes
-      updateSchemaState({
+      updateSchema({
         attributes: attributeRowData,
         attributesWithLists: newAttributesWithLists
       });
@@ -399,7 +399,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
 
       // Persist attributes and list to MultiSchemaContext in one place to avoid flicker
       // Sync lanAttributeRowData: filter out deleted attributes while preserving existing labels
-      const schemaState = getSchemaState();
+      const schemaState = getSchema();
       const currentLanAttributeRowData = schemaState?.lanAttributeRowData || {};
       
       // Create a set of current attribute names for fast lookup
@@ -431,7 +431,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       });
       
       // attributesList is computed automatically from attributes
-      updateSchemaState({
+      updateSchema({
         attributes: attributeRowData,
         attributesWithLists: newAttributesWithLists,
         lanAttributeRowData: updatedLanAttributeRowData,
@@ -487,7 +487,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     // Save current attribute data to schema state, including attributesWithLists
     // so step visibility can update properly
     // attributesList is computed automatically from attributes
-    updateSchemaState({
+    updateSchema({
       attributes: currentData,
       attributesWithLists: newAttributesWithLists
     });
@@ -531,7 +531,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
 
     // Save current attribute data to schema state without validation
     // attributesList is computed automatically from attributes
-    updateSchemaState({
+    updateSchema({
       attributes: attributeRowData
     });
     

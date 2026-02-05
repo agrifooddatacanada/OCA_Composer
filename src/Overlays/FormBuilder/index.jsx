@@ -33,12 +33,12 @@ const FormBuilder = () => {
 
   // Get data from MultiSchemaContext
   const {
-    getSchemaState,
-    updateSchemaState,
+    getSchema,
+    updateSchema,
     getAttributesList,
     getFormatRuleData
   } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   
   // Get schema-specific data (not global)
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
@@ -55,15 +55,15 @@ const FormBuilder = () => {
     const newData = typeof updater === 'function'
       ? updater(FormInformationRowData)
       : updater;
-    updateSchemaState({ FormInformationRowData: newData });
-  }, [FormInformationRowData, updateSchemaState]);
+    updateSchema({ FormInformationRowData: newData });
+  }, [FormInformationRowData, updateSchema]);
 
   const setLanAttributeRowData = useCallback((updater) => {
     const newData = typeof updater === 'function'
       ? updater(lanAttributeRowData)
       : updater;
-    updateSchemaState({ lanAttributeRowData: newData });
-  }, [lanAttributeRowData, updateSchemaState]);
+    updateSchema({ lanAttributeRowData: newData });
+  }, [lanAttributeRowData, updateSchema]);
 
   
   const languageIndex = languages.findIndex(

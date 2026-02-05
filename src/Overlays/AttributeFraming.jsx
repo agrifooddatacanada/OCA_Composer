@@ -1079,28 +1079,28 @@ const AttributeFraming = () => {
   } = useContext(Context);
 
   const {
-    getSchemaState,
-    updateSchemaState,
+    getSchema,
+    updateSchema,
     setSelectedOverlay
   } = useMultiSchema();
   
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const attributeFramingRowData = schemaState?.attributeFramingData || [];
   const frameAllAttributes = schemaState?.frameAllAttributes || false;
   const unframedAttributeList = schemaState?.unframedAttributeList || [];
   
   // Setter functions that update MultiSchemaContext
   const setAttributeFramingRowData = useCallback((data) => {
-    updateSchemaState({ attributeFramingData: data });
-  }, [updateSchemaState]);
+    updateSchema({ attributeFramingData: data });
+  }, [updateSchema]);
   
   const setFrameAllAttributes = useCallback((value) => {
-    updateSchemaState({ frameAllAttributes: value });
-  }, [updateSchemaState]);
+    updateSchema({ frameAllAttributes: value });
+  }, [updateSchema]);
   
   const setUnframedAttributeList = useCallback((list) => {
-    updateSchemaState({ unframedAttributeList: list });
-  }, [updateSchemaState]);
+    updateSchema({ unframedAttributeList: list });
+  }, [updateSchema]);
   
   const { t } = useTranslation();
   const gridRef = useRef();

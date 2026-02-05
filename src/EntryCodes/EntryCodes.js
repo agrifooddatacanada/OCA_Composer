@@ -28,8 +28,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const { currentSchemaId, getSchemaState, updateSchemaState, getLanguages } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const { currentSchemaId, getSchema, updateSchema, getLanguages } = useMultiSchema();
+  const schemaState = getSchema();
   
   // Get languages from schema state (per-schema)
   const languages = getLanguages();
@@ -89,7 +89,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
         );
       });
       if (hasExistingData) {
-        updateSchemaState({ hasLoadedFromOverlays: true });
+        updateSchema({ hasLoadedFromOverlays: true });
         return;
       }
 
@@ -151,7 +151,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       if (Object.keys(initialized).length === 0) return;
 
       // Update schema state
-      updateSchemaState({
+      updateSchema({
         entryCodes: { ...entryCodeRowData, ...initialized },
         hasLoadedFromOverlays: true
       });
@@ -166,7 +166,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       });
       // Use local state instead of global
       setLocalEntryCodeRowData(alignedEntryCodesArray);
-      updateSchemaState({ hasLoadedFromOverlays: true });
+      updateSchema({ hasLoadedFromOverlays: true });
     } catch (_) {
       // silent
     }
@@ -346,7 +346,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
     });
 
     // Save to schema state
-    updateSchemaState({
+    updateSchema({
       entryCodes: newEntryCodesObject
     });
   };
@@ -380,7 +380,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       );
     });
 
-    updateSchemaState({
+    updateSchema({
       entryCodes: newEntryCodesObject
     });
   };

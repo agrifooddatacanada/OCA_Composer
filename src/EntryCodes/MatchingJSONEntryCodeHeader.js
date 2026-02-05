@@ -65,8 +65,8 @@ const MatchingJSONEntryCodeHeader = () => {
   const { tempEntryCodeSummary, tempEntryList, setCurrentPage, chosenEntryCodeIndex } = useContext(Context);
   
   // Use MultiSchemaContext for schema-specific data
-  const { getSchemaState, updateSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const { getSchema, updateSchema } = useMultiSchema();
+  const schemaState = getSchema();
   const attributeRowData = schemaState?.attributes || [];
   
   // Get schema-specific languages (not global)
@@ -152,7 +152,7 @@ const MatchingJSONEntryCodeHeader = () => {
       // Save to MultiSchemaContext using attribute name as key
       if (targetAttributeName) {
         const currentEntryCodes = schemaState?.entryCodes || {};
-        updateSchemaState({
+        updateSchema({
           entryCodes: {
             ...currentEntryCodes,
             [targetAttributeName]: newEntryCodeRowData

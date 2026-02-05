@@ -4,7 +4,7 @@ import { useMultiSchema } from "../schema/schemaContext";
 // Use AG Grid's provided node to update the cell value, rather than looking up by rowIndex
 const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalToggle }) => {
   const inputRef = useRef();
-  const { getSchemaState, updateSchemaState } = useMultiSchema();
+  const { getSchema, updateSchema } = useMultiSchema();
 
   useEffect(() => {
     inputRef.current.checked = value;
@@ -26,7 +26,7 @@ const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalTogg
 
     // Immediately reflect list toggles in MultiSchemaContext so Home can add/remove the Entry Codes step
     if (colId === "List" && data && data.Attribute) {
-      const schemaState = getSchemaState() || {};
+      const schemaState = getSchema() || {};
       const prevLists = Array.isArray(schemaState.attributesWithLists)
         ? schemaState.attributesWithLists
         : [];
@@ -59,7 +59,7 @@ const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalTogg
         }
       }
 
-      updateSchemaState({
+      updateSchema({
         attributes: nextAttributes,
         attributesWithLists: nextLists,
         entryCodes: nextEntryCodes

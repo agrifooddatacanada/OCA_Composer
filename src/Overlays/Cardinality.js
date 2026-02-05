@@ -72,14 +72,14 @@ const Cardinality = () => {
   
   // Use MultiSchema context with standard pattern
   const {
-    getSchemaState,
-    updateSchemaState,
+    getSchema,
+    updateSchema,
     updateOverlaySelection,
     setSelectedOverlay,
     getCardinalityData,
     setCardinalityData
   } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CARDINALITY_OVERLAY);
   
   // Get cardinality data - computed from attributes + attributeCardinality
@@ -112,9 +112,9 @@ const Cardinality = () => {
   useEffect(() => {
     // Only initialize if attributeCardinality doesn't exist yet
     if (schemaState?.attributes && typeof schemaState?.attributeCardinality === 'undefined') {
-      updateSchemaState({ attributeCardinality: {} });
+      updateSchema({ attributeCardinality: {} });
     }
-  }, [schemaState?.attributes, schemaState?.attributeCardinality, updateSchemaState]);
+  }, [schemaState?.attributes, schemaState?.attributeCardinality, updateSchema]);
 
   // Set loading state
   useEffect(() => {

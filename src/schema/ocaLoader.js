@@ -21,7 +21,7 @@ import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 export { getPackageBundle, getPackageBundleId } from "../utils/packageUtils";
 
 export function createOcaLoader({
-  getSchemaStateById,
+  getSchemaById,
   setSchemaStates,
 }) {
   /**
@@ -53,7 +53,7 @@ export function createOcaLoader({
       overlays: schemaData.overlays || {}
     };
 
-    const existingState = getSchemaStateById(schemaId);
+    const existingState = getSchemaById(schemaId);
     // Only parse if schema not already initialized
     const parsedState =
       existingState?.initialized ? null : parseSchemaFromOCA(schemaId, ocaPackage);

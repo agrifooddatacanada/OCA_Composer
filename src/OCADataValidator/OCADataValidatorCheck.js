@@ -319,8 +319,8 @@ const OCADataValidatorCheck = ({
   } = useContext(Context);
 
   // Get schema data from MultiSchemaContext
-  const { currentSchemaId, getSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const { currentSchemaId, getSchema } = useMultiSchema();
+  const schemaState = getSchema();
   
   // Extract data from schema state (single schema for Data Validator)
   const languages = schemaState?.metadata?.languages || [];

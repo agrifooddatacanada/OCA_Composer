@@ -49,14 +49,14 @@ const Overlays = ({ pageBack, pageForward }) => {
   const {
     getOverlaySelections,
     updateOverlaySelection,
-    updateSchemaState,
+    updateSchema,
     setSelectedOverlay,
-    getSchemaState,
+    getSchema,
     getRangeData,
     getFormatRuleData
   } = useMultiSchema();
   
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const rangeRowData = getRangeData();
   const attributeRowData = schemaState?.attributes || []; // Full attribute objects with Type field
   const formatRuleData = getFormatRuleData();
@@ -97,8 +97,8 @@ const Overlays = ({ pageBack, pageForward }) => {
       [overlayKey]: true
     };
     
-    // Combine both updates into a single updateSchemaState call to avoid race condition
-    updateSchemaState({
+    // Combine both updates into a single updateSchema call to avoid race condition
+    updateSchema({
       overlaySelections: updatedSelections,
       selectedOverlay: overlayKey
     });
@@ -111,9 +111,9 @@ const Overlays = ({ pageBack, pageForward }) => {
   const removeFromSelected = () => {
     // selectedItemToDelete is already a constant key (from selectedKeys array)
     deleteOverlayData(selectedItemToDelete, { 
-      updateSchemaState, 
+      updateSchema, 
       updateOverlaySelection, 
-      getSchemaState 
+      getSchema 
     });
     setShowDeleteConfirmation(false);
   };

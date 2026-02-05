@@ -79,13 +79,13 @@ export default function ViewSchema({
     currentSchemaId,
     switchToSchema,
     exportSchemaChanges,
-    getSchemaState,
-    updateSchemaState,
+    getSchema,
+    updateSchema,
     schemaStates
   } = useMultiSchema();
 
   // Get languages from current schema's metadata (per-schema languages)
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
 
   const filteredLanguages = React.useMemo(() => {
@@ -388,7 +388,7 @@ export default function ViewSchema({
 
       // Mark schema as initialized so exportSchemaChanges will process it
       if (!rootState.initialized) {
-        updateSchemaState(rootSchemaId, { initialized: true });
+        updateSchema(rootSchemaId, { initialized: true });
         // Since state update is async, also update the local ref for immediate use
         schemaStates[rootSchemaId] = { ...rootState, initialized: true };
       }
@@ -423,7 +423,7 @@ export default function ViewSchema({
     const modifiedPackage = exportSchemaChanges(basePackage);
     setUpdatedOCAPackage(modifiedPackage);
     setVizVersion((v) => v + 1);
-  }, [OCAPackage, schemaStates, exportSchemaChanges, updateSchemaState]);
+  }, [OCAPackage, schemaStates, exportSchemaChanges, updateSchema]);
 
   // Removed in favor of global language toggle (EN/FR)
 
@@ -459,7 +459,7 @@ export default function ViewSchema({
 
         // CRITICAL FIX: Wait for schemaStates to contain the currentSchemaId
         // When OCA package is uploaded, schemaStates updates asynchronously
-        // Use direct lookup to avoid stale getSchemaState closure
+        // Use direct lookup to avoid stale getSchema closure
         const currentSchema = schemaStates[currentSchemaId];
         
         if (OCAPackage && currentSchemaId && !currentSchema) {
@@ -469,8 +469,8 @@ export default function ViewSchema({
 
         setLoading(true);
 
-        // Use direct lookup instead of getSchemaState to avoid stale closures
-        const schemaState = currentSchema || getSchemaState();
+        // Use direct lookup instead of getSchema to avoid stale closures
+        const schemaState = currentSchema || getSchema();
         
         if ((OCAPackage && currentSchemaId) || (!OCAPackage && schemaState && schemaState.attributes)) {
 
@@ -581,11 +581,11 @@ export default function ViewSchema({
     OCAPackage,
     schemaLanguageOverride,
     i18next.language,
-    getSchemaState,
+    getSchema,
     filteredLanguages,
     schemaStates, // Ensure updates when schema state changes
-    getSchemaState()?.attributeFormats, // Explicitly watch attributeFormats changes
-    getSchemaState()?.attributeRanges // Explicitly watch attributeRanges changes
+    getSchema()?.attributeFormats, // Explicitly watch attributeFormats changes
+    getSchema()?.attributeRanges // Explicitly watch attributeRanges changes
   ]);
 
   if (loading) {

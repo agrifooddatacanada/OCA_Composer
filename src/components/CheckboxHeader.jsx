@@ -5,7 +5,7 @@ import { useMultiSchema } from "../schema/schemaContext";
 
 const CheckboxHeader = ({ gridRef, field, columnName, helpText }) => {
   const inputRef = useRef();
-  const { getSchemaState, updateSchemaState } = useMultiSchema();
+  const { getSchema, updateSchema } = useMultiSchema();
 
   const handleCheckboxChange = (event) => {
     const { checked } = event.target;
@@ -15,7 +15,7 @@ const CheckboxHeader = ({ gridRef, field, columnName, helpText }) => {
     
     // Update schema state when List column Select All is toggled
     if (field === "List") {
-      const schemaState = getSchemaState() || {};
+      const schemaState = getSchema() || {};
       const prevAttributes = Array.isArray(schemaState.attributes) ? schemaState.attributes : [];
       const prevEntryCodes = schemaState.entryCodes || {};
       
@@ -33,7 +33,7 @@ const CheckboxHeader = ({ gridRef, field, columnName, helpText }) => {
         });
       }
       
-      updateSchemaState({
+      updateSchema({
         attributes: nextAttributes,
         attributesWithLists: nextLists,
         entryCodes: nextEntryCodes

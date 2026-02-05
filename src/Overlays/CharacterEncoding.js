@@ -22,12 +22,12 @@ const CharacterEncoding = () => {
   const { setCurrentPage } = useContext(Context);
 
   const {
-    getSchemaState,
-    updateSchemaState,
+    getSchema,
+    updateSchema,
     updateOverlaySelection,
     setSelectedOverlay
   } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CHARACTER_ENCODING_OVERLAY);
 
   // Get character encoding data, initialize with attributes if empty
@@ -61,9 +61,9 @@ const CharacterEncoding = () => {
         }
       });
 
-      updateSchemaState({ characterEncodingData });
+      updateSchema({ characterEncodingData });
     },
-    [updateSchemaState]
+    [updateSchema]
   );
 
   const [loading, setLoading] = useState(true);
@@ -142,7 +142,7 @@ const CharacterEncoding = () => {
               characterEncodingData[row.Attribute] = row["Character Encoding"];
             }
           });
-          updateSchemaState({ characterEncodingData });
+          updateSchema({ characterEncodingData });
         }
       }
     };

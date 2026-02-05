@@ -33,8 +33,8 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   
   // Use MultiSchema context with standard pattern
   const { 
-    getSchemaState, 
-    updateSchemaState,
+    getSchema, 
+    updateSchema,
     updateOverlaySelection,
     setSelectedOverlay,
     getFormatRuleData,
@@ -42,7 +42,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     setFormatRuleRowData,
     setRangeRowData
   } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORMAT_OVERLAY);
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -172,7 +172,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
               attributeFormats[row.Attribute] = formatRule;
             }
           });
-          updateSchemaState({ attributeFormats });
+          updateSchema({ attributeFormats });
         }
       }
     };

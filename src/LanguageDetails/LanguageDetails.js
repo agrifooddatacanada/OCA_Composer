@@ -22,8 +22,8 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   
   // Use MultiSchemaContext
   const {
-    getSchemaState,
-    updateSchemaState,
+    getSchema,
+    updateSchema,
     getLanguages
   } = useMultiSchema();
 
@@ -36,7 +36,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   const languages = getLanguages();
 
   // Get schema state data
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const attributesWithLists = schemaState?.attributesWithLists || [];
 
@@ -106,7 +106,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
     
     // Save to MultiSchemaContext for both manual and loaded schemas
     // Convert LDAD data to schema overlays
-    const schemaState = getSchemaState();
+    const schemaState = getSchema();
     const currentSchema = schemaState?.completeSchema || {};
     const updatedOverlays = { ...currentSchema.overlays };
 
@@ -141,7 +141,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       updatedOverlays.label = labelOverlays;
     }
 
-    updateSchemaState({
+    updateSchema({
       lanAttributeRowData: noSpacesObject, // Keep for compatibility during transition
       overlays: updatedOverlays,  // Save overlays directly to schema state
       completeSchema: {
@@ -269,7 +269,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
     }
     
     // Update schema state with the modified data
-    updateSchemaState({
+    updateSchema({
       lanAttributeRowData: newLanAttributeRowData
     });
   };

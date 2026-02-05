@@ -24,7 +24,6 @@ import React, {
   useMemo
 } from "react";
 import { MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
-
 import { makeSchemaStore } from "./schemaStore";
 import { canonicalizeSchemaId } from "../utils/schemaId";
 import { buildOcaPackageFromState } from "./ocaBuilder";
@@ -78,13 +77,13 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     [setSchemaStates, getCurrentSchemaId]
   );
 
-  const getSchemaState = useCallback(
-    () => store.getSchemaState(),
+  const getSchema = useCallback(
+    () => store.getSchema(),
     [store]
   );
 
-  const getSchemaStateById = useCallback(
-    (schemaId) => store.getSchemaStateById(schemaId),
+  const getSchemaById = useCallback(
+    (schemaId) => store.getSchemaById(schemaId),
     [store]
   );
 
@@ -102,9 +101,9 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
       buildOcaPackageFromState({
         ocaPackage,
         schemaStates,
-        getSchemaState,
+        getSchemaById,
       }),
-    [schemaStates, getSchemaState]
+    [schemaStates, getSchemaById]
   );
 
   // Clear all schema states
@@ -134,8 +133,8 @@ export const MultiSchemaProvider = ({ children, OCAPackage }) => {
     });
 
   const oca = useMemo(
-    () => createOcaLoader({getSchemaStateById, setSchemaStates}),
-    [getSchemaStateById, setSchemaStates]
+    () => createOcaLoader({getSchemaById, setSchemaStates}),
+    [getSchemaById, setSchemaStates]
   );
 
   // Context value

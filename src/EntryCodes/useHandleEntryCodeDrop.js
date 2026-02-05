@@ -33,8 +33,8 @@ const useHandleEntryCodeDrop = () => {
   } = useContext(Context);
   
   // Use MultiSchemaContext for schema-specific data
-  const { getSchemaState, updateSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const { getSchema, updateSchema } = useMultiSchema();
+  const schemaState = getSchema();
   
   // Get attribute and entry code data from schema state
   const attributeRowData = useMemo(
@@ -50,8 +50,8 @@ const useHandleEntryCodeDrop = () => {
   const setEntryCodeRowData = useCallback((updater) => {
     const currentEntryCodes = schemaState?.entryCodes || {};
     const newEntryCodes = typeof updater === 'function' ? updater(currentEntryCodes) : updater;
-    updateSchemaState({ entryCodes: newEntryCodes });
-  }, [schemaState?.entryCodes, updateSchemaState]);
+    updateSchema({ entryCodes: newEntryCodes });
+  }, [schemaState?.entryCodes, updateSchema]);
   const [rawFile, setRawFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);

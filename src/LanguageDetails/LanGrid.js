@@ -103,19 +103,19 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   // Use MultiSchemaContext
   const {
-    getSchemaState,
+    getSchema,
     getAttributesList,
-    updateSchemaState,
+    updateSchema,
     getLanguages
   } = useMultiSchema();
 
   // Get schema-specific languages from per-schema metadata
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const languages = schemaState?.metadata?.languages || [];
 
   // Get schema-specific overlay data from unified context, formatted for LanGrid
   const schemaOverlay = useMemo(() => {
-    const completeSchema = getSchemaState();
+    const completeSchema = getSchema();
     const rawOverlays = completeSchema?.overlays;
 
     if (!rawOverlays) {
@@ -161,7 +161,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     }
 
     return transformedOverlay;
-  }, [getSchemaState]);
+  }, [getSchema]);
 
   // Get schema state data with stable references
   const attributesList = useMemo(
@@ -185,9 +185,9 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const effectiveAttributesList = attributesList;
 
   const stableEntryCodes = useMemo(() => {
-    const schemaState = getSchemaState();
+    const schemaState = getSchema();
     return schemaState?.entryCodes || {};
-  }, [getSchemaState]);
+  }, [getSchema]);
 
   // Sets Language Dependent Attribute row data - simplified version
   useEffect(() => {
@@ -262,7 +262,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       }
     });
     
-    updateSchemaState({
+    updateSchema({
       lanAttributeRowData: newLanAttributeRowData
     });
   }, [languages, stableEntryCodes, attributeRowData]);
@@ -372,11 +372,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       );
 
       // Update schema state
-      updateSchemaState({
+      updateSchema({
         lanAttributeRowData: updatedLanAttributeRowData
       });
     },
-    [lanAttributeRowData, currentLanguage, updateSchemaState]
+    [lanAttributeRowData, currentLanguage, updateSchema]
   );
 
   return (

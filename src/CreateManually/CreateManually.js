@@ -69,7 +69,7 @@ export default function CreateManually() {
   const { setCurrentPage, setFileData } = useContext(Context);
 
   // Use MultiSchemaContext for all attribute management
-  const { updateSchemaState, getSchemaState, getAttributesList } = useMultiSchema();
+  const { updateSchema, getSchema, getAttributesList } = useMultiSchema();
 
   const [rowData, setRowData] = useState([{ Name: "" }]);
   const [addErrorMessage, setAddErrorMessage] = useState("");
@@ -263,7 +263,7 @@ export default function CreateManually() {
     }));
     
     // attributesList is computed automatically from attributes
-    updateSchemaState({
+    updateSchema({
       attributes: attributeRowData
     });
     
@@ -286,7 +286,7 @@ export default function CreateManually() {
     }));
     
     // attributesList is computed automatically from attributes
-    updateSchemaState({
+    updateSchema({
       attributes: attributeRowData
     });
     setCurrentPage("Start");
@@ -294,7 +294,7 @@ export default function CreateManually() {
 
   const pageBackReset = () => {
     // Clear MultiSchemaContext data (attributesList is computed automatically)
-    updateSchemaState({
+    updateSchema({
       attributes: []
     });
     setCurrentPage("Start");
@@ -306,7 +306,7 @@ export default function CreateManually() {
 
   const handleClearAll = () => {
     // Clear MultiSchemaContext data (attributesList is computed automatically)
-    updateSchemaState({
+    updateSchema({
       attributes: []
     });
     setFileData([]); // Still needed for file data clearing

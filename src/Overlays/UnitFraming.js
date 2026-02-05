@@ -354,11 +354,11 @@ const UnitFraming = () => {
 
   // Use MultiSchema context with standard pattern
   const {
-    getSchemaState,
-    updateSchemaState,
+    getSchema,
+    updateSchema,
     setSelectedOverlay
   } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_UNIT_FRAMING_OVERLAY);
 
   // Get unit framing data from schema state, sync with current attributes
@@ -422,11 +422,11 @@ const UnitFraming = () => {
 
   const setUnitFramedRowData = useCallback(
     (newData) => {
-      updateSchemaState({
+      updateSchema({
         unitFramedData: newData
       });
     },
-    [updateSchemaState]
+    [updateSchema]
   );
 
   // For compatibility, use the same data for currentUnitFramedRowData
@@ -437,9 +437,9 @@ const UnitFraming = () => {
   const frameAllUnits = schemaState?.frameAllUnits || false;
   const setFrameAllUnits = useCallback(
     (value) => {
-      updateSchemaState({ frameAllUnits: value });
+      updateSchema({ frameAllUnits: value });
     },
-    [updateSchemaState]
+    [updateSchema]
   );
 
   // Get unframed unit list - calculate from unitFramedRowData

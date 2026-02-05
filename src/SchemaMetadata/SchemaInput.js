@@ -27,14 +27,14 @@ export default function SchemaInput({
   const [deleteHover, setDeleteHover] = useState(false);
   const nameFieldId = `schema-name${language}`;
   const descriptionFieldId = `schema-description${language}`;
-  const { getSchemaState, updateSchemaState, currentSchemaId } = useMultiSchema();
+  const { getSchema, updateSchema, currentSchemaId } = useMultiSchema();
 
   // Convert language name to OCA code for accessing overlays
   const langCodeOCA = langCodeOCAFromName(language);
 
   // Get schema data from MultiSchemaContext (works for both manual and imported schemas)
   // MultiSchemaContext handles null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
-  const schemaState = getSchemaState() || {};
+  const schemaState = getSchema() || {};
   const metaState = schemaState.metadata || {};
   const metaLocalized = metaState.localized || {};
   
@@ -60,7 +60,7 @@ export default function SchemaInput({
     const newText = e.target.value;
     
     // Trust MultiSchemaContext to handle null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
-    const st = getSchemaState() || {};
+    const st = getSchema() || {};
     const prevMeta = st.metadata || {};
     const prevLoc = prevMeta.localized || {};
     const nextLocalized = {
@@ -80,14 +80,14 @@ export default function SchemaInput({
         ? { ...prevMeta, name: newText, localized: nextLocalized }
         : { ...prevMeta, localized: nextLocalized };
     
-    updateSchemaState({ metadata: nextMeta });
+    updateSchema({ metadata: nextMeta });
   };
 
   const handleDescriptionField = (e) => {
     const newText = e.target.value;
     
     // Trust MultiSchemaContext to handle null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
-    const st = getSchemaState() || {};
+    const st = getSchema() || {};
     const prevMeta = st.metadata || {};
     const prevLoc = prevMeta.localized || {};
     const nextLocalized = {
@@ -107,7 +107,7 @@ export default function SchemaInput({
         ? { ...prevMeta, description: newText, localized: nextLocalized }
         : { ...prevMeta, localized: nextLocalized };
     
-    updateSchemaState({ metadata: nextMeta });
+    updateSchema({ metadata: nextMeta });
   };
 
   const handleDelete = () => {
@@ -118,13 +118,13 @@ export default function SchemaInput({
     
     // Also remove from schema metadata
     if (currentSchemaId) {
-      const st = getSchemaState() || {};
+      const st = getSchema() || {};
       const prevMeta = st.metadata || {};
       const prevLoc = prevMeta.localized || {};
       const nextLocalized = { ...prevLoc };
       delete nextLocalized[langCodeOCA];
       
-      updateSchemaState({
+      updateSchema({
         metadata: {
           ...prevMeta,
           localized: nextLocalized,

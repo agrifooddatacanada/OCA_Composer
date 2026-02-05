@@ -77,9 +77,9 @@ const useOCAExport = () => {
   } = useContext(Context);
 
   // Get schema-specific data from MultiSchemaContext (single source of truth)
-  const { getCurrentSchemaId, getSchemaState, getAttributesList, exportSchemaChanges, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas } = useMultiSchema();
+  const { getCurrentSchemaId, getSchema, getAttributesList, exportSchemaChanges, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   const metadata = schemaState?.metadata || {};
 
   // All schema-specific data comes from MultiSchemaContext only
@@ -153,7 +153,7 @@ const useOCAExport = () => {
   // Build OCA package from schema state using text DSL generation
   // Works for both single schemas and multi-schema packages
   const buildPackageFromTextDSL = async (targetSchemaId, childSaidMap = {}) => {
-    const targetState = getSchemaState(targetSchemaId);
+    const targetState = getSchema(targetSchemaId);
     const targetMetadata = targetState?.metadata || {};
     
     // Extract data from target schema state

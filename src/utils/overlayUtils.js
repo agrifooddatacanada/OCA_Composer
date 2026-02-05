@@ -62,13 +62,13 @@ export const resetOverlayValues = (overlayType) => {
  * @param {string} overlayType - The overlay type constant
  * @param {Object} context - Required context methods
  */
-export const deleteOverlayData = (overlayType, { updateSchemaState, updateOverlaySelection, getSchemaState }) => {
+export const deleteOverlayData = (overlayType, { updateSchema, updateOverlaySelection, getSchema }) => {
   // Clear the overlay data
   const resetValues = resetOverlayValues(overlayType);
   
   // Handle special case for conformance overlay (Required Entries)
   if (overlayType === FIELD_CONFORMANCE_OVERLAY) {
-    const schemaState = getSchemaState();
+    const schemaState = getSchema();
     
     // Clear Required flags from all attributes
     const updatedAttributes = schemaState?.attributes?.map((attr) => ({
@@ -76,12 +76,12 @@ export const deleteOverlayData = (overlayType, { updateSchemaState, updateOverla
       Required: false
     })) || [];
     
-    updateSchemaState({
+    updateSchema({
       ...resetValues,
       attributes: updatedAttributes
     });
   } else if (Object.keys(resetValues).length > 0) {
-    updateSchemaState(resetValues);
+    updateSchema(resetValues);
   }
   
   // Update selection state to deselected
@@ -100,18 +100,18 @@ export const deleteOverlayData = (overlayType, { updateSchemaState, updateOverla
  * @returns {Function} Delete handler function
  */
 export const useDeleteOverlayHandler = (overlayType, shouldNavigate = true) => {
-  const { updateSchemaState, updateOverlaySelection, getSchemaState } = useMultiSchema();
+  const { updateSchema, updateOverlaySelection, getSchema } = useMultiSchema();
   const { setCurrentPage } = useContext(Context);
   
   return useCallback(() => {
     // Execute core deletion logic
-    deleteOverlayData(overlayType, { updateSchemaState, updateOverlaySelection, getSchemaState });
+    deleteOverlayData(overlayType, { updateSchema, updateOverlaySelection, getSchema });
     
     // Navigate back to overlays page if requested
     if (shouldNavigate) {
       setCurrentPage("Overlays");
     }
-  }, [overlayType, shouldNavigate, updateSchemaState, updateOverlaySelection, getSchemaState, setCurrentPage]);
+  }, [overlayType, shouldNavigate, updateSchema, updateOverlaySelection, getSchema, setCurrentPage]);
 };
 
 /**

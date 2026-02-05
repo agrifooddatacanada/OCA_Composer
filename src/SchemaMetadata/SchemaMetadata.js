@@ -30,8 +30,8 @@ const SchemaMetadata = forwardRef(({
 
   // Schema data hook
   // Use MultiSchema context with standard pattern
-  const { getSchemaState, updateSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const { getSchema, updateSchema } = useMultiSchema();
+  const schemaState = getSchema();
 
   // Local component state
   const [showLanguages, setShowLanguages] = useState(false);
@@ -105,7 +105,7 @@ const SchemaMetadata = forwardRef(({
         }
       });
       
-      updateSchemaState({
+      updateSchema({
         metadata: {
           name: rootName,
           description: rootDescription,
@@ -114,7 +114,7 @@ const SchemaMetadata = forwardRef(({
       });
     } else {
       // Handle string or other formats
-      updateSchemaState({
+      updateSchema({
         metadata: {
           ...schemaState?.metadata,
           description: newDescription
@@ -148,7 +148,7 @@ const SchemaMetadata = forwardRef(({
       }
     };
     
-    updateSchemaState(metadataUpdate);
+    updateSchema(metadataUpdate);
     
     // Also update global context for components that still read from it
     globalSetLanguages(newLanguages);

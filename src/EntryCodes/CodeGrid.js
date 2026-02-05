@@ -113,8 +113,8 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   const { t } = useTranslation();
   
   // Get schema-specific languages (not global)
-  const { getSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const { getSchema } = useMultiSchema();
+  const schemaState = getSchema();
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
   
   const [buttonArray, setButtonArray] = useState([]);

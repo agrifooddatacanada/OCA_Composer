@@ -56,11 +56,11 @@ const FormInformation = () => {
     getCurrentSchemaId, 
     getAttributesList, 
     getFormatRuleData,
-    getSchemaState,
-    updateSchemaState 
+    getSchema,
+    updateSchema 
   } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
-  const schemaState = getSchemaState();
+  const schemaState = getSchema();
   
   // Get schema-specific languages (not global)
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
@@ -77,22 +77,22 @@ const FormInformation = () => {
     const newData = typeof updater === 'function' 
       ? updater(lanAttributeRowData) 
       : updater;
-    updateSchemaState({ lanAttributeRowData: newData });
-  }, [lanAttributeRowData, updateSchemaState]);
+    updateSchema({ lanAttributeRowData: newData });
+  }, [lanAttributeRowData, updateSchema]);
 
   const setFormInformationRowData = useCallback((updater) => {
     const newData = typeof updater === 'function'
       ? updater(FormInformationRowData)
       : updater;
-    updateSchemaState({ FormInformationRowData: newData });
-  }, [FormInformationRowData, updateSchemaState]);
+    updateSchema({ FormInformationRowData: newData });
+  }, [FormInformationRowData, updateSchema]);
 
   const setFormPlaceholdersByLanguage = useCallback((updater) => {
     const newData = typeof updater === 'function'
       ? updater(formPlaceholdersByLanguage)
       : updater;
-    updateSchemaState({ formPlaceholdersByLanguage: newData });
-  }, [formPlaceholdersByLanguage, updateSchemaState]);
+    updateSchema({ formPlaceholdersByLanguage: newData });
+  }, [formPlaceholdersByLanguage, updateSchema]);
 
   const gridRef = useRef();
   const refContainer = useRef();
@@ -141,7 +141,7 @@ const FormInformation = () => {
       normalizedPlaceholders[name] = v;
     });
 
-    updateSchemaState({ lanAttributeRowData: normalizedLan, formPlaceholdersByLanguage: normalizedPlaceholders });
+    updateSchema({ lanAttributeRowData: normalizedLan, formPlaceholdersByLanguage: normalizedPlaceholders });
     // also update grid immediately (resolve robustly) and refresh cells so Format column updates
     try {
       if (gridRef.current?.api) {
@@ -152,7 +152,7 @@ const FormInformation = () => {
     } catch (e) {
       // ignore
     }
-  }, [lanAttributeRowData, formPlaceholdersByLanguage, currentLanguage, updateSchemaState]);
+  }, [lanAttributeRowData, formPlaceholdersByLanguage, currentLanguage, updateSchema]);
 
   // Ensure lanAttributeRowData has rows for all languages (import or fresh init)
   useEffect(() => {
@@ -222,7 +222,7 @@ const FormInformation = () => {
     // Only perform the update once per component mount to avoid loops
     if (didAdd && !initializationRef.current) {
       initializationRef.current = true;
-      updateSchemaState({ lanAttributeRowData: newLan });
+      updateSchema({ lanAttributeRowData: newLan });
       // Immediately update grid so UI shows rows even if context update hasn't propagated
       try {
         if (gridRef.current?.api) {
@@ -236,7 +236,7 @@ const FormInformation = () => {
       // Check shortly after to confirm the update persisted in context
       setTimeout(() => {
         try {
-          const stateAfter = getSchemaState();
+          const stateAfter = getSchema();
           // If attributeFormats exist, force a refresh of cells so Format column renders descriptions
           try {
             if (gridRef.current?.api && stateAfter?.attributeFormats && Object.keys(stateAfter.attributeFormats).length > 0) {
@@ -257,7 +257,7 @@ const FormInformation = () => {
      FormInformationRowData, 
      formPlaceholdersByLanguage, 
      lanAttributeRowData, 
-     updateSchemaState, 
+     updateSchema, 
      currentSchemaId]);
 
   // Update currentLanguage when global UI language changes
@@ -489,7 +489,7 @@ const FormInformation = () => {
       gridRef.current.api.stopEditing();
       
       // Reorder attributes in MultiSchemaContext (source of truth)
-      updateSchemaState( (prevState) => {
+      updateSchema( (prevState) => {
         const currentAttrs = prevState.attributes || [];
         const newAttrs = [...currentAttrs];
         newAttrs.splice(newIndex, 0, newAttrs.splice(oldIndex, 1)[0]);
@@ -528,7 +528,7 @@ const FormInformation = () => {
     [
       attributesList,
       currentSchemaId,
-      updateSchemaState,
+      updateSchema,
       FormInformationRowData,
       setFormInformationRowData,
       lanAttributeRowData,

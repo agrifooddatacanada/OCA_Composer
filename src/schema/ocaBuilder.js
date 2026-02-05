@@ -23,7 +23,7 @@ import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA } from "../constants/constan
 /**
  * Rebuilds entire OCA package by applying user edits from schemaStates
  */
-export function buildOcaPackageFromState({ ocaPackage, schemaStates, getSchemaState }) {
+export function buildOcaPackageFromState({ ocaPackage, schemaStates, getSchemaById }) {
   if (!ocaPackage) return ocaPackage;
 
   const modifiedPackage = JSON.parse(JSON.stringify(ocaPackage));
@@ -31,14 +31,14 @@ export function buildOcaPackageFromState({ ocaPackage, schemaStates, getSchemaSt
 
   // Phase 1: Apply edits to all initialized schemas
   Object.keys(schemaStates).forEach((schemaId) => {
-    const schemaState = getSchemaState(schemaId);
+    const schemaState = getSchemaById(schemaId);
     if (!schemaState?.initialized) return;
 
     const targetSchema = findOrCreateTargetSchema({
       modifiedPackage,
       bundle,
       schemaId,
-      getSchemaState,
+      getSchemaById,
     });
     
     if (!targetSchema) return;
@@ -48,7 +48,7 @@ export function buildOcaPackageFromState({ ocaPackage, schemaStates, getSchemaSt
   });
 
   // Phase 2: Ensure child schemas exist as dependencies
-  ensureChildSchemaDependencies({ modifiedPackage, bundle, schemaStates, getSchemaState });
+  ensureChildSchemaDependencies({ modifiedPackage, bundle, schemaStates, getSchemaById });
 
   // Phase 3: Create placeholder dependencies
   ensurePlaceholderDependencies({ modifiedPackage, bundle });
@@ -60,7 +60,7 @@ export function findOrCreateTargetSchema({
   modifiedPackage,
   bundle,
   schemaId,
-  getSchemaState,
+  getSchemaById,
 }) {
   const dependencies = getPackageDependencies(modifiedPackage);
   // 1) find existing
@@ -80,7 +80,7 @@ export function findOrCreateTargetSchema({
   if (!isPlaceholder) return null;
 
   // 3) derive display name from parent labels (fallback schemaId)
-  const rootSchemaState = getSchemaState(bundle?.d);
+  const rootSchemaState = getSchemaById(bundle?.d);
   const rootLanData = rootSchemaState?.lanAttributeRowData || {};
   const engLabels = rootLanData["eng"] || rootLanData["English"] || [];
   const labelRow = engLabels.find((row) => row.Attribute === schemaId);
@@ -155,14 +155,14 @@ export function rebuildCaptureBaseAttributes(targetSchema, schemaState) {
 export function ensureChildSchemaDependencies({
   modifiedPackage,
   bundle,
-  getSchemaState,
+  getSchemaById,
   schemaStates,
 }) {
   const dependencies = getPackageDependencies(modifiedPackage);
   
   // After processing all schemas, check for child schemas that need to be added as dependencies
   Object.keys(schemaStates).forEach((schemaId) => {
-    const schemaState = getSchemaState(schemaId);
+    const schemaState = getSchemaById(schemaId);
     if (!schemaState.initialized) return;
 
     // Look for child schema type attributes in this schema
@@ -172,7 +172,7 @@ export function ensureChildSchemaDependencies({
           const childSchemaName = attr.Attribute;
 
           // Check if there's a schema state for this child schema
-          const childSchemaState = getSchemaState(childSchemaName);
+          const childSchemaState = getSchemaById(childSchemaName);
           if (childSchemaState && (childSchemaState.initialized || childSchemaState.attributes?.length > 0)) {
             // Check if this child schema is already in the package
             const existsInPackage =

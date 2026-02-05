@@ -10,8 +10,8 @@ export default function SchemaDescription({ currentLanguage }) {
   const { t, i18n } = useTranslation();
   const { divisionGroup, currentTheme } = useContext(Context);
   // Use MultiSchema context with standard pattern
-  const { getSchemaState } = useMultiSchema();
-  const schemaState = getSchemaState();
+  const { getSchema } = useMultiSchema();
+  const schemaState = getSchema();
 
   // Use current schema state's metadata
   const currentMeta = schemaState?.metadata || {};
