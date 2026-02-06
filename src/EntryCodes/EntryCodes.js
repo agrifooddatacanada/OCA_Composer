@@ -6,7 +6,6 @@ import React, {
   forwardRef,
   useImperativeHandle,
   useMemo,
-  useCallback
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Box, Typography } from "@mui/material";

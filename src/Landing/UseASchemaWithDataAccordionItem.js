@@ -21,14 +21,14 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
-import { hasMultiSchemaStructure } from "../utils/schemaUtils";
+import { hasMultipleSchemas } from "../utils/schemaUtils";
 
 const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setCurrentDataValidatorPage } = useContext(Context);
-  const { packageUpload } = useMultiSchema();
-  const isMultiSchema = hasMultiSchemaStructure(packageUpload);
+  const { pkgUpload } = useMultiSchema();
+  const isMultiSchema = hasMultipleSchemas(pkgUpload);
   const {
     jsonRawFile,
     setJsonRawFile,

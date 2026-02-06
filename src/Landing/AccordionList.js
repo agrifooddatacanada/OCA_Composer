@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Box, Button, Typography, useMediaQuery, Tooltip } from "@mui/material";
@@ -26,7 +26,7 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import { getPackageBundle, getPackageBundleId } from "../utils/packageUtils";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
-import { hasMultiSchemaStructure } from "../utils/schemaUtils";
+import { hasMultipleSchemas } from "../utils/schemaUtils";
 
 const buttonStyles = {
   backgroundColor: CustomPalette.PRIMARY,
@@ -40,7 +40,7 @@ const AccordionList = () => {
   const isMobile = useMediaQuery("(max-width: 736px)");
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, OCAPackage, schemaDescription } =
+  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, pkgUpload, schemaDescription } =
     useContext(Context);
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
@@ -72,7 +72,7 @@ const AccordionList = () => {
     setIsZip(false);
     // Multi-schema: show visualization to let user choose which schema to edit
     // Single schema: go directly to editing
-    const targetPage = hasMultiSchemaStructure(OCAPackage) ? "View" : "Metadata";
+    const targetPage = hasMultipleSchemas(pkgUpload) ? "View" : "Metadata";
     setCurrentPage(targetPage);
     navigate("/start");
   };
@@ -107,17 +107,17 @@ const AccordionList = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
-  const isMultiSchema = hasMultiSchemaStructure(OCAPackage);
+  const isMultiSchema = hasMultipleSchemas(pkgUpload);
   let isInvalidOcaPackage = false;
 
-  if (OCAPackage) {
+  if (pkgUpload) {
     // Only verify if this is actually an OCA package with proper structure
-    const hasOcaStructure = getPackageBundle(OCAPackage);
-    const digest = OCAPackage.d || getPackageBundleId(OCAPackage);
+    const hasOcaStructure = getPackageBundle(pkgUpload);
+    const digest = pkgUpload.d || getPackageBundleId(pkgUpload);
 
     if (hasOcaStructure && digest) {
       try {
-        isInvalidOcaPackage = !VerifyOcaPackage(OCAPackage, digest);
+        isInvalidOcaPackage = !VerifyOcaPackage(pkgUpload, digest);
       } catch (e) {
         isInvalidOcaPackage = false; // Don't block UI on verification errors
       }
@@ -267,7 +267,7 @@ const AccordionList = () => {
               color="navButton"
               onClick={() => {
                 if (Object.keys(jsonToReadme).length > 0) {
-                  jsonToTextFile(jsonToReadme, OCAPackage, schemaDescription);
+                  jsonToTextFile(jsonToReadme, pkgUpload, schemaDescription);
                 } else if (zipToReadme.length > 0) {
                   toTextFile(zipToReadme);
                 }

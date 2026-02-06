@@ -213,14 +213,14 @@ function App() {
   // These are now handled by MultiSchemaContext with normalized storage
 
   // TODO: Unit framing logic needs to be refactored to work with multi-schema context
-  // For now, this useEffect is disabled since OCAPackage is no longer in App.js
+  // For now, this useEffect is disabled since pkgUpload is no longer in App.js
   // useEffect(() => {
-  //   if (OCAPackage) {
+  //   if (pkgUpload) {
   //     setUnitFramedThatAlreadyExistInOcaPackage(
-  //       getUnitsFramedThatAlreadyExistInOcaPackage(OCAPackage)
+  //       getUnitsFramedThatAlreadyExistInOcaPackage(pkgUpload)
   //     );
   //   }
-  // }, [OCAPackage]);
+  // }, [pkgUpload]);
 
   /*
   Every time the unitRowData updates, we need to update the unitFramedRowData
@@ -346,7 +346,7 @@ function App() {
 
     setIsZip(false);
     setZipToReadme([]);
-    // Note: OCAPackage is now in multi-schema context, cleared via clearAllSchemas()
+    // Note: pkgUpload is now in multi-schema context, cleared via clearAllSchemas()
   }, [fileData, jsonRawFile]);
 
   // REMOVED: Legacy useEffect that synced attributesList with editingSchemaId

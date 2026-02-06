@@ -9,7 +9,7 @@ import { getPackageDependencies } from "./packageUtils";
  * @param {Object} ocaPackage - The OCA package to check
  * @returns {boolean} True if the package has dependencies, false otherwise
  */
-export const hasMultiSchemaStructure = (ocaPackage) => {
+export const hasMultipleSchemas = (ocaPackage) => {
   if (!ocaPackage) return false;
   
   const dependencies = getPackageDependencies(ocaPackage);

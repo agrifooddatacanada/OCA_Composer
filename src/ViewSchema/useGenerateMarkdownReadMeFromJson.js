@@ -10,9 +10,7 @@
  * Note: For ZIP files, see useGenerateMarkdownReadMe.
  */
 
-import { useContext } from "react";
 import i18next from "i18next";
-import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { langNameFromCodeUI, langCodeOCAFromName, langCodeOCAFromCodeUI } from "../utils/languageUtils";
 import { getPackageLanguages, getPackageDependencies } from "../utils/packageUtils";
@@ -47,8 +45,8 @@ const getModifiedLayer = (overlay) => {
 };
 
 const useGenerateMarkdownReadMeFromJson = () => {
-  const { packageUpload } = useMultiSchema();
-  const pkg = packageUpload;
+  const { pkgUpload } = useMultiSchema();
+  const pkg = pkgUpload;
   
   // For now, use ADC extension overlays for the top-level/main schema bundle
   const orderingOverlay =

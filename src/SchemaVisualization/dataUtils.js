@@ -105,54 +105,54 @@ export const getDependencyInfo = (depId, dependencyMap, langCodeOCA = "eng") => 
 
 /**
  * Normalize OCA package structure to handle different formats
- * @param {Object} ocaPackage - Raw OCA package 
+ * @param {Object} pkg - Raw OCA package 
  * @returns {Object} Normalized package with consistent structure
  */
-const normalizeOCAPackage = (ocaPackage) => {
-  if (!ocaPackage) return null;
+const pkgNormalize = (pkg) => {
+  if (!pkg) return null;
   
   // Handle oca_package format: { oca_bundle: { bundle: {...}, dependencies: [...] }, extensions: {...} }
-  if (ocaPackage.oca_bundle) {
+  if (pkg.oca_bundle) {
     return {
-      bundle: getPackageBundle(ocaPackage),
-      dependencies: getPackageDependencies(ocaPackage),
-      extensions: ocaPackage.extensions || ocaPackage.oca_bundle.extensions || {}
+      bundle: getPackageBundle(pkg),
+      dependencies: getPackageDependencies(pkg),
+      extensions: pkg.extensions || pkg.oca_bundle.extensions || {}
     };
   }
   
   // Handle direct format: { bundle: {...}, dependencies: [...], extensions: {...} }
-  return ocaPackage;
+  return pkg;
 };
 
 /**
  * Extract schema data directly from OCA package for visualization
- * @param {Object} ocaPackage - OCA package object
+ * @param {Object} pkg - OCA package object
  * @param {string} langCodeOCA - OCA language code (optional)
  * @returns {Object} Processed schema data for visualization
  */
-export const extractSchemaDataFromPackage = (ocaPackage, langCodeOCA = "eng") => {
-  if (!ocaPackage) {
+export const extractSchemaDataFromPackage = (pkg, langCodeOCA = "eng") => {
+  if (!pkg) {
     return null;
   }
 
   // Normalize package structure to handle both formats
-  const normalizedPackage = normalizeOCAPackage(ocaPackage);
-  if (!normalizedPackage) {
+  const pkgNormalized = pkgNormalize(pkg);
+  if (!pkgNormalized) {
     return null;
   }
 
   // Extract labels from the bundle's overlays
-  // Note: Labels are populated by exportSchemaChanges from lanAttributeRowData
-  const labelOverlays = normalizedPackage.bundle.overlays?.label;
+  // Note: Labels are populated by pkgBuildFromState from lanAttributeRowData
+  const labelOverlays = pkgNormalized.bundle.overlays?.label;
   const labelOverlay = Array.isArray(labelOverlays)
     ? (labelOverlays.find((l) => l.language === langCodeOCA) || labelOverlays[0] || {})
     : (labelOverlays || {});
   const labels = labelOverlay.attribute_labels || {};
 
-  const bundle = getPackageBundle(normalizedPackage);
+  const bundle = getPackageBundle(pkgNormalized);
   
   return {
-    dependencies: getPackageDependencies(normalizedPackage),
+    dependencies: getPackageDependencies(pkgNormalized),
     attributes: bundle?.capture_base?.attributes || {},
     overlays: bundle?.overlays || {},
     labels
@@ -161,25 +161,25 @@ export const extractSchemaDataFromPackage = (ocaPackage, langCodeOCA = "eng") =>
 
 /**
  * Get schema data for a specific schema ID
- * @param {Object} ocaPackage - OCA package object
+ * @param {Object} pkg - OCA package object
  * @param {string} schemaId - Schema ID to get data for
  * @param {string} langCodeOCA - OCA language code (optional)
  * @returns {Object} Schema data for the specified schema
  */
 
-export const getSchemaDataById = (ocaPackage, schemaId, langCodeOCA = "eng") => {
-  if (!ocaPackage || !schemaId) {
+export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
+  if (!pkg || !schemaId) {
     return null;
   }
 
   // Normalize the package structure
-  const normalizedPackage = normalizeOCAPackage(ocaPackage);
-  if (!normalizedPackage) {
+  const pkgNormalized = pkgNormalize(pkg);
+  if (!pkgNormalized) {
     return null;
   }
 
-  const bundle = getPackageBundle(normalizedPackage);
-  const bundleId = getPackageBundleId(normalizedPackage);
+  const bundle = getPackageBundle(pkgNormalized);
+  const bundleId = getPackageBundleId(pkgNormalized);
   
   // If it's the root schema (either by bundle digest, capture base digest, by "root" ID, or by schema name)
   if (
@@ -224,11 +224,11 @@ export const getSchemaDataById = (ocaPackage, schemaId, langCodeOCA = "eng") => 
   }
 
   // If it's a dependency schema - try to find by digest first
-  let dependency = normalizedPackage.dependencies?.find((dep) => dep.d === schemaId);
+  let dependency = pkgNormalized.dependencies?.find((dep) => dep.d === schemaId);
 
   // If not found by digest, try to find by name in meta overlays
-  if (!dependency && normalizedPackage.dependencies) {
-    dependency = normalizedPackage.dependencies.find((dep) => {
+  if (!dependency && pkgNormalized.dependencies) {
+    dependency = pkgNormalized.dependencies.find((dep) => {
       const metaOverlay =
         dep.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
         dep.overlays?.meta?.[0];
@@ -271,8 +271,8 @@ export const getSchemaDataById = (ocaPackage, schemaId, langCodeOCA = "eng") => 
   }
 
   // If it's a placeholder field name (like q9) - check if it exists in the root schema's refn fields
-  const rawBundle = getPackageBundle(ocaPackage);
-  const deps = getPackageDependencies(ocaPackage);
+  const rawBundle = getPackageBundle(pkg);
+  const deps = getPackageDependencies(pkg);
   
   if (rawBundle?.capture_base?.attributes) {
     const rootAttributes = rawBundle.capture_base.attributes;

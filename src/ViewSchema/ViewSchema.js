@@ -38,7 +38,6 @@ import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateTextReadmeFromJson from "./useGenerateTextReadmeFromJson";
 import { getPackageBundleId, getPackageDependencies } from "../utils/packageUtils";
 
-
 import ErrorPopup from "./ErrorPopup";
 import CustomRouterLink from "../components/CustomRouterLink";
 import ConfirmResetCard from "./ConfirmResetCard";
@@ -77,15 +76,12 @@ export default function ViewSchema({
   const {
     currentSchemaId,
     switchToSchema,
-    exportSchemaChanges,
+    pkgBuildFromState,
     getSchema,
     updateSchema,
     schemaStates,
-    packageUpload
+    pkgUpload
   } = useMultiSchema();
-
-  // OCAPackage from multi-schema context (source of truth for package structure)
-  const OCAPackage = packageUpload;
 
   // Get languages from current schema's metadata (per-schema languages)
   const schemaState = getSchema();
@@ -254,7 +250,7 @@ export default function ViewSchema({
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [loading, setLoading] = useState(true);
   const [visualizationMode, setVisualizationMode] = useState("detailed"); // "detailed" for left-right, "tree" for top-down
-  const [updatedOCAPackage, setUpdatedOCAPackage] = useState(OCAPackage);
+  const [pkgFromState, setPkgWithChanges] = useState(pkgUpload);
   const [vizVersion, setVizVersion] = useState(0);
 
   // Track the last known root digest to detect when package structure actually changes
@@ -263,7 +259,7 @@ export default function ViewSchema({
   // Sync currentSchemaId ONLY when package structure changes (e.g., adding first child schema)
   // Don't interfere with normal navigation to child schemas
   useEffect(() => {
-    const pkg = updatedOCAPackage || OCAPackage;
+    const pkg = pkgFromState || pkgUpload;
     const rootDigest = getPackageBundleId(pkg);
     
     // Only sync if the root digest has changed (package structure modified)
@@ -273,7 +269,7 @@ export default function ViewSchema({
     
     // Update the ref for next comparison
     lastRootDigestRef.current = rootDigest;
-  }, [updatedOCAPackage, OCAPackage, switchToSchema]);
+  }, [pkgFromState, pkgUpload, switchToSchema]);
 
   // Enhanced schema switching with proper navigation
   const handleSchemaSwitch = useCallback(
@@ -282,25 +278,25 @@ export default function ViewSchema({
       
       // Canonicalize the incoming schemaId to match how it's stored in the context
       // "root" should map to bundle.d
-      const pkg = updatedOCAPackage || OCAPackage;
+      const pkg = pkgFromState || pkgUpload;
       const rootDigest = getPackageBundleId(pkg);
       const canonicalSchemaId = (schemaId === "root" && rootDigest) ? rootDigest : schemaId;
       
       // Switch only if different, but always navigate to the editor
-      // Use updatedOCAPackage which includes the latest changes and placeholder dependencies
+      // Use pkgFromState which includes the latest changes and placeholder dependencies
       if (canonicalSchemaId !== currentSchemaId) {
-        switchToSchema(schemaId, updatedOCAPackage || OCAPackage);
+        switchToSchema(schemaId, pkgFromState || pkgUpload);
       }
       setCurrentPage("Details");
       navigate("/start");
     },
-    [currentSchemaId, switchToSchema, updatedOCAPackage, OCAPackage, setCurrentPage, navigate]
+    [currentSchemaId, switchToSchema, pkgFromState, pkgUpload, setCurrentPage, navigate]
   );
 
   const downloadReadMe = () => {
     if (Object.keys(jsonToReadme).length > 0) {
       // Schema name will be extracted from jsonToReadme automatically
-      jsonToTextFile(jsonToReadme, updatedOCAPackage);
+      jsonToTextFile(jsonToReadme, pkgFromState);
     } else if (zipToReadme.length > 0) {
       toTextFile(zipToReadme);
     }
@@ -321,9 +317,9 @@ export default function ViewSchema({
       return used;
     }
 
-    const captureBaseSaid = updatedOCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+    const captureBaseSaid = pkgFromState?.oca_bundle?.bundle?.capture_base?.d;
     const extensionOverlays =
-      updatedOCAPackage?.extensions?.adc?.[captureBaseSaid]?.overlays || {};
+      pkgFromState?.extensions?.adc?.[captureBaseSaid]?.overlays || {};
 
     const formOverlayData = extensionOverlays.form_overlay || extensionOverlays.form;
     const formOverlayArray = Array.isArray(formOverlayData)
@@ -340,7 +336,7 @@ export default function ViewSchema({
     }
 
     return used;
-  }, [formBuilderPages, updatedOCAPackage]);
+  }, [formBuilderPages, pkgFromState]);
 
   const moveBackward = () => {
     if (history.length > 1 && history[history.length - 2] === "Landing") {
@@ -366,29 +362,27 @@ export default function ViewSchema({
     });
     
     // Check if package has any dependencies (even empty ones)
-    const dependencies = getPackageDependencies(updatedOCAPackage);
+    const dependencies = getPackageDependencies(pkgFromState);
     const hasDependencies = dependencies.length > 0;
     
     return anySchemaHasChildren || hasDependencies;
-  }, [schemaStates, updatedOCAPackage]);
+  }, [schemaStates, pkgFromState]);
 
   // Update the package data when schemas are modified
   useEffect(() => {
-    // For manual creation, OCAPackage is null - exportSchemaChanges will create the structure
-    // For uploaded packages, OCAPackage contains the original structure
-    const basePackage = OCAPackage;
-    
+    // For manual creation, pkgUpload is null - pkgBuildFromState will create the structure
+    // For uploaded packages, pkgUpload contains the original structure    
     // If manual creation, ensure root schema is initialized before building
-    if (!basePackage) {
+    if (!pkgUpload) {
       const rootSchemaId = MANUAL_CREATION_SCHEMA_ID;
       const rootState = schemaStates[rootSchemaId];
       
       if (!rootState) {
-        setUpdatedOCAPackage(null);
+        setPkgWithChanges(null);
         return;
       }
 
-      // Mark schema as initialized so exportSchemaChanges will process it
+      // Mark schema as initialized so pkgBuildFromState will process it
       if (!rootState.initialized) {
         updateSchema(rootSchemaId, { initialized: true });
         // Since state update is async, also update the local ref for immediate use
@@ -396,14 +390,14 @@ export default function ViewSchema({
       }
     }
 
-    // UNIFIED CODE PATH: exportSchemaChanges handles both imported and manual schemas
-    // - For uploads: clones basePackage and applies edits
+    // UNIFIED CODE PATH: pkgBuildFromState handles both imported and manual schemas
+    // - For uploads: clones pkgUpload and applies edits
     // - For manual creation: creates fresh package structure from schemaStates
     // - Converts "Child Schema" -> refn:name and builds dependencies automatically
-    const modifiedPackage = exportSchemaChanges(basePackage);
-    setUpdatedOCAPackage(modifiedPackage);
+    const pkgFromState = pkgBuildFromState(pkgUpload);
+    setPkgWithChanges(pkgFromState);
     setVizVersion((v) => v + 1);
-  }, [OCAPackage, schemaStates, exportSchemaChanges, updateSchema]);
+  }, [pkgUpload, schemaStates, pkgBuildFromState]);
 
   // Removed in favor of global language toggle (EN/FR)
 
@@ -412,7 +406,7 @@ export default function ViewSchema({
       setLoading(true);
       
       // Unified export hook handles all scenarios:
-      // - Imported packages (flat or nested) via exportSchemaChanges()
+      // - Imported packages (flat or nested) via pkgBuildFromState()
       // - Manual flat schemas via text DSL generation
       // - Manual nested schemas (throws helpful error - not yet supported)
       await exportData();
@@ -432,7 +426,7 @@ export default function ViewSchema({
     const loadSchemaData = async () => {
       try {
         // Wait for schema initialization if OCA package exists but no currentSchemaId yet
-        if (OCAPackage && !currentSchemaId) {
+        if (pkgUpload && !currentSchemaId) {
           setLoading(true);
           return;
         }
@@ -442,7 +436,7 @@ export default function ViewSchema({
         // Use direct lookup to avoid stale getSchema closure
         const currentSchema = schemaStates[currentSchemaId];
         
-        if (OCAPackage && currentSchemaId && !currentSchema) {
+        if (pkgUpload && currentSchemaId && !currentSchema) {
           setLoading(true);
           return;
         }
@@ -452,7 +446,7 @@ export default function ViewSchema({
         // Use direct lookup instead of getSchema to avoid stale closures
         const schemaState = currentSchema || getSchema();
         
-        if ((OCAPackage && currentSchemaId) || (!OCAPackage && schemaState && schemaState.attributes)) {
+        if ((pkgUpload && currentSchemaId) || (!pkgUpload && schemaState && schemaState.attributes)) {
 
           // Convert schema state back to the format expected by ViewGrid
           const schemaAttributes = schemaState.attributes || [];
@@ -558,7 +552,7 @@ export default function ViewSchema({
     loadSchemaData();
   }, [
     currentSchemaId,
-    OCAPackage,
+    pkgUpload,
     schemaLanguageOverride,
     i18next.language,
     getSchema,
@@ -983,9 +977,9 @@ export default function ViewSchema({
             <Box sx={{ marginBottom: "2rem", width: "100%", minHeight: "400px" }}>
               <Suspense fallback={<Loading />}>
                 <SchemaVisualizationEmbed
-                  key={`viz-${vizVersion}-${getPackageBundleId(updatedOCAPackage)}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
+                  key={`viz-${vizVersion}-${getPackageBundleId(pkgFromState)}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
                   schemaLanguageOverride={getCurrentLanguage()}
-                  OCAPackage={updatedOCAPackage}
+                  pkg={pkgFromState}
                   viewMode={visualizationMode}
                   currentSchemaId={currentSchemaId}
                   setCurrentSchemaId={handleSchemaSwitch}
@@ -1029,7 +1023,7 @@ export default function ViewSchema({
           displayArray={displayArray}
           currentLanguage={getCurrentLanguage()}
           setLoading={setLoading}
-          packageWithEdits={updatedOCAPackage}
+          packageWithEdits={pkgFromState}
         />
       </Box>
 

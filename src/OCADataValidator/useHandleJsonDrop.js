@@ -39,8 +39,8 @@ export const useHandleJsonDrop = (
     targetResult,
     setTargetResult
   } = useContext(Context);
-  const { clearAllSchemas, switchToSchema, initializeFromOCAPackage, setPackageUpload } = useMultiSchema();
-  // useZipParser removed - data processing now handled by initializeFromOCAPackage -> OCAParser
+  const { clearAllSchemas, switchToSchema, initializeFromPkgUpload, setPkgUpload } = useMultiSchema();
+  // useZipParser removed - data processing now handled by initializeFromPkgUpload -> OCAParser
 
   const [jsonDropMessage, setJsonDropMessage] = useState({
     message: "",
@@ -79,7 +79,7 @@ export const useHandleJsonDrop = (
           if (rawParse?.oca_bundle?.bundle) {
             ocaPackageData = rawParse;
             jsonFile = rawParse?.oca_bundle?.bundle;
-            setPackageUpload(rawParse);
+            setPkgUpload(rawParse);
           } else if (rawParse?.bundle) {
             jsonFile = rawParse?.bundle;
           } else if (rawParse?.schema?.[0]) {
@@ -228,7 +228,7 @@ export const useHandleJsonDrop = (
             throw new Error("No language found in the JSON file");
           }
 
-          // Data processing handled by initializeFromOCAPackage (called during upload)
+          // Data processing handled by initializeFromPkgUpload (called during upload)
           // which uses OCAParser to extract all schema data into MultiSchemaContext
           
           setZipToReadme(allJSONFiles);
@@ -368,7 +368,7 @@ export const useHandleJsonDrop = (
         allZipFiles.push(convertedLoadRoot);
 
         setJsonParsedFile(bundleForValidator);
-        // Data processing handled by initializeFromOCAPackage (called during upload)
+        // Data processing handled by initializeFromPkgUpload (called during upload)
         // which uses OCAParser to extract all schema data into MultiSchemaContext
         
         setZipToReadme(allZipFiles);
@@ -409,7 +409,7 @@ export const useHandleJsonDrop = (
       try {
         setJsonLoading(true);
         // Note: Do NOT call clearAllSchemas() here - it causes race conditions
-        // initializeFromOCAPackage() will properly add the schemas to state
+        // initializeFromPkgUpload() will properly add the schemas to state
         
         const reader = new FileReader();
 
@@ -426,21 +426,18 @@ export const useHandleJsonDrop = (
             const bundle = mapLinkMLToOCABundle(linkmlSchema);
 
             // Create OCA package
-            const ocaPackage = transformToPackage(bundle);
+            const pkg = transformToPackage(bundle);
 
             // Store OCA package in context
-            setPackageUpload(ocaPackage);
-
-            // Initialize MultiSchemaContext with complete package data
-            const schemaIds = initializeFromOCAPackage(ocaPackage);
+            setPkgUpload(pkg);
 
             // Set editing schema to root schema
-            const pkgBundle = getPackageBundle(ocaPackage);
-            const rootSchemaId = getPackageBundleId(ocaPackage) || pkgBundle?.capture_base?.d || 'generated_schema';
-            switchToSchema(rootSchemaId, ocaPackage);
+            const pkgBundle = getPackageBundle(pkg);
+            const rootSchemaId = getPackageBundleId(pkg) || pkgBundle?.capture_base?.d || 'generated_schema';
+            switchToSchema(rootSchemaId, pkg);
 
             // Extract the bundle for processing - exactly the same structure expected by JSON processing
-            const jsonFile = ocaPackage.oca_bundle.bundle;
+            const jsonFile = pkg.oca_bundle.bundle;
 
             // Process the bundle the same way as JSON files
             setJsonParsedFile(jsonFile);
@@ -575,7 +572,7 @@ export const useHandleJsonDrop = (
               languageList.push("en");
             }
 
-            // Data processing handled by initializeFromOCAPackage -> OCAParser
+            // Data processing handled by initializeFromPkgUpload -> OCAParser
             // which already extracts all metadata, labels, descriptions, etc.
             
             setZipToReadme(allJSONFiles);
@@ -619,7 +616,7 @@ export const useHandleJsonDrop = (
     [
       clearAllSchemas,
       datasetRawFile.length,
-      initializeFromOCAPackage,
+      initializeFromPkgUpload,
       jsonIsParsed,
       setCurrentDataValidatorPage,
       setDatasetDropDisabled,
@@ -628,7 +625,7 @@ export const useHandleJsonDrop = (
       setJsonIsParsed,
       setJsonLoading,
       setJsonParsedFile,
-      setPackageUpload,
+      setPkgUpload,
       setShowWarningCard,
       setTargetResult,
       setZipToReadme,

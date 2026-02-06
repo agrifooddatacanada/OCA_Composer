@@ -92,7 +92,7 @@ const flaggedHeader = (
   characterEncodingRowData,
   cardinalityData,
   lang,
-  OCAPackage = null
+  pkgUpload = null
 ) => {
   const labelDescription = lanAttributeRowData[lang];
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
@@ -121,7 +121,7 @@ const flaggedHeader = (
 
   // For now, use ADC community's extension overlays for the top-level/main schema bundle
   const rangeOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+    pkgUpload?.extensions?.[ADC]?.[pkgUpload?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[RANGE];
   const rangeData = rangeOverlay?.attributes?.[props?.displayName];
 
@@ -315,7 +315,7 @@ const OCADataValidatorCheck = ({
     setSchemaDataConformantHeader,
     targetResult,
     notToVerifyAttributes,
-    OCAPackage
+    pkgUpload
   } = useContext(Context);
 
   // Get schema data from MultiSchemaContext
@@ -417,7 +417,7 @@ const OCADataValidatorCheck = ({
           characterEncodingRowData,
           cardinalityData,
           langRef.current,
-          OCAPackage
+          pkgUpload
         ),
       cellRendererParams: (params) => ({
         dataHeaders: savedEntryCodes,
@@ -594,7 +594,7 @@ const OCADataValidatorCheck = ({
     setFirstValidate(true);
 
     const bundle = new OCABundle();
-    await bundle.loadedBundle(jsonParsedFile, OCAPackage);
+    await bundle.loadedBundle(jsonParsedFile, pkgUpload);
 
     const newData = getCurrentData(gridRef.current.api, true);
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext, useRef, useCallback } from "react";
 import "./App.css";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { getPackageBundle, getPackageBundleId } from "./utils/packageUtils";
 import StartSchema from "./StartSchema/StartSchema";
 import SchemaMetadata from "./SchemaMetadata/SchemaMetadata";
@@ -41,19 +41,19 @@ const Home = ({
     currentSchemaId,
     schemaStates, 
     switchToSchema,
-    packageUpload
+    pkgUpload
   } = useMultiSchema();
   const { isZip, setIsZipEdited } = useContext(Context);
 
   // Ensure schema is initialized when entering via EDIT SCHEMA (old flow)
   useEffect(() => {
-    if (packageUpload && !currentSchemaId) {
-      const rootSchemaId = getPackageBundleId(packageUpload);
+    if (pkgUpload && !currentSchemaId) {
+      const rootSchemaId = getPackageBundleId(pkgUpload);
       if (rootSchemaId) {
-        switchToSchema(rootSchemaId, packageUpload);
+        switchToSchema(rootSchemaId, pkgUpload);
       }
     }
-  }, [packageUpload, currentSchemaId, switchToSchema]);
+  }, [pkgUpload, currentSchemaId, switchToSchema]);
 
   const [activeStep, setActiveStep] = useState(0);
   const [steps, setSteps] = useState([
@@ -205,16 +205,16 @@ const Home = ({
 
   // Show Entry Codes step immediately if schema contains list attributes or entry overlays
   useEffect(() => {
-    if (!packageUpload) return;
+    if (!pkgUpload) return;
 
     const hasArrayAttributes = (() => {
-      const bundle = getPackageBundle(packageUpload);
+      const bundle = getPackageBundle(pkgUpload);
       const attrs = bundle?.capture_base?.attributes || {};
       return Object.values(attrs).some((v) => Array.isArray(v));
     })();
 
     const hasEntryOverlay = (() => {
-      const entry = packageUpload?.bundle?.overlays?.entry;
+      const entry = pkgUpload?.bundle?.overlays?.entry;
       if (Array.isArray(entry)) {
         return entry.some((e) => {
           const ae = e?.attribute_entries || {};
@@ -225,7 +225,7 @@ const Home = ({
     })();
 
     const hasEntryCodeOverlay = (() => {
-      const ec = packageUpload?.bundle?.overlays?.entry_code?.attribute_entry_codes;
+      const ec = pkgUpload?.bundle?.overlays?.entry_code?.attribute_entry_codes;
       if (ec && typeof ec === "object") {
         return Object.keys(ec).length > 0;
       }
@@ -235,7 +235,7 @@ const Home = ({
     if (hasArrayAttributes || hasEntryOverlay || hasEntryCodeOverlay) {
       insertStep(2, { label: "Entry Codes", page: "Codes" });
     }
-  }, [packageUpload]);
+  }, [pkgUpload]);
 
   // Add new page to this list
 

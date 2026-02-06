@@ -25,8 +25,8 @@ const useHandleAllDrop = (pageForward) => {
     excelSheetChoice,
     setExcelSheetChoice
   } = useContext(Context);
-  const { clearAllSchemas, switchToSchema, initializeFromOCAPackage, setPackageUpload } = useMultiSchema();
-  // useZipParser removed - data processing now handled by initializeFromOCAPackage -> OCAParser
+  const { clearAllSchemas, switchToSchema, initializeFromPkgUpload, setPkgUpload } = useMultiSchema();
+  // useZipParser removed - data processing now handled by initializeFromPkgUpload -> OCAParser
 
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
@@ -394,11 +394,11 @@ const useHandleAllDrop = (pageForward) => {
         };
 
         // Set OCA package in context
-        setPackageUpload(ocaPackage);
+        setPkgUpload(ocaPackage);
         setZipToReadme(allZipFiles);
 
         // NEW: Initialize MultiSchemaContext with complete package data
-        initializeFromOCAPackage(ocaPackage);
+        initializeFromPkgUpload(ocaPackage);
 
         // Set editing schema to root schema
         switchToSchema(root, ocaPackage);
@@ -499,7 +499,7 @@ const useHandleAllDrop = (pageForward) => {
         throw new Error("No language found in the JSON file");
       }
 
-      // Data processing now handled by initializeFromOCAPackage -> OCAParser
+      // Data processing now handled by initializeFromPkgUpload -> OCAParser
       // which already extracts all metadata, labels, descriptions, entry codes, etc.
       // into MultiSchemaContext per-schema storage
       
@@ -526,10 +526,10 @@ const useHandleAllDrop = (pageForward) => {
           // setUnitFramedThatAlreadyExistInOcaPackage(
           //   getUnitsFramedThatAlreadyExistInOcaPackage(jsonFile)
           // );
-          setPackageUpload(jsonFile);
+          setPkgUpload(jsonFile);
 
           // NEW: Initialize MultiSchemaContext with complete package data
-          initializeFromOCAPackage(jsonFile);
+          initializeFromPkgUpload(jsonFile);
 
           // Set editing schema to root schema
           switchToSchema(jsonFile.oca_bundle.bundle.d, jsonFile);
@@ -539,20 +539,20 @@ const useHandleAllDrop = (pageForward) => {
           // If dependencies exist, keep the full OCA package in context for visualization
           if (jsonFile?.dependencies && Array.isArray(jsonFile.dependencies)) {
             const sanitizedOcaPackage = { ...jsonFile, bundle: modifiedJsonFile };
-            setPackageUpload(sanitizedOcaPackage);
+            setPkgUpload(sanitizedOcaPackage);
 
             // NEW: Initialize MultiSchemaContext with complete package data
-            initializeFromOCAPackage(sanitizedOcaPackage);
+            initializeFromPkgUpload(sanitizedOcaPackage);
 
             // Set editing schema to root schema
             switchToSchema(jsonFile.bundle.d, sanitizedOcaPackage);
             handleBundleJSONDrop(modifiedJsonFile, sanitizedOcaPackage);
           } else {
             // Single schema package
-            setPackageUpload(jsonFile);
+            setPkgUpload(jsonFile);
 
             // NEW: Initialize MultiSchemaContext
-            initializeFromOCAPackage(jsonFile);
+            initializeFromPkgUpload(jsonFile);
 
             switchToSchema(jsonFile.bundle.d, jsonFile);
             handleBundleJSONDrop(modifiedJsonFile);

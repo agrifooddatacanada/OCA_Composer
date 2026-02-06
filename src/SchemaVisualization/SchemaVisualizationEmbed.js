@@ -2,7 +2,7 @@
  * Embedded Schema Visualization Component
  * Simplified version for use within the ViewSchema page
  */
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   ReactFlow,
   applyNodeChanges,
@@ -34,7 +34,7 @@ const SchemaVisualizationEmbed = ({
   schemaDescription,
   languages,
   schemaLanguageOverride,
-  OCAPackage,
+  pkg,
   viewMode = "tree",
   height = "500px",
   showDebug = false,
@@ -76,10 +76,10 @@ const SchemaVisualizationEmbed = ({
     return () => clearTimeout(id);
   }, [viewMode]);
 
-  // Use OCAPackage prop if provided, else build from context
+  // Use pkg prop if provided, else build from context
   const getOCAPackage = useCallback(() => {
-    if (OCAPackage) {
-      return OCAPackage;
+    if (pkg) {
+      return pkg;
     }
     // fallback to minimal builder for editor context
     if (!attributeRowData || attributeRowData.length === 0) {
@@ -144,12 +144,12 @@ const SchemaVisualizationEmbed = ({
       },
       dependencies
     };
-  }, [OCAPackage, attributeRowData, schemaDescription, languages]);
+  }, [pkg, attributeRowData, schemaDescription, languages]);
 
   // Generate layout based on current view mode and language
   const generateLayout = useCallback(() => {
-    const ocaPackage = getOCAPackage();
-    if (!ocaPackage) {
+    const pkg = getOCAPackage();
+    if (!pkg) {
       return;
     }
 
@@ -170,7 +170,7 @@ const SchemaVisualizationEmbed = ({
       }
     }
     
-    const processedSchemaData = extractSchemaDataFromPackage(ocaPackage, languageCode);
+    const processedSchemaData = extractSchemaDataFromPackage(pkg, languageCode);
     if (!processedSchemaData) {
       return;
     }
@@ -215,10 +215,10 @@ const SchemaVisualizationEmbed = ({
       // Add click handlers and normalized highlighting to nodes
       if (result?.nodes) {
         // Handle both package structures: direct and wrapped in oca_bundle
-        const rootId = getPackageBundleId(ocaPackage);
+        const rootId = getPackageBundleId(pkg);
         // Build a name -> digest map from dependency meta overlays
         const nameToId = new Map();
-        const dependencies = getPackageDependencies(ocaPackage);
+        const dependencies = getPackageDependencies(pkg);
         dependencies.forEach((dep) => {
           const meta = dep?.overlays?.meta;
           if (Array.isArray(meta)) {
@@ -285,12 +285,12 @@ const SchemaVisualizationEmbed = ({
 
   // Generate layout on component mount and when dependencies change
   useEffect(() => {
-    const ocaPackage = getOCAPackage();
+    const pkg = getOCAPackage();
 
     // Handle both package formats: { bundle, dependencies } or { oca_bundle: { bundle, dependencies } }
-    const bundle = getPackageBundle(ocaPackage);
+    const bundle = getPackageBundle(pkg);
 
-    if (ocaPackage && bundle) {
+    if (pkg && bundle) {
       generateLayout();
 
       // Set initial currentSchemaId to the root schema if not already set
@@ -307,7 +307,7 @@ const SchemaVisualizationEmbed = ({
       setEdges([]);
       setHasData(false);
     }
-  }, [getOCAPackage, generateLayout, OCAPackage, setCurrentSchemaId]);
+  }, [getOCAPackage, generateLayout, pkg, setCurrentSchemaId]);
 
   return (
     <Box
@@ -391,16 +391,16 @@ const SchemaVisualizationEmbed = ({
           }}
         >
           <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            OCAPackage Debug Info (Raw)
+            pkg Debug Info (Raw)
           </Typography>
           <pre style={{ fontSize: "0.8em", maxHeight: 300, overflow: "auto" }}>
-            {JSON.stringify(OCAPackage, null, 2)}
+            {JSON.stringify(pkg, null, 2)}
           </pre>
           <Typography variant="subtitle2" sx={{ mt: 2 }}>
             Dependencies
           </Typography>
           <pre style={{ fontSize: "0.8em", maxHeight: 300, overflow: "auto" }}>
-            {JSON.stringify(OCAPackage?.dependencies, null, 2)}
+            {JSON.stringify(pkg?.dependencies, null, 2)}
           </pre>
         </Box>
       )}

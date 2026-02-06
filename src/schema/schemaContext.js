@@ -27,7 +27,7 @@ import React, {
 import { MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { makeSchemaStore } from "./schemaStore";
 import { canonicalizeSchemaId } from "../utils/schemaId";
-import { buildPackageFromState } from "./ocaBuilder";
+import { buildPkgFromState } from "./ocaBuilder";
 import { useSchemaPersistence } from "./schemaPersistence";
 import { useCreateChildSchemaPlaceholder } from "./createChildSchemaPlaceholder";
 
@@ -40,14 +40,14 @@ const MultiSchemaContext = createContext();
  * Multi-Schema Provider
  * @param {Object} props
  * @param {React.ReactNode} props.children - Child components
- * @param {Object} [props.packageOCA] - Optional OCA package for backward compatibility (deprecated - use setPackageUpload instead)
+ * @param {Object} [props.packageOCA] - Optional OCA package for backward compatibility (deprecated - use setPkgUpload instead)
  */
 export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
   const PERSIST_VERSION = 2;
 
   // Store the original OCA package (source of truth for schema structure)
   // Initialize from prop if provided (for backward compatibility)
-  const [packageUpload, setPackageUpload] = useState(packageOCA);
+  const [pkgUpload, setPkgUpload] = useState(packageOCA);
 
   // Multi-schema state - Use ref to persist across StrictMode remounts
   const schemaStatesRef = useRef({});
@@ -100,21 +100,21 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
 
   // Switch to editing a different schema
   const switchToSchema = useCallback(
-    (schemaId, packageOCA = packageUpload) => {
-      const resolvedId = canonicalizeSchemaId(packageOCA, schemaId);
+    (schemaId, pkgUpload) => {
+      const resolvedId = canonicalizeSchemaId(pkgUpload, schemaId);
       setCurrentSchemaId(resolvedId);
     },
-    [packageUpload]
-  );  
+    [pkgUpload]
+  );
 
-  const exportSchemaChanges = useCallback(
-    (packageOCAJSON = packageUpload) =>
-      buildPackageFromState({
-        packageOCAJSON,
+  const pkgBuildFromState = useCallback(
+    (pkgUpload) =>
+      buildPkgFromState({
+        pkgUpload,
         schemaStates,
         getSchemaById,
       }),
-    [schemaStates, getSchemaById, packageUpload]
+    [schemaStates, getSchemaById, pkgUpload]
   );
 
   // Clear all schema states
@@ -154,13 +154,13 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       // State
       schemaStates,
       currentSchemaId,
-      packageUpload,
-      setPackageUpload,
+      pkgUpload,
+      setPkgUpload,
 
       // Core actions
       getCurrentSchemaId,
       switchToSchema,
-      exportSchemaChanges,
+      pkgBuildFromState,
       clearAllSchemas,
       createChildSchemaPlaceholder,
 
@@ -174,12 +174,12 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
     [
       schemaStates,
       currentSchemaId,
-      packageUpload,
+      pkgUpload,
       getCurrentSchemaId,
       store,
       oca,
       switchToSchema,
-      exportSchemaChanges,
+      pkgBuildFromState,
       clearAllSchemas,
       createChildSchemaPlaceholder,
       saveToLocalStorage,

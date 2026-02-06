@@ -9,7 +9,6 @@ import {
   FIELD_RANGE_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
-  ADC,
   TYPE_CHILD_SCHEMA,
   TYPE_ARRAY_CHILD_SCHEMA
 } from "../constants/constants";
@@ -40,7 +39,7 @@ export class OCAParser {
    * Parse OCA package data for a specific schema
    * 
    * @param {string} schemaId - The schema identifier
-   * @param {Object} ocaPackage - The OCA package data
+   * @param {Object} pkgUpload - The OCA package data
    * @returns {Object} Parsed schema state data ready for React components
    * 
    * IMPORTANT OUTPUTS:
@@ -50,16 +49,16 @@ export class OCAParser {
    * 
    * This ensures components don't need to re-parse from completeSchema.
    */
-  static parseSchemaData(schemaId, ocaPackage) {
+  static parseSchemaData(schemaId, pkgUpload) {
     // Normalize the OCA package format first
     // Handle oca_package format: { oca_bundle: { bundle, dependencies }, extensions }
-    const normalizedPackage = ocaPackage?.oca_bundle ? {
-      bundle: getPackageBundle(ocaPackage),
-      dependencies: getPackageDependencies(ocaPackage),
-      extensions: ocaPackage.extensions || ocaPackage.oca_bundle.extensions || {}
-    } : ocaPackage;
+    const pkgNormalized = pkgUpload?.oca_bundle ? {
+      bundle: getPackageBundle(pkgUpload),
+      dependencies: getPackageDependencies(pkgUpload),
+      extensions: pkgUpload.extensions || pkgUpload.oca_bundle.extensions || {}
+    } : pkgUpload;
     
-    const schemaData = getSchemaDataById(normalizedPackage, schemaId);
+    const schemaData = getSchemaDataById(pkgNormalized, schemaId);
     
     if (!schemaData) {
       return null;
@@ -69,11 +68,11 @@ export class OCAParser {
     // Extensions are keyed by capture_base.d, not bundle.d
     // For root schema, use bundle.capture_base.d
     // For child schemas in dependencies, find the matching dependency's capture_base.d
-    let captureBaseId = normalizedPackage?.bundle?.capture_base?.d;
+    let captureBaseId = pkgNormalized?.bundle?.capture_base?.d;
     
     // Check if this is a child schema by looking in dependencies
-    if (normalizedPackage?.dependencies) {
-      const dependency = normalizedPackage.dependencies.find(
+    if (pkgNormalized?.dependencies) {
+      const dependency = pkgNormalized.dependencies.find(
         dep => dep.d === schemaId || dep.capture_base?.d === schemaId
       );
       if (dependency) {
@@ -87,11 +86,11 @@ export class OCAParser {
     // Extract flagged_attributes from capture_base (for root schema)
     // For child schemas, get from dependencies
     let flaggedAttributes = [];
-    const bundleId = getPackageBundleId(normalizedPackage);
-    if (schemaId === bundleId || schemaId === normalizedPackage.bundle?.capture_base?.d || schemaId === "root") {
-      flaggedAttributes = normalizedPackage.bundle?.capture_base?.flagged_attributes || [];
-    } else if (normalizedPackage?.dependencies) {
-      const dependency = normalizedPackage.dependencies.find(
+    const bundleId = getPackageBundleId(pkgNormalized);
+    if (schemaId === bundleId || schemaId === pkgNormalized.bundle?.capture_base?.d || schemaId === "root") {
+      flaggedAttributes = pkgNormalized.bundle?.capture_base?.flagged_attributes || [];
+    } else if (pkgNormalized?.dependencies) {
+      const dependency = pkgNormalized.dependencies.find(
         dep => dep.d === schemaId || dep.capture_base?.d === schemaId
       );
       if (dependency) {
@@ -136,7 +135,7 @@ export class OCAParser {
     const overlayData = this._parseOverlayData(
       schemaData.overlays, 
       attributesWithLists,
-      normalizedPackage,
+      pkgNormalized,
       captureBaseId
     );
 
@@ -160,10 +159,10 @@ export class OCAParser {
 
     // Initialize overlay selections based on which overlays are present
     // Check if ADC extensions exist
-    const hasUnitFramingExtension = !!normalizedPackage?.extensions?.adc?.[captureBaseId]?.overlays?.unit_framing;
-    const hasRangeExtension = !!normalizedPackage?.extensions?.adc?.[captureBaseId]?.overlays?.range;
-    const formOverlayData = normalizedPackage?.extensions?.adc?.[captureBaseId]?.overlays?.form_overlay || 
-                           normalizedPackage?.extensions?.adc?.[captureBaseId]?.overlays?.form;
+    const hasUnitFramingExtension = !!pkgNormalized?.extensions?.adc?.[captureBaseId]?.overlays?.unit_framing;
+    const hasRangeExtension = !!pkgNormalized?.extensions?.adc?.[captureBaseId]?.overlays?.range;
+    const formOverlayData = pkgNormalized?.extensions?.adc?.[captureBaseId]?.overlays?.form_overlay || 
+                           pkgNormalized?.extensions?.adc?.[captureBaseId]?.overlays?.form;
     const hasFormExtension = !!formOverlayData && (Array.isArray(formOverlayData) ? formOverlayData.length > 0 : !!formOverlayData.form_overlays);
     const overlaySelections = this._buildOverlaySelections(
       schemaData.overlays, 
@@ -381,15 +380,15 @@ export class OCAParser {
    * Parse various overlay types into display-friendly arrays
    * @private
    */
-  static _parseOverlayData(overlays, attributes = [], ocaPackage = null, schemaId = null) {
+  static _parseOverlayData(overlays, attributes = [], pkgUpload = null, schemaId = null) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
     const unitOverlay = overlays?.unit;
     
     // Get ADC extension overlays (ADC spec format)
-    const unitFramingExtension = ocaPackage?.extensions?.adc?.[schemaId]?.overlays?.unit_framing;
-    const rangeOverlay = ocaPackage?.extensions?.adc?.[schemaId]?.overlays?.range;
+    const unitFramingExtension = pkgUpload?.extensions?.adc?.[schemaId]?.overlays?.unit_framing;
+    const rangeOverlay = pkgUpload?.extensions?.adc?.[schemaId]?.overlays?.range;
 
     // Character encoding data for components
     // Store as object { attributeName: encoding } for easy lookup
@@ -458,7 +457,7 @@ export class OCAParser {
     const attributeFramingData = [];
 
     // Parse form overlay placeholders (ADC extension)
-    const formPlaceholders = this._parseFormOverlay(ocaPackage, schemaId);
+    const formPlaceholders = this._parseFormOverlay(pkgUpload, schemaId);
 
     return {
       characterEncodingData,
@@ -493,15 +492,15 @@ export class OCAParser {
    * 
    * Returns: { UILanguageName: { attributeName: "placeholder text", ... }, ... }
    */
-  static _parseFormOverlay(ocaPackage, schemaId) {
+  static _parseFormOverlay(pkgUpload, schemaId) {
     const formPlaceholdersByLanguage = {};
     
-    if (!ocaPackage?.extensions?.adc?.[schemaId]?.overlays) {
+    if (!pkgUpload?.extensions?.adc?.[schemaId]?.overlays) {
       return formPlaceholdersByLanguage;
     }
 
-    const formOverlayData = ocaPackage.extensions.adc[schemaId].overlays.form_overlay || 
-                           ocaPackage.extensions.adc[schemaId].overlays.form;
+    const formOverlayData = pkgUpload.extensions.adc[schemaId].overlays.form_overlay || 
+                           pkgUpload.extensions.adc[schemaId].overlays.form;
     
     const formOverlayArray = Array.isArray(formOverlayData)
       ? formOverlayData

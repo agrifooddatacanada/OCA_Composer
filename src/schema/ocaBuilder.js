@@ -24,7 +24,7 @@ import { createMinimalOCASchema, createMetaOverlay } from "./createMinimalOCASch
 /**
  * Rebuilds entire OCA package by applying user edits from editor state.
  * 
- * @param {Object|null} packageOCAJSON - Original OCA package JSON structure (null for manual creation)
+ * @param {Object|null} pkgUpload - Original OCA package JSON structure (null for manual creation)
  * @param {Object} schemaStates - Map of schemaId -> editor state (UI changes)
  * @param {Function} getSchemaById - Function to get editor state by schema ID
  * @returns {Object} Modified OCA package with all edits applied
@@ -35,11 +35,11 @@ import { createMinimalOCASchema, createMetaOverlay } from "./createMinimalOCASch
  * 3. Ensure child schemas exist as dependencies
  * 4. Create placeholder dependencies for referenced but undefined schemas
  */
-export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaById }) {
+export function buildPkgFromState({ pkgUpload, schemaStates, getSchemaById }) {
   // If no package provided (manual creation), create minimal structure
-  let packageOCA;
-  if (!packageOCAJSON) {
-    packageOCA = createMinimalOCASchema(MANUAL_CREATION_SCHEMA_ID, {
+  let pkg;
+  if (!pkgUpload) {
+    pkg = createMinimalOCASchema(MANUAL_CREATION_SCHEMA_ID, {
       captureBaseType: "spec/capture_base/1.0",
       classification: "",
       overlays: {
@@ -50,7 +50,7 @@ export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaB
       asBundle: true
     });
   } else {
-    packageOCA = JSON.parse(JSON.stringify(packageOCAJSON));
+    pkg = JSON.parse(JSON.stringify(pkgUpload));
   }
 
   // Phase 1: Apply edits to each schema
@@ -58,8 +58,8 @@ export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaB
     const schemaState = getSchemaById(schemaId);
     if (!schemaState?.initialized) return;
 
-    applySchemaStateToPackage({
-      packageOCA,
+    applySchemaStateToPkg({
+      pkg,
       schemaId,
       schemaState,
       getSchemaById,
@@ -67,23 +67,23 @@ export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaB
   });
 
   // Phase 2 & 3: Ensure (if not existing, add) missing dependencies
-  ensureChildSchemaDependencies(packageOCA, schemaStates, getSchemaById);
-  ensurePlaceholderDependencies(packageOCA);
+  ensureChildSchemaDependencies(pkg, schemaStates, getSchemaById);
+  ensurePlaceholderDependencies(pkg);
 
-  return packageOCA;
+  return pkg;
 }
 
 /**
  * Updates a schema in the OCA package during building
  * 
- * @param {Object} packageOCA - Cloned OCA package being built
+ * @param {Object} pkg - Cloned OCA package being built
  * @param {string} schemaId - Schema ID to find/create
  * @param {Function} getSchemaById - Function to get editor state (only used for label lookup)
  * 
  */
-function applySchemaStateToPackage({ packageOCA, schemaId, schemaState, getSchemaById }) {
-  const schemaInPackage = findOrCreatePackageSchema({
-    packageOCA,
+function applySchemaStateToPkg({ pkg, schemaId, schemaState, getSchemaById }) {
+  const schemaInPackage = findOrCreatePkgSchema({
+    pkg,
     schemaId,
     getSchemaById,
   });
@@ -97,7 +97,7 @@ function applySchemaStateToPackage({ packageOCA, schemaId, schemaState, getSchem
 /**
  * Finds a schema in the OCA package JSON, or creates a new placeholder if missing.
  * 
- * @param {Object} packageOCA - Cloned OCA package being built
+ * @param {Object} pkg - Cloned OCA package being built
  * @param {string} schemaId - Schema ID to find/create
  * @param {Function} getSchemaById - Function to get editor state (only used for label lookup)
  * @returns {Object|null} OCA schema structure (bundle or dependency), or null if not found
@@ -105,13 +105,13 @@ function applySchemaStateToPackage({ packageOCA, schemaId, schemaState, getSchem
  * Note: Only creates placeholders for schemas referenced as refn:placeholder_* in attributes.
  * Returns the OCA JSON structure, not the editor state.
  */
-export function findOrCreatePackageSchema({
-  packageOCA,
+export function findOrCreatePkgSchema({
+  pkg,
   schemaId,
   getSchemaById,
 }) {
-  const dependencies = getPackageDependencies(packageOCA);
-  const bundle = getPackageBundle(packageOCA);
+  const dependencies = getPackageDependencies(pkg);
+  const bundle = getPackageBundle(pkg);
   // 1) Find existing schema in package JSON
   let schema = null;
   if (schemaId === bundle?.d) {
@@ -147,13 +147,12 @@ export function findOrCreatePackageSchema({
       ],
     },
   });
-
-  if (packageOCA.oca_bundle) {
-    if (!packageOCA.oca_bundle.dependencies) packageOCA.oca_bundle.dependencies = [];
-    packageOCA.oca_bundle.dependencies.push(newDependency);
+  if (bundle) {
+    if (!bundle.dependencies) bundle.dependencies = [];
+    bundle.dependencies.push(newDependency);
   } else {
-    if (!packageOCA.dependencies) packageOCA.dependencies = [];
-    packageOCA.dependencies.push(newDependency);
+    if (!pkg.dependencies) pkg.dependencies = [];
+    pkg.dependencies.push(newDependency);
   }
 
   return newDependency;
@@ -199,7 +198,7 @@ export function rebuildAttributes(schema, schemaState) {
 /**
  * Ensures all child schemas referenced in editor state exist as dependencies in package.
  * 
- * @param {Object} packageOCA - OCA package being built
+ * @param {Object} pkg - OCA package being built
  * @param {Function} getSchemaById - Get editor state by schema ID
  * @param {Object} schemaStates - Map of all editor states
  * 
@@ -207,11 +206,11 @@ export function rebuildAttributes(schema, schemaState) {
  * structures in the package if they're missing.
  */
 export function ensureChildSchemaDependencies(
-  packageOCA,
+  pkg,
   getSchemaById,
   schemaStates,
 ) {
-  const dependencies = getPackageDependencies(packageOCA);
+  const dependencies = getPackageDependencies(pkg);
   
   // Check each edited schema for child schema attributes
   Object.keys(schemaStates).forEach((schemaId) => {
@@ -230,7 +229,7 @@ export function ensureChildSchemaDependencies(
             // Check if child already exists in package JSON
             const existsInPackage =
               dependencies?.some((dep) => dep.d === childSchemaName) ||
-              packageOCA.bundle?.d === childSchemaName;
+              pkg.bundle?.d === childSchemaName;
 
             if (!existsInPackage) {
               // Create new OCA dependency structure for this child
@@ -258,7 +257,7 @@ export function ensureChildSchemaDependencies(
               };
 
               applyAllOverlays(newDependency, childschemaState);
-              pushDependency(packageOCA, newDependency);
+              pushDependency(pkg, newDependency);
             }
           }
         }
@@ -271,9 +270,9 @@ export function ensureChildSchemaDependencies(
  * Scan for refn:placeholder_* references and create missing child schema dependencies.
  * Keeps language inheritance from root meta overlays.
  */
-export function ensurePlaceholderDependencies(packageOCA) {
-  const dependencies = getPackageDependencies(packageOCA);
-  const bundle = getPackageBundle(packageOCA);
+export function ensurePlaceholderDependencies(pkg) {
+  const dependencies = getPackageDependencies(pkg);
+  const bundle = getPackageBundle(pkg);
   const existingDepIds = new Set((dependencies || []).map((dep) => dep.d));
   const placeholdersToCreate = new Set();
 
@@ -327,17 +326,17 @@ export function ensurePlaceholderDependencies(packageOCA) {
       },
     });
 
-    pushDependency(packageOCA, newDependency);
+    pushDependency(pkg, newDependency);
   });
 }
 
-export function pushDependency(packageOCA, dependency) {
-  const bundle = getPackageBundle(packageOCA);
+export function pushDependency(pkg, dependency) {
+  const bundle = getPackageBundle(pkg);
   if (bundle) {
     if (!bundle.dependencies) bundle.dependencies = [];
     bundle.dependencies.push(dependency);
   } else {
-    if (!packageOCA.dependencies) packageOCA.dependencies = [];
-    packageOCA.dependencies.push(dependency);
+    if (!pkg.dependencies) pkg.dependencies = [];
+    pkg.dependencies.push(dependency);
   }
 }
