@@ -350,7 +350,7 @@
   "There are one or more blank entries in the Type column.": "There are one or more blank entries in the Type column.",
   "Please provide valid data types for all attributes.": "Please provide valid data types for all attributes.",
   "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.": "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.",
-  "FileSizeError": "File is too large. Please upload a file smaller than {{maxFileSize}} MB.",
+  "FileSizeError": "File is too large. Please upload a file smaller than {{maxFileSize}} MB. Consider deleting the data, leaving only the headers in row 1, and re-uploading.",
   "OCA Merge": "OCA Merge",
   "Collaborate on a Schema": "Collaborate on a Schema",
   "You can support multiple contributors to your schema and merge the final results together in:": "You can support multiple contributors to your schema and merge the final results together in:",
