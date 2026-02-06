@@ -126,6 +126,7 @@ export default function ViewGrid({
   const [rowData, setRowData] = useState([]);
 
   // Extract unit framing metadata from built package (with edits)
+  // But the metadata CAN'T be edited so is this pointless?
   const unitFramingOverlay =
     packageWithEdits?.extensions?.[ADC]?.[packageWithEdits?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[UNIT_FRAMING];
