@@ -48,6 +48,7 @@ const useMultiSchemaExport = () => {
   const { 
     currentSchemaId,
     getSchema,
+    getSchemaById,
     pkgBuildFromState
   } = useMultiSchema();
 
@@ -60,13 +61,13 @@ const useMultiSchemaExport = () => {
   // Export individual schema
   const exportIndividualSchema = async (schemaId) => {
     try {
-      const schemaState = getSchema(schemaId);
+      const schemaState = getSchemaById(schemaId);
       if (!schemaState) {
         throw new Error(`Schema ${schemaId} not found`);
       }
 
       // Create a single-schema OCA package
-      const pkgSingleSchema = {
+      const singleSchemaPackage = {
         bundle: {
           d: schemaId,
           capture_base: {
@@ -79,12 +80,15 @@ const useMultiSchemaExport = () => {
         }
       };
 
-      const pkgSeriallizer = new OcaPackage(pkgSingleSchema);
-      const pkgBytes = await pkgSeriallizer.toBuffer();
+      // Generate the OCA package
+      const ocaPackage = new OcaPackage(singleSchemaPackage);
+      const packageBuffer = await ocaPackage.toBuffer();
+
+      // Create filename
       const fileName = getDescriptiveFileName(schemaState.metadata?.name || schemaId);
 
       // Download the file
-      const blob = new Blob([pkgBytes], { type: "application/octet-stream" });
+      const blob = new Blob([packageBuffer], { type: "application/octet-stream" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -108,14 +112,19 @@ const useMultiSchemaExport = () => {
         throw new Error("No OCA package available for export");
       }
 
-      const pkgFromState = pkgBuildFromState(pkgUpload);
-      const pkgSeriallizer = new OcaPackage(pkgFromState);
-      const pkgBytes = await pkgSeriallizer.toBuffer();
-      const rootSchemaName = getPackageBundleId(pkgFromState) || "schema";
+      // Always export with all changes integrated
+      const exportPackage = pkgBuildFromState(pkgUpload);
+
+      // Generate the OCA package
+      const ocaPackage = new OcaPackage(exportPackage);
+      const packageBuffer = await ocaPackage.toBuffer();
+
+      // Create filename
+      const rootSchemaName = getPackageBundleId(exportPackage) || "schema";
       const fileName = getDescriptiveFileName(rootSchemaName);
 
       // Download OCA_package.json
-      const blob = new Blob([pkgBytes], { type: "application/octet-stream" });
+      const blob = new Blob([packageBuffer], { type: "application/octet-stream" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -126,14 +135,14 @@ const useMultiSchemaExport = () => {
       URL.revokeObjectURL(url);
 
       // Generate README_OCA_schema.txt
-      if (pkgFromState.bundle?.overlays?.meta) {
-        jsonToTextFile(pkgFromState.bundle, pkgFromState, schemaDescription);
+      if (exportPackage.bundle?.overlays?.meta) {
+        jsonToTextFile(exportPackage.bundle, exportPackage, schemaDescription);
       }
 
       // Download OCA_bundle.json only on testing site
       const currentEnv = process.env.REACT_APP_ENV;
-      if (currentEnv === "DEV" && pkgFromState.bundle) {
-        const bundleBlob = new Blob([JSON.stringify(pkgFromState.bundle, null, 2)], {
+      if (currentEnv === "DEV" && exportPackage.bundle) {
+        const bundleBlob = new Blob([JSON.stringify(exportPackage.bundle, null, 2)], {
           type: "application/json"
         });
         const bundleUrl = URL.createObjectURL(bundleBlob);

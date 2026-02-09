@@ -405,6 +405,8 @@ export default function ViewSchema({
     try {
       setLoading(true);
       
+      console.log("Download button clicked!");
+      
       // Unified export hook handles all scenarios:
       // - Imported packages (flat or nested) via pkgBuildFromState()
       // - Manual flat schemas via text DSL generation

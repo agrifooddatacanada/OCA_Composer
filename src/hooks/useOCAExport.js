@@ -1,11 +1,13 @@
 import { useContext, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { langCodeOCAFromName, langCodeUIFromName } from "../utils/languageUtils";
-import { findSchemaById, getPackageBundleId } from "../utils/packageUtils";
+import { getPackageBundle, getPackageDependencies, findSchemaById, getPackageBundleId } from "../utils/packageUtils";
 import {
   ADC,
+  CUSTOM_FORMAT_RULE,
   divisionCodes,
   groupCodes,
   ORDERING,
@@ -73,7 +75,8 @@ const useOCAExport = () => {
     setCurrentPage
   } = useContext(Context);
 
-  const { getCurrentSchemaId, getSchema, getAttributesList, pkgBuildFromState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, setPkgUpload } = useMultiSchema();
+  const { getCurrentSchemaId, getSchema, getSchemaById, getAttributesList, pkgBuildFromState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, setPkgUpload } = useMultiSchema();
+  
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchema();
   const metadata = schemaState?.metadata || {};
@@ -149,7 +152,7 @@ const useOCAExport = () => {
   // Build OCA package from schema state using text DSL generation
   // Works for both single schemas and multi-schema packages
   const buildPackageFromTextDSL = async (targetSchemaId, childSaidMap = {}) => {
-    const targetState = getSchema(targetSchemaId);
+    const targetState = getSchemaById(targetSchemaId);
     const targetMetadata = targetState?.metadata || {};
     
     // Extract data from target schema state
@@ -584,16 +587,67 @@ const useOCAExport = () => {
   const exportData = async () => {
     try {
       setError("");
+      
+      console.log("=== EXPORT STARTING ===");
+      console.log("pkgUpload exists:", !!pkgUpload);
+      console.log("Current Schema ID:", activeSchemaId);
 
       // For imported packages: Build ALL schemas from UI state to get fresh SAID digests
       // This matches agreeable-mushroom behavior - decompose bundle to UI state,
       // then rebuild from scratch which naturally generates new SAIDs
       if (pkgUpload) {
+        console.log("=== EXPORTING IMPORTED PACKAGE ===");
         const originalRootId = getPackageBundleId(pkgUpload);
-        const schemaIds = Object.keys(schemaStates);
+        
+        console.log("=== EXPORT DEBUG ===");
+        console.log("Original Root ID:", originalRootId);
+        console.log("pkgUpload structure:", pkgUpload?.bundle?.d || pkgUpload?.oca_bundle?.bundle?.d);
+        console.log("Available schema IDs in schemaStates:", Object.keys(schemaStates));
+        
+        // Log each schema's details
+        Object.keys(schemaStates).forEach(id => {
+          const state = schemaStates[id];
+          console.log(`Schema ${id}:`, {
+            initialized: state?.initialized,
+            name: state?.metadata?.name,
+            attrCount: state?.attributes?.length
+          });
+        });
+        console.log("Current schema ID:", activeSchemaId);
+        
+        // CRITICAL: Ensure all schemas from OCA package are in schemaStates
+        // If user only edited a child schema, the root might not be initialized
+        const bundle = getPackageBundle(pkgUpload);
+        const dependencies = getPackageDependencies(pkgUpload);
+        
+        // Check if root is initialized; if not, something is wrong
+        const rootState = getSchemaById(originalRootId);
+        console.log("Root state exists:", !!rootState);
+        console.log("Root state initialized:", rootState?.initialized);
+        console.log("Root state attributes count:", rootState?.attributes?.length);
+        
+        if (!rootState || !rootState.initialized) {
+          console.error("Root schema not initialized:", originalRootId);
+          console.error("Available schemas:", Object.keys(schemaStates));
+          throw new Error(`Root schema ${originalRootId} is not initialized. Please try reloading the schema.`);
+        }
+        
+        const schemaIds = Object.keys(schemaStates).filter(id => {
+          const state = getSchemaById(id);
+          return state?.initialized;
+        });
+        
+        // Verify originalRootId is in the list
+        if (!schemaIds.includes(originalRootId)) {
+          console.error("Root ID not in schemaStates:", originalRootId);
+          console.error("Available:", schemaIds);
+          throw new Error(`Root schema ID mismatch. Expected: ${originalRootId}`);
+        }
         
         // Separate root from dependencies
         const dependencyIds = schemaIds.filter(id => id !== originalRootId);
+        console.log("Building dependencies:", dependencyIds);
+        console.log("Building root:", originalRootId);
         
         // Step 1: Build all dependency schemas FIRST to get their SAIDs
         const childSaidMap = {};
@@ -641,33 +695,33 @@ const useOCAExport = () => {
           dependencies: childBundles
         };
 
-        // Use pkgUpload library to generate package with correct digests
+        // Use OcaPackage library to generate package with correct digests
         const ocaPackageService = new OcaPackage(mergedExtension, bundleWithDeps);
         const exportPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
         
         // Use root bundle for filename extraction
-        const bundle = rootBundle.bundle;
+        const rootBundleData = rootBundle.bundle;
         
         // Extract schema name from meta overlays for filename
-        const metaOverlays = bundle?.overlays?.meta;
+        const metaOverlays = rootBundleData?.overlays?.meta;
         const engMeta = Array.isArray(metaOverlays) 
           ? metaOverlays.find(m => m.language === 'eng') || metaOverlays[0]
           : null;
-        const schemaName = engMeta?.name || getPackageBundleId(bundle) || "schema";
+        const schemaName = engMeta?.name || getPackageBundleId(rootBundleData) || "schema";
         
         // Download OCA_package.json with regenerated digests
         const packageFileName = schemaName.split(" ")[0] + "_OCA_package.json";
         downloadJsonFile(exportPackage, packageFileName);
         
         // Generate README_OCA_schema.txt (schema name extracted from bundle automatically)
-        if (bundle?.overlays?.meta) {
-          await jsonToTextFile(bundle, exportPackage);
+        if (rootBundleData?.overlays?.meta) {
+          await jsonToTextFile(rootBundleData, exportPackage);
         }
         
         // Download OCA_bundle.json only on testing site
-        if (currentEnv === "DEV" && bundle) {
+        if (currentEnv === "DEV" && rootBundleData) {
           const bundleFileName = schemaName.split(" ")[0] + "_OCA_bundle.json";
-          downloadJsonFile(bundle, bundleFileName);
+          downloadJsonFile(rootBundleData, bundleFileName);
         }
         
         return true;
@@ -722,12 +776,12 @@ const useOCAExport = () => {
       
       // Merge extensions into the final package
       const ocaPackageService = new OcaPackage(mergedExtension, { bundle: finalPackage.bundle, dependencies: finalPackage.dependencies });
-      const pkgUpload = JSON.parse(ocaPackageService.GenerateOcaPackage());
+      const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
 
       // Generate and download text readme (schema name extracted from bundle automatically)
       try {
         if (finalPackage.bundle?.capture_base) {
-          await jsonToTextFile(finalPackage.bundle, pkgUpload);
+          await jsonToTextFile(finalPackage.bundle, ocaPackage);
         }
       } catch (readmeError) {
         console.warn("Could not generate README:", readmeError);
@@ -737,7 +791,7 @@ const useOCAExport = () => {
       const schemaNameForFile = metadata?.name || metadata?.localized?.eng?.name || null;
 
       // Download files
-      downloadJsonFile(pkgUpload, getDescriptiveFileName(schemaNameForFile, "OCA_package.json"));
+      downloadJsonFile(ocaPackage, getDescriptiveFileName(schemaNameForFile, "OCA_package.json"));
 
       if (currentEnv === "DEV") {
         downloadTextFile(textDSL, getDescriptiveFileName(schemaNameForFile, "OCA_file.txt"));
@@ -760,7 +814,7 @@ const useOCAExport = () => {
     setFileData([]);
     setIsZip(false);
     setRawFile([]);
-    setPkgUpload(null);
+    setPackageUpload(null);
     setSchemaMode(SCHEMA_MODE_SINGLE);
     setOverlay(overlayItems);
     setSelectedOverlay("");
@@ -772,7 +826,7 @@ const useOCAExport = () => {
     navigate("/");
   }, [
     setFileData, setIsZip, setRawFile,
-    setPkgUpload, setSchemaMode, setOverlay, setSelectedOverlay,
+    setPackageUpload, setSchemaMode, setOverlay, setSelectedOverlay,
     clearAllSchemas, setCurrentPage, navigate
   ]);
 
