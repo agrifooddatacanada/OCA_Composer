@@ -384,12 +384,43 @@ export function ensureChildSchemaDependencies(
         const parentLanguages = rootMetaOverlays.map((m) => m.language).filter(Boolean);
         const languagesToUse = parentLanguages.length > 0 ? parentLanguages : ["eng"];
         
+        // Try to find a better display name by looking for the parent attribute label
+        let displayName = childSchemaName; // Default to the schema ID
+        
+        // Search all schemas (bundle + dependencies) for an attribute with refn:childSchemaName
+        const allSchemas = [bundle, ...(dependencies || [])].filter(Boolean);
+        for (const schema of allSchemas) {
+          const attrs = schema?.capture_base?.attributes || {};
+          for (const [attrKey, attrValue] of Object.entries(attrs)) {
+            if (attrValue === `refn:${childSchemaName}`) {
+              // Found the parent attribute! Try to get its label
+              const labelOverlays = schema?.overlays?.label;
+              if (Array.isArray(labelOverlays)) {
+                // Try to find label in the first available language
+                for (const labelOverlay of labelOverlays) {
+                  const attrLabel = labelOverlay?.attribute_labels?.[attrKey];
+                  if (attrLabel) {
+                    displayName = attrLabel;
+                    break;
+                  }
+                }
+              }
+              // If we found a label, use the attribute key as fallback
+              if (displayName === childSchemaName && attrKey) {
+                displayName = attrKey;
+              }
+              break;
+            }
+          }
+          if (displayName !== childSchemaName) break; // Found it, stop searching
+        }
+        
         newDependency.overlays.meta = languagesToUse.map((lang) =>
           createMetaOverlay(
             newDependency.capture_base.d,
             lang,
-            childSchemaName, // Use the schema name as the display name
-            `Schema for ${childSchemaName}`
+            displayName, // Use the found display name (attribute label or key)
+            `Schema for ${displayName}`
           )
         );
       }
