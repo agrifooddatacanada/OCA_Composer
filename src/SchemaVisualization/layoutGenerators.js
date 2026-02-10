@@ -220,9 +220,27 @@ export const generateTreeLayout = (
           }
         }
       } else if (isRefn) {
+        // For placeholder child schemas, look up the dependency to get the schema metadata name
+        const placeholderName = value.replace("refn:", "");
+        const refDep = dependencyMap[placeholderName];
+        
+        let displayName = labels[key] || key; // fallback to attribute label
+        
+        if (refDep) {
+          const refMetaOverlays = refDep.overlays?.meta;
+          const refMetaOverlay = Array.isArray(refMetaOverlays)
+            ? (refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0])
+            : null;
+          
+          // Use schema metadata name if available
+          if (refMetaOverlay?.name) {
+            displayName = refMetaOverlay.name;
+          }
+        }
+        
         nodeData.children.push({
           id: key, // Use the field name (e.g., "q9") as the node ID
-          name: labels[key] || key,
+          name: displayName,
           type: "placeholder",
           children: []
         });
@@ -358,9 +376,9 @@ export const generateDetailedLayout = (
         const referencedId = field.type.replace("refs:", "");
         const referencedInfo = getDependencyInfo(referencedId, dependencyMap, langCodeOCA);
 
-        // Use parent schema's label (field.originalName) as the display title
-        // Fall back to dependency's meta name only if no label exists
-        const displayTitle = field.originalName || referencedInfo.name;
+        // Use child schema's meta name as the display title
+        // This ensures the header matches the schema metadata name, not the attribute label
+        const displayTitle = referencedInfo.name;
 
         processNode(
           referencedId,
@@ -382,8 +400,8 @@ export const generateDetailedLayout = (
 
         // Check if this placeholder schema now has actual attributes
         let placeholderFields = [];
-        // Default title is the label (field.originalName), not the attribute key
-        let placeholderTitle = field.originalName || field.name;
+        // Default title will be from the schema metadata name
+        let placeholderTitle = field.originalName || field.name; // fallback
         let hasRealAttributes = false; // Track if placeholder has real attributes
 
         // Look for the schema in dependencies to see if it has attributes
@@ -406,24 +424,30 @@ export const generateDetailedLayout = (
             dependencyWithAttributes.capture_base?.attributes &&
             Object.keys(dependencyWithAttributes.capture_base.attributes).length > 0;
 
-          if (hasRealAttributes) {
+          if (hasRealAttributes || dependencyWithAttributes) {
+            // Get the schema metadata name
+            const metaOverlays = dependencyWithAttributes.overlays?.meta;
+            const metaOverlay = Array.isArray(metaOverlays)
+              ? (metaOverlays.find((m) => m.language === langCodeOCA) || metaOverlays[0])
+              : null;
+            
+            // Use schema metadata name if available
+            if (metaOverlay?.name) {
+              placeholderTitle = metaOverlay.name;
+            }
+            
             // This placeholder now has real attributes, use them
-            const labelOverlays = dependencyWithAttributes.overlays?.label;
-            const labelAttributes = Array.isArray(labelOverlays) 
-              ? (labelOverlays.find((l) => l.language === langCodeOCA)?.attribute_labels || {})
-              : {};
-            
-            placeholderFields = processAttributes(
-              dependencyWithAttributes.capture_base.attributes,
-              labelAttributes
-            );
-            
-
-            
-            // Prefer field label (from parent schema), then meta overlay name, then attribute key
-            // field.originalName is the human-readable label from the parent schema's label overlay
-            // metaOverlay.name is often just the attribute key (e.g., "collect_date"), not the label
-            // So we prefer the label we already have
+            if (hasRealAttributes) {
+              const labelOverlays = dependencyWithAttributes.overlays?.label;
+              const labelAttributes = Array.isArray(labelOverlays) 
+                ? (labelOverlays.find((l) => l.language === langCodeOCA)?.attribute_labels || {})
+                : {};
+              
+              placeholderFields = processAttributes(
+                dependencyWithAttributes.capture_base.attributes,
+                labelAttributes
+              );
+            }
           }
         }
 
