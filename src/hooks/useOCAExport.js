@@ -49,7 +49,7 @@ const currentEnv = process.env.REACT_APP_ENV;
  * Unified OCA Export Hook
  * 
  * Handles all OCA export scenarios:
- * 1. Imported packages (flat or nested) - uses pkgBuildFromState()
+ * 1. Imported packages (flat or nested) - uses exportSchemaChanges()
  * 2. Manually created schemas (flat) - builds from scratch using text DSL
  * 3. Manually created schemas (nested) - builds and merges child schemas
  * 
@@ -76,7 +76,6 @@ const useOCAExport = () => {
   } = useContext(Context);
 
   const { getCurrentSchemaId, getSchema, getSchemaById, getAttributesList, pkgBuildFromState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, setPkgUpload } = useMultiSchema();
-  
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchema();
   const metadata = schemaState?.metadata || {};
@@ -412,10 +411,9 @@ const useOCAExport = () => {
         let entryText = "";
         targetAttributesList.forEach((item) => {
           if (targetSavedEntryCodes[item] && targetSavedEntryCodes[item].length > 0) {
-            // CRITICAL: entryCodes uses FULL language names as keys (English, French)
-            // NOT 3-letter OCA codes (eng, fra). This is the internal UI format.
-            // We output OCA codes in the DSL (language.code), but look up using full names.
-            const languageName = language.language;  // "English" not "eng"
+            // Entry codes are stored with FULL language names (English, French, etc.)
+            // NOT 3-letter OCA codes (eng, fra)
+            const languageName = language.language;  // Use full name like "English"
             
             let entryString = "";
             for (const entry of targetSavedEntryCodes[item]) {
@@ -815,7 +813,7 @@ const useOCAExport = () => {
     setFileData([]);
     setIsZip(false);
     setRawFile([]);
-    setPackageUpload(null);
+    setPkgUpload(null);
     setSchemaMode(SCHEMA_MODE_SINGLE);
     setOverlay(overlayItems);
     setSelectedOverlay("");
@@ -827,7 +825,7 @@ const useOCAExport = () => {
     navigate("/");
   }, [
     setFileData, setIsZip, setRawFile,
-    setPackageUpload, setSchemaMode, setOverlay, setSelectedOverlay,
+    setPkgUpload, setSchemaMode, setOverlay, setSelectedOverlay,
     clearAllSchemas, setCurrentPage, navigate
   ]);
 

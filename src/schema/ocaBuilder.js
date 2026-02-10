@@ -96,7 +96,7 @@ function resolveChildSchemaDisplayName(childSchemaName, bundle, dependencies) {
 /**
  * Rebuilds entire OCA package by applying user edits from editor state.
  * 
- * @param {Object|null} packageOCAJSON - Original OCA package JSON structure (null for manual creation)
+ * @param {Object|null} pkgUpload - Original OCA package JSON structure (null for manual creation)
  * @param {Object} schemaStates - Map of schemaId -> editor state (UI changes)
  * @param {Function} getSchemaById - Function to get editor state by schema ID
  * @returns {Object} Modified OCA package with all edits applied
@@ -107,10 +107,10 @@ function resolveChildSchemaDisplayName(childSchemaName, bundle, dependencies) {
  * 3. Ensure child schemas exist as dependencies
  * 4. Create placeholder dependencies for referenced but undefined schemas
  */
-export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaById }) {
+export function buildPkgFromState({ pkgUpload, schemaStates, getSchemaById }) {
   // If no package provided (manual creation), create minimal structure
   let pkg;
-  if (!packageOCAJSON) {
+  if (!pkgUpload) {
     pkg = createMinimalOCASchema(MANUAL_CREATION_SCHEMA_ID, {
       captureBaseType: "spec/capture_base/1.0",
       classification: "",
@@ -122,7 +122,7 @@ export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaB
       asBundle: true
     });
   } else {
-    pkg = JSON.parse(JSON.stringify(packageOCAJSON));
+    pkg = JSON.parse(JSON.stringify(pkgUpload));
   }
 
   // Phase 1: Apply edits to each schema
@@ -133,7 +133,7 @@ export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaB
       return;
     }
 
-    applySchemaStateToPackage({
+    applySchemaStateToPkg({
       pkg,
       schemaId,
       schemaState,
@@ -164,8 +164,8 @@ export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaB
  * @param {Object} schemaStates - Map of all editor states
  * 
  */
-function applySchemaStateToPackage({ pkg, schemaId, schemaState, getSchemaById, schemaStates }) {
-  const schemaInPackage = findOrCreatePackageSchema({
+function applySchemaStateToPkg({ pkg, schemaId, schemaState, getSchemaById, schemaStates }) {
+  const schemaInPackage = findOrCreatePkgSchema({
     pkg,
     schemaId,
     getSchemaById,
@@ -190,7 +190,7 @@ function applySchemaStateToPackage({ pkg, schemaId, schemaState, getSchemaById, 
  * Note: Only creates placeholders for schemas referenced as refn:* in attributes.
  * Returns the OCA JSON structure, not the editor state.
  */
-export function findOrCreatePackageSchema({
+export function findOrCreatePkgSchema({
   pkg,
   schemaId,
   getSchemaById,
