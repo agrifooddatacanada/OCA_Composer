@@ -85,8 +85,11 @@ const Cardinality = () => {
   // Get cardinality data - computed from attributes + attributeCardinality
   const cardinalityData = useMemo(() => {
     const computed = getCardinalityData();
-    const currentLanguage = i18next.language.startsWith("fr") ? "fra" : "eng";
-    const labelData = schemaState?.lanAttributeRowData?.[currentLanguage] || [];
+    
+    // Use first available language (like agreeable-mushroom does)
+    // This ensures we always have labels even if UI language doesn't match schema languages
+    const firstLanguage = Object.keys(schemaState?.lanAttributeRowData || {})?.[0];
+    const labelData = firstLanguage ? (schemaState?.lanAttributeRowData[firstLanguage] || []) : [];
     
     // Add Label and convert Cardinality field name to EntryLimit for UI compatibility
     return computed.map(item => {

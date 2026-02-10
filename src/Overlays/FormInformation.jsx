@@ -119,6 +119,14 @@ const FormInformation = () => {
   }
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   
+  // Update currentLanguage when languages array changes
+  useEffect(() => {
+    // If current language is no longer in the list, switch to first available
+    if (!languages.includes(currentLanguage)) {
+      setCurrentLanguage(filteredLanguages[0]);
+    }
+  }, [languages, currentLanguage, filteredLanguages]);
+  
   // Get rows for current language, handling various language key formats
   const currentRows = resolveLanguageData(lanAttributeRowData, currentLanguage) || [];
   const primaryLanguage = languages?.[0];

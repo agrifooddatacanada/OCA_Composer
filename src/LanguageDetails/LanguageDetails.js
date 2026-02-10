@@ -46,11 +46,19 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
 
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   
-  // Update currentLanguage when UI language changes
+  // Update currentLanguage when UI language changes OR when languages array changes
   useEffect(() => {
-    const bestLanguage = getBestLangName(getUICode(), languages);
-    setCurrentLanguage(bestLanguage);
-  }, [t, languages]); // Use 't' to track language changes
+    // If current language is no longer in the list, switch to first available
+    if (!languages.includes(currentLanguage)) {
+      setCurrentLanguage(filteredLanguages[0]);
+    } else {
+      // Try to match UI language preference
+      const bestLanguage = getBestLangName(getUICode(), languages);
+      if (bestLanguage && languages.includes(bestLanguage)) {
+        setCurrentLanguage(bestLanguage);
+      }
+    }
+  }, [t, languages, filteredLanguages, currentLanguage]); // Use 't' to track language changes
 
   const [loading, setLoading] = useState(true);
   const setLoadingIfChanged = useCallback((next) => {

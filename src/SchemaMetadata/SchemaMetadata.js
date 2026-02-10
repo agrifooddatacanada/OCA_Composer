@@ -44,7 +44,6 @@ const SchemaMetadata = forwardRef(({
   const {
     schemaDescription: globalSchemaDescription,
     languages: globalLanguages,
-    setLanguages: globalSetLanguages,
     history,
     setHistory,
     setCurrentPage
@@ -149,9 +148,7 @@ const SchemaMetadata = forwardRef(({
     };
     
     updateSchema(metadataUpdate);
-    
-    // Also update global context for components that still read from it
-    globalSetLanguages(newLanguages);
+  
   };
 
   const toTitleCase = (str) =>
