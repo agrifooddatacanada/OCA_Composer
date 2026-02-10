@@ -85,7 +85,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
         );
       });
       if (hasExistingData) {
-        updateSchema({ hasLoadedFromOverlays: true });
         return;
       }
 
@@ -148,8 +147,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
 
       // Update schema state
       updateSchema({
-        entryCodes: { ...entryCodeRowData, ...initialized },
-        hasLoadedFromOverlays: true
+        entryCodes: { ...entryCodeRowData, ...initialized }
       });
 
       // Always update the visible grid rows too for immediate UI feedback
@@ -162,7 +160,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       });
       // Use local state instead of global
       setLocalEntryCodeRowData(alignedEntryCodesArray);
-      updateSchema({ hasLoadedFromOverlays: true });
     } catch (_) {
       // silent
     }

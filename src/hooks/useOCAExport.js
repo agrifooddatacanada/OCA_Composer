@@ -412,14 +412,14 @@ const useOCAExport = () => {
         let entryText = "";
         targetAttributesList.forEach((item) => {
           if (targetSavedEntryCodes[item] && targetSavedEntryCodes[item].length > 0) {
-            // Entry codes are stored with 3-letter OCA language codes (eng, fra, etc.)
-            // Get the proper 3-letter OCA code from schema language name
-            const threeLetterCode = langCodeOCAFromName(language.language);
+            // Entry codes are stored with FULL language names (English, French, etc.)
+            // NOT 3-letter OCA codes (eng, fra)
+            const languageName = language.language;  // Use full name like "English"
             
             let entryString = "";
             for (const entry of targetSavedEntryCodes[item]) {
-              // Look up label using 3-letter OCA code
-              const label = entry[threeLetterCode] || "";
+              // Look up label using full language name
+              const label = entry[languageName] || "";
               if (label) {
                 entryString += `, "${entry.Code}": "${label}"`;
               }

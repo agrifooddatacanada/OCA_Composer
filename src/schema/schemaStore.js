@@ -80,8 +80,24 @@ export const createDefaultSchemaState = () => ({
   unframedAttributeList: [],
   unitFramedThatAlreadyExist: {},
   // Lifecycle flags
-  initialized: false,  // true = schema has been processed by OCAParser or saved by user (don't re-parse)
-  hasLoadedFromOverlays: false,  // true = component has already loaded entry codes/lang data from overlays
+  /**
+   * initialized: Marks schema as "ready for export/visualization"
+   * 
+   * Automatically set to true when:
+   * - Schema parsed from uploaded OCA package (ocaParser.js)
+   * - ANY updateSchema() call is made (metadata, attributes, overlays, etc.)
+   * - User saves attributes in AttributeDetails step
+   * - ViewSchema ensures root schema is initialized before export
+   * 
+   * Used by buildPackageFromState to determine which schemas to process.
+   * 
+   * Design note: This flag serves dual purpose:
+   * 1. "Has been loaded with data" (prevents re-parsing)
+   * 2. "Has user edits" (includes in export)
+   * Both purposes benefit from "true = touched by user or parser"
+   */
+  initialized: false,
+  
   // Persisted user removals
   deletedAttributes: []  // Track attribute names that user explicitly deleted
 });
@@ -119,6 +135,14 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
           ...currentState.metadata,
           ...updates.metadata
         };
+      }
+      
+      // CRITICAL: Mark schema as initialized whenever ANY change is made
+      // This ensures schema is processed for export/visualization even if user
+      // only edits metadata/overlays without touching attributes
+      // Exception: Don't override if explicitly setting initialized to false
+      if (updates.initialized !== false) {
+        updatedState.initialized = true;
       }
       
       return {

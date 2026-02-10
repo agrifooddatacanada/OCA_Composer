@@ -1,3 +1,5 @@
+import { langCodeOCAFromName } from '../utils/languageUtils';
+
 /**
  * Applies all overlay changes from editor state to OCA schema structure.
  * 
@@ -219,27 +221,58 @@ function applyEntryOverlay(ocaSchema, editorState) {
   const entryCodes = editorState.entryCodes || {};
   if (Object.keys(entryCodes).length === 0) return;
   
-  const entryOverlay = {
-    d: ocaSchema.overlays?.entry?.d,
-    capture_base: ocaSchema.capture_base.d,
-    type: "spec/overlays/entry/1.1",
-    language: "eng",
-    attribute_entries: {},
-  };
-
-  Object.entries(entryCodes).forEach(([attrName, codes]) => {
+  // Detect all languages present in entry code data
+  // Entry codes stored as: { Code: "001", English: "Red", French: "Rouge", ... }
+  const languagesSet = new Set();
+  Object.values(entryCodes).forEach((codes) => {
     if (Array.isArray(codes)) {
-      entryOverlay.attribute_entries[attrName] = {};
       codes.forEach((code) => {
-        if (code.Code) {
-          entryOverlay.attribute_entries[attrName][code.Code] = code.eng || code.English || "";
-        }
+        Object.keys(code).forEach((key) => {
+          if (key !== "Code" && code[key]) {
+            languagesSet.add(key);
+          }
+        });
       });
     }
   });
+  
+  const languages = Array.from(languagesSet);
+  if (languages.length === 0) return;
+  
+  // Create one entry overlay per language
+  const entryOverlays = [];
+  
+  languages.forEach((languageName) => {
+    // Convert language name to 3-letter OCA code (English -> eng, French -> fra)
+    const langCode = langCodeOCAFromName(languageName) || languageName.toLowerCase().slice(0, 3);
+    
+    const entryOverlay = {
+      d: undefined,  // Will be calculated when package is SAIDified
+      capture_base: ocaSchema.capture_base.d,
+      type: "spec/overlays/entry/1.1",
+      language: langCode,
+      attribute_entries: {},
+    };
 
-  if (Object.keys(entryOverlay.attribute_entries).length > 0) {
-    ocaSchema.overlays.entry = [entryOverlay];
+    Object.entries(entryCodes).forEach(([attrName, codes]) => {
+      if (Array.isArray(codes) && codes.length > 0) {
+        entryOverlay.attribute_entries[attrName] = {};
+        codes.forEach((code) => {
+          if (code.Code && code[languageName]) {
+            entryOverlay.attribute_entries[attrName][code.Code] = code[languageName];
+          }
+        });
+      }
+    });
+
+    // Only add overlay if it has entries
+    if (Object.keys(entryOverlay.attribute_entries).length > 0) {
+      entryOverlays.push(entryOverlay);
+    }
+  });
+  
+  if (entryOverlays.length > 0) {
+    ocaSchema.overlays.entry = entryOverlays;
   }
 }
 

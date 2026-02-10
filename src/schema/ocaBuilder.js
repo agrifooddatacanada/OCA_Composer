@@ -6,20 +6,92 @@
  * - Exporting schemas to JSON
  * - Real-time schema visualization in View Schema step
  * 
- * Process:
+ * Build Process:
  * 1. Clone original OCA package (avoid mutations)
- * 2. Find each initialized schema and apply edits
- * 3. Rebuild capture_base attributes from schemaState.attributes array
- * 4. Apply overlay changes (delegated to ocaBuilderOverlays.js)
- * 5. Ensure child schemas exist as dependencies
+ * 2. Phase 1: Apply edits to initialized schemas
+ * 3. Phase 2: Ensure child dependencies exist (iterative to handle nesting)
+ * 4. Phase 3: Create empty placeholders for unedited refn: references
  * 
- * Important: Only processes schemas where initialized=true (skips untouched schemas)
+ * Schema Processing:
+ * - Processes schemas where initialized=true OR has attributes (edited placeholders)
+ * - Converts UI editor state to OCA JSON format
+ * - Handles nested child schemas via iterative dependency resolution
+ * - Auto-generates metadata for child schemas using parent attribute labels
+ * 
+ * Important: Only processes schemas that have been edited (schemaHasEdits check)
  */
 
 import { getPackageBundle, getPackageDependencies } from "../utils/packageUtils";
 import { applyAllOverlays } from "./ocaBuilderOverlays";
 import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA, MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { createMinimalOCASchema, createMetaOverlay } from "./createMinimalOCASchema";
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Check if a schema has edits that should be processed
+ * 
+ * A schema should be processed if:
+ * - initialized=true: Schema was parsed from OCA file OR user made ANY change (metadata, attributes, overlays)
+ * - attributes.length > 0: Fallback for edge cases where attributes exist but initialized wasn't set
+ * 
+ * This covers:
+ * - Uploaded schemas that were parsed
+ * - Schemas where user edited metadata, attributes, labels, or any other field
+ * - Placeholder child schemas that now have attributes
+ * 
+ * Note: As of the updateSchema() fix, initialized is set on ANY change, so the
+ * attributes.length check is mainly a defensive fallback for edge cases.
+ */
+function schemaHasEdits(schemaState) {
+  return schemaState?.initialized || (schemaState?.attributes && schemaState.attributes.length > 0);
+}
+
+/**
+ * Find the display name for a child schema by looking up its parent's attribute label
+ * Searches through all schemas to find which attribute references this child via refn:
+ * 
+ * @param {string} childSchemaName - The schema name to find (e.g., "placeholder1")
+ * @param {Object} bundle - Root bundle
+ * @param {Array} dependencies - Dependency schemas
+ * @returns {string} The attribute label/key from parent, or childSchemaName if not found
+ */
+function resolveChildSchemaDisplayName(childSchemaName, bundle, dependencies) {
+  const allSchemas = [bundle, ...(dependencies || [])].filter(Boolean);
+  
+  for (const schema of allSchemas) {
+    const attrs = schema?.capture_base?.attributes || {};
+    
+    for (const [attrKey, attrValue] of Object.entries(attrs)) {
+      if (attrValue === `refn:${childSchemaName}`) {
+        // Found the parent attribute! Try to get its label
+        const labelOverlays = schema?.overlays?.label;
+        
+        if (Array.isArray(labelOverlays)) {
+          // Try to find label in the first available language
+          for (const labelOverlay of labelOverlays) {
+            const attrLabel = labelOverlay?.attribute_labels?.[attrKey];
+            if (attrLabel) {
+              return attrLabel;
+            }
+          }
+        }
+        
+        // Use attribute key as fallback (better than schema ID)
+        return attrKey;
+      }
+    }
+  }
+  
+  // Not found - use the schema name itself
+  return childSchemaName;
+}
+
+// ============================================================================
+// MAIN BUILD FUNCTION
+// ============================================================================
 
 /**
  * Rebuilds entire OCA package by applying user edits from editor state.
@@ -54,20 +126,13 @@ export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaB
   }
 
   // Phase 1: Apply edits to each schema
-  console.log('[buildPackageFromState] Phase 1: Processing schemas', Object.keys(schemaStates));
   Object.keys(schemaStates).forEach((schemaId) => {
     const schemaState = getSchemaById(schemaId);
-    // Process schema if it's initialized OR if it has attributes (edited placeholder)
-    const hasAttributes = schemaState?.attributes && schemaState.attributes.length > 0;
-    if (!schemaState?.initialized && !hasAttributes) {
-      console.log(`[buildPackageFromState] Skipping uninitialized schema: ${schemaId}`);
+    
+    if (!schemaHasEdits(schemaState)) {
       return;
     }
 
-    console.log(`[buildPackageFromState] Applying schema state for: ${schemaId}`, {
-      hasAttributes: !!schemaState.attributes,
-      attributeCount: schemaState.attributes?.length || 0
-    });
     applySchemaStateToPackage({
       pkg,
       schemaId,
@@ -78,16 +143,17 @@ export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaB
   });
 
   // Phase 2 & 3: Ensure (if not existing, add) missing dependencies
-  console.log('[buildPackageFromState] Phase 2: Ensuring child schema dependencies');
   ensureChildSchemaDependencies(pkg, schemaStates, getSchemaById);
-  console.log('[buildPackageFromState] Phase 3: Ensuring placeholder dependencies');
   ensurePlaceholderDependencies(pkg);
   
   const finalDeps = getPackageDependencies(pkg);
-  console.log('[buildPackageFromState] Final dependencies:', finalDeps?.map(d => d.d) || []);
 
   return pkg;
 }
+
+// ============================================================================
+// SCHEMA APPLICATION FUNCTIONS
+// ============================================================================
 
 /**
  * Updates a schema in the OCA package during building
@@ -262,6 +328,10 @@ export function rebuildAttributes(schema, schemaState) {
   schema.capture_base.attributes = rebuiltAttributes;
 }
 
+// ============================================================================
+// DEPENDENCY MANAGEMENT FUNCTIONS
+// ============================================================================
+
 /**
  * Ensures all child schemas referenced in editor state exist as dependencies in package.
  * 
@@ -277,10 +347,11 @@ export function ensureChildSchemaDependencies(
   schemaStates,
   getSchemaById,
 ) {
-  // Keep looping until no new dependencies are created ability(handles nested refn: references)
+  // Iterative approach: Keep looping until no new dependencies are created
+  // This handles nested refn: references (e.g., placeholder1 contains refn:placeholder2)
   let foundNewDependencies = true;
   let iteration = 0;
-  const maxIterations = 10; // Safety limit to avoid infinite loops
+  const maxIterations = 10; // Safety limit to prevent infinite loops
   
   while (foundNewDependencies && iteration < maxIterations) {
     iteration++;
@@ -292,55 +363,51 @@ export function ensureChildSchemaDependencies(
     // Track which child schemas need dependencies created
     const childSchemasToCreate = new Map(); // Map<schemaName, schemaState>
   
-  // Phase 1: Collect all child schemas from TYPE_CHILD_SCHEMA attributes
-  Object.keys(schemaStates).forEach((schemaId) => {
-    const schemaState = getSchemaById(schemaId);
-    if (!schemaState.initialized) return;
+    // Phase 1: Collect child schemas from TYPE_CHILD_SCHEMA attributes
+    // (This handles the old UI pattern where users selected "Child Schema" type)
+    Object.keys(schemaStates).forEach((schemaId) => {
+      const schemaState = getSchemaById(schemaId);
+      if (!schemaState.initialized) return;
 
-    // Look for Child Schema type attributes
-    if (schemaState.attributes) {
-      schemaState.attributes.forEach((attr) => {
-        if (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_ARRAY_CHILD_SCHEMA) {
-          const childSchemaName = attr.Attribute;
+      // Look for Child Schema type attributes
+      if (schemaState.attributes) {
+        schemaState.attributes.forEach((attr) => {
+          if (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_ARRAY_CHILD_SCHEMA) {
+            const childSchemaName = attr.Attribute;
 
-          // Check if child has editor state (was edited in UI)
-          const childschemaState = getSchemaById(childSchemaName);
-          if (childschemaState && (childschemaState.initialized || childschemaState.attributes?.length > 0)) {
-            childSchemasToCreate.set(childSchemaName, childschemaState);
+            // Check if child has editor state (was edited in UI)
+            const childschemaState = getSchemaById(childSchemaName);
+            if (schemaHasEdits(childschemaState)) {
+              childSchemasToCreate.set(childSchemaName, childschemaState);
+            }
           }
-        }
-      });
-    }
-  });
+        });
+      }
+    });
   
-  // Phase 2: Also check for refn: references that have been edited
-  // Scan all schema attributes (bundle and dependencies) for refn: references
-  const allSchemas = [bundle, ...(dependencies || [])].filter(Boolean);
-  console.log('[ensureChildSchemaDependencies] Scanning schemas for refn: references:', allSchemas.length);
-  allSchemas.forEach((schema) => {
-    const attributes = schema?.capture_base?.attributes || {};
-    console.log(`[ensureChildSchemaDependencies] Checking schema ${schema.d}:`, Object.keys(attributes));
-    Object.entries(attributes).forEach(([key, value]) => {
-      if (typeof value === "string" && value.startsWith("refn:")) {
+    // Phase 2: Scan for refn: references that have been edited
+    // This handles placeholder schemas that now have attributes
+    const allSchemas = [bundle, ...(dependencies || [])].filter(Boolean);
+    allSchemas.forEach((schema) => {
+      const attributes = schema?.capture_base?.attributes || {};
+      Object.entries(attributes).forEach(([key, value]) => {
+        if (typeof value === "string" && value.startsWith("refn:")) {
         // Extract the schema name from refn:name
         const refnSchemaName = value.replace("refn:", "");
-        console.log(`[ensureChildSchemaDependencies] Found refn:${refnSchemaName} in ${schema.d}`);
         
         // Check if this schema has been edited
         const refnSchemaState = getSchemaById(refnSchemaName);
-        if (refnSchemaState && (refnSchemaState.initialized || refnSchemaState.attributes?.length > 0)) {
-          console.log(`[ensureChildSchemaDependencies] Schema ${refnSchemaName} has been edited, adding to create list`);
+        if (schemaHasEdits(refnSchemaState)) {
           childSchemasToCreate.set(refnSchemaName, refnSchemaState);
-        } else {
-          console.log(`[ensureChildSchemaDependencies] Schema ${refnSchemaName} not edited yet`);
         }
+        // Note: If not edited, it stays as placeholder (expected - user may not have filled it in yet)
       }
     });
   });
   
-  // Phase 3: Create dependencies for all collected child schemas
-  console.log('[ensureChildSchemaDependencies] Creating dependencies for:', Array.from(childSchemasToCreate.keys()));
-  childSchemasToCreate.forEach((childschemaState, childSchemaName) => {
+    // Phase 3: Create OCA dependency structures for collected child schemas
+    // Only creates dependencies that don't already exist in the package
+    childSchemasToCreate.forEach((childschemaState, childSchemaName) => {
     // Check if child already exists in package JSON
     const existsInPackage =
       dependencies?.some((dep) => dep.d === childSchemaName) ||
@@ -376,50 +443,22 @@ export function ensureChildSchemaDependencies(
 
       applyAllOverlays(newDependency, childschemaState);
       
-      // Ensure metadata overlay exists with schema name
-      // If schema state didn't have metadata, create default metadata
+      // Ensure metadata overlay exists with a meaningful name
+      // If schema state didn't have metadata, create default metadata using parent's attribute label
       if (!newDependency.overlays.meta || newDependency.overlays.meta.length === 0) {
         // Get languages from root schema or default to English
         const rootMetaOverlays = bundle?.overlays?.meta || [];
         const parentLanguages = rootMetaOverlays.map((m) => m.language).filter(Boolean);
         const languagesToUse = parentLanguages.length > 0 ? parentLanguages : ["eng"];
         
-        // Try to find a better display name by looking for the parent attribute label
-        let displayName = childSchemaName; // Default to the schema ID
-        
-        // Search all schemas (bundle + dependencies) for an attribute with refn:childSchemaName
-        const allSchemas = [bundle, ...(dependencies || [])].filter(Boolean);
-        for (const schema of allSchemas) {
-          const attrs = schema?.capture_base?.attributes || {};
-          for (const [attrKey, attrValue] of Object.entries(attrs)) {
-            if (attrValue === `refn:${childSchemaName}`) {
-              // Found the parent attribute! Try to get its label
-              const labelOverlays = schema?.overlays?.label;
-              if (Array.isArray(labelOverlays)) {
-                // Try to find label in the first available language
-                for (const labelOverlay of labelOverlays) {
-                  const attrLabel = labelOverlay?.attribute_labels?.[attrKey];
-                  if (attrLabel) {
-                    displayName = attrLabel;
-                    break;
-                  }
-                }
-              }
-              // If we found a label, use the attribute key as fallback
-              if (displayName === childSchemaName && attrKey) {
-                displayName = attrKey;
-              }
-              break;
-            }
-          }
-          if (displayName !== childSchemaName) break; // Found it, stop searching
-        }
+        // Find the best display name by looking up the parent's attribute label
+        const displayName = resolveChildSchemaDisplayName(childSchemaName, bundle, dependencies);
         
         newDependency.overlays.meta = languagesToUse.map((lang) =>
           createMetaOverlay(
             newDependency.capture_base.d,
             lang,
-            displayName, // Use the found display name (attribute label or key)
+            displayName,
             `Schema for ${displayName}`
           )
         );

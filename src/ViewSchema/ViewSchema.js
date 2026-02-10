@@ -404,9 +404,7 @@ export default function ViewSchema({
   const handleClickDownload = async () => {
     try {
       setLoading(true);
-      
-      console.log("Download button clicked!");
-      
+            
       // Unified export hook handles all scenarios:
       // - Imported packages (flat or nested) via pkgBuildFromState()
       // - Manual flat schemas via text DSL generation
