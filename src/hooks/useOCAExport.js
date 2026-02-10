@@ -412,9 +412,10 @@ const useOCAExport = () => {
         let entryText = "";
         targetAttributesList.forEach((item) => {
           if (targetSavedEntryCodes[item] && targetSavedEntryCodes[item].length > 0) {
-            // Entry codes are stored with FULL language names (English, French, etc.)
-            // NOT 3-letter OCA codes (eng, fra)
-            const languageName = language.language;  // Use full name like "English"
+            // CRITICAL: entryCodes uses FULL language names as keys (English, French)
+            // NOT 3-letter OCA codes (eng, fra). This is the internal UI format.
+            // We output OCA codes in the DSL (language.code), but look up using full names.
+            const languageName = language.language;  // "English" not "eng"
             
             let entryString = "";
             for (const entry of targetSavedEntryCodes[item]) {

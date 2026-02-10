@@ -54,6 +54,20 @@ export const createDefaultSchemaState = () => ({
     conformance: {},
     entry: {}
   },
+  /**
+   * Entry codes: Maps attribute name -> array of code objects
+   * 
+   * IMPORTANT: Language keys use FULL NAMES (English, French), NOT OCA codes (eng, fra)
+   * This is the internal UI format. Export functions convert to OCA 3-letter codes.
+   * 
+   * Structure:
+   * {
+   *   "attribute_name": [
+   *     { Code: "001", English: "Red", French: "Rouge" },
+   *     { Code: "002", English: "Green", French: "Vert" }
+   *   ]
+   * }
+   */
   entryCodes: {},
   attributesWithLists: [],
   // Overlay selection state (per-schema) - generated from overlayItems

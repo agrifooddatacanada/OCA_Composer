@@ -271,6 +271,11 @@ export class OCAParser {
 
   /**
    * Parse entry overlays to identify lists and build entry codes
+   * 
+   * Converts OCA file format (3-letter codes) to internal UI format (full language names):
+   * INPUT:  entry overlays with language: "eng", "fra"
+   * OUTPUT: entryCodes with keys: "English", "French"
+   * 
    * @private
    */
   static _parseEntryOverlays(entryOverlay) {
@@ -285,7 +290,8 @@ export class OCAParser {
         row = { Code: code };
         entryCodes[attrName].push(row);
       }
-      // Normalize language code to full name (eng -> English, fra -> French)
+      // CONVERSION: OCA 3-letter code (eng) → Full language name (English)
+      // This is how we store entry codes internally for consistency with UI
       const langName = langNameFromCodeOCA(langCode) || langCode;
       row[langName] = text || "";
     };
