@@ -24,7 +24,7 @@ import { createMinimalOCASchema, createMetaOverlay } from "./createMinimalOCASch
 /**
  * Rebuilds entire OCA package by applying user edits from editor state.
  * 
- * @param {Object|null} pkgUpload - Original OCA package JSON structure (null for manual creation)
+ * @param {Object|null} packageOCAJSON - Original OCA package JSON structure (null for manual creation)
  * @param {Object} schemaStates - Map of schemaId -> editor state (UI changes)
  * @param {Function} getSchemaById - Function to get editor state by schema ID
  * @returns {Object} Modified OCA package with all edits applied
@@ -35,10 +35,10 @@ import { createMinimalOCASchema, createMetaOverlay } from "./createMinimalOCASch
  * 3. Ensure child schemas exist as dependencies
  * 4. Create placeholder dependencies for referenced but undefined schemas
  */
-export function buildPkgFromState({ pkgUpload, schemaStates, getSchemaById }) {
+export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaById }) {
   // If no package provided (manual creation), create minimal structure
   let pkg;
-  if (!pkgUpload) {
+  if (!packageOCAJSON) {
     pkg = createMinimalOCASchema(MANUAL_CREATION_SCHEMA_ID, {
       captureBaseType: "spec/capture_base/1.0",
       classification: "",
@@ -50,25 +50,39 @@ export function buildPkgFromState({ pkgUpload, schemaStates, getSchemaById }) {
       asBundle: true
     });
   } else {
-    pkg = JSON.parse(JSON.stringify(pkgUpload));
+    pkg = JSON.parse(JSON.stringify(packageOCAJSON));
   }
 
   // Phase 1: Apply edits to each schema
+  console.log('[buildPackageFromState] Phase 1: Processing schemas', Object.keys(schemaStates));
   Object.keys(schemaStates).forEach((schemaId) => {
     const schemaState = getSchemaById(schemaId);
-    if (!schemaState?.initialized) return;
+    if (!schemaState?.initialized) {
+      console.log(`[buildPackageFromState] Skipping uninitialized schema: ${schemaId}`);
+      return;
+    }
 
-    applySchemaStateToPkg({
+    console.log(`[buildPackageFromState] Applying schema state for: ${schemaId}`, {
+      hasAttributes: !!schemaState.attributes,
+      attributeCount: schemaState.attributes?.length || 0
+    });
+    applySchemaStateToPackage({
       pkg,
       schemaId,
       schemaState,
       getSchemaById,
+      schemaStates, // Pass schemaStates for refn: lookups
     });
   });
 
   // Phase 2 & 3: Ensure (if not existing, add) missing dependencies
+  console.log('[buildPackageFromState] Phase 2: Ensuring child schema dependencies');
   ensureChildSchemaDependencies(pkg, schemaStates, getSchemaById);
+  console.log('[buildPackageFromState] Phase 3: Ensuring placeholder dependencies');
   ensurePlaceholderDependencies(pkg);
+  
+  const finalDeps = getPackageDependencies(pkg);
+  console.log('[buildPackageFromState] Final dependencies:', finalDeps?.map(d => d.d) || []);
 
   return pkg;
 }
@@ -79,13 +93,15 @@ export function buildPkgFromState({ pkgUpload, schemaStates, getSchemaById }) {
  * @param {Object} pkg - Cloned OCA package being built
  * @param {string} schemaId - Schema ID to find/create
  * @param {Function} getSchemaById - Function to get editor state (only used for label lookup)
+ * @param {Object} schemaStates - Map of all editor states
  * 
  */
-function applySchemaStateToPkg({ pkg, schemaId, schemaState, getSchemaById }) {
-  const schemaInPackage = findOrCreatePkgSchema({
+function applySchemaStateToPackage({ pkg, schemaId, schemaState, getSchemaById, schemaStates }) {
+  const schemaInPackage = findOrCreatePackageSchema({
     pkg,
     schemaId,
     getSchemaById,
+    schemaStates, // Pass schemaStates for refn: lookups
   });
   
   if (!schemaInPackage) return;
@@ -100,15 +116,17 @@ function applySchemaStateToPkg({ pkg, schemaId, schemaState, getSchemaById }) {
  * @param {Object} pkg - Cloned OCA package being built
  * @param {string} schemaId - Schema ID to find/create
  * @param {Function} getSchemaById - Function to get editor state (only used for label lookup)
+ * @param {Object} schemaStates - Map of all editor states (for refn: lookups)
  * @returns {Object|null} OCA schema structure (bundle or dependency), or null if not found
  * 
- * Note: Only creates placeholders for schemas referenced as refn:placeholder_* in attributes.
+ * Note: Only creates placeholders for schemas referenced as refn:* in attributes.
  * Returns the OCA JSON structure, not the editor state.
  */
-export function findOrCreatePkgSchema({
+export function findOrCreatePackageSchema({
   pkg,
   schemaId,
   getSchemaById,
+  schemaStates = {},
 }) {
   const dependencies = getPackageDependencies(pkg);
   const bundle = getPackageBundle(pkg);
@@ -121,18 +139,58 @@ export function findOrCreatePkgSchema({
   }
   if (schema) return schema;
 
-  // 2) Check if this is a placeholder reference (refn:*) in root attributes
-  const rootAttributes = bundle?.capture_base?.attributes || {};
-  const isPlaceholder = Object.entries(rootAttributes).some(
-    ([key, value]) => key === schemaId && typeof value === "string" && value.startsWith("refn:")
-  );
-  if (!isPlaceholder) return null; // Not found and not a placeholder
+  // 2) Check if this is a placeholder reference (refn:*) in ANY schema
+  // We need to check both the package AND the schemaStates since some schemas
+  // might have been edited but not yet written to the package
+  let parentSchemaId = null;
+  
+  // Helper to check if schemaId is referenced as refn: in attributes
+  const checkAttributes = (attributes) => {
+    return Object.entries(attributes || {}).some(
+      ([key, value]) => key === schemaId && typeof value === "string" && value.startsWith("refn:")
+    );
+  };
+  
+  // Check root attributes in package
+  if (checkAttributes(bundle?.capture_base?.attributes)) {
+    parentSchemaId = bundle?.d;
+  }
+  
+  // Check all dependencies' attributes in package (if not found yet)
+  if (!parentSchemaId) {
+    for (const dep of (dependencies || [])) {
+      if (checkAttributes(dep?.capture_base?.attributes)) {
+        parentSchemaId = dep.d;
+        break;
+      }
+    }
+  }
+  
+  // Also check schemaStates for refn: references (for newly created schemas)
+  if (!parentSchemaId) {
+    for (const [stateSchemaId, _] of Object.entries(schemaStates)) {
+      const schemaState = getSchemaById(stateSchemaId);
+      if (!schemaState?.attributes) continue;
+      
+      // Check if this schema has refn:schemaId in its attributes
+      const hasRefn = schemaState.attributes.some((attr) => {
+        return attr.Attribute === schemaId && 
+               (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_ARRAY_CHILD_SCHEMA);
+      });
+      
+      if (hasRefn) {
+        parentSchemaId = stateSchemaId;
+        break;
+      }
+    }
+  }
+  
+  if (!parentSchemaId) return null; // Not found and not a placeholder
 
   // 3) Create new placeholder - derive display name from parent's label overlay
-  // (This is the ONLY place we use getSchemaById - to peek at parent's UI labels)
-  const rootSchemaState = getSchemaById(bundle?.d); // Parent's editor state
-  const rootLanData = rootSchemaState?.lanAttributeRowData || {};
-  const engLabels = rootLanData["eng"] || rootLanData["English"] || [];
+  const parentSchemaState = getSchemaById(parentSchemaId); // Parent's editor state
+  const parentLanData = parentSchemaState?.lanAttributeRowData || {};
+  const engLabels = parentLanData["eng"] || parentLanData["English"] || [];
   const labelRow = engLabels.find((row) => row.Attribute === schemaId);
   const displayName = labelRow?.Label || schemaId;
 
@@ -147,9 +205,10 @@ export function findOrCreatePkgSchema({
       ],
     },
   });
-  if (bundle) {
-    if (!bundle.dependencies) bundle.dependencies = [];
-    bundle.dependencies.push(newDependency);
+
+  if (pkg.oca_bundle) {
+    if (!pkg.oca_bundle.dependencies) pkg.oca_bundle.dependencies = [];
+    pkg.oca_bundle.dependencies.push(newDependency);
   } else {
     if (!pkg.dependencies) pkg.dependencies = [];
     pkg.dependencies.push(newDependency);
@@ -213,12 +272,16 @@ export function rebuildAttributes(schema, schemaState) {
  */
 export function ensureChildSchemaDependencies(
   pkg,
-  getSchemaById,
   schemaStates,
+  getSchemaById,
 ) {
   const dependencies = getPackageDependencies(pkg);
+  const bundle = getPackageBundle(pkg);
   
-  // Check each edited schema for child schema attributes
+  // Track which child schemas need dependencies created
+  const childSchemasToCreate = new Map(); // Map<schemaName, schemaState>
+  
+  // Phase 1: Collect all child schemas from TYPE_CHILD_SCHEMA attributes
   Object.keys(schemaStates).forEach((schemaId) => {
     const schemaState = getSchemaById(schemaId);
     if (!schemaState.initialized) return;
@@ -232,45 +295,76 @@ export function ensureChildSchemaDependencies(
           // Check if child has editor state (was edited in UI)
           const childschemaState = getSchemaById(childSchemaName);
           if (childschemaState && (childschemaState.initialized || childschemaState.attributes?.length > 0)) {
-            // Check if child already exists in package JSON
-            const existsInPackage =
-              dependencies?.some((dep) => dep.d === childSchemaName) ||
-              pkg.bundle?.d === childSchemaName;
-
-            if (!existsInPackage) {
-              // Create new OCA dependency structure for this child
-              const childAttributes = {};
-              childschemaState.attributes?.forEach((childAttr) => {
-                if (childAttr.Attribute) {
-                  // Convert "Child Schema" types to refn: format in nested schemas too
-                  if (childAttr.Type === TYPE_CHILD_SCHEMA) {
-                    childAttributes[childAttr.Attribute] = `refn:${childAttr.Attribute}`;
-                  } else if (childAttr.Type === TYPE_ARRAY_CHILD_SCHEMA) {
-                    childAttributes[childAttr.Attribute] = [`refn:${childAttr.Attribute}`];
-                  } else {
-                    childAttributes[childAttr.Attribute] = childAttr.Type || "Text";
-                  }
-                }
-              });
-
-              const newDependency = { // New OCA schema structure
-                d: childSchemaName,
-                capture_base: {
-                  d: `schema_${childSchemaName}_${Date.now()}`,
-                  type: "spec/capture_base/1.1",
-                  attributes: childAttributes,
-                  classification: "RDF508",
-                  flagged_attributes: [],
-                },
-                overlays: {},
-              };
-
-              applyAllOverlays(newDependency, childschemaState);
-              pushDependency(pkg, newDependency);
-            }
+            childSchemasToCreate.set(childSchemaName, childschemaState);
           }
         }
       });
+    }
+  });
+  
+  // Phase 2: Also check for refn: references that have been edited
+  // Scan all schema attributes (bundle and dependencies) for refn: references
+  const allSchemas = [bundle, ...(dependencies || [])].filter(Boolean);
+  console.log('[ensureChildSchemaDependencies] Scanning schemas for refn: references:', allSchemas.length);
+  allSchemas.forEach((schema) => {
+    const attributes = schema?.capture_base?.attributes || {};
+    console.log(`[ensureChildSchemaDependencies] Checking schema ${schema.d}:`, Object.keys(attributes));
+    Object.entries(attributes).forEach(([key, value]) => {
+      if (typeof value === "string" && value.startsWith("refn:")) {
+        // Extract the schema name from refn:name
+        const refnSchemaName = value.replace("refn:", "");
+        console.log(`[ensureChildSchemaDependencies] Found refn:${refnSchemaName} in ${schema.d}`);
+        
+        // Check if this schema has been edited
+        const refnSchemaState = getSchemaById(refnSchemaName);
+        if (refnSchemaState && (refnSchemaState.initialized || refnSchemaState.attributes?.length > 0)) {
+          console.log(`[ensureChildSchemaDependencies] Schema ${refnSchemaName} has been edited, adding to create list`);
+          childSchemasToCreate.set(refnSchemaName, refnSchemaState);
+        } else {
+          console.log(`[ensureChildSchemaDependencies] Schema ${refnSchemaName} not edited yet`);
+        }
+      }
+    });
+  });
+  
+  // Phase 3: Create dependencies for all collected child schemas
+  console.log('[ensureChildSchemaDependencies] Creating dependencies for:', Array.from(childSchemasToCreate.keys()));
+  childSchemasToCreate.forEach((childschemaState, childSchemaName) => {
+    // Check if child already exists in package JSON
+    const existsInPackage =
+      dependencies?.some((dep) => dep.d === childSchemaName) ||
+      bundle?.d === childSchemaName;
+
+    if (!existsInPackage) {
+      // Create new OCA dependency structure for this child
+      const childAttributes = {};
+      childschemaState.attributes?.forEach((childAttr) => {
+        if (childAttr.Attribute) {
+          // Convert "Child Schema" types to refn: format in nested schemas too
+          if (childAttr.Type === TYPE_CHILD_SCHEMA) {
+            childAttributes[childAttr.Attribute] = `refn:${childAttr.Attribute}`;
+          } else if (childAttr.Type === TYPE_ARRAY_CHILD_SCHEMA) {
+            childAttributes[childAttr.Attribute] = [`refn:${childAttr.Attribute}`];
+          } else {
+            childAttributes[childAttr.Attribute] = childAttr.Type || "Text";
+          }
+        }
+      });
+
+      const newDependency = { // New OCA schema structure
+        d: childSchemaName,
+        capture_base: {
+          d: `schema_${childSchemaName}_${Date.now()}`,
+          type: "spec/capture_base/1.1",
+          attributes: childAttributes,
+          classification: "RDF508",
+          flagged_attributes: [],
+        },
+        overlays: {},
+      };
+
+      applyAllOverlays(newDependency, childschemaState);
+      pushDependency(pkg, newDependency);
     }
   });
 }
@@ -346,10 +440,10 @@ export function ensurePlaceholderDependencies(pkg) {
 }
 
 export function pushDependency(pkg, dependency) {
-  const bundle = getPackageBundle(pkg);
-  if (bundle) {
-    if (!bundle.dependencies) bundle.dependencies = [];
-    bundle.dependencies.push(dependency);
+  // Push to the correct location based on package structure
+  if (pkg.oca_bundle) {
+    if (!pkg.oca_bundle.dependencies) pkg.oca_bundle.dependencies = [];
+    pkg.oca_bundle.dependencies.push(dependency);
   } else {
     if (!pkg.dependencies) pkg.dependencies = [];
     pkg.dependencies.push(dependency);
