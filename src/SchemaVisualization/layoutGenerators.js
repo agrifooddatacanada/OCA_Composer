@@ -179,7 +179,12 @@ export const generateTreeLayout = (
     nodeType
   }) => {
     const labels = nodeLabelOverlay?.attribute_labels || {};
-    const nodeName = metaOverlay?.name ? metaOverlay.name : rootLabel;
+    // Use metadata name if available, otherwise:
+    // - For root node: use rootLabel (passed from parent, e.g., "sample_questionnaire")
+    // - For child nodes: use nodeId (the schema ID, e.g., "placeholder1")
+    const nodeName = metaOverlay?.name 
+      ? metaOverlay.name 
+      : (nodeId === "root" ? rootLabel : nodeId);
 
     const nodeData = {
       id: nodeId,
@@ -224,54 +229,51 @@ export const generateTreeLayout = (
         const placeholderName = value.replace("refn:", "");
         const refDep = dependencyMap[placeholderName];
         
+        // Check if placeholder actually has attributes (not just an empty object)
+        const attributesObj = refDep?.capture_base?.attributes;
+        const hasAttributes = attributesObj && 
+          typeof attributesObj === 'object' &&
+          Object.keys(attributesObj).length > 0;
+        
+        // Get metadata for display name
+        const refMetaOverlays = refDep?.overlays?.meta;
+        const refMetaOverlay = Array.isArray(refMetaOverlays)
+          ? (refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0])
+          : null;
+        
         // Default to attribute label as display name
         let displayName = labels[key] || key;
         
-        // If the placeholder has a dependency with attributes, treat it like a reference
+        // If the placeholder has actual attributes, treat it like a reference
         // and recursively build its hierarchy
-        if (refDep && refDep.capture_base?.attributes) {
+        if (hasAttributes) {
           const refLabelOverlays = refDep.overlays?.label;
           const refLabelOverlay = Array.isArray(refLabelOverlays)
             ? (refLabelOverlays.find((l) => l.language === langCodeOCA) || refLabelOverlays[0])
             : null;
           
-          const refMetaOverlays = refDep.overlays?.meta;
-          const refMetaOverlay = Array.isArray(refMetaOverlays)
-            ? (refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0])
-            : null;
-          
-          // Use schema metadata name if available
+          // Use schema metadata name if available for nodes with attributes
           if (refMetaOverlay?.name) {
             displayName = refMetaOverlay.name;
           }
 
           // Recursively build hierarchy for placeholder with attributes
+          // Once a placeholder has attributes, treat it as a reference (not placeholder)
           const childNode = buildHierarchy({
             nodeId: placeholderName,
             attributes: refDep.capture_base.attributes,
             labelOverlay: refLabelOverlay,
             metaOverlay: refMetaOverlay,
-            nodeType: "placeholder" // Keep as placeholder type even with attributes
+            nodeType: "reference"
           });
           if (childNode) {
             nodeData.children.push(childNode);
           }
         } else {
           // True placeholder with no attributes yet - just create a leaf node
-          if (refDep) {
-            const refMetaOverlays = refDep.overlays?.meta;
-            const refMetaOverlay = Array.isArray(refMetaOverlays)
-              ? (refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0])
-              : null;
-            
-            // Use schema metadata name if available
-            if (refMetaOverlay?.name) {
-              displayName = refMetaOverlay.name;
-            }
-          }
-          
+          // For empty placeholders, prefer attribute label over metadata to avoid showing placeholder name
           nodeData.children.push({
-            id: placeholderName, // Use the placeholder name as the node ID for consistency
+            id: placeholderName,
             name: displayName,
             type: "placeholder",
             children: []
@@ -460,7 +462,8 @@ export const generateDetailedLayout = (
             dependencyWithAttributes.capture_base?.attributes &&
             Object.keys(dependencyWithAttributes.capture_base.attributes).length > 0;
 
-          if (hasRealAttributes || dependencyWithAttributes) {
+          // Only override the title if the placeholder has real attributes
+          if (hasRealAttributes && dependencyWithAttributes) {
             // Get the schema metadata name
             const metaOverlays = dependencyWithAttributes.overlays?.meta;
             const metaOverlay = Array.isArray(metaOverlays)
@@ -473,17 +476,15 @@ export const generateDetailedLayout = (
             }
             
             // This placeholder now has real attributes, use them
-            if (hasRealAttributes) {
-              const labelOverlays = dependencyWithAttributes.overlays?.label;
-              const labelAttributes = Array.isArray(labelOverlays) 
-                ? (labelOverlays.find((l) => l.language === langCodeOCA)?.attribute_labels || {})
-                : {};
-              
-              placeholderFields = processAttributes(
-                dependencyWithAttributes.capture_base.attributes,
-                labelAttributes
-              );
-            }
+            const labelOverlays = dependencyWithAttributes.overlays?.label;
+            const labelAttributes = Array.isArray(labelOverlays) 
+              ? (labelOverlays.find((l) => l.language === langCodeOCA)?.attribute_labels || {})
+              : {};
+            
+            placeholderFields = processAttributes(
+              dependencyWithAttributes.capture_base.attributes,
+              labelAttributes
+            );
           }
         }
 

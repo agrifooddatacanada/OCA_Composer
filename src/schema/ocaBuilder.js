@@ -57,7 +57,9 @@ export function buildPackageFromState({ packageOCAJSON, schemaStates, getSchemaB
   console.log('[buildPackageFromState] Phase 1: Processing schemas', Object.keys(schemaStates));
   Object.keys(schemaStates).forEach((schemaId) => {
     const schemaState = getSchemaById(schemaId);
-    if (!schemaState?.initialized) {
+    // Process schema if it's initialized OR if it has attributes (edited placeholder)
+    const hasAttributes = schemaState?.attributes && schemaState.attributes.length > 0;
+    if (!schemaState?.initialized && !hasAttributes) {
       console.log(`[buildPackageFromState] Skipping uninitialized schema: ${schemaId}`);
       return;
     }
@@ -275,11 +277,20 @@ export function ensureChildSchemaDependencies(
   schemaStates,
   getSchemaById,
 ) {
-  const dependencies = getPackageDependencies(pkg);
-  const bundle = getPackageBundle(pkg);
+  // Keep looping until no new dependencies are created ability(handles nested refn: references)
+  let foundNewDependencies = true;
+  let iteration = 0;
+  const maxIterations = 10; // Safety limit to avoid infinite loops
   
-  // Track which child schemas need dependencies created
-  const childSchemasToCreate = new Map(); // Map<schemaName, schemaState>
+  while (foundNewDependencies && iteration < maxIterations) {
+    iteration++;
+    foundNewDependencies = false;
+    
+    const dependencies = getPackageDependencies(pkg);
+    const bundle = getPackageBundle(pkg);
+    
+    // Track which child schemas need dependencies created
+    const childSchemasToCreate = new Map(); // Map<schemaName, schemaState>
   
   // Phase 1: Collect all child schemas from TYPE_CHILD_SCHEMA attributes
   Object.keys(schemaStates).forEach((schemaId) => {
@@ -364,9 +375,30 @@ export function ensureChildSchemaDependencies(
       };
 
       applyAllOverlays(newDependency, childschemaState);
+      
+      // Ensure metadata overlay exists with schema name
+      // If schema state didn't have metadata, create default metadata
+      if (!newDependency.overlays.meta || newDependency.overlays.meta.length === 0) {
+        // Get languages from root schema or default to English
+        const rootMetaOverlays = bundle?.overlays?.meta || [];
+        const parentLanguages = rootMetaOverlays.map((m) => m.language).filter(Boolean);
+        const languagesToUse = parentLanguages.length > 0 ? parentLanguages : ["eng"];
+        
+        newDependency.overlays.meta = languagesToUse.map((lang) =>
+          createMetaOverlay(
+            newDependency.capture_base.d,
+            lang,
+            childSchemaName, // Use the schema name as the display name
+            `Schema for ${childSchemaName}`
+          )
+        );
+      }
+      
       pushDependency(pkg, newDependency);
+      foundNewDependencies = true; // Flag that we created a new dependency
     }
   });
+  } // End while loop
 }
 
 /**
