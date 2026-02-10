@@ -187,6 +187,12 @@ export function rebuildAttributes(schema, schemaState) {
       (originalValue.startsWith("refn:") || originalValue.startsWith("refs:"))
     ) {
       rebuiltAttributes[name] = originalValue; // Keep reference
+    } else if (type === TYPE_CHILD_SCHEMA) {
+      // Convert "Child Schema" UI type to refn: format for newly added attributes
+      rebuiltAttributes[name] = `refn:${name}`;
+    } else if (type === TYPE_ARRAY_CHILD_SCHEMA) {
+      // Convert "Array[Child Schema]" UI type to refn: format
+      rebuiltAttributes[name] = [`refn:${name}`];
     } else {
       rebuiltAttributes[name] = type || "Text"; // Use editor type
     }
@@ -236,8 +242,11 @@ export function ensureChildSchemaDependencies(
               const childAttributes = {};
               childschemaState.attributes?.forEach((childAttr) => {
                 if (childAttr.Attribute) {
+                  // Convert "Child Schema" types to refn: format in nested schemas too
                   if (childAttr.Type === TYPE_CHILD_SCHEMA) {
-                    childAttributes[childAttr.Attribute] = `refn:placeholder_${childAttr.Attribute}`;
+                    childAttributes[childAttr.Attribute] = `refn:${childAttr.Attribute}`;
+                  } else if (childAttr.Type === TYPE_ARRAY_CHILD_SCHEMA) {
+                    childAttributes[childAttr.Attribute] = [`refn:${childAttr.Attribute}`];
                   } else {
                     childAttributes[childAttr.Attribute] = childAttr.Type || "Text";
                   }
@@ -267,7 +276,7 @@ export function ensureChildSchemaDependencies(
 }
 
 /**
- * Scan for refn:placeholder_* references and create missing child schema dependencies.
+ * Scan for refn:* references and create missing child schema dependencies.
  * Keeps language inheritance from root meta overlays.
  */
 export function ensurePlaceholderDependencies(pkg) {
@@ -276,14 +285,22 @@ export function ensurePlaceholderDependencies(pkg) {
   const existingDepIds = new Set((dependencies || []).map((dep) => dep.d));
   const placeholdersToCreate = new Set();
 
+  // Helper to extract placeholder ID from refn: reference
+  const extractPlaceholderId = (attrType) => {
+    if (typeof attrType === "string" && attrType.startsWith("refn:")) {
+      // Handle both "refn:placeholder_name" and "refn:name" formats
+      const refValue = attrType.replace("refn:", "");
+      return refValue.startsWith("placeholder_") ? refValue.replace("placeholder_", "") : refValue;
+    }
+    return null;
+  };
+
   // Scan root schema attributes
   if (bundle?.capture_base?.attributes) {
     Object.entries(bundle.capture_base.attributes).forEach(([_, attrType]) => {
-      if (typeof attrType === "string" && attrType.startsWith("refn:placeholder_")) {
-        const placeholderId = attrType.replace("refn:placeholder_", "");
-        if (!existingDepIds.has(placeholderId)) {
-          placeholdersToCreate.add(placeholderId);
-        }
+      const placeholderId = extractPlaceholderId(attrType);
+      if (placeholderId && !existingDepIds.has(placeholderId)) {
+        placeholdersToCreate.add(placeholderId);
       }
     });
   }
@@ -292,11 +309,9 @@ export function ensurePlaceholderDependencies(pkg) {
   (dependencies || []).forEach((dep) => {
     if (dep?.capture_base?.attributes) {
       Object.entries(dep.capture_base.attributes).forEach(([_, attrType]) => {
-        if (typeof attrType === "string" && attrType.startsWith("refn:placeholder_")) {
-          const placeholderId = attrType.replace("refn:placeholder_", "");
-          if (!existingDepIds.has(placeholderId)) {
-            placeholdersToCreate.add(placeholderId);
-          }
+        const placeholderId = extractPlaceholderId(attrType);
+        if (placeholderId && !existingDepIds.has(placeholderId)) {
+          placeholdersToCreate.add(placeholderId);
         }
       });
     }

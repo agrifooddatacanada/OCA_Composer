@@ -220,13 +220,21 @@ export const generateTreeLayout = (
           }
         }
       } else if (isRefn) {
-        // For placeholder child schemas, look up the dependency to get the schema metadata name
+        // For placeholder child schemas, extract the placeholder name from refn: reference
         const placeholderName = value.replace("refn:", "");
         const refDep = dependencyMap[placeholderName];
         
-        let displayName = labels[key] || key; // fallback to attribute label
+        // Default to attribute label as display name
+        let displayName = labels[key] || key;
         
-        if (refDep) {
+        // If the placeholder has a dependency with attributes, treat it like a reference
+        // and recursively build its hierarchy
+        if (refDep && refDep.capture_base?.attributes) {
+          const refLabelOverlays = refDep.overlays?.label;
+          const refLabelOverlay = Array.isArray(refLabelOverlays)
+            ? (refLabelOverlays.find((l) => l.language === langCodeOCA) || refLabelOverlays[0])
+            : null;
+          
           const refMetaOverlays = refDep.overlays?.meta;
           const refMetaOverlay = Array.isArray(refMetaOverlays)
             ? (refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0])
@@ -236,14 +244,39 @@ export const generateTreeLayout = (
           if (refMetaOverlay?.name) {
             displayName = refMetaOverlay.name;
           }
+
+          // Recursively build hierarchy for placeholder with attributes
+          const childNode = buildHierarchy({
+            nodeId: placeholderName,
+            attributes: refDep.capture_base.attributes,
+            labelOverlay: refLabelOverlay,
+            metaOverlay: refMetaOverlay,
+            nodeType: "placeholder" // Keep as placeholder type even with attributes
+          });
+          if (childNode) {
+            nodeData.children.push(childNode);
+          }
+        } else {
+          // True placeholder with no attributes yet - just create a leaf node
+          if (refDep) {
+            const refMetaOverlays = refDep.overlays?.meta;
+            const refMetaOverlay = Array.isArray(refMetaOverlays)
+              ? (refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0])
+              : null;
+            
+            // Use schema metadata name if available
+            if (refMetaOverlay?.name) {
+              displayName = refMetaOverlay.name;
+            }
+          }
+          
+          nodeData.children.push({
+            id: placeholderName, // Use the placeholder name as the node ID for consistency
+            name: displayName,
+            type: "placeholder",
+            children: []
+          });
         }
-        
-        nodeData.children.push({
-          id: key, // Use the field name (e.g., "q9") as the node ID
-          name: displayName,
-          type: "placeholder",
-          children: []
-        });
       }
     });
 
@@ -395,28 +428,31 @@ export const generateDetailedLayout = (
           target: referencedId
         });
       } else if (field.isPlaceholder) {
-        // Use attribute key for internal ID (for lookups), but label for display
-        const placeholderId = field.attributeKey || field.originalName || field.name;
+        // Extract the placeholder name from the refn: reference (e.g., "refn:placeholder1" -> "placeholder1")
+        const placeholderName = field.type.replace("refn:", "");
+        
+        // Use the placeholder name as the node ID for lookups
+        const placeholderId = placeholderName;
 
-        // Check if this placeholder schema now has actual attributes
+        // Check if this placeholder schema now has actual attributes in dependencies
         let placeholderFields = [];
-        // Default title will be from the schema metadata name
-        let placeholderTitle = field.originalName || field.name; // fallback
+        // Default title is the label from the parent schema
+        let placeholderTitle = field.originalName || field.name;
         let hasRealAttributes = false; // Track if placeholder has real attributes
 
         // Look for the schema in dependencies to see if it has attributes
-        // Check by dependency ID first (matches attribute key), then by name
+        // Check by dependency ID (matches placeholder name) or by meta overlay name
         if (dependencies) {
           const dependencyWithAttributes = dependencies.find((dep) => {
-            // First check if the dependency's d field matches the placeholder ID (attribute key)
-            if (dep.d === placeholderId) return true;
+            // First check if the dependency's d field matches the placeholder name
+            if (dep.d === placeholderName) return true;
             
             // Fall back to checking the meta overlay name
             const metaOverlays = dep.overlays?.meta;
             const metaOverlay = Array.isArray(metaOverlays)
               ? (metaOverlays.find((m) => m.language === langCodeOCA) || metaOverlays[0])
               : null;
-            return metaOverlay?.name === placeholderId;
+            return metaOverlay?.name === placeholderName;
           });
 
           // Check if it has actual attributes (not just an empty object)
