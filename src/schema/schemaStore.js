@@ -74,6 +74,8 @@ export const createDefaultSchemaState = () => ({
   overlaySelections: overlayItems,
   selectedOverlay: "",
   // Language-specific data
+  // IMPORTANT: lanAttributeRowData keys are language NAMES ("English", "French"), not OCA codes ("eng", "fra")
+  // Structure: { "English": [{Attribute: "name", Label: "Name", Description: "...", List: "Not a List"}], ... }
   lanAttributeRowData: {},
   // Form Information overlay data (per-schema)
   FormInformationRowData: [],

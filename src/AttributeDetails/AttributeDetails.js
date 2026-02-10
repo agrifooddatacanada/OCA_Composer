@@ -407,9 +407,10 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       
       // Filter each language's data to only include current attributes
       // This preserves the original labels/descriptions while removing deleted attributes
+      // NOTE: lanAttributeRowData is keyed by language NAMES ("English", "French"), not OCA codes
       const updatedLanAttributeRowData = {};
-      Object.keys(currentLanAttributeRowData).forEach(langCodeOCA => {
-        const filteredData = currentLanAttributeRowData[langCodeOCA].filter(
+      Object.keys(currentLanAttributeRowData).forEach(languageName => {
+        const filteredData = currentLanAttributeRowData[languageName].filter(
           item => currentAttributeNames.has(item.Attribute)
         );
         
@@ -427,7 +428,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
           }
         });
         
-        updatedLanAttributeRowData[langCodeOCA] = filteredData;
+        updatedLanAttributeRowData[languageName] = filteredData;
       });
       
       // attributesList is computed automatically from attributes

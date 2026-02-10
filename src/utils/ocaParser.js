@@ -30,6 +30,7 @@ import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./
  * KEY EXTRACTIONS:
  * - attributes: Array of {Attribute, Type, List, Required, ...}
  * - lanAttributeRowData: Labels/descriptions by language from label overlays
+ *   NOTE: Keyed by language NAMES ("English", "French"), not OCA codes ("eng", "fra")
  * - entryCodes: Entry code definitions for list attributes
  * - overlayData: Character encoding, format rules, cardinality, etc.
  */
