@@ -96,6 +96,7 @@ function App() {
   ] = useState({});
   const [unframedUnitList, setUnframedUnitList] = useState([]);
   const [unitRowDataWhenNoFrameAll, setUnitRowDataWhenNoFrameAll] = useState([]);
+  const [decimalSeparator, setDecimalSeparator] = useState(".");
 
   // Attribute framing
   const [attributeFramingRowData, setAttributeFramingRowData] = useState([]);
@@ -822,7 +823,9 @@ function App() {
             unframedAttributeList,
             setUnframedAttributeList,
             attributeFramingRowData,
-            setAttributeFramingRowData
+            setAttributeFramingRowData,
+            decimalSeparator,
+            setDecimalSeparator
           }}
         >
           <Box

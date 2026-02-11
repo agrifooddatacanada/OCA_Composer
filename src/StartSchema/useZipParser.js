@@ -9,6 +9,8 @@ import {
   dataTypes,
   FIELD_RANGE_OVERLAY,
   RANGE,
+  FIELD_DECIMAL_SEPARATOR_OVERLAY,
+  DECIMAL_SEPARATOR,
   SCHEMA_MODE_MULTI_LEVEL,
   SCHEMA_MODE_SINGLE,
   SENSITIVE
@@ -19,6 +21,7 @@ import {
   hasAttributeOrdering,
   hasEntryCodeOrdering,
   hasRangeOverlay,
+  hasDecimalSeparatorOverlay,
   hasUnitFramingOverlay,
   hasAttributeFramingOverlay,
   isMultiLevelSchema,
@@ -42,6 +45,7 @@ const useZipParser = () => {
     setCardinalityData,
     setUnitRowData,
     setRangeRowData,
+    setDecimalSeparator,
     setAttributeFramingRowData,
     setSchemaMode
   } = useContext(Context);
@@ -99,6 +103,7 @@ const useZipParser = () => {
     let attributesWithListType = [];
     const newUnitFramingRowData = [];
     const newRangeRowData = [];
+    let newDecimalSeparator = ".";
     const newAttributeFramingRowData = [];
 
     if (isMultiLevelSchema(root?.attributes || {})) {
@@ -477,6 +482,20 @@ const useZipParser = () => {
       }));
     }
 
+    if (ocaPackageData && hasDecimalSeparatorOverlay(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const decimalSeparatorOverlay = ocaPackageData.extensions[ADC][captureBaseSaid].overlays[DECIMAL_SEPARATOR];
+      newDecimalSeparator = decimalSeparatorOverlay?.decimal_separator || ".";
+
+      setOverlay((prev) => ({
+        ...prev,
+        [FIELD_DECIMAL_SEPARATOR_OVERLAY]: {
+          ...prev[FIELD_DECIMAL_SEPARATOR_OVERLAY],
+          selected: true
+        }
+      }));
+    }
+
     if (ocaPackageData && hasAttributeOrdering(ocaPackageData)) {
       const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
       const attributeOrdering = replaceCharsInKeys(
@@ -499,6 +518,7 @@ const useZipParser = () => {
     setCharacterEncodingRowData(newCharacterEncodingRowData);
     setLanAttributeRowData(newLangAttributeRowData);
     setRangeRowData(newRangeRowData);
+    setDecimalSeparator(newDecimalSeparator);
   };
 
   return {

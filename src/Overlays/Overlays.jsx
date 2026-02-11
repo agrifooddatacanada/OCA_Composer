@@ -73,7 +73,7 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("Range");
     } else if (item === "Attribute Framing") {
       setCurrentPage("AttributeFraming");
-    } else if(item === "Data Separator") {
+    } else if(item === "Decimal Separator") {
       setCurrentPage("DataSeparator");
     } else {
       setCurrentPage("FormatRules");
@@ -126,7 +126,7 @@ const Overlays = ({ pageBack, pageForward }) => {
       setCurrentPage("Range");
     } else if (overlayName === "Attribute Framing") {
       setCurrentPage("AttributeFraming");
-    } else if (overlayName === "Data Separator") {
+    } else if (overlayName === "Decimal Separator") {
       setCurrentPage("DataSeparator");
     } else {
       setCurrentPage("FormatRules");

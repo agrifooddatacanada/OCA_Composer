@@ -19,7 +19,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { Context } from "../App";
-import { FIELD_DATA_SEPARATOR_OVERLAY } from "../constants/constants";
+import { FIELD_DECIMAL_SEPARATOR_OVERLAY } from "../constants/constants";
 
 const SectionTitle = ({ checked, onChange, title, help }) => {
   const { t } = useTranslation();
@@ -38,8 +38,14 @@ const SectionTitle = ({ checked, onChange, title, help }) => {
 
 const DataSeparator = () => {
   const { t } = useTranslation();
-  const { setCurrentPage, setOverlay, setSelectedOverlay, attributeRowData } =
-    useContext(Context);
+  const { 
+    setCurrentPage, 
+    setOverlay, 
+    setSelectedOverlay, 
+    attributeRowData,
+    decimalSeparator,
+    setDecimalSeparator
+  } = useContext(Context);
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
@@ -53,7 +59,6 @@ const DataSeparator = () => {
   const [enableArrayDelimiter, setEnableArrayDelimiter] = useState(hasArrayAttributes);
 
   // Values
-  const [decimalSeparator, setDecimalSeparator] = useState("dot"); // dot | comma
   const [fieldDelimiter, setFieldDelimiter] = useState("comma"); // comma | tab | semicolon | pipe
   const [quoteChar, setQuoteChar] = useState("\"");
   const [escapeChar, setEscapeChar] = useState("\\");
@@ -61,16 +66,36 @@ const DataSeparator = () => {
   const [dataStartRow, setDataStartRow] = useState(1);
   const [arrayDelimiter, setArrayDelimiter] = useState(";");
 
+
+  // const handleSave = () => {
+  // };
   const handleForward = () => {
+    // This code was copied from range overlay, might be used if we add validation to this overlay
+    // const hasValidationError = Object.values(errors).some((attrErrors) =>
+    //   Object.values(attrErrors).some((isError) => isError)
+    // );
+
+    // if (hasValidationError) {
+    //   setShowValidationError(true);
+    //   setTimeout(() => {
+    //     setShowValidationError(false);
+    //   }, 3000);
+    //   return;
+    // }
+
+    // handleSave();
     setSelectedOverlay("");
     setCurrentPage("Overlays");
+  };
+  const handleBack = () => {
+    setShowDeleteConfirmation(true);
   };
 
   const handleDeleteCurrentOverlay = () => {
     setOverlay((prev) => ({
       ...prev,
-      [FIELD_DATA_SEPARATOR_OVERLAY]: {
-        ...prev[FIELD_DATA_SEPARATOR_OVERLAY],
+      [FIELD_DECIMAL_SEPARATOR_OVERLAY]: {
+        ...prev[FIELD_DECIMAL_SEPARATOR_OVERLAY],
         selected: false
       }
     }));
@@ -83,7 +108,7 @@ const DataSeparator = () => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={() => setShowDeleteConfirmation(true)}
+      pageBack={handleBack}
       backText={t("Remove overlay")}
     >
       {showDeleteConfirmation && (
@@ -119,11 +144,11 @@ const DataSeparator = () => {
               <Select
                 labelId="decimal-separator-label"
                 label={t("Choose decimal separator")}
-                value={decimalSeparator}
+                value={decimalSeparator || "."}
                 onChange={(e) => setDecimalSeparator(e.target.value)}
               >
-                <MenuItem value="dot">{t("Dot ( . )")}</MenuItem>
-                <MenuItem value="comma">{t("Comma ( , )")}</MenuItem>
+                <MenuItem value=".">{t("Dot ( . )")}</MenuItem>
+                <MenuItem value=",">{t("Comma ( , )")}</MenuItem>
               </Select>
             </FormControl>
           </CardContent>

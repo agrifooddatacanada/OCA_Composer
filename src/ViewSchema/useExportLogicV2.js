@@ -19,7 +19,9 @@ import {
   RANGE,
   ATTRIBUTE_FRAMING,
   FORM,
-  FIELD_FORM_INFORMATION_OVERLAY
+  FIELD_FORM_INFORMATION_OVERLAY,
+  FIELD_DECIMAL_SEPARATOR_OVERLAY,
+  DECIMAL_SEPARATOR,
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -51,7 +53,8 @@ const useExportLogicV2 = () => {
     cardinalityData,
     rangeRowData,
     attributeFramingRowData,
-    formBuilderPages
+    formBuilderPages,
+    decimalSeparator
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -487,6 +490,12 @@ const useExportLogicV2 = () => {
             attributes: rangeOverlayInput
           }
         }),
+        ...(overlay[FIELD_DECIMAL_SEPARATOR_OVERLAY].selected && {
+          decimal_separator_overlay: {
+            type: DECIMAL_SEPARATOR,
+            decimal_separator: decimalSeparator
+          }
+        }),
         ...(sensitiveAttributes.length > 0 && {
           sensitive_overlay: {
             type: SENSITIVE,
@@ -531,10 +540,11 @@ const useExportLogicV2 = () => {
           }
         }
       };
-
+      console.log("extension", extension);
+      console.log("bundle", bundle);
       const ocaPackageService = new OcaPackage(extension, bundle);
       const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
-
+      console.log("ocaPackage", ocaPackage);
       // Generate and download text readme
       jsonToTextFile(bundle.bundle, ocaPackage);
 
