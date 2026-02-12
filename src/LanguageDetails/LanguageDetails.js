@@ -12,8 +12,6 @@ import Loading from "../components/Loading";
 import { useMultiSchema } from "../schema/schemaContext";
 import { 
   getPrioritizedLangNames, 
-  getBestLangName, 
-  getUICode, 
   langCodeOCAFromName 
 } from "../utils/languageUtils";
 
@@ -46,19 +44,15 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
 
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
   
-  // Update currentLanguage when UI language changes OR when languages array changes
+  // Update currentLanguage when languages array changes
+  // NOTE: We do NOT auto-sync with UI language to preserve user's schema language selection
   useEffect(() => {
     // If current language is no longer in the list, switch to first available
     if (!languages.includes(currentLanguage)) {
       setCurrentLanguage(filteredLanguages[0]);
-    } else {
-      // Try to match UI language preference
-      const bestLanguage = getBestLangName(getUICode(), languages);
-      if (bestLanguage && languages.includes(bestLanguage)) {
-        setCurrentLanguage(bestLanguage);
-      }
     }
-  }, [t, languages, filteredLanguages, currentLanguage]); // Use 't' to track language changes
+    // Don't auto-switch based on UI language - let user control schema language independently
+  }, [languages, filteredLanguages, currentLanguage]);
 
   const [loading, setLoading] = useState(true);
   const setLoadingIfChanged = useCallback((next) => {

@@ -12,7 +12,7 @@ import {
   TYPE_CHILD_SCHEMA,
   TYPE_ARRAY_CHILD_SCHEMA
 } from "../constants/constants";
-import { langNameFromCodeUI, langNameFromCodeOCA, LanguageConstants } from "./languageUtils";
+import { langNameFromCodeUI, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
 
 /**
@@ -634,52 +634,58 @@ export class OCAParser {
   /**
    * Build metadata from meta overlays
    * @private
+   * 
+   * ARCHITECTURE: Normalize to OCA standard (3-letter codes) at the boundary
+   * - Accepts any format: 2-letter (en, fr) or 3-letter (eng, fra) codes
+   * - Normalizes to OCA standard: "eng", "fra"
+   * - Stores localized with OCA codes as keys (expected by SchemaMetadata)
+   * - Deduplicates automatically: "en" and "eng" both normalize to "eng"
+   * - Exports language list as full names for UI display
    */
   static _buildMetadata(schemaData, schemaId) {
     const metaOverlay = schemaData.overlays?.meta;
     const localized = {};
+    const languageCodesSet = new Set();
     
     // Extract from OCA meta overlays (array format)
+    // Normalize all codes to OCA 3-letter format to prevent duplicates
     if (Array.isArray(metaOverlay)) {
       metaOverlay.forEach((m) => {
         if (m?.language) {
-          localized[m.language] = {
+          // Normalize to OCA code (en → eng, fr → fra)
+          const normalizedCode = normalizeToOCACode(m.language);
+          
+          localized[normalizedCode] = {
             name: m.name || schemaId,
             description: m.description || ""
           };
+          languageCodesSet.add(normalizedCode);
         }
       });
     }
     
     // Fallback to default English if no meta overlays
-    if (!localized.eng) {
-      localized.eng = {
+    if (!languageCodesSet.has(LanguageConstants.DEFAULT_OCA_CODE)) {
+      localized[LanguageConstants.DEFAULT_OCA_CODE] = {
         name: schemaData.schemaName || schemaId,
         description: schemaData.schemaDescription || ""
       };
+      languageCodesSet.add(LanguageConstants.DEFAULT_OCA_CODE);
     }
 
-    // Extract actual languages from meta overlays
-    const detectedLanguages = Object.keys(localized);
-    
-    // Sort languages with English first, then alphabetically
-    const sortedLanguages = detectedLanguages.sort((a, b) => {
-      if (a === 'eng') return -1;
-      if (b === 'eng') return 1;
-      return a.localeCompare(b);
-    });
-    
-    const languages = sortedLanguages.length > 0 
-      ? sortedLanguages.map(code => {
-          // Convert language codes to full names (eng -> English, fra -> French)
-          const codeMap = { eng: 'English', fra: 'French', deu: 'German', spa: 'Spanish' };
-          return codeMap[code] || code;
-        })
-      : LanguageConstants.FALLBACK_LANG_NAMES;
+    // Convert OCA codes to language names for UI display
+    // Sort with English first, then alphabetically
+    const languages = Array.from(languageCodesSet)
+      .map(code => langNameFromCodeOCA(code) || code)
+      .sort((a, b) => {
+        if (a === LanguageConstants.DEFAULT_LANG_NAME) return -1;
+        if (b === LanguageConstants.DEFAULT_LANG_NAME) return 1;
+        return a.localeCompare(b);
+      });
 
     return {
-      localized,
-      languages
+      localized,   // Keyed by OCA codes: { eng: {...}, fra: {...} }
+      languages    // Array of language names: ["English", "French"]
     };
   }
 }

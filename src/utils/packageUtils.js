@@ -25,7 +25,7 @@
  * Each dependency is a complete OCA bundle that can be referenced by the parent schema.
  */
 
-import { langNameFromCodeUI } from './languageUtils';
+import { langNameFromCodeUI, langNameFromCodeOCA, normalizeToOCACode } from './languageUtils';
 
 /**
  * Get the root bundle from an OCA package, handling both format variations
@@ -110,10 +110,13 @@ export const getPackageLanguages = (pkg) => {
     if (Array.isArray(schemaData.overlays.meta)) {
       schemaData.overlays.meta.forEach(metaOverlay => {
         if (metaOverlay.language) {
-          // Convert OCA code (eng, fra) to language name (English, French)
-          const langName = langNameFromCodeUI(metaOverlay.language) || 
-                          (metaOverlay.language === 'eng' ? 'English' : metaOverlay.language);
-          languageSet.add(langName);
+          // Convert any language code format to language name
+          // Try OCA code (3-letter: eng, fra) first, then UI code (2-letter: en, fr)
+          const langName = langNameFromCodeOCA(metaOverlay.language) || 
+                          langNameFromCodeUI(metaOverlay.language);
+          if (langName) {
+            languageSet.add(langName);
+          }
         }
       });
     }
@@ -124,9 +127,13 @@ export const getPackageLanguages = (pkg) => {
       if (Array.isArray(overlay)) {
         overlay.forEach(item => {
           if (item.language) {
-            const langName = langNameFromCodeUI(item.language) || 
-                            (item.language === 'eng' ? 'English' : item.language);
-            languageSet.add(langName);
+            // Convert any language code format to language name
+            // Try OCA code (3-letter: eng, fra) first, then UI code (2-letter: en, fr)
+            const langName = langNameFromCodeOCA(item.language) || 
+                            langNameFromCodeUI(item.language);
+            if (langName) {
+              languageSet.add(langName);
+            }
           }
         });
       }

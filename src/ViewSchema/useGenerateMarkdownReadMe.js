@@ -11,7 +11,7 @@
  */
 
 import i18next from "i18next";
-import { langNameFromCodeUI, langCodeUIFromName } from "../utils/languageUtils";
+import { langNameFromCodeUI, langCodeUIFromName, langNameFromCodeOCA } from "../utils/languageUtils";
 import { DEFAULT_LANGUAGE_CODE } from "../constants/constants";
 import {
   downloadMarkdownFile,
@@ -57,7 +57,8 @@ const useGenerateMarkdownReadMe = () => {
       if (layer.language) {
         // Convert UI code (en, fr) to language name (English, French)
         const langName = langNameFromCodeUI(layer.language) || 
-                        (layer.language === 'en' ? 'English' : layer.language);
+                        // Convert any language code format to language name
+                        (langNameFromCodeOCA(layer.language) || langNameFromCodeUI(layer.language) || layer.language);
         languageSet.add(langName);
       }
     });

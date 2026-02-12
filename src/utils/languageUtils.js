@@ -138,6 +138,36 @@ export const langCodeUIFromCodeOCA = (langCodeOCA) => {
   return langName ? langCodeUIFromName(langName) : "en";
 };
 
+/**
+ * Normalize any language code to OCA 3-letter format
+ * Handles both 2-letter UI codes and 3-letter OCA codes
+ * @param {string} code - Any language code: "en", "eng", "fr", "fra"
+ * @returns {string} OCA 3-letter code: "eng", "fra"
+ * 
+ * ARCHITECTURE: This is the boundary normalization function
+ * - Use when importing/parsing data that might have mixed formats
+ * - Ensures internal consistency by standardizing to OCA format
+ */
+export const normalizeToOCACode = (code) => {
+  if (!code) return LanguageConstants.DEFAULT_OCA_CODE;
+  
+  // Try as OCA code first (if valid, return as-is)
+  const langNameFromOCA = langNameFromCodeOCA(code);
+  if (langNameFromOCA) {
+    return code.toLowerCase();
+  }
+  
+  // Try as UI code, convert to OCA
+  const langNameFromUI = langNameFromCodeUI(code);
+  if (langNameFromUI) {
+    return langCodeOCAFromName(langNameFromUI);
+  }
+  
+  // Unknown code - return as-is (lowercase)
+  return code.toLowerCase();
+};
+
+
 // =============================================================================
 // HELPERS
 // =============================================================================
