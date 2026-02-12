@@ -284,17 +284,9 @@ function applyLabelAndInfoOverlays(ocaSchema, editorState) {
   const informationOverlays = [];
 
   Object.entries(lanData).forEach(([language, rows]) => {
-    const langCodeMap = {
-      English: "eng",
-      French: "fra",
-      German: "deu",
-      Spanish: "spa",
-      eng: "eng",
-      fra: "fra",
-      deu: "deu",
-      spa: "spa",
-    };
-    const langCode = langCodeMap[language] || language;
+    // Convert language name to 3-letter OCA code (English -> eng, French -> fra)
+    // Same pattern as applyEntryOverlay above
+    const langCode = langCodeOCAFromName(language) || language.toLowerCase().slice(0, 3);
 
     const existingLabel = ocaSchema.overlays?.label?.find((l) => l.language === langCode);
     const existingInfo = ocaSchema.overlays?.information?.find((i) => i.language === langCode);
