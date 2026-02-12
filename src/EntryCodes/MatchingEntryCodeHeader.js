@@ -103,17 +103,15 @@ const MatchingEntryCodeHeader = () => {
         const newRow = {};
         for (const assign of assignedData) {
           for (const lang of matchingEntryCodeMap[assign]) {
-            // Convert language name to OCA code (e.g., "English" -> "eng")
-            // Keep "Code" as is
-            const langCodeOCA = lang === "Code" ? "Code" : langCodeOCAFromName(lang);
-            newRow[langCodeOCA] = row[assign];
+            // Keep language names as-is for internal storage
+            // CodeGrid expects language names ("English", "French"), not OCA codes
+            newRow[lang] = row[assign];
           }
         }
         // Ensure all languages have a key (using OCA codes)
         for (const lang of newLanguages) {
-          const langCodeOCA = lang === "Code" ? "Code" : langCodeOCAFromName(lang);
-          if (!(langCodeOCA in newRow)) {
-            newRow[langCodeOCA] = '';
+          if (!(lang in newRow)) {
+            newRow[lang] = '';
           }
         }
         newRowData.push(newRow);
