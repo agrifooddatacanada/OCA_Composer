@@ -1,7 +1,7 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
-import { langNameFromTwoLetters, langCodeOCAFromName, langTwoLettersFromCodeOCA } from "./languageUtils";
+import { langCodeOCAFromName, langNameFromTwoLetters } from "./languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -705,7 +705,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   const attributes = Object.keys(coreOverlays.capture_base.attributes);
   const attributeTypeMap = coreOverlays.capture_base.attributes;
   let fileContent = "# Add attributes (capture base) \n";
-  fileContent += "ADD ATTRIBUTE";
+  fileContent += "ADD Attribute";
 
   attributes.forEach((attribute) => {
     const attributeType = Array.isArray(attributeTypeMap[attribute])
@@ -719,7 +719,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Classification
   fileContent += "# Add classification\n";
   if (coreOverlays.capture_base.classification) {
-    fileContent += `ADD CLASSIFICATION ${coreOverlays.capture_base.classification}`;
+    fileContent += `ADD classification ${coreOverlays.capture_base.classification}`;
     fileContent += "\n";
   }
 
@@ -729,14 +729,14 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
     // Escape quotes in name and description
     const escapedName = escapeForOCAString(normalizeEscapedQuotes(item.name || ""));
     const escapedDesc = escapeForOCAString(normalizeEscapedQuotes(item.description || ""));
-    fileContent += `\nADD META ${langTwoLettersFromCodeOCA(item.language)} PROPS name="${escapedName}" description="${escapedDesc}"`;
+    fileContent += `\nADD Meta ${item.language} PROPS name="${escapedName}" description="${escapedDesc}"`;
   });
   fileContent += "\n";
 
   // Format overlay
   fileContent += "# Add format overlay\n";
   if (coreOverlays.format) {
-    fileContent += "ADD FORMAT ATTRS";
+    fileContent += "ADD Format ATTRS";
     Object.keys(coreOverlays.format.attribute_formats).forEach((attribute) => {
       // Normalize and escape quotes to prevent double-escaping issues
       const formatRule = coreOverlays.format.attribute_formats[attribute];
@@ -760,7 +760,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   fileContent += "# Add label overlay";
   if (coreOverlays.label) {
     coreOverlays.label.forEach((item) => {
-      fileContent += `\nADD LABEL ${langTwoLettersFromCodeOCA(item.language)} ATTRS`;
+      fileContent += `\nADD Label ${item.language} ATTRS`;
       Object.keys(item.attribute_labels).forEach((attribute) => {
         // Escape quotes in labels
         const escapedLabel = escapeForOCAString(normalizeEscapedQuotes(item.attribute_labels[attribute] || ""));
@@ -774,7 +774,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   fileContent += "# Add information overlay";
   if (coreOverlays.information) {
     coreOverlays.information.forEach((item) => {
-      fileContent += `\nADD INFORMATION ${langTwoLettersFromCodeOCA(item.language)} ATTRS`;
+      fileContent += `\nADD Information ${item.language} ATTRS`;
       Object.keys(item.attribute_information).forEach((attribute) => {
         // Escape quotes in information/descriptions
         const escapedInfo = escapeForOCAString(normalizeEscapedQuotes(item.attribute_information[attribute] || ""));
@@ -797,7 +797,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
 
     if (coreOverlays.entry) {
       coreOverlays.entry.forEach((item) => {
-        fileContent += `ADD ENTRY ${langTwoLettersFromCodeOCA(item.language)} ATTRS`;
+        fileContent += `ADD ENTRY ${item.language} ATTRS`;
         Object.keys(item.attribute_entries).forEach((attribute) => {
           const entries = item.attribute_entries[attribute];
           const entriesText = Object.keys(entries)
@@ -823,7 +823,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Unit overlay
   fileContent += "# Add units overlay\n";
   if (coreOverlays.unit) {
-    fileContent += "ADD UNIT ATTRS";
+    fileContent += "ADD Unit ATTRS";
     Object.keys(coreOverlays.unit.attribute_unit).forEach((attribute) => {
       fileContent += ` ${attribute}="${coreOverlays.unit.attribute_unit[attribute]}"`;
     });

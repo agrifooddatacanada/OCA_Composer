@@ -200,6 +200,49 @@ export const codeToDivision = {
   RDF60: "Humanities and the arts"
 };
 
+/**
+ * Parse classification code from various formats and return division/group
+ * Handles: "RDF40", "CRDC:RDF40", "ANZSRC-FOR:07 AGRICULTURAL...", etc.
+ */
+export const parseClassificationCode = (classificationCode) => {
+  if (!classificationCode || typeof classificationCode !== 'string') {
+    return null;
+  }
+
+  let rdfCode = null;
+  const trimmed = classificationCode.trim();
+  
+  // Format 1: Just the code ("RDF40" or "RDF401")
+  if (/^RDF\d+(-\d+)?$/.test(trimmed)) {
+    rdfCode = trimmed;
+  }
+  // Format 2: "CRDC:RDF40" or "ANZSRC-FOR:07..."
+  else {
+    const match = trimmed.match(/RDF\d+(-\d+)?/);
+    if (match) {
+      rdfCode = match[0];
+    }
+  }
+  
+  if (!rdfCode) {
+    return null;
+  }
+  
+  // Check if it's a group code or division code
+  const division = codeToDivision[rdfCode];
+  const group = codeToGroup[rdfCode];
+  
+  if (group && division) {
+    // It's a group code - return both
+    return { division, group };
+  } else if (division) {
+    // It's a division code only - return division with empty group
+    return { division, group: '' };
+  }
+  
+  return null;
+};
+
 export const codeToGroup = {
   "": "",
   RDF101: "Mathematics and statistics",

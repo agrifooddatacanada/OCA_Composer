@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import { langCodeOCAFromName, langTwoLettersFromName } from "../utils/languageUtils";
+import { langCodeOCAFromName } from "../utils/languageUtils";
 import { getPackageBundle, getPackageDependencies, findSchemaById, getPackageBundleId } from "../utils/packageUtils";
 import {
   ADC,
@@ -104,11 +104,8 @@ const useOCAExport = () => {
   }, {});
 
   const classificationCode = useMemo(() => {
-    if (groupCodes[divisionGroup.group]) {
-      return groupCodes[divisionGroup.group];
-    }
-    return divisionCodes[divisionGroup.division];
-  }, [divisionGroup.division, divisionGroup.group]);
+    return metadata?.classification || null;
+  }, [metadata?.classification]);
 
   // Check if schema has nested child schemas (refs: or refn: types, or "Child Schema" display format)
   const hasNestedSchemas = useMemo(() => {
@@ -230,7 +227,7 @@ const useOCAExport = () => {
       const languageObject = {};
       languageObject.language = language;
       languageObject.code =
-        langTwoLettersFromName(language) ||
+        langCodeOCAFromName(language) ||
         customIsos[language.toLowerCase()] ||
         "unknown";
 
@@ -457,25 +454,7 @@ const useOCAExport = () => {
       }
     });
 
-    // Generate bundle from text DSL
     const bundle = await generateOCABundle(data);
-
-    // Debug logging
-    if (!bundle) {
-      console.error("generateOCABundle returned null/undefined");
-      console.error("Text DSL sent:", data);
-      throw new Error("generateOCABundle returned empty response");
-    }
-    
-    if (!bundle.bundle) {
-      console.error("Bundle structure missing .bundle property:", bundle);
-      throw new Error("Invalid bundle structure - missing .bundle property");
-    }
-
-    if (!bundle.bundle.capture_base) {
-      console.error("Bundle missing capture_base:", bundle.bundle);
-      throw new Error("Invalid bundle structure - missing capture_base");
-    }
 
     const sensitiveAttributes = targetAttributeRowData
       .filter((item) => item.Flagged)

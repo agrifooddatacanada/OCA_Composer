@@ -198,6 +198,7 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
       schemaId: bundleId || "root",
       schemaName,
       schemaDescription,
+      classification: bundle?.capture_base?.classification || null,
       attributes: bundle?.capture_base?.attributes || {},
       overlays: bundle?.overlays || {},
       labels:
@@ -215,6 +216,7 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
       schemaId: bundleId || "root",
       schemaName: rootMetaOverlay.name,
       schemaDescription: rootMetaOverlay.description || "",
+      classification: bundle?.capture_base?.classification || null,
       attributes: bundle?.capture_base?.attributes || {},
       overlays: bundle?.overlays || {},
       labels:
@@ -248,6 +250,7 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
       schemaId: dependency.d,
       schemaName,
       schemaDescription,
+      classification: dependency.capture_base?.classification || null,
       attributes: dependency.capture_base?.attributes || {},
       overlays: dependency.overlays || {},
       labels:

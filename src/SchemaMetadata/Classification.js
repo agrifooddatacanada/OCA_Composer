@@ -4,17 +4,44 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { Box, Tooltip, Typography } from '@mui/material';
 import { CustomPalette } from '../constants/customPalette';
-import { classification } from '../constants/constants';
+import { classification, parseClassificationCode, groupCodes, divisionCodes } from '../constants/constants';
 import { Context } from '../App';
+import { useMultiSchema } from '../schema/schemaContext';
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from 'react-i18next';
 
 const Classification = () => {
   const { t } = useTranslation();
-  const {
-    divisionGroup,
-    setDivisionGroup
-  } = useContext(Context);
+  const { divisionGroup, setDivisionGroup } = useContext(Context);
+  const { getSchema, updateSchema } = useMultiSchema();
+  const schemaState = getSchema();
+
+  // Initialize divisionGroup from schema metadata on mount
+  useEffect(() => {
+    const classificationCode = schemaState?.metadata?.classification;
+    if (classificationCode) {
+      const parsed = parseClassificationCode(classificationCode);
+      if (parsed && (divisionGroup.division !== parsed.division || divisionGroup.group !== parsed.group)) {
+        setDivisionGroup(parsed);
+      }
+    }
+  }, [schemaState?.metadata?.classification]);
+
+  // Update schema metadata when divisionGroup changes
+  useEffect(() => {
+    if (divisionGroup.division) {
+      // Prefer group code if group is selected, otherwise use division code
+      const code = (divisionGroup.group && groupCodes[divisionGroup.group]) || 
+                   divisionCodes[divisionGroup.division];
+      if (code && schemaState?.metadata?.classification !== code) {
+        updateSchema({
+          metadata: {
+            classification: code
+          }
+        });
+      }
+    }
+  }, [divisionGroup.division, divisionGroup.group]);
 
   const divisionsDropdown = useMemo(() => {
     return Object.keys(classification).map((division) => {
@@ -31,16 +58,6 @@ const Classification = () => {
       );
     });
   }, [divisionGroup.division]);
-
-  useEffect(() => {
-    // Only change when the groups is not within the division
-    if (!(classification[divisionGroup.division].includes(divisionGroup.group))) {
-      setDivisionGroup(prev => ({
-        ...prev,
-        group: classification[prev.division][0],
-      }));
-    }
-  }, [divisionGroup.division, setDivisionGroup]);
 
   return (
     <Box sx={{ textAlign: 'left', marginBottom: '1rem', height: '5rem' }}>

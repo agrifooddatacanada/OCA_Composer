@@ -686,7 +686,8 @@ export class OCAParser {
 
     return {
       localized,   // Keyed by OCA codes: { eng: {...}, fra: {...} }
-      languages    // Array of language names: ["English", "French"]
+      languages,   // Array of language names: ["English", "French"]
+      classification: schemaData.classification || null  // Extract from capture_base
     };
   }
 }

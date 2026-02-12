@@ -5,6 +5,7 @@ import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { langCodeOCAFromName } from "../utils/languageUtils";
+import { parseClassificationCode } from "../constants/constants";
 
 export default function SchemaDescription({ currentLanguage }) {
   const { t, i18n } = useTranslation();
@@ -33,8 +34,17 @@ export default function SchemaDescription({ currentLanguage }) {
     localizedMeta?.description ||
     (uiLanguage === "en" ? currentMeta?.description : null) ||
     t("No description available");
-  const classification =
-    divisionGroup?.group || divisionGroup?.division || t("Not classified");
+  
+  // Use classification from schema metadata if available, fallback to divisionGroup
+  const classificationFromMetadata = currentMeta?.classification;
+  let classification = divisionGroup?.group || divisionGroup?.division || t("Not classified");
+  
+  if (classificationFromMetadata) {
+    const parsed = parseClassificationCode(classificationFromMetadata);
+    if (parsed) {
+      classification = parsed.group || parsed.division || classification;
+    }
+  }
 
   return (
     <Box>
