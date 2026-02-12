@@ -12,7 +12,7 @@ import {
   TYPE_CHILD_SCHEMA,
   TYPE_ARRAY_CHILD_SCHEMA
 } from "../constants/constants";
-import { langNameFromCodeUI, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
+import { langNameFromTwoLetters, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
 
 /**
@@ -291,9 +291,10 @@ export class OCAParser {
         row = { Code: code };
         entryCodes[attrName].push(row);
       }
-      // CONVERSION: OCA 3-letter code (eng) → Full language name (English)
+      // CONVERSION: Any language code format → Full language name
+      // Try OCA code (3-letter: eng, fra) first, then 2-letter: en, fr
       // This is how we store entry codes internally for consistency with UI
-      const langName = langNameFromCodeOCA(langCode) || langCode;
+      const langName = langNameFromCodeOCA(langCode) || langNameFromTwoLetters(langCode) || langCode;
       row[langName] = text || "";
     };
 
@@ -369,7 +370,7 @@ export class OCAParser {
       
       // Convert OCA code (e.g., "eng") to schema language name (e.g., "English")
       // Prefer OCA->Name mapping, then UI code mapping, then fallback to raw code
-      const languageName = langNameFromCodeOCA(langCode) || langNameFromCodeUI(langCode) || langCode;
+      const languageName = langNameFromCodeOCA(langCode) || langNameFromTwoLetters(langCode) || langCode;
       
       lanAttributeRowData[languageName] = attributesWithLists.map((attr) => ({
         Attribute: attr.Attribute,
@@ -520,7 +521,7 @@ export class OCAParser {
     formOverlayArray.forEach((overlay) => {
       const langCode = overlay.language || "eng";  // 3-letter ISO code
       // Prefer OCA->language name conversion, then UI code mapping, then fallback
-      const langName = langNameFromCodeOCA(langCode) || langNameFromCodeUI(langCode) || langCode;
+      const langName = langNameFromCodeOCA(langCode) || langNameFromTwoLetters(langCode) || langCode;
       
       if (!overlay.interaction?.[0]?.arguments) {
         return;

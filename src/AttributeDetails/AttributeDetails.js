@@ -21,7 +21,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { hasDisallowedChars } from "../utils/helpers";
 import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
-import { langNameFromCodeUI, langCodeOCAFromName } from "../utils/languageUtils";
+import { langNameFromTwoLetters, langCodeOCAFromName } from "../utils/languageUtils";
 
 const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, removeStep }, ref) => {
   const { t, i18n } = useTranslation();
@@ -107,7 +107,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     const schemaState = getSchema();
     
     // Get current language code for schema data
-    const schemaLanguageName = langNameFromCodeUI(i18n.language);
+    const schemaLanguageName = langNameFromTwoLetters(i18n.language);
     const languageCode = langCodeOCAFromName(schemaLanguageName);
     // NEW UNIFIED APPROACH: Get complete schema data directly
     const completeSchema = getSchema();

@@ -1,5 +1,5 @@
 import i18next from "i18next";
-import { langNameFromCodeUI } from "../../../utils/languageUtils";
+import { langNameFromTwoLetters } from "../../../utils/languageUtils";
 
 const getMultilingualText = (textObj, currentLanguage, fallback = "") => {
   if (!textObj || typeof textObj !== "object") {
@@ -12,7 +12,7 @@ const getMultilingualText = (textObj, currentLanguage, fallback = "") => {
   }
 
   // Priority 2: User's global UI language
-  const userLanguage = langNameFromCodeUI(i18next.language);
+  const userLanguage = langNameFromTwoLetters(i18next.language);
   if (userLanguage && textObj[userLanguage]) {
     return textObj[userLanguage];
   }

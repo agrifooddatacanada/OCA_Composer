@@ -12,7 +12,7 @@
 
 import i18next from "i18next";
 import { useMultiSchema } from "../schema/schemaContext";
-import { langNameFromCodeUI, langCodeOCAFromName, langCodeOCAFromCodeUI } from "../utils/languageUtils";
+import { langNameFromTwoLetters, langCodeOCAFromName, langCodeOCAFromTwoLetters } from "../utils/languageUtils";
 import { getPackageLanguages, getPackageDependencies } from "../utils/packageUtils";
 import {
   ADC,
@@ -75,9 +75,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
     
     // Ensuring that the currently selected site language is one of the languages of the schema
     const currentLanguageCode = languages.some(
-      (language) => language === langNameFromCodeUI(i18next.language)
+      (language) => language === langNameFromTwoLetters(i18next.language)
     )
-      ? langCodeOCAFromCodeUI(i18next.language)
+      ? langCodeOCAFromTwoLetters(i18next.language)
       : DEFAULT_THREE_LETTER_LANGUAGE_CODE;
     
     let fileContent = "";

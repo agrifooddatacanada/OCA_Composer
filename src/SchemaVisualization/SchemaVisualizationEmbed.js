@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import { PlaceholderNode, DetailedNode, TreeNode } from "./CustomNodes";
 import { generateTreeLayout, generateDetailedLayout } from "./layoutGenerators";
 import { extractSchemaDataFromPackage } from "./dataUtils";
-import { langNameFromCodeUI, langCodeOCAFromName, langCodeOCAFromCodeUI } from "../utils/languageUtils";
+import { langNameFromTwoLetters, langCodeOCAFromName, langCodeOCAFromTwoLetters } from "../utils/languageUtils";
 import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA } from "../constants/constants";
 import CustomPalette from "../constants/customPalette";
 import Spinner from "../components/Spinner";
@@ -162,11 +162,11 @@ const SchemaVisualizationEmbed = ({
       languageCode = langCodeOCAFromName(schemaLanguageOverride);
     } else {
       // Primary: Use i18n app language (from EN/FR toggle)
-      const i18nLanguageName = langNameFromCodeUI(i18n.language);
+      const i18nLanguageName = langNameFromTwoLetters(i18n.language);
       if (i18nLanguageName) {
         languageCode = langCodeOCAFromName(i18nLanguageName);
       } else {
-        languageCode = langCodeOCAFromCodeUI(i18n.language) || "eng";
+        languageCode = langCodeOCAFromTwoLetters(i18n.language) || "eng";
       }
     }
     

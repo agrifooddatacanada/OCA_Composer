@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import { langCodeOCAFromName, langCodeUIFromName } from "../utils/languageUtils";
+import { langCodeOCAFromName, langTwoLettersFromName } from "../utils/languageUtils";
 import { getPackageBundle, getPackageDependencies, findSchemaById, getPackageBundleId } from "../utils/packageUtils";
 import {
   ADC,
@@ -230,7 +230,7 @@ const useOCAExport = () => {
       const languageObject = {};
       languageObject.language = language;
       languageObject.code =
-        langCodeUIFromName(language) ||
+        langTwoLettersFromName(language) ||
         customIsos[language.toLowerCase()] ||
         "unknown";
 

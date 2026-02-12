@@ -24,7 +24,7 @@ import {
   Event as EventIcon 
 } from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
-import { langNameFromCodeUI } from "../../utils/languageUtils";
+import { langNameFromTwoLetters } from "../../utils/languageUtils";
 import { getFormatRuleDescription } from "../../utils/helpers";
 import i18next from "i18next";
 import {
@@ -95,7 +95,7 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
   // Get placeholder text for current language
   const getPlaceholder = () => {
     if (typeof placeholder === 'object' && placeholder !== null) {
-      const userLanguage = langNameFromCodeUI(i18next.language);
+      const userLanguage = langNameFromTwoLetters(i18next.language);
       const langPlaceholder = placeholder[currentLanguage] !== undefined 
         ? placeholder[currentLanguage]
         : (placeholder[userLanguage] !== undefined ? placeholder[userLanguage] : placeholder[Object.keys(placeholder)[0]]);
@@ -111,7 +111,7 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
   // Get option label for current language
   const getOptionLabel = (option) => {
     if (typeof option.labels === 'object' && option.labels !== null) {
-      const userLanguage = langNameFromCodeUI(i18next.language);
+      const userLanguage = langNameFromTwoLetters(i18next.language);
       return option.labels[currentLanguage] || option.labels[userLanguage] || option.labels[Object.keys(option.labels)[0]];
     }
     return option.label || option.value || option.code || 'Option';

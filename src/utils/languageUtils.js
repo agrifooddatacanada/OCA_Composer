@@ -5,9 +5,14 @@ import { languageCodesObject, codesToLanguages, languageNameToAlpha3Codes } from
  * Language Utilities for OCA Composer
  * 
  * Three language formats:
- *   - UI Code (2-letter): "en", "fr" - used by i18next
+ *   - UI Code (2-letter): "en", "fr" - i18next UI codes (ISO 639-1)
  *   - Lang Name (word): "English", "French" - display names
- *   - OCA Code (3-letter): "eng", "fra" - used in OCA overlays
+ *   - OCA Code (3-letter): "eng", "fra" - OCA 2.0+ spec (ISO 639-2)
+ * 
+ * Backward Compatibility:
+ *   - Supports legacy OCA 1.0 2-letter language codes ("en", "fr")
+ *   - Supports legacy OCA 1.0 locale codes ("en-US", "en-GB", "fr-CA")
+ *   - All exports use modern 3-letter OCA codes
  * 
  * Naming convention:
  *   - get[Output]From[Input]() for all conversions
@@ -43,7 +48,7 @@ export const getUICode = () => {
  * @returns {string} "English", "French", etc.
  */
 export const getUILangName = () => {
-  return langNameFromCodeUI(getUICode()) || LanguageConstants.DEFAULT_LANG_NAME;
+  return langNameFromTwoLetters(getUICode()) || LanguageConstants.DEFAULT_LANG_NAME;
 };
 
 /**
@@ -70,13 +75,22 @@ export const getNormalizedUICode = (uiCode) => {
 };
 
 /**
- * Get language name from UI code
- * @param {string} uiCode - "en", "fr"
+ * Get language name from 2-letter ISO 639-1 code
+ * 
+ * Primary use: i18next UI language codes ("en", "fr")
+ * Also handles: Legacy OCA 1.0 language codes from pre-2024 spec
+ *   - Simple codes: "en", "fr"
+ *   - Locale codes: "en-US", "en-GB", "fr-CA" (strips country code)
+ * 
+ * Note: OCA spec changed in 2024 to require 3-letter ISO 639-2 codes.
+ * This function provides backward compatibility for files using the old format.
+ * 
+ * @param {string} uiCode - "en", "fr", "en-US", "fr-CA", etc.
  * @returns {string|null} "English", "French", or null
  */
-export const langNameFromCodeUI = (uiCode) => {
+export const langNameFromTwoLetters = (uiCode) => {
   if (!uiCode) return null;
-  const normalized = uiCode.split("-")[0];
+  const normalized = uiCode.split("-")[0];  // Strip locale: "en-US" → "en"
   return codesToLanguages[normalized] || null;
 };
 
@@ -97,11 +111,11 @@ export const langNameFromCodeOCA = (langCodeOCA) => {
 };
 
 /**
- * Get UI code from language name
+ * Get 2-letter code from language name
  * @param {string} langName - "English", "French"
  * @returns {string} "en", "fr" (defaults to "en")
  */
-export const langCodeUIFromName = (langName) => {
+export const langTwoLettersFromName = (langName) => {
   if (!langName) return "en";
   const normalized = langName.toLowerCase();
   return languageCodesObject[normalized] || "en";
@@ -119,28 +133,28 @@ export const langCodeOCAFromName = (langName) => {
 };
 
 /**
- * Get OCA code from UI code (shortcut)
+ * Get OCA code from 2-letter code
  * @param {string} uiCode - "en", "fr"
  * @returns {string} "eng", "fra"
  */
-export const langCodeOCAFromCodeUI = (uiCode) => {
-  const langName = langNameFromCodeUI(uiCode);
+export const langCodeOCAFromTwoLetters = (uiCode) => {
+  const langName = langNameFromTwoLetters(uiCode);
   return langName ? langCodeOCAFromName(langName) : "eng";
 };
 
 /**
- * Get UI code from OCA code (shortcut)
+ * Get 2-letter code from OCA code
  * @param {string} langCodeOCA - "eng", "fra"
  * @returns {string} "en", "fr"
  */
-export const langCodeUIFromCodeOCA = (langCodeOCA) => {
+export const langTwoLettersFromCodeOCA = (langCodeOCA) => {
   const langName = langNameFromCodeOCA(langCodeOCA);
-  return langName ? langCodeUIFromName(langName) : "en";
+  return langName ? langTwoLettersFromName(langName) : "en";
 };
 
 /**
  * Normalize any language code to OCA 3-letter format
- * Handles both 2-letter UI codes and 3-letter OCA codes
+ * Handles both 2-letter (UI/legacy OCA) codes and 3-letter OCA codes
  * @param {string} code - Any language code: "en", "eng", "fr", "fra"
  * @returns {string} OCA 3-letter code: "eng", "fra"
  * 
@@ -157,10 +171,10 @@ export const normalizeToOCACode = (code) => {
     return code.toLowerCase();
   }
   
-  // Try as UI code, convert to OCA
-  const langNameFromUI = langNameFromCodeUI(code);
-  if (langNameFromUI) {
-    return langCodeOCAFromName(langNameFromUI);
+  // Try as 2-letter code, convert to OCA
+  const langNameFromTwo = langNameFromTwoLetters(code);
+  if (langNameFromTwo) {
+    return langCodeOCAFromName(langNameFromTwo);
   }
   
   // Unknown code - return as-is (lowercase)
@@ -184,7 +198,7 @@ export const getBestLangName = (schema, preferredUICode) => {
   }
 
   if (preferredUICode) {
-    const preferredLangName = langNameFromCodeUI(preferredUICode);
+    const preferredLangName = langNameFromTwoLetters(preferredUICode);
     if (schema.languages.includes(preferredLangName)) {
       return preferredLangName;
     }
@@ -207,7 +221,7 @@ export const getPrioritizedLangNames = (langNames, uiCode = null) => {
   if (!langNames?.length) return [];
   
   const currentUICode = uiCode || getUICode();
-  const matchingLangName = langNameFromCodeUI(currentUICode);
+  const matchingLangName = langNameFromTwoLetters(currentUICode);
   
   if (!matchingLangName || !langNames.includes(matchingLangName)) {
     return [...langNames];
@@ -253,9 +267,9 @@ export const resolveLanguageData = (dataObj, languageName) => {
   const langCodeOCA = langCodeOCAFromName(languageName);
   if (langCodeOCA && dataObj[langCodeOCA] !== undefined) return dataObj[langCodeOCA];
   
-  // Try UI code (2-letter: en, fr)
-  const uiCode = langCodeUIFromName(languageName);
-  if (uiCode && dataObj[uiCode] !== undefined) return dataObj[uiCode];
+  // Try 2-letter code: en, fr
+  const twoLetterCode = langTwoLettersFromName(languageName);
+  if (twoLetterCode && dataObj[twoLetterCode] !== undefined) return dataObj[twoLetterCode];
   
   return null;
 };

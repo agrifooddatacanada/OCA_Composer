@@ -11,7 +11,7 @@
  */
 
 import i18next from "i18next";
-import { langNameFromCodeUI, langCodeUIFromName, langNameFromCodeOCA } from "../utils/languageUtils";
+import { langNameFromTwoLetters, langTwoLettersFromName, langNameFromCodeOCA } from "../utils/languageUtils";
 import { DEFAULT_LANGUAGE_CODE } from "../constants/constants";
 import {
   downloadMarkdownFile,
@@ -56,9 +56,9 @@ const useGenerateMarkdownReadMe = () => {
     layers.forEach(layer => {
       if (layer.language) {
         // Convert UI code (en, fr) to language name (English, French)
-        const langName = langNameFromCodeUI(layer.language) || 
+        const langName = langNameFromTwoLetters(layer.language) || 
                         // Convert any language code format to language name
-                        (langNameFromCodeOCA(layer.language) || langNameFromCodeUI(layer.language) || layer.language);
+                        (langNameFromCodeOCA(layer.language) || langNameFromTwoLetters(layer.language) || layer.language);
         languageSet.add(langName);
       }
     });
@@ -66,7 +66,7 @@ const useGenerateMarkdownReadMe = () => {
     
     // Ensuring that the currently selected site language is one of the languages of the schema
     const currentLanguageCode = languages.some(
-      (language) => language === langNameFromCodeUI(i18next.language)
+      (language) => language === langNameFromTwoLetters(i18next.language)
     )
       ? i18next.language
       : "en";
@@ -85,7 +85,7 @@ const useGenerateMarkdownReadMe = () => {
     // Build language code lookup map
     const languageCodeLookupMap = {};
     languages.forEach(lang => {
-      languageCodeLookupMap[lang.toLowerCase()] = langCodeUIFromName(lang);
+      languageCodeLookupMap[lang.toLowerCase()] = langTwoLettersFromName(lang);
     });
 
     fileContent += generateFrontMatter(metaOverlayCurrentLanguage, catalogueData);

@@ -1,7 +1,7 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
-import { langNameFromCodeUI, langCodeOCAFromName, langCodeUIFromCodeOCA } from "./languageUtils";
+import { langNameFromTwoLetters, langCodeOCAFromName, langTwoLettersFromCodeOCA } from "./languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -50,7 +50,7 @@ export const getDescriptiveFileName = (schemaNameOrDescription, commonFileName) 
   }
   // Handle legacy schemaDescription object format
   else if (schemaNameOrDescription && typeof schemaNameOrDescription === 'object') {
-    const currentLanguage = langNameFromCodeUI(i18next.language) || DEFAULT_LANGUAGE;
+    const currentLanguage = langNameFromTwoLetters(i18next.language) || DEFAULT_LANGUAGE;
     schemaName = schemaNameOrDescription[currentLanguage]?.name;
   }
   
@@ -729,7 +729,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
     // Escape quotes in name and description
     const escapedName = escapeForOCAString(normalizeEscapedQuotes(item.name || ""));
     const escapedDesc = escapeForOCAString(normalizeEscapedQuotes(item.description || ""));
-    fileContent += `\nADD META ${langCodeUIFromCodeOCA(item.language)} PROPS name="${escapedName}" description="${escapedDesc}"`;
+    fileContent += `\nADD META ${langTwoLettersFromCodeOCA(item.language)} PROPS name="${escapedName}" description="${escapedDesc}"`;
   });
   fileContent += "\n";
 
@@ -760,7 +760,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   fileContent += "# Add label overlay";
   if (coreOverlays.label) {
     coreOverlays.label.forEach((item) => {
-      fileContent += `\nADD LABEL ${langCodeUIFromCodeOCA(item.language)} ATTRS`;
+      fileContent += `\nADD LABEL ${langTwoLettersFromCodeOCA(item.language)} ATTRS`;
       Object.keys(item.attribute_labels).forEach((attribute) => {
         // Escape quotes in labels
         const escapedLabel = escapeForOCAString(normalizeEscapedQuotes(item.attribute_labels[attribute] || ""));
@@ -774,7 +774,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   fileContent += "# Add information overlay";
   if (coreOverlays.information) {
     coreOverlays.information.forEach((item) => {
-      fileContent += `\nADD INFORMATION ${langCodeUIFromCodeOCA(item.language)} ATTRS`;
+      fileContent += `\nADD INFORMATION ${langTwoLettersFromCodeOCA(item.language)} ATTRS`;
       Object.keys(item.attribute_information).forEach((attribute) => {
         // Escape quotes in information/descriptions
         const escapedInfo = escapeForOCAString(normalizeEscapedQuotes(item.attribute_information[attribute] || ""));
@@ -797,7 +797,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
 
     if (coreOverlays.entry) {
       coreOverlays.entry.forEach((item) => {
-        fileContent += `ADD ENTRY ${langCodeUIFromCodeOCA(item.language)} ATTRS`;
+        fileContent += `ADD ENTRY ${langTwoLettersFromCodeOCA(item.language)} ATTRS`;
         Object.keys(item.attribute_entries).forEach((attribute) => {
           const entries = item.attribute_entries[attribute];
           const entriesText = Object.keys(entries)

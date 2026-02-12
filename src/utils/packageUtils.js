@@ -25,7 +25,7 @@
  * Each dependency is a complete OCA bundle that can be referenced by the parent schema.
  */
 
-import { langNameFromCodeUI, langNameFromCodeOCA, normalizeToOCACode } from './languageUtils';
+import { langNameFromTwoLetters, langNameFromCodeOCA, normalizeToOCACode } from './languageUtils';
 
 /**
  * Get the root bundle from an OCA package, handling both format variations
@@ -113,7 +113,7 @@ export const getPackageLanguages = (pkg) => {
           // Convert any language code format to language name
           // Try OCA code (3-letter: eng, fra) first, then UI code (2-letter: en, fr)
           const langName = langNameFromCodeOCA(metaOverlay.language) || 
-                          langNameFromCodeUI(metaOverlay.language);
+                          langNameFromTwoLetters(metaOverlay.language);
           if (langName) {
             languageSet.add(langName);
           }
@@ -130,7 +130,7 @@ export const getPackageLanguages = (pkg) => {
             // Convert any language code format to language name
             // Try OCA code (3-letter: eng, fra) first, then UI code (2-letter: en, fr)
             const langName = langNameFromCodeOCA(item.language) || 
-                            langNameFromCodeUI(item.language);
+                            langNameFromTwoLetters(item.language);
             if (langName) {
               languageSet.add(langName);
             }

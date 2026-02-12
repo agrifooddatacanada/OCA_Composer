@@ -6,7 +6,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { langCodeOCAFromName, langCodeUIFromName } from "../utils/languageUtils";
+import { langCodeOCAFromName, langTwoLettersFromName } from "../utils/languageUtils";
 import Classification from "./Classification";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -205,11 +205,11 @@ export default function SchemaInput({
           <Box>
             <Typography variant="body2" sx={{ fontStyle: "italic" }}>
               ISO Code:{" "}
-              {langCodeUIFromName(language) ||
+              {langTwoLettersFromName(language) ||
                 customIsos[language.toLowerCase()]}
             </Typography>
           </Box>
-          {!langCodeUIFromName(language) && (
+          {!langTwoLettersFromName(language) && (
             <Button
               variant="contained"
               color="button"

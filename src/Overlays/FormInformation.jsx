@@ -9,7 +9,7 @@ import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { langNameFromCodeUI, langNameFromCodeOCA, langCodeOCAFromName, getUICode, LanguageConstants, resolveLanguageData } from "../utils/languageUtils";
+import { langNameFromTwoLetters, langNameFromCodeOCA, langCodeOCAFromName, getUICode, LanguageConstants, resolveLanguageData } from "../utils/languageUtils";
 import i18next from "i18next";
 import {
   formatCodeBinaryDescription,
@@ -110,7 +110,7 @@ const FormInformation = () => {
   }, [currentSchemaId]);
 
   const languageIndex = languages.findIndex(
-    (item) => langNameFromCodeUI(i18next.language) === item
+    (item) => langNameFromTwoLetters(i18next.language) === item
   );
   const filteredLanguages = [...languages];
   if (languageIndex !== -1 && languageIndex !== 0) {
@@ -139,13 +139,13 @@ const FormInformation = () => {
 
     const normalizedLan = {};
     Object.entries(lanAttributeRowData || {}).forEach(([k, v]) => {
-      const name = langNameFromCodeOCA(k) || langNameFromCodeUI(k) || k;
+      const name = langNameFromCodeOCA(k) || langNameFromTwoLetters(k) || k;
       normalizedLan[name] = v;
     });
 
     const normalizedPlaceholders = {};
     Object.entries(formPlaceholdersByLanguage || {}).forEach(([k, v]) => {
-      const name = langNameFromCodeOCA(k) || langNameFromCodeUI(k) || k;
+      const name = langNameFromCodeOCA(k) || langNameFromTwoLetters(k) || k;
       normalizedPlaceholders[name] = v;
     });
 
@@ -270,7 +270,7 @@ const FormInformation = () => {
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {
-    const userLanguage = langNameFromCodeUI(i18next.language);
+    const userLanguage = langNameFromTwoLetters(i18next.language);
     if (userLanguage && languages.includes(userLanguage)) {
       setCurrentLanguage(userLanguage);
     }
