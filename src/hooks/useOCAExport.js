@@ -404,8 +404,14 @@ const useOCAExport = () => {
       let hasEncoding = false;
       
       attributesList.forEach((item, index) => {
-        // Use actual data from characterEncodingRowData, matching agreeable-mushroom
-        const encoding = characterEncodingRowData[index]?.[FIELD_CHARACTER_ENCODING_OVERLAY];
+        // characterEncodingRowData can be either:
+        // - an object mapping attributeName -> encoding (schema state)
+        // - an array of row objects [{ Attribute, "Character Encoding" }] (legacy/UI)
+        // Prefer object map lookup for correctness.
+        const encoding = Array.isArray(characterEncodingRowData)
+          ? characterEncodingRowData[index]?.[FIELD_CHARACTER_ENCODING_OVERLAY]
+          : characterEncodingRowData[item];
+
         if (encoding) {
           hasEncoding = true;
           encodingText += ` ${item}="${encoding}"`;
