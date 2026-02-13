@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import { langCodeOCAFromName } from "../utils/languageUtils";
+import { langCodeOCAFromName, langTwoLettersFromName } from "../utils/languageUtils";
 import { getPackageBundle, getPackageDependencies, findSchemaById, getPackageBundleId } from "../utils/packageUtils";
 import {
   ADC,
@@ -227,7 +227,7 @@ const useOCAExport = () => {
       const languageObject = {};
       languageObject.language = language;
       languageObject.code =
-        langCodeOCAFromName(language) ||
+        langTwoLettersFromName(language) ||
         customIsos[language.toLowerCase()] ||
         "unknown";
 
@@ -438,7 +438,7 @@ const useOCAExport = () => {
     if (targetOverlaySelections[FIELD_CHARACTER_ENCODING_OVERLAY]) {
       let encodingText = "";
       targetAttributesList.forEach((item, index) => {
-        encodingText += ` ${item}=utf-8`;
+        encodingText += ` ${item}="utf-8"`;
       });
       if (encodingText !== "") {
         buildText += `ADD CHARACTER_ENCODING ATTRS${encodingText}\n`;
