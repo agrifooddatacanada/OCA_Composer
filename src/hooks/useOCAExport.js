@@ -357,9 +357,12 @@ const useOCAExport = () => {
       let labelText = "";
       targetAttributesList.forEach((item, index) => {
         const languageIndex =
-          OCADataArray.slice(1).findIndex((element) => element[0].Language === language.language) + 1;
+          OCADataArray
+            .slice(1)
+            .findIndex((element) => element[0].Language === language.language) + 1;
         if (OCADataArray[languageIndex][index].Label && OCADataArray[languageIndex][index].Label !== "") {
-          labelText += ` ${item}="${OCADataArray[languageIndex][index].Label}"`;
+          const escapedLabel = escapeForOCAString(normalizeEscapedQuotes(OCADataArray[languageIndex][index].Label));
+          labelText += ` ${item}="${escapedLabel}"`;
         }
       });
       if (labelText !== "") {
@@ -374,9 +377,14 @@ const useOCAExport = () => {
       let informationText = "";
       targetAttributesList.forEach((item, index) => {
         const languageIndex =
-          OCADataArray.slice(1).findIndex((element) => element[0].Language === language.language) + 1;
-        if (OCADataArray[languageIndex][index].Description && OCADataArray[languageIndex][index].Description !== "") {
-          informationText += ` ${item}="${OCADataArray[languageIndex][index].Description}"`;
+          OCADataArray
+            .slice(1)
+            .findIndex((element) => element[0].Language === language.language) + 1;
+        if (
+          OCADataArray[languageIndex][index].Description && 
+          OCADataArray[languageIndex][index].Description !== "") {
+          const escapedDescription = escapeForOCAString(normalizeEscapedQuotes(OCADataArray[languageIndex][index].Description));
+          informationText += ` ${item}="${escapedDescription}"`;
         }
       });
       if (informationText !== "") {

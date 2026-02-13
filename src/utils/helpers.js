@@ -862,8 +862,8 @@ export const normalizeEscapedQuotes = (s) => (typeof s === 'string' ? s.replace(
 
 export const escapeForOCAString = (s) => {
   if (typeof s !== 'string') return s;
-  // First escape backslashes, then escape double and single quotes for OCA output
-  return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'");
+  // First escape backslashes, then escape double quotes, single quotes, and dashes for OCA output
+  return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'").replace(/-/g, "\\-");
 };
 
 export const getFormatRuleDescription = (attributeType, formatRule) => {
