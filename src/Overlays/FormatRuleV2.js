@@ -62,20 +62,21 @@ const FormatRulesV2 = forwardRef((props, ref) => {
 
     const initialData = schemaState.attributes.map(attr => {
       const formatRegex = attributeFormats[attr.Attribute] || "";
-      
-      // Check if this regex matches a built-in format for the current attribute type
+
+      // Determine whether the stored regex matches a built-in description for this type
       const description = formatRegex ? getFormatRuleDescription(attr.Type, formatRegex) : "";
-      
-      // Only keep the format rule if it matches a built-in format for the current type
-      // If format rule doesn't match the current type, clear both fields
-      // (e.g., when attribute type changes from Text to Numeric, don't keep the old Text format)
-      const isBuiltInFormat = formatRegex && description;
-      
+      const isBuiltInFormat = Boolean(formatRegex && description);
+
+      // If it's a built-in format, put it in the "Format Rule" column.
+      // If it's not built-in but exists (custom regex), rehydrate it into the custom column
+      // so the user sees and can edit their custom regex.
+      const customFormat = formatRegex && !isBuiltInFormat ? formatRegex : "";
+
       return {
         Attribute: attr.Attribute,
         Type: attr.Type || "Text",
         "Format Rule": isBuiltInFormat ? formatRegex : "",
-        [CUSTOM_FORMAT_RULE]: ""
+        [CUSTOM_FORMAT_RULE]: customFormat
       };
     });
 

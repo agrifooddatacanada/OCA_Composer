@@ -14,7 +14,7 @@
  */
 
 import { LanguageConstants } from "../utils/languageUtils";
-import { overlayItems } from "../constants/constants";
+import { overlayItems, CUSTOM_FORMAT_RULE } from "../constants/constants";
 
 export const createDefaultSchemaState = () => ({
   completeSchema: {
@@ -204,7 +204,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   const setFormatRuleRowData = (newData) => {
     const attributeFormats = {};
     newData.forEach(row => {
-      const formatRule = row["Format Rule"] || row["Custom Format Rule"];
+      const formatRule = row["Format Rule"] || row[CUSTOM_FORMAT_RULE];
       if (formatRule) {
         attributeFormats[row.Attribute] = formatRule;
       }
