@@ -7,9 +7,6 @@ import { langCodeOCAFromName, langTwoLettersFromName } from "../utils/languageUt
 import { getPackageBundle, getPackageDependencies, findSchemaById, getPackageBundleId } from "../utils/packageUtils";
 import {
   ADC,
-  CUSTOM_FORMAT_RULE,
-  divisionCodes,
-  groupCodes,
   ORDERING,
   UNIT_FRAMING,
   UNIT_FRAME_ID,
@@ -63,7 +60,6 @@ const useOCAExport = () => {
     divisionGroup,
     customIsos,
     overlay,
-    pkgUpload,
     formBuilderPages,
     // Setters needed for resetToDefaults
     setFileData,
@@ -75,7 +71,7 @@ const useOCAExport = () => {
     setCurrentPage
   } = useContext(Context);
 
-  const { getCurrentSchemaId, getSchema, getSchemaById, getAttributesList, pkgBuildFromState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, setPkgUpload } = useMultiSchema();
+  const { getCurrentSchemaId, getSchema, getSchemaById, getAttributesList, pkgBuildFromState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, pkgUpload, setPkgUpload } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchema();
   const metadata = schemaState?.metadata || {};
@@ -227,6 +223,7 @@ const useOCAExport = () => {
       const languageObject = {};
       languageObject.language = language;
       languageObject.code =
+      // API does not accept 3-letter OCA codes? langCodeOCAFromName() gave unhelpful parsing error: "expected label, meta,..."
         langTwoLettersFromName(language) ||
         customIsos[language.toLowerCase()] ||
         "unknown";
@@ -437,10 +434,18 @@ const useOCAExport = () => {
     buildText += "# Add character encoding overlay\n";
     if (targetOverlaySelections[FIELD_CHARACTER_ENCODING_OVERLAY]) {
       let encodingText = "";
+      let hasEncoding = false;
+      
       targetAttributesList.forEach((item, index) => {
-        encodingText += ` ${item}="utf-8"`;
+        // Use actual data from characterEncodingRowData, matching agreeable-mushroom
+        const encoding = targetCharacterEncodingRowData[index]?.[FIELD_CHARACTER_ENCODING_OVERLAY];
+        if (encoding) {
+          hasEncoding = true;
+          encodingText += ` ${item}="${encoding}"`;
+        }
       });
-      if (encodingText !== "") {
+      
+      if (hasEncoding) {
         buildText += `ADD CHARACTER_ENCODING ATTRS${encodingText}\n`;
       }
     }
@@ -565,33 +570,12 @@ const useOCAExport = () => {
   const exportData = async () => {
     try {
       setError("");
-      
-      console.log("=== EXPORT STARTING ===");
-      console.log("pkgUpload exists:", !!pkgUpload);
-      console.log("Current Schema ID:", activeSchemaId);
 
       // For imported packages: Build ALL schemas from UI state to get fresh SAID digests
       // This matches agreeable-mushroom behavior - decompose bundle to UI state,
       // then rebuild from scratch which naturally generates new SAIDs
       if (pkgUpload) {
-        console.log("=== EXPORTING IMPORTED PACKAGE ===");
         const originalRootId = getPackageBundleId(pkgUpload);
-        
-        console.log("=== EXPORT DEBUG ===");
-        console.log("Original Root ID:", originalRootId);
-        console.log("pkgUpload structure:", pkgUpload?.bundle?.d || pkgUpload?.oca_bundle?.bundle?.d);
-        console.log("Available schema IDs in schemaStates:", Object.keys(schemaStates));
-        
-        // Log each schema's details
-        Object.keys(schemaStates).forEach(id => {
-          const state = schemaStates[id];
-          console.log(`Schema ${id}:`, {
-            initialized: state?.initialized,
-            name: state?.metadata?.name,
-            attrCount: state?.attributes?.length
-          });
-        });
-        console.log("Current schema ID:", activeSchemaId);
         
         // CRITICAL: Ensure all schemas from OCA package are in schemaStates
         // If user only edited a child schema, the root might not be initialized
@@ -600,9 +584,6 @@ const useOCAExport = () => {
         
         // Check if root is initialized; if not, something is wrong
         const rootState = getSchemaById(originalRootId);
-        console.log("Root state exists:", !!rootState);
-        console.log("Root state initialized:", rootState?.initialized);
-        console.log("Root state attributes count:", rootState?.attributes?.length);
         
         if (!rootState || !rootState.initialized) {
           console.error("Root schema not initialized:", originalRootId);
@@ -624,8 +605,6 @@ const useOCAExport = () => {
         
         // Separate root from dependencies
         const dependencyIds = schemaIds.filter(id => id !== originalRootId);
-        console.log("Building dependencies:", dependencyIds);
-        console.log("Building root:", originalRootId);
         
         // Step 1: Build all dependency schemas FIRST to get their SAIDs
         const childSaidMap = {};
