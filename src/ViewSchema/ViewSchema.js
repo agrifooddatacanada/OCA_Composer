@@ -210,7 +210,6 @@ export default function ViewSchema({
     exportData,
     error: exportError,
     clearError,
-    hasNestedSchemas,
     resetToDefaults
   } = useOCAExport();
   

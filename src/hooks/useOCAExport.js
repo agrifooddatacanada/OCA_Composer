@@ -73,48 +73,8 @@ const useOCAExport = () => {
 
   const { getCurrentSchemaId, getSchema, getSchemaById, getAttributesList, pkgBuildFromState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, pkgUpload, setPkgUpload } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
-  const schemaState = getSchema();
-  const metadata = schemaState?.metadata || {};
-
-  // All schema-specific data comes from MultiSchemaContext only
-  const languages = metadata.languages || ["English"];
-  const attributeRowData = schemaState?.attributes || [];
-  const attributesList = getAttributesList(); // Computed from attributes
-  const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
-  const savedEntryCodes = schemaState?.entryCodes || {};
-  const attributeFormats = schemaState?.attributeFormats || {};
-  const characterEncodingRowData = schemaState?.characterEncodingData || {};
-  const attributeCardinality = schemaState?.attributeCardinality || {};
-  const attributeRanges = schemaState?.attributeRanges || {};
-  const attributeFramingRowData = schemaState?.attributeFramingData || [];
-  const currentUnitFramedRowData = schemaState?.unitFramedData || [];
-
-  // REMOVED: schemaDescription - no longer needed, schema name extracted from bundles directly
-  
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [error, setError] = useState("");
-
-  const attributeListMap = attributeRowData.reduce((acc, attr) => {
-    acc[attr.Attribute] = attr.List;
-    return acc;
-  }, {});
-
-  const classificationCode = useMemo(() => {
-    return metadata?.classification || null;
-  }, [metadata?.classification]);
-
-  // Check if schema has nested child schemas (refs: or refn: types, or "Child Schema" display format)
-  const hasNestedSchemas = useMemo(() => {
-    return attributeRowData.some((attr) => {
-      const type = attr.Type;
-      return typeof type === "string" && (
-        type.startsWith("refs:") || 
-        type.startsWith("refn:") || 
-        type === "Child Schema" || 
-        type === "Array[Child Schema]"
-      );
-    });
-  }, [attributeRowData]);
 
   // Shared download utilities
   const downloadTextFile = (data, fileName) => {
@@ -143,61 +103,60 @@ const useOCAExport = () => {
 
   // Build OCA package from schema state using text DSL generation
   // Works for both single schemas and multi-schema packages
-  const buildPackageFromTextDSL = async (targetSchemaId, childSaidMap = {}) => {
-    const targetState = getSchemaById(targetSchemaId);
-    const targetMetadata = targetState?.metadata || {};
+  const buildPackageFromTextDSL = async (schemaId, childSaidMap = {}) => {
+    const schemaState = getSchemaById(schemaId);
+    const metadata = schemaState?.metadata || {};
     
-    // Extract data from target schema state
-    const targetLanguages = targetMetadata.languages || ["English"];
-    const targetAttributeRowData = targetState?.attributes || [];
-    // Always derive attributesList from attributes array - it's the source of truth
-    const targetAttributesList = targetAttributeRowData.map(attr => attr.Attribute);
+    // Extract all data for this schema
+    const languages = metadata.languages || ["English"];
+    const attributeRowData = schemaState?.attributes || [];
+    const attributesList = attributeRowData.map(attr => attr.Attribute);
+    const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
+    const savedEntryCodes = schemaState?.entryCodes || {};
+    const attributeFormats = schemaState?.attributeFormats || {};
+    const characterEncodingRowData = schemaState?.characterEncodingData || {};
+    const attributeCardinality = schemaState?.attributeCardinality || {};
+    const attributeRanges = schemaState?.attributeRanges || {};
+    const attributeFramingRowData = schemaState?.attributeFramingData || [];
+    const unitFramedRowData = schemaState?.unitFramedData || [];
+    const overlaySelections = schemaState?.overlaySelections || overlay;
+    const classificationCode = metadata?.classification || null;
     
-    const targetLanAttributeRowData = targetState?.lanAttributeRowData || {};
-    const targetSavedEntryCodes = targetState?.entryCodes || {};
-    const targetAttributeFormats = targetState?.attributeFormats || {};
-    const targetCharacterEncodingRowData = targetState?.characterEncodingData || {};
-    const targetAttributeCardinality = targetState?.attributeCardinality || {};
-    const targetAttributeRanges = targetState?.attributeRanges || {};
-    const targetAttributeFramingRowData = targetState?.attributeFramingData || [];
-    const targetUnitFramedRowData = targetState?.unitFramedData || [];
-    const targetOverlaySelections = targetState?.overlaySelections || overlay;
-    
-    // Get the actual schema from pkgUpload to find reference types
-    let targetSchema = null;
+    // Get original schema from pkgUpload to preserve reference types
+    let originalSchema = null;
     if (pkgUpload) {
-      targetSchema = findSchemaById(pkgUpload, targetSchemaId);
+      originalSchema = findSchemaById(pkgUpload, schemaId);
     }
     
-    // Build schemaDescription for target
-    const targetSchemaDescription = {};
-    targetLanguages.forEach((language) => {
+    // Build schema description for each language
+    const schemaDescription = {};
+    languages.forEach((language) => {
       const langCodeOCA = langCodeOCAFromName(language);
-      const localized = targetMetadata.localized?.[langCodeOCA] || {};
-      targetSchemaDescription[language] = {
-        name: localized.name || targetMetadata.name || "",
-        description: localized.description || targetMetadata.description || ""
+      const localized = metadata.localized?.[langCodeOCA] || {};
+      schemaDescription[language] = {
+        name: localized.name || metadata.name || "",
+        description: localized.description || metadata.description || ""
       };
     });
     
-    const targetAttributeListMap = targetAttributeRowData.reduce((acc, attr) => {
+    const attributeListMap = attributeRowData.reduce((acc, attr) => {
       acc[attr.Attribute] = attr.List;
       return acc;
     }, {});
     
-    // Prepare OCA data array for target schema
-    const OCADataArray = [];
-    const descriptionRow = targetLanguages.map((language) => ({
+    // Build data array: [0] = schema metadata, [1+] = attribute data per language
+    const dataArray = [];
+    const descriptionRow = languages.map((language) => ({
       Language: language,
-      Name: targetSchemaDescription[language]?.name || "",
-      Description: targetSchemaDescription[language]?.description || ""
+      Name: schemaDescription[language]?.name || "",
+      Description: schemaDescription[language]?.description || ""
     }));
-    OCADataArray.push(descriptionRow);
+    dataArray.push(descriptionRow);
 
-    targetLanguages.forEach((language) => {
+    languages.forEach((language) => {
       const rowData = [];
-      const lanRows = targetLanAttributeRowData[language] || [];
-      targetAttributeRowData.forEach((attrRow, index) => {
+      const lanRows = lanAttributeRowData[language] || [];
+      attributeRowData.forEach((attrRow, index) => {
         const rowObject = { Language: language, Attribute: attrRow.Attribute || "" };
         const lanRow = lanRows[index] || {};
         rowObject.Flagged = attrRow.Flagged ? "Y" : "";
@@ -211,15 +170,15 @@ const useOCAExport = () => {
         rowObject.Language = language;
         rowData.push(rowObject);
       });
-      OCADataArray.push(rowData);
+      dataArray.push(rowData);
     });
     
-    // Build text DSL for target schema (inline simplified version)
-    const OCADescriptionData = OCADataArray[0];
+    // Build text DSL
+    const schemaMetadata = dataArray[0];
     const languagesWithCode = [];
     const allLanguageCodes = [];
 
-    targetLanguages.forEach((language) => {
+    languages.forEach((language) => {
       const languageObject = {};
       languageObject.language = language;
       languageObject.code =
@@ -247,10 +206,10 @@ const useOCAExport = () => {
     // Add attributes (capture base)
     buildText += "# add attributes (capture base) \n";
     buildText += "ADD Attribute";
-    targetAttributesList.forEach((item, index) => {
-      let attributeType = Array.isArray(OCADataArray[1][index].Type)
-        ? `Array[${OCADataArray[1][index].Type[0]}]`
-        : OCADataArray[1][index].Type;
+    attributesList.forEach((item, index) => {
+      let attributeType = Array.isArray(dataArray[1][index].Type)
+        ? `Array[${dataArray[1][index].Type[0]}]`
+        : dataArray[1][index].Type;
       
       // Convert "Child Schema" UI type to OCA spec refs:/refn: format
       // - refs:SAID = child schema with cryptographic identifier (has been built)
@@ -259,7 +218,7 @@ const useOCAExport = () => {
       const isChildSchema = attributeType === "Child Schema" || isArray;
       
       if (isChildSchema) {
-        const originalValue = targetSchema?.capture_base?.attributes?.[item];
+        const originalValue = originalSchema?.capture_base?.attributes?.[item];
         const childSaid = childSaidMap[item];
         
         if (childSaid) {
@@ -291,24 +250,24 @@ const useOCAExport = () => {
     // Add meta overlay
     buildText += "# Add meta overlay";
     languagesWithCode.forEach((language) => {
-      const languageIndex = OCADescriptionData.findIndex(
+      const languageIndex = schemaMetadata.findIndex(
         (obj) => obj.Language === language.language
       );
-      const parsedDescription = normalizeEscapedQuotes(OCADescriptionData[languageIndex].Description || "");
+      const parsedDescription = normalizeEscapedQuotes(schemaMetadata[languageIndex].Description || "");
       const escapedDescription = escapeForOCAString(parsedDescription);
       buildText += `\nADD Meta ${language.code} PROPS`;
-      buildText += ` name="${escapeForOCAString(normalizeEscapedQuotes(OCADescriptionData[languageIndex].Name || ""))}"`;
+      buildText += ` name="${escapeForOCAString(normalizeEscapedQuotes(schemaMetadata[languageIndex].Name || ""))}"`;
       buildText += ` description="${escapedDescription}"`;
     });
     buildText += "\n";
 
     // Add Format Overlay
     buildText += "# Add Format Overlay\n";
-    if (targetOverlaySelections[FIELD_FORMAT_OVERLAY] && Object.keys(targetAttributeFormats).length > 0) {
+    if (overlaySelections[FIELD_FORMAT_OVERLAY] && Object.keys(attributeFormats).length > 0) {
       let tempText = "";
       // Filter to only include attributes that exist in the current schema
-      Object.entries(targetAttributeFormats).forEach(([attrName, formatRule]) => {
-        if (formatRule && targetAttributesList.includes(attrName)) {
+      Object.entries(attributeFormats).forEach(([attrName, formatRule]) => {
+        if (formatRule && attributesList.includes(attrName)) {
           // Normalize first (unescape any already-escaped quotes), then escape all quotes
           // This prevents double-escaping when format rules contain \" from the original OCA file
           const escapedRule = escapeForOCAString(normalizeEscapedQuotes(formatRule));
@@ -324,11 +283,11 @@ const useOCAExport = () => {
 
     // Add Conformance Overlay
     buildText += "# Add Conformance Overlay\n";
-    if (targetOverlaySelections["Make selected entries required"]) {
+    if (overlaySelections["Make selected entries required"]) {
       let conformanceText = "";
       // Required status is stored in the attributes array
-      targetAttributesList.forEach((item) => {
-        const attr = targetAttributeRowData.find(a => a.Attribute === item);
+      attributesList.forEach((item) => {
+        const attr = attributeRowData.find(a => a.Attribute === item);
         const isRequired = attr?.Required;
         conformanceText += ` ${item}=${isRequired ? "M" : "O"}`;
       });
@@ -339,9 +298,9 @@ const useOCAExport = () => {
 
     // Add Cardinality Overlay
     buildText += "# Add Cardinality Overlay\n";
-    if (targetOverlaySelections[FIELD_CARDINALITY_OVERLAY] && Object.keys(targetAttributeCardinality).length > 0) {
+    if (overlaySelections[FIELD_CARDINALITY_OVERLAY] && Object.keys(attributeCardinality).length > 0) {
       let cardinalityText = "";
-      Object.entries(targetAttributeCardinality).forEach(([attrName, cardinalityValue]) => {
+      Object.entries(attributeCardinality).forEach(([attrName, cardinalityValue]) => {
         if (cardinalityValue && attrName) {
           cardinalityText += ` ${attrName}="${cardinalityValue}"`;
         }
@@ -355,13 +314,13 @@ const useOCAExport = () => {
     buildText += "# Add label overlay";
     languagesWithCode.forEach((language) => {
       let labelText = "";
-      targetAttributesList.forEach((item, index) => {
+      attributesList.forEach((item, index) => {
         const languageIndex =
-          OCADataArray
+          dataArray
             .slice(1)
             .findIndex((element) => element[0].Language === language.language) + 1;
-        if (OCADataArray[languageIndex][index].Label && OCADataArray[languageIndex][index].Label !== "") {
-          const escapedLabel = escapeForOCAString(normalizeEscapedQuotes(OCADataArray[languageIndex][index].Label));
+        if (dataArray[languageIndex][index].Label && dataArray[languageIndex][index].Label !== "") {
+          const escapedLabel = escapeForOCAString(normalizeEscapedQuotes(dataArray[languageIndex][index].Label));
           labelText += ` ${item}="${escapedLabel}"`;
         }
       });
@@ -375,15 +334,15 @@ const useOCAExport = () => {
     buildText += "# Add information overlay";
     languagesWithCode.forEach((language) => {
       let informationText = "";
-      targetAttributesList.forEach((item, index) => {
+      attributesList.forEach((item, index) => {
         const languageIndex =
-          OCADataArray
+          dataArray
             .slice(1)
             .findIndex((element) => element[0].Language === language.language) + 1;
         if (
-          OCADataArray[languageIndex][index].Description && 
-          OCADataArray[languageIndex][index].Description !== "") {
-          const escapedDescription = escapeForOCAString(normalizeEscapedQuotes(OCADataArray[languageIndex][index].Description));
+          dataArray[languageIndex][index].Description && 
+          dataArray[languageIndex][index].Description !== "") {
+          const escapedDescription = escapeForOCAString(normalizeEscapedQuotes(dataArray[languageIndex][index].Description));
           informationText += ` ${item}="${escapedDescription}"`;
         }
       });
@@ -398,9 +357,9 @@ const useOCAExport = () => {
     
     // First add ENTRY_CODE overlay with just the codes
     let entryCodesText = "";
-    targetAttributesList.forEach((item) => {
-      if (targetAttributeListMap[item] && targetSavedEntryCodes[item] && targetSavedEntryCodes[item].length > 0) {
-        const codes = targetSavedEntryCodes[item].map((entry) => `"${entry.Code}"`).join(", ");
+    attributesList.forEach((item) => {
+      if (attributeListMap[item] && savedEntryCodes[item] && savedEntryCodes[item].length > 0) {
+        const codes = savedEntryCodes[item].map((entry) => `"${entry.Code}"`).join(", ");
         entryCodesText += ` ${item}=[${codes}]`;
       }
     });
@@ -411,14 +370,14 @@ const useOCAExport = () => {
       // Then add ENTRY language overlays with code-to-label mappings
       languagesWithCode.forEach((language) => {
         let entryText = "";
-        targetAttributesList.forEach((item) => {
-          if (targetSavedEntryCodes[item] && targetSavedEntryCodes[item].length > 0) {
+        attributesList.forEach((item) => {
+          if (savedEntryCodes[item] && savedEntryCodes[item].length > 0) {
             // Entry codes are stored with FULL language names (English, French, etc.)
             // NOT 3-letter OCA codes (eng, fra)
             const languageName = language.language;  // Use full name like "English"
             
             let entryString = "";
-            for (const entry of targetSavedEntryCodes[item]) {
+            for (const entry of savedEntryCodes[item]) {
               // Look up label using full language name
               const label = entry[languageName] || "";
               if (label) {
@@ -440,13 +399,13 @@ const useOCAExport = () => {
 
     // Add character encoding overlay
     buildText += "# Add character encoding overlay\n";
-    if (targetOverlaySelections[FIELD_CHARACTER_ENCODING_OVERLAY]) {
+    if (overlaySelections[FIELD_CHARACTER_ENCODING_OVERLAY]) {
       let encodingText = "";
       let hasEncoding = false;
       
-      targetAttributesList.forEach((item, index) => {
+      attributesList.forEach((item, index) => {
         // Use actual data from characterEncodingRowData, matching agreeable-mushroom
-        const encoding = targetCharacterEncodingRowData[index]?.[FIELD_CHARACTER_ENCODING_OVERLAY];
+        const encoding = characterEncodingRowData[index]?.[FIELD_CHARACTER_ENCODING_OVERLAY];
         if (encoding) {
           hasEncoding = true;
           encodingText += ` ${item}="${encoding}"`;
@@ -461,33 +420,33 @@ const useOCAExport = () => {
     const data = buildText;
 
     const filteredEntryCodes = {};
-    Object.entries(targetAttributeListMap).forEach(([attribute, isList]) => {
-      if (isList && targetSavedEntryCodes[attribute]) {
-        filteredEntryCodes[attribute] = targetSavedEntryCodes[attribute];
+    Object.entries(attributeListMap).forEach(([attribute, isList]) => {
+      if (isList && savedEntryCodes[attribute]) {
+        filteredEntryCodes[attribute] = savedEntryCodes[attribute];
       }
     });
 
     const bundle = await generateOCABundle(data);
 
-    const sensitiveAttributes = targetAttributeRowData
+    const sensitiveAttributes = attributeRowData
       .filter((item) => item.Flagged)
       .map((item) => item.Attribute);
 
     // Convert attributeFormats object to array format for helper functions
-    const targetFormatRuleRowData = targetAttributeRowData.map(attr => ({
+    const formatRuleRowData = attributeRowData.map(attr => ({
       Attribute: attr.Attribute,
-      "Format Rule": targetAttributeFormats[attr.Attribute] || ""
+      "Format Rule": attributeFormats[attr.Attribute] || ""
     }));
 
     // Convert attributeRanges object to array format for helper functions
-    const targetRangeRowData = targetAttributeRowData
+    const rangeRowData = attributeRowData
       .filter(attr => attr.Type === "Numeric" || attr.Type === "DateTime")
       .map(attr => {
-        const range = targetAttributeRanges[attr.Attribute] || {};
+        const range = attributeRanges[attr.Attribute] || {};
         return {
           Attribute: attr.Attribute,
           Type: attr.Type,
-          FormatRule: targetAttributeFormats[attr.Attribute] || "",
+          FormatRule: attributeFormats[attr.Attribute] || "",
           LowerBound: range.lower || "",
           UpperBound: range.upper || "",
           LowerInclusive: range.lower_inclusive ?? false,
@@ -495,16 +454,16 @@ const useOCAExport = () => {
         };
       });
 
-    const rangeOverlayInput = getRangeOverlayInput(targetRangeRowData, targetFormatRuleRowData, targetAttributesList);
-    const retainedUniqueFramedUnits = targetUnitFramedRowData.filter((row) => !row.deleted);
+    const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData, attributesList);
+    const retainedUniqueFramedUnits = unitFramedRowData.filter((row) => !row.deleted);
 
     const extension_overlay_object = {
       ordering_overlay: {
         type: ORDERING,
-        attribute_ordering: targetAttributesList,
+        attribute_ordering: attributesList,
         entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
       },
-      ...(targetOverlaySelections[FIELD_UNIT_FRAMING_OVERLAY] && retainedUniqueFramedUnits.length > 0
+      ...(overlaySelections[FIELD_UNIT_FRAMING_OVERLAY] && retainedUniqueFramedUnits.length > 0
         ? {
             unit_framing_overlay: {
               type: UNIT_FRAMING,
@@ -518,7 +477,7 @@ const useOCAExport = () => {
             }
           }
         : {}),
-      ...(targetOverlaySelections[FIELD_RANGE_OVERLAY] && Object.keys(rangeOverlayInput).length > 0
+      ...(overlaySelections[FIELD_RANGE_OVERLAY] && Object.keys(rangeOverlayInput).length > 0
         ? {
             range_overlay: {
               type: RANGE,
@@ -534,7 +493,7 @@ const useOCAExport = () => {
             }
           }
         : {}),
-      ...(targetOverlaySelections[FIELD_ATTRIBUTE_FRAMING_OVERLAY]
+      ...(overlaySelections[FIELD_ATTRIBUTE_FRAMING_OVERLAY]
         ? {
             attribute_framing_overlay: {
               type: ATTRIBUTE_FRAMING,
@@ -544,17 +503,17 @@ const useOCAExport = () => {
                 location: "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl",
                 version: "1.0"
               },
-              attributes: getAttributeFramingInput(targetAttributeFramingRowData, targetAttributesList)
+              attributes: getAttributeFramingInput(attributeFramingRowData, attributesList)
             }
           }
         : {}),
-      ...(targetOverlaySelections[FIELD_FORM_INFORMATION_OVERLAY]
+      ...(overlaySelections[FIELD_FORM_INFORMATION_OVERLAY]
         ? {
             form_overlay: {
               form_overlays: formBuilderPages.map((page) => ({
                 type: FORM,
                 ...page,
-                schemaName: targetSchemaDescription[targetLanguages[0]]?.name || targetMetadata.name || "",
+                schemaName: originalSchemaDescription[languages[0]]?.name || metadata.name || "",
                 schemaDigest: bundle.bundle.d
               }))
             }
@@ -752,8 +711,9 @@ const useOCAExport = () => {
         console.warn("Could not generate README:", readmeError);
       }
 
-      // Get schema name for filenames (extract from metadata)
-      const schemaNameForFile = metadata?.name || metadata?.localized?.eng?.name || null;
+      // Get schema name for filenames
+      const currentState = getSchema();
+      const schemaNameForFile = currentState?.metadata?.name || currentState?.metadata?.localized?.eng?.name || null;
 
       // Download files
       downloadJsonFile(ocaPackage, getDescriptiveFileName(schemaNameForFile, "OCA_package.json"));
@@ -799,7 +759,6 @@ const useOCAExport = () => {
     exportData,
     error,
     clearError: () => setError(""),
-    hasNestedSchemas,
     isImportedPackage: !!pkgUpload,
     resetToDefaults
   };
