@@ -397,6 +397,19 @@ const useOCAExport = () => {
     }
     buildText += "\n";
 
+    // Unit overlay (attribute units)
+    buildText += "# Add units overlay\n";
+    let unitText = "";
+    attributesList.forEach((item) => {
+      const row = attributeRowData.find((r) => r.Attribute === item);
+      if (row && row.Unit && row.Unit !== "") {
+        unitText += ` ${item}="${row.Unit}"`;
+      }
+    });
+    if (unitText !== "") {
+      buildText += `ADD Unit ATTRS${unitText}\n`;
+    }
+
     // Add character encoding overlay
     buildText += "# Add character encoding overlay\n";
     if (overlaySelections[FIELD_CHARACTER_ENCODING_OVERLAY]) {

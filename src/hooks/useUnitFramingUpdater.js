@@ -6,17 +6,13 @@ const useUnitFramingUpdater = (unitRowData) => {
 
   useEffect(() => {
     if (!unitRowData) return;
-    const framedUnits = unitRowData.map((row) => {
-      const searchValue = row["UCUM Code"] || row.Unit;
-      const { firstMatch } = searchUnits(searchValue);
-
-      return {
-        ...row,
-        "UCUM Code": firstMatch?.code,
-        "UCUM Label": firstMatch?.label,
-        Description: firstMatch?.description
-      };
-    });
+    // Do not auto-search UCUM here — AttributeDetails is responsible for populating UCUM codes.
+    const framedUnits = unitRowData.map((row) => ({
+      ...row,
+      "UCUM Code": row["UCUM Code"] || "",
+      "UCUM Label": row["UCUM Label"] || "",
+      Description: row.Description || ""
+    }));
 
     setUnitFramedRowData(framedUnits);
   }, [unitRowData]);

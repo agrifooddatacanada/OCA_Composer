@@ -371,49 +371,38 @@ const UnitFraming = () => {
       existing.map((row) => [row.Attribute, row])
     );
     
-    // Build unit framed data from current attributes
+    // Build unit framed data from current attributes (do NOT auto-search UCUM here)
+    // AttributeDetails is the single source that auto-populates UCUM codes on save.
     const framedData = attributes
       .filter((attr) => attr.Unit) // Only attributes with units
       .map((attr) => {
         const existingRow = existingMap.get(attr.Attribute);
-        
-        // If unit changed, reset and auto-search for new UCUM code
+
+        // If unit changed, start fresh but do NOT auto-search for UCUM
         if (existingRow && existingRow.Unit !== attr.Unit) {
-          const { firstMatch } = searchUnits(attr.Unit);
           return {
             Attribute: attr.Attribute,
             Unit: attr.Unit,
-            "UCUM Code": firstMatch?.code || "",
-            "UCUM Label": firstMatch?.label || "",
-            Description: firstMatch?.description || ""
+            "UCUM Code": "",
+            "UCUM Label": "",
+            Description: "",
+            deleted: existingRow.deleted || false
           };
         }
-        
-        // If exists with same unit, preserve existing data
+
+        // Preserve any existing persisted framing row as-is
         if (existingRow) {
-          // Populate labels and descriptions from UCUM lookup if missing
-          if (existingRow["UCUM Code"] && (!existingRow["UCUM Label"] || !existingRow.Description)) {
-            const { results } = searchUnits(existingRow["UCUM Code"]);
-            const match = results.find((item) => item.code === existingRow["UCUM Code"]);
-            if (match) {
-              return {
-                ...existingRow,
-                "UCUM Label": match.label || existingRow["UCUM Label"] || "",
-                Description: match.description || existingRow.Description || ""
-              };
-            }
-          }
           return existingRow;
         }
-        
-        // New attribute with unit - auto-search for UCUM code
-        const { firstMatch } = searchUnits(attr.Unit);
+
+        // New attribute with unit - do not auto-populate UCUM here
         return {
           Attribute: attr.Attribute,
           Unit: attr.Unit,
-          "UCUM Code": firstMatch?.code || "",
-          "UCUM Label": firstMatch?.label || "",
-          Description: firstMatch?.description || ""
+          "UCUM Code": "",
+          "UCUM Label": "",
+          Description: "",
+          deleted: false
         };
       });
     
@@ -533,32 +522,13 @@ const UnitFraming = () => {
       displayedFramedUnits
     );
     
-    // Auto-populate UCUM codes for units that don't have them yet
-    const autoFramedData = updatedCurrentUnitFramedRowData.map((row) => {
-      // If already has UCUM code, keep it
-      if (row["UCUM Code"]) {
-        return row;
-      }
-      
-      // Auto-search for UCUM code based on unit name
-      if (row.Unit) {
-        const { firstMatch } = searchUnits(row.Unit);
-        if (firstMatch) {
-          return {
-            ...row,
-            "UCUM Code": firstMatch.code || "",
-            "UCUM Label": firstMatch.label || "",
-            Description: firstMatch.description || ""
-          };
-        }
-      }
-      
-      return row;
-    });
-    
-    setCurrentUnitFramedRowData(autoFramedData);
+    // Do NOT auto-populate UCUM codes here — AttributeDetails is the source of truth
+    // Preserve existing UCUM values and mark frame-all.
+    const preservedData = updatedCurrentUnitFramedRowData.map((row) => ({ ...row }));
 
-    const eligibleData = autoFramedData.filter((row) => !row.deleted);
+    setCurrentUnitFramedRowData(preservedData);
+
+    const eligibleData = preservedData.filter((row) => !row.deleted);
 
     setTempToDisplayRowData(eligibleData);
     setFrameAllUnits(true);
