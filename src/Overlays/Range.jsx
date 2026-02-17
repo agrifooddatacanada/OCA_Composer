@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
 import { Alert, Box, Button, Typography } from "@mui/material";
@@ -17,7 +17,7 @@ import { FIELD_RANGE_OVERLAY } from "../constants/constants";
 import { matchFormat } from "../OCADataValidator/utils/matchRules";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 
-const Range = () => {
+const Range = forwardRef((props, ref) => {
   const {
     setCurrentPage,
     setSelectedOverlay,
@@ -160,6 +160,11 @@ const Range = () => {
     const rowData = gridRef.current.api.getRenderedNodes()?.map((node) => node?.data);
     setRangeRowData(rowData);
   };
+
+  // Expose save() to parent (Home) so navigation (stepper) can trigger an immediate save
+  useImperativeHandle(ref, () => ({
+    save: handleSave
+  }));
 
   const handleForward = () => {
     const hasValidationError = Object.values(errors).some((attrErrors) =>
@@ -341,6 +346,6 @@ const Range = () => {
       </Box>
     </BackNextSkeleton>
   );
-};
+});
 
 export default Range;

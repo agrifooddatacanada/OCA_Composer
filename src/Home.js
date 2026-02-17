@@ -105,6 +105,7 @@ const Home = ({
   const languageDetailsRef = useRef(null);
   const schemaMetadataRef = useRef(null);
   const formatRulesRef = useRef(null);
+  const rangeRef = useRef(null);
 
   // List of overlay pages that use AG Grid and need their data saved on navigation
   const overlayPagesWithGrids = [
@@ -194,9 +195,12 @@ const Home = ({
 
       // Save overlay data when navigating away from overlay pages with grids
       // All overlays use unmount effects for saving, so they auto-save on navigation
-      // FormatRules has an exposed save method for immediate save if needed
+      // FormatRules and Range expose save methods for immediate save if needed
       if (currentPage === "FormatRules" && formatRulesRef.current && typeof formatRulesRef.current.save === "function") {
         formatRulesRef.current.save();
+      }
+      if (currentPage === "Range" && rangeRef.current && typeof rangeRef.current.save === "function") {
+        rangeRef.current.save();
       }
 
       setCurrentPage(target.page);
@@ -355,7 +359,7 @@ const Home = ({
         {currentPage === "FormInformation" && <FormInformation />}
         {currentPage === "FormBuilder" && <FormBuilder />}
         {currentPage === "DataStandards" && <DataStandards />}
-        {currentPage === "Range" && <Range />}
+        {currentPage === "Range" && <Range ref={rangeRef} />}
         {currentPage === "AttributeFraming" && <AttributeFraming />}
         {currentPage === "FormatRules" && <FormatRuleV2 ref={formatRulesRef} />}
       </Box>
