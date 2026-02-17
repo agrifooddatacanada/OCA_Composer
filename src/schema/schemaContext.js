@@ -28,7 +28,6 @@ import { MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { makeSchemaStore } from "./schemaStore";
 import { canonicalizeSchemaId } from "../utils/schemaId";
 import { buildPkgFromState } from "./ocaBuilder";
-import { useSchemaPersistence } from "./schemaPersistence";
 import { useCreateChildSchemaPlaceholder } from "./createChildSchemaPlaceholder";
 
 /** factories */
@@ -43,8 +42,6 @@ const MultiSchemaContext = createContext();
  * @param {Object} [props.packageOCA] - Optional OCA package for backward compatibility (deprecated - use setPkgUpload instead)
  */
 export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
-  const PERSIST_VERSION = 2;
-
   // Store the original OCA package (source of truth for schema structure)
   // Initialize from prop if provided (for backward compatibility)
   const [pkgUpload, setPkgUpload] = useState(packageOCA);
@@ -63,15 +60,7 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
     });
   }, []);
   
-  // Persist schemaStates to localStorage (debounced) + load on demand
-  const { saveToLocalStorage, loadFromLocalStorage } = useSchemaPersistence({
-    schemaStatesRef,
-    setSchemaStates,
-    storageKey: "oca_composer_multischema",
-    persistVersion: PERSIST_VERSION,
-    saveSignal: schemaStates,
-    debounceMs: 1000,
-  });
+
 
   // Get current working schema ID (with fallback to temp)
   const getCurrentSchemaId = useCallback(() => 
@@ -121,19 +110,6 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
   const clearAllSchemas = useCallback(() => {
     setSchemaStates({});
     setCurrentSchemaId();
-
-    // Clear localStorage for all multi-schema data
-    try {
-      // Clear all multi-schema entries (in case there are old ones)
-      const keys = Object.keys(localStorage);
-      keys.forEach((key) => {
-        if (key.startsWith("oca_composer_multischema_")) {
-          localStorage.removeItem(key);
-        }
-      });
-    } catch (error) {
-      // console.warn("Failed to clear localStorage:", error);
-    }
   }, []);
 
   const createChildSchemaPlaceholder =
@@ -167,9 +143,6 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       ...store,
       ...oca,
 
-      // Persistence
-      saveToLocalStorage,
-      loadFromLocalStorage
     }),
     [
       schemaStates,
@@ -181,9 +154,7 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       switchToSchema,
       pkgBuildFromState,
       clearAllSchemas,
-      createChildSchemaPlaceholder,
-      saveToLocalStorage,
-      loadFromLocalStorage
+      createChildSchemaPlaceholder
     ]
   );
 
