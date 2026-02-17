@@ -18,8 +18,8 @@ import {
   removeSpacesFromArrayOfObjects
 } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { hasDisallowedChars } from "../utils/helpers";
-import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA } from "../constants/constants";
+import { hasDisallowedChars, searchUnits } from "../utils/helpers";
+import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA, FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { langNameFromTwoLetters, langCodeOCAFromName } from "../utils/languageUtils";
 
@@ -236,6 +236,55 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     setCanDelete(attributeRowData.length > 0);
   }, [attributeRowData.length]);
 
+/**
+   * Helpers for unitFramedData merge and comparison
+   * - buildMergedUnitFramedData: merge persisted rows with attributes, preserving manual edits
+   * - unitFramedKey / areUnitFramedEqual: compare only the meaningful fields
+   */
+  const buildMergedUnitFramedData = (attributes = [], persisted = []) => {
+    const deletedUnits = new Set(persisted.filter((r) => r.deleted).map((r) => r.Unit));
+    const index = new Map(persisted.map((r) => [`${r.Attribute}|||${r.Unit}`, r]));
+
+    return attributes
+      .filter((a) => a.Unit && String(a.Unit).trim() !== "")
+      .map((attr) => {
+        const key = `${attr.Attribute}|||${attr.Unit}`;
+        const existing = index.get(key);
+        if (existing) return existing;
+
+        const { firstMatch } = searchUnits(attr.Unit);
+        return {
+          Attribute: attr.Attribute,
+          Unit: attr.Unit,
+          "UCUM Code": firstMatch?.code || "",
+          "UCUM Label": firstMatch?.label || "",
+          Description: firstMatch?.description || "",
+          deleted: deletedUnits.has(attr.Unit)
+        };
+      });
+  };
+
+  const unitFramedKey = (r = {}) => `${r.Attribute || ""}|||${r.Unit || ""}|||${r["UCUM Code"] || ""}`;
+  const areUnitFramedEqual = (a = [], b = []) => {
+    if (a.length !== b.length) return false;
+    const aKeys = a.map(unitFramedKey).sort();
+    const bKeys = b.map(unitFramedKey).sort();
+    return aKeys.every((k, i) => k === bKeys[i]);
+  };
+
+  // Keep schemaState.unitFramedData synchronized with attributeRowData so the
+  // Unit Framing overlay UI reflects UCUM codes immediately (preserve manual edits).
+  useEffect(() => {
+    const schemaState = getSchema();
+    const persisted = schemaState?.unitFramedData || [];
+
+    const merged = buildMergedUnitFramedData(attributeRowData, persisted);
+
+    if (!areUnitFramedEqual(persisted, merged)) {
+      updateSchema({ unitFramedData: merged });
+    }
+  }, [attributeRowData]);
+
   // Stops grid editing when clicking outside grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
@@ -432,10 +481,38 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       });
       
       // attributesList is computed automatically from attributes
+      // Auto-persist unit framing for attributes that have a Unit set.
+      // Preserve any existing unitFramed rows when Attribute+Unit match and retain deleted flags.
+      const existingUnitFramed = schemaState?.unitFramedData || [];
+      const deletedRows = existingUnitFramed.filter((r) => r.deleted === true);
+      const newUnitFramedData = attributeRowData
+        .filter((a) => a.Unit && String(a.Unit).trim() !== "")
+        .map((attr) => {
+          const existingRow = existingUnitFramed.find(
+            (r) => r.Attribute === attr.Attribute && r.Unit === attr.Unit
+          );
+          if (existingRow) return existingRow;
+          const { firstMatch } = searchUnits(attr.Unit);
+          return {
+            Attribute: attr.Attribute,
+            Unit: attr.Unit,
+            "UCUM Code": firstMatch?.code || "",
+            "UCUM Label": firstMatch?.label || "",
+            Description: firstMatch?.description || "",
+            deleted: deletedRows.some((dr) => dr.Unit === attr.Unit)
+          };
+        });
+
+      // If we have framed units, ensure the Unit Framing overlay is enabled for this schema
+      if (newUnitFramedData.length > 0) {
+        updateOverlaySelection(FIELD_UNIT_FRAMING_OVERLAY, true);
+      }
+
       updateSchema({
         attributes: attributeRowData,
         attributesWithLists: newAttributesWithLists,
         lanAttributeRowData: updatedLanAttributeRowData,
+        unitFramedData: newUnitFramedData,
         initialized: true
       });
       navigationSafe.current = true;
@@ -485,12 +562,39 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       }
     });
 
-    // Save current attribute data to schema state, including attributesWithLists
-    // so step visibility can update properly
-    // attributesList is computed automatically from attributes
+    // Persist unitFramedData as well so quick/back navigation doesn't lose framed units
+    const schemaState = getSchema();
+    const existingUnitFramed = schemaState?.unitFramedData || [];
+    const deletedRows = existingUnitFramed.filter((r) => r.deleted === true);
+
+    const newUnitFramedData = currentData
+      .filter((a) => a.Unit && String(a.Unit).trim() !== "")
+      .map((attr) => {
+        const existingRow = existingUnitFramed.find(
+          (r) => r.Attribute === attr.Attribute && r.Unit === attr.Unit
+        );
+        if (existingRow) return existingRow;
+        const { firstMatch } = searchUnits(attr.Unit);
+        return {
+          Attribute: attr.Attribute,
+          Unit: attr.Unit,
+          "UCUM Code": firstMatch?.code || "",
+          "UCUM Label": firstMatch?.label || "",
+          Description: firstMatch?.description || "",
+          deleted: deletedRows.some((dr) => dr.Unit === attr.Unit)
+        };
+      });
+
+    // If we have framed units, ensure the Unit Framing overlay is enabled for this schema
+    if (newUnitFramedData.length > 0) {
+      updateOverlaySelection(FIELD_UNIT_FRAMING_OVERLAY, true);
+    }
+
+    // Save current attribute data to schema state, including attributesWithLists and unit framing
     updateSchema({
       attributes: currentData,
-      attributesWithLists: newAttributesWithLists
+      attributesWithLists: newAttributesWithLists,
+      unitFramedData: newUnitFramedData
     });
   };
 

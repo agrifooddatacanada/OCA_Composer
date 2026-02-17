@@ -20,7 +20,7 @@ import { useMultiSchema } from "../schema/schemaContext";
 import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
-import { 
+import {
   getPrioritizedLangNames,
   getBestLangName,
   langCodeOCAFromName,
@@ -31,7 +31,7 @@ import {
   isChildSchemaType, 
   MANUAL_CREATION_SCHEMA_ID
 } from "../constants/constants";
-
+import { searchUnits } from "../utils/helpers";
 import Loading from "../components/Loading";
 import useOCAExport from "../hooks/useOCAExport";
 import useGenerateReadMe from "./useGenerateReadMe";
@@ -528,8 +528,9 @@ export default function ViewSchema({
               UpperBound: range.upper || "",
               LowerInclusive: range.lower_inclusive ?? false,
               UpperInclusive: range.upper_inclusive ?? false,
-              // Add unit framing field (UCUM code)
-              "Unit Framing": unitFramingData?.["UCUM Code"] || ""
+              // Add unit framing field (UCUM code). If no unitFramedData exists, try to derive a UCUM code from the attribute Unit.
+              "Unit Framing":
+                unitFramingData?.["UCUM Code"] || (attr.Unit ? (searchUnits(attr.Unit).firstMatch?.code || "") : "")
             };
           });
 
