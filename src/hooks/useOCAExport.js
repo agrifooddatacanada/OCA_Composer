@@ -270,7 +270,8 @@ const useOCAExport = () => {
         if (formatRule && attributesList.includes(attrName)) {
           // Normalize first (unescape any already-escaped quotes), then escape all quotes
           // This prevents double-escaping when format rules contain \" from the original OCA file
-          const escapedRule = escapeForOCAString(normalizeEscapedQuotes(formatRule));
+          // Only escape double quotes for the DSL; avoid escaping backslashes/hyphens
+          const escapedRule = normalizeEscapedQuotes(formatRule).replace(/"/g, '\\"');
           tempText += ` ${attrName}="${escapedRule}"`;
         }
       });
@@ -529,12 +530,7 @@ const useOCAExport = () => {
       ...(overlaySelections[FIELD_FORM_INFORMATION_OVERLAY]
         ? {
             form_overlay: {
-              form_overlays: formBuilderPages.map((page) => ({
-                type: FORM,
-                ...page,
-                schemaName: originalSchemaDescription[languages[0]]?.name || metadata.name || "",
-                schemaDigest: bundle.bundle.d
-              }))
+              form_overlays: getFormInformationInput(formBuilderPages, languages, schemaDescription, bundle.bundle.d)
             }
           }
         : {})
@@ -638,10 +634,46 @@ const useOCAExport = () => {
           dependencies: childBundles
         };
 
+        // Validate mergedExtension before handing to OcaPackage (catch malformed overlays early)
+        const validateExtension = (ext) => {
+          if (!ext || typeof ext !== 'object') throw new Error('extension must be an object');
+          const adc = ext.extensions?.adc;
+          if (!adc || typeof adc !== 'object') return; // nothing to validate
+          Object.entries(adc).forEach(([schemaKey, overlays]) => {
+            if (!overlays || (typeof overlays !== 'object' && !Array.isArray(overlays))) {
+              throw new Error(`extensions.adc.${schemaKey} must be an object or array`);
+            }
+            const overlayArray = Array.isArray(overlays) ? overlays : [overlays];
+            overlayArray.forEach((ov, idx) => {
+              if (!ov || typeof ov !== 'object') throw new Error(`overlay at extensions.adc.${schemaKey}[${idx}] is not an object`);
+              if (ov.form_overlay) {
+                const fo = ov.form_overlay.form_overlays || ov.form_overlay.form_overlays;
+                if (!Array.isArray(fo)) throw new Error('form_overlay.form_overlays must be an array');
+                fo.forEach((page, pidx) => {
+                  if (!page || typeof page !== 'object') throw new Error(`form_overlays[${pidx}] must be an object`);
+                  if (page.labels && typeof page.labels === 'object') {
+                    Object.entries(page.labels).forEach(([lang, label]) => {
+                      if (typeof lang !== 'string') throw new Error('form overlay page label language key is not a string');
+                      if (typeof label !== 'string') throw new Error(`form overlay page label for ${lang} must be a string`);
+                    });
+                  }
+                });
+              }
+            });
+          });
+        };
+
+        validateExtension(mergedExtension);
         // Use OcaPackage library to generate package with correct digests
-        const ocaPackageService = new OcaPackage(mergedExtension, bundleWithDeps);
-        const exportPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
-        
+        let exportPackage;
+        try {
+          const ocaPackageService = new OcaPackage(mergedExtension, bundleWithDeps);
+          exportPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
+        } catch (e) {
+          console.error('Failed to generate OCA package from extension:', e, mergedExtension);
+          throw new Error(`Failed to parse Extension JSON: ${e.message}`);
+        }
+
         // Use root bundle for filename extraction
         const rootBundleData = rootBundle.bundle;
         
@@ -718,8 +750,45 @@ const useOCAExport = () => {
       };
       
       // Merge extensions into the final package
-      const ocaPackageService = new OcaPackage(mergedExtension, { bundle: finalPackage.bundle, dependencies: finalPackage.dependencies });
-      const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
+      const validateExtension = (ext) => {
+        if (!ext || typeof ext !== 'object') throw new Error('extension must be an object');
+        const adc = ext.extensions?.adc;
+        if (!adc || typeof adc !== 'object') return; // nothing to validate
+        Object.entries(adc).forEach(([schemaKey, overlays]) => {
+          if (!overlays || (typeof overlays !== 'object' && !Array.isArray(overlays))) {
+            throw new Error(`extensions.adc.${schemaKey} must be an object or array`);
+          }
+          const overlayArray = Array.isArray(overlays) ? overlays : [overlays];
+          overlayArray.forEach((ov, idx) => {
+            if (!ov || typeof ov !== 'object') throw new Error(`overlay at extensions.adc.${schemaKey}[${idx}] is not an object`);
+            if (ov.form_overlay) {
+              const fo = ov.form_overlay.form_overlays || ov.form_overlay.form_overlays;
+              if (!Array.isArray(fo)) throw new Error('form_overlay.form_overlays must be an array');
+              fo.forEach((page, pidx) => {
+                if (!page || typeof page !== 'object') throw new Error(`form_overlays[${pidx}] must be an object`);
+                if (page.labels && typeof page.labels === 'object') {
+                  Object.entries(page.labels).forEach(([lang, label]) => {
+                    if (typeof lang !== 'string') throw new Error('form overlay page label language key is not a string');
+                    if (typeof label !== 'string') throw new Error(`form overlay page label for ${lang} must be a string`);
+                  });
+                }
+              });
+            }
+          });
+        });
+      };
+
+      validateExtension(mergedExtension);
+      let ocaPackage;
+      try {
+        const ocaPackageService = new OcaPackage(mergedExtension, { bundle: finalPackage.bundle, dependencies: finalPackage.dependencies });
+        ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
+      } catch (e) {
+        console.error('Failed to generate OCA package from extension:', e, mergedExtension);
+        throw new Error(`Failed to parse Extension JSON: ${e.message}`);
+      }
+
+      // Generate and download text readme (schema name extracted from bundle automatically)
 
       // Generate and download text readme (schema name extracted from bundle automatically)
       try {

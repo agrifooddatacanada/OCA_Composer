@@ -20,6 +20,7 @@ import {
   FIELD_FORM_INFORMATION_OVERLAY
 } from "../constants/constants";
 import { getDateTimePickerConfig } from "./FormBuilder/utils/getDateTimePickerConfig";
+import convertOverlayToFormBuilder from "./FormBuilder/utils/convertOverlayToFormBuilder";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
@@ -45,6 +46,7 @@ const PLACEHOLDER_EDITABLE_TYPES = ["Text", "Array[Text]", "DateTime", "Array[Da
 const FormInformation = () => {
   const { t } = useTranslation();
   const {
+    formBuilderPages,
     setFormBuilderPages,
     setCurrentPage,
     setSelectedOverlay,
@@ -57,7 +59,8 @@ const FormInformation = () => {
     getAttributesList, 
     getFormatRuleData,
     getSchema,
-    updateSchema 
+    updateSchema,
+    pkgUpload
   } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchema();
@@ -267,6 +270,44 @@ const FormInformation = () => {
      lanAttributeRowData, 
      updateSchema, 
      currentSchemaId]);
+
+  // Initialize Form Builder pages from ADC `form` overlay on OCA import
+  useEffect(() => {
+    // Don't overwrite an existing FormBuilder state that user may have edited
+    if (formBuilderPages && formBuilderPages.length > 0) return;
+
+    // Need the original package upload to find ADC extension overlays
+    if (!pkgUpload) return;
+
+    const captureBaseSaid = pkgUpload?.oca_bundle?.bundle?.capture_base?.d;
+    if (!captureBaseSaid) return;
+
+    const adcOverlays = pkgUpload?.extensions?.adc?.[captureBaseSaid]?.overlays || {};
+    const formOverlayData = adcOverlays.form_overlay || adcOverlays.form || null;
+    if (!formOverlayData) return;
+
+    // Convert ADC overlay to internal Form Builder pages
+    try {
+      const pages = convertOverlayToFormBuilder(
+        formOverlayData,
+        languages,
+        attributeRowData,
+        formatRuleRowData,
+        schemaState?.entryCodes || {},
+        schemaState?.attributesWithLists || [],
+        schemaState?.lanAttributeRowData || {}
+      );
+
+      if (pages && pages.length > 0) {
+        setFormBuilderPages(pages);
+      }
+    } catch (err) {
+      // Fail silently — don't block the UI if overlay conversion fails
+      // but surface a console message for debugging
+      // eslint-disable-next-line no-console
+      console.warn("Failed to convert ADC form overlay to FormBuilder pages:", err);
+    }
+  }, [pkgUpload, schemaState, formBuilderPages, setFormBuilderPages, languages, attributeRowData, formatRuleRowData]);
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {
