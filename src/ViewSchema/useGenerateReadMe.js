@@ -231,7 +231,8 @@ const useGenerateReadMe = () => {
     const text = textFile.join("");
     const textBlob = new Blob([text], { type: "text/plain" });
     const downloadUrl = URL.createObjectURL(textBlob);
-    const fileName = getDescriptiveFileName(schemaDescription, "README_OCA_schema.txt");
+    // Use same naming as package + _README for consistency
+    const fileName = getDescriptiveFileName(schemaDescription, "OCA_package_README.txt");
 
     const link = document.createElement("a");
     link.href = downloadUrl;

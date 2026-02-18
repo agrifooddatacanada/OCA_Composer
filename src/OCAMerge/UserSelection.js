@@ -33,7 +33,8 @@ import {
   generateOCABundle,
   generateOCAFileFromMergedOverlays,
   searchUnits,
-  normalizeEscapedQuotes
+  normalizeEscapedQuotes,
+  getDescriptiveFileName
 } from "../utils/helpers";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 
@@ -565,7 +566,8 @@ const UserSelection = () => {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "merged_schema.json";
+    // Use descriptive package naming for merged exports
+    a.download = getDescriptiveFileName("merged_schema", "OCA_package.json");
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -637,7 +639,9 @@ const UserSelection = () => {
     const ocaPackageService = new OcaPackage(extension, bundle);
     const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
 
-    jsonToTextFile(bundle.bundle, ocaPackage, schemaDescription);
+    // Use "merged_schema" as the name for merged exports so the README and package
+    // filenames are consistent (e.g. merged_schema_OCA_package_README.txt)
+    jsonToTextFile(bundle.bundle, ocaPackage, "merged_schema");
 
     exportToJsonFile(ocaPackage);
   };

@@ -811,9 +811,10 @@ const useGenerateTextReadmeFromJson = () => {
       nameForFile = engMeta?.name || null;
     }
     
+    // Filename format: <Schema>_OCA_package_README.txt (matches package naming + _README)
     const descriptiveFileName = getDescriptiveFileName(
       nameForFile,
-      "README_OCA_schema.txt"
+      "OCA_package_README.txt"
     );
 
     const link = document.createElement("a");
