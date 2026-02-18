@@ -41,7 +41,8 @@ const Home = ({
     currentSchemaId,
     schemaStates, 
     switchToSchema,
-    pkgUpload
+    pkgUpload,
+    getSchema
   } = useMultiSchema();
   const { isZip, setIsZipEdited } = useContext(Context);
 
@@ -254,13 +255,14 @@ const Home = ({
   // Ensure Entry Codes step reflects the currently active schema (root or dependency)
   const prevShouldShowRef = React.useRef(null); // null = uninitialized
   useEffect(() => {
-    const state = schemaStates[currentSchemaId] || {};
+    // Use getSchema() so manual-creation schemas (no currentSchemaId) are handled correctly
+    const state = getSchema() || {};
     const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
     const attributesWithLists = state?.attributesWithLists || [];
-    
+
     // Check if any attributes are marked as lists
     const hasList = Array.isArray(attributesWithLists) && attributesWithLists.length > 0;
-    
+
     const hasEntryCodes = state?.entryCodes && Object.keys(state.entryCodes).length > 0;
     const hasArrayTypes = attributesArray.some(
       (a) => typeof a?.Type === "string" && a.Type.startsWith("Array[")
@@ -288,7 +290,7 @@ const Home = ({
 
       prevShouldShowRef.current = shouldShow;
     }
-  }, [currentSchemaId, schemaStates, currentPage, setCurrentPage, insertStep, removeStep]);
+  }, [currentSchemaId, schemaStates, currentPage, setCurrentPage, insertStep, removeStep, getSchema]);
 
   return (
     <>
