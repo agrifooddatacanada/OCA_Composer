@@ -1,7 +1,7 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
-import { langCodeOCAFromName, langNameFromTwoLetters } from "./languageUtils";
+import { langCodeOCAFromName, langNameFromTwoLetters, langTwoLettersFromCodeOCA } from "./languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
@@ -726,46 +726,64 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Meta overlay
   fileContent += "# Add meta overlay";
   coreOverlays.meta.forEach((item) => {
+    // Emit 2-letter language code for DSL (parser expects UI-style codes here)
+    const twoLetterLang = langTwoLettersFromCodeOCA(item.language || "") || item.language;
+
     // Escape quotes in name and description
     const escapedName = escapeForOCAString(normalizeEscapedQuotes(item.name || ""));
     const escapedDesc = escapeForOCAString(normalizeEscapedQuotes(item.description || ""));
-    fileContent += `\nADD Meta ${item.language} PROPS name="${escapedName}" description="${escapedDesc}"`;
+    fileContent += `\nADD Meta ${twoLetterLang} PROPS name="${escapedName}" description="${escapedDesc}"`;
   });
   fileContent += "\n";
 
   // Format overlay
   fileContent += "# Add format overlay\n";
   if (coreOverlays.format) {
-    fileContent += "ADD Format ATTRS";
-    Object.keys(coreOverlays.format.attribute_formats).forEach((attribute) => {
-      // Normalize and escape quotes to prevent double-escaping issues
-      const formatRule = coreOverlays.format.attribute_formats[attribute];
-      const escapedRule = escapeForOCAString(normalizeEscapedQuotes(formatRule));
-      fileContent += ` ${attribute}="${escapedRule}"`;
-    });
-    fileContent += "\n";
+    const formatEntries = Object.entries(coreOverlays.format.attribute_formats || {}).filter(
+      ([attr, rule]) => attributes.includes(attr) && rule
+    );
+    if (formatEntries.length > 0) {
+      fileContent += "ADD Format ATTRS";
+      formatEntries.forEach(([attribute, formatRule]) => {
+        // Normalize and escape quotes to prevent double-escaping issues
+        const escapedRule = escapeForOCAString(normalizeEscapedQuotes(formatRule));
+        fileContent += ` ${attribute}="${escapedRule}"`;
+      });
+      fileContent += "\n";
+    }
   }
 
   // Conformance overlay
   fileContent += "# Add conformance overlay\n";
   if (coreOverlays.conformance) {
-    fileContent += "ADD CONFORMANCE ATTRS";
-    Object.keys(coreOverlays.conformance.attribute_conformance).forEach((attribute) => {
-      fileContent += ` ${attribute}="${coreOverlays.conformance.attribute_conformance[attribute]}"`;
-    });
-    fileContent += "\n";
+    const confEntries = Object.entries(coreOverlays.conformance.attribute_conformance || {}).filter(
+      ([attr]) => attributes.includes(attr)
+    );
+    if (confEntries.length > 0) {
+      fileContent += "ADD CONFORMANCE ATTRS";
+      confEntries.forEach(([attribute, val]) => {
+        fileContent += ` ${attribute}="${val}"`;
+      });
+      fileContent += "\n";
+    }
   }
 
   // Label overlay
   fileContent += "# Add label overlay";
   if (coreOverlays.label) {
     coreOverlays.label.forEach((item) => {
-      fileContent += `\nADD Label ${item.language} ATTRS`;
-      Object.keys(item.attribute_labels).forEach((attribute) => {
-        // Escape quotes in labels
-        const escapedLabel = escapeForOCAString(normalizeEscapedQuotes(item.attribute_labels[attribute] || ""));
-        fileContent += ` ${attribute}="${escapedLabel}"`;
-      });
+      const labels = Object.entries(item.attribute_labels || {}).filter(([attr]) =>
+        attributes.includes(attr)
+      );
+      if (labels.length > 0) {
+        const twoLetterLang = langTwoLettersFromCodeOCA(item.language || "") || item.language;
+        fileContent += `\nADD Label ${twoLetterLang} ATTRS`;
+        labels.forEach(([attribute, labelVal]) => {
+          // Escape quotes in labels
+          const escapedLabel = escapeForOCAString(normalizeEscapedQuotes(labelVal || ""));
+          fileContent += ` ${attribute}="${escapedLabel}"`;
+        });
+      }
     });
   }
   fileContent += "\n";
@@ -774,12 +792,18 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   fileContent += "# Add information overlay";
   if (coreOverlays.information) {
     coreOverlays.information.forEach((item) => {
-      fileContent += `\nADD Information ${item.language} ATTRS`;
-      Object.keys(item.attribute_information).forEach((attribute) => {
-        // Escape quotes in information/descriptions
-        const escapedInfo = escapeForOCAString(normalizeEscapedQuotes(item.attribute_information[attribute] || ""));
-        fileContent += ` ${attribute}="${escapedInfo}"`;
-      });
+      const infos = Object.entries(item.attribute_information || {}).filter(([attr]) =>
+        attributes.includes(attr)
+      );
+      if (infos.length > 0) {
+        const twoLetterLang = langTwoLettersFromCodeOCA(item.language || "") || item.language;
+        fileContent += `\nADD Information ${twoLetterLang} ATTRS`;
+        infos.forEach(([attribute, infoVal]) => {
+          // Escape quotes in information/descriptions
+          const escapedInfo = escapeForOCAString(normalizeEscapedQuotes(infoVal || ""));
+          fileContent += ` ${attribute}="${escapedInfo}"`;
+        });
+      }
     });
   }
   fileContent += "\n";
@@ -787,25 +811,35 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Entry code and entry overlay
   fileContent += "# Add entry code overlay\n";
   if (coreOverlays.entry_code) {
-    fileContent += "ADD ENTRY_CODE ATTRS";
-    const entryCodes = coreOverlays.entry_code.attribute_entry_codes;
-    Object.keys(entryCodes).forEach((attribute) => {
-      const codesInQuotes = entryCodes[attribute].map((code) => `"${code}"`);
-      fileContent += ` ${attribute}=[${codesInQuotes.join(", ")}]`;
-    });
-    fileContent += "\n";
+    const entryCodes = coreOverlays.entry_code.attribute_entry_codes || {};
+    const filteredEntryCodes = Object.entries(entryCodes).filter(([attr]) =>
+      attributes.includes(attr)
+    );
+    if (filteredEntryCodes.length > 0) {
+      fileContent += "ADD ENTRY_CODE ATTRS";
+      filteredEntryCodes.forEach(([attribute, codes]) => {
+        const codesInQuotes = (codes || []).map((code) => `"${code}"`);
+        fileContent += ` ${attribute}=[${codesInQuotes.join(", ")}]`;
+      });
+      fileContent += "\n";
+    }
 
     if (coreOverlays.entry) {
       coreOverlays.entry.forEach((item) => {
-        fileContent += `ADD ENTRY ${item.language} ATTRS`;
-        Object.keys(item.attribute_entries).forEach((attribute) => {
-          const entries = item.attribute_entries[attribute];
-          const entriesText = Object.keys(entries)
-            .map((code) => `"${code}": "${entries[code]}"`)
-            .join(", ");
-          fileContent += ` ${attribute}={${entriesText}}`;
-        });
-        fileContent += "\n";
+        const entriesForAttrs = Object.entries(item.attribute_entries || {}).filter(([attr]) =>
+          attributes.includes(attr)
+        );
+        if (entriesForAttrs.length > 0) {
+          const twoLetterLang = langTwoLettersFromCodeOCA(item.language || "") || item.language;
+          fileContent += `ADD ENTRY ${twoLetterLang} ATTRS`;
+          entriesForAttrs.forEach(([attribute, entries]) => {
+            const entriesText = Object.keys(entries)
+              .map((code) => `"${code}": "${entries[code]}"`)
+              .join(", ");
+            fileContent += ` ${attribute}={${entriesText}}`;
+          });
+          fileContent += "\n";
+        }
       });
     }
   }
@@ -813,40 +847,53 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Cardinality overlay
   fileContent += "# Add cardinality overlay\n";
   if (coreOverlays.cardinality) {
-    fileContent += "ADD CARDINALITY ATTRS";
-    Object.keys(coreOverlays.cardinality.attribute_cardinality).forEach((attribute) => {
-      fileContent += ` ${attribute}="${coreOverlays.cardinality.attribute_cardinality[attribute]}"`;
-    });
-    fileContent += "\n";
+    const cardinalityEntries = Object.entries(coreOverlays.cardinality.attribute_cardinality || {}).filter(
+      ([attr]) => attributes.includes(attr)
+    );
+    if (cardinalityEntries.length > 0) {
+      fileContent += "ADD CARDINALITY ATTRS";
+      cardinalityEntries.forEach(([attribute, val]) => {
+        fileContent += ` ${attribute}="${val}"`;
+      });
+      fileContent += "\n";
+    }
   }
 
   // Unit overlay
   fileContent += "# Add units overlay\n";
   if (coreOverlays.unit) {
-    fileContent += "ADD Unit ATTRS";
-    Object.keys(coreOverlays.unit.attribute_unit).forEach((attribute) => {
-      fileContent += ` ${attribute}="${coreOverlays.unit.attribute_unit[attribute]}"`;
-    });
-    fileContent += "\n";
+    const unitEntries = Object.entries(coreOverlays.unit.attribute_unit || {}).filter(([attr]) =>
+      attributes.includes(attr)
+    );
+    if (unitEntries.length > 0) {
+      fileContent += "ADD Unit ATTRS";
+      unitEntries.forEach(([attribute, val]) => {
+        fileContent += ` ${attribute}="${val}"`;
+      });
+      fileContent += "\n";
+    }
   }
 
   // Character encoding overlay
   fileContent += "# Add character encoding overlay\n";
   if (coreOverlays.character_encoding) {
-    fileContent += "ADD CHARACTER_ENCODING ATTRS";
-    Object.keys(coreOverlays.character_encoding.attribute_character_encoding).forEach(
-      (attribute) => {
-        fileContent += ` ${attribute}="${coreOverlays.character_encoding.attribute_character_encoding[attribute]}"`;
-      }
+    const charEncEntries = Object.entries(coreOverlays.character_encoding.attribute_character_encoding || {}).filter(
+      ([attr]) => attributes.includes(attr)
     );
-    fileContent += "\n";
+    if (charEncEntries.length > 0) {
+      fileContent += "ADD CHARACTER_ENCODING ATTRS";
+      charEncEntries.forEach(([attribute, val]) => {
+        fileContent += ` ${attribute}="${val}"`;
+      });
+      fileContent += "\n";
+    }
   }
 
   return fileContent;
 };
 
 export const downloadJsonFile = (data, fileName) => {
-  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
 

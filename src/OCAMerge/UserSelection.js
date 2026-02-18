@@ -471,11 +471,95 @@ const UserSelection = () => {
       }
     });
 
+    // Sanitize overlays: drop any attribute-mapped keys that are not part of the selected capture_base.
+    // This prevents emitted DSL from containing unknown attribute keys (e.g. "d", "i", "passed")
+    const captureAttrs = Object.keys(coreOverlays.capture_base?.attributes || {});
+    const isValidAttr = (a) => captureAttrs.includes(a);
+
+    // Non-language overlays that map attribute -> value
+    if (coreOverlays.format?.attribute_formats) {
+      coreOverlays.format.attribute_formats = Object.fromEntries(
+        Object.entries(coreOverlays.format.attribute_formats).filter(([k]) => isValidAttr(k))
+      );
+      if (Object.keys(coreOverlays.format.attribute_formats).length === 0) delete coreOverlays.format;
+    }
+
+    if (coreOverlays.conformance?.attribute_conformance) {
+      coreOverlays.conformance.attribute_conformance = Object.fromEntries(
+        Object.entries(coreOverlays.conformance.attribute_conformance).filter(([k]) => isValidAttr(k))
+      );
+      if (Object.keys(coreOverlays.conformance.attribute_conformance).length === 0) delete coreOverlays.conformance;
+    }
+
+    if (coreOverlays.entry_code?.attribute_entry_codes) {
+      coreOverlays.entry_code.attribute_entry_codes = Object.fromEntries(
+        Object.entries(coreOverlays.entry_code.attribute_entry_codes).filter(([k]) => isValidAttr(k))
+      );
+      if (Object.keys(coreOverlays.entry_code.attribute_entry_codes).length === 0) delete coreOverlays.entry_code;
+    }
+
+    if (coreOverlays.unit) {
+      const unitMap = coreOverlays.unit.attribute_unit || coreOverlays.unit.attribute_units || {};
+      const filteredUnits = Object.fromEntries(Object.entries(unitMap).filter(([k]) => isValidAttr(k)));
+      if (coreOverlays.unit.attribute_unit) coreOverlays.unit.attribute_unit = filteredUnits;
+      else coreOverlays.unit.attribute_units = filteredUnits;
+      if (Object.keys(filteredUnits).length === 0) delete coreOverlays.unit;
+    }
+
+    if (coreOverlays.cardinality?.attribute_cardinality) {
+      coreOverlays.cardinality.attribute_cardinality = Object.fromEntries(
+        Object.entries(coreOverlays.cardinality.attribute_cardinality).filter(([k]) => isValidAttr(k))
+      );
+      if (Object.keys(coreOverlays.cardinality.attribute_cardinality).length === 0) delete coreOverlays.cardinality;
+    }
+
+    if (coreOverlays.character_encoding?.attribute_character_encoding) {
+      coreOverlays.character_encoding.attribute_character_encoding = Object.fromEntries(
+        Object.entries(coreOverlays.character_encoding.attribute_character_encoding).filter(([k]) => isValidAttr(k))
+      );
+      if (Object.keys(coreOverlays.character_encoding.attribute_character_encoding).length === 0) delete coreOverlays.character_encoding;
+    }
+
+    // Language-specific overlays (arrays): filter per-item attribute maps
+    ["label", "information", "entry"].forEach((key) => {
+      if (Array.isArray(coreOverlays[key])) {
+        coreOverlays[key] = coreOverlays[key]
+          .map((item) => {
+            const copy = { ...item };
+            if (copy.attribute_labels) {
+              copy.attribute_labels = Object.fromEntries(
+                Object.entries(copy.attribute_labels).filter(([k]) => isValidAttr(k))
+              );
+            }
+            if (copy.attribute_information) {
+              copy.attribute_information = Object.fromEntries(
+                Object.entries(copy.attribute_information).filter(([k]) => isValidAttr(k))
+              );
+            }
+            if (copy.attribute_entries) {
+              copy.attribute_entries = Object.fromEntries(
+                Object.entries(copy.attribute_entries).filter(([k]) => isValidAttr(k))
+              );
+            }
+            return copy;
+          })
+          .filter((item) =>
+            Boolean(
+              (item.attribute_labels && Object.keys(item.attribute_labels).length > 0) ||
+                (item.attribute_information && Object.keys(item.attribute_information).length > 0) ||
+                (item.attribute_entries && Object.keys(item.attribute_entries).length > 0)
+            )
+          );
+
+        if (coreOverlays[key].length === 0) delete coreOverlays[key];
+      }
+    });
+
     return { coreOverlays, extensionOverlays };
   };
 
   const exportToJsonFile = (data) => {
-    const jsonString = JSON.stringify(data);
+    const jsonString = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
