@@ -30,6 +30,234 @@ For the OCA_BUNDLE, each section between rows of ****'s contains the details of 
 ******************************************************************
 END_REFERENCE_MATERIAL\n\n`;
 
+// Helper: build overlay SAID map + overlay text blocks for a schema bundle
+// Returns { overlaySaids, overlayTexts }
+const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
+  const overlaySaids = {};
+  const overlayTexts = {};
+
+  const hasAttrOrder = orderingOverlay?.attribute_ordering?.length > 0;
+  const hasEntryCodeOrder = Object.keys(orderingOverlay?.entry_code_ordering || {}).length > 0;
+
+  // capture_base (if present)
+  if (bundle.capture_base) {
+    const said = bundle.capture_base.d;
+    const layer_name = bundle.capture_base.type;
+    const { classification } = bundle.capture_base;
+    const schema_attributes = hasAttrOrder
+      ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, bundle.capture_base.attributes)
+      : bundle.capture_base.attributes;
+
+    overlaySaids[layer_name] = said;
+    overlayTexts.capture_base =
+      `Layer name: ${layer_name}\n` +
+      `SAID/digest: ${said}\n` +
+      `Classification: ${classification}\n` +
+      "\n" +
+      `Schema attributes: data type\n` +
+      `${Object.entries(schema_attributes)
+        .map(([key, value]) => `    ${key}: ${Array.isArray(value) ? `Array[${value[0]}]` : value}`)
+        .join("\n")}\n` +
+      "\n";
+  }
+
+  const overlays = bundle.overlays || {};
+
+  // meta (language-specific; array or single)
+  if (overlays.meta) {
+    const metas = Array.isArray(overlays.meta) ? overlays.meta : [overlays.meta];
+    overlayTexts.meta = metas
+      .map((overlay) => {
+        const said = overlay.d;
+        const layer_name = overlay.type;
+        const lang = overlay.language;
+        const { description } = overlay;
+        overlaySaids[`${layer_name} (${lang})`] = said;
+        return (
+          `Layer name: ${layer_name}\n` +
+          `SAID/digest: ${said}\n` +
+          `Language: ${lang}\n` +
+          `Description: ${description ? normalizeEscapedQuotes(description) : ""}\n` +
+          "\n"
+        );
+      })
+      .join("");
+  }
+
+  // label (language-specific)
+  if (overlays.label) {
+    const labels = Array.isArray(overlays.label) ? overlays.label : [overlays.label];
+    overlayTexts.label = labels
+      .map((overlay) => {
+        const said = overlay.d;
+        const layer_name = overlay.type;
+        const lang = overlay.language;
+        const schema_attributes = hasAttrOrder
+          ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, overlay.attribute_labels)
+          : overlay.attribute_labels;
+        overlaySaids[`${layer_name} (${lang})`] = said;
+        return (
+          `Layer name: ${layer_name}\n` +
+          `SAID/digest: ${said}\n` +
+          `Language: ${lang}\n` +
+          `Schema attributes: ${layer_name}\n` +
+          `${Object.entries(schema_attributes)
+            .map(([key, value]) => `    ${key}: ${value}`)
+            .join("\n")}\n` +
+          "\n"
+        );
+      })
+      .join("");
+  }
+
+  // information (language-specific)
+  if (overlays.information) {
+    const infos = Array.isArray(overlays.information) ? overlays.information : [overlays.information];
+    overlayTexts.information = infos
+      .map((overlay) => {
+        const said = overlay.d;
+        const layer_name = overlay.type;
+        const lang = overlay.language;
+        const schema_attributes = hasAttrOrder
+          ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, overlay.attribute_information)
+          : overlay.attribute_information;
+        overlaySaids[`${layer_name} (${lang})`] = said;
+        return (
+          `Layer name: ${layer_name}\n` +
+          `SAID/digest: ${said}\n` +
+          `Language: ${lang}\n` +
+          `Schema attributes: ${layer_name}\n` +
+          `${Object.entries(schema_attributes)
+            .map(([key, value]) => `    ${key}: ${normalizeEscapedQuotes(value)}`)
+            .join("\n")}\n` +
+          "\n"
+        );
+      })
+      .join("");
+  }
+
+  // unit (single object)
+  if (overlays.unit) {
+    const overlay = overlays.unit;
+    const said = overlay.d;
+    const layer_name = overlay.type;
+    const { measurement_system } = overlay;
+    const attributeUnits = overlay.attribute_unit || overlay.attribute_units || {};
+    const schema_attributes = hasAttrOrder
+      ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, attributeUnits)
+      : attributeUnits;
+
+    overlaySaids[layer_name] = said;
+    overlayTexts.unit =
+      `Layer name: ${layer_name}\n` +
+      `SAID/digest: ${said}\n` +
+      `Measurement system: ${measurement_system}\n` +
+      "\n" +
+      `Schema attributes: ${layer_name}\n` +
+      `${Object.entries(schema_attributes).map(([key, value]) => `    ${key}: ${value}`).join("\n")}\n` +
+      "\n";
+  }
+
+  // conformance
+  if (overlays.conformance) {
+    const overlay = overlays.conformance;
+    const said = overlay.d;
+    const schema_attributes = hasAttrOrder
+      ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, overlay.attribute_conformance)
+      : overlay.attribute_conformance;
+    const layer_name = overlay.type;
+    overlaySaids[layer_name] = said;
+    overlayTexts.conformance =
+      `Layer name: ${layer_name}\n` +
+      `SAID/digest: ${said}\n` +
+      "\n" +
+      `Schema attributes: ${layer_name}\n` +
+      `${Object.entries(schema_attributes).map(([key, value]) => `    ${key}: ${value}`).join("\n")}\n` +
+      "\n";
+  }
+
+  // character_encoding
+  if (overlays.character_encoding) {
+    const overlay = overlays.character_encoding;
+    const said = overlay.d;
+    const layer_name = overlay.type;
+    const schema_attributes = hasAttrOrder
+      ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, overlay.attribute_character_encoding)
+      : overlay.attribute_character_encoding;
+    overlaySaids[layer_name] = said;
+    overlayTexts.character_encoding =
+      `Layer name: ${layer_name}\n` +
+      `SAID/digest: ${said}\n` +
+      "\n" +
+      `Schema attributes: ${layer_name}\n` +
+      `${Object.entries(schema_attributes).map(([key, value]) => `    ${key}: ${value}`).join("\n")}\n` +
+      "\n";
+  }
+
+  // format
+  if (overlays.format) {
+    const overlay = overlays.format;
+    const said = overlay.d;
+    const layer_name = overlay.type;
+    const schema_attributes = hasAttrOrder
+      ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, overlay.attribute_formats)
+      : overlay.attribute_formats;
+    overlaySaids[layer_name] = said;
+    overlayTexts.format =
+      `Layer name: ${layer_name}\n` +
+      `SAID/digest: ${said}\n` +
+      "\n" +
+      `Schema attributes: ${layer_name}\n` +
+      `${Object.entries(schema_attributes).map(([key, value]) => `    ${key}: ${value}`).join("\n")}\n` +
+      "\n";
+  }
+
+  // entry_code
+  if (overlays.entry_code) {
+    const overlay = overlays.entry_code;
+    const said = overlay.d;
+    const layer_name = overlay.type;
+    const schema_attributes = hasEntryCodeOrder
+      ? orderingOverlay.entry_code_ordering
+      : overlay.attribute_entry_codes;
+    overlaySaids[layer_name] = said;
+    overlayTexts.entry_code =
+      `Layer name: ${layer_name}\n` +
+      `SAID/digest: ${said}\n` +
+      "\n" +
+      `Schema attributes: ${layer_name}\n` +
+      `${Object.entries(schema_attributes).map(([key, value]) => `    ${key}: [${value}]`).join("\n")}\n` +
+      "\n";
+  }
+
+  // entry (language-specific array)
+  if (overlays.entry) {
+    const entries = Array.isArray(overlays.entry) ? overlays.entry : [overlays.entry];
+    overlayTexts.entry = entries
+      .map((overlay) => {
+        const said = overlay.d;
+        const layer_name = overlay.type;
+        const lang = overlay.language;
+        const schema_attributes = hasEntryCodeOrder
+          ? getOrderedEntries(orderingOverlay.entry_code_ordering, overlay.attribute_entries)
+          : overlay.attribute_entries;
+        overlaySaids[`${layer_name} (${lang})`] = said;
+        const body = Object.entries(schema_attributes)
+          .map(([key, value]) => {
+            if (typeof value === "object" && value !== null) {
+              return `    ${key}: ${Object.values(value).join(", ")}`;
+            }
+            return `    ${key}: ${value}`;
+          })
+          .join("\n");
+        return `Layer name: ${layer_name}\nSAID/digest: ${said}\nSchema attributes: ${layer_name}\n${body}\n\n`;
+      })
+      .join("");
+  }
+
+  return { overlaySaids, overlayTexts };
+};
+
 /**
  * Hook to generate text-based README (OCA_READ_ME/1.0 format) from JSON OCA packages.
  * 
@@ -77,248 +305,10 @@ const useGenerateTextReadmeFromJson = () => {
     const overlay_texts = {};
 
     // Step 3: --- Converting schema overlays from objects to texts
-    if (Object.prototype.hasOwnProperty.call(json_bundle, "capture_base")) {
-      const said = json_bundle.capture_base.d;
-      const layer_name = json_bundle.capture_base.type;
-      const { classification } = json_bundle.capture_base;
-      const schema_attributes = hasAttributeOrdering
-        ? getOrderedAttributeMap(
-            orderingOverlay.attribute_ordering,
-            json_bundle.capture_base.attributes
-          )
-        : json_bundle.capture_base.attributes;
+    const { overlaySaids: rootSaids, overlayTexts: rootTexts } = buildOverlayMaps(json_bundle, orderingOverlay || {});
+    Object.assign(overlay_saids, rootSaids);
+    Object.assign(overlay_texts, rootTexts);
 
-      overlay_saids[layer_name] = said;
-      overlay_texts.capture_base =
-        `Layer name: ${layer_name}\n` +
-        `SAID/digest: ${said}\n` +
-        `Classification: ${classification}\n` +
-        "\n" +
-        "Schema attributes: data type\n" +
-        `${Object.entries(schema_attributes)
-          .map(
-            ([key, value]) =>
-              `    ${key}: ${Array.isArray(value) ? `Array[${value[0]}]` : value}`
-          )
-          .join("\n")}\n` +
-        "\n";
-      // implement flagged attributes
-    }
-
-    const metas_overlays_txt = [];
-    if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "meta")) {
-      for (const overlay of json_bundle.overlays.meta) {
-        const said = overlay.d;
-        const layer_name = overlay.type;
-        const lang = overlay.language;
-        const { description } = overlay;
-        overlay_saids[`${layer_name} (${lang})`] = said;
-        metas_overlays_txt.push(
-          `Layer name: ${layer_name}\n` +
-            `SAID/digest: ${said}\n` +
-            `Language: ${lang}\n` +
-            // eslint-disable-next-line quotes
-            `Description: ${description ? normalizeEscapedQuotes(description) : ""}\n` +
-            "\n"
-        );
-      }
-      overlay_texts.meta = metas_overlays_txt.join("");
-    }
-
-    if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "label")) {
-      const labels_overlays_txt = [];
-      for (const overlay of json_bundle.overlays.label) {
-        const said = overlay.d;
-        const layer_name = overlay.type;
-        const lang = overlay.language;
-        const schema_attributes = hasAttributeOrdering
-          ? getOrderedAttributeMap(
-              orderingOverlay.attribute_ordering,
-              overlay.attribute_labels
-            )
-          : overlay.attribute_labels;
-        overlay_saids[`${layer_name} (${lang})`] = said;
-        labels_overlays_txt.push(
-          `Layer name: ${layer_name}\n` +
-            `SAID/digest: ${said}\n` +
-            `Language: ${lang}\n` +
-            `Schema attributes: ${layer_name}\n` +
-            `${Object.entries(schema_attributes)
-              .map(([key, value]) => `    ${key}: ${value}`)
-              .join("\n")}\n` +
-            "\n"
-        );
-      }
-      overlay_texts.label = labels_overlays_txt.join("");
-    }
-
-    if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "information")) {
-      const information_overlays_txt = [];
-      for (const overlay of json_bundle.overlays.information) {
-        const said = overlay.d;
-        const layer_name = overlay.type;
-        const lang = overlay.language;
-        const schema_attributes = hasAttributeOrdering
-          ? getOrderedAttributeMap(
-              orderingOverlay.attribute_ordering,
-              overlay.attribute_information
-            )
-          : overlay.attribute_information;
-        overlay_saids[`${layer_name} (${lang})`] = said;
-        information_overlays_txt.push(
-          `Layer name: ${layer_name}\n` +
-            `SAID/digest: ${said}\n` +
-            `Language: ${lang}\n` +
-            `Schema attributes: ${layer_name}\n` +
-            `${Object.entries(schema_attributes)
-              .map(
-                ([key, value]) =>
-                  // eslint-disable-next-line quotes
-                  `    ${key}: ${normalizeEscapedQuotes(value)}`
-              )
-              .join("\n")}\n` +
-            "\n"
-        );
-      }
-      overlay_texts.information = information_overlays_txt.join("");
-    }
-
-    if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "unit")) {
-      const said = json_bundle.overlays.unit.d;
-      const layer_name = json_bundle.overlays.unit.type;
-      const { measurement_system } = json_bundle.overlays.unit;
-      const attributeUnits =
-        json_bundle.overlays.unit.attribute_unit ||
-        json_bundle.overlays.unit.attribute_units ||
-        {};
-      const schema_attributes = hasAttributeOrdering
-        ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, attributeUnits)
-        : attributeUnits;
-      overlay_saids[layer_name] = said;
-      overlay_texts.unit =
-        `Layer name: ${layer_name}\n` +
-        `SAID/digest: ${said}\n` +
-        `Measurement system: ${measurement_system}\n` +
-        "\n" +
-        `Schema attributes: ${layer_name}\n` +
-        `${Object.entries(schema_attributes)
-          .map(([key, value]) => `    ${key}: ${value}`)
-          .join("\n")}\n` +
-        "\n";
-    }
-
-    if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "conformance")) {
-      const said = json_bundle.overlays.conformance.d;
-      const schema_attributes = hasAttributeOrdering
-        ? getOrderedAttributeMap(
-            orderingOverlay.attribute_ordering,
-            json_bundle.overlays.conformance.attribute_conformance
-          )
-        : json_bundle.overlays.conformance.attribute_conformance;
-      const layer_name = json_bundle.overlays.conformance.type;
-      overlay_saids[layer_name] = said;
-      overlay_texts.conformance =
-        `Layer name: ${layer_name}\n` +
-        `SAID/digest: ${said}\n` +
-        "\n" +
-        `Schema attributes: ${layer_name}\n` +
-        `${Object.entries(schema_attributes)
-          .map(([key, value]) => `    ${key}: ${value}`)
-          .join("\n")}\n` +
-        "\n";
-    }
-
-    if (
-      Object.prototype.hasOwnProperty.call(json_bundle.overlays, "character_encoding")
-    ) {
-      const said = json_bundle.overlays.character_encoding.d;
-      const layer_name = json_bundle.overlays.character_encoding.type;
-      const schema_attributes = hasAttributeOrdering
-        ? getOrderedAttributeMap(
-            orderingOverlay.attribute_ordering,
-            json_bundle.overlays.character_encoding.attribute_character_encoding
-          )
-        : json_bundle.overlays.character_encoding.attribute_character_encoding;
-      overlay_saids[layer_name] = said;
-      overlay_texts.character_encoding =
-        `Layer name: ${layer_name}\n` +
-        `SAID/digest: ${said}\n` +
-        "\n" +
-        `Schema attributes: ${layer_name}\n` +
-        `${Object.entries(schema_attributes)
-          .map(([key, value]) => `    ${key}: ${value}`)
-          .join("\n")}\n` +
-        "\n";
-    }
-
-    if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "format")) {
-      const said = json_bundle.overlays.format.d;
-      const layer_name = json_bundle.overlays.format.type;
-      const schema_attributes = hasAttributeOrdering
-        ? getOrderedAttributeMap(
-            orderingOverlay.attribute_ordering,
-            json_bundle.overlays.format.attribute_formats
-          )
-        : json_bundle.overlays.format.attribute_formats;
-      overlay_saids[layer_name] = said;
-      overlay_texts.format =
-        `Layer name: ${layer_name}\n` +
-        `SAID/digest: ${said}\n` +
-        "\n" +
-        `Schema attributes: ${layer_name}\n` +
-        `${Object.entries(schema_attributes)
-          .map(([key, value]) => `    ${key}: ${value}`)
-          .join("\n")}\n` +
-        "\n";
-    }
-
-    if (Object.prototype.hasOwnProperty.call(json_bundle.overlays, "entry_code")) {
-      const said = json_bundle.overlays.entry_code.d;
-      const layer_name = json_bundle.overlays.entry_code.type;
-      const schema_attributes = hasEntryCodeOrdering
-        ? orderingOverlay.entry_code_ordering
-        : json_bundle.overlays.entry_code.attribute_entry_codes;
-      overlay_saids[layer_name] = said;
-      overlay_texts.entry_code =
-        `Layer name: ${layer_name}\n` +
-        `SAID/digest: ${said}\n` +
-        "\n" +
-        `Schema attributes: ${layer_name}\n` +
-        `${Object.entries(schema_attributes)
-          .map(([key, value]) => `    ${key}: [${value}]`)
-          .join("\n")}\n` +
-        "\n";
-    }
-
-    if (json_bundle.overlays.entry !== undefined) {
-      const entry_overlays_txt = [];
-      for (const overlay of json_bundle.overlays.entry) {
-        const said = overlay.d;
-        const layer_name = overlay.type;
-        const lang = overlay.language;
-        const schema_attributes = hasEntryCodeOrdering
-          ? getOrderedEntries(
-              orderingOverlay.entry_code_ordering,
-              overlay.attribute_entries
-            )
-          : overlay.attribute_entries;
-        overlay_saids[`${layer_name} (${lang})`] = said;
-        entry_overlays_txt.push(
-          `Layer name: ${layer_name}\n` +
-            `SAID/digest: ${said}\n` +
-            `Schema attributes: ${layer_name}\n` +
-            `${Object.entries(schema_attributes)
-              .map(([key, value]) => {
-                if (typeof value === "object" && value !== null) {
-                  return `    ${key}: ${Object.values(value).join(", ")}`;
-                }
-                return `    ${key}: ${value}`;
-              })
-              .join("\n")}\n\n`
-        );
-      }
-      overlay_texts.entry = entry_overlays_txt.join("");
-    }
 
     // Step 4: --- Constructing OCA ReadMe file
     const manifest = [];
@@ -777,8 +767,29 @@ const useGenerateTextReadmeFromJson = () => {
           const typeDisplay = Array.isArray(attrType) ? `Array[${attrType[0]}]` : attrType;
           text_file.push(`    ${attrName}: ${typeDisplay}\n`);
         });
-        
-        text_file.push("\n******************************************************************\n");
+
+        // --- Include overlays for the child schema (reuse shared helper)
+        const childOrderingOverlay =
+          ocaPackage?.extensions?.[ADC]?.[childCaptureBase.d]?.overlays?.ordering ||
+          childBundle?.overlays?.ordering;
+        const { overlayTexts: childTexts } = buildOverlayMaps(childBundle, childOrderingOverlay || {});
+        // render in same order as root
+        ["meta","label","information","unit","conformance","character_encoding","format","entry_code","entry"].forEach((k) => {
+          if (childTexts[k]) {
+            text_file.push(childTexts[k]);
+            text_file.push("******************************************************************\n");
+          }
+        });
+
+
+
+
+
+
+
+
+
+
       });
       
       text_file.push("END_CHILD_SCHEMAS\n");
