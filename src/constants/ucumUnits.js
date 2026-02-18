@@ -333,6 +333,10 @@ const ucumUnits = [
   { code: "ug", label: "microgram", description: "Unit of mass" },
   { code: "ng", label: "nanogram", description: "Unit of mass" },
   { code: "pg", label: "picogram", description: "Unit of mass" },
+  { code: "mm", label: "millimetre", description: "Unit of length" },
+  { code: "um", label: "micrometre", description: "Unit of length" },
+  { code: "nm", label: "nanometre", description: "Unit of length" },
+  { code: "Ao", label: "Ångström", description: "Unit of length" },
   {
     code: "mg/kg",
     label: "milligram per kilogram",
