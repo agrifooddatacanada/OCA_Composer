@@ -466,25 +466,6 @@ const OCADataValidatorCheck = ({
     ]
   );
 
-  // DEBUG: render diagnostics — remove when fixed
-  const renderCounterRef = useRef(0);
-  renderCounterRef.current += 1;
-  try {
-    console.debug("[OCADataValidatorCheck] render#", renderCounterRef.current, {
-      columnDefsLen: columnDefs?.length,
-      rowDataLen: rowData?.length,
-      initialRowDataLen: initialRowData?.length,
-      schemaHeaderLen: schemaDataConformantHeader?.length,
-      matchingRowDataLen: matchingRowData?.length,
-      revalidateData,
-      isValidateButtonEnabled,
-      errorName,
-      pkgUploadPresent: !!pkgUpload
-    });
-  } catch (err) {
-    /* ignore during debug */
-  }
-
   const generateCSVFile = async (ogHeader) => {
     const newData = [];
     gridRef.current.api.forEachNode((node) => {

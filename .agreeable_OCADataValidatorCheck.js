@@ -1,4 +1,5 @@
-import React, {
+/* DELETED: temporary port snapshot removed */
+
   memo,
   useCallback,
   useContext,
