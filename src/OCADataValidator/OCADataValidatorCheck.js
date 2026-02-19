@@ -411,7 +411,7 @@ const OCADataValidatorCheck = ({
         </Box>
       </Box>
 
-      <ViewSchema isPageForward={false} />
+      <ViewSchema isPageForward={false} isExport={false} />
     </Box>
   );
 
