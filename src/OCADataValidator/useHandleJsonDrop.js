@@ -34,7 +34,6 @@ export const useHandleJsonDrop = (
     setDatasetDropDisabled,
     datasetRawFile,
     setMatchingRowData,
-    setJsonParsedFile,
     firstTimeMatchingRef,
     targetResult,
     setTargetResult
@@ -94,9 +93,6 @@ export const useHandleJsonDrop = (
 
           jsonFile = replaceAttributeCharsInParsedJson(jsonFile);
 
-          // Persist parsed JSON in App context for backwards compatibility
-          setJsonParsedFile(jsonFile);
-
           // ALSO ensure multi-schema pkgUpload is populated so validator always uses package root
           try {
             let pkgToSet = null;
@@ -117,7 +113,8 @@ export const useHandleJsonDrop = (
                 const rootId = getPackageBundleId(pkgToSet) || pkgToSet?.bundle?.d || null;
                 if (rootId) switchToSchema(rootId, pkgToSet);
               } catch (err) {
-                // non-fatal; keep jsonParsedFile available as fallback for older flows
+                // non-fatal; initialization failed but pkgUpload was set — downstream components
+                // should handle missing initialization defensively.
                 console.warn("useHandleJsonDrop: initializeFromPkgUpload failed", err);
               }
             }
@@ -397,8 +394,7 @@ export const useHandleJsonDrop = (
         }
         allZipFiles.push(convertedLoadRoot);
 
-        // Persist parsed bundle and also set pkgUpload so multi-schema state is initialized
-        setJsonParsedFile(bundleForValidator);
+        // Persist parsed bundle by initializing MultiSchema pkgUpload so validator uses package root
         try {
           const pkg = { bundle: bundleForValidator };
           setPkgUpload(pkg);
@@ -467,7 +463,7 @@ export const useHandleJsonDrop = (
             // Create OCA package
             const pkg = transformToPackage(bundle);
 
-            // Store OCA package in context
+            // Store OCA package in MultiSchema context and initialize editor state
             setPkgUpload(pkg);
 
             // Set editing schema to root schema
@@ -477,9 +473,6 @@ export const useHandleJsonDrop = (
 
             // Extract the bundle for processing - exactly the same structure expected by JSON processing
             const jsonFile = pkg.oca_bundle.bundle;
-
-            // Process the bundle the same way as JSON files
-            setJsonParsedFile(jsonFile);
             const languageList = [];
             const informationList = [];
             const labelList = [];
@@ -663,7 +656,6 @@ export const useHandleJsonDrop = (
       setJsonDropDisabled,
       setJsonIsParsed,
       setJsonLoading,
-      setJsonParsedFile,
       setPkgUpload,
       setShowWarningCard,
       setTargetResult,

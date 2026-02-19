@@ -100,7 +100,6 @@ function App() {
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
-  const [jsonParsedFile, setJsonParsedFile] = useState(undefined);
   const [jsonLoading, setJsonLoading] = useState(false);
   const [jsonDropDisabled, setJsonDropDisabled] = useState(false);
   const [jsonIsParsed, setJsonIsParsed] = useState(false);
@@ -421,8 +420,6 @@ function App() {
               setSchemaDataConformantRowData,
               ogWorkbook,
               setOgWorkbook,
-              jsonParsedFile,
-              setJsonParsedFile,
               ogSchemaDataConformantHeaderRef,
               entryCodeHeaders,
               setEntryCodeHeaders,
