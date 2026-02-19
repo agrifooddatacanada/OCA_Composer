@@ -572,16 +572,7 @@ const useOCAExport = () => {
     try {
       setError("");
 
-      // Block export early if any schema in the current editor state explicitly
-      // has an attributes array with zero entries. This prevents generating
-      // an invalid text-DSL (bare `ADD Attribute`) and gives a clear error.
-      const emptySchemas = Object.entries(schemaStates).filter(([, s]) => Array.isArray(s?.attributes) && s.attributes.length === 0);
-      if (emptySchemas.length > 0) {
-        const names = emptySchemas.map(([, s]) => s?.metadata?.localized?.eng?.name || s?.metadata?.name).join(", ");
-        const msg = `Export blocked: the following schema(s) have no attributes: ${names}. Add at least one attribute before exporting.`;
-        setError(msg);
-        throw new Error(msg);
-      }
+
 
       // For imported packages: Build ALL schemas from UI state to get fresh SAID digests
       // This matches agreeable-mushroom behavior - decompose bundle to UI state,
