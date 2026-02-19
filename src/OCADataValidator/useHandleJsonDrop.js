@@ -94,7 +94,37 @@ export const useHandleJsonDrop = (
 
           jsonFile = replaceAttributeCharsInParsedJson(jsonFile);
 
+          // Persist parsed JSON in App context for backwards compatibility
           setJsonParsedFile(jsonFile);
+
+          // ALSO ensure multi-schema pkgUpload is populated so validator always uses package root
+          try {
+            let pkgToSet = null;
+            if (ocaPackageData) {
+              pkgToSet = ocaPackageData; // full OCA package
+            } else if (rawParse?.bundle) {
+              pkgToSet = rawParse; // package-like object with bundle
+            } else if (jsonFile?.capture_base) {
+              // wrap single-capture_base bundle into a package-like object for multi-schema context
+              pkgToSet = { bundle: jsonFile };
+            }
+
+            if (pkgToSet) {
+              setPkgUpload(pkgToSet);
+              // initialize MultiSchema state so other components (validator) can rely on pkgUpload
+              try {
+                initializeFromPkgUpload(pkgToSet);
+                const rootId = getPackageBundleId(pkgToSet) || pkgToSet?.bundle?.d || null;
+                if (rootId) switchToSchema(rootId, pkgToSet);
+              } catch (err) {
+                // non-fatal; keep jsonParsedFile available as fallback for older flows
+                console.warn("useHandleJsonDrop: initializeFromPkgUpload failed", err);
+              }
+            }
+          } catch (err) {
+            console.error("useHandleJsonDrop: error setting pkgUpload", err);
+          }
+
           const languageList = [];
           const informationList = [];
           const labelList = [];
@@ -367,10 +397,19 @@ export const useHandleJsonDrop = (
         }
         allZipFiles.push(convertedLoadRoot);
 
+        // Persist parsed bundle and also set pkgUpload so multi-schema state is initialized
         setJsonParsedFile(bundleForValidator);
+        try {
+          const pkg = { bundle: bundleForValidator };
+          setPkgUpload(pkg);
+          initializeFromPkgUpload(pkg);
+          switchToSchema(bundleForValidator?.d || bundleForValidator?.capture_base?.d || getPackageBundleId(pkg) || 'generated_schema', pkg);
+        } catch (err) {
+          console.warn('useHandleJsonDrop: failed to initialize pkgUpload from zip bundle', err);
+        }
+
         // Data processing handled by initializeFromPkgUpload (called during upload)
         // which uses OCAParser to extract all schema data into MultiSchemaContext
-        
         setZipToReadme(allZipFiles);
       };
 

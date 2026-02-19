@@ -40,6 +40,7 @@ import {
 import WarningPopup from "./WarningPopup";
 import { CustomPalette } from "../constants/customPalette";
 import { getCurrentData, getDescriptiveFileName } from "../utils/helpers";
+import { getPackageBundle } from "../utils/packageUtils";
 import { CreateDataEntryExcel } from "../Landing/CreateDataEntryExcel";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import ViewSchema from "../ViewSchema/ViewSchema";
@@ -310,18 +311,37 @@ const OCADataValidatorCheck = ({
     schemaDataConformantHeader,
     setCurrentDataValidatorPage,
     ogWorkbook,
-    jsonParsedFile,
     matchingRowData,
     datasetRawFile,
     setSchemaDataConformantHeader,
     targetResult,
-    notToVerifyAttributes,
-    pkgUpload
+    notToVerifyAttributes
   } = useContext(Context);
 
-  // Get schema data from MultiSchemaContext
-  const { currentSchemaId, getSchema } = useMultiSchema();
+  // Get schema data and uploaded package from MultiSchemaContext
+  const { currentSchemaId, getSchema, pkgUpload } = useMultiSchema();
   const schemaState = getSchema();
+
+  // Validator MUST use the package root bundle when available (multi-schema flow).
+  // Build a validator bundle from pkgUpload (preferred) or derive a minimal bundle
+  // from the current schema state when pkgUpload isn't set (manual-creation).
+  let bundleForValidator = null;
+  if (pkgUpload) {
+    bundleForValidator = getPackageBundle(pkgUpload);
+    if (!bundleForValidator) {
+      console.error("OCADataValidatorCheck: pkgUpload present but root bundle missing — cannot validate");
+    }
+  } else if (schemaState && Array.isArray(schemaState.attributes) && schemaState.attributes.length > 0) {
+    // derive minimal capture_base from schema editor state (manual creation)
+    const capture_base = { attributes: {} };
+    schemaState.attributes.forEach((a) => {
+      capture_base.attributes[a.Attribute] = a.Type || "Text";
+    });
+    bundleForValidator = { capture_base };
+    console.debug("OCADataValidatorCheck: derived validator bundle from schemaState (manual)");
+  } else {
+    console.error("OCADataValidatorCheck: no pkgUpload and no schemaState available — validation disabled");
+  }
   
   // Extract data from schema state (single schema for Data Validator)
   const languages = schemaState?.metadata?.languages || [];
@@ -391,8 +411,8 @@ const OCADataValidatorCheck = ({
 
   const SavedEntryCodesWithNoArrayType = Object.keys(savedEntryCodes)
     .filter((key) => {
-      const attribute = jsonParsedFile.capture_base.attributes[key];
-      return !Array.isArray(attribute) && !attribute.includes("Array");
+      const attribute = (bundleForValidator?.capture_base?.attributes || {})[key];
+      return !Array.isArray(attribute) && !attribute?.includes("Array");
     })
     .reduce((acc, key) => {
       acc[key] = savedEntryCodes[key];
@@ -435,7 +455,8 @@ const OCADataValidatorCheck = ({
       characterEncodingRowData,
       formatRuleRowData,
       savedEntryCodes,
-      langRef.current
+      langRef.current,
+      pkgUpload
     ]
   );
 
@@ -594,8 +615,15 @@ const OCADataValidatorCheck = ({
     setRevalidateData(false);
     setFirstValidate(true);
 
+    if (!bundleForValidator) {
+      console.error("handleValidate: no validator bundle available — aborting validation");
+      gridRef.current?.api?.hideLoadingOverlay?.();
+      setRevalidateData(true);
+      return;
+    }
+
     const bundle = new OCABundle();
-    await bundle.loadedBundle(jsonParsedFile, pkgUpload);
+    await bundle.loadedBundle(bundleForValidator, pkgUpload);
 
     const newData = getCurrentData(gridRef.current.api, true);
 
@@ -700,7 +728,7 @@ const OCADataValidatorCheck = ({
       newData.forEach((data) => {
         const row = schemaConformantDataHeaders.map((header) => {
           const value = data[header] || "";
-          const isNumeric = jsonParsedFile.capture_base.attributes[header] === "Numeric";
+          const isNumeric = (bundleForValidator?.capture_base?.attributes || {})[header] === "Numeric";
 
           // Convert string to number if the attribute is marked as Numeric
           if (isNumeric && typeof value === "string") {
@@ -1110,7 +1138,7 @@ const OCADataValidatorCheck = ({
                 handleSave={handleSave}
                 inputDataType={datasetRawFileType}
                 validatedData={rowDataFilter}
-                currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
+                currentSchemaName={bundleForValidator?.capture_base?.name || ""}
               />
               {inIframe && (
                 <UploadButton isDisabled={!isDataValid} uploadFunc={uploadData} />
