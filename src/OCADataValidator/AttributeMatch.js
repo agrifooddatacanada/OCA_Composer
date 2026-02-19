@@ -9,7 +9,8 @@ import Languages from "./Languages";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
-import { langNameFromTwoLetters, getUILangName } from "../utils/languageUtils";
+import { useMultiSchema } from "../schema/schemaContext";
+import { langNameFromTwoLetters, getUILangName, LanguageConstants } from "../utils/languageUtils";
 
 export const DataHeaderRenderer = memo((props) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -79,7 +80,6 @@ const AttributeMatch = () => {
   const { t } = useTranslation();
   const {
     setCurrentDataValidatorPage,
-    languages,
     matchingRowData,
     setMatchingRowData,
     schemaDataConformantHeader,
@@ -90,11 +90,19 @@ const AttributeMatch = () => {
     notToVerifyAttributes,
     setNotToVerifyAttributes
   } = useContext(Context);
+
+  const { getLanguages } = useMultiSchema();
+  const _rawLanguages = getLanguages();
+  const languages = Array.isArray(_rawLanguages) && _rawLanguages.length ? _rawLanguages : [LanguageConstants.DEFAULT_LANG_NAME];
+
   const [type, setType] = useState(() => {
     const siteLanguage = getUILangName();
-    return siteLanguage === "English"
-      ? languages[0]
-      : languages.find((language) => language.includes(siteLanguage));
+    const langNames = Array.isArray(languages) && languages.length ? languages : [LanguageConstants.DEFAULT_LANG_NAME];
+    const chosen =
+      siteLanguage === "English"
+        ? langNames[0]
+        : langNames.find((language) => language.includes(siteLanguage)) || langNames[0];
+    return chosen || LanguageConstants.DEFAULT_LANG_NAME;
   });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -194,12 +202,13 @@ const AttributeMatch = () => {
   // Change selected language when site language changes
   useEffect(() => {
     const siteLanguage = getUILangName();
-    setType(
+    const langNames = Array.isArray(languages) && languages.length ? languages : [LanguageConstants.DEFAULT_LANG_NAME];
+    const newType =
       siteLanguage === "English"
-        ? languages[0]
-        : languages.find((language) => language.includes(siteLanguage))
-    );
-  }, [i18next.language]);
+        ? (langNames[0] || LanguageConstants.DEFAULT_LANG_NAME)
+        : (langNames.find((language) => language.includes(siteLanguage)) || langNames[0] || LanguageConstants.DEFAULT_LANG_NAME);
+    setType(newType);
+  }, [i18next.language, languages]);
 
   useEffect(() => {
     if (ogSchemaDataConformantHeaderRef.current.length === 0) {

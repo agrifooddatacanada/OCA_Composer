@@ -120,19 +120,19 @@ const FormInformation = () => {
     const removedLanguage = filteredLanguages.splice(languageIndex, 1);
     filteredLanguages.unshift(removedLanguage[0]);
   }
-  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
+  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
   
   // Update currentLanguage when languages array changes
   useEffect(() => {
     // If current language is no longer in the list, switch to first available
     if (!languages.includes(currentLanguage)) {
-      setCurrentLanguage(filteredLanguages[0]);
+      setCurrentLanguage(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
     }
   }, [languages, currentLanguage, filteredLanguages]);
   
   // Get rows for current language, handling various language key formats
   const currentRows = resolveLanguageData(lanAttributeRowData, currentLanguage) || [];
-  const primaryLanguage = languages?.[0];
+  const primaryLanguage = languages?.[0] || LanguageConstants.DEFAULT_LANG_NAME;
 
   // Normalize any lan/form placeholder keys that use OCA 3-letter codes (e.g., 'eng') into UI language names (e.g., 'English')
   useEffect(() => {

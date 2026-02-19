@@ -12,7 +12,8 @@ import Loading from "../components/Loading";
 import { useMultiSchema } from "../schema/schemaContext";
 import { 
   getPrioritizedLangNames, 
-  langCodeOCAFromName 
+  langCodeOCAFromName,
+  LanguageConstants
 } from "../utils/languageUtils";
 
 const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForward }, ref) {
@@ -42,14 +43,14 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
     return getPrioritizedLangNames(languages);
   }, [languages]);
 
-  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
+  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
   
   // Update currentLanguage when languages array changes
   // NOTE: We do NOT auto-sync with UI language to preserve user's schema language selection
   useEffect(() => {
     // If current language is no longer in the list, switch to first available
     if (!languages.includes(currentLanguage)) {
-      setCurrentLanguage(filteredLanguages[0]);
+      setCurrentLanguage(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
     }
     // Don't auto-switch based on UI language - let user control schema language independently
   }, [languages, filteredLanguages, currentLanguage]);
@@ -283,7 +284,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       isForward
       pageForward={pageForwardSave}
     >
-      {loading && lanAttributeRowData[languages[0]]?.length > 40 && <Loading />}
+      {loading && lanAttributeRowData[languages[0] || LanguageConstants.DEFAULT_LANG_NAME]?.length > 40 && <Loading />}
       <Box
         sx={{
           margin: "2rem"

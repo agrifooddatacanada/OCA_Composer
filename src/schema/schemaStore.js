@@ -277,7 +277,8 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
 
   const getLanguages = () => {
     const state = getSchema();
-    return state?.metadata?.languages || [];
+    const langs = state?.metadata?.languages;
+    return Array.isArray(langs) && langs.length ? langs : [LanguageConstants.DEFAULT_LANG_NAME];
   };
 
   const getCardinalityData = () => {

@@ -74,7 +74,7 @@ const FormBuilder = () => {
     const removedLanguage = filteredLanguages.splice(languageIndex, 1);
     filteredLanguages.unshift(removedLanguage[0]);
   }
-  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
+  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {
@@ -187,7 +187,7 @@ const FormBuilder = () => {
             id: existingOption?.id || uuidv4(),
             code: entryCode.Code,
             value: entryCode.Code,
-            label: optionLabels[languages[0]] || entryCode.Code,
+            label: optionLabels[languages[0] || LanguageConstants.DEFAULT_LANG_NAME] || entryCode.Code,
             labels: optionLabels
           };
         });
@@ -338,7 +338,7 @@ const FormBuilder = () => {
           id: uuidv4(),
           code: entryCode.Code,
           value: entryCode.Code,
-          label: optionLabels[languages[0]] || entryCode.Code,
+          label: optionLabels[languages[0] || LanguageConstants.DEFAULT_LANG_NAME] || entryCode.Code,
           labels: optionLabels
         });
       });

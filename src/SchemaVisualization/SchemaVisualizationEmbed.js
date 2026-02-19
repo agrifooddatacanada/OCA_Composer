@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import { PlaceholderNode, DetailedNode, TreeNode } from "./CustomNodes";
 import { generateTreeLayout, generateDetailedLayout } from "./layoutGenerators";
 import { extractSchemaDataFromPackage } from "./dataUtils";
-import { langNameFromTwoLetters, langCodeOCAFromName, langCodeOCAFromTwoLetters } from "../utils/languageUtils";
+import { langNameFromTwoLetters, langCodeOCAFromName, langCodeOCAFromTwoLetters, LanguageConstants } from "../utils/languageUtils";
 import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA } from "../constants/constants";
 import CustomPalette from "../constants/customPalette";
 import Spinner from "../components/Spinner";
@@ -125,7 +125,7 @@ const SchemaVisualizationEmbed = ({
     const schemaName =
       schemaDescription?.English?.name ||
       schemaDescription?.english?.name ||
-      (languages && languages[0] && schemaDescription?.[languages[0]]?.name) ||
+      schemaDescription?.[languages?.[0] || LanguageConstants.DEFAULT_LANG_NAME]?.name ||
       "Schema";
     return {
       bundle: {

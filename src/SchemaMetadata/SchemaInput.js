@@ -6,7 +6,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { langCodeOCAFromName, langTwoLettersFromName } from "../utils/languageUtils";
+import { langCodeOCAFromName, langTwoLettersFromName, LanguageConstants } from "../utils/languageUtils";
 import Classification from "./Classification";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -37,6 +37,7 @@ export default function SchemaInput({
   const schemaState = getSchema() || {};
   const metaState = schemaState.metadata || {};
   const metaLocalized = metaState.localized || {};
+  const primaryLanguage = languages?.[0] || LanguageConstants.DEFAULT_LANG_NAME; // safe fallback for callers that reference languages[0]
   
   // Priority: localized metadata > OCA package data (on initial load) > empty string
   let schemaName = "";
@@ -245,7 +246,7 @@ export default function SchemaInput({
           >
             {t("Name of Schema")}
           </Typography>
-          {language === languages[0] && (
+          {language === primaryLanguage && (
             <Tooltip
               title={t(
                 "The name of the schema. It is recommended to use a more general..."
@@ -287,7 +288,7 @@ export default function SchemaInput({
           >
             {t("Description")}
           </Typography>
-          {language === languages[0] && (
+          {language === primaryLanguage && (
             <Tooltip
               title={t("The description of the schema that will help yourself...")}
               placement="right"

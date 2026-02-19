@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-unresolved
 import { v4 as uuidv4 } from "uuid";
 import { languageNameToAlpha3Codes } from "../../../constants/isoCodes";
+import { LanguageConstants } from "../../../utils/languageUtils";
 
 const createQuestionFromAttribute = (
   attribute,
@@ -64,11 +65,11 @@ const createQuestionFromAttribute = (
     const overlayLanguageName =
       languages.find(
         (lang) => languageNameToAlpha3Codes[lang.toLowerCase()] === overlayLangCode
-      ) || languages[0];
-
+      ) || languages[0] || LanguageConstants.DEFAULT_LANG_NAME;
+    
     options = savedEntryCodes[attribute].map((entryCodeObj) => {
-      const optionLabels = {};
       const code = entryCodeObj.Code;
+      const optionLabels = {};
 
       languages.forEach((lang) => {
         optionLabels[lang] = entryCodeObj[lang] || code || "";
@@ -78,7 +79,7 @@ const createQuestionFromAttribute = (
         id: uuidv4(),
         code,
         value: code,
-        label: optionLabels[overlayLanguageName] || optionLabels[languages[0]] || code,
+        label: optionLabels[overlayLanguageName] || optionLabels[languages[0] || LanguageConstants.DEFAULT_LANG_NAME] || code,
         labels: optionLabels
       };
     });

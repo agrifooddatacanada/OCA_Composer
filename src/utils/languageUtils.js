@@ -208,7 +208,7 @@ export const getBestLangName = (schema, preferredUICode) => {
     return LanguageConstants.DEFAULT_LANG_NAME;
   }
 
-  return schema.languages[0];
+  return schema.languages[0] || LanguageConstants.DEFAULT_LANG_NAME;
 };
 
 /**

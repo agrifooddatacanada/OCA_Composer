@@ -46,6 +46,7 @@ import ViewSchema from "../ViewSchema/ViewSchema";
 import CloseIcon from "../assets/icon-close.png";
 import AutoCompleteEditor from "../components/AutoCompleteEditor";
 import CustomTooltip from "./CustomTooltip";
+import { LanguageConstants } from "../utils/languageUtils";
 import EntryCodeDropdownSelector from "./EntryCodeDropdownSelector";
 
 export const TrashCanButton = memo((props) => {
@@ -339,7 +340,7 @@ const OCADataValidatorCheck = ({
   const [initialRowData, setInitialRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const [revalidateData, setRevalidateData] = useState(false);
-  const langRef = useRef(languages[0]);
+  const langRef = useRef(languages[0] || LanguageConstants.DEFAULT_LANG_NAME);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [errorName, setErrorNameList] = useState([SHOW_ALL_DATA]);
   const [firstValidate, setFirstValidate] = useState(false);

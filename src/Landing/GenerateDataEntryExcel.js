@@ -84,7 +84,7 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck, isMul
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
 
   const [open, setOpen] = useState(false);
-  const defaultLang = languages.includes("English") ? "English" : languages[0];
+  const defaultLang = languages.includes("English") ? "English" : (languages[0] || LanguageConstants.DEFAULT_LANG_NAME);
   const [selectedLang, setSelectedLang] = useState(defaultLang);
 
   useEffect(() => {
