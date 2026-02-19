@@ -627,6 +627,13 @@ export const generateOCABundle = async (OCAFileData) => {
     // Check for API-level errors (even with 200 status)
     if (responseData.success === false || responseData.errors) {
       console.error("API returned error response:", responseData);
+      // Log the submitted DSL so we can inspect why the parser rejected it
+      try {
+        console.error("Submitted OCA DSL:", OCAFileData);
+      } catch (e) {
+        console.error("Failed to log submitted DSL:", e);
+      }
+
       // Properly serialize errors - handle arrays of strings, arrays of objects, or single objects
       let errorMessages = "Unknown error";
       if (responseData.errors) {
@@ -640,7 +647,7 @@ export const generateOCABundle = async (OCAFileData) => {
           errorMessages = String(responseData.errors);
         }
       }
-      throw new Error(`OCA Bundle generation failed: ${errorMessages}`);
+      throw new Error(`OCA Bundle generation failed: ${errorMessages} (see console for submitted DSL)`);
     }
 
     if (!response.ok) {
@@ -704,17 +711,25 @@ export const getLabelofParentClass = async (uri) => {
 export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   const attributes = Object.keys(coreOverlays.capture_base.attributes);
   const attributeTypeMap = coreOverlays.capture_base.attributes;
-  let fileContent = "# Add attributes (capture base) \n";
-  fileContent += "ADD Attribute";
+  let fileContent = "# Add attributes (capture base)\n";
 
-  attributes.forEach((attribute) => {
-    const attributeType = Array.isArray(attributeTypeMap[attribute])
-      ? `Array[${attributeTypeMap[attribute][0]}]`
-      : attributeTypeMap[attribute];
-    fileContent += ` ${attribute}=${attributeType}`;
-  });
+  // Emit the `ADD Attribute` line only when we actually have attributes to list.
+  // A bare `ADD Attribute` (no attr_pairs) is invalid DSL and will cause the
+  // OCA parser to report `expected attr_pairs`.
+  if (attributes.length > 0) {
+    fileContent += "ADD Attribute";
 
-  fileContent += "\n";
+    attributes.forEach((attribute) => {
+      const attributeType = Array.isArray(attributeTypeMap[attribute])
+        ? `Array[${attributeTypeMap[attribute][0]}]`
+        : attributeTypeMap[attribute];
+      fileContent += ` ${attribute}=${attributeType}`;
+    });
+
+    fileContent += "\n";
+  } else {
+    fileContent += "# (no attributes present - skipped ADD Attribute)\n";
+  }
 
   // Classification
   fileContent += "# Add classification\n";

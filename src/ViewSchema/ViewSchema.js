@@ -36,7 +36,7 @@ import Loading from "../components/Loading";
 import useOCAExport from "../hooks/useOCAExport";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateTextReadmeFromJson from "./useGenerateTextReadmeFromJson";
-import { getPackageBundleId, getPackageDependencies } from "../utils/packageUtils";
+import { getPackageBundle, getPackageBundleId, getPackageDependencies } from "../utils/packageUtils";
 
 import ErrorPopup from "./ErrorPopup";
 import CustomRouterLink from "../components/CustomRouterLink";
@@ -212,44 +212,111 @@ export default function ViewSchema({
     clearError,
     resetToDefaults
   } = useOCAExport();
-  
-  // Validation: Check if any attributes are missing types
-  const missingTypeAttributes = useMemo(() => {
-    const currentSchema = schemaStates[currentSchemaId];
-    if (!currentSchema?.attributes) return [];
-    return currentSchema.attributes.filter(attr => !attr.Type || attr.Type === "");
-  }, [schemaStates, currentSchemaId]);
-  
-  // Validation: Check if any list attributes are missing entry codes
-  const missingEntryCodeAttributes = useMemo(() => {
-    const currentSchema = schemaStates[currentSchemaId];
-    if (!currentSchema?.attributes) return [];
-    
-    const attributesWithLists = currentSchema.attributesWithLists || [];
-    const entryCodes = currentSchema.entryCodes || {};
-    
-    // Find attributes marked as lists but with no entry codes
-    // attributesWithLists can be either an array of names or an object {name: true}
-    return currentSchema.attributes.filter(attr => {
-      const isList = Array.isArray(attributesWithLists) 
-        ? attributesWithLists.includes(attr.Attribute)
-        : attributesWithLists[attr.Attribute];
-      const codes = entryCodes[attr.Attribute];
-      const hasNoCodes = !codes || codes.length === 0;
-      return isList && hasNoCodes;
-    });
-  }, [schemaStates, currentSchemaId]);
-  
-  const hasInvalidAttributes = missingTypeAttributes.length > 0;
-  const hasMissingEntryCodes = missingEntryCodeAttributes.length > 0;
-  
-  // Export is disabled if there are validation errors
-  const exportDisabled = hasInvalidAttributes || hasMissingEntryCodes;
+
+  // Package representation built from current editor state — kept early so
+  // helper functions (display name lookup, package-level validation) can use it.
+  const [pkgFromState, setPkgWithChanges] = useState(pkgUpload);
+
+  // PACKAGE-LEVEL VALIDATION: scan all schemas in the workspace and report problems
+  // Helper: return the same display name used by the visualization (meta overlay, then
+  // attribute label from the parent, then schema metadata or id).
+  const getSchemaDisplayName = (schemaId) => {
+    const state = schemaStates[schemaId];
+
+    // 1) Use explicit metadata name if available and not equal to the raw id
+    const metaName = state?.metadata?.localized?.eng?.name || state?.metadata?.name;
+    if (metaName && metaName !== schemaId) return metaName;
+
+    // 2) Try to find a parent attribute that references this schema and use its label
+    const pkg = pkgFromState || pkgUpload || (pkgBuildFromState ? pkgBuildFromState(pkgUpload) : null);
+    if (pkg) {
+      const bundle = getPackageBundle(pkg);
+      const deps = getPackageDependencies(pkg) || [];
+      const all = [bundle, ...deps].filter(Boolean);
+
+      for (const s of all) {
+        const attrs = s?.capture_base?.attributes || {};
+        for (const [attrName, attrVal] of Object.entries(attrs)) {
+          // Match refn:/refs: references or attribute-name-based placeholders
+          const isRefMatch =
+            (typeof attrVal === 'string' && (attrVal === `refn:${schemaId}` || attrVal === `refs:${schemaId}`)) ||
+            (Array.isArray(attrVal) && (attrVal[0] === `refn:${schemaId}` || attrVal[0] === `refs:${schemaId}`)) ||
+            attrName === schemaId;
+          if (!isRefMatch) continue;
+
+          // Try to read the attribute label from the parent schema's localized label overlays
+          const parentSchemaId = s.d;
+          const parentState = schemaStates[parentSchemaId];
+          const lan = parentState?.lanAttributeRowData || {};
+          const engRows = lan['English'] || lan['eng'] || lan[Object.keys(lan)[0]] || [];
+          const row = engRows.find(r => r.Attribute === attrName);
+          if (row?.Label) return row.Label;
+
+          // Fallback to the attribute key
+          return attrName;
+        }
+      }
+    }
+
+    // 3) Fallback to metadata name or raw id
+    return metaName || schemaId;
+  };
+
+  const packageLevelMissingTypes = useMemo(() => {
+    return Object.entries(schemaStates).reduce((acc, [schemaId, state]) => {
+      if (!state || !state.attributes) return acc;
+      const missing = state.attributes.find(attr => !attr.Type || attr.Type === "");
+      if (missing) {
+        const displayName = getSchemaDisplayName(schemaId);
+        acc.push({ schemaId, name: displayName });
+      }
+      return acc;
+    }, []);
+  }, [schemaStates, pkgFromState, pkgUpload]);
+
+  const packageLevelMissingEntryCodes = useMemo(() => {
+    return Object.entries(schemaStates).reduce((acc, [schemaId, state]) => {
+      if (!state || !state.attributes) return acc;
+      const attributesWithLists = state.attributesWithLists || [];
+      const entryCodes = state.entryCodes || {};
+      const hasProblem = state.attributes.some(attr => {
+        const isList = Array.isArray(attributesWithLists)
+          ? attributesWithLists.includes(attr.Attribute)
+          : attributesWithLists[attr.Attribute];
+        const codes = entryCodes[attr.Attribute];
+        return isList && (!codes || codes.length === 0);
+      });
+      if (hasProblem) {
+        const displayName = getSchemaDisplayName(schemaId);
+        acc.push({ schemaId, name: displayName });
+      }
+      return acc;
+    }, []);
+  }, [schemaStates, pkgFromState, pkgUpload]);
+
+  // Package-level: detect schemas that explicitly have zero attributes
+  const packageLevelEmptySchemas = useMemo(() => {
+    return Object.entries(schemaStates).reduce((acc, [schemaId, state]) => {
+      if (!state) return acc;
+      // Only consider schemas that explicitly have an attributes array (edited or parsed)
+      if (Array.isArray(state.attributes) && state.attributes.length === 0) {
+        const displayName = getSchemaDisplayName(schemaId);
+        acc.push({ schemaId, name: displayName });
+      }
+      return acc;
+    }, []);
+  }, [schemaStates, pkgFromState, pkgUpload]);
+
+  const hasInvalidAttributesInPackage = packageLevelMissingTypes.length > 0;
+  const hasMissingEntryCodesInPackage = packageLevelMissingEntryCodes.length > 0;
+  const hasEmptySchemasInPackage = packageLevelEmptySchemas.length > 0;
+
+  // Export is disabled only when the package contains invalid schemas (download is package-wide)
+  const exportDisabled = hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage || hasEmptySchemasInPackage;
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [loading, setLoading] = useState(true);
   const [visualizationMode, setVisualizationMode] = useState("detailed"); // "detailed" for left-right, "tree" for top-down
-  const [pkgFromState, setPkgWithChanges] = useState(pkgUpload);
   const [vizVersion, setVizVersion] = useState(0);
 
   // Track the last known root digest to detect when package structure actually changes
@@ -403,13 +470,13 @@ export default function ViewSchema({
   const handleClickDownload = async () => {
     try {
       setLoading(true);
-            
+
       // Unified export hook handles all scenarios:
       // - Imported packages (flat or nested) via pkgBuildFromState()
       // - Manual flat schemas via text DSL generation
       // - Manual nested schemas (throws helpful error - not yet supported)
       await exportData();
-      
+
       // Clear any export errors since we successfully downloaded
       clearError();
     } catch (error) {
@@ -658,29 +725,66 @@ export default function ViewSchema({
           )}
 
           {/* Validation Alerts */}
-          {hasInvalidAttributes && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
-            <Alert severity="warning" sx={{ mb: 2 }}>
-              {missingTypeAttributes.length === 1
-                ? t("1 attribute is missing a type. Visit Attribute Details to complete your schema.", {
-                    defaultValue: "1 attribute is missing a type. Visit Attribute Details to complete your schema."
-                  })
-                : t("{{count}} attributes are missing types. Visit Attribute Details to complete your schema.", {
-                    defaultValue: `${missingTypeAttributes.length} attributes are missing types. Visit Attribute Details to complete your schema.`,
-                    count: missingTypeAttributes.length
-                  })}
-            </Alert>
-          )}
+
           
-          {hasMissingEntryCodes && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+
+
+          {/* Package-level validation: warn if ANY schema in the package has missing attribute types or missing entry codes */}
+          {(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage || hasEmptySchemasInPackage) && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
             <Alert severity="warning" sx={{ mb: 2 }}>
-              {missingEntryCodeAttributes.length === 1
-                ? t("1 attribute is marked as a List but has no entry codes. Visit Entry Codes to add codes.", {
-                    defaultValue: "1 attribute is marked as a List but has no entry codes. Visit Entry Codes to add codes."
-                  })
-                : t("{{count}} attributes are marked as Lists but have no entry codes. Visit Entry Codes to add codes.", {
-                    defaultValue: `${missingEntryCodeAttributes.length} attributes are marked as Lists but have no entry codes. Visit Entry Codes to add codes.`,
-                    count: missingEntryCodeAttributes.length
-                  })}
+              {hasEmptySchemasInPackage && (
+                <div>
+                  {packageLevelEmptySchemas.length === 1 ? (
+                    <span>
+                      {t('Schema')}{' '}
+                      <Button color="inherit" variant="text" onClick={() => handleSchemaSwitch(packageLevelEmptySchemas[0].schemaId)}>
+                        {packageLevelEmptySchemas[0].name}
+                      </Button>{' '}
+                      {t('has no attributes. Add at least one attribute before exporting.')}
+                    </span>
+                  ) : (
+                    <span>
+                      {t('{{count}} schemas have no attributes. Open each schema and add attributes before exporting.', { count: packageLevelEmptySchemas.length })}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {hasInvalidAttributesInPackage && (
+                <div style={{ marginTop: hasEmptySchemasInPackage ? '0.5rem' : 0 }}>
+                  {packageLevelMissingTypes.length === 1 ? (
+                    <span>
+                      {t('Schema')}{' '}
+                      <Button color="inherit" variant="text" onClick={() => handleSchemaSwitch(packageLevelMissingTypes[0].schemaId)}>
+                        {packageLevelMissingTypes[0].name}
+                      </Button>{' '}
+                      {t('has attributes missing types. Complete the schema before exporting.')}
+                    </span>
+                  ) : (
+                    <span>
+                      {t('{{count}} schemas have attributes missing types. Open each schema to complete them before exporting.', { count: packageLevelMissingTypes.length })}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {hasMissingEntryCodesInPackage && (
+                <div style={{ marginTop: (hasEmptySchemasInPackage || hasInvalidAttributesInPackage) ? '0.5rem' : 0 }}>
+                  {packageLevelMissingEntryCodes.length === 1 ? (
+                    <span>
+                      {t('Schema')}{' '}
+                      <Button color="inherit" variant="text" onClick={() => handleSchemaSwitch(packageLevelMissingEntryCodes[0].schemaId)}>
+                        {packageLevelMissingEntryCodes[0].name}
+                      </Button>{' '}
+                      {t('has List attributes with no entry codes. Add entry codes before exporting.')}
+                    </span>
+                  ) : (
+                    <span>
+                      {t('{{count}} schemas have List attributes with no entry codes. Open each schema to add entry codes before exporting.', { count: packageLevelMissingEntryCodes.length })}
+                    </span>
+                  )}
+                </div>
+              )}
             </Alert>
           )}
 
@@ -698,7 +802,9 @@ export default function ViewSchema({
                   p: 1
                 }}
                 disabled={exportDisabled}
-                title={(hasInvalidAttributes || hasMissingEntryCodes) ? t("Complete all required fields to enable download", { defaultValue: "Complete all required fields to enable download" }) : ""}
+                title={(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage || hasEmptySchemasInPackage)
+                  ? t("Complete all required fields across the package to enable download", { defaultValue: "Complete all required fields across the package to enable download" })
+                  : ""}
               >
                 {t("Finish and Download", { defaultValue: "Finish and Download" })}{" "}
                 <CheckCircleIcon />

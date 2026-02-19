@@ -204,41 +204,49 @@ const useOCAExport = () => {
     let buildText = "";
 
     // Add attributes (capture base)
-    buildText += "# add attributes (capture base) \n";
-    buildText += "ADD Attribute";
-    attributesList.forEach((item, index) => {
-      let attributeType = Array.isArray(dataArray[1][index].Type)
-        ? `Array[${dataArray[1][index].Type[0]}]`
-        : dataArray[1][index].Type;
-      
-      // Convert "Child Schema" UI type to OCA spec refs:/refn: format
-      // - refs:SAID = child schema with cryptographic identifier (has been built)
-      // - refn:name = named reference placeholder (not yet built)
-      const isArray = attributeType === "Array[Child Schema]";
-      const isChildSchema = attributeType === "Child Schema" || isArray;
-      
-      if (isChildSchema) {
-        const originalValue = originalSchema?.capture_base?.attributes?.[item];
-        const childSaid = childSaidMap[item];
+    buildText += "# add attributes (capture base)\n";
+
+    // Only emit the `ADD Attribute` DSL when there are attributes to list. A
+    // bare `ADD Attribute` (no attribute pairs) is invalid and causes the
+    // OCA parser to fail with "expected attr_pairs".
+    if (attributesList.length > 0) {
+      buildText += "ADD Attribute";
+      attributesList.forEach((item, index) => {
+        let attributeType = Array.isArray(dataArray[1][index].Type)
+          ? `Array[${dataArray[1][index].Type[0]}]`
+          : dataArray[1][index].Type;
         
-        if (childSaid) {
-          // Child schema was pre-built, use its SAID
-          attributeType = isArray ? `Array[refs:${childSaid}]` : `refs:${childSaid}`;
-        } else if (originalValue && typeof originalValue === 'string' && (originalValue.startsWith('refs:') || originalValue.startsWith('refn:'))) {
-          // Use existing refs:/refn: from original schema
-          attributeType = originalValue;
-        } else if (originalValue && Array.isArray(originalValue) && originalValue[0]?.startsWith?.('refs:') || originalValue?.[0]?.startsWith?.('refn:')) {
-          // Array of references from original schema
-          attributeType = `Array[${originalValue[0]}]`;
-        } else {
-          // Fallback: named reference placeholder (child not yet built)
-          attributeType = isArray ? `Array[refn:${item}]` : `refn:${item}`;
+        // Convert "Child Schema" UI type to OCA spec refs:/refn: format
+        // - refs:SAID = child schema with cryptographic identifier (has been built)
+        // - refn:name = named reference placeholder (not yet built)
+        const isArray = attributeType === "Array[Child Schema]";
+        const isChildSchema = attributeType === "Child Schema" || isArray;
+        
+        if (isChildSchema) {
+          const originalValue = originalSchema?.capture_base?.attributes?.[item];
+          const childSaid = childSaidMap[item];
+          
+          if (childSaid) {
+            // Child schema was pre-built, use its SAID
+            attributeType = isArray ? `Array[refs:${childSaid}]` : `refs:${childSaid}`;
+          } else if (originalValue && typeof originalValue === 'string' && (originalValue.startsWith('refs:') || originalValue.startsWith('refn:'))) {
+            // Use existing refs:/refn: from original schema
+            attributeType = originalValue;
+          } else if (originalValue && Array.isArray(originalValue) && originalValue[0]?.startsWith?.('refs:') || originalValue?.[0]?.startsWith?.('refn:')) {
+            // Array of references from original schema
+            attributeType = `Array[${originalValue[0]}]`;
+          } else {
+            // Fallback: named reference placeholder (child not yet built)
+            attributeType = isArray ? `Array[refn:${item}]` : `refn:${item}`;
+          }
         }
-      }
-      
-      buildText += ` ${item}=${attributeType}`;
-    });
-    buildText += "\n";
+        
+        buildText += ` ${item}=${attributeType}`;
+      });
+      buildText += "\n";
+    } else {
+      buildText += "# (no attributes present - skipped ADD Attribute)\n";
+    }
 
     // Add classification
     buildText += "# Add classification\n";
@@ -439,6 +447,17 @@ const useOCAExport = () => {
 
     const data = buildText;
 
+    // Defensive validation: reject DSLs that contain a bare `ADD Attribute` line.
+    // The OCA parser reports `expected attr_pairs` for `ADD Attribute` with no
+    // following attribute=type pairs. If this happens, abort early and log the
+    // full DSL so we can debug why attributes are missing from schema state.
+    if (/^ADD Attribute\s*$/m.test(data)) {
+      console.error("Generated DSL contains bare 'ADD Attribute' — aborting export. DSL follows:\n", data);
+      throw new Error(
+        "Export aborted: generated OCA DSL contains an empty `ADD Attribute` line. Please ensure the schema has attributes and try again. (DSL logged to console)"
+      );
+    }
+
     const filteredEntryCodes = {};
     Object.entries(attributeListMap).forEach(([attribute, isList]) => {
       if (isList && savedEntryCodes[attribute]) {
@@ -552,6 +571,17 @@ const useOCAExport = () => {
   const exportData = async () => {
     try {
       setError("");
+
+      // Block export early if any schema in the current editor state explicitly
+      // has an attributes array with zero entries. This prevents generating
+      // an invalid text-DSL (bare `ADD Attribute`) and gives a clear error.
+      const emptySchemas = Object.entries(schemaStates).filter(([, s]) => Array.isArray(s?.attributes) && s.attributes.length === 0);
+      if (emptySchemas.length > 0) {
+        const names = emptySchemas.map(([, s]) => s?.metadata?.localized?.eng?.name || s?.metadata?.name).join(", ");
+        const msg = `Export blocked: the following schema(s) have no attributes: ${names}. Add at least one attribute before exporting.`;
+        setError(msg);
+        throw new Error(msg);
+      }
 
       // For imported packages: Build ALL schemas from UI state to get fresh SAID digests
       // This matches agreeable-mushroom behavior - decompose bundle to UI state,
@@ -702,14 +732,20 @@ const useOCAExport = () => {
         return true;
       }
 
+      // Determine the true root schema id from the package built from current editor state.
+      // This ensures `Finish and Download` exports the full package (root + children)
+      // even when the user is currently editing a child schema.
+      const pkgFromState = pkgBuildFromState(pkgUpload);
+      const rootSchemaId = getPackageBundleId(pkgFromState) || currentSchemaId;
+
       const allSchemaIds = Object.keys(schemaStates);
-      const childSchemaIds = allSchemaIds.filter(id => id !== currentSchemaId);
-      
+      const childSchemaIds = allSchemaIds.filter((id) => id !== rootSchemaId);
+
       // Step 1: Build all child schemas first to get their SAIDs
       const childSaidMap = {};
       const childBundles = [];
       const childExtensions = []; // Store child extensions
-      
+
       for (const childId of childSchemaIds) {
         const childState = schemaStates[childId];
         // Only build if the child has been initialized (user actually created it)
@@ -723,9 +759,9 @@ const useOCAExport = () => {
           }
         }
       }
-      
-      // Step 2: Build root schema with child SAIDs
-      const { bundle, extension, textDSL } = await buildPackageFromTextDSL(currentSchemaId, childSaidMap);
+
+      // Step 2: Build root schema with child SAIDs (use rootSchemaId, not the currently open editor id)
+      const { bundle, extension, textDSL } = await buildPackageFromTextDSL(rootSchemaId, childSaidMap);
       
       // Merge all extensions (root + all children)
       const mergedExtension = {
