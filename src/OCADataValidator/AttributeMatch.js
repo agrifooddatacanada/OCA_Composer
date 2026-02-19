@@ -91,7 +91,7 @@ const AttributeMatch = () => {
     setNotToVerifyAttributes
   } = useContext(Context);
 
-  const { getLanguages } = useMultiSchema();
+  const { getLanguages, getAttributesList, getSchema } = useMultiSchema();
   const _rawLanguages = getLanguages();
   const languages = Array.isArray(_rawLanguages) && _rawLanguages.length ? _rawLanguages : [LanguageConstants.DEFAULT_LANG_NAME];
 
@@ -215,23 +215,41 @@ const AttributeMatch = () => {
       ogSchemaDataConformantHeaderRef.current = schemaDataConformantHeader;
     }
 
-    const unassignedVariables = [...ogSchemaDataConformantHeaderRef.current];
+      const unassignedVariables = [...ogSchemaDataConformantHeaderRef.current];
     if (firstTimeMatchingRef.current) {
-      const newMatchingRowData = [];
+      // If user already has matching data, preserve it and attempt to auto-fill Dataset
       if (matchingRowData && matchingRowData?.length > 0) {
-        for (const node of matchingRowData) {
+        const newMatchingRowData = matchingRowData.map((node) => {
           const index = matchingFunction(unassignedVariables, node.Attribute);
-          newMatchingRowData.push({
-            ...node,
-            Dataset: index !== -1 ? unassignedVariables[index] : ""
-          });
-          if (index !== -1) {
-            unassignedVariables.splice(index, 1);
-          }
-        }
-      }
+          const DatasetVal = index !== -1 ? unassignedVariables[index] : "";
+          if (index !== -1) unassignedVariables.splice(index, 1);
+          return { ...node, Dataset: DatasetVal };
+        });
+        setMatchingRowData(newMatchingRowData);
+      } else {
+        // Seed matchingRowData from the active schema attributes (first visit)
+        const schema = getSchema();
+        const attributeNames = Array.isArray(getAttributesList()) ? getAttributesList() : [];
+        const lanAttributeRowData = schema?.lanAttributeRowData || {};
+        const langLabelArray = lanAttributeRowData[type] || [];
+        const labelMap = {};
+        langLabelArray.forEach((l) => {
+          labelMap[l.Attribute] = l.Label || "";
+        });
 
-      setMatchingRowData(newMatchingRowData);
+        const newMatchingRowData = attributeNames.map((attr) => {
+          const index = matchingFunction(unassignedVariables, attr);
+          const datasetMatch = index !== -1 ? unassignedVariables[index] : "";
+          if (index !== -1) unassignedVariables.splice(index, 1);
+          return {
+            Attribute: attr,
+            [type]: labelMap[attr] || "",
+            Dataset: datasetMatch
+          };
+        });
+
+        setMatchingRowData(newMatchingRowData);
+      }
     } else {
       for (const node of matchingRowData) {
         const index = unassignedVariables.indexOf(node.Dataset);
