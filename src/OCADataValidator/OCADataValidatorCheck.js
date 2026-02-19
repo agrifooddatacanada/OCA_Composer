@@ -999,10 +999,51 @@ const OCADataValidatorCheck = ({
     setColumnDefs(columns);
 
     if (schemaDataConformantRowData.length > 0) {
-      const rowDataWithIndex = schemaDataConformantRowData.map((row, index) => ({
-        ...row,
-        originalIndex: index
-      }));
+      // Build a label->code lookup for attributes that have entry codes so we
+      // can convert any dataset cell that _exactly_ matches a label to its
+      // corresponding code. This is conservative (only exact matches) and
+      // avoids aggressive normalization while preventing select/value warnings.
+      const labelToCodeMap = {};
+      Object.entries(savedEntryCodes || {}).forEach(([attr, codesArray]) => {
+        const codes = codesArray.map((c) => c.Code);
+        const map = {};
+        codesArray.forEach((codeObj) => {
+          // include all language label fields found on the entry-code object
+          Object.entries(codeObj).forEach(([k, v]) => {
+            if (k === "Code") return;
+            if (typeof v === "string" && v.trim() !== "") {
+              map[String(v).toLowerCase().trim()] = codeObj.Code;
+            }
+          });
+        });
+        labelToCodeMap[attr] = { codes, map };
+      });
+
+      const rowDataWithIndex = schemaDataConformantRowData.map((row, index) => {
+        const normalized = { ...row };
+        Object.keys(normalized).forEach((attr) => {
+          const val = normalized[attr];
+          if (
+            val !== undefined &&
+            val !== null &&
+            typeof val === "string" &&
+            labelToCodeMap[attr]
+          ) {
+            const { codes, map } = labelToCodeMap[attr];
+            const trimmed = val.trim();
+            const lower = String(trimmed).toLowerCase();
+            // If the dataset already contains a valid code, keep it
+            if (codes.includes(trimmed)) return;
+            // If the dataset value matches a known label, convert to code
+            if (map[lower]) {
+              normalized[attr] = map[lower];
+            }
+          }
+        });
+        normalized.originalIndex = index;
+        return normalized;
+      });
+
       setRowData(rowDataWithIndex);
       setInitialRowData(rowDataWithIndex);
     }
