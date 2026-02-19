@@ -112,7 +112,10 @@ export const gridStyles = `
 }
 
 .ag-center-cols-clipper {
-  min-height: unset !important;
+  /* Ensure center columns fill the grid height so pinned columns stay aligned
+     (fixes duplicate-looking sidebar appearing under the last row when dataset
+     is short). */
+  min-height: 100% !important;
 }
 
 .ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) {
