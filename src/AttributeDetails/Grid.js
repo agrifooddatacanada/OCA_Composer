@@ -418,7 +418,9 @@ export default function Grid({
   const onRowDragLeave = () => {
     const newRowData = JSON.parse(JSON.stringify(attributeRowData));
     newRowData.forEach((item) => {
-      item.Type = typesObjectRef.current[item.Attribute] || item.Type;
+      // Preserve empty string as valid Type value (don't use || which treats "" as falsy)
+      const typeFromRef = typesObjectRef.current[item.Attribute];
+      item.Type = typeFromRef !== undefined ? typeFromRef : item.Type;
     });
     setAttributeRowData(newRowData);
     const onMouseUpEvent = new MouseEvent("mouseup");

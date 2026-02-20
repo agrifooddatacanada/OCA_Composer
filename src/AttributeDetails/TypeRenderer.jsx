@@ -36,12 +36,14 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
 
   const index = attributeRowData.findIndex((item) => item.Attribute === attributeName);
   
-  // Normalize initial type to never show "Placeholder Child Schema" to users
+  // Get initial type from attributeRowData (source of truth)
   const getInitialType = () => {
-    const rawType = (currentAttribute && currentAttribute.Type) || "";
+    if (!currentAttribute) return "";
+    const rawType = currentAttribute.Type;
+    // Normalize placeholder types for display, but preserve empty string
     if (rawType === TYPE_PLACEHOLDER_CHILD_SCHEMA) return TYPE_CHILD_SCHEMA;
     if (rawType === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) return TYPE_ARRAY_CHILD_SCHEMA;
-    return rawType;
+    return rawType !== undefined && rawType !== null ? rawType : "";
   };
   
   const [type, setType] = useState(getInitialType());
@@ -94,14 +96,31 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
 
   useEffect(() => {
     // Keep local type in sync when data or refs change
-    // Check the actual package to see if refn: has become refs: (or vice versa)
+    // Priority order: 1) attributeRowData (source of truth), 2) package, 3) typesObjectRef
+    const currentAttr = attributeRowData.find((i) => i.Attribute === attributeName);
+    
+    if (currentAttr && currentAttr.Type !== undefined && currentAttr.Type !== null) {
+      // Use attributeRowData as source of truth (handles "", "Text", etc.)
+      let displayType = currentAttr.Type;
+      
+      // Normalize placeholder types to regular child schema for display
+      if (displayType === TYPE_PLACEHOLDER_CHILD_SCHEMA) {
+        displayType = TYPE_CHILD_SCHEMA;
+      }
+      if (displayType === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
+        displayType = TYPE_ARRAY_CHILD_SCHEMA;
+      }
+      
+      setType(displayType);
+      return;
+    }
+    
+    // Fallback: check package if not in attributeRowData
     const pkg = pkgBuildFromState();
     const packageType = pkg?.bundle?.capture_base?.attributes?.[attributeName];
     
-    // Derive display type from package state
-    // Always show "Child Schema" to users, regardless of refs: vs refn: backend distinction
-    let displayType = "";
     if (packageType) {
+      let displayType = "";
       if (typeof packageType === "string") {
         if (packageType.startsWith("refs:") || packageType.startsWith("refn:")) {
           displayType = TYPE_CHILD_SCHEMA;
@@ -115,25 +134,14 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
           displayType = `Array[${packageType[0]}]`;
         }
       }
+      setType(displayType);
+      return;
     }
     
-    // Fallback to attribute row data if package doesn't have this attribute
-    if (!displayType) {
-      const fromRow = (attributeRowData.find((i) => i.Attribute === attributeName) || {}).Type;
-      const fromRef = typesObjectRef.current[attributeName];
-      displayType = fromRow !== undefined && fromRow !== null && fromRow !== "" ? fromRow : fromRef;
-    }
-    
-    // Normalize placeholder types to regular child schema for display
-    if (displayType === TYPE_PLACEHOLDER_CHILD_SCHEMA) {
-      displayType = TYPE_CHILD_SCHEMA;
-    }
-    if (displayType === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
-      displayType = TYPE_ARRAY_CHILD_SCHEMA;
-    }
-    
-    setType(displayType || "");
-  }, [attributeName, attributeRowData, typesObjectRef, pkgBuildFromState, schemaStates]);
+    // Last resort: typesObjectRef (but prefer "" over undefined)
+    const fromRef = typesObjectRef.current[attributeName];
+    setType(fromRef !== undefined && fromRef !== null ? fromRef : "");
+  }, [attributeName, attributeRowData, pkgBuildFromState, schemaStates]);
 
   const handleKeyDown = (e) => {
     const keyPressed = e.key;
