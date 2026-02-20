@@ -96,16 +96,14 @@ export const getDependencyInfo = (depId, dependencyMap, langCodeOCA = "eng") => 
     };
   }
 
-  // Get meta overlay for name
-  const metaOverlay =
-    dependency.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
-    dependency.overlays?.meta?.[0];
+  // Get meta overlay for name - ensure it's an array
+  const metaArray = Array.isArray(dependency.overlays?.meta) ? dependency.overlays.meta : [];
+  const metaOverlay = metaArray.find((m) => m.language === langCodeOCA) || metaArray[0];
   const name = metaOverlay?.name || depId;
 
-  // Get label overlay for field labels - LDAD changes will be saved directly to overlays
-  const labelOverlay =
-    dependency.overlays?.label?.find((l) => l.language === langCodeOCA) ||
-    dependency.overlays?.label?.[0];
+  // Get label overlay for field labels - ensure it's an array
+  const labelArray = Array.isArray(dependency.overlays?.label) ? dependency.overlays.label : [];
+  const labelOverlay = labelArray.find((l) => l.language === langCodeOCA) || labelArray[0];
   const labels = labelOverlay?.attribute_labels || {};
 
   // Process attributes into fields

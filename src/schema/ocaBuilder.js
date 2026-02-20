@@ -23,7 +23,7 @@
 
 import { getPackageBundle, getPackageDependencies } from "../utils/packageUtils";
 import { applyAllOverlays } from "./ocaBuilderOverlays";
-import { TYPE_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA, MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
+import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA, TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA, MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { createMinimalOCASchema, createMetaOverlay } from "./createMinimalOCASchema";
 
 // ============================================================================
@@ -243,7 +243,8 @@ export function findOrCreatePkgSchema({
       // Check if this schema has refn:schemaId in its attributes
       const hasRefn = schemaState.attributes.some((attr) => {
         return attr.Attribute === schemaId && 
-               (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_ARRAY_CHILD_SCHEMA);
+               (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_PLACEHOLDER_CHILD_SCHEMA || 
+                attr.Type === TYPE_ARRAY_CHILD_SCHEMA || attr.Type === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA);
       });
       
       if (hasRefn) {
@@ -325,8 +326,20 @@ export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSch
         rebuiltAttributes[name] = originalType;
       }
     } else if (originalType && typeof originalType === "string" && originalType.startsWith("refn:")) {
-      // Preserve refn: from original package
-      rebuiltAttributes[name] = originalType;
+      // Check if placeholder now has attributes - if so, convert to refs:
+      // Search for child schema by ID (manual creation) or metadata.name (imports)
+      const childEntry = Object.entries(schemaStates).find(([id, s]) => id === name || s.metadata?.name === name);
+      const childSchemaId = childEntry?.[0];
+      const childSchemaState = childEntry?.[1];
+      const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
+      
+      if (hasAttributes && childSchemaId) {
+        // Placeholder now has attributes - promote to refs:SAID
+        rebuiltAttributes[name] = `refs:${childSchemaId}`;
+      } else {
+        // Still a placeholder - keep as is
+        rebuiltAttributes[name] = originalType;
+      }
     } else if (originalType && Array.isArray(originalType) && originalType[0]) {
       if (originalType[0].startsWith("refs:")) {
         // Check if the child schema still has attributes
@@ -342,8 +355,20 @@ export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSch
           rebuiltAttributes[name] = originalType;
         }
       } else if (originalType[0].startsWith("refn:")) {
-        // Preserve Array[refn:] from original package
-        rebuiltAttributes[name] = originalType;
+        // Check if placeholder now has attributes - if so, convert to refs:
+        // Search for child schema by ID (manual creation) or metadata.name (imports)
+        const childEntry = Object.entries(schemaStates).find(([id, s]) => id === name || s.metadata?.name === name);
+        const childSchemaId = childEntry?.[0];
+        const childSchemaState = childEntry?.[1];
+        const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
+        
+        if (hasAttributes && childSchemaId) {
+          // Placeholder now has attributes - promote to Array[refs:SAID]
+          rebuiltAttributes[name] = [`refs:${childSchemaId}`];
+        } else {
+          // Still a placeholder - preserve Array[refn:]
+          rebuiltAttributes[name] = originalType;
+        }
       } else {
         rebuiltAttributes[name] = originalType;
       }
@@ -357,8 +382,9 @@ export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSch
       ) {
         // If it's a refs: reference, check if the child schema still has attributes
         if (originalValue.startsWith("refs:") && getSchemaById) {
-          // Try to find the child schema by attribute name
-          const childSchemaState = getSchemaById(name);
+          // Extract SAID and find child schema
+          const refSaid = originalValue.replace("refs:", "");
+          const childSchemaState = getSchemaById(refSaid);
           const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
           
           if (!hasAttributes) {
@@ -369,14 +395,31 @@ export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSch
             rebuiltAttributes[name] = originalValue;
           }
         } else {
-          // refn: reference or no way to check - keep as is
-          rebuiltAttributes[name] = originalValue;
+          // refn: reference - check if it now has attributes
+          if (originalValue.startsWith("refn:")) {
+            // Search for child schema by ID (manual creation) or metadata.name (imports)
+            const childEntry = Object.entries(schemaStates).find(([id, s]) => id === name || s.metadata?.name === name);
+            const childSchemaId = childEntry?.[0];
+            const childSchemaState = childEntry?.[1];
+            const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
+            
+            if (hasAttributes && childSchemaId) {
+              // Placeholder now has attributes - promote to refs:SAID
+              rebuiltAttributes[name] = `refs:${childSchemaId}`;
+            } else {
+              // Still a placeholder - keep as is
+              rebuiltAttributes[name] = originalValue;
+            }
+          } else {
+            // No way to check - keep as is
+            rebuiltAttributes[name] = originalValue;
+          }
         }
-      } else if (type === TYPE_CHILD_SCHEMA) {
-        // Convert "Child Schema" UI type to refn: format for newly added attributes
+      } else if (type === TYPE_CHILD_SCHEMA || type === TYPE_PLACEHOLDER_CHILD_SCHEMA) {
+        // Convert "Child Schema" or "Placeholder Child Schema" UI type to refn: format for newly added attributes
         rebuiltAttributes[name] = `refn:${name}`;
-      } else if (type === TYPE_ARRAY_CHILD_SCHEMA) {
-        // Convert "Array[Child Schema]" UI type to refn: format
+      } else if (type === TYPE_ARRAY_CHILD_SCHEMA || type === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
+        // Convert "Array[Child Schema]" or "Array[Placeholder Child Schema]" UI type to refn: format
         rebuiltAttributes[name] = [`refn:${name}`];
       } else {
         rebuiltAttributes[name] = type || "Text"; // Use editor type
@@ -431,7 +474,8 @@ export function ensureChildSchemaDependencies(
       // Look for Child Schema type attributes
       if (schemaState.attributes) {
         schemaState.attributes.forEach((attr) => {
-          if (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_ARRAY_CHILD_SCHEMA) {
+          if (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_PLACEHOLDER_CHILD_SCHEMA || 
+              attr.Type === TYPE_ARRAY_CHILD_SCHEMA || attr.Type === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
             const childSchemaName = attr.Attribute;
 
             // Check if child has editor state AND has attributes (empty schemas become placeholders)
@@ -484,10 +528,10 @@ export function ensureChildSchemaDependencies(
       const childAttributes = {};
       childschemaState.attributes?.forEach((childAttr) => {
         if (childAttr.Attribute) {
-          // Convert "Child Schema" types to refn: format in nested schemas too
-          if (childAttr.Type === TYPE_CHILD_SCHEMA) {
+          // Convert "Child Schema" or "Placeholder Child Schema" types to refn: format in nested schemas too
+          if (childAttr.Type === TYPE_CHILD_SCHEMA || childAttr.Type === TYPE_PLACEHOLDER_CHILD_SCHEMA) {
             childAttributes[childAttr.Attribute] = `refn:${childAttr.Attribute}`;
-          } else if (childAttr.Type === TYPE_ARRAY_CHILD_SCHEMA) {
+          } else if (childAttr.Type === TYPE_ARRAY_CHILD_SCHEMA || childAttr.Type === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
             childAttributes[childAttr.Attribute] = [`refn:${childAttr.Attribute}`];
           } else {
             childAttributes[childAttr.Attribute] = childAttr.Type || "Text";
@@ -504,7 +548,11 @@ export function ensureChildSchemaDependencies(
           classification: "RDF508",
           flagged_attributes: [],
         },
-        overlays: {},
+        overlays: {
+          meta: [],
+          label: [],
+          information: [],
+        },
       };
 
       applyAllOverlays(newDependency, childschemaState);

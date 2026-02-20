@@ -10,7 +10,9 @@ import {
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   TYPE_CHILD_SCHEMA,
-  TYPE_ARRAY_CHILD_SCHEMA
+  TYPE_PLACEHOLDER_CHILD_SCHEMA,
+  TYPE_ARRAY_CHILD_SCHEMA,
+  TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA
 } from "../constants/constants";
 import { langNameFromTwoLetters, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
@@ -206,7 +208,7 @@ export class OCAParser {
     return Object.entries(attributesObj).map(([name, type]) => ({
       Attribute: name,
       Type: this._normalizeType(type),
-      OriginalType: type,  // Preserve original refs:SAID for rebuild
+      OriginalType: type,  // Preserve original refs:SAID/refn:name for rebuild
       Description: "",
       Required: false,
       List: false,
@@ -227,9 +229,9 @@ export class OCAParser {
       const first = rawType[0];
       if (typeof first === "string") {
         const inner = first.trim();
-        // refs:/refn: = child schema reference in OCA spec
-        if (inner.startsWith("refn:") || inner.startsWith("refs:"))
-          return TYPE_ARRAY_CHILD_SCHEMA;
+        // refs: = child schema with SAID, refn: = placeholder reference
+        if (inner.startsWith("refs:")) return TYPE_ARRAY_CHILD_SCHEMA;
+        if (inner.startsWith("refn:")) return TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA;
         const mapped = this._getTypeMapping()[inner.toLowerCase()] || inner;
         return `Array[${mapped}]`;
       }
@@ -239,17 +241,15 @@ export class OCAParser {
     if (typeof rawType !== "string") return "";
     
     const t = rawType.trim();
-    // refs:/refn: = child schema reference in OCA spec → display as "Child Schema"
-    if (t.startsWith("refn:") || t.startsWith("refs:")) return TYPE_CHILD_SCHEMA;
+    // refs: = child schema with SAID, refn: = placeholder reference
+    if (t.startsWith("refs:")) return TYPE_CHILD_SCHEMA;
+    if (t.startsWith("refn:")) return TYPE_PLACEHOLDER_CHILD_SCHEMA;
     
     const arrayMatch = t.match(/^array\[(.+)\]$/i);
     if (arrayMatch) {
       const inner = arrayMatch[1];
-      if (
-        inner.toLowerCase().startsWith("refn:") ||
-        inner.toLowerCase().startsWith("refs:")
-      )
-        return TYPE_ARRAY_CHILD_SCHEMA;
+      if (inner.toLowerCase().startsWith("refs:")) return TYPE_ARRAY_CHILD_SCHEMA;
+      if (inner.toLowerCase().startsWith("refn:")) return TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA;
       const mapped = this._getTypeMapping()[inner.toLowerCase()] || inner;
       return `Array[${mapped}]`;
     }

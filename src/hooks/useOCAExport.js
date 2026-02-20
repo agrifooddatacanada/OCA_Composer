@@ -216,11 +216,11 @@ const useOCAExport = () => {
           ? `Array[${dataArray[1][index].Type[0]}]`
           : dataArray[1][index].Type;
         
-        // Convert "Child Schema" UI type to OCA spec refs:/refn: format
+        // Convert "Child Schema" or "Placeholder Child Schema" UI type to OCA spec refs:/refn: format
         // - refs:SAID = child schema with cryptographic identifier (has been built)
         // - refn:name = named reference placeholder (not yet built)
-        const isArray = attributeType === "Array[Child Schema]";
-        const isChildSchema = attributeType === "Child Schema" || isArray;
+        const isArray = attributeType === "Array[Child Schema]" || attributeType === "Array[Placeholder Child Schema]";
+        const isChildSchema = attributeType === "Child Schema" || attributeType === "Placeholder Child Schema" || isArray;
         
         if (isChildSchema) {
           const originalValue = originalSchema?.capture_base?.attributes?.[item];

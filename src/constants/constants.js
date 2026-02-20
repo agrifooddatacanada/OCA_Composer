@@ -19,17 +19,21 @@ export const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
  * Schema Type Constants
  * 
  * TERMINOLOGY GUIDE:
- * - "Child Schema" = UI term shown to users in the type dropdown
+ * - "Child Schema" = UI term for linked schema with cryptographic SAID
+ * - "Placeholder Child Schema" = UI term for named reference (not yet defined)
  * - `refs:SAID`    = OCA spec: linked schema with cryptographic SAID identifier
  * - `refn:name`    = OCA spec: named reference (placeholder for schema not yet defined)
  * 
  * INTERNAL CONVENTION:
- * - Use TYPE_CHILD_SCHEMA ("Child Schema") throughout the codebase
- * - Convert to refs:/refn: ONLY at export time in useOCAExport.js
- * - When parsing OCA packages, convert refs:/refn: → "Child Schema" immediately
+ * - Use TYPE_CHILD_SCHEMA ("Child Schema") for refs: references
+ * - Use TYPE_PLACEHOLDER_CHILD_SCHEMA ("Placeholder Child Schema") for refn: references
+ * - Convert to refs:/refn: at export time in useOCAExport.js
+ * - When parsing OCA packages, convert to appropriate type based on refs: vs refn:
  */
 export const TYPE_CHILD_SCHEMA = "Child Schema";
+export const TYPE_PLACEHOLDER_CHILD_SCHEMA = "Placeholder Child Schema";
 export const TYPE_ARRAY_CHILD_SCHEMA = "Array[Child Schema]";
+export const TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA = "Array[Placeholder Child Schema]";
 
 /**
  * Check if a type represents a child/nested schema
@@ -41,7 +45,9 @@ export const isChildSchemaType = (type) => {
   const t = type.trim();
   return (
     t === TYPE_CHILD_SCHEMA ||
+    t === TYPE_PLACEHOLDER_CHILD_SCHEMA ||
     t === TYPE_ARRAY_CHILD_SCHEMA ||
+    t === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA ||
     t.startsWith("refs:") ||
     t.startsWith("refn:") ||
     t.startsWith("Array[refs:") ||
