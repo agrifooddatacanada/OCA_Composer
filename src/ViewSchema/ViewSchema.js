@@ -312,7 +312,8 @@ export default function ViewSchema({
   const hasEmptySchemasInPackage = packageLevelEmptySchemas.length > 0;
 
   // Export is disabled only when the package contains invalid schemas (download is package-wide)
-  const exportDisabled = hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage || hasEmptySchemasInPackage;
+  // Empty schemas are allowed - they become refn: placeholders in the export
+  const exportDisabled = hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage;
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [loading, setLoading] = useState(true);
@@ -730,28 +731,10 @@ export default function ViewSchema({
 
 
           {/* Package-level validation: warn if ANY schema in the package has missing attribute types or missing entry codes */}
-          {(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage || hasEmptySchemasInPackage) && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+          {(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage) && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
             <Alert severity="warning" sx={{ mb: 2 }}>
-              {hasEmptySchemasInPackage && (
-                <div>
-                  {packageLevelEmptySchemas.length === 1 ? (
-                    <span>
-                      {t('Schema')}{' '}
-                      <Button color="inherit" variant="text" onClick={() => handleSchemaSwitch(packageLevelEmptySchemas[0].schemaId)}>
-                        {packageLevelEmptySchemas[0].name}
-                      </Button>{' '}
-                      {t('has no attributes. Add at least one attribute before exporting.')}
-                    </span>
-                  ) : (
-                    <span>
-                      {t('{{count}} schemas have no attributes. Open each schema and add attributes before exporting.', { count: packageLevelEmptySchemas.length })}
-                    </span>
-                  )}
-                </div>
-              )}
-
               {hasInvalidAttributesInPackage && (
-                <div style={{ marginTop: hasEmptySchemasInPackage ? '0.5rem' : 0 }}>
+                <div>
                   {packageLevelMissingTypes.length === 1 ? (
                     <span>
                       {t('Schema')}{' '}
@@ -769,7 +752,7 @@ export default function ViewSchema({
               )}
 
               {hasMissingEntryCodesInPackage && (
-                <div style={{ marginTop: (hasEmptySchemasInPackage || hasInvalidAttributesInPackage) ? '0.5rem' : 0 }}>
+                <div style={{ marginTop: hasInvalidAttributesInPackage ? '0.5rem' : 0 }}>
                   {packageLevelMissingEntryCodes.length === 1 ? (
                     <span>
                       {t('Schema')}{' '}
@@ -802,7 +785,7 @@ export default function ViewSchema({
                   p: 1
                 }}
                 disabled={exportDisabled}
-                title={(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage || hasEmptySchemasInPackage)
+                title={(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage)
                   ? t("Complete all required fields across the package to enable download", { defaultValue: "Complete all required fields across the package to enable download" })
                   : ""}
               >

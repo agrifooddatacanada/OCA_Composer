@@ -174,7 +174,7 @@ function applySchemaStateToPkg({ pkg, schemaId, schemaState, getSchemaById, sche
   
   if (!schemaInPackage) return;
 
-  rebuildAttributes(schemaInPackage, schemaState);
+  rebuildAttributes(schemaInPackage, schemaState, schemaStates, getSchemaById);
   applyAllOverlays(schemaInPackage, schemaState);
 }
 
@@ -290,11 +290,13 @@ export function findOrCreatePkgSchema({
  * 
  * @param {Object} schema - OCA package schema (bundle or dependency) to modify
  * @param {Object} schemaState - Editor state with attributes array from UI
+ * @param {Object} schemaStates - Map of all editor states (for checking child schema status)
+ * @param {Function} getSchemaById - Function to get editor state by ID
  * 
  * Converts flat editor format (array of {Attribute, Type}) to OCA format (map).
- * Preserves refs:/refn: references for child schemas.
+ * Preserves refs:/refn: references for child schemas, but converts refs: to refn: if child is empty.
  */
-export function rebuildAttributes(schema, schemaState) {
+export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSchemaById = null) {
   // Only rebuild if attributes exist in editor state
   if (schemaState.attributes === undefined || schemaState.attributes === null) return;
 
@@ -306,22 +308,49 @@ export function rebuildAttributes(schema, schemaState) {
 
     const name = attr.Attribute;
     const type = attr.Type;
+    const originalType = attr.OriginalType;  // Preserve refs:SAID from loaded package
 
-    // Preserve refs:/refn: child schema references from original package
-    const originalValue = originalAttributes[name];
-    if (
-      typeof originalValue === "string" &&
-      (originalValue.startsWith("refn:") || originalValue.startsWith("refs:"))
-    ) {
-      rebuiltAttributes[name] = originalValue; // Keep reference
-    } else if (type === TYPE_CHILD_SCHEMA) {
-      // Convert "Child Schema" UI type to refn: format for newly added attributes
-      rebuiltAttributes[name] = `refn:${name}`;
-    } else if (type === TYPE_ARRAY_CHILD_SCHEMA) {
-      // Convert "Array[Child Schema]" UI type to refn: format
-      rebuiltAttributes[name] = [`refn:${name}`];
-    } else {
-      rebuiltAttributes[name] = type || "Text"; // Use editor type
+    // First priority: Check if we have OriginalType with refs:/refn: from loaded package
+    if (originalType && typeof originalType === "string" && (originalType.startsWith("refs:") || originalType.startsWith("refn:"))) {
+      // Preserve refs:SAID or refn: from original package
+      rebuiltAttributes[name] = originalType;
+    } else if (originalType && Array.isArray(originalType) && originalType[0] && (originalType[0].startsWith("refs:") || originalType[0].startsWith("refn:"))) {
+      // Preserve Array[refs:SAID] or Array[refn:] from original package
+      rebuiltAttributes[name] = originalType;
+    }
+    // Second priority: Check originalAttributes from package (for schemas that were edited)
+    else {
+      const originalValue = originalAttributes[name];
+      if (
+        typeof originalValue === "string" &&
+        (originalValue.startsWith("refn:") ||originalValue.startsWith("refs:"))
+      ) {
+        // If it's a refs: reference, check if the child schema still has attributes
+        if (originalValue.startsWith("refs:") && getSchemaById) {
+          // Try to find the child schema by attribute name
+          const childSchemaState = getSchemaById(name);
+          const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
+          
+          if (!hasAttributes) {
+            // Child schema has no attributes - convert to placeholder
+            rebuiltAttributes[name] = `refn:${name}`;
+          } else {
+            // Child still has attributes - keep the refs: reference
+            rebuiltAttributes[name] = originalValue;
+          }
+        } else {
+          // refn: reference or no way to check - keep as is
+          rebuiltAttributes[name] = originalValue;
+        }
+      } else if (type === TYPE_CHILD_SCHEMA) {
+        // Convert "Child Schema" UI type to refn: format for newly added attributes
+        rebuiltAttributes[name] = `refn:${name}`;
+      } else if (type === TYPE_ARRAY_CHILD_SCHEMA) {
+        // Convert "Array[Child Schema]" UI type to refn: format
+        rebuiltAttributes[name] = [`refn:${name}`];
+      } else {
+        rebuiltAttributes[name] = type || "Text"; // Use editor type
+      }
     }
   });
 
@@ -375,9 +404,9 @@ export function ensureChildSchemaDependencies(
           if (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_ARRAY_CHILD_SCHEMA) {
             const childSchemaName = attr.Attribute;
 
-            // Check if child has editor state (was edited in UI)
+            // Check if child has editor state AND has attributes (empty schemas become placeholders)
             const childschemaState = getSchemaById(childSchemaName);
-            if (schemaHasEdits(childschemaState)) {
+            if (schemaHasEdits(childschemaState) && childschemaState.attributes && childschemaState.attributes.length > 0) {
               childSchemasToCreate.set(childSchemaName, childschemaState);
             }
           }
@@ -385,25 +414,32 @@ export function ensureChildSchemaDependencies(
       }
     });
   
-    // Phase 2: Scan for refn: references that have been edited
-    // This handles placeholder schemas that now have attributes
+    // Phase 2: Scan for refs:/refn: references
+    // - refn: references that have been edited and now have attributes
+    // - refs: references from original package that need to be preserved
     const allSchemas = [bundle, ...(dependencies || [])].filter(Boolean);
     allSchemas.forEach((schema) => {
       const attributes = schema?.capture_base?.attributes || {};
       Object.entries(attributes).forEach(([key, value]) => {
+        // Handle refn: placeholders that now have attributes
         if (typeof value === "string" && value.startsWith("refn:")) {
-        // Extract the schema name from refn:name
-        const refnSchemaName = value.replace("refn:", "");
-        
-        // Check if this schema has been edited
-        const refnSchemaState = getSchemaById(refnSchemaName);
-        if (schemaHasEdits(refnSchemaState)) {
-          childSchemasToCreate.set(refnSchemaName, refnSchemaState);
+          const refnSchemaName = value.replace("refn:", "");
+          const refnSchemaState = getSchemaById(refnSchemaName);
+          if (schemaHasEdits(refnSchemaState) && refnSchemaState.attributes && refnSchemaState.attributes.length > 0) {
+            childSchemasToCreate.set(refnSchemaName, refnSchemaState);
+          }
         }
-        // Note: If not edited, it stays as placeholder (expected - user may not have filled it in yet)
-      }
+        // Handle refs: references from original package - always preserve child schemas with attributes
+        else if (typeof value === "string" && value.startsWith("refs:")) {
+          const refsSchemaId = value.replace("refs:", "");
+          const refsSchemaState = getSchemaById(refsSchemaId);
+          // Include if initialized (was loaded from package) and has attributes
+          if (schemaHasEdits(refsSchemaState) && refsSchemaState.attributes && refsSchemaState.attributes.length > 0) {
+            childSchemasToCreate.set(refsSchemaId, refsSchemaState);
+          }
+        }
+      });
     });
-  });
   
     // Phase 3: Create OCA dependency structures for collected child schemas
     // Only creates dependencies that don't already exist in the package

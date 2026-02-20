@@ -230,11 +230,40 @@ const useOCAExport = () => {
             // Child schema was pre-built, use its SAID
             attributeType = isArray ? `Array[refs:${childSaid}]` : `refs:${childSaid}`;
           } else if (originalValue && typeof originalValue === 'string' && (originalValue.startsWith('refs:') || originalValue.startsWith('refn:'))) {
-            // Use existing refs:/refn: from original schema
-            attributeType = originalValue;
+            // Check if this refs: child schema exists and has attributes
+            if (originalValue.startsWith('refs:')) {
+              const refSaid = originalValue.replace('refs:', '');
+              // Try to find the child schema in schemaStates
+              const childSchemaState = getSchemaById(refSaid);
+              const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
+              
+              if (!hasAttributes) {
+                // Child schema is empty - convert to placeholder
+                attributeType = `refn:${item}`;
+              } else {
+                // Use existing refs: from original schema
+                attributeType = originalValue;
+              }
+            } else {
+              // Use existing refn: from original schema
+              attributeType = originalValue;
+            }
           } else if (originalValue && Array.isArray(originalValue) && originalValue[0]?.startsWith?.('refs:') || originalValue?.[0]?.startsWith?.('refn:')) {
             // Array of references from original schema
-            attributeType = `Array[${originalValue[0]}]`;
+            if (originalValue[0]?.startsWith('refs:')) {
+              const refSaid = originalValue[0].replace('refs:', '');
+              const childSchemaState = getSchemaById(refSaid);
+              const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
+              
+              if (!hasAttributes) {
+                // Child schema is empty - convert to placeholder
+                attributeType = `Array[refn:${item}]`;
+              } else {
+                attributeType = `Array[${originalValue[0]}]`;
+              }
+            } else {
+              attributeType = `Array[${originalValue[0]}]`;
+            }
           } else {
             // Fallback: named reference placeholder (child not yet built)
             attributeType = isArray ? `Array[refn:${item}]` : `refn:${item}`;
@@ -620,6 +649,12 @@ const useOCAExport = () => {
         const depResults = [];
         
         for (const depId of dependencyIds) {
+          const depState = schemaStates[depId];
+          // Skip empty schemas - they'll become refn: placeholders in parent
+          if (!depState?.attributes || depState.attributes.length === 0) {
+            continue;
+          }
+          
           const { bundle, extension, textDSL } = await buildPackageFromTextDSL(depId);
           const said = bundle?.bundle?.d;
           if (said) {
@@ -762,8 +797,8 @@ const useOCAExport = () => {
 
       for (const childId of childSchemaIds) {
         const childState = schemaStates[childId];
-        // Only build if the child has been initialized (user actually created it)
-        if (childState?.initialized || (childState?.attributes && childState.attributes.length > 0)) {
+        // Only build if the child has attributes (empty schemas become refn: placeholders)
+        if (childState?.attributes && childState.attributes.length > 0) {
           const { bundle: childBundle, extension: childExtension } = await buildPackageFromTextDSL(childId);
           const said = childBundle?.bundle?.d;
           if (said) {

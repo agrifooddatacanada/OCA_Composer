@@ -206,6 +206,7 @@ export class OCAParser {
     return Object.entries(attributesObj).map(([name, type]) => ({
       Attribute: name,
       Type: this._normalizeType(type),
+      OriginalType: type,  // Preserve original refs:SAID for rebuild
       Description: "",
       Required: false,
       List: false,

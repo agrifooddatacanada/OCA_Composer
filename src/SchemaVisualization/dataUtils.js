@@ -27,7 +27,21 @@ export const createDependencyMap = (dependencies) => {
   const depMap = {};
   dependencies.forEach((dep) => {
     // Dependencies have flat structure: { capture_base: {...}, overlays: {...} }
-    depMap[dep.d || dep.id] = dep;
+    const bundleSaid = dep.d || dep.id;
+    const captureBaseSaid = dep.capture_base?.d;
+    
+    // Index by bundle SAID (primary)
+    if (bundleSaid) {
+      depMap[bundleSaid] = dep;
+    }
+    
+    // Also index by capture_base SAID (fallback for refs: that use capture_base)
+    if (captureBaseSaid && captureBaseSaid !== bundleSaid) {
+      // Only add if not already present (bundle SAID takes precedence)
+      if (!depMap[captureBaseSaid]) {
+        depMap[captureBaseSaid] = dep;
+      }
+    }
   });
 
   return depMap;

@@ -223,6 +223,19 @@ export const generateTreeLayout = (
           if (childNode) {
             nodeData.children.push(childNode);
           }
+        } else {
+          // Dependency not found - use attribute label as fallback name
+          const fallbackName = labels[key] || key;
+          const childNode = buildHierarchy({
+            nodeId: refId,
+            attributes: {},
+            labelOverlay: null,
+            metaOverlay: { name: fallbackName },
+            nodeType: "reference"
+          });
+          if (childNode) {
+            nodeData.children.push(childNode);
+          }
         }
       } else if (isRefn) {
         // For placeholder child schemas, extract the placeholder name from refn: reference
@@ -412,8 +425,10 @@ export const generateDetailedLayout = (
         const referencedInfo = getDependencyInfo(referencedId, dependencyMap, langCodeOCA);
 
         // Use child schema's meta name as the display title
-        // This ensures the header matches the schema metadata name, not the attribute label
-        const displayTitle = referencedInfo.name;
+        // If the dependency isn't found, use the attribute label as fallback
+        const displayTitle = referencedInfo.name !== referencedId 
+          ? referencedInfo.name  // Found: use meta overlay name
+          : field.originalName || field.name;  // Not found: use attribute label
 
         processNode(
           referencedId,
