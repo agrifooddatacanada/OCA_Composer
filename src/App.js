@@ -16,7 +16,6 @@ import { MultiSchemaProvider, useMultiSchema } from "./schema/schemaContext";
 import { getCurrentTheme } from "./utils/themeDetector";
 import { CustomPalette } from "./constants/customPalette";
 // import Tutorial from "./Tutorial/Tutorial";
-import useUnitFramingUpdater from "./hooks/useUnitFramingUpdater";
 import { LanguageConstants } from "./utils/languageUtils";
 import {
   CUSTOM_FORMAT_RULE,
@@ -225,15 +224,13 @@ function App() {
   This is because the unitFramedRowData is used to display & create the unit framing overlay
   and the unitFramedRowData has to be updated whenever unitRowData is updated.
   */
-  const framedUnits = useUnitFramingUpdater(unitRowData);
-
   useEffect(() => {
-    if (framedUnits.length > 0) {
+    if (unitRowData.length > 0) {
       setUnitFramedRowData((prev) => {
         // First, preserve all existing rows that are marked as deleted
         const deletedRows = prev.filter((row) => row.deleted === true);
 
-        return framedUnits.map((currentFramedUnit) => {
+        return unitRowData.map((currentFramedUnit) => {
           // Check if the row already exists in unitFramedRowData
           const existingRow = prev.find(
             (prevFramedUnit) =>
@@ -257,7 +254,7 @@ function App() {
         });
       });
     }
-  }, [framedUnits]);
+  }, [unitRowData]);
 
   useEffect(() => {
     if (!frameAllUnits) {
