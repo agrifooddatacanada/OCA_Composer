@@ -20,8 +20,11 @@ import {
   ATTRIBUTE_FRAMING,
   FORM,
   FIELD_FORM_INFORMATION_OVERLAY,
-  FIELD_DECIMAL_SEPARATOR_OVERLAY,
+  FIELD_DATA_SEPARATOR_OVERLAY,
+  // FIELD_DECIMAL_SEPARATOR_OVERLAY,
   DECIMAL_SEPARATOR,
+  // FIELD_FILE_DELIMITER_OVERLAY,
+  FILE_DELIMITER,
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -54,7 +57,8 @@ const useExportLogicV2 = () => {
     rangeRowData,
     attributeFramingRowData,
     formBuilderPages,
-    decimalSeparator
+    decimalSeparator,
+    fileDelimiterData
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -490,10 +494,20 @@ const useExportLogicV2 = () => {
             attributes: rangeOverlayInput
           }
         }),
-        ...(overlay[FIELD_DECIMAL_SEPARATOR_OVERLAY].selected && {
+        ...(overlay[FIELD_DATA_SEPARATOR_OVERLAY].selected && {
           decimal_separator_overlay: {
             type: DECIMAL_SEPARATOR,
             decimal_separator: decimalSeparator
+          }
+        }),
+        ...(overlay[FIELD_DATA_SEPARATOR_OVERLAY].selected && {
+          file_delimiter_overlay: {
+            type: FILE_DELIMITER,
+            delimiter: fileDelimiterData.fieldDelimiter,
+            quote_char: fileDelimiterData.quoteChar,
+            escape_char: fileDelimiterData.escapeChar,
+            line_terminator: fileDelimiterData.lineTerminator,
+            data_start_row: fileDelimiterData.dataStartRow
           }
         }),
         ...(sensitiveAttributes.length > 0 && {

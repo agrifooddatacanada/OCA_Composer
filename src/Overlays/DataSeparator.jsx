@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -19,7 +19,8 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { Context } from "../App";
-import { FIELD_DECIMAL_SEPARATOR_OVERLAY } from "../constants/constants";
+// import { FIELD_DECIMAL_SEPARATOR_OVERLAY } from "../constants/constants";
+import { FIELD_DATA_SEPARATOR_OVERLAY } from "../constants/constants";
 
 const SectionTitle = ({ checked, onChange, title, help }) => {
   const { t } = useTranslation();
@@ -44,7 +45,9 @@ const DataSeparator = () => {
     setSelectedOverlay, 
     attributeRowData,
     decimalSeparator,
-    setDecimalSeparator
+    setDecimalSeparator,
+    fileDelimiterData,
+    setFileDelimiterData
   } = useContext(Context);
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -59,13 +62,38 @@ const DataSeparator = () => {
   const [enableArrayDelimiter, setEnableArrayDelimiter] = useState(hasArrayAttributes);
 
   // Values
-  const [fieldDelimiter, setFieldDelimiter] = useState("comma"); // comma | tab | semicolon | pipe
-  const [quoteChar, setQuoteChar] = useState("\"");
-  const [escapeChar, setEscapeChar] = useState("\\");
-  const [lineTerminator, setLineTerminator] = useState("lf"); // lf | crlf
-  const [dataStartRow, setDataStartRow] = useState(1);
+  const [fieldDelimiter, setFieldDelimiter] = useState(fileDelimiterData.fieldDelimiter);
+  const [quoteChar, setQuoteChar] = useState(fileDelimiterData.quoteChar);
+  const [escapeChar, setEscapeChar] = useState(fileDelimiterData.escapeChar);
+  const [lineTerminator, setLineTerminator] = useState(fileDelimiterData.lineTerminator);
+  const [dataStartRow, setDataStartRow] = useState(fileDelimiterData.dataStartRow);
   const [arrayDelimiter, setArrayDelimiter] = useState(";");
 
+  // Field delimiter options: value -> character used for decimal-separator exclusion
+  const FIELD_DELIMITER_OPTIONS = useMemo(
+    () => [
+      { value: ",", labelKey: "Comma (,)" },
+      { value: "\t", labelKey: "Tab (\\t)" },
+      { value: ";", labelKey: "Semicolon (;)" },
+      { value: "|", labelKey: "Pipe (|)" }
+    ],
+    []
+  );
+
+  const currentDecimal = decimalSeparator || ".";
+  const availableFieldDelimiterOptions = useMemo(
+    () =>
+      FIELD_DELIMITER_OPTIONS.filter((opt) => opt.value !== currentDecimal),
+    [FIELD_DELIMITER_OPTIONS, currentDecimal]
+  );
+
+  // When decimal separator changes, if current field delimiter is excluded, switch to first available
+  useEffect(() => {
+    const availableValues = availableFieldDelimiterOptions.map((o) => o.value);
+    if (!availableValues.includes(fieldDelimiter)) {
+      setFieldDelimiter(availableValues[0] ?? fieldDelimiter);
+    }
+  }, [currentDecimal, availableFieldDelimiterOptions, fieldDelimiter]);
 
   // const handleSave = () => {
   // };
@@ -84,6 +112,13 @@ const DataSeparator = () => {
     // }
 
     // handleSave();
+    setFileDelimiterData({
+      fieldDelimiter,
+      quoteChar,
+      escapeChar,
+      lineTerminator,
+      dataStartRow
+    });
     setSelectedOverlay("");
     setCurrentPage("Overlays");
   };
@@ -94,8 +129,8 @@ const DataSeparator = () => {
   const handleDeleteCurrentOverlay = () => {
     setOverlay((prev) => ({
       ...prev,
-      [FIELD_DECIMAL_SEPARATOR_OVERLAY]: {
-        ...prev[FIELD_DECIMAL_SEPARATOR_OVERLAY],
+      [FIELD_DATA_SEPARATOR_OVERLAY]: {
+        ...prev[FIELD_DATA_SEPARATOR_OVERLAY],
         selected: false
       }
     }));
@@ -180,10 +215,11 @@ const DataSeparator = () => {
                   value={fieldDelimiter}
                   onChange={(e) => setFieldDelimiter(e.target.value)}
                 >
-                  <MenuItem value="comma">{t("Comma (,)")}</MenuItem>
-                  <MenuItem value="tab">{t("Tab (\\t)")}</MenuItem>
-                  <MenuItem value="semicolon">{t("Semicolon (;)")}</MenuItem>
-                  <MenuItem value="pipe">{t("Pipe (|)")}</MenuItem>
+                  {availableFieldDelimiterOptions.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {t(opt.labelKey)}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
 
@@ -226,7 +262,6 @@ const DataSeparator = () => {
                 onChange={(e) =>
                   setDataStartRow(Math.max(1, Number.parseInt(e.target.value || 1, 10)))
                 }
-                inputProps={{ min: 1 }}
                 fullWidth
               />
             </Box>

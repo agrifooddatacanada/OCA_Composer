@@ -9,8 +9,10 @@ import {
   dataTypes,
   FIELD_RANGE_OVERLAY,
   RANGE,
-  FIELD_DECIMAL_SEPARATOR_OVERLAY,
+  // FIELD_DECIMAL_SEPARATOR_OVERLAY,
+  FIELD_DATA_SEPARATOR_OVERLAY,
   DECIMAL_SEPARATOR,
+  FILE_DELIMITER,
   SCHEMA_MODE_MULTI_LEVEL,
   SCHEMA_MODE_SINGLE,
   SENSITIVE
@@ -22,6 +24,7 @@ import {
   hasEntryCodeOrdering,
   hasRangeOverlay,
   hasDecimalSeparatorOverlay,
+  hasFileDelimiterOverlay,
   hasUnitFramingOverlay,
   hasAttributeFramingOverlay,
   isMultiLevelSchema,
@@ -46,6 +49,7 @@ const useZipParser = () => {
     setUnitRowData,
     setRangeRowData,
     setDecimalSeparator,
+    setFileDelimiterData,
     setAttributeFramingRowData,
     setSchemaMode
   } = useContext(Context);
@@ -104,6 +108,13 @@ const useZipParser = () => {
     const newUnitFramingRowData = [];
     const newRangeRowData = [];
     let newDecimalSeparator = ".";
+    const newFileDelimiterData = {
+      fieldDelimiter: ",",
+      quoteChar: "\"",
+      escapeChar: "\\",
+      lineTerminator: "lf",
+      dataStartRow: 1
+    };
     const newAttributeFramingRowData = [];
 
     if (isMultiLevelSchema(root?.attributes || {})) {
@@ -489,8 +500,26 @@ const useZipParser = () => {
 
       setOverlay((prev) => ({
         ...prev,
-        [FIELD_DECIMAL_SEPARATOR_OVERLAY]: {
-          ...prev[FIELD_DECIMAL_SEPARATOR_OVERLAY],
+        [FIELD_DATA_SEPARATOR_OVERLAY]: {
+          ...prev[FIELD_DATA_SEPARATOR_OVERLAY],
+          selected: true
+        }
+      }));
+    }
+
+    if (ocaPackageData && hasFileDelimiterOverlay(ocaPackageData)) {
+      const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
+      const fileDelimiterOverlay = ocaPackageData.extensions[ADC][captureBaseSaid].overlays[FILE_DELIMITER];
+      newFileDelimiterData.fieldDelimiter = fileDelimiterOverlay?.delimiter || ",";
+      newFileDelimiterData.quoteChar = fileDelimiterOverlay?.quote_char || "\"";
+      newFileDelimiterData.escapeChar = fileDelimiterOverlay?.escape_char || "\\";
+      newFileDelimiterData.lineTerminator = fileDelimiterOverlay?.line_terminator || "lf";
+      newFileDelimiterData.dataStartRow = fileDelimiterOverlay?.data_start_row || 1;
+
+      setOverlay((prev) => ({
+        ...prev,
+        [FIELD_DATA_SEPARATOR_OVERLAY]: {
+          ...prev[FIELD_DATA_SEPARATOR_OVERLAY],
           selected: true
         }
       }));
@@ -519,6 +548,7 @@ const useZipParser = () => {
     setLanAttributeRowData(newLangAttributeRowData);
     setRangeRowData(newRangeRowData);
     setDecimalSeparator(newDecimalSeparator);
+    setFileDelimiterData(newFileDelimiterData);
   };
 
   return {

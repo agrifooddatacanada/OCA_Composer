@@ -97,6 +97,13 @@ function App() {
   const [unframedUnitList, setUnframedUnitList] = useState([]);
   const [unitRowDataWhenNoFrameAll, setUnitRowDataWhenNoFrameAll] = useState([]);
   const [decimalSeparator, setDecimalSeparator] = useState(".");
+  const [fileDelimiterData, setFileDelimiterData] = useState({
+    fieldDelimiter: "comma",
+    quoteChar: "\"",
+    escapeChar: "\\",
+    lineTerminator: "lf",
+    dataStartRow: 1
+  });
 
   // Attribute framing
   const [attributeFramingRowData, setAttributeFramingRowData] = useState([]);
@@ -825,7 +832,9 @@ function App() {
             attributeFramingRowData,
             setAttributeFramingRowData,
             decimalSeparator,
-            setDecimalSeparator
+            setDecimalSeparator,
+            fileDelimiterData,
+            setFileDelimiterData
           }}
         >
           <Box
