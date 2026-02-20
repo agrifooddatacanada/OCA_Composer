@@ -302,9 +302,10 @@ const useOCAExport = () => {
     buildText += "# Add Format Overlay\n";
     if (overlaySelections[FIELD_FORMAT_OVERLAY] && Object.keys(attributeFormats).length > 0) {
       let tempText = "";
-      // Filter to only include attributes that exist in the current schema
-      Object.entries(attributeFormats).forEach(([attrName, formatRule]) => {
-        if (formatRule && attributesList.includes(attrName)) {
+      // Iterate over current attributes only (prevents deleted attributes from appearing)
+      attributesList.forEach((attrName) => {
+        const formatRule = attributeFormats[attrName];
+        if (formatRule) {
           // Normalize first (unescape any already-escaped quotes), then escape all quotes
           // This prevents double-escaping when format rules contain \" from the original OCA file
           // Only escape double quotes for the DSL; avoid escaping backslashes/hyphens
@@ -338,8 +339,10 @@ const useOCAExport = () => {
     buildText += "# Add Cardinality Overlay\n";
     if (overlaySelections[FIELD_CARDINALITY_OVERLAY] && Object.keys(attributeCardinality).length > 0) {
       let cardinalityText = "";
-      Object.entries(attributeCardinality).forEach(([attrName, cardinalityValue]) => {
-        if (cardinalityValue && attrName) {
+      // Iterate over current attributes only (prevents deleted attributes from appearing)
+      attributesList.forEach((attrName) => {
+        const cardinalityValue = attributeCardinality[attrName];
+        if (cardinalityValue) {
           cardinalityText += ` ${attrName}="${cardinalityValue}"`;
         }
       });
