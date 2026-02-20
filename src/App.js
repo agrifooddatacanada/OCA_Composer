@@ -6,7 +6,6 @@ import "./App.css";
 import CustomTheme from "./constants/theme";
 import Home from "./Home";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
-import { getListOfSelectedOverlays } from "./utils/overlayUtils";
 import Landing from "./Landing/Landing";
 // import HelpStorage from "./Landing/HelpStorage";
 import OCADataValidator from "./OCADataValidator/OCADataValidator";

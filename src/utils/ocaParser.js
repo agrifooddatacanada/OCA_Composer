@@ -14,6 +14,7 @@ import {
 } from "../constants/constants";
 import { langNameFromTwoLetters, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
+import { searchUnits } from "./helpers";
 
 /**
  * OCA Package Parser Utility
@@ -447,13 +448,25 @@ export class OCAParser {
       Object.entries(unitOverlay.attribute_unit).forEach(([attr, unit]) => {
         // Get UCUM framing data for this unit if it exists
         const unitFraming = unitFramingExtension?.units?.[unit];
+        const termId = unitFraming?.term_id || "";
+        
+        // Look up UCUM label and description from the UCUM database
+        let ucumLabel = "";
+        let ucumDescription = "";
+        if (termId) {
+          const { firstMatch } = searchUnits(termId);
+          if (firstMatch) {
+            ucumLabel = firstMatch.label || "";
+            ucumDescription = firstMatch.description || "";
+          }
+        }
         
         unitFramedData.push({
           Attribute: attr,
           Unit: unit || "",
-          "UCUM Code": unitFraming?.term_id || "",
-          "UCUM Label": "", // Label not stored in extension, would come from UCUM lookup
-          Description: ""  // Description not stored in extension
+          "UCUM Code": termId,
+          "UCUM Label": ucumLabel,
+          Description: ucumDescription
         });
       });
     }
