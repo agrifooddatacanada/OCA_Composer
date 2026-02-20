@@ -311,12 +311,42 @@ export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSch
     const originalType = attr.OriginalType;  // Preserve refs:SAID from loaded package
 
     // First priority: Check if we have OriginalType with refs:/refn: from loaded package
-    if (originalType && typeof originalType === "string" && (originalType.startsWith("refs:") || originalType.startsWith("refn:"))) {
-      // Preserve refs:SAID or refn: from original package
+    if (originalType && typeof originalType === "string" && originalType.startsWith("refs:")) {
+      // Check if the child schema still has attributes
+      const refSaid = originalType.replace("refs:", "");
+      const childSchemaState = getSchemaById ? getSchemaById(refSaid) : null;
+      const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
+      
+      if (!hasAttributes) {
+        // Child schema is now empty - convert to placeholder
+        rebuiltAttributes[name] = `refn:${name}`;
+      } else {
+        // Preserve refs:SAID from original package
+        rebuiltAttributes[name] = originalType;
+      }
+    } else if (originalType && typeof originalType === "string" && originalType.startsWith("refn:")) {
+      // Preserve refn: from original package
       rebuiltAttributes[name] = originalType;
-    } else if (originalType && Array.isArray(originalType) && originalType[0] && (originalType[0].startsWith("refs:") || originalType[0].startsWith("refn:"))) {
-      // Preserve Array[refs:SAID] or Array[refn:] from original package
-      rebuiltAttributes[name] = originalType;
+    } else if (originalType && Array.isArray(originalType) && originalType[0]) {
+      if (originalType[0].startsWith("refs:")) {
+        // Check if the child schema still has attributes
+        const refSaid = originalType[0].replace("refs:", "");
+        const childSchemaState = getSchemaById ? getSchemaById(refSaid) : null;
+        const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
+        
+        if (!hasAttributes) {
+          // Child schema is now empty - convert to placeholder
+          rebuiltAttributes[name] = [`refn:${name}`];
+        } else {
+          // Preserve Array[refs:SAID] from original package
+          rebuiltAttributes[name] = originalType;
+        }
+      } else if (originalType[0].startsWith("refn:")) {
+        // Preserve Array[refn:] from original package
+        rebuiltAttributes[name] = originalType;
+      } else {
+        rebuiltAttributes[name] = originalType;
+      }
     }
     // Second priority: Check originalAttributes from package (for schemas that were edited)
     else {
