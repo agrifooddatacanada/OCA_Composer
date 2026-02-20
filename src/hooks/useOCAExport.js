@@ -609,6 +609,12 @@ const useOCAExport = () => {
         // Separate root from dependencies
         const dependencyIds = schemaIds.filter(id => id !== originalRootId);
         
+        // Get original root schema to map child SAIDs to attribute names
+        let originalRootSchema = null;
+        if (pkgUpload) {
+          originalRootSchema = findSchemaById(pkgUpload, originalRootId);
+        }
+        
         // Step 1: Build all dependency schemas FIRST to get their SAIDs
         const childSaidMap = {};
         const depResults = [];
@@ -617,6 +623,17 @@ const useOCAExport = () => {
           const { bundle, extension, textDSL } = await buildPackageFromTextDSL(depId);
           const said = bundle?.bundle?.d;
           if (said) {
+            // Map attribute names to child SAIDs
+            if (originalRootSchema?.capture_base?.attributes) {
+              Object.entries(originalRootSchema.capture_base.attributes).forEach(([attrName, attrValue]) => {
+                const valueStr = Array.isArray(attrValue) ? attrValue[0] : attrValue;
+                const extractedSaid = valueStr?.toString().match(/refs?n?:([^)]+)/)?.[1];
+                if (extractedSaid === depId) {
+                  childSaidMap[attrName] = said;
+                }
+              });
+            }
+            // Fallback for edge cases
             childSaidMap[depId] = said;
           }
           depResults.push({ schemaId: depId, bundle, extension, textDSL });
@@ -736,6 +753,12 @@ const useOCAExport = () => {
       const childSaidMap = {};
       const childBundles = [];
       const childExtensions = []; // Store child extensions
+      
+      // Get root schema's original attributes to map child SAIDs to attribute names
+      let originalRootSchema = null;
+      if (pkgUpload) {
+        originalRootSchema = findSchemaById(pkgUpload, rootSchemaId);
+      }
 
       for (const childId of childSchemaIds) {
         const childState = schemaStates[childId];
@@ -744,7 +767,22 @@ const useOCAExport = () => {
           const { bundle: childBundle, extension: childExtension } = await buildPackageFromTextDSL(childId);
           const said = childBundle?.bundle?.d;
           if (said) {
-            childSaidMap[childId] = said;
+            // Map attribute names to child SAIDs instead of schema IDs to SAIDs
+            // Check original root schema attributes to find which attribute(s) reference this child
+            if (originalRootSchema?.capture_base?.attributes) {
+              Object.entries(originalRootSchema.capture_base.attributes).forEach(([attrName, attrValue]) => {
+                const valueStr = Array.isArray(attrValue) ? attrValue[0] : attrValue;
+                const extractedSaid = valueStr?.toString().match(/refs?n?:([^)]+)/)?.[1];
+                if (extractedSaid === childId) {
+                  childSaidMap[attrName] = said;
+                }
+              });
+            }
+            // Also handle manually created schemas where childId === attributeName
+            if (!originalRootSchema || childId === childId.toLowerCase() || childId.startsWith('q')) {
+              childSaidMap[childId] = said;
+            }
+            
             childBundles.push(childBundle.bundle);
             childExtensions.push(childExtension);
           }
