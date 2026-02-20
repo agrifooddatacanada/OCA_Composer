@@ -123,8 +123,12 @@ const Home = ({
   const handleStepClick = (index) => {
     const target = steps[index];
     if (target?.page) {
-      // If navigating from View page via stepper to make edits, mark zip as edited
-      if (currentPage === "View" && target.page !== "View" && isZip) {
+      // If navigating to/from View page via stepper on uploaded zip, mark as edited
+      // This makes stepper navigation consistent with NEXT button behavior
+      if (isZip && (
+        (currentPage === "View" && target.page !== "View") ||  // FROM View to edit pages
+        (currentPage !== "View" && target.page === "View")     // TO View from edit pages
+      )) {
         setIsZipEdited(true);
       }
 
