@@ -443,30 +443,31 @@ export class OCAParser {
     }
 
     // Unit framing data for components
-    // Combines basic unit data from unit overlay with UCUM data from unit framing extension
-    // Auto-populate UCUM framing for units (same as AttributeDetails does)
+    // Only populate UCUM data if explicitly provided in unit_framing extension
     // OCA spec uses attribute_units (plural) but some packages use attribute_unit (singular)
     const unitFramedData = [];
     const unitDataField = unitOverlay?.attribute_units || unitOverlay?.attribute_unit;
     if (unitDataField) {
       Object.entries(unitDataField).forEach(([attr, unit]) => {
-        // Get UCUM framing data for this unit if it exists in the extension
+        // Get UCUM framing data ONLY if it exists in the extension
         const unitFraming = unitFramingExtension?.units?.[unit];
         const termId = unitFraming?.term_id || "";
         
-        // Auto-populate UCUM data using searchUnits
-        // If termId exists from extension, use it; otherwise search by unit name
-        const searchTerm = termId || unit;
-        const { firstMatch } = searchUnits(searchTerm);
-        
-        const ucumCode = termId || (firstMatch?.code || "");
-        const ucumLabel = firstMatch?.label || "";
-        const ucumDescription = firstMatch?.description || "";
+        // Only look up UCUM data if we have an explicit term_id from the extension
+        let ucumLabel = "";
+        let ucumDescription = "";
+        if (termId) {
+          const { firstMatch } = searchUnits(termId);
+          if (firstMatch) {
+            ucumLabel = firstMatch.label || "";
+            ucumDescription = firstMatch.description || "";
+          }
+        }
         
         unitFramedData.push({
           Attribute: attr,
           Unit: unit || "",
-          "UCUM Code": ucumCode,
+          "UCUM Code": termId,
           "UCUM Label": ucumLabel,
           Description: ucumDescription
         });
@@ -639,7 +640,7 @@ export class OCAParser {
       [FIELD_FORMAT_OVERLAY]: !!formatOverlay?.attribute_formats,
       [FIELD_CARDINALITY_OVERLAY]: !!cardinalityOverlay?.attribute_cardinality,
       [FIELD_DATA_STANDARDS_OVERLAY]: false,
-      [FIELD_UNIT_FRAMING_OVERLAY]: !!(unitOverlay?.attribute_units || unitOverlay?.attribute_unit), // Auto-enable when units exist
+      [FIELD_UNIT_FRAMING_OVERLAY]: !!(unitOverlay?.attribute_units || unitOverlay?.attribute_unit) && hasUnitFramingExtension, // Only enable if explicit framing exists
       [FIELD_RANGE_OVERLAY]: hasRangeExtension,
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
       [FIELD_FORM_INFORMATION_OVERLAY]: hasFormExtension

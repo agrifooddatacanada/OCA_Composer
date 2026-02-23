@@ -32,7 +32,7 @@ export const resetOverlayValues = (overlayType) => {
     [FIELD_FORM_INFORMATION_OVERLAY]: { FormInformationRowData: [] },
     [FIELD_RANGE_OVERLAY]: { rangeData: [] },
     [FIELD_CARDINALITY_OVERLAY]: { cardinalityData: undefined }, // undefined = uninitialized state
-    [FIELD_UNIT_FRAMING_OVERLAY]: { unitFramedRowData: undefined, frameAllUnits: false, unframedUnitList: [] },
+    [FIELD_UNIT_FRAMING_OVERLAY]: { unitFramedData: undefined, frameAllUnits: false, unframedUnitList: [] },
     [FIELD_CONFORMANCE_OVERLAY]: { 
       requiredEntries: undefined, 
       conformanceRowData: [],

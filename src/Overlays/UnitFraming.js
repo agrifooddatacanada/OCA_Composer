@@ -65,22 +65,17 @@ const useUnitData = (currentUnitFramedRowData) => {
 
   const processUnitData = useCallback(() => {
     // Always use currentUnitFramedRowData as the source
-    const sourceData = currentUnitFramedRowData;
+    // Ensure it's an array
+    const sourceData = Array.isArray(currentUnitFramedRowData) ? currentUnitFramedRowData : [];
 
     // Create unique units map
     const unitFramedRowDataSet = Array.from(
       new Map(sourceData.map((row) => [row.Unit, row])).values()
     );
 
-    // Filter out deleted units
-    const filteredUnitFramedRowData = unitFramedRowDataSet.filter((row) => {
-      const toDisplayRow = unitFramedRowDataSet.find(
-        (displayRow) => displayRow.Attribute === row.Attribute && !displayRow.deleted
-      );
-      return !!toDisplayRow;
-    });
-
-    setTempToDisplayRowData(filteredUnitFramedRowData);
+    // Show all units, don't filter by deleted flag
+    // Deleted units will have their UCUM data cleared
+    setTempToDisplayRowData(unitFramedRowDataSet);
   }, [currentUnitFramedRowData]);
 
   useEffect(() => {
@@ -91,15 +86,28 @@ const useUnitData = (currentUnitFramedRowData) => {
 };
 
 const TrashCanButton = memo((props) => {
-  const { setCurrentUnitFramedRowData } = useContext(Context);
+  const { setUnitFramedRowData, setFrameAllUnits, unitFramedRowData } = props;
 
   const handleDelete = useCallback(() => {
-    setCurrentUnitFramedRowData((prev) =>
-      prev.map((row) =>
-        row.Unit === props.node.data.Unit ? { ...row, deleted: true } : row
-      )
+    // Ensure unitFramedRowData is an array
+    const dataArray = Array.isArray(unitFramedRowData) ? unitFramedRowData : [];
+    const newData = dataArray.map((row) =>
+      row.Unit === props.node.data.Unit 
+        ? { 
+            ...row, 
+            "UCUM Code": "",
+            "UCUM Label": "",
+            Description: "",
+            deleted: true 
+          } 
+        : row
     );
+    setUnitFramedRowData(newData);
 
+    // When deleting a unit, turn off frame all units flag
+    setFrameAllUnits(false);
+
+    // Update the grid cell display
     props.node.updateData({
       ...props.node.data,
       "UCUM Code": "",
@@ -108,7 +116,7 @@ const TrashCanButton = memo((props) => {
     });
 
     props?.onRefresh();
-  }, [props.node.data, setCurrentUnitFramedRowData, props]);
+  }, [props.node.data, setUnitFramedRowData, setFrameAllUnits, unitFramedRowData, props]);
 
   const isVisible = props.node.data?.Unit !== "";
 
@@ -257,22 +265,6 @@ const createOnCellValueChanged = (searchUnits, key, onSave) => (params) => {
   }
 };
 
-const updateUnits = (unitFramedRowData, displayedFramedUnits) =>
-  unitFramedRowData.map((row) => {
-    const displayedRow = displayedFramedUnits.find(
-      (displayed) => displayed.Unit === row.Unit
-    );
-
-    return displayedRow
-      ? {
-          ...row,
-          "UCUM Code": displayedRow["UCUM Code"],
-          "UCUM Label": displayedRow["UCUM Label"],
-          Description: displayedRow.Description
-        }
-      : row;
-  });
-
 const useColumnDefs = (gridRef, t, onCellChanged) =>
   useMemo(
     () => [
@@ -337,12 +329,8 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         headerName: "",
         field: "Delete",
         cellRendererFramework: TrashCanButton,
-        width: 48,
-        cellRendererParams: (params) => ({
-          onRefresh: () => {
-            gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
-          }
-        })
+        width: 48
+        // cellRendererParams will be added in columnDefsWithCallbacks
       }
     ],
     [t, gridRef, onCellChanged]
@@ -364,7 +352,9 @@ const UnitFraming = () => {
   // Get unit framing data from schema state, sync with current attributes
   const unitFramedRowData = useMemo(() => {
     const attributes = schemaState?.attributes || [];
-    const existing = schemaState?.unitFramedData || [];
+    const existingData = schemaState?.unitFramedData;
+    // Ensure existing is always an array
+    const existing = Array.isArray(existingData) ? existingData : [];
     
     // Create a map of existing unit framing data by Attribute name
     const existingMap = new Map(
@@ -410,17 +400,23 @@ const UnitFraming = () => {
   }, [schemaState?.unitFramedData, schemaState?.attributes]);
 
   const setUnitFramedRowData = useCallback(
-    (newData) => {
-      updateSchema({
-        unitFramedData: newData
-      });
+    (newDataOrUpdater) => {
+      // Handle both direct data and function updater patterns
+      if (typeof newDataOrUpdater === 'function') {
+        const existingData = schemaState?.unitFramedData;
+        const currentData = Array.isArray(existingData) ? existingData : [];
+        const newData = newDataOrUpdater(currentData);
+        updateSchema({
+          unitFramedData: newData
+        });
+      } else {
+        updateSchema({
+          unitFramedData: newDataOrUpdater
+        });
+      }
     },
-    [updateSchema]
+    [updateSchema, schemaState]
   );
-
-  // For compatibility, use the same data for currentUnitFramedRowData
-  const currentUnitFramedRowData = unitFramedRowData;
-  const setCurrentUnitFramedRowData = setUnitFramedRowData;
 
   // Get frame all units flag from schema state
   const frameAllUnits = schemaState?.frameAllUnits || false;
@@ -439,8 +435,9 @@ const UnitFraming = () => {
     
     // Get unique units that don't have UCUM codes yet
     const uniqueUnits = new Map();
-    unitFramedRowData.forEach((row) => {
-      if (row.Unit && !row["UCUM Code"] && !row.deleted) {
+    const dataArray = Array.isArray(unitFramedRowData) ? unitFramedRowData : [];
+    dataArray.forEach((row) => {
+      if (row.Unit && !row["UCUM Code"]) {
         uniqueUnits.set(row.Unit, true);
       }
     });
@@ -453,7 +450,7 @@ const UnitFraming = () => {
   const gridRef = useRef();
 
   const { tempToDisplayRowData, setTempToDisplayRowData } = useUnitData(
-    currentUnitFramedRowData
+    unitFramedRowData
   );
 
   // Callback to save data when cell value changes via autocomplete
@@ -463,15 +460,51 @@ const UnitFraming = () => {
         gridRef.current.api.getRenderedNodes()?.map((node) => node?.data) || [];
       
       if (displayedFramedUnits.length > 0) {
-        // Update both currentUnitFramedRowData and unitFramedRowData
-        setCurrentUnitFramedRowData((prev) => updateUnits(prev, displayedFramedUnits));
-        const finalUnitFramedRowData = updateUnits(unitFramedRowData, displayedFramedUnits);
+        // Update all rows with current grid data
+        const finalUnitFramedRowData = unitFramedRowData.map((row) => {
+          const displayedRow = displayedFramedUnits.find(
+            (displayed) => displayed.Unit === row.Unit && displayed.Attribute === row.Attribute
+          );
+
+          if (displayedRow) {
+            return {
+              ...row,
+              "UCUM Code": displayedRow["UCUM Code"],
+              "UCUM Label": displayedRow["UCUM Label"],
+              Description: displayedRow.Description
+            };
+          }
+          
+          return row;
+        });
+        
         setUnitFramedRowData(finalUnitFramedRowData);
       }
     }
-  }, [unitFramedRowData, setUnitFramedRowData, setCurrentUnitFramedRowData]);
+  }, [unitFramedRowData, setUnitFramedRowData]);
 
   const columnDefs = useColumnDefs(gridRef, t, handleCellChanged);
+
+  // Pass setUnitFramedRowData and setFrameAllUnits to column defs
+  const columnDefsWithCallbacks = useMemo(() => 
+    columnDefs.map(col => {
+      if (col.field === 'Delete') {
+        return {
+          ...col,
+          cellRendererParams: (params) => ({
+            setUnitFramedRowData,
+            setFrameAllUnits,
+            unitFramedRowData,
+            onRefresh: () => {
+              gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
+            }
+          })
+        };
+      }
+      return col;
+    }),
+    [columnDefs, setUnitFramedRowData, setFrameAllUnits, unitFramedRowData]
+  );
 
 
 
@@ -480,13 +513,26 @@ const UnitFraming = () => {
     const displayedFramedUnits =
       gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data) || [];
 
-    // Update currentUnitFramedRowData with only displayed data
-    setCurrentUnitFramedRowData((prev) => updateUnits(prev, displayedFramedUnits));
+    // Update all rows with current grid data
+    const finalUnitFramedRowData = unitFramedRowData.map((row) => {
+      const displayedRow = displayedFramedUnits.find(
+        (displayed) => displayed.Unit === row.Unit && displayed.Attribute === row.Attribute
+      );
 
-    // Update unitFramedRowData with the final framed data
-    const finalUnitFramedRowData = updateUnits(unitFramedRowData, displayedFramedUnits);
+      if (displayedRow) {
+        return {
+          ...row,
+          "UCUM Code": displayedRow["UCUM Code"],
+          "UCUM Label": displayedRow["UCUM Label"],
+          Description: displayedRow.Description
+        };
+      }
+      
+      return row;
+    });
+
     setUnitFramedRowData(finalUnitFramedRowData);
-  }, [unitFramedRowData, setUnitFramedRowData, setCurrentUnitFramedRowData]);
+  }, [unitFramedRowData, setUnitFramedRowData]);
 
   const handleForward = useCallback(() => {
     handleSave();
@@ -502,10 +548,26 @@ const UnitFraming = () => {
         const displayedFramedUnits =
           gridRef.current.api.getRenderedNodes()?.map((node) => node?.data) || [];
         
-        if (displayedFramedUnits.length > 0) {
-          // Update both currentUnitFramedRowData and unitFramedRowData
-          const updatedData = updateUnits(unitFramedRowData, displayedFramedUnits);
-          setUnitFramedRowData(updatedData);
+        if (displayedFramedUnits.length > 0 || unitFramedRowData.length > 0) {
+          // Update all rows with current grid data
+          const finalUnitFramedRowData = unitFramedRowData.map((row) => {
+            const displayedRow = displayedFramedUnits.find(
+              (displayed) => displayed.Unit === row.Unit && displayed.Attribute === row.Attribute
+            );
+
+            if (displayedRow) {
+              return {
+                ...row,
+                "UCUM Code": displayedRow["UCUM Code"],
+                "UCUM Label": displayedRow["UCUM Label"],
+                Description: displayedRow.Description
+              };
+            }
+            
+            return row;
+          });
+          
+          setUnitFramedRowData(finalUnitFramedRowData);
         }
       }
     };
@@ -517,26 +579,50 @@ const UnitFraming = () => {
     const displayedFramedUnits =
       gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data) || [];
 
-    const updatedCurrentUnitFramedRowData = updateUnits(
-      currentUnitFramedRowData,
-      displayedFramedUnits
-    );
+    // Merge displayed data with all rows (including deleted)
+    const updatedData = unitFramedRowData.map((row) => {
+      const displayedRow = displayedFramedUnits.find(
+        (displayed) => displayed.Unit === row.Unit && displayed.Attribute === row.Attribute
+      );
+
+      if (displayedRow) {
+        return {
+          ...row,
+          "UCUM Code": displayedRow["UCUM Code"],
+          "UCUM Label": displayedRow["UCUM Label"],
+          Description: displayedRow.Description
+        };
+      }
+      
+      return row;
+    });
     
-    // Do NOT auto-populate UCUM codes here — AttributeDetails is the source of truth
-    // Preserve existing UCUM values and mark frame-all.
-    const preservedData = updatedCurrentUnitFramedRowData.map((row) => ({ ...row }));
+    // Auto-populate UCUM codes for all units that don't have them yet
+    const framedData = updatedData.map((row) => {
+      // If already has UCUM code, preserve it
+      if (row["UCUM Code"]) {
+        return row;
+      }
+      
+      // Auto-search for UCUM data
+      const { firstMatch } = searchUnits(row.Unit);
+      return {
+        ...row,
+        "UCUM Code": firstMatch?.code || "",
+        "UCUM Label": firstMatch?.label || "",
+        Description: firstMatch?.description || "",
+        deleted: false // Clear deleted flag when framing
+      };
+    });
 
-    setCurrentUnitFramedRowData(preservedData);
+    setUnitFramedRowData(framedData);
 
-    const eligibleData = preservedData.filter((row) => !row.deleted);
-
-    setTempToDisplayRowData(eligibleData);
+    // tempToDisplayRowData will be auto-updated by useUnitData useEffect
     setFrameAllUnits(true);
   }, [
-    currentUnitFramedRowData,
+    unitFramedRowData,
     setFrameAllUnits,
-    setCurrentUnitFramedRowData,
-    setTempToDisplayRowData
+    setUnitFramedRowData
   ]);
 
   const onGridReady = useCallback(() => {
@@ -618,7 +704,7 @@ const UnitFraming = () => {
           <AgGridReact
             ref={gridRef}
             rowData={tempToDisplayRowData}
-            columnDefs={columnDefs}
+            columnDefs={columnDefsWithCallbacks}
             domLayout="autoHeight"
             suppressHorizontalScroll
             rowHeight={50}

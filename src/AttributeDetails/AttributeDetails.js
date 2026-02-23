@@ -18,7 +18,7 @@ import {
   removeSpacesFromArrayOfObjects
 } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { hasDisallowedChars, searchUnits } from "../utils/helpers";
+import { hasDisallowedChars } from "../utils/helpers";
 import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA, FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { langNameFromTwoLetters, langCodeOCAFromName } from "../utils/languageUtils";
@@ -252,13 +252,13 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         const existing = index.get(key);
         if (existing) return existing;
 
-        const { firstMatch } = searchUnits(attr.Unit);
+        // New unit - don't auto-populate UCUM, just create empty row
         return {
           Attribute: attr.Attribute,
           Unit: attr.Unit,
-          "UCUM Code": firstMatch?.code || "",
-          "UCUM Label": firstMatch?.label || "",
-          Description: firstMatch?.description || "",
+          "UCUM Code": "",
+          "UCUM Label": "",
+          Description: "",
           deleted: deletedUnits.has(attr.Unit)
         };
       });
@@ -274,8 +274,16 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
 
   // Keep schemaState.unitFramedData synchronized with attributeRowData so the
   // Unit Framing overlay UI reflects UCUM codes immediately (preserve manual edits).
+  // Only sync if the unit framing overlay is selected.
   useEffect(() => {
     const schemaState = getSchema();
+    const overlaySelections = getOverlaySelections(currentSchemaId);
+    
+    // Don't auto-sync if overlay is not selected (prevents repopulation after deletion)
+    if (!overlaySelections || !overlaySelections[FIELD_UNIT_FRAMING_OVERLAY]) {
+      return;
+    }
+    
     const persisted = schemaState?.unitFramedData || [];
 
     const merged = buildMergedUnitFramedData(attributeRowData, persisted);
@@ -481,7 +489,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       });
       
       // attributesList is computed automatically from attributes
-      // Auto-persist unit framing for attributes that have a Unit set.
+      // Persist unit framing for attributes that have a Unit set.
       // Preserve any existing unitFramed rows when Attribute+Unit match and retain deleted flags.
       const existingUnitFramed = schemaState?.unitFramedData || [];
       const deletedRows = existingUnitFramed.filter((r) => r.deleted === true);
@@ -492,20 +500,25 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
             (r) => r.Attribute === attr.Attribute && r.Unit === attr.Unit
           );
           if (existingRow) return existingRow;
-          const { firstMatch } = searchUnits(attr.Unit);
+          
+          // New unit - don't auto-populate UCUM, just create empty row
           return {
             Attribute: attr.Attribute,
             Unit: attr.Unit,
-            "UCUM Code": firstMatch?.code || "",
-            "UCUM Label": firstMatch?.label || "",
-            Description: firstMatch?.description || "",
+            "UCUM Code": "",
+            "UCUM Label": "",
+            Description: "",
             deleted: deletedRows.some((dr) => dr.Unit === attr.Unit)
           };
         });
 
       // If we have framed units, ensure the Unit Framing overlay is enabled for this schema
       if (newUnitFramedData.length > 0) {
-        updateOverlaySelection(FIELD_UNIT_FRAMING_OVERLAY, true);
+        // Only enable if there's actual UCUM data, not just units
+        const hasActualFraming = newUnitFramedData.some(row => row["UCUM Code"]);
+        if (hasActualFraming) {
+          updateOverlaySelection(FIELD_UNIT_FRAMING_OVERLAY, true);
+        }
       }
 
       updateSchema({
@@ -574,20 +587,25 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
           (r) => r.Attribute === attr.Attribute && r.Unit === attr.Unit
         );
         if (existingRow) return existingRow;
-        const { firstMatch } = searchUnits(attr.Unit);
+        
+        // New unit - don't auto-populate UCUM, just create empty row
         return {
           Attribute: attr.Attribute,
           Unit: attr.Unit,
-          "UCUM Code": firstMatch?.code || "",
-          "UCUM Label": firstMatch?.label || "",
-          Description: firstMatch?.description || "",
+          "UCUM Code": "",
+          "UCUM Label": "",
+          Description: "",
           deleted: deletedRows.some((dr) => dr.Unit === attr.Unit)
         };
       });
 
     // If we have framed units, ensure the Unit Framing overlay is enabled for this schema
     if (newUnitFramedData.length > 0) {
-      updateOverlaySelection(FIELD_UNIT_FRAMING_OVERLAY, true);
+      // Only enable if there's actual UCUM data, not just units
+      const hasActualFraming = newUnitFramedData.some(row => row["UCUM Code"]);
+      if (hasActualFraming) {
+        updateOverlaySelection(FIELD_UNIT_FRAMING_OVERLAY, true);
+      }
     }
 
     // Save current attribute data to schema state, including attributesWithLists and unit framing

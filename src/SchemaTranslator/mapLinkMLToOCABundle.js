@@ -174,7 +174,23 @@ export function buildOverlays(slots, enums, linkmlSchema) {
   const entryOverlays = buildEntryOverlays(slots, enums);
   Object.assign(overlays, entryOverlays);
 
-  return { overlays };
+  // Build ADC unit_framing extension if ucum_code is present
+  const unitFramingExtension = {};
+  Object.entries(slots)
+    .filter(([, slot]) => slot.unit?.ucum_code)
+    .forEach(([, slot]) => {
+      const ucumCode = slot.unit.ucum_code;
+      if (!unitFramingExtension[ucumCode]) {
+        unitFramingExtension[ucumCode] = {
+          term_id: ucumCode,
+          predicate_id: "skos:exactMatch"
+        };
+      }
+    });
+
+  const extensions = Object.keys(unitFramingExtension).length > 0 ? { unit_framing: { units: unitFramingExtension } } : null;
+
+  return { overlays, extensions };
 }
 
 /**
@@ -228,11 +244,13 @@ export function mapLinkMLToOCABundle(linkmlSchema) {
     flagged_attributes: flaggedAttributes
   };
 
-  const { overlays } = buildOverlays(slots, enums, linkmlSchema);
+  const { overlays, extensions } = buildOverlays(slots, enums, linkmlSchema);
 
   return {
     d: schemaId,
     capture_base,
-    overlays
+    overlays,
+    extensions,
+    captureBaseId
   };
 }
