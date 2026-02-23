@@ -19,10 +19,10 @@ Our team is using the [OCA Package standard](https://github.com/agrifooddatacana
 | Character encoding | N/A | Character Encoding Overlay | (assumes UTF-8) | `attribute_character_encoding: {"field": "utf-8"}` |
 | Cross-enum mappings | N/A | Entry Code Mapping Overlay | (no equivalent) | `attr_entry_codes_mapping: {"country": ["US:USA"]}` |
 | **⚠️ Not Yet Implemented** |  |  |  |  |
-| Required fields | `slot.required` | Conformance Overlay | `required: true` | `attribute_conformance: {"field": "M"}` |
 | Cardinality constraints | `multivalued`, array limits | Cardinality Overlay | `multivalued: true` | `attr_cardinality: {"tags": "1-5"}` |
 | Aliases/mappings | `aliases`, `structured_aliases` | Attribute Mapping Overlay | `aliases: ["alt_name"]` | `attribute_mapping: {"name": "full_name"}` |
 | **✅ Implemented** |  |  |  |  |
+| Required fields | `slot.required` | Conformance Overlay | `required: true` | `attribute_conformance: {"field": "M"}` |
 | Unit framing | `slot.unit.ucum_code` | ADC Unit Framing Overlay | `slots: {temp: {unit: {ucum_code: "Cel"}}}` | `unit_framing: {...}` |
 | Sensitive data overlay | N/A | Sensitive Overlay | (uses general `flagged`) | `attributes: ["ssn", "dob"]` |
 | Data types | `range: float/string/integer` | Capture Base attributes | `slots: {field: {range: "float"}}` | `attributes: {"field": "Numeric"}` |

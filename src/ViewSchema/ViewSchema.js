@@ -547,8 +547,8 @@ export default function ViewSchema({
                 (item) => item.Attribute === attr.Attribute
               );
 
-              descriptionObj[lang] = langData?.Description || attr.Description || "";
-              labelObj[lang] = langData?.Label || attr.Label || "";
+              descriptionObj[lang] = langData?.Description || "";
+              labelObj[lang] = langData?.Label || "";
 
               // Build list text from entry codes for this language, or Not a List
               if (codesForAttr.length > 0) {
