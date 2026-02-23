@@ -19,13 +19,13 @@ Our team is using the [OCA Package standard](https://github.com/agrifooddatacana
 | Character encoding | N/A | Character Encoding Overlay | (assumes UTF-8) | `attribute_character_encoding: {"field": "utf-8"}` |
 | Cross-enum mappings | N/A | Entry Code Mapping Overlay | (no equivalent) | `attr_entry_codes_mapping: {"country": ["US:USA"]}` |
 | **⚠️ Not Yet Implemented** |  |  |  |  |
+| Unit framing | `slot.unit.ucum_code` | ADC Unit Framing Overlay | `slots: {temp: {unit: {ucum_code: "Cel"}}}` | `unit_framing: {...}` |
 | Sensitive data overlay | N/A | Sensitive Overlay | (uses general `flagged`) | `attributes: ["ssn", "dob"]` |
 | Required fields | `slot.required` | Conformance Overlay | `required: true` | `attribute_conformance: {"field": "M"}` |
 | Cardinality constraints | `multivalued`, array limits | Cardinality Overlay | `multivalued: true` | `attr_cardinality: {"tags": "1-5"}` |
 | Aliases/mappings | `aliases`, `structured_aliases` | Attribute Mapping Overlay | `aliases: ["alt_name"]` | `attribute_mapping: {"name": "full_name"}` |
 | **📦 Only Possible with Extensions** |  |  |  |  |
 | Range constraints | `minimum_value`, `maximum_value` | ADC Range Overlay | `minimum_value: 0, maximum_value: 100` | `attribute_ranges: {"score": {"min": 0, "max": 100}}` |
-| Unit framing | `slot.unit.ucum_code` | ADC Unit Framing Overlay | `slots: {temp: {unit: {ucum_code: "Cel"}}}` | `units: {"Cel": {"term_id": "Cel", "predicate_id": "skos:exactMatch"}}` |
 | Schema imports | `imports` | OCA Package Dependencies | `imports: ["base_schema"]` | `dependencies: [{"bundle": "base_said"}]` |
 | Class inheritance | `is_a`, `mixins` | Community Overlay | `is_a: Person` | `inheritance: {"Patient": {"parent": "Person"}}` |
 | Object relationships | Object `range` values | Community Overlay | `range: Organization` | `relationships: {"employer": {"type": "Organization"}}` |
