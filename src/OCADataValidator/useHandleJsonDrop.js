@@ -465,6 +465,13 @@ export const useHandleJsonDrop = (
 
             // Store OCA package in MultiSchema context and initialize editor state
             setPkgUpload(pkg);
+            
+            // Initialize schema states from the package (required for MultiSchemaContext)
+            try {
+              initializeFromPkgUpload(pkg);
+            } catch (err) {
+              console.warn("LinkML: initializeFromPkgUpload failed", err);
+            }
 
             // Set editing schema to root schema
             const pkgBundle = getPackageBundle(pkg);
