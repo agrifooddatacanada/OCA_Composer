@@ -444,28 +444,29 @@ export class OCAParser {
 
     // Unit framing data for components
     // Combines basic unit data from unit overlay with UCUM data from unit framing extension
+    // Auto-populate UCUM framing for units (same as AttributeDetails does)
+    // OCA spec uses attribute_units (plural) but some packages use attribute_unit (singular)
     const unitFramedData = [];
-    if (unitOverlay?.attribute_unit) {
-      Object.entries(unitOverlay.attribute_unit).forEach(([attr, unit]) => {
-        // Get UCUM framing data for this unit if it exists
+    const unitDataField = unitOverlay?.attribute_units || unitOverlay?.attribute_unit;
+    if (unitDataField) {
+      Object.entries(unitDataField).forEach(([attr, unit]) => {
+        // Get UCUM framing data for this unit if it exists in the extension
         const unitFraming = unitFramingExtension?.units?.[unit];
         const termId = unitFraming?.term_id || "";
         
-        // Look up UCUM label and description from the UCUM database
-        let ucumLabel = "";
-        let ucumDescription = "";
-        if (termId) {
-          const { firstMatch } = searchUnits(termId);
-          if (firstMatch) {
-            ucumLabel = firstMatch.label || "";
-            ucumDescription = firstMatch.description || "";
-          }
-        }
+        // Auto-populate UCUM data using searchUnits
+        // If termId exists from extension, use it; otherwise search by unit name
+        const searchTerm = termId || unit;
+        const { firstMatch } = searchUnits(searchTerm);
+        
+        const ucumCode = termId || (firstMatch?.code || "");
+        const ucumLabel = firstMatch?.label || "";
+        const ucumDescription = firstMatch?.description || "";
         
         unitFramedData.push({
           Attribute: attr,
           Unit: unit || "",
-          "UCUM Code": termId,
+          "UCUM Code": ucumCode,
           "UCUM Label": ucumLabel,
           Description: ucumDescription
         });
@@ -592,10 +593,10 @@ export class OCAParser {
    */
   static _processUnitOverlay(unitOverlay, attributesWithLists) {
     // OCA spec uses attribute_units (plural) but some packages use attribute_unit (singular)
-    const unitData = unitOverlay?.attribute_units || unitOverlay?.attribute_unit;
+    const unitDataField = unitOverlay?.attribute_units || unitOverlay?.attribute_unit;
     
-    if (unitData) {
-      Object.entries(unitData).forEach(
+    if (unitDataField) {
+      Object.entries(unitDataField).forEach(
         ([attr, unit]) => {
           const attrData = attributesWithLists.find((a) => a.Attribute === attr);
           if (attrData) {
@@ -638,7 +639,7 @@ export class OCAParser {
       [FIELD_FORMAT_OVERLAY]: !!formatOverlay?.attribute_formats,
       [FIELD_CARDINALITY_OVERLAY]: !!cardinalityOverlay?.attribute_cardinality,
       [FIELD_DATA_STANDARDS_OVERLAY]: false,
-      [FIELD_UNIT_FRAMING_OVERLAY]: !!unitOverlay?.attribute_unit && hasUnitFramingExtension,
+      [FIELD_UNIT_FRAMING_OVERLAY]: !!(unitOverlay?.attribute_units || unitOverlay?.attribute_unit), // Auto-enable when units exist
       [FIELD_RANGE_OVERLAY]: hasRangeExtension,
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
       [FIELD_FORM_INFORMATION_OVERLAY]: hasFormExtension

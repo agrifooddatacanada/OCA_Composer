@@ -17,9 +17,9 @@ Our team is using the [OCA Package standard](https://github.com/agrifooddatacana
 |         |               |            | **LinkML** | **OCA** |
 | **🎯 OCA-Specific (No LinkML Equivalent)** |  |  |  |  |
 | Character encoding | N/A | Character Encoding Overlay | (assumes UTF-8) | `attribute_character_encoding: {"field": "utf-8"}` |
-| Sensitive data overlay | N/A | Sensitive Overlay | (uses general `flagged`) | `attributes: ["ssn", "dob"]` |
 | Cross-enum mappings | N/A | Entry Code Mapping Overlay | (no equivalent) | `attr_entry_codes_mapping: {"country": ["US:USA"]}` |
 | **⚠️ Not Yet Implemented** |  |  |  |  |
+| Sensitive data overlay | N/A | Sensitive Overlay | (uses general `flagged`) | `attributes: ["ssn", "dob"]` |
 | Required fields | `slot.required` | Conformance Overlay | `required: true` | `attribute_conformance: {"field": "M"}` |
 | Cardinality constraints | `multivalued`, array limits | Cardinality Overlay | `multivalued: true` | `attr_cardinality: {"tags": "1-5"}` |
 | Aliases/mappings | `aliases`, `structured_aliases` | Attribute Mapping Overlay | `aliases: ["alt_name"]` | `attribute_mapping: {"name": "full_name"}` |
