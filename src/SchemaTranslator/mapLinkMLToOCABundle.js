@@ -174,6 +174,23 @@ export function buildOverlays(slots, enums, linkmlSchema) {
   const entryOverlays = buildEntryOverlays(slots, enums);
   Object.assign(overlays, entryOverlays);
 
+  // Conformance overlay (language-independent)
+  const conformanceData = Object.fromEntries(
+    Object.entries(slots).map(([key, slot]) => {
+      // If required is explicitly true, set to "M", otherwise "O"
+      const conformance = slot.required === true ? "M" : "O";
+      return [key, conformance];
+    })
+  );
+
+  if (Object.keys(conformanceData).length > 0) {
+    overlays.conformance = {
+      type: "spec/overlays/conformance/1.0",
+      capture_base: "",
+      attribute_conformance: conformanceData
+    };
+  }
+
   // Build ADC unit_framing extension if ucum_code is present
   const unitFramingExtension = {};
   Object.entries(slots)
