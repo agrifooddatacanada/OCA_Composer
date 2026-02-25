@@ -18,10 +18,8 @@ Our team is using the [OCA Package standard](https://github.com/agrifooddatacana
 | **🎯 OCA-Specific (No LinkML Equivalent)** |  |  |  |  |
 | Character encoding | N/A | Character Encoding Overlay | (assumes UTF-8) | `attribute_character_encoding: {"field": "utf-8"}` |
 | Cross-enum mappings | N/A | Entry Code Mapping Overlay | (no equivalent) | `attr_entry_codes_mapping: {"country": ["US:USA"]}` |
-| **⚠️ Not Yet Implemented** |  |  |  |  |
-| Cardinality constraints | `multivalued`, array limits | Cardinality Overlay | `multivalued: true` | `attr_cardinality: {"tags": "1-5"}` |
-| Aliases/mappings | `aliases`, `structured_aliases` | Attribute Mapping Overlay | `aliases: ["alt_name"]` | `attribute_mapping: {"name": "full_name"}` |
 | **✅ Implemented** |  |  |  |  |
+| Cardinality constraints | `multivalued`, `minimum_cardinality`, `maximum_cardinality` | Cardinality Overlay | `minimum_cardinality: 1, maximum_cardinality: 5` | `attribute_cardinality: {"tags": "1-5"}` |
 | Required fields | `slot.required` | Conformance Overlay | `required: true` | `attribute_conformance: {"field": "M"}` |
 | Unit framing | `slot.unit.ucum_code` | ADC Unit Framing Overlay | `slots: {temp: {unit: {ucum_code: "Cel"}}}` | `unit_framing: {...}` |
 | Sensitive data overlay | N/A | Sensitive Overlay | (uses general `flagged`) | `attributes: ["ssn", "dob"]` |
@@ -43,7 +41,7 @@ Our team is using the [OCA Package standard](https://github.com/agrifooddatacana
 | Complex validation | `rules`, `conditions` | Community Overlay | `rules: [{if: age > 18}]` | `validation: {"rules": [...]}` |
 | Advanced types | `any_of`, `exactly_one_of` | Community Overlay | `any_of: [string, integer]` | `types: {"union": ["string", "integer"]}` |
 | Custom annotations | `annotations` | Community Overlay | `annotations: {custom: "value"}` | `extensions: {"community": {...}}` |
-
+| Aliases/mappings | `aliases`, `structured_aliases` | Aliases Overlay | `aliases: ["alt_name"]` | `attribute_aliases: {"name": "alias"}` | 
 
 ### Example Mapping
 

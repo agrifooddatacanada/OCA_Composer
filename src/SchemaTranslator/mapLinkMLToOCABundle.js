@@ -75,6 +75,53 @@ function buildEntryOverlays(slots, enums) {
 }
 
 /**
+ * Build cardinality overlay from LinkML slots
+ * @param {Object} slots - The slots dictionary
+ * @param {Object} linkmlSchema - The LinkML schema
+ * @returns {Object|null} A cardinality overlay or null if no cardinality data
+ */
+function buildCardinalityOverlay(slots, linkmlSchema) {
+  const cardinalityData = {};
+
+  // First, check slots directly for cardinality properties
+  Object.entries(slots).forEach(([slotName, slot]) => {
+    let minCard = null;
+    let maxCard = null;
+
+    // Check for minimum and maximum cardinality
+    if (slot.minimum_cardinality !== undefined) {
+      minCard = slot.minimum_cardinality;
+    }
+    if (slot.maximum_cardinality !== undefined) {
+      maxCard = slot.maximum_cardinality;
+    }
+
+    // If not multivalued or cardinality not specified, skip
+    if (slot.multivalued && minCard === null && maxCard === null) {
+      return;
+    }
+
+    // Build cardinality string
+    if (minCard !== null && maxCard !== null) {
+      cardinalityData[slotName] = `${minCard}-${maxCard}`;
+    } else if (minCard !== null) {
+      cardinalityData[slotName] = `${minCard}-*`;
+    } else if (maxCard !== null) {
+      cardinalityData[slotName] = `0-${maxCard}`;
+    }
+  });
+  
+  // Return overlay only if there's cardinality data
+  if (Object.keys(cardinalityData).length === 0) return null;
+
+  return {
+    type: "spec/overlays/cardinality/1.0",
+    capture_base: "",
+    attribute_cardinality: cardinalityData
+  };
+}
+
+/**
  * Build overlays for an OCA bundle
  * @param {Object} slots - The slots dictionary
  * @param {Object} enums - The enums dictionary
@@ -189,6 +236,12 @@ export function buildOverlays(slots, enums, linkmlSchema) {
       capture_base: "",
       attribute_conformance: conformanceData
     };
+  }
+
+  // Cardinality overlay (language-independent)
+  const cardinalityOverlay = buildCardinalityOverlay(slots, linkmlSchema);
+  if (cardinalityOverlay) {
+    overlays.cardinality = cardinalityOverlay;
   }
 
   // Build ADC unit_framing extension if ucum_code is present
