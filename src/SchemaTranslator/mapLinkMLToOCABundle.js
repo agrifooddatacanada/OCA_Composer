@@ -75,6 +75,42 @@ function buildEntryOverlays(slots, enums) {
 }
 
 /**
+ * Build range overlay from LinkML slots
+ * @param {Object} slots - The slots dictionary
+ * @returns {Object|null} A range overlay or null if no range data
+ */
+function buildRangeOverlay(slots) {
+  const rangeData = {};
+
+  Object.entries(slots).forEach(([slotName, slot]) => {
+    const hasMin = slot.minimum_value !== undefined;
+    const hasMax = slot.maximum_value !== undefined;
+
+    if (hasMin || hasMax) {
+      rangeData[slotName] = {};
+      
+      if (hasMin) {
+        rangeData[slotName].lower = String(slot.minimum_value);
+        rangeData[slotName].lower_inclusive = true;
+      }
+      
+      if (hasMax) {
+        rangeData[slotName].upper = String(slot.maximum_value);
+        rangeData[slotName].upper_inclusive = true;
+      }
+    }
+  });
+
+  if (Object.keys(rangeData).length === 0) return null;
+
+  return {
+    type: "community/overlays/adc/range/1.1",
+    capture_base: "",
+    attributes: rangeData
+  };
+}
+
+/**
  * Build cardinality overlay from LinkML slots
  * @param {Object} slots - The slots dictionary
  * @param {Object} linkmlSchema - The LinkML schema
@@ -110,7 +146,7 @@ function buildCardinalityOverlay(slots, linkmlSchema) {
       cardinalityData[slotName] = `0-${maxCard}`;
     }
   });
-  
+
   // Return overlay only if there's cardinality data
   if (Object.keys(cardinalityData).length === 0) return null;
 
@@ -138,8 +174,16 @@ export function buildOverlays(slots, enums, linkmlSchema) {
       key: "attribute_formats",
       data: Object.fromEntries(
         Object.entries(slots)
-          .filter(([, s]) => s.pattern)
-          .map(([k, s]) => [k, s.pattern])
+          .filter(([, s]) => s.pattern || (s.minimum_value !== undefined || s.maximum_value !== undefined))
+          .map(([k, s]) => {
+            if (s.pattern) {
+              return [k, s.pattern];
+            }
+            if (s.range === "integer") {
+              return [k, "^-?[0-9]+$"];
+            }
+            return [k, "^[-+]?\\d*\\.?\\d+$"];
+          })
       )
     },
     {
@@ -185,13 +229,21 @@ export function buildOverlays(slots, enums, linkmlSchema) {
   ];
 
   overlaySpecs.forEach(({ name, type, key, data }) => {
-    // Unit overlay is language-independent and not wrapped in array
+    // Unit and format overlays are language-independent and not wrapped in array
     if (name === "unit") {
       if (Object.keys(data).length > 0) {
         overlays[name] = {
           type,
           capture_base: "",
           measurement_system: "Metric",  // Default to Metric for LinkML
+          [key]: data
+        };
+      }
+    } else if (name === "format") {
+      if (Object.keys(data).length > 0) {
+        overlays[name] = {
+          type,
+          capture_base: "",
           [key]: data
         };
       }
@@ -244,7 +296,16 @@ export function buildOverlays(slots, enums, linkmlSchema) {
     overlays.cardinality = cardinalityOverlay;
   }
 
-  // Build ADC unit_framing extension if ucum_code is present
+  // Build ADC extensions
+  const extensions = {};
+
+  // Range overlay (ADC extension)
+  const rangeOverlay = buildRangeOverlay(slots);
+  if (rangeOverlay) {
+    extensions.range = rangeOverlay;
+  }
+
+  // Unit framing extension
   const unitFramingExtension = {};
   Object.entries(slots)
     .filter(([, slot]) => slot.unit?.ucum_code)
@@ -258,9 +319,11 @@ export function buildOverlays(slots, enums, linkmlSchema) {
       }
     });
 
-  const extensions = Object.keys(unitFramingExtension).length > 0 ? { unit_framing: { units: unitFramingExtension } } : null;
+  if (Object.keys(unitFramingExtension).length > 0) {
+    extensions.unit_framing = { units: unitFramingExtension };
+  }
 
-  return { overlays, extensions };
+  return { overlays, extensions: Object.keys(extensions).length > 0 ? extensions : null };
 }
 
 /**
