@@ -235,7 +235,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           helpText: t("Enter a custom regular expression for the attribute's data")
         },
         // A custom format rule can be provided only if no built-in format rule is selected
-        editable: (params) => !params.node.data["Format Rule"],
+        editable: (params) => !params.data["Format Rule"],
         autoHeight: true,
         width: 200,
         wrapText: true
@@ -260,24 +260,30 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     setLoading(false);
   }, []);
 
-  const handleKeyPress = (params) => {
-    if (params.colDef.field !== CUSTOM_FORMAT_RULE) return;
-
-    params.node.updateData({
-      ...params.node.data,
-      [CUSTOM_FORMAT_RULE]: params.event.target.value
-    });
-
-    // Force refresh the format rule cell to update its disabled state
-    const formatRuleColumn = params.columnApi.getColumn("FormatRule");
-    if (formatRuleColumn) {
+  const onCellValueChanged = useCallback((params) => {
+    if (params.colDef.field === CUSTOM_FORMAT_RULE) {
+      // When custom format rule changes, clear the built-in format rule and refresh
+      if (params.newValue && params.data["Format Rule"]) {
+        params.node.updateData({
+          ...params.data,
+          "Format Rule": ""
+        });
+      }
+      // Force refresh the format rule cell to update its disabled state
       params.api.refreshCells({
         force: true,
         rowNodes: [params.node],
-        columns: [formatRuleColumn]
+        columns: ["Format Rule"]
+      });
+    } else if (params.colDef.field === "Format Rule") {
+      // When format rule changes, refresh custom format rule column to update editable state
+      params.api.refreshCells({
+        force: true,
+        rowNodes: [params.node],
+        columns: [CUSTOM_FORMAT_RULE]
       });
     }
-  };
+  }, []);
 
   return (
     <BackNextSkeleton
@@ -313,7 +319,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
             suppressHorizontalScroll
             rowHeight={50}
             onGridReady={onGridReady}
-            onCellKeyDown={handleKeyPress}
+            onCellValueChanged={onCellValueChanged}
           />
         </Box>
         <Box

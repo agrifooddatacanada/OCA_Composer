@@ -23,14 +23,15 @@ import { normalizeEscapedQuotes } from "../utils/helpers";
 export const TrashCanButton = memo(
   // eslint-disable-next-line no-unused-vars
   forwardRef((props, ref) => {
-    const { node, onRefresh } = props;
+    const { node, data, onRefresh } = props;
     const onClick = useCallback(() => {
       node.updateData({
-        ...node.data,
-        "Format Rule": ""
+        ...data,
+        "Format Rule": "",
+        [CUSTOM_FORMAT_RULE]: ""
       });
       onRefresh?.();
-    }, [node, onRefresh]);
+    }, [node, data, onRefresh]);
 
     return (
       <IconButton
@@ -38,7 +39,7 @@ export const TrashCanButton = memo(
           pr: 1,
           color: CustomPalette.GREY_600,
           transition: "all 0.2s ease-in-out",
-          display: node.data?.["Format Rule"] === "" ? "none" : "block"
+          display: data?.["Format Rule"] === "" && data?.[CUSTOM_FORMAT_RULE] === "" ? "none" : "block"
         }}
         onClick={onClick}
       >
@@ -70,9 +71,10 @@ export const FormatRuleTypeRenderer = memo(
     }
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const hasCustomFormatRule = Boolean(props.node.data[CUSTOM_FORMAT_RULE]);
 
     const handleClick = (e) => {
+      // Check current state dynamically
+      const hasCustomFormatRule = Boolean(props.data[CUSTOM_FORMAT_RULE]);
       // If custom format rule exists, prevent the dropdown from opening
       if (hasCustomFormatRule) {
         e.preventDefault();
@@ -93,12 +95,22 @@ export const FormatRuleTypeRenderer = memo(
               : "";
 
     const handleChange = (e) => {
+      const newFormatRule = findCode(e.target.value);
       props.node.updateData({
-        ...props.node.data,
-        "Format Rule": findCode(e.target.value)
+        ...props.data,
+        "Format Rule": newFormatRule,
+        [CUSTOM_FORMAT_RULE]: "" // Clear custom format rule when selecting a built-in rule
       });
       // Close dropdown immediately
       setIsDropdownOpen(false);
+      // Refresh Custom Format Rule column to update editable state
+      if (props.api) {
+        props.api.refreshCells({
+          force: true,
+          rowNodes: [props.node],
+          columns: [CUSTOM_FORMAT_RULE]
+        });
+      }
       // Save to context
       props.onRefresh();
     };
@@ -140,13 +152,13 @@ export const FormatRuleTypeRenderer = memo(
     return selectedOption.length > 0 ? (
       <DropdownMenuList
         handleKeyDown={handleKeyDown}
-        type={findDescription(props.node.data["Format Rule"])}
+        type={findDescription(props.data["Format Rule"])}
         handleChange={handleChange}
         handleClick={handleClick}
         isDropdownOpen={isDropdownOpen}
         setIsDropdownOpen={setIsDropdownOpen}
         typesDisplay={typesDisplay}
-        isDisabled={hasCustomFormatRule}
+        isDisabled={Boolean(props.data[CUSTOM_FORMAT_RULE])}
       />
     ) : null;
   })
