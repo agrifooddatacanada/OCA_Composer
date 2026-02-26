@@ -16,7 +16,7 @@ import {
 } from "../constants/constants";
 import { langNameFromTwoLetters, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
-import { searchUnits } from "./helpers";
+import { searchUnits, normalizeEscapedQuotes } from "./helpers";
 
 /**
  * OCA Package Parser Utility
@@ -376,8 +376,8 @@ export class OCAParser {
       
       lanAttributeRowData[languageName] = attributesWithLists.map((attr) => ({
         Attribute: attr.Attribute,
-        Label: labels[attr.Attribute] || "",
-        Description: descriptions[attr.Attribute] || "",
+        Label: normalizeEscapedQuotes(labels[attr.Attribute] || ""),
+        Description: normalizeEscapedQuotes(descriptions[attr.Attribute] || ""),
         List: attr.List
       }));
     });
@@ -547,21 +547,18 @@ export class OCAParser {
         formPlaceholdersByLanguage[langName] = {};
       }
 
-      // overlay.interaction[0].arguments = { attributeName: { placeholder: "text" }, ... }
       Object.entries(overlay.interaction[0].arguments).forEach(([attr, argData]) => {
         if (argData?.placeholder) {
           const placeholder = argData.placeholder;
           
-          // Placeholder can be a string or object
           if (typeof placeholder === "string") {
-            formPlaceholdersByLanguage[langName][attr] = placeholder;
+            formPlaceholdersByLanguage[langName][attr] = normalizeEscapedQuotes(placeholder);
           } else if (typeof placeholder === "object" && placeholder !== null) {
-            // If object, try to find matching language or use first available
             const placeholderValue = placeholder[langCode] || 
                                     placeholder[langName] || 
                                     Object.values(placeholder)[0] || "";
             if (placeholderValue) {
-              formPlaceholdersByLanguage[langName][attr] = placeholderValue;
+              formPlaceholdersByLanguage[langName][attr] = normalizeEscapedQuotes(placeholderValue);
             }
           }
         }
@@ -669,23 +666,21 @@ export class OCAParser {
     if (Array.isArray(metaOverlay)) {
       metaOverlay.forEach((m) => {
         if (m?.language) {
-          // Normalize to OCA code (en → eng, fr → fra)
           const normalizedCode = normalizeToOCACode(m.language);
           
           localized[normalizedCode] = {
-            name: m.name || schemaId,
-            description: m.description || ""
+            name: normalizeEscapedQuotes(m.name || schemaId),
+            description: normalizeEscapedQuotes(m.description || "")
           };
           languageCodesSet.add(normalizedCode);
         }
       });
     }
     
-    // Fallback to default English if no meta overlays
     if (!languageCodesSet.has(LanguageConstants.DEFAULT_OCA_CODE)) {
       localized[LanguageConstants.DEFAULT_OCA_CODE] = {
-        name: schemaData.schemaName || schemaId,
-        description: schemaData.schemaDescription || ""
+        name: normalizeEscapedQuotes(schemaData.schemaName || schemaId),
+        description: normalizeEscapedQuotes(schemaData.schemaDescription || "")
       };
       languageCodesSet.add(LanguageConstants.DEFAULT_OCA_CODE);
     }

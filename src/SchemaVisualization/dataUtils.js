@@ -3,6 +3,7 @@
  */
 
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "../utils/packageUtils";
+import { normalizeEscapedQuotes } from "../utils/helpers";
 
 /**
  * Universal truncation function for all text in the application
@@ -204,7 +205,7 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
       bundle?.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
       bundle?.overlays?.meta?.[0];
     const schemaName = metaOverlay?.name || bundleId || "root";
-    const schemaDescription = metaOverlay?.description || "";
+    const schemaDescription = normalizeEscapedQuotes(metaOverlay?.description || "");
 
     return {
       schemaId: bundleId || "root",
@@ -227,7 +228,7 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
     return {
       schemaId: bundleId || "root",
       schemaName: rootMetaOverlay.name,
-      schemaDescription: rootMetaOverlay.description || "",
+      schemaDescription: normalizeEscapedQuotes(rootMetaOverlay.description || ""),
       classification: bundle?.capture_base?.classification || null,
       attributes: bundle?.capture_base?.attributes || {},
       overlays: bundle?.overlays || {},
@@ -251,12 +252,11 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
   }
 
   if (dependency) {
-    // Get the schema name and description from meta overlays
     const metaOverlay =
       dependency.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
       dependency.overlays?.meta?.[0];
     const schemaName = metaOverlay?.name || dependency.d;
-    const schemaDescription = metaOverlay?.description || "";
+    const schemaDescription = normalizeEscapedQuotes(metaOverlay?.description || "");
 
     return {
       schemaId: dependency.d,

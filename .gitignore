@@ -27,3 +27,4 @@ yarn-error.log*
 .env
 
 .github/copilot-instructions.md
+AGENTS.md

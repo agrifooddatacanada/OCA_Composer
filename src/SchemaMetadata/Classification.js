@@ -33,9 +33,14 @@ const Classification = () => {
       // Prefer group code if group is selected, otherwise use division code
       const code = (divisionGroup.group && groupCodes[divisionGroup.group]) || 
                    divisionCodes[divisionGroup.division];
-      if (code && schemaState?.metadata?.classification !== code) {
+      
+      const st = getSchema() || {};
+      const prevMeta = st.metadata || {};
+      
+      if (code && prevMeta.classification !== code) {
         updateSchema({
           metadata: {
+            ...prevMeta,
             classification: code
           }
         });
