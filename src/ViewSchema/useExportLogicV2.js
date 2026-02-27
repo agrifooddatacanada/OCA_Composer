@@ -25,6 +25,7 @@ import {
   DECIMAL_SEPARATOR,
   // FIELD_FILE_DELIMITER_OVERLAY,
   FILE_DELIMITER,
+  ARRAY_DELIMITER,
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -58,7 +59,8 @@ const useExportLogicV2 = () => {
     attributeFramingRowData,
     formBuilderPages,
     decimalSeparator,
-    fileDelimiterData
+    fileDelimiterData,
+    arrayDelimiter
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -508,6 +510,12 @@ const useExportLogicV2 = () => {
             escape_char: fileDelimiterData.escapeChar,
             line_terminator: fileDelimiterData.lineTerminator,
             data_start_row: fileDelimiterData.dataStartRow
+          }
+        }),
+        ...(overlay[FIELD_DATA_SEPARATOR_OVERLAY].selected && {
+          array_delimiter_overlay: {
+            type: ARRAY_DELIMITER,
+            delimiter: arrayDelimiter
           }
         }),
         ...(sensitiveAttributes.length > 0 && {

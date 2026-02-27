@@ -22,7 +22,8 @@ import {
   RANGE,
   SSSOM_MAPPER_API_URL,
   DECIMAL_SEPARATOR,
-  FILE_DELIMITER
+  FILE_DELIMITER,
+  ARRAY_DELIMITER
 } from "./constants";
 
 import { convertToFormInformationOverlay } from "../Overlays/FormBuilder/utils/convertToFormInformation";
@@ -338,6 +339,15 @@ export const hasFileDelimiterOverlay = (OCAPackage) => {
   return Boolean(
     Object.keys(OCAPackage?.extensions || {}).length > 0 &&
       OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[FILE_DELIMITER]
+  );
+};
+
+export const hasArrayDelimiterOverlay = (OCAPackage) => {
+  // For now, use the capture base SAID of the main/top-level bundle
+  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return Boolean(
+    Object.keys(OCAPackage?.extensions || {}).length > 0 &&
+      OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[ARRAY_DELIMITER]
   );
 };
 

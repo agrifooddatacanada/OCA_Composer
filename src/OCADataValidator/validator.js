@@ -498,7 +498,10 @@ export default class OCABundle {
         }
 
         const dataEntryWithSpaces = String(dataset[attr][i]);
-        const dataEntry = dataEntryWithSpaces.replace(/,\s*/g, ",");
+        const dataEntry = dataEntryWithSpaces
+          .replace(/,\s*/g, ",")
+          .replace(/;\s*/g, ";")
+          .replace(/\|\s*/g, "|");
 
         if (attrType.includes("Array") || Array.isArray(attrType)) {
           const dataArr = this.processEntries(dataEntry);

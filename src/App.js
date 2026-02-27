@@ -104,6 +104,7 @@ function App() {
     lineTerminator: "lf",
     dataStartRow: 1
   });
+  const [arrayDelimiter, setArrayDelimiter] = useState(",");
 
   // Attribute framing
   const [attributeFramingRowData, setAttributeFramingRowData] = useState([]);
@@ -834,7 +835,9 @@ function App() {
             decimalSeparator,
             setDecimalSeparator,
             fileDelimiterData,
-            setFileDelimiterData
+            setFileDelimiterData,
+            arrayDelimiter,
+            setArrayDelimiter
           }}
         >
           <Box

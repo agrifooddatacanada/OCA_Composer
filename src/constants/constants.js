@@ -41,8 +41,6 @@ export const overlayItems = {
   [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
   [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false },
   [FIELD_FORM_INFORMATION_OVERLAY]: { feature: "Add Form Information", selected: false },
-  // [FIELD_DECIMAL_SEPARATOR_OVERLAY]: { feature: "Decimal Separator", selected: false },
-  // [FIELD_FILE_DELIMITER_OVERLAY]: { feature: "File Delimiter", selected: false },
   [FIELD_DATA_SEPARATOR_OVERLAY]: { feature: "Data Separator", selected: false }
 };
 
@@ -522,6 +520,9 @@ export const DECIMAL_SEPARATOR = "decimal_separator";
 
 // File Delimiter Overlay
 export const FILE_DELIMITER = "file_delimiter";
+
+// Array Delimiter Overlay
+export const ARRAY_DELIMITER = "array_delimiter";
 
 export const overlays = [
   CHARACTER_ENCODING,

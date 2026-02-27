@@ -47,7 +47,9 @@ const DataSeparator = () => {
     decimalSeparator,
     setDecimalSeparator,
     fileDelimiterData,
-    setFileDelimiterData
+    setFileDelimiterData,
+    arrayDelimiter,
+    setArrayDelimiter
   } = useContext(Context);
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -67,7 +69,6 @@ const DataSeparator = () => {
   const [escapeChar, setEscapeChar] = useState(fileDelimiterData.escapeChar);
   const [lineTerminator, setLineTerminator] = useState(fileDelimiterData.lineTerminator);
   const [dataStartRow, setDataStartRow] = useState(fileDelimiterData.dataStartRow);
-  const [arrayDelimiter, setArrayDelimiter] = useState(";");
 
   // Field delimiter options: value -> character used for decimal-separator exclusion
   const FIELD_DELIMITER_OPTIONS = useMemo(
