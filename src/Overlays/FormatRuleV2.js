@@ -54,6 +54,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   useEffect(() => {
     if (!schemaState?.attributes) {
       setGridRowData([]);
+      setLoading(false);
       return;
     }
 
@@ -81,19 +82,13 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     });
 
     setGridRowData(initialData);
+    setLoading(false);
   }, [schemaState?.attributes, schemaState?.attributeFormats]); // Re-init when attributes or formats change
   
   // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(() => 
     getRangeData() || []
   , [getRangeData, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
-
-  // Set loading false when we have schema state
-  useEffect(() => {
-    if (schemaState && schemaState.initialized) {
-      setLoading(false);
-    }
-  }, [schemaState]);
 
   const handleSave = useCallback(() => {
     if (!gridRef.current) {
@@ -257,7 +252,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   );
 
   const onGridReady = useCallback(() => {
-    setLoading(false);
   }, []);
 
   const onCellValueChanged = useCallback((params) => {
@@ -293,7 +287,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       pageBack={() => setShowDeleteConfirmation(true)}
       backText="Remove overlay"
     >
-      {loading && gridRowData?.length > 40 && <Loading />}
+      {loading && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={deleteHandler}
