@@ -191,26 +191,16 @@ const Cardinality = () => {
   }, []);
 
   const handleDeleteRow = useCallback((params) => {
-    // Update the grid data immediately
+    setSelectedCellData({ ...params?.data, rowIndex: params?.rowIndex });
     params.node.updateData({
       ...params.node.data,
       EntryLimit: ""
     });
-    
-    // Save the changes to context
-    const updatedData = cardinalityRef.current.api
-      .getRenderedNodes()
-      ?.map((node) => node?.data);
-    setCardinalityData(updatedData);
-    
-    // Clear the form if this row was selected
-    if (selectedCellData && selectedCellData.Attribute === params.node.data.Attribute) {
-      setSelectedCellData(null);
-      setExactValue("");
-      setMinValue("");
-      setMaxValue("");
-    }
-  }, [setCardinalityData, selectedCellData]);
+    cardinalityRef.current.api.redrawRows({ rowNodes: [params.node] });
+    setExactValue("");
+    setMinValue("");
+    setMaxValue("");
+  }, []);
 
   const handleValueChange = useCallback((value, type) => {
     switch (type) {
@@ -276,17 +266,6 @@ const Cardinality = () => {
         EntryLimit: exactValue || `${minValue}-${maxValue}`
       });
       
-      // Save the updated data to schema state
-      if (cardinalityRef.current) {
-        const newData = [];
-        cardinalityRef.current.api.forEachNode((node) => {
-          if (node.data) {
-            newData.push(node.data);
-          }
-        });
-        setCardinalityData(newData);
-      }
-      
       if (minValue !== "" && maxValue !== "") {
         setExactValue("");
       } else if (minValue === "" && maxValue === "" && exactValue === "") {
@@ -296,7 +275,7 @@ const Cardinality = () => {
         setMaxValue("");
       }
     }
-  }, [exactValue, isNotInteger, maxValue, minValue, selectedCellData, t, setCardinalityData]);
+  }, [exactValue, isNotInteger, maxValue, minValue, selectedCellData, t]);
 
   const onGridReady = useCallback(() => {
     setLoading(false);
@@ -337,6 +316,17 @@ const Cardinality = () => {
           helpText: t(
             "Applies only to array DatatTypes. Describes the number of occurrences of an element"
           )
+        },
+        valueFormatter: (params) => {
+          const value = params.value;
+          if (!value) return "";
+          if (value.includes("-")) {
+            const [min, max] = value.split("-").map((v) => v.trim());
+            if (min && max) return `[${min}, ${max}]`;
+            if (min) return `[${min}, ∞)`;
+            if (max) return `[0, ${max}]`;
+          }
+          return value;
         }
       },
       {
@@ -502,9 +492,6 @@ const Cardinality = () => {
               >
                 {t("Apply")}
               </Button>
-              <Typography style={{ marginTop: "20px", color: "red" }}>
-                {t("NOTE: Please leave blank to not specify a min or max value")}
-              </Typography>
             </>
           )}
         </Box>
