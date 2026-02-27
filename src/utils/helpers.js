@@ -1005,7 +1005,7 @@ export const getRangeOverlayDisabledReason = (
   });
   
   if (!hasAttributesWithFormatRules) {
-    return i18next.t("No attributes available for range overlay");
+    return i18next.t("A format rule must be applied to at least one numeric, date, or time attribute before a range rule can be added.");
   }
   
   return "";

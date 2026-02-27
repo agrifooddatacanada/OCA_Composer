@@ -33,8 +33,7 @@ const Range = forwardRef((props, ref) => {
   
   const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_RANGE_OVERLAY);
-  
-  // Get range data using computed getter (filters to Numeric/DateTime with format rules)
+
   const rangeRowData = useMemo(() => {
     return getRangeData() || [];
   }, [getRangeData, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);

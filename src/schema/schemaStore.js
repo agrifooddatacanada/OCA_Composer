@@ -316,13 +316,18 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     const attributeFormats = state?.attributeFormats || {};
 
     return attributes
-      .filter((attr) => attr.Type === "Numeric" || attr.Type === "DateTime")
+      .filter((attr) => {
+        const hasCorrectType = attr.Type === "Numeric" || attr.Type === "DateTime";
+        const formatRule = attributeFormats[attr.Attribute];
+        const hasFormatRule = formatRule && String(formatRule).trim() !== "";
+        return hasCorrectType && hasFormatRule;
+      })
       .map((attr) => {
         const range = attributeRanges[attr.Attribute] || {};
         return {
           Attribute: attr.Attribute,
           Type: attr.Type,
-          FormatRule: attributeFormats[attr.Attribute] || "",
+          FormatRule: attributeFormats[attr.Attribute],
           LowerBound: range.lower || "",
           UpperBound: range.upper || "",
           LowerInclusive: range.lower_inclusive ?? false,
