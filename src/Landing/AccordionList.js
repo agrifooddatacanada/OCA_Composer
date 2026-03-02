@@ -79,8 +79,8 @@ const AccordionList = () => {
 
   const navigateToViewPage = () => {
     setIsZip(true);
-    setCurrentPage("View");
     navigate("/start");
+    setTimeout(() => setCurrentPage("View"), 0);
   };
 
   const navigateToPreviewSchema = () => {

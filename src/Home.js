@@ -56,7 +56,7 @@ const Home = ({
     }
   }, [pkgUpload, currentSchemaId, switchToSchema]);
 
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep, setActiveStep] = useState(-1);
   const [steps, setSteps] = useState([
     { label: "Schema Metadata", page: "Metadata" },
     { label: "Attribute Details", page: "Details" },
@@ -257,14 +257,12 @@ const Home = ({
   }, [currentPage, steps]);
 
   // Ensure Entry Codes step reflects the currently active schema (root or dependency)
-  const prevShouldShowRef = React.useRef(null); // null = uninitialized
+  const prevShouldShowRef = React.useRef(null);
   useEffect(() => {
-    // Use getSchema() so manual-creation schemas (no currentSchemaId) are handled correctly
     const state = getSchema() || {};
     const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
     const attributesWithLists = state?.attributesWithLists || [];
 
-    // Check if any attributes are marked as lists
     const hasList = Array.isArray(attributesWithLists) && attributesWithLists.length > 0;
 
     const hasEntryCodes = state?.entryCodes && Object.keys(state.entryCodes).length > 0;
@@ -272,15 +270,9 @@ const Home = ({
       (a) => typeof a?.Type === "string" && a.Type.startsWith("Array[")
     );
 
-    // Show Entry Codes step if:
-    // - Any attributes are marked as lists (attributesWithLists has items)
-    // - Entry codes exist
-    // - Array types exist (fallback for imports) BUT only if attributesWithLists is uninitialized
-    //   (once user starts toggling List checkboxes, trust attributesWithLists over Type field)
     const isAttributesWithListsInitialized = state?.attributesWithLists !== undefined;
     const shouldShow = hasList || hasEntryCodes || (!isAttributesWithListsInitialized && hasArrayTypes);
 
-    // Initialize on first run or update if visibility changed
     if (prevShouldShowRef.current === null || shouldShow !== prevShouldShowRef.current) {
       
       if (shouldShow) {

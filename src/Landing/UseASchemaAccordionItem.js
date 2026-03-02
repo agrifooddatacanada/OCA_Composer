@@ -58,8 +58,8 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   };
 
   const navigateToViewPage = () => {
-    setCurrentPage("View");
     navigate("/start");
+    setTimeout(() => setCurrentPage("View"), 0);
   };
 
   const setFile = (acceptedFiles) => {
