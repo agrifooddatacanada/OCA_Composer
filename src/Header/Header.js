@@ -245,13 +245,7 @@ export default function Header({ currentPage }) {
           </Box>
         ) : (
           <>
-            <Link
-              to="/"
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.href = "/";
-              }}
-            >
+            <Link to="/">
               <img src={logoSE} alt="Semantic Engine" style={{ maxWidth: "100px" }} />
             </Link>
             <div
