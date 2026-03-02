@@ -24,8 +24,10 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 import { hasMultipleSchemas } from "../utils/schemaUtils";
+import { getPackageBundle, getPackageBundleId } from "../utils/packageUtils";
+import { VerifyOcaPackage } from "oca_package";
 
-const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
+const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme } = useContext(Context);
   const { pkgUpload } = useMultiSchema();
@@ -68,7 +70,25 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
+  const isMultiSchema = hasMultipleSchemas(pkgUpload);
+  
+  let isInvalidOcaPackage = false;
+  if (pkgUpload) {
+    // Only verify Format 3 OCA packages (those with top-level d field)
+    // Format 2 packages (draft format) don't have this structure and shouldn't be verified
+    const hasTopLevelDigest = pkgUpload.d;
+
+    if (hasTopLevelDigest) {
+      try {
+        isInvalidOcaPackage = !VerifyOcaPackage(pkgUpload, pkgUpload.d);
+      } catch (e) {
+        isInvalidOcaPackage = false;
+      }
+    }
+  }
+  
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
+  const disableMultiSchemaTools = disableAdditionalSchemaTools || isMultiSchema;
 
   const handleClickMarkdownReadme = () => {
     const jsonSchemaIsUploaded = Object.keys(jsonToReadme).length > 0;
@@ -184,7 +204,7 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
             color="navButton"
             onClick={handleClickMarkdownReadme}
             sx={buttonStyles}
-            disabled={disableAdditionalSchemaTools}
+            disabled={disableMultiSchemaTools}
           >
             {t("Generate Markdown Readme")}
           </Button>

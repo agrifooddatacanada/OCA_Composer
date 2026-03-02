@@ -14,6 +14,7 @@ import Drop from "../StartSchema/Drop";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import useOCAExport from "../hooks/useOCAExport";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
@@ -40,8 +41,9 @@ const AccordionList = () => {
   const isMobile = useMediaQuery("(max-width: 736px)");
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, pkgUpload, schemaDescription } =
+  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, schemaDescription } =
     useContext(Context);
+  const { pkgUpload } = useMultiSchema();
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
@@ -111,22 +113,20 @@ const AccordionList = () => {
   let isInvalidOcaPackage = false;
 
   if (pkgUpload) {
-    // Only verify if this is actually an OCA package with proper structure
-    const hasOcaStructure = getPackageBundle(pkgUpload);
-    const digest = pkgUpload.d || getPackageBundleId(pkgUpload);
+    // Only verify Format 3 OCA packages (those with top-level d field)
+    // Format 2 packages (draft format) don't have this structure and shouldn't be verified
+    const hasTopLevelDigest = pkgUpload.d;
 
-    if (hasOcaStructure && digest) {
+    if (hasTopLevelDigest) {
       try {
-        isInvalidOcaPackage = !VerifyOcaPackage(pkgUpload, digest);
+        isInvalidOcaPackage = !VerifyOcaPackage(pkgUpload, pkgUpload.d);
       } catch (e) {
         isInvalidOcaPackage = false; // Don't block UI on verification errors
       }
-    } else {
-      // Not a verifiable OCA package, treat as valid
-      isInvalidOcaPackage = false;
     }
   }
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
+  const disableMultiSchemaTools = disableAdditionalSchemaTools || isMultiSchema;
 
   return (
     <Box
@@ -161,7 +161,7 @@ const AccordionList = () => {
           <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
           <CollaborateOnASchema navigateToStartPage={navigateToStartPage} />
           <StoreASchemaAccordionItem />
-          <UseASchemaAccordionItem isInvalidOcaPackage={isInvalidOcaPackage} />
+          <UseASchemaAccordionItem />
           <UseASchemaWithDataAccordionItem isInvalidOcaPackage={isInvalidOcaPackage} />
           {/* <OCADataValidatorItem /> */}
         </Box>
@@ -287,13 +287,13 @@ const AccordionList = () => {
                 border: `1px solid ${CustomPalette.PRIMARY}`
               }}
             >
-              <CatalogueInfo isDisabled={disableAdditionalSchemaTools} />
+              <CatalogueInfo isDisabled={disableMultiSchemaTools} />
               <Button
                 variant="contained"
                 color="navButton"
                 onClick={handleClickMarkdownReadme}
                 sx={{ ...buttonStyles, marginTop: "12px" }}
-                disabled={disableAdditionalSchemaTools}
+                disabled={disableMultiSchemaTools}
               >
                 {t("Generate Markdown Readme")}
               </Button>
@@ -301,7 +301,7 @@ const AccordionList = () => {
             <GenerateDataEntryExcel
               rawFile={rawFile}
               setLoading={setLoading}
-              disableButtonCheck={disableAdditionalSchemaTools || isMultiSchema}
+              disableButtonCheck={disableMultiSchemaTools}
               isMultiSchema={isMultiSchema}
             />
             <Tooltip
@@ -318,7 +318,7 @@ const AccordionList = () => {
                     ":hover": { backgroundColor: CustomPalette.SECONDARY },
                     width: "100%"
                   }}
-                  disabled={disableAdditionalSchemaTools || isMultiSchema}
+                  disabled={disableMultiSchemaTools}
                 >
                   {t("Enter/Verify Data in Webpage")}
                 </Button>
