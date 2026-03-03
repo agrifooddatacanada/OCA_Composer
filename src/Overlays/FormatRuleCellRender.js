@@ -23,15 +23,22 @@ import { normalizeEscapedQuotes } from "../utils/helpers";
 export const TrashCanButton = memo(
   // eslint-disable-next-line no-unused-vars
   forwardRef((props, ref) => {
-    const { node, data, onRefresh } = props;
+    const { node, data, onRefresh, api } = props;
     const onClick = useCallback(() => {
       node.updateData({
         ...data,
         "Format Rule": "",
         [CUSTOM_FORMAT_RULE]: ""
       });
+      if (api) {
+        api.refreshCells({
+          force: true,
+          rowNodes: [node],
+          columns: ["Format Rule"]
+        });
+      }
       onRefresh?.();
-    }, [node, data, onRefresh]);
+    }, [node, data, onRefresh, api]);
 
     return (
       <IconButton
