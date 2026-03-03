@@ -464,7 +464,7 @@ export default class OCABundle {
             } else {
               rslt.errs[attr][i] = {
                 type: "FE",
-                detail: `${FORMAT_ERR_MSG}`
+                detail: `${FORMAT_ERR_MSG} Format rule for this column is ${attrFormat}.`
               };
             }
           }
