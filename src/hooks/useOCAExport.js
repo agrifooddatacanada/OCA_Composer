@@ -902,9 +902,9 @@ const useOCAExport = () => {
         console.warn("Could not generate README:", readmeError);
       }
 
-      // Get schema name for filenames
-      const currentState = getSchema();
-      const schemaNameForFile = currentState?.metadata?.name || currentState?.metadata?.localized?.eng?.name || null;
+      // Get schema name for filenames - always use root schema
+      const rootState = getSchemaById(rootSchemaId);
+      const schemaNameForFile = rootState?.metadata?.name || rootState?.metadata?.localized?.eng?.name || null;
 
       // Download files
       downloadJsonFile(ocaPackage, getDescriptiveFileName(schemaNameForFile, "OCA_package.json"));
