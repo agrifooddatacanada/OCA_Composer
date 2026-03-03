@@ -92,7 +92,6 @@ export const ListRenderer = memo((props) => {
     return <Box>Not a List</Box>;
   }
 
-  // Render plain text with single-line ellipsis and a tooltip for full content
   return (
     <Tooltip title={listText} placement="top" arrow>
       <Box
@@ -100,7 +99,8 @@ export const ListRenderer = memo((props) => {
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
-          width: "100%"
+          width: "100%",
+          textAlign: "center"
         }}
       >
         {listText}
