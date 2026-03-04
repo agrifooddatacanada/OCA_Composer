@@ -64,7 +64,6 @@ function App() {
     group: ""
   });
   const [formPlaceholdersByLanguage, setFormPlaceholdersByLanguage] = useState({});
-  const [showIntroCard, setShowIntroCard] = useState(true);
   const [customIsos, setCustomIsos] = useState({});
   const [currentSchemaId, setCurrentSchemaId] = useState(null);
   const [editingSchemaId, setEditingSchemaId] = useState(null);
@@ -496,8 +495,6 @@ function App() {
                         setCurrentPage={setCurrentPage}
                         pageForward={pageForward}
                         pageBack={pageBack}
-                        showIntroCard={showIntroCard}
-                        setShowIntroCard={setShowIntroCard}
                       />
                     }
                   />

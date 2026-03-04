@@ -15,15 +15,12 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { langCodeOCAFromName } from "../utils/languageUtils";
 import { removeSpacesFromObjectOfObjects } from "../utils/stringUtils";
-import IntroCard from "./IntroCard";
 import IsoCard from "./IsoCard";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 
 const SchemaMetadata = forwardRef(({
   pageBack,
-  pageForward,
-  showIntroCard,
-  setShowIntroCard
+  pageForward
 }, ref) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -302,7 +299,6 @@ const SchemaMetadata = forwardRef(({
           }}
         />
       )}
-      {showIntroCard && <IntroCard setShowIntroCard={setShowIntroCard} />}
       {showIsoInput && (
         <IsoCard
           setShowIsoInput={setShowIsoInput}

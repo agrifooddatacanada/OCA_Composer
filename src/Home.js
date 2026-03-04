@@ -33,9 +33,7 @@ const Home = ({
   currentPage,
   setCurrentPage,
   pageForward: appPageForward,
-  pageBack: appPageBack,
-  showIntroCard,
-  setShowIntroCard
+  pageBack: appPageBack
 }) => {
   const { 
     currentSchemaId,
@@ -307,8 +305,6 @@ const Home = ({
             ref={schemaMetadataRef}
             pageBack={pageBack}
             pageForward={pageForward}
-            showIntroCard={showIntroCard}
-            setShowIntroCard={setShowIntroCard}
           />
         )}
         {currentPage === "Details" && (
