@@ -72,10 +72,8 @@ const AccordionList = () => {
 
   const navigateToEditSchema = () => {
     setIsZip(false);
-    // Multi-schema: show visualization to let user choose which schema to edit
-    // Single schema: go directly to editing
-    const targetPage = hasMultipleSchemas(pkgUpload) ? "View" : "Metadata";
-    setCurrentPage(targetPage);
+    // Always go to Schema Metadata page for editing
+    setCurrentPage("Metadata");
     navigate("/start");
   };
 
