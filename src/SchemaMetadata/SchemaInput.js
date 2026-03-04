@@ -167,7 +167,7 @@ export default function SchemaInput({
               wordBreak: "break-word"
             }}
           >
-            {language}
+            {t(language, { defaultValue: language })}
           </Typography>
           {languages.length > 1 && (
             <Box
@@ -205,7 +205,7 @@ export default function SchemaInput({
         >
           <Box>
             <Typography variant="body2" sx={{ fontStyle: "italic" }}>
-              ISO Code:{" "}
+              {t("ISO Code")}:{" "}
               {langTwoLettersFromName(language) ||
                 customIsos[language.toLowerCase()]}
             </Typography>

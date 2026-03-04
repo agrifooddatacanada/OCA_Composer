@@ -168,7 +168,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
   return (
     <DropdownMenuList
       handleKeyDown={handleKeyDown}
-      type={type}
+      type={t(type, { defaultValue: type })}
       handleChange={handleChange}
       dropRefs={dropRefs.current[index]}
       handleClick={handleClick}

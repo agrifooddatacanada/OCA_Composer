@@ -200,7 +200,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         effectiveAttributesList.forEach((item) => {
           let listDisplay = attributeRowData.find((obj) => obj.Attribute === item)?.List;
           if (!listDisplay) {
-            listDisplay = "Not a List";
+            listDisplay = t("Not a List");
           } else {
             const listDisplayArray = [];
             stableEntryCodes[item]?.forEach((row) => {
@@ -209,7 +209,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
               if (value) listDisplayArray.push(value);
             });
             const listDisplayString = listDisplayArray.join(" | ");
-            listDisplay = listDisplayString || "Not a List";
+            listDisplay = listDisplayString || t("Not a List");
           }
           
           const overlaylangCodeOCA = langCodeOCAFromName(language);
@@ -239,7 +239,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           
           let listDisplay = item.List;
           if (!listDisplay) {
-            listDisplay = "Not a List";
+            listDisplay = t("Not a List");
           } else {
             const listDisplayArray = [];
             stableEntryCodes[item.Attribute]?.forEach((row) => {
@@ -248,7 +248,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
               if (value) listDisplayArray.push(value);
             });
             const listDisplayString = listDisplayArray.join(" | ");
-            listDisplay = listDisplayString || "Not a List";
+            listDisplay = listDisplayString || t("Not a List");
           }
 
           newLanguageList.push({

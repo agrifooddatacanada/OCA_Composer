@@ -102,7 +102,7 @@ const LanguageHeader = ({ languages, language }) => {
       )}
       <div className="ag-header-cell-label">
         <Typography noWrap variant="subtitle2" sx={{ textTransform: "capitalize" }}>
-          {language}
+          {t(language, { defaultValue: language })}
         </Typography>
       </div>
     </div>

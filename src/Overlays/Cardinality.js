@@ -393,7 +393,7 @@ const Cardinality = () => {
               marginBottom: "14px"
             }}
           >
-            {t("Entry limits can only be created for attributes with an array DataType")}
+            {t("Entry limits can only be created for attributes with an array data type")}
           </Typography>
           <style>{gridStyles}</style>
           <AgGridReact

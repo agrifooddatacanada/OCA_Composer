@@ -27,17 +27,20 @@ import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 
 import "ag-grid-community/styles/ag-theme-balham.css";
 
-const findDescription = (formatText, attributeType) => {
+const findDescription = (formatText, attributeType, t = null) => {
   if (!formatText) return "";
-  // Normalize escaped quotes (OCA often escapes "). This mirrors behavior in FormatRuleCellRender
   const normalized = String(formatText).replace(/\\"/g, '"');
-  if (attributeType.includes("Date")) return formatCodeDateDescription[normalized] || "";
-  if (attributeType.includes("Numeric"))
-    return formatCodeNumericDescription[normalized] || "";
-  if (attributeType.includes("Binary"))
-    return formatCodeBinaryDescription[normalized] || "";
-  if (attributeType.includes("Text")) return formatCodeTextDescription[normalized] || "";
-  return normalized;
+  let description = "";
+  if (attributeType.includes("Date")) description = formatCodeDateDescription[normalized] || "";
+  else if (attributeType.includes("Numeric")) description = formatCodeNumericDescription[normalized] || "";
+  else if (attributeType.includes("Binary")) description = formatCodeBinaryDescription[normalized] || "";
+  else if (attributeType.includes("Text")) description = formatCodeTextDescription[normalized] || "";
+  else description = normalized;
+  
+  if (description && t) {
+    return t(description, { defaultValue: description });
+  }
+  return description;
 };
 
 const PLACEHOLDER_EDITABLE_TYPES = ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"];
@@ -508,8 +511,8 @@ const FormInformation = () => {
             }
           }}
         >
-          <Typography noWrap={true} variant="button">
-            {language}
+          <Typography noWrap variant="button">
+            {t(language, { defaultValue: language })}
           </Typography>
         </Button>
       );
@@ -641,7 +644,7 @@ const FormInformation = () => {
             (rule) => rule.Attribute === attributeName
           );
           const formatText = formatRule?.FormatText || "";
-          const description = findDescription(formatText, attributeType);
+          const description = findDescription(formatText, attributeType, t);
           if (!formatText || !description)
             return (
               <span style={{ color: "#999", fontStyle: "italic" }}>

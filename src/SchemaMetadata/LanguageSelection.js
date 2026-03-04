@@ -1,5 +1,6 @@
 import { Box, Button, Alert } from "@mui/material";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import { removeSpacesFromString } from "../utils/stringUtils";
 import { allLanguagesWithCodesArray } from "../constants/isoCodes";
@@ -36,6 +37,7 @@ export default function LanguageSelection({
   schemaDescription,
   setSchemaDescription
 }) {
+  const { t } = useTranslation();
   // const [newLanguage, setNewLanguage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const toTitleCase = (str) =>
@@ -140,7 +142,7 @@ export default function LanguageSelection({
         }
       }}
     >
-      {item}
+      {t(item, { defaultValue: item })}
     </Button>
   ));
   return (

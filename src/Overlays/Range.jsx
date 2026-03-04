@@ -84,7 +84,7 @@ const Range = forwardRef((props, ref) => {
           helpText: t("The format rule that is applied to the attribute")
         },
         valueFormatter: (params) =>
-          getFormatRuleDescription(params.data.Type, params.value) || params.value
+          getFormatRuleDescription(params.data.Type, params.value, t) || params.value
       },
       {
         field: "LowerBound",

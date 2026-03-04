@@ -51,18 +51,18 @@ const Classification = () => {
   const divisionsDropdown = useMemo(() => {
     return Object.keys(classification).map((division) => {
       return (
-        <MenuItem sx={{ height: '38px' }} key={division} value={division}>{division}</MenuItem>
+        <MenuItem sx={{ height: '38px' }} key={division} value={division}>{t(division, { defaultValue: division })}</MenuItem>
       );
     });
-  }, []);
+  }, [t]);
 
   const groupsDropdown = useMemo(() => {
     return classification[divisionGroup.division].map((group) => {
       return (
-        <MenuItem sx={{ height: '38px' }} key={group} value={group}>{group}</MenuItem>
+        <MenuItem sx={{ height: '38px' }} key={group} value={group}>{t(group, { defaultValue: group })}</MenuItem>
       );
     });
-  }, [divisionGroup.division]);
+  }, [divisionGroup.division, t]);
 
   return (
     <Box sx={{ textAlign: 'left', marginBottom: '1rem', height: '5rem' }}>

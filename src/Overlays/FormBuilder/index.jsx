@@ -503,8 +503,8 @@ const FormBuilder = () => {
             border: `0.5px solid ${CustomPalette.PRIMARY}`
           }}
         >
-          <Typography noWrap={true} variant="button">
-            {language}
+          <Typography noWrap variant="button">
+            {t(language, { defaultValue: language })}
           </Typography>
         </Button>
       );

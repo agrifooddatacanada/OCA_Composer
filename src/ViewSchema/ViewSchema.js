@@ -192,7 +192,7 @@ export default function ViewSchema({
             }
           }}
         >
-          <Typography variant="button">{minimizedLanguage}</Typography>
+          <Typography variant="button">{t(minimizedLanguage, { defaultValue: minimizedLanguage })}</Typography>
         </Button>
       );
     });

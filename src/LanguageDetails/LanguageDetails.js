@@ -248,7 +248,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
         >
           {" "}
           <Typography noWrap variant="button">
-            {language}
+            {t(language, { defaultValue: language })}
           </Typography>
         </Button>
       );
@@ -311,7 +311,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
               p: 1
             }}
           >
-            Copy Attribute -{">"} Label
+            {t("Copy Attribute -> Label", { defaultValue: "Copy Attribute -> Label" })}
           </Button>
         </Box>
         <Box
