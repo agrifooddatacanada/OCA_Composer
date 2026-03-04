@@ -3,7 +3,7 @@ import { Box, Typography } from "@mui/material";
 import React from "react";
 
 // eslint-disable-next-line arrow-body-style
-const GeneralAnnouncementBanner = ({ message }) => {
+const GeneralAnnouncementBanner = ({ message, children }) => {
   return (
     <Box
       sx={{
@@ -12,7 +12,7 @@ const GeneralAnnouncementBanner = ({ message }) => {
       }}
     >
       <Typography>
-        {message}
+        {children ?? message}
       </Typography>
     </Box>
   );
