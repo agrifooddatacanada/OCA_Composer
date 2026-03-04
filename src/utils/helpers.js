@@ -23,6 +23,31 @@ import {
 import { convertToFormInformationOverlay } from "../Overlays/FormBuilder/utils/convertToFormInformation";
 import ucumUnits from "../constants/ucumUnits";
 
+export const translateDataType = (type, t = null) => {
+  if (!type || !t) return type;
+  
+  const typeMap = {
+    'Text': t('Text'),
+    'Numeric': t('Numeric'),
+    'Boolean': t('Boolean'),
+    'Binary': t('Binary'),
+    'Binaryfile': t('Binaryfile'),
+    'DateTime': t('DateTime'),
+    'Array[Text]': t('Array[Text]'),
+    'Array[Numeric]': t('Array[Numeric]'),
+    'Array[Boolean]': t('Array[Boolean]'),
+    'Array[Binary]': t('Array[Binary]'),
+    'Array[Binaryfile]': t('Array[Binaryfile]'),
+    'Array[DateTime]': t('Array[DateTime]'),
+    'Child Schema': t('Child Schema'),
+    'Array[Child Schema]': t('Array[Child Schema]'),
+    'Placeholder Child Schema': t('Placeholder Child Schema'),
+    'Array[Placeholder Child Schema]': t('Array[Placeholder Child Schema]')
+  };
+  
+  return typeMap[type] || type;
+};
+
 export const getCurrentData = (currentApi, includedError) => {
   const newData = [];
   currentApi.forEachNode((node) => {
@@ -928,11 +953,10 @@ export const escapeForOCAString = (s) => {
   return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'").replace(/-/g, "\\-");
 };
 
-export const getFormatRuleDescription = (attributeType, formatRule) => {
-  // Use centralized normalization for consistent lookup
+export const getFormatRuleDescription = (attributeType, formatRule, t = null) => {
   const normalizedRule = normalizeEscapedQuotes(formatRule);
   
-  return attributeType.includes("Date")
+  let description = attributeType.includes("Date")
     ? formatCodeDateDescription[normalizedRule]
     : attributeType.includes("Numeric")
       ? formatCodeNumericDescription[normalizedRule]
@@ -941,6 +965,11 @@ export const getFormatRuleDescription = (attributeType, formatRule) => {
         : attributeType.includes("Text")
           ? formatCodeTextDescription[normalizedRule]
           : "";
+
+  if (description && t) {
+    return t(description, { defaultValue: description });
+  }
+  return description;
 };
 
 export const shouldDisableRangeOverlay = (

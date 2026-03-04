@@ -87,9 +87,12 @@ const CheckboxRenderer = ({ value }) => {
 };
 
 export const ListRenderer = memo((props) => {
+  const { t } = useTranslation();
   const listText = props?.data?.List;
-  if (!listText || listText === "Not a List") {
-    return <Box>Not a List</Box>;
+  const notAListText = t("Not a List");
+  
+  if (!listText || listText === notAListText) {
+    return <Box>{notAListText}</Box>;
   }
 
   return (
@@ -192,6 +195,28 @@ export default function ViewGrid({
           headerComponentParams: {
             headerText: t("Type"),
             helpText: <TypeTooltip />
+          },
+          valueFormatter: (params) => {
+            const type = params.value;
+            const typeMap = {
+              'Text': t('Text'),
+              'Numeric': t('Numeric'),
+              'Boolean': t('Boolean'),
+              'Binary': t('Binary'),
+              'Binaryfile': t('Binaryfile'),
+              'DateTime': t('DateTime'),
+              'Array[Text]': t('Array[Text]'),
+              'Array[Numeric]': t('Array[Numeric]'),
+              'Array[Boolean]': t('Array[Boolean]'),
+              'Array[Binary]': t('Array[Binary]'),
+              'Array[Binaryfile]': t('Array[Binaryfile]'),
+              'Array[DateTime]': t('Array[DateTime]'),
+              'Child Schema': t('Child Schema'),
+              'Array[Child Schema]': t('Array[Child Schema]'),
+              'Placeholder Child Schema': t('Placeholder Child Schema'),
+              'Array[Placeholder Child Schema]': t('Array[Placeholder Child Schema]')
+            };
+            return typeMap[type] || type;
           }
         },
         {
@@ -305,7 +330,7 @@ export default function ViewGrid({
               feature: overlayKey
             },
             valueFormatter: (params) =>
-              getFormatRuleDescription(params.data.Type, params.value) || params.value
+              getFormatRuleDescription(params.data.Type, params.value, t) || params.value
           });
         } else if (overlayKey === FIELD_UNIT_FRAMING_OVERLAY) {
           let helpText = "";
@@ -402,8 +427,11 @@ export default function ViewGrid({
       item.List =
         item.List && item.List[currentLanguage]
           ? item.List[currentLanguage]
-          : "Not a List";
+          : t("Not a List");
 
+      // Translate Type column value
+      item.Type = item.Type;
+      
       // Get cardinality value from object
       const cardinalityValue = attributeCardinality[item.Attribute];
       if (cardinalityValue) {
@@ -443,7 +471,7 @@ export default function ViewGrid({
     });
 
     setRowData(newRowData);
-  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchema]);
+  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchema, t]);
 
   return (
     <div className="ag-theme-balham" style={{ width: "100%" }}>

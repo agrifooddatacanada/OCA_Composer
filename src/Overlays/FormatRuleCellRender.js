@@ -1,4 +1,5 @@
 import React, { forwardRef, memo, useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { IconButton, MenuItem } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
@@ -59,10 +60,10 @@ export const TrashCanButton = memo(
 export const FormatRuleTypeRenderer = memo(
   // eslint-disable-next-line no-unused-vars
   forwardRef((props, ref) => {
-    const attributeType = props.data?.Type || "Text"; // Default to "Text" if Type is undefined
+    const { t } = useTranslation();
+    const attributeType = props.data?.Type || "Text";
     let selectedOption = [];
 
-    // Handle Array types by extracting the base type
     const baseType = attributeType.includes("Array")
       ? attributeType.replace(/Array\[|\]/g, "")
       : attributeType;
@@ -80,14 +81,11 @@ export const FormatRuleTypeRenderer = memo(
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const handleClick = (e) => {
-      // Check current state dynamically
       const hasCustomFormatRule = Boolean(props.data[CUSTOM_FORMAT_RULE]);
-      // If custom format rule exists, prevent the dropdown from opening
       if (hasCustomFormatRule) {
         e.preventDefault();
         e.stopPropagation();
       }
-      // Otherwise, do nothing - let Material UI's onOpen/onClose handle the state
     };
 
     const findCode = (value) =>
@@ -106,11 +104,9 @@ export const FormatRuleTypeRenderer = memo(
       props.node.updateData({
         ...props.data,
         "Format Rule": newFormatRule,
-        [CUSTOM_FORMAT_RULE]: "" // Clear custom format rule when selecting a built-in rule
+        [CUSTOM_FORMAT_RULE]: ""
       });
-      // Close dropdown immediately
       setIsDropdownOpen(false);
-      // Refresh Custom Format Rule column to update editable state
       if (props.api) {
         props.api.refreshCells({
           force: true,
@@ -118,24 +114,18 @@ export const FormatRuleTypeRenderer = memo(
           columns: [CUSTOM_FORMAT_RULE]
         });
       }
-      // Save to context
       props.onRefresh();
     };
 
     const handleKeyDown = (e) => {
       const keyPressed = e.key;
       if (keyPressed === "Delete" || keyPressed === "Backspace") {
-        // typesObjectRef.current[attributeName] = "";
       }
     };
 
     const findDescription = (value) => {
-      // Remove the escape character for " in regex patterns
-      // OCA file requires " to be escaped, that's why the escape character needs to be added when creating OCA file
-      // However, in other situtations, the escape character is not needed
-      // Normalize escaped quotes in stored regexes
       const formattedValue = normalizeEscapedQuotes(value);
-      return baseType.includes("Date")
+      const description = baseType.includes("Date")
         ? formatCodeDateDescription[formattedValue]
         : baseType.includes("Numeric")
           ? formatCodeNumericDescription[formattedValue]
@@ -144,6 +134,8 @@ export const FormatRuleTypeRenderer = memo(
             : baseType.includes("Text") || baseType === "Text"
               ? formatCodeTextDescription[formattedValue]
               : "";
+      
+      return description ? t(description, { defaultValue: description }) : "";
     };
 
     const typesDisplay = selectedOption.map((value) => (
@@ -152,7 +144,7 @@ export const FormatRuleTypeRenderer = memo(
         value={value}
         sx={{ border: "none", height: "2rem", fontSize: "small" }}
       >
-        {value && <span>{value}</span>}
+        {value && <span>{t(value, { defaultValue: value })}</span>}
       </MenuItem>
     ));
 
