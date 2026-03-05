@@ -25,13 +25,10 @@ import { moveQuestionToPage, moveQuestionToSection, moveSectionBetweenPages, reo
 const FormBuilder = () => {
   const { t } = useTranslation();
   const {
-    formBuilderPages,
-    setFormBuilderPages,
     setCurrentPage,
     setSelectedOverlay
   } = useContext(Context);
 
-  // Get data from MultiSchemaContext
   const {
     getSchema,
     updateSchema,
@@ -40,7 +37,6 @@ const FormBuilder = () => {
   } = useMultiSchema();
   const schemaState = getSchema();
   
-  // Get schema-specific data (not global)
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
   const savedEntryCodes = schemaState?.entryCodes || {};
   const attributesWithLists = schemaState?.attributesWithLists || [];
@@ -50,22 +46,7 @@ const FormBuilder = () => {
   const attributeRowData = schemaState?.attributes || [];
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const FormInformationRowData = schemaState?.FormInformationRowData || [];
-  
-  const setFormInformationRowData = useCallback((updater) => {
-    const newData = typeof updater === 'function'
-      ? updater(FormInformationRowData)
-      : updater;
-    updateSchema({ FormInformationRowData: newData });
-  }, [FormInformationRowData, updateSchema]);
-
-  const setLanAttributeRowData = useCallback((updater) => {
-    const newData = typeof updater === 'function'
-      ? updater(lanAttributeRowData)
-      : updater;
-    updateSchema({ lanAttributeRowData: newData });
-  }, [lanAttributeRowData, updateSchema]);
-
-  
+  const formBuilderPages = schemaState?.formBuilderPages || [];
   const languageIndex = languages.findIndex(
     (item) => langNameFromTwoLetters(i18next.language) === item
   );
@@ -139,10 +120,9 @@ const FormBuilder = () => {
 
   const usedAttributes = useUsedAttributes(pages);
 
-  // Sync pages to persistent state whenever it changes
   useEffect(() => {
-    setFormBuilderPages(pages);
-  }, [pages, setFormBuilderPages]);
+    updateSchema({ formBuilderPages: pages });
+  }, [pages, updateSchema]);
 
   useEffect(() => {
     if (!pages || pages.length === 0) return;
@@ -268,7 +248,8 @@ const FormBuilder = () => {
       q = page?.questions?.[questionIndex];
     }
     if (q?.attribute) {
-      setLanAttributeRowData((prev) => {
+      const newLanData = (() => {
+        const prev = lanAttributeRowData;
         const updated = { ...prev };
         languages.forEach((lang) => {
           const arr = updated[lang] || [];
@@ -282,7 +263,8 @@ const FormBuilder = () => {
           }
         });
         return updated;
-      });
+      })();
+      updateSchema({ lanAttributeRowData: newLanData });
     }
 
     setPages(prev => prev.map((p, i) => {
@@ -389,7 +371,8 @@ const FormBuilder = () => {
       });
     });
     
-    setLanAttributeRowData(prevLanData => {
+    const updatedLanData = (() => {
+      const prevLanData = lanAttributeRowData;
       const updatedLanData = { ...prevLanData };
       
       languages.forEach(lang => {
@@ -432,8 +415,9 @@ const FormBuilder = () => {
       });
       
       return updatedLanData;
-    });
-  }, [pages, languages, setLanAttributeRowData]);
+    })();
+    updateSchema({ lanAttributeRowData: updatedLanData });
+  }, [pages, languages, lanAttributeRowData, updateSchema]);
 
   useEffect(() => {
     syncQuestionFieldsToLanData();
@@ -445,13 +429,12 @@ const FormBuilder = () => {
     const validation = validateForm();
     if (!validation.ok) return;
     
-    // Convert pages to form information format
     const formData = convertToFormInformation(pages);
-    setFormInformationRowData(formData);
+    updateSchema({ FormInformationRowData: formData });
 
     setSelectedOverlay("");
     setCurrentPage("Overlays");
-  }, [validateForm, pages, setFormInformationRowData, setSelectedOverlay, setCurrentPage, languages]);
+  }, [validateForm, pages, updateSchema, setSelectedOverlay, setCurrentPage, languages]);
 
   const handleBack = useCallback(() => {
     setCurrentPage("FormInformation");

@@ -80,6 +80,7 @@ export const createDefaultSchemaState = () => ({
   // Form Information overlay data (per-schema)
   FormInformationRowData: [],
   formPlaceholdersByLanguage: {},  // Placeholder text by language for form fields (parsed from form overlay)
+  formBuilderPages: [],
   // Overlay display data (populated during initialization)
   characterEncodingData: {},  // Object mapping attribute name to encoding
   attributeFormats: {},  // Object mapping attribute name to format rule string

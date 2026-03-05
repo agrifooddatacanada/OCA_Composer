@@ -77,28 +77,6 @@ const FormInformation = () => {
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const FormInformationRowData = schemaState?.FormInformationRowData || [];
   const formPlaceholdersByLanguage = schemaState?.formPlaceholdersByLanguage || {};
-  
-  // Setter wrappers to update MultiSchemaContext
-  const setLanAttributeRowData = useCallback((updater) => {
-    const newData = typeof updater === 'function' 
-      ? updater(lanAttributeRowData) 
-      : updater;
-    updateSchema({ lanAttributeRowData: newData });
-  }, [lanAttributeRowData, updateSchema]);
-
-  const setFormInformationRowData = useCallback((updater) => {
-    const newData = typeof updater === 'function'
-      ? updater(FormInformationRowData)
-      : updater;
-    updateSchema({ FormInformationRowData: newData });
-  }, [FormInformationRowData, updateSchema]);
-
-  const setFormPlaceholdersByLanguage = useCallback((updater) => {
-    const newData = typeof updater === 'function'
-      ? updater(formPlaceholdersByLanguage)
-      : updater;
-    updateSchema({ formPlaceholdersByLanguage: newData });
-  }, [formPlaceholdersByLanguage, updateSchema]);
 
   const gridRef = useRef();
   const refContainer = useRef();
@@ -321,8 +299,9 @@ const FormInformation = () => {
   }, [i18next.language, languages]);
 
   useEffect(() => {
-    setLanAttributeRowData((prevLanData) => {
-      const prev = prevLanData || {};
+    const newLanData = (() => {
+      const prevLanData = lanAttributeRowData || {};
+      const prev = prevLanData;
       const newLan = JSON.parse(JSON.stringify(prev));
       languages.forEach((language) => {
         if (newLan[language]) {
@@ -405,26 +384,23 @@ const FormInformation = () => {
         }
       });
 
-      // Only return a new object if something actually changed to avoid rerender loops
       try {
         if (JSON.stringify(prev) === JSON.stringify(newLan)) {
-          return prevLanData; // unchanged
+          return prevLanData;
         }
       } catch (e) {
-        // fallback: return newLan if compare fails
       }
 
-      // After we update lanAttributeRowData, schedule a refresh of grid cell renderers
       setTimeout(() => {
         try {
           if (gridRef.current?.api) gridRef.current.api.refreshCells({ force: true });
         } catch (e) {
-          // ignore
         }
       }, 40);
 
       return newLan;
-    });
+    })();
+    updateSchema({ lanAttributeRowData: newLanData });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     languages,
@@ -554,9 +530,8 @@ const FormInformation = () => {
             newFormData.push(existingData);
           }
         });
-        setFormInformationRowData(newFormData);
+        updateSchema({ FormInformationRowData: newFormData });
 
-        // Reorder lanAttributeRowData for all languages
         const newLanData = JSON.parse(JSON.stringify(lanAttributeRowData || {}));
         Object.keys(newLanData).forEach((language) => {
           if (newLanData[language] && Array.isArray(newLanData[language])) {
@@ -570,6 +545,7 @@ const FormInformation = () => {
             newLanData[language] = reorderedLangData;
           }
         });
+        updateSchema({ lanAttributeRowData: newLanData });
         
         return {
           attributes: newAttrs,
@@ -582,24 +558,20 @@ const FormInformation = () => {
       currentSchemaId,
       updateSchema,
       FormInformationRowData,
-      setFormInformationRowData,
-      lanAttributeRowData,
-      setLanAttributeRowData
+      lanAttributeRowData
     ]
   );
 
   const onRowDragLeave = useCallback(() => {
-    // Reset to current state when drag is cancelled
     const newFormData = JSON.parse(JSON.stringify(FormInformationRowData));
-    setFormInformationRowData(newFormData);
+    updateSchema({ FormInformationRowData: newFormData });
     const newLanData = JSON.parse(JSON.stringify(lanAttributeRowData || {}));
-    setLanAttributeRowData(newLanData);
+    updateSchema({ lanAttributeRowData: newLanData });
     document.dispatchEvent(new MouseEvent("mouseup"));
   }, [
     FormInformationRowData,
-    setFormInformationRowData,
     lanAttributeRowData,
-    setLanAttributeRowData
+    updateSchema
   ]);
 
   const columnDefs = useMemo(() => {
@@ -716,13 +688,15 @@ const FormInformation = () => {
           const newValue = params.newValue || "";
           params.data.Placeholder = newValue;
 
-          setFormPlaceholdersByLanguage((prev) => {
+          const newFormPlaceholders = (() => {
+            const prev = formPlaceholdersByLanguage || {};
             const next = { ...(prev || {}) };
             const langMap = { ...(next[currentLanguage] || {}) };
             langMap[attr] = newValue;
             next[currentLanguage] = langMap;
             return next;
-          });
+          })();
+          updateSchema({ formPlaceholdersByLanguage: newFormPlaceholders });
           return true;
         },
         valueGetter: (params) => {
@@ -776,9 +750,9 @@ const FormInformation = () => {
       setTimeout(() => setErrorMessage(""), 2500);
       return;
     }
-    if (result.rows) setFormInformationRowData(result.rows);
+    if (result.rows) updateSchema({ FormInformationRowData: result.rows });
     setCurrentPage("FormBuilder");
-  }, [handleSave, setFormInformationRowData, t, validateRows, setCurrentPage]);
+  }, [handleSave, t, validateRows, setCurrentPage, updateSchema]);
 
   const handleBack = useCallback(() => {
     setShowDeleteConfirmation(true);
