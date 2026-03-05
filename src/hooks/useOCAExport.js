@@ -60,8 +60,6 @@ const useOCAExport = () => {
     divisionGroup,
     customIsos,
     overlay,
-    formBuilderPages,
-    // Setters needed for resetToDefaults
     setFileData,
     setIsZip,
     setRawFile,
@@ -581,7 +579,7 @@ const useOCAExport = () => {
       ...(overlaySelections[FIELD_FORM_INFORMATION_OVERLAY]
         ? {
             form_overlay: {
-              form_overlays: getFormInformationInput(formBuilderPages, languages, schemaDescription, bundle.bundle.d)
+              form_overlays: getFormInformationInput(schemaState.formBuilderPages || [], languages, schemaDescription, bundle.bundle.d)
             }
           }
         : {})

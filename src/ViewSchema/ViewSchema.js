@@ -68,11 +68,9 @@ export default function ViewSchema({
     history,
     setHistory,
     zipToReadme,
-    jsonToReadme,
-    formBuilderPages
+    jsonToReadme
   } = useContext(Context);
 
-  // Multi-schema context
   const {
     currentSchemaId,
     switchToSchema,
@@ -373,7 +371,9 @@ export default function ViewSchema({
   const usedAttributesInForm = React.useMemo(() => {
     const used = new Set();
 
-    // Prefer formBuilderPages (created/edited via the Form Builder UI)
+    const schemaState = getSchema();
+    const formBuilderPages = schemaState?.formBuilderPages || [];
+
     if (formBuilderPages && formBuilderPages.length > 0) {
       formBuilderPages.forEach((page) => {
         (page.questions || []).forEach((q) => q?.attribute && used.add(q.attribute));
@@ -403,7 +403,7 @@ export default function ViewSchema({
     }
 
     return used;
-  }, [formBuilderPages, pkgFromState]);
+  }, [getSchema, pkgFromState]);
 
   const moveBackward = () => {
     if (history.length > 1 && history[history.length - 2] === "Landing") {

@@ -63,17 +63,11 @@ function App() {
     division: "",
     group: ""
   });
-  const [formPlaceholdersByLanguage, setFormPlaceholdersByLanguage] = useState({});
   const [customIsos, setCustomIsos] = useState({});
   const [currentSchemaId, setCurrentSchemaId] = useState(null);
   const [editingSchemaId, setEditingSchemaId] = useState(null);
 
-  // Use for Overlays
-  const [characterEncodingRowData, setCharacterEncodingRowData] = useState([]);
-  const [FormInformationRowData, setFormInformationRowData] = useState([]);
-  const [formBuilderPages, setFormBuilderPages] = useState([]);
   const [overlay, setOverlay] = useState(overlayItems);
-  
   const [selectedOverlay, setSelectedOverlay] = useState("");
   const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
   // the current state of units from attributeRowData
@@ -361,8 +355,6 @@ function App() {
               setRawFile,
               divisionGroup,
               setDivisionGroup,
-              formPlaceholdersByLanguage,
-              setFormPlaceholdersByLanguage,
               setCurrentPage,
               history,
               setHistory,
@@ -370,12 +362,6 @@ function App() {
               setCustomIsos,
               isZip,
               setIsZip,
-              characterEncodingRowData,
-              setCharacterEncodingRowData,
-              FormInformationRowData,
-              setFormInformationRowData,
-              formBuilderPages,
-              setFormBuilderPages,
               dataStandardsRowData,
               setDataStandardsRowData,
               overlay,
