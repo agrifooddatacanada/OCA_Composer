@@ -180,6 +180,7 @@ export class OCAParser {
 
     return {
       metadata,
+      captureBaseId,  // Store for form overlay lookup
       attributes: attributesWithLists,  // Always an array, even if empty: []
       // Note: attributesList removed - now computed via getAttributesList() in MultiSchemaContext
       overlays: schemaData.overlays || {},
