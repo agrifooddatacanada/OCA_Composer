@@ -17,6 +17,7 @@ import {
 import { langNameFromTwoLetters, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
 import { searchUnits, normalizeEscapedQuotes } from "./helpers";
+import convertOverlayToFormBuilder from "../Overlays/FormBuilder/utils/convertOverlayToFormBuilder";
 
 /**
  * OCA Package Parser Utility
@@ -140,7 +141,9 @@ export class OCAParser {
       schemaData.overlays, 
       attributesWithLists,
       pkgNormalized,
-      captureBaseId
+      captureBaseId,
+      entryCodes,           // Pass entryCodes for form builder
+      lanAttributeRowData   // Pass lanAttributeRowData for form builder
     );
 
     // Process conformance overlay for Required field in attributes
@@ -180,7 +183,6 @@ export class OCAParser {
 
     return {
       metadata,
-      captureBaseId,  // Store for form overlay lookup
       attributes: attributesWithLists,  // Always an array, even if empty: []
       // Note: attributesList removed - now computed via getAttributesList() in MultiSchemaContext
       overlays: schemaData.overlays || {},
@@ -390,7 +392,7 @@ export class OCAParser {
    * Parse various overlay types into display-friendly arrays
    * @private
    */
-  static _parseOverlayData(overlays, attributes = [], pkgUpload = null, schemaId = null) {
+  static _parseOverlayData(overlays, attributes = [], pkgUpload = null, schemaId = null, entryCodes = {}, lanAttributeRowData = {}) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
@@ -482,6 +484,16 @@ export class OCAParser {
 
     // Parse form overlay placeholders (ADC extension)
     const formPlaceholders = this._parseFormOverlay(pkgUpload, schemaId);
+    
+    // Parse form overlay structure to FormBuilder pages (ADC extension)
+    const formBuilderPages = this._parseFormOverlayStructure(
+      pkgUpload, 
+      schemaId, 
+      attributes,
+      overlays,             // Pass overlays for format rules
+      entryCodes,
+      lanAttributeRowData
+    );
 
     return {
       characterEncodingData,
@@ -492,7 +504,8 @@ export class OCAParser {
       unitData,
       unitFramedData,
       attributeFramingData,
-      formPlaceholdersByLanguage: formPlaceholders
+      formPlaceholdersByLanguage: formPlaceholders,
+      formBuilderPages
     };
   }
 
@@ -567,6 +580,73 @@ export class OCAParser {
     });
 
     return formPlaceholdersByLanguage;
+  }
+
+  /**
+   * Parse form overlay structure to FormBuilder pages from ADC extensions
+   * @private
+   * 
+   * Converts the form overlay structure (pages, sections, questions) into
+   * the internal FormBuilder format during OCA import.
+   * 
+   * @param {Object} pkgUpload - The OCA package
+   * @param {string} schemaId - The capture_base ID to look up extensions
+   * @param {Array} attributes - Parsed attributes array
+   * @param {Object} overlays - Schema overlays for format rules
+   * @param {Object} entryCodes - Parsed entry codes
+   * @param {Object} lanAttributeRowData - Language-specific label data
+   * @returns {Array} FormBuilder pages array
+   */
+  static _parseFormOverlayStructure(pkgUpload, schemaId, attributes, overlays, entryCodes, lanAttributeRowData) {
+    if (!pkgUpload?.extensions?.adc?.[schemaId]?.overlays) {
+      return [];
+    }
+
+    const formOverlayData = pkgUpload.extensions.adc[schemaId].overlays.form_overlay ||
+                           pkgUpload.extensions.adc[schemaId].overlays.form;
+    
+    if (!formOverlayData) {
+      return [];
+    }
+
+    // Get languages from parsed lanAttributeRowData
+    const languagesArray = Object.keys(lanAttributeRowData).length > 0
+      ? Object.keys(lanAttributeRowData)
+      : [LanguageConstants.DEFAULT_LANG_NAME];
+
+    // Build format rule data from overlays
+    const formatRuleRowData = [];
+    if (overlays?.format?.attribute_formats) {
+      attributes.forEach(attr => {
+        const formatRule = overlays.format.attribute_formats[attr.Attribute];
+        formatRuleRowData.push({
+          Attribute: attr.Attribute,
+          Type: attr.Type,
+          "Format Rule": formatRule || "",
+          FormatText: formatRule || ""
+        });
+      });
+    }
+
+    // Get list of attributes with entry codes
+    const attributesWithLists = Object.keys(entryCodes);
+
+    try {
+      const pages = convertOverlayToFormBuilder(
+        formOverlayData,
+        languagesArray,
+        attributes,
+        formatRuleRowData,
+        entryCodes,
+        attributesWithLists,
+        lanAttributeRowData
+      );
+
+      return pages || [];
+    } catch (err) {
+      console.warn("Failed to parse form overlay structure during OCA import:", err);
+      return [];
+    }
   }
 
   /**
