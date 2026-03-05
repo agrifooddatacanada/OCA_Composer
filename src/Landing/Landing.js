@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import React, { useContext, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { CustomPalette } from "../constants/customPalette";
 import QuickStart from "./Quick_Start";
@@ -8,9 +9,12 @@ import AccordionList from "./AccordionList";
 import { Context } from "../App";
 import Footer from "../Footer/Footer";
 import Header from "../Header/Header";
+import GeneralAnnouncementBanner from "./AnnouncementBanner";
+import CustomAnchorLink from "../components/CustomAnchorLink";
 
 const Landing = () => {
   const path = useLocation();
+  const { t } = useTranslation();
   const { setCurrentPage } = useContext(Context);
 
   useEffect(() => {
@@ -21,6 +25,15 @@ const Landing = () => {
 
   return (
     <>
+      <GeneralAnnouncementBanner>
+        {t(
+          "Watch this site - we are adding more content. Soon you will find this page at "
+        )}
+        <CustomAnchorLink
+          link="https://schemas.semanticengine.org"
+          text="schemas.semanticengine.org"
+        />
+      </GeneralAnnouncementBanner>
       <Header currentPage="Landing" />
       <Box
         sx={{
