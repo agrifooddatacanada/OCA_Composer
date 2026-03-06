@@ -5,6 +5,7 @@ import { Box, Tooltip } from "@mui/material";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { greyCellStyle } from "../constants/styles";
+import { measureTextHeight } from "../utils/measureTextLines";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { getListOfSelectedOverlays } from "../utils/overlayUtils";
@@ -127,6 +128,7 @@ export default function ViewGrid({
   
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
+  const gridRef = useRef();
 
   // Extract unit framing metadata from built package (with edits)
   // But the metadata CAN'T be edited so is this pointless?
@@ -140,6 +142,17 @@ export default function ViewGrid({
     }
   }, [setLoading]);
 
+  const getRowHeight = useCallback((params) => {
+    const opts = { compact: true };
+    const attrH = measureTextHeight(params.data?.Attribute || "", 104, opts);
+    const unitH = measureTextHeight(params.data?.Unit || "", 74, opts);
+    const typeH = measureTextHeight(params.data?.Type || "", 104, opts);
+    const labelH = measureTextHeight(params.data?.Label || "", 154, opts);
+    const descH = measureTextHeight(params.data?.Description || "", 334, opts);
+    const maxH = Math.max(attrH, unitH, typeH, labelH, descH);
+    return Math.max(32, maxH + 4);
+  }, []);
+
   useEffect(() => {
     const getColumns = () => {
       
@@ -147,7 +160,7 @@ export default function ViewGrid({
         {
           field: "Attribute",
           headerName: t("Attributes"),
-          autoHeight: true,
+          wrapText: true,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Attributes"),
@@ -178,7 +191,7 @@ export default function ViewGrid({
           field: "Unit",
           headerName: t("Unit"),
           width: 90,
-          autoHeight: true,
+          wrapText: true,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Unit"),
@@ -190,7 +203,7 @@ export default function ViewGrid({
         {
           field: "Type",
           headerName: t("Type"),
-          autoHeight: true,
+          wrapText: true,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Type"),
@@ -221,7 +234,7 @@ export default function ViewGrid({
         },
         {
           field: "Label",
-          autoHeight: true,
+          wrapText: true,
           width: 170,
           headerComponent: CellHeader,
           headerComponentParams: {
@@ -234,7 +247,7 @@ export default function ViewGrid({
           field: "Description",
           flex: 1,
           minWidth: 350,
-          autoHeight: true,
+          wrapText: true,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Description"),
@@ -407,6 +420,15 @@ export default function ViewGrid({
   }, [overlay, t, displayArray, unitFramingOverlay?.framing_metadata]);
 
   useEffect(() => {
+    const api = gridRef.current?.api;
+    if (!api) return;
+    const raf = requestAnimationFrame(() => {
+      api.resetRowHeights();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [currentLanguage]);
+
+  useEffect(() => {
     const newRowData = JSON.parse(JSON.stringify(displayArray));
     const attributeCardinality = schemaState?.attributeCardinality || {};
     const attributeFormats = schemaState?.attributeFormats || {};
@@ -477,11 +499,13 @@ export default function ViewGrid({
     <div className="ag-theme-balham" style={{ width: "100%" }}>
       <style>{gridStyles}</style>
       <AgGridReact
+        ref={gridRef}
         rowData={rowData}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         domLayout="autoHeight"
         onGridReady={onGridReady}
+        getRowHeight={getRowHeight}
       />
     </div>
   );

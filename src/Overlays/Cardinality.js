@@ -32,6 +32,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
+import { measureTextHeight } from "../utils/measureTextLines";
 import CustomPalette from "../constants/customPalette";
 import Loading from "../components/Loading";
 import DeleteConfirmation from "./DeleteConfirmation";
@@ -281,12 +282,20 @@ const Cardinality = () => {
     setLoading(false);
   }, []);
 
+  const getRowHeight = useCallback((params) => {
+    const attrH = measureTextHeight(params.data?.Attribute || "", 144);
+    const labelH = measureTextHeight(params.data?.Label || "", 184);
+    const entryH = measureTextHeight(params.data?.EntryLimit || "", 124);
+    const maxH = Math.max(attrH, labelH, entryH);
+    return Math.max(32, maxH + 4);
+  }, []);
+
   const columnDefs = useMemo(
     () => [
       {
         field: "Attribute",
         width: 160,
-        autoHeight: true,
+        wrapText: true,
         cellStyle: () => preWrapWordBreak,
         headerComponent: CellHeader,
         headerComponentParams: {
@@ -297,7 +306,7 @@ const Cardinality = () => {
       {
         field: "Label",
         width: 200,
-        autoHeight: true,
+        wrapText: true,
         cellStyle: () => preWrapWordBreak,
         headerComponent: CellHeader,
         headerComponentParams: {
@@ -309,7 +318,7 @@ const Cardinality = () => {
         headerName: t("Entry Limit"),
         field: "EntryLimit",
         width: 140,
-        autoHeight: true,
+        wrapText: true,
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Entry Limit"),
@@ -346,8 +355,6 @@ const Cardinality = () => {
     ],
     [handleDeleteRow, t]
   );
-
-
 
   const rowClassRules = useMemo(
     () => ({
@@ -404,6 +411,7 @@ const Cardinality = () => {
             columnDefs={columnDefs}
             gridOptions={gridOptions}
             onGridReady={onGridReady}
+            getRowHeight={getRowHeight}
           />
         </Box>
         <Divider orientation="vertical" flexItem />

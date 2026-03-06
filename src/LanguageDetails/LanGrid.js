@@ -1,16 +1,12 @@
 import React, {
   useState,
   useEffect,
-  useContext,
-  useImperativeHandle,
-  forwardRef,
   useCallback,
   useMemo,
   useRef
 } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
-import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import CellHeader from "../components/CellHeader";
 import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
@@ -18,21 +14,8 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { MAX_ATTR_DESCRIPTION_CHARS, MAX_ATTR_LABEL_CHARS } from "../constants/constants";
 import { langCodeOCAFromName } from "../utils/languageUtils";
-
-const textareaStyle = {
-  width: "100%",
-  height: "100%",
-  resize: "none",
-  outline: "none",
-  border: "none",
-  fontFamily:
-    // eslint-disable-next-line quotes
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
-  fontSize: "12px",
-  padding: "4px 6px",
-  boxSizing: "border-box",
-  lineHeight: "1.4"
-};
+import { measureTextHeight } from "../utils/measureTextLines";
+import TextareaCellEditor from "../components/TextareaCellEditor";
 
 // Compact renderer moved to module scope to avoid defining components during render
 const CompactListRenderer = ({ value }) => {
@@ -52,51 +35,6 @@ const CompactListRenderer = ({ value }) => {
     </span>
   );
 };
-
-const TextareaCellEditor = forwardRef((props, ref) => {
-  const [value, setValue] = useState(props.value);
-  const textareaRef = useRef(null);
-
-  useEffect(() => {
-    setValue(props.value);
-  }, [props.value]);
-
-  // Auto-focus the textarea when editor opens
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-      // Move cursor to end of text
-      textareaRef.current.setSelectionRange(
-        textareaRef.current.value.length,
-        textareaRef.current.value.length
-      );
-    }
-  }, []);
-
-  useImperativeHandle(ref, () => ({
-    getValue() {
-      return value;
-    },
-
-    isCancelBeforeStart() {
-      return false;
-    },
-
-    isCancelAfterEnd() {
-      return false;
-    }
-  }));
-
-  return (
-    <textarea
-      ref={textareaRef}
-      maxLength={MAX_ATTR_DESCRIPTION_CHARS}
-      style={textareaStyle}
-      value={value}
-      onChange={(event) => setValue(event.target.value)}
-    />
-  );
-});
 
 export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const { t } = useTranslation();
@@ -267,73 +205,75 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     });
   }, [languages, stableEntryCodes, attributeRowData]);
 
-  const [columnDefs, setColumnDefs] = useState([]);
-
-  useEffect(() => {
-    setColumnDefs([
-      {
-        field: "Attribute",
-        editable: false,
-        width: 120,
-        wrapText: true,
-        autoHeight: true,
-        cellStyle: () => preWrapWordBreak,
-        headerComponent: CellHeader,
-        headerComponentParams: {
-          headerText: t("Attribute"),
-          helpText: t("This is the name for the attribute and, for example...")
-        }
+  const columnDefs = useMemo(() => [
+    {
+      field: "Attribute",
+      editable: false,
+      width: 120,
+      wrapText: true,
+      cellStyle: () => preWrapWordBreak,
+      headerComponent: CellHeader,
+      headerComponentParams: {
+        headerText: t("Attribute"),
+        helpText: t("This is the name for the attribute and, for example...")
+      }
+    },
+    {
+      field: "Label",
+      editable: true,
+      width: 250,
+      wrapText: true,
+      cellEditor: TextareaCellEditor,
+      cellStyle: () => preWrapWordBreak,
+      headerComponent: CellHeader,
+      headerComponentParams: {
+        headerText: t("Label"),
+        constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
+        helpText: t("This is the language specific label for an attribute")
       },
-      {
-        field: "Label",
-        editable: true,
-        width: 250,
-        wrapText: true,
-        autoHeight: true,
-        cellStyle: () => preWrapWordBreak,
-        headerComponent: CellHeader,
-        headerComponentParams: {
-          headerText: t("Label"),
-          constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
-          helpText: t("This is the language specific label for an attribute")
-        },
-        cellEditorParams: {
-          maxLength: MAX_ATTR_LABEL_CHARS
-        }
-      },
-      {
-        field: "Description",
-        editable: true,
-        width: 260,
+      cellEditorParams: {
+        maxLength: MAX_ATTR_LABEL_CHARS
+      }
+    },
+    {
+      field: "Description",
+      editable: true,
+      width: 260,
         cellEditor: TextareaCellEditor,
         cellEditorParams: {
           maxLength: MAX_ATTR_DESCRIPTION_CHARS
         },
-        wrapText: true,
-        autoHeight: true,
-        cellStyle: () => preWrapWordBreak,
-        headerComponent: CellHeader,
-        headerComponentParams: {
-          headerText: t("Description"),
-          constraint: t("max description chars", {
-            maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
-          }),
-          helpText: t("This is a language specific description of the attribute...")
-        }
-      },
-      {
-        field: "List",
-        headerName: t("List"),
-        editable: false,
-        flex: 2,
-        minWidth: 320,
-        tooltipField: "List",
-        cellRenderer: CompactListRenderer,
-        cellStyle: (params) =>
-          attributesWithLists.includes(params.data.Attribute) ? {} : greyCellStyle
+      wrapText: true,
+      cellStyle: () => preWrapWordBreak,
+      headerComponent: CellHeader,
+      headerComponentParams: {
+        headerText: t("Description"),
+        constraint: t("max description chars", {
+          maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
+        }),
+        helpText: t("This is a language specific description of the attribute...")
       }
-    ]);
-  }, [effectiveAttributesList, t, attributesWithLists]);
+    },
+    {
+      field: "List",
+      headerName: t("List"),
+      editable: false,
+      flex: 2,
+      minWidth: 320,
+      tooltipField: "List",
+      cellRenderer: CompactListRenderer,
+      cellStyle: (params) =>
+        attributesWithLists.includes(params.data.Attribute) ? {} : greyCellStyle
+    }
+  ], [t, attributesWithLists]);
+
+  const getRowHeight = useCallback((params) => {
+    const attrH = measureTextHeight(params.data?.Attribute || "", 104);
+    const labelH = measureTextHeight(params.data?.Label || "", 234);
+    const descH = measureTextHeight(params.data?.Description || "", 244);
+    const maxH = Math.max(attrH, labelH, descH);
+    return Math.max(32, maxH + 4);
+  }, []);
 
   const onCellKeyDown = (e) => {
     const keyPressed = e.event.code;
@@ -349,6 +289,15 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const onGridReady = useCallback(() => {
     setLoading(false);
   }, [setLoading]);
+
+  useEffect(() => {
+    const api = gridRef.current?.api;
+    if (!api) return;
+    const raf = requestAnimationFrame(() => {
+      api.resetRowHeights();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [currentLanguage]);
 
   const onCellValueChanged = useCallback(
     (event) => {
@@ -402,6 +351,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           onCellValueChanged={onCellValueChanged}
           domLayout="autoHeight"
           onGridReady={onGridReady}
+          getRowHeight={getRowHeight}
           getRowId={(params) => params.data.Attribute}
           immutableData={true}
         />

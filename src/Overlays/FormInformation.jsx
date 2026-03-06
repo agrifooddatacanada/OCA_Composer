@@ -5,6 +5,8 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { AgGridReact } from "ag-grid-react";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
 import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
+import { measureTextHeight } from "../utils/measureTextLines";
+import TextareaCellEditor from "../components/TextareaCellEditor";
 import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
@@ -536,6 +538,19 @@ const FormInformation = () => {
     updateSchema
   ]);
 
+  const getRowHeight = useCallback((params) => {
+    const attrH = measureTextHeight(params.data?.Attribute || "", 164);
+    const labelH = measureTextHeight(params.data?.Label || "", 224);
+    const placeholderH = measureTextHeight(params.data?.Placeholder || "", 224);
+    const attrName = params.data?.Attribute;
+    const attrType = attributeRowData.find((r) => r.Attribute === attrName)?.Type || "";
+    const formatRule = formatRuleRowData.find((r) => r.Attribute === attrName);
+    const formatDesc = findDescription(formatRule?.FormatText, attrType, t);
+    const formatH = measureTextHeight(formatDesc || "", 284);
+    const maxH = Math.max(attrH, labelH, placeholderH, formatH);
+    return Math.max(32, maxH + 4);
+  }, [attributeRowData, formatRuleRowData, t]);
+
   const columnDefs = useMemo(() => {
     return [
       {
@@ -560,7 +575,6 @@ const FormInformation = () => {
         field: "FormatRule",
         editable: false,
         width: 300,
-        autoHeight: true,
         wrapText: true,
         cellStyle: () => greyCellStyle,
         headerComponent: CellHeader,
@@ -607,7 +621,8 @@ const FormInformation = () => {
         headerName: `${t("Label")} (${currentLanguage || ""})`,
         editable: true,
         width: 240,
-        autoHeight: true,
+        wrapText: true,
+        cellEditor: TextareaCellEditor,
         cellStyle: () => preWrapWordBreak,
         headerComponent: CellHeader,
         headerComponentParams: {
@@ -626,7 +641,8 @@ const FormInformation = () => {
           return PLACEHOLDER_EDITABLE_TYPES.includes(attrType);
         },
         width: 240,
-        autoHeight: true,
+        wrapText: true,
+        cellEditor: TextareaCellEditor,
         cellStyle: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
@@ -673,6 +689,15 @@ const FormInformation = () => {
       }
     ];
   }, [attributeRowData, formatRuleRowData, currentLanguage, t]);
+
+  useEffect(() => {
+    const api = gridRef.current?.api;
+    if (!api) return;
+    const raf = requestAnimationFrame(() => {
+      api.resetRowHeights();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [currentLanguage]);
   
 
   const onCellKeyDown = useCallback((e) => {
@@ -795,6 +820,7 @@ const FormInformation = () => {
               rowDragManaged={true}
               animateRows={true}
               onGridReady={onGridReady}
+              getRowHeight={getRowHeight}
             />
           </Box>
         </div>
