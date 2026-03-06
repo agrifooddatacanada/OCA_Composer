@@ -19,8 +19,7 @@ import { CustomPalette } from "./constants/customPalette";
 import { LanguageConstants } from "./utils/languageUtils";
 import {
   CUSTOM_FORMAT_RULE,
-  overlayItems,
-  SCHEMA_MODE_SINGLE
+  overlayItems
 } from "./constants/constants";
 import {
   getUnitsFramedThatAlreadyExistInOcaPackage,
@@ -47,7 +46,6 @@ export const pagesArray = [
 ];
 
 function App() {
-  const [schemaMode, setSchemaMode] = useState(SCHEMA_MODE_SINGLE);
   const [isZip, setIsZip] = useState(false);
   const [isZipEdited, setIsZipEdited] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
@@ -347,8 +345,6 @@ function App() {
           <Context.Provider
             // eslint-disable-next-line react/jsx-no-constructed-context-values
             value={{
-              schemaMode,
-              setSchemaMode,
               fileData,
               setFileData,
               rawFile,

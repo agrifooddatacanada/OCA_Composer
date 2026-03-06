@@ -9,10 +9,6 @@ export const MAX_QUESTION_DESCRIPTION_CHARS = 1000;
 
 export const FORM_BUILDER_CARD_WIDTH = 720;
 
-export const SCHEMA_MODE_SINGLE = "single";
-export const SCHEMA_MODE_MULTI_LEVEL = "multi-level";
-
-// Internal schema ID for manual creation flow (before user sets a name)
 export const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
 
 /**

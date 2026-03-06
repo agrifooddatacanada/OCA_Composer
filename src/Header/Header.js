@@ -312,25 +312,6 @@ export default function Header({ currentPage }) {
               alignItems: "center"
             }}
           >
-            {/* <div>
-              <select
-                id="language-select"
-                style={{
-                  border: "none",
-                  fontSize: "18px",
-                  color: "white",
-                  background: CustomPalette.PRIMARY,
-                  marginRight: "2.5rem"
-                }}
-                value={schemaMode}
-                onChange={(e) => setSchemaMode(e.target.value)}
-              >
-                <option value={SCHEMA_MODE_SINGLE}>Single schema</option>
-                <option value={SCHEMA_MODE_MULTI_LEVEL}>Multi-level schema</option>
-              </select>
-            </div> */}
-
-            {/* Landing page header */}
             <div>
               <select
                 id="language-select"

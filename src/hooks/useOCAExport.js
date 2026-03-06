@@ -24,8 +24,7 @@ import {
   ATTRIBUTE_FRAMING,
   FORM,
   FIELD_FORM_INFORMATION_OVERLAY,
-  overlayItems,
-  SCHEMA_MODE_SINGLE
+  overlayItems
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -63,7 +62,6 @@ const useOCAExport = () => {
     setFileData,
     setIsZip,
     setRawFile,
-    setSchemaMode,
     setOverlay,
     setSelectedOverlay,
     setCurrentPage
@@ -924,23 +922,20 @@ const useOCAExport = () => {
    * Reset all application state to defaults and navigate to landing page
    */
   const resetToDefaults = useCallback(() => {
-    // Clear legacy Context state
     setFileData([]);
     setIsZip(false);
     setRawFile([]);
     setPkgUpload(null);
-    setSchemaMode(SCHEMA_MODE_SINGLE);
     setOverlay(overlayItems);
     setSelectedOverlay("");
     
-    // Clear MultiSchemaContext state (all schema data now managed here)
     clearAllSchemas();
     
     setCurrentPage("Landing");
     navigate("/");
   }, [
     setFileData, setIsZip, setRawFile,
-    setPkgUpload, setSchemaMode, setOverlay, setSelectedOverlay,
+    setPkgUpload, setOverlay, setSelectedOverlay,
     clearAllSchemas, setCurrentPage, navigate
   ]);
 
