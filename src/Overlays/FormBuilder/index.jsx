@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState, useEffect, useMemo } from "react";
+import React, { useCallback, useContext, useState, useEffect, useMemo, useRef } from "react";
 import { Context } from "../../App";
 import { useMultiSchema } from "../../schema/schemaContext";
 import BackNextSkeleton from "../../components/BackNextSkeleton";
@@ -118,6 +118,8 @@ const FormBuilder = () => {
   const [targetPageIndex, setTargetPageIndex] = useState(-1);
   const [targetSectionIndex, setTargetSectionIndex] = useState(null);
 
+  const isUpdatingFromFormBuilder = useRef(false);
+
   const usedAttributes = useUsedAttributes(pages);
 
   useEffect(() => {
@@ -126,6 +128,10 @@ const FormBuilder = () => {
 
   useEffect(() => {
     if (!pages || pages.length === 0) return;
+    if (isUpdatingFromFormBuilder.current) {
+      isUpdatingFromFormBuilder.current = false;
+      return;
+    }
 
     const syncQuestionData = (question) => {
       const { attribute } = question;
@@ -150,7 +156,8 @@ const FormBuilder = () => {
 
       const updatedDescription = {};
       languages.forEach(lang => {
-        updatedDescription[lang] = question.description?.[lang] || '';
+        const langData = lanAttributeRowData?.[lang]?.find(item => item.Attribute === attribute);
+        updatedDescription[lang] = langData?.FormDescription || question.description?.[lang] || '';
       });
 
       let updatedOptions = question.options || [];
@@ -204,7 +211,6 @@ const FormBuilder = () => {
     if (hasChanges) {
       setPages(syncedPages);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lanAttributeRowData, formatRuleRowData, attributeRowData, savedEntryCodes, attributesWithLists, languages]);
 
   const handleAddPage = () => {
@@ -239,34 +245,6 @@ const FormBuilder = () => {
 
   const handleEditQuestion = (question, questionIndex, pageIndex, sectionIndex = null) => { setEditingQuestion(question); setEditingQuestionIndex(questionIndex); setTargetPageIndex(pageIndex); setTargetSectionIndex(sectionIndex); setShowQuestionDialog(true); };
   const handleDeleteQuestion = (questionIndex, pageIndex, sectionIndex = null) => {
-
-    const page = pages[pageIndex];
-    let q;
-    if (sectionIndex !== null) {
-      q = page?.sections?.[sectionIndex]?.questions?.[questionIndex];
-    } else {
-      q = page?.questions?.[questionIndex];
-    }
-    if (q?.attribute) {
-      const newLanData = (() => {
-        const prev = lanAttributeRowData;
-        const updated = { ...prev };
-        languages.forEach((lang) => {
-          const arr = updated[lang] || [];
-          const idx = arr.findIndex((it) => it.Attribute === q.attribute);
-          if (idx !== -1) {
-            const existing = arr[idx];
-            const newPlaceholder = typeof q.placeholder === 'object' && q.placeholder !== null ? (q.placeholder[lang] || existing.Placeholder || '') : (q.placeholder || existing.Placeholder || '');
-            const newFormDescription = typeof q.description === 'object' && q.description !== null ? (q.description[lang] || existing.FormDescription || '') : (q.description || existing.FormDescription || '');
-            const newLabel = typeof q.title === 'object' && q.title !== null ? (q.title[lang] || existing.Label || q.attribute) : (q.title || existing.Label || q.attribute);
-            arr[idx] = { ...existing, Label: newLabel, Placeholder: newPlaceholder, FormDescription: newFormDescription };
-          }
-        });
-        return updated;
-      })();
-      updateSchema({ lanAttributeRowData: newLanData });
-    }
-
     setPages(prev => prev.map((p, i) => {
       if (i !== pageIndex) return p;
       if (sectionIndex !== null) return { ...p, sections: p.sections.map((s, si) => si === sectionIndex ? { ...s, questions: (s.questions || []).filter((_, qi) => qi !== questionIndex) } : s) };
@@ -276,6 +254,33 @@ const FormBuilder = () => {
   };
   const handleSaveQuestion = (questionData) => {
     const question = { ...questionData, id: questionData.id || uuidv4() };
+    
+    if (question.attribute) {
+      isUpdatingFromFormBuilder.current = true;
+      const newLanData = (() => {
+        const updated = { ...lanAttributeRowData };
+        languages.forEach((lang) => {
+          const arr = updated[lang] || [];
+          const idx = arr.findIndex((it) => it.Attribute === question.attribute);
+          if (idx !== -1) {
+            const existing = arr[idx];
+            const newLabel = typeof question.title === 'object' && question.title !== null 
+              ? (question.title[lang] || existing.Label || question.attribute) 
+              : (question.title || existing.Label || question.attribute);
+            const newPlaceholder = typeof question.placeholder === 'object' && question.placeholder !== null 
+              ? (question.placeholder[lang] || existing.Placeholder || '') 
+              : (question.placeholder || existing.Placeholder || '');
+            const newFormDescription = typeof question.description === 'object' && question.description !== null 
+              ? (question.description[lang] || existing.FormDescription || '') 
+              : (question.description || existing.FormDescription || '');
+            arr[idx] = { ...existing, Label: newLabel, Placeholder: newPlaceholder, FormDescription: newFormDescription };
+          }
+        });
+        return updated;
+      })();
+      updateSchema({ lanAttributeRowData: newLanData });
+    }
+    
     setPages(prev => prev.map((p, i) => {
       if (i !== targetPageIndex) return p;
       if (editingQuestionIndex >= 0) {
@@ -351,77 +356,6 @@ const FormBuilder = () => {
     const newQuestion = createQuestionFromPaletteItem(item);
     setPages(prev => prev.map((p, pi) => pi !== pageIndex ? p : ({ ...p, sections: p.sections.map((s, si) => si !== sectionIndex ? s : ({ ...s, questions: [ ...(s.questions || []), newQuestion ] })) })));
   };
-
-  // Helper function to sync label, placeholder and FORM description back to lanAttributeRowData
-  const syncQuestionFieldsToLanData = useCallback(() => {
-    const questionsByAttribute = {};
-    const formDescriptionsByAttribute = {};
-    const titlesByAttribute = {};
-    pages.forEach(page => {
-      [...(page.questions || []), ...(page.sections || []).flatMap(s => s.questions || [])].forEach(q => {
-        if (q?.attribute && q.placeholder) {
-          questionsByAttribute[q.attribute] = q.placeholder;
-        }
-        if (q?.attribute && q.description) {
-          formDescriptionsByAttribute[q.attribute] = q.description;
-        }
-        if (q?.attribute && q.title) {
-          titlesByAttribute[q.attribute] = q.title;
-        }
-      });
-    });
-    
-    const updatedLanData = (() => {
-      const prevLanData = lanAttributeRowData;
-      const updatedLanData = { ...prevLanData };
-      
-      languages.forEach(lang => {
-        if (updatedLanData[lang]) {
-          updatedLanData[lang] = updatedLanData[lang].map(item => {
-            const attr = item.Attribute;
-            const questionPlaceholder = questionsByAttribute[attr];
-            const questionDescription = formDescriptionsByAttribute[attr];
-            const questionTitle = titlesByAttribute[attr];
-            let newItem = { ...item };
-
-            if (questionPlaceholder) {
-              if (typeof questionPlaceholder === 'object' && questionPlaceholder !== null) {
-                newItem.Placeholder = questionPlaceholder[lang] || '';
-              } else if (typeof questionPlaceholder === 'string') {
-                newItem.Placeholder = questionPlaceholder;
-              }
-            }
-
-       
-            if (questionDescription) {
-              if (typeof questionDescription === 'object' && questionDescription !== null) {
-                newItem.FormDescription = questionDescription[lang] || '';
-              } else if (typeof questionDescription === 'string') {
-                newItem.FormDescription = questionDescription;
-              }
-            }
-
-            if (questionTitle) {
-              if (typeof questionTitle === 'object' && questionTitle !== null) {
-                newItem.Label = questionTitle[lang] || newItem.Label || attr;
-              } else if (typeof questionTitle === 'string') {
-                newItem.Label = questionTitle || newItem.Label || attr;
-              }
-            }
-
-            return newItem;
-          });
-        }
-      });
-      
-      return updatedLanData;
-    })();
-    updateSchema({ lanAttributeRowData: updatedLanData });
-  }, [pages, languages, lanAttributeRowData, updateSchema]);
-
-  useEffect(() => {
-    syncQuestionFieldsToLanData();
-  }, [pages, syncQuestionFieldsToLanData]);
 
   const validateForm = useCallback(() => ({ ok: true }), []);
 

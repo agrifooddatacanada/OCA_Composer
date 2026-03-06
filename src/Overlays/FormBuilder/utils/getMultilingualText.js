@@ -6,24 +6,20 @@ const getMultilingualText = (textObj, currentLanguage, fallback = "") => {
     return textObj || fallback;
   }
 
-  // Priority 1: Current language tab
-  if (currentLanguage && textObj[currentLanguage]) {
+  if (currentLanguage && textObj[currentLanguage] !== undefined) {
     return textObj[currentLanguage];
   }
 
-  // Priority 2: User's global UI language
   const userLanguage = langNameFromTwoLetters(i18next.language);
-  if (userLanguage && textObj[userLanguage]) {
+  if (userLanguage && textObj[userLanguage] !== undefined) {
     return textObj[userLanguage];
   }
 
-  // Priority 3: First available language
   const firstLang = Object.keys(textObj)[0];
-  if (firstLang && textObj[firstLang]) {
+  if (firstLang && textObj[firstLang] !== undefined) {
     return textObj[firstLang];
   }
 
-  // Priority 4: Fallback
   return fallback;
 };
 
