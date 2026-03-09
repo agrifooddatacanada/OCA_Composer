@@ -1,10 +1,11 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, Box, Typography, IconButton, Collapse } from "@mui/material";
+import { Card, CardContent, Box, Typography, IconButton, Collapse, Tooltip } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useDrag, useDrop } from 'react-dnd';
 import { DragIndicator as DragIcon, Edit as EditIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
-import { FORM_BUILDER_CARD_WIDTH } from "../../constants/constants";
+import { FORM_BUILDER_CARD_WIDTH, isChildSchemaType } from "../../constants/constants";
 import {
   formatCodeBinaryDescription,
   formatCodeDateDescription,
@@ -58,6 +59,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
   const questionDescription = getMultilingualText(question.description, currentLanguage, '');
   const isLongDescription = questionDescription && questionDescription.length > 180;
   const [descExpanded, setDescExpanded] = React.useState(false);
+  const isChildSchema = isChildSchemaType(question.attributeType);
 
   return (
     <Card 
@@ -153,10 +155,18 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
               </Box>
             )}
 
-            <Typography variant="body2" sx={{ color: CustomPalette.GREY_600, mb: 1, mt: 0.5 }}>
-              {formatRuleDescription || (question.attributeType ? t(question.attributeType) : t("No format rule"))}
-            </Typography>
-            
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, mb: 1, mt: 0.5 }}>
+              <Typography variant="body2" sx={{ color: CustomPalette.GREY_600 }}>
+                {formatRuleDescription || (question.attributeType ? t(question.attributeType) : t("No format rule"))}
+              </Typography>
+              {isChildSchema && (
+                <Tooltip title={t("Navigate to the child schema's form overlay to see child schema questions.")} placement="top" arrow>
+                  <HelpOutlineIcon sx={{ fontSize: 15, color: CustomPalette.GREY_600 }} />
+                </Tooltip>
+              )}
+            </Box>
+
+            {!isChildSchema && (
             <Collapse in={expanded}>
               <Box sx={{ 
                 p: 2, 
@@ -174,6 +184,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
                 />
               </Box>
             </Collapse>
+            )}
           </Box>
         </Box>
       </CardContent>
