@@ -158,7 +158,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
             </Typography>
             
             <Collapse in={expanded}>
-              {/* <Box sx={{ 
+              <Box sx={{ 
                 p: 2, 
                 backgroundColor: CustomPalette.GREY_50, 
                 borderRadius: 1,
@@ -166,13 +166,13 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
               }}>
                 <Typography variant="caption" sx={{ color: CustomPalette.GREY_600, fontWeight: 600, mt: -1, mb: 1, display: 'block', textAlign: 'center' }}>
                   {t("Answer Area Preview")}:
-                </Typography> */}
+                </Typography>
                 <QuestionAnswerPreview 
                   question={question} 
                   currentLanguage={currentLanguage}
                   compact={false}
                 />
-              {/* </Box> */}
+              </Box>
             </Collapse>
           </Box>
         </Box>

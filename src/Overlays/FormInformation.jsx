@@ -472,72 +472,6 @@ const FormInformation = () => {
     setLoading(false);
   }, []);
 
-  const onRowDragEnd = useCallback(
-    (event) => {
-      const oldIndex = attributesList.findIndex(
-        (item) => item === event.node.data.Attribute
-      );
-      const newIndex = event.node.rowIndex;
-      gridRef.current.api.stopEditing();
-      
-      // Reorder attributes in MultiSchemaContext (source of truth)
-      updateSchema( (prevState) => {
-        const currentAttrs = prevState.attributes || [];
-        const newAttrs = [...currentAttrs];
-        newAttrs.splice(newIndex, 0, newAttrs.splice(oldIndex, 1)[0]);
-        
-        // Reorder FormInformationRowData to match
-        const newFormData = [];
-        newAttrs.forEach((attr) => {
-          const existingData = FormInformationRowData.find(item => item.Attribute === attr.Attribute);
-          if (existingData) {
-            newFormData.push(existingData);
-          }
-        });
-        updateSchema({ FormInformationRowData: newFormData });
-
-        const newLanData = JSON.parse(JSON.stringify(lanAttributeRowData || {}));
-        Object.keys(newLanData).forEach((language) => {
-          if (newLanData[language] && Array.isArray(newLanData[language])) {
-            const reorderedLangData = [];
-            newAttrs.forEach((attr) => {
-              const existingLangData = newLanData[language].find(item => item.Attribute === attr.Attribute);
-              if (existingLangData) {
-                reorderedLangData.push(existingLangData);
-              }
-            });
-            newLanData[language] = reorderedLangData;
-          }
-        });
-        updateSchema({ lanAttributeRowData: newLanData });
-        
-        return {
-          attributes: newAttrs,
-          lanAttributeRowData: newLanData
-        };
-      });
-    },
-    [
-      attributesList,
-      currentSchemaId,
-      updateSchema,
-      FormInformationRowData,
-      lanAttributeRowData
-    ]
-  );
-
-  const onRowDragLeave = useCallback(() => {
-    const newFormData = JSON.parse(JSON.stringify(FormInformationRowData));
-    updateSchema({ FormInformationRowData: newFormData });
-    const newLanData = JSON.parse(JSON.stringify(lanAttributeRowData || {}));
-    updateSchema({ lanAttributeRowData: newLanData });
-    document.dispatchEvent(new MouseEvent("mouseup"));
-  }, [
-    FormInformationRowData,
-    lanAttributeRowData,
-    updateSchema
-  ]);
-
   const getRowHeight = useCallback((params) => {
     const attrH = measureTextHeight(params.data?.Attribute || "", 164);
     const labelH = measureTextHeight(params.data?.Label || "", 224);
@@ -553,13 +487,6 @@ const FormInformation = () => {
 
   const columnDefs = useMemo(() => {
     return [
-      {
-        field: "Drag",
-        headerName: "",
-        width: 40,
-        cellStyle: () => ({ display: "flex" }),
-        rowDrag: () => true
-      },
       {
         field: "Attribute",
         editable: false,
@@ -640,7 +567,8 @@ const FormInformation = () => {
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
           return PLACEHOLDER_EDITABLE_TYPES.includes(attrType);
         },
-        width: 240,
+        flex: 1,
+        minWidth: 240,
         wrapText: true,
         cellEditor: TextareaCellEditor,
         cellStyle: (params) => {
@@ -818,9 +746,6 @@ const FormInformation = () => {
               domLayout="autoHeight"
               suppressHorizontalScroll
               onCellKeyDown={onCellKeyDown}
-              onRowDragEnd={onRowDragEnd}
-              onRowDragLeave={onRowDragLeave}
-              rowDragManaged={true}
               animateRows={true}
               onGridReady={onGridReady}
               getRowHeight={getRowHeight}
