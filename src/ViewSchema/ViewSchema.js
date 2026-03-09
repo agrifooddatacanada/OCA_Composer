@@ -848,43 +848,49 @@ export default function ViewSchema({
               width: "100%"
             }}
           >
-            <Box
+            <Typography
               sx={{
-                display: "flex",
-                alignItems: "center"
+                fontSize: 22,
+                fontWeight: "bold",
+                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
               }}
             >
-              <Typography
+              {t("Schema Language")}
+            </Typography>
+            <Box
+              sx={{
+                position: "relative",
+                display: "flex",
+                flexDirection: "column-reverse",
+                alignItems: "flex-start",
+                mb: 4,
+                width: "70rem"
+              }}
+            >
+              {languageButtonDisplay}
+              <Box
                 sx={{
-                  fontSize: 22,
-                  fontWeight: "bold",
-                  color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  position: "absolute",
+                  right: "100%",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  marginRight: 1,
+                  color: CustomPalette.GREY_600
                 }}
               >
-                {t("Schema Language")}
-              </Typography>
-              <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
                 <Tooltip
                   title={t(
                     "Toggles between the one or more languages used in the schema"
                   )}
-                  placement="right"
+                  placement="left"
                   arrow
+                  PopperProps={{
+                    sx: { "& .MuiTooltip-tooltip": { width: 100 } }
+                  }}
                 >
                   <HelpOutlineIcon sx={{ fontSize: 15 }} />
                 </Tooltip>
-              </Box>
-            </Box>
-            <Box sx={{ mb: 4, width: "70rem" }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column-reverse",
-                  alignItems: "flex-start"
-                }}
-              >
-                {languageButtonDisplay}
               </Box>
             </Box>
           </Box>

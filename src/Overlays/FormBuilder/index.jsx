@@ -413,11 +413,25 @@ const FormBuilder = () => {
             backgroundColor:
               currentLanguage === language
                 ? CustomPalette.PRIMARY
-                : CustomPalette.SECONDARY,
+                : CustomPalette.WHITE,
+            color:
+              currentLanguage === language
+                ? "white"
+                : CustomPalette.PRIMARY,
             borderRadius,
             width: languages.length < 5 ? "12rem" : "8.335rem",
             boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.PRIMARY}`
+            border: `1px solid ${CustomPalette.PRIMARY}`,
+            "&:hover": {
+              backgroundColor:
+                currentLanguage === language
+                  ? CustomPalette.PRIMARY
+                  : CustomPalette.WHITE,
+              boxShadow:
+                currentLanguage === language
+                  ? "none"
+                  : undefined
+            }
           }}
         >
           <Typography noWrap variant="button">
@@ -440,6 +454,7 @@ const FormBuilder = () => {
           {/* Language Tabs*/}
           <Box
             sx={{
+              position: "relative",
               display: "flex",
               flexDirection: "column-reverse",
               alignItems: languages.length < 6 ? "flex-start" : "flex-end",
@@ -447,25 +462,27 @@ const FormBuilder = () => {
             }}
           >
             {languageButtonDisplay}
-          </Box>
-          <Box
-            sx={{
-              textAlign: "left",
-              transform: "translate(-25px, -25px)",
-              color: CustomPalette.GREY_600,
-              height: "0rem"
-            }}
-          >
-            <Tooltip
-              title={t("Toggles between the one or more languages used in the schema")}
-              placement="left"
-              arrow
-              PopperProps={{
-                sx: { "& .MuiTooltip-tooltip": { width: 100 } }
+            <Box
+              sx={{
+                position: "absolute",
+                right: "100%",
+                top: "50%",
+                transform: "translateY(-50%)",
+                marginRight: 1,
+                color: CustomPalette.GREY_600
               }}
             >
-              <HelpOutlineIcon sx={{ fontSize: 15 }} />
-            </Tooltip>
+              <Tooltip
+                title={t("Toggles between the one or more languages used in the schema")}
+                placement="left"
+                arrow
+                PopperProps={{
+                  sx: { "& .MuiTooltip-tooltip": { width: 100 } }
+                }}
+              >
+                <HelpOutlineIcon sx={{ fontSize: 15 }} />
+              </Tooltip>
+            </Box>
           </Box>
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

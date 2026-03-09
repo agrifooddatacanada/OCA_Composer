@@ -80,20 +80,20 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
           <DragIcon sx={{ color: CustomPalette.GREY_600, mt: 0.5, flexShrink: 0 }} />
           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0 }}>
+            <Box sx={{ position: 'relative', mb: 0, width: '100%' }}>
               <Typography 
                 variant="subtitle1" 
                 sx={{ 
                   fontWeight: 'bold', 
                   color: CustomPalette.GREY_800, 
-                  flexGrow: 1,
-                  minWidth: 0,
+                  textAlign: 'center',
+                  px: 7,
                   ...textWrapStyle
                 }}
               >
                 {questionTitle}
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+              <Box sx={{ position: 'absolute', top: -4, right: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <IconButton 
                   size="small" 
                   onClick={() => setExpanded(!expanded)}

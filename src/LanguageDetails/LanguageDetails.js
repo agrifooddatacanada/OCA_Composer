@@ -316,35 +316,34 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
         </Box>
         <Box
           sx={{
+            position: "relative",
             display: "flex",
             flexDirection: "column-reverse",
             alignItems: languages.length < 6 ? "flex-start" : "flex-end"
           }}
         >
           {languageButtonDisplay}
-        </Box>
-        <Box
-          sx={{
-            textAlign: "left",
-            transform: "translate(-25px, -25px)",
-            color: CustomPalette.GREY_600,
-            height: "0rem"
-          }}
-        >
-          <Tooltip
-            title={t("Toggles between the one or more languages used in the schema")}
-            placement="left"
-            arrow
-            PopperProps={{
-              sx: {
-                "& .MuiTooltip-tooltip": {
-                  width: 100
-                }
-              }
+          <Box
+            sx={{
+              position: "absolute",
+              right: "100%",
+              top: "50%",
+              transform: "translateY(-50%)",
+              marginRight: 1,
+              color: CustomPalette.GREY_600
             }}
           >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
+            <Tooltip
+              title={t("Toggles between the one or more languages used in the schema")}
+              placement="left"
+              arrow
+              PopperProps={{
+                sx: { "& .MuiTooltip-tooltip": { width: 100 } }
+              }}
+            >
+              <HelpOutlineIcon sx={{ fontSize: 15 }} />
+            </Tooltip>
+          </Box>
         </Box>
         <div ref={refContainer}>
           <LanGrid
