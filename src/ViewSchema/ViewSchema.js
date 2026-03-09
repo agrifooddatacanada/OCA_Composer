@@ -24,7 +24,8 @@ import {
   getPrioritizedLangNames,
   getBestLangName,
   langCodeOCAFromName,
-  LanguageConstants
+  LanguageConstants,
+  getLanguageButtonBorderRadius
 } from "../utils/languageUtils";
 import { 
   TYPE_CHILD_SCHEMA, 
@@ -112,46 +113,7 @@ export default function ViewSchema({
 
   const createLanguageRow = (languageArray, rowIndex) => {
     const languageRowDisplay = languageArray.map((language, index) => {
-      let curveLeftTop = "0";
-      let curveRightTop = "0";
-      let curveRightBottom = "0";
-      let curveLeftBottom = "0";
-
-      if (languages.length > 7) {
-        if (rowIndex === 0 && index === 0) {
-          curveLeftBottom = "8px";
-        }
-        if (rowIndex === displayLanguageArray.length - 1 && index === 0) {
-          curveLeftTop = "8px";
-        }
-        if (rowIndex === 0 && index === 6) {
-          curveRightBottom = "8px";
-        }
-        if (
-          rowIndex === displayLanguageArray.length - 1 &&
-          index === languageArray.length - 1
-        ) {
-          curveRightTop = "8px";
-        }
-        if (
-          rowIndex === displayLanguageArray.length - 2 &&
-          displayLanguageArray[displayLanguageArray.length - 1].length < 7 &&
-          index === 6
-        ) {
-          curveRightTop = "8px";
-        }
-      } else {
-        if (index === 0) {
-          curveLeftBottom = "8px";
-          curveLeftTop = "8px";
-        }
-        if (index === languages.length - 1) {
-          curveRightBottom = "8px";
-          curveRightTop = "8px";
-        }
-      }
-
-      const borderRadius = `${curveLeftTop} ${curveRightTop} ${curveRightBottom} ${curveLeftBottom}`;
+      const borderRadius = getLanguageButtonBorderRadius(index, languageArray, rowIndex, displayLanguageArray, languages.length, 7);
       let minimizedLanguage = language.slice(0, 9);
       if (minimizedLanguage !== language) {
         minimizedLanguage += "...";

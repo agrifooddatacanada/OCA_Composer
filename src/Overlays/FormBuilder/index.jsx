@@ -10,7 +10,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuidv4 } from 'uuid';
-import { langNameFromTwoLetters, LanguageConstants } from "../../utils/languageUtils";
+import { langNameFromTwoLetters, LanguageConstants, getLanguageButtonBorderRadius } from "../../utils/languageUtils";
 import i18next from "i18next";
 
 import AttributePalette from "./AttributePalette";
@@ -383,26 +383,7 @@ const FormBuilder = () => {
 
   const createLanguageRow = (languageArray, rowIndex) => {
     const languageRowDisplay = languageArray.map((language, index) => {
-      let isFirstButton;
-      if (languages.length > 6) {
-        if (
-          displayLanguageArray[rowIndex + 1] &&
-          displayLanguageArray[rowIndex + 1].length === 6
-        ) {
-          isFirstButton =
-            language === displayLanguageArray[displayLanguageArray.length - 1][0];
-        } else {
-          isFirstButton = index === 0;
-        }
-      } else {
-        isFirstButton = index === 0;
-      }
-      const isLastButton = language === filteredLanguages[languages.length - 1];
-      let borderRadius = "";
-      if (isFirstButton && isLastButton) borderRadius = "8px 8px 0 0";
-      else if (isFirstButton) borderRadius = "8px 0 0 0";
-      else if (isLastButton) borderRadius = "0 8px 0 0";
-      else borderRadius = "0";
+      const borderRadius = getLanguageButtonBorderRadius(index, languageArray, rowIndex, displayLanguageArray, languages.length, 6);
       return (
         <Button
           key={language}
@@ -419,7 +400,7 @@ const FormBuilder = () => {
                 ? "white"
                 : CustomPalette.PRIMARY,
             borderRadius,
-            width: languages.length < 5 ? "12rem" : "8.335rem",
+            minWidth: languages.length < 5 ? "12rem" : "10rem",
             boxShadow: "none",
             border: `1px solid ${CustomPalette.PRIMARY}`,
             "&:hover": {
@@ -451,7 +432,30 @@ const FormBuilder = () => {
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={handleBack}>
       <DndProvider backend={HTML5Backend}>
         <Box sx={{ margin: "2rem" }}>
-          {/* Language Tabs*/}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Typography variant="h4" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800 }}>
+              {t("Form Builder")}
+            </Typography>
+            <Button 
+              startIcon={<AddIcon />} 
+              onClick={handleAddPage} 
+              variant="contained" 
+              color="button"
+              sx={{ 
+                backgroundColor: CustomPalette.PRIMARY,
+                '&:hover': {
+                  backgroundColor: CustomPalette.DARK
+                }
+              }}
+            >
+              {t("Add Page")}
+            </Button>
+          </Box>
+
+          <Typography variant="body1" sx={{ color: CustomPalette.GREY_600, mb: 2, textAlign: 'left' }}>
+            {t("Drag attributes from the left into pages or sections. Each attribute can be used once.")}
+          </Typography>
+
           <Box
             sx={{
               position: "relative",
@@ -483,32 +487,6 @@ const FormBuilder = () => {
                 <HelpOutlineIcon sx={{ fontSize: 15 }} />
               </Tooltip>
             </Box>
-          </Box>
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800 }}>
-              {t("Form Builder")}
-            </Typography>
-            <Button 
-              startIcon={<AddIcon />} 
-              onClick={handleAddPage} 
-              variant="contained" 
-              color="button"
-              sx={{ 
-                backgroundColor: CustomPalette.PRIMARY,
-                '&:hover': {
-                  backgroundColor: CustomPalette.DARK
-                }
-              }}
-            >
-              {t("Add Page")}
-            </Button>
-          </Box>
-
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="body1" sx={{ color: CustomPalette.GREY_600 }}>
-              {t("Drag attributes from the left into pages or sections. Each attribute can be used once.")}
-            </Typography>
           </Box>
 
           <Box 

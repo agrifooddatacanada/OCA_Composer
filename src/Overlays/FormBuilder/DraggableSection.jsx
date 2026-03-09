@@ -53,27 +53,31 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
       }}
     >
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: sectionDescription ? 1 : 0 }}>
-          <DragIcon sx={{ color: CustomPalette.PRIMARY, flexShrink: 0 }} />
-          <Typography 
-            variant="subtitle1" 
-            sx={{ 
-              fontWeight: 'bold', 
-              color: CustomPalette.GREY_800,
-              flexGrow: 1,
-              minWidth: 0,
-              ...textWrapStyle
-            }}
-          >
-            {sectionTitle}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
-            <IconButton size="small" onClick={() => onEdit(section, index, pageIndex)} sx={{ color: CustomPalette.GREY_600 }}>
-              <EditIcon />
-            </IconButton>
-            <IconButton size="small" onClick={() => onDelete(index, pageIndex)} sx={{ color: CustomPalette.SECONDARY }}>
-              <DeleteIcon />
-            </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: sectionDescription ? 1 : 0 }}>
+          <DragIcon sx={{ color: CustomPalette.PRIMARY, mt: 0.5, flexShrink: 0 }} />
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Box sx={{ position: 'relative', width: '100%' }}>
+              <Typography 
+                variant="subtitle1" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  color: CustomPalette.GREY_800,
+                  textAlign: 'center',
+                  px: 10,
+                  ...textWrapStyle
+                }}
+              >
+                {sectionTitle}
+              </Typography>
+              <Box sx={{ position: 'absolute', top: -4, right: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <IconButton size="small" onClick={() => onEdit(section, index, pageIndex)} sx={{ color: CustomPalette.GREY_600 }}>
+                  <EditIcon />
+                </IconButton>
+                <IconButton size="small" onClick={() => onDelete(index, pageIndex)} sx={{ color: CustomPalette.SECONDARY }}>
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            </Box>
           </Box>
         </Box>
 

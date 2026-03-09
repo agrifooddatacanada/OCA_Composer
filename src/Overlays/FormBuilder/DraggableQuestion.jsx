@@ -87,14 +87,14 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
                   fontWeight: 'bold', 
                   color: CustomPalette.GREY_800, 
                   textAlign: 'center',
-                  px: 7,
+                  px: 9,
                   ...textWrapStyle
                 }}
               >
                 {questionTitle}
               </Typography>
               <Box sx={{ position: 'absolute', top: -4, right: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <IconButton 
+                {/* <IconButton 
                   size="small" 
                   onClick={() => setExpanded(!expanded)}
                   sx={{ 
@@ -104,7 +104,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
                   }}
                 >
                   <ExpandMoreIcon fontSize="small" />
-                </IconButton>
+                </IconButton> */}
                 <IconButton size="small" onClick={() => onEdit(question, index, pageIndex, sectionIndex)} sx={{ color: CustomPalette.GREY_600 }}>
                   <EditIcon fontSize="small" />
                 </IconButton>
@@ -153,26 +153,26 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
               </Box>
             )}
 
-            <Typography variant="body2" sx={{ color: CustomPalette.GREY_600, mb: 1 }}>
+            <Typography variant="body2" sx={{ color: CustomPalette.GREY_600, mb: 1, mt: 0.5 }}>
               {formatRuleDescription || (question.attributeType ? t(question.attributeType) : t("No format rule"))}
             </Typography>
             
             <Collapse in={expanded}>
-              <Box sx={{ 
+              {/* <Box sx={{ 
                 p: 2, 
                 backgroundColor: CustomPalette.GREY_50, 
                 borderRadius: 1,
                 border: `1px solid ${CustomPalette.GREY_200}`
               }}>
-                <Typography variant="caption" sx={{ color: CustomPalette.GREY_600, fontWeight: 600, mb: 1, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: CustomPalette.GREY_600, fontWeight: 600, mt: -1, mb: 1, display: 'block', textAlign: 'center' }}>
                   {t("Answer Area Preview")}:
-                </Typography>
+                </Typography> */}
                 <QuestionAnswerPreview 
                   question={question} 
                   currentLanguage={currentLanguage}
                   compact={false}
                 />
-              </Box>
+              {/* </Box> */}
             </Collapse>
           </Box>
         </Box>

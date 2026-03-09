@@ -273,3 +273,35 @@ export const resolveLanguageData = (dataObj, languageName) => {
   
   return null;
 };
+
+export const getLanguageButtonBorderRadius = (index, languageArray, rowIndex, displayLanguageArray, totalLanguages, perRow) => {
+  let curveLeftTop = "0";
+  let curveRightTop = "0";
+  let curveRightBottom = "0";
+  let curveLeftBottom = "0";
+
+  if (totalLanguages > perRow) {
+    if (rowIndex === 0 && index === 0) curveLeftBottom = "8px";
+    if (rowIndex === displayLanguageArray.length - 1 && index === 0) curveLeftTop = "8px";
+    if (rowIndex === 0 && index === perRow - 1) curveRightBottom = "8px";
+    if (rowIndex === displayLanguageArray.length - 1 && index === languageArray.length - 1) curveRightTop = "8px";
+    if (
+      rowIndex === displayLanguageArray.length - 2 &&
+      displayLanguageArray[displayLanguageArray.length - 1].length < perRow &&
+      index === perRow - 1
+    ) {
+      curveRightTop = "8px";
+    }
+  } else {
+    if (index === 0) {
+      curveLeftBottom = "8px";
+      curveLeftTop = "8px";
+    }
+    if (index === totalLanguages - 1) {
+      curveRightBottom = "8px";
+      curveRightTop = "8px";
+    }
+  }
+
+  return `${curveLeftTop} ${curveRightTop} ${curveRightBottom} ${curveLeftBottom}`;
+};
