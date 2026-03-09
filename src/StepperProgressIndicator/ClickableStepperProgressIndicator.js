@@ -17,7 +17,9 @@ export default function ClickableStepperProgressIndicator({
             key={step.label}
             sx={{
               "& .MuiSvgIcon-root.Mui-active": { color: CustomPalette.PRIMARY },
-              "& .MuiSvgIcon-root.Mui-completed": { color: CustomPalette.PRIMARY }
+              "& .MuiSvgIcon-root.Mui-completed": { color: CustomPalette.PRIMARY },
+              "& .MuiStepLabel-root": { alignItems: "center" },
+              "& .MuiStepLabel-labelContainer": { display: "flex", justifyContent: "center" }
             }}
           >
             <StepLabel>
@@ -26,6 +28,7 @@ export default function ClickableStepperProgressIndicator({
                 onClick={() => onStepClick && onStepClick(i, step)}
                 sx={{
                   cursor: "pointer",
+                  alignSelf: "center",
                   px: 2,
                   py: 0.5,
                   border: `1px solid ${CustomPalette.PRIMARY}`,
