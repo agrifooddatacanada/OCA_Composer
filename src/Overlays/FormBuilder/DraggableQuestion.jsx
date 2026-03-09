@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, Box, Typography, IconButton, Collapse } from "@mui/material";
 import { useDrag, useDrop } from 'react-dnd';
 import { DragIndicator as DragIcon, Edit as EditIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
@@ -17,11 +18,12 @@ import DND_TYPES from './dnd/types';
 
 import { getFormatRuleDescription } from "../../utils/helpers";
 
-const findDescription = (formatText, attributeType) => {
-  return getFormatRuleDescription(attributeType, formatText) || "";
+const findDescription = (formatText, attributeType, t) => {
+  return getFormatRuleDescription(attributeType, formatText, t) || "";
 };
 
 const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLanguage, onEdit, onDelete, onReorder, indexInItems, onReorderPageItem }) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = React.useState(true);
   const isTopLevel = (sectionIndex ?? null) === null;
   const [{ isDragging }, drag] = useDrag({ type: isTopLevel ? DND_TYPES.PAGE_ITEM : DND_TYPES.QUESTION, item: isTopLevel ? { type: DND_TYPES.PAGE_ITEM, kind: 'question', index, indexInItems, question, pageIndex, sectionIndex } : { type: DND_TYPES.QUESTION, index, question, pageIndex, sectionIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
@@ -51,7 +53,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
   });
 
   
-  const formatRuleDescription = findDescription(question.formatText, question.attributeType);
+  const formatRuleDescription = findDescription(question.formatText, question.attributeType, t);
   const questionTitle = getMultilingualText(question.title, currentLanguage, question.attribute || 'Untitled Question');
   const questionDescription = getMultilingualText(question.description, currentLanguage, '');
   const isLongDescription = questionDescription && questionDescription.length > 180;
@@ -152,7 +154,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
             )}
 
             <Typography variant="body2" sx={{ color: CustomPalette.GREY_600, mb: 1 }}>
-              {formatRuleDescription || question.attributeType || 'No format rule'}
+              {formatRuleDescription || (question.attributeType ? t(question.attributeType) : t("No format rule"))}
             </Typography>
             
             <Collapse in={expanded}>
@@ -163,7 +165,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
                 border: `1px solid ${CustomPalette.GREY_200}`
               }}>
                 <Typography variant="caption" sx={{ color: CustomPalette.GREY_600, fontWeight: 600, mb: 1, display: 'block' }}>
-                  Answer Area Preview:
+                  {t("Answer Area Preview")}:
                 </Typography>
                 <QuestionAnswerPreview 
                   question={question} 

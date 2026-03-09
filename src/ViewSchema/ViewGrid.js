@@ -235,7 +235,7 @@ export default function ViewGrid({
         {
           field: "Label",
           wrapText: true,
-          width: 170,
+          width: 215,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Label"),
@@ -373,7 +373,7 @@ export default function ViewGrid({
           predefinedColumns.push({
             field: "Add Form Information",
             headerName: t("Form"),
-            width: 98,
+            width: 102,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {

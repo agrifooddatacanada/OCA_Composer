@@ -37,7 +37,7 @@ const CompactListRenderer = ({ value }) => {
 };
 
 export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Use MultiSchemaContext
   const {
@@ -203,7 +203,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     updateSchema({
       lanAttributeRowData: newLanAttributeRowData
     });
-  }, [languages, stableEntryCodes, attributeRowData]);
+  }, [languages, stableEntryCodes, attributeRowData, i18n.language]);
 
   const columnDefs = useMemo(() => [
     {

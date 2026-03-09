@@ -75,7 +75,7 @@ export const PlaceholderNode = ({ data }) => {
               e.stopPropagation();
               data.onNodeClick(data.nodeId);
             }}
-            title="Edit this schema"
+            title={t("Edit this schema")}
           >
             <EditIcon sx={{ fontSize: 16 }} />
           </button>
@@ -89,6 +89,7 @@ export const PlaceholderNode = ({ data }) => {
  * Tree Node Component - represents schema entities in tree view
  */
 export const TreeNode = ({ data }) => {
+  const { t } = useTranslation();
   const isRootNode = data.nodeId === "root";
   const isHighlighted = isRootNode
     ? data.currentSchemaId === data.rootId || data.currentSchemaId === "root"
@@ -108,7 +109,7 @@ export const TreeNode = ({ data }) => {
               e.stopPropagation();
               data.onNodeClick(data.nodeId);
             }}
-            title="Edit this schema"
+            title={t("Edit this schema")}
           >
             <EditIcon sx={{ fontSize: 16 }} />
           </button>
@@ -122,6 +123,7 @@ export const TreeNode = ({ data }) => {
  * Detailed Node Component - represents schema entities with fields in left-to-right layout
  */
 export const DetailedNode = ({ data }) => {
+  const { t } = useTranslation();
   const { title, fields = [], nodeType } = data;
 
   // Sort fields to prioritize child schemas and placeholder child schemas first
@@ -191,7 +193,7 @@ export const DetailedNode = ({ data }) => {
               <strong>Full field names:</strong>
               {truncatedFields.map((field) => (
                 <div key={field.originalName || field.name}>
-                  • {field.originalName || field.name} ({getFieldDisplayType(field)})
+                  • {field.originalName || field.name} ({t(getFieldDisplayType(field))})
                 </div>
               ))}
             </div>
@@ -201,7 +203,7 @@ export const DetailedNode = ({ data }) => {
               <strong>Hidden fields ({hiddenFieldsCount}):</strong>
               {regularFields.slice(maxRegularFields).map((field) => (
                 <div key={field.originalName || field.name}>
-                  • {field.originalName || field.name} ({getFieldDisplayType(field)})
+                  • {field.originalName || field.name} ({t(getFieldDisplayType(field))})
                 </div>
               ))}
             </div>
@@ -227,9 +229,9 @@ export const DetailedNode = ({ data }) => {
                   data.onNodeClick(data.nodeId);
                 }
               }}
-              title="Edit this schema"
+              title={t("Edit this schema")}
             >
-              Edit
+              {t("Edit")}
             </button>
           )}
         </div>
@@ -254,7 +256,7 @@ export const DetailedNode = ({ data }) => {
                 >
                   {fieldName}
                 </span>
-                <span className="field-type">{getFieldDisplayType(field)}</span>
+                <span className="field-type">{t(getFieldDisplayType(field))}</span>
                 {(field.isReference || field.isPlaceholder) && (
                   <FieldHandle field={field} />
                 )}
@@ -274,9 +276,9 @@ export const DetailedNode = ({ data }) => {
                   cursor: "help",
                   textDecoration: "underline dotted"
                 }}
-                title="Select node to see hidden fields"
+                title={t("Select node to see hidden fields")}
               >
-                ... {hiddenFieldsCount} more field{hiddenFieldsCount > 1 ? "s" : ""}
+                ... {t("more fields", { count: hiddenFieldsCount })}
               </span>
               <span className="field-type" />
             </div>
