@@ -3,6 +3,13 @@ import {
   scenarioParentIctGroupMap
 } from "../constants/catalogueInfo";
 
+// this function is used to pretty print the delimiter value in the markdown table
+const prettyDelimiter = (value) => {
+  if (value === "\t") return "\\t (tab)";
+  if (value === " ") return "\\s (space)"; // if we ever support space as a delimiter
+  return value;
+};
+
 const generateTable = (columns, rows) => {
   const header = `| ${columns.join(" | ")} |\n| ${columns.map(() => "---").join(" | ")} |\n`;
   const body = rows.map((row) => `| ${row.join(" | ")} |`).join("\n");
@@ -106,11 +113,15 @@ export const generateSchemaQuickView = ({
 export const generateInternationalSchemaInformation = (
   layers,
   languages,
-  languageCodeLookupMap
+  languageCodeLookupMap,
+  decimal_separator,
+  file_delimiter,
 ) => {
   const markdownContent = ["## International schema information\n\n"];
   const columns = ["Language", "Name", "Description"];
   const rows = [];
+  const delimiterColumns = ["Delimiter", "Value"];
+  const delimiterRows = [];
 
   languages.forEach((language) => {
     const languageCode = languageCodeLookupMap[language.toLowerCase()];
@@ -121,7 +132,22 @@ export const generateInternationalSchemaInformation = (
     rows.push([language, metaOverlay.name, metaOverlay.description]);
   });
 
+  if (decimal_separator || file_delimiter) {
+    if (decimal_separator) {
+      delimiterRows.push(["Decimal separator", decimal_separator.decimal_separator]);
+    }
+    if (file_delimiter) {
+      delimiterRows.push(["File delimiter", prettyDelimiter(file_delimiter.delimiter)]);
+      delimiterRows.push(["Quote character", file_delimiter.quote_char]);
+      delimiterRows.push(["Escape character", file_delimiter.escape_char]);
+      delimiterRows.push(["Line terminator", file_delimiter.line_terminator]);
+      delimiterRows.push(["Data start row", file_delimiter.data_start_row]);
+    }
+  }
+
   markdownContent.push(generateTable(columns, rows), "\n\n");
+  markdownContent.push("### Global Schema Values\n\n");
+  markdownContent.push(generateTable(delimiterColumns, delimiterRows), "\n\n");
 
   return markdownContent.join("");
 };
@@ -235,7 +261,8 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   attributeNames,
   sensitiveAttributes = [],
   rangeOverlay = null,
-  unitFramingOverlay = null
+  unitFramingOverlay = null,
+  arrayDelimiterOverlay = null
 }) => {
   const hcfFlaggedAttributes = Array.isArray(captureBaseOverlay.flagged_attributes)
     ? captureBaseOverlay.flagged_attributes
@@ -287,6 +314,10 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
     columns.push("Unit Framing");
   }
 
+  if (arrayDelimiterOverlay?.attributes) {
+    columns.push("Array delimiters");
+  }
+  
   const rows = attributeNames.map((attribute) => {
     const row = [attribute];
 
@@ -343,6 +374,11 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
     if (unitFramingOverlay?.units?.[unit]) {
       const unitFramingData = unitFramingOverlay.units[unit];
       row.push(unitFramingData.term_id);
+    }
+
+    if (arrayDelimiterOverlay?.attributes?.[attribute]) {
+      const arrayDelimiter = arrayDelimiterOverlay.attributes[attribute];
+      row.push(prettyDelimiter(arrayDelimiter));
     }
 
     return row;

@@ -5,7 +5,7 @@ import {
   getOrderedAttributeMap,
   getOrderedEntries
 } from "../constants/utils";
-import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
+import { ADC, RANGE, SENSITIVE, UNIT_FRAMING, DECIMAL_SEPARATOR, FILE_DELIMITER, ARRAY_DELIMITER } from "../constants/constants";
 
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL
@@ -520,6 +520,57 @@ const useGenerateReadMeV2 = () => {
             );
           });
 
+          text_file.push(
+            "\n",
+            "******************************************************************\n"
+          );
+        }
+      }
+
+      if (Object.prototype.hasOwnProperty.call(extensionOverlays, DECIMAL_SEPARATOR)) {
+        const decimalSeparatorOverlay = extensionOverlays[DECIMAL_SEPARATOR];
+        text_file.push(
+          `Layer name: ${decimalSeparatorOverlay.type}\n`,
+          `SAID/digest: ${decimalSeparatorOverlay.d}\n`,
+          `Decimal separator: ${decimalSeparatorOverlay.decimal_separator ?? ""}\n`,
+          "\n",
+          "******************************************************************\n"
+        );
+      }
+
+      if (Object.prototype.hasOwnProperty.call(extensionOverlays, FILE_DELIMITER)) {
+        const fileDelimiterOverlay = extensionOverlays[FILE_DELIMITER];
+        text_file.push(
+          `Layer name: ${fileDelimiterOverlay.type}\n`,
+          `SAID/digest: ${fileDelimiterOverlay.d}\n`,
+          `delimiter: ${fileDelimiterOverlay.delimiter ?? ""}\n`,
+          `quote_char: ${fileDelimiterOverlay.quote_char ?? ""}\n`,
+          `escape_char: ${fileDelimiterOverlay.escape_char ?? ""}\n`,
+          `line_terminator: ${fileDelimiterOverlay.line_terminator ?? ""}\n`,
+          `data_start_row: ${fileDelimiterOverlay.data_start_row ?? ""}\n`,
+          "\n",
+          "******************************************************************\n"
+        );
+      }
+
+      if (Object.prototype.hasOwnProperty.call(extensionOverlays, ARRAY_DELIMITER)) {
+        const arrayDelimiterOverlay = extensionOverlays[ARRAY_DELIMITER];
+        const arrayAttributes = arrayDelimiterOverlay?.attributes;
+        const hasArrayAttributes =
+          arrayAttributes &&
+          typeof arrayAttributes === "object" &&
+          !Array.isArray(arrayAttributes) &&
+          Object.keys(arrayAttributes).length > 0;
+
+        if (hasArrayAttributes) {
+          text_file.push(
+            `Layer name: ${arrayDelimiterOverlay.type}\n`,
+            `SAID/digest: ${arrayDelimiterOverlay.d}\n\n`,
+            `Schema attributes: ${arrayDelimiterOverlay.type}\n`
+          );
+          Object.entries(arrayAttributes).forEach(([attribute, delimiter]) => {
+            text_file.push(`   ${attribute}: ${delimiter}\n`);
+          });
           text_file.push(
             "\n",
             "******************************************************************\n"

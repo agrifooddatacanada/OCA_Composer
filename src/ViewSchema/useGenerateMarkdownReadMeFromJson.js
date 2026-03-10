@@ -11,7 +11,10 @@ import {
   DEFAULT_THREE_LETTER_LANGUAGE_CODE,
   RANGE,
   SENSITIVE,
-  UNIT_FRAMING
+  UNIT_FRAMING,
+  ARRAY_DELIMITER,
+  DECIMAL_SEPARATOR,
+  FILE_DELIMITER
 } from "../constants/constants";
 import {
   downloadMarkdownFile,
@@ -58,6 +61,18 @@ const useGenerateMarkdownReadMeFromJson = () => {
   const unitFramingOverlay =
     OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[UNIT_FRAMING];
+
+  const arrayDelimiterOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.[ARRAY_DELIMITER];
+
+  const decimalSeparatorOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.[DECIMAL_SEPARATOR];
+
+  const fileDelimiterOverlay =
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+      ?.overlays?.[FILE_DELIMITER];
 
   // Ensuring that the currently selected site language is one of the languages of the schema
   const currentLanguageCode = languages.some(
@@ -142,7 +157,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
     fileContent += generateInternationalSchemaInformation(
       layers,
       languages,
-      languageNameToAlpha3Codes
+      languageNameToAlpha3Codes,
+      decimalSeparatorOverlay,
+      fileDelimiterOverlay
     );
     fileContent += generateEntryCodeTables(
       layers,
@@ -156,7 +173,8 @@ const useGenerateMarkdownReadMeFromJson = () => {
       attributeNames,
       sensitiveAttributes,
       rangeOverlay,
-      unitFramingOverlay
+      unitFramingOverlay,
+      arrayDelimiterOverlay
     });
     if (unitFramingOverlay?.framing_metadata) {
       fileContent += generateUnitFramingMetadataTable(
