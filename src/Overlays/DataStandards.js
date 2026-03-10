@@ -12,6 +12,7 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 import { FIELD_DATA_STANDARDS_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
+import { useOverlayGridOnGridReady } from "./gridUtils";
 
 const DataStandards = () => {
   const {
@@ -72,9 +73,7 @@ const DataStandards = () => {
     setShowDeleteConfirmation(true);
   };
 
-  const onGridReady = () => {
-    setLoading(false);
-  };
+  const onGridReady = useOverlayGridOnGridReady(setLoading);
 
   const columnDefs = useMemo(() => [
       {

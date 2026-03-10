@@ -252,8 +252,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     [t, setFormatRuleRowData]
   );
 
-  const onGridReady = useCallback(() => {}, []);
-
   const onCellValueChanged = useCallback((params) => {
     if (params.colDef.field === CUSTOM_FORMAT_RULE) {
       // When custom format rule changes, clear the built-in format rule and refresh
@@ -312,7 +310,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
             domLayout="autoHeight"
             suppressHorizontalScroll
             rowHeight={50}
-            onGridReady={onGridReady}
             onFirstDataRendered={overlayGridOnFirstDataRendered}
             onCellValueChanged={onCellValueChanged}
           />

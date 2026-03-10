@@ -16,7 +16,7 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 import { FIELD_CHARACTER_ENCODING_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { overlayGridOnFirstDataRendered } from "./gridUtils";
+import { overlayGridOnFirstDataRendered, useOverlayGridOnGridReady } from "./gridUtils";
 
 const CharacterEncoding = () => {
   const { t } = useTranslation();
@@ -150,9 +150,7 @@ const CharacterEncoding = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount/unmount
 
-  const onGridReady = useCallback((params) => {
-    setLoading(false);
-  }, []);
+  const onGridReady = useOverlayGridOnGridReady(setLoading);
 
   return (
     <BackNextSkeleton

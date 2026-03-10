@@ -32,6 +32,7 @@ import Loading from "../components/Loading";
 import { searchUnits } from "../utils/helpers";
 import { FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
+import { useOverlayGridOnGridReady } from "./gridUtils";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 
@@ -625,9 +626,7 @@ const UnitFraming = () => {
     setUnitFramedRowData
   ]);
 
-  const onGridReady = useCallback(() => {
-    setLoading(false);
-  }, []);
+  const onGridReady = useOverlayGridOnGridReady(setLoading);
 
   const showLoading = loading && unitFramedRowData?.length > LOADING_THRESHOLD;
   const hasUnframedUnits = unframedUnitList && unframedUnitList.length > 0;

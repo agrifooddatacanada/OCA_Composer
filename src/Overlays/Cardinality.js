@@ -39,7 +39,7 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
 import { FIELD_CARDINALITY_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { overlayGridOnFirstDataRendered } from "./gridUtils";
+import { overlayGridOnFirstDataRendered, useOverlayGridOnGridReady } from "./gridUtils";
 import "../App.css";
 
 const gridOptions = {
@@ -279,9 +279,7 @@ const Cardinality = () => {
     }
   }, [exactValue, isNotInteger, maxValue, minValue, selectedCellData, t]);
 
-  const onGridReady = useCallback(() => {
-    setLoading(false);
-  }, []);
+  const onGridReady = useOverlayGridOnGridReady(setLoading);
 
   const getRowHeight = useCallback((params) => {
     const attrH = measureTextHeight(params.data?.Attribute || "", 144);

@@ -25,6 +25,7 @@ import { getDateTimePickerConfig } from "./FormBuilder/utils/getDateTimePickerCo
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
+import { useOverlayGridOnGridReady } from "./gridUtils";
 
 import "ag-grid-community/styles/ag-theme-balham.css";
 
@@ -463,9 +464,7 @@ const FormInformation = () => {
     if (gridRef.current?.api) gridRef.current.api.stopEditing();
   }, []);
 
-  const onGridReady = useCallback(() => {
-    setLoading(false);
-  }, []);
+  const onGridReady = useOverlayGridOnGridReady(setLoading);
 
   const getRowHeight = useCallback((params) => {
     const attrH = measureTextHeight(params.data?.Attribute || "", 164);

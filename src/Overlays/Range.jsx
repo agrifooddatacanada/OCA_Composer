@@ -16,6 +16,7 @@ import { getCurrentData, getFormatRuleDescription } from "../utils/helpers";
 import { FIELD_RANGE_OVERLAY } from "../constants/constants";
 import { matchFormat } from "../OCADataValidator/utils/matchRules";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
+import { useOverlayGridOnGridReady } from "./gridUtils";
 
 const Range = forwardRef((props, ref) => {
   const {
@@ -150,9 +151,7 @@ const Range = forwardRef((props, ref) => {
     [t, getCellValidationStyle]
   );
 
-  const onGridReady = () => {
-    setLoading(false);
-  };
+  const onGridReady = useOverlayGridOnGridReady(setLoading);
 
   const handleSave = () => {
     gridRef.current.api.stopEditing();
