@@ -10,6 +10,7 @@ import { textWrapStyle } from "../../constants/styles";
 import DND_TYPES from './dnd/types';
 
 const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, onDelete, onMoveQuestionToSection, onDropPaletteQuestionToSection, onEditQuestion, onDeleteQuestion, onReorderQuestion, indexInItems, onReorderPageItem }) => {
+  const ref = React.useRef(null);
   const [{ isDragging }, drag] = useDrag({ type: DND_TYPES.PAGE_ITEM, item: { type: DND_TYPES.PAGE_ITEM, kind: 'section', index, indexInItems, section, pageIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
   const [{ isOver }, drop] = useDrop({
     accept: [DND_TYPES.QUESTION, DND_TYPES.PALETTE_QUESTION, DND_TYPES.PAGE_ITEM],
@@ -27,6 +28,16 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
       if (item.type === DND_TYPES.PAGE_ITEM) {
         if (item.pageIndex !== pageIndex) return;
         if (item.indexInItems === indexInItems) return;
+        if (ref.current) {
+          const hoverBoundingRect = ref.current.getBoundingClientRect();
+          const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+          const clientOffset = monitor.getClientOffset();
+          if (clientOffset) {
+            const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+            if (item.indexInItems < indexInItems && hoverClientY < hoverMiddleY) return;
+            if (item.indexInItems > indexInItems && hoverClientY > hoverMiddleY) return;
+          }
+        }
         onReorderPageItem(pageIndex, item.indexInItems, indexInItems);
         item.indexInItems = indexInItems;
       }
@@ -39,7 +50,7 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
 
   return (
   <Card 
-      ref={(node) => drag(drop(node))} 
+      ref={(node) => { ref.current = node; drag(drop(node)); }} 
       sx={{ 
         mb: 1, 
         opacity: isDragging ? 0.5 : 1, 

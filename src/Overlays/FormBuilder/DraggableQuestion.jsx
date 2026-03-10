@@ -25,6 +25,7 @@ const findDescription = (formatText, attributeType, t) => {
 
 const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLanguage, onEdit, onDelete, onReorder, indexInItems, onReorderPageItem }) => {
   const { t } = useTranslation();
+  const ref = React.useRef(null);
   const [expanded, setExpanded] = React.useState(true);
   const isTopLevel = (sectionIndex ?? null) === null;
   const [{ isDragging }, drag] = useDrag({ type: isTopLevel ? DND_TYPES.PAGE_ITEM : DND_TYPES.QUESTION, item: isTopLevel ? { type: DND_TYPES.PAGE_ITEM, kind: 'question', index, indexInItems, question, pageIndex, sectionIndex } : { type: DND_TYPES.QUESTION, index, question, pageIndex, sectionIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
@@ -43,11 +44,31 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
         const sameContainer = (item.sectionIndex ?? null) === (sectionIndex ?? null);
         if (!sameContainer) return;
         if (item.index === index) return;
+        if (ref.current) {
+          const hoverBoundingRect = ref.current.getBoundingClientRect();
+          const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 4;
+          const clientOffset = monitor.getClientOffset();
+          if (clientOffset) {
+            const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+            if (item.index < index && hoverClientY < hoverMiddleY) return;
+            if (item.index > index && hoverClientY > hoverMiddleY) return;
+          }
+        }
         onReorder(pageIndex, sectionIndex ?? null, item.index, index);
         item.index = index;
         return;
       }
       if (item.indexInItems === indexInItems) return;
+      if (ref.current) {
+        const hoverBoundingRect = ref.current.getBoundingClientRect();
+        const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+        const clientOffset = monitor.getClientOffset();
+        if (clientOffset) {
+          const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+          if (item.indexInItems < indexInItems && hoverClientY < hoverMiddleY) return;
+          if (item.indexInItems > indexInItems && hoverClientY > hoverMiddleY) return;
+        }
+      }
       onReorderPageItem(pageIndex, item.indexInItems, indexInItems);
       item.indexInItems = indexInItems;
     }
@@ -63,7 +84,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
 
   return (
     <Card 
-      ref={(node) => drag(drop(node))} 
+      ref={(node) => { ref.current = node; drag(drop(node)); }} 
       sx={{ 
         mb: 1, 
         opacity: isDragging ? 0.5 : 1, 
