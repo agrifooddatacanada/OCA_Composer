@@ -10,6 +10,7 @@ import CellHeader from "../components/CellHeader";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { FIELD_CONFORMANCE_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
+import { overlayGridOnFirstDataRendered } from "./gridUtils";
 
 const RequiredEntryHeader = ({ gridRef, t }) => {
   const inputRef = useRef();
@@ -173,6 +174,8 @@ const RequiredEntries = () => {
             rowData={requiredEntriesRowData}
             columnDefs={columnDefs}
             domLayout="autoHeight"
+            suppressHorizontalScroll
+            onFirstDataRendered={overlayGridOnFirstDataRendered}
             onCellValueChanged={handleCellValueChanged}
           />
         </div>

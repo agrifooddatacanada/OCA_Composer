@@ -18,6 +18,7 @@ import {
   FIELD_RANGE_OVERLAY
 } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
+import { overlayGridOnFirstDataRendered } from "./gridUtils";
 import { getFormatRuleDescription } from "../utils/helpers";
 
 const allowOverflowStyle = {
@@ -251,8 +252,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     [t, setFormatRuleRowData]
   );
 
-  const onGridReady = useCallback(() => {
-  }, []);
+  const onGridReady = useCallback(() => {}, []);
 
   const onCellValueChanged = useCallback((params) => {
     if (params.colDef.field === CUSTOM_FORMAT_RULE) {
@@ -313,6 +313,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
             suppressHorizontalScroll
             rowHeight={50}
             onGridReady={onGridReady}
+            onFirstDataRendered={overlayGridOnFirstDataRendered}
             onCellValueChanged={onCellValueChanged}
           />
         </Box>
