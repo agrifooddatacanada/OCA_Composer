@@ -44,6 +44,7 @@ const DroppablePage = ({
   onMovePageItem
 }) => {
   const { t } = useTranslation();
+  const itemsContainerRef = React.useRef(null);
 
   const [{ isDragging }, drag] = useDrag({
     type: 'page',
@@ -61,6 +62,17 @@ const DroppablePage = ({
       if (item.type === DND_TYPES.PAGE_ITEM) {
         if (item.pageIndex !== pageIndex) {
           onMovePageItem(item.pageIndex, item.indexInItems, pageIndex);
+        } else if (itemsContainerRef.current) {
+          const clientOffset = monitor.getClientOffset();
+          if (clientOffset) {
+            const rect = itemsContainerRef.current.getBoundingClientRect();
+            const items = page.items || [];
+            const relY = (clientOffset.y - rect.top) / Math.max(rect.height, 1);
+            const toIndex = Math.min(Math.max(0, Math.floor(relY * items.length)), items.length - 1);
+            if (toIndex !== item.indexInItems) {
+              onReorderPageItem(pageIndex, item.indexInItems, toIndex);
+            }
+          }
         }
       }
     },
@@ -160,7 +172,7 @@ const DroppablePage = ({
           </Box>
         )}
 
-        <Box sx={{ minHeight: 100 }}>
+        <Box ref={itemsContainerRef} sx={{ minHeight: 100 }}>
           {(page.items || []).map((it, idx) => {
             if (it.kind === 'section') {
               const sectionIndex = (page.sections || []).findIndex(s => s.id === it.id);

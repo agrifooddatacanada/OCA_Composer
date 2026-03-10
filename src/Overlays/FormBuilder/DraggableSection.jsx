@@ -9,6 +9,38 @@ import getMultilingualText from "./utils/getMultilingualText";
 import { textWrapStyle } from "../../constants/styles";
 import DND_TYPES from './dnd/types';
 
+const SectionQuestionsDropZone = ({ section, sectionIndex, pageIndex, onReorderQuestion, onMoveQuestionToSection, onDropPaletteQuestionToSection, children }) => {
+  const ref = React.useRef(null);
+  const [, drop] = useDrop({
+    accept: [DND_TYPES.QUESTION, DND_TYPES.PALETTE_QUESTION],
+    drop: (item, monitor) => {
+      if (monitor.didDrop()) return;
+      if (item.source === 'palette') { onDropPaletteQuestionToSection(pageIndex, sectionIndex, item); return; }
+      if (item.type === DND_TYPES.QUESTION && ref.current) {
+        const fromPageIndex = item.pageIndex;
+        const fromSectionIndex = item.sectionIndex ?? null;
+        const isSameSection = fromPageIndex === pageIndex && fromSectionIndex === sectionIndex;
+        const clientOffset = monitor.getClientOffset();
+        if (clientOffset) {
+          const rect = ref.current.getBoundingClientRect();
+          const questions = section.questions || [];
+          const relY = (clientOffset.y - rect.top) / Math.max(rect.height, 1);
+          const toIndex = Math.min(Math.max(0, Math.floor(relY * questions.length)), Math.max(0, questions.length - 1));
+          if (isSameSection && toIndex !== item.index) {
+            onReorderQuestion(pageIndex, sectionIndex, item.index, toIndex);
+            return;
+          }
+          if (!isSameSection) {
+            onMoveQuestionToSection(fromPageIndex, item.index, pageIndex, sectionIndex, fromSectionIndex);
+            return;
+          }
+        }
+      }
+    }
+  });
+  return <Box ref={(n) => { ref.current = n; drop(n); }} sx={{ mt: 1 }}>{children}</Box>;
+};
+
 const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, onDelete, onMoveQuestionToSection, onDropPaletteQuestionToSection, onEditQuestion, onDeleteQuestion, onReorderQuestion, indexInItems, onReorderPageItem }) => {
   const ref = React.useRef(null);
   const [{ isDragging }, drag] = useDrag({ type: DND_TYPES.PAGE_ITEM, item: { type: DND_TYPES.PAGE_ITEM, kind: 'section', index, indexInItems, section, pageIndex }, collect: (m) => ({ isDragging: m.isDragging() }) });
@@ -20,6 +52,11 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
       if (item.type === DND_TYPES.QUESTION) {
         const fromPageIndex = item.pageIndex;
         const fromSectionIndex = item.sectionIndex ?? null;
+        const isSameSection = fromPageIndex === pageIndex && fromSectionIndex === index;
+        if (isSameSection) {
+          onReorderQuestion(pageIndex, index, item.index, 0);
+          return;
+        }
         onMoveQuestionToSection(fromPageIndex, item.index, pageIndex, index, fromSectionIndex);
       }
     },
@@ -108,7 +145,14 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
           </Box>
         )}
 
-        <Box sx={{ mt: 1 }}>
+        <SectionQuestionsDropZone
+          section={section}
+          sectionIndex={index}
+          pageIndex={pageIndex}
+          onReorderQuestion={onReorderQuestion}
+          onMoveQuestionToSection={onMoveQuestionToSection}
+          onDropPaletteQuestionToSection={onDropPaletteQuestionToSection}
+        >
           {(section.questions || []).map((question, questionIndex) => (
             <DraggableQuestion
               key={question.id}
@@ -122,7 +166,7 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
               onReorder={onReorderQuestion}
             />
           ))}
-        </Box>
+        </SectionQuestionsDropZone>
       </CardContent>
     </Card>
   );

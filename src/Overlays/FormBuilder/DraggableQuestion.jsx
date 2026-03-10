@@ -37,6 +37,14 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
       }
       return item.pageIndex === pageIndex && item.indexInItems !== indexInItems;
     },
+    drop: (item, monitor) => {
+      if (!isTopLevel && !monitor.didDrop()) {
+        const sameContainer = (item.sectionIndex ?? null) === (sectionIndex ?? null);
+        if (sameContainer && item.index !== index) {
+          onReorder(pageIndex, sectionIndex ?? null, item.index, index);
+        }
+      }
+    },
     hover: (item, monitor) => {
       if (!monitor.isOver({ shallow: true })) return;
       if (item.pageIndex !== pageIndex) return;
@@ -46,7 +54,7 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
         if (item.index === index) return;
         if (ref.current) {
           const hoverBoundingRect = ref.current.getBoundingClientRect();
-          const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 4;
+          const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
           const clientOffset = monitor.getClientOffset();
           if (clientOffset) {
             const hoverClientY = clientOffset.y - hoverBoundingRect.top;
