@@ -552,7 +552,20 @@ const FormInformation = () => {
           constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
           helpText: t("This is the language specific label for an attribute")
         },
-        cellEditorParams: { maxLength: MAX_ATTR_LABEL_CHARS }
+        cellEditorParams: { maxLength: MAX_ATTR_LABEL_CHARS },
+        valueSetter: (params) => {
+          const attr = params.data.Attribute;
+          const newValue = params.newValue ?? "";
+          params.data.Label = newValue;
+          const prev = lanAttributeRowData || {};
+          const langRows = prev[currentLanguage] || [];
+          const rowByAttr = Object.fromEntries(langRows.map((r) => [r.Attribute, r]));
+          const updated = attributesList.map((a) => {
+            const r = rowByAttr[a] || { Attribute: a, Label: "", Placeholder: "", Description: "", List: "" };
+            return a === attr ? { ...r, Label: newValue } : r;
+          });
+          updateSchema({ lanAttributeRowData: { ...prev, [currentLanguage]: updated } });
+        }
       },
       {
         field: "Placeholder",
@@ -611,7 +624,7 @@ const FormInformation = () => {
         }
       }
     ];
-  }, [attributeRowData, formatRuleRowData, currentLanguage, t, updateSchema, formPlaceholdersByLanguage]);
+  }, [attributeRowData, formatRuleRowData, currentLanguage, t, updateSchema, formPlaceholdersByLanguage, lanAttributeRowData, attributesList]);
 
   useEffect(() => {
     const api = gridRef.current?.api;
@@ -675,12 +688,6 @@ const FormInformation = () => {
     deleteHandler();
   }, [deleteHandler, updateSchema]);
 
-  useEffect(() => {
-    if (gridRef.current?.api) {
-      gridRef.current.api.setRowData(currentRows);
-    }
-  }, [currentRows]);
-
   return (
     <BackNextSkeleton
       isForward
@@ -735,6 +742,7 @@ const FormInformation = () => {
             <AgGridReact
               ref={gridRef}
               rowData={currentRows}
+              getRowId={(params) => params.data.Attribute}
               columnDefs={columnDefs}
               domLayout="autoHeight"
               suppressHorizontalScroll
