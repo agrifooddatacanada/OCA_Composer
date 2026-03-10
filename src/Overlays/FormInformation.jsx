@@ -11,7 +11,7 @@ import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { langNameFromTwoLetters, langNameFromCodeOCA, langCodeOCAFromName, getUICode, LanguageConstants, resolveLanguageData } from "../utils/languageUtils";
+import { langNameFromTwoLetters, langNameFromCodeOCA, langCodeOCAFromName, LanguageConstants, resolveLanguageData } from "../utils/languageUtils";
 import i18next from "i18next";
 import {
   formatCodeBinaryDescription,
@@ -49,20 +49,14 @@ const PLACEHOLDER_EDITABLE_TYPES = ["Text", "Array[Text]", "DateTime", "Array[Da
 
 const FormInformation = () => {
   const { t } = useTranslation();
-  const {
-    setCurrentPage,
-    setSelectedOverlay,
-    setOverlay
-  } = useContext(Context);
+  const { setCurrentPage } = useContext(Context);
 
-  // Get data from MultiSchemaContext (single source of truth)
-  const { 
-    getCurrentSchemaId, 
-    getAttributesList, 
+  const {
+    getCurrentSchemaId,
+    getAttributesList,
     getFormatRuleData,
     getSchema,
-    updateSchema,
-    pkgUpload
+    updateSchema
   } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchema();
@@ -77,9 +71,6 @@ const FormInformation = () => {
   const FormInformationRowData = schemaState?.FormInformationRowData || [];
   const formPlaceholdersByLanguage = schemaState?.formPlaceholdersByLanguage || {};
   
-  // Get formBuilderPages from per-schema state
-  const formBuilderPages = schemaState?.formBuilderPages || [];
-
   const gridRef = useRef();
   const refContainer = useRef();
   const [errorMessage, setErrorMessage] = useState("");
@@ -113,8 +104,12 @@ const FormInformation = () => {
     }
   }, [languages, currentLanguage, filteredLanguages]);
   
-  // Get rows for current language, handling various language key formats
-  const currentRows = resolveLanguageData(lanAttributeRowData, currentLanguage) || [];
+  const rawRows = resolveLanguageData(lanAttributeRowData, currentLanguage) || [];
+  const currentRows = useMemo(() => {
+    if (!attributesList?.length) return rawRows;
+    const rowByAttr = Object.fromEntries((rawRows || []).map((r) => [r.Attribute, r]));
+    return attributesList.map((attr) => rowByAttr[attr] || { Attribute: attr, Label: "", Placeholder: "", Description: "", List: "" });
+  }, [rawRows, attributesList]);
   const primaryLanguage = languages?.[0] || LanguageConstants.DEFAULT_LANG_NAME;
 
   // Normalize any lan/form placeholder keys that use OCA 3-letter codes (e.g., 'eng') into UI language names (e.g., 'English')
@@ -616,7 +611,7 @@ const FormInformation = () => {
         }
       }
     ];
-  }, [attributeRowData, formatRuleRowData, currentLanguage, t]);
+  }, [attributeRowData, formatRuleRowData, currentLanguage, t, updateSchema, formPlaceholdersByLanguage]);
 
   useEffect(() => {
     const api = gridRef.current?.api;
@@ -644,10 +639,10 @@ const FormInformation = () => {
     gridRef.current.api.stopEditing();
     const rows = [];
     gridRef.current.api.forEachNode((node) => rows.push(node.data));
-    for (let i = 0; i < attributesList.length; i += 1) {
-      const label = lanAttributeRowData?.[primaryLanguage]?.[i]?.Label;
-      if (!label || `${label}`.trim() === "") {
-        const attr = attributesList[i];
+    const primaryRows = lanAttributeRowData?.[primaryLanguage] || [];
+    for (const attr of attributesList) {
+      const row = primaryRows.find((r) => r.Attribute === attr);
+      if (!row?.Label || `${row.Label}`.trim() === "") {
         return {
           ok: false,
           msg: `${t("Label")} - ${t("Please fill out all fields")} (${attr})`
@@ -680,13 +675,11 @@ const FormInformation = () => {
     deleteHandler();
   }, [deleteHandler, updateSchema]);
 
-  // Ensure grid row data updates when lanAttributeRowData changes
   useEffect(() => {
     if (gridRef.current?.api) {
-      const rows = resolveLanguageData(lanAttributeRowData, currentLanguage) || [];
-      gridRef.current.api.setRowData(rows);
+      gridRef.current.api.setRowData(currentRows);
     }
-  }, [lanAttributeRowData, currentLanguage]);
+  }, [currentRows]);
 
   return (
     <BackNextSkeleton
