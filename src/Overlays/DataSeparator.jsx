@@ -27,7 +27,7 @@ const SectionTitle = ({ checked, onChange, title, help }) => {
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
       <FormControlLabel
-        control={<Checkbox checked={checked} onChange={(e) => onChange(e.target.checked)} />}
+        control={<Checkbox checked={checked} onChange={(e) => {if(typeof onChange === "function") {onChange(e.target.checked);}}} />}
         label={<Typography variant="h6">{t(title)}</Typography>}
       />
       <Tooltip title={t(help || "")}>
@@ -48,20 +48,49 @@ const DataSeparator = () => {
     setDecimalSeparator,
     fileDelimiterData,
     setFileDelimiterData,
-    arrayDelimiter,
-    setArrayDelimiter
+    arrayDelimiterData,
+    setArrayDelimiterData,
+    enableDecimalSeparator,
+    setEnableDecimalSeparator,
+    enableFileDelimiter,
+    setEnableFileDelimiter,
+    enableArrayDelimiter,
+    setEnableArrayDelimiter
   } = useContext(Context);
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   // Section toggles
-  const [enableDecimalSeparator, setEnableDecimalSeparator] = useState(true);
-  const [enableFileDelimiter, setEnableFileDelimiter] = useState(true);
+  // const [enableDecimalSeparator, setEnableDecimalSeparator] = useState(true);
+  // const [enableFileDelimiter, setEnableFileDelimiter] = useState(true);
   const hasArrayAttributes = useMemo(
     () => attributeRowData?.some((row) => String(row?.Type || "").startsWith("Array[")),
     [attributeRowData]
   );
-  const [enableArrayDelimiter, setEnableArrayDelimiter] = useState(hasArrayAttributes);
+  const arrayAttributes = useMemo(
+    () =>
+      attributeRowData?.filter((row) =>
+        String(row?.Type || "").startsWith("Array[")
+      ).map((row) => row.Attribute) ?? [],
+    [attributeRowData]
+  );
+  // const [enableArrayDelimiter, setEnableArrayDelimiter] = useState(hasArrayAttributes);
+  const safeArrayDelimiterData = useMemo(() => {
+    const data = arrayDelimiterData;
+    if (typeof data === "object" && data !== null && !Array.isArray(data)) {
+      return data;
+    }
+    return {};
+  }, [arrayDelimiterData]);
+
+  const setArrayDelimiterForAttribute = (attrName, value) => {
+    setArrayDelimiterData((prev) => ({
+      ...(typeof prev === "object" && prev !== null && !Array.isArray(prev)
+        ? prev
+        : {}),
+      [attrName]: value
+    }));
+  };
 
   // Values
   const [fieldDelimiter, setFieldDelimiter] = useState(fileDelimiterData.fieldDelimiter);
@@ -293,16 +322,41 @@ const DataSeparator = () => {
                 </Typography>
               </Box>
             ) : (
-              <Box sx={{ mt: 2 }}>
-                <TextField
-                  disabled={!enableArrayDelimiter}
-                  label={t("Array delimiter")}
-                  value={arrayDelimiter}
-                  onChange={(e) => setArrayDelimiter(e.target.value)}
-                  helperText={t("Single character, e.g., ; or |")}
-                  inputProps={{ maxLength: 1 }}
-                  fullWidth
-                />
+              <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+                {arrayAttributes.map((attrName) => (
+                  <Box
+                    key={attrName}
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 2,
+                      alignItems: "center"
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {attrName}
+                    </Typography>
+                    <FormControl fullWidth disabled={!enableArrayDelimiter} size="small">
+                      <InputLabel id={`array-delimiter-${attrName}`}>
+                        {t("Delimiter")}
+                      </InputLabel>
+                      <Select
+                        labelId={`array-delimiter-${attrName}`}
+                        label={t("Delimiter")}
+                        value={safeArrayDelimiterData[attrName] ?? ","}
+                        onChange={(e) =>
+                          setArrayDelimiterForAttribute(attrName, e.target.value)
+                        }
+                      >
+                        {FIELD_DELIMITER_OPTIONS.map((opt) => (
+                          <MenuItem key={opt.value} value={opt.value}>
+                            {t(opt.labelKey)}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                ))}
               </Box>
             )}
           </CardContent>

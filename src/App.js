@@ -96,6 +96,8 @@ function App() {
   ] = useState({});
   const [unframedUnitList, setUnframedUnitList] = useState([]);
   const [unitRowDataWhenNoFrameAll, setUnitRowDataWhenNoFrameAll] = useState([]);
+
+  // Data Separator Overlay
   const [decimalSeparator, setDecimalSeparator] = useState(".");
   const [fileDelimiterData, setFileDelimiterData] = useState({
     fieldDelimiter: "comma",
@@ -104,9 +106,14 @@ function App() {
     lineTerminator: "lf",
     dataStartRow: 1
   });
-  const [arrayDelimiter, setArrayDelimiter] = useState(",");
+  const [arrayDelimiterData, setArrayDelimiterData] = useState({});
 
-  // Attribute framing
+  // Data Separator Overlay Toggles: enable/disable the sections of the Data Separator Overlay
+  const [enableDecimalSeparator, setEnableDecimalSeparator] = useState(false);
+  const [enableFileDelimiter, setEnableFileDelimiter] = useState(false);
+  const [enableArrayDelimiter, setEnableArrayDelimiter] = useState(false);
+
+  // Attribute Framing Overlay
   const [attributeFramingRowData, setAttributeFramingRowData] = useState([]);
   const [frameAllAttributes, setFrameAllAttributes] = useState(
     hasAttributeFramingOverlay()
@@ -836,8 +843,14 @@ function App() {
             setDecimalSeparator,
             fileDelimiterData,
             setFileDelimiterData,
-            arrayDelimiter,
-            setArrayDelimiter
+            arrayDelimiterData,
+            setArrayDelimiterData,
+            enableDecimalSeparator,
+            setEnableDecimalSeparator,
+            enableFileDelimiter,
+            setEnableFileDelimiter,
+            enableArrayDelimiter,
+            setEnableArrayDelimiter
           }}
         >
           <Box

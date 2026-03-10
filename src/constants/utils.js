@@ -539,6 +539,14 @@ export const getRangeOverlayInput = (rangeRowData, formatRuleRowData) => {
   return rangeOverlayInput;
 };
 
+export const getArrayDelimiterInput = (arrayDelimiterData) => {
+  const arrayDelimiterInput = {};
+  Object.entries(arrayDelimiterData).forEach(([attribute, delimiter]) => {
+    arrayDelimiterInput[attribute] = delimiter;
+  });
+  return arrayDelimiterInput;
+};
+
 export const getFormInformationInput = (
   formBuilderPages,
   languages,

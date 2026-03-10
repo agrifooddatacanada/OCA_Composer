@@ -52,7 +52,7 @@ const useZipParser = () => {
     setRangeRowData,
     setDecimalSeparator,
     setFileDelimiterData,
-    setArrayDelimiter,
+    setArrayDelimiterData,
     setAttributeFramingRowData,
     setSchemaMode
   } = useContext(Context);
@@ -119,7 +119,7 @@ const useZipParser = () => {
       dataStartRow: 1
     };
     const newAttributeFramingRowData = [];
-    let newArrayDelimiter = ",";
+    let newArrayDelimiterData = {};
 
     if (isMultiLevelSchema(root?.attributes || {})) {
       setSchemaMode(SCHEMA_MODE_MULTI_LEVEL);
@@ -531,8 +531,24 @@ const useZipParser = () => {
 
     if (ocaPackageData && hasArrayDelimiterOverlay(ocaPackageData)) {
       const captureBaseSaid = ocaPackageData?.oca_bundle?.bundle?.capture_base?.d;
-      const arrayDelimiterOverlay = ocaPackageData.extensions[ADC][captureBaseSaid].overlays[ARRAY_DELIMITER];
-      newArrayDelimiter = arrayDelimiterOverlay?.delimiter || ",";
+      const arrayDelimiterOverlay =
+        ocaPackageData.extensions[ADC][captureBaseSaid].overlays[ARRAY_DELIMITER];
+      const overlayAttrs = arrayDelimiterOverlay?.attributes;
+      const legacyDelimiter = arrayDelimiterOverlay?.delimiter;
+      if (
+        overlayAttrs &&
+        typeof overlayAttrs === "object" &&
+        !Array.isArray(overlayAttrs)
+      ) {
+        newArrayDelimiterData = { ...overlayAttrs };
+      } else if (legacyDelimiter != null && legacyDelimiter !== "") {
+        const arrayAttrNames = newAttributeRowData
+          .filter((row) => String(row?.Type || "").startsWith("Array["))
+          .map((row) => row.Attribute);
+        newArrayDelimiterData = Object.fromEntries(
+          arrayAttrNames.map((attr) => [attr, legacyDelimiter || ","])
+        );
+      }
 
       setOverlay((prev) => ({
         ...prev,
@@ -567,7 +583,7 @@ const useZipParser = () => {
     setRangeRowData(newRangeRowData);
     setDecimalSeparator(newDecimalSeparator);
     setFileDelimiterData(newFileDelimiterData);
-    setArrayDelimiter(newArrayDelimiter);
+    setArrayDelimiterData(newArrayDelimiterData);
   };
 
   return {

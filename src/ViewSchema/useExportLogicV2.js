@@ -34,7 +34,8 @@ import {
   getTransformedEntryCodes,
   getUnitFramingInput,
   getAttributeFramingInput,
-  getFormInformationInput
+  getFormInformationInput,
+  getArrayDelimiterInput
 } from "../constants/utils";
 import useGenerateReadMeV2 from "./useGenerateReadMeV2";
 
@@ -60,7 +61,10 @@ const useExportLogicV2 = () => {
     formBuilderPages,
     decimalSeparator,
     fileDelimiterData,
-    arrayDelimiter
+    arrayDelimiterData,
+    enableDecimalSeparator,
+    enableFileDelimiter,
+    enableArrayDelimiter,
   } = useContext(Context);
 
   const { jsonToTextFile } = useGenerateReadMeV2();
@@ -465,6 +469,7 @@ const useExportLogicV2 = () => {
       */
 
       const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData);
+      const arrayDelimiterInput = getArrayDelimiterInput(arrayDelimiterData);
 
       // unit framing overlay extension input for creation
       const retainedUniqueFramedUnits = currentUnitFramedRowData.filter(
@@ -496,13 +501,13 @@ const useExportLogicV2 = () => {
             attributes: rangeOverlayInput
           }
         }),
-        ...(overlay[FIELD_DATA_SEPARATOR_OVERLAY].selected && {
+        ...(overlay[FIELD_DATA_SEPARATOR_OVERLAY].selected && enableDecimalSeparator && {
           decimal_separator_overlay: {
             type: DECIMAL_SEPARATOR,
             decimal_separator: decimalSeparator
           }
         }),
-        ...(overlay[FIELD_DATA_SEPARATOR_OVERLAY].selected && {
+        ...(overlay[FIELD_DATA_SEPARATOR_OVERLAY].selected && enableFileDelimiter && {
           file_delimiter_overlay: {
             type: FILE_DELIMITER,
             delimiter: fileDelimiterData.fieldDelimiter,
@@ -512,10 +517,10 @@ const useExportLogicV2 = () => {
             data_start_row: fileDelimiterData.dataStartRow
           }
         }),
-        ...(overlay[FIELD_DATA_SEPARATOR_OVERLAY].selected && {
+        ...(overlay[FIELD_DATA_SEPARATOR_OVERLAY].selected && enableArrayDelimiter && {
           array_delimiter_overlay: {
             type: ARRAY_DELIMITER,
-            delimiter: arrayDelimiter
+            attributes: arrayDelimiterInput
           }
         }),
         ...(sensitiveAttributes.length > 0 && {
