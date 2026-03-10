@@ -95,7 +95,6 @@ export const createDefaultSchemaState = () => ({
   frameAllAttributes: false,
   unframedUnitList: [],
   unframedAttributeList: [],
-  unitFramedThatAlreadyExist: {},
   // Lifecycle flags
   /**
    * initialized: Marks schema as "ready for export/visualization"

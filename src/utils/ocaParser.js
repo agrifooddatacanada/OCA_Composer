@@ -198,7 +198,6 @@ export class OCAParser {
       frameAllAttributes: false,
       unframedUnitList: [],
       unframedAttributeList: [],
-      unitFramedThatAlreadyExist: {},
       initialized: true  // CRITICAL: Marks schema as parsed (don't re-parse)
     };
   }

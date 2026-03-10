@@ -481,36 +481,6 @@ export const searchUnits = (unit) => {
   };
 };
 
-export const updatedUnitFramingRowDataForViewSchema = (
-  attributeRowData,
-  unitFramedRowData
-) =>
-  attributeRowData.map((attributeRow) => {
-    const matchingRow = unitFramedRowData.find(
-      (unitRow) => unitRow.Unit === attributeRow.Unit && !unitRow.deleted
-    );
-
-    return matchingRow
-      ? {
-          ...attributeRow,
-          "UCUM Code": matchingRow["UCUM Code"],
-          "UCUM Label": matchingRow["UCUM Label"],
-          Description: matchingRow.Description
-        }
-      : attributeRow;
-  });
-
-export const getCurrentUnitFramingRowData = (
-  framedAllUnits,
-  unitFramedRowData,
-  unitRowDataWhenNoFrameAll
-) => {
-  if (framedAllUnits) {
-    return unitFramedRowData;
-  }
-  return unitRowDataWhenNoFrameAll;
-};
-
 export const getAttributeFramingInput = (attributeFramingRowData, attributesList = null) => {
   const attributeFramingInput = {};
   // Create a Set of valid attributes if provided for O(1) lookup
