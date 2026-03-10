@@ -21,12 +21,6 @@ import {
   CUSTOM_FORMAT_RULE,
   overlayItems
 } from "./constants/constants";
-import {
-  getUnitsFramedThatAlreadyExistInOcaPackage,
-  hasUnitFramingOverlay,
-  hasAttributeFramingOverlay
-} from "./utils/helpers";
-
 // import { environVariables } from "./components/environmentConfig";
 
 export const Context = createContext();
@@ -67,25 +61,6 @@ function App() {
 
   const [overlay, setOverlay] = useState(overlayItems);
   const [selectedOverlay, setSelectedOverlay] = useState("");
-  const [dataStandardsRowData, setDataStandardsRowData] = useState([]);
-  // the current state of units from attributeRowData
-  const [unitRowData, setUnitRowData] = useState([]);
-  const [currentUnitFramedRowData, setCurrentUnitFramedRowData] = useState([]);
-  const [unitFramedRowData, setUnitFramedRowData] = useState([]);
-  const [frameAllUnits, setFrameAllUnits] = useState(hasUnitFramingOverlay());
-  const [
-    unitFramedThatAlreadyExistInOcaPackage,
-    setUnitFramedThatAlreadyExistInOcaPackage
-  ] = useState({});
-  const [unframedUnitList, setUnframedUnitList] = useState([]);
-  const [unitRowDataWhenNoFrameAll, setUnitRowDataWhenNoFrameAll] = useState([]);
-
-  // Attribute framing
-  const [attributeFramingRowData, setAttributeFramingRowData] = useState([]);
-  const [frameAllAttributes, setFrameAllAttributes] = useState(
-    hasAttributeFramingOverlay()
-  );
-  const [unframedAttributeList, setUnframedAttributeList] = useState([]);
 
   // Use for OCA Validator
   const [jsonRawFile, setJsonRawFile] = useState([]);
@@ -197,132 +172,6 @@ function App() {
     ReactGA.send({ hitType: "pageview", page: window.location.pathname });
   }, []);
 
-  // REMOVED: Legacy useEffects for attributesList, formatRuleRowData management
-  // These are now handled by MultiSchemaContext with normalized storage
-
-  // TODO: Unit framing logic needs to be refactored to work with multi-schema context
-  // For now, this useEffect is disabled since pkgUpload is no longer in App.js
-  // useEffect(() => {
-  //   if (pkgUpload) {
-  //     setUnitFramedThatAlreadyExistInOcaPackage(
-  //       getUnitsFramedThatAlreadyExistInOcaPackage(pkgUpload)
-  //     );
-  //   }
-  // }, [pkgUpload]);
-
-  /*
-  Every time the unitRowData updates, we need to update the unitFramedRowData
-  This is because the unitFramedRowData is used to display & create the unit framing overlay
-  and the unitFramedRowData has to be updated whenever unitRowData is updated.
-  */
-  useEffect(() => {
-    if (unitRowData.length > 0) {
-      setUnitFramedRowData((prev) => {
-        // First, preserve all existing rows that are marked as deleted
-        const deletedRows = prev.filter((row) => row.deleted === true);
-
-        return unitRowData.map((currentFramedUnit) => {
-          // Check if the row already exists in unitFramedRowData
-          const existingRow = prev.find(
-            (prevFramedUnit) =>
-              prevFramedUnit.Attribute === currentFramedUnit.Attribute &&
-              prevFramedUnit.Unit === currentFramedUnit.Unit &&
-              prevFramedUnit["UCUM Code"] === currentFramedUnit["UCUM Code"]
-          );
-
-          // If it exists, keep the existing row (including its `deleted` status)
-          if (existingRow) {
-            return existingRow;
-          }
-
-          // Check if this unit was previously deleted
-          const wasDeleted = deletedRows.some(
-            (deletedRow) => deletedRow.Unit === currentFramedUnit.Unit
-          );
-
-          // If it was deleted, keep it deleted; otherwise, set to false
-          return { ...currentFramedUnit, deleted: wasDeleted };
-        });
-      });
-    }
-  }, [unitRowData]);
-
-  useEffect(() => {
-    if (!frameAllUnits) {
-      // framed units that already exist in the OCA package
-      const existingUnits = unitFramedRowData.filter((row) =>
-        Object.prototype.hasOwnProperty.call(
-          unitFramedThatAlreadyExistInOcaPackage,
-          row.Unit
-        )
-      );
-      setUnitRowDataWhenNoFrameAll(existingUnits);
-
-      // unframed units that don't exist in the OCA package
-      const unframedUnits = unitFramedRowData.filter(
-        (row) =>
-          !Object.prototype.hasOwnProperty.call(
-            unitFramedThatAlreadyExistInOcaPackage,
-            row.Unit
-          )
-      );
-
-      const uniqueUnframedUnits = Array.from(
-        new Map(unframedUnits.map((row) => [row.Unit, row])).values()
-      );
-      setUnframedUnitList(uniqueUnframedUnits.map((row) => row.Unit));
-    }
-  }, [frameAllUnits, unitFramedRowData, unitFramedThatAlreadyExistInOcaPackage]);
-
-  useEffect(() => {
-    if (!frameAllUnits) {
-      setCurrentUnitFramedRowData((prev) => {
-        const deletedRows = prev.filter((row) => row.deleted === true);
-
-        return unitRowDataWhenNoFrameAll.map((currentFramedUnit) => {
-          const existingRow = prev.find(
-            (prevFramedUnit) =>
-              prevFramedUnit.Attribute === currentFramedUnit.Attribute &&
-              prevFramedUnit.Unit === currentFramedUnit.Unit
-          );
-
-          if (existingRow) {
-            return existingRow;
-          }
-
-          const wasDeleted = deletedRows.some(
-            (deletedRow) => deletedRow.Unit === currentFramedUnit.Unit
-          );
-
-          return { ...currentFramedUnit, deleted: wasDeleted };
-        });
-      });
-    }
-
-    if (frameAllUnits) {
-      setCurrentUnitFramedRowData((prev) => {
-        const deletedRows = prev.filter((row) => row.deleted === true);
-
-        return unitFramedRowData.map((currentFramedUnit) => {
-          const existingRow = prev.find(
-            (prevFramedUnit) =>
-              prevFramedUnit.Attribute === currentFramedUnit.Attribute &&
-              prevFramedUnit.Unit === currentFramedUnit.Unit
-          );
-
-          if (existingRow) {
-            return existingRow;
-          }
-
-          const wasDeleted = deletedRows.some(
-            (deletedRow) => deletedRow.Unit === currentFramedUnit.Unit
-          );
-          return { ...currentFramedUnit, deleted: wasDeleted };
-        });
-      });
-    }
-  }, [frameAllUnits, unitFramedRowData, unitRowDataWhenNoFrameAll]);
-
   // Re-set all fields when fileData updates
   useEffect(() => {
     setDivisionGroup({
@@ -358,8 +207,6 @@ function App() {
               setCustomIsos,
               isZip,
               setIsZip,
-              dataStandardsRowData,
-              setDataStandardsRowData,
               overlay,
               setOverlay,
               selectedOverlay,
@@ -431,26 +278,6 @@ function App() {
               setDatasetDropMessage,
               notToVerifyAttributes,
               setNotToVerifyAttributes,
-              unitRowData,
-              setUnitRowData,
-              unitFramedRowData,
-              setUnitFramedRowData,
-              unitFramedThatAlreadyExistInOcaPackage,
-              setUnitFramedThatAlreadyExistInOcaPackage,
-              frameAllUnits,
-              setFrameAllUnits,
-              unitRowDataWhenNoFrameAll,
-              setUnitRowDataWhenNoFrameAll,
-              currentUnitFramedRowData,
-              setCurrentUnitFramedRowData,
-              unframedUnitList,
-              setUnframedUnitList,
-              frameAllAttributes,
-              setFrameAllAttributes,
-              unframedAttributeList,
-              setUnframedAttributeList,
-              attributeFramingRowData,
-              setAttributeFramingRowData,
               currentSchemaId,
               setCurrentSchemaId,
               editingSchemaId,
