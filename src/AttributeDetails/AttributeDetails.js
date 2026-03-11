@@ -44,7 +44,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   const [showAddAttribute, setShowAddAttribute] = useState(false);
   const [addByTab, setAddByTab] = useState(false);
   const [showCard, setShowCard] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const navigationSafe = useRef();
   const gridRef = useRef();
@@ -102,7 +102,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
    *    - hasAttributesArray=false, so we CAN initialize from completeSchema
    */
   useEffect(() => {
-    setLoading(true);
     // Get schema state (MultiSchemaContext handles the fallback internally)
     const schemaState = getSchema();
     

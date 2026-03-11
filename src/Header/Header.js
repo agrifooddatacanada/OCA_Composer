@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getNormalizedUICode, getUICode, setUICode } from "../utils/languageUtils";
@@ -13,13 +13,40 @@ import logoSE from "../assets/se-logo.png";
 import { themes } from "../constants/themeConstants";
 import { Context } from "../App";
 
+function getHeaderMeta(currentPage, t, selectedLanguage) {
+  const lang = selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage;
+  const base = "https://agrifooddatacanada.github.io/OCA_Composer_help_pages";
+  const dewBase = "https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages";
+  const switchMap = {
+    Start: { header: t("Start Creating an OCA Schema"), toolTipText: "", helpLink: `${base}/${lang}/CreatingOCASchema/` },
+    Metadata: { header: t("Schema Metadata"), toolTipText: t("This page is where you can write the metadata describing..."), helpLink: `${base}/${lang}/SchemaMetadata/` },
+    Details: { header: t("Attribute Details"), toolTipText: t("Each column of your dataset is an attribute in your schema..."), helpLink: `${base}/${lang}/AttributeDetails/` },
+    Codes: { header: t("Add Entry Codes"), toolTipText: t("Entry codes are options you want available to users as a..."), helpLink: `${base}/${lang}/AddEntryCode/` },
+    LanguageDetails: { header: t("Language Dependent Attribute Details"), toolTipText: t("You can add details in each language to help users..."), helpLink: `${base}/${lang}/LanguageAttribute/` },
+    View: { header: t("Review Schema"), toolTipText: t("Before finishing your schema you can preview the final contents on this page"), helpLink: `${base}/${lang}/ViewSchema/` },
+    Overlays: { header: t("Add Additional Optional Information"), toolTipText: "", helpLink: `${base}/${lang}/Overlays/` },
+    CharacterEncoding: { header: t("Add Character Encoding"), toolTipText: t("Character encoding of the data source (for each attribute)..."), helpLink: `${base}/${lang}/CharacterEncoding/` },
+    RequiredEntries: { header: t("Add Required Entries"), toolTipText: t("Specify if the underlying data must have an entry for the specific attribute"), helpLink: `${base}/${lang}/RequiredEntry/` },
+    FormatRules: { header: t("Add Format Rules for Data Entry"), toolTipText: "", helpLink: `${base}/${lang}/FormatText/` },
+    FormInformation: { header: t("Add Form Information"), toolTipText: "", helpLink: `${base}/${lang}/FormInformation/` },
+    FormBuilder: { header: t("Form Builder"), toolTipText: t("Create interactive forms using drag-and-drop interface"), helpLink: `${base}/${lang}/FormBuilder/` },
+    Cardinality: { header: t("Add Entry Limit Rules for Data Entry"), toolTipText: "", helpLink: `${base}/${lang}/Cardinality/` },
+    DataStandards: { header: t("Add Data Standards"), toolTipText: "", helpLink: `${base}/${lang}/DataStandards/` },
+    StartDataValidator: { header: t("Upload Data (optional)"), toolTipText: "", helpLink: `${dewBase}/${lang}/DataEntryVerificationStart` },
+    SchemaViewDataValidator: { header: t("Preview Schema"), toolTipText: "", helpLink: "" },
+    DatasetViewDataValidator: { header: t("Preview Dataset"), toolTipText: "", helpLink: `${dewBase}/${lang}/PreviewSchema` },
+    AttributeMatchDataValidator: { header: t("Matching Attributes"), toolTipText: "", helpLink: `${dewBase}/${lang}/MatchAttributes/` },
+    OCADataValidatorCheck: { header: t("Data Entry and Verification"), toolTipText: "", helpLink: `${dewBase}/${lang}/DataVerification/` },
+    UnitFraming: { header: t("Define units for schema attributes"), toolTipText: "", helpLink: `${base}/${lang}/UnitFraming/` },
+    UserSelection: { header: "", toolTipText: "", helpLink: `${base}/${lang}/Coauthor/` },
+    Range: { header: t("Add Range Rules for Data"), toolTipText: "", helpLink: "" }
+  };
+  return switchMap[currentPage] || { header: "", toolTipText: "", helpLink: "" };
+}
+
 export default function Header({ currentPage }) {
   const { t } = useTranslation();
-  const [header, setHeader] = useState(currentPage);
-  const [toolTipText, setToolTipText] = useState("");
-  const [helpLink, setHelpLink] = useState("");
   const location = useLocation();
-  // Detecting mobile screens with 'isMobile'
   const isMobile = useMediaQuery("(max-width:736px)");
   const [selectedLanguage, setSelectedLanguage] = useState(
     getNormalizedUICode(getUICode())
@@ -35,175 +62,10 @@ export default function Header({ currentPage }) {
     setUICode(lng);
   };
 
-  // Sets headers and tooltip Text based on current page
-  useEffect(() => {
-    switch (currentPage) {
-      case "Start":
-        setHeader(t("Start Creating an OCA Schema"));
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/CreatingOCASchema/`
-        );
-        break;
-      case "Metadata":
-        setHeader(t("Schema Metadata"));
-        setToolTipText(t("This page is where you can write the metadata describing..."));
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/SchemaMetadata/`
-        );
-        break;
-      case "Details":
-        setHeader(t("Attribute Details"));
-        setToolTipText(
-          t("Each column of your dataset is an attribute in your schema...")
-        );
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/AttributeDetails/`
-        );
-        break;
-      case "Codes":
-        setHeader(t("Add Entry Codes"));
-        setToolTipText(t("Entry codes are options you want available to users as a..."));
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/AddEntryCode/`
-        );
-        break;
-      case "LanguageDetails":
-        setHeader(t("Language Dependent Attribute Details"));
-        setToolTipText(t("You can add details in each language to help users..."));
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/LanguageAttribute/`
-        );
-        break;
-      case "View":
-        setHeader(t("Review Schema"));
-        setToolTipText(
-          t(
-            "Before finishing your schema you can preview the final contents on this page"
-          )
-        );
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/ViewSchema/`
-        );
-        break;
-      case "Overlays":
-        setHeader(t("Add Additional Optional Information"));
-        // TODO: Add help tooltips
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/Overlays/`
-        );
-        break;
-      case "CharacterEncoding":
-        setHeader(t("Add Character Encoding"));
-        setToolTipText(
-          t("Character encoding of the data source (for each attribute)...")
-        );
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/CharacterEncoding/`
-        );
-        break;
-      case "RequiredEntries":
-        setHeader(t("Add Required Entries"));
-        setToolTipText(
-          t(
-            "Specify if the underlying data must have an entry for the specific attribute"
-          )
-        );
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/RequiredEntry/`
-        );
-        break;
-      case "FormatRules":
-        setHeader(t("Add Format Rules for Data Entry"));
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/FormatText/`
-        );
-        break;
-      case "FormInformation":
-        setHeader(t("Add Form Information"));
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/FormInformation/`
-        );
-        break;
-      case "FormBuilder":
-        setHeader(t("Form Builder"));
-        setToolTipText(t("Create interactive forms using drag-and-drop interface"));
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/FormBuilder/`
-        );
-        break;
-      case "Cardinality":
-        setHeader(t("Add Entry Limit Rules for Data Entry"));
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/Cardinality/`
-        );
-        break;
-      case "DataStandards":
-        setHeader(t("Add Data Standards"));
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/DataStandards/`
-        );
-        break;
-      case "StartDataValidator":
-        setHeader(t("Upload Data (optional)"));
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/DataEntryVerificationStart`
-        );
-        break;
-      case "SchemaViewDataValidator":
-        setHeader(t("Preview Schema"));
-        setToolTipText("");
-        setHelpLink("");
-        break;
-      case "DatasetViewDataValidator":
-        setHeader(t("Preview Dataset"));
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/PreviewSchema`
-        );
-        break;
-      case "AttributeMatchDataValidator":
-        setHeader(t("Matching Attributes"));
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/MatchAttributes/`
-        );
-        break;
-      case "OCADataValidatorCheck":
-        setHeader(t("Data Entry and Verification"));
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/DataVerification/`
-        );
-        break;
-      case "UnitFraming":
-        setHeader(t("Define units for schema attributes"));
-        setToolTipText("");
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/UnitFraming/`
-        );
-        break;
-      case "UserSelection":
-        setHelpLink(
-          `https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage}/Coauthor/`
-        );
-        break;
-      case "Range":
-        setHeader(t("Add Range Rules for Data"));
-        setToolTipText("");
-        setHelpLink("");
-        break;
-      default:
-        setHeader("");
-        setHelpLink("");
-    }
-  }, [currentPage, t]);
+  const { header, toolTipText, helpLink } = useMemo(
+    () => getHeaderMeta(currentPage, t, selectedLanguage),
+    [currentPage, t, selectedLanguage]
+  );
 
   return (
     <HeaderWrapper
