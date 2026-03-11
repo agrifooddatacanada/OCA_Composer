@@ -680,41 +680,6 @@ export default function ViewSchema({
             </Alert>
           )}
 
-          {/* Finish and Download button - moved to top */}
-          {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Button
-                color="button"
-                variant="contained"
-                onClick={handleClickDownload}
-                sx={{
-                  width: "13rem",
-                  display: "flex",
-                  justifyContent: "space-around",
-                  p: 1
-                }}
-                disabled={exportDisabled}
-                title={(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage)
-                  ? t("Complete all required fields across the package to enable download", { defaultValue: "Complete all required fields across the package to enable download" })
-                  : ""}
-              >
-                {t("Finish and Download", { defaultValue: "Finish and Download" })}{" "}
-                <CheckCircleIcon />
-              </Button>
-              <Box sx={{ color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
-                <Tooltip
-                  title={t(
-                    "Export your schema in a .json machine-readable version and..."
-                  )}
-                  placement="right"
-                  arrow
-                >
-                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                </Tooltip>
-              </Box>
-            </Box>
-          )}
-
           {/* Clear All Data button - moved to top */}
           {addClearButton && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
             <Button
@@ -722,7 +687,7 @@ export default function ViewSchema({
               variant="outlined"
               onClick={() => setShowConfirmReset(true)}
               sx={{
-                width: "20rem",
+                width: "16rem",
                 display: "flex",
                 justifyContent: "space-around",
                 p: 1
@@ -733,6 +698,27 @@ export default function ViewSchema({
               })}
             </Button>
           )}
+
+          {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+            <Button
+              color="button"
+              variant="contained"
+              onClick={handleClickDownload}
+              sx={{
+                width: "18rem",
+                display: "flex",
+                justifyContent: "space-around",
+                p: 1
+              }}
+              disabled={exportDisabled}
+              title={(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage)
+                ? t("Complete all required fields across the package to enable download", { defaultValue: "Complete all required fields across the package to enable download" })
+                : ""}
+            >
+              {t("Download Schema and Readme", { defaultValue: "Download Schema and Readme" })}{" "}
+            </Button>
+          )}
+
     </>
   );
 
@@ -750,6 +736,27 @@ export default function ViewSchema({
         </Box>
       ) : (
         <Box sx={{ mt: 2, mb: BETWEEN_SECTION_SPACING, width: "100%" }}>
+      <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
+          {isPageForward && isExport && (
+            <Box
+              sx={{
+                padding: 2,
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                backgroundColor: "#f9f9f9",
+                width: "300px",
+                textAlign: "left",
+                position: "absolute",
+                right: 0,
+                top: 0
+              }}
+            >
+              <Typography sx={{ fontSize: 14, color: "#333" }}>
+                {t("For future editing, download your schema as-is and later upload it to the Semantic Engine.")}
+              </Typography>
+            </Box>
+          )}
+        </Box>
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Typography
           sx={{
@@ -762,36 +769,6 @@ export default function ViewSchema({
         >
           {t("Schema Language")}
         </Typography>
-        <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
-          {isPageForward && isExport && (
-            <Box
-              sx={{
-                padding: 2,
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                backgroundColor: "#f9f9f9",
-                width: "300px",
-                textAlign: "left",
-                position: "absolute",
-                right: 0,
-                top: 0,
-                marginRight: "4rem"
-              }}
-            >
-              <Typography sx={{ fontSize: 16, color: "#333" }}>
-                {t("Note: Downloading two files")}
-              </Typography>
-              <Typography sx={{ fontSize: 14, marginTop: 1 }}>
-                {t("1) Schema in .txt format, readable and archivable.")}
-              </Typography>
-              <Typography sx={{ fontSize: 14, marginTop: 1 }}>
-                {t(
-                  "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine."
-                )}
-              </Typography>
-            </Box>
-          )}
-        </Box>
       </Box>
       <Box
         sx={{
