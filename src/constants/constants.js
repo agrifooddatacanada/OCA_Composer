@@ -8,6 +8,9 @@ export const MAX_ATTR_DESCRIPTION_CHARS = 250;
 export const MAX_QUESTION_DESCRIPTION_CHARS = 1000;
 
 export const FORM_BUILDER_CARD_WIDTH = 720;
+export const SECTION_SPACING = 2;
+export const HEADER_TO_CONTENT_GAP_PX = 6;
+export const BETWEEN_SECTION_SPACING = 4;
 
 export const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
 

@@ -3,8 +3,9 @@ import { useTranslation } from "react-i18next";
 import { Alert, Box, Button } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
+import usePrimaryColor from "../hooks/usePrimaryColor";
+import useFontFamily from "../hooks/useFontFamily";
 
 const BackNextSkeleton = ({
   errorMessage = "",
@@ -21,6 +22,8 @@ const BackNextSkeleton = ({
 }) => {
   const { t } = useTranslation();
   const { currentTheme } = useContext(Context);
+  const primaryColor = usePrimaryColor();
+  const fontFamily = useFontFamily();
   return (
     <Box>
       <Box
@@ -48,8 +51,8 @@ const BackNextSkeleton = ({
               sx={{
                 textAlign: "left",
                 alignSelf: "flex-start",
-                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                color: primaryColor,
+                fontFamily
               }}
               onClick={pageBack}
             >
@@ -75,21 +78,45 @@ const BackNextSkeleton = ({
               <p>{middleText}</p>
             </Box>
           )}
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Box
+            sx={{
+              position: "relative",
+              display: "flex",
+              gap: 2,
+              alignItems: "center",
+              flex: 1,
+              justifyContent: rightContent ? "flex-start" : "flex-end",
+              minWidth: 0
+            }}
+          >
             {isForward && (
               <Button
                 color="navButton"
                 onClick={pageForward}
                 disabled={disableForward}
                 sx={{
-                  color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  color: primaryColor,
+                  fontFamily
                 }}
               >
                 {t(nextText)} <ArrowForwardIosIcon />
               </Button>
             )}
-            {rightContent}
+            {rightContent && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  right: 0,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  display: "flex",
+                  gap: 2,
+                  alignItems: "center"
+                }}
+              >
+                {rightContent}
+              </Box>
+            )}
             {errorMessage.length > 0 && (
               <Alert
                 severity="error"

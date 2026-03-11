@@ -12,6 +12,8 @@ import {
   defaultUploadedDescription
 } from "../constants/constants";
 import { Context } from "../App";
+import usePrimaryColor from "../hooks/usePrimaryColor";
+import useFontFamily from "../hooks/useFontFamily";
 
 export default function DropCard({
   loading,
@@ -32,6 +34,8 @@ export default function DropCard({
 }) {
   const { t } = useTranslation();
   const { currentTheme } = useContext(Context);
+  const primaryColor = usePrimaryColor();
+  const fontFamily = useFontFamily();
   return (
     <section
       className="container"
@@ -124,10 +128,9 @@ export default function DropCard({
                   mb: 2,
                 color:
                   dropDisabled === false
-                    ? (currentTheme?.primaryColor ?? CustomPalette.PRIMARY)
+                    ? primaryColor
                     : CustomPalette.GREY_600,
-                fontFamily:
-                  currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif",
+                fontFamily,
                 whiteSpace: "pre-line"
                 }}
                 gutterBottom
@@ -145,7 +148,7 @@ export default function DropCard({
                 sx={{
                   fontSize: 12,
                   color: CustomPalette.GREY_600,
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  fontFamily
                 }}
               >
                 {t(noteDescription)}

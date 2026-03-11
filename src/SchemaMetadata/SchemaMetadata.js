@@ -14,7 +14,6 @@ import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { langCodeOCAFromName } from "../utils/languageUtils";
-import { removeSpacesFromObjectOfObjects } from "../utils/stringUtils";
 import IsoCard from "./IsoCard";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 

@@ -76,13 +76,15 @@ const Classification = () => {
             color: CustomPalette.BLACK,
           }}
         >{t('Schema Classification')}</Typography>
-        <Tooltip
-          title={t("Select the division and group that best reflects how you would classify your schema")}
-          placement="right"
-          arrow
-        >
-          <HelpOutlineIcon sx={{ fontSize: 15 }} />
-        </Tooltip>
+        <Box sx={{ color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
+          <Tooltip
+            title={t("Select the division and group that best reflects how you would classify your schema")}
+            placement="right"
+            arrow
+          >
+            <HelpOutlineIcon sx={{ fontSize: 15 }} />
+          </Tooltip>
+        </Box>
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
         <FormControl variant="standard" sx={{ minWidth: 120, width: '45%' }}>

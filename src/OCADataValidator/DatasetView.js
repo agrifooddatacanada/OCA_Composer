@@ -14,6 +14,8 @@ import { Box, IconButton, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
+import usePrimaryColor from "../hooks/usePrimaryColor";
+import useFontFamily from "../hooks/useFontFamily";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
 
@@ -43,6 +45,8 @@ export const TrashCanButton = memo(
 const DatasetView = () => {
   const { t } = useTranslation();
   const { currentTheme } = useContext(Context);
+  const primaryColor = usePrimaryColor();
+  const fontFamily = useFontFamily();
   const schemaGridRef = useRef(null);
   const {
     setCurrentDataValidatorPage,
@@ -143,9 +147,9 @@ const DatasetView = () => {
           variant="h5"
           sx={{
             mb: 2,
-            color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+            color: primaryColor,
             fontWeight: 500,
-            fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+            fontFamily
           }}
         >
           {t("Schema Data")}
@@ -167,7 +171,7 @@ const DatasetView = () => {
         ) : (
           <Typography
             sx={{
-              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              fontFamily
             }}
           >
             {t("No Schema Conformant Data")}

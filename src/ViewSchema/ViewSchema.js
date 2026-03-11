@@ -29,12 +29,16 @@ import {
 import { 
   TYPE_CHILD_SCHEMA, 
   isChildSchemaType, 
-  MANUAL_CREATION_SCHEMA_ID
+  MANUAL_CREATION_SCHEMA_ID,
+  SECTION_SPACING,
+  HEADER_TO_CONTENT_GAP_PX,
+  BETWEEN_SECTION_SPACING
 } from "../constants/constants";
 import { searchUnits } from "../utils/helpers";
 import Loading from "../components/Loading";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import useOCAExport from "../hooks/useOCAExport";
+import usePrimaryColor from "../hooks/usePrimaryColor";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateTextReadmeFromJson from "./useGenerateTextReadmeFromJson";
 import { getPackageBundle, getPackageBundleId, getPackageDependencies } from "../utils/packageUtils";
@@ -60,8 +64,7 @@ export default function ViewSchema({
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { 
-    currentTheme,
+  const {
     isZip, 
     isZipEdited,
     setIsZipEdited,
@@ -81,6 +84,8 @@ export default function ViewSchema({
     schemaStates,
     pkgUpload
   } = useMultiSchema();
+
+  const primaryColor = usePrimaryColor();
 
   // Get languages from current schema's metadata (per-schema languages)
   const schemaState = getSchema();
@@ -130,20 +135,20 @@ export default function ViewSchema({
           sx={{
             backgroundColor:
               getCurrentLanguage() === language
-                ? CustomPalette.PRIMARY
+                ? primaryColor
                 : CustomPalette.WHITE,
             color:
               getCurrentLanguage() === language
                 ? "white"
-                : CustomPalette.PRIMARY,
+                : primaryColor,
             borderRadius,
             minWidth: languages.length < 5 ? "12rem" : "10rem",
             boxShadow: "none",
-            border: `1px solid ${CustomPalette.PRIMARY}`,
+            border: `1px solid ${primaryColor}`,
             "&:hover": {
               backgroundColor:
                 getCurrentLanguage() === language
-                  ? CustomPalette.PRIMARY
+                  ? primaryColor
                   : CustomPalette.WHITE,
               boxShadow:
                 getCurrentLanguage() === language
@@ -696,15 +701,17 @@ export default function ViewSchema({
                 {t("Finish and Download", { defaultValue: "Finish and Download" })}{" "}
                 <CheckCircleIcon />
               </Button>
-              <Tooltip
-                title={t(
-                  "Export your schema in a .json machine-readable version and..."
-                )}
-                placement="right"
-                arrow
-              >
-                <HelpOutlineIcon sx={{ fontSize: 18, color: CustomPalette.GREY_600 }} />
-              </Tooltip>
+              <Box sx={{ color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
+                <Tooltip
+                  title={t(
+                    "Export your schema in a .json machine-readable version and..."
+                  )}
+                  placement="right"
+                  arrow
+                >
+                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                </Tooltip>
+              </Box>
             </Box>
           )}
 
@@ -742,76 +749,20 @@ export default function ViewSchema({
           <CircularProgress />
         </Box>
       ) : (
-        <Box sx={{ padding: "2rem" }}>
-      {showLink && <LinkCard setShowLink={setShowLink} />}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          margin: "2rem 2rem 4rem 2rem"
-        }}
-      >
-        <Box
+        <Box sx={{ mt: 2, mb: BETWEEN_SECTION_SPACING, width: "100%" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Typography
           sx={{
-            display: "flex",
-            width: "100%"
-          }}
+            fontSize: 20,
+            fontWeight: "bold",
+            textAlign: "left",
+            margin: `1rem 0 ${HEADER_TO_CONTENT_GAP_PX}px 0`,
+            color: primaryColor
+        }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              width: "100%"
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: 22,
-                fontWeight: "bold",
-                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
-              }}
-            >
-              {t("Schema Language")}
-            </Typography>
-            <Box
-              sx={{
-                position: "relative",
-                display: "flex",
-                flexDirection: "column-reverse",
-                alignItems: "flex-start",
-                mb: 4,
-                width: "70rem"
-              }}
-            >
-              {languageButtonDisplay}
-              <Box
-                sx={{
-                  position: "absolute",
-                  right: "100%",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  marginRight: 1,
-                  color: CustomPalette.GREY_600
-                }}
-              >
-                <Tooltip
-                  title={t(
-                    "Toggles between the one or more languages used in the schema"
-                  )}
-                  placement="left"
-                  arrow
-                  PopperProps={{
-                    sx: { "& .MuiTooltip-tooltip": { width: 100 } }
-                  }}
-                >
-                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                </Tooltip>
-              </Box>
-            </Box>
-          </Box>
+          {t("Schema Language")}
+        </Typography>
+        <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
           {isPageForward && isExport && (
             <Box
               sx={{
@@ -823,31 +774,17 @@ export default function ViewSchema({
                 textAlign: "left",
                 position: "absolute",
                 right: 0,
+                top: 0,
                 marginRight: "4rem"
               }}
             >
-              <Typography
-                sx={{
-                  fontSize: 16,
-                  color: "#333"
-                }}
-              >
+              <Typography sx={{ fontSize: 16, color: "#333" }}>
                 {t("Note: Downloading two files")}
               </Typography>
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  marginTop: 1
-                }}
-              >
+              <Typography sx={{ fontSize: 14, marginTop: 1 }}>
                 {t("1) Schema in .txt format, readable and archivable.")}
               </Typography>
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  marginTop: 1
-                }}
-              >
+              <Typography sx={{ fontSize: 14, marginTop: 1 }}>
                 {t(
                   "2) Schema in .json format. Can be used by computers including tools on the Semantic Engine."
                 )}
@@ -855,6 +792,50 @@ export default function ViewSchema({
             </Box>
           )}
         </Box>
+      </Box>
+      <Box
+        sx={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column-reverse",
+          alignItems: "flex-start",
+          mb: `${HEADER_TO_CONTENT_GAP_PX}px`,
+          width: "70rem"
+        }}
+      >
+        {languageButtonDisplay}
+        <Box
+          sx={{
+            position: "absolute",
+            right: "100%",
+            top: "50%",
+            transform: "translateY(-50%)",
+            marginRight: 1,
+            color: CustomPalette.GREY_600
+          }}
+        >
+          <Tooltip
+            title={t(
+              "Toggles between the one or more languages used in the schema"
+            )}
+            placement="left"
+            arrow
+            PopperProps={{
+              sx: { "& .MuiTooltip-tooltip": { width: 100 } }
+            }}
+          >
+            <HelpOutlineIcon sx={{ fontSize: 15 }} />
+          </Tooltip>
+        </Box>
+      </Box>
+      {showLink && <LinkCard setShowLink={setShowLink} />}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start"
+        }}
+      >
         {/* <Typography
           sx={{
             fontSize: 28,
@@ -873,20 +854,23 @@ export default function ViewSchema({
           sx={{
             display: "flex",
             alignItems: "center",
-            marginTop: 2
+            marginTop: BETWEEN_SECTION_SPACING,
+            marginBottom: `${HEADER_TO_CONTENT_GAP_PX}px`
           }}
         >
           <Typography
             sx={{
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: "bold",
-              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              textAlign: "left",
+              margin: 0,
+              lineHeight: 1.5,
+              color: primaryColor
             }}
           >
             {t("Schema Metadata")}
           </Typography>
-          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
+          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
             <Tooltip
               title={t(
                 "Language specific information describing general schema information"
@@ -907,23 +891,25 @@ export default function ViewSchema({
               sx={{
                 display: "flex",
                 alignItems: "center",
-                marginTop: 4,
-                marginBottom: 1
+                marginTop: BETWEEN_SECTION_SPACING,
+                marginBottom: `${HEADER_TO_CONTENT_GAP_PX}px`
               }}
             >
               <Typography
                 sx={{
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: "bold",
-                  color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  textAlign: "left",
+                  margin: 0,
+                  lineHeight: 1.5,
+                  color: primaryColor
                 }}
               >
                 {t("Multi-Schema Visualization", {
                   defaultValue: "Multi-Schema Visualization"
                 })}
               </Typography>
-              <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
+              <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
                 <Tooltip
                   title={t("Visual representation of references between schemas", {
                     defaultValue: "Visual representation of references between schemas"
@@ -949,8 +935,8 @@ export default function ViewSchema({
                   color="primary"
                   sx={{
                     "& .MuiToggleButton-root": {
-                      border: `1px solid ${CustomPalette.PRIMARY}`,
-                      color: CustomPalette.PRIMARY,
+                      border: `1px solid ${primaryColor}`,
+                      color: primaryColor,
                       backgroundColor: CustomPalette.WHITE,
                       boxShadow: "none",
                       minWidth: languages.length < 5 ? "12rem" : "10rem",
@@ -958,10 +944,10 @@ export default function ViewSchema({
                         boxShadow: "0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)"
                       },
                       "&.Mui-selected": {
-                        backgroundColor: CustomPalette.PRIMARY,
+                        backgroundColor: primaryColor,
                         color: "white",
                         "&:hover": {
-                          backgroundColor: CustomPalette.PRIMARY,
+                          backgroundColor: primaryColor,
                           boxShadow: "none"
                         }
                       },
@@ -987,7 +973,7 @@ export default function ViewSchema({
             </Box>
 
             {/* Visualization embed */}
-            <Box sx={{ marginBottom: "2rem", width: "100%", minHeight: "400px" }}>
+            <Box sx={{ marginBottom: 0, width: "100%", minHeight: "400px" }}>
               <Suspense fallback={<Loading />}>
                 <SchemaVisualizationEmbed
                   key={`viz-${vizVersion}-${getPackageBundleId(pkgFromState)}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
@@ -1006,21 +992,23 @@ export default function ViewSchema({
           sx={{
             display: "flex",
             alignItems: "center",
-            marginTop: 4,
-            marginBottom: 2
+            marginTop: BETWEEN_SECTION_SPACING,
+            marginBottom: `${HEADER_TO_CONTENT_GAP_PX}px`
           }}
         >
           <Typography
             sx={{
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: "bold",
-              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              textAlign: "left",
+              margin: 0,
+              lineHeight: 1.5,
+              color: primaryColor
             }}
           >
             {t("Schema Details")}
           </Typography>
-          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600 }}>
+          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
             <Tooltip
               title={t(
                 "The details of the schema including attribute names and their features as well as language specific information"
@@ -1065,7 +1053,7 @@ export default function ViewSchema({
                 <CustomRouterLink
                   to="mailto:adc@uoguelph.ca"
                   text="adc@uoguelph.ca"
-                  overrideStyle={{ fontWeight: "500", color: CustomPalette.PRIMARY }}
+                  overrideStyle={{ fontWeight: "500", color: primaryColor }}
                 />
               ]}
             />

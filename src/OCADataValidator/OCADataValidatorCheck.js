@@ -39,6 +39,8 @@ import {
 } from "../constants/constants";
 import WarningPopup from "./WarningPopup";
 import { CustomPalette } from "../constants/customPalette";
+import usePrimaryColor from "../hooks/usePrimaryColor";
+import useFontFamily from "../hooks/useFontFamily";
 import { getCurrentData, getDescriptiveFileName } from "../utils/helpers";
 import { getPackageBundle } from "../utils/packageUtils";
 import { CreateDataEntryExcel } from "../Landing/CreateDataEntryExcel";
@@ -361,6 +363,8 @@ const OCADataValidatorCheck = ({
 
   const { t } = useTranslation();
   const { currentTheme } = useContext(Context);
+  const primaryColor = usePrimaryColor();
+  const fontFamily = useFontFamily();
 
   const [rowData, setRowData] = useState([]);
   const [initialRowData, setInitialRowData] = useState([]);
@@ -392,7 +396,7 @@ const OCADataValidatorCheck = ({
         <h1
           style={{
             textAlign: "center",
-            color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY
+            color: primaryColor
           }}
         >
           {t("Schema Preview")}
@@ -1150,8 +1154,8 @@ const OCADataValidatorCheck = ({
               sx={{
                 textAlign: "left",
                 alignSelf: "flex-start",
-                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                color: primaryColor,
+                fontFamily
               }}
               onClick={handleMoveBack}
             >
@@ -1260,7 +1264,7 @@ const OCADataValidatorCheck = ({
                   disabled={isValidateButtonEnabled}
                   sx={{
                     fontFamily:
-                      currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                      fontFamily
                   }}
                 >
                   {t("Verify")}
@@ -1272,7 +1276,7 @@ const OCADataValidatorCheck = ({
                       color: "red",
                       fontWeight: "bold",
                       fontFamily:
-                        currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                        fontFamily
                     }}
                   >
                     {t("Please re-verify the data!")}
@@ -1296,7 +1300,7 @@ const OCADataValidatorCheck = ({
               overrideStyle={{
                 textAlign: "right",
                 marginRight: "2rem",
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                fontFamily
               }}
             />
             <Box
@@ -1316,7 +1320,7 @@ const OCADataValidatorCheck = ({
               />
               <span
                 style={{
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  fontFamily
                 }}
               >
                 {t("Pass Verification")}
@@ -1339,7 +1343,7 @@ const OCADataValidatorCheck = ({
               />
               <span
                 style={{
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  fontFamily
                 }}
               >
                 {t("Fail Verification")}
@@ -1362,7 +1366,7 @@ const OCADataValidatorCheck = ({
               />
               <span
                 style={{
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  fontFamily
                 }}
               >
                 {t("Unmatched Attributes")}
@@ -1386,7 +1390,7 @@ const OCADataValidatorCheck = ({
               />
               <span
                 style={{
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  fontFamily
                 }}
               >
                 {t("Unverified Data")}

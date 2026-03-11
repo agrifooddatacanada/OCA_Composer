@@ -10,6 +10,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import ExcelSheetSelection from "../components/ExcelSheetSelection";
 import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
+import useFontFamily from "../hooks/useFontFamily";
 
 const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const { t } = useTranslation();
@@ -18,6 +19,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
     setShowWarningCard
   );
   const { currentTheme } = useContext(Context);
+  const fontFamily = useFontFamily();
   const {
     datasetRawFile,
     setDatasetRawFile,
@@ -92,7 +94,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
               sx={{
                 textAlign: "start",
                 color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                fontFamily
               }}
             >
               {t("Optional: Upload Data")}
@@ -146,7 +148,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             sx={{
               width: 190,
               mr: 2,
-              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              fontFamily
             }}
             disabled={datasetRawFile.length === 0}
           >
@@ -158,7 +160,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             sx={{
               width: 200,
               ml: 2,
-              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              fontFamily
             }}
             onClick={handleClickViewData}
             disabled={datasetRawFile.length === 0}

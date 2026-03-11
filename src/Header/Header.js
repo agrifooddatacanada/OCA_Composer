@@ -12,6 +12,8 @@ import HeaderWrapper from "./HeaderWrapper";
 import logoSE from "../assets/se-logo.png";
 import { themes } from "../constants/themeConstants";
 import { Context } from "../App";
+import usePrimaryColor from "../hooks/usePrimaryColor";
+import useFontFamily from "../hooks/useFontFamily";
 
 function getHeaderMeta(currentPage, t, selectedLanguage) {
   const lang = selectedLanguage === "en-US" || selectedLanguage === "en-CA" ? "en" : selectedLanguage;
@@ -52,6 +54,8 @@ export default function Header({ currentPage }) {
     getNormalizedUICode(getUICode())
   );
   const { currentTheme } = useContext(Context);
+  const primaryColor = usePrimaryColor();
+  const fontFamily = useFontFamily();
   useEffect(() => {
     setSelectedLanguage(getNormalizedUICode(getUICode()));
   }, []);
@@ -139,9 +143,9 @@ export default function Header({ currentPage }) {
               sx={{
                 fontSize: 25,
                 fontWeight: "bold",
-                color: currentTheme?.primaryColor || CustomPalette.PRIMARY,
+                color: primaryColor,
                 alignSelf: "center",
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                fontFamily
               }}
             >
               {header}
@@ -236,8 +240,8 @@ export default function Header({ currentPage }) {
                 style={{
                   border: "none",
                   fontSize: "20px",
-                  color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  color: primaryColor,
+                  fontFamily
                 }}
                 value={selectedLanguage}
                 onChange={changeLanguage}

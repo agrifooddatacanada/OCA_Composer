@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Menu, MenuItem, MenuList, ClickAwayListener } from "@mui/material";
-import { CustomPalette } from "../constants/customPalette";
-import { Context } from "../App";
+import usePrimaryColor from "../hooks/usePrimaryColor";
+import useFontFamily from "../hooks/useFontFamily";
 
 const exportOptions = ["excel", "csv"];
 
 const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
-  const { currentTheme } = useContext(Context);
+  const primaryColor = usePrimaryColor();
+  const fontFamily = useFontFamily();
   const [selectedOption, setSelectedOption] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [additionalOptionsAnchorEl, setAdditionalOptionsAnchorEl] = useState(null);
@@ -105,7 +106,7 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
           display: "flex",
           justifyContent: "space-around",
           padding: "0.5rem 1rem",
-          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+          fontFamily
         }}
       >
         {t("Download Data")}
@@ -130,8 +131,8 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
         {exportOptions.map((option) => (
           <MenuItem
             sx={{
-              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              color: primaryColor,
+              fontFamily
             }}
             key={option}
             selected={option === selectedOption}
@@ -154,8 +155,8 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
           <MenuList>
             <MenuItem
               sx={{
-                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                color: primaryColor,
+                fontFamily
               }}
               // onClick={() => {
               //   handleAdditionalOptionsClose();
@@ -167,8 +168,8 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
             </MenuItem>
             <MenuItem
               sx={{
-                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                color: primaryColor,
+                fontFamily
               }}
               // onClick={() => {
               //   handleAdditionalOptionsClose();
