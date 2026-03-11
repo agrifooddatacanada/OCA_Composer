@@ -9,12 +9,11 @@ import {
   Tooltip,
   ToggleButton,
   ToggleButtonGroup,
-  Alert
+  Alert,
+  CircularProgress
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { CustomPalette } from "../constants/customPalette";
@@ -34,6 +33,7 @@ import {
 } from "../constants/constants";
 import { searchUnits } from "../utils/helpers";
 import Loading from "../components/Loading";
+import BackNextSkeleton from "../components/BackNextSkeleton";
 import useOCAExport from "../hooks/useOCAExport";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateTextReadmeFromJson from "./useGenerateTextReadmeFromJson";
@@ -592,66 +592,8 @@ export default function ViewSchema({
     getSchema()?.attributeRanges // Explicitly watch attributeRanges changes
   ]);
 
-  if (loading) {
-    return <Loading />;
-  }
-
-  return (
-    <Box sx={{ padding: "2rem" }}>
-      {/* Header: Navigation and Action buttons */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: isBack || !pageForward ? "space-between" : "flex-end",
-          alignItems: "flex-start",
-          mb: 2
-        }}
-      >
-        {/* Back button logic */}
-        {isBack && (
-          <Button
-            color="navButton"
-            sx={{
-              textAlign: "left",
-              alignSelf: "flex-start",
-              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
-            }}
-            onClick={pageBack}
-          >
-            <ArrowBackIosIcon /> {t("Back")}
-          </Button>
-        )}
-        {isPageForward && !pageForward && (
-          <Button
-            color="navButton"
-            onClick={moveBackward}
-            sx={{
-              textAlign: "left",
-              alignSelf: "flex-start",
-              color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
-            }}
-          >
-            <ArrowBackIosIcon /> {t("Back")}
-          </Button>
-        )}
-
-        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-          {/* Next button for page forward */}
-          {isPageForward && pageForward && (
-            <Button
-              color="navButton"
-              onClick={pageForward}
-              sx={{
-                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
-              }}
-            >
-              {t("Next")} <ArrowForwardIosIcon />
-            </Button>
-          )}
-          
+  const viewSchemaRightContent = (
+    <>
           {isZip && isExport && !isZipEdited && (
             <>
               <Button
@@ -784,9 +726,23 @@ export default function ViewSchema({
               })}
             </Button>
           )}
+    </>
+  );
+
+  return (
+    <BackNextSkeleton
+      isBack={isBack || (isPageForward && !pageForward)}
+      pageBack={isBack ? pageBack : moveBackward}
+      isForward={isPageForward && !!pageForward}
+      pageForward={pageForward}
+      rightContent={viewSchemaRightContent}
+    >
+      {loading ? (
+        <Box sx={{ py: 8, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <CircularProgress />
         </Box>
-      </Box>
-      
+      ) : (
+        <Box sx={{ padding: "2rem" }}>
       {showLink && <LinkCard setShowLink={setShowLink} />}
       <Box
         sx={{
@@ -1116,6 +1072,8 @@ export default function ViewSchema({
           </Typography>
         </ErrorPopup>
       )}
-    </Box>
+        </Box>
+      )}
+    </BackNextSkeleton>
   );
 }

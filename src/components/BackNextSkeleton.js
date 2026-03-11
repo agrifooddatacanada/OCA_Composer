@@ -16,7 +16,8 @@ const BackNextSkeleton = ({
   backText = "Back",
   middleText,
   nextText = "Next",
-  disableForward = false
+  disableForward = false,
+  rightContent
 }) => {
   const { t } = useTranslation();
   const { currentTheme } = useContext(Context);
@@ -74,7 +75,7 @@ const BackNextSkeleton = ({
               <p>{middleText}</p>
             </Box>
           )}
-          <Box>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             {isForward && (
               <Button
                 color="navButton"
@@ -88,6 +89,7 @@ const BackNextSkeleton = ({
                 {t(nextText)} <ArrowForwardIosIcon />
               </Button>
             )}
+            {rightContent}
             {errorMessage.length > 0 && (
               <Alert
                 severity="error"
