@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 import { Alert, Box, Button, TextField } from "@mui/material";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
@@ -24,11 +24,21 @@ export default function AddAttribute({
   setAttributeRowData,
   errorMessage
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { updateSchema } = useMultiSchema();
   
   // Note: attributesList is now computed - no need to update it separately
   const [newAttribute, setNewAttribute] = useState("");
+  const [textFieldWidth, setTextFieldWidth] = useState("10.75rem");
+  useEffect(() => {
+    if (!showAddAttribute || !addButton1?.current) return;
+    const el = addButton1.current;
+    const measure = () => setTextFieldWidth(`${el.offsetWidth}px`);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [showAddAttribute, addButton1, i18n.language]);
 
   const handleLanguageField = (e) => {
     e.preventDefault();
@@ -180,7 +190,7 @@ export default function AddAttribute({
                   }
                 }}
                 sx={{
-                  width: "10.75rem",
+                  width: textFieldWidth,
                   "& .MuiInput-underline:before": {
                     borderBottomColor: CustomPalette.GREY_300
                   },
