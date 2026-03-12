@@ -250,7 +250,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
           });
         }
       }
-      if (!rowsForAttr) rowsForAttr = [emptyRow];
+      if (!rowsForAttr || rowsForAttr.length === 0) rowsForAttr = [emptyRow];
       return rowsForAttr.map((r) => ({ ...r }));
     });
     

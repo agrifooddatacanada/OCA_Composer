@@ -358,7 +358,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   return (
     <Box style={{ margin: "3rem", display: "flex", flexDirection: "column" }}>
       <Box style={{ display: "flex" }}>
-        <Box className="ag-theme-alpine" style={{ width: gridWidth }}>
+        <Box className="ag-theme-alpine" style={{ width: gridWidth, minWidth: gridWidth, maxWidth: gridWidth, overflow: "hidden" }}>
           <style>{gridStyle}</style>
           <div ref={refContainer}>
             <AgGridReact
@@ -367,6 +367,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               domLayout="autoHeight"
+              suppressHorizontalScroll
               onCellKeyDown={onCellKeyDown}
               onCellClicked={() => setChosenTable(index)}
               onRowDragEnd={onRowDragEnd}
