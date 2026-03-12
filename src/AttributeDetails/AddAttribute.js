@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 
-import { Box, Button, TextField } from "@mui/material";
+import { Alert, Box, Button, TextField } from "@mui/material";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AddIcon from "@mui/icons-material/Add";
@@ -21,7 +21,8 @@ export default function AddAttribute({
   setAddByTab,
   typesObjectRef,
   attributeRowData,
-  setAttributeRowData
+  setAttributeRowData,
+  errorMessage
 }) {
   const { t } = useTranslation();
   const { updateSchema } = useMultiSchema();
@@ -151,64 +152,79 @@ export default function AddAttribute({
             zIndex: "1000",
             top: "100%",
             mt: 0.5,
-            display: "flex",
             left: 0,
-            alignItems: "center"
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start"
           }}
         >
-          <TextField
-            id="customLanguageField"
-            type="text"
-            onChange={handleLanguageField}
-            placeholder={t("New Attribute")}
-            size="small"
-            variant="standard"
-            inputProps={{
-              style: {
-                color: CustomPalette.PRIMARY,
-                fontWeight: "bold",
-                paddingLeft: "0.8rem"
-              }
-            }}
-            sx={{
-              width: "10.75rem",
-              "& .MuiInput-underline:before": {
-                borderBottomColor: CustomPalette.GREY_300
-              },
-              "& .MuiInput-underline:after": {
-                borderBottomColor: CustomPalette.PRIMARY
-              }
-            }}
-          />
-          <Button onClick={handleAddRow} ref={addButton2}>
-            <AddIcon
-              sx={{
-                color: CustomPalette.SECONDARY,
-                "&:hover": {
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <TextField
+              id="customLanguageField"
+              type="text"
+              onChange={handleLanguageField}
+              placeholder={t("New Attribute")}
+              size="small"
+              variant="standard"
+              inputProps={{
+                style: {
                   color: CustomPalette.PRIMARY,
-                  transform: "scale(1.1)"
+                  fontWeight: "bold",
+                  paddingLeft: "0.8rem"
+                }
+              }}
+              sx={{
+                width: "10.75rem",
+                "& .MuiInput-underline:before": {
+                  borderBottomColor: CustomPalette.GREY_300
+                },
+                "& .MuiInput-underline:after": {
+                  borderBottomColor: CustomPalette.PRIMARY
                 }
               }}
             />
-          </Button>
+            <Button onClick={handleAddRow} ref={addButton2}>
+              <AddIcon
+                sx={{
+                  color: CustomPalette.SECONDARY,
+                  "&:hover": {
+                    color: CustomPalette.PRIMARY,
+                    transform: "scale(1.1)"
+                  }
+                }}
+              />
+            </Button>
+          </Box>
+          {errorMessage && (
+            <Alert severity="error" sx={{ mt: 1, width: "100%" }}>
+              {errorMessage}
+            </Alert>
+          )}
         </Box>
       )}
-      <Button
-        color="button"
-        variant="contained"
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignSelf: "flex-end",
-          m: 0,
-          mb: 2
-        }}
-        onClick={handleToggle}
-        ref={addButton1}
-      >
-        {t("Add Attribute")} &nbsp;
-        {showAddAttribute === true ? <RemoveCircleIcon /> : <AddCircleIcon />}
-      </Button>
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+        <Button
+          color="button"
+          variant="contained"
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignSelf: "flex-end",
+            m: 0,
+            mb: 2
+          }}
+          onClick={handleToggle}
+          ref={addButton1}
+        >
+          {t("Add Attribute")} &nbsp;
+          {showAddAttribute === true ? <RemoveCircleIcon /> : <AddCircleIcon />}
+        </Button>
+        {!showAddAttribute && errorMessage && (
+          <Alert severity="error" sx={{ mb: 2, width: "100%" }}>
+            {errorMessage}
+          </Alert>
+        )}
+      </Box>
     </Box>
   );
 }

@@ -8,7 +8,7 @@ import React, {
   useCallback
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Box, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import Grid from "./Grid";
 import Loading from "../components/Loading";
 import AddAttribute from "./AddAttribute";
@@ -682,20 +682,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
           </Box>
         </ErrorPopup>
       )}
-      {errorMessage.length > 0 && (
-        <Alert
-          severity="error"
-          style={{
-            position: "fixed",
-            top: 10,
-            left: 100,
-            right: 100,
-            zIndex: 9999
-          }}
-        >
-          {errorMessage}
-        </Alert>
-      )}
       <Box sx={{ width: "calc(752px + 4rem)", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
         <div ref={refContainer}>
           {!loading && (
@@ -716,19 +702,20 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         </div>
         <Box sx={{ mt: TABLE_TO_BUTTON_GAP, mb: BETWEEN_SECTION_SPACING, mr: "2rem" }}>
           <AddAttribute
-        addButton1={addButton1}
-        addButton2={addButton2}
-        gridRef={gridRef}
-        setErrorMessage={setErrorMessage}
-        setCanDelete={setCanDelete}
-        showAddAttribute={showAddAttribute}
-        setShowAddAttribute={setShowAddAttribute}
-        addByTab={addByTab}
-        setAddByTab={setAddByTab}
-        typesObjectRef={typesObjectRef}
-        attributeRowData={attributeRowData}
-        setAttributeRowData={setAttributeRowData}
-      />
+            addButton1={addButton1}
+            addButton2={addButton2}
+            gridRef={gridRef}
+            setErrorMessage={setErrorMessage}
+            setCanDelete={setCanDelete}
+            showAddAttribute={showAddAttribute}
+            setShowAddAttribute={setShowAddAttribute}
+            addByTab={addByTab}
+            setAddByTab={setAddByTab}
+            typesObjectRef={typesObjectRef}
+            attributeRowData={attributeRowData}
+            setAttributeRowData={setAttributeRowData}
+            errorMessage={errorMessage}
+          />
         </Box>
       </Box>
     </BackNextSkeleton>
