@@ -14,7 +14,6 @@ import ListHeader from "./ListHeader";
 import DeleteRenderer from "./DeleteRenderer";
 import TypeRenderer from "./TypeRenderer";
 import { useMultiSchema } from "../schema/schemaContext";
-import { TABLE_TO_BUTTON_GAP } from "../constants/constants";
 
 // styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
 const gridStyle = `
@@ -667,7 +666,7 @@ export default function Grid({
   }, []);
 
   return (
-    <div style={{ margin: `2rem 2rem ${TABLE_TO_BUTTON_GAP * 8}px 2rem` }}>
+    <div style={{ margin: "2rem 2rem 0 2rem" }}>
       <div
         className={`ag-theme-balham ${attributeRowData.length > 0 ? "ag-grid-compact" : ""}`}
         style={{ width: 752 }}

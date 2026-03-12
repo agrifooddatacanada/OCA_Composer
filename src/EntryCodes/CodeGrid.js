@@ -15,6 +15,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { CustomPalette } from "../constants/customPalette";
+import { TABLE_TO_BUTTON_GAP } from "../constants/constants";
 import { preWrapWordBreak } from "../constants/styles";
 import { LanguageConstants } from "../utils/languageUtils";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -396,22 +397,21 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
         </Box>
       </Box>
 
-      <Button
-        onClick={handleAddRow}
-        color="button"
-        variant="contained"
-        sx={{
-          alignSelf: "flex-end",
-          width: "10rem",
-          margin: "1rem 3.3rem 0 0",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-around"
-        }}
-        ref={buttonRef}
-      >
+      <Box sx={{ width: gridWidth, display: "flex", flexDirection: "column", alignItems: "flex-end", mt: TABLE_TO_BUTTON_GAP }}>
+        <Button
+          onClick={handleAddRow}
+          color="button"
+          variant="contained"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5
+          }}
+          ref={buttonRef}
+        >
         {t("Add row")} <AddCircleIcon />
-      </Button>
+        </Button>
+      </Box>
     </Box>
   );
 }
