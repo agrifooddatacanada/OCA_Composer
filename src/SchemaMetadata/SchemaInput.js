@@ -200,7 +200,8 @@ export default function SchemaInput({
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between"
+            justifyContent: "space-between",
+            marginTop: "0.35rem"
           }}
         >
           <Box>

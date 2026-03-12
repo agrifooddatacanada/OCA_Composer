@@ -66,13 +66,14 @@ const Classification = () => {
 
   return (
     <Box sx={{ textAlign: 'left', marginBottom: '1rem', height: '5rem' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '0.35rem' }}>
         <Typography
           sx={{
             fontSize: 15,
             fontWeight: "bold",
             textAlign: "left",
-            width: "12rem",
+            minWidth: "10.5rem",
+            whiteSpace: "nowrap",
             color: CustomPalette.BLACK,
           }}
         >{t('Schema Classification')}</Typography>
