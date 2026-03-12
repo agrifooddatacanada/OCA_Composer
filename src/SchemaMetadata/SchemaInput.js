@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { langCodeOCAFromName, langTwoLettersFromName, LanguageConstants } from "../utils/languageUtils";
-import Classification from "./Classification";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 import { useMultiSchema } from "../schema/schemaContext";
 
@@ -15,7 +14,6 @@ export default function SchemaInput({
   language,
   setShowIsoInput,
   setEditingLanguage,
-  index,
   languages,
   setLanguages
 }) {
@@ -142,14 +140,8 @@ export default function SchemaInput({
           display: "flex",
           flexDirection: "column",
           mt: 1,
-          height: "10.5rem"
         }}
       >
-        {index === 0 ? (
-          <Classification />
-        ) : (
-          <Box sx={{ marginBottom: "1rem", height: "5rem" }} />
-        )}
         <Box
           sx={{
             display: "flex",

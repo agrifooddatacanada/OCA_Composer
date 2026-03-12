@@ -65,7 +65,7 @@ const Classification = () => {
   }, [divisionGroup.division, t]);
 
   return (
-    <Box sx={{ textAlign: 'left', marginBottom: '1rem', height: '5rem' }}>
+    <Box sx={{ textAlign: 'left', marginBottom: '1rem', height: '5rem', width: '22rem' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '0.35rem' }}>
         <Typography
           sx={{
