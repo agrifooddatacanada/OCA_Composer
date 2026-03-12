@@ -1,4 +1,7 @@
-/* Disable horizontal scrolling on mobile devices */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   overflow-x: hidden;
 }
