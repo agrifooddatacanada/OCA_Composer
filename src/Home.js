@@ -100,6 +100,7 @@ const Home = ({
   };
 
   const entryCodesRef = useRef(null);
+  const [entryCodesError, setEntryCodesError] = useState("");
   const attributeDetailsRef = useRef(null);
   const languageDetailsRef = useRef(null);
   const schemaMetadataRef = useRef(null);
@@ -254,6 +255,13 @@ const Home = ({
     }
   }, [currentPage, steps]);
 
+  // Clear Entry Codes error when navigating away
+  useEffect(() => {
+    if (currentPage !== "Codes") {
+      setEntryCodesError("");
+    }
+  }, [currentPage]);
+
   // Ensure Entry Codes step reflects the currently active schema (root or dependency)
   const prevShouldShowRef = React.useRef(null);
   useEffect(() => {
@@ -297,6 +305,7 @@ const Home = ({
             activeStep={activeStep}
             steps={steps}
             onStepClick={handleStepClick}
+            stepErrors={entryCodesError ? { "Entry Codes": entryCodesError } : {}}
           />
         )}
         {currentPage === "Start" && <StartSchema pageForward={pageForward} />}
@@ -321,6 +330,7 @@ const Home = ({
             ref={entryCodesRef}
             pageBack={pageBack}
             pageForward={pageForward}
+            onValidationError={setEntryCodesError}
           />
         )}
         {currentPage === "UploadEntryCodes" && <UploadEntryCodesPage />}

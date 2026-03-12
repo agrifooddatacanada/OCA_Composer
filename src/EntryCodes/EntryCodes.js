@@ -22,7 +22,7 @@ const errorMessages = {
   fieldEmpty: "Please fill out all fields",
   quoteMisuse: "Fields cannot contain quotes or commas"
 };
-const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
+const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref) => {
   const { t } = useTranslation();
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
@@ -305,30 +305,35 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
 
     // setSavedEntryCodes(newEntryCodeObject);
     // Validate only the "Code" field and the languages currently in the schema
+    const msg = t(errorMessages.fieldEmpty);
+    if (onValidationError) onValidationError("");
     const values = Object.values(newEntryCodeObject);
-    values.forEach((item) => {
-      item.forEach((obj) => {
-        // Check Code field
+    for (const item of values) {
+      for (const obj of item) {
         if (!obj.Code) {
           pageForwardDisabledRef.current = true;
-          setErrorMessage(t(errorMessages.fieldEmpty));
+          setErrorMessage(msg);
+          onValidationError?.(msg);
           setTimeout(() => {
             setErrorMessage("");
-          }, [2000]);
+            onValidationError?.("");
+          }, 2000);
           return;
         }
-        // Check each language field - data uses language names as keys
-        languages.forEach((languageName) => {
+        for (const languageName of languages) {
           if (!obj[languageName]) {
             pageForwardDisabledRef.current = true;
-            setErrorMessage(t(errorMessages.fieldEmpty));
+            setErrorMessage(msg);
+            onValidationError?.(msg);
             setTimeout(() => {
               setErrorMessage("");
-            }, [2000]);
+              onValidationError?.("");
+            }, 2000);
+            return;
           }
-        });
-      });
-    });
+        }
+      }
+    }
 
     const keys = Object.keys(newEntryCodeObject);
     const newEntryCodesObject = {};
@@ -338,6 +343,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       );
     });
 
+    onValidationError?.("");
     // Save to schema state
     updateSchema({
       entryCodes: newEntryCodesObject
@@ -431,7 +437,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward }, ref) => {
       pageBack={pageBackSave}
       isForward
       pageForward={pageForwardSave}
-      errorMessage={errorMessage}
+      errorMessage={onValidationError ? "" : errorMessage}
     >
       {showWarning && (
         <WarningEntryCodeDelete

@@ -1,12 +1,13 @@
 import React from "react";
-import { Box, Step, StepLabel, Stepper } from "@mui/material";
+import { Alert, Box, Step, StepLabel, Stepper } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import CustomPalette from "../constants/customPalette";
 
 export default function ClickableStepperProgressIndicator({
   activeStep,
   steps,
-  onStepClick
+  onStepClick,
+  stepErrors = {}
 }) {
   const { t } = useTranslation();
   return (
@@ -23,6 +24,7 @@ export default function ClickableStepperProgressIndicator({
             }}
           >
             <StepLabel>
+              <Box sx={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
               <Box
                 component="span"
                 onClick={() => onStepClick && onStepClick(i, step)}
@@ -57,6 +59,24 @@ export default function ClickableStepperProgressIndicator({
                 }}
               >
                 {t(step.label)}
+              </Box>
+              {stepErrors[step.label] && (
+                <Alert
+                  severity="error"
+                  sx={{
+                    position: "absolute",
+                    top: "100%",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    mt: 1,
+                    width: 180,
+                    zIndex: 9999,
+                    boxShadow: 2
+                  }}
+                >
+                  {stepErrors[step.label]}
+                </Alert>
+              )}
               </Box>
             </StepLabel>
           </Step>
