@@ -336,10 +336,10 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       let blankAttributes = false;
 
       const errorOptions = {
-        duplicates: t("Please enter a unique attribute name for each attribute"),
-        blankAttribute: t("Attribute names cannot be blank"),
-        codeInjection: t("Attribute names cannot include HTML"),
-        blankType: t("Please enter a Type for all attributes"),
+        duplicates: t("Please enter a unique name for each attribute."),
+        blankAttribute: t("Attribute names cannot be blank."),
+        codeInjection: t("Attribute names cannot include HTML."),
+        blankType: t("Please enter a Type for all attributes."),
         disallowedCharacters: t("AttributeDisallowedCharErrorMessage")
       };
       let codeInjection = false;

@@ -74,7 +74,7 @@ export default function AddAttribute({
     if (addByTab) {
       attributeToAdd = "";
       if (duplicates.length > 0) {
-        setErrorMessage(t("All attribute names must be unique before proceeding"));
+        setErrorMessage(t("All attribute names must be unique before proceeding."));
         setTimeout(() => {
           setErrorMessage("");
         }, [2000]);
@@ -86,7 +86,7 @@ export default function AddAttribute({
       (addByTab && !blanks);
     if (isNew) {
       if (duplicates.length > 0) {
-        setErrorMessage(t("All attribute names must be unique before proceeding"));
+        setErrorMessage(t("All attribute names must be unique before proceeding."));
         setTimeout(() => {
           setErrorMessage("");
         }, [2000]);
@@ -122,15 +122,20 @@ export default function AddAttribute({
       
       setCanDelete(true);
       setNewAttribute("");
+    } else if (!attributeToAdd) {
+      setErrorMessage(t("Please enter a name."));
+      setTimeout(() => {
+        setErrorMessage("");
+      }, [2000]);
     } else if (blanks) {
       setErrorMessage(
-        t("Attribute names cannot be blank. Please fill out all names before continuing")
+        t("Attribute names cannot be blank. Please fill out all names before continuing.")
       );
       setTimeout(() => {
         setErrorMessage("");
       }, [2000]);
     } else {
-      setErrorMessage(t("Please enter a unique attribute name"));
+      setErrorMessage(t("Please enter a unique name."));
       setTimeout(() => {
         setErrorMessage("");
       }, [2000]);
@@ -151,55 +156,57 @@ export default function AddAttribute({
             position: "absolute",
             zIndex: "1000",
             top: "100%",
-            mt: 0.5,
+            mt: -1,
             left: 0,
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start"
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <TextField
-              id="customLanguageField"
-              type="text"
-              onChange={handleLanguageField}
-              placeholder={t("New Attribute")}
-              size="small"
-              variant="standard"
-              inputProps={{
-                style: {
-                  color: CustomPalette.PRIMARY,
-                  fontWeight: "bold",
-                  paddingLeft: "0.8rem"
-                }
-              }}
-              sx={{
-                width: "10.75rem",
-                "& .MuiInput-underline:before": {
-                  borderBottomColor: CustomPalette.GREY_300
-                },
-                "& .MuiInput-underline:after": {
-                  borderBottomColor: CustomPalette.PRIMARY
-                }
-              }}
-            />
-            <Button onClick={handleAddRow} ref={addButton2}>
-              <AddIcon
-                sx={{
-                  color: CustomPalette.SECONDARY,
-                  "&:hover": {
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, minHeight: 48 }}>
+            <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+              <TextField
+                id="customLanguageField"
+                type="text"
+                onChange={handleLanguageField}
+                placeholder={t("New Attribute")}
+                size="small"
+                variant="standard"
+                inputProps={{
+                  style: {
                     color: CustomPalette.PRIMARY,
-                    transform: "scale(1.1)"
+                    fontWeight: "bold",
+                    paddingLeft: "0.8rem"
+                  }
+                }}
+                sx={{
+                  width: "10.75rem",
+                  "& .MuiInput-underline:before": {
+                    borderBottomColor: CustomPalette.GREY_300
+                  },
+                  "& .MuiInput-underline:after": {
+                    borderBottomColor: CustomPalette.PRIMARY
                   }
                 }}
               />
-            </Button>
+              <Button onClick={handleAddRow} ref={addButton2} sx={{ ml: -0.1, minWidth: 0, px: 0.5 }}>
+                <AddIcon
+                  sx={{
+                    color: CustomPalette.SECONDARY,
+                    "&:hover": {
+                      color: CustomPalette.PRIMARY,
+                      transform: "scale(1.1)"
+                    }
+                  }}
+                />
+              </Button>
+            </Box>
+            {errorMessage && (
+              <Alert severity="error" sx={{ m: 0, flexShrink: 0, "& .MuiAlert-message": { whiteSpace: "nowrap" } }}>
+                {errorMessage}
+              </Alert>
+            )}
           </Box>
-          {errorMessage && (
-            <Alert severity="error" sx={{ mt: 1, width: "100%" }}>
-              {errorMessage}
-            </Alert>
-          )}
         </Box>
       )}
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>

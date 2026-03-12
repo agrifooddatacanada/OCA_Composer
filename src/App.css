@@ -4,6 +4,7 @@ html {
 
 body {
   overflow-x: hidden;
+  overflow-y: scroll;
 }
 
 /* Set maximum width to the device width on mobile devices */

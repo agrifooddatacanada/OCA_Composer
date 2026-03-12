@@ -292,14 +292,14 @@ export default function Grid({
               (attribute) => attribute.Attribute === currentAttributeName
             ) !== -1
           ) {
-            setErrorMessage(t("Please enter a unique attribute name"));
+            setErrorMessage(t("Please enter a unique name."));
             setTimeout(() => {
               setErrorMessage("");
             }, [2000]);
             return;
           }
           if (currentAttributeName === "") {
-            setErrorMessage(t("Please enter a unique attribute name"));
+            setErrorMessage(t("Please enter a name."));
             setTimeout(() => {
               setErrorMessage("");
             }, [2000]);
@@ -328,7 +328,7 @@ export default function Grid({
                 setAddByTab(false);
               }, 2);
             } catch (error) {
-              setErrorMessage("Something went wrong when adding cell by tab. Try again.");
+              setErrorMessage(t("Something went wrong when adding cell by tab. Try again."));
               setTimeout(() => {
                 setErrorMessage("");
               }, [2000]);
@@ -364,7 +364,7 @@ export default function Grid({
                 colKey: tabbingColumns[currentIndex + 1]
               });
             } else {
-              setErrorMessage(t("Please enter a unique attribute name"));
+              setErrorMessage(t("Please enter a unique name."));
               setTimeout(() => {
                 setErrorMessage("");
               }, [2000]);
@@ -571,10 +571,9 @@ export default function Grid({
     // Only handle event if the user changed the attribute name; do not handle programmatic update
     if (e.source !== "edit") return;
     const isAttributeNameChange = e.colDef.field === "Attribute";
-    const currentIndex = e.rowIndex;
     if (isAttributeNameChange) {
-      const allAttributeNames = gridRef.current.props.rowData.map(
-        (item) => item.Attribute
+      const allAttributeNames = attributeRowData.map((item, i) =>
+        i === e.rowIndex ? e.newValue : item.Attribute
       );
       if (e.newValue) {
         // Renames duplicate values to <value>_(number)
@@ -585,17 +584,21 @@ export default function Grid({
         let valueToAdd = e.newValue;
         if (findMultipleOccurrences(allAttributeNames, valueToAdd)) {
           savedAttributeName.current = e.oldValue;
-          let i = 2;
-          let tempValue = `${valueToAdd}_(${i})`;
+          let i = 1;
+          let tempValue = `${valueToAdd}_${i}`;
 
           while (allAttributeNames.includes(tempValue)) {
             i += 1;
-            tempValue = `${valueToAdd}_(${i})`;
+            tempValue = `${valueToAdd}_${i}`;
           }
 
           valueToAdd = tempValue;
-          const rowNode = gridRef.current.api.getRowNode(currentIndex);
-          rowNode.setDataValue("Attribute", valueToAdd);
+          const rowId = e.data?._rid;
+          setAttributeRowData((prev) =>
+            prev.map((row) =>
+              row._rid === rowId ? { ...row, Attribute: valueToAdd } : row
+            )
+          );
 
           // Update typesObjectRef using updated new value
           const newAttributeName = valueToAdd;
@@ -638,14 +641,18 @@ export default function Grid({
           }
         }
       } else {
-        // Re-save blank attribute as previous attribute
-        const rowNode = gridRef.current.api.getRowNode(currentIndex);
-        rowNode.setDataValue("Attribute", e.oldValue);
-
-        e.api.startEditingCell({
-          rowIndex: e.rowIndex,
-          colKey: "Attribute"
-        });
+        const rowId = e.data?._rid;
+        setAttributeRowData((prev) =>
+          prev.map((row) =>
+            row._rid === rowId ? { ...row, Attribute: e.oldValue } : row
+          )
+        );
+        setTimeout(() => {
+          e.api.startEditingCell({
+            rowIndex: e.rowIndex,
+            colKey: "Attribute"
+          });
+        }, 0);
       }
 
       // Prevents Row Dragging when attribute names are blank
