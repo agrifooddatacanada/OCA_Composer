@@ -4,7 +4,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { Box, Tooltip, Typography } from '@mui/material';
 import { CustomPalette } from '../constants/customPalette';
-import { classification, parseClassificationCode, groupCodes, divisionCodes } from '../constants/constants';
+import { classification, parseClassificationCode, groupCodes, divisionCodes, TOOLTIP_ICON_GAP } from '../constants/constants';
 import { Context } from '../App';
 import { useMultiSchema } from '../schema/schemaContext';
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -66,26 +66,23 @@ const Classification = () => {
 
   return (
     <Box sx={{ textAlign: 'left', marginBottom: '1rem', height: '5rem', width: '22rem' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '0.35rem' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: TOOLTIP_ICON_GAP, marginBottom: '0.35rem', color: CustomPalette.GREY_600 }}>
         <Typography
           sx={{
             fontSize: 15,
             fontWeight: "bold",
             textAlign: "left",
-            minWidth: "10.5rem",
-            whiteSpace: "nowrap",
+            flexShrink: 0,
             color: CustomPalette.BLACK,
           }}
         >{t('Schema Classification')}</Typography>
-        <Box sx={{ color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
-          <Tooltip
+        <Tooltip
             title={t("Select the division and group that best reflects how you would classify your schema")}
             placement="right"
             arrow
           >
             <HelpOutlineIcon sx={{ fontSize: 15 }} />
           </Tooltip>
-        </Box>
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
         <FormControl variant="standard" sx={{ minWidth: 120, width: '45%' }}>

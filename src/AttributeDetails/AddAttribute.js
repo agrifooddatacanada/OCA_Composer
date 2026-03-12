@@ -30,14 +30,24 @@ export default function AddAttribute({
   // Note: attributesList is now computed - no need to update it separately
   const [newAttribute, setNewAttribute] = useState("");
   const [textFieldWidth, setTextFieldWidth] = useState("10.75rem");
+  const [popupReady, setPopupReady] = useState(false);
   useEffect(() => {
-    if (!showAddAttribute || !addButton1?.current) return;
+    if (!showAddAttribute || !addButton1?.current) {
+      setPopupReady(false);
+      return;
+    }
     const el = addButton1.current;
-    const measure = () => setTextFieldWidth(`${el.offsetWidth}px`);
+    const measure = () => {
+      setTextFieldWidth(`${el.offsetWidth}px`);
+      setPopupReady(true);
+    };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
-    return () => ro.disconnect();
+    return () => {
+      ro.disconnect();
+      setPopupReady(false);
+    };
   }, [showAddAttribute, addButton1, i18n.language]);
 
   const handleLanguageField = (e) => {
@@ -170,7 +180,8 @@ export default function AddAttribute({
             left: 0,
             display: "flex",
             flexDirection: "column",
-            alignItems: "flex-start"
+            alignItems: "flex-start",
+            visibility: popupReady ? "visible" : "hidden"
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, minHeight: 48 }}>

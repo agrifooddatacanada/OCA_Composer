@@ -8,6 +8,7 @@ import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { langCodeOCAFromName, langTwoLettersFromName, LanguageConstants } from "../utils/languageUtils";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
+import { TOOLTIP_ICON_GAP } from "../constants/constants";
 import { useMultiSchema } from "../schema/schemaContext";
 
 export default function SchemaInput({
@@ -224,6 +225,7 @@ export default function SchemaInput({
           sx={{
             display: "flex",
             alignItems: "center",
+            gap: TOOLTIP_ICON_GAP,
             color: CustomPalette.GREY_600
           }}
         >
@@ -233,7 +235,7 @@ export default function SchemaInput({
               fontWeight: "bold",
               textAlign: "left",
               margin: "0.5rem 0 0.5rem 0",
-              width: "8rem",
+              flexShrink: 0,
               color: CustomPalette.BLACK
             }}
           >
@@ -266,6 +268,7 @@ export default function SchemaInput({
           sx={{
             display: "flex",
             alignItems: "center",
+            gap: TOOLTIP_ICON_GAP,
             margin: "2rem 0 0.5rem 0",
             color: CustomPalette.GREY_600
           }}
@@ -275,8 +278,8 @@ export default function SchemaInput({
               fontSize: 15,
               fontWeight: "bold",
               textAlign: "left",
-              color: CustomPalette.BLACK,
-              width: "6rem"
+              flexShrink: 0,
+              color: CustomPalette.BLACK
             }}
           >
             {t("Description")}
