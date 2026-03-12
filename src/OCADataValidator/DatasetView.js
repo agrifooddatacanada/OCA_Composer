@@ -13,6 +13,7 @@ import { AgGridReact } from "ag-grid-react";
 import { Box, IconButton, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { Context } from "../App";
 import usePrimaryColor from "../hooks/usePrimaryColor";
 import useFontFamily from "../hooks/useFontFamily";
@@ -140,7 +141,8 @@ const DatasetView = () => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          flex: 1
+          flex: 1,
+          mb: BETWEEN_SECTION_SPACING
         }}
       >
         <Typography

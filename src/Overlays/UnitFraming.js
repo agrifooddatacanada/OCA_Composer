@@ -24,6 +24,7 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import { useTranslation } from "react-i18next";
 import { styled } from "@mui/material/styles";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import DeleteConfirmation from "./DeleteConfirmation";
@@ -654,6 +655,7 @@ const UnitFraming = () => {
       <Box
         sx={{
           margin: "2rem",
+          marginBottom: BETWEEN_SECTION_SPACING,
           gap: "2rem",
           display: "flex",
           flexDirection: "column",

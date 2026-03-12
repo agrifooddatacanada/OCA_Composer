@@ -1,5 +1,6 @@
 import React from "react";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { Box, Button, FormControl, Select, Typography } from "@mui/material";
 import Drop from "../StartSchema/Drop";
 import useHandleEntryCodeDrop from "./useHandleEntryCodeDrop";
@@ -37,7 +38,7 @@ const UploadPage = () => {
   } = useHandleEntryCodeDrop();
 
   return (
-    <>
+    <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <BackNextSkeleton
         isBack
         pageBack={() => {
@@ -51,6 +52,7 @@ const UploadPage = () => {
         }
         pageForward={handleSave}
       />
+      <Box sx={{ mb: BETWEEN_SECTION_SPACING, flex: 1 }}>
       <FormControl
         variant="standard"
         sx={{
@@ -188,7 +190,8 @@ const UploadPage = () => {
           </Select>
         </FormControl>
       )}
-    </>
+      </Box>
+    </Box>
   );
 };
 

@@ -4,6 +4,7 @@ import i18next from "i18next";
 import { AgGridReact } from "ag-grid-react";
 import { Box, List, ListItem, ListItemText, MenuItem, Typography } from "@mui/material";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { Context } from "../App";
 import Languages from "./Languages";
 import { greyCellStyle, gridStyles } from "../constants/styles";
@@ -329,7 +330,8 @@ const AttributeMatch = () => {
           display: "flex",
           flexDirection: "column",
           flex: 1,
-          marginTop: "20px"
+          marginTop: "20px",
+          mb: BETWEEN_SECTION_SPACING
         }}
       >
         <Box

@@ -199,7 +199,8 @@ export default function AddAttribute({
           display: "flex",
           justifyContent: "space-between",
           alignSelf: "flex-end",
-          m: 2
+          m: 0,
+          mb: 2
         }}
         onClick={handleToggle}
         ref={addButton1}

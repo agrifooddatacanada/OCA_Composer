@@ -9,6 +9,7 @@ import useCharacterEncodingType, {
   CharacterEncodingTypeRenderer
 } from "./useCharacterEncodingType";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
@@ -170,6 +171,7 @@ const CharacterEncoding = () => {
       <Box
         sx={{
           margin: "2rem",
+          marginBottom: BETWEEN_SECTION_SPACING,
           gap: "3rem",
           display: "flex",
           flexDirection: "column"

@@ -1,5 +1,6 @@
 import React, { forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import BackNextSkeleton from '../components/BackNextSkeleton';
+import { BETWEEN_SECTION_SPACING } from '../constants/constants';
 import { Context } from '../App';
 import { useMultiSchema } from '../schema/schemaContext';
 import { langCodeOCAFromName, LanguageConstants } from '../utils/languageUtils';
@@ -209,6 +210,7 @@ const MatchingEntryCodeHeader = () => {
         justifyContent: 'center',
         marginTop: 2,
         flex: 1,
+        mb: BETWEEN_SECTION_SPACING,
       }}>
         <div className="ag-theme-balham" style={{ width: '400px' }}>
           <style>{gridStyles}</style>

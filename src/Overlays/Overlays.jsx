@@ -9,6 +9,7 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { getListOfSelectedOverlays } from "../utils/overlayUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { shouldDisableRangeOverlay, getRangeOverlayDisabledReason, shouldDisableFormInformationOverlay, getFormInformationDisabledReason } from "../utils/helpers";
 import {
@@ -137,6 +138,7 @@ const Overlays = ({ pageBack, pageForward }) => {
       <Box
         sx={{
           margin: "2rem",
+          marginBottom: BETWEEN_SECTION_SPACING,
           gap: "3rem",
           display: "flex",
           flexDirection: "column"

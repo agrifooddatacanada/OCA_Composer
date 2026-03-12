@@ -33,6 +33,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import Spinner from "../components/Spinner";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
@@ -1409,7 +1410,7 @@ const AttributeFraming = () => {
           }
         />
       )}
-      <Box sx={{ my: "2rem" }}>
+      <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         {isLoadingPredicates ? (
           <Spinner text="Framing Attributes..." size={36} />
         ) : (

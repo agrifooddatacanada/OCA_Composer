@@ -29,6 +29,7 @@ import i18next from "i18next";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
@@ -382,6 +383,7 @@ const Cardinality = () => {
       <Box
         sx={{
           margin: "2rem",
+          marginBottom: BETWEEN_SECTION_SPACING,
           gap: "3rem",
           display: "flex",
           flexDirection: "row",

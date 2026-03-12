@@ -8,6 +8,7 @@ import LanGrid from "./LanGrid";
 import CustomPalette from "../constants/customPalette";
 import { removeSpacesFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import Loading from "../components/Loading";
 import { useMultiSchema } from "../schema/schemaContext";
 import { 
@@ -287,7 +288,8 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       {loading && lanAttributeRowData[languages[0] || LanguageConstants.DEFAULT_LANG_NAME]?.length > 40 && <Loading />}
       <Box
         sx={{
-          margin: "2rem"
+          margin: "2rem",
+          marginBottom: BETWEEN_SECTION_SPACING
         }}
       >
         <Box

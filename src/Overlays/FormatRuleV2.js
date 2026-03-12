@@ -6,6 +6,7 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
@@ -295,6 +296,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       <Box
         sx={{
           margin: "2rem",
+          marginBottom: BETWEEN_SECTION_SPACING,
           gap: "3rem",
           display: "flex",
           flexDirection: "column",

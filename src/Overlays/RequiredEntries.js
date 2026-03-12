@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { flexCenter, gridStyles, preWrapWordBreak } from "../constants/styles";
 import CellHeader from "../components/CellHeader";
 import DeleteConfirmation from "./DeleteConfirmation";
@@ -162,6 +163,7 @@ const RequiredEntries = () => {
       <Box
         sx={{
           margin: "2rem",
+          marginBottom: BETWEEN_SECTION_SPACING,
           gap: "3rem",
           display: "flex",
           flexDirection: "column",

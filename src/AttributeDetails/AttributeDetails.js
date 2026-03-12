@@ -18,8 +18,9 @@ import {
   removeSpacesFromArrayOfObjects
 } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { hasDisallowedChars } from "../utils/helpers";
-import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA, FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
+import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA, FIELD_UNIT_FRAMING_OVERLAY, TABLE_TO_BUTTON_GAP } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { langNameFromTwoLetters, langCodeOCAFromName } from "../utils/languageUtils";
 
@@ -695,24 +696,26 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
           {errorMessage}
         </Alert>
       )}
-      <div ref={refContainer}>
-        {!loading && (
-          <Grid
-            gridRef={gridRef}
-            addButton1={addButton1}
-            addButton2={addButton2}
-            setErrorMessage={setErrorMessage}
-            canDelete={canDelete}
-            setCanDelete={setCanDelete}
-            setAddByTab={setAddByTab}
-            typesObjectRef={typesObjectRef}
-            setLoading={setLoading}
-            attributeRowData={attributeRowData}
-            setAttributeRowData={setAttributeRowData}
-          />
-        )}
-      </div>
-      <AddAttribute
+      <Box sx={{ width: "calc(752px + 4rem)", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+        <div ref={refContainer}>
+          {!loading && (
+            <Grid
+              gridRef={gridRef}
+              addButton1={addButton1}
+              addButton2={addButton2}
+              setErrorMessage={setErrorMessage}
+              canDelete={canDelete}
+              setCanDelete={setCanDelete}
+              setAddByTab={setAddByTab}
+              typesObjectRef={typesObjectRef}
+              setLoading={setLoading}
+              attributeRowData={attributeRowData}
+              setAttributeRowData={setAttributeRowData}
+            />
+          )}
+        </div>
+        <Box sx={{ mt: TABLE_TO_BUTTON_GAP, mb: BETWEEN_SECTION_SPACING, mr: "2rem" }}>
+          <AddAttribute
         addButton1={addButton1}
         addButton2={addButton2}
         gridRef={gridRef}
@@ -726,6 +729,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         attributeRowData={attributeRowData}
         setAttributeRowData={setAttributeRowData}
       />
+        </Box>
+      </Box>
     </BackNextSkeleton>
   );
 });

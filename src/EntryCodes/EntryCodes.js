@@ -13,6 +13,7 @@ import { Context } from "../App";
 import SingleTable from "./SingleTable";
 import { removeSpacesAndColonFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 import { useMultiSchema } from "../schema/schemaContext";
 import { langCodeOCAFromName, langNameFromCodeOCA } from "../utils/languageUtils";
@@ -449,7 +450,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
           handleForward={() => setCurrentPage("UploadEntryCodes")}
         />
       )}
-      <Box sx={{ width: "90%", margin: "auto" }}>
+      <Box sx={{ width: "90%", margin: "auto", mb: BETWEEN_SECTION_SPACING }}>
         <Typography
           sx={{
             fontSize: 15,

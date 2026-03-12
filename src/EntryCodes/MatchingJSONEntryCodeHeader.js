@@ -5,6 +5,7 @@ import { useMultiSchema } from '../schema/schemaContext';
 import { langCodeOCAFromName, LanguageConstants } from '../utils/languageUtils';
 import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import BackNextSkeleton from '../components/BackNextSkeleton';
+import { BETWEEN_SECTION_SPACING } from '../constants/constants';
 import { AgGridReact } from 'ag-grid-react';
 import { gridStyles } from '../constants/styles';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
@@ -214,6 +215,7 @@ const MatchingJSONEntryCodeHeader = () => {
             // margin: '2rem',
             marginLeft: 11,
             marginTop: 2,
+            marginBottom: BETWEEN_SECTION_SPACING,
             gap: '3rem',
             display: 'flex',
             flexDirection: 'column',
@@ -250,6 +252,7 @@ const MatchingJSONEntryCodeHeader = () => {
           alignItems: 'center',
           justifyContent: 'center',
           flex: 1,
+          mb: BETWEEN_SECTION_SPACING,
         }}>
           <Typography variant="h5">No entry codes in this schema</Typography>
         </Box>}

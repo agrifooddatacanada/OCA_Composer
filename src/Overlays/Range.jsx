@@ -6,6 +6,7 @@ import { Alert, Box, Button, Typography } from "@mui/material";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
 import { flexCenter, gridStyles, preWrapWordBreak } from "../constants/styles";
@@ -299,7 +300,7 @@ const Range = forwardRef((props, ref) => {
           proceeding.
         </Alert>
       )}
-      <Box sx={{ my: "2rem" }}>
+      <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         <Box className="ag-theme-balham" sx={{ width: 881.5 }}>
           <style>{gridStyles}</style>
           <Box sx={{ display: "flex", alignItems: "center", mb: "1.6rem" }}>

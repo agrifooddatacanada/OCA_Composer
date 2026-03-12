@@ -5,7 +5,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Drop from "../StartSchema/Drop";
 import { useHandleJsonDrop } from "./useHandleJsonDrop";
 import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
-import { datasetUploadDescription, datasetUploadTooltip } from "../constants/constants";
+import { datasetUploadDescription, datasetUploadTooltip, BETWEEN_SECTION_SPACING } from "../constants/constants";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import ExcelSheetSelection from "../components/ExcelSheetSelection";
 import { Context } from "../App";
@@ -77,7 +77,8 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          flex: 1
+          flex: 1,
+          mb: BETWEEN_SECTION_SPACING
         }}
       >
         <Box sx={{ height: "3rem" }} />

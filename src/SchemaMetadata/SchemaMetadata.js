@@ -16,6 +16,7 @@ import { useMultiSchema } from "../schema/schemaContext";
 import { langCodeOCAFromName } from "../utils/languageUtils";
 import IsoCard from "./IsoCard";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 
 const SchemaMetadata = forwardRef(({
   pageBack,
@@ -309,6 +310,7 @@ const SchemaMetadata = forwardRef(({
       <Box
         sx={{
           mt: 2,
+          mb: BETWEEN_SECTION_SPACING,
           width: "100%"
         }}
       >

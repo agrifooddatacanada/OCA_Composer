@@ -6,6 +6,7 @@ import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import CellHeader from "../components/CellHeader";
 import DataStandardAutocompleteEditor from "./DataStandards/DataStandardAutocompleteEditor";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import DeleteConfirmation from "./DeleteConfirmation";
@@ -100,7 +101,7 @@ const DataStandards = () => {
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}
-      <Box>
+      <Box sx={{ mb: BETWEEN_SECTION_SPACING }}>
         <Box className='ag-theme-balham' sx={{ width: 430 }}>
           <style>{gridStyles}</style>
           <AgGridReact

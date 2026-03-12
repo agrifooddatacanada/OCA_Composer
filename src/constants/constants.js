@@ -9,6 +9,7 @@ export const MAX_QUESTION_DESCRIPTION_CHARS = 1000;
 
 export const FORM_BUILDER_CARD_WIDTH = 720;
 export const SECTION_SPACING = 2;
+export const TABLE_TO_BUTTON_GAP = 2; // theme units, gap between table and Add Attribute button
 export const HEADER_TO_CONTENT_GAP_PX = 6;
 export const BETWEEN_SECTION_SPACING = 4;
 
