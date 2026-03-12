@@ -149,10 +149,11 @@ export default function AddAttribute({
           sx={{
             position: "absolute",
             zIndex: "1000",
-            top: -20,
+            top: "100%",
+            mt: 0.5,
             display: "flex",
-            left: "10%",
-            width: "100%"
+            left: 0,
+            alignItems: "center"
           }}
         >
           <TextField
@@ -170,7 +171,7 @@ export default function AddAttribute({
               }
             }}
             sx={{
-              width: "9rem",
+              width: "10.75rem",
               "& .MuiInput-underline:before": {
                 borderBottomColor: CustomPalette.GREY_300
               },
