@@ -131,6 +131,8 @@ export const generateInternationalSchemaInformation = (
     if (!metaOverlay) return;
     rows.push([language, metaOverlay.name, metaOverlay.description]);
   });
+  
+  markdownContent.push(generateTable(columns, rows), "\n\n");
 
   if (decimal_separator || file_delimiter) {
     if (decimal_separator) {
@@ -143,11 +145,10 @@ export const generateInternationalSchemaInformation = (
       delimiterRows.push(["Line terminator", file_delimiter.line_terminator]);
       delimiterRows.push(["Data start row", file_delimiter.data_start_row]);
     }
+  
+    markdownContent.push("### Global Schema Values\n\n");
+    markdownContent.push(generateTable(delimiterColumns, delimiterRows), "\n\n");
   }
-
-  markdownContent.push(generateTable(columns, rows), "\n\n");
-  markdownContent.push("### Global Schema Values\n\n");
-  markdownContent.push(generateTable(delimiterColumns, delimiterRows), "\n\n");
 
   return markdownContent.join("");
 };
