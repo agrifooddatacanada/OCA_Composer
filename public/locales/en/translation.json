@@ -491,6 +491,7 @@
   "Section Labels": "Section Labels",
   "Page Labels": "Page Labels",
   "Semantic Engine is currently undergoing maintenance and schemas cannot be exported at this time": "Semantic Engine is currently undergoing maintenance and schemas cannot be exported at this time",
+  "For future editing, download your schema as-is and later upload it to the Semantic Engine.": "For future editing, download your schema as-is and later upload it to the Semantic Engine.",
   "Placeholder text to display when field is empty": "Placeholder text to display when field is empty",
   "text, mixed text and numbers": "text, mixed text and numbers",
   "only numbers": "only numbers",

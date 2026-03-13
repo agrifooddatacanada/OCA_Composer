@@ -42,7 +42,10 @@ export const DropdownMenuList = ({
         open={isDropdownOpen}
         onClose={() => setIsDropdownOpen(false)}
         onOpen={() => setIsDropdownOpen(true)}
-        renderValue={(value) => value}
+        renderValue={(value) => value || "\u200B"}
+        MenuProps={{
+          disableScrollLock: true
+        }}
       >
         {typesDisplay}
       </Select>

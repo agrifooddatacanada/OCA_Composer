@@ -441,6 +441,7 @@
   "Section Labels": "Étiquettes de section",
   "Page Labels": "Étiquettes de page",
   "Semantic Engine is currently undergoing maintenance and schemas cannot be exported at this time": "Semantic Engine est actuellement en maintenance et les schémas ne peuvent pas être exportés pour le moment",
+  "For future editing, download your schema as-is and later upload it to the Semantic Engine.": "Pour une modification ultérieure, téléchargez votre schéma tel quel et téléversez-le plus tard sur le moteur sémantique.",
   "Placeholder text to display when field is empty": "Texte d'espace réservé à afficher lorsque le champ est vide",
   "text, mixed text and numbers": "texte, texte mixte et nombres",
   "only numbers": "seulement des nombres",
