@@ -40,6 +40,7 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     AttributeMatchDataValidator: { header: t("Matching Attributes"), toolTipText: "", helpLink: `${dewBase}/${lang}/MatchAttributes/` },
     OCADataValidatorCheck: { header: t("Data Entry and Verification"), toolTipText: "", helpLink: `${dewBase}/${lang}/DataVerification/` },
     UnitFraming: { header: t("Define units for schema attributes"), toolTipText: "", helpLink: `${base}/${lang}/UnitFraming/` },
+    AttributeFraming: { header: t("Add Attribute Framing"), toolTipText: "", helpLink: `${base}/${lang}/AttributeFraming/` },
     UserSelection: { header: "", toolTipText: "", helpLink: `${base}/${lang}/Coauthor/` },
     Range: { header: t("Add Range Rules for Data"), toolTipText: "", helpLink: `${base}/${lang}/Range/` }
   };
