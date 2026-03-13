@@ -66,6 +66,19 @@ const gridStyle = `
 .ag-cell .ag-drag-handle {
   margin-right: 0;
 }
+
+.ag-row .delete-icon-solid {
+  display: none;
+}
+.ag-row:hover .delete-icon-outline {
+  display: none;
+}
+.ag-row:hover .delete-icon-solid {
+  display: inline-flex;
+}
+.ag-row:hover .ag-cell {
+  background-color: ${CustomPalette.PINK_200} !important;
+}
 `;
 
 const CodeHeader = () => {
@@ -118,11 +131,8 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   const schemaState = getSchema();
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
   
-  const [buttonArray, setButtonArray] = useState([]);
   const [gridWidth, setGridWidth] = useState(500);
-  const [hoveredRowIndex, setHoveredRowIndex] = useState(-1);
   const refContainer = useRef(null);
-  const boxRefs = useRef([]);
   const buttonRef = useRef();
 
   const handleDeleteRow = useCallback(
@@ -178,11 +188,25 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     });
   };
 
+  const DeleteCell = (params) => {
+    const idx = params?.node?.rowIndex ?? params?.rowIndex ?? -1;
+    if (idx < 0) return null;
+    return (
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+        <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
+        <DeleteForeverIcon
+          onClick={() => handleDeleteRow(idx)}
+          sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }}
+          className="delete-icon-solid"
+        />
+      </Box>
+    );
+  };
+
   const columnDefs = useMemo(() => {
-    // Use language names as field keys (normalized at source in ocaParser)
     const languageHeaders = languages.map((lang) => {
       return {
-        field: lang, // Use language name for data binding (e.g., "English", "French")
+        field: lang,
         editable: true,
         headerComponent: () => LanguageHeader({ languages, language: lang }),
         autoHeight: true,
@@ -203,7 +227,15 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak
       },
-      ...languageHeaders
+      ...languageHeaders,
+      {
+        field: "Delete",
+        headerName: "",
+        width: 44,
+        sortable: false,
+        editable: false,
+        cellRenderer: DeleteCell
+      }
     ];
   }, [languages, entryCodeData]);
 
@@ -211,14 +243,9 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     () => ({
       width: 200,
       tabToNextCell: true,
-      cellStyle: (params) => {
-        if (params.node.rowIndex === hoveredRowIndex) {
-          return { backgroundColor: CustomPalette.PINK_200 };
-        }
-        return { backgroundColor: "white" };
-      }
+      cellStyle: () => ({ backgroundColor: "white" })
     }),
-    [hoveredRowIndex]
+    []
   );
 
   // Creates "add-by-tab" behaviour
@@ -244,86 +271,27 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
 
   // Sets grid width based on number of Languages
   useEffect(() => {
+    const deleteColWidth = 44;
     if (languages.length > 3) {
-      setGridWidth(892);
+      setGridWidth(892 + deleteColWidth);
     } else {
       switch (languages.length) {
         case 1:
-          setGridWidth(442);
+          setGridWidth(442 + deleteColWidth);
           break;
         case 2:
-          setGridWidth(642);
+          setGridWidth(642 + deleteColWidth);
           break;
         case 3:
-          setGridWidth(842);
+          setGridWidth(842 + deleteColWidth);
           break;
         default:
-          setGridWidth(500);
+          setGridWidth(500 + deleteColWidth);
           break;
       }
     }
   }, [languages]);
 
-  // Because grid width varies dependent on number of languages, delete icons float outside of the grid component, and are linked by index
-  // There is an empty box at the top to make the icons line up correctly
-  // Hover effect helps with clarity since the delete icons are floating beside
-  useEffect(() => {
-    if (entryCodeData.length > 0) {
-      const newButtonArray = [];
-      boxRefs.current = [];
-      newButtonArray.push(<Box sx={{ height: "2.2rem" }} key={0} />);
-      entryCodeData.forEach((item, index) => {
-        const ref = React.createRef();
-        boxRefs.current.push(ref);
-        newButtonArray.push(
-          <Box
-            key={item.Code}
-            ref={ref}
-            sx={{
-              ml: 1
-            }}
-          >
-            {hoveredRowIndex === index ? (
-              <DeleteForeverIcon
-                onClick={() => handleDeleteRow(index)}
-                sx={{
-                  color: CustomPalette.PRIMARY
-                }}
-              />
-            ) : (
-              <DeleteOutlineIcon
-                sx={{
-                  color: CustomPalette.GREY_600
-                }}
-              />
-            )}
-          </Box>
-        );
-      });
-      if (newButtonArray.length > 2) {
-        setButtonArray(newButtonArray);
-      } else {
-        setButtonArray(null);
-      }
-    }
-  }, [entryCodeData, hoveredRowIndex]);
-
-  useEffect(() => {
-    const handleMousemove = (event) => {
-      const hoveredIndex = boxRefs.current.findIndex((ref) =>
-        ref.current?.contains(event.target)
-      );
-      if (hoveredIndex !== -1) {
-        setHoveredRowIndex(hoveredIndex);
-      } else {
-        setHoveredRowIndex(-1);
-      }
-    };
-    document.addEventListener("mousemove", handleMousemove);
-    return () => {
-      document.removeEventListener("mousemove", handleMousemove);
-    };
-  }, []);
 
   // Stops grid editing on all other grid components - not just current grid
   useEffect(() => {
@@ -380,6 +348,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
               <AgGridReact
                 ref={codeRefs.current[index]}
                 rowData={entryCodeData}
+                suppressNoRowsOverlay
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
                 domLayout="autoHeight"
@@ -390,24 +359,6 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
                 rowDragManaged
               />
             </div>
-          </Box>
-        </Box>
-        <Box
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-end"
-          }}
-        >
-          <Box
-            sx={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-around"
-            }}
-          >
-            {buttonArray}
           </Box>
         </Box>
       </Box>
