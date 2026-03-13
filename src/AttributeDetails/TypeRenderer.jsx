@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
@@ -8,6 +8,7 @@ import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHE
 
 const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAttributeRowData }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const skipSyncRef = useRef(false);
   const { t } = useTranslation();
   const { updateSchema, getSchema, createChildSchemaPlaceholder, pkgBuildFromState, schemaStates } = useMultiSchema();
   
@@ -60,6 +61,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
 
   const handleChange = (e) => {
     const newType = e.target.value;
+    skipSyncRef.current = true;
     setType(newType);
 
     // Update typesObjectRef
@@ -95,8 +97,10 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
   };
 
   useEffect(() => {
-    // Keep local type in sync when data or refs change
-    // Priority order: 1) attributeRowData (source of truth), 2) package, 3) typesObjectRef
+    if (skipSyncRef.current) {
+      skipSyncRef.current = false;
+      return;
+    }
     const currentAttr = attributeRowData.find((i) => i.Attribute === attributeName);
     
     if (currentAttr && currentAttr.Type !== undefined && currentAttr.Type !== null) {
@@ -146,6 +150,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
   const handleKeyDown = (e) => {
     const keyPressed = e.key;
     if (keyPressed === "Delete" || keyPressed === "Backspace") {
+      skipSyncRef.current = true;
       setType("");
       typesObjectRef.current[attributeName] = "";
       
