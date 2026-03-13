@@ -41,7 +41,7 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     OCADataValidatorCheck: { header: t("Data Entry and Verification"), toolTipText: "", helpLink: `${dewBase}/${lang}/DataVerification/` },
     UnitFraming: { header: t("Define units for schema attributes"), toolTipText: "", helpLink: `${base}/${lang}/UnitFraming/` },
     UserSelection: { header: "", toolTipText: "", helpLink: `${base}/${lang}/Coauthor/` },
-    Range: { header: t("Add Range Rules for Data"), toolTipText: "", helpLink: "" }
+    Range: { header: t("Add Range Rules for Data"), toolTipText: "", helpLink: `${base}/${lang}/Range/` }
   };
   return switchMap[currentPage] || { header: "", toolTipText: "", helpLink: "" };
 }

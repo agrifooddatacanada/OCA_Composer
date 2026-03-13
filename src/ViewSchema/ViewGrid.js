@@ -265,7 +265,7 @@ export default function ViewGrid({
         if (overlayKey === FIELD_RANGE_OVERLAY) {
           predefinedColumns.push({
             field: "LowerBound",
-            width: 160,
+            width: 130,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {
@@ -288,7 +288,7 @@ export default function ViewGrid({
 
           predefinedColumns.push({
             field: "UpperBound",
-            width: 160,
+            width: 130,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {
