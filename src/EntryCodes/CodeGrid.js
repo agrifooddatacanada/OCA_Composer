@@ -356,26 +356,41 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     };
   }, [codeRefs, chosenTable]);
 
+  const scrollbarSx = {
+    "&::-webkit-scrollbar": { height: "8px" },
+    "&::-webkit-scrollbar-track": { backgroundColor: "#f1f1f1" },
+    "&::-webkit-scrollbar-thumb": { backgroundColor: "#c1c1c1", borderRadius: "4px" },
+    "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "#a8a8a8" }
+  };
+
   return (
     <Box style={{ margin: "3rem", display: "flex", flexDirection: "column" }}>
       <Box style={{ display: "flex" }}>
-        <Box className="ag-theme-alpine" style={{ width: gridWidth, minWidth: gridWidth, maxWidth: gridWidth, overflow: "hidden" }}>
-          <style>{gridStyle}</style>
-          <div ref={refContainer}>
-            <AgGridReact
-              ref={codeRefs.current[index]}
-              rowData={entryCodeData}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              domLayout="autoHeight"
-              suppressHorizontalScroll
-              onCellKeyDown={onCellKeyDown}
-              onCellClicked={() => setChosenTable(index)}
-              onRowDragEnd={onRowDragEnd}
-              onRowDragLeave={onRowDragLeave}
-              rowDragManaged
-            />
-          </div>
+        <Box
+          sx={{
+            maxWidth: gridWidth,
+            overflowX: "auto",
+            pb: 1,
+            ...scrollbarSx
+          }}
+        >
+          <Box className="ag-theme-alpine" style={{ minWidth: gridWidth, width: "max-content" }}>
+            <style>{gridStyle}</style>
+            <div ref={refContainer}>
+              <AgGridReact
+                ref={codeRefs.current[index]}
+                rowData={entryCodeData}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                domLayout="autoHeight"
+                onCellKeyDown={onCellKeyDown}
+                onCellClicked={() => setChosenTable(index)}
+                onRowDragEnd={onRowDragEnd}
+                onRowDragLeave={onRowDragLeave}
+                rowDragManaged
+              />
+            </div>
+          </Box>
         </Box>
         <Box
           style={{

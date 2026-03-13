@@ -90,7 +90,7 @@ const Range = forwardRef((props, ref) => {
       },
       {
         field: "LowerBound",
-        width: 130,
+        width: 160,
         editable: true,
         autoHeight: true,
         headerComponent: CellHeader,
@@ -120,7 +120,7 @@ const Range = forwardRef((props, ref) => {
       },
       {
         field: "UpperBound",
-        width: 130,
+        width: 160,
         editable: true,
         autoHeight: true,
         headerComponent: CellHeader,
@@ -301,7 +301,7 @@ const Range = forwardRef((props, ref) => {
         </Alert>
       )}
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
-        <Box className="ag-theme-balham" sx={{ width: 881.5 }}>
+        <Box className="ag-theme-balham" sx={{ width: 941.5 }}>
           <style>{gridStyles}</style>
           <Box sx={{ display: "flex", alignItems: "center", mb: "1.6rem" }}>
             <Button
