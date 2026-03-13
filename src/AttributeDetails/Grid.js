@@ -36,6 +36,40 @@ const gridStyle = `
   .ag-theme-balham.ag-grid-compact .ag-center-cols-clipper {
     min-height: unset !important;
   }
+  .ag-row .delete-icon-solid {
+    display: none;
+  }
+  .delete-icon-wrapper:hover .delete-icon-outline {
+    display: none;
+  }
+  .delete-icon-wrapper:hover .delete-icon-solid {
+    display: inline-flex;
+  }
+  .ag-header-cell:last-child,
+  .ag-header-cell[col-id="Delete"] {
+    border-right: none !important;
+    --ag-header-column-separator-display: none !important;
+  }
+  .ag-header-cell:last-child *,
+  .ag-header-cell[col-id="Delete"] * {
+    border-right: none !important;
+    box-shadow: none !important;
+  }
+  .ag-header-viewport .ag-header-cell:last-child {
+    border-right: none !important;
+  }
+  .ag-header-container {
+    border-right: none !important;
+  }
+  .ag-center-cols-viewport .ag-cell:last-child {
+    border-right: none !important;
+  }
+  .ag-header-row .ag-header-cell:last-child::after {
+    display: none !important;
+  }
+  .ag-header-viewport {
+    overflow-x: hidden;
+  }
   `;
 
 // Renderers define input cells, Headers define grid header cells
@@ -150,7 +184,8 @@ export default function Grid({
         cellStyle: () => ({
           ...preWrapWordBreak,
           ...flexCenter
-        })
+        }),
+        flex: 1
       },
       {
         field: "Type",
@@ -203,7 +238,7 @@ export default function Grid({
           setCanDelete
         }),
         cellStyle: () => flexCenter,
-        width: 60
+        width: 44
       }
     ]);
   }, [attributesList, attributeRowData, canDelete, typesObjectRef]);

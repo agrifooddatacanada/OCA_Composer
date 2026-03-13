@@ -1,5 +1,7 @@
 import React from "react";
+import { Box } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import CustomPalette from "../constants/customPalette";
 import { useMultiSchema } from "../schema/schemaContext";
 
@@ -98,19 +100,17 @@ const DeleteRenderer = ({
     }
   };
   
+  if (!canDelete) return null;
   return (
-    canDelete && (
-      <DeleteOutlineIcon
-        sx={{
-          pr: 1,
-          color: CustomPalette.GREY_600,
-          transition: "all 0.2s ease-in-out",
-          cursor: "pointer"
-        }}
+    <Box className="delete-icon-wrapper" sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+      <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
+      <DeleteForeverIcon
         onClick={handleDeleteClick}
+        sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }}
+        className="delete-icon-solid"
         title="Delete attribute"
       />
-    )
+    </Box>
   );
 };
 
