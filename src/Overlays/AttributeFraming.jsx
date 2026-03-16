@@ -822,6 +822,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                     rowHeight={30}
                     headerHeight={30}
                     suppressHorizontalScroll
+                    overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
                     getRowStyle={(params) => {
                       // Check if the checkbox is actually selected in the row data
                       const isSelected = params.data && params.data.selected === true;
@@ -1483,6 +1484,7 @@ const AttributeFraming = () => {
                 stopEditingWhenCellsLoseFocus
                 suppressHorizontalScroll={false}
                 onGridReady={() => setGridReady(true)}
+                overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
               />
             </Box>
           </Box>

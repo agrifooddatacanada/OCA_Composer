@@ -710,6 +710,7 @@ const UnitFraming = () => {
             suppressHorizontalScroll
             rowHeight={50}
             onGridReady={onGridReady}
+            overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
         </Box>
         <Box sx={{ width: "80%" }}>

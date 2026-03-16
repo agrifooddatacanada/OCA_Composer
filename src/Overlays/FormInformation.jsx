@@ -750,6 +750,7 @@ const FormInformation = () => {
               animateRows={true}
               onGridReady={onGridReady}
               getRowHeight={getRowHeight}
+              overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
             />
           </Box>
         </div>

@@ -337,6 +337,7 @@ const Range = forwardRef((props, ref) => {
             stopEditingWhenCellsLoseFocus
             onGridReady={onGridReady}
             onCellValueChanged={onCellValueChanged}
+            overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
           <Typography sx={{ textAlign: "left", mt: "1.6rem" }}>
             {t("Range bounds must match the format rules.")}

@@ -345,6 +345,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
             onFirstDataRendered={overlayGridOnFirstDataRendered}
             onCellValueChanged={onCellValueChanged}
             onCellKeyDown={handleCellKeyDown}
+            overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
         </Box>
         <Box

@@ -680,43 +680,42 @@ export default function ViewSchema({
             </Alert>
           )}
 
-          {/* Clear All Data button - moved to top */}
-          {addClearButton && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
-            <Button
-              color="warning"
-              variant="outlined"
-              onClick={() => setShowConfirmReset(true)}
-              sx={{
-                width: "16rem",
-                display: "flex",
-                justifyContent: "space-around",
-                p: 1
-              }}
-            >
-              {t("Clear All Data and Restart", {
-                defaultValue: "Clear All Data and Restart"
-              })}
-            </Button>
-          )}
-
           {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
-            <Button
-              color="button"
-              variant="contained"
-              onClick={handleClickDownload}
-              sx={{
-                width: "18rem",
-                display: "flex",
-                justifyContent: "space-around",
-                p: 1
-              }}
-              disabled={exportDisabled}
-              title={(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage)
-                ? t("Complete all required fields across the package to enable download", { defaultValue: "Complete all required fields across the package to enable download" })
-                : ""}
-            >
-              {t("Download Schema and Readme", { defaultValue: "Download Schema and Readme" })}{" "}
-            </Button>
+            <Box sx={{ position: "relative" }}>
+              <Button
+                color="button"
+                variant="contained"
+                onClick={handleClickDownload}
+                sx={{
+                  width: "8rem",
+                  display: "flex",
+                  justifyContent: "space-around",
+                  p: 1,
+                  whiteSpace: "normal",
+                  textAlign: "center"
+                }}
+                disabled={exportDisabled}
+                title={(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage)
+                  ? t("Complete all required fields across the package to enable download", { defaultValue: "Complete all required fields across the package to enable download" })
+                  : ""}
+              >
+                {t("Download", { defaultValue: "Download" })}
+              </Button>
+              <Tooltip
+                title={
+                  <span>
+                    {t("For future editing, download your schema as-is and later upload it to the Semantic Engine.")}{" "}
+                    ({t("This is the")} <em>.json</em> {t("file. The")} <em>.txt</em> {t("file is a human-friendly description of your schema.")})
+                  </span>
+                }
+                placement="bottom"
+                arrow
+              >
+                <Box sx={{ position: "absolute", right: -20, top: "50%", transform: "translateY(-50%)", cursor: "help" }}>
+                  <HelpOutlineIcon sx={{ fontSize: 15, color: CustomPalette.GREY_600 }} />
+                </Box>
+              </Tooltip>
+            </Box>
           )}
 
     </>
@@ -735,28 +734,7 @@ export default function ViewSchema({
           <CircularProgress />
         </Box>
       ) : (
-        <Box sx={{ mt: 2, mb: BETWEEN_SECTION_SPACING, width: "100%" }}>
-      <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
-          {isPageForward && isExport && (
-            <Box
-              sx={{
-                padding: 2,
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                backgroundColor: "#f9f9f9",
-                width: "300px",
-                textAlign: "left",
-                position: "absolute",
-                right: 0,
-                top: 0
-              }}
-            >
-              <Typography sx={{ fontSize: 14, color: "#333" }}>
-                {t("For future editing, download your schema as-is and later upload it to the Semantic Engine.")}
-              </Typography>
-            </Box>
-          )}
-        </Box>
+        <Box sx={{ mt: 2, mb: BETWEEN_SECTION_SPACING, width: "100%", position: "relative" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Typography
           sx={{
@@ -1003,6 +981,25 @@ export default function ViewSchema({
           setLoading={setLoading}
           packageWithEdits={pkgFromState}
         />
+        {addClearButton && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4, width: "100%" }}>
+            <Button
+              color="warning"
+              variant="outlined"
+              onClick={() => setShowConfirmReset(true)}
+              sx={{
+                width: "16rem",
+                display: "flex",
+                justifyContent: "space-around",
+                p: 1
+              }}
+            >
+              {t("Clear All Data and Restart", {
+                defaultValue: "Clear All Data and Restart"
+              })}
+            </Button>
+          </Box>
+        )}
       </Box>
 
       {/* Confirm Reset Dialog */}

@@ -179,6 +179,7 @@ const RequiredEntries = () => {
             suppressHorizontalScroll
             onFirstDataRendered={overlayGridOnFirstDataRendered}
             onCellValueChanged={handleCellValueChanged}
+            overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
         </div>
       </Box>

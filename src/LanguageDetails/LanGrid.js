@@ -354,6 +354,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           getRowHeight={getRowHeight}
           getRowId={(params) => params.data.Attribute}
           immutableData={true}
+          overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
         />
       ) : (
         <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>

@@ -162,8 +162,8 @@ const SchemaMetadata = forwardRef(({
     
     // If no localized data exists yet, both name and description are missing
     if (Object.keys(localized).length === 0) {
-      spacesArray.push('Name of Schema');
-      spacesArray.push('Description');
+      spacesArray.push(t('Name of Schema'));
+      spacesArray.push(t('Description'));
       return spacesArray;
     }
     
@@ -198,12 +198,12 @@ const SchemaMetadata = forwardRef(({
         }
       });
       
-      if (missingName) spacesArray.push('Name of Schema');
-      if (missingDescription) spacesArray.push('Description');
+      if (missingName) spacesArray.push(t('Name of Schema'));
+      if (missingDescription) spacesArray.push(t('Description'));
     }
     
     return spacesArray;
-  }, [schemaDescription, languages, schemaState, setSchemaDescription]);
+  }, [schemaDescription, languages, schemaState, setSchemaDescription, t]);
 
   const [pendingNavigationTarget, setPendingNavigationTarget] = useState(null);
 

@@ -415,6 +415,7 @@ const Cardinality = () => {
             onGridReady={onGridReady}
             onFirstDataRendered={overlayGridOnFirstDataRendered}
             getRowHeight={getRowHeight}
+            overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
         </Box>
         <Divider orientation="vertical" flexItem />

@@ -111,6 +111,7 @@ const DataStandards = () => {
           domLayout="autoHeight"
           stopEditingWhenCellsLoseFocus
           onGridReady={onGridReady}
+          overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
         </Box>
       </Box>
