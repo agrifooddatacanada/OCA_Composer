@@ -7,6 +7,8 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 
 import TypeTooltip from "./TypeTooltip";
 import CellHeader from "../components/CellHeader";
+import TextareaCellEditor from "../components/TextareaCellEditor";
+import { measureTextHeight } from "../utils/measureTextLines";
 import { flexCenter, preWrapWordBreak } from "../constants/styles";
 import CheckboxRenderer from "./CheckboxRenderer";
 import FlaggedHeader from "./FlaggedHeader";
@@ -69,6 +71,12 @@ const gridStyle = `
   }
   .ag-header-viewport {
     overflow-x: hidden;
+  }
+  .ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height {
+    min-height: 80px !important;
+  }
+  .attribute-details-grid .ag-body-horizontal-scroll {
+    display: none !important;
   }
   `;
 
@@ -135,6 +143,13 @@ export default function Grid({
   }, [attributesList, attributeRowData]);
 
   useEffect(() => {
+    const api = gridRef.current?.api;
+    if (!api || attributeRowData.length === 0) return;
+    const raf = requestAnimationFrame(() => api.resetRowHeights());
+    return () => cancelAnimationFrame(raf);
+  }, [attributeRowData]);
+
+  useEffect(() => {
     setColumnDefs([
       {
         field: "Drag",
@@ -153,7 +168,8 @@ export default function Grid({
           helpText: t("This is the name for the attribute and, for example...")
         },
         editable: true,
-        autoHeight: true,
+        wrapText: true,
+        cellEditor: TextareaCellEditor,
         cellStyle: () => ({
           ...preWrapWordBreak,
           ...flexCenter
@@ -180,12 +196,13 @@ export default function Grid({
             "The units of each attribute (or leave blank if the attribute is..."
           )
         },
-        autoHeight: true,
+        wrapText: true,
+        cellEditor: TextareaCellEditor,
         cellStyle: () => ({
           ...preWrapWordBreak,
           ...flexCenter
         }),
-        flex: 1
+        width: 128
       },
       {
         field: "Type",
@@ -651,14 +668,17 @@ export default function Grid({
           updateAttributesWithLists(oldAttributeName, newAttributeName);
           updateSavedEntryCodes(oldAttributeName, newAttributeName);
         } else {
-          // Finds correct key to re-save the new typesObjectRef value
+          setAttributeRowData((prev) =>
+            prev.map((row, i) =>
+              i === e.rowIndex ? { ...row, Attribute: e.newValue } : row
+            )
+          );
           if (e.oldValue) {
             savedAttributeName.current = e.oldValue;
           } else if (e.oldValue !== "") {
             savedAttributeName.current = e.newValue;
           }
 
-          // Update typesObjectRef when values are updated
           const newAttributeName = e.newValue;
           const oldAttributeName = savedAttributeName.current;
           if (oldAttributeName !== newAttributeName) {
@@ -701,7 +721,27 @@ export default function Grid({
         setRowDragManaged(true);
       }
     }
+    if (e.colDef.field === "Attribute" || e.colDef.field === "Unit") {
+      if (e.colDef.field === "Unit") {
+        setAttributeRowData((prev) =>
+          prev.map((row, i) =>
+            i === e.rowIndex ? { ...row, Unit: e.newValue } : row
+          )
+        );
+      }
+      e.api.refreshCells({ rowNodes: [e.node], force: true });
+      requestAnimationFrame(() => e.api.resetRowHeights());
+    }
   };
+
+  const getRowHeight = useCallback((params) => {
+    const opts = { compact: true };
+    const attrH = measureTextHeight(params.data?.Attribute || "", 150, {});
+    const unitH = measureTextHeight(params.data?.Unit || "", 128, {});
+    const typeH = measureTextHeight(params.data?.Type || "", 150, opts);
+    const maxH = Math.max(attrH, unitH, typeH);
+    return Math.max(32, maxH + 16);
+  }, []);
 
   const onGridReady = useCallback(() => {
     setLoading(false);
@@ -709,10 +749,7 @@ export default function Grid({
 
   return (
     <div style={{ margin: "2rem 2rem 0 2rem" }}>
-      <div
-        className={`ag-theme-balham ${attributeRowData.length > 0 ? "ag-grid-compact" : ""}`}
-        style={{ width: 752 }}
-      >
+      <div className="attribute-details-grid ag-theme-balham" style={{ width: 737, overflowX: "hidden" }}>
         <style>{gridStyle}</style>
         <AgGridReact
           ref={gridRef}
@@ -724,6 +761,8 @@ export default function Grid({
           suppressRowClickSelection
           suppressCellSelection={false}
           domLayout="autoHeight"
+          getRowHeight={getRowHeight}
+          suppressHorizontalScroll
           suppressRowHoverHighlight
           onCellKeyDown={onCellKeyDown}
           animateRows
