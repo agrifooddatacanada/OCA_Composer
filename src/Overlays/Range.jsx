@@ -15,6 +15,7 @@ import CheckboxHeader from "../components/CheckboxHeader";
 import Loading from "../components/Loading";
 import CheckboxRenderer from "../AttributeDetails/CheckboxRenderer";
 import { getCurrentData, getFormatRuleDescription } from "../utils/helpers";
+import { measureTextHeight } from "../utils/measureTextLines";
 import { FIELD_RANGE_OVERLAY } from "../constants/constants";
 import { matchFormat } from "../OCADataValidator/utils/matchRules";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
@@ -49,6 +50,20 @@ const Range = forwardRef((props, ref) => {
   const [errors, setErrors] = useState({});
   const [showValidationError, setShowValidationError] = useState(false);
 
+  const getRowHeight = useCallback(
+    (params) => {
+      const opts = { compact: true };
+      const attrH = measureTextHeight(params.data?.Attribute || "", 180, opts);
+      const formatDesc = getFormatRuleDescription(params.data?.Type, params.data?.FormatRule, t) || "";
+      const formatH = measureTextHeight(formatDesc, 240, {});
+      const lowerH = measureTextHeight(params.data?.LowerBound || "", 130, opts);
+      const upperH = measureTextHeight(params.data?.UpperBound || "", 130, opts);
+      const maxH = Math.max(attrH, formatH, lowerH, upperH);
+      return Math.max(32, maxH + 8);
+    },
+    [t]
+  );
+
   const getCellValidationStyle = useCallback(
     (params) => {
       if (errors[params.data.Attribute]?.[params.colDef.field]) {
@@ -68,7 +83,7 @@ const Range = forwardRef((props, ref) => {
       {
         field: "Attribute",
         width: 180,
-        autoHeight: true,
+        wrapText: true,
         cellStyle: () => preWrapWordBreak,
         headerComponent: CellHeader,
         headerComponentParams: {
@@ -78,8 +93,8 @@ const Range = forwardRef((props, ref) => {
       },
       {
         field: "FormatRule",
-        width: 200,
-        autoHeight: true,
+        width: 240,
+        wrapText: true,
         cellStyle: () => preWrapWordBreak,
         headerComponent: CellHeader,
         headerComponentParams: {
@@ -93,7 +108,7 @@ const Range = forwardRef((props, ref) => {
         field: "LowerBound",
         width: 130,
         editable: true,
-        autoHeight: true,
+        wrapText: true,
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Lower Bound"),
@@ -123,7 +138,7 @@ const Range = forwardRef((props, ref) => {
         field: "UpperBound",
         width: 130,
         editable: true,
-        autoHeight: true,
+        wrapText: true,
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Upper Bound"),
@@ -245,6 +260,7 @@ const Range = forwardRef((props, ref) => {
         columns: [params.colDef.field],
         rowNodes: [params.node]
       });
+      params.api.resetRowHeights();
       setShouldRevalidate(true);
     }
   };
@@ -302,8 +318,9 @@ const Range = forwardRef((props, ref) => {
         </Alert>
       )}
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
-        <Box className="ag-theme-balham" sx={{ width: 881.5 }}>
+        <Box className="ag-theme-balham" sx={{ width: 921.5 }}>
           <style>{gridStyles}</style>
+          <style>{`.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height { min-height: 80px !important; }`}</style>
           <Box sx={{ display: "flex", alignItems: "center", mb: "1.6rem", position: "relative" }}>
             <Tooltip title={t("Range bounds must match the format rules.")} placement="top" arrow>
               <IconButton size="small" sx={{ position: "absolute", left: -32, top: "50%", transform: "translateY(-50%)" }} aria-label="Range bounds info">
@@ -340,6 +357,7 @@ const Range = forwardRef((props, ref) => {
             rowData={rangeRowData}
             columnDefs={columnDefs}
             domLayout="autoHeight"
+            getRowHeight={getRowHeight}
             stopEditingWhenCellsLoseFocus
             onGridReady={onGridReady}
             onCellValueChanged={onCellValueChanged}
