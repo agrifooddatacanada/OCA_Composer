@@ -137,6 +137,7 @@ const DraggableSection = ({ section, index, pageIndex, currentLanguage, onEdit, 
                 color: CustomPalette.GREY_600,
                 fontStyle: 'italic',
                 fontSize: '0.875rem',
+                textAlign: 'center',
                 ...textWrapStyle
               }}
             >

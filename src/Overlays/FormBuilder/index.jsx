@@ -432,29 +432,17 @@ const FormBuilder = () => {
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={handleBack}>
       <DndProvider backend={HTML5Backend}>
-        <Box sx={{ margin: "2rem", marginBottom: BETWEEN_SECTION_SPACING }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800 }}>
+        <Box sx={{ margin: "2rem", marginTop: "0.5rem", marginBottom: BETWEEN_SECTION_SPACING }}>
+          <Box sx={{ mb: 1 }}>
+            <Typography variant="h4" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800, textAlign: 'center' }}>
               {t("Form Builder")}
             </Typography>
-            <Button 
-              startIcon={<AddIcon />} 
-              onClick={handleAddPage} 
-              variant="contained" 
-              color="button"
-              sx={{ 
-                backgroundColor: CustomPalette.PRIMARY,
-                '&:hover': {
-                  backgroundColor: CustomPalette.DARK
-                }
-              }}
-            >
-              {t("Add Page")}
-            </Button>
           </Box>
 
-          <Typography variant="body1" sx={{ color: CustomPalette.GREY_600, mb: 2, textAlign: 'left' }}>
-            {t("Drag attributes from the left into pages or sections. Each attribute can be used once.")}
+          <Typography variant="body1" component="div" sx={{ color: CustomPalette.GREY_600, mb: 4, textAlign: 'center' }}>
+            {t("Drag attributes from the left into pages or sections.")}
+            <br />
+            {t("Each attribute can be used once.")}
           </Typography>
 
           <Box
@@ -463,10 +451,27 @@ const FormBuilder = () => {
               display: "flex",
               flexDirection: "column-reverse",
               alignItems: languages.length < 6 ? "flex-start" : "flex-end",
-              mb: 2
+              mb: 2,
+              gap: 1
             }}
           >
-            {languageButtonDisplay}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', justifyContent: 'space-between', width: '100%' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>{languageButtonDisplay}</Box>
+              <Button 
+                startIcon={<AddIcon />} 
+                onClick={handleAddPage} 
+                variant="contained" 
+                color="button"
+                sx={{ 
+                  backgroundColor: CustomPalette.PRIMARY,
+                  '&:hover': {
+                    backgroundColor: CustomPalette.DARK
+                  }
+                }}
+              >
+                {t("Add Page")}
+              </Button>
+            </Box>
             <Box
               sx={{
                 position: "absolute",

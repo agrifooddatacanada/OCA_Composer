@@ -124,6 +124,7 @@ const DroppablePage = ({
               sx={{ 
                 fontWeight: "bold", 
                 color: CustomPalette.GREY_800,
+                textAlign: 'left',
                 ...textWrapStyle
               }}
             >
@@ -158,12 +159,13 @@ const DroppablePage = ({
         </Box>
 
         {pageDescription && (
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2, ml: 4.1 }}>
             <Typography
               variant="body2"
               sx={{
                 color: CustomPalette.GREY_600,
                 fontStyle: 'italic',
+                textAlign: 'left',
                 ...textWrapStyle
               }}
             >
@@ -225,6 +227,7 @@ const DroppablePage = ({
                 sx={{
                   textAlign: "center",
                   py: 4,
+                  px: 3,
                   border: `2px dashed ${CustomPalette.GREY_300}`,
                   borderRadius: 1,
                   color: CustomPalette.GREY_600,
