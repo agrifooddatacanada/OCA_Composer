@@ -1,4 +1,4 @@
-import { Box, Link } from "@mui/material";
+import { Box, Link, Popover, Alert } from "@mui/material";
 import React, { useCallback, useContext, useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
@@ -48,6 +48,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORMAT_OVERLAY);
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [customFormatRuleAnchorEl, setCustomFormatRuleAnchorEl] = useState(null);
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
   const [gridRowData, setGridRowData] = useState([]);
@@ -278,6 +279,20 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     }
   }, []);
 
+  const handleCellKeyDown = useCallback((e) => {
+    const colField = e.colDef?.field ?? e.column?.colId;
+    const domEvent = e.event;
+    if (
+      colField === CUSTOM_FORMAT_RULE &&
+      e.data?.["Format Rule"] &&
+      domEvent?.key?.length === 1
+    ) {
+      domEvent?.preventDefault?.();
+      const cellEl = domEvent?.target?.closest?.(".ag-cell") || domEvent?.target;
+      setCustomFormatRuleAnchorEl(cellEl || null);
+    }
+  }, []);
+
   return (
     <BackNextSkeleton
       isForward
@@ -293,6 +308,21 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}
+      <Popover
+        open={Boolean(customFormatRuleAnchorEl)}
+        anchorEl={customFormatRuleAnchorEl}
+        onClose={() => setCustomFormatRuleAnchorEl(null)}
+        disableScrollLock
+        anchorOrigin={{ vertical: "center", horizontal: "right" }}
+        transformOrigin={{ vertical: "center", horizontal: "left" }}
+        PaperProps={{
+          sx: { mt: 1.5, ml: 1.5, p: 0, overflow: "visible" }
+        }}
+      >
+        <Alert severity="error" sx={{ m: 0 }}>
+          {t("Clear the Format Rule first to enter a custom format rule.")}
+        </Alert>
+      </Popover>
       <Box
         sx={{
           margin: "2rem",
@@ -314,6 +344,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
             rowHeight={50}
             onFirstDataRendered={overlayGridOnFirstDataRendered}
             onCellValueChanged={onCellValueChanged}
+            onCellKeyDown={handleCellKeyDown}
           />
         </Box>
         <Box

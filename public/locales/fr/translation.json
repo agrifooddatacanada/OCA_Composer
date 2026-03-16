@@ -510,6 +510,7 @@
   "Edit this schema": "Modifier ce schéma",
   "Select node to see hidden fields": "Sélectionnez le nœud pour voir les champs masqués",
   "Custom Format Rule": "Règle de format personnalisée",
+  "Clear the Format Rule first to enter a custom format rule.": "Effacez d'abord la règle de format pour entrer une règle de format personnalisée.",
   "ISO Code": "Code ISO",
   "English": "Anglais",
   "French": "Français",

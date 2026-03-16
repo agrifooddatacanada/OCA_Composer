@@ -547,6 +547,7 @@
   "{{count}} schemas have List attributes with no entry codes. Open each schema to add entry codes before exporting.": "{{count}} schemas have List attributes with no entry codes. Open each schema to add entry codes before exporting.",
   "Complete all required fields across the package to enable download": "Complete all required fields across the package to enable download",
   "Custom Format Rule": "Custom Format Rule",
+  "Clear the Format Rule first to enter a custom format rule.": "Clear the Format Rule first to enter a custom format rule.",
   "ISO Code": "ISO Code",
   "English": "English",
   "French": "French",
