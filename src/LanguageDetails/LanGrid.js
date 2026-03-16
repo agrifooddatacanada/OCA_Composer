@@ -16,25 +16,7 @@ import { MAX_ATTR_DESCRIPTION_CHARS, MAX_ATTR_LABEL_CHARS } from "../constants/c
 import { langCodeOCAFromName } from "../utils/languageUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
 import TextareaCellEditor from "../components/TextareaCellEditor";
-
-// Compact renderer moved to module scope to avoid defining components during render
-const CompactListRenderer = ({ value }) => {
-  const text = value || "";
-  return (
-    <span
-      title={text}
-      style={{
-        display: "inline-block",
-        maxWidth: "100%",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis"
-      }}
-    >
-      {text}
-    </span>
-  );
-};
+import TruncatedListCell from "../components/TruncatedListCell";
 
 export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const { t, i18n } = useTranslation();
@@ -221,7 +203,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     {
       field: "Label",
       editable: true,
-      width: 250,
+      width: 200,
       wrapText: true,
       cellEditor: TextareaCellEditor,
       cellStyle: () => preWrapWordBreak,
@@ -258,21 +240,20 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       field: "List",
       headerName: t("List"),
       editable: false,
-      flex: 2,
-      minWidth: 320,
-      tooltipField: "List",
-      cellRenderer: CompactListRenderer,
+      flex: 1,
+      minWidth: 305,
+      cellRenderer: (params) => <TruncatedListCell value={params.value} />,
       cellStyle: (params) =>
         attributesWithLists.includes(params.data.Attribute) ? {} : greyCellStyle
     }
   ], [t, attributesWithLists]);
 
   const getRowHeight = useCallback((params) => {
-    const attrH = measureTextHeight(params.data?.Attribute || "", 104);
-    const labelH = measureTextHeight(params.data?.Label || "", 234);
-    const descH = measureTextHeight(params.data?.Description || "", 244);
+    const attrH = measureTextHeight(params.data?.Attribute || "", 120, {});
+    const labelH = measureTextHeight(params.data?.Label || "", 200, {});
+    const descH = measureTextHeight(params.data?.Description || "", 260, {});
     const maxH = Math.max(attrH, labelH, descH);
-    return Math.max(32, maxH + 4);
+    return Math.max(32, maxH + 16);
   }, []);
 
   const onCellKeyDown = (e) => {
@@ -292,23 +273,19 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   useEffect(() => {
     const api = gridRef.current?.api;
-    if (!api) return;
-    const raf = requestAnimationFrame(() => {
-      api.resetRowHeights();
-    });
+    if (!api || !lanAttributeRowData[currentLanguage]?.length) return;
+    const raf = requestAnimationFrame(() => api.resetRowHeights());
     return () => cancelAnimationFrame(raf);
-  }, [currentLanguage]);
+  }, [currentLanguage, lanAttributeRowData]);
 
   const onCellValueChanged = useCallback(
     (event) => {
-      // Only update state after editing is complete, not during typing
       if (event.source !== "edit") return;
-      
+
       const { colDef, data, newValue } = event;
       const attributeName = data.Attribute;
       const { field } = colDef;
 
-      // Update local lanAttributeRowData
       const updatedLanAttributeRowData = { ...lanAttributeRowData };
       if (!updatedLanAttributeRowData[currentLanguage]) {
         updatedLanAttributeRowData[currentLanguage] = [];
@@ -320,24 +297,52 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         row.Attribute === attributeName ? { ...row, [field]: newValue } : row
       );
 
-      // Update schema state
       updateSchema({
         lanAttributeRowData: updatedLanAttributeRowData
       });
+
+      if (colDef.field === "Label" || colDef.field === "Description") {
+        event.api.refreshCells({ rowNodes: [event.node], force: true });
+        requestAnimationFrame(() => event.api.resetRowHeights());
+      }
     },
     [lanAttributeRowData, currentLanguage, updateSchema]
   );
 
   return (
-    <div className="ag-theme-balham" style={{ width: 890 }}>
+    <div className="lan-grid ag-theme-balham" style={{ width: 890, overflowX: "hidden" }}>
       <style>
         {gridStyles}
         {`
           .ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height {
-            min-height: unset !important;
+            min-height: 80px !important;
           }
           .ag-theme-balham.ag-layout-auto-height {
             height: auto !important;
+          }
+          .lan-grid .ag-body-horizontal-scroll {
+            display: none !important;
+          }
+          .lan-grid .ag-header-viewport {
+            padding-right: 17px;
+          }
+          .lan-grid .ag-header-cell:last-child {
+            border-right: none !important;
+            --ag-header-column-separator-display: none !important;
+          }
+          .lan-grid .ag-header-cell:last-child * {
+            border-right: none !important;
+            box-shadow: none !important;
+          }
+          .lan-grid .ag-header-row .ag-header-cell:last-child::after {
+            display: none !important;
+          }
+          .lan-grid .ag-center-cols-viewport .ag-cell:last-child {
+            border-right: none !important;
+          }
+          .lan-grid .ag-cell[col-id="List"] {
+            overflow: hidden;
+            padding-right: 0;
           }
         `}
       </style>
@@ -352,6 +357,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           domLayout="autoHeight"
           onGridReady={onGridReady}
           getRowHeight={getRowHeight}
+          suppressHorizontalScroll
           getRowId={(params) => params.data.Attribute}
           immutableData={true}
           overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}

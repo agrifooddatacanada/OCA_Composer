@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useContext, useCallback, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
-import { Box, Tooltip } from "@mui/material";
+import { Box } from "@mui/material";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { greyCellStyle } from "../constants/styles";
@@ -57,6 +57,15 @@ const gridStyles = `
 .ag-root-wrapper-body.ag-layout-auto-height {
   min-height: 80px !important;
 }
+
+.ag-cell[col-id="List"] {
+  overflow: hidden;
+  padding-right: 0;
+}
+
+.view-schema-grid .ag-header-viewport {
+  padding-right: 17px;
+}
 `;
 
 const defaultColDef = {
@@ -75,30 +84,18 @@ const CheckboxRenderer = ({ value }) => {
   return <input type="checkbox" ref={inputRef} disabled />;
 };
 
+import TruncatedListCell from "../components/TruncatedListCell";
+
 export const ListRenderer = memo((props) => {
   const { t } = useTranslation();
   const listText = props?.data?.List;
   const notAListText = t("Not a List");
-  
+
   if (!listText || listText === notAListText) {
     return <Box>{notAListText}</Box>;
   }
 
-  return (
-    <Tooltip title={listText} placement="top" arrow>
-      <Box
-        sx={{
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          width: "100%",
-          textAlign: "center"
-        }}
-      >
-        {listText}
-      </Box>
-    </Tooltip>
-  );
+  return <TruncatedListCell value={listText} />;
 });
 
 export default function ViewGrid({
@@ -484,7 +481,7 @@ export default function ViewGrid({
   }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchema, t]);
 
   return (
-    <div className="ag-theme-balham" style={{ width: "100%" }}>
+    <div className="view-schema-grid ag-theme-balham" style={{ width: "100%" }}>
       <style>{gridStyles}</style>
       <AgGridReact
         ref={gridRef}
