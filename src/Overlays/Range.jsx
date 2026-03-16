@@ -1,7 +1,8 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
-import { Alert, Box, Button, Typography } from "@mui/material";
+import { Alert, Box, Button, IconButton, Tooltip, Typography } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -303,7 +304,12 @@ const Range = forwardRef((props, ref) => {
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         <Box className="ag-theme-balham" sx={{ width: 881.5 }}>
           <style>{gridStyles}</style>
-          <Box sx={{ display: "flex", alignItems: "center", mb: "1.6rem" }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: "1.6rem", position: "relative" }}>
+            <Tooltip title={t("Range bounds must match the format rules.")} placement="top" arrow>
+              <IconButton size="small" sx={{ position: "absolute", left: -32, top: "50%", transform: "translateY(-50%)" }} aria-label="Range bounds info">
+                <HelpOutlineIcon sx={{ fontSize: 15 }} />
+              </IconButton>
+            </Tooltip>
             <Button
               color="button"
               variant="contained"
@@ -339,9 +345,6 @@ const Range = forwardRef((props, ref) => {
             onCellValueChanged={onCellValueChanged}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
-          <Typography sx={{ textAlign: "left", mt: "1.6rem" }}>
-            {t("Range bounds must match the format rules.")}
-          </Typography>
         </Box>
       </Box>
     </BackNextSkeleton>

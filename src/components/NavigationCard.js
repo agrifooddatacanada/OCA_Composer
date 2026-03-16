@@ -38,22 +38,25 @@ export default function NavigationCard({
         <Box
           sx={{
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "row",
+            justifyContent: "flex-start",
             alignItems: "center",
+            gap: 1.5,
             width: "100%",
             backgroundColor: CustomPalette.RED_100,
             mb: 2,
+            px: 2,
+            py: 1.5,
           }}
         >
           <ErrorOutlineIcon
             sx={{
               color: CustomPalette.SECONDARY,
-              p: 1,
-              pl: 0,
+              flexShrink: 0,
               fontSize: 35,
             }}
           />
-          <Typography variant="body1" sx={{ p: 1, fontSize: 20 }}>
+          <Typography variant="body1" sx={{ fontSize: 20, flex: 1, minWidth: 0 }}>
             {t('There are one or more blank entries in the following field(s)')}
           </Typography>
         </Box>
