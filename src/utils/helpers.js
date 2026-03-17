@@ -40,7 +40,6 @@ export const translateDataType = (type, t = null) => {
     'Array[Binaryfile]': t('Array[Binaryfile]'),
     'Array[DateTime]': t('Array[DateTime]'),
     'Child Schema': t('Child Schema'),
-    'Array[Child Schema]': t('Array[Child Schema]'),
     'Placeholder Child Schema': t('Placeholder Child Schema'),
     'Array[Placeholder Child Schema]': t('Array[Placeholder Child Schema]')
   };

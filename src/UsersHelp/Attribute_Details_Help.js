@@ -68,6 +68,10 @@ const AttributeDetailsHelp = () => {
       <TypographyTag type='li'>
         Array [attribute type]: a data type that defines a structure that holds several data items or elements of the same data type
       </TypographyTag>
+      <TypographyTag type='li'>
+        Child Schema: a separate table containing any combination of the above; used for nested data
+      </TypographyTag>
+      <br />
       <br />
       <HelpPageH3Title text="List" />
 

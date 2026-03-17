@@ -11,7 +11,6 @@ import {
   FIELD_FORM_INFORMATION_OVERLAY,
   TYPE_CHILD_SCHEMA,
   TYPE_PLACEHOLDER_CHILD_SCHEMA,
-  TYPE_ARRAY_CHILD_SCHEMA,
   TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA
 } from "../constants/constants";
 import { langNameFromTwoLetters, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
@@ -232,7 +231,7 @@ export class OCAParser {
       if (typeof first === "string") {
         const inner = first.trim();
         // refs: = child schema with SAID, refn: = placeholder reference
-        if (inner.startsWith("refs:")) return TYPE_ARRAY_CHILD_SCHEMA;
+        if (inner.startsWith("refs:")) return TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA;
         if (inner.startsWith("refn:")) return TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA;
         const mapped = this._getTypeMapping()[inner.toLowerCase()] || inner;
         return `Array[${mapped}]`;
@@ -250,7 +249,7 @@ export class OCAParser {
     const arrayMatch = t.match(/^array\[(.+)\]$/i);
     if (arrayMatch) {
       const inner = arrayMatch[1];
-      if (inner.toLowerCase().startsWith("refs:")) return TYPE_ARRAY_CHILD_SCHEMA;
+      if (inner.toLowerCase().startsWith("refs:")) return TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA;
       if (inner.toLowerCase().startsWith("refn:")) return TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA;
       const mapped = this._getTypeMapping()[inner.toLowerCase()] || inner;
       return `Array[${mapped}]`;

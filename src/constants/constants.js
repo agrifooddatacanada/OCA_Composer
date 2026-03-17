@@ -33,7 +33,6 @@ export const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
  */
 export const TYPE_CHILD_SCHEMA = "Child Schema";
 export const TYPE_PLACEHOLDER_CHILD_SCHEMA = "Placeholder Child Schema";
-export const TYPE_ARRAY_CHILD_SCHEMA = "Array[Child Schema]";
 export const TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA = "Array[Placeholder Child Schema]";
 
 /**
@@ -47,7 +46,6 @@ export const isChildSchemaType = (type) => {
   return (
     t === TYPE_CHILD_SCHEMA ||
     t === TYPE_PLACEHOLDER_CHILD_SCHEMA ||
-    t === TYPE_ARRAY_CHILD_SCHEMA ||
     t === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA ||
     t.startsWith("refs:") ||
     t.startsWith("refn:") ||
@@ -309,8 +307,7 @@ export const dataTypes = [
   "Array[Boolean]",
   "Array[DateTime]",
   "Array[Numeric]",
-  "Array[Text]",
-  "Array[Child Schema]"
+  "Array[Text]"
 ];
 
 export const descriptionToFormatCodeText = {

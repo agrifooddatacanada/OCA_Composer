@@ -4,7 +4,7 @@ import { MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA, TYPE_ARRAY_CHILD_SCHEMA, TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA } from "../constants/constants";
+import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA, TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA } from "../constants/constants";
 
 const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAttributeRowData }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -22,12 +22,12 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     { value: "DateTime", label: "DateTime" },
     { value: "Numeric", label: "Numeric" },
     { value: TYPE_CHILD_SCHEMA, label: TYPE_CHILD_SCHEMA },
+    { value: TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA, label: TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA },
     { value: "Array[Binary]", label: "Array[Binaryfile]" },
     { value: "Array[Boolean]", label: "Array[Boolean]" },
     { value: "Array[DateTime]", label: "Array[DateTime]" },
     { value: "Array[Numeric]", label: "Array[Numeric]" },
-    { value: "Array[Text]", label: "Array[Text]" },
-    { value: TYPE_ARRAY_CHILD_SCHEMA, label: TYPE_ARRAY_CHILD_SCHEMA }
+    { value: "Array[Text]", label: "Array[Text]" }
   ];
 
   const attributeName = data.Attribute;
@@ -43,7 +43,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     const rawType = currentAttribute.Type;
     // Normalize placeholder types for display, but preserve empty string
     if (rawType === TYPE_PLACEHOLDER_CHILD_SCHEMA) return TYPE_CHILD_SCHEMA;
-    if (rawType === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) return TYPE_ARRAY_CHILD_SCHEMA;
+    if (rawType === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) return TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA;
     return rawType !== undefined && rawType !== null ? rawType : "";
   };
   
@@ -85,7 +85,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     
     // If setting type to Child Schema, create a placeholder child schema
     // so user can immediately navigate to edit it
-    if (newType === TYPE_CHILD_SCHEMA || newType === TYPE_ARRAY_CHILD_SCHEMA) {
+    if (newType === TYPE_CHILD_SCHEMA || newType === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
       createChildSchemaPlaceholder(attributeName);
     }
     
@@ -110,9 +110,6 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       }
       if (displayType === TYPE_PLACEHOLDER_CHILD_SCHEMA) {
         displayType = TYPE_CHILD_SCHEMA;
-      }
-      if (displayType === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
-        displayType = TYPE_ARRAY_CHILD_SCHEMA;
       }
       setType(displayType);
       return;
