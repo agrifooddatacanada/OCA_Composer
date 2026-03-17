@@ -37,8 +37,10 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   } = useMultiSchema();
   
 
-  // Local state for the current editing session
-  const [attributeRowData, setAttributeRowData] = useState([]);
+  const [attributeRowData, setAttributeRowData] = useState(() => {
+    const schema = getSchema();
+    return Array.isArray(schema?.attributes) ? schema.attributes : [];
+  });
 
   const [errorMessage, setErrorMessage] = useState("");
   const [canDelete, setCanDelete] = useState(false);
