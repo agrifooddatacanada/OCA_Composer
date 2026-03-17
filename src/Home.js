@@ -56,11 +56,11 @@ const Home = ({
 
   const [activeStep, setActiveStep] = useState(-1);
   const [steps, setSteps] = useState([
-    { label: "Schema Metadata", page: "Metadata" },
-    { label: "Attribute Details", page: "Details" },
-    { label: "Language-dependent Attribute Details", page: "LanguageDetails" },
+    { label: "Metadata", page: "Metadata" },
+    { label: "Attributes", page: "Details" },
+    { label: "Labels", page: "LanguageDetails" },
     { label: "Overlays", page: "Overlays" },
-    { label: "View Schema", page: "View" }
+    { label: "Summary", page: "View" }
   ]);
 
   /**
