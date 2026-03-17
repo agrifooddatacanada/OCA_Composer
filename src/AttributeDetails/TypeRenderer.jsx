@@ -10,7 +10,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const skipSyncRef = useRef(false);
   const { t } = useTranslation();
-  const { updateSchema, getSchema, createChildSchemaPlaceholder, pkgBuildFromState, schemaStates } = useMultiSchema();
+  const { updateSchema, createChildSchemaPlaceholder } = useMultiSchema();
   
   // Type dropdown options
   // Note: "Child Schema" covers both refs: (with SAID) and refn: (placeholder) - distinction is automatic
@@ -103,49 +103,24 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     }
     const currentAttr = attributeRowData.find((i) => i.Attribute === attributeName);
     
-    if (currentAttr && currentAttr.Type !== undefined && currentAttr.Type !== null) {
-      // Use attributeRowData as source of truth (handles "", "Text", etc.)
+    if (currentAttr) {
       let displayType = currentAttr.Type;
-      
-      // Normalize placeholder types to regular child schema for display
+      if (displayType === undefined || displayType === null) {
+        displayType = "";
+      }
       if (displayType === TYPE_PLACEHOLDER_CHILD_SCHEMA) {
         displayType = TYPE_CHILD_SCHEMA;
       }
       if (displayType === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
         displayType = TYPE_ARRAY_CHILD_SCHEMA;
       }
-      
       setType(displayType);
       return;
     }
     
-    // Fallback: check package if not in attributeRowData
-    const pkg = pkgBuildFromState();
-    const packageType = pkg?.bundle?.capture_base?.attributes?.[attributeName];
-    
-    if (packageType) {
-      let displayType = "";
-      if (typeof packageType === "string") {
-        if (packageType.startsWith("refs:") || packageType.startsWith("refn:")) {
-          displayType = TYPE_CHILD_SCHEMA;
-        } else {
-          displayType = packageType;
-        }
-      } else if (Array.isArray(packageType) && packageType[0]) {
-        if (packageType[0].startsWith("refs:") || packageType[0].startsWith("refn:")) {
-          displayType = TYPE_ARRAY_CHILD_SCHEMA;
-        } else {
-          displayType = `Array[${packageType[0]}]`;
-        }
-      }
-      setType(displayType);
-      return;
-    }
-    
-    // Last resort: typesObjectRef (but prefer "" over undefined)
     const fromRef = typesObjectRef.current[attributeName];
     setType(fromRef !== undefined && fromRef !== null ? fromRef : "");
-  }, [attributeName, attributeRowData, pkgBuildFromState, schemaStates]);
+  }, [attributeName, attributeRowData]);
 
   const handleKeyDown = (e) => {
     const keyPressed = e.key;
