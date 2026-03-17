@@ -66,6 +66,21 @@ const gridStyles = `
 .view-schema-grid .ag-header-viewport {
   padding-right: 17px;
 }
+
+.ag-header-cell:last-child {
+  border-right: none !important;
+  --ag-header-column-separator-display: none !important;
+}
+.ag-header-cell:last-child * {
+  border-right: none !important;
+  box-shadow: none !important;
+}
+.ag-header-row .ag-header-cell:last-child::after {
+  display: none !important;
+}
+.ag-center-cols-viewport .ag-cell:last-child {
+  border-right: none !important;
+}
 `;
 
 const defaultColDef = {

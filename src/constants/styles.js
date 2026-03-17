@@ -125,4 +125,19 @@ export const gridStyles = `
 .ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
   min-height: 100px !important;
 }
+
+.ag-header-cell:last-child {
+  border-right: none !important;
+  --ag-header-column-separator-display: none !important;
+}
+.ag-header-cell:last-child * {
+  border-right: none !important;
+  box-shadow: none !important;
+}
+.ag-header-row .ag-header-cell:last-child::after {
+  display: none !important;
+}
+.ag-center-cols-viewport .ag-cell:last-child {
+  border-right: none !important;
+}
 `;
