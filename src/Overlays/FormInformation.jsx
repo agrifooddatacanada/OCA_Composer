@@ -575,15 +575,15 @@ const FormInformation = () => {
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
           return PLACEHOLDER_EDITABLE_TYPES.includes(attrType);
         },
-        flex: 1,
-        minWidth: 240,
+        width: 283,
         wrapText: true,
         cellEditor: TextareaCellEditor,
         cellStyle: (params) => {
           const attr = params.data.Attribute;
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
           const isEditable = PLACEHOLDER_EDITABLE_TYPES.includes(attrType);
-          return isEditable ? preWrapWordBreak : greyCellStyle;
+          const base = isEditable ? preWrapWordBreak : greyCellStyle;
+          return base;
         },
         headerComponent: CellHeader,
         headerComponentParams: {
