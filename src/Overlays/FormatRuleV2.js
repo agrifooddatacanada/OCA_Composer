@@ -24,7 +24,7 @@ import { getFormatRuleDescription } from "../utils/helpers";
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
-  overflow: "auto"
+  overflow: "hidden"
 };
 
 const FormatRulesV2 = forwardRef((props, ref) => {
@@ -157,6 +157,21 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   useImperativeHandle(ref, () => ({
     save: handleSave
   }));
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevScrollbarGutter = html.style.scrollbarGutter;
+    const prevScrollbarWidth = body.style.scrollbarWidth;
+    html.style.scrollbarGutter = "auto";
+    body.style.scrollbarWidth = "none";
+    body.classList.add("format-rules-no-scrollbar");
+    return () => {
+      html.style.scrollbarGutter = prevScrollbarGutter;
+      body.style.scrollbarWidth = prevScrollbarWidth;
+      body.classList.remove("format-rules-no-scrollbar");
+    };
+  }, []);
 
   // Save changes when component unmounts (user navigates away)
   useEffect(() => {
