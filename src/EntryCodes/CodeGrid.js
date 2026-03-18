@@ -80,6 +80,9 @@ const codeGridStyle = `
   .entry-codes-grid .ag-root-wrapper-body.ag-layout-auto-height {
     min-height: unset !important;
   }
+  .entry-codes-grid .ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
+    min-height: 75px !important;
+  }
   .ag-row .delete-icon-solid {
     display: none;
   }
@@ -286,14 +289,13 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   );
 
   const getRowHeight = useCallback((params) => {
-    const opts = { compact: true };
-    const codeH = measureTextHeight(params.data?.Code || "", ENTRY_CODE_CODE_WIDTH, opts);
+    const codeH = measureTextHeight(params.data?.Code || "", ENTRY_CODE_CODE_WIDTH, {});
     let maxH = codeH;
     languages.forEach((lang) => {
-      const langH = measureTextHeight(params.data?.[lang] || "", ENTRY_CODE_LANG_WIDTH, opts);
+      const langH = measureTextHeight(params.data?.[lang] || "", ENTRY_CODE_LANG_WIDTH, {});
       maxH = Math.max(maxH, langH);
     });
-    return Math.max(32, maxH + 16);
+    return Math.max(42, maxH + 16);
   }, [languages]);
 
   const prevRowCountRef = useRef(0);
@@ -303,7 +305,9 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     prevRowCountRef.current = rowCount;
     const api = codeRefs.current?.[index]?.current?.api;
     if (!api) return;
-    const raf = requestAnimationFrame(() => api.resetRowHeights());
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => api.resetRowHeights());
+    });
     return () => cancelAnimationFrame(raf);
   }, [entryCodeData?.length, codeRefs, index]);
 
