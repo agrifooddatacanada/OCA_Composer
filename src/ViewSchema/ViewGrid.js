@@ -29,7 +29,7 @@ import SelectedFeatureHeader from "./SelectedFeatureHeader";
 const gridStyles = `
 .ag-cell {
   line-height: 1 !important;
-  padding: 0 !important;
+  padding: 0 6px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -60,7 +60,11 @@ const gridStyles = `
 
 .ag-cell[col-id="List"] {
   overflow: hidden;
-  padding-right: 0;
+  padding: 0 0 0 6px !important;
+}
+
+.ag-cell[col-id="Format Rule"] {
+  padding: 6px !important;
 }
 
 .view-schema-grid .ag-header-viewport {
@@ -150,7 +154,7 @@ export default function ViewGrid({
     const labelH = measureTextHeight(params.data?.Label || "", 154, opts);
     const descH = measureTextHeight(params.data?.Description || "", 334, opts);
     const maxH = Math.max(attrH, unitH, typeH, labelH, descH);
-    return Math.max(32, maxH + 4);
+    return Math.max(32, maxH + 14);
   }, []);
 
   useEffect(() => {

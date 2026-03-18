@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { Box, Button, List, ListItemButton, ListItemText, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { CustomPalette } from "../constants/customPalette";
@@ -141,7 +141,7 @@ const Overlays = ({ pageBack, pageForward }) => {
           marginBottom: BETWEEN_SECTION_SPACING,
           gap: "3rem",
           display: "flex",
-          flexDirection: "column"
+          flexDirection: "row"
         }}
       >
         <Box
@@ -257,38 +257,38 @@ const Overlays = ({ pageBack, pageForward }) => {
               {selectedKeys.map((overlayKey) => {
                 const displayName = overlayKey;
                 return (
-                  <Box
+                  <ListItemButton
                     key={overlayKey}
+                    onClick={() => handleEditOverlay(overlayKey)}
                     sx={{
                       display: "flex",
                       flexDirection: "row",
-                      alignItems: "center"
+                      alignItems: "center",
+                      paddingRight: 1
                     }}
                   >
-                    <ListItemText
-                      primary={t(displayName)}
-                      sx={{
-                        display: "flex",
-                        paddingLeft: "1rem",
-                        textAlign: "left",
-                        width: "240px",
-                        paddingRight: "1rem"
-                      }}
-                    />
-                    <DeleteForeverIcon
-                      sx={{ cursor: "pointer", color: CustomPalette.PRIMARY }}
-                      onClick={() => {
+                    <RemoveCircleIcon
+                      sx={{ cursor: "pointer", color: CustomPalette.PRIMARY, marginRight: 2 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setSelectedItemToDelete(overlayKey);
                         setShowDeleteConfirmation(true);
                       }}
                     />
+                    <ListItemText
+                      primary={t(displayName)}
+                      sx={{ marginLeft: 0, flex: 1, minWidth: 0 }}
+                    />
                     <Button
-                      sx={{ color: CustomPalette.PRIMARY }}
-                      onClick={() => handleEditOverlay(overlayKey)}
+                      sx={{ color: CustomPalette.PRIMARY, minWidth: "auto", padding: "2px 8px", marginLeft: 1, minHeight: 0, lineHeight: 1.5, marginTop: "0.5px" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditOverlay(overlayKey);
+                      }}
                     >
                       {t("Edit")}
                     </Button>
-                  </Box>
+                  </ListItemButton>
                 );
               })}
             </List>
