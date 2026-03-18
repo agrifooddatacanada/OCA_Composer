@@ -78,6 +78,14 @@ const gridStyle = `
   .attribute-details-grid .ag-body-horizontal-scroll {
     display: none !important;
   }
+  .attribute-details-grid .ag-header-cell[col-id="Sensitive"] input[type="checkbox"],
+  .attribute-details-grid .ag-header-cell[col-id="List"] input[type="checkbox"],
+  .attribute-details-grid .ag-cell[col-id="Sensitive"] input[type="checkbox"],
+  .attribute-details-grid .ag-cell[col-id="List"] input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+  }
   `;
 
 // Renderers define input cells, Headers define grid header cells
