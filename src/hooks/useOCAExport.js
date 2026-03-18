@@ -155,7 +155,7 @@ const useOCAExport = () => {
       attributeRowData.forEach((attrRow, index) => {
         const rowObject = { Language: language, Attribute: attrRow.Attribute || "" };
         const lanRow = lanRows[index] || {};
-        rowObject.Flagged = attrRow.Flagged ? "Y" : "";
+        rowObject.Flagged = attrRow.Sensitive ? "Y" : "";
         rowObject.Unit = attrRow.Unit || "";
         // Keep "Child Schema" type as-is; conversion to refs:/refn: happens at DSL generation
         rowObject.Type = attrRow.Type || "";
@@ -496,7 +496,7 @@ const useOCAExport = () => {
     const bundle = await generateOCABundle(data);
 
     const sensitiveAttributes = attributeRowData
-      .filter((item) => item.Flagged)
+      .filter((item) => item.Sensitive)
       .map((item) => item.Attribute);
 
     // Convert attributeFormats object to array format for helper functions

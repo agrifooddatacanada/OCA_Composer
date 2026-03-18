@@ -121,7 +121,7 @@ export default function AddAttribute({
         Required: false,
         EntryCodes: [],
         List: false,
-        Flagged: false,
+        Sensitive: false,
         Unit: ""
       };
       const updatedAttributeRowData = [...newAttributeRowData, newAttributeObj];

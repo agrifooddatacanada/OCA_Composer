@@ -557,7 +557,7 @@ export default function ViewSchema({
               "Character Encoding": charEncoding,
               List: listObj,
               Unit: attr.Unit || "",
-              Flagged: attr.Sensitive || false,
+              Sensitive: attr.Sensitive || false,
               // Add range overlay fields from object
               LowerBound: range.lower || "",
               UpperBound: range.upper || "",

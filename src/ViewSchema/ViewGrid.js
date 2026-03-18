@@ -168,7 +168,7 @@ export default function ViewGrid({
           }
         },
         {
-          field: "Flagged",
+          field: "Sensitive",
           width: 98,
           headerComponent: CellHeader,
           headerComponentParams: {

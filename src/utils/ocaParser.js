@@ -11,7 +11,8 @@ import {
   FIELD_FORM_INFORMATION_OVERLAY,
   TYPE_CHILD_SCHEMA,
   TYPE_PLACEHOLDER_CHILD_SCHEMA,
-  TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA
+  TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA,
+  SENSITIVE
 } from "../constants/constants";
 import { langNameFromTwoLetters, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
@@ -87,20 +88,30 @@ export class OCAParser {
     // Fallback to schemaId if we couldn't determine capture_base ID
     captureBaseId = captureBaseId || schemaId;
 
-    // Extract flagged_attributes from capture_base (for root schema)
+    // Extract sensitive attributes from capture_base.flagged_attributes and ADC sensitive extension
     // For child schemas, get from dependencies
-    let flaggedAttributes = [];
+    let sensitiveAttributeNames = [];
     const bundleId = getPackageBundleId(pkgNormalized);
     if (schemaId === bundleId || schemaId === pkgNormalized.bundle?.capture_base?.d || schemaId === "root") {
-      flaggedAttributes = pkgNormalized.bundle?.capture_base?.flagged_attributes || [];
+      sensitiveAttributeNames = pkgNormalized.bundle?.capture_base?.flagged_attributes || [];
     } else if (pkgNormalized?.dependencies) {
       const dependency = pkgNormalized.dependencies.find(
         dep => dep.d === schemaId || dep.capture_base?.d === schemaId
       );
       if (dependency) {
-        flaggedAttributes = dependency.capture_base?.flagged_attributes || [];
+        sensitiveAttributeNames = dependency.capture_base?.flagged_attributes || [];
       }
     }
+    // Merge with ADC sensitive extension (sensitive_attributes)
+    const adcExtensions = pkgNormalized?.extensions?.adc?.[captureBaseId] ??
+      pkgNormalized?.extensions?.adc?.[bundleId];
+    const sensitiveOverlay = Array.isArray(adcExtensions)
+      ? adcExtensions.find((ov) => ov?.sensitive_overlay)?.sensitive_overlay
+      : adcExtensions?.overlays?.[SENSITIVE];
+    const adcSensitiveAttrs = Array.isArray(sensitiveOverlay?.sensitive_attributes)
+      ? sensitiveOverlay.sensitive_attributes
+      : [];
+    sensitiveAttributeNames = [...new Set([...sensitiveAttributeNames, ...adcSensitiveAttrs])];
 
     // Build attributes array from OCA attributes object
     const attributes = this._buildAttributes(schemaData.attributes || {});
@@ -157,9 +168,9 @@ export class OCAParser {
       attributesWithLists
     );
 
-    // Process flagged_attributes to populate Sensitive field
+    // Process sensitive attributes to populate Sensitive field
     this._processFlaggedAttributes(
-      flaggedAttributes,
+      sensitiveAttributeNames,
       attributesWithLists
     );
 
@@ -685,12 +696,12 @@ export class OCAParser {
   }
 
   /**
-   * Process flagged_attributes to populate Sensitive field
+   * Process sensitive attribute names to populate Sensitive field
    * @private
    */
-  static _processFlaggedAttributes(flaggedAttributes, attributesWithLists) {
-    if (Array.isArray(flaggedAttributes)) {
-      flaggedAttributes.forEach((attrName) => {
+  static _processFlaggedAttributes(sensitiveAttributeNames, attributesWithLists) {
+    if (Array.isArray(sensitiveAttributeNames)) {
+      sensitiveAttributeNames.forEach((attrName) => {
         const attrData = attributesWithLists.find((a) => a.Attribute === attrName);
         if (attrData) {
           attrData.Sensitive = true;

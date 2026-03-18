@@ -326,10 +326,18 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       gridRef.current.api.stopEditing();
     }
 
+    // Get latest data from grid (includes Sensitive checkbox changes that don't trigger onCellValueChanged)
+    let currentAttributeRowData = attributeRowData;
+    if (gridRef.current?.api) {
+      const rowData = [];
+      gridRef.current.api.forEachNode((node) => rowData.push(node.data));
+      currentAttributeRowData = rowData;
+    }
+
     // Always save current attribute data to schema state first, so validation can check current data
     // attributesList is computed automatically from attributes
     updateSchema({
-      attributes: attributeRowData
+      attributes: currentAttributeRowData
     });
 
     const validateForward = () => {
@@ -347,7 +355,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       let codeInjection = false;
       let hasDisallowedCharacters = false;
 
-      attributeRowData.forEach((item) => {
+      currentAttributeRowData.forEach((item) => {
         const attributeName = removeSpacesFromString(item.Attribute);
 
         if (hasDisallowedChars(attributeName)) {
@@ -390,7 +398,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         return errorOptions.codeInjection;
       }
 
-      const newAttributeRowData = attributeRowData.map((item, index) => ({
+      const newAttributeRowData = currentAttributeRowData.map((item, index) => ({
         ...item,
         Attribute:
           item.Attribute !== allAttributes[index] ? allAttributes[index] : item.Attribute,
@@ -434,7 +442,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       }, [2000]);
     } else {
       const newAttributesWithLists = [];
-      attributeRowData.forEach((item) => {
+      currentAttributeRowData.forEach((item) => {
         if (item.List === true) {
           newAttributesWithLists.push(item.Attribute);
         }
@@ -444,7 +452,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       // MultiSchemaContext handles null schemaId internally
       // attributesList is computed automatically from attributes
       updateSchema({
-        attributes: attributeRowData,
+        attributes: currentAttributeRowData,
         attributesWithLists: newAttributesWithLists
       });
       
@@ -462,7 +470,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       const currentLanAttributeRowData = schemaState?.lanAttributeRowData || {};
       
       // Create a set of current attribute names for fast lookup
-      const currentAttributeNames = new Set(attributeRowData.map(attr => attr.Attribute));
+      const currentAttributeNames = new Set(currentAttributeRowData.map(attr => attr.Attribute));
       
       // Filter each language's data to only include current attributes
       // This preserves the original labels/descriptions while removing deleted attributes
