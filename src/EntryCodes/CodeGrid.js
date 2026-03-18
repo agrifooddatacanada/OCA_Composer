@@ -152,7 +152,7 @@ const LanguageHeader = ({ languages, language }) => {
 };
 
 export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable, entryCodeData = [], setEntryCodeData }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   // Get schema-specific languages (not global)
   const { getSchema } = useMultiSchema();
@@ -369,6 +369,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
         <style>{codeGridStyle}</style>
         <div ref={refContainer}>
           <AgGridReact
+            key={i18n.language}
             ref={codeRefs.current[index]}
             rowData={entryCodeData}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}

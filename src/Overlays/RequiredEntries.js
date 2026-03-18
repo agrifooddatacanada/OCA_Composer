@@ -65,7 +65,7 @@ const CheckboxRenderer = ({ value, rowIndex, colDef, api }) => {
 };
 
 const RequiredEntries = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     setCurrentPage,
     setSelectedOverlay,
@@ -172,6 +172,7 @@ const RequiredEntries = () => {
         <div className="ag-theme-balham" style={{ width: 360 }}>
           <style>{gridStyles}</style>
           <AgGridReact
+            key={i18n.language}
             ref={gridRef}
             rowData={requiredEntriesRowData}
             columnDefs={columnDefs}

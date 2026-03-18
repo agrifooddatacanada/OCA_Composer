@@ -36,7 +36,7 @@ const DataStandards = () => {
     schemaState?.dataStandardsData || []
   , [schemaState?.dataStandardsData]);
   
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const gridRef = useRef();
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -105,6 +105,7 @@ const DataStandards = () => {
         <Box className='ag-theme-balham' sx={{ width: 430 }}>
           <style>{gridStyles}</style>
           <AgGridReact
+          key={i18n.language}
           ref={gridRef}
           rowData={dataStandardsRowData} 
           columnDefs={columnDefs} 

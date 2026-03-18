@@ -104,7 +104,7 @@ export default function Grid({
   attributeRowData,
   setAttributeRowData
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   // Use MultiSchemaContext for schema-specific data
   const { getSchema, updateSchema } = useMultiSchema();
@@ -760,6 +760,7 @@ export default function Grid({
       <div className="attribute-details-grid ag-theme-balham" style={{ width: 737, overflowX: "hidden" }}>
         <style>{gridStyle}</style>
         <AgGridReact
+          key={i18n.language}
           ref={gridRef}
           getRowId={(params) => (params.data && (params.data._rid || params.data.Attribute))}
           rowData={attributeRowData}
@@ -779,6 +780,7 @@ export default function Grid({
           onRowDragLeave={(e) => onRowDragLeave(e)}
           rowDragManaged={rowDragManaged}
           onGridReady={onGridReady}
+          overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
         />
       </div>
     </div>

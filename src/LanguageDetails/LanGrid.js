@@ -359,6 +359,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       {lanAttributeRowData[currentLanguage] &&
       lanAttributeRowData[currentLanguage].length > 0 ? (
         <AgGridReact
+          key={i18n.language}
           ref={gridRef}
           rowData={lanAttributeRowData[currentLanguage]}
           columnDefs={columnDefs}

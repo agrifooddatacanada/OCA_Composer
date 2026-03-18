@@ -123,7 +123,7 @@ export default function ViewGrid({
   setLoading = () => {},
   packageWithEdits = null
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   // Get overlay data from MultiSchemaContext
   const { getOverlaySelections, getSchema, updateSchema } = useMultiSchema();
@@ -502,6 +502,7 @@ export default function ViewGrid({
     <div className="view-schema-grid ag-theme-balham" style={{ width: "100%" }}>
       <style>{gridStyles}</style>
       <AgGridReact
+        key={i18n.language}
         ref={gridRef}
         rowData={rowData}
         columnDefs={columnDefs}

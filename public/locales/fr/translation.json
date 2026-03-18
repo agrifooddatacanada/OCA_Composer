@@ -28,6 +28,8 @@
   "(.yaml or .yml for LinkML)": "(.yaml ou .yml pour LinkML)",
   "Drag-and-Drop/Click-to-Find": "Glisser-Déposer/Cliquer-pour-Chercher",
   "Overlays": "Superpositions",
+  "Labels": "Étiquettes",
+  "Summary": "Résumé",
   "View Schema": "Afficher le schéma",
   "Edit Schema": "Modifier le schéma",
   "Generate Text Readme": "Générer du texte Lisez-moi",

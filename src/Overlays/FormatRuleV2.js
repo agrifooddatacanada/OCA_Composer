@@ -28,7 +28,7 @@ const allowOverflowStyle = {
 };
 
 const FormatRulesV2 = forwardRef((props, ref) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     setCurrentPage
   } = useContext(Context);
@@ -351,6 +351,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         <Box className="ag-theme-balham" sx={{ width: 790 }}>
           <style>{gridStyles}</style>
           <AgGridReact
+            key={i18n.language}
             ref={gridRef}
             rowData={gridRowData}
             columnDefs={columnDefs}

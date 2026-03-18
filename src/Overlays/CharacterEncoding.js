@@ -20,7 +20,7 @@ import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { overlayGridOnFirstDataRendered, useOverlayGridOnGridReady } from "./gridUtils";
 
 const CharacterEncoding = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { setCurrentPage } = useContext(Context);
 
   const {
@@ -198,6 +198,7 @@ const CharacterEncoding = () => {
           <Box ref={gridContainerRef} className="ag-theme-balham" sx={{ width: 380 }}>
             <style>{gridStyles}</style>
             <AgGridReact
+              key={i18n.language}
               ref={gridRef}
               rowData={characterEncodingRowData}
               columnDefs={columnDefs}

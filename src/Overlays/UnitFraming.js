@@ -339,7 +339,7 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
   );
 
 const UnitFraming = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { setCurrentPage } = useContext(Context);
 
   // Use MultiSchema context with standard pattern
@@ -703,6 +703,7 @@ const UnitFraming = () => {
         <Box className="ag-theme-balham" sx={{ width: GRID_WIDTH }}>
           <style>{gridStyles}</style>
           <AgGridReact
+            key={i18n.language}
             ref={gridRef}
             rowData={tempToDisplayRowData}
             columnDefs={columnDefsWithCallbacks}

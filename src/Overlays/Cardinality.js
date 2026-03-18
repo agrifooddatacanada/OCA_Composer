@@ -68,7 +68,7 @@ const TrashCanButton = memo(
 );
 
 const Cardinality = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     setCurrentPage
   } = useContext(Context);
@@ -405,6 +405,7 @@ const Cardinality = () => {
           </Typography>
           <style>{gridStyles}</style>
           <AgGridReact
+            key={i18n.language}
             ref={cardinalityRef}
             rowClassRules={rowClassRules}
             onCellClicked={handleCellClick}

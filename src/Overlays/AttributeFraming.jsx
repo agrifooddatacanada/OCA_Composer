@@ -547,7 +547,7 @@ const CustomTreeView = ({ selectedTerm }) => {
 };
 
 const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -811,6 +811,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                     }
                   `}</style>
                   <AgGridReact
+                    key={i18n.language}
                     ref={gridRef}
                     rowData={searchResults}
                     columnDefs={searchResultsColumnDefs}
@@ -1104,7 +1105,7 @@ const AttributeFraming = () => {
     updateSchema({ unframedAttributeList: list });
   }, [updateSchema]);
   
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const gridRef = useRef();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isLoadingPredicates, setIsLoadingPredicates] = useState(false);
@@ -1477,6 +1478,7 @@ const AttributeFraming = () => {
             >
               <style>{gridStyles}</style>
               <AgGridReact
+                key={i18n.language}
                 ref={gridRef}
                 rowData={attributeFramingRowData}
                 columnDefs={columnDefs}

@@ -42,7 +42,7 @@ const Range = forwardRef((props, ref) => {
     return getRangeData() || [];
   }, [getRangeData, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
   
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const gridRef = useRef();
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -353,6 +353,7 @@ const Range = forwardRef((props, ref) => {
             )}
           </Box>
           <AgGridReact
+            key={i18n.language}
             ref={gridRef}
             rowData={rangeRowData}
             columnDefs={columnDefs}

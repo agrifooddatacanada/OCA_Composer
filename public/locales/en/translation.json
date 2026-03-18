@@ -29,6 +29,8 @@
   "(.yaml or .yml for LinkML)": "(.yaml or .yml for LinkML)",
   "Drag-and-Drop/Click-to-Find": "Drag-and-Drop/Click-to-Find",
   "Overlays": "Overlays",
+  "Labels": "Labels",
+  "Summary": "Summary",
   "View Schema": "View Schema",
   "Visualize Schema": "Visualize Schema",
   "Edit Schema": "Edit Schema",

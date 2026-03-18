@@ -50,7 +50,7 @@ const PLACEHOLDER_EDITABLE_TYPES = ["Text", "Array[Text]", "DateTime", "Array[Da
 
 
 const FormInformation = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { setCurrentPage } = useContext(Context);
 
   const {
@@ -740,6 +740,7 @@ const FormInformation = () => {
           <Box className="ag-theme-balham" sx={{ width: 1003 }}>
             <style>{gridStyles}</style>
             <AgGridReact
+              key={i18n.language}
               ref={gridRef}
               rowData={currentRows}
               getRowId={(params) => params.data.Attribute}
