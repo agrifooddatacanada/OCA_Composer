@@ -240,8 +240,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       field: "List",
       headerName: t("List"),
       editable: false,
-      flex: 1,
-      minWidth: 305,
+      width: 305,
       cellRenderer: (params) => <TruncatedListCell value={params.value} />,
       cellStyle: (params) =>
         attributesWithLists.includes(params.data.Attribute) ? {} : greyCellStyle
@@ -310,7 +309,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   );
 
   return (
-    <div className="lan-grid ag-theme-balham" style={{ width: 890, overflowX: "hidden" }}>
+    <div className="lan-grid ag-theme-balham" style={{ width: 885, overflowX: "hidden" }}>
       <style>
         {gridStyles}
         {`
@@ -323,8 +322,15 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           .lan-grid .ag-body-horizontal-scroll {
             display: none !important;
           }
-          .lan-grid .ag-header-viewport {
-            padding-right: 17px;
+          .lan-grid .ag-header-viewport,
+          .lan-grid .ag-body-viewport,
+          .lan-grid .ag-center-cols-viewport {
+            padding-right: 0 !important;
+            overflow-x: hidden !important;
+          }
+          .lan-grid .ag-root-wrapper,
+          .lan-grid .ag-body-viewport-wrapper {
+            overflow-x: hidden !important;
           }
           .lan-grid .ag-header-cell:last-child {
             border-right: none !important;
@@ -343,6 +349,10 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           .lan-grid .ag-cell[col-id="List"] {
             overflow: hidden;
             padding-right: 0;
+          }
+          .lan-grid .ag-cell[col-id="List"] .ag-cell-wrapper,
+          .lan-grid .ag-cell[col-id="List"] .ag-cell-wrapper > * {
+            width: 100%;
           }
         `}
       </style>
