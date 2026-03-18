@@ -85,6 +85,7 @@
   "This will be the column header in every tabular data set no matter what language": "Ce sera l'en-tête de colonne dans chaque ensemble de données tabulaires, quelle que soit la langue.",
   "Every attribute must be unique, and no entries can be left blank": "Chaque attribut doit être unique et aucune entrée ne peut être laissée vide.",
   "Add row": "Ajouter une rangée",
+  "Add Code": "Ajouter un code",
   "Clear All": "Tout effacer",
   "Attribute Name": "Nom d'attribut",
   "Attribute Names cannot be empty": "Les noms d'attribut ne peuvent pas être vides",

@@ -405,7 +405,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
           }}
           ref={buttonRef}
         >
-        {t("Add row")} <AddCircleIcon />
+        {t("Add Code", { defaultValue: "Add Code" })} <AddCircleIcon />
         </Button>
       </Box>
     </Box>
