@@ -69,7 +69,7 @@ export default function ClickableStepperProgressIndicator({
                     left: "50%",
                     transform: "translateX(-50%)",
                     mt: 1,
-                    width: 180,
+                    width: 160,
                     zIndex: 9999,
                     boxShadow: 2
                   }}

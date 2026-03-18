@@ -20,7 +20,7 @@ import { langCodeOCAFromName, langNameFromCodeOCA } from "../utils/languageUtils
 import { getPackageBundle } from "../utils/packageUtils";
 
 const errorMessages = {
-  fieldEmpty: "Please fill out all fields",
+  fieldEmpty: "Please add codes.",
   quoteMisuse: "Fields cannot contain quotes or commas"
 };
 const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref) => {
@@ -308,6 +308,16 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
     if (onValidationError) onValidationError("");
     const values = Object.values(newEntryCodeObject);
     for (const item of values) {
+      if (!item || item.length === 0) {
+        pageForwardDisabledRef.current = true;
+        setErrorMessage(msg);
+        onValidationError?.(msg);
+        setTimeout(() => {
+          setErrorMessage("");
+          onValidationError?.("");
+        }, 2000);
+        return;
+      }
       for (const obj of item) {
         if (!obj.Code) {
           pageForwardDisabledRef.current = true;

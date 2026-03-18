@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import "./App.css";
 import { Box } from "@mui/material";
 import { getPackageBundle, getPackageBundleId } from "./utils/packageUtils";
@@ -29,18 +30,37 @@ import Footer from "./Footer/Footer";
 import { useMultiSchema } from "./schema/schemaContext";
 import ClickableStepperProgressIndicator from "./StepperProgressIndicator/ClickableStepperProgressIndicator";
 
+const validateEntryCodesFromSchema = (state, languages, t) => {
+  const attributesWithLists = state?.attributesWithLists || [];
+  const entryCodes = state?.entryCodes || {};
+  for (const attrName of attributesWithLists) {
+    const rows = entryCodes[attrName];
+    if (!Array.isArray(rows) || rows.length === 0) return t("Please add codes.");
+    for (const row of rows) {
+      if (!row?.Code || !String(row.Code).trim()) return t("Please add codes.");
+      for (const lang of languages) {
+        const val = row[lang];
+        if (val === undefined || val === null || !String(val).trim()) return t("Please add codes.");
+      }
+    }
+  }
+  return null;
+};
+
 const Home = ({
   currentPage,
   setCurrentPage,
   pageForward: appPageForward,
   pageBack: appPageBack
 }) => {
+  const { t } = useTranslation();
   const { 
     currentSchemaId,
     schemaStates, 
     switchToSchema,
     pkgUpload,
-    getSchema
+    getSchema,
+    getLanguages
   } = useMultiSchema();
   const { isZip, setIsZipEdited } = useContext(Context);
 
@@ -137,6 +157,19 @@ const Home = ({
 
       // Only validate when navigating FORWARD
       if (isForwardNavigation) {
+        const entryCodesStepIndex = steps.findIndex((s) => s.label === "Entry Codes");
+        const isSkippingEntryCodes = entryCodesStepIndex >= 0 && index > entryCodesStepIndex && currentIndex < entryCodesStepIndex;
+
+        if (isSkippingEntryCodes) {
+          const state = getSchema() || {};
+          const languages = getLanguages?.() || state?.metadata?.languages || [];
+          const err = validateEntryCodesFromSchema(state, languages, t);
+          if (err) {
+            setEntryCodesError(err);
+            return;
+          }
+        }
+
         // If we're currently on the Metadata step, validate and show popup if needed
         if (currentPage === "Metadata") {
           if (schemaMetadataRef.current && typeof schemaMetadataRef.current.showValidationPopup === "function") {

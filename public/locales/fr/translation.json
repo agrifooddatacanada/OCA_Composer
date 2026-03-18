@@ -243,6 +243,7 @@
   "Schema Language": "Langage de schéma",
   "Schema Details": "Détails du schéma",
   "Please fill out all fields": "Veuillez remplir tous les champs",
+  "Please add codes.": "Veuillez ajouter des codes.",
   "The details of the schema including attribute names and their features as well as language specific information": "Les détails du schéma, y ​​compris les noms d'attributs et leurs fonctionnalités, ainsi que les informations spécifiques à la langue.",
   "Language specific information describing general schema information": "Informations spécifiques à la langue décrivant les informations générales sur le schéma.",
   "Export your schema in a .json machine-readable version and...": "Exportez votre schéma dans une version .json lisible par machine et dans un format txt lisible par l'homme en utilisant toutes les informations fournies ici.",

@@ -270,6 +270,7 @@
   "Schema Language": "Schema Language",
   "Schema Details": "Schema Details",
   "Please fill out all fields": "Please fill out all fields",
+  "Please add codes.": "Please add codes.",
   "The details of the schema including attribute names and their features as well as language specific information": "The details of the schema including attribute names and their features as well as language specific information.",
   "Language specific information describing general schema information": "Language specific information describing general schema information.",
   "Export your schema in a .json machine-readable version and...": "Export your schema in a .json machine-readable version and a txt human-readable format using all the information that has been provided here.",
