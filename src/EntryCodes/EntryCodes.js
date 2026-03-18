@@ -175,7 +175,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
     // updateCurrentSchema and schemaState intentionally omitted to prevent infinite loop
   ]);
 
-  // Create codeRefs so there can be multiple grids on the page
   useEffect(() => {
     if (!codeRefs.current) {
       codeRefs.current = attributesWithLists.map(() => React.createRef());
@@ -265,7 +264,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
       setLocalEntryCodeRowData(alignedEntryCodesArray);
     }
 
-    // If no attributes are marked as lists, redirect to LanguageDetails
     if (filteredAttributes.length === 0) {
       setCurrentPage("LanguageDetails");
     }
@@ -450,7 +448,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
           handleForward={() => setCurrentPage("UploadEntryCodes")}
         />
       )}
-      <Box sx={{ width: "90%", margin: "auto", mb: BETWEEN_SECTION_SPACING }}>
+      <Box sx={{ width: "90%", margin: "auto", mb: BETWEEN_SECTION_SPACING, minHeight: 400 }}>
         <Typography
           sx={{
             fontSize: 15,

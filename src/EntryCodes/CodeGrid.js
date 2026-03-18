@@ -1,84 +1,111 @@
 import React, {
   useEffect,
   useMemo,
-  useState,
   useRef,
   useCallback
 } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
-import { Button, Tooltip, Typography, Box } from "@mui/material";
+import "ag-grid-community/styles/ag-theme-balham.css";
+import { Button, Tooltip, Box } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { CustomPalette } from "../constants/customPalette";
-import { TABLE_TO_BUTTON_GAP } from "../constants/constants";
-import { preWrapWordBreak } from "../constants/styles";
+import {
+  TABLE_TO_BUTTON_GAP,
+  ENTRY_CODE_DRAG_WIDTH,
+  ENTRY_CODE_CODE_WIDTH,
+  ENTRY_CODE_LANG_WIDTH,
+  ENTRY_CODE_DELETE_WIDTH
+} from "../constants/constants";
+import { preWrapWordBreak, flexCenter } from "../constants/styles";
+import { measureTextHeight } from "../utils/measureTextLines";
+import TextareaCellEditor from "../components/TextareaCellEditor";
 import { LanguageConstants } from "../utils/languageUtils";
 import { useMultiSchema } from "../schema/schemaContext";
 
-// Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
-const gridStyle = `
-.ag-center-cols-clipper {
-  min-height: unset !important;
-}
-
-.ag-theme-alpine .ag-cell {
-  border-right: 1px solid ${CustomPalette.GREY_300};
-}
-
-.ag-cell-value {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.ag-header-cell-label {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.ag-header-cell {
-  border: 0.5px solid ${CustomPalette.GREY_300};}
-}
-
-.ag-cell {
-  line-height: 1.6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ag-cell, .ag-full-width-row .ag-cell-wrapper.ag-row-group {
-  line-height: 1.6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
-  height: 100%
-}
-
-.ag-cell .ag-drag-handle {
-  margin-right: 0;
-}
-
-.ag-row .delete-icon-solid {
-  display: none;
-}
-.ag-row:hover .delete-icon-outline {
-  display: none;
-}
-.ag-row:hover .delete-icon-solid {
-  display: inline-flex;
-}
-.ag-row:hover .ag-cell {
-  background-color: ${CustomPalette.PINK_200} !important;
-}
+const codeGridStyle = `
+  .entry-codes-grid .ag-cell {
+    border-right: 1px solid ${CustomPalette.GREY_300};
+  }
+  .entry-codes-grid .ag-header-cell-label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .ag-cell {
+    line-height: 1.5;
+  }
+  .ag-select-list {
+    height: 90px;
+    overflow-y: auto;
+  }
+  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
+    height: 100%;
+  }
+  .ag-header-cell:last-child,
+  .ag-header-cell[col-id="Delete"] {
+    border-right: none !important;
+    --ag-header-column-separator-display: none !important;
+  }
+  .ag-header-cell:last-child *,
+  .ag-header-cell[col-id="Delete"] * {
+    border-right: none !important;
+    box-shadow: none !important;
+  }
+  .ag-header-viewport .ag-header-cell:last-child {
+    border-right: none !important;
+  }
+  .ag-header-container {
+    border-right: none !important;
+  }
+  .entry-codes-grid .ag-cell:last-child {
+    border-right: none !important;
+  }
+  .ag-header-row .ag-header-cell:last-child::after {
+    display: none !important;
+  }
+  .ag-header-viewport {
+    overflow-x: hidden;
+  }
+  .entry-codes-grid .ag-body-horizontal-scroll {
+    display: none !important;
+  }
+  .entry-codes-grid .ag-center-cols-clipper {
+    min-height: unset !important;
+  }
+  .entry-codes-grid .ag-root-wrapper-body.ag-layout-auto-height {
+    min-height: unset !important;
+  }
+  .ag-row .delete-icon-solid {
+    display: none;
+  }
+  .ag-row:hover .delete-icon-outline {
+    display: none;
+  }
+  .ag-row:hover .delete-icon-solid {
+    display: inline-flex;
+  }
+  .ag-row:hover .ag-cell {
+    background-color: ${CustomPalette.PINK_200} !important;
+  }
+  .ag-cell-value {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .ag-cell, .ag-full-width-row .ag-cell-wrapper.ag-row-group {
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ag-cell .ag-drag-handle {
+    margin-right: 0;
+  }
 `;
 
 const CodeHeader = () => {
@@ -114,10 +141,8 @@ const LanguageHeader = ({ languages, language }) => {
           <HelpOutlineIcon sx={{ fontSize: 15 }} />
         </Tooltip>
       )}
-      <div className="ag-header-cell-label">
-        <Typography noWrap variant="subtitle2" sx={{ textTransform: "capitalize" }}>
-          {t(language, { defaultValue: language })}
-        </Typography>
+      <div className="ag-header-cell-label" style={{ textTransform: "capitalize" }}>
+        {t(language, { defaultValue: language })}
       </div>
     </div>
   );
@@ -131,7 +156,14 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   const schemaState = getSchema();
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
   
-  const [gridWidth, setGridWidth] = useState(500);
+  const gridWidth = useMemo(
+    () =>
+      ENTRY_CODE_DRAG_WIDTH +
+      ENTRY_CODE_CODE_WIDTH +
+      languages.length * ENTRY_CODE_LANG_WIDTH +
+      ENTRY_CODE_DELETE_WIDTH,
+    [languages.length]
+  );
   const refContainer = useRef(null);
   const buttonRef = useRef();
 
@@ -192,7 +224,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     const idx = params?.node?.rowIndex ?? params?.rowIndex ?? -1;
     if (idx < 0) return null;
     return (
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+        <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
         <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
         <DeleteForeverIcon
           onClick={() => handleDeleteRow(idx)}
@@ -204,51 +236,74 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   };
 
   const columnDefs = useMemo(() => {
-    const languageHeaders = languages.map((lang) => {
-      return {
-        field: lang,
-        editable: true,
-        headerComponent: () => LanguageHeader({ languages, language: lang }),
-        autoHeight: true,
-        cellStyle: () => preWrapWordBreak
-      };
-    });
+    const languageHeaders = languages.map((lang) => ({
+      field: lang,
+      editable: true,
+      headerComponent: () => LanguageHeader({ languages, language: lang }),
+      wrapText: true,
+      cellEditor: TextareaCellEditor,
+      cellStyle: () => ({ ...preWrapWordBreak, ...flexCenter }),
+      width: ENTRY_CODE_LANG_WIDTH
+    }));
     return [
       {
         field: "Drag",
         headerName: "",
-        width: 40,
+        width: ENTRY_CODE_DRAG_WIDTH,
         rowDrag: true
       },
       {
         field: "Code",
         editable: true,
         headerComponent: CodeHeader,
-        autoHeight: true,
-        cellStyle: () => preWrapWordBreak
+        wrapText: true,
+        cellEditor: TextareaCellEditor,
+        cellStyle: () => ({ ...preWrapWordBreak, ...flexCenter }),
+        width: ENTRY_CODE_CODE_WIDTH
       },
       ...languageHeaders,
       {
         field: "Delete",
         headerName: "",
-        width: 44,
+        width: ENTRY_CODE_DELETE_WIDTH,
         sortable: false,
         editable: false,
         cellRenderer: DeleteCell
       }
     ];
-  }, [languages, entryCodeData]);
+  }, [languages]);
 
   const defaultColDef = useMemo(
     () => ({
-      width: 200,
+      width: ENTRY_CODE_LANG_WIDTH,
       tabToNextCell: true,
       cellStyle: () => ({ backgroundColor: "white" })
     }),
     []
   );
 
-  // Creates "add-by-tab" behaviour
+  const getRowHeight = useCallback((params) => {
+    const opts = { compact: true };
+    const codeH = measureTextHeight(params.data?.Code || "", ENTRY_CODE_CODE_WIDTH, opts);
+    let maxH = codeH;
+    languages.forEach((lang) => {
+      const langH = measureTextHeight(params.data?.[lang] || "", ENTRY_CODE_LANG_WIDTH, opts);
+      maxH = Math.max(maxH, langH);
+    });
+    return Math.max(32, maxH + 16);
+  }, [languages]);
+
+  const prevRowCountRef = useRef(0);
+  useEffect(() => {
+    const rowCount = entryCodeData?.length ?? 0;
+    if (prevRowCountRef.current === rowCount) return;
+    prevRowCountRef.current = rowCount;
+    const api = codeRefs.current?.[index]?.current?.api;
+    if (!api) return;
+    const raf = requestAnimationFrame(() => api.resetRowHeights());
+    return () => cancelAnimationFrame(raf);
+  }, [entryCodeData?.length, codeRefs, index]);
+
   const onCellKeyDown = useCallback(
     (e) => {
       const keyPressed = e.event.code;
@@ -268,30 +323,6 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     },
     [languages]
   );
-
-  // Sets grid width based on number of Languages
-  useEffect(() => {
-    const deleteColWidth = 44;
-    if (languages.length > 3) {
-      setGridWidth(892 + deleteColWidth);
-    } else {
-      switch (languages.length) {
-        case 1:
-          setGridWidth(442 + deleteColWidth);
-          break;
-        case 2:
-          setGridWidth(642 + deleteColWidth);
-          break;
-        case 3:
-          setGridWidth(842 + deleteColWidth);
-          break;
-        default:
-          setGridWidth(500 + deleteColWidth);
-          break;
-      }
-    }
-  }, [languages]);
-
 
   // Stops grid editing on all other grid components - not just current grid
   useEffect(() => {
@@ -324,46 +355,38 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     };
   }, [codeRefs, chosenTable]);
 
-  const scrollbarSx = {
-    "&::-webkit-scrollbar": { height: "8px" },
-    "&::-webkit-scrollbar-track": { backgroundColor: "#f1f1f1" },
-    "&::-webkit-scrollbar-thumb": { backgroundColor: "#c1c1c1", borderRadius: "4px" },
-    "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "#a8a8a8" }
-  };
-
   return (
-    <Box style={{ margin: "3rem", display: "flex", flexDirection: "column" }}>
-      <Box style={{ display: "flex" }}>
-        <Box
-          sx={{
-            maxWidth: gridWidth,
-            overflowX: "auto",
-            pb: 1,
-            ...scrollbarSx
-          }}
-        >
-          <Box className="ag-theme-alpine" style={{ minWidth: gridWidth, width: "max-content" }}>
-            <style>{gridStyle}</style>
-            <div ref={refContainer}>
-              <AgGridReact
-                ref={codeRefs.current[index]}
-                rowData={entryCodeData}
-                suppressNoRowsOverlay
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                domLayout="autoHeight"
-                onCellKeyDown={onCellKeyDown}
-                onCellClicked={() => setChosenTable(index)}
-                onRowDragEnd={onRowDragEnd}
-                onRowDragLeave={onRowDragLeave}
-                rowDragManaged
-              />
-            </div>
-          </Box>
-        </Box>
+    <Box style={{ margin: "2rem 2rem 0 2rem", display: "flex", flexDirection: "column" }}>
+      <Box sx={{ maxWidth: "100%", overflowX: "auto" }}>
+        <div className="entry-codes-grid ag-theme-balham" style={{ width: gridWidth, overflowX: "hidden" }}>
+        <style>{codeGridStyle}</style>
+        <div ref={refContainer}>
+          <AgGridReact
+            ref={codeRefs.current[index]}
+            rowData={entryCodeData}
+            suppressNoRowsOverlay
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            domLayout="autoHeight"
+            getRowHeight={getRowHeight}
+            suppressHorizontalScroll
+            onCellKeyDown={onCellKeyDown}
+            onCellClicked={() => setChosenTable(index)}
+            onRowDragEnd={onRowDragEnd}
+            onRowDragLeave={onRowDragLeave}
+            onCellValueChanged={(e) => {
+              if (e.column.colId === "Code" || languages.includes(e.column.colId)) {
+                e.api.refreshCells({ rowNodes: [e.node], force: true });
+                requestAnimationFrame(() => e.api.resetRowHeights());
+              }
+            }}
+            rowDragManaged
+          />
+        </div>
+        </div>
       </Box>
 
-      <Box sx={{ width: gridWidth, display: "flex", flexDirection: "column", alignItems: "flex-end", mt: TABLE_TO_BUTTON_GAP }}>
+      <Box sx={{ width: gridWidth, display: "flex", flexDirection: "column", alignItems: "flex-end", mt: TABLE_TO_BUTTON_GAP, mr: "2rem" }}>
         <Button
           onClick={handleAddRow}
           color="button"
