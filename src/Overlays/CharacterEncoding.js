@@ -73,6 +73,7 @@ const CharacterEncoding = () => {
   const [buttonMarginTop, setButtonMarginTop] = useState(0);
   const gridRef = useRef();
   const gridContainerRef = useRef();
+  const buttonContainerRef = useRef();
   const { handleSave, applyAllFunc } = useCharacterEncodingType(
     gridRef,
     characterEncodingRowData,
@@ -158,18 +159,14 @@ const CharacterEncoding = () => {
   const onFirstDataRendered = useCallback((params) => {
     overlayGridOnFirstDataRendered(params);
     requestAnimationFrame(() => {
-      const container = gridContainerRef.current;
-      if (!container) return;
-      const header = container.querySelector(".ag-header-row");
-      const firstRow = container.querySelector(".ag-row");
+      const firstRow = gridContainerRef.current?.querySelector(".ag-row");
+      const buttonContainer = buttonContainerRef.current;
+      if (!firstRow || !buttonContainer) return;
+      const rowRect = firstRow.getBoundingClientRect();
+      const containerRect = buttonContainer.getBoundingClientRect();
+      const rowCenter = rowRect.top + rowRect.height / 2;
       const buttonH = 27.2;
-      if (header && firstRow) {
-        const headerH = header.getBoundingClientRect().height;
-        const rowH = firstRow.getBoundingClientRect().height;
-        setButtonMarginTop(headerH + rowH / 2 - buttonH / 2);
-      } else if (header) {
-        setButtonMarginTop(header.getBoundingClientRect().height / 2 - buttonH / 2);
-      }
+      setButtonMarginTop(rowCenter - containerRect.top - buttonH / 2);
     });
   }, []);
 
@@ -212,6 +209,7 @@ const CharacterEncoding = () => {
             />
           </Box>
           <Box
+            ref={buttonContainerRef}
             sx={{
               width: 70,
               display: "flex",
