@@ -641,13 +641,20 @@ export default function ViewSchema({
 
           {/* Package-level validation: warn if ANY schema in the package has missing attribute types or missing entry codes */}
           {(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage) && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
-            <Alert severity="warning" sx={{ mb: 2 }}>
+            <Alert
+              severity="warning"
+              sx={{
+                alignItems: "center",
+                mb: 0,
+                "& .MuiAlert-icon": { alignSelf: "center" }
+              }}
+            >
               {hasInvalidAttributesInPackage && (
                 <div>
                   {packageLevelMissingTypes.length === 1 ? (
                     <span>
                       {t('Schema')}{' '}
-                      <Button color="inherit" variant="text" onClick={() => handleSchemaSwitch(packageLevelMissingTypes[0].schemaId)}>
+                      <Button color="inherit" variant="text" sx={{ px: 0.5, py: 0, minWidth: "unset" }} onClick={() => handleSchemaSwitch(packageLevelMissingTypes[0].schemaId)}>
                         {packageLevelMissingTypes[0].name}
                       </Button>{' '}
                       {t('has attributes missing types. Complete the schema before exporting.')}
@@ -665,7 +672,7 @@ export default function ViewSchema({
                   {packageLevelMissingEntryCodes.length === 1 ? (
                     <span>
                       {t('Schema')}{' '}
-                      <Button color="inherit" variant="text" onClick={() => handleSchemaSwitch(packageLevelMissingEntryCodes[0].schemaId)}>
+                      <Button color="inherit" variant="text" sx={{ px: 0.5, py: 0, minWidth: "unset" }} onClick={() => handleSchemaSwitch(packageLevelMissingEntryCodes[0].schemaId)}>
                         {packageLevelMissingEntryCodes[0].name}
                       </Button>{' '}
                       {t('has List attributes with no entry codes. Add entry codes before exporting.')}
