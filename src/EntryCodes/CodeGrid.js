@@ -166,6 +166,8 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   );
   const refContainer = useRef(null);
   const buttonRef = useRef();
+  const entryCodeDataRef = useRef(entryCodeData);
+  entryCodeDataRef.current = entryCodeData;
 
   const handleDeleteRow = useCallback(
     (elementIndex) => {
@@ -173,11 +175,12 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
         grid.current.api.stopEditing();
       });
 
-      const newEntryCodeRowData = JSON.parse(JSON.stringify(entryCodeData));
+      const currentData = entryCodeDataRef.current;
+      const newEntryCodeRowData = JSON.parse(JSON.stringify(currentData));
       newEntryCodeRowData.splice(elementIndex, 1);
       setEntryCodeData(newEntryCodeRowData);
     },
-    [codeRefs, entryCodeData, setEntryCodeData]
+    [codeRefs, setEntryCodeData]
   );
 
   const handleAddRow = useCallback(() => {
@@ -364,7 +367,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
           <AgGridReact
             ref={codeRefs.current[index]}
             rowData={entryCodeData}
-            suppressNoRowsOverlay
+            overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
             domLayout="autoHeight"
