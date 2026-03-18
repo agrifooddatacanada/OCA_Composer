@@ -10,7 +10,7 @@ const FlaggedHeader = ({ gridRef }) => {
   const handleCheckboxChange = (event) => {
     const { checked } = event.target;
     gridRef.current.api.forEachNode((node) => {
-      node.setDataValue("Flagged", checked);
+      node.setDataValue("Sensitive", checked);
     });
   };
 
