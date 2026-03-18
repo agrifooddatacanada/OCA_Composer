@@ -70,7 +70,9 @@ const CharacterEncoding = () => {
 
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [buttonMarginTop, setButtonMarginTop] = useState(0);
   const gridRef = useRef();
+  const gridContainerRef = useRef();
   const { handleSave, applyAllFunc } = useCharacterEncodingType(
     gridRef,
     characterEncodingRowData,
@@ -153,6 +155,24 @@ const CharacterEncoding = () => {
 
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 
+  const onFirstDataRendered = useCallback((params) => {
+    overlayGridOnFirstDataRendered(params);
+    requestAnimationFrame(() => {
+      const container = gridContainerRef.current;
+      if (!container) return;
+      const header = container.querySelector(".ag-header-row");
+      const firstRow = container.querySelector(".ag-row");
+      const buttonH = 27.2;
+      if (header && firstRow) {
+        const headerH = header.getBoundingClientRect().height;
+        const rowH = firstRow.getBoundingClientRect().height;
+        setButtonMarginTop(headerH + rowH / 2 - buttonH / 2);
+      } else if (header) {
+        setButtonMarginTop(header.getBoundingClientRect().height / 2 - buttonH / 2);
+      }
+    });
+  }, []);
+
   return (
     <BackNextSkeleton
       isForward
@@ -178,7 +198,7 @@ const CharacterEncoding = () => {
         }}
       >
         <Box style={{ display: "flex" }}>
-          <Box className="ag-theme-balham" sx={{ width: 380 }}>
+          <Box ref={gridContainerRef} className="ag-theme-balham" sx={{ width: 380 }}>
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
@@ -187,7 +207,7 @@ const CharacterEncoding = () => {
               domLayout="autoHeight"
               suppressHorizontalScroll
               onGridReady={onGridReady}
-              onFirstDataRendered={overlayGridOnFirstDataRendered}
+              onFirstDataRendered={onFirstDataRendered}
               overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
             />
           </Box>
@@ -199,14 +219,14 @@ const CharacterEncoding = () => {
               alignItems: "flex-start"
             }}
           >
-            <Box sx={{ height: "2.2rem" }} key={0} />
             <Button
               color="navButton"
               sx={{
                 ml: 1,
                 width: "130px",
                 height: "1.7rem",
-                color: CustomPalette.PRIMARY
+                color: CustomPalette.PRIMARY,
+                marginTop: `${buttonMarginTop}px`
               }}
               onClick={applyAllFunc}
             >
