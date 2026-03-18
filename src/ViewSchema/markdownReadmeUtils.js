@@ -2,14 +2,9 @@ import {
   catalogueInfoFormFields,
   scenarioParentIctGroupMap
 } from "../constants/catalogueInfo";
+import { prettyPrintDelimiter } from "../constants/utils";
 
 // this function is used to pretty print the delimiter value in the markdown table
-const prettyDelimiter = (value) => {
-  if (value === "\t") return "\\t (tab)";
-  if (value === " ") return "\\s (space)"; // if we ever support space as a delimiter
-  return value;
-};
-
 const generateTable = (columns, rows) => {
   const header = `| ${columns.join(" | ")} |\n| ${columns.map(() => "---").join(" | ")} |\n`;
   const body = rows.map((row) => `| ${row.join(" | ")} |`).join("\n");
@@ -139,7 +134,7 @@ export const generateInternationalSchemaInformation = (
       delimiterRows.push(["Decimal separator", decimal_separator.decimal_separator]);
     }
     if (file_delimiter) {
-      delimiterRows.push(["File delimiter", prettyDelimiter(file_delimiter.delimiter)]);
+      delimiterRows.push(["File delimiter", prettyPrintDelimiter(file_delimiter.delimiter)]);
       delimiterRows.push(["Quote character", file_delimiter.quote_char]);
       delimiterRows.push(["Escape character", file_delimiter.escape_char]);
       delimiterRows.push(["Line terminator", file_delimiter.line_terminator]);
@@ -379,7 +374,7 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
 
     if (arrayDelimiterOverlay?.attributes?.[attribute]) {
       const arrayDelimiter = arrayDelimiterOverlay.attributes[attribute];
-      row.push(prettyDelimiter(arrayDelimiter));
+      row.push(prettyPrintDelimiter(arrayDelimiter));
     }
 
     return row;

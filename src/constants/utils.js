@@ -41,6 +41,13 @@ export const getCurrentData = (currentApi, includedError) => {
   return newData;
 };
 
+// this function is used to pretty print the delimiter value in the markdown table or excel sheet
+export const prettyPrintDelimiter = (value) => {
+  if (value === "\t") return "\\t (tab)";
+  if (value === " ") return "\\s (space)"; // if we ever support space as a delimiter
+  return value;
+};
+
 export const getDescriptiveFileName = (schemaDescription, commonFileName) => {
   const currentLanguage = codesToLanguages[i18next.language] || DEFAULT_LANGUAGE;
   const schemaName = schemaDescription[currentLanguage]?.name;
