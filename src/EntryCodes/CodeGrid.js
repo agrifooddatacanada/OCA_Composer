@@ -81,7 +81,7 @@ const codeGridStyle = `
     min-height: unset !important;
   }
   .entry-codes-grid .ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
-    min-height: 75px !important;
+    min-height: 88px !important;
   }
   .ag-row .delete-icon-solid {
     display: none;
@@ -295,7 +295,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
       const langH = measureTextHeight(params.data?.[lang] || "", ENTRY_CODE_LANG_WIDTH, {});
       maxH = Math.max(maxH, langH);
     });
-    return Math.max(42, maxH + 16);
+    return Math.max(56, maxH + 16);
   }, [languages]);
 
   const prevRowCountRef = useRef(0);
