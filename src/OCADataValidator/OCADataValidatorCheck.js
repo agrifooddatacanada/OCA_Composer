@@ -205,13 +205,13 @@ const flaggedHeader = (
             )}
             {characterEncoding && (
               <>
-                {"Make selected entries required" in characterEncoding && (
+                {"Required Entry" in characterEncoding && (
                   <>
                     <br />
                     <Typography sx={{ fontWeight: "bold" }}>Required:</Typography>
                     <Typography>
                       {characterEncoding?.[
-                        "Make selected entries required"
+                        "Required Entry"
                       ]?.toString() || ""}
                     </Typography>
                   </>

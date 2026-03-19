@@ -433,34 +433,28 @@ const Cardinality = () => {
         >
           {selectedCellData && (
             <>
-              <Box>
-                <TextField
-                  label={t("Exact")}
-                  variant="outlined"
-                  value={exactValue}
-                  onChange={(e) => handleValueChange(e.target.value, "exact")}
-                  style={{
-                    marginBottom: "10px",
-                    backgroundColor: minValue || maxValue ? "#f2f2f2" : "white"
-                  }}
-                  disabled={minValue || maxValue}
-                />
-                <Tooltip
-                  title={t(
-                    "For each attribute you can specify the exact, minimum or maximum ..."
-                  )}
-                  placement="top"
-                  arrow
-                >
-                  <HelpOutlineIcon
-                    sx={{
-                      fontSize: 18,
-                      color: "#ccc",
-                      marginLeft: "10px",
-                      marginTop: "5px"
+              <Box sx={{ display: "flex", justifyContent: "center", marginBottom: "10px" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: "10px", transform: "translateX(-14px)" }}>
+                  <TextField
+                    label={t("Exact")}
+                    variant="outlined"
+                    value={exactValue}
+                    onChange={(e) => handleValueChange(e.target.value, "exact")}
+                    style={{
+                      backgroundColor: minValue || maxValue ? "#f2f2f2" : "white"
                     }}
+                    disabled={minValue || maxValue}
                   />
-                </Tooltip>
+                  <Tooltip
+                    title={t(
+                      "For each attribute you can specify the exact, minimum or maximum ..."
+                    )}
+                    placement="top"
+                    arrow
+                  >
+                    <HelpOutlineIcon sx={{ fontSize: 18, color: "#ccc" }} />
+                  </Tooltip>
+                </Box>
               </Box>
               <Typography variant="h6" align="center" style={{ marginBottom: "10px" }}>
                 or

@@ -29,7 +29,7 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     CharacterEncoding: { header: t("Add Character Encoding"), toolTipText: t("Character encoding of the data source (for each attribute)..."), helpLink: `${base}/${lang}/CharacterEncoding/` },
     RequiredEntries: { header: t("Add Required Entries"), toolTipText: t("Specify if the underlying data must have an entry for the specific attribute"), helpLink: `${base}/${lang}/RequiredEntry/` },
     FormatRules: { header: t("Add Format Rules for Data Entry"), toolTipText: "", helpLink: `${base}/${lang}/FormatText/` },
-    FormInformation: { header: t("Add Form Information"), toolTipText: "", helpLink: `${base}/${lang}/FormInformation/` },
+    FormInformation: { header: t("Form Information"), toolTipText: "", helpLink: `${base}/${lang}/FormInformation/` },
     FormBuilder: { header: t("Form Builder"), toolTipText: t("Create interactive forms using drag-and-drop interface"), helpLink: `${base}/${lang}/FormBuilder/` },
     Cardinality: { header: t("Add Entry Limit Rules for Data Entry"), toolTipText: "", helpLink: `${base}/${lang}/Cardinality/` },
     DataStandards: { header: t("Add Data Standards"), toolTipText: "", helpLink: `${base}/${lang}/DataStandards/` },

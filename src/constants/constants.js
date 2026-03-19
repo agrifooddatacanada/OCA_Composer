@@ -60,14 +60,14 @@ export const isChildSchemaType = (type) => {
 
 // Fields for overlay items
 export const FIELD_CHARACTER_ENCODING_OVERLAY = "Character Encoding";
-export const FIELD_FORMAT_OVERLAY = "Add format rule for data";
-export const FIELD_CONFORMANCE_OVERLAY = "Make selected entries required";
+export const FIELD_FORMAT_OVERLAY = "Format";
+export const FIELD_CONFORMANCE_OVERLAY = "Required Entry";
 export const FIELD_CARDINALITY_OVERLAY = "Cardinality";
 export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
 export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
-export const FIELD_RANGE_OVERLAY = "Add range rule for data";
+export const FIELD_RANGE_OVERLAY = "Range";
 export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
-export const FIELD_FORM_INFORMATION_OVERLAY = "Add Form Information";
+export const FIELD_FORM_INFORMATION_OVERLAY = "Form Information";
 
 export const overlayItems = {
   [FIELD_CHARACTER_ENCODING_OVERLAY]: false,

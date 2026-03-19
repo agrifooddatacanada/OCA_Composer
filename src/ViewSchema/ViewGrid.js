@@ -374,7 +374,7 @@ export default function ViewGrid({
           });
         } else if (overlayKey === FIELD_FORM_INFORMATION_OVERLAY) {
           predefinedColumns.push({
-            field: "Add Form Information",
+            field: FIELD_FORM_INFORMATION_OVERLAY,
             headerName: t("Form"),
             width: 102,
             autoHeight: true,
@@ -391,9 +391,9 @@ export default function ViewGrid({
           const isFormat =
             normalized === "format rules" ||
             normalized === "format rule" ||
-            normalized === "add format rule for data";
+            normalized === "format";
           const isRequired =
-            normalized === "make selected entries required" ||
+            normalized === "required entry" ||
             normalized === "required entry" ||
             normalized === "required";
           const mappedField = isFormat
@@ -401,7 +401,7 @@ export default function ViewGrid({
             : isRequired
               ? "Required"
               : overlayKey;
-          const useCheckbox = isRequired || overlayKey === "Make selected entries required";
+          const useCheckbox = isRequired || overlayKey === FIELD_CONFORMANCE_OVERLAY;
 
           predefinedColumns.push({
             field: mappedField,
@@ -490,7 +490,7 @@ export default function ViewGrid({
           const hasPlaceholder = Object.values(formPlaceholders).some(
             langPlaceholders => langPlaceholders && langPlaceholders[item.Attribute]
           );
-          item["Add Form Information"] = hasPlaceholder;
+          item[FIELD_FORM_INFORMATION_OVERLAY] = hasPlaceholder;
         }
       }
     });

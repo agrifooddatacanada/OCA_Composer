@@ -19,7 +19,7 @@ const RequiredEntryHeader = ({ gridRef, t }) => {
   const handleCheckboxChange = (event) => {
     const { checked } = event.target;
     gridRef.current.api.forEachNode((node) => {
-      node.setDataValue("Make selected entries required", checked);
+      node.setDataValue(FIELD_CONFORMANCE_OVERLAY, checked);
     });
   };
 
@@ -54,9 +54,9 @@ const CheckboxRenderer = ({ value, rowIndex, colDef, api }) => {
     const { checked } = event.target;
     api.forEachNode((node, index) => {
       if (rowIndex === index) {
-        node.setDataValue("Make selected entries required", checked);
+        node.setDataValue(FIELD_CONFORMANCE_OVERLAY, checked);
       } else if (!node.data[colDef.field]) {
-        node.setDataValue("Make selected entries required", false);
+        node.setDataValue(FIELD_CONFORMANCE_OVERLAY, false);
       }
     });
   };
@@ -84,7 +84,7 @@ const RequiredEntries = () => {
     // Create row data with Attribute name and Required status
     return schemaState.attributes.map((attr) => ({
       Attribute: attr.Attribute,
-      "Make selected entries required": !!attr.Required
+      [FIELD_CONFORMANCE_OVERLAY]: !!attr.Required
     }));
   }, [schemaState?.attributes]);
   
@@ -94,7 +94,7 @@ const RequiredEntries = () => {
       const rowData = newData.find((row) => row.Attribute === attr.Attribute);
       return {
         ...attr,
-        Required: rowData ? rowData["Make selected entries required"] : false
+        Required: rowData ? rowData[FIELD_CONFORMANCE_OVERLAY] : false
       };
     });
     
@@ -131,7 +131,7 @@ const RequiredEntries = () => {
         },
       },
       {
-        field: "Make selected entries required",
+        field: FIELD_CONFORMANCE_OVERLAY,
         width: 180,
         headerComponent: RequiredEntryHeader,
         headerComponentParams: {

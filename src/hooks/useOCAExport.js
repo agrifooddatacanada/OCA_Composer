@@ -14,6 +14,7 @@ import {
   UNIT_FRAME_LOCATION,
   UNIT_FRAME_VERSION,
   SENSITIVE,
+  FIELD_CONFORMANCE_OVERLAY,
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
   FIELD_CHARACTER_ENCODING_OVERLAY,
@@ -318,7 +319,7 @@ const useOCAExport = () => {
 
     // Add Conformance Overlay
     buildText += "# Add Conformance Overlay\n";
-    if (overlaySelections["Make selected entries required"]) {
+    if (overlaySelections[FIELD_CONFORMANCE_OVERLAY]) {
       let conformanceText = "";
       // Required status is stored in the attributes array
       attributesList.forEach((item) => {
