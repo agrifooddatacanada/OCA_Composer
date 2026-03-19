@@ -27,6 +27,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
+import { measureTextHeight } from "../utils/measureTextLines";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
@@ -259,8 +260,8 @@ const createOnCellValueChanged = (searchUnits, key, onSave) => (params) => {
       "UCUM Label": selectedItem.label,
       Description: selectedItem.description
     });
-    
-    // Trigger save after updating the grid
+    params.api.refreshCells({ rowNodes: [params.node], force: true });
+    requestAnimationFrame(() => params.api.resetRowHeights());
     if (onSave) {
       onSave();
     }
@@ -285,7 +286,6 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
       {
         field: "UCUM Code",
         width: 185,
-        autoHeight: true,
         cellStyle: () => allowOverflowStyle,
         cellEditor: UnitFramingAutoCompleteEditor,
         cellEditorParams: createCellEditorParams(searchUnits, "code"),
@@ -299,7 +299,6 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
       {
         field: "UCUM Label",
         width: 185,
-        autoHeight: true,
         cellStyle: () => allowOverflowStyle,
         cellEditor: UnitFramingAutoCompleteEditor,
         cellEditorParams: createCellEditorParams(searchUnits, "label"),
@@ -313,7 +312,6 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
       {
         field: "Description",
         width: 185,
-        autoHeight: true,
         cellStyle: () => allowOverflowStyle,
         cellEditor: UnitFramingAutoCompleteEditor,
         cellEditorParams: createCellEditorParams(searchUnits, "description"),
@@ -486,6 +484,21 @@ const UnitFraming = () => {
   }, [unitFramedRowData, setUnitFramedRowData]);
 
   const columnDefs = useColumnDefs(gridRef, t, handleCellChanged);
+
+  const getRowHeight = useCallback((params) => {
+    const unitH = measureTextHeight(params.data?.Unit || "", 100, {});
+    const codeH = measureTextHeight(params.data?.["UCUM Code"] || "", 185, {});
+    const labelH = measureTextHeight(params.data?.["UCUM Label"] || "", 185, {});
+    const descH = measureTextHeight(params.data?.Description || "", 185, {});
+    const maxH = Math.max(unitH, codeH, labelH, descH);
+    return Math.max(50, maxH + 16);
+  }, []);
+
+  useEffect(() => {
+    const api = gridRef.current?.api;
+    if (!api) return;
+    requestAnimationFrame(() => api.resetRowHeights());
+  }, [tempToDisplayRowData]);
 
   // Pass setUnitFramedRowData and setFrameAllUnits to column defs
   const columnDefsWithCallbacks = useMemo(() => 
@@ -700,16 +713,21 @@ const UnitFraming = () => {
             {unframedUnitsText}
           </Box>
         </Box>
-        <Box className="ag-theme-balham" sx={{ width: GRID_WIDTH }}>
+        <Box className="unit-framing-grid ag-theme-balham" sx={{ width: GRID_WIDTH, overflowX: "hidden" }}>
           <style>{gridStyles}</style>
+          <style>{`
+            .unit-framing-grid .ag-center-cols-clipper { min-height: unset !important; }
+            .unit-framing-grid .ag-root-wrapper-body.ag-layout-auto-height { min-height: unset !important; }
+            .unit-framing-grid .ag-body-horizontal-scroll { display: none !important; }
+          `}</style>
           <AgGridReact
             key={i18n.language}
             ref={gridRef}
             rowData={tempToDisplayRowData}
             columnDefs={columnDefsWithCallbacks}
             domLayout="autoHeight"
+            getRowHeight={getRowHeight}
             suppressHorizontalScroll
-            rowHeight={50}
             onGridReady={onGridReady}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
