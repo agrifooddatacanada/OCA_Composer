@@ -13,6 +13,7 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import { FIELD_CONFORMANCE_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { overlayGridOnFirstDataRendered } from "./gridUtils";
+import { measureTextHeight } from "../utils/measureTextLines";
 
 const RequiredEntryHeader = ({ gridRef, t }) => {
   const inputRef = useRef();
@@ -111,13 +112,18 @@ const RequiredEntries = () => {
     setRequiredEntriesRowData(allRowData);
   }, [setRequiredEntriesRowData]);
 
+  const getRowHeight = useCallback((params) => {
+    const opts = { compact: true };
+    const attrH = measureTextHeight(params.data?.Attribute || "", 100, opts);
+    return Math.max(32, attrH + 16);
+  }, []);
+
   useEffect(() => {
     setColumnDefs([
       {
         field: "Attribute",
         editable: false,
         width: 100,
-        autoHeight: true,
         cellStyle: () => preWrapWordBreak,
         headerComponent: CellHeader,
         headerComponentParams: {
@@ -180,6 +186,7 @@ const RequiredEntries = () => {
             rowData={requiredEntriesRowData}
             columnDefs={columnDefs}
             domLayout="autoHeight"
+            getRowHeight={getRowHeight}
             suppressHorizontalScroll
             onFirstDataRendered={overlayGridOnFirstDataRendered}
             onCellValueChanged={handleCellValueChanged}
