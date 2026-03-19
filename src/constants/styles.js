@@ -140,4 +140,14 @@ export const gridStyles = `
 .ag-center-cols-viewport .ag-cell:last-child {
   border-right: none !important;
 }
+
+.ag-row .delete-icon-solid {
+  display: none;
+}
+.delete-icon-wrapper:hover .delete-icon-outline {
+  display: none;
+}
+.delete-icon-wrapper:hover .delete-icon-solid {
+  display: inline-flex;
+}
 `;

@@ -16,12 +16,17 @@ const textareaStyle = {
 };
 
 const TextareaCellEditor = forwardRef((props, ref) => {
-  const [value, setValue] = useState(props.value);
+  const [value, setValue] = useState(
+    props.charPress != null
+      ? (props.value ?? "") + props.charPress
+      : props.value
+  );
   const textareaRef = useRef(null);
   const maxLength = props.cellEditorParams?.maxLength ?? MAX_ATTR_DESCRIPTION_CHARS;
 
+  const startedWithCharPress = useRef(!!props.charPress);
   useEffect(() => {
-    setValue(props.value);
+    if (!startedWithCharPress.current) setValue(props.value);
   }, [props.value]);
 
   useEffect(() => {

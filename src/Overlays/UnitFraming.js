@@ -11,7 +11,6 @@ import React, {
 } from "react";
 import {
   Box,
-  IconButton,
   TextField,
   Autocomplete,
   Popper,
@@ -19,6 +18,7 @@ import {
   Button
 } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { useTranslation } from "react-i18next";
@@ -122,19 +122,12 @@ const TrashCanButton = memo((props) => {
   }, [props.node.data, setUnitFramedRowData, setFrameAllUnits, unitFramedRowData, props]);
 
   const isVisible = props.node.data?.Unit !== "";
-
+  if (!isVisible) return null;
   return (
-    <IconButton
-      sx={{
-        pr: 1,
-        color: CustomPalette.GREY_600,
-        transition: "all 0.2s ease-in-out",
-        display: isVisible ? "block" : "none"
-      }}
-      onClick={handleDelete}
-    >
-      <DeleteOutlineIcon />
-    </IconButton>
+    <Box className="delete-icon-wrapper" sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+      <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
+      <DeleteForeverIcon onClick={handleDelete} sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }} className="delete-icon-solid" />
+    </Box>
   );
 });
 

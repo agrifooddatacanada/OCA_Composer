@@ -11,7 +11,7 @@ import CellHeader from "../components/CellHeader";
 import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import DeleteConfirmation from "./DeleteConfirmation";
-import { FormatRuleTypeRenderer, TrashCanButton } from "./FormatRuleCellRender";
+import { FormatRuleTypeRenderer } from "./FormatRuleCellRender";
 import Loading from "../components/Loading";
 import {
   CUSTOM_FORMAT_RULE,
@@ -232,12 +232,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           )
         },
         cellRenderer: FormatRuleTypeRenderer,
-        width: 200,
+        width: 260,
         cellRendererParams: () => ({
-          onRefresh: () => {
-            // Do nothing - let grid handle data updates
-            // Data will be saved on navigation via handleSave
-          }
+          onRefresh: () => {}
         })
       },
       {
@@ -252,18 +249,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         autoHeight: true,
         width: 200,
         wrapText: true
-      },
-      {
-        headerName: "",
-        field: "Delete",
-        cellRenderer: TrashCanButton,
-        width: 60,
-        cellRendererParams: () => ({
-          onRefresh: () => {
-            // Do nothing - let grid handle data updates
-            // Data will be saved on navigation via handleSave
-          }
-        })
       }
     ],
     [t, setFormatRuleRowData]

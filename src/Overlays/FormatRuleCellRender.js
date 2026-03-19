@@ -1,9 +1,7 @@
-import React, { forwardRef, memo, useCallback, useState } from "react";
+import React, { forwardRef, memo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { IconButton, MenuItem } from "@mui/material";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
-import { CustomPalette } from "../constants/customPalette";
 import {
   CUSTOM_FORMAT_RULE,
   descriptionToFormatCodeBinary,
@@ -20,42 +18,6 @@ import {
   formatCodeTextDescription
 } from "../constants/constants";
 import { normalizeEscapedQuotes } from "../utils/helpers";
-
-export const TrashCanButton = memo(
-  // eslint-disable-next-line no-unused-vars
-  forwardRef((props, ref) => {
-    const { node, data, onRefresh, api } = props;
-    const onClick = useCallback(() => {
-      node.updateData({
-        ...data,
-        "Format Rule": "",
-        [CUSTOM_FORMAT_RULE]: ""
-      });
-      if (api) {
-        api.refreshCells({
-          force: true,
-          rowNodes: [node],
-          columns: ["Format Rule"]
-        });
-      }
-      onRefresh?.();
-    }, [node, data, onRefresh, api]);
-
-    return (
-      <IconButton
-        sx={{
-          pr: 1,
-          color: CustomPalette.GREY_600,
-          transition: "all 0.2s ease-in-out",
-          display: data?.["Format Rule"] === "" && data?.[CUSTOM_FORMAT_RULE] === "" ? "none" : "block"
-        }}
-        onClick={onClick}
-      >
-        <DeleteOutlineIcon />
-      </IconButton>
-    );
-  })
-);
 
 export const FormatRuleTypeRenderer = memo(
   // eslint-disable-next-line no-unused-vars
@@ -118,8 +80,12 @@ export const FormatRuleTypeRenderer = memo(
     };
 
     const handleKeyDown = (e) => {
-      const keyPressed = e.key;
-      if (keyPressed === "Delete" || keyPressed === "Backspace") {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        if (!props.data[CUSTOM_FORMAT_RULE]) {
+          handleChange({ target: { value: "" } });
+          setIsDropdownOpen(false);
+        }
       }
     };
 

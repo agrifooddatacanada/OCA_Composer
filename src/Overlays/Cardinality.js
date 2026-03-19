@@ -24,6 +24,7 @@ import {
 import { AgGridReact } from "ag-grid-react";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
 import { Context } from "../App";
@@ -51,17 +52,14 @@ const TrashCanButton = memo(
   forwardRef((props, ref) => (
     <div ref={ref}>
       {props.node.data?.Type?.includes("Array") && (
-        <IconButton
-          sx={{
-            pr: 1,
-            color: CustomPalette.GREY_600,
-            transition: "all 0.2s ease-in-out"
-          }}
-          disabled={props.node.data?.EntryLimit === ""}
-          onClick={() => props.handleDeleteRow(props)}
-        >
-          <DeleteOutlineIcon />
-        </IconButton>
+        <Box className="delete-icon-wrapper" sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
+          <DeleteForeverIcon
+            onClick={() => props.node.data?.EntryLimit !== "" && props.handleDeleteRow(props)}
+            sx={{ color: CustomPalette.PRIMARY, cursor: props.node.data?.EntryLimit === "" ? "not-allowed" : "pointer" }}
+            className="delete-icon-solid"
+          />
+        </Box>
       )}
     </div>
   ))
