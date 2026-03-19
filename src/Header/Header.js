@@ -2,8 +2,7 @@ import React, { useState, useEffect, useContext, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getNormalizedUICode, getUICode, setUICode } from "../utils/languageUtils";
-import { Typography, Tooltip, Button, Box, useMediaQuery } from "@mui/material";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { Typography, Button, Box, useMediaQuery } from "@mui/material";
 
 import { CustomPalette } from "../constants/customPalette";
 // import logo from "../assets/agri-logo.png";
@@ -47,6 +46,7 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
   return switchMap[currentPage] || { header: "", toolTipText: "", helpLink: "" };
 }
 
+export { getHeaderMeta };
 export default function Header({ currentPage }) {
   const { t } = useTranslation();
   const location = useLocation();
@@ -67,7 +67,7 @@ export default function Header({ currentPage }) {
     setUICode(lng);
   };
 
-  const { header, toolTipText, helpLink } = useMemo(
+  const { helpLink, toolTipText } = useMemo(
     () => getHeaderMeta(currentPage, t, selectedLanguage),
     [currentPage, t, selectedLanguage]
   );
@@ -78,6 +78,22 @@ export default function Header({ currentPage }) {
       headerColor={
         (currentPage === "Landing" || currentPage === "StartOCAMerge") &&
         CustomPalette.PRIMARY
+      }
+      centerItem={
+        currentPage !== "Landing" &&
+        currentPage !== "StartOCAMerge" &&
+        toolTipText ? (
+          <Typography
+            sx={{
+              color: CustomPalette.GREY_600,
+              fontSize: "0.875rem",
+              maxWidth: 1100,
+              textAlign: "center",
+            }}
+          >
+            {toolTipText}
+          </Typography>
+        ) : null
       }
       leftItem={
         currentPage === "Landing" || currentPage === "StartOCAMerge" ? (
@@ -140,32 +156,6 @@ export default function Header({ currentPage }) {
                 alt={currentTheme.logos.primaryLogo.alt}
               />
             </a>
-            <Typography
-              sx={{
-                fontSize: 25,
-                fontWeight: "bold",
-                color: primaryColor,
-                alignSelf: "center",
-                fontFamily
-              }}
-            >
-              {header}
-            </Typography>
-            {toolTipText.length > 0 && (
-              <Box sx={{ marginLeft: 2, color: CustomPalette.GREY_600 }}>
-                <Tooltip
-                  title={toolTipText}
-                  placement={
-                    header === "Attribute Details" || header === "View Schema"
-                      ? "right"
-                      : "right-start"
-                  }
-                  arrow
-                >
-                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                </Tooltip>
-              </Box>
-            )}
           </>
         )
       }
@@ -232,7 +222,7 @@ export default function Header({ currentPage }) {
                   window.open(`${helpLink}`, "_blank", "rel=noopener noreferrer")
                 }
               >
-                {t("Help with this page")}
+                {t("Page Help")}
               </Button>
             )}
             <div>

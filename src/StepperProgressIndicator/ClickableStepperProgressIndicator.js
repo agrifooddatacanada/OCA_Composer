@@ -11,8 +11,8 @@ export default function ClickableStepperProgressIndicator({
 }) {
   const { t } = useTranslation();
   return (
-    <Box sx={{ px: 10, py: 4 }}>
-      <Stepper activeStep={activeStep} alternativeLabel>
+    <Box sx={{ px: 10, py: 4, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Stepper activeStep={activeStep} alternativeLabel sx={{ width: "100%" }}>
         {steps.map((step, i) => (
           <Step
             key={step.label}
