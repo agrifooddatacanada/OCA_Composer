@@ -8,6 +8,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { flexCenter, gridStyles, preWrapWordBreak } from "../constants/styles";
 import CellHeader from "../components/CellHeader";
+import CheckboxColumnHeader from "../AttributeDetails/CheckboxColumnHeader";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { FIELD_CONFORMANCE_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
@@ -28,18 +29,12 @@ const RequiredEntryHeader = ({ gridRef, t }) => {
   }, []);
 
   return (
-    <CellHeader
-      headerText={
-        <Box sx={{ display: "flex", direction: "row", alignItems: "center" }}>
-          {t("Required entries")} {" "}
-          <input
-            type="checkbox"
-            ref={inputRef}
-            onChange={handleCheckboxChange}
-          />
-        </Box>
-      }
-      helpText={t("Check for each attribute where the data entry cannot be left empty in a dataset")} />
+    <CheckboxColumnHeader
+      label={t("Required")}
+      helpText={t("Check for each attribute where the data entry cannot be left empty in a dataset")}
+      onCheckboxChange={handleCheckboxChange}
+      inputRef={inputRef}
+    />
   );
 };
 
@@ -121,18 +116,18 @@ const RequiredEntries = () => {
       {
         field: "Attribute",
         editable: false,
-        width: 180,
+        width: 100,
         autoHeight: true,
         cellStyle: () => preWrapWordBreak,
         headerComponent: CellHeader,
         headerComponentParams: {
-          headerText: t("Attributes"),
+          headerText: t("Attribute"),
           helpText: t("This is the name for the attribute and, for example...")
         },
       },
       {
         field: FIELD_CONFORMANCE_OVERLAY,
-        width: 180,
+        width: 70,
         headerComponent: RequiredEntryHeader,
         headerComponentParams: {
           gridRef,
@@ -169,8 +164,16 @@ const RequiredEntries = () => {
           flexDirection: "column",
         }}
       >
-        <div className="ag-theme-balham" style={{ width: 360 }}>
+        <div className="required-entries-grid ag-theme-balham" style={{ width: 330 }}>
           <style>{gridStyles}</style>
+          <style>{`
+  .required-entries-grid .ag-header-cell[col-id="Required Entry"] input[type="checkbox"],
+  .required-entries-grid .ag-cell[col-id="Required Entry"] input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+  }
+`}</style>
           <AgGridReact
             key={i18n.language}
             ref={gridRef}
