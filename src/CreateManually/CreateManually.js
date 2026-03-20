@@ -65,8 +65,8 @@ export default function CreateManually() {
   const refContainer = useRef();
   const { t } = useTranslation();
 
-  // Keep minimal legacy Context usage for navigation and file clearing
-  const { setCurrentPage, setFileData } = useContext(Context);
+  // Keep minimal legacy Context usage for navigation
+  const { setCurrentPage } = useContext(Context);
 
   // Use MultiSchemaContext for all attribute management
   const { updateSchema, getSchema, getAttributesList } = useMultiSchema();
@@ -309,7 +309,6 @@ export default function CreateManually() {
     updateSchema({
       attributes: []
     });
-    setFileData([]); // Still needed for file data clearing
     setRowData([{ Name: "" }]);
   };  // Stops grid editing when clicking outside grid
   useEffect(() => {

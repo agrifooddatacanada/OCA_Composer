@@ -44,8 +44,6 @@ function App() {
   const [isZipEdited, setIsZipEdited] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
   const [jsonToReadme, setJsonToReadme] = useState({});
-  const [fileData, setFileData] = useState([]);
-  const [rawFile, setRawFile] = useState([]);
   const [currentPage, setCurrentPage] = useState("Landing");
   const [currentDataValidatorPage, setCurrentDataValidatorPage] =
     useState("StartDataValidator");
@@ -172,7 +170,7 @@ function App() {
     ReactGA.send({ hitType: "pageview", page: window.location.pathname });
   }, []);
 
-  // Re-set all fields when fileData updates
+  // Re-set all fields when jsonRawFile updates
   useEffect(() => {
     setDivisionGroup({
       division: "",
@@ -182,7 +180,7 @@ function App() {
     setIsZip(false);
     setZipToReadme([]);
     // Note: pkgUpload is now in multi-schema context, cleared via clearAllSchemas()
-  }, [fileData, jsonRawFile]);
+  }, [jsonRawFile]);
 
   // REMOVED: Legacy useEffect that synced attributesList with editingSchemaId
   // This is now handled by MultiSchemaContext
@@ -194,10 +192,6 @@ function App() {
           <Context.Provider
             // eslint-disable-next-line react/jsx-no-constructed-context-values
             value={{
-              fileData,
-              setFileData,
-              rawFile,
-              setRawFile,
               divisionGroup,
               setDivisionGroup,
               setCurrentPage,

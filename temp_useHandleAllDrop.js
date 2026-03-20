@@ -3,29 +3,33 @@ import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import Papa from "papaparse";
 import { Context } from "../App";
-import { removeSpacesFromString } from "../utils/stringUtils";
+import useZipParser from "./useZipParser";
+import { removeSpacesFromString } from "../constants/removeSpaces";
 import { messages } from "../constants/messages";
 import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
   // getUnitsFramedThatAlreadyExistInOcaPackage
-} from "../utils/helpers";
-import { useMultiSchema } from "../schema/schemaContext";
+} from "../constants/utils";
 
-const useHandleAllDrop = () => {
+const useHandleAllDrop = (pageForward) => {
   const {
+    setFileData,
+    fileData,
     setCurrentPage,
+    attributesList,
+    setAttributesList,
     setIsZip,
     setZipToReadme,
     setJsonToReadme,
+    rawFile,
+    setRawFile,
     excelSheetChoice,
-    setExcelSheetChoice
+    setExcelSheetChoice,
+    setOCAPackage
   } = useContext(Context);
-  
-  const [fileData, setFileData] = useState([]);
-  const [rawFile, setRawFile] = useState([]);
-  const { clearAllSchemas, switchToSchema, initializeFromPkgUpload, setPkgUpload, updateSchema } = useMultiSchema();
-  // useZipParser removed - data processing now handled by initializeFromPkgUpload -> OCAParser
+  const { processLanguages, processMetadata, processLabelsDescriptionRootUnitsEntries } =
+    useZipParser();
 
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
@@ -118,7 +122,6 @@ const useHandleAllDrop = () => {
           setDropMessage({ message: "", type: "" });
         }, [2500]);
       }
-      return dataArray;
     },
     [setFileData]
   );
@@ -284,8 +287,8 @@ const useHandleAllDrop = () => {
       acceptedFiles.forEach((file) => {
         const reader = new FileReader();
         const rABS = !!reader.readAsBinaryString; // converts object to boolean
-        reader.onabort = () => {}; // console.log("file reading was aborted");
-        reader.onerror = () => {}; // console.log("file reading has failed");
+        reader.onabort = () => console.log("file reading was aborted");
+        reader.onerror = () => console.log("file reading has failed");
         reader.onload = (e) => {
           const bstr = e.target.result;
           const workbook = XLSX.read(bstr, {
@@ -315,30 +318,29 @@ const useHandleAllDrop = () => {
   const handleZipDrop = useCallback((acceptedFiles) => {
     try {
       setLoading(true);
-      // Clear multi-schema context when uploading a new file
-      clearAllSchemas();
-
       const reader = new FileReader();
 
       reader.onload = async (e) => {
         const zip = await JSZip.loadAsync(e.target.result);
+        const languageList = [];
+        const informationList = [];
+        const labelList = [];
+        const metaList = [];
+        const entryList = [];
         const allZipFiles = [];
+        let entryCodeSummary = {};
+        let conformance;
+        let characterEncoding;
+        let loadUnits;
+        let formatRules;
+        let cardinalityData;
+        let dataStandards;
 
         // load up metadata file in OCA bundle
         const loadMetadataFile = await zip.files["meta.json"].async("text");
         const metadataJson = JSON.parse(loadMetadataFile);
         const { root } = metadataJson;
         allZipFiles.push(loadMetadataFile);
-
-        // Reconstruct OCA bundle structure from zip files
-        const captureBase = JSON.parse(
-          replaceAttributeCharsInJsonString(
-            await zip.files[`${root}.json`].async("text")
-          )
-        );
-        allZipFiles.push(JSON.stringify(captureBase));
-
-        const overlays = {};
 
         // loop through all files in OCA bundle
         for (const [key, file] of Object.entries(metadataJson.files[root])) {
@@ -347,64 +349,75 @@ const useHandleAllDrop = () => {
           // Sanitize attributes in JSON content; replace disallowed characters in attribute names
           const convertedContent = replaceAttributeCharsInJsonString(content);
           const parsedData = JSON.parse(convertedContent);
-          allZipFiles.push(convertedContent);
 
-          // Group overlays by type
           if (key.includes("meta")) {
-            overlays.meta = overlays.meta || [];
-            overlays.meta.push(parsedData);
-          } else if (key.includes("information")) {
-            overlays.information = overlays.information || [];
-            overlays.information.push(parsedData);
-          } else if (key.includes("label")) {
-            overlays.label = overlays.label || [];
-            overlays.label.push(parsedData);
-          } else if (key.includes("entry (")) {
-            overlays.entry = overlays.entry || [];
-            overlays.entry.push(parsedData);
-          } else if (key.includes("entry_code")) {
-            overlays.entry_code = parsedData;
-          } else if (key.includes("conformance")) {
-            overlays.conformance = parsedData;
-          } else if (key.includes("character_encoding")) {
-            overlays.character_encoding = parsedData;
-          } else if (key.includes("unit")) {
-            overlays.unit = parsedData;
-          } else if (key.includes("cardinality")) {
-            overlays.cardinality = parsedData;
-          } else if (key.includes("format")) {
-            overlays.format = parsedData;
-          } else if (key === "standard") {
-            overlays.standard = parsedData;
+            metaList.push(parsedData);
+            languageList.push(key.substring(6, 8));
           }
+
+          if (key.includes("information")) {
+            informationList.push(parsedData);
+          } else if (key.includes("format")) {
+            // Format word is inside Information word, so we need to check if it is a format or information
+            formatRules = parsedData;
+          }
+
+          if (key === "standard") {
+            dataStandards = parsedData;
+          }
+
+          if (key.includes("label")) {
+            labelList.push(parsedData);
+          }
+
+          if (key.includes("entry (")) {
+            entryList.push(parsedData);
+          }
+
+          if (key.includes("entry_code")) {
+            entryCodeSummary = parsedData;
+          }
+
+          if (key.includes("conformance")) {
+            conformance = parsedData;
+          }
+
+          if (key.includes("character_encoding")) {
+            characterEncoding = parsedData;
+          }
+
+          if (key.includes("unit")) {
+            loadUnits = parsedData;
+          }
+
+          if (key.includes("cardinality")) {
+            cardinalityData = parsedData;
+          }
+
+          allZipFiles.push(convertedContent);
         }
 
-        // Construct OCA package structure
-        const ocaBundle = {
-          d: root,
-          bundle: {
-            d: root,
-            capture_base: captureBase,
-            overlays
-          }
-        };
+        const loadRoot = await zip.files[`${metadataJson.root}.json`].async("text");
+        const convertedLoadRoot = replaceAttributeCharsInJsonString(loadRoot);
+        allZipFiles.push(convertedLoadRoot);
 
-        const ocaPackage = {
-          oca_bundle: ocaBundle
-        };
-
-        // Set OCA package in context
-        setPkgUpload(ocaPackage);
+        processLanguages(languageList);
+        processMetadata(metaList);
+        processLabelsDescriptionRootUnitsEntries(
+          labelList,
+          informationList,
+          JSON.parse(convertedLoadRoot),
+          loadUnits,
+          entryCodeSummary,
+          entryList,
+          conformance,
+          characterEncoding,
+          languageList,
+          formatRules,
+          cardinalityData,
+          dataStandards
+        );
         setZipToReadme(allZipFiles);
-
-        // NEW: Initialize MultiSchemaContext with complete package data
-        initializeFromPkgUpload(ocaPackage);
-
-        // Set editing schema to root schema
-        switchToSchema(root, ocaPackage);
-
-        // Use the existing bundle handler (with sanitized bundle)
-        handleBundleJSONDrop(ocaBundle.bundle, ocaPackage);
       };
 
       reader.readAsArrayBuffer(acceptedFiles[0]);
@@ -416,14 +429,12 @@ const useHandleAllDrop = () => {
         setSwitchToLastPage(true);
       }, 900);
     } catch (error) {
-      console.error("Zip upload error:", error);
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
       setTimeout(() => {
         setDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleBundleJSONDrop = useCallback(
@@ -499,21 +510,36 @@ const useHandleAllDrop = () => {
         throw new Error("No language found in the JSON file");
       }
 
-      // Data processing now handled by initializeFromPkgUpload -> OCAParser
-      // which already extracts all metadata, labels, descriptions, entry codes, etc.
-      // into MultiSchemaContext per-schema storage
-      
+      processLanguages(languageList);
+      processMetadata(metaList);
+      processLabelsDescriptionRootUnitsEntries(
+        labelList,
+        informationList,
+        loadRoot,
+        loadUnits,
+        entryCodeSummary,
+        entryList,
+        conformance,
+        characterEncoding,
+        languageList,
+        formatRules,
+        cardinalityData,
+        dataStandards,
+        ocaPackageData
+      );
       setJsonToReadme(jsonFile);
     },
-    [setZipToReadme]
+    [
+      processLabelsDescriptionRootUnitsEntries,
+      processLanguages,
+      processMetadata,
+      setZipToReadme
+    ]
   );
 
   const handleJsonDrop = useCallback((acceptedFiles) => {
     try {
       setLoading(true);
-      // Clear multi-schema context when uploading a new file
-      clearAllSchemas();
-
       const reader = new FileReader();
 
       reader.onload = async (e) => {
@@ -526,37 +552,11 @@ const useHandleAllDrop = () => {
           // setUnitFramedThatAlreadyExistInOcaPackage(
           //   getUnitsFramedThatAlreadyExistInOcaPackage(jsonFile)
           // );
-          setPkgUpload(jsonFile);
-
-          // NEW: Initialize MultiSchemaContext with complete package data
-          initializeFromPkgUpload(jsonFile);
-
-          // Set editing schema to root schema
-          switchToSchema(jsonFile.oca_bundle.bundle.d, jsonFile);
+          setOCAPackage(jsonFile);
           handleBundleJSONDrop(modifiedBundle, jsonFile);
         } else if (jsonFile?.bundle) {
           const modifiedJsonFile = replaceAttributeCharsInParsedJson(jsonFile.bundle);
-          // If dependencies exist, keep the full OCA package in context for visualization
-          if (jsonFile?.dependencies && Array.isArray(jsonFile.dependencies)) {
-            const sanitizedOcaPackage = { ...jsonFile, bundle: modifiedJsonFile };
-            setPkgUpload(sanitizedOcaPackage);
-
-            // NEW: Initialize MultiSchemaContext with complete package data
-            initializeFromPkgUpload(sanitizedOcaPackage);
-
-            // Set editing schema to root schema
-            switchToSchema(jsonFile.bundle.d, sanitizedOcaPackage);
-            handleBundleJSONDrop(modifiedJsonFile, sanitizedOcaPackage);
-          } else {
-            // Single schema package
-            setPkgUpload(jsonFile);
-
-            // NEW: Initialize MultiSchemaContext
-            initializeFromPkgUpload(jsonFile);
-
-            switchToSchema(jsonFile.bundle.d, jsonFile);
-            handleBundleJSONDrop(modifiedJsonFile);
-          }
+          handleBundleJSONDrop(modifiedJsonFile);
         } else if (jsonFile?.schema?.[0]) {
           handleBundleJSONDrop(jsonFile?.schema?.[0]);
         } else {
@@ -582,34 +582,12 @@ const useHandleAllDrop = () => {
   }, []);
 
   const handlePageForward = useCallback(() => {
-    let listToUpdate = fileData.map((item) => item[0]);
-
-    if (rawFile && rawFile.length > 0 && (rawFile[0].path.includes(".xls") || rawFile[0].path.includes(".xlsx"))) {
+    if (rawFile[0].path.includes(".xls") || rawFile[0].path.includes(".xlsx")) {
       const index = excelSheetNames.indexOf(excelSheetChoice);
-      const dataArray = processExcelFile(tempExcel, index);
-      if (dataArray) {
-        listToUpdate = dataArray.map((item) => item[0]);
-      }
+      processExcelFile(tempExcel, index);
     }
-
-    if (listToUpdate && listToUpdate.length > 0) {
-      const attributeRowData = listToUpdate.map((attr) => ({
-        Attribute: attr,
-        Type: "",
-        Description: "",
-        Required: false,
-        EntryCodes: [],
-        List: false
-      }));
-
-      // Initialize the schema with these attributes
-      updateSchema({
-        attributes: attributeRowData
-      });
-    }
-
-    setCurrentPage("Metadata");
-  }, [fileData, excelSheetChoice, excelSheetNames, setCurrentPage, processExcelFile, tempExcel, rawFile, updateSchema]);
+    pageForward();
+  }, [excelSheetChoice, excelSheetNames, pageForward, processExcelFile, tempExcel]);
 
   useEffect(() => {
     if (rawFile.length > 0 && rawFile[0].size > 1000000) {
@@ -640,11 +618,8 @@ const useHandleAllDrop = () => {
     }
   }, [rawFile, handleExcelDrop, handleZipDrop, processCSVFile, setFileData]);
 
-  // Derive attributesList from fileData
-  const attributesList = fileData.map(item => item[0]);
-  
   useEffect(() => {
-    if (fileData.length > 0) {
+    if (fileData.length > 0 || attributesList.length > 0) {
       setDropDisabled(true);
     }
   }, [fileData]);
@@ -673,6 +648,7 @@ const useHandleAllDrop = () => {
   }, [loading]);
 
   return {
+    setAttributesList,
     rawFile,
     setRawFile,
     attributesList,

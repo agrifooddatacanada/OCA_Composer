@@ -26,7 +26,7 @@ export default function StartSchema({ pageForward }) {
     setExcelSheetNames,
     excelSheetChoice,
     handlePageForward
-  } = useHandleAllDrop(pageForward);
+  } = useHandleAllDrop();
 
   useEffect(() => {
     if (switchToLastPage) {

@@ -60,9 +60,7 @@ const useOCAExport = () => {
     divisionGroup,
     customIsos,
     overlay,
-    setFileData,
     setIsZip,
-    setRawFile,
     setOverlay,
     setSelectedOverlay,
     setCurrentPage
@@ -923,9 +921,7 @@ const useOCAExport = () => {
    * Reset all application state to defaults and navigate to landing page
    */
   const resetToDefaults = useCallback(() => {
-    setFileData([]);
     setIsZip(false);
-    setRawFile([]);
     setPkgUpload(null);
     setOverlay(overlayItems);
     setSelectedOverlay("");
@@ -935,7 +931,7 @@ const useOCAExport = () => {
     setCurrentPage("Landing");
     navigate("/");
   }, [
-    setFileData, setIsZip, setRawFile,
+    setIsZip,
     setPkgUpload, setOverlay, setSelectedOverlay,
     clearAllSchemas, setCurrentPage, navigate
   ]);
