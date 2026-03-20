@@ -20,6 +20,7 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
   const dewBase = "https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages";
   const switchMap = {
     Start: { header: t("Start Creating an OCA Schema"), toolTipText: t("Write column (attribute) names manually or drag and drop an existing dataset (Excel or .csv file) to import names. The first row must contain the column headers."), helpLink: `${base}/${lang}/CreatingOCASchema/` },
+    Create: { header: t("Attribute Names"), toolTipText: t("Enter the name of each attribute below. This will be the column header in every tabular data set no matter what language."), helpLink: `${base}/${lang}/CreatingOCASchema/` },
     Metadata: { header: t("Schema Metadata"), toolTipText: t("Describe your schema using metadata to help others find, understand, and use your schema."), helpLink: `${base}/${lang}/SchemaMetadata/` },
     Details: { header: t("Attribute Details"), toolTipText: t("Each column of your dataset is an attribute in your schema..."), helpLink: `${base}/${lang}/AttributeDetails/` },
     Codes: { header: t("Add Entry Codes"), toolTipText: t("Entry codes are options you want available to users as a..."), helpLink: `${base}/${lang}/AddEntryCode/` },

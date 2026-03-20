@@ -424,56 +424,6 @@ export default function CreateManually() {
           <ArrowForwardIosIcon />
         </Button>
       </Box>
-      <Box sx={{ mb: 5 }}>
-        <Typography
-          sx={{
-            fontSize: 35,
-            fontWeight: "bold",
-            color: CustomPalette.PRIMARY,
-            p: 0
-          }}
-        >
-          {t("Attribute Names")}
-        </Typography>
-        <Typography
-          sx={{
-            mt: -0.5,
-            fontWeight: "bold",
-            fontSize: 20,
-            color: CustomPalette.GREY_800
-          }}
-        >
-          {t("Enter the name of each attribute below")}
-        </Typography>
-        <Typography
-          sx={{
-            mt: 2,
-            mx: "auto",
-            fontWeight: "light",
-            fontStyle: "italic",
-            fontSize: 14,
-            maxWidth: "55ch"
-          }}
-        >
-          {t(
-            "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: ."
-          )}
-        </Typography>
-        <Typography
-          sx={{
-            mt: 2,
-            fontWeight: "light",
-            fontStyle: "italic",
-            fontSize: 14
-          }}
-        >
-          {t(
-            "This will be the column header in every tabular data set no matter what language"
-          )}
-          <br />
-          {t("Every attribute must be unique, and no entries can be left blank")}
-        </Typography>
-      </Box>
       <Box>
         <Box style={{ display: "flex" }}>
           <Box className="ag-theme-alpine" style={{ width: 565 }} ref={refContainer}>
