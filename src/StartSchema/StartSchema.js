@@ -1,12 +1,11 @@
 import React, { useEffect } from "react";
 import { Button, Box, Typography } from "@mui/material";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useTranslation } from "react-i18next";
-import StartIntro from "./StartIntro";
 import Drop from "./Drop";
 import { CustomPalette } from "../constants/customPalette";
 import useHandleAllDrop from "./useHandleAllDrop";
 import ExcelSheetSelection from "../components/ExcelSheetSelection";
+import BackNextSkeleton from "../components/BackNextSkeleton";
 
 export default function StartSchema({ pageForward }) {
   const { t } = useTranslation();
@@ -36,94 +35,62 @@ export default function StartSchema({ pageForward }) {
   }, [switchToLastPage]);
 
   return (
-    <Box sx={{ mt: 5, mb: 3 }}>
-      <Box width="80%" margin="auto">
-        <Typography variant="h5">
-          <Box sx={{ marginTop: 2 }}>
-            {t("Welcome to Agri-food Data Canada's schema writer...")}
-          </Box>
-        </Typography>
-      </Box>
-      <Box
-        display="flex"
-        sx={{
-          flexDirection: "column",
-          alignItems: "center",
-          width: 600,
-          margin: "auto",
-          marginBottom: 10
-        }}
-      >
+    <BackNextSkeleton
+      isBack={attributesList.length > 0 || excelSheetNames.length > 0}
+      pageBack={() => {
+        setDropDisabled(false);
+        setFileData([]);  // attributesList derived from fileData
+        setExcelSheetChoice(-1);
+        setExcelSheetNames([]);
+      }}
+      isForward={attributesList.length > 0 || excelSheetChoice !== -1}
+      pageForward={handlePageForward}
+    >
+      <Box sx={{ mt: 5, mb: 3 }}>
         <Box
+          display="flex"
           sx={{
-            height: "3rem",
-            alignSelf: "flex-end",
-            transform: "translateY(2.5rem)"
+            flexDirection: "column",
+            alignItems: "center",
+            width: 600,
+            margin: "auto",
+            marginBottom: 10
           }}
         >
-          {(attributesList.length > 0 || excelSheetChoice !== -1) && (
-            <Button
-              variant="text"
-              color="navButton"
-              sx={{ fontSize: "1.2rem", color: CustomPalette.PRIMARY }}
-              onClick={handlePageForward}
-            >
-              {t("Next")} <ArrowForwardIosIcon />
-            </Button>
+          {!(attributesList.length > 0 || excelSheetNames.length > 0) && (
+            <Box display="flex" flexDirection="column" alignItems="center" sx={{ width: "100%" }}>
+              <Button
+                variant="contained"
+                color="button"
+                sx={{ width: 250, mb: 6, mt: 1 }}
+                onClick={() => { setCurrentPage("Create") }}
+              >
+                {t("WRITE NAMES MANUALLY")}
+              </Button>
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                {t("OR")}
+              </Typography>
+            </Box>
+          )}
+          
+          {excelSheetNames.length > 0 ? (
+            <ExcelSheetSelection
+              chosenValue={excelSheetChoice}
+              choices={excelSheetNames}
+              setChoice={setExcelSheetChoice}
+            />
+          ) : (
+            <Drop
+              setFile={setRawFile}
+              setLoading={setLoading}
+              loading={loading}
+              dropDisabled={dropDisabled}
+              dropMessage={dropMessage}
+              setDropMessage={setDropMessage}
+            />
           )}
         </Box>
-        {excelSheetNames.length > 0 ? (
-          <ExcelSheetSelection
-            chosenValue={excelSheetChoice}
-            choices={excelSheetNames}
-            setChoice={setExcelSheetChoice}
-          />
-        ) : (
-          <Drop
-            setFile={setRawFile}
-            setLoading={setLoading}
-            loading={loading}
-            dropDisabled={dropDisabled}
-            dropMessage={dropMessage}
-            setDropMessage={setDropMessage}
-          />
-        )}
-        {attributesList.length > 0 || excelSheetNames.length > 0 ? (
-          <Box display="flex">
-            <Button
-              variant="contained"
-              color="button"
-              onClick={() => {
-                setDropDisabled(false);
-                setFileData([]);  // attributesList derived from fileData
-                setExcelSheetChoice(-1);
-                setExcelSheetNames([]);
-              }}
-              sx={{ width: 170, mr: 2 }}
-            >
-              {t("New File")}
-            </Button>
-            <Button
-              variant="contained"
-              color="button"
-              sx={{ width: 170, ml: 2 }}
-              onClick={() => setCurrentPage("Create")}
-            >
-              {t("Edit")}
-            </Button>
-          </Box>
-        ) : (
-          <Button
-            variant="contained"
-            color="button"
-            sx={{ width: 190 }}
-            onClick={() => setCurrentPage("Create")}
-          >
-            {t("Create Manually")}
-          </Button>
-        )}
       </Box>
-      <StartIntro />
-    </Box>
+    </BackNextSkeleton>
   );
 }

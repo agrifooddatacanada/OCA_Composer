@@ -68,6 +68,7 @@ const AccordionList = () => {
     resetToDefaults();
     setCurrentPage("Start");
     navigate("/start");
+    window.scrollTo(0, 0);
   };
 
   const navigateToEditSchema = () => {
