@@ -111,7 +111,7 @@ const UploadPage = () => {
               variant="contained"
               color="button"
               onClick={handleClearUpload}
-              sx={{ width: 230, mr: 2 }}
+              sx={{ width: 230 }}
               disabled={!rawFile || rawFile?.length === 0}
             >
               {t("Clear Entry Code File")}
