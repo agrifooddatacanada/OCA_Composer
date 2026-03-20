@@ -23,7 +23,7 @@
 
 import { getPackageBundle, getPackageDependencies } from "../utils/packageUtils";
 import { applyAllOverlays } from "./ocaBuilderOverlays";
-import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA, TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA, MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
+import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA, MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { createMinimalOCASchema, createMetaOverlay } from "./createMinimalOCASchema";
 
 // ============================================================================
@@ -242,11 +242,10 @@ export function findOrCreatePkgSchema({
       
       // Check if this schema has refn:schemaId in its attributes
       const hasRefn = schemaState.attributes.some((attr) => {
-        return attr.Attribute === schemaId && 
-               (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_PLACEHOLDER_CHILD_SCHEMA || 
-                attr.Type === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA);
+        return attr.Attribute === schemaId &&
+               (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_PLACEHOLDER_CHILD_SCHEMA);
       });
-      
+
       if (hasRefn) {
         parentSchemaId = stateSchemaId;
         break;
@@ -418,9 +417,6 @@ export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSch
       } else if (type === TYPE_CHILD_SCHEMA || type === TYPE_PLACEHOLDER_CHILD_SCHEMA) {
         // Convert "Child Schema" or "Placeholder Child Schema" UI type to refn: format for newly added attributes
         rebuiltAttributes[name] = `refn:${name}`;
-      } else if (type === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
-        // Convert "Array[Placeholder Child Schema]" UI type to refn: format
-        rebuiltAttributes[name] = [`refn:${name}`];
       } else {
         rebuiltAttributes[name] = type || "Text"; // Use editor type
       }
@@ -474,8 +470,7 @@ export function ensureChildSchemaDependencies(
       // Look for Child Schema type attributes
       if (schemaState.attributes) {
         schemaState.attributes.forEach((attr) => {
-          if (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_PLACEHOLDER_CHILD_SCHEMA || 
-              attr.Type === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
+          if (attr.Type === TYPE_CHILD_SCHEMA || attr.Type === TYPE_PLACEHOLDER_CHILD_SCHEMA) {
             const childSchemaName = attr.Attribute;
 
             // Check if child has editor state AND has attributes (empty schemas become placeholders)
@@ -531,8 +526,6 @@ export function ensureChildSchemaDependencies(
           // Convert "Child Schema" or "Placeholder Child Schema" types to refn: format in nested schemas too
           if (childAttr.Type === TYPE_CHILD_SCHEMA || childAttr.Type === TYPE_PLACEHOLDER_CHILD_SCHEMA) {
             childAttributes[childAttr.Attribute] = `refn:${childAttr.Attribute}`;
-          } else if (childAttr.Type === TYPE_ARRAY_PLACEHOLDER_CHILD_SCHEMA) {
-            childAttributes[childAttr.Attribute] = [`refn:${childAttr.Attribute}`];
           } else {
             childAttributes[childAttr.Attribute] = childAttr.Type || "Text";
           }

@@ -512,7 +512,7 @@
   "MM/DD/YYYY: month, day, year": "MM/JJ/AAAA : mois, jour, année",
   "Child Schema": "Schéma enfant",
   "Placeholder Child Schema": "Schéma enfant temporaire",
-  "Array[Placeholder Child Schema]": "Tableau[Schéma enfant temporaire]",
+  
   "Unknown": "Inconnu",
   "Not classified": "Non classifié",
   "Schema": "Schéma",

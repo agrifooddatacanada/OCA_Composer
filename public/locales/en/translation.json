@@ -562,7 +562,7 @@
   "Not classified": "Not classified",
   "Schema": "Schema",
   "Placeholder Child Schema": "Placeholder Child Schema",
-  "Array[Placeholder Child Schema]": "Array[Placeholder Child Schema]",
+  
   "has attributes missing types. Complete the schema before exporting.": "has attributes missing types. Complete the schema before exporting.",
   "{{count}} schemas have attributes missing types. Open each schema to complete them before exporting.": "{{count}} schemas have attributes missing types. Open each schema to complete them before exporting.",
   "has List attributes with no entry codes. Add entry codes before exporting.": "has List attributes with no entry codes. Add entry codes before exporting.",

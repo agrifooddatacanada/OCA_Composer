@@ -214,8 +214,7 @@ const useOCAExport = () => {
         // Convert "Child Schema" or "Placeholder Child Schema" UI type to OCA spec refs:/refn: format
         // - refs:SAID = child schema with cryptographic identifier (has been built)
         // - refn:name = named reference placeholder (not yet built)
-        const isArray = attributeType === "Array[Placeholder Child Schema]";
-        const isChildSchema = attributeType === "Child Schema" || attributeType === "Placeholder Child Schema" || isArray;
+        const isChildSchema = attributeType === "Child Schema" || attributeType === "Placeholder Child Schema";
         
         if (isChildSchema) {
           const originalValue = originalSchema?.capture_base?.attributes?.[item];
@@ -223,7 +222,7 @@ const useOCAExport = () => {
           
           if (childSaid) {
             // Child schema was pre-built, use its SAID
-            attributeType = isArray ? `Array[refs:${childSaid}]` : `refs:${childSaid}`;
+            attributeType = `refs:${childSaid}`;
           } else if (originalValue && typeof originalValue === 'string' && (originalValue.startsWith('refs:') || originalValue.startsWith('refn:'))) {
             // Check if this refs: child schema exists and has attributes
             if (originalValue.startsWith('refs:')) {
@@ -243,25 +242,9 @@ const useOCAExport = () => {
               // Use existing refn: from original schema
               attributeType = originalValue;
             }
-          } else if (originalValue && Array.isArray(originalValue) && originalValue[0]?.startsWith?.('refs:') || originalValue?.[0]?.startsWith?.('refn:')) {
-            // Array of references from original schema
-            if (originalValue[0]?.startsWith('refs:')) {
-              const refSaid = originalValue[0].replace('refs:', '');
-              const childSchemaState = getSchemaById(refSaid);
-              const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
-              
-              if (!hasAttributes) {
-                // Child schema is empty - convert to placeholder
-                attributeType = `Array[refn:${item}]`;
-              } else {
-                attributeType = `Array[${originalValue[0]}]`;
-              }
-            } else {
-              attributeType = `Array[${originalValue[0]}]`;
-            }
           } else {
             // Fallback: named reference placeholder (child not yet built)
-            attributeType = isArray ? `Array[refn:${item}]` : `refn:${item}`;
+            attributeType = `refn:${item}`;
           }
         }
         
