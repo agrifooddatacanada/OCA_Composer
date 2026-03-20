@@ -71,6 +71,7 @@ const UploadPage = () => {
           value={selectionValue}
           onChange={(e) => setSelectionValue(e.target.value)}
           displayEmpty
+          MenuProps={{ disableScrollLock: true }}
           sx={{
             minWidth: "100px"
           }}
