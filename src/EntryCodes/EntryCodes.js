@@ -455,7 +455,10 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
             t("Your current entry codes for this attribute will be overwritten")
           ]}
           setShowCard={setShowWarning}
-          handleForward={() => setCurrentPage("UploadEntryCodes")}
+          handleForward={() => {
+            setCurrentPage("UploadEntryCodes");
+            window.scrollTo(0, 0);
+          }}
         />
       )}
       <Box sx={{ width: "90%", margin: "auto", mb: BETWEEN_SECTION_SPACING, minHeight: 400 }}>

@@ -59,7 +59,7 @@ const useHandleEntryCodeDrop = () => {
   const [tableLength, setTableLength] = useState(0);
   const [columnDefs, setColumnDefs] = useState([]);
   const [fileType, setFileType] = useState("");
-  const [selectionValue, setSelectionValue] = useState("Copy from other entry codes");
+  const [selectionValue, setSelectionValue] = useState("Upload");
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [selectedAttrToCopy, setSelectedAttrToCopy] = useState("");
   const gridRef = useRef(null);
