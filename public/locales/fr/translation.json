@@ -1,4 +1,6 @@
 {
+  "Click here to select a .csv file or schema bundle, or drag and drop one here.": "Cliquez ici pour sélectionner un fichier .csv ou un ensemble de schémas, ou faites-le glisser et déposez-le ici.",
+  "Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from.": "Téléchargez un nouveau fichier contenant vos codes d'entrée, ou sélectionnez un attribut existant pour copier ses codes d'entrée.",
   "Schemas add value to data": "Les schémas ajoutent de la valeur aux données",
   "Schemas": "Schémas",
   "Left-Right": "Gauche–Droite",
