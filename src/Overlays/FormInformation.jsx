@@ -693,8 +693,7 @@ const FormInformation = () => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={handleBack}
-      backText="Remove overlay"
+      pageBack={() => setCurrentPage("Overlays")}
       errorMessage={errorMessage}
     >
       {loading && (FormInformationRowData?.length || 0) > 40 && <Loading />}

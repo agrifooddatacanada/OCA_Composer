@@ -368,8 +368,7 @@ const Cardinality = () => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={() => setShowDeleteConfirmation(true)}
-      backText="Remove overlay"
+      pageBack={() => setCurrentPage("Overlays")}
     >
       {loading && cardinalityData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (

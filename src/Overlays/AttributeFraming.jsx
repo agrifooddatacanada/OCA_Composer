@@ -1393,8 +1393,7 @@ const AttributeFraming = () => {
       isForward
       isBack
       pageForward={handleForward}
-      pageBack={handleBack}
-      backText="Remove overlay"
+      pageBack={() => setCurrentPage("Overlays")}
     >
       {showDeleteConfirmation && (
         <DeleteConfirmation

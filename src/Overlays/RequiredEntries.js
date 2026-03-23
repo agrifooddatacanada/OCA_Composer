@@ -154,7 +154,7 @@ const RequiredEntries = () => {
 
 
   return (
-    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setShowDeleteConfirmation(true)} backText="Remove overlay">
+    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setCurrentPage("Overlays")}>
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={deleteHandler}

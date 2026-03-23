@@ -175,8 +175,7 @@ const CharacterEncoding = () => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={() => setShowDeleteConfirmation(true)}
-      backText="Remove overlay"
+      pageBack={() => setCurrentPage("Overlays")}
     >
       {loading && characterEncodingRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (

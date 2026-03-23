@@ -259,15 +259,30 @@ const SchemaMetadata = forwardRef(({
   }, [showIsoInput]);
 
   const moveBackward = () => {
-    if (history.length > 1 && history[history.length - 2] === "Landing") {
-      setHistory((prev) => prev.slice(0, prev.length - 1));
+    let originPage = null;
+    let targetIndex = -1;
+    
+    // Look backward in history to find the first pre-stepper page
+    for (let i = history.length - 2; i >= 0; i--) {
+      if (history[i] === "Landing" || history[i] === "Start" || history[i] === "Create") {
+        originPage = history[i];
+        targetIndex = i;
+        break;
+      }
+    }
+
+    if (originPage === "Landing") {
+      setHistory((prev) => prev.slice(0, targetIndex + 1));
       setCurrentPage("Landing");
       navigate("/");
-    } else if (history.length > 1 && history[history.length - 2] === "Create") {
-      // User came from CREATE MANUALLY flow
-      setHistory((prev) => prev.slice(0, prev.length - 1));
+    } else if (originPage === "Create") {
+      setHistory((prev) => prev.slice(0, targetIndex + 1));
       setCurrentPage("Create");
+    } else if (originPage === "Start") {
+      setHistory((prev) => prev.slice(0, targetIndex + 1));
+      setCurrentPage("Start");
     } else {
+      // Fallback if none found
       pageBack();
     }
   };

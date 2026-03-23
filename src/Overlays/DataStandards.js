@@ -93,7 +93,7 @@ const DataStandards = () => {
     ], [t]);
 
   return (
-    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={handleBack} backText="Remove overlay">
+    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setCurrentPage("Overlays")}>
       {loading && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation

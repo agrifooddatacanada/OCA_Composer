@@ -298,8 +298,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={() => setShowDeleteConfirmation(true)}
-      backText="Remove overlay"
+      pageBack={() => setCurrentPage("Overlays")}
     >
       {loading && <Loading />}
       {showDeleteConfirmation && (

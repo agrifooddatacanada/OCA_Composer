@@ -648,8 +648,7 @@ const UnitFraming = () => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={() => setShowDeleteConfirmation(true)}
-      backText="Remove overlay"
+      pageBack={() => setCurrentPage("Overlays")}
     >
       {showLoading && <Loading />}
       {showDeleteConfirmation && (
