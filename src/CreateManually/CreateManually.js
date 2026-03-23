@@ -297,13 +297,13 @@ export default function CreateManually() {
           if (spacesCounter === 1 && errorIndex === 0 && allAttributes.length === 0) {
             resetFunction();
           } else {
-            errorSettingFunction(t("Attribute Names cannot be empty"));
+            errorSettingFunction(t("Attribute Names cannot be empty."));
             setTimeout(() => {
               errorSettingFunction("");
             }, [2500]);
           }
         } else {
-          errorSettingFunction(t("Attribute Names cannot be empty"));
+          errorSettingFunction(t("Attribute Names cannot be empty."));
           gridRef.current.api.setFocusedCell(errorIndex, "Name");
           setTimeout(() => {
             errorSettingFunction("");

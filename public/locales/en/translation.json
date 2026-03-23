@@ -1,4 +1,6 @@
 {
+  "Metadata": "Metadata",
+  "WRITE NAMES MANUALLY": "WRITE NAMES MANUALLY",
   "Click here to select a .csv file or schema bundle, or drag and drop one here.": "Click here to select a .csv file or schema bundle, or drag and drop one here.",
   "Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from.": "Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from.",
   "Schemas add value to data": "Schemas add value to data",
@@ -116,7 +118,7 @@
   "Add row": "Add row",
   "Clear All": "Clear All",
   "Attribute Name": "Attribute Name",
-  "Attribute Names cannot be empty": "Attribute Names cannot be empty",
+  "Attribute Names cannot be empty.": "Attribute Names cannot be empty.",
   "Start Creating an OCA Schema": "Start Creating an OCA Schema",
   "Write column (attribute) names manually or drag and drop an existing dataset (Excel or .csv file) to import names. The first row must contain the column headers.": "Write column (attribute) names manually or drag and drop an existing dataset (Excel or .csv file) to import names. The first row must contain the column headers.",
   "Help with this page": "Help with this page",

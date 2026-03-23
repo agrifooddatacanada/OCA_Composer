@@ -1,4 +1,6 @@
 {
+  "Metadata": "Métadonnées",
+  "WRITE NAMES MANUALLY": "ÉCRIRE LES NOMS MANUELLEMENT",
   "Click here to select a .csv file or schema bundle, or drag and drop one here.": "Cliquez ici pour sélectionner un fichier .csv ou un ensemble de schémas, ou faites-le glisser et déposez-le ici.",
   "Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from.": "Téléchargez un nouveau fichier contenant vos codes d'entrée, ou sélectionnez un attribut existant pour copier ses codes d'entrée.",
   "Schemas add value to data": "Les schémas ajoutent de la valeur aux données",
@@ -92,7 +94,7 @@
   "Add Code": "Ajouter un code",
   "Clear All": "Tout effacer",
   "Attribute Name": "Nom d'attribut",
-  "Attribute Names cannot be empty": "Les noms d'attribut ne peuvent pas être vides",
+  "Attribute Names cannot be empty.": "Les noms d'attribut ne peuvent pas être vides.",
   "Start Creating an OCA Schema": "Commencez à créer un schéma OCA",
   "Write column (attribute) names manually or drag and drop an existing dataset (Excel or .csv file) to import names. The first row must contain the column headers.": "Saisissez les noms de colonnes (attributs) manuellement ou effectuez un glisser-déposer d'un jeu de données existant (fichier Excel ou .csv) pour importer les noms. La première ligne doit contenir les en-têtes de colonnes.",
   "Help with this page": "Aide avec cette page",
