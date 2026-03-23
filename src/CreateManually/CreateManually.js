@@ -21,6 +21,7 @@ import { hasDisallowedChars } from "../utils/helpers";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import { measureTextHeight } from "../utils/measureTextLines";
 import { flexCenter, preWrapWordBreak } from "../constants/styles";
+import { TABLE_TO_BUTTON_GAP, BETWEEN_SECTION_SPACING } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 
 // !important overrides default grid style that sets the minimum height of the grid container
@@ -105,6 +106,7 @@ const gridStyle = `
   }
   .ag-overlay-no-rows-center {
     font-size: 14px;
+    padding-top: 15px;
   }
 `;
 
@@ -526,7 +528,7 @@ export default function CreateManually() {
           <ArrowForwardIosIcon />
         </Button>
       </Box>
-      <Box>
+      <Box sx={{ width: 565 }}>
         <Box style={{ display: "flex" }}>
           <Box className="create-schema-grid ag-theme-balham" style={{ width: 565, overflowX: "hidden" }} ref={refContainer}>
             <style>{gridStyle}</style>
@@ -548,29 +550,29 @@ export default function CreateManually() {
             />
           </Box>
         </Box>
-        <Box>
-          <Box sx={{ display: "flex", alignItems: "center", mt: "2rem", mb: 5 }}>
-            <Button
-              onClick={handleAddRow}
-              color="button"
-              variant="contained"
-              sx={{
-                width: "10rem",
-                m: "1rem 3rem 1rem 0",
-                display: "flex",
-                alignItems: "center"
-              }}
-              ref={addRef}
-            >
-              {t("Add row")} <AddCircleIcon sx={{ marginLeft: "10px" }} />
-            </Button>
+        <Box sx={{ mt: TABLE_TO_BUTTON_GAP, mb: BETWEEN_SECTION_SPACING, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+          <Button
+            onClick={handleAddRow}
+            color="button"
+            variant="contained"
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignSelf: "flex-end",
+              m: 0,
+              mb: 2
+            }}
+            ref={addRef}
+          >
+            {t("Add row")} &nbsp;
+            <AddCircleIcon />
+          </Button>
 
-            {addErrorMessage.length > 0 && (
-              <Alert severity="error" sx={{ maxWidth: "42ch" }}>
-                {addErrorMessage}
-              </Alert>
-            )}
-          </Box>
+          {addErrorMessage.length > 0 && (
+            <Alert severity="error" sx={{ maxWidth: "42ch" }}>
+              {addErrorMessage}
+            </Alert>
+          )}
         </Box>
       </Box>
     </Box>
