@@ -47,6 +47,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
   const [showAddAttribute, setShowAddAttribute] = useState(false);
   const [addByTab, setAddByTab] = useState(false);
   const [showCard, setShowCard] = useState(false);
+  const [showInvalidCharModal, setShowInvalidCharModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigationSafe = useRef();
@@ -349,8 +350,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
         duplicates: t("Please enter a unique name for each attribute."),
         blankAttribute: t("Attribute names cannot be blank."),
         codeInjection: t("Attribute names cannot include HTML."),
-        blankType: t("Please enter a Type for all attributes."),
-        disallowedCharacters: t("AttributeDisallowedCharErrorMessage")
+        blankType: t("Please enter a Type for all attributes.")
       };
       let codeInjection = false;
       let hasDisallowedCharacters = false;
@@ -383,7 +383,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       });
 
       if (hasDisallowedCharacters) {
-        return errorOptions.disallowedCharacters;
+        return "disallowed";
       }
 
       if (duplicateAttributes.length > 0) {
@@ -436,10 +436,14 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
     const validationResult = validateForward();
 
     if (typeof validationResult === "string") {
-      setErrorMessage(validateForward());
-      setTimeout(() => {
-        setErrorMessage("");
-      }, [2000]);
+      if (validationResult === "disallowed") {
+        setShowInvalidCharModal(true);
+      } else {
+        setErrorMessage(validationResult);
+        setTimeout(() => {
+          setErrorMessage("");
+        }, [2000]);
+      }
     } else {
       const newAttributesWithLists = [];
       currentAttributeRowData.forEach((item) => {
@@ -692,6 +696,32 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
           </Box>
         </ErrorPopup>
       )}
+      {showInvalidCharModal && (
+        <ErrorPopup onClose={() => setShowInvalidCharModal(false)}>
+          <Box sx={{ textAlign: "center", mb: 2 }}>
+            <Typography variant="h6" fontWeight="semibold" sx={{ mb: 2 }}>
+              {t("Attribute names are limited to the following characters:")}
+            </Typography>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: 1, columnGap: 3, textAlign: "left" }}>
+                {[
+                  { label: "Numbers", value: "0-9" },
+                  { label: "Letters", value: "a-z, A-Z" },
+                  { label: "Underline", value: "_" },
+                  { label: "Hyphen", value: "-" },
+                  { label: "Period", value: "." }
+                ].map((item, i) => (
+                  <React.Fragment key={i}>
+                    <Typography variant="body1">{t(item.label)}:</Typography>
+                    <Typography variant="body1">{item.value}</Typography>
+                  </React.Fragment>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </ErrorPopup>
+      )}
+      {/* We removed the generic errorMessage ErrorPopup to restore the inline error display for other general errors */}
       <Box sx={{ width: "calc(752px + 4rem)", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
         <div ref={refContainer}>
           {!loading && (
@@ -707,6 +737,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
               setLoading={setLoading}
               attributeRowData={attributeRowData}
               setAttributeRowData={setAttributeRowData}
+              triggerInvalidCharModal={() => setShowInvalidCharModal(true)}
             />
           )}
         </div>
@@ -725,6 +756,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
             attributeRowData={attributeRowData}
             setAttributeRowData={setAttributeRowData}
             errorMessage={errorMessage}
+            triggerInvalidCharModal={() => setShowInvalidCharModal(true)}
           />
         </Box>
       </Box>

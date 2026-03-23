@@ -84,14 +84,12 @@ export const getDescriptiveFileName = (schemaNameOrDescription, commonFileName) 
 // Helper function to replace specified characters in object keys
 export const replaceCharsInKeys = (
   obj,
-  charsToReplace = DISALLOWED_CHARACTERS,
   replacement = "_"
 ) => {
   if (!obj) return obj;
 
-  // Escape backslash to ensure it's treated as a literal backslash
-  const escapedChars = charsToReplace.map((char) => (char === "\\" ? "\\\\" : char));
-  const pattern = new RegExp(`[${escapedChars.join("")}]+`, "g");
+  // Pattern matches anything that IS NOT a letter, number, underscore, hyphen, or period
+  const pattern = /[^a-zA-Z0-9_\-.]+/g;
 
   const cleanString = (str) => {
     // Replace consecutive special chars with a single replacement character
@@ -115,11 +113,9 @@ export const replaceCharsInKeys = (
   return converted;
 };
 
-export const hasDisallowedChars = (str, charsToCheck = DISALLOWED_CHARACTERS) => {
-  const pattern = new RegExp(
-    `[${charsToCheck.map((char) => (char === "\\" ? "\\\\" : char)).join("")}]`
-  );
-  return pattern.test(str);
+export const hasDisallowedChars = (str) => {
+  // Only allow letters, numbers, underscores, hyphens, and periods
+  return /[^a-zA-Z0-9_\-.]/.test(str);
 };
 
 // Sanitize attributes in JSON string from ZIP schema upload

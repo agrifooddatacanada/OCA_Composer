@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useMultiSchema } from "../schema/schemaContext";
 import { removeSpacesFromString } from "../utils/stringUtils";
 import CustomPalette from "../constants/customPalette";
+import { hasDisallowedChars } from "../utils/helpers";
 
 export default function AddAttribute({
   addButton1,
@@ -22,7 +23,8 @@ export default function AddAttribute({
   typesObjectRef,
   attributeRowData,
   setAttributeRowData,
-  errorMessage
+  errorMessage,
+  triggerInvalidCharModal
 }) {
   const { t, i18n } = useTranslation();
   const { updateSchema } = useMultiSchema();
@@ -52,7 +54,12 @@ export default function AddAttribute({
 
   const handleLanguageField = (e) => {
     e.preventDefault();
-    setNewAttribute(e.target.value);
+    const newValue = e.target.value;
+    if (hasDisallowedChars(newValue)) {
+      if (triggerInvalidCharModal) triggerInvalidCharModal();
+      return;
+    }
+    setNewAttribute(newValue);
   };
 
   const handleAddRow = () => {
@@ -190,9 +197,11 @@ export default function AddAttribute({
                 id="customLanguageField"
                 type="text"
                 onChange={handleLanguageField}
+                value={newAttribute}
                 placeholder={t("New Attribute")}
                 size="small"
                 variant="standard"
+                autoComplete="off"
                 inputProps={{
                   style: {
                     color: CustomPalette.PRIMARY,

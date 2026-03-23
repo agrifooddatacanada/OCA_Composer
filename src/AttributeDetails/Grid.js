@@ -102,7 +102,8 @@ export default function Grid({
   typesObjectRef,
   setLoading,
   attributeRowData,
-  setAttributeRowData
+  setAttributeRowData,
+  triggerInvalidCharModal
 }) {
   const { t, i18n } = useTranslation();
   
@@ -178,6 +179,9 @@ export default function Grid({
         editable: true,
         wrapText: true,
         cellEditor: TextareaCellEditor,
+        cellEditorParams: {
+          context: { setErrorMessage, triggerInvalidCharModal }
+        },
         cellStyle: () => ({
           ...preWrapWordBreak,
           ...flexCenter

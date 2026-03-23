@@ -240,7 +240,6 @@
   "Maximum": "Maximum",
   "Garbage": "Ordures",
   "Clear All Data and Restart": "Effacer toutes les données et redémarrer",
-  "Required Entry": "Entrée obligatoire",
   "Format Rules": "Règles de format",
   "The minimum value must be less than the maximum value": "La valeur minimale doit être inférieure à la valeur maximale",
   "All entries must be positive integers": "Toutes les entrées doivent être des entiers positifs",
@@ -311,7 +310,6 @@
   "Select Errors": "Sélectionnez les erreurs",
   "Entry Codes": "Codes d'entrée",
   "Data Type": "Type de données",
-  "Format": "Format",
   "To make it easier to upload a schema you can drag and drop your existing dataset that you are creating the schema for. This schema should be in JSON format": "Pour faciliter le téléchargement d'un schéma, vous pouvez faire glisser et déposer votre ensemble de données existant pour lequel vous créez le schéma. Ce schéma doit être au format JSON",
   "To make it easier to upload a dataset you can drag and drop your existing dataset that you are creating the schema for. This dataset should be in table format as an Excel or .csv format": "Pour faciliter le téléchargement d'un ensemble de données, vous pouvez glisser-déposer l'ensemble de données existant pour lequel vous créez le schéma. Cet ensemble de données doit être sous forme de tableau au format Excel ou .csv",
   "To make it easier to create a schema you can drag and drop your existing dataset that...": "Pour faciliter la création d'un schéma, vous pouvez faire glisser et déposer votre ensemble de données existant pour lequel vous créez le schéma. Cet ensemble de données doit être sous forme de tableau au format Excel ou .csv. La première ligne doit contenir les en-têtes de colonnes (c'est-à-dire les noms d'attributs). \n \n Notez qu'aucune donnée ne quitte votre appareil et qu'aucune donnée n'est téléchargée sur un serveur. Tout le traitement pour copier les en-têtes de colonnes (noms d'attributs) dans le brouillon de schéma se produit sur votre appareil.",
@@ -379,7 +377,7 @@
   "Whether or not the upper bound is included in the range": "Si oui ou non la limite supérieure est incluse dans la plage",
   "No attributes available for range overlay": "Aucun attribut disponible pour la superposition de plage.",
   "Range overlay requires format overlay to be selected": "La superposition de plage nécessite d'abord l'ajout de 'Format'.",
-  "Range overlay requires Numeric or DateTime attributes": "La superposition de plage nécessite des attributs numériques ou DateTime avec des règles de format.",  
+  "Range overlay requires Numeric or DateTime attributes": "La superposition de plage nécessite des attributs numériques ou DateTime avec des règles de format.",
   "Please re-verify the data!": "Veuillez revérifier les données !",
   "There are one or more blank entries in the Type column.": "Il y a une ou plusieurs entrées vides dans la colonne Type.",
   "Please provide valid data types for all attributes.": "Veuillez fournir des types de données valides pour tous les attributs.",
@@ -512,7 +510,6 @@
   "MM/DD/YYYY: month, day, year": "MM/JJ/AAAA : mois, jour, année",
   "Child Schema": "Schéma enfant",
   "Placeholder Child Schema": "Schéma enfant temporaire",
-  
   "Unknown": "Inconnu",
   "Not classified": "Non classifié",
   "Schema": "Schéma",
@@ -632,5 +629,11 @@
   "Urdu": "Ourdou",
   "Swahili": "Swahili",
   "Tamil": "Tamoul",
-  "Telugu": "Télougou"
+  "Telugu": "Télougou",
+  "Attribute names are limited to the following characters:": "Les noms d'attributs sont limités aux caractères suivants :",
+  "Numbers": "Chiffres",
+  "Letters": "Lettres",
+  "Underline": "Soulignement",
+  "Hyphen": "Trait d'union",
+  "Period": "Point"
 }

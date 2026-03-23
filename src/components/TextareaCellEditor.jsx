@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, forwardRef } from "react";
 import { MAX_ATTR_DESCRIPTION_CHARS } from "../constants/constants";
 import { useImperativeHandle } from "react";
+import { hasDisallowedChars } from "../utils/helpers";
 
 const textareaStyle = {
   width: "100%",
@@ -16,11 +17,24 @@ const textareaStyle = {
 };
 
 const TextareaCellEditor = forwardRef((props, ref) => {
-  const [value, setValue] = useState(
-    props.charPress != null
-      ? (props.value ?? "") + props.charPress
-      : props.value
-  );
+  const [value, setValue] = useState(() => {
+    // If the cell editor was opened via a key press, validate the character initially
+    if (props.charPress != null) {
+      const initialValue = (props.value ?? "") + props.charPress;
+      if (
+        (props.colDef?.field === "Attribute" || props.colDef?.field === "Name") &&
+        hasDisallowedChars(initialValue)
+      ) {
+        if (props.context?.triggerInvalidCharModal) {
+          // Wrap in a setTimeout so the context method is called after render cycle
+          setTimeout(() => props.context.triggerInvalidCharModal(), 0);
+        }
+        return props.value ?? ""; // Reject the charPress, retain old value
+      }
+      return initialValue;
+    }
+    return props.value ?? "";
+  });
   const textareaRef = useRef(null);
   const maxLength = props.cellEditorParams?.maxLength ?? MAX_ATTR_DESCRIPTION_CHARS;
 
@@ -51,13 +65,26 @@ const TextareaCellEditor = forwardRef((props, ref) => {
     }
   }));
 
+  const handleChange = (e) => {
+    const newValue = e.target.value;
+    if ((props.colDef?.field === "Attribute" || props.colDef?.field === "Name") && hasDisallowedChars(newValue)) {
+      if (props.context?.triggerInvalidCharModal) {
+        props.context.triggerInvalidCharModal();
+      }
+      return;
+    }
+    setValue(newValue);
+  };
+
   return (
     <textarea
       ref={textareaRef}
       maxLength={maxLength}
       style={textareaStyle}
       value={value}
-      onChange={(e) => setValue(e.target.value)}
+      onChange={handleChange}
+      autoComplete="off"
+      spellCheck="false"
     />
   );
 });

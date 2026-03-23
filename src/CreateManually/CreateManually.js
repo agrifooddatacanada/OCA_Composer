@@ -7,6 +7,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -15,49 +16,110 @@ import { CustomPalette } from "../constants/customPalette";
 import { removeSpacesFromString } from "../utils/stringUtils";
 
 import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
+import "ag-grid-community/styles/ag-theme-balham.css";
 import { hasDisallowedChars } from "../utils/helpers";
+import TextareaCellEditor from "../components/TextareaCellEditor";
+import { measureTextHeight } from "../utils/measureTextLines";
+import { flexCenter, preWrapWordBreak } from "../constants/styles";
+import ErrorPopup from "../ViewSchema/ErrorPopup";
 
 // !important overrides default grid style that sets the minimum height of the grid container
 // Without the min-height, it looks awkward when the component is empty or has only a couple attributes
 const gridStyle = `
-  .ag-center-cols-clipper {
-    min-height: unset !important;
-  }
-  
-  .ag-theme-alpine .ag-cell {
+  .create-schema-grid .ag-cell {
     border-right: 1px solid ${CustomPalette.GREY_300};
   }
-  
+  .create-schema-grid .ag-header-cell-label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .ag-cell {
+    line-height: 1.5;
+  }
+  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
+    height: 100%;
+  }
+  .ag-header-cell:last-child,
+  .ag-header-cell[col-id="Delete"] {
+    border-right: none !important;
+    --ag-header-column-separator-display: none !important;
+  }
+  .ag-header-cell:last-child *,
+  .ag-header-cell[col-id="Delete"] * {
+    border-right: none !important;
+    box-shadow: none !important;
+  }
+  .ag-header-viewport .ag-header-cell:last-child {
+    border-right: none !important;
+  }
+  .ag-header-container {
+    border-right: none !important;
+  }
+  .create-schema-grid .ag-cell:last-child {
+    border-right: none !important;
+  }
+  .ag-header-row .ag-header-cell:last-child::after {
+    display: none !important;
+  }
+  .ag-header-viewport {
+    overflow-x: hidden;
+  }
+  .create-schema-grid .ag-body-horizontal-scroll {
+    display: none !important;
+  }
+  .create-schema-grid .ag-center-cols-clipper {
+    min-height: unset !important;
+  }
+  .create-schema-grid .ag-root-wrapper-body.ag-layout-auto-height {
+    min-height: unset !important;
+  }
+  .create-schema-grid .ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
+    min-height: 88px !important;
+  }
+  .ag-row .delete-icon-solid {
+    display: none;
+  }
+  .ag-row:hover .delete-icon-outline {
+    display: none;
+  }
+  .ag-row:hover .delete-icon-solid {
+    display: inline-flex;
+  }
+  .ag-row:hover .ag-cell {
+    background-color: ${CustomPalette.PINK_200} !important;
+  }
   .ag-cell-value {
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  
-  .ag-header-cell-label {
+  .ag-cell, .ag-full-width-row .ag-cell-wrapper.ag-row-group {
+    line-height: 1.5;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
   }
-  .ag-header-cell {
-    border: 0.5px solid ${CustomPalette.GREY_300};}
+  .ag-cell .ag-drag-handle {
+    margin-right: 0;
   }
-  `;
+  .ag-overlay-no-rows-center {
+    font-size: 14px;
+    padding-top: 15px;
+  }
+`;
 
-const DeleteRenderer = ({ node, canDelete, onDelete }) =>
-  canDelete && (
-    <DeleteOutlineIcon
-      sx={{
-        pr: 1,
-        color: CustomPalette.GREY_600,
-        transition: "all 0.2s ease-in-out"
-      }}
-      onClick={() => {
-        onDelete(node.rowIndex);
-      }}
+const DeleteRenderer = ({ node, onDelete }) => (
+  <Box className="delete-icon-wrapper" sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: "100%", width: "100%" }}>
+    <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
+    <DeleteForeverIcon
+      onClick={() => onDelete(node.rowIndex)}
+      sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }}
+      className="delete-icon-solid"
+      title="Delete attribute"
     />
-  );
+  </Box>
+);
 
 export default function CreateManually() {
   const addRef = useRef();
@@ -75,18 +137,14 @@ export default function CreateManually() {
   const [addErrorMessage, setAddErrorMessage] = useState("");
   const [forwardErrorMessage, setForwardErrorMessage] = useState("");
   const [backErrorMessage, setBackErrorMessage] = useState("");
+  const [showInvalidCharModal, setShowInvalidCharModal] = useState(false);
   // Get current attributes from MultiSchemaContext (computed from attributes array)
   const attributesList = getAttributesList();
-  
-  const [canDelete, setCanDelete] = useState(attributesList.length > 1);
 
   const handleDeleteRow = (rowIndex) => {
     gridRef.current.api.stopEditing();
     const newRowData = rowData.filter((item, index) => index !== rowIndex);
     setRowData(newRowData);
-    if (newRowData.length <= 1) {
-      setCanDelete(false);
-    }
   };
 
   // Only sync from context when navigating BACK to this page with existing data
@@ -96,27 +154,52 @@ export default function CreateManually() {
       // User navigated back to this page with saved attributes
       const allRowData = attributesList.map((item) => ({ Name: item }));
       setRowData(allRowData);
-      setCanDelete(allRowData.length > 1);
     }
-    // Only run when attributesList length changes (navigating back to page)
     // Don't watch rowData - let it be managed by user actions only
   }, [attributesList.length]);
 
+  useEffect(() => {
+    const api = gridRef.current?.api;
+    if (!api || rowData.length === 0) return;
+    const raf = requestAnimationFrame(() => api.resetRowHeights());
+    return () => cancelAnimationFrame(raf);
+  }, [rowData]);
+
   const columnDefs = [
     { field: "Drag", headerName: "", width: 50, rowDrag: true },
-    { field: "Name", headerName: t("Attribute Name"), width: 470, editable: true },
+    {
+      field: "Name",
+      headerName: t("Attribute Name"),
+      width: 470,
+      editable: true,
+      wrapText: true,
+      cellEditor: TextareaCellEditor,
+      cellEditorParams: {
+        context: { triggerInvalidCharModal: () => setShowInvalidCharModal(true) }
+      },
+      cellStyle: () => ({
+        ...preWrapWordBreak,
+        ...flexCenter
+      })
+    },
     {
       field: "Delete",
       headerName: "",
       cellRenderer: DeleteRenderer,
       cellRendererParams: (params) => ({
         node: params.node,
-        canDelete,
         onDelete: handleDeleteRow
       }),
-      width: 50
+      cellStyle: () => flexCenter,
+      width: 44
     }
   ];
+
+  const getRowHeight = useCallback((params) => {
+    if (!params.data) return 40;
+    const nameH = measureTextHeight(params.data.Name || "", 515, {});
+    return Math.max(nameH, 40) + 16;
+  }, []);
 
   const defaultColDef = {
     tabToNextCell: true
@@ -196,11 +279,8 @@ export default function CreateManually() {
     });
 
     if (hasDisallowedCharacters) {
-      errorSettingFunction(t("AttributeDisallowedCharErrorMessage"));
+      setShowInvalidCharModal(true);
       gridRef.current.api.setFocusedCell(errorIndex, "Name");
-      setTimeout(() => {
-        errorSettingFunction("");
-      }, [2500]);
       return;
     }
 
@@ -243,12 +323,14 @@ export default function CreateManually() {
 
   const addRowSuccess = () => {
     const newRow = { Name: "" };
-    setCanDelete(true);
     setRowData((prevState) => [...prevState, newRow]);
   };
 
   const handleAddRow = () => {
-    validateRowData(setAddErrorMessage, addRowSuccess);
+    // Check if we just want to add a row without validating
+    // This allows users to add multiple empty rows before filling them in
+    const newRow = { Name: "" };
+    setRowData((prevState) => [...prevState, newRow]);
   };
 
   const pageForwardSuccess = (attributes) => {
@@ -369,15 +451,11 @@ export default function CreateManually() {
         rowNode.setDataValue("Name", valueToAdd);
       }
     } else {
-      // Re-save blank attribute as previous attribute
+      // Allow the cell to be left blank
       const rowNode = gridRef.current.api.getRowNode(currentIndex);
-      rowNode.setDataValue("Name", e.oldValue);
-
-      e.api.startEditingCell({
-        rowIndex: e.rowIndex,
-        colKey: "Name"
-      });
+      rowNode.setDataValue("Name", e.newValue);
     }
+    requestAnimationFrame(() => e.api.resetRowHeights());
   };
 
   return (
@@ -390,6 +468,31 @@ export default function CreateManually() {
         margin: "auto"
       }}
     >
+      {showInvalidCharModal && (
+        <ErrorPopup onClose={() => setShowInvalidCharModal(false)}>
+          <Box sx={{ textAlign: "center", mb: 2 }}>
+            <Typography variant="h6" fontWeight="semibold" sx={{ mb: 2 }}>
+              {t("Attribute names are limited to the following characters:")}
+            </Typography>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: 1, columnGap: 3, textAlign: "left" }}>
+                {[
+                  { label: "Numbers", value: "0-9" },
+                  { label: "Letters", value: "a-z, A-Z" },
+                  { label: "Underline", value: "_" },
+                  { label: "Hyphen", value: "-" },
+                  { label: "Period", value: "." }
+                ].map((item, i) => (
+                  <React.Fragment key={i}>
+                    <Typography variant="body1">{t(item.label)}:</Typography>
+                    <Typography variant="body1">{item.value}</Typography>
+                  </React.Fragment>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </ErrorPopup>
+      )}
       <Box
         sx={{
           alignSelf: "flex-start",
@@ -426,7 +529,7 @@ export default function CreateManually() {
       </Box>
       <Box>
         <Box style={{ display: "flex" }}>
-          <Box className="ag-theme-alpine" style={{ width: 565 }} ref={refContainer}>
+          <Box className="create-schema-grid ag-theme-balham" style={{ width: 565, overflowX: "hidden" }} ref={refContainer}>
             <style>{gridStyle}</style>
             <AgGridReact
               ref={gridRef}
@@ -434,17 +537,20 @@ export default function CreateManually() {
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               domLayout="autoHeight"
+              getRowHeight={getRowHeight}
+              suppressHorizontalScroll
               rowDragManaged
               animateRows
               onRowDragEnd={(e) => onRowDragEnd(e)}
               onCellKeyDown={onCellKeyDown}
               onRowDragLeave={(e) => onRowDragLeave(e)}
               onCellValueChanged={(e) => handleCellValueChanged(e)}
+              overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
             />
           </Box>
         </Box>
         <Box>
-          <Box sx={{ display: "flex", alignItems: "center", mt: "2rem" }}>
+          <Box sx={{ display: "flex", alignItems: "center", mt: "2rem", mb: 5 }}>
             <Button
               onClick={handleAddRow}
               color="button"
@@ -466,21 +572,6 @@ export default function CreateManually() {
               </Alert>
             )}
           </Box>
-          <Button
-            color="warning"
-            variant="outlined"
-            onClick={handleClearAll}
-            sx={{
-              alignSelf: "flex-end",
-              width: "10rem",
-              display: "flex",
-              justifyContent: "space-around",
-              p: 1,
-              mb: 5
-            }}
-          >
-            {t("Clear All")}
-          </Button>
         </Box>
       </Box>
     </Box>
