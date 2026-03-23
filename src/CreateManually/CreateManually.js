@@ -106,7 +106,6 @@ const gridStyle = `
   }
   .ag-overlay-no-rows-center {
     font-size: 14px;
-    padding-top: 15px;
   }
 `;
 
