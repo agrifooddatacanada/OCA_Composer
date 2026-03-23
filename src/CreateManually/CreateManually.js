@@ -498,7 +498,9 @@ export default function CreateManually() {
           alignSelf: "flex-start",
           display: "flex",
           justifyContent: "space-between",
-          width: "100%"
+          alignItems: "center",
+          width: "100%",
+          position: "relative"
         }}
       >
         <Button color="button" onClick={() => handleBack()} sx={{ m: 3 }}>
@@ -508,7 +510,14 @@ export default function CreateManually() {
         {backErrorMessage && (
           <Alert
             severity="error"
-            sx={{ ml: "2rem", display: "flex", alignItems: "center" }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              py: 0,
+              position: "absolute",
+              left: "50%",
+              transform: "translateX(-50%)"
+            }}
           >
             <Box sx={{ pl: 2, pr: 2 }}>
               {backErrorMessage}
@@ -518,7 +527,17 @@ export default function CreateManually() {
           </Alert>
         )}
         {forwardErrorMessage.length > 0 && (
-          <Alert severity="error" sx={{ display: "flex", alignItems: "center" }}>
+          <Alert
+            severity="error"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              py: 0,
+              position: "absolute",
+              left: "50%",
+              transform: "translateX(-50%)"
+            }}
+          >
             {forwardErrorMessage}
           </Alert>
         )}

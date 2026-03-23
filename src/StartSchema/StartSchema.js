@@ -54,7 +54,7 @@ export default function StartSchema({ pageForward }) {
             alignItems: "center",
             width: 600,
             margin: "auto",
-            marginBottom: 10
+            marginBottom: 5
           }}
         >
           {!(attributesList.length > 0 || excelSheetNames.length > 0) && (
