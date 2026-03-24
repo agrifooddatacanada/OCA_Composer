@@ -494,7 +494,9 @@ export default function CreateManually() {
                     justifyContent: "center",
                     textAlign: "center",
                     whiteSpace: "normal",
-                    wordBreak: "break-word"
+                    wordBreak: "break-word",
+                    visibility: "hidden",
+                    pointerEvents: "none"
                   }}
                 >
                   {t("Write Names")}

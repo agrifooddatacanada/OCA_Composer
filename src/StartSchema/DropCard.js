@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, Typography, Alert, Tooltip, Box } from "@mui/material";
+import { Card, CardContent, Typography, Alert, Tooltip, Box, Button } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import LoopIcon from "@mui/icons-material/Loop";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -90,69 +90,103 @@ export default function DropCard({
               </Alert>
             )}
 
-            <CardContent sx={{ pr: 10, pl: 10 }}>
-              {loading === true ? (
-                <LoopIcon
-                  sx={{
-                    color: CustomPalette.GREY_300,
-                    m: 2,
-                    fontSize: "60px",
-                    animation: spinningAnimation,
-                    transition: "all 0.2s ease-in-out"
-                  }}
-                />
-              ) : dropDisabled === true ? (
-                <CheckCircleOutlineIcon
-                  sx={{
-                    m: 2,
-                    fontSize: "60px",
-                    // color: CustomPalette.GREEN_400,
-                    color: CustomPalette.PRIMARY
-                  }}
-                />
-              ) : (
-                <DownloadIcon
-                  sx={{
-                    color: downloadIconColor,
-                    m: 2,
-                    fontSize: "60px",
-                    transition: "all 0.2s ease-in-out",
-                    transform:
-                      hover === true && dropDisabled === false && "translateY(5px)"
-                  }}
-                />
-              )}
-              <Typography
+            <CardContent sx={{ pr: 10, pl: 10, pt: 2, pb: 1 }}>
+              <Box
                 sx={{
-                  fontSize: 14,
-                  mb: 2,
-                color:
-                  dropDisabled === false
-                    ? primaryColor
-                    : CustomPalette.GREY_600,
-                fontFamily,
-                whiteSpace: "pre-line"
-                }}
-                gutterBottom
-              >
-                {dropDisabled === false ? (
-                  t(description)
-                ) : (
-                  <>
-                    Use the buttons below to add a <strong>new</strong> file or{" "}
-                    <strong>edit</strong> the uploaded file.
-                  </>
-                )}
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 12,
-                  color: CustomPalette.GREY_600,
-                  fontFamily
+                  height: "100%",
+                  minHeight: "11rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center"
                 }}
               >
-                {t(noteDescription)}
-              </Typography>
+                <Box
+                  sx={{
+                    flex: 1,
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  {dropDisabled === false && loading === false && (
+                    <Button
+                      variant="contained"
+                      color="button"
+                      sx={{
+                        width: 250,
+                        mt: 1,
+                        mb: 1,
+                        textTransform: "none",
+                        whiteSpace: "pre-line",
+                        textAlign: "center",
+                        lineHeight: 1.2
+                      }}
+                    >
+                      {t(description)}
+                    </Button>
+                  )}
+
+                  {loading === true ? (
+                    <LoopIcon
+                      sx={{
+                        color: CustomPalette.GREY_300,
+                        my: 1,
+                        fontSize: "60px",
+                        animation: spinningAnimation,
+                        transition: "all 0.2s ease-in-out"
+                      }}
+                    />
+                  ) : dropDisabled === true ? (
+                    <CheckCircleOutlineIcon
+                      sx={{
+                        my: 1,
+                        fontSize: "60px",
+                        color: CustomPalette.PRIMARY
+                      }}
+                    />
+                  ) : (
+                    <DownloadIcon
+                      sx={{
+                        color: downloadIconColor,
+                        my: 1,
+                        fontSize: "60px",
+                        transition: "all 0.2s ease-in-out"
+                      }}
+                    />
+                  )}
+
+                  {dropDisabled === true && (
+                    <Typography
+                      sx={{
+                        fontSize: 14,
+                        mb: 2,
+                        color: CustomPalette.GREY_600,
+                        fontFamily,
+                        whiteSpace: "pre-line",
+                        textAlign: "center"
+                      }}
+                      gutterBottom
+                    >
+                      Use the buttons below to add a <strong>new</strong> file or{" "}
+                      <strong>edit</strong> the uploaded file.
+                    </Typography>
+                  )}
+                </Box>
+
+                <Typography
+                  sx={{
+                    fontSize: 12,
+                    color: CustomPalette.GREY_600,
+                    fontFamily,
+                    textAlign: "center",
+                    pb: 0
+                  }}
+                >
+                  {t(noteDescription)}
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
         </Box>

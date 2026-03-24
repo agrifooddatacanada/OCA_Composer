@@ -1,6 +1,6 @@
 {
   "Metadata": "Metadata",
-  "TYPE IN COLUMN NAMES": "TYPE IN COLUMN NAMES",
+  "TYPE IN COLUMN NAMES": "Type In Column Names",
   "Click here to select a .csv file or schema bundle, or drag and drop one here.": "Click here to select a .csv file or schema bundle, or drag and drop one here.",
   "Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from.": "Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from.",
   "Schemas add value to data": "Schemas add value to data",
@@ -248,7 +248,7 @@
   "Required entries": "Required entries",
   "Check for each attribute where the data entry cannot be left empty in a dataset": "Check for each attribute where the data entry cannot be left empty in a dataset.",
   "Note: None of this data will be uploaded to a server and all processing happens on device.": "Note: None of this data will be uploaded to a server and all processing happens on device.",
-  "Import a spreadsheet by click or drag-and-drop.": "Import a spreadsheet by click or drag-and-drop.",
+  "Import a spreadsheet by click or drag-and-drop.": "Import a Spreadsheet\n(Click or Drag-and-Drop)",
   "Format Rule": "Format Rule",
   "Select the formatting rule that applies to data for each attribute": "Select the formatting rule that applies to data for each attribute.",
   "All format rules are documented in the": "All format rules are documented in the",

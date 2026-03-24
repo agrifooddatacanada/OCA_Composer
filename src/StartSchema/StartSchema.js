@@ -62,7 +62,7 @@ export default function StartSchema({ pageForward }) {
               <Button
                 variant="contained"
                 color="button"
-                sx={{ width: 250, mb: 6, mt: 1 }}
+                sx={{ width: 250, mb: 6, mt: 1, textTransform: "none" }}
                 onClick={() => { setCurrentPage("Create") }}
               >
                 {t("TYPE IN COLUMN NAMES")}
