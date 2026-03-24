@@ -20,7 +20,8 @@ import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 
 const SchemaMetadata = forwardRef(({
   pageBack,
-  pageForward
+  pageForward,
+  onContinueNavigation
 }, ref) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -306,7 +307,11 @@ const SchemaMetadata = forwardRef(({
           handleForward={() => {
             setShowCard(false);
             if (pendingNavigationTarget) {
-              setCurrentPage(pendingNavigationTarget);
+              if (typeof onContinueNavigation === "function") {
+                onContinueNavigation(pendingNavigationTarget);
+              } else {
+                setCurrentPage(pendingNavigationTarget);
+              }
               setPendingNavigationTarget(null);
             } else {
               pageForward();

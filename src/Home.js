@@ -48,6 +48,20 @@ const validateEntryCodesFromSchema = (state, languages, t) => {
   return null;
 };
 
+const isSchemaMetadataComplete = (state) => {
+  const localized = state?.metadata?.localized;
+  if (!localized || typeof localized !== "object") return false;
+  const values = Object.values(localized);
+  if (values.length === 0) return false;
+
+  return values.some((langData) => {
+    if (!langData || typeof langData !== "object") return false;
+    const name = typeof langData.name === "string" ? langData.name.trim() : "";
+    const description = typeof langData.description === "string" ? langData.description.trim() : "";
+    return name !== "" && description !== "";
+  });
+};
+
 const Home = ({
   currentPage,
   setCurrentPage,
@@ -123,11 +137,33 @@ const Home = ({
   const entryCodesRef = useRef(null);
   const [entryCodesError, setEntryCodesError] = useState("");
   const [attributesTypeError, setAttributesTypeError] = useState("");
+  const entryCodesErrorTimerRef = useRef(null);
+  const attributesTypeErrorTimerRef = useRef(null);
+  const bypassMetadataModalRef = useRef(false);
+  const forceInlineStepperErrorsRef = useRef(false);
   const attributeDetailsRef = useRef(null);
   const languageDetailsRef = useRef(null);
   const schemaMetadataRef = useRef(null);
   const formatRulesRef = useRef(null);
   const rangeRef = useRef(null);
+
+  useEffect(() => {
+    if (!entryCodesError) return;
+    if (entryCodesErrorTimerRef.current) clearTimeout(entryCodesErrorTimerRef.current);
+    entryCodesErrorTimerRef.current = setTimeout(() => setEntryCodesError(""), 5000);
+    return () => {
+      if (entryCodesErrorTimerRef.current) clearTimeout(entryCodesErrorTimerRef.current);
+    };
+  }, [entryCodesError]);
+
+  useEffect(() => {
+    if (!attributesTypeError) return;
+    if (attributesTypeErrorTimerRef.current) clearTimeout(attributesTypeErrorTimerRef.current);
+    attributesTypeErrorTimerRef.current = setTimeout(() => setAttributesTypeError(""), 5000);
+    return () => {
+      if (attributesTypeErrorTimerRef.current) clearTimeout(attributesTypeErrorTimerRef.current);
+    };
+  }, [attributesTypeError]);
 
   // List of overlay pages that use AG Grid and need their data saved on navigation
   const overlayPagesWithGrids = [
@@ -141,9 +177,24 @@ const Home = ({
     "RequiredEntries"
   ];
 
+  const handleContinueNavigationFromMetadataModal = (targetPage) => {
+    const targetIndex = steps.findIndex((s) => s.page === targetPage);
+    if (targetIndex < 0) return;
+
+    bypassMetadataModalRef.current = true;
+    forceInlineStepperErrorsRef.current = true;
+    handleStepClick(targetIndex);
+  };
+
   const handleStepClick = (index) => {
     const target = steps[index];
     if (target?.page) {
+      const resetBypassFlags = () => {
+        bypassMetadataModalRef.current = false;
+        forceInlineStepperErrorsRef.current = false;
+      };
+
+      try {
       // If navigating to/from View page via stepper on uploaded zip, mark as edited
       // This makes stepper navigation consistent with NEXT button behavior
       if (isZip && (
@@ -159,6 +210,37 @@ const Home = ({
 
       // Only validate when navigating FORWARD
       if (isForwardNavigation) {
+        // Run page-level modal validations first (take priority over stepper inline errors)
+        if (currentPage === "Metadata") {
+          if (!bypassMetadataModalRef.current) {
+            if (schemaMetadataRef.current && typeof schemaMetadataRef.current.showValidationPopup === "function") {
+              const isValid = schemaMetadataRef.current.showValidationPopup(target.page);
+              if (!isValid) {
+                return;
+              }
+            }
+          }
+        }
+
+        if (currentPage === "Details") {
+          if (attributeDetailsRef.current && typeof attributeDetailsRef.current.save === "function") {
+            attributeDetailsRef.current.save();
+          }
+          if (attributeDetailsRef.current && typeof attributeDetailsRef.current.showValidationPopup === "function") {
+            const isValid = attributeDetailsRef.current.showValidationPopup();
+            if (!isValid) {
+              return;
+            }
+          }
+        }
+
+        const state = getSchema() || {};
+        const metadataComplete = isSchemaMetadataComplete(state);
+        const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
+        const hasMissingType = attributesArray.some(
+          (attr) => !attr?.Type || String(attr.Type).trim() === ""
+        );
+
         const attributesStepIndex = steps.findIndex((s) => s.label === "Attributes");
         const isSkippingAttributes =
           attributesStepIndex >= 0 &&
@@ -166,13 +248,9 @@ const Home = ({
           currentIndex < attributesStepIndex;
 
         if (isSkippingAttributes) {
-          const state = getSchema() || {};
-          const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
-          const hasMissingType = attributesArray.some(
-            (attr) => !attr?.Type || String(attr.Type).trim() === ""
-          );
-          if (hasMissingType) {
+          if (hasMissingType && (metadataComplete || forceInlineStepperErrorsRef.current)) {
             setAttributesTypeError(t("Please click above and select types."));
+            if (entryCodesError) setEntryCodesError("");
             return;
           }
           if (attributesTypeError) setAttributesTypeError("");
@@ -184,38 +262,23 @@ const Home = ({
         const isSkippingEntryCodes = entryCodesStepIndex >= 0 && index > entryCodesStepIndex && currentIndex < entryCodesStepIndex;
 
         if (isSkippingEntryCodes) {
-          const state = getSchema() || {};
+          // Entry Codes stepper inline error only applies if all attribute types are selected
+          if (hasMissingType) {
+            if (metadataComplete || forceInlineStepperErrorsRef.current) {
+              setAttributesTypeError(t("Please click above and select types."));
+            }
+            if (entryCodesError) setEntryCodesError("");
+            return;
+          }
+
           const languages = getLanguages?.() || state?.metadata?.languages || [];
           const err = validateEntryCodesFromSchema(state, languages, t);
           if (err) {
             setEntryCodesError(err);
+            if (attributesTypeError) setAttributesTypeError("");
             return;
           }
-        }
-
-        // If we're currently on the Metadata step, validate and show popup if needed
-        if (currentPage === "Metadata") {
-          if (schemaMetadataRef.current && typeof schemaMetadataRef.current.showValidationPopup === "function") {
-            const isValid = schemaMetadataRef.current.showValidationPopup(target.page);
-            if (!isValid) {
-              return; // Validation failed, component will show its popup with target page
-            }
-          }
-        }
-
-        // If we're currently on the Details step, save and validate before navigation
-        if (currentPage === "Details") {
-          // Persist edits before validating/navigation
-          if (attributeDetailsRef.current && typeof attributeDetailsRef.current.save === "function") {
-            attributeDetailsRef.current.save();
-          }
-          // Show validation popup if validation fails
-          if (attributeDetailsRef.current && typeof attributeDetailsRef.current.showValidationPopup === "function") {
-            const isValid = attributeDetailsRef.current.showValidationPopup();
-            if (!isValid) {
-              return; // Validation failed, component will show its popup
-            }
-          }
+          if (entryCodesError) setEntryCodesError("");
         }
 
         // If leaving Entry Codes step, validate and persist any edits before navigation
@@ -264,6 +327,9 @@ const Home = ({
       }
 
       setCurrentPage(target.page);
+      } finally {
+        resetBypassFlags();
+      }
     }
   };
 
@@ -379,6 +445,7 @@ const Home = ({
             ref={schemaMetadataRef}
             pageBack={pageBack}
             pageForward={pageForward}
+            onContinueNavigation={handleContinueNavigationFromMetadataModal}
           />
         )}
         {currentPage === "Details" && (
