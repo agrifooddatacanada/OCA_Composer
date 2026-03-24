@@ -14,7 +14,6 @@ import {
   TextField,
   Autocomplete,
   Popper,
-  Link,
   Button
 } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -42,6 +41,7 @@ const GRID_WIDTH = 705;
 const LOADING_THRESHOLD = 40;
 const BUTTON_MIN_WIDTH = "150px";
 const MAX_TEXT_WIDTH = "600px";
+const STATUS_AREA_HEIGHT = 44;
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -313,8 +313,8 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         onCellValueChanged: createOnCellValueChanged(searchUnits, "description", onCellChanged),
         headerComponent: () => (
           <CellHeader
-            headerText={t("UCUM Description")}
-            helpText={t("UCUM Description")}
+            headerText={t("UCUM Unit Description")}
+            helpText={t("UCUM Unit Description")}
           />
         )
       },
@@ -637,11 +637,10 @@ const UnitFraming = () => {
 
   const showLoading = loading && unitFramedRowData?.length > LOADING_THRESHOLD;
   const hasUnframedUnits = unframedUnitList && unframedUnitList.length > 0;
-  const unframedUnitsText = frameAllUnits
-    ? t("All units are framed")
-    : hasUnframedUnits
+  const unframedUnitsText =
+    !frameAllUnits && hasUnframedUnits
       ? `${t("Unframed units")}: [${unframedUnitList.join(", ")}]`
-      : t("No units to frame");
+      : "";
 
   return (
     <BackNextSkeleton
@@ -659,9 +658,9 @@ const UnitFraming = () => {
       )}
       <Box
         sx={{
-          margin: "2rem",
+          margin: "1rem",
           marginBottom: BETWEEN_SECTION_SPACING,
-          gap: "2rem",
+          gap: "1.25rem",
           display: "flex",
           flexDirection: "column",
           alignItems: "center"
@@ -672,10 +671,28 @@ const UnitFraming = () => {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "0.75rem",
+            gap: "1.25rem",
             width: "100%"
           }}
         >
+          <Box
+            sx={{
+              textAlign: "center",
+              fontSize: "0.9rem",
+              color: "text.secondary",
+              maxWidth: MAX_TEXT_WIDTH,
+              wordWrap: "break-word",
+              height: STATUS_AREA_HEIGHT,
+              overflowY: "auto",
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "center",
+              width: "100%",
+              lineHeight: 1.2
+            }}
+          >
+            {unframedUnitsText}
+          </Box>
           <Button
             color="button"
             variant="contained"
@@ -693,17 +710,6 @@ const UnitFraming = () => {
                 ? t("No units to frame")
                 : t("Frame all units")}
           </Button>
-          <Box
-            sx={{
-              textAlign: "center",
-              fontSize: "0.9rem",
-              color: "text.secondary",
-              maxWidth: MAX_TEXT_WIDTH,
-              wordWrap: "break-word"
-            }}
-          >
-            {unframedUnitsText}
-          </Box>
         </Box>
         <Box className="unit-framing-grid ag-theme-balham" sx={{ width: GRID_WIDTH, overflowX: "hidden" }}>
           <style>{gridStyles}</style>
@@ -723,26 +729,6 @@ const UnitFraming = () => {
             onGridReady={onGridReady}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
-        </Box>
-        <Box sx={{ width: "80%" }}>
-          {t("All unit rules are documented in the")}{" "}
-          <Link
-            href="https://github.com/agrifooddatacanada/UCUM_agri-food_units"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t("units GitHub repository")}
-          </Link>
-          . {t("Request new unit ontologies to be added by")}{" "}
-          <Link
-            href="https://github.com/agrifooddatacanada/UCUM_agri-food_units/issues"
-            rel="noreferrer"
-            target="_blank"
-          >
-            {t("raising an issue in the repository")}
-          </Link>{" "}
-          {t("or email us at")} <Link href="mailto:adc@uoguelph.ca">adc@uoguelph.ca</Link>
-          .
         </Box>
       </Box>
     </BackNextSkeleton>

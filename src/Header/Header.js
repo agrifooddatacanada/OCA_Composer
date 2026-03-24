@@ -78,7 +78,48 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     DatasetViewDataValidator: { header: t("Preview Dataset"), toolTipText: "", helpLink: `${dewBase}/${lang}/PreviewSchema` },
     AttributeMatchDataValidator: { header: t("Matching Attributes"), toolTipText: "", helpLink: `${dewBase}/${lang}/MatchAttributes/` },
     OCADataValidatorCheck: { header: t("Data Entry and Verification"), toolTipText: "", helpLink: `${dewBase}/${lang}/DataVerification/` },
-    UnitFraming: { header: t("Define units for schema attributes"), toolTipText: "", helpLink: `${base}/${lang}/UnitFraming/` },
+    UnitFraming: {
+      header: t("Define units for schema attributes"),
+      toolTipText: (
+        <>
+          {t("Define your units.", { defaultValue: "Define your units." })}{" "}
+          {t("All unit rules are documented in the", {
+            defaultValue: "All unit rules are documented in the"
+          })}{" "}
+          <MuiLink
+            href="https://github.com/agrifooddatacanada/UCUM_agri-food_units"
+            target="_blank"
+            rel="noreferrer"
+            underline="hover"
+            sx={{ pointerEvents: "auto" }}
+          >
+            {t("GitHub repo", { defaultValue: "GitHub repo" })}
+          </MuiLink>
+          .{" "}
+          {t("Request new unit ontologies by", {
+            defaultValue: "Request new unit ontologies by"
+          })}{" "}
+          <MuiLink
+            href="https://github.com/agrifooddatacanada/UCUM_agri-food_units/issues"
+            target="_blank"
+            rel="noreferrer"
+            underline="hover"
+            sx={{ pointerEvents: "auto" }}
+          >
+            {t("raising an issue in the repository", {
+              defaultValue: "raising an issue in the repository"
+            })}
+          </MuiLink>
+          {" "}
+          {t("or email us at", { defaultValue: "or email us at" })}{" "}
+          <MuiLink href="mailto:adc@uoguelph.ca" underline="hover" sx={{ pointerEvents: "auto" }}>
+            adc@uoguelph.ca
+          </MuiLink>
+          .
+        </>
+      ),
+      helpLink: `${base}/${lang}/UnitFraming/`
+    },
     AttributeFraming: { header: t("Add Attribute Framing"), toolTipText: "", helpLink: `${base}/${lang}/AttributeFraming/` },
     UserSelection: { header: "", toolTipText: "", helpLink: `${base}/${lang}/Coauthor/` },
     Range: { header: t("Add Range Rules for Data"), toolTipText: "", helpLink: `${base}/${lang}/Range/` }
@@ -112,7 +153,8 @@ export default function Header({ currentPage }) {
     [currentPage, t, selectedLanguage]
   );
 
-  const centerItemInteractive = currentPage === "FormatRules";
+  const centerItemInteractive =
+    currentPage === "FormatRules" || currentPage === "UnitFraming";
 
   return (
     <HeaderWrapper
