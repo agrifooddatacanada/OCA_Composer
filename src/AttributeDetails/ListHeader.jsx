@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useMultiSchema } from "../schema/schemaContext";
 import CheckboxColumnHeader from "./CheckboxColumnHeader";
-import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA } from "../constants/constants";
+import { isChildSchemaType } from "../constants/constants";
 
 const ListHeader = ({ gridRef }) => {
   const { t } = useTranslation();
@@ -14,11 +14,7 @@ const ListHeader = ({ gridRef }) => {
 
     gridRef.current.api.forEachNode((node) => {
       const type = node?.data?.Type;
-      const isChildSchemaType =
-        type === TYPE_CHILD_SCHEMA ||
-        type === TYPE_PLACEHOLDER_CHILD_SCHEMA ||
-        (typeof type === "string" && (type.startsWith("refs:") || type.startsWith("refn:")));
-      node.setDataValue("List", isChildSchemaType ? false : checked);
+      node.setDataValue("List", isChildSchemaType(type) ? false : checked);
     });
 
     const schemaState = getSchema() || {};
@@ -27,11 +23,7 @@ const ListHeader = ({ gridRef }) => {
 
     const nextAttributes = prevAttributes.map((attr) => {
       const type = attr?.Type;
-      const isChildSchemaType =
-        type === TYPE_CHILD_SCHEMA ||
-        type === TYPE_PLACEHOLDER_CHILD_SCHEMA ||
-        (typeof type === "string" && (type.startsWith("refs:") || type.startsWith("refn:")));
-      return { ...attr, List: isChildSchemaType ? false : checked };
+      return { ...attr, List: isChildSchemaType(type) ? false : checked };
     });
 
     const nextLists = checked

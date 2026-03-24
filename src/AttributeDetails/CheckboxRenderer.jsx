@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useMultiSchema } from "../schema/schemaContext";
-import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA } from "../constants/constants";
+import { isChildSchemaType } from "../constants/constants";
 
 // Use AG Grid's provided node to update the cell value, rather than looking up by rowIndex
 const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalToggle }) => {
@@ -8,11 +8,7 @@ const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalTogg
   const { getSchema, updateSchema } = useMultiSchema();
 
   const colId = colDef.field;
-  const isChildSchemaType =
-    data?.Type === TYPE_CHILD_SCHEMA ||
-    data?.Type === TYPE_PLACEHOLDER_CHILD_SCHEMA ||
-    (typeof data?.Type === "string" && (data.Type.startsWith("refs:") || data.Type.startsWith("refn:")));
-  const isDisabled = colId === "List" && isChildSchemaType;
+  const isDisabled = colId === "List" && isChildSchemaType(data?.Type);
 
   useEffect(() => {
     if (!inputRef.current) return;
