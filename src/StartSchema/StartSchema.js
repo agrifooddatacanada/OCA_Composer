@@ -65,7 +65,7 @@ export default function StartSchema({ pageForward }) {
                 sx={{ width: 250, mb: 6, mt: 1 }}
                 onClick={() => { setCurrentPage("Create") }}
               >
-                {t("WRITE NAMES MANUALLY")}
+                {t("TYPE IN COLUMN NAMES")}
               </Button>
               <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                 {t("OR")}

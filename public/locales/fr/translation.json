@@ -1,6 +1,6 @@
 {
   "Metadata": "Métadonnées",
-  "WRITE NAMES MANUALLY": "ÉCRIRE LES NOMS MANUELLEMENT",
+  "TYPE IN COLUMN NAMES": "TAPER LES NOMS DE COLONNES",
   "Click here to select a .csv file or schema bundle, or drag and drop one here.": "Cliquez ici pour sélectionner un fichier .csv ou un ensemble de schémas, ou faites-le glisser et déposez-le ici.",
   "Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from.": "Téléchargez un nouveau fichier contenant vos codes d'entrée, ou sélectionnez un attribut existant pour copier ses codes d'entrée.",
   "Schemas add value to data": "Les schémas ajoutent de la valeur aux données",
@@ -87,7 +87,7 @@
   "Watch our tutorial and see an example schema being created": "Regardez notre didacticiel et voyez un exemple de schéma en cours de création",
   "Back": "en arrière",
   "Attribute Names": "Noms d'attribut",
-  "Enter the name of each attribute below": "Entrez le nom de chaque attribut ci-dessous",
+  "Enter the column names below": "Entrez les noms des colonnes ci-dessous",
   "This will be the column header in every tabular data set no matter what language": "Ce sera l'en-tête de colonne dans chaque ensemble de données tabulaires, quelle que soit la langue.",
   "Every attribute must be unique, and no entries can be left blank": "Chaque attribut doit être unique et aucune entrée ne peut être laissée vide.",
   "Add row": "Ajouter une rangée",
@@ -637,5 +637,8 @@
   "Letters": "Lettres",
   "Underline": "Soulignement",
   "Hyphen": "Trait d'union",
-  "Period": "Point"
+  "Period": "Point",
+  "Each column of your dataset is an attribute in your schema. Here you can add, remove, and edit attributes and their details.": "Chaque colonne de votre jeu de données est un attribut dans votre schéma. Ici, vous pouvez ajouter, supprimer et modifier des attributs et leurs détails.",
+  "Enter the column names below. These are the column headers in the tabular data set no matter the language.": "Entrez les noms de colonnes ci-dessous. Ce sont les en-têtes de colonnes dans l'ensemble de données tabulaires quelle que soit la langue.",
+  "Write column names or drag and drop an existing dataset (Excel or .csv file) to import names (the first row must contain the column headers). You can edit these later.": "Écrivez les noms de colonne ou faites glisser et déposez un jeu de données existant (fichier Excel ou .csv) pour importer des noms (la première ligne doit contenir les en-têtes de colonne). Vous pouvez les modifier plus tard."
 }

@@ -1,7 +1,7 @@
 import React, { useContext, useState, useRef, useCallback, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
-import { Box, Button, Alert, Typography } from "@mui/material";
+import { Box, Button, Alert, Typography, ButtonBase, Stepper, Step, StepLabel } from "@mui/material";
 
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -11,6 +11,7 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
+import BackNextSkeleton from "../components/BackNextSkeleton";
 
 import { CustomPalette } from "../constants/customPalette";
 import { removeSpacesFromString } from "../utils/stringUtils";
@@ -459,96 +460,124 @@ export default function CreateManually() {
   };
 
   return (
-    <Box
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        width: "80%",
-        margin: "auto"
-      }}
-    >
-      {showInvalidCharModal && (
-        <ErrorPopup onClose={() => setShowInvalidCharModal(false)}>
-          <Box sx={{ textAlign: "center", mb: 2 }}>
-            <Typography variant="h6" fontWeight="semibold" sx={{ mb: 2 }}>
-              {t("Attribute names are limited to the following characters:")}
-            </Typography>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: 1, columnGap: 3, textAlign: "left" }}>
-                {[
-                  { label: "Numbers", value: "0-9" },
-                  { label: "Letters", value: "a-z, A-Z" },
-                  { label: "Underline", value: "_" },
-                  { label: "Hyphen", value: "-" },
-                  { label: "Period", value: "." }
-                ].map((item, i) => (
-                  <React.Fragment key={i}>
-                    <Typography variant="body1">{t(item.label)}:</Typography>
-                    <Typography variant="body1">{item.value}</Typography>
-                  </React.Fragment>
-                ))}
+    <Box sx={{ width: "100%" }}>
+      {/* Pseudo-stepper for consistent layout */}
+      <Box sx={{ px: 10, py: 4, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Stepper activeStep={0} alternativeLabel sx={{ width: "100%" }}>
+          <Step
+            sx={{
+              "& .MuiStepLabel-root": { alignItems: "center" },
+              "& .MuiStepLabel-labelContainer": { display: "flex", justifyContent: "center" }
+            }}
+          >
+            <StepLabel icon={<Box sx={{ width: 24, height: 24 }} />}>
+              <Box sx={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <ButtonBase
+                  component="span"
+                  sx={{
+                    cursor: "default",
+                    alignSelf: "center",
+                    px: 2,
+                    py: 0.5,
+                    border: `1px solid ${CustomPalette.PRIMARY}`,
+                    borderRadius: 1,
+                    backgroundColor: CustomPalette.PRIMARY,
+                    color: "white",
+                    boxShadow: "none",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    lineHeight: 1.2,
+                    maxWidth: "140px",
+                    minHeight: "32px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word"
+                  }}
+                >
+                  {t("Write Names")}
+                </ButtonBase>
               </Box>
-            </Box>
-          </Box>
-        </ErrorPopup>
-      )}
-      <Box
-        sx={{
-          alignSelf: "flex-start",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          width: "100%",
-          position: "relative"
-        }}
-      >
-        <Button color="button" onClick={() => handleBack()} sx={{ m: 3 }}>
-          <ArrowBackIosIcon />
-          {t("Back")}
-        </Button>
-        {backErrorMessage && (
-          <Alert
-            severity="error"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              py: 0,
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)"
-            }}
-          >
-            <Box sx={{ pl: 2, pr: 2 }}>
-              {backErrorMessage}
-              <br />
-              <b>Fix errors</b> or <b>clear all fields</b> to continue.
-            </Box>
-          </Alert>
-        )}
-        {forwardErrorMessage.length > 0 && (
-          <Alert
-            severity="error"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              py: 0,
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)"
-            }}
-          >
-            {forwardErrorMessage}
-          </Alert>
-        )}
-        <Button color="button" onClick={() => handleForward()} sx={{ m: "0.4rem" }}>
-          {t("Next")}
-          <ArrowForwardIosIcon />
-        </Button>
+            </StepLabel>
+          </Step>
+        </Stepper>
       </Box>
-      <Box sx={{ width: 565 }}>
-        <Box style={{ display: "flex" }}>
-          <Box className="create-schema-grid ag-theme-balham" style={{ width: 565, overflowX: "hidden" }} ref={refContainer}>
+
+      <BackNextSkeleton
+        isBack
+        pageBack={() => handleBack()}
+        isForward
+        pageForward={() => handleForward()}
+      >
+        <Box
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "80%",
+            margin: "auto",
+            position: "relative"
+          }}
+        >
+          {showInvalidCharModal && (
+            <ErrorPopup onClose={() => setShowInvalidCharModal(false)}>
+              <Box sx={{ textAlign: "center", mb: 2 }}>
+                <Typography variant="h6" fontWeight="semibold" sx={{ mb: 2 }}>
+                  {t("Attribute names are limited to the following characters:")}
+                </Typography>
+                <Box sx={{ display: "flex", justifyContent: "center" }}>
+                  <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: 1, columnGap: 3, textAlign: "left" }}>
+                    {[
+                      { label: "Numbers", value: "0-9" },
+                      { label: "Letters", value: "a-z, A-Z" },
+                      { label: "Underline", value: "_" },
+                      { label: "Hyphen", value: "-" },
+                      { label: "Period", value: "." }
+                    ].map((item, i) => (
+                      <React.Fragment key={i}>
+                        <Typography variant="body1">{t(item.label)}:</Typography>
+                        <Typography variant="body1">{item.value}</Typography>
+                      </React.Fragment>
+                    ))}
+                  </Box>
+                </Box>
+              </Box>
+            </ErrorPopup>
+          )}
+
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", minHeight: "60px" }}>
+            {backErrorMessage && (
+              <Alert
+                severity="error"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  py: 0
+                }}
+              >
+                <Box sx={{ pl: 2, pr: 2 }}>
+                  {backErrorMessage}
+                </Box>
+              </Alert>
+            )}
+            {forwardErrorMessage.length > 0 && (
+              <Alert
+                severity="error"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  py: 0
+                }}
+              >
+                {forwardErrorMessage}
+              </Alert>
+            )}
+          </Box>
+          <Box sx={{ width: 565 }}>
+            <Box style={{ display: "flex" }}>
+              <Box className="create-schema-grid ag-theme-balham" style={{ width: 565, overflowX: "hidden" }} ref={refContainer}>
             <style>{gridStyle}</style>
             <AgGridReact
               ref={gridRef}
@@ -593,6 +622,8 @@ export default function CreateManually() {
           )}
         </Box>
       </Box>
+      </Box>
+      </BackNextSkeleton>
     </Box>
   );
 }

@@ -19,10 +19,10 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
   const base = "https://agrifooddatacanada.github.io/OCA_Composer_help_pages";
   const dewBase = "https://agrifooddatacanada.github.io/OCA_DEW_v_Help_Pages";
   const switchMap = {
-    Start: { header: t("Start Creating an OCA Schema"), toolTipText: t("Write column (attribute) names manually or drag and drop an existing dataset (Excel or .csv file) to import names. The first row must contain the column headers."), helpLink: `${base}/${lang}/CreatingOCASchema/` },
-    Create: { header: t("Attribute Names"), toolTipText: t("Enter the name of each attribute below. This will be the column header in every tabular data set no matter what language."), helpLink: `${base}/${lang}/CreatingOCASchema/` },
+    Start: { header: t("Start Creating an OCA Schema"), toolTipText: t("Write column names or drag and drop an existing dataset (Excel or .csv file) to import names (the first row must contain the column headers). You can edit these later."), helpLink: `${base}/${lang}/CreatingOCASchema/` },
+    Create: { header: t("Names"), toolTipText: t("Enter the column names below. These are the column headers in the tabular data set no matter the language."), helpLink: `${base}/${lang}/CreatingOCASchema/` },
     Metadata: { header: t("Schema Metadata"), toolTipText: t("Describe your schema using metadata to help others find, understand, and use your schema."), helpLink: `${base}/${lang}/SchemaMetadata/` },
-    Details: { header: t("Attribute Details"), toolTipText: t("Each column of your dataset is an attribute in your schema..."), helpLink: `${base}/${lang}/AttributeDetails/` },
+    Details: { header: t("Attribute Details"), toolTipText: t("Each column of your dataset is an attribute in your schema. Here you can add, remove, and edit attributes and their details."), helpLink: `${base}/${lang}/AttributeDetails/` },
     Codes: { header: t("Add Entry Codes"), toolTipText: t("Entry codes are options you want available to users as a..."), helpLink: `${base}/${lang}/AddEntryCode/` },
     UploadEntryCodes: { header: t("Upload Entry Codes"), toolTipText: t("Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from."), helpLink: `${base}/${lang}/AddEntryCode/` },
     LanguageDetails: { header: t("Language Dependent Attribute Details"), toolTipText: t("You can add labels and descriptions in each language to help users of your schema. By having languages separate from the underlying structure it means you can share your schema in multiple languages."), helpLink: `${base}/${lang}/LanguageAttribute/` },

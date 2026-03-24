@@ -528,7 +528,7 @@ export const dataStandardOptions = [
 ];
 
 export const defaultUploadedDescription =
-  "Click here to select a spreadsheet or drag and drop one here.";
+  "Import a spreadsheet by click or drag-and-drop.";
 export const jsonUploadDescription =
   "Click here to select an OCA schema or drag and drop one here";
 export const dewvSchemaUploadDescription =
