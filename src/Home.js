@@ -31,16 +31,17 @@ import { useMultiSchema } from "./schema/schemaContext";
 import ClickableStepperProgressIndicator from "./StepperProgressIndicator/ClickableStepperProgressIndicator";
 
 const validateEntryCodesFromSchema = (state, languages, t) => {
+  const messageKey = "Please click above and add codes.";
   const attributesWithLists = state?.attributesWithLists || [];
   const entryCodes = state?.entryCodes || {};
   for (const attrName of attributesWithLists) {
     const rows = entryCodes[attrName];
-    if (!Array.isArray(rows) || rows.length === 0) return t("Please add codes.");
+    if (!Array.isArray(rows) || rows.length === 0) return t(messageKey);
     for (const row of rows) {
-      if (!row?.Code || !String(row.Code).trim()) return t("Please add codes.");
+      if (!row?.Code || !String(row.Code).trim()) return t(messageKey);
       for (const lang of languages) {
         const val = row[lang];
-        if (val === undefined || val === null || !String(val).trim()) return t("Please add codes.");
+        if (val === undefined || val === null || !String(val).trim()) return t(messageKey);
       }
     }
   }
@@ -121,6 +122,7 @@ const Home = ({
 
   const entryCodesRef = useRef(null);
   const [entryCodesError, setEntryCodesError] = useState("");
+  const [attributesTypeError, setAttributesTypeError] = useState("");
   const attributeDetailsRef = useRef(null);
   const languageDetailsRef = useRef(null);
   const schemaMetadataRef = useRef(null);
@@ -157,6 +159,27 @@ const Home = ({
 
       // Only validate when navigating FORWARD
       if (isForwardNavigation) {
+        const attributesStepIndex = steps.findIndex((s) => s.label === "Attributes");
+        const isSkippingAttributes =
+          attributesStepIndex >= 0 &&
+          index > attributesStepIndex &&
+          currentIndex < attributesStepIndex;
+
+        if (isSkippingAttributes) {
+          const state = getSchema() || {};
+          const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
+          const hasMissingType = attributesArray.some(
+            (attr) => !attr?.Type || String(attr.Type).trim() === ""
+          );
+          if (hasMissingType) {
+            setAttributesTypeError(t("Please click above and select types."));
+            return;
+          }
+          if (attributesTypeError) setAttributesTypeError("");
+        } else if (attributesTypeError) {
+          setAttributesTypeError("");
+        }
+
         const entryCodesStepIndex = steps.findIndex((s) => s.label === "Entry Codes");
         const isSkippingEntryCodes = entryCodesStepIndex >= 0 && index > entryCodesStepIndex && currentIndex < entryCodesStepIndex;
 
@@ -243,6 +266,12 @@ const Home = ({
       setCurrentPage(target.page);
     }
   };
+
+  useEffect(() => {
+    if (currentPage === "Details") {
+      setAttributesTypeError("");
+    }
+  }, [currentPage]);
 
   // Show Entry Codes step immediately if schema contains list attributes or entry overlays
   useEffect(() => {
@@ -338,7 +367,10 @@ const Home = ({
             activeStep={activeStep}
             steps={steps}
             onStepClick={handleStepClick}
-            stepErrors={entryCodesError ? { "Entry Codes": entryCodesError } : {}}
+            stepErrors={{
+              ...(attributesTypeError ? { Attributes: attributesTypeError } : {}),
+              ...(entryCodesError ? { "Entry Codes": entryCodesError } : {})
+            }}
           />
         )}
         {currentPage === "Start" && <StartSchema pageForward={pageForward} />}

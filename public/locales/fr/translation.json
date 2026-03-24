@@ -382,6 +382,8 @@
   "Range overlay requires format overlay to be selected": "La superposition de plage nécessite d'abord l'ajout de 'Format'.",
   "Range overlay requires Numeric or DateTime attributes": "La superposition de plage nécessite des attributs numériques ou DateTime avec des règles de format.",
   "Please re-verify the data!": "Veuillez revérifier les données !",
+  "Please click above and add codes.": "Veuillez cliquer ci-dessus et ajouter des codes.",
+  "Please click above and select types.": "Veuillez cliquer ci-dessus et sélectionner des types.",
   "There are one or more blank entries in the Type column.": "Il y a une ou plusieurs entrées vides dans la colonne Type.",
   "Please provide valid data types for all attributes.": "Veuillez fournir des types de données valides pour tous les attributs.",
   "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.": "Tous les outils ne sont pas disponibles pour les schémas non valides. Les schémas doivent d'abord être convertis par édition avant que d'autres outils ne soient disponibles.",

@@ -405,6 +405,8 @@
   "Range overlay requires format overlay to be selected": "Range overlay requires 'Formats' to be added first.",
   "Range overlay requires Numeric or DateTime attributes": "Range overlay requires Numeric or DateTime attributes with format rules.",
   "Please re-verify the data!": "Please re-verify the data!",
+  "Please click above and add codes.": "Please click above and add codes.",
+  "Please click above and select types.": "Please click above and select types.",
   "There are one or more blank entries in the Type column.": "There are one or more blank entries in the Type column.",
   "Please provide valid data types for all attributes.": "Please provide valid data types for all attributes.",
   "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.": "Not all tools are available for invalid schemas. Schemas must first be converted via editing before other tools are available.",

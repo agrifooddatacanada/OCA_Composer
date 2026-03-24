@@ -20,7 +20,7 @@ import { langCodeOCAFromName, langNameFromCodeOCA } from "../utils/languageUtils
 import { getPackageBundle } from "../utils/packageUtils";
 
 const errorMessages = {
-  fieldEmpty: "Please add codes.",
+  fieldEmpty: "Please select above and add codes.",
   quoteMisuse: "Fields cannot contain quotes or commas"
 };
 const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref) => {
