@@ -91,6 +91,7 @@ const Classification = () => {
             value={divisionGroup.division}
             onChange={(e) => setDivisionGroup(prev => ({ ...prev, division: e.target.value }))}
             displayEmpty
+            MenuProps={{ disableScrollLock: true }}
           >
             {divisionsDropdown}
           </Select>
@@ -101,6 +102,7 @@ const Classification = () => {
             value={divisionGroup.group}
             onChange={(e) => setDivisionGroup(prev => ({ ...prev, group: e.target.value }))}
             displayEmpty
+            MenuProps={{ disableScrollLock: true }}
           >
             {groupsDropdown}
           </Select>
