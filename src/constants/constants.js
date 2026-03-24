@@ -461,7 +461,7 @@ export const dewvSchemaUploadDescription =
 export const textUploadDescription =
   "Click here to select schema bundle (.zip OR .json) or drag and drop one here";
 export const datasetUploadDescription =
-  "Click here to select an Excel or CSV dataset or drag and drop one here";
+  "Click here to select an Excel, CSV, or TSV dataset or drag and drop one here";
 export const defaultTooltip =
   "To make it easier to create a schema you can drag and drop your existing dataset that...";
 export const jsonUploadTooltip =
@@ -469,7 +469,7 @@ export const jsonUploadTooltip =
 export const dewcSchemaUploadTooltip =
   "To make it easier to upload a schema you can drag and drop your existing dataset that you are creating the schema for. This schema should be the machine-readable schema bundle generated from the Semantic Engine.";
 export const datasetUploadTooltip =
-  "To make it easier to upload a dataset you can drag and drop your existing dataset that you are creating the schema for. This dataset should be in table format as an Excel or .csv format";
+  "To make it easier to upload a dataset you can drag and drop your existing dataset that you are creating the schema for. This dataset should be in table format as an Excel, CSV, or TSV file";
 export const defaultNoteDescription =
   "Note: None of this data will be uploaded to a server and all processing happens on device.";
 

@@ -4,7 +4,7 @@ import { Box, Button, Typography } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Drop from "../StartSchema/Drop";
 import { useHandleJsonDrop } from "./useHandleJsonDrop";
-import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
+import useHandleDatasetDrop from "./useHandleDatasetDrop";
 import { datasetUploadDescription, datasetUploadTooltip } from "../constants/constants";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import ExcelSheetSelection from "../components/ExcelSheetSelection";

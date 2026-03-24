@@ -44,7 +44,9 @@ export default function Drop({
     }
     if (version === 2) {
       return {
-        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"]
+        "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
+        "text/tab-separated-values": [".tsv"],
+        "text/plain": [".tsv"]
       };
     }
     if (version === 3) {
