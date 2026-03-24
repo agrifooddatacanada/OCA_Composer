@@ -486,7 +486,7 @@ const FormInformation = () => {
         field: "Attribute",
         editable: false,
         width: 180,
-        cellStyle: () => preWrapWordBreak,
+        cellStyle: () => greyCellStyle,
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),

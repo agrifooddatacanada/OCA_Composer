@@ -14,10 +14,13 @@ import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { getFormatRuleDescription } from "../utils/helpers";
 import {
   ADC,
+  FIELD_CHARACTER_ENCODING_OVERLAY,
   FIELD_RANGE_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY,
   FIELD_FORMAT_OVERLAY,
   FIELD_CONFORMANCE_OVERLAY,
+  FIELD_CARDINALITY_OVERLAY,
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   MAX_ATTR_DESCRIPTION_CHARS,
   MAX_ATTR_LABEL_CHARS,
@@ -163,11 +166,11 @@ export default function ViewGrid({
       const predefinedColumns = [
         {
           field: "Attribute",
-          headerName: t("Attributes"),
+          headerName: t("Attribute"),
           wrapText: true,
           headerComponent: CellHeader,
           headerComponentParams: {
-            headerText: t("Attributes"),
+            headerText: t("Attribute"),
             helpText: t("This is the name for the attribute and, for example...")
           }
         },
@@ -284,7 +287,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Lower Bound"),
-              helpText: t("The lower bound of the range")
+              helpText: `${t("The lower bound of the range")}.`
             }
           });
 
@@ -295,7 +298,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Lower Inclusive"),
-              helpText: t("Whether or not the lower bound is included in the range")
+              helpText: `${t("Whether or not the lower bound is included in the range")}.`
             },
             cellRenderer: CheckboxRenderer
           });
@@ -307,7 +310,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Upper Bound"),
-              helpText: t("The upper bound of the range")
+              helpText: `${t("The upper bound of the range")}.`
             }
           });
 
@@ -318,7 +321,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Upper Inclusive"),
-              helpText: t("Whether or not the upper bound is included in the range")
+              helpText: `${t("Whether or not the upper bound is included in the range")}.`
             },
             cellRenderer: CheckboxRenderer
           });
@@ -328,11 +331,23 @@ export default function ViewGrid({
             field: "Required",
             width: 120,
             autoHeight: true,
-            headerComponent: SelectedFeatureHeader,
+            headerComponent: CellHeader,
             headerComponentParams: {
-              feature: overlayKey
+              headerText: t("Required"),
+              helpText: t("Check for each attribute where the data entry cannot be left empty in a dataset")
             },
             cellRenderer: CheckboxRenderer
+          });
+        } else if (overlayKey === FIELD_CHARACTER_ENCODING_OVERLAY) {
+          predefinedColumns.push({
+            field: FIELD_CHARACTER_ENCODING_OVERLAY,
+            width: 180,
+            autoHeight: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Character Encoding"),
+              helpText: t("The character encoding that is applied to the attribute")
+            }
           });
         } else if (overlayKey === FIELD_FORMAT_OVERLAY) {
           // Handle Format Rule column
@@ -340,25 +355,55 @@ export default function ViewGrid({
             field: "Format Rule",
             width: 160,
             autoHeight: true,
-            headerComponent: SelectedFeatureHeader,
+            headerComponent: CellHeader,
             headerComponentParams: {
-              feature: overlayKey
+              headerText: t("Format Rule"),
+              helpText: t("The format rule that is applied to the attribute")
             },
             valueFormatter: (params) =>
               getFormatRuleDescription(params.data.Type, params.value, t) || params.value
           });
+        } else if (overlayKey === FIELD_CARDINALITY_OVERLAY) {
+          predefinedColumns.push({
+            field: FIELD_CARDINALITY_OVERLAY,
+            width: 140,
+            autoHeight: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Cardinality"),
+              helpText: t("The cardinality that is applied to the attribute")
+            }
+          });
+        } else if (overlayKey === FIELD_ATTRIBUTE_FRAMING_OVERLAY) {
+          predefinedColumns.push({
+            field: FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+            width: 180,
+            autoHeight: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Attribute Framing"),
+              helpText: t("The attribute framing that is applied to the attribute")
+            }
+          });
         } else if (overlayKey === FIELD_UNIT_FRAMING_OVERLAY) {
-          let helpText = "";
+          const baseHelpText = t("The unit framing that is applied to the attribute");
+          let helpText = baseHelpText;
           if (unitFramingOverlay?.framing_metadata) {
-            const helpTextElements = Object.entries(
-              unitFramingOverlay.framing_metadata
-            ).map(([key, value], index) => (
-              <React.Fragment key={key}>
-                {index > 0 && <br />}
-                <strong>{key}:</strong> &quot;{value}&quot;
-              </React.Fragment>
-            ));
-            helpText = helpTextElements;
+            const helpTextElements = Object.entries(unitFramingOverlay.framing_metadata).map(
+              ([key, value], index) => (
+                <React.Fragment key={key}>
+                  {index > 0 && <br />}
+                  <strong>{key}:</strong> &quot;{value}&quot;
+                </React.Fragment>
+              )
+            );
+            helpText = (
+              <>
+                {baseHelpText}
+                <br />
+                {helpTextElements}
+              </>
+            );
           }
 
           predefinedColumns.push({
@@ -406,9 +451,18 @@ export default function ViewGrid({
             field: mappedField,
             width: 160,
             autoHeight: true,
-            headerComponent: SelectedFeatureHeader,
+            headerComponent: CellHeader,
             headerComponentParams: {
-              feature: overlayKey
+              headerText: isFormat
+                ? t("Format Rule")
+                : isRequired
+                  ? t("Required")
+                  : t(overlayKey),
+              helpText: isRequired
+                ? t("Check for each attribute where the data entry cannot be left empty in a dataset")
+                : isFormat
+                  ? t("The format rule that is applied to the attribute")
+                  : t("Overlay value for this attribute") + "."
             },
             cellRenderer: useCheckbox ? CheckboxRenderer : null
           });

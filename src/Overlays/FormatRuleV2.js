@@ -214,10 +214,10 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         field: "Attribute",
         editable: false,
         width: 180,
-        cellStyle: () => allowOverflowStyle,
+        cellStyle: () => greyCellStyle,
         headerComponent: CellHeader,
         headerComponentParams: {
-          headerText: t("Attributes"),
+          headerText: t("Attribute"),
           helpText: t("This is the name for the attribute and, for example...")
         }
       },
@@ -238,8 +238,12 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Format Rule"),
-          helpText: t(
-            "Select the formatting rule that applies to data for each attribute"
+          helpText: (
+            <>
+              {t("Select the formatting rule that applies to data for each attribute")} {t(
+                "Dropdowns are available for types Text, Numeric, DateTime, Binary, and Arrays of those types"
+              )}
+            </>
           )
         },
         cellStyle: (params) => {
@@ -254,8 +258,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
             baseType.includes("Binary") ||
             baseType.includes("Text") ||
             baseType === "Text";
+          const hasCustom = Boolean(params?.data?.[CUSTOM_FORMAT_RULE]);
 
-          return hasDropdown ? allowOverflowStyle : greyCellStyle;
+          return hasDropdown && !hasCustom ? allowOverflowStyle : greyCellStyle;
         },
         cellRenderer: FormatRuleTypeRenderer,
         width: 260,
@@ -268,10 +273,12 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Custom Format Rule", { defaultValue: "Custom Format Rule" }),
-          helpText: t("Enter a custom regular expression for the attribute's data")
+          helpText: `${t("Enter a custom regular expression for the attribute's data")}.`
         },
         // A custom format rule can be provided only if no built-in format rule is selected
         editable: (params) => !params.data["Format Rule"],
+        cellStyle: (params) =>
+          params?.data?.["Format Rule"] ? greyCellStyle : preWrapWordBreak,
         autoHeight: true,
         width: 200,
         wrapText: true

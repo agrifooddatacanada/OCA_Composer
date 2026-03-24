@@ -193,7 +193,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       editable: false,
       width: 120,
       wrapText: true,
-      cellStyle: () => preWrapWordBreak,
+      cellStyle: () => greyCellStyle,
       headerComponent: CellHeader,
       headerComponentParams: {
         headerText: t("Attribute"),

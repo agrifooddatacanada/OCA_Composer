@@ -6,7 +6,7 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
-import { flexCenter, gridStyles, preWrapWordBreak } from "../constants/styles";
+import { flexCenter, gridStyles, greyCellStyle } from "../constants/styles";
 import CellHeader from "../components/CellHeader";
 import CheckboxColumnHeader from "../AttributeDetails/CheckboxColumnHeader";
 import DeleteConfirmation from "./DeleteConfirmation";
@@ -124,7 +124,7 @@ const RequiredEntries = () => {
         field: "Attribute",
         editable: false,
         width: 100,
-        cellStyle: () => preWrapWordBreak,
+        cellStyle: () => greyCellStyle,
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),

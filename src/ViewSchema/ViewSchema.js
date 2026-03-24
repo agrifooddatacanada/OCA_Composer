@@ -875,7 +875,7 @@ export default function ViewSchema({
                 <Tooltip
                   title={t("Visual representation of references between schemas", {
                     defaultValue: "Visual representation of references between schemas"
-                  })}
+                  }) + "."}
                   placement="right"
                   arrow
                 >

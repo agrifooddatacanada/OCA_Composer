@@ -11,7 +11,7 @@ import useCharacterEncodingType, {
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
-import { gridStyles, preWrapWordBreak } from "../constants/styles";
+import { gridStyles, greyCellStyle } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
@@ -96,10 +96,10 @@ const CharacterEncoding = () => {
         editable: false,
         width: 180,
         autoHeight: true,
-        cellStyle: () => preWrapWordBreak,
+        cellStyle: () => greyCellStyle,
         headerComponent: CellHeader,
         headerComponentParams: {
-          headerText: t("Attributes"),
+          headerText: t("Attribute"),
           helpText:
             "This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language."
         }
