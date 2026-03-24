@@ -10,7 +10,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const skipSyncRef = useRef(false);
   const { t } = useTranslation();
-  const { updateSchema, createChildSchemaPlaceholder } = useMultiSchema();
+  const { getSchema, updateSchema, createChildSchemaPlaceholder } = useMultiSchema();
   
   // Type dropdown options
   // Note: "Child Schema" covers both refs: (with SAID) and refn: (placeholder) - distinction is automatic
@@ -69,16 +69,39 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     // Also update the global context's attributeRowData
     const updatedAttributeRowData = attributeRowData.map((item) => {
       if (item.Attribute === attributeName) {
-        return { ...item, Type: newType };
+        return {
+          ...item,
+          Type: newType,
+          ...(newType === TYPE_CHILD_SCHEMA ? { List: false, EntryCodes: [] } : {})
+        };
       }
       return item;
     });
     setAttributeRowData(updatedAttributeRowData);
     
-    // Update MultiSchemaContext to persist the change
-    updateSchema({
-      attributes: updatedAttributeRowData
-    });
+    if (newType === TYPE_CHILD_SCHEMA) {
+      const schemaState = getSchema() || {};
+      const prevLists = Array.isArray(schemaState.attributesWithLists)
+        ? schemaState.attributesWithLists
+        : [];
+      const prevEntryCodes = schemaState.entryCodes || {};
+
+      const nextLists = prevLists.filter((a) => a !== attributeName);
+      const nextEntryCodes = { ...prevEntryCodes };
+      if (nextEntryCodes[attributeName]) {
+        delete nextEntryCodes[attributeName];
+      }
+
+      updateSchema({
+        attributes: updatedAttributeRowData,
+        attributesWithLists: nextLists,
+        entryCodes: nextEntryCodes
+      });
+    } else {
+      updateSchema({
+        attributes: updatedAttributeRowData
+      });
+    }
     
     // If setting type to Child Schema, create a placeholder child schema
     // so user can immediately navigate to edit it

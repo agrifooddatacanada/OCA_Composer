@@ -194,7 +194,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
           Description: "",
           Required: false,
           EntryCodes: [],
-          List: hasEntryCodes
+          List: displayType === TYPE_CHILD_SCHEMA ? false : hasEntryCodes
         };
       });
 

@@ -1,18 +1,27 @@
 import React, { useEffect, useRef } from "react";
 import { useMultiSchema } from "../schema/schemaContext";
+import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA } from "../constants/constants";
 
 // Use AG Grid's provided node to update the cell value, rather than looking up by rowIndex
 const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalToggle }) => {
   const inputRef = useRef();
   const { getSchema, updateSchema } = useMultiSchema();
 
+  const colId = colDef.field;
+  const isChildSchemaType =
+    data?.Type === TYPE_CHILD_SCHEMA ||
+    data?.Type === TYPE_PLACEHOLDER_CHILD_SCHEMA ||
+    (typeof data?.Type === "string" && (data.Type.startsWith("refs:") || data.Type.startsWith("refn:")));
+  const isDisabled = colId === "List" && isChildSchemaType;
+
   useEffect(() => {
-    inputRef.current.checked = value;
-  }, [value]);
+    if (!inputRef.current) return;
+    inputRef.current.checked = isDisabled ? false : value;
+  }, [value, isDisabled]);
 
   const handleChange = (event) => {
+    if (isDisabled) return;
     const { checked } = event.target;
-    const colId = colDef.field;
     
     if (node && typeof node.setDataValue === "function") {
       node.setDataValue(colId, checked);
@@ -67,7 +76,15 @@ const CheckboxRenderer = ({ value, colDef, data, node, onToggleList, onLocalTogg
     }
   };
 
-  return <input type="checkbox" ref={inputRef} onChange={handleChange} />;
+  return (
+    <input
+      type="checkbox"
+      ref={inputRef}
+      onChange={handleChange}
+      disabled={isDisabled}
+      style={isDisabled ? { opacity: 0.45, cursor: "not-allowed" } : undefined}
+    />
+  );
 };
 
 export default CheckboxRenderer;
