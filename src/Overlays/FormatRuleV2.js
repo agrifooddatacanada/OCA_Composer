@@ -21,6 +21,7 @@ import {
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { overlayGridOnFirstDataRendered } from "./gridUtils";
 import { getFormatRuleDescription } from "../utils/helpers";
+import { isChildSchemaType } from "../constants/constants";
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -64,8 +65,16 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     // Get existing format rules from attributeFormats object
     const attributeFormats = schemaState.attributeFormats || {};
 
-    const initialData = schemaState.attributes.map(attr => {
-      const formatRegex = attributeFormats[attr.Attribute] || "";
+    const initialData = schemaState.attributes
+      .filter((attr) => {
+        const rawType = attr?.Type || "Text";
+        const baseType = rawType.includes("Array")
+          ? rawType.replace(/Array\[|\]/g, "")
+          : rawType;
+        return !isChildSchemaType(baseType);
+      })
+      .map((attr) => {
+        const formatRegex = attributeFormats[attr.Attribute] || "";
 
       // Determine whether the stored regex matches a built-in description for this type
       const description = formatRegex ? getFormatRuleDescription(attr.Type, formatRegex) : "";
@@ -76,13 +85,13 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       // so the user sees and can edit their custom regex.
       const customFormat = formatRegex && !isBuiltInFormat ? formatRegex : "";
 
-      return {
-        Attribute: attr.Attribute,
-        Type: attr.Type || "Text",
-        "Format Rule": isBuiltInFormat ? formatRegex : "",
-        [CUSTOM_FORMAT_RULE]: customFormat
-      };
-    });
+        return {
+          Attribute: attr.Attribute,
+          Type: attr.Type || "Text",
+          "Format Rule": isBuiltInFormat ? formatRegex : "",
+          [CUSTOM_FORMAT_RULE]: customFormat
+        };
+      });
 
     setGridRowData(initialData);
     setLoading(false);
@@ -181,13 +190,15 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         const newFormatRuleRowData = gridRef.current.api
           .getRenderedNodes()
           ?.map((node) => node?.data);
-        // Convert to object format and save
         if (newFormatRuleRowData && newFormatRuleRowData.length > 0) {
-          const attributeFormats = {};
-          newFormatRuleRowData.forEach(row => {
+          const currentSchema = getSchema();
+          const attributeFormats = { ...(currentSchema?.attributeFormats || {}) };
+          newFormatRuleRowData.forEach((row) => {
             const formatRule = row["Format Rule"] || row[CUSTOM_FORMAT_RULE];
             if (formatRule) {
               attributeFormats[row.Attribute] = formatRule;
+            } else {
+              delete attributeFormats[row.Attribute];
             }
           });
           updateSchema({ attributeFormats });
@@ -230,6 +241,21 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           helpText: t(
             "Select the formatting rule that applies to data for each attribute"
           )
+        },
+        cellStyle: (params) => {
+          const rawType = params?.data?.Type || "Text";
+          const baseType = rawType.includes("Array")
+            ? rawType.replace(/Array\[|\]/g, "")
+            : rawType;
+
+          const hasDropdown =
+            baseType.includes("Date") ||
+            baseType.includes("Numeric") ||
+            baseType.includes("Binary") ||
+            baseType.includes("Text") ||
+            baseType === "Text";
+
+          return hasDropdown ? allowOverflowStyle : greyCellStyle;
         },
         cellRenderer: FormatRuleTypeRenderer,
         width: 260,
@@ -347,30 +373,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
             onCellKeyDown={handleCellKeyDown}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
-        </Box>
-        <Box
-          sx={{
-            width: "80%"
-          }}
-        >
-          {t("All format rules are documented in the")}{" "}
-          <Link
-            href="https://github.com/agrifooddatacanada/format_options"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t("format GitHub repository")}
-          </Link>
-          . {t("Request a new format to be added by")}{" "}
-          <Link
-            href="https://github.com/agrifooddatacanada/format_options/issues"
-            rel="noreferrer"
-            target="_blank"
-          >
-            {t("raising an issue in the repository")}
-          </Link>{" "}
-          {t("or email us at")} <Link href="mailto:adc@uoguelph.ca">adc@uoguelph.ca</Link>
-          .
         </Box>
       </Box>
     </BackNextSkeleton>

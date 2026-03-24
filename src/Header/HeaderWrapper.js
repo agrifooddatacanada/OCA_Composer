@@ -2,7 +2,7 @@ import React from 'react';
 import { CustomPalette } from '../constants/customPalette';
 import { Box, Stack } from '@mui/material';
 
-const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem, centerItem }) => {
+const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem, centerItem, centerItemInteractive = false }) => {
   return (
     <Stack
       direction='row'
@@ -27,7 +27,7 @@ const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem, centerItem 
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            pointerEvents: 'none',
+            pointerEvents: centerItemInteractive ? 'auto' : 'none',
           }}
         >
           {centerItem}

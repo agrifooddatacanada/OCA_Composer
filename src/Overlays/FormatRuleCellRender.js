@@ -125,6 +125,10 @@ export const FormatRuleTypeRenderer = memo(
         typesDisplay={typesDisplay}
         isDisabled={Boolean(props.data[CUSTOM_FORMAT_RULE])}
       />
-    ) : null;
+    ) : (
+      <span style={{ width: "100%", textAlign: "center" }}>
+        {t("No Dropdown Available", { defaultValue: "No Dropdown Available" })}
+      </span>
+    );
   })
 );

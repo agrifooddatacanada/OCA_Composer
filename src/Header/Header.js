@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getNormalizedUICode, getUICode, setUICode } from "../utils/languageUtils";
 import { Typography, Button, Box, useMediaQuery } from "@mui/material";
+import MuiLink from "@mui/material/Link";
 
 import { CustomPalette } from "../constants/customPalette";
 // import logo from "../assets/agri-logo.png";
@@ -30,7 +31,44 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     Overlays: { header: t("Add Additional Optional Information"), toolTipText: t("A variety of additional information can be added to your schema using overlays."), helpLink: `${base}/${lang}/Overlays/` },
     CharacterEncoding: { header: t("Add Character Encoding"), toolTipText: t("Character encoding of the data source (for each attribute)..."), helpLink: `${base}/${lang}/CharacterEncoding/` },
     RequiredEntries: { header: t("Add Required Entries"), toolTipText: t("Specify if the underlying data must have an entry for the specific attribute"), helpLink: `${base}/${lang}/RequiredEntry/` },
-    FormatRules: { header: t("Add Format Rules for Data Entry"), toolTipText: "", helpLink: `${base}/${lang}/FormatText/` },
+    FormatRules: {
+      header: t("Add Format Rules for Data Entry"),
+      toolTipText: (
+        <>
+          {t("Specify format rules for eligible attributes.", {
+            defaultValue: "Specify format rules for eligible attributes."
+          })}{" "}
+          {t("Rules are documented in the", { defaultValue: "Rules are documented in the" })}{" "}
+          <MuiLink
+            href="https://github.com/agrifooddatacanada/format_options"
+            target="_blank"
+            rel="noreferrer"
+            underline="hover"
+            sx={{ pointerEvents: "auto" }}
+          >
+            {t("GitHub repo", { defaultValue: "GitHub repo" })}
+          </MuiLink>
+          .{" "}
+          {t("Request new rules by", { defaultValue: "Request new rules by" })}{" "}
+          <MuiLink
+            href="https://github.com/agrifooddatacanada/format_options/issues"
+            target="_blank"
+            rel="noreferrer"
+            underline="hover"
+            sx={{ pointerEvents: "auto" }}
+          >
+            {t("raise an issue", { defaultValue: "raise an issue" })}
+          </MuiLink>
+          {" "}
+          {t("or email", { defaultValue: "or email" })}{" "}
+          <MuiLink href="mailto:adc@uoguelph.ca" underline="hover" sx={{ pointerEvents: "auto" }}>
+            adc@uoguelph.ca
+          </MuiLink>
+          .
+        </>
+      ),
+      helpLink: `${base}/${lang}/FormatText/`
+    },
     FormInformation: { header: t("Form Information"), toolTipText: "", helpLink: `${base}/${lang}/FormInformation/` },
     FormBuilder: { header: t("Form Builder"), toolTipText: t("Create interactive forms using drag-and-drop interface"), helpLink: `${base}/${lang}/FormBuilder/` },
     Cardinality: { header: t("Add Entry Limit Rules for Data Entry"), toolTipText: "", helpLink: `${base}/${lang}/Cardinality/` },
@@ -74,6 +112,8 @@ export default function Header({ currentPage }) {
     [currentPage, t, selectedLanguage]
   );
 
+  const centerItemInteractive = currentPage === "FormatRules";
+
   return (
     <HeaderWrapper
       isMobile={isMobile}
@@ -91,12 +131,14 @@ export default function Header({ currentPage }) {
               fontSize: "0.875rem",
               maxWidth: 1100,
               textAlign: "center",
+              pointerEvents: centerItemInteractive ? "auto" : "none"
             }}
           >
             {toolTipText}
           </Typography>
         ) : null
       }
+      centerItemInteractive={centerItemInteractive}
       leftItem={
         currentPage === "Landing" || currentPage === "StartOCAMerge" ? (
           <Box sx={{ flex: "column" }}>
