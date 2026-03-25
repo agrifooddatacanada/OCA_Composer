@@ -12,6 +12,7 @@ import { getListOfSelectedOverlays } from "../utils/overlayUtils";
 import CellHeader from "../components/CellHeader";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { getFormatRuleDescription } from "../utils/helpers";
+import { getMapValueForAttributeName } from "../utils/stringUtils";
 import {
   ADC,
   FIELD_CHARACTER_ENCODING_OVERLAY,
@@ -511,7 +512,7 @@ export default function ViewGrid({
       item.Type = item.Type;
       
       // Get cardinality value from object
-      const cardinalityValue = attributeCardinality[item.Attribute];
+      const cardinalityValue = getMapValueForAttributeName(attributeCardinality, item.Attribute);
       if (cardinalityValue) {
         item.Cardinality = cardinalityValue;
       }
@@ -533,7 +534,7 @@ export default function ViewGrid({
         // Add Format Rule field data
         if (overlay[FIELD_FORMAT_OVERLAY]) {
           // Get format rule from object
-          item["Format Rule"] = attributeFormats[item.Attribute] || "";
+          item["Format Rule"] = getMapValueForAttributeName(attributeFormats, item.Attribute) || "";
         }
         
         // Add Form Information checkbox data

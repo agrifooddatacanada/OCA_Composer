@@ -42,6 +42,7 @@ import usePrimaryColor from "../hooks/usePrimaryColor";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateTextReadmeFromJson from "./useGenerateTextReadmeFromJson";
 import { getPackageBundle, getPackageBundleId, getPackageDependencies } from "../utils/packageUtils";
+import { getMapValueForAttributeName } from "../utils/stringUtils";
 
 import ErrorPopup from "./ErrorPopup";
 import CustomRouterLink from "../components/CustomRouterLink";
@@ -540,7 +541,7 @@ export default function ViewSchema({
             const charEncoding = (schemaState.characterEncodingData || {})[attr.Attribute] || "";
             
             // Get range data for this attribute from object
-            const range = attributeRanges[attr.Attribute] || {};
+            const range = getMapValueForAttributeName(attributeRanges, attr.Attribute) || {};
             
             // Find unit framing data for this attribute
             const unitFramingData = (schemaState.unitFramedData || []).find(
@@ -553,7 +554,7 @@ export default function ViewSchema({
               Description: descriptionObj,
               Label: labelObj,
               Required: !!attr.Required,
-              "Format Rule": attributeFormats[attr.Attribute] || "",
+              "Format Rule": getMapValueForAttributeName(attributeFormats, attr.Attribute) || "",
               "Character Encoding": charEncoding,
               List: listObj,
               Unit: attr.Unit || "",

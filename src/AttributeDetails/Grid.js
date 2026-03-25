@@ -107,20 +107,12 @@ export default function Grid({
 }) {
   const { t, i18n } = useTranslation();
   
-  // Use MultiSchemaContext for schema-specific data
-  const { getSchema, updateSchema } = useMultiSchema();
+  const { renameAttribute } = useMultiSchema();
   
   // Derive attributesList from attributeRowData (single source of truth)
   const attributesList = useMemo(
     () => attributeRowData.map((item) => item.Attribute),
     [attributeRowData]
-  );
-  
-  // Get schema state data
-  const schemaState = getSchema();
-  const lanAttributeRowData = useMemo(
-    () => schemaState?.lanAttributeRowData || {},
-    [schemaState?.lanAttributeRowData]
   );
   
   // Note: attributesList is now computed - no need to update it separately
@@ -506,131 +498,6 @@ export default function Grid({
     typesObjectRef.current = updatedTypesObjRefValue;
   };
 
-  // Update attribute in language-specific row data (MultiSchemaContext)
-  const updateLanAttributeRowData = useCallback((oldAttributeValue, newAttributeValue) => {
-    const currentLanData = schemaState?.lanAttributeRowData || {};
-    const updatedLanAttributeRowData = {};
-    for (const lang in currentLanData) {
-      if (Object.prototype.hasOwnProperty.call(currentLanData, lang)) {
-        const attributes = currentLanData[lang] || [];
-        const updatedAttributes = attributes.map((row) => {
-          if (row.Attribute === oldAttributeValue) {
-            return { ...row, Attribute: newAttributeValue };
-          }
-          return row;
-        });
-        updatedLanAttributeRowData[lang] = updatedAttributes;
-      }
-    }
-    updateSchema({ lanAttributeRowData: updatedLanAttributeRowData });
-  }, [schemaState?.lanAttributeRowData, updateSchema]);
-
-  // Update character encoding row data (MultiSchemaContext)
-  const updateCharacterEncodingRowData = useCallback((oldAttributeValue, newAttributeValue) => {
-    const currentData = schemaState?.characterEncodingData || {};
-    if (currentData[oldAttributeValue]) {
-      const updatedData = { ...currentData };
-      updatedData[newAttributeValue] = updatedData[oldAttributeValue];
-      delete updatedData[oldAttributeValue];
-      updateSchema({ characterEncodingData: updatedData });
-    }
-  }, [schemaState?.characterEncodingData, updateSchema]);
-
-  // Update format rule row data (MultiSchemaContext)
-  const updateFormatRuleRowData = useCallback((oldAttributeValue, newAttributeValue) => {
-    const currentData = schemaState?.formatRuleData || [];
-    const updatedData = currentData.map((row) => {
-      if (row.Attribute === oldAttributeValue) {
-        return { ...row, Attribute: newAttributeValue };
-      }
-      return row;
-    });
-    updateSchema({ formatRuleData: updatedData });
-  }, [schemaState?.formatRuleData, updateSchema]);
-
-  // Update cardinality data (MultiSchemaContext)
-  const updateCardinalityData = useCallback((oldAttributeValue, newAttributeValue) => {
-    const currentData = schemaState?.cardinalityData || [];
-    const updatedData = currentData.map((row) => {
-      if (row.Attribute === oldAttributeValue) {
-        return { ...row, Attribute: newAttributeValue };
-      }
-      return row;
-    });
-    updateSchema({ cardinalityData: updatedData });
-  }, [schemaState?.cardinalityData, updateSchema]);
-
-  // Update attributes with lists (MultiSchemaContext)
-  const updateAttributesWithLists = useCallback((oldAttributeValue, newAttributeValue) => {
-    const currentData = schemaState?.attributesWithLists || [];
-    const updatedData = currentData.map((attributeName) => {
-      if (attributeName === oldAttributeValue) {
-        return newAttributeValue;
-      }
-      return attributeName;
-    });
-    updateSchema({ attributesWithLists: updatedData });
-  }, [schemaState?.attributesWithLists, updateSchema]);
-
-  // Update entry codes (MultiSchemaContext)
-  const updateSavedEntryCodes = useCallback((oldAttributeValue, newAttributeValue) => {
-    const currentData = schemaState?.entryCodes || {};
-    if (currentData[oldAttributeValue]) {
-      const updatedData = { ...currentData };
-      updatedData[newAttributeValue] = updatedData[oldAttributeValue];
-      delete updatedData[oldAttributeValue];
-      updateSchema({ entryCodes: updatedData });
-    }
-  }, [schemaState?.entryCodes, updateSchema]);
-
-  // Update range data (MultiSchemaContext)
-  const updateRangeData = useCallback((oldAttributeValue, newAttributeValue) => {
-    const currentData = schemaState?.rangeData || [];
-    const updatedData = currentData.map((row) => {
-      if (row.Attribute === oldAttributeValue) {
-        return { ...row, Attribute: newAttributeValue };
-      }
-      return row;
-    });
-    updateSchema({ rangeData: updatedData });
-  }, [schemaState?.rangeData, updateSchema]);
-
-  // Update unit framed data (MultiSchemaContext)
-  const updateUnitFramedData = useCallback((oldAttributeValue, newAttributeValue) => {
-    const currentData = schemaState?.unitFramedData || [];
-    const updatedData = currentData.map((row) => {
-      if (row.Attribute === oldAttributeValue) {
-        return { ...row, Attribute: newAttributeValue };
-      }
-      return row;
-    });
-    updateSchema({ unitFramedData: updatedData });
-  }, [schemaState?.unitFramedData, updateSchema]);
-
-  // Update attribute framing data (MultiSchemaContext)
-  const updateAttributeFramingData = useCallback((oldAttributeValue, newAttributeValue) => {
-    const currentData = schemaState?.attributeFramingData || [];
-    const updatedData = currentData.map((row) => {
-      if (row.Attribute === oldAttributeValue) {
-        return { ...row, Attribute: newAttributeValue };
-      }
-      return row;
-    });
-    updateSchema({ attributeFramingData: updatedData });
-  }, [schemaState?.attributeFramingData, updateSchema]);
-
-  // Update data standards data (MultiSchemaContext)
-  const updateDataStandardsData = useCallback((oldAttributeValue, newAttributeValue) => {
-    const currentData = schemaState?.dataStandardsData || [];
-    const updatedData = currentData.map((row) => {
-      if (row.Attribute === oldAttributeValue) {
-        return { ...row, Attribute: newAttributeValue };
-      }
-      return row;
-    });
-    updateSchema({ dataStandardsData: updatedData });
-  }, [schemaState?.dataStandardsData, updateSchema]);
-
   const handleCellValueChanged = (e) => {
     // Only handle event if the user changed the attribute name; do not handle programmatic update
     if (e.source !== "edit") return;
@@ -669,16 +536,7 @@ export default function Grid({
           const oldAttributeName = e.oldValue;
 
           updateTypesObjRef(oldAttributeName, newAttributeName);
-          updateLanAttributeRowData(oldAttributeName, newAttributeName);
-          updateCharacterEncodingRowData(oldAttributeName, newAttributeName);
-          updateFormatRuleRowData(oldAttributeName, newAttributeName);
-          updateCardinalityData(oldAttributeName, newAttributeName);
-          updateRangeData(oldAttributeName, newAttributeName);
-          updateUnitFramedData(oldAttributeName, newAttributeName);
-          updateAttributeFramingData(oldAttributeName, newAttributeName);
-          updateDataStandardsData(oldAttributeName, newAttributeName);
-          updateAttributesWithLists(oldAttributeName, newAttributeName);
-          updateSavedEntryCodes(oldAttributeName, newAttributeName);
+          renameAttribute(oldAttributeName, newAttributeName);
         } else {
           setAttributeRowData((prev) =>
             prev.map((row, i) =>
@@ -695,16 +553,7 @@ export default function Grid({
           const oldAttributeName = savedAttributeName.current;
           if (oldAttributeName !== newAttributeName) {
             updateTypesObjRef(oldAttributeName, newAttributeName);
-            updateLanAttributeRowData(oldAttributeName, newAttributeName);
-            updateCharacterEncodingRowData(oldAttributeName, newAttributeName);
-            updateFormatRuleRowData(oldAttributeName, newAttributeName);
-            updateCardinalityData(oldAttributeName, newAttributeName);
-            updateRangeData(oldAttributeName, newAttributeName);
-            updateUnitFramedData(oldAttributeName, newAttributeName);
-            updateAttributeFramingData(oldAttributeName, newAttributeName);
-            updateDataStandardsData(oldAttributeName, newAttributeName);
-            updateAttributesWithLists(oldAttributeName, newAttributeName);
-            updateSavedEntryCodes(oldAttributeName, newAttributeName);
+            renameAttribute(oldAttributeName, newAttributeName);
           }
         }
       } else {

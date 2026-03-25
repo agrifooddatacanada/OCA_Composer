@@ -338,6 +338,154 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
       });
   };
 
+  const renameAttribute = (oldAttributeValue, newAttributeValue) => {
+    if (typeof oldAttributeValue !== "string" || typeof newAttributeValue !== "string") return;
+    if (oldAttributeValue === newAttributeValue) return;
+
+    const oldNorm = normalizeAttributeNameKey(oldAttributeValue);
+    const newNorm = normalizeAttributeNameKey(newAttributeValue);
+
+    setSchemaStates((prev) => {
+      const schemaId = getCurrentSchemaId();
+      const currentState = prev[schemaId] || createDefaultSchemaState();
+
+      if (!currentState) return prev;
+
+      const renameInArrayOfObjectsAttribute = (arr) => {
+        if (!Array.isArray(arr)) return arr;
+        return arr.map((row) => {
+          if (!row || typeof row !== "object") return row;
+          const rowAttr = row.Attribute;
+          if (typeof rowAttr !== "string") return row;
+          const rowNorm = normalizeAttributeNameKey(rowAttr);
+          const matches = rowAttr === oldAttributeValue || rowNorm === oldNorm;
+          return matches ? { ...row, Attribute: newAttributeValue } : row;
+        });
+      };
+
+      const renameInStringArray = (arr) => {
+        if (!Array.isArray(arr)) return arr;
+        let didRename = false;
+        const next = arr.map((s) => {
+          if (typeof s !== "string") return s;
+          const sNorm = normalizeAttributeNameKey(s);
+          const matches = s === oldAttributeValue || sNorm === oldNorm;
+          if (!matches) return s;
+          didRename = true;
+          return newAttributeValue;
+        });
+        return didRename ? next : arr;
+      };
+
+      const renameKeyInObjectByNorm = (obj, targetKey) => {
+        if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
+        const next = { ...obj };
+        const keys = Object.keys(obj);
+        let didRename = false;
+
+        keys.forEach((k) => {
+          const kNorm = normalizeAttributeNameKey(k);
+          const matches = k === oldAttributeValue || kNorm === oldNorm;
+          if (!matches) return;
+          if (k === targetKey) return;
+          const existingTarget = Object.prototype.hasOwnProperty.call(next, targetKey);
+          if (existingTarget) {
+            delete next[k];
+            didRename = true;
+            return;
+          }
+          next[targetKey] = obj[k];
+          delete next[k];
+          didRename = true;
+        });
+
+        return didRename ? next : obj;
+      };
+
+      const renameOverlayMapKeys = (map) => {
+        if (!map || typeof map !== "object" || Array.isArray(map)) return map;
+        const next = { ...map };
+        const targetKey = newNorm;
+        const keys = Object.keys(map);
+        let didRename = false;
+
+        keys.forEach((k) => {
+          const kNorm = normalizeAttributeNameKey(k);
+          if (kNorm !== oldNorm) return;
+          if (k === targetKey) return;
+          if (Object.prototype.hasOwnProperty.call(next, targetKey) && k !== targetKey) {
+            delete next[k];
+            didRename = true;
+            return;
+          }
+          next[targetKey] = map[k];
+          delete next[k];
+          didRename = true;
+        });
+
+        return didRename ? next : map;
+      };
+
+      const updatedState = { ...currentState };
+
+      updatedState.attributes = renameInArrayOfObjectsAttribute(currentState.attributes);
+      updatedState.attributeFormats = renameOverlayMapKeys(currentState.attributeFormats || {});
+      updatedState.attributeRanges = renameOverlayMapKeys(currentState.attributeRanges || {});
+      updatedState.attributeCardinality = renameOverlayMapKeys(currentState.attributeCardinality || {});
+
+      updatedState.formatRuleData = renameInArrayOfObjectsAttribute(currentState.formatRuleData);
+      updatedState.rangeData = renameInArrayOfObjectsAttribute(currentState.rangeData);
+      updatedState.cardinalityData = renameInArrayOfObjectsAttribute(currentState.cardinalityData);
+
+      updatedState.characterEncodingData = renameKeyInObjectByNorm(
+        currentState.characterEncodingData || {},
+        newAttributeValue
+      );
+
+      const entryCodes = currentState.entryCodes || {};
+      updatedState.entryCodes = renameKeyInObjectByNorm(entryCodes, newAttributeValue);
+
+      updatedState.attributesWithLists = renameInStringArray(currentState.attributesWithLists || []);
+      updatedState.deletedAttributes = renameInStringArray(currentState.deletedAttributes || []);
+
+      updatedState.lanAttributeRowData = (() => {
+        const lan = currentState.lanAttributeRowData || {};
+        if (!lan || typeof lan !== "object") return lan;
+        let didRename = false;
+        const nextLan = { ...lan };
+        Object.keys(lan).forEach((language) => {
+          const rows = lan[language];
+          if (!Array.isArray(rows)) return;
+          const nextRows = rows.map((row) => {
+            if (!row || typeof row !== "object") return row;
+            const rowAttr = row.Attribute;
+            if (typeof rowAttr !== "string") return row;
+            const rowNorm = normalizeAttributeNameKey(rowAttr);
+            const matches = rowAttr === oldAttributeValue || rowNorm === oldNorm;
+            if (!matches) return row;
+            didRename = true;
+            return { ...row, Attribute: newAttributeValue };
+          });
+          nextLan[language] = didRename ? nextRows : rows;
+        });
+        return didRename ? nextLan : lan;
+      })();
+
+      updatedState.unitFramedData = renameInArrayOfObjectsAttribute(currentState.unitFramedData);
+      updatedState.attributeFramingData = renameInArrayOfObjectsAttribute(currentState.attributeFramingData);
+      updatedState.dataStandardsData = renameInArrayOfObjectsAttribute(currentState.dataStandardsData);
+
+      updatedState.unitData = renameInStringArray(currentState.unitData || []);
+      updatedState.unframedUnitList = renameInStringArray(currentState.unframedUnitList || []);
+      updatedState.unframedAttributeList = renameInStringArray(currentState.unframedAttributeList || []);
+
+      return {
+        ...prev,
+        [schemaId]: updatedState
+      };
+    });
+  };
+
   return { 
     // Core state access
     getSchema,
@@ -363,5 +511,6 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     getCardinalityData,
     getFormatRuleData,
     getRangeData,
+    renameAttribute
   };
 };

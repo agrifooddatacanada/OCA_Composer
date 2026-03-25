@@ -1,4 +1,5 @@
 import { langCodeOCAFromName } from '../utils/languageUtils';
+import { normalizeAttributeNameKey } from "../utils/stringUtils";
 
 /**
  * Applies all overlay changes from editor state to OCA schema structure.
@@ -34,6 +35,16 @@ export function applyAllOverlays(ocaSchema, editorState) {
 function getValidAttributeNames(editorState) {
   const attrs = editorState?.attributes || [];
   return new Set(attrs.map((a) => a.Attribute));
+}
+
+function getNormalizedAttributeToRawMap(editorState) {
+  const attrs = editorState?.attributes || [];
+  const normalizedToRaw = new Map();
+  attrs.forEach((a) => {
+    if (!a?.Attribute) return;
+    normalizedToRaw.set(normalizeAttributeNameKey(a.Attribute), a.Attribute);
+  });
+  return normalizedToRaw;
 }
 
 // ============================================================================
@@ -103,6 +114,8 @@ function applyFormatOverlay(ocaSchema, editorState, validAttributeNames) {
   const attributeFormats = editorState.attributeFormats || {};
   
   if (Object.keys(attributeFormats).length === 0) return;
+
+  const normalizedToRaw = getNormalizedAttributeToRawMap(editorState);
   
   const formatOverlay = {
     d: ocaSchema.overlays?.format?.d,
@@ -112,8 +125,10 @@ function applyFormatOverlay(ocaSchema, editorState, validAttributeNames) {
   };
 
   Object.entries(attributeFormats).forEach(([attrName, formatRule]) => {
-    if (validAttributeNames.has(attrName) && formatRule) {
-      formatOverlay.attribute_formats[attrName] = formatRule;
+    if (!formatRule) return;
+    const rawAttrName = normalizedToRaw.get(normalizeAttributeNameKey(attrName));
+    if (rawAttrName) {
+      formatOverlay.attribute_formats[rawAttrName] = formatRule;
     }
   });
 
@@ -146,6 +161,8 @@ function applyCardinalityOverlay(ocaSchema, editorState, validAttributeNames) {
   const attributeCardinality = editorState.attributeCardinality || {};
   
   if (Object.keys(attributeCardinality).length === 0) return;
+
+  const normalizedToRaw = getNormalizedAttributeToRawMap(editorState);
   
   const cardinalityOverlay = {
     d: ocaSchema.overlays?.cardinality?.d,
@@ -155,8 +172,10 @@ function applyCardinalityOverlay(ocaSchema, editorState, validAttributeNames) {
   };
 
   Object.entries(attributeCardinality).forEach(([attrName, cardValue]) => {
-    if (validAttributeNames.has(attrName) && cardValue) {
-      cardinalityOverlay.attribute_cardinality[attrName] = cardValue;
+    if (!cardValue) return;
+    const rawAttrName = normalizedToRaw.get(normalizeAttributeNameKey(attrName));
+    if (rawAttrName) {
+      cardinalityOverlay.attribute_cardinality[rawAttrName] = cardValue;
     }
   });
 
@@ -193,6 +212,8 @@ function applyRangeOverlay(ocaSchema, editorState, validAttributeNames) {
   const attributeRanges = editorState.attributeRanges || {};
   
   if (Object.keys(attributeRanges).length === 0) return;
+
+  const normalizedToRaw = getNormalizedAttributeToRawMap(editorState);
   
   const rangeOverlay = {
     d: ocaSchema.overlays?.range?.d,
@@ -202,8 +223,10 @@ function applyRangeOverlay(ocaSchema, editorState, validAttributeNames) {
   };
 
   Object.entries(attributeRanges).forEach(([attrName, range]) => {
-    if (validAttributeNames.has(attrName) && (range.lower || range.upper)) {
-      rangeOverlay.attributes[attrName] = {
+    if (!(range.lower || range.upper)) return;
+    const rawAttrName = normalizedToRaw.get(normalizeAttributeNameKey(attrName));
+    if (rawAttrName) {
+      rangeOverlay.attributes[rawAttrName] = {
         lower: range.lower || "",
         lower_inclusive: range.lower_inclusive || false,
         upper: range.upper || "",

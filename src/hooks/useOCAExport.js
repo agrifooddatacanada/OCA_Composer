@@ -38,6 +38,7 @@ import {
   normalizeEscapedQuotes,
   escapeForOCAString
 } from "../utils/helpers";
+import { getMapValueForAttributeName } from "../utils/stringUtils";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 
 const currentEnv = process.env.REACT_APP_ENV;
@@ -282,7 +283,7 @@ const useOCAExport = () => {
       let tempText = "";
       // Iterate over current attributes only (prevents deleted attributes from appearing)
       attributesList.forEach((attrName) => {
-        const formatRule = attributeFormats[attrName];
+        const formatRule = getMapValueForAttributeName(attributeFormats, attrName);
         if (formatRule) {
           // Normalize first (unescape any already-escaped quotes), then escape all quotes
           // This prevents double-escaping when format rules contain \" from the original OCA file
@@ -319,7 +320,7 @@ const useOCAExport = () => {
       let cardinalityText = "";
       // Iterate over current attributes only (prevents deleted attributes from appearing)
       attributesList.forEach((attrName) => {
-        const cardinalityValue = attributeCardinality[attrName];
+        const cardinalityValue = getMapValueForAttributeName(attributeCardinality, attrName);
         if (cardinalityValue) {
           cardinalityText += ` ${attrName}="${cardinalityValue}"`;
         }
@@ -484,18 +485,18 @@ const useOCAExport = () => {
     // Convert attributeFormats object to array format for helper functions
     const formatRuleRowData = attributeRowData.map(attr => ({
       Attribute: attr.Attribute,
-      "Format Rule": attributeFormats[attr.Attribute] || ""
+      "Format Rule": getMapValueForAttributeName(attributeFormats, attr.Attribute) || ""
     }));
 
     // Convert attributeRanges object to array format for helper functions
     const rangeRowData = attributeRowData
       .filter(attr => attr.Type === "Numeric" || attr.Type === "DateTime")
       .map(attr => {
-        const range = attributeRanges[attr.Attribute] || {};
+        const range = getMapValueForAttributeName(attributeRanges, attr.Attribute) || {};
         return {
           Attribute: attr.Attribute,
           Type: attr.Type,
-          FormatRule: attributeFormats[attr.Attribute] || "",
+          FormatRule: getMapValueForAttributeName(attributeFormats, attr.Attribute) || "",
           LowerBound: range.lower || "",
           UpperBound: range.upper || "",
           LowerInclusive: range.lower_inclusive ?? false,

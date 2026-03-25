@@ -28,10 +28,10 @@ export const resetOverlayValues = (overlayType) => {
   // Overlay data field configuration
   const overlayConfig = {
     [FIELD_CHARACTER_ENCODING_OVERLAY]: { characterEncodingData: {} },
-    [FIELD_FORMAT_OVERLAY]: { formatRuleData: [], rangeData: [] },
+    [FIELD_FORMAT_OVERLAY]: { attributeFormats: {}, attributeRanges: {}, formatRuleData: [], rangeData: [] },
     [FIELD_FORM_INFORMATION_OVERLAY]: { FormInformationRowData: [] },
-    [FIELD_RANGE_OVERLAY]: { rangeData: [] },
-    [FIELD_CARDINALITY_OVERLAY]: { cardinalityData: undefined }, // undefined = uninitialized state
+    [FIELD_RANGE_OVERLAY]: { attributeRanges: {}, rangeData: [] },
+    [FIELD_CARDINALITY_OVERLAY]: { attributeCardinality: {}, cardinalityData: undefined }, // undefined = uninitialized state
     [FIELD_UNIT_FRAMING_OVERLAY]: { unitFramedData: undefined, frameAllUnits: false, unframedUnitList: [] },
     [FIELD_CONFORMANCE_OVERLAY]: { 
       requiredEntries: undefined, 
