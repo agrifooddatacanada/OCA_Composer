@@ -72,12 +72,11 @@ const Range = forwardRef((props, ref) => {
 
   const getRowHeight = useCallback(
     (params) => {
-      const opts = { compact: true };
-      const attrH = measureTextHeight(params.data?.Attribute || "", 180, opts);
+      const attrH = measureTextHeight(params.data?.Attribute || "", 164);
       const formatDesc = getFormatRuleDescription(params.data?.Type, params.data?.FormatRule, t) || "";
-      const formatH = measureTextHeight(formatDesc, 240, {});
-      const lowerH = measureTextHeight(params.data?.LowerBound || "", 130, opts);
-      const upperH = measureTextHeight(params.data?.UpperBound || "", 130, opts);
+      const formatH = measureTextHeight(formatDesc, 224);
+      const lowerH = measureTextHeight(params.data?.LowerBound || "", 114);
+      const upperH = measureTextHeight(params.data?.UpperBound || "", 114);
       const maxH = Math.max(attrH, formatH, lowerH, upperH);
       return Math.max(32, maxH + 8);
     },
