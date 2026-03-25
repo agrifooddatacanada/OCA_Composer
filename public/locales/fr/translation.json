@@ -668,5 +668,17 @@
   "Period": "Point",
   "Each column of your dataset is an attribute in your schema. Here you can add, remove, and edit attributes and their details.": "Chaque colonne de votre jeu de données est un attribut dans votre schéma. Ici, vous pouvez ajouter, supprimer et modifier des attributs et leurs détails.",
   "Enter the column names below. These are the column headers in the tabular data set no matter the language.": "Entrez les noms de colonnes ci-dessous. Ce sont les en-têtes de colonnes dans l'ensemble de données tabulaires quelle que soit la langue.",
-  "Write column names or drag and drop an existing dataset (Excel or .csv file) to import names (the first row must contain the column headers). You can edit these later.": "Écrivez les noms de colonne ou faites glisser et déposez un jeu de données existant (fichier Excel ou .csv) pour importer des noms (la première ligne doit contenir les en-têtes de colonne). Vous pouvez les modifier plus tard."
+  "Write column names or drag and drop an existing dataset (Excel or .csv file) to import names (the first row must contain the column headers). You can edit these later.": "Écrivez les noms de colonne ou faites glisser et déposez un jeu de données existant (fichier Excel ou .csv) pour importer des noms (la première ligne doit contenir les en-têtes de colonne). Vous pouvez les modifier plus tard.",
+  "Edit placeholder values shown to form users. Then click NEXT to use the form layout builder.": "Modifiez les valeurs d'espace réservé affichées aux utilisateurs du formulaire. Cliquez ensuite sur SUIVANT pour utiliser le créateur de mise en page du formulaire.",
+  "You can use the default encodings below if you don't know the encodings the data source uses. For new data, utf-8 is a good choice.": "Vous pouvez utiliser les encodages par défaut ci-dessous si vous ne connaissez pas les encodages qu'exploite la source de données. Pour les nouvelles données, utf-8 est un bon choix.",
+  "Specify if attributes must have data.": "Précisez si les attributs doivent contenir des données.",
+  "Here you can start to define a form of questions. Start by editing placeholder answers for each question. Then hit NEXT to define pages, sections, and more.": "Ici, vous pouvez commencer à définir un formulaire de questions. Commencez par modifier les réponses indicatives pour chaque question. Ensuite, cliquez sur SUIVANT pour définir les pages, les sections et plus encore.",
+  "Link attributes to terms drawn from an ontology or controlled vocabulary.": "Associez les attributs à des termes tirés d'une ontologie ou d'un vocabulaire contrôlé.",
+  "Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes.": "Ajoutez des valeurs min. et/ou max. (inclusives ou exclusives) pour les attributs ayant des types de données Numérique ou Date et Heure.",
+  "Specify the format of values for Text, Numeric, DateTime, and Binary attributes.": "Spécifiez le format des valeurs pour les attributs Texte, Numérique, Date et Heure, et Binaire.",
+  "Link units to terms drawn from an ontology or controlled vocabulary.": "Associez les unités à des termes tirés d'une ontologie ou d'un vocabulaire contrôlé.",
+  "Define how many values your Array[] datatype attributes can have.": "Définissez combien de valeurs vos attributs de type de données Array[] (Tableau) peuvent avoir.",
+  "Layout Builder": "Constructeur de mise en page",
+  "Drag attributes from the left into pages or sections. Each attribute can be used once.": "Faites glisser les attributs de la gauche vers des pages ou des sections. Chaque attribut peut être utilisé une fois.",
+  "Placeholder Editor": "Éditeur d'espace réservé"
 }

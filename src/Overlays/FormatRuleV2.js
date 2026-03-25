@@ -1,4 +1,5 @@
-import { Box, Link, Popover, Alert } from "@mui/material";
+import { Box, Popover, Alert, Typography } from "@mui/material";
+import MuiLink from "@mui/material/Link";
 import React, { useCallback, useContext, useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
@@ -16,11 +17,13 @@ import Loading from "../components/Loading";
 import {
   CUSTOM_FORMAT_RULE,
   FIELD_FORMAT_OVERLAY,
-  FIELD_RANGE_OVERLAY
+  FIELD_RANGE_OVERLAY,
+  isRangeEligibleAttributeType
 } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { overlayGridOnFirstDataRendered } from "./gridUtils";
+import { getAllGridRowData, overlayGridOnFirstDataRendered } from "./gridUtils";
 import { getFormatRuleDescription } from "../utils/helpers";
+import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
 import { isChildSchemaType } from "../constants/constants";
 
 const allowOverflowStyle = {
@@ -43,7 +46,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     getFormatRuleData,
     getRangeData,
     setFormatRuleRowData,
-    setRangeRowData
+    setRangeRowData,
+    schemaStates,
+    getCurrentSchemaId
   } = useMultiSchema();
   const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORMAT_OVERLAY);
@@ -74,7 +79,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         return !isChildSchemaType(baseType);
       })
       .map((attr) => {
-        const formatRegex = attributeFormats[attr.Attribute] || "";
+        const formatRegex = getMapValueForAttributeName(attributeFormats, attr.Attribute) || "";
 
       // Determine whether the stored regex matches a built-in description for this type
       const description = formatRegex ? getFormatRuleDescription(attr.Type, formatRegex) : "";
@@ -98,9 +103,10 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   }, [schemaState?.attributes, schemaState?.attributeFormats]); // Re-init when attributes or formats change
   
   // Get range data using computed getter (filters to Numeric/DateTime with format rules)
-  const rangeRowData = useMemo(() => 
-    getRangeData() || []
-  , [getRangeData, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
+  const rangeRowData = useMemo(
+    () => getRangeData() || [],
+    [getRangeData, schemaStates, getCurrentSchemaId]
+  );
 
   const handleSave = useCallback(() => {
     if (!gridRef.current) {
@@ -108,9 +114,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     }
     
     gridRef.current.api.stopEditing();
-    const newFormatRuleRowData = gridRef.current.api
-      .getRenderedNodes()
-      ?.map((node) => node?.data) || [];
+    const newFormatRuleRowData = getAllGridRowData(gridRef.current.api);
     
     // Only update if we have data to prevent clearing existing format rules
     if (newFormatRuleRowData.length > 0) {
@@ -121,14 +125,15 @@ const FormatRulesV2 = forwardRef((props, ref) => {
 
     newFormatRuleRowData.forEach((row) => {
       if (
-        (row.Type !== "Numeric" && row.Type !== "DateTime") ||
+        !isRangeEligibleAttributeType(row.Type) ||
         (!row["Format Rule"] && !row[CUSTOM_FORMAT_RULE])
       ) {
         return;
       }
 
       const existingRangeRow = rangeRowData.find(
-        (rangeRow) => rangeRow.Attribute === row.Attribute
+        (rangeRow) =>
+          normalizeAttributeNameKey(rangeRow.Attribute) === normalizeAttributeNameKey(row.Attribute)
       );
 
       if (existingRangeRow) {
@@ -187,18 +192,18 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     return () => {
       // Save on unmount - capture the grid data at unmount time
       if (gridRef.current?.api) {
-        const newFormatRuleRowData = gridRef.current.api
-          .getRenderedNodes()
-          ?.map((node) => node?.data);
+        const newFormatRuleRowData = getAllGridRowData(gridRef.current.api);
         if (newFormatRuleRowData && newFormatRuleRowData.length > 0) {
           const currentSchema = getSchema();
           const attributeFormats = { ...(currentSchema?.attributeFormats || {}) };
           newFormatRuleRowData.forEach((row) => {
             const formatRule = row["Format Rule"] || row[CUSTOM_FORMAT_RULE];
+            const norm = normalizeAttributeNameKey(row.Attribute);
+            Object.keys(attributeFormats).forEach((k) => {
+              if (normalizeAttributeNameKey(k) === norm) delete attributeFormats[k];
+            });
             if (formatRule) {
-              attributeFormats[row.Attribute] = formatRule;
-            } else {
-              delete attributeFormats[row.Attribute];
+              attributeFormats[norm] = formatRule;
             }
           });
           updateSchema({ attributeFormats });
@@ -381,6 +386,34 @@ const FormatRulesV2 = forwardRef((props, ref) => {
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
         </Box>
+        <Typography
+          variant="body2"
+          sx={{ color: "text.secondary", textAlign: "center", mt: 2, maxWidth: 790, px: 1, lineHeight: 1.5 }}
+        >
+          {t("Rules are documented in the", { defaultValue: "Rules are documented in the" })}{" "}
+          <MuiLink
+            href="https://github.com/agrifooddatacanada/format_options"
+            target="_blank"
+            rel="noreferrer"
+            underline="hover"
+          >
+            {t("GitHub repo", { defaultValue: "GitHub repo" })}
+          </MuiLink>
+          . {t("Request new rules by", { defaultValue: "Request new rules by" })}{" "}
+          <MuiLink
+            href="https://github.com/agrifooddatacanada/format_options/issues"
+            target="_blank"
+            rel="noreferrer"
+            underline="hover"
+          >
+            {t("raise an issue", { defaultValue: "raise an issue" })}
+          </MuiLink>{" "}
+          {t("or email", { defaultValue: "or email" })}{" "}
+          <MuiLink href="mailto:adc@uoguelph.ca" underline="hover">
+            adc@uoguelph.ca
+          </MuiLink>
+          .
+        </Typography>
       </Box>
     </BackNextSkeleton>
   );

@@ -703,7 +703,12 @@ const FormInformation = () => {
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}
-      <Box sx={{ margin: "2rem", marginBottom: BETWEEN_SECTION_SPACING }}>
+      <Box sx={{ margin: "2rem", marginTop: "0.5rem", marginBottom: BETWEEN_SECTION_SPACING }}>
+        <Box sx={{ mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: "bold", color: CustomPalette.GREY_800, textAlign: "center", mb: 4 }}>
+            {t("Placeholder Editor")}
+          </Typography>
+        </Box>
         <Box
           sx={{
             position: "relative",

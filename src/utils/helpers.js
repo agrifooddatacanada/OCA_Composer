@@ -11,6 +11,7 @@ import {
   FIELD_FORMAT_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_RANGE_OVERLAY,
+  isRangeEligibleAttributeType,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
   formatCodeNumericDescription,
@@ -952,7 +953,7 @@ export const shouldDisableRangeOverlay = (
     
     // Find the corresponding attribute to get its Type
     const attribute = attributes.find(attr => attr.Attribute === rule.Attribute);
-    return attribute && (attribute.Type === "Numeric" || attribute.Type === "DateTime");
+    return attribute && isRangeEligibleAttributeType(attribute.Type);
   });
   
   return (
@@ -994,7 +995,7 @@ export const getRangeOverlayDisabledReason = (
     
     // Find the corresponding attribute to get its Type
     const attribute = attributes.find(attr => attr.Attribute === rule.Attribute);
-    return attribute && (attribute.Type === "Numeric" || attribute.Type === "DateTime");
+    return attribute && isRangeEligibleAttributeType(attribute.Type);
   });
   
   if (!hasAttributesWithFormatRules) {

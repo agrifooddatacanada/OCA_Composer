@@ -5,6 +5,26 @@ export const removeSpacesFromString = (string) => {
     return string;
   }
 };
+
+export const normalizeAttributeNameKey = (name) => {
+  if (typeof name !== "string") return "";
+  return removeSpacesFromString(name.replace(/[\u200b\uFEFF]/g, ""));
+};
+
+export const getMapValueForAttributeName = (map, attributeName) => {
+  if (!map || typeof attributeName !== "string") return undefined;
+  if (Object.prototype.hasOwnProperty.call(map, attributeName)) {
+    return map[attributeName];
+  }
+  const normalized = normalizeAttributeNameKey(attributeName);
+  if (normalized !== attributeName && Object.prototype.hasOwnProperty.call(map, normalized)) {
+    return map[normalized];
+  }
+  for (const k of Object.keys(map)) {
+    if (normalizeAttributeNameKey(k) === normalized) return map[k];
+  }
+  return undefined;
+};
 export const replaceColonFromString = (string) => {
   if (typeof string === "string") {
     return string.replace(/:/g, "-");

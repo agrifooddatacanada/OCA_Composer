@@ -7,6 +7,15 @@ export const overlayGridOnFirstDataRendered = (params) => {
   params?.api?.sizeColumnsToFit?.();
 };
 
+export const getAllGridRowData = (api) => {
+  if (!api) return [];
+  const rowData = [];
+  api.forEachNode((node) => {
+    if (node?.data) rowData.push(node.data);
+  });
+  return rowData;
+};
+
 /**
  * Hook for overlay grids that use loading state - returns onGridReady callback.
  */

@@ -14,6 +14,8 @@
  */
 
 import { LanguageConstants } from "../utils/languageUtils";
+import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
+import { isRangeEligibleAttributeType } from "../constants/constants";
 import { overlayItems, CUSTOM_FORMAT_RULE } from "../constants/constants";
 
 export const createDefaultSchemaState = () => ({
@@ -190,7 +192,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     const attributeRanges = {};
     newData.forEach((row) => {
       if (row.LowerBound || row.UpperBound) {
-        attributeRanges[row.Attribute] = {
+        attributeRanges[normalizeAttributeNameKey(row.Attribute)] = {
           lower: row.LowerBound || "",
           upper: row.UpperBound || "",
           lower_inclusive: row.LowerInclusive ?? false,
@@ -206,7 +208,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     newData.forEach(row => {
       const formatRule = row["Format Rule"] || row[CUSTOM_FORMAT_RULE];
       if (formatRule) {
-        attributeFormats[row.Attribute] = formatRule;
+        attributeFormats[normalizeAttributeNameKey(row.Attribute)] = formatRule;
       }
     });
     updateSchema({ attributeFormats });
@@ -217,7 +219,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     newData.forEach(item => {
       const cardinalityValue = item.EntryLimit || item.Cardinality || "";
       if (cardinalityValue) {
-        attributeCardinality[item.Attribute] = cardinalityValue;
+        attributeCardinality[normalizeAttributeNameKey(item.Attribute)] = cardinalityValue;
       }
     });
     updateSchema({ attributeCardinality });
@@ -289,7 +291,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     return attributes.map(attr => ({
       Attribute: attr.Attribute,
       Type: attr.Type,
-      Cardinality: map[attr.Attribute] || ""
+      Cardinality: getMapValueForAttributeName(map, attr.Attribute) || ""
     }));
   };
 
@@ -299,7 +301,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     const attributeFormats = state?.attributeFormats || {};
 
     return attributes.map((attr) => {
-      const rule = attributeFormats[attr.Attribute] || "";
+      const rule = getMapValueForAttributeName(attributeFormats, attr.Attribute) || "";
       return {
         Attribute: attr.Attribute,
         Type: attr.Type,
@@ -317,17 +319,17 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
 
     return attributes
       .filter((attr) => {
-        const hasCorrectType = attr.Type === "Numeric" || attr.Type === "DateTime";
-        const formatRule = attributeFormats[attr.Attribute];
+        const hasCorrectType = isRangeEligibleAttributeType(attr.Type);
+        const formatRule = getMapValueForAttributeName(attributeFormats, attr.Attribute);
         const hasFormatRule = formatRule && String(formatRule).trim() !== "";
         return hasCorrectType && hasFormatRule;
       })
       .map((attr) => {
-        const range = attributeRanges[attr.Attribute] || {};
+        const range = getMapValueForAttributeName(attributeRanges, attr.Attribute) || {};
         return {
           Attribute: attr.Attribute,
           Type: attr.Type,
-          FormatRule: attributeFormats[attr.Attribute],
+          FormatRule: getMapValueForAttributeName(attributeFormats, attr.Attribute),
           LowerBound: range.lower || "",
           UpperBound: range.upper || "",
           LowerInclusive: range.lower_inclusive ?? false,

@@ -434,16 +434,10 @@ const FormBuilder = () => {
       <DndProvider backend={HTML5Backend}>
         <Box sx={{ margin: "2rem", marginTop: "0.5rem", marginBottom: BETWEEN_SECTION_SPACING }}>
           <Box sx={{ mb: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800, textAlign: 'center' }}>
-              {t("Form Builder")}
+            <Typography variant="h4" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800, textAlign: 'center', mb: 4 }}>
+              {t("Layout Builder")}
             </Typography>
           </Box>
-
-          <Typography variant="body1" component="div" sx={{ color: CustomPalette.GREY_600, mb: 4, textAlign: 'center' }}>
-            {t("Drag attributes from the left into pages or sections.")}
-            <br />
-            {t("Each attribute can be used once.")}
-          </Typography>
 
           <Box
             sx={{

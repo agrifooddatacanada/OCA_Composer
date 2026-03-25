@@ -638,5 +638,17 @@
   "Hyphen": "Hyphen",
   "Period": "Period",
   "Each column of your dataset is an attribute in your schema. Here you can add, remove, and edit attributes and their details.": "Each column of your dataset is an attribute in your schema. Here you can add, remove, and edit attributes and their details.",
-  "Enter the column names below. These are the column headers in the tabular data set no matter the language.": "Enter the column names below. These are the column headers in the tabular data set no matter the language."
+  "Enter the column names below. These are the column headers in the tabular data set no matter the language.": "Enter the column names below. These are the column headers in the tabular data set no matter the language.",
+  "Edit placeholder values shown to form users. Then click NEXT to use the form layout builder.": "Edit placeholder values shown to form users. Then click NEXT to use the form layout builder.",
+  "You can use the default encodings below if you don't know the encodings the data source uses. For new data, utf-8 is a good choice.": "You can use the default encodings below if you don't know the encodings the data source uses. For new data, utf-8 is a good choice.",
+  "Specify if attributes must have data.": "Specify if attributes must have data.",
+  "Here you can start to define a form of questions. Start by editing placeholder answers for each question. Then hit NEXT to define pages, sections, and more.": "Here you can start to define a form of questions. Start by editing placeholder answers for each question. Then hit NEXT to define pages, sections, and more.",
+  "Link attributes to terms drawn from an ontology or controlled vocabulary.": "Link attributes to terms drawn from an ontology or controlled vocabulary.",
+  "Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes.": "Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes.",
+  "Specify the format of values for Text, Numeric, DateTime, and Binary attributes.": "Specify the format of values for Text, Numeric, DateTime, and Binary attributes.",
+  "Link units to terms drawn from an ontology or controlled vocabulary.": "Link units to terms drawn from an ontology or controlled vocabulary.",
+  "Define how many values your Array[] datatype attributes can have.": "Define how many values your Array[] datatype attributes can have.",
+  "Layout Builder": "Layout Builder",
+  "Drag attributes from the left into pages or sections. Each attribute can be used once.": "Drag attributes from the left into pages or sections. Each attribute can be used once.",
+  "Placeholder Editor": "Placeholder Editor"
 }

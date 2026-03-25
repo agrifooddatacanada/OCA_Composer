@@ -7,19 +7,23 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
+import {
+  BETWEEN_SECTION_SPACING,
+  FIELD_RANGE_OVERLAY,
+  isRangeEligibleAttributeType
+} from "../constants/constants";
 import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
-import { flexCenter, gridStyles, greyCellStyle, preWrapWordBreak } from "../constants/styles";
+import { flexCenter, gridStyles, greyCellStyle } from "../constants/styles";
 import CheckboxHeader from "../components/CheckboxHeader";
 import Loading from "../components/Loading";
 import CheckboxRenderer from "../AttributeDetails/CheckboxRenderer";
 import { getCurrentData, getFormatRuleDescription } from "../utils/helpers";
+import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
-import { FIELD_RANGE_OVERLAY } from "../constants/constants";
 import { matchFormat } from "../OCADataValidator/utils/matchRules";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { useOverlayGridOnGridReady } from "./gridUtils";
+import { getAllGridRowData, useOverlayGridOnGridReady } from "./gridUtils";
 
 const Range = forwardRef((props, ref) => {
   const {
@@ -32,7 +36,9 @@ const Range = forwardRef((props, ref) => {
     getSchema, 
     updateSchema, 
     getRangeData,
-    setRangeRowData
+    setRangeRowData,
+    schemaStates,
+    getCurrentSchemaId
   } = useMultiSchema();
   
   const schemaState = getSchema();
@@ -40,7 +46,7 @@ const Range = forwardRef((props, ref) => {
 
   const rangeRowData = useMemo(() => {
     return getRangeData() || [];
-  }, [getRangeData, schemaState?.attributeRanges, schemaState?.attributeFormats, schemaState?.attributes]);
+  }, [getRangeData, schemaStates, getCurrentSchemaId]);
   
   const { t, i18n } = useTranslation();
   const gridRef = useRef();
@@ -49,20 +55,6 @@ const Range = forwardRef((props, ref) => {
   const [shouldRevalidate, setShouldRevalidate] = useState(false);
   const [errors, setErrors] = useState({});
   const [showValidationError, setShowValidationError] = useState(false);
-
-  const getRowHeight = useCallback(
-    (params) => {
-      const opts = { compact: true };
-      const attrH = measureTextHeight(params.data?.Attribute || "", 180, opts);
-      const formatDesc = getFormatRuleDescription(params.data?.Type, params.data?.FormatRule, t) || "";
-      const formatH = measureTextHeight(formatDesc, 240, {});
-      const lowerH = measureTextHeight(params.data?.LowerBound || "", 130, opts);
-      const upperH = measureTextHeight(params.data?.UpperBound || "", 130, opts);
-      const maxH = Math.max(attrH, formatH, lowerH, upperH);
-      return Math.max(32, maxH + 8);
-    },
-    [t]
-  );
 
   const getCellValidationStyle = useCallback(
     (params) => {
@@ -76,6 +68,20 @@ const Range = forwardRef((props, ref) => {
       };
     },
     [errors]
+  );
+
+  const getRowHeight = useCallback(
+    (params) => {
+      const opts = { compact: true };
+      const attrH = measureTextHeight(params.data?.Attribute || "", 180, opts);
+      const formatDesc = getFormatRuleDescription(params.data?.Type, params.data?.FormatRule, t) || "";
+      const formatH = measureTextHeight(formatDesc, 240, {});
+      const lowerH = measureTextHeight(params.data?.LowerBound || "", 130, opts);
+      const upperH = measureTextHeight(params.data?.UpperBound || "", 130, opts);
+      const maxH = Math.max(attrH, formatH, lowerH, upperH);
+      return Math.max(32, maxH + 8);
+    },
+    [t]
   );
 
   const columnDefs = useMemo(
@@ -172,7 +178,7 @@ const Range = forwardRef((props, ref) => {
 
   const handleSave = () => {
     gridRef.current.api.stopEditing();
-    const rowData = gridRef.current.api.getRenderedNodes()?.map((node) => node?.data);
+    const rowData = getAllGridRowData(gridRef.current.api);
     setRangeRowData(rowData);
   };
 
@@ -204,7 +210,7 @@ const Range = forwardRef((props, ref) => {
     return () => {
       if (gridRef.current?.api) {
         gridRef.current.api.stopEditing();
-        const rowData = gridRef.current.api.getRenderedNodes()?.map((node) => node?.data);
+        const rowData = getAllGridRowData(gridRef.current.api);
         if (rowData && rowData.length > 0) {
           setRangeRowData(rowData);
         }
@@ -224,17 +230,13 @@ const Range = forwardRef((props, ref) => {
       const newRanges = {};
       
       attributes.forEach((attribute) => {
-        const formatRule = attributeFormats[attribute.Attribute];
+        const formatRule = getMapValueForAttributeName(attributeFormats, attribute.Attribute);
         
-        if (
-          (attribute.Type !== "Numeric" && attribute.Type !== "DateTime") ||
-          !formatRule
-        ) {
+        if (!isRangeEligibleAttributeType(attribute.Type) || !formatRule) {
           return;
         }
 
-        // Initialize with empty range bounds
-        newRanges[attribute.Attribute] = {
+        newRanges[normalizeAttributeNameKey(attribute.Attribute)] = {
           lower: "",
           upper: "",
           lower_inclusive: false,

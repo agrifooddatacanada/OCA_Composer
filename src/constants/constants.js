@@ -54,6 +54,18 @@ export const isChildSchemaType = (type) => {
   );
 };
 
+export const getScalarOrArrayElementTypeForRange = (typeStr) => {
+  if (!typeStr || typeof typeStr !== "string") return "";
+  const t = typeStr.trim();
+  const m = t.match(/^Array\[(.+)\]$/i);
+  return m ? m[1].trim() : t;
+};
+
+export const isRangeEligibleAttributeType = (typeStr) => {
+  const base = getScalarOrArrayElementTypeForRange(typeStr);
+  return base === "Numeric" || base === "DateTime";
+};
+
 // Fields for overlay items
 export const FIELD_CHARACTER_ENCODING_OVERLAY = "Character Encoding";
 export const FIELD_FORMAT_OVERLAY = "Format";

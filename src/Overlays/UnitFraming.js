@@ -14,8 +14,10 @@ import {
   TextField,
   Autocomplete,
   Popper,
-  Button
+  Button,
+  Typography
 } from "@mui/material";
+import MuiLink from "@mui/material/Link";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { AgGridReact } from "ag-grid-react";
@@ -25,7 +27,7 @@ import { styled } from "@mui/material/styles";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
-import { gridStyles, preWrapWordBreak } from "../constants/styles";
+import { gridStyles, greyCellStyle, preWrapWordBreak } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { CustomPalette } from "../constants/customPalette";
@@ -268,7 +270,7 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         field: "Unit",
         editable: false,
         width: 100,
-        cellStyle: () => allowOverflowStyle,
+        cellStyle: () => ({ ...greyCellStyle, overflow: "auto" }),
         headerComponent: () => (
           <CellHeader
             headerText={t("Unit")}
@@ -730,6 +732,48 @@ const UnitFraming = () => {
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
         </Box>
+        <Typography
+          variant="body2"
+          sx={{
+            color: "text.secondary",
+            textAlign: "center",
+            mt: 2,
+            maxWidth: GRID_WIDTH,
+            px: 1,
+            lineHeight: 1.5
+          }}
+        >
+          {t("All unit rules are documented in the", {
+            defaultValue: "All unit rules are documented in the"
+          })}{" "}
+          <MuiLink
+            href="https://github.com/agrifooddatacanada/UCUM_agri-food_units"
+            target="_blank"
+            rel="noreferrer"
+            underline="hover"
+          >
+            {t("GitHub repo", { defaultValue: "GitHub repo" })}
+          </MuiLink>
+          .{" "}
+          {t("Request new unit ontologies by", {
+            defaultValue: "Request new unit ontologies by"
+          })}{" "}
+          <MuiLink
+            href="https://github.com/agrifooddatacanada/UCUM_agri-food_units/issues"
+            target="_blank"
+            rel="noreferrer"
+            underline="hover"
+          >
+            {t("raising an issue in the repository", {
+              defaultValue: "raising an issue in the repository"
+            })}
+          </MuiLink>{" "}
+          {t("or email us at", { defaultValue: "or email us at" })}{" "}
+          <MuiLink href="mailto:adc@uoguelph.ca" underline="hover">
+            adc@uoguelph.ca
+          </MuiLink>
+          .
+        </Typography>
       </Box>
     </BackNextSkeleton>
   );

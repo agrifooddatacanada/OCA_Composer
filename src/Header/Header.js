@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getNormalizedUICode, getUICode, setUICode } from "../utils/languageUtils";
 import { Typography, Button, Box, useMediaQuery } from "@mui/material";
-import MuiLink from "@mui/material/Link";
 
 import { CustomPalette } from "../constants/customPalette";
 // import logo from "../assets/agri-logo.png";
@@ -29,49 +28,22 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     LanguageDetails: { header: t("Language Dependent Attribute Details"), toolTipText: t("You can add labels and descriptions in each language to help users of your schema. By having languages separate from the underlying structure it means you can share your schema in multiple languages."), helpLink: `${base}/${lang}/LanguageAttribute/` },
     View: { header: t("Review Schema"), toolTipText: t("Before finishing your schema you can preview the final contents on this page"), helpLink: `${base}/${lang}/ViewSchema/` },
     Overlays: { header: t("Add Additional Optional Information"), toolTipText: t("A variety of additional information can be added to your schema using overlays."), helpLink: `${base}/${lang}/Overlays/` },
-    CharacterEncoding: { header: t("Add Character Encoding"), toolTipText: t("Character encoding of the data source (for each attribute)..."), helpLink: `${base}/${lang}/CharacterEncoding/` },
-    RequiredEntries: { header: t("Add Required Entries"), toolTipText: t("Specify if the underlying data must have an entry for the specific attribute"), helpLink: `${base}/${lang}/RequiredEntry/` },
+    CharacterEncoding: { header: t("Add Character Encoding"), toolTipText: t("You can use the default encodings below if you don't know the encodings the data source uses. For new data, utf-8 is a good choice."), helpLink: `${base}/${lang}/CharacterEncoding/` },
+    RequiredEntries: { header: t("Add Required Entries"), toolTipText: t("Specify if attributes must have data."), helpLink: `${base}/${lang}/RequiredEntry/` },
     FormatRules: {
       header: t("Add Format Rules for Data Entry"),
-      toolTipText: (
-        <>
-          {t("Specify format rules for eligible attributes.", {
-            defaultValue: "Specify format rules for eligible attributes."
-          })}{" "}
-          {t("Rules are documented in the", { defaultValue: "Rules are documented in the" })}{" "}
-          <MuiLink
-            href="https://github.com/agrifooddatacanada/format_options"
-            target="_blank"
-            rel="noreferrer"
-            underline="hover"
-            sx={{ pointerEvents: "auto" }}
-          >
-            {t("GitHub repo", { defaultValue: "GitHub repo" })}
-          </MuiLink>
-          .{" "}
-          {t("Request new rules by", { defaultValue: "Request new rules by" })}{" "}
-          <MuiLink
-            href="https://github.com/agrifooddatacanada/format_options/issues"
-            target="_blank"
-            rel="noreferrer"
-            underline="hover"
-            sx={{ pointerEvents: "auto" }}
-          >
-            {t("raise an issue", { defaultValue: "raise an issue" })}
-          </MuiLink>
-          {" "}
-          {t("or email", { defaultValue: "or email" })}{" "}
-          <MuiLink href="mailto:adc@uoguelph.ca" underline="hover" sx={{ pointerEvents: "auto" }}>
-            adc@uoguelph.ca
-          </MuiLink>
-          .
-        </>
-      ),
+      toolTipText: t("Specify the format of values for Text, Numeric, DateTime, and Binary attributes."),
       helpLink: `${base}/${lang}/FormatText/`
     },
-    FormInformation: { header: t("Form Information"), toolTipText: "", helpLink: `${base}/${lang}/FormInformation/` },
-    FormBuilder: { header: t("Form Builder"), toolTipText: t("Create interactive forms using drag-and-drop interface"), helpLink: `${base}/${lang}/FormBuilder/` },
-    Cardinality: { header: t("Add Entry Limit Rules for Data Entry"), toolTipText: "", helpLink: `${base}/${lang}/Cardinality/` },
+    FormInformation: {
+      header: t("Placeholder Editor"),
+      toolTipText: t(
+        "Here you can start to define a form of questions. Start by editing placeholder answers for each question. Then hit NEXT to define pages, sections, and more."
+      ),
+      helpLink: `${base}/${lang}/FormInformation/`
+    },
+    FormBuilder: { header: t("Layout Builder"), toolTipText: t("Drag attributes from the left into pages or sections. Each attribute can be used once."), helpLink: `${base}/${lang}/FormBuilder/` },
+    Cardinality: { header: t("Add Entry Limit Rules for Data Entry"), toolTipText: t("Define how many values your Array[] datatype attributes can have."), helpLink: `${base}/${lang}/Cardinality/` },
     DataStandards: { header: t("Add Data Standards"), toolTipText: "", helpLink: `${base}/${lang}/DataStandards/` },
     StartDataValidator: { header: t("Upload Data (optional)"), toolTipText: "", helpLink: `${dewBase}/${lang}/DataEntryVerificationStart` },
     SchemaViewDataValidator: { header: t("Preview Schema"), toolTipText: "", helpLink: "" },
@@ -80,49 +52,12 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     OCADataValidatorCheck: { header: t("Data Entry and Verification"), toolTipText: "", helpLink: `${dewBase}/${lang}/DataVerification/` },
     UnitFraming: {
       header: t("Define units for schema attributes"),
-      toolTipText: (
-        <>
-          {t("Define your units.", { defaultValue: "Define your units." })}{" "}
-          {t("All unit rules are documented in the", {
-            defaultValue: "All unit rules are documented in the"
-          })}{" "}
-          <MuiLink
-            href="https://github.com/agrifooddatacanada/UCUM_agri-food_units"
-            target="_blank"
-            rel="noreferrer"
-            underline="hover"
-            sx={{ pointerEvents: "auto" }}
-          >
-            {t("GitHub repo", { defaultValue: "GitHub repo" })}
-          </MuiLink>
-          .{" "}
-          {t("Request new unit ontologies by", {
-            defaultValue: "Request new unit ontologies by"
-          })}{" "}
-          <MuiLink
-            href="https://github.com/agrifooddatacanada/UCUM_agri-food_units/issues"
-            target="_blank"
-            rel="noreferrer"
-            underline="hover"
-            sx={{ pointerEvents: "auto" }}
-          >
-            {t("raising an issue in the repository", {
-              defaultValue: "raising an issue in the repository"
-            })}
-          </MuiLink>
-          {" "}
-          {t("or email us at", { defaultValue: "or email us at" })}{" "}
-          <MuiLink href="mailto:adc@uoguelph.ca" underline="hover" sx={{ pointerEvents: "auto" }}>
-            adc@uoguelph.ca
-          </MuiLink>
-          .
-        </>
-      ),
+      toolTipText: t("Link units to terms drawn from an ontology or controlled vocabulary."),
       helpLink: `${base}/${lang}/UnitFraming/`
     },
-    AttributeFraming: { header: t("Add Attribute Framing"), toolTipText: "", helpLink: `${base}/${lang}/AttributeFraming/` },
+    AttributeFraming: { header: t("Add Attribute Framing"), toolTipText: t("Link attributes to terms drawn from an ontology or controlled vocabulary."), helpLink: `${base}/${lang}/AttributeFraming/` },
     UserSelection: { header: "", toolTipText: "", helpLink: `${base}/${lang}/Coauthor/` },
-    Range: { header: t("Add Range Rules for Data"), toolTipText: "", helpLink: `${base}/${lang}/Range/` }
+    Range: { header: t("Add Range Rules for Data"), toolTipText: t("Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes."), helpLink: `${base}/${lang}/Range/` }
   };
   return switchMap[currentPage] || { header: "", toolTipText: "", helpLink: "" };
 }
@@ -153,9 +88,6 @@ export default function Header({ currentPage }) {
     [currentPage, t, selectedLanguage]
   );
 
-  const centerItemInteractive =
-    currentPage === "FormatRules" || currentPage === "UnitFraming";
-
   return (
     <HeaderWrapper
       isMobile={isMobile}
@@ -173,14 +105,13 @@ export default function Header({ currentPage }) {
               fontSize: "0.875rem",
               maxWidth: 1100,
               textAlign: "center",
-              pointerEvents: centerItemInteractive ? "auto" : "none"
+              pointerEvents: "none"
             }}
           >
             {toolTipText}
           </Typography>
         ) : null
       }
-      centerItemInteractive={centerItemInteractive}
       leftItem={
         currentPage === "Landing" || currentPage === "StartOCAMerge" ? (
           <Box sx={{ flex: "column" }}>
