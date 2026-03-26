@@ -320,7 +320,7 @@ const Range = forwardRef((props, ref) => {
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         <Box className="ag-theme-balham" sx={{ width: 921.5 }}>
           <style>{gridStyles}</style>
-          <style>{`.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height { min-height: 80px !important; }`}</style>
+          <style>{`.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height { min-height: unset !important; }`}</style>
           <Box sx={{ display: "flex", alignItems: "center", mb: "1.6rem", position: "relative" }}>
             <Tooltip title={t("Range bounds must match the format rules.")} placement="top" arrow>
               <IconButton size="small" sx={{ position: "absolute", left: -32, top: "50%", transform: "translateY(-50%)" }} aria-label="Range bounds info">

@@ -203,7 +203,7 @@ const CharacterEncoding = () => {
         <Box style={{ display: "flex" }}>
           <Box ref={gridContainerRef} className="ag-theme-balham" sx={{ width: 380 }}>
             <style>{gridStyles}</style>
-            <style>{`.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height { min-height: 80px !important; }`}</style>
+            <style>{`.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height { min-height: unset !important; }`}</style>
             <AgGridReact
               key={i18n.language}
               ref={gridRef}
