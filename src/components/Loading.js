@@ -13,7 +13,7 @@ const Loading = ({ text }) => {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 49
+    zIndex: 1200
   };
 
   const textStyle = {

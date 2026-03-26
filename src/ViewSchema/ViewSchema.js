@@ -9,8 +9,7 @@ import {
   Tooltip,
   ToggleButton,
   ToggleButtonGroup,
-  Alert,
-  CircularProgress
+  Alert
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -36,6 +35,7 @@ import {
 } from "../constants/constants";
 import { searchUnits } from "../utils/helpers";
 import Loading from "../components/Loading";
+import Spinner from "../components/Spinner";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import useOCAExport from "../hooks/useOCAExport";
 import usePrimaryColor from "../hooks/usePrimaryColor";
@@ -737,11 +737,20 @@ export default function ViewSchema({
       pageForward={pageForward}
       rightContent={viewSchemaRightContent}
     >
-      {loading ? (
-        <Box sx={{ py: 8, display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <CircularProgress />
-        </Box>
-      ) : (
+      {loading && (
+        <>
+          <Loading />
+          <Box
+            aria-hidden
+            sx={{
+              width: "100%",
+              minHeight: "calc(100vh - 21rem)",
+              pointerEvents: "none"
+            }}
+          />
+        </>
+      )}
+      {!loading && (
         <Box sx={{ mt: 2, mb: BETWEEN_SECTION_SPACING, width: "100%", position: "relative" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Typography
@@ -936,8 +945,25 @@ export default function ViewSchema({
             </Box>
 
             {/* Visualization embed */}
-            <Box sx={{ marginBottom: 0, width: "100%", minHeight: "400px" }}>
-              <Suspense fallback={<Loading />}>
+            <Box sx={{ marginBottom: 0, width: "100%", minHeight: 500 }}>
+              <Suspense
+                fallback={
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: 500,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: `1px solid ${CustomPalette.GREY_300}`,
+                      borderRadius: 2,
+                      backgroundColor: "#f8f9fa"
+                    }}
+                  >
+                    <Spinner size={40} text="" />
+                  </Box>
+                }
+              >
                 <SchemaVisualizationEmbed
                   key={`viz-${vizVersion}-${getPackageBundleId(pkgFromState)}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
                   schemaLanguageOverride={getCurrentLanguage()}

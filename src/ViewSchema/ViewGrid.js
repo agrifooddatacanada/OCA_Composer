@@ -150,16 +150,27 @@ export default function ViewGrid({
     }
   }, [setLoading]);
 
-  const getRowHeight = useCallback((params) => {
+  const computeRowPixelHeight = useCallback((data) => {
     const opts = { compact: true };
-    const attrH = measureTextHeight(params.data?.Attribute || "", 104, opts);
-    const unitH = measureTextHeight(params.data?.Unit || "", 74, opts);
-    const typeH = measureTextHeight(params.data?.Type || "", 104, opts);
-    const labelH = measureTextHeight(params.data?.Label || "", 154, opts);
-    const descH = measureTextHeight(params.data?.Description || "", 334, opts);
+    const attrH = measureTextHeight(data?.Attribute || "", 104, opts);
+    const unitH = measureTextHeight(data?.Unit || "", 74, opts);
+    const typeH = measureTextHeight(data?.Type || "", 104, opts);
+    const labelH = measureTextHeight(data?.Label || "", 154, opts);
+    const descH = measureTextHeight(data?.Description || "", 334, opts);
     const maxH = Math.max(attrH, unitH, typeH, labelH, descH);
     return Math.max(32, maxH + 14);
   }, []);
+
+  const getRowHeight = useCallback(
+    (params) => computeRowPixelHeight(params.data),
+    [computeRowPixelHeight]
+  );
+
+  const reservedGridMinHeight = useMemo(() => {
+    const headerRowPx = 49;
+    if (!rowData.length) return headerRowPx + 80;
+    return headerRowPx + rowData.reduce((sum, row) => sum + computeRowPixelHeight(row), 0);
+  }, [rowData, computeRowPixelHeight]);
 
   useEffect(() => {
     const getColumns = () => {
@@ -553,7 +564,10 @@ export default function ViewGrid({
   }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchema, t]);
 
   return (
-    <div className="view-schema-grid ag-theme-balham" style={{ width: "100%" }}>
+    <div
+      className="view-schema-grid ag-theme-balham"
+      style={{ width: "100%", minHeight: reservedGridMinHeight }}
+    >
       <style>{gridStyles}</style>
       <AgGridReact
         key={i18n.language}

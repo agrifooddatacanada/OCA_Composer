@@ -48,6 +48,7 @@ const SchemaVisualizationEmbed = ({
   const [viewSwitchLoading, setViewSwitchLoading] = useState(false);
   const [hasData, setHasData] = useState(false);
   const reactFlowInstanceRef = useRef(null);
+  const skipInitialViewModeEffect = useRef(true);
 
   // Handle node clicks for schema navigation
   const handleNodeClick = useCallback(
@@ -65,8 +66,12 @@ const SchemaVisualizationEmbed = ({
 
   // Sync internal mode to external prop and animate transitions
   useEffect(() => {
-    setViewSwitchLoading(true);
     setInternalViewMode(viewMode || "tree");
+    if (skipInitialViewModeEffect.current) {
+      skipInitialViewModeEffect.current = false;
+      return;
+    }
+    setViewSwitchLoading(true);
     const id = setTimeout(() => {
       setViewSwitchLoading(false);
       if (reactFlowInstanceRef.current) {
