@@ -1,6 +1,6 @@
 import React, {
-  useState,
   useEffect,
+  useLayoutEffect,
   useCallback,
   useMemo,
   useRef
@@ -17,6 +17,7 @@ import { langCodeOCAFromName } from "../utils/languageUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import TruncatedListCell from "../components/TruncatedListCell";
+import CustomPalette from "../constants/customPalette";
 
 export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const { t, i18n } = useTranslation();
@@ -81,7 +82,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     }
 
     return transformedOverlay;
-  }, [getSchema]);
+  }, [schemaState?.completeSchema?.overlays, schemaState?.overlays]);
 
   // Get schema state data with stable references
   const attributesList = useMemo(
@@ -107,7 +108,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const stableEntryCodes = useMemo(() => {
     const schemaState = getSchema();
     return schemaState?.entryCodes || {};
-  }, [getSchema]);
+  }, [schemaState?.entryCodes]);
 
   // Sets Language Dependent Attribute row data - simplified version
   useEffect(() => {
@@ -270,12 +271,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     setLoading(false);
   }, [setLoading]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const api = gridRef.current?.api;
     if (!api || !lanAttributeRowData[currentLanguage]?.length) return;
-    const raf = requestAnimationFrame(() => api.resetRowHeights());
-    return () => cancelAnimationFrame(raf);
-  }, [currentLanguage, lanAttributeRowData]);
+    api.resetRowHeights();
+  }, [currentLanguage, lanAttributeRowData[currentLanguage]?.length]);
 
   const onCellValueChanged = useCallback(
     (event) => {
@@ -302,17 +302,39 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
       if (colDef.field === "Label" || colDef.field === "Description") {
         event.api.refreshCells({ rowNodes: [event.node], force: true });
-        requestAnimationFrame(() => event.api.resetRowHeights());
+        event.api.resetRowHeights();
       }
     },
     [lanAttributeRowData, currentLanguage, updateSchema]
   );
 
   return (
-    <div className="lan-grid ag-theme-balham" style={{ width: 885, overflowX: "hidden" }}>
+    <div
+      className="lan-grid ag-theme-balham"
+      style={{
+        width: 885,
+        overflowX: "hidden",
+        backgroundColor: CustomPalette.GREY_200
+      }}
+    >
       <style>
         {gridStyles}
         {`
+          .lan-grid .ag-root-wrapper,
+          .lan-grid .ag-root-wrapper-body,
+          .lan-grid .ag-body-viewport,
+          .lan-grid .ag-center-cols-viewport,
+          .lan-grid .ag-body-horizontal-scroll-viewport {
+            background-color: ${CustomPalette.GREY_200} !important;
+          }
+          .lan-grid .ag-cell[col-id="Label"],
+          .lan-grid .ag-cell[col-id="Description"] {
+            background-color: ${CustomPalette.WHITE} !important;
+          }
+          .lan-grid .ag-header-cell[col-id="Label"],
+          .lan-grid .ag-header-cell[col-id="Description"] {
+            background-color: ${CustomPalette.WHITE} !important;
+          }
           .ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height {
             min-height: 80px !important;
           }
@@ -356,12 +378,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           }
         `}
       </style>
-      {lanAttributeRowData[currentLanguage] &&
-      lanAttributeRowData[currentLanguage].length > 0 ? (
+      {attributeRowData.length > 0 ? (
         <AgGridReact
           key={i18n.language}
           ref={gridRef}
-          rowData={lanAttributeRowData[currentLanguage]}
+          rowData={lanAttributeRowData[currentLanguage] ?? []}
           columnDefs={columnDefs}
           onCellKeyDown={onCellKeyDown}
           onCellValueChanged={onCellValueChanged}

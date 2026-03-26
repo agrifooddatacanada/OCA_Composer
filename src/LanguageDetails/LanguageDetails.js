@@ -95,13 +95,13 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
     if (gridRef.current && gridRef.current.api) {
       gridRef.current.api.stopEditing();
     }
-    const newLanAttributeRowData = JSON.parse(JSON.stringify(lanAttributeRowData));
+    const storedLan = getSchema()?.lanAttributeRowData || {};
     const noSpacesObject = {};
     languages.forEach((language) => {
-      // Check if lanAttributeRowData exists for this language
-      if (newLanAttributeRowData[language] && Array.isArray(newLanAttributeRowData[language])) {
+      const rows = lanAttributeRowData[language] ?? storedLan[language];
+      if (rows && Array.isArray(rows)) {
         noSpacesObject[language] = removeSpacesFromArrayOfObjects(
-          newLanAttributeRowData[language]
+          JSON.parse(JSON.stringify(rows))
         );
       } else {
         noSpacesObject[language] = [];
