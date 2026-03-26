@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import "./App.css";
 import { Box } from "@mui/material";
-import { getPackageBundle, getPackageBundleId } from "./utils/packageUtils";
+import { getPackageBundleId } from "./utils/packageUtils";
 import StartSchema from "./StartSchema/StartSchema";
 import SchemaMetadata from "./SchemaMetadata/SchemaMetadata";
 import AttributeDetails from "./AttributeDetails/AttributeDetails";
@@ -74,31 +74,9 @@ const STEPS_BASE = [
 
 const ENTRY_CODES_STEP = { label: "Entry Codes", page: "Codes" };
 
-const computeShowEntryCodes = (pkgUpload, state) => {
-  if (pkgUpload) {
-    const bundle = getPackageBundle(pkgUpload);
-    const attrs = bundle?.capture_base?.attributes || {};
-    const hasArrayAttributes = Object.values(attrs).some((v) => Array.isArray(v));
-    const entry = pkgUpload?.bundle?.overlays?.entry;
-    const hasEntryOverlay =
-      Array.isArray(entry) &&
-      entry.some((e) => {
-        const ae = e?.attribute_entries || {};
-        return Object.keys(ae).length > 0;
-      });
-    const ec = pkgUpload?.bundle?.overlays?.entry_code?.attribute_entry_codes;
-    const hasEntryCodeOverlay = ec && typeof ec === "object" && Object.keys(ec).length > 0;
-    if (hasArrayAttributes || hasEntryOverlay || hasEntryCodeOverlay) return true;
-  }
-  const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
+const computeShowEntryCodes = (state) => {
   const attributesWithLists = state?.attributesWithLists || [];
-  const hasList = Array.isArray(attributesWithLists) && attributesWithLists.length > 0;
-  const hasEntryCodes = state?.entryCodes && Object.keys(state.entryCodes).length > 0;
-  const hasArrayTypes = attributesArray.some(
-    (a) => typeof a?.Type === "string" && a.Type.startsWith("Array[")
-  );
-  const isAttributesWithListsInitialized = state?.attributesWithLists !== undefined;
-  return hasList || hasEntryCodes || (!isAttributesWithListsInitialized && hasArrayTypes);
+  return Array.isArray(attributesWithLists) && attributesWithLists.length > 0;
 };
 
 const isSchemaMetadataComplete = (state) => {
@@ -154,7 +132,7 @@ const Home = ({
 
   const showEntryCodes = useMemo(() => {
     const state = getSchema() || {};
-    return computeShowEntryCodes(pkgUpload, state);
+    return computeShowEntryCodes(state);
   }, [pkgUpload, schemaStates, currentSchemaId, getSchema]);
 
   const steps = useMemo(() => {
