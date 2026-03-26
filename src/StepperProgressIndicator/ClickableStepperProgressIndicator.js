@@ -3,7 +3,7 @@ import { Alert, Box, ButtonBase, Step, StepLabel, Stepper } from "@mui/material"
 import { useTranslation } from "react-i18next";
 import CustomPalette from "../constants/customPalette";
 
-export default function ClickableStepperProgressIndicator({
+function ClickableStepperProgressIndicator({
   activeStep,
   steps,
   onStepClick,
@@ -11,7 +11,18 @@ export default function ClickableStepperProgressIndicator({
 }) {
   const { t } = useTranslation();
   return (
-    <Box sx={{ px: 10, py: 4, display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <Box
+      sx={{
+        px: 10,
+        py: 4,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        position: "relative",
+        zIndex: 1250,
+        bgcolor: "background.default"
+      }}
+    >
       <Stepper activeStep={activeStep} alternativeLabel sx={{ width: "100%" }}>
         {steps.map((step, i) => (
           <Step
@@ -27,6 +38,8 @@ export default function ClickableStepperProgressIndicator({
               <Box sx={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
               <ButtonBase
                 component="span"
+                disableRipple
+                focusRipple={false}
                 onClick={() => onStepClick && onStepClick(i, step)}
                 sx={{
                   cursor: "pointer",
@@ -49,7 +62,6 @@ export default function ClickableStepperProgressIndicator({
                   textAlign: "center",
                   whiteSpace: "normal",
                   wordBreak: "break-word",
-                  transition: "all 0.15s ease",
                   "&:hover": {
                     backgroundColor: i === activeStep ? CustomPalette.PRIMARY : CustomPalette.WHITE,
                     color: i === activeStep ? "white" : CustomPalette.PRIMARY,
@@ -85,3 +97,5 @@ export default function ClickableStepperProgressIndicator({
     </Box>
   );
 }
+
+export default React.memo(ClickableStepperProgressIndicator);

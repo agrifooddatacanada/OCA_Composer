@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef, useCallback } from "react";
+import React, { useEffect, useState, useContext, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import "./App.css";
 import { Box } from "@mui/material";
@@ -48,6 +48,58 @@ const validateEntryCodesFromSchema = (state, languages, t) => {
   return null;
 };
 
+const OVERLAY_SUB_PAGES = new Set([
+  "CharacterEncoding",
+  "RequiredEntries",
+  "Cardinality",
+  "UnitFraming",
+  "FormInformation",
+  "FormBuilder",
+  "DataStandards",
+  "Range",
+  "AttributeFraming",
+  "FormatRules"
+]);
+
+const EMPTY_STEP_ERRORS = {};
+
+const STEPS_BASE = [
+  { label: "Metadata", page: "Metadata" },
+  { label: "Attributes", page: "Details" },
+  { label: "Labels", page: "LanguageDetails" },
+  { label: "Overlays", page: "Overlays" },
+  { label: "Summary", page: "View" }
+];
+
+const ENTRY_CODES_STEP = { label: "Entry Codes", page: "Codes" };
+
+const computeShowEntryCodes = (pkgUpload, state) => {
+  if (pkgUpload) {
+    const bundle = getPackageBundle(pkgUpload);
+    const attrs = bundle?.capture_base?.attributes || {};
+    const hasArrayAttributes = Object.values(attrs).some((v) => Array.isArray(v));
+    const entry = pkgUpload?.bundle?.overlays?.entry;
+    const hasEntryOverlay =
+      Array.isArray(entry) &&
+      entry.some((e) => {
+        const ae = e?.attribute_entries || {};
+        return Object.keys(ae).length > 0;
+      });
+    const ec = pkgUpload?.bundle?.overlays?.entry_code?.attribute_entry_codes;
+    const hasEntryCodeOverlay = ec && typeof ec === "object" && Object.keys(ec).length > 0;
+    if (hasArrayAttributes || hasEntryOverlay || hasEntryCodeOverlay) return true;
+  }
+  const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
+  const attributesWithLists = state?.attributesWithLists || [];
+  const hasList = Array.isArray(attributesWithLists) && attributesWithLists.length > 0;
+  const hasEntryCodes = state?.entryCodes && Object.keys(state.entryCodes).length > 0;
+  const hasArrayTypes = attributesArray.some(
+    (a) => typeof a?.Type === "string" && a.Type.startsWith("Array[")
+  );
+  const isAttributesWithListsInitialized = state?.attributesWithLists !== undefined;
+  return hasList || hasEntryCodes || (!isAttributesWithListsInitialized && hasArrayTypes);
+};
+
 const isSchemaMetadataComplete = (state) => {
   const localized = state?.metadata?.localized;
   if (!localized || typeof localized !== "object") return false;
@@ -89,37 +141,20 @@ const Home = ({
     }
   }, [pkgUpload, currentSchemaId, switchToSchema]);
 
-  const [activeStep, setActiveStep] = useState(-1);
-  const [steps, setSteps] = useState([
-    { label: "Metadata", page: "Metadata" },
-    { label: "Attributes", page: "Details" },
-    { label: "Labels", page: "LanguageDetails" },
-    { label: "Overlays", page: "Overlays" },
-    { label: "Summary", page: "View" }
-  ]);
+  const showEntryCodes = useMemo(() => {
+    const state = getSchema() || {};
+    return computeShowEntryCodes(pkgUpload, state);
+  }, [pkgUpload, schemaStates, currentSchemaId, getSchema]);
 
-  /**
-   * inserts a step at the specified position
-   * @param {number} position - index at which the step is to be inserted
-   * @param {{label: string, page: string}} step - object containing step label and the step's associated page
-   * @returns
-   */
-  const insertStep = useCallback((position, step) => {
-    setSteps((currentSteps) => {
-      // Prevent duplicates even if called multiple times rapidly
-      const exists = currentSteps.some((s) => s.label === step.label);
-      if (exists) return currentSteps;
-      return [...currentSteps.slice(0, position), step, ...currentSteps.slice(position)];
-    });
-  }, []);
+  const steps = useMemo(() => {
+    if (!showEntryCodes) return STEPS_BASE;
+    return [...STEPS_BASE.slice(0, 2), ENTRY_CODES_STEP, ...STEPS_BASE.slice(2)];
+  }, [showEntryCodes]);
 
-  const removeStep = useCallback((stepLabel) => {
-    setSteps((currentSteps) => currentSteps.filter((step) => step.label !== stepLabel));
-  }, []);
+  const pageForNav = OVERLAY_SUB_PAGES.has(currentPage) ? "Overlays" : currentPage;
 
-  // Custom navigation functions that use dynamic steps array instead of static pagesArray
   const pageForward = () => {
-    const currentIndex = steps.findIndex((step) => step.page === currentPage);
+    const currentIndex = steps.findIndex((step) => step.page === pageForNav);
     if (currentIndex >= 0 && currentIndex < steps.length - 1) {
       const nextStep = steps[currentIndex + 1];
       setCurrentPage(nextStep.page);
@@ -127,7 +162,7 @@ const Home = ({
   };
 
   const pageBack = () => {
-    const currentIndex = steps.findIndex((step) => step.page === currentPage);
+    const currentIndex = steps.findIndex((step) => step.page === pageForNav);
     if (currentIndex > 0) {
       const prevStep = steps[currentIndex - 1];
       setCurrentPage(prevStep.page);
@@ -165,28 +200,8 @@ const Home = ({
     };
   }, [attributesTypeError]);
 
-  // List of overlay pages that use AG Grid and need their data saved on navigation
-  const overlayPagesWithGrids = [
-    "FormatRules",
-    "Cardinality", 
-    "Range",
-    "UnitFraming",
-    "DataStandards",
-    "AttributeFraming",
-    "CharacterEncoding",
-    "RequiredEntries"
-  ];
-
-  const handleContinueNavigationFromMetadataModal = (targetPage) => {
-    const targetIndex = steps.findIndex((s) => s.page === targetPage);
-    if (targetIndex < 0) return;
-
-    bypassMetadataModalRef.current = true;
-    forceInlineStepperErrorsRef.current = true;
-    handleStepClick(targetIndex);
-  };
-
-  const handleStepClick = (index) => {
+  const handleStepClick = useCallback(
+    (index) => {
     const target = steps[index];
     if (target?.page) {
       const resetBypassFlags = () => {
@@ -195,17 +210,15 @@ const Home = ({
       };
 
       try {
-      // If navigating to/from View page via stepper on uploaded zip, mark as edited
-      // This makes stepper navigation consistent with NEXT button behavior
       if (isZip && (
-        (currentPage === "View" && target.page !== "View") ||  // FROM View to edit pages
-        (currentPage !== "View" && target.page === "View")     // TO View from edit pages
+        (currentPage === "View" && target.page !== "View") ||
+        (currentPage !== "View" && target.page === "View")
       )) {
         setIsZipEdited(true);
       }
 
-      // Determine if we're navigating forward or backward
-      const currentIndex = steps.findIndex((step) => step.page === currentPage);
+      const pageForStepIndex = OVERLAY_SUB_PAGES.has(currentPage) ? "Overlays" : currentPage;
+      const currentIndex = steps.findIndex((step) => step.page === pageForStepIndex);
       const isForwardNavigation = index > currentIndex;
 
       // Only validate when navigating FORWARD
@@ -331,7 +344,32 @@ const Home = ({
         resetBypassFlags();
       }
     }
-  };
+  },
+  [
+    steps,
+    currentPage,
+    isZip,
+    setIsZipEdited,
+    getSchema,
+    getLanguages,
+    t,
+    setCurrentPage,
+    attributesTypeError,
+    entryCodesError
+  ]
+);
+
+  const handleContinueNavigationFromMetadataModal = useCallback(
+    (targetPage) => {
+      const targetIndex = steps.findIndex((s) => s.page === targetPage);
+      if (targetIndex < 0) return;
+
+      bypassMetadataModalRef.current = true;
+      forceInlineStepperErrorsRef.current = true;
+      handleStepClick(targetIndex);
+    },
+    [steps, handleStepClick]
+  );
 
   useEffect(() => {
     if (currentPage === "Details") {
@@ -339,49 +377,20 @@ const Home = ({
     }
   }, [currentPage]);
 
-  // Show Entry Codes step immediately if schema contains list attributes or entry overlays
-  useEffect(() => {
-    if (!pkgUpload) return;
-
-    const hasArrayAttributes = (() => {
-      const bundle = getPackageBundle(pkgUpload);
-      const attrs = bundle?.capture_base?.attributes || {};
-      return Object.values(attrs).some((v) => Array.isArray(v));
-    })();
-
-    const hasEntryOverlay = (() => {
-      const entry = pkgUpload?.bundle?.overlays?.entry;
-      if (Array.isArray(entry)) {
-        return entry.some((e) => {
-          const ae = e?.attribute_entries || {};
-          return Object.keys(ae).length > 0;
-        });
-      }
-      return false;
-    })();
-
-    const hasEntryCodeOverlay = (() => {
-      const ec = pkgUpload?.bundle?.overlays?.entry_code?.attribute_entry_codes;
-      if (ec && typeof ec === "object") {
-        return Object.keys(ec).length > 0;
-      }
-      return false;
-    })();
-
-    if (hasArrayAttributes || hasEntryOverlay || hasEntryCodeOverlay) {
-      insertStep(2, { label: "Entry Codes", page: "Codes" });
-    }
-  }, [pkgUpload]);
-
-  // Add new page to this list
-
-  // Update active step based on current page
-  useEffect(() => {
-    const stepIndex = steps.findIndex((step) => step.page === currentPage);
-    if (stepIndex !== -1) {
-      setActiveStep(stepIndex);
-    }
+  const activeStep = useMemo(() => {
+    const pageForStep = OVERLAY_SUB_PAGES.has(currentPage) ? "Overlays" : currentPage;
+    let idx = steps.findIndex((s) => s.page === pageForStep);
+    if (idx === -1) idx = steps.findIndex((s) => s.page === currentPage);
+    return idx >= 0 ? idx : 0;
   }, [currentPage, steps]);
+
+  const stepErrors = useMemo(() => {
+    if (!attributesTypeError && !entryCodesError) return EMPTY_STEP_ERRORS;
+    return {
+      ...(attributesTypeError ? { Attributes: attributesTypeError } : {}),
+      ...(entryCodesError ? { "Entry Codes": entryCodesError } : {})
+    };
+  }, [attributesTypeError, entryCodesError]);
 
   // Clear Entry Codes error when navigating away
   useEffect(() => {
@@ -390,37 +399,11 @@ const Home = ({
     }
   }, [currentPage]);
 
-  // Ensure Entry Codes step reflects the currently active schema (root or dependency)
-  const prevShouldShowRef = React.useRef(null);
   useEffect(() => {
-    const state = getSchema() || {};
-    const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
-    const attributesWithLists = state?.attributesWithLists || [];
-
-    const hasList = Array.isArray(attributesWithLists) && attributesWithLists.length > 0;
-
-    const hasEntryCodes = state?.entryCodes && Object.keys(state.entryCodes).length > 0;
-    const hasArrayTypes = attributesArray.some(
-      (a) => typeof a?.Type === "string" && a.Type.startsWith("Array[")
-    );
-
-    const isAttributesWithListsInitialized = state?.attributesWithLists !== undefined;
-    const shouldShow = hasList || hasEntryCodes || (!isAttributesWithListsInitialized && hasArrayTypes);
-
-    if (prevShouldShowRef.current === null || shouldShow !== prevShouldShowRef.current) {
-      
-      if (shouldShow) {
-        insertStep(2, { label: "Entry Codes", page: "Codes" });
-      } else {
-        removeStep("Entry Codes");
-        if (currentPage === "Codes") {
-          setCurrentPage("LanguageDetails");
-        }
-      }
-
-      prevShouldShowRef.current = shouldShow;
+    if (!showEntryCodes && currentPage === "Codes") {
+      setCurrentPage("LanguageDetails");
     }
-  }, [currentSchemaId, schemaStates, currentPage, setCurrentPage, insertStep, removeStep, getSchema]);
+  }, [showEntryCodes, currentPage, setCurrentPage]);
 
   return (
     <>
@@ -433,10 +416,7 @@ const Home = ({
             activeStep={activeStep}
             steps={steps}
             onStepClick={handleStepClick}
-            stepErrors={{
-              ...(attributesTypeError ? { Attributes: attributesTypeError } : {}),
-              ...(entryCodesError ? { "Entry Codes": entryCodesError } : {})
-            }}
+            stepErrors={stepErrors}
           />
         )}
         {currentPage === "Start" && <StartSchema pageForward={pageForward} />}
@@ -453,8 +433,6 @@ const Home = ({
             ref={attributeDetailsRef}
             pageBack={pageBack}
             pageForward={pageForward}
-            insertStep={insertStep}
-            removeStep={removeStep}
           />
         )}
         {currentPage === "Codes" && (

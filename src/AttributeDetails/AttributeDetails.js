@@ -24,7 +24,7 @@ import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA, FIELD_UNIT_FRAMING_OVERLAY, TAB
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { langNameFromTwoLetters, langCodeOCAFromName } from "../utils/languageUtils";
 
-const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, removeStep }, ref) => {
+const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
   const { t, i18n } = useTranslation();
   
   // Use only MultiSchemaContext - unified approach
@@ -462,10 +462,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward, insertStep, remove
       
       if (newAttributesWithLists.length > 0) {
         entryCodesRef.current = true;
-        // Insert Entry Codes step synchronously to ensure it's available for navigation
-        insertStep(2, { label: "Entry Codes", page: "Codes" });
       } else {
-        removeStep("Entry Codes");
+        entryCodesRef.current = false;
       }
 
       // Persist attributes and list to MultiSchemaContext in one place to avoid flicker
