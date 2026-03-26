@@ -14,6 +14,7 @@ const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem, centerItem,
         borderColor: headerColor || CustomPalette.GREY_300,
         backgroundColor: headerColor,
         position: 'relative',
+        zIndex: 1210
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>{leftItem}</Box>
