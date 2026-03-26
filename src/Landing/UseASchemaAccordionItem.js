@@ -58,8 +58,7 @@ const UseASchemaAccordionItem = () => {
   };
 
   const navigateToViewPage = () => {
-    navigate("/start");
-    setTimeout(() => setCurrentPage("View"), 0);
+    navigate("/start", { state: { openView: true } });
   };
 
   const setFile = (acceptedFiles) => {

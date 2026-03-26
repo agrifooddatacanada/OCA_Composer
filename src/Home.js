@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useContext, useRef, useCallback, useMemo } from "react";
+import React, { useEffect, useLayoutEffect, useState, useContext, useRef, useCallback, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import "./App.css";
 import { Box } from "@mui/material";
@@ -120,7 +121,17 @@ const Home = ({
   pageForward: appPageForward,
   pageBack: appPageBack
 }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
+
+  useLayoutEffect(() => {
+    if (location.state?.openView) {
+      setCurrentPage("View");
+      navigate(location.pathname, { replace: true, state: null });
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname, location.state, setCurrentPage, navigate]);
   const { 
     currentSchemaId,
     schemaStates, 

@@ -80,8 +80,7 @@ const AccordionList = () => {
 
   const navigateToViewPage = () => {
     setIsZip(true);
-    navigate("/start");
-    setTimeout(() => setCurrentPage("View"), 0);
+    navigate("/start", { state: { openView: true } });
   };
 
   const navigateToPreviewSchema = () => {
