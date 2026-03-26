@@ -17,7 +17,8 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 import { FIELD_CHARACTER_ENCODING_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { overlayGridOnFirstDataRendered, useOverlayGridOnGridReady } from "./gridUtils";
+import { measureTextHeight } from "../utils/measureTextLines";
+import { useOverlayGridOnGridReady } from "./gridUtils";
 
 const CharacterEncoding = () => {
   const { t, i18n } = useTranslation();
@@ -89,13 +90,20 @@ const CharacterEncoding = () => {
     }
   }, [setCharacterEncodingRowData]);
 
+  const getRowHeight = useCallback((params) => {
+    const attrH = measureTextHeight(params.data?.Attribute || "", 164);
+    const encH = measureTextHeight(String(params.data?.["Character Encoding"] ?? ""), 184);
+    const maxH = Math.max(attrH, encH);
+    return Math.max(32, maxH + 8);
+  }, []);
+
   const columnDefs = useMemo(
     () => [
       {
         field: "Attribute",
         editable: false,
         width: 180,
-        autoHeight: true,
+        wrapText: true,
         cellStyle: () => greyCellStyle,
         headerComponent: CellHeader,
         headerComponentParams: {
@@ -156,8 +164,7 @@ const CharacterEncoding = () => {
 
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 
-  const onFirstDataRendered = useCallback((params) => {
-    overlayGridOnFirstDataRendered(params);
+  const onFirstDataRendered = useCallback(() => {
     requestAnimationFrame(() => {
       const firstRow = gridContainerRef.current?.querySelector(".ag-row");
       const buttonContainer = buttonContainerRef.current;
@@ -196,12 +203,14 @@ const CharacterEncoding = () => {
         <Box style={{ display: "flex" }}>
           <Box ref={gridContainerRef} className="ag-theme-balham" sx={{ width: 380 }}>
             <style>{gridStyles}</style>
+            <style>{`.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height { min-height: 80px !important; }`}</style>
             <AgGridReact
               key={i18n.language}
               ref={gridRef}
               rowData={characterEncodingRowData}
               columnDefs={columnDefs}
               domLayout="autoHeight"
+              getRowHeight={getRowHeight}
               suppressHorizontalScroll
               onGridReady={onGridReady}
               onFirstDataRendered={onFirstDataRendered}

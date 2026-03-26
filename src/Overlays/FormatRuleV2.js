@@ -21,8 +21,9 @@ import {
   isRangeEligibleAttributeType
 } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { getAllGridRowData, overlayGridOnFirstDataRendered } from "./gridUtils";
+import { getAllGridRowData } from "./gridUtils";
 import { getFormatRuleDescription } from "../utils/helpers";
+import { measureTextHeight } from "../utils/measureTextLines";
 import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
 import { isChildSchemaType } from "../constants/constants";
 
@@ -213,12 +214,45 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount/unmount
 
+  const getRowHeight = useCallback(
+    (params) => {
+      const d = params.data || {};
+      const attrH = measureTextHeight(d.Attribute || "", 164);
+      const typeH = measureTextHeight(d.Type || "", 134);
+      const builtIn = d["Format Rule"] || "";
+      const custom = d[CUSTOM_FORMAT_RULE] || "";
+      const rawType = d.Type || "Text";
+      const baseType = rawType.includes("Array") ? rawType.replace(/Array\[|\]/g, "") : rawType;
+      const hasDropdown =
+        baseType.includes("Date") ||
+        baseType.includes("Numeric") ||
+        baseType.includes("Binary") ||
+        baseType.includes("Text") ||
+        baseType === "Text";
+      const noDd = t("No Dropdown Available", { defaultValue: "No Dropdown Available" });
+      let formatColH = 0;
+      if (custom) {
+        formatColH = measureTextHeight(builtIn, 244);
+      } else if (hasDropdown) {
+        const desc = builtIn ? getFormatRuleDescription(d.Type || "Text", builtIn, t) || builtIn : "";
+        formatColH = measureTextHeight(desc, 244);
+      } else {
+        formatColH = measureTextHeight(noDd, 244);
+      }
+      const customH = measureTextHeight(custom, 184);
+      const maxH = Math.max(attrH, typeH, formatColH, customH);
+      return Math.max(32, maxH + 8);
+    },
+    [t]
+  );
+
   const columnDefs = useMemo(
     () => [
       {
         field: "Attribute",
         editable: false,
         width: 180,
+        wrapText: true,
         cellStyle: () => greyCellStyle,
         headerComponent: CellHeader,
         headerComponentParams: {
@@ -230,7 +264,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         field: "Type",
         editable: false,
         width: 150,
-        autoHeight: true,
+        wrapText: true,
         cellStyle: () => greyCellStyle,
         headerComponent: CellHeader,
         headerComponentParams: {
@@ -284,7 +318,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         editable: (params) => !params.data["Format Rule"],
         cellStyle: (params) =>
           params?.data?.["Format Rule"] ? greyCellStyle : preWrapWordBreak,
-        autoHeight: true,
         width: 200,
         wrapText: true
       }
@@ -307,6 +340,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         rowNodes: [params.node],
         columns: ["Format Rule"]
       });
+      params.api.resetRowHeights();
     } else if (params.colDef.field === "Format Rule") {
       // When format rule changes, refresh custom format rule column to update editable state
       params.api.refreshCells({
@@ -314,6 +348,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         rowNodes: [params.node],
         columns: [CUSTOM_FORMAT_RULE]
       });
+      params.api.resetRowHeights();
     }
   }, []);
 
@@ -372,15 +407,15 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       >
         <Box className="ag-theme-balham" sx={{ width: 790 }}>
           <style>{gridStyles}</style>
+          <style>{`.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height { min-height: 80px !important; }`}</style>
           <AgGridReact
             key={i18n.language}
             ref={gridRef}
             rowData={gridRowData}
             columnDefs={columnDefs}
             domLayout="autoHeight"
+            getRowHeight={getRowHeight}
             suppressHorizontalScroll
-            rowHeight={50}
-            onFirstDataRendered={overlayGridOnFirstDataRendered}
             onCellValueChanged={onCellValueChanged}
             onCellKeyDown={handleCellKeyDown}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
