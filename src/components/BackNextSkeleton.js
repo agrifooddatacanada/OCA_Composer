@@ -42,7 +42,10 @@ const BackNextSkeleton = ({
           sx={{
             width: "100%",
             display: "flex",
-            justifyContent: "space-between"
+            justifyContent: "space-between",
+            position: "relative",
+            zIndex: 1250,
+            bgcolor: "background.default"
           }}
         >
           {isBack ? (
