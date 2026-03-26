@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Box } from "@mui/material";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import CellHeader from "../components/CellHeader";
 import DataStandardAutocompleteEditor from "./DataStandards/DataStandardAutocompleteEditor";

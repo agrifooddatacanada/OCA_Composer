@@ -5,7 +5,7 @@ import { Box, Button, FormControl, Select, Typography } from "@mui/material";
 import Drop from "../StartSchema/Drop";
 import useHandleEntryCodeDrop from "./useHandleEntryCodeDrop";
 import { gridStyles } from "../constants/styles";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { CustomPalette } from "../constants/customPalette";
 import csvFileExample from "../assets/csv_example.png";
 import { useTranslation } from "react-i18next";

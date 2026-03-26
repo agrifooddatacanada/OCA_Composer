@@ -18,7 +18,7 @@ import {
   Button,
   Tooltip
 } from "@mui/material"; // Import necessary components for the dialog/pop-up
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";

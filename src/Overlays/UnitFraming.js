@@ -20,7 +20,7 @@ import {
 import MuiLink from "@mui/material/Link";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { useTranslation } from "react-i18next";
 import { styled } from "@mui/material/styles";

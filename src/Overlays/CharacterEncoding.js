@@ -1,6 +1,6 @@
 import { Box, Button } from "@mui/material";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";

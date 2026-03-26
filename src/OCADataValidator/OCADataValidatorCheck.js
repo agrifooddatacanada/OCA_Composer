@@ -8,7 +8,7 @@ import React, {
   useState
 } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { Box, Button, Drawer, IconButton, Typography } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";

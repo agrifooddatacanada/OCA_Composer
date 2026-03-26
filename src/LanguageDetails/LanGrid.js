@@ -6,7 +6,7 @@ import React, {
   useRef
 } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { useMultiSchema } from "../schema/schemaContext";
 import CellHeader from "../components/CellHeader";
 import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";

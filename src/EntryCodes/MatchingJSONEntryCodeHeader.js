@@ -6,7 +6,7 @@ import { langCodeOCAFromName, LanguageConstants } from '../utils/languageUtils';
 import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { BETWEEN_SECTION_SPACING } from '../constants/constants';
-import { AgGridReact } from 'ag-grid-react';
+import { AgGridReact } from '../components/AgGridReact';
 import { gridStyles } from '../constants/styles';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
 

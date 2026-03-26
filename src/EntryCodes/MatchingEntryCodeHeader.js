@@ -6,7 +6,7 @@ import { useMultiSchema } from '../schema/schemaContext';
 import { langCodeOCAFromName, LanguageConstants } from '../utils/languageUtils';
 import { Box, MenuItem } from '@mui/material';
 import { gridStyles } from '../constants/styles';
-import { AgGridReact } from 'ag-grid-react';
+import { AgGridReact } from '../components/AgGridReact';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
 
 export const DataHeaderRenderer = memo(

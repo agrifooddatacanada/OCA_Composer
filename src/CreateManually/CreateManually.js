@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef, useCallback, useEffect } from "react";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { useTranslation } from "react-i18next";
 import { Box, Button, Alert, Typography, ButtonBase, Stepper, Step, StepLabel } from "@mui/material";
 

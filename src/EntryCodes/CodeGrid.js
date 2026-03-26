@@ -5,7 +5,7 @@ import React, {
   useCallback
 } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { Button, Tooltip, Box } from "@mui/material";
@@ -175,7 +175,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   const handleDeleteRow = useCallback(
     (elementIndex) => {
       codeRefs.current.forEach((grid) => {
-        grid.current.api.stopEditing();
+        grid?.current?.api?.stopEditing();
       });
 
       const currentData = entryCodeDataRef.current;
@@ -188,7 +188,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
 
   const handleAddRow = useCallback(() => {
     codeRefs.current.forEach((grid) => {
-      grid.current.api.stopEditing();
+      grid?.current?.api?.stopEditing();
     });
 
     const newEntryCodeRow = { Code: "" };
@@ -204,7 +204,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   // Saves elements in proper order after dragging
   const onRowDragEnd = (event) => {
     codeRefs.current.forEach((grid) => {
-      grid.current.api.stopEditing();
+      grid?.current?.api?.stopEditing();
     });
 
     const oldEntryCodeIndex = entryCodeData.findIndex(
@@ -222,7 +222,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
 
   const onRowDragLeave = () => {
     codeRefs.current.forEach((grid) => {
-      grid.current.api.stopEditing();
+      grid?.current?.api?.stopEditing();
     });
   };
 

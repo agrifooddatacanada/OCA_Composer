@@ -3,7 +3,7 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
 import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";

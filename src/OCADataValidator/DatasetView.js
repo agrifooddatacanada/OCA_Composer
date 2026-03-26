@@ -9,7 +9,7 @@ import React, {
   useState
 } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { Box, IconButton, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import BackNextSkeleton from "../components/BackNextSkeleton";

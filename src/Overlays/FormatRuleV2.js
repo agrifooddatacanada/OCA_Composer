@@ -1,7 +1,7 @@
 import { Box, Popover, Alert, Typography } from "@mui/material";
 import MuiLink from "@mui/material/Link";
 import React, { useCallback, useContext, useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";

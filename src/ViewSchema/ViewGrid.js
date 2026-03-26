@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useContext, useCallback, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { Box } from "@mui/material";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
