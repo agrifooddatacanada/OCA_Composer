@@ -12,8 +12,11 @@ import CheckboxColumnHeader from "../AttributeDetails/CheckboxColumnHeader";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { FIELD_CONFORMANCE_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { overlayGridOnFirstDataRendered } from "./gridUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
+
+const REQUIRED_GRID_WIDTH_PX = 330;
+const REQUIRED_ATTR_COL_WIDTH_PX = Math.round((REQUIRED_GRID_WIDTH_PX * 100) / 170);
+const REQUIRED_CHECK_COL_WIDTH_PX = REQUIRED_GRID_WIDTH_PX - REQUIRED_ATTR_COL_WIDTH_PX;
 
 const RequiredEntryHeader = ({ gridRef, t }) => {
   const inputRef = useRef();
@@ -100,7 +103,6 @@ const RequiredEntries = () => {
   }, [schemaState?.attributes, updateSchema]);
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [columnDefs, setColumnDefs] = useState([]);
   const gridRef = useRef();
 
   // Add callback to handle data changes in the grid
@@ -114,17 +116,23 @@ const RequiredEntries = () => {
 
   const getRowHeight = useCallback((params) => {
     const opts = { compact: true };
-    const attrH = measureTextHeight(params.data?.Attribute || "", 100, opts);
+    const attrH = measureTextHeight(params.data?.Attribute || "", REQUIRED_ATTR_COL_WIDTH_PX, opts);
     return Math.max(32, attrH + 16);
   }, []);
 
-  useEffect(() => {
-    setColumnDefs([
+  const columnDefs = useMemo(
+    () => [
       {
         field: "Attribute",
         editable: false,
-        width: 100,
-        cellStyle: () => greyCellStyle,
+        width: REQUIRED_ATTR_COL_WIDTH_PX,
+        minWidth: REQUIRED_ATTR_COL_WIDTH_PX,
+        maxWidth: REQUIRED_ATTR_COL_WIDTH_PX,
+        suppressSizeToFit: true,
+        cellStyle: () => ({
+          ...greyCellStyle,
+          textAlign: "center",
+        }),
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),
@@ -133,7 +141,10 @@ const RequiredEntries = () => {
       },
       {
         field: FIELD_CONFORMANCE_OVERLAY,
-        width: 70,
+        width: REQUIRED_CHECK_COL_WIDTH_PX,
+        minWidth: REQUIRED_CHECK_COL_WIDTH_PX,
+        maxWidth: REQUIRED_CHECK_COL_WIDTH_PX,
+        suppressSizeToFit: true,
         headerComponent: RequiredEntryHeader,
         headerComponentParams: {
           gridRef,
@@ -143,8 +154,9 @@ const RequiredEntries = () => {
         checkboxSelection: false,
         cellStyle: () => flexCenter,
       },
-    ]);
-  }, [t]);
+    ],
+    [t]
+  );
 
   const handleForward = () => {
     setSelectedOverlay("");
@@ -168,11 +180,23 @@ const RequiredEntries = () => {
           gap: "3rem",
           display: "flex",
           flexDirection: "column",
+          width: REQUIRED_GRID_WIDTH_PX,
+          minWidth: REQUIRED_GRID_WIDTH_PX,
+          maxWidth: REQUIRED_GRID_WIDTH_PX,
+          boxSizing: "border-box",
+          textAlign: "left",
         }}
       >
-        <div className="required-entries-grid ag-theme-balham" style={{ width: 330 }}>
+        <div
+          className="required-entries-grid ag-theme-balham"
+          style={{ width: "100%", minWidth: REQUIRED_GRID_WIDTH_PX, overflow: "hidden" }}
+        >
           <style>{gridStyles}</style>
           <style>{`
+  .required-entries-grid .ag-cell[col-id="Attribute"] .ag-cell-value {
+    text-align: center;
+    width: 100%;
+  }
   .required-entries-grid .ag-header-cell[col-id="Required Entry"] input[type="checkbox"],
   .required-entries-grid .ag-cell[col-id="Required Entry"] input[type="checkbox"] {
     width: 13px;
@@ -188,9 +212,11 @@ const RequiredEntries = () => {
             domLayout="autoHeight"
             getRowHeight={getRowHeight}
             suppressHorizontalScroll
-            onFirstDataRendered={overlayGridOnFirstDataRendered}
+            suppressColumnVirtualisation
+            animateRows={false}
             onCellValueChanged={handleCellValueChanged}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
+            defaultColDef={{ resizable: false }}
           />
         </div>
       </Box>
