@@ -35,7 +35,7 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
 import { FIELD_CARDINALITY_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { overlayGridOnFirstDataRendered, useOverlayGridOnGridReady } from "./gridUtils";
+import { useOverlayGridOnGridReady } from "./gridUtils";
 import "../App.css";
 
 const gridOptions = {
@@ -528,7 +528,6 @@ const Cardinality = () => {
             gridOptions={gridOptions}
             suppressHorizontalScroll
             onGridReady={onGridReady}
-            onFirstDataRendered={overlayGridOnFirstDataRendered}
             getRowHeight={getRowHeight}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
