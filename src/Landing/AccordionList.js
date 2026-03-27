@@ -30,6 +30,7 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 import { hasMultipleSchemas } from "../utils/schemaUtils";
+import { syncLandingSchemaDrop } from "../utils/landingSchemaUpload";
 
 const buttonStyles = {
   backgroundColor: CustomPalette.PRIMARY,
@@ -92,8 +93,7 @@ const AccordionList = () => {
   };
 
   const setFile = (acceptedFiles) => {
-    setRawFile(acceptedFiles);
-    setJsonRawFile(acceptedFiles);
+    syncLandingSchemaDrop(setRawFile, setJsonRawFile, acceptedFiles);
   };
 
   const handleClickMarkdownReadme = () => {

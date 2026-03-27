@@ -22,6 +22,7 @@ import { useMultiSchema } from "../schema/schemaContext";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 import { hasMultipleSchemas } from "../utils/schemaUtils";
+import { syncLandingSchemaDrop } from "../utils/landingSchemaUpload";
 
 const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
   const { t } = useTranslation();
@@ -45,14 +46,16 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
     setCurrentDataValidatorPage("SchemaViewDataValidator");
   };
 
-  const { setRawFile } = useHandleAllDrop();
+  const { setRawFile, rawFile, loading: startLoading } = useHandleAllDrop();
 
   const setFile = (acceptedFiles) => {
-    setRawFile(acceptedFiles);
-    setJsonRawFile(acceptedFiles);
+    syncLandingSchemaDrop(setRawFile, setJsonRawFile, acceptedFiles);
   };
 
-  const disableButtonCheck = jsonRawFile.length === 0 || jsonLoading;
+  const disableButtonCheck =
+    (rawFile.length === 0 && jsonRawFile.length === 0) ||
+    jsonLoading ||
+    startLoading;
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
 
   return (
@@ -77,7 +80,7 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
         <Drop
           setFile={setFile}
           setLoading={overallLoading}
-          loading={jsonLoading}
+          loading={jsonLoading || startLoading}
           dropDisabled={jsonDropDisabled}
           dropMessage={jsonDropMessage}
           setDropMessage={setJsonDropMessage}
@@ -101,7 +104,7 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
             </Box>
           )}
           <GenerateDataEntryExcel
-            rawFile={jsonRawFile}
+            rawFile={rawFile.length > 0 ? rawFile : jsonRawFile}
             setLoading={setJsonLoading}
             disableButtonCheck={disableAdditionalSchemaTools || isMultiSchema}
             isMultiSchema={isMultiSchema}

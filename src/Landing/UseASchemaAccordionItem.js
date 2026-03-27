@@ -24,6 +24,7 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 import { hasMultipleSchemas } from "../utils/schemaUtils";
+import { syncLandingSchemaDrop } from "../utils/landingSchemaUpload";
 import {
   isOcaPackageIntegrityValid,
   shouldVerifyOcaPackageCryptographically
@@ -64,8 +65,7 @@ const UseASchemaAccordionItem = () => {
   };
 
   const setFile = (acceptedFiles) => {
-    setRawFile(acceptedFiles);
-    setJsonRawFile(acceptedFiles);
+    syncLandingSchemaDrop(setRawFile, setJsonRawFile, acceptedFiles);
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;

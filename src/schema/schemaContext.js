@@ -43,8 +43,8 @@ const MultiSchemaContext = createContext();
  * @param {Object} [props.packageOCA] - Optional OCA package for backward compatibility (deprecated - use setPkgUpload instead)
  */
 export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
-  // Store the original OCA package (source of truth for schema structure)
-  // Initialize from prop if provided (for backward compatibility)
+  // pkgUpload: last schema import session root (object after normalizeOcaPackageFormat when applicable).
+  // May be null, legacy bundle shape, or full OCA package; rename to schemaImport is planned.
   const [pkgUpload, _setPkgUpload] = useState(
     packageOCA ? normalizeOcaPackageFormat(packageOCA) : null
   );
