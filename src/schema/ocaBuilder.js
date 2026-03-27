@@ -107,7 +107,7 @@ function resolveChildSchemaDisplayName(childSchemaName, bundle, dependencies) {
  * 3. Ensure child schemas exist as dependencies
  * 4. Create placeholder dependencies for referenced but undefined schemas
  */
-export function buildPkgFromState({ ocaPackage, schemaStates, getSchemaById }) {
+export function buildOcaPackageJsonFromEditorState({ ocaPackage, schemaStates, getSchemaById }) {
   // If no package provided (manual creation), create minimal structure
   let pkg;
   if (!ocaPackage) {

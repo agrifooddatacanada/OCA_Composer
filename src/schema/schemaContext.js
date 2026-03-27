@@ -26,7 +26,7 @@ import React, {
 import { MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { makeSchemaStore } from "./schemaStore";
 import { canonicalizeSchemaId } from "../utils/schemaId";
-import { buildPkgFromState } from "./ocaBuilder";
+import { buildOcaPackageJsonFromEditorState } from "./ocaBuilder";
 import { acceptOcaPackageOrNull } from "../utils/packageUtils";
 import { useCreateChildSchemaPlaceholder } from "./createChildSchemaPlaceholder";
 
@@ -124,7 +124,7 @@ export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
 
   const rebuildOcaPackageFromEditorState = useCallback(
     (ocaPackageArg) =>
-      buildPkgFromState({
+      buildOcaPackageJsonFromEditorState({
         ocaPackage: ocaPackageArg,
         schemaStates,
         getSchemaById,

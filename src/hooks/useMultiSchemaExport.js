@@ -1,49 +1,11 @@
-import { useContext, useMemo, useState } from "react";
+import { useState } from "react";
 import { OcaPackage } from "oca_package";
-import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import {
-  ADC,
-  CUSTOM_FORMAT_RULE,
-  divisionCodes,
-  groupCodes,
-  ORDERING,
-  UNIT_FRAMING,
-  UNIT_FRAME_ID,
-  UNIT_FRAME_LABEL,
-  UNIT_FRAME_LOCATION,
-  UNIT_FRAME_VERSION,
-  SENSITIVE,
-  FIELD_FORMAT_OVERLAY,
-  FIELD_RANGE_OVERLAY,
-  RANGE,
-  ATTRIBUTE_FRAMING
-} from "../constants/constants";
-import {
-  generateOCABundle,
-  getDescriptiveFileName,
-  getRangeOverlayInput,
-  getTransformedEntryCodes,
-  getUnitFramingInput,
-  getAttributeFramingInput
-} from "../utils/helpers";
+import { getDescriptiveFileName } from "../utils/helpers";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 import { getPackageBundleId } from "../utils/packageUtils";
 
-/**
- * Multi-Schema Export Hook
- * 
- * This hook handles exporting OCA packages with multi-schema support.
- * It can export individual schemas or the entire multi-schema package.
- */
 const useMultiSchemaExport = () => {
-  const {
-    languages,
-    customIsos,
-    divisionGroup,
-    schemaDescription
-  } = useContext(Context);
-
   const {
     ocaPackage,
     currentSchemaId,
@@ -55,10 +17,8 @@ const useMultiSchemaExport = () => {
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [error, setError] = useState("");
 
-  // Clear error
   const clearError = () => setError("");
 
-  // Export individual schema
   const exportIndividualSchema = async (schemaId) => {
     try {
       const schemaState = getSchemaById(schemaId);
@@ -66,7 +26,6 @@ const useMultiSchemaExport = () => {
         throw new Error(`Schema ${schemaId} not found`);
       }
 
-      // Create a single-schema OCA package
       const singleSchemaPackage = {
         bundle: {
           d: schemaId,
@@ -83,10 +42,8 @@ const useMultiSchemaExport = () => {
       const ocaPackageBinary = new OcaPackage(singleSchemaPackage);
       const packageBuffer = await ocaPackageBinary.toBuffer();
 
-      // Create filename
       const fileName = getDescriptiveFileName(schemaState.metadata?.name || schemaId);
 
-      // Download the file
       const blob = new Blob([packageBuffer], { type: "application/octet-stream" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -104,24 +61,20 @@ const useMultiSchemaExport = () => {
     }
   };
 
-  // Export entire multi-schema package
   const exportMultiSchemaPackage = async () => {
     try {
       if (!ocaPackage) {
         throw new Error("No OCA package available for export");
       }
 
-      // Always export with all changes integrated
       const exportPackage = rebuildOcaPackageFromEditorState(ocaPackage);
 
       const ocaPackageBinary = new OcaPackage(exportPackage);
       const packageBuffer = await ocaPackageBinary.toBuffer();
 
-      // Create filename
       const rootSchemaName = getPackageBundleId(exportPackage) || "schema";
       const fileName = getDescriptiveFileName(rootSchemaName);
 
-      // Download OCA_package.json
       const blob = new Blob([packageBuffer], { type: "application/octet-stream" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -132,12 +85,15 @@ const useMultiSchemaExport = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Generate README_OCA_schema.txt
       if (exportPackage.bundle?.overlays?.meta) {
-        jsonToTextFile(exportPackage.bundle, exportPackage, schemaDescription);
+        const rootId = getPackageBundleId(exportPackage);
+        const rootSchemaState =
+          (rootId && getSchemaById(rootId)) || getSchema();
+        const readmeMeta =
+          rootSchemaState?.metadata?.localized ?? null;
+        jsonToTextFile(exportPackage.bundle, exportPackage, readmeMeta);
       }
 
-      // Download OCA_bundle.json only on testing site
       const currentEnv = process.env.REACT_APP_ENV;
       if (currentEnv === "DEV" && exportPackage.bundle) {
         const bundleBlob = new Blob([JSON.stringify(exportPackage.bundle, null, 2)], {
@@ -160,16 +116,12 @@ const useMultiSchemaExport = () => {
     }
   };
 
-  // Main export function
   const exportData = async () => {
     try {
-      // If we're editing a specific schema, export that schema
       if (currentSchemaId) {
         return await exportIndividualSchema(currentSchemaId);
-      } 
-        // Otherwise export the entire multi-schema package
-        return await exportMultiSchemaPackage();
-      
+      }
+      return await exportMultiSchemaPackage();
     } catch (err) {
       setError(`Export failed: ${err.message}`);
       return false;
@@ -187,6 +139,3 @@ const useMultiSchemaExport = () => {
 };
 
 export default useMultiSchemaExport;
-
-
-
