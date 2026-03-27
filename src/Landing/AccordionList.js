@@ -2,7 +2,10 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Box, Button, Typography, useMediaQuery, Tooltip } from "@mui/material";
-import { VerifyOcaPackage } from "oca_package";
+import {
+  isOcaPackageIntegrityValid,
+  shouldVerifyOcaPackageCryptographically
+} from "../utils/verifyOcaIntegrity";
 import UseASchemaAccordionItem from "./UseASchemaAccordionItem";
 import UseASchemaWithDataAccordionItem from "./UseASchemaWithDataAccordionItem";
 import SchemaAccordionItem from "./SchemaAccordionItem";
@@ -24,7 +27,6 @@ import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
 import CatalogueInfo from "../CatalogueInfo/CatalogueInfo";
 import useLocalStorage from "../hooks/useLocalStorage";
-import { getPackageBundle, getPackageBundleId } from "../utils/packageUtils";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 import { hasMultipleSchemas } from "../utils/schemaUtils";
@@ -110,18 +112,8 @@ const AccordionList = () => {
   const isMultiSchema = hasMultipleSchemas(pkgUpload);
   let isInvalidOcaPackage = false;
 
-  if (pkgUpload) {
-    // Only verify Format 3 OCA packages (those with top-level d field)
-    // Format 2 packages (draft format) don't have this structure and shouldn't be verified
-    const hasTopLevelDigest = pkgUpload.d;
-
-    if (hasTopLevelDigest) {
-      try {
-        isInvalidOcaPackage = !VerifyOcaPackage(pkgUpload, pkgUpload.d);
-      } catch (e) {
-        isInvalidOcaPackage = false; // Don't block UI on verification errors
-      }
-    }
+  if (pkgUpload && shouldVerifyOcaPackageCryptographically(pkgUpload)) {
+    isInvalidOcaPackage = !isOcaPackageIntegrityValid(pkgUpload);
   }
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
   const disableMultiSchemaTools = disableAdditionalSchemaTools || isMultiSchema;

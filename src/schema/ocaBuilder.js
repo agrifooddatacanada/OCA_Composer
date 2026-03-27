@@ -123,6 +123,9 @@ export function buildPkgFromState({ pkgUpload, schemaStates, getSchemaById }) {
     });
   } else {
     pkg = JSON.parse(JSON.stringify(pkgUpload));
+    Object.keys(pkg).forEach((k) => {
+      if (k.startsWith("__composer")) delete pkg[k];
+    });
   }
 
   // Phase 1: Apply edits to each schema

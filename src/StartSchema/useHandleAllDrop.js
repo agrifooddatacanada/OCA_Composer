@@ -390,6 +390,7 @@ const useHandleAllDrop = () => {
         };
 
         const ocaPackage = {
+          __composerImportSource: "zip",
           oca_bundle: ocaBundle
         };
 

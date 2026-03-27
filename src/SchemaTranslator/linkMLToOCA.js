@@ -11,6 +11,7 @@ import { mapLinkMLToOCABundle } from "./mapLinkMLToOCABundle";
 export function transformToPackage(bundle) {
   const pkg = {
     type: "oca_package/1.0",
+    __composerImportSource: "linkml",
     oca_bundle: {
       bundle: {
         d: bundle.d,

@@ -24,8 +24,10 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
 import { hasMultipleSchemas } from "../utils/schemaUtils";
-import { getPackageBundle, getPackageBundleId } from "../utils/packageUtils";
-import { VerifyOcaPackage } from "oca_package";
+import {
+  isOcaPackageIntegrityValid,
+  shouldVerifyOcaPackageCryptographically
+} from "../utils/verifyOcaIntegrity";
 
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
@@ -70,18 +72,8 @@ const UseASchemaAccordionItem = () => {
   const isMultiSchema = hasMultipleSchemas(pkgUpload);
   
   let isInvalidOcaPackage = false;
-  if (pkgUpload) {
-    // Only verify Format 3 OCA packages (those with top-level d field)
-    // Format 2 packages (draft format) don't have this structure and shouldn't be verified
-    const hasTopLevelDigest = pkgUpload.d;
-
-    if (hasTopLevelDigest) {
-      try {
-        isInvalidOcaPackage = !VerifyOcaPackage(pkgUpload, pkgUpload.d);
-      } catch (e) {
-        isInvalidOcaPackage = false;
-      }
-    }
+  if (pkgUpload && shouldVerifyOcaPackageCryptographically(pkgUpload)) {
+    isInvalidOcaPackage = !isOcaPackageIntegrityValid(pkgUpload);
   }
   
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
