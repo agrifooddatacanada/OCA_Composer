@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { messages } from "../constants/messages";
 import { Context } from "../App";
+import { ADC, FILE_DELIMITER } from "../constants/constants";
 
 /**
  * Decode CSV/TSV bytes: UTF-8 BOM / UTF-16 LE / UTF-16 BE, then strict UTF-8 or legacy ANSI.
@@ -71,6 +72,22 @@ function normalizeInvertedExclamationAsDegree(value) {
   return value;
 }
 
+function getSchemaFileDelimiter(ocaPackage) {
+  const captureBaseSaid = ocaPackage?.oca_bundle?.bundle?.capture_base?.d;
+  return ocaPackage?.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[FILE_DELIMITER]?.delimiter;
+}
+
+function normalizeDelimiter(delimiter) {
+  if (delimiter === "\\t") return "\t";
+  return delimiter;
+}
+
+function delimiterToFileType(delimiter) {
+  if (delimiter === ",") return "CSV";
+  if (delimiter === "\t") return "TSV";
+  return "";
+}
+
 export default function useHandleDatasetDrop() {
   const {
     datasetLoading,
@@ -96,7 +113,8 @@ export default function useHandleDatasetDrop() {
     firstNavigationToDataset,
     setFirstNavigationToDataset,
     datasetDropMessage,
-    setDatasetDropMessage
+    setDatasetDropMessage,
+    OCAPackage
   } = useContext(Context);
 
   const [excelSheetNames, setExcelSheetNames] = useState([]);
@@ -159,14 +177,26 @@ export default function useHandleDatasetDrop() {
           setDatasetLoading(false);
           setDatasetDropDisabled(true);
 
+          const schemaDelimiter = normalizeDelimiter(getSchemaFileDelimiter(OCAPackage));
+          const expectedFileType = delimiterToFileType(schemaDelimiter);
+          const uploadedFileType = delimiterToFileType(delimiter);
+          const hasDelimiterMismatch =
+            expectedFileType !== "" &&
+            uploadedFileType !== "" &&
+            expectedFileType !== uploadedFileType;
+
           setDatasetDropMessage({
-            message: messages.successfulUpload,
-            type: "success",
+            message: hasDelimiterMismatch
+              ? messages.delimiterMismatchWarning(expectedFileType, uploadedFileType)
+              : messages.successfulUpload,
+            type: hasDelimiterMismatch ? "warning" : "success",
           });
 
           setTimeout(() => {
             setDatasetDropDisabled(true);
-            setDatasetDropMessage({ message: "", type: "" });
+            if (!hasDelimiterMismatch) {
+              setDatasetDropMessage({ message: "", type: "" });
+            }
             setDatasetLoading(false);
             setJsonLoading(false);
             if (jsonRawFile.length === 0) {
@@ -175,7 +205,7 @@ export default function useHandleDatasetDrop() {
 
             if (!datasetIsParsed) {
               setDatasetIsParsed(true);
-              if (jsonRawFile.length > 0) {
+              if (jsonRawFile.length > 0 && !hasDelimiterMismatch) {
                 setCurrentDataValidatorPage("AttributeMatchDataValidator");
               } 
             }
@@ -193,7 +223,7 @@ export default function useHandleDatasetDrop() {
         setDatasetDropMessage({ message: "", type: "" });
       }, 2500);
     }
-  }, [datasetIsParsed, jsonRawFile]);
+  }, [datasetIsParsed, jsonRawFile, OCAPackage]);
 
   const handleExcelDrop = useCallback((acceptedFiles) => {
 
