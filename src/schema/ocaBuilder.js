@@ -21,7 +21,7 @@
  * Important: Only processes schemas that have been edited (schemaHasEdits check)
  */
 
-import { getPackageBundle, getPackageDependencies } from "../utils/packageUtils";
+import { coerceIfLegacyTopLevelBundle, getPackageBundle, getPackageDependencies } from "../utils/packageUtils";
 import { applyAllOverlays } from "./ocaBuilderOverlays";
 import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA, MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { createMinimalOCASchema, createMetaOverlay } from "./createMinimalOCASchema";
@@ -127,6 +127,7 @@ export function buildOcaPackageJsonFromEditorState({ ocaPackage, schemaStates, g
       if (k.startsWith("__composer")) delete pkg[k];
     });
   }
+  pkg = coerceIfLegacyTopLevelBundle(pkg);
 
   // Phase 1: Apply edits to each schema
   Object.keys(schemaStates).forEach((schemaId) => {
@@ -277,13 +278,7 @@ export function findOrCreatePkgSchema({
     },
   });
 
-  if (pkg.oca_bundle) {
-    if (!pkg.oca_bundle.dependencies) pkg.oca_bundle.dependencies = [];
-    pkg.oca_bundle.dependencies.push(newDependency);
-  } else {
-    if (!pkg.dependencies) pkg.dependencies = [];
-    pkg.dependencies.push(newDependency);
-  }
+  pushDependency(pkg, newDependency);
 
   return newDependency;
 }

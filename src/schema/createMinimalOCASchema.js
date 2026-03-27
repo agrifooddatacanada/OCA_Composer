@@ -17,8 +17,8 @@
  * @param {string} options.classification - Schema classification (default: "RDF508")
  * @param {Array} options.flaggedAttributes - Flagged attributes array (default: [])
  * @param {Object} options.overlays - Overlay structure (default: {})
- * @param {boolean} options.asBundle - Wrap in bundle structure for root schema (default: false)
- * @returns {Object} OCA schema structure
+ * @param {boolean} options.asBundle - Return canonical oca_package with oca_bundle.bundle + dependencies (default: false)
+ * @returns {Object} Single bundle/dependency schema, or full oca_package when asBundle
  */
 export function createMinimalOCASchema(schemaId, options = {}) {
   const captureBaseId = options.captureBaseId || schemaId;
@@ -42,11 +42,15 @@ export function createMinimalOCASchema(schemaId, options = {}) {
     schema.capture_base.classification = "RDF508";
   }
 
-  // Wrap in bundle if requested (for root schemas)
   if (options.asBundle) {
+    const dependencies = Array.isArray(options.dependencies) ? options.dependencies : [];
     return {
-      bundle: schema,
-      dependencies: []
+      type: options.packageType || "oca_package/1.0",
+      oca_bundle: {
+        bundle: schema,
+        dependencies
+      },
+      ...(options.extensions !== undefined && { extensions: options.extensions })
     };
   }
 

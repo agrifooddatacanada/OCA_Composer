@@ -4,8 +4,9 @@
  * Canonical shape (Format 1): { type?: "oca_package/1.0", oca_bundle: { bundle, dependencies }, extensions? }
  * Format 3 adds top-level d (and optional type): https://github.com/agrifooddatacanada/OCA_package_standard
  *
- * Legacy uploads used top-level { bundle, dependencies } without oca_bundle; coerceIfLegacyTopLevelBundle() wraps only
- * when that pattern is present; otherwise returns input unchanged. acceptOcaPackageOrNull() then requires oca_bundle.bundle.
+ * Manual seed and builder working copy use canonical oca_bundle. Legacy top-level { bundle, dependencies } is coerced
+ * at load (acceptOcaPackageOrNull) and at build start (coerceIfLegacyTopLevelBundle). getPackageBundle/getPackageDependencies
+ * still accept flat for defensive reads.
  *
  * CHILD SCHEMA STORAGE: oca_bundle.dependencies — each item is a full bundle.
  */
