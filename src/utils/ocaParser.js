@@ -54,15 +54,14 @@ export class OCAParser {
    * This ensures components don't need to re-parse from completeSchema.
    */
   static parseSchemaData(schemaId, pkgOCA) {
-    // Normalize the OCA package format first
-    // Handle oca_package format: { oca_bundle: { bundle, dependencies }, extensions }
-    const pkgNormalized = pkgOCA?.oca_bundle ? {
+    // Flat { bundle, dependencies, extensions } for getSchemaDataById / extension lookups (same shape as unwrapOcaPackageForVisualization).
+    const flatOcaPackageForParsing = pkgOCA?.oca_bundle ? {
       bundle: getPackageBundle(pkgOCA),
       dependencies: getPackageDependencies(pkgOCA),
       extensions: pkgOCA.extensions || pkgOCA.oca_bundle.extensions || {}
     } : pkgOCA;
     
-    const schemaData = getSchemaDataById(pkgNormalized, schemaId);
+    const schemaData = getSchemaDataById(flatOcaPackageForParsing, schemaId);
     
     if (!schemaData) {
       return null;
@@ -72,11 +71,11 @@ export class OCAParser {
     // Extensions are keyed by capture_base.d, not bundle.d
     // For root schema, use bundle.capture_base.d
     // For child schemas in dependencies, find the matching dependency's capture_base.d
-    let captureBaseId = pkgNormalized?.bundle?.capture_base?.d;
+    let captureBaseId = flatOcaPackageForParsing?.bundle?.capture_base?.d;
     
     // Check if this is a child schema by looking in dependencies
-    if (pkgNormalized?.dependencies) {
-      const dependency = pkgNormalized.dependencies.find(
+    if (flatOcaPackageForParsing?.dependencies) {
+      const dependency = flatOcaPackageForParsing.dependencies.find(
         dep => dep.d === schemaId || dep.capture_base?.d === schemaId
       );
       if (dependency) {
@@ -90,11 +89,11 @@ export class OCAParser {
     // Extract sensitive attributes from capture_base.flagged_attributes and ADC sensitive extension
     // For child schemas, get from dependencies
     let sensitiveAttributeNames = [];
-    const bundleId = getPackageBundleId(pkgNormalized);
-    if (schemaId === bundleId || schemaId === pkgNormalized.bundle?.capture_base?.d || schemaId === "root") {
-      sensitiveAttributeNames = pkgNormalized.bundle?.capture_base?.flagged_attributes || [];
-    } else if (pkgNormalized?.dependencies) {
-      const dependency = pkgNormalized.dependencies.find(
+    const bundleId = getPackageBundleId(flatOcaPackageForParsing);
+    if (schemaId === bundleId || schemaId === flatOcaPackageForParsing.bundle?.capture_base?.d || schemaId === "root") {
+      sensitiveAttributeNames = flatOcaPackageForParsing.bundle?.capture_base?.flagged_attributes || [];
+    } else if (flatOcaPackageForParsing?.dependencies) {
+      const dependency = flatOcaPackageForParsing.dependencies.find(
         dep => dep.d === schemaId || dep.capture_base?.d === schemaId
       );
       if (dependency) {
@@ -102,8 +101,8 @@ export class OCAParser {
       }
     }
     // Merge with ADC sensitive extension (sensitive_attributes)
-    const adcExtensions = pkgNormalized?.extensions?.adc?.[captureBaseId] ??
-      pkgNormalized?.extensions?.adc?.[bundleId];
+    const adcExtensions = flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId] ??
+      flatOcaPackageForParsing?.extensions?.adc?.[bundleId];
     const sensitiveOverlay = Array.isArray(adcExtensions)
       ? adcExtensions.find((ov) => ov?.sensitive_overlay)?.sensitive_overlay
       : adcExtensions?.overlays?.[SENSITIVE];
@@ -149,7 +148,7 @@ export class OCAParser {
     const overlayData = this._parseOverlayData(
       schemaData.overlays, 
       attributesWithLists,
-      pkgNormalized,
+      flatOcaPackageForParsing,
       captureBaseId,
       entryCodes,           // Pass entryCodes for form builder
       lanAttributeRowData   // Pass lanAttributeRowData for form builder
@@ -175,10 +174,10 @@ export class OCAParser {
 
     // Initialize overlay selections based on which overlays are present
     // Check if ADC extensions exist
-    const hasUnitFramingExtension = !!pkgNormalized?.extensions?.adc?.[captureBaseId]?.overlays?.unit_framing;
-    const hasRangeExtension = !!pkgNormalized?.extensions?.adc?.[captureBaseId]?.overlays?.range;
-    const formOverlayData = pkgNormalized?.extensions?.adc?.[captureBaseId]?.overlays?.form_overlay || 
-                           pkgNormalized?.extensions?.adc?.[captureBaseId]?.overlays?.form;
+    const hasUnitFramingExtension = !!flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId]?.overlays?.unit_framing;
+    const hasRangeExtension = !!flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId]?.overlays?.range;
+    const formOverlayData = flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId]?.overlays?.form_overlay || 
+                           flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId]?.overlays?.form;
     const hasFormExtension = !!formOverlayData && (Array.isArray(formOverlayData) ? formOverlayData.length > 0 : !!formOverlayData.form_overlays);
     const overlaySelections = this._buildOverlaySelections(
       schemaData.overlays, 

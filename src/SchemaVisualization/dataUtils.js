@@ -122,19 +122,19 @@ export const getDependencyInfo = (depId, dependencyMap, langCodeOCA = "eng") => 
 };
 
 /**
- * Normalize OCA package to { bundle, dependencies, extensions } for visualization
+ * Unwrap oca_bundle into { bundle, dependencies, extensions } for visualization helpers.
  */
-const pkgNormalize = (pkg) => {
+const unwrapOcaPackageForVisualization = (pkg) => {
   if (!pkg) return null;
-  const n = coerceIfLegacyTopLevelBundle(pkg);
-  if (n.oca_bundle) {
+  const afterCoercion = coerceIfLegacyTopLevelBundle(pkg);
+  if (afterCoercion.oca_bundle) {
     return {
-      bundle: getPackageBundle(n),
-      dependencies: getPackageDependencies(n),
-      extensions: n.extensions || n.oca_bundle.extensions || {}
+      bundle: getPackageBundle(afterCoercion),
+      dependencies: getPackageDependencies(afterCoercion),
+      extensions: afterCoercion.extensions || afterCoercion.oca_bundle.extensions || {}
     };
   }
-  return n;
+  return afterCoercion;
 };
 
 /**
@@ -148,24 +148,22 @@ export const extractSchemaDataFromPackage = (pkg, langCodeOCA = "eng") => {
     return null;
   }
 
-  // Normalize package structure to handle both formats
-  const pkgNormalized = pkgNormalize(pkg);
-  if (!pkgNormalized) {
+  const unwrapped = unwrapOcaPackageForVisualization(pkg);
+  if (!unwrapped) {
     return null;
   }
 
-  // Extract labels from the bundle's overlays
   // Note: Labels are populated by rebuildOcaPackageFromEditorState from lanAttributeRowData
-  const labelOverlays = pkgNormalized.bundle.overlays?.label;
+  const labelOverlays = unwrapped.bundle.overlays?.label;
   const labelOverlay = Array.isArray(labelOverlays)
     ? (labelOverlays.find((l) => l.language === langCodeOCA) || labelOverlays[0] || {})
     : (labelOverlays || {});
   const labels = labelOverlay.attribute_labels || {};
 
-  const bundle = pkgNormalized.bundle;
+  const bundle = unwrapped.bundle;
 
   return {
-    dependencies: pkgNormalized.dependencies ?? [],
+    dependencies: unwrapped.dependencies ?? [],
     attributes: bundle?.capture_base?.attributes || {},
     overlays: bundle?.overlays || {},
     labels
@@ -185,13 +183,12 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
     return null;
   }
 
-  // Normalize the package structure
-  const pkgNormalized = pkgNormalize(pkg);
-  if (!pkgNormalized) {
+  const unwrapped = unwrapOcaPackageForVisualization(pkg);
+  if (!unwrapped) {
     return null;
   }
 
-  const bundle = pkgNormalized.bundle;
+  const bundle = unwrapped.bundle;
   const bundleId = bundle?.d || null;
 
   // If it's the root schema (either by bundle digest, capture base digest, by "root" ID, or by schema name)
@@ -239,11 +236,11 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
   }
 
   // If it's a dependency schema - try to find by digest first
-  let dependency = pkgNormalized.dependencies?.find((dep) => dep.d === schemaId);
+  let dependency = unwrapped.dependencies?.find((dep) => dep.d === schemaId);
 
   // If not found by digest, try to find by name in meta overlays
-  if (!dependency && pkgNormalized.dependencies) {
-    dependency = pkgNormalized.dependencies.find((dep) => {
+  if (!dependency && unwrapped.dependencies) {
+    dependency = unwrapped.dependencies.find((dep) => {
       const metaOverlay =
         dep.overlays?.meta?.find((m) => m.language === langCodeOCA) ||
         dep.overlays?.meta?.[0];
@@ -286,8 +283,8 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
   }
 
   // If it's a placeholder field name (like q9) - check if it exists in the root schema's refn fields
-  const rawBundle = pkgNormalized.bundle;
-  const deps = pkgNormalized.dependencies ?? [];
+  const rawBundle = unwrapped.bundle;
+  const deps = unwrapped.dependencies ?? [];
   
   if (rawBundle?.capture_base?.attributes) {
     const rootAttributes = rawBundle.capture_base.attributes;
