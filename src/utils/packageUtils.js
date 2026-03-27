@@ -56,7 +56,8 @@ export function acceptOcaPackageOrNull(pkg) {
  */
 export const getPackageBundle = (pkg) => {
   if (!pkg) return null;
-  return pkg.oca_bundle?.bundle || null;
+  if (pkg.oca_bundle?.bundle) return pkg.oca_bundle.bundle;
+  return pkg.bundle ?? null;
 };
 
 /**
@@ -66,7 +67,12 @@ export const getPackageBundle = (pkg) => {
  */
 export const getPackageDependencies = (pkg) => {
   if (!pkg) return [];
-  return pkg.oca_bundle?.dependencies || [];
+  if (pkg.oca_bundle) {
+    const d = pkg.oca_bundle.dependencies;
+    return Array.isArray(d) ? d : [];
+  }
+  const d = pkg.dependencies;
+  return Array.isArray(d) ? d : [];
 };
 
 /**

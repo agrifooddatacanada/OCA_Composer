@@ -861,32 +861,27 @@ const useOCAExport = () => {
       };
 
       validateExtension(mergedExtension);
-      let ocaPackage;
+      let exportedPackageJson;
       try {
         const ocaPackageService = new OcaPackage(mergedExtension, { bundle: finalPackage.bundle, dependencies: finalPackage.dependencies });
-        ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
+        exportedPackageJson = JSON.parse(ocaPackageService.GenerateOcaPackage());
       } catch (e) {
         console.error('Failed to generate OCA package from extension:', e, mergedExtension);
         throw new Error(`Failed to parse Extension JSON: ${e.message}`);
       }
 
-      // Generate and download text readme (schema name extracted from bundle automatically)
-
-      // Generate and download text readme (schema name extracted from bundle automatically)
       try {
         if (finalPackage.bundle?.capture_base) {
-          await jsonToTextFile(finalPackage.bundle, ocaPackage);
+          await jsonToTextFile(finalPackage.bundle, exportedPackageJson);
         }
       } catch (readmeError) {
         console.warn("Could not generate README:", readmeError);
       }
 
-      // Get schema name for filenames - always use root schema
       const rootState = getSchemaById(rootSchemaId);
       const schemaNameForFile = rootState?.metadata?.name || rootState?.metadata?.localized?.eng?.name || null;
 
-      // Download files
-      downloadJsonFile(ocaPackage, getDescriptiveFileName(schemaNameForFile, "OCA_package.json"));
+      downloadJsonFile(exportedPackageJson, getDescriptiveFileName(schemaNameForFile, "OCA_package.json"));
 
       if (currentEnv === "DEV") {
         downloadTextFile(textDSL, getDescriptiveFileName(schemaNameForFile, "OCA_file.txt"));
