@@ -149,8 +149,6 @@ export function buildOcaPackageJsonFromEditorState({ ocaPackage, schemaStates, g
   // Phase 2 & 3: Ensure (if not existing, add) missing dependencies
   ensureChildSchemaDependencies(pkg, schemaStates, getSchemaById);
   ensurePlaceholderDependencies(pkg);
-  
-  const finalDeps = getPackageDependencies(pkg);
 
   return pkg;
 }
