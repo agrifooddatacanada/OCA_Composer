@@ -264,7 +264,7 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
  * Used by:
  * - "Download README" button in ViewSchema
  * - "Download README" button in Landing page accordions
- * - Export flow in useOCAExport and useMultiSchemaExport
+ * - Export flow in useOCAExport
  * 
  * Input: JSON OCA package (already parsed)
  * Output: Text file (.txt) with human-readable schema documentation
