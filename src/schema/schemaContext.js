@@ -28,7 +28,10 @@ import { MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { makeSchemaStore } from "./schemaStore";
 import { canonicalizeSchemaId } from "../utils/schemaId";
 import { buildPkgFromState } from "./ocaBuilder";
-import { normalizeOcaPackageFormat } from "../utils/packageUtils";
+import {
+  normalizeOcaPackageFormat,
+  isCanonicalOcaPackageShape
+} from "../utils/packageUtils";
 import { useCreateChildSchemaPlaceholder } from "./createChildSchemaPlaceholder";
 
 /** factories */
@@ -42,11 +45,19 @@ const MultiSchemaContext = createContext();
  * @param {React.ReactNode} props.children - Child components
  * @param {Object} [props.packageOCA] - Optional OCA package for backward compatibility (deprecated - use setPkgUpload instead)
  */
+function initialPkgFromProp(packageOCA) {
+  if (!packageOCA) return null;
+  const n = normalizeOcaPackageFormat(packageOCA);
+  if (isCanonicalOcaPackageShape(n)) return n;
+  console.warn(
+    "MultiSchemaProvider packageOCA: expected oca_bundle.bundle; starting with null"
+  );
+  return null;
+}
+
 export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
-  // pkgUpload: last schema import session root (object after normalizeOcaPackageFormat when applicable).
-  // May be null, legacy bundle shape, or full OCA package; rename to schemaImport is planned.
-  const [pkgUpload, _setPkgUpload] = useState(
-    packageOCA ? normalizeOcaPackageFormat(packageOCA) : null
+  const [pkgUpload, _setPkgUpload] = useState(() =>
+    initialPkgFromProp(packageOCA)
   );
 
   const setPkgUpload = useCallback((value) => {
@@ -54,7 +65,15 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       _setPkgUpload(null);
       return;
     }
-    _setPkgUpload(normalizeOcaPackageFormat(value));
+    const normalized = normalizeOcaPackageFormat(value);
+    if (!isCanonicalOcaPackageShape(normalized)) {
+      console.warn(
+        "setPkgUpload: value has no oca_bundle.bundle after normalize; clearing package state"
+      );
+      _setPkgUpload(null);
+      return;
+    }
+    _setPkgUpload(normalized);
   }, []);
 
   // Multi-schema state - Use ref to persist across StrictMode remounts

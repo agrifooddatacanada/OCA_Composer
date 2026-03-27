@@ -33,6 +33,16 @@ export function normalizeOcaPackageFormat(pkg) {
   return pkg;
 }
 
+export function isCanonicalOcaPackageShape(pkg) {
+  return Boolean(
+    pkg &&
+      typeof pkg === "object" &&
+      pkg.oca_bundle &&
+      typeof pkg.oca_bundle.bundle === "object" &&
+      pkg.oca_bundle.bundle !== null
+  );
+}
+
 /**
  * Get the root bundle from an OCA package (canonical Format 1 / 3)
  * @param {Object} pkg - The OCA package object
