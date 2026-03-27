@@ -179,7 +179,7 @@ function App() {
 
     setIsZip(false);
     setZipToReadme([]);
-    // Note: pkgUpload is now in multi-schema context, cleared via clearAllSchemas()
+    // Note: pkgOCA is now in multi-schema context, cleared via clearAllSchemas()
   }, [schemaRawFile]);
 
   // REMOVED: Legacy useEffect that synced attributesList with editingSchemaId

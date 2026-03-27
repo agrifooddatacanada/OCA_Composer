@@ -21,7 +21,7 @@ export default function SchemaInput({
   const { t } = useTranslation();
   const {
     customIsos,
-    pkgUpload
+    pkgOCA
   } = useContext(Context);
   const [deleteHover, setDeleteHover] = useState(false);
   const nameFieldId = `schema-name${language}`;
@@ -46,9 +46,9 @@ export default function SchemaInput({
     // Use localized data for this language from schema state
     schemaName = metaLocalized[langCodeOCA]?.name ?? "";
     currentSchemaDescription = metaLocalized[langCodeOCA]?.description ?? "";
-  } else if (pkgUpload && currentSchemaId) {
+  } else if (pkgOCA && currentSchemaId) {
     // Fall back to OCA package data on initial load (imported schemas only)
-    const currentSchemaData = getSchemaDataById(pkgUpload, currentSchemaId, langCodeOCA);
+    const currentSchemaData = getSchemaDataById(pkgOCA, currentSchemaId, langCodeOCA);
     schemaName = currentSchemaData?.schemaName || "";
     currentSchemaDescription = currentSchemaData?.schemaDescription || "";
   }

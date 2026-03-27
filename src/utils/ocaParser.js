@@ -43,7 +43,7 @@ export class OCAParser {
    * Parse OCA package data for a specific schema
    * 
    * @param {string} schemaId - The schema identifier
-   * @param {Object} pkgUpload - The OCA package data
+   * @param {Object} pkgOCA - The OCA package data
    * @returns {Object} Parsed schema state data ready for React components
    * 
    * IMPORTANT OUTPUTS:
@@ -53,14 +53,14 @@ export class OCAParser {
    * 
    * This ensures components don't need to re-parse from completeSchema.
    */
-  static parseSchemaData(schemaId, pkgUpload) {
+  static parseSchemaData(schemaId, pkgOCA) {
     // Normalize the OCA package format first
     // Handle oca_package format: { oca_bundle: { bundle, dependencies }, extensions }
-    const pkgNormalized = pkgUpload?.oca_bundle ? {
-      bundle: getPackageBundle(pkgUpload),
-      dependencies: getPackageDependencies(pkgUpload),
-      extensions: pkgUpload.extensions || pkgUpload.oca_bundle.extensions || {}
-    } : pkgUpload;
+    const pkgNormalized = pkgOCA?.oca_bundle ? {
+      bundle: getPackageBundle(pkgOCA),
+      dependencies: getPackageDependencies(pkgOCA),
+      extensions: pkgOCA.extensions || pkgOCA.oca_bundle.extensions || {}
+    } : pkgOCA;
     
     const schemaData = getSchemaDataById(pkgNormalized, schemaId);
     
@@ -395,15 +395,15 @@ export class OCAParser {
    * Parse various overlay types into display-friendly arrays
    * @private
    */
-  static _parseOverlayData(overlays, attributes = [], pkgUpload = null, schemaId = null, entryCodes = {}, lanAttributeRowData = {}) {
+  static _parseOverlayData(overlays, attributes = [], pkgOCA = null, schemaId = null, entryCodes = {}, lanAttributeRowData = {}) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
     const unitOverlay = overlays?.unit;
     
     // Get ADC extension overlays (ADC spec format)
-    const unitFramingExtension = pkgUpload?.extensions?.adc?.[schemaId]?.overlays?.unit_framing;
-    const rangeOverlay = pkgUpload?.extensions?.adc?.[schemaId]?.overlays?.range;
+    const unitFramingExtension = pkgOCA?.extensions?.adc?.[schemaId]?.overlays?.unit_framing;
+    const rangeOverlay = pkgOCA?.extensions?.adc?.[schemaId]?.overlays?.range;
 
     // Character encoding data for components
     // Store as object { attributeName: encoding } for easy lookup
@@ -486,11 +486,11 @@ export class OCAParser {
     const attributeFramingData = [];
 
     // Parse form overlay placeholders (ADC extension)
-    const formPlaceholders = this._parseFormOverlay(pkgUpload, schemaId);
+    const formPlaceholders = this._parseFormOverlay(pkgOCA, schemaId);
     
     // Parse form overlay structure to FormBuilder pages (ADC extension)
     const formBuilderPages = this._parseFormOverlayStructure(
-      pkgUpload, 
+      pkgOCA, 
       schemaId, 
       attributes,
       overlays,             // Pass overlays for format rules
@@ -532,15 +532,15 @@ export class OCAParser {
    * 
    * Returns: { UILanguageName: { attributeName: "placeholder text", ... }, ... }
    */
-  static _parseFormOverlay(pkgUpload, schemaId) {
+  static _parseFormOverlay(pkgOCA, schemaId) {
     const formPlaceholdersByLanguage = {};
     
-    if (!pkgUpload?.extensions?.adc?.[schemaId]?.overlays) {
+    if (!pkgOCA?.extensions?.adc?.[schemaId]?.overlays) {
       return formPlaceholdersByLanguage;
     }
 
-    const formOverlayData = pkgUpload.extensions.adc[schemaId].overlays.form_overlay || 
-                           pkgUpload.extensions.adc[schemaId].overlays.form;
+    const formOverlayData = pkgOCA.extensions.adc[schemaId].overlays.form_overlay || 
+                           pkgOCA.extensions.adc[schemaId].overlays.form;
     
     const formOverlayArray = Array.isArray(formOverlayData)
       ? formOverlayData
@@ -592,7 +592,7 @@ export class OCAParser {
    * Converts the form overlay structure (pages, sections, questions) into
    * the internal FormBuilder format during OCA import.
    * 
-   * @param {Object} pkgUpload - The OCA package
+   * @param {Object} pkgOCA - The OCA package
    * @param {string} schemaId - The capture_base ID to look up extensions
    * @param {Array} attributes - Parsed attributes array
    * @param {Object} overlays - Schema overlays for format rules
@@ -600,13 +600,13 @@ export class OCAParser {
    * @param {Object} lanAttributeRowData - Language-specific label data
    * @returns {Array} FormBuilder pages array
    */
-  static _parseFormOverlayStructure(pkgUpload, schemaId, attributes, overlays, entryCodes, lanAttributeRowData) {
-    if (!pkgUpload?.extensions?.adc?.[schemaId]?.overlays) {
+  static _parseFormOverlayStructure(pkgOCA, schemaId, attributes, overlays, entryCodes, lanAttributeRowData) {
+    if (!pkgOCA?.extensions?.adc?.[schemaId]?.overlays) {
       return [];
     }
 
-    const formOverlayData = pkgUpload.extensions.adc[schemaId].overlays.form_overlay ||
-                           pkgUpload.extensions.adc[schemaId].overlays.form;
+    const formOverlayData = pkgOCA.extensions.adc[schemaId].overlays.form_overlay ||
+                           pkgOCA.extensions.adc[schemaId].overlays.form;
     
     if (!formOverlayData) {
       return [];

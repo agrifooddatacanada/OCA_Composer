@@ -37,7 +37,7 @@ export const useHandleSchemaFileDrop = (
     targetResult,
     setTargetResult
   } = useContext(Context);
-  const { clearAllSchemas, switchToSchema, initializeFromPkgUpload, setPkgUpload } = useMultiSchema();
+  const { clearAllSchemas, switchToSchema, initializeFromPkgUpload, setPkgOCA } = useMultiSchema();
   // useZipParser removed - data processing now handled by initializeFromPkgUpload -> OCAParser
 
   const [jsonDropMessage, setJsonDropMessage] = useState({
@@ -76,7 +76,7 @@ export const useHandleSchemaFileDrop = (
           if (rawParse?.oca_bundle?.bundle) {
             ocaPackageData = rawParse;
             jsonFile = rawParse?.oca_bundle?.bundle;
-            setPkgUpload(rawParse);
+            setPkgOCA(rawParse);
           } else if (rawParse?.schema?.[0]) {
             jsonFile = rawParse?.schema?.[0];
           } else {
@@ -89,7 +89,7 @@ export const useHandleSchemaFileDrop = (
 
           jsonFile = replaceAttributeCharsInParsedJson(jsonFile);
 
-          // ALSO ensure multi-schema pkgUpload is populated so validator always uses package root
+          // ALSO ensure multi-schema pkgOCA is populated so validator always uses package root
           try {
             let pkgToSet = null;
             if (ocaPackageData) {
@@ -99,19 +99,19 @@ export const useHandleSchemaFileDrop = (
             }
 
             if (pkgToSet) {
-              setPkgUpload(pkgToSet);
+              setPkgOCA(pkgToSet);
               try {
                 initializeFromPkgUpload(pkgToSet);
                 const rootId = getPackageBundleId(pkgToSet);
                 if (rootId) switchToSchema(rootId, pkgToSet);
               } catch (err) {
-                // non-fatal; initialization failed but pkgUpload was set — downstream components
+                // non-fatal; initialization failed but pkgOCA was set — downstream components
                 // should handle missing initialization defensively.
                 console.warn("useHandleSchemaFileDrop: initializeFromPkgUpload failed", err);
               }
             }
           } catch (err) {
-            console.error("useHandleSchemaFileDrop: error setting pkgUpload", err);
+            console.error("useHandleSchemaFileDrop: error setting pkgOCA", err);
           }
 
           const languageList = [];
@@ -297,7 +297,7 @@ export const useHandleSchemaFileDrop = (
           if (captureBase?.flagged_attributes?.length > 0) {
             setShowWarningCard(true);
           }
-          setPkgUpload(ocaPackage);
+          setPkgOCA(ocaPackage);
           initializeFromPkgUpload(ocaPackage);
           switchToSchema(root, ocaPackage);
           setZipToReadme(allZipFiles);
@@ -361,7 +361,7 @@ export const useHandleSchemaFileDrop = (
             const pkg = transformToPackage(bundle);
 
             // Store OCA package in MultiSchema context and initialize editor state
-            setPkgUpload(pkg);
+            setPkgOCA(pkg);
             
             // Initialize schema states from the package (required for MultiSchemaContext)
             try {
@@ -560,7 +560,7 @@ export const useHandleSchemaFileDrop = (
       setJsonDropDisabled,
       setJsonIsParsed,
       setJsonLoading,
-      setPkgUpload,
+      setPkgOCA,
       setShowWarningCard,
       setTargetResult,
       setZipToReadme,

@@ -43,7 +43,7 @@ const MultiSchemaContext = createContext();
  * Multi-Schema Provider
  * @param {Object} props
  * @param {React.ReactNode} props.children - Child components
- * @param {Object} [props.packageOCA] - Optional OCA package for backward compatibility (deprecated - use setPkgUpload instead)
+ * @param {Object} [props.packageOCA] - Optional OCA package for backward compatibility (deprecated - use setPkgOCA instead)
  */
 function initialPkgFromProp(packageOCA) {
   if (!packageOCA) return null;
@@ -56,24 +56,24 @@ function initialPkgFromProp(packageOCA) {
 }
 
 export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
-  const [pkgUpload, _setPkgUpload] = useState(() =>
+  const [pkgOCA, _setPkgOCA] = useState(() =>
     initialPkgFromProp(packageOCA)
   );
 
-  const setPkgUpload = useCallback((value) => {
+  const setPkgOCA = useCallback((value) => {
     if (value == null) {
-      _setPkgUpload(null);
+      _setPkgOCA(null);
       return;
     }
     const normalized = normalizeOcaPackageFormat(value);
     if (!isCanonicalOcaPackageShape(normalized)) {
       console.warn(
-        "setPkgUpload: value has no oca_bundle.bundle after normalize; clearing package state"
+        "setPkgOCA: value has no oca_bundle.bundle after normalize; clearing package state"
       );
-      _setPkgUpload(null);
+      _setPkgOCA(null);
       return;
     }
-    _setPkgUpload(normalized);
+    _setPkgOCA(normalized);
   }, []);
 
   // Multi-schema state - Use ref to persist across StrictMode remounts
@@ -119,21 +119,21 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
 
   // Switch to editing a different schema
   const switchToSchema = useCallback(
-    (schemaId, pkgUpload) => {
-      const resolvedId = canonicalizeSchemaId(pkgUpload, schemaId);
+    (schemaId, pkgOCA) => {
+      const resolvedId = canonicalizeSchemaId(pkgOCA, schemaId);
       setCurrentSchemaId(resolvedId);
     },
-    [pkgUpload]
+    [pkgOCA]
   );
 
   const pkgBuildFromState = useCallback(
-    (pkgUpload) =>
+    (pkgOCA) =>
       buildPkgFromState({
-        pkgUpload,
+        pkgOCA,
         schemaStates,
         getSchemaById,
       }),
-    [schemaStates, getSchemaById, pkgUpload]
+    [schemaStates, getSchemaById, pkgOCA]
   );
 
   // Clear all schema states
@@ -160,8 +160,8 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       // State
       schemaStates,
       currentSchemaId,
-      pkgUpload,
-      setPkgUpload,
+      pkgOCA,
+      setPkgOCA,
 
       // Core actions
       getCurrentSchemaId,
@@ -177,8 +177,8 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
     [
       schemaStates,
       currentSchemaId,
-      pkgUpload,
-      setPkgUpload,
+      pkgOCA,
+      setPkgOCA,
       getCurrentSchemaId,
       store,
       oca,

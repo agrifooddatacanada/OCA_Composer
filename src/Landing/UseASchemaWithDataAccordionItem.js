@@ -28,8 +28,8 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setCurrentDataValidatorPage } = useContext(Context);
-  const { pkgUpload } = useMultiSchema();
-  const isMultiSchema = hasMultipleSchemas(pkgUpload);
+  const { pkgOCA } = useMultiSchema();
+  const isMultiSchema = hasMultipleSchemas(pkgOCA);
   const {
     schemaRawFile,
     setSchemaRawFile,

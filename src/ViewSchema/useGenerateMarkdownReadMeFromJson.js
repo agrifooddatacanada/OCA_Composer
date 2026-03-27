@@ -45,8 +45,8 @@ const getModifiedLayer = (overlay) => {
 };
 
 const useGenerateMarkdownReadMeFromJson = () => {
-  const { pkgUpload } = useMultiSchema();
-  const pkg = pkgUpload;
+  const { pkgOCA } = useMultiSchema();
+  const pkg = pkgOCA;
   
   // For now, use ADC extension overlays for the top-level/main schema bundle
   const orderingOverlay =

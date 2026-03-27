@@ -38,7 +38,7 @@ import { getPackageBundleId } from "../utils/packageUtils";
  */
 const useMultiSchemaExport = () => {
   const {
-    pkgUpload,
+    pkgOCA,
     languages,
     customIsos,
     divisionGroup,
@@ -108,12 +108,12 @@ const useMultiSchemaExport = () => {
   // Export entire multi-schema package
   const exportMultiSchemaPackage = async () => {
     try {
-      if (!pkgUpload) {
+      if (!pkgOCA) {
         throw new Error("No OCA package available for export");
       }
 
       // Always export with all changes integrated
-      const exportPackage = pkgBuildFromState(pkgUpload);
+      const exportPackage = pkgBuildFromState(pkgOCA);
 
       // Generate the OCA package
       const ocaPackage = new OcaPackage(exportPackage);

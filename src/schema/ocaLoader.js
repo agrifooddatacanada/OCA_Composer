@@ -33,16 +33,16 @@ export function createOcaLoader({
    * LOW-LEVEL: parse schema from OCA (no initialized flag here)
    * Only used internally by addSchemaFromOCA.
    */
-  const parseSchemaFromOCA = (schemaId, pkgUpload) => {
-    const parsedState = OCAParser.parseSchemaData(schemaId, pkgUpload);
+  const parseSchemaFromOCA = (schemaId, pkgOCA) => {
+    const parsedState = OCAParser.parseSchemaData(schemaId, pkgOCA);
     return parsedState || null;
   };
 
-  const addSchemaFromOCA = (pkgUpload, schemaId) => {
-    if (!pkgUpload || !schemaId) return null;
+  const addSchemaFromOCA = (pkgOCA, schemaId) => {
+    if (!pkgOCA || !schemaId) return null;
 
     // Extract raw schema data
-    const schemaData = getSchemaDataById(pkgUpload, schemaId);
+    const schemaData = getSchemaDataById(pkgOCA, schemaId);
     if (!schemaData) return null;
 
     // Build complete schema reference
@@ -61,7 +61,7 @@ export function createOcaLoader({
     const existingState = getSchemaById(schemaId);
     // Only parse if schema not already initialized
     const parsedState =
-      existingState?.initialized ? null : parseSchemaFromOCA(schemaId, pkgUpload);
+      existingState?.initialized ? null : parseSchemaFromOCA(schemaId, pkgOCA);
 
     setSchemaStates(prev => {
       const newState = {
@@ -82,11 +82,11 @@ export function createOcaLoader({
   /**
    * Load all schemas from package
    */
-  const initializeFromPkgUpload = (pkgUpload) => {
-    if (!pkgUpload) return [];
+  const initializeFromPkgUpload = (pkgOCA) => {
+    if (!pkgOCA) return [];
 
     const schemaIds = [];
-    const pkgNormalized = normalizeOcaPackageFormat(pkgUpload);
+    const pkgNormalized = normalizeOcaPackageFormat(pkgOCA);
 
     const bundle = getPackageBundle(pkgNormalized);
     const dependencies = getPackageDependencies(pkgNormalized);

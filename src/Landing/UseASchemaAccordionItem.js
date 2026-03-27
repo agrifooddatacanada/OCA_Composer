@@ -33,7 +33,7 @@ import {
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme } = useContext(Context);
-  const { pkgUpload } = useMultiSchema();
+  const { pkgOCA } = useMultiSchema();
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
@@ -69,11 +69,11 @@ const UseASchemaAccordionItem = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
-  const isMultiSchema = hasMultipleSchemas(pkgUpload);
+  const isMultiSchema = hasMultipleSchemas(pkgOCA);
   
   let isInvalidOcaPackage = false;
-  if (pkgUpload && shouldVerifyOcaPackageCryptographically(pkgUpload)) {
-    isInvalidOcaPackage = !isOcaPackageIntegrityValid(pkgUpload);
+  if (pkgOCA && shouldVerifyOcaPackageCryptographically(pkgOCA)) {
+    isInvalidOcaPackage = !isOcaPackageIntegrityValid(pkgOCA);
   }
   
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
@@ -178,7 +178,7 @@ const UseASchemaAccordionItem = () => {
             onClick={() => {
               if (Object.keys(jsonToReadme).length > 0) {
                 // Schema name will be extracted from jsonToReadme automatically
-                jsonToTextFile(jsonToReadme, pkgUpload);
+                jsonToTextFile(jsonToReadme, pkgOCA);
               } else if (zipToReadme.length > 0) {
                 toTextFile(zipToReadme);
               }

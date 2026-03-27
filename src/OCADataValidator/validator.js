@@ -43,15 +43,15 @@ export default class OCABundle {
     this.captureBase = null;
     this.overlays = {};
     this.ErrorBuilder = new OCADataSetErr();
-    this.pkgUpload = null;
+    this.pkgOCA = null;
   }
 
   // Load the OCA bundle from a JSON file.
-  async loadedBundle(bundle, pkgUpload) {
+  async loadedBundle(bundle, pkgOCA) {
     try {
       this.captureBase = bundle[CB_KEY];
       this.overlays = bundle[OVERLAYS_KEY];
-      this.pkgUpload = pkgUpload;
+      this.pkgOCA = pkgOCA;
     } catch (error) {
       console.error("Error loading bundle:", error);
       throw error;
@@ -205,8 +205,8 @@ export default class OCABundle {
     const rslt = this.ErrorBuilder.rangeErr;
     // For now, use ADC community's extension overlays for the top-level/main schema bundle
     const rangeOverlay =
-      this.pkgUpload?.extensions?.[ADC]?.[
-        this.pkgUpload?.oca_bundle?.bundle?.capture_base?.d
+      this.pkgOCA?.extensions?.[ADC]?.[
+        this.pkgOCA?.oca_bundle?.bundle?.capture_base?.d
       ]?.overlays?.[RANGE];
 
     if (rangeOverlay?.attributes) {
