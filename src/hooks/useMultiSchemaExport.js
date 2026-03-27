@@ -38,14 +38,14 @@ import { getPackageBundleId } from "../utils/packageUtils";
  */
 const useMultiSchemaExport = () => {
   const {
-    pkgOCA,
     languages,
     customIsos,
     divisionGroup,
     schemaDescription
   } = useContext(Context);
 
-  const { 
+  const {
+    ocaPackage,
     currentSchemaId,
     getSchema,
     getSchemaById,
@@ -80,9 +80,8 @@ const useMultiSchemaExport = () => {
         }
       };
 
-      // Generate the OCA package
-      const ocaPackage = new OcaPackage(singleSchemaPackage);
-      const packageBuffer = await ocaPackage.toBuffer();
+      const ocaPackageBinary = new OcaPackage(singleSchemaPackage);
+      const packageBuffer = await ocaPackageBinary.toBuffer();
 
       // Create filename
       const fileName = getDescriptiveFileName(schemaState.metadata?.name || schemaId);
@@ -108,16 +107,15 @@ const useMultiSchemaExport = () => {
   // Export entire multi-schema package
   const exportMultiSchemaPackage = async () => {
     try {
-      if (!pkgOCA) {
+      if (!ocaPackage) {
         throw new Error("No OCA package available for export");
       }
 
       // Always export with all changes integrated
-      const exportPackage = rebuildOcaPackageFromEditorState(pkgOCA);
+      const exportPackage = rebuildOcaPackageFromEditorState(ocaPackage);
 
-      // Generate the OCA package
-      const ocaPackage = new OcaPackage(exportPackage);
-      const packageBuffer = await ocaPackage.toBuffer();
+      const ocaPackageBinary = new OcaPackage(exportPackage);
+      const packageBuffer = await ocaPackageBinary.toBuffer();
 
       // Create filename
       const rootSchemaName = getPackageBundleId(exportPackage) || "schema";

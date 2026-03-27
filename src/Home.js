@@ -114,7 +114,7 @@ const Home = ({
     currentSchemaId,
     schemaStates, 
     switchToSchema,
-    pkgOCA,
+    ocaPackage,
     getSchema,
     getLanguages
   } = useMultiSchema();
@@ -122,18 +122,18 @@ const Home = ({
 
   // Ensure schema is initialized when entering via EDIT SCHEMA (old flow)
   useEffect(() => {
-    if (pkgOCA && !currentSchemaId) {
-      const rootSchemaId = getPackageBundleId(pkgOCA);
+    if (ocaPackage && !currentSchemaId) {
+      const rootSchemaId = getPackageBundleId(ocaPackage);
       if (rootSchemaId) {
-        switchToSchema(rootSchemaId, pkgOCA);
+        switchToSchema(rootSchemaId, ocaPackage);
       }
     }
-  }, [pkgOCA, currentSchemaId, switchToSchema]);
+  }, [ocaPackage, currentSchemaId, switchToSchema]);
 
   const showEntryCodes = useMemo(() => {
     const state = getSchema() || {};
     return computeShowEntryCodes(state);
-  }, [pkgOCA, schemaStates, currentSchemaId, getSchema]);
+  }, [ocaPackage, schemaStates, currentSchemaId, getSchema]);
 
   const steps = useMemo(() => {
     if (!showEntryCodes) return STEPS_BASE;

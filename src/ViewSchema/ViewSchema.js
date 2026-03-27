@@ -83,7 +83,7 @@ export default function ViewSchema({
     getSchema,
     updateSchema,
     schemaStates,
-    pkgOCA
+    ocaPackage
   } = useMultiSchema();
 
   const primaryColor = usePrimaryColor();
@@ -181,7 +181,7 @@ export default function ViewSchema({
 
   // Package representation built from current editor state — kept early so
   // helper functions (display name lookup, package-level validation) can use it.
-  const [pkgFromState, setPkgWithChanges] = useState(pkgOCA);
+  const [pkgFromState, setPkgWithChanges] = useState(ocaPackage);
 
   // PACKAGE-LEVEL VALIDATION: scan all schemas in the workspace and report problems
   // Helper: return the same display name used by the visualization (meta overlay, then
@@ -194,7 +194,7 @@ export default function ViewSchema({
     if (metaName && metaName !== schemaId) return metaName;
 
     // 2) Try to find a parent attribute that references this schema and use its label
-    const pkg = pkgFromState || pkgOCA || (rebuildOcaPackageFromEditorState ? rebuildOcaPackageFromEditorState(pkgOCA) : null);
+    const pkg = pkgFromState || ocaPackage || (rebuildOcaPackageFromEditorState ? rebuildOcaPackageFromEditorState(ocaPackage) : null);
     if (pkg) {
       const bundle = getPackageBundle(pkg);
       const deps = getPackageDependencies(pkg) || [];
@@ -238,7 +238,7 @@ export default function ViewSchema({
       }
       return acc;
     }, []);
-  }, [schemaStates, pkgFromState, pkgOCA]);
+  }, [schemaStates, pkgFromState, ocaPackage]);
 
   const packageLevelMissingEntryCodes = useMemo(() => {
     return Object.entries(schemaStates).reduce((acc, [schemaId, state]) => {
@@ -258,7 +258,7 @@ export default function ViewSchema({
       }
       return acc;
     }, []);
-  }, [schemaStates, pkgFromState, pkgOCA]);
+  }, [schemaStates, pkgFromState, ocaPackage]);
 
   // Package-level: detect schemas that explicitly have zero attributes
   const packageLevelEmptySchemas = useMemo(() => {
@@ -271,7 +271,7 @@ export default function ViewSchema({
       }
       return acc;
     }, []);
-  }, [schemaStates, pkgFromState, pkgOCA]);
+  }, [schemaStates, pkgFromState, ocaPackage]);
 
   const hasInvalidAttributesInPackage = packageLevelMissingTypes.length > 0;
   const hasMissingEntryCodesInPackage = packageLevelMissingEntryCodes.length > 0;
@@ -292,7 +292,7 @@ export default function ViewSchema({
   // Sync currentSchemaId ONLY when package structure changes (e.g., adding first child schema)
   // Don't interfere with normal navigation to child schemas
   useEffect(() => {
-    const pkg = pkgFromState || pkgOCA;
+    const pkg = pkgFromState || ocaPackage;
     const rootDigest = getPackageBundleId(pkg);
     
     // Only sync if the root digest has changed (package structure modified)
@@ -302,7 +302,7 @@ export default function ViewSchema({
     
     // Update the ref for next comparison
     lastRootDigestRef.current = rootDigest;
-  }, [pkgFromState, pkgOCA, switchToSchema]);
+  }, [pkgFromState, ocaPackage, switchToSchema]);
 
   // Enhanced schema switching with proper navigation
   const handleSchemaSwitch = useCallback(
@@ -311,19 +311,19 @@ export default function ViewSchema({
       
       // Canonicalize the incoming schemaId to match how it's stored in the context
       // "root" should map to bundle.d
-      const pkg = pkgFromState || pkgOCA;
+      const pkg = pkgFromState || ocaPackage;
       const rootDigest = getPackageBundleId(pkg);
       const canonicalSchemaId = (schemaId === "root" && rootDigest) ? rootDigest : schemaId;
       
       // Switch only if different, but always navigate to the editor
       // Use pkgFromState which includes the latest changes and placeholder dependencies
       if (canonicalSchemaId !== currentSchemaId) {
-        switchToSchema(schemaId, pkgFromState || pkgOCA);
+        switchToSchema(schemaId, pkgFromState || ocaPackage);
       }
       setCurrentPage("Details");
       navigate("/start");
     },
-    [currentSchemaId, switchToSchema, pkgFromState, pkgOCA, setCurrentPage, navigate]
+    [currentSchemaId, switchToSchema, pkgFromState, ocaPackage, setCurrentPage, navigate]
   );
 
   const downloadReadMe = () => {
@@ -405,10 +405,10 @@ export default function ViewSchema({
 
   // Update the package data when schemas are modified
   useEffect(() => {
-    // For manual creation, pkgOCA is null - rebuildOcaPackageFromEditorState will create the structure
-    // For uploaded packages, pkgOCA contains the original structure    
+    // For manual creation, ocaPackage is null - rebuildOcaPackageFromEditorState will create the structure
+    // For uploaded packages, ocaPackage contains the original structure    
     // If manual creation, ensure root schema is initialized before building
-    if (!pkgOCA) {
+    if (!ocaPackage) {
       const rootSchemaId = MANUAL_CREATION_SCHEMA_ID;
       const rootState = schemaStates[rootSchemaId];
       
@@ -426,13 +426,13 @@ export default function ViewSchema({
     }
 
     // UNIFIED CODE PATH: rebuildOcaPackageFromEditorState handles both imported and manual schemas
-    // - For uploads: clones pkgOCA and applies edits
+    // - For uploads: clones ocaPackage and applies edits
     // - For manual creation: creates fresh package structure from schemaStates
     // - Converts "Child Schema" -> refn:name and builds dependencies automatically
-    const pkgFromState = rebuildOcaPackageFromEditorState(pkgOCA);
+    const pkgFromState = rebuildOcaPackageFromEditorState(ocaPackage);
     setPkgWithChanges(pkgFromState);
     setVizVersion((v) => v + 1);
-  }, [pkgOCA, schemaStates, rebuildOcaPackageFromEditorState]);
+  }, [ocaPackage, schemaStates, rebuildOcaPackageFromEditorState]);
 
   // Removed in favor of global language toggle (EN/FR)
 
@@ -461,7 +461,7 @@ export default function ViewSchema({
     const loadSchemaData = async () => {
       try {
         // Wait for schema initialization if OCA package exists but no currentSchemaId yet
-        if (pkgOCA && !currentSchemaId) {
+        if (ocaPackage && !currentSchemaId) {
           setLoading(true);
           return;
         }
@@ -471,7 +471,7 @@ export default function ViewSchema({
         // Use direct lookup to avoid stale getSchema closure
         const currentSchema = schemaStates[currentSchemaId];
         
-        if (pkgOCA && currentSchemaId && !currentSchema) {
+        if (ocaPackage && currentSchemaId && !currentSchema) {
           setLoading(true);
           return;
         }
@@ -481,7 +481,7 @@ export default function ViewSchema({
         // Use direct lookup instead of getSchema to avoid stale closures
         const schemaState = currentSchema || getSchema();
         
-        if ((pkgOCA && currentSchemaId) || (!pkgOCA && schemaState && schemaState.attributes)) {
+        if ((ocaPackage && currentSchemaId) || (!ocaPackage && schemaState && schemaState.attributes)) {
 
           // Convert schema state back to the format expected by ViewGrid
           const schemaAttributes = schemaState.attributes || [];
@@ -588,7 +588,7 @@ export default function ViewSchema({
     loadSchemaData();
   }, [
     currentSchemaId,
-    pkgOCA,
+    ocaPackage,
     schemaLanguageOverride,
     i18next.language,
     getSchema,

@@ -25,7 +25,7 @@ const useHandleAllDrop = () => {
   
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
-  const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setPkgOCA, updateSchema } = useMultiSchema();
+  const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setOcaPackage, updateSchema } = useMultiSchema();
   // useZipParser removed - data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
 
   const [loading, setLoading] = useState(false);
@@ -326,7 +326,7 @@ const useHandleAllDrop = () => {
         const { ocaPackage, allZipFiles, root } =
           await parseOcaZipArrayBuffer(e.target.result);
 
-        setPkgOCA(ocaPackage);
+        setOcaPackage(ocaPackage);
         setZipToReadme(allZipFiles);
 
         loadAllSchemasFromOcaPackage(ocaPackage);
@@ -459,7 +459,7 @@ const useHandleAllDrop = () => {
           const modifiedBundle = replaceAttributeCharsInParsedJson(
             jsonFile.oca_bundle.bundle
           );
-          setPkgOCA(jsonFile);
+          setOcaPackage(jsonFile);
 
           loadAllSchemasFromOcaPackage(jsonFile);
 

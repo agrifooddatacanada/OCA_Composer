@@ -96,7 +96,7 @@ function resolveChildSchemaDisplayName(childSchemaName, bundle, dependencies) {
 /**
  * Rebuilds entire OCA package by applying user edits from editor state.
  * 
- * @param {Object|null} pkgOCA - Original OCA package JSON structure (null for manual creation)
+ * @param {Object|null} ocaPackage - Original OCA package JSON structure (null for manual creation)
  * @param {Object} schemaStates - Map of schemaId -> editor state (UI changes)
  * @param {Function} getSchemaById - Function to get editor state by schema ID
  * @returns {Object} Modified OCA package with all edits applied
@@ -107,10 +107,10 @@ function resolveChildSchemaDisplayName(childSchemaName, bundle, dependencies) {
  * 3. Ensure child schemas exist as dependencies
  * 4. Create placeholder dependencies for referenced but undefined schemas
  */
-export function buildPkgFromState({ pkgOCA, schemaStates, getSchemaById }) {
+export function buildPkgFromState({ ocaPackage, schemaStates, getSchemaById }) {
   // If no package provided (manual creation), create minimal structure
   let pkg;
-  if (!pkgOCA) {
+  if (!ocaPackage) {
     pkg = createMinimalOCASchema(MANUAL_CREATION_SCHEMA_ID, {
       captureBaseType: "spec/capture_base/1.0",
       classification: "",
@@ -122,7 +122,7 @@ export function buildPkgFromState({ pkgOCA, schemaStates, getSchemaById }) {
       asBundle: true
     });
   } else {
-    pkg = JSON.parse(JSON.stringify(pkgOCA));
+    pkg = JSON.parse(JSON.stringify(ocaPackage));
     Object.keys(pkg).forEach((k) => {
       if (k.startsWith("__composer")) delete pkg[k];
     });

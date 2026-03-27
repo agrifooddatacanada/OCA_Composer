@@ -96,7 +96,7 @@ const flaggedHeader = (
   characterEncodingRowData,
   cardinalityData,
   lang,
-  pkgOCA = null
+  ocaPackage = null
 ) => {
   const labelDescription = lanAttributeRowData[lang];
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
@@ -125,7 +125,7 @@ const flaggedHeader = (
 
   // For now, use ADC community's extension overlays for the top-level/main schema bundle
   const rangeOverlay =
-    pkgOCA?.extensions?.[ADC]?.[pkgOCA?.oca_bundle?.bundle?.capture_base?.d]
+    ocaPackage?.extensions?.[ADC]?.[ocaPackage?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[RANGE];
   const rangeData = rangeOverlay?.attributes?.[props?.displayName];
 
@@ -321,17 +321,17 @@ const OCADataValidatorCheck = ({
   } = useContext(Context);
 
   // Get schema data and uploaded package from MultiSchemaContext
-  const { currentSchemaId, getSchema, pkgOCA, getAttributesList, getLanguages } = useMultiSchema();
+  const { currentSchemaId, getSchema, ocaPackage, getAttributesList, getLanguages } = useMultiSchema();
   const schemaState = getSchema();
 
   // Validator MUST use the package root bundle when available (multi-schema flow).
-  // Build a validator bundle from pkgOCA (preferred) or derive a minimal bundle
-  // from the current schema state when pkgOCA isn't set (manual-creation).
+  // Build a validator bundle from ocaPackage (preferred) or derive a minimal bundle
+  // from the current schema state when ocaPackage isn't set (manual-creation).
   let bundleForValidator = null;
-  if (pkgOCA) {
-    bundleForValidator = getPackageBundle(pkgOCA);
+  if (ocaPackage) {
+    bundleForValidator = getPackageBundle(ocaPackage);
     if (!bundleForValidator) {
-      console.error("OCADataValidatorCheck: pkgOCA present but root bundle missing — cannot validate");
+      console.error("OCADataValidatorCheck: ocaPackage present but root bundle missing — cannot validate");
     }
   } else if (schemaState && Array.isArray(schemaState.attributes) && schemaState.attributes.length > 0) {
     // derive minimal capture_base from schema editor state (manual creation)
@@ -342,7 +342,7 @@ const OCADataValidatorCheck = ({
     bundleForValidator = { capture_base };
     console.debug("OCADataValidatorCheck: derived validator bundle from schemaState (manual)");
   } else {
-    console.error("OCADataValidatorCheck: no pkgOCA and no schemaState available — validation disabled");
+    console.error("OCADataValidatorCheck: no ocaPackage and no schemaState available — validation disabled");
   }
   
   // Extract data from schema state (single schema for Data Validator)
@@ -448,7 +448,7 @@ const OCADataValidatorCheck = ({
           characterEncodingRowData,
           cardinalityData,
           langRef.current,
-          pkgOCA
+          ocaPackage
         ),
       cellRendererParams: (params) => ({
         dataHeaders: savedEntryCodes,
@@ -466,7 +466,7 @@ const OCADataValidatorCheck = ({
       formatRuleRowData,
       savedEntryCodes,
       langRef.current,
-      pkgOCA
+      ocaPackage
     ]
   );
 
@@ -633,7 +633,7 @@ const OCADataValidatorCheck = ({
     }
 
     const bundle = new OCABundle();
-    await bundle.loadedBundle(bundleForValidator, pkgOCA);
+    await bundle.loadedBundle(bundleForValidator, ocaPackage);
 
     const newData = getCurrentData(gridRef.current.api, true);
 

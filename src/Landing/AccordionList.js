@@ -46,7 +46,7 @@ const AccordionList = () => {
   const navigate = useNavigate();
   const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, schemaDescription } =
     useContext(Context);
-  const { pkgOCA } = useMultiSchema();
+  const { ocaPackage } = useMultiSchema();
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
@@ -109,11 +109,11 @@ const AccordionList = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
-  const isMultiSchema = hasMultipleSchemas(pkgOCA);
+  const isMultiSchema = hasMultipleSchemas(ocaPackage);
   let isInvalidOcaPackage = false;
 
-  if (pkgOCA && shouldVerifyOcaPackageCryptographically(pkgOCA)) {
-    isInvalidOcaPackage = !isOcaPackageIntegrityValid(pkgOCA);
+  if (ocaPackage && shouldVerifyOcaPackageCryptographically(ocaPackage)) {
+    isInvalidOcaPackage = !isOcaPackageIntegrityValid(ocaPackage);
   }
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
   const disableMultiSchemaTools = disableAdditionalSchemaTools || isMultiSchema;
@@ -257,7 +257,7 @@ const AccordionList = () => {
               color="navButton"
               onClick={() => {
                 if (Object.keys(jsonToReadme).length > 0) {
-                  jsonToTextFile(jsonToReadme, pkgOCA, schemaDescription);
+                  jsonToTextFile(jsonToReadme, ocaPackage, schemaDescription);
                 } else if (zipToReadme.length > 0) {
                   toTextFile(zipToReadme);
                 }

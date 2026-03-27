@@ -67,7 +67,7 @@ const useOCAExport = () => {
     setCurrentPage
   } = useContext(Context);
 
-  const { getCurrentSchemaId, getSchema, getSchemaById, getAttributesList, rebuildOcaPackageFromEditorState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, pkgOCA, setPkgOCA } = useMultiSchema();
+  const { getCurrentSchemaId, getSchema, getSchemaById, getAttributesList, rebuildOcaPackageFromEditorState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, ocaPackage, setOcaPackage } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [error, setError] = useState("");
@@ -118,10 +118,10 @@ const useOCAExport = () => {
     const overlaySelections = schemaState?.overlaySelections || overlay;
     const classificationCode = metadata?.classification || null;
     
-    // Get original schema from pkgOCA to preserve reference types
+    // Get original schema from ocaPackage to preserve reference types
     let originalSchema = null;
-    if (pkgOCA) {
-      originalSchema = findSchemaById(pkgOCA, schemaId);
+    if (ocaPackage) {
+      originalSchema = findSchemaById(ocaPackage, schemaId);
     }
     
     // Build schema description for each language
@@ -588,13 +588,13 @@ const useOCAExport = () => {
       // For imported packages: Build ALL schemas from UI state to get fresh SAID digests
       // This matches agreeable-mushroom behavior - decompose bundle to UI state,
       // then rebuild from scratch which naturally generates new SAIDs
-      if (pkgOCA) {
-        const originalRootId = getPackageBundleId(pkgOCA);
+      if (ocaPackage) {
+        const originalRootId = getPackageBundleId(ocaPackage);
         
         // CRITICAL: Ensure all schemas from OCA package are in schemaStates
         // If user only edited a child schema, the root might not be initialized
-        const bundle = getPackageBundle(pkgOCA);
-        const dependencies = getPackageDependencies(pkgOCA);
+        const bundle = getPackageBundle(ocaPackage);
+        const dependencies = getPackageDependencies(ocaPackage);
         
         // Check if root is initialized; if not, something is wrong
         const rootState = getSchemaById(originalRootId);
@@ -622,8 +622,8 @@ const useOCAExport = () => {
         
         // Get original root schema to map child SAIDs to attribute names
         let originalRootSchema = null;
-        if (pkgOCA) {
-          originalRootSchema = findSchemaById(pkgOCA, originalRootId);
+        if (ocaPackage) {
+          originalRootSchema = findSchemaById(ocaPackage, originalRootId);
         }
         
         // Step 1: Build all dependency schemas FIRST to get their SAIDs
@@ -760,7 +760,7 @@ const useOCAExport = () => {
       // Determine the true root schema id from the package built from current editor state.
       // This ensures `Finish and Download` exports the full package (root + children)
       // even when the user is currently editing a child schema.
-      const pkgFromState = rebuildOcaPackageFromEditorState(pkgOCA);
+      const pkgFromState = rebuildOcaPackageFromEditorState(ocaPackage);
       const rootSchemaId = getPackageBundleId(pkgFromState) || currentSchemaId;
 
       const allSchemaIds = Object.keys(schemaStates);
@@ -773,8 +773,8 @@ const useOCAExport = () => {
       
       // Get root schema's original attributes to map child SAIDs to attribute names
       let originalRootSchema = null;
-      if (pkgOCA) {
-        originalRootSchema = findSchemaById(pkgOCA, rootSchemaId);
+      if (ocaPackage) {
+        originalRootSchema = findSchemaById(ocaPackage, rootSchemaId);
       }
 
       for (const childId of childSchemaIds) {
@@ -906,7 +906,7 @@ const useOCAExport = () => {
    */
   const resetToDefaults = useCallback(() => {
     setIsZip(false);
-    setPkgOCA(null);
+    setOcaPackage(null);
     setOverlay(overlayItems);
     setSelectedOverlay("");
     
@@ -916,7 +916,7 @@ const useOCAExport = () => {
     navigate("/");
   }, [
     setIsZip,
-    setPkgOCA, setOverlay, setSelectedOverlay,
+    setOcaPackage, setOverlay, setSelectedOverlay,
     clearAllSchemas, setCurrentPage, navigate
   ]);
 
@@ -924,7 +924,7 @@ const useOCAExport = () => {
     exportData,
     error,
     clearError: () => setError(""),
-    isImportedPackage: !!pkgOCA,
+    isImportedPackage: !!ocaPackage,
     resetToDefaults
   };
 };

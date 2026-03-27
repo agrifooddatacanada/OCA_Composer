@@ -21,8 +21,7 @@ import React, {
   useState,
   useCallback,
   useRef,
-  useMemo,
-  useEffect
+  useMemo
 } from "react";
 import { MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { makeSchemaStore } from "./schemaStore";
@@ -40,37 +39,37 @@ const MultiSchemaContext = createContext();
  * Multi-Schema Provider
  * @param {Object} props
  * @param {React.ReactNode} props.children - Child components
- * @param {Object} [props.packageOCA] - Optional OCA package for backward compatibility (deprecated - use setPkgOCA instead)
+ * @param {Object} [props.initialOcaPackage] - Optional OCA package for initial state (use setOcaPackage to update)
  */
-function initialPkgFromProp(packageOCA) {
-  if (!packageOCA) return null;
-  const accepted = acceptOcaPackageOrNull(packageOCA);
+function ocaPackageFromInitialProp(initialOcaPackage) {
+  if (!initialOcaPackage) return null;
+  const accepted = acceptOcaPackageOrNull(initialOcaPackage);
   if (accepted) return accepted;
   console.warn(
-    "MultiSchemaProvider packageOCA: expected oca_bundle.bundle; starting with null"
+    "MultiSchemaProvider initialOcaPackage: expected oca_bundle.bundle; starting with null"
   );
   return null;
 }
 
-export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
-  const [pkgOCA, _setPkgOCA] = useState(() =>
-    initialPkgFromProp(packageOCA)
+export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
+  const [ocaPackage, _setOcaPackage] = useState(() =>
+    ocaPackageFromInitialProp(initialOcaPackage)
   );
 
-  const setPkgOCA = useCallback((value) => {
+  const setOcaPackage = useCallback((value) => {
     if (value == null) {
-      _setPkgOCA(null);
+      _setOcaPackage(null);
       return;
     }
     const accepted = acceptOcaPackageOrNull(value);
     if (!accepted) {
       console.warn(
-        "setPkgOCA: value has no oca_bundle.bundle after legacy coercion; clearing package state"
+        "setOcaPackage: value has no oca_bundle.bundle after legacy coercion; clearing package state"
       );
-      _setPkgOCA(null);
+      _setOcaPackage(null);
       return;
     }
-    _setPkgOCA(accepted);
+    _setOcaPackage(accepted);
   }, []);
 
   // Multi-schema state - Use ref to persist across StrictMode remounts
@@ -116,21 +115,21 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
 
   // Switch to editing a different schema
   const switchToSchema = useCallback(
-    (schemaId, pkgOCA) => {
-      const resolvedId = canonicalizeSchemaId(pkgOCA, schemaId);
+    (schemaId, ocaPackage) => {
+      const resolvedId = canonicalizeSchemaId(ocaPackage, schemaId);
       setCurrentSchemaId(resolvedId);
     },
-    [pkgOCA]
+    [ocaPackage]
   );
 
   const rebuildOcaPackageFromEditorState = useCallback(
-    (pkgOCA) =>
+    (ocaPackageArg) =>
       buildPkgFromState({
-        pkgOCA,
+        ocaPackage: ocaPackageArg,
         schemaStates,
         getSchemaById,
       }),
-    [schemaStates, getSchemaById, pkgOCA]
+    [schemaStates, getSchemaById, ocaPackage]
   );
 
   // Clear all schema states
@@ -157,8 +156,8 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       // State
       schemaStates,
       currentSchemaId,
-      pkgOCA,
-      setPkgOCA,
+      ocaPackage,
+      setOcaPackage,
 
       // Core actions
       getCurrentSchemaId,
@@ -174,8 +173,8 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
     [
       schemaStates,
       currentSchemaId,
-      pkgOCA,
-      setPkgOCA,
+      ocaPackage,
+      setOcaPackage,
       getCurrentSchemaId,
       store,
       oca,
