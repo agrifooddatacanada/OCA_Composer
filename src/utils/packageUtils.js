@@ -1,50 +1,56 @@
 /**
- * Utilities for handling OCA package structure variations
- * 
- * The OCA ecosystem supports multiple package formats:
- * 
- * Format 1 (HCF Endpoint): { type: "oca_package/1.0", oca_bundle: { bundle: {...}, dependencies: [...] }, extensions: {...} }
- *   - Returned by HCF schema generation endpoint
- *   - Base structure for OCA packages with oca_bundle wrapper
- * 
- * Format 2 (Draft): { bundle: {...}, dependencies: [...] }
- *   - Internal draft format used during initial multi-schema development
- *   - Direct bundle structure without oca_bundle wrapper
- *   - Still supported for backward compatibility
- * 
- * Format 3 (OCA Package Standard): { d: "SAID", type: "oca_package/1.0", oca_bundle: {...}, extensions: {...} }
- *   - Full OCA Package standard: https://github.com/agrifooddatacanada/OCA_package_standard
- *   - Includes top-level SAID (d) for package integrity
- *   - Supports community extensions following OCA Package Design Requirements
- *   - This app generates Format 1/3 packages (with extensions, may not include top-level SAID)
- * 
- * These utilities provide a consistent interface to access package data regardless of format.
- * 
- * CHILD SCHEMA STORAGE:
- * Child schemas are stored in oca_bundle.dependencies (Format 1/3) or dependencies (Format 2) as an array of bundles.
- * Each dependency is a complete OCA bundle that can be referenced by the parent schema.
+ * Utilities for OCA package structure
+ *
+ * Canonical shape (Format 1): { type?: "oca_package/1.0", oca_bundle: { bundle, dependencies }, extensions? }
+ * Format 3 adds top-level d (and optional type): https://github.com/agrifooddatacanada/OCA_package_standard
+ *
+ * Legacy uploads used top-level { bundle, dependencies } without oca_bundle; normalizeOcaPackageFormat() maps that
+ * to Format 1 on ingest so the rest of the app only reads oca_bundle.
+ *
+ * CHILD SCHEMA STORAGE: oca_bundle.dependencies — each item is a full bundle.
  */
 
 import { langNameFromTwoLetters, langNameFromCodeOCA, normalizeToOCACode } from './languageUtils';
 
 /**
- * Get the root bundle from an OCA package, handling both format variations
+ * Map legacy top-level bundle (+ optional dependencies) to canonical oca_bundle shape.
+ * No-op if oca_bundle.bundle already exists.
+ */
+export function normalizeOcaPackageFormat(pkg) {
+  if (!pkg || typeof pkg !== "object") return pkg;
+  if (pkg.oca_bundle?.bundle) return pkg;
+  if (pkg.bundle) {
+    const { bundle, dependencies = [], ...rest } = pkg;
+    return {
+      ...rest,
+      type: rest.type || "oca_package/1.0",
+      oca_bundle: {
+        bundle,
+        dependencies: Array.isArray(dependencies) ? dependencies : []
+      }
+    };
+  }
+  return pkg;
+}
+
+/**
+ * Get the root bundle from an OCA package (canonical Format 1 / 3)
  * @param {Object} pkg - The OCA package object
  * @returns {Object|null} The bundle object or null if not found
  */
 export const getPackageBundle = (pkg) => {
   if (!pkg) return null;
-  return pkg.oca_bundle?.bundle || pkg.bundle || null;
+  return pkg.oca_bundle?.bundle || null;
 };
 
 /**
- * Get the dependencies array from an OCA package, handling both format variations
+ * Get the dependencies array from an OCA package
  * @param {Object} pkg - The OCA package object
  * @returns {Array} The dependencies array (empty if not found)
  */
 export const getPackageDependencies = (pkg) => {
   if (!pkg) return [];
-  return pkg.oca_bundle?.dependencies || pkg.dependencies || [];
+  return pkg.oca_bundle?.dependencies || [];
 };
 
 /**
@@ -146,8 +152,7 @@ export const getPackageLanguages = (pkg) => {
     extractFromSchema(bundle);
   }
   
-  // Extract from child schemas (stored in dependencies array)
-  const childSchemas = pkg?.oca_bundle?.dependencies || [];
+  const childSchemas = getPackageDependencies(pkg);
   
   if (Array.isArray(childSchemas)) {
     childSchemas.forEach(childBundle => {

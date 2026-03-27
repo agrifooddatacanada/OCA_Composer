@@ -2,7 +2,12 @@
  * Utility functions for processing OCA schema data for visualization
  */
 
-import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "../utils/packageUtils";
+import {
+  getPackageBundle,
+  getPackageDependencies,
+  getPackageBundleId,
+  normalizeOcaPackageFormat
+} from "../utils/packageUtils";
 import { normalizeEscapedQuotes } from "../utils/helpers";
 
 /**
@@ -117,24 +122,19 @@ export const getDependencyInfo = (depId, dependencyMap, langCodeOCA = "eng") => 
 };
 
 /**
- * Normalize OCA package structure to handle different formats
- * @param {Object} pkg - Raw OCA package 
- * @returns {Object} Normalized package with consistent structure
+ * Normalize OCA package to { bundle, dependencies, extensions } for visualization
  */
 const pkgNormalize = (pkg) => {
   if (!pkg) return null;
-  
-  // Handle oca_package format: { oca_bundle: { bundle: {...}, dependencies: [...] }, extensions: {...} }
-  if (pkg.oca_bundle) {
+  const n = normalizeOcaPackageFormat(pkg);
+  if (n.oca_bundle) {
     return {
-      bundle: getPackageBundle(pkg),
-      dependencies: getPackageDependencies(pkg),
-      extensions: pkg.extensions || pkg.oca_bundle.extensions || {}
+      bundle: getPackageBundle(n),
+      dependencies: getPackageDependencies(n),
+      extensions: n.extensions || n.oca_bundle.extensions || {}
     };
   }
-  
-  // Handle direct format: { bundle: {...}, dependencies: [...], extensions: {...} }
-  return pkg;
+  return n;
 };
 
 /**
@@ -162,10 +162,10 @@ export const extractSchemaDataFromPackage = (pkg, langCodeOCA = "eng") => {
     : (labelOverlays || {});
   const labels = labelOverlay.attribute_labels || {};
 
-  const bundle = getPackageBundle(pkgNormalized);
-  
+  const bundle = pkgNormalized.bundle;
+
   return {
-    dependencies: getPackageDependencies(pkgNormalized),
+    dependencies: pkgNormalized.dependencies ?? [],
     attributes: bundle?.capture_base?.attributes || {},
     overlays: bundle?.overlays || {},
     labels
@@ -191,9 +191,9 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
     return null;
   }
 
-  const bundle = getPackageBundle(pkgNormalized);
-  const bundleId = getPackageBundleId(pkgNormalized);
-  
+  const bundle = pkgNormalized.bundle;
+  const bundleId = bundle?.d || null;
+
   // If it's the root schema (either by bundle digest, capture base digest, by "root" ID, or by schema name)
   if (
     schemaId === bundleId ||
@@ -286,8 +286,8 @@ export const getSchemaDataById = (pkg, schemaId, langCodeOCA = "eng") => {
   }
 
   // If it's a placeholder field name (like q9) - check if it exists in the root schema's refn fields
-  const rawBundle = getPackageBundle(pkg);
-  const deps = getPackageDependencies(pkg);
+  const rawBundle = pkgNormalized.bundle;
+  const deps = pkgNormalized.dependencies ?? [];
   
   if (rawBundle?.capture_base?.attributes) {
     const rootAttributes = rawBundle.capture_base.attributes;

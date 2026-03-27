@@ -19,6 +19,7 @@ import {
   overlays
 } from "../constants/constants";
 import { replaceAttributeCharsInParsedJson } from "../utils/helpers";
+import { normalizeOcaPackageFormat } from "../utils/packageUtils";
 
 const useHandleOCAFileUpload = () => {
   const {
@@ -133,8 +134,7 @@ const useHandleOCAFileUpload = () => {
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const jsonFile = JSON.parse(e.target.result);
-        // If the file is an OCA package
+        const jsonFile = normalizeOcaPackageFormat(JSON.parse(e.target.result));
         if (jsonFile?.oca_bundle?.bundle) {
           const modifiedBundle = replaceAttributeCharsInParsedJson(
             jsonFile.oca_bundle.bundle
@@ -152,8 +152,6 @@ const useHandleOCAFileUpload = () => {
           } else {
             handleBundleJSONDrop(modifiedBundle, fileNumber);
           }
-        } else if (jsonFile?.bundle) {
-          handleBundleJSONDrop(jsonFile.bundle, fileNumber);
         } else if (jsonFile?.schema?.[0]) {
           handleBundleJSONDrop(jsonFile.schema[0], fileNumber);
         } else {

@@ -7,6 +7,7 @@ import {
   normalizeEscapedQuotes
 } from "../utils/helpers";
 import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
+import { normalizeOcaPackageFormat } from "../utils/packageUtils";
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -23,19 +24,16 @@ function readJSON(originJsonData_jsonSaid, e) {
   try {
     const textDecoder = new TextDecoder("utf-8");
     const jsonString = textDecoder.decode(e.target.result);
-    const rawJson = JSON.parse(jsonString);
+    const rawJson = normalizeOcaPackageFormat(JSON.parse(jsonString));
 
-    // check if the json is a valid oca-package or just a normal oca-bundle
     let json = null;
     if (rawJson.type && rawJson.type.includes("oca_package")) {
       isOcaPackage = true;
       extensions = rawJson.extensions;
       ocaPackageSaid = rawJson?.d || "";
       json = rawJson.oca_bundle.bundle;
-    } else if (rawJson.oca_bundle && rawJson.oca_bundle.bundle) {
+    } else if (rawJson.oca_bundle?.bundle) {
       json = rawJson.oca_bundle.bundle;
-    } else if (rawJson.bundle) {
-      json = rawJson.bundle;
     } else {
       throw new WorkbookError(".. Error in reading the json file ...");
     }

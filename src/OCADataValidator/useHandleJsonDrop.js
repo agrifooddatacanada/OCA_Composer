@@ -1,19 +1,18 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import JSZip from "jszip";
 import yaml from "js-yaml";
 import { messages } from "../constants/messages";
 import { ADC, SENSITIVE } from "../constants/constants";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import {
-  replaceAttributeCharsInJsonString,
-  replaceAttributeCharsInParsedJson
-} from "../utils/helpers";
+import { replaceAttributeCharsInParsedJson } from "../utils/helpers";
 import { mapLinkMLToOCABundle } from "../SchemaTranslator/mapLinkMLToOCABundle";
 import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
-import { getPackageBundleId, getPackageBundle } from "../utils/packageUtils";
-
-const neededOverlays = ["format", "character_encoding", "conformance", "entry_code"];
+import {
+  getPackageBundleId,
+  getPackageBundle,
+  normalizeOcaPackageFormat
+} from "../utils/packageUtils";
+import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
 // eslint-disable-next-line import/prefer-default-export
 export const useHandleJsonDrop = (
   firstTimeDisplayWarning,
@@ -71,16 +70,13 @@ export const useHandleJsonDrop = (
           setTargetResult(e);
           const textDecoder = new TextDecoder("utf-8");
           const jsonString = textDecoder.decode(e.target.result);
-          const rawParse = JSON.parse(jsonString);
+          const rawParse = normalizeOcaPackageFormat(JSON.parse(jsonString));
           let jsonFile = null;
           let ocaPackageData = null;
-          // First check if the json file is an OCA package that has OCA bundle
           if (rawParse?.oca_bundle?.bundle) {
             ocaPackageData = rawParse;
             jsonFile = rawParse?.oca_bundle?.bundle;
             setPkgUpload(rawParse);
-          } else if (rawParse?.bundle) {
-            jsonFile = rawParse?.bundle;
           } else if (rawParse?.schema?.[0]) {
             jsonFile = rawParse?.schema?.[0];
           } else {
@@ -97,20 +93,16 @@ export const useHandleJsonDrop = (
           try {
             let pkgToSet = null;
             if (ocaPackageData) {
-              pkgToSet = ocaPackageData; // full OCA package
-            } else if (rawParse?.bundle) {
-              pkgToSet = rawParse; // package-like object with bundle
+              pkgToSet = ocaPackageData;
             } else if (jsonFile?.capture_base) {
-              // wrap single-capture_base bundle into a package-like object for multi-schema context
               pkgToSet = { bundle: jsonFile };
             }
 
             if (pkgToSet) {
               setPkgUpload(pkgToSet);
-              // initialize MultiSchema state so other components (validator) can rely on pkgUpload
               try {
                 initializeFromPkgUpload(pkgToSet);
-                const rootId = getPackageBundleId(pkgToSet) || pkgToSet?.bundle?.d || null;
+                const rootId = getPackageBundleId(pkgToSet);
                 if (rootId) switchToSchema(rootId, pkgToSet);
               } catch (err) {
                 // non-fatal; initialization failed but pkgUpload was set — downstream components
@@ -299,114 +291,19 @@ export const useHandleJsonDrop = (
 
       reader.onload = async (e) => {
         setTargetResult(e);
-        const zip = await JSZip.loadAsync(e.target.result);
-        const languageList = [];
-        const informationList = [];
-        const labelList = [];
-        const metaList = [];
-        const entryList = [];
-        const allZipFiles = [];
-        let entryCodeSummary = {};
-        let conformance;
-        let characterEncoding;
-        let loadUnits;
-        let formatRules;
-        let cardinalityData;
-        let dataStandards;
-        const bundleForValidator = { overlays: {} };
-
-        // load up metadata file in OCA bundle
-        const loadMetadataFile = await zip.files["meta.json"].async("text");
-        const metadataJson = JSON.parse(loadMetadataFile);
-        const { root } = metadataJson;
-        allZipFiles.push(loadMetadataFile);
-
-        // loop through all files in OCA bundle
-        for (const [key, file] of Object.entries(metadataJson.files[root])) {
-          // eslint-disable-next-line no-await-in-loop
-          const content = await zip.files[`${file}.json`].async("text");
-          // Sanitize attributes in JSON content; replace disallowed characters in attribute names
-          const convertedContent = replaceAttributeCharsInJsonString(content);
-          const parsedContent = JSON.parse(convertedContent);
-
-          if (
-            "type" in parsedContent &&
-            neededOverlays.includes(parsedContent.type.split("/")[2])
-          ) {
-            bundleForValidator.overlays[parsedContent.type.split("/")[2]] = parsedContent;
-          }
-
-          if (key.includes("meta")) {
-            metaList.push(parsedContent);
-            languageList.push(key.substring(6, 8));
-          }
-
-          if (key.includes("information")) {
-            informationList.push(parsedContent);
-          } else if (key.includes("format")) {
-            // Format word is inside Information word, so we need to check if it is a format or information
-            formatRules = parsedContent;
-          }
-
-          if (key.includes("label")) {
-            labelList.push(parsedContent);
-          }
-
-          if (key.includes("entry (")) {
-            entryList.push(parsedContent);
-          }
-
-          if (key.includes("entry_code")) {
-            entryCodeSummary = parsedContent;
-          }
-
-          if (key.includes("conformance")) {
-            conformance = parsedContent;
-          }
-
-          if (key.includes("character_encoding")) {
-            characterEncoding = parsedContent;
-          }
-
-          if (key.includes("unit")) {
-            loadUnits = parsedContent;
-          }
-
-          if (key.includes("cardinality")) {
-            cardinalityData = parsedContent;
-          }
-
-          if (key.includes("standard")) {
-            dataStandards = parsedContent;
-          }
-
-          allZipFiles.push(convertedContent);
-        }
-
-        const loadRoot = await zip.files[`${metadataJson.root}.json`].async("text");
-        const convertedLoadRoot = replaceAttributeCharsInJsonString(loadRoot);
-        const parsedRoot = JSON.parse(convertedLoadRoot);
-        if (parsedRoot?.flagged_attributes?.length > 0) {
-          setShowWarningCard(true);
-        }
-        if ("type" in parsedRoot && parsedRoot.type.split("/")[1] === "capture_base") {
-          bundleForValidator.capture_base = parsedRoot;
-        }
-        allZipFiles.push(convertedLoadRoot);
-
-        // Persist parsed bundle by initializing MultiSchema pkgUpload so validator uses package root
         try {
-          const pkg = { bundle: bundleForValidator };
-          setPkgUpload(pkg);
-          initializeFromPkgUpload(pkg);
-          switchToSchema(bundleForValidator?.d || bundleForValidator?.capture_base?.d || getPackageBundleId(pkg) || 'generated_schema', pkg);
+          const { ocaPackage, allZipFiles, root, captureBase } =
+            await parseOcaZipArrayBuffer(e.target.result);
+          if (captureBase?.flagged_attributes?.length > 0) {
+            setShowWarningCard(true);
+          }
+          setPkgUpload(ocaPackage);
+          initializeFromPkgUpload(ocaPackage);
+          switchToSchema(root, ocaPackage);
+          setZipToReadme(allZipFiles);
         } catch (err) {
-          console.warn('useHandleJsonDrop: failed to initialize pkgUpload from zip bundle', err);
+          console.warn("useHandleJsonDrop: failed to parse zip as OCA package", err);
         }
-
-        // Data processing handled by initializeFromPkgUpload (called during upload)
-        // which uses OCAParser to extract all schema data into MultiSchemaContext
-        setZipToReadme(allZipFiles);
       };
 
       reader.readAsArrayBuffer(acceptedFiles[0]);

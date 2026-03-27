@@ -11,7 +11,7 @@ import { getPackageBundle, getPackageBundleId } from "./packageUtils";
 
 export const canonicalizeSchemaId = (pkg, id) => {
         if (!pkg) return id;
-        // Handle both pkg.bundle.d and pkg.oca_bundle.bundle.d structures
+        // Canonical package: oca_bundle.bundle.d (legacy top-level bundle normalized on load)
         const rootDigest = getPackageBundleId(pkg);
         // Collect possible root names from meta overlays if present (handle array or object)
         const rootNames = new Set();

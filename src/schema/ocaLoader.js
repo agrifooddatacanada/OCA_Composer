@@ -13,7 +13,12 @@
  * - Only parse once (check initialized flag)
  */
 
-import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "../utils/packageUtils";
+import {
+  getPackageBundle,
+  getPackageDependencies,
+  getPackageBundleId,
+  normalizeOcaPackageFormat
+} from "../utils/packageUtils";
 import { OCAParser } from "../utils/ocaParser";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
 
@@ -81,7 +86,7 @@ export function createOcaLoader({
     if (!pkgUpload) return [];
 
     const schemaIds = [];
-    const pkgNormalized = pkgUpload.oca_bundle ? pkgUpload : { oca_bundle: pkgUpload };
+    const pkgNormalized = normalizeOcaPackageFormat(pkgUpload);
 
     const bundle = getPackageBundle(pkgNormalized);
     const dependencies = getPackageDependencies(pkgNormalized);

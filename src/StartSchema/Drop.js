@@ -31,12 +31,14 @@ export default function Drop({
       return {
         "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
         "application/zip": [".zip"],
+        "application/x-zip-compressed": [".zip"],
         "application/json": [".json"]
       };
     }
     if (version === 1) {
       return {
         "application/zip": [".zip"],
+        "application/x-zip-compressed": [".zip"],
         "application/json": [".json"],
         "text/yaml": [".yaml", ".yml"],
         "application/x-yaml": [".yaml", ".yml"]
@@ -61,6 +63,7 @@ export default function Drop({
       return {
         "application/vnd.ms-excel": [".csv"],
         "application/zip": [".zip"],
+        "application/x-zip-compressed": [".zip"],
         "application/json": [".json"]
       };
     }

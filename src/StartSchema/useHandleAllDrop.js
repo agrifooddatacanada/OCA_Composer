@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
-import JSZip from "jszip";
 import Papa from "papaparse";
 import { Context } from "../App";
 import { removeSpacesFromString } from "../utils/stringUtils";
@@ -11,6 +10,8 @@ import {
   // getUnitsFramedThatAlreadyExistInOcaPackage
 } from "../utils/helpers";
 import { useMultiSchema } from "../schema/schemaContext";
+import { normalizeOcaPackageFormat } from "../utils/packageUtils";
+import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
 
 const useHandleAllDrop = () => {
   const {
@@ -321,91 +322,26 @@ const useHandleAllDrop = () => {
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const zip = await JSZip.loadAsync(e.target.result);
-        const allZipFiles = [];
+        try {
+        const { ocaPackage, allZipFiles, root } =
+          await parseOcaZipArrayBuffer(e.target.result);
 
-        // load up metadata file in OCA bundle
-        const loadMetadataFile = await zip.files["meta.json"].async("text");
-        const metadataJson = JSON.parse(loadMetadataFile);
-        const { root } = metadataJson;
-        allZipFiles.push(loadMetadataFile);
-
-        // Reconstruct OCA bundle structure from zip files
-        const captureBase = JSON.parse(
-          replaceAttributeCharsInJsonString(
-            await zip.files[`${root}.json`].async("text")
-          )
-        );
-        allZipFiles.push(JSON.stringify(captureBase));
-
-        const overlays = {};
-
-        // loop through all files in OCA bundle
-        for (const [key, file] of Object.entries(metadataJson.files[root])) {
-          /* eslint-disable-next-line no-await-in-loop */
-          const content = await zip.files[`${file}.json`].async("text");
-          // Sanitize attributes in JSON content; replace disallowed characters in attribute names
-          const convertedContent = replaceAttributeCharsInJsonString(content);
-          const parsedData = JSON.parse(convertedContent);
-          allZipFiles.push(convertedContent);
-
-          // Group overlays by type
-          if (key.includes("meta")) {
-            overlays.meta = overlays.meta || [];
-            overlays.meta.push(parsedData);
-          } else if (key.includes("information")) {
-            overlays.information = overlays.information || [];
-            overlays.information.push(parsedData);
-          } else if (key.includes("label")) {
-            overlays.label = overlays.label || [];
-            overlays.label.push(parsedData);
-          } else if (key.includes("entry (")) {
-            overlays.entry = overlays.entry || [];
-            overlays.entry.push(parsedData);
-          } else if (key.includes("entry_code")) {
-            overlays.entry_code = parsedData;
-          } else if (key.includes("conformance")) {
-            overlays.conformance = parsedData;
-          } else if (key.includes("character_encoding")) {
-            overlays.character_encoding = parsedData;
-          } else if (key.includes("unit")) {
-            overlays.unit = parsedData;
-          } else if (key.includes("cardinality")) {
-            overlays.cardinality = parsedData;
-          } else if (key.includes("format")) {
-            overlays.format = parsedData;
-          } else if (key === "standard") {
-            overlays.standard = parsedData;
-          }
-        }
-
-        // Construct OCA package structure
-        const ocaBundle = {
-          d: root,
-          bundle: {
-            d: root,
-            capture_base: captureBase,
-            overlays
-          }
-        };
-
-        const ocaPackage = {
-          __composerImportSource: "zip",
-          oca_bundle: ocaBundle
-        };
-
-        // Set OCA package in context
         setPkgUpload(ocaPackage);
         setZipToReadme(allZipFiles);
 
-        // NEW: Initialize MultiSchemaContext with complete package data
         initializeFromPkgUpload(ocaPackage);
 
-        // Set editing schema to root schema
         switchToSchema(root, ocaPackage);
 
-        // Use the existing bundle handler (with sanitized bundle)
-        handleBundleJSONDrop(ocaBundle.bundle, ocaPackage);
+        handleBundleJSONDrop(ocaPackage.oca_bundle.bundle, ocaPackage);
+        } catch (error) {
+          console.error("Zip upload error:", error);
+          setDropMessage({ message: messages.uploadFail, type: "error" });
+          setLoading(false);
+          setTimeout(() => {
+            setDropMessage({ message: "", type: "" });
+          }, 2500);
+        }
       };
 
       reader.readAsArrayBuffer(acceptedFiles[0]);
@@ -518,46 +454,17 @@ const useHandleAllDrop = () => {
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const jsonFile = JSON.parse(e.target.result);
-        // First check if the json file is an OCA package that has OCA bundle
+        const jsonFile = normalizeOcaPackageFormat(JSON.parse(e.target.result));
         if (jsonFile?.oca_bundle?.bundle) {
           const modifiedBundle = replaceAttributeCharsInParsedJson(
             jsonFile.oca_bundle.bundle
           );
-          // setUnitFramedThatAlreadyExistInOcaPackage(
-          //   getUnitsFramedThatAlreadyExistInOcaPackage(jsonFile)
-          // );
           setPkgUpload(jsonFile);
 
-          // NEW: Initialize MultiSchemaContext with complete package data
           initializeFromPkgUpload(jsonFile);
 
-          // Set editing schema to root schema
           switchToSchema(jsonFile.oca_bundle.bundle.d, jsonFile);
           handleBundleJSONDrop(modifiedBundle, jsonFile);
-        } else if (jsonFile?.bundle) {
-          const modifiedJsonFile = replaceAttributeCharsInParsedJson(jsonFile.bundle);
-          // If dependencies exist, keep the full OCA package in context for visualization
-          if (jsonFile?.dependencies && Array.isArray(jsonFile.dependencies)) {
-            const sanitizedOcaPackage = { ...jsonFile, bundle: modifiedJsonFile };
-            setPkgUpload(sanitizedOcaPackage);
-
-            // NEW: Initialize MultiSchemaContext with complete package data
-            initializeFromPkgUpload(sanitizedOcaPackage);
-
-            // Set editing schema to root schema
-            switchToSchema(jsonFile.bundle.d, sanitizedOcaPackage);
-            handleBundleJSONDrop(modifiedJsonFile, sanitizedOcaPackage);
-          } else {
-            // Single schema package
-            setPkgUpload(jsonFile);
-
-            // NEW: Initialize MultiSchemaContext
-            initializeFromPkgUpload(jsonFile);
-
-            switchToSchema(jsonFile.bundle.d, jsonFile);
-            handleBundleJSONDrop(modifiedJsonFile);
-          }
         } else if (jsonFile?.schema?.[0]) {
           handleBundleJSONDrop(jsonFile?.schema?.[0]);
         } else {

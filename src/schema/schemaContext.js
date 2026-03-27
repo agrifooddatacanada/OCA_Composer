@@ -28,6 +28,7 @@ import { MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { makeSchemaStore } from "./schemaStore";
 import { canonicalizeSchemaId } from "../utils/schemaId";
 import { buildPkgFromState } from "./ocaBuilder";
+import { normalizeOcaPackageFormat } from "../utils/packageUtils";
 import { useCreateChildSchemaPlaceholder } from "./createChildSchemaPlaceholder";
 
 /** factories */
@@ -44,7 +45,17 @@ const MultiSchemaContext = createContext();
 export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
   // Store the original OCA package (source of truth for schema structure)
   // Initialize from prop if provided (for backward compatibility)
-  const [pkgUpload, setPkgUpload] = useState(packageOCA);
+  const [pkgUpload, _setPkgUpload] = useState(
+    packageOCA ? normalizeOcaPackageFormat(packageOCA) : null
+  );
+
+  const setPkgUpload = useCallback((value) => {
+    if (value == null) {
+      _setPkgUpload(null);
+      return;
+    }
+    _setPkgUpload(normalizeOcaPackageFormat(value));
+  }, []);
 
   // Multi-schema state - Use ref to persist across StrictMode remounts
   const schemaStatesRef = useRef({});
@@ -148,6 +159,7 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       schemaStates,
       currentSchemaId,
       pkgUpload,
+      setPkgUpload,
       getCurrentSchemaId,
       store,
       oca,
