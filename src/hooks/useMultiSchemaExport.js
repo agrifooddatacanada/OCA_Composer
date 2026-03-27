@@ -49,7 +49,7 @@ const useMultiSchemaExport = () => {
     currentSchemaId,
     getSchema,
     getSchemaById,
-    pkgBuildFromState
+    rebuildOcaPackageFromEditorState
   } = useMultiSchema();
 
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
@@ -113,7 +113,7 @@ const useMultiSchemaExport = () => {
       }
 
       // Always export with all changes integrated
-      const exportPackage = pkgBuildFromState(pkgOCA);
+      const exportPackage = rebuildOcaPackageFromEditorState(pkgOCA);
 
       // Generate the OCA package
       const ocaPackage = new OcaPackage(exportPackage);

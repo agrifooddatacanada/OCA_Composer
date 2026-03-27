@@ -7,7 +7,7 @@ import {
   normalizeEscapedQuotes
 } from "../utils/helpers";
 import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
-import { normalizeOcaPackageFormat } from "../utils/packageUtils";
+import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -24,7 +24,7 @@ function readJSON(originJsonData_jsonSaid, e) {
   try {
     const textDecoder = new TextDecoder("utf-8");
     const jsonString = textDecoder.decode(e.target.result);
-    const rawJson = normalizeOcaPackageFormat(JSON.parse(jsonString));
+    const rawJson = coerceIfLegacyTopLevelBundle(JSON.parse(jsonString));
 
     let json = null;
     if (rawJson.type && rawJson.type.includes("oca_package")) {

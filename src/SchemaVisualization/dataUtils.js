@@ -6,7 +6,7 @@ import {
   getPackageBundle,
   getPackageDependencies,
   getPackageBundleId,
-  normalizeOcaPackageFormat
+  coerceIfLegacyTopLevelBundle
 } from "../utils/packageUtils";
 import { normalizeEscapedQuotes } from "../utils/helpers";
 
@@ -126,7 +126,7 @@ export const getDependencyInfo = (depId, dependencyMap, langCodeOCA = "eng") => 
  */
 const pkgNormalize = (pkg) => {
   if (!pkg) return null;
-  const n = normalizeOcaPackageFormat(pkg);
+  const n = coerceIfLegacyTopLevelBundle(pkg);
   if (n.oca_bundle) {
     return {
       bundle: getPackageBundle(n),
@@ -155,7 +155,7 @@ export const extractSchemaDataFromPackage = (pkg, langCodeOCA = "eng") => {
   }
 
   // Extract labels from the bundle's overlays
-  // Note: Labels are populated by pkgBuildFromState from lanAttributeRowData
+  // Note: Labels are populated by rebuildOcaPackageFromEditorState from lanAttributeRowData
   const labelOverlays = pkgNormalized.bundle.overlays?.label;
   const labelOverlay = Array.isArray(labelOverlays)
     ? (labelOverlays.find((l) => l.language === langCodeOCA) || labelOverlays[0] || {})

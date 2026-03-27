@@ -15,7 +15,7 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { getCurrentData } from "../utils/helpers";
 import { ADC } from "../constants/constants";
-import { normalizeOcaPackageFormat } from "../utils/packageUtils";
+import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
 
 const userSelectionDropdown = ["Copy from other entry codes", "Upload"];
 
@@ -148,7 +148,7 @@ const useHandleEntryCodeDrop = () => {
         setLoading(true);
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const jsonFile = normalizeOcaPackageFormat(JSON.parse(e.target.result));
+          const jsonFile = coerceIfLegacyTopLevelBundle(JSON.parse(e.target.result));
 
           if (jsonFile?.oca_bundle?.bundle) {
             handleBundleJSONDrop(jsonFile?.oca_bundle?.bundle, jsonFile);

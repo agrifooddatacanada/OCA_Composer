@@ -79,7 +79,7 @@ export default function ViewSchema({
   const {
     currentSchemaId,
     switchToSchema,
-    pkgBuildFromState,
+    rebuildOcaPackageFromEditorState,
     getSchema,
     updateSchema,
     schemaStates,
@@ -194,7 +194,7 @@ export default function ViewSchema({
     if (metaName && metaName !== schemaId) return metaName;
 
     // 2) Try to find a parent attribute that references this schema and use its label
-    const pkg = pkgFromState || pkgOCA || (pkgBuildFromState ? pkgBuildFromState(pkgOCA) : null);
+    const pkg = pkgFromState || pkgOCA || (rebuildOcaPackageFromEditorState ? rebuildOcaPackageFromEditorState(pkgOCA) : null);
     if (pkg) {
       const bundle = getPackageBundle(pkg);
       const deps = getPackageDependencies(pkg) || [];
@@ -405,7 +405,7 @@ export default function ViewSchema({
 
   // Update the package data when schemas are modified
   useEffect(() => {
-    // For manual creation, pkgOCA is null - pkgBuildFromState will create the structure
+    // For manual creation, pkgOCA is null - rebuildOcaPackageFromEditorState will create the structure
     // For uploaded packages, pkgOCA contains the original structure    
     // If manual creation, ensure root schema is initialized before building
     if (!pkgOCA) {
@@ -417,7 +417,7 @@ export default function ViewSchema({
         return;
       }
 
-      // Mark schema as initialized so pkgBuildFromState will process it
+      // Mark schema as initialized so rebuildOcaPackageFromEditorState will process it
       if (!rootState.initialized) {
         updateSchema(rootSchemaId, { initialized: true });
         // Since state update is async, also update the local ref for immediate use
@@ -425,14 +425,14 @@ export default function ViewSchema({
       }
     }
 
-    // UNIFIED CODE PATH: pkgBuildFromState handles both imported and manual schemas
+    // UNIFIED CODE PATH: rebuildOcaPackageFromEditorState handles both imported and manual schemas
     // - For uploads: clones pkgOCA and applies edits
     // - For manual creation: creates fresh package structure from schemaStates
     // - Converts "Child Schema" -> refn:name and builds dependencies automatically
-    const pkgFromState = pkgBuildFromState(pkgOCA);
+    const pkgFromState = rebuildOcaPackageFromEditorState(pkgOCA);
     setPkgWithChanges(pkgFromState);
     setVizVersion((v) => v + 1);
-  }, [pkgOCA, schemaStates, pkgBuildFromState]);
+  }, [pkgOCA, schemaStates, rebuildOcaPackageFromEditorState]);
 
   // Removed in favor of global language toggle (EN/FR)
 
@@ -441,7 +441,7 @@ export default function ViewSchema({
       setLoading(true);
 
       // Unified export hook handles all scenarios:
-      // - Imported packages (flat or nested) via pkgBuildFromState()
+      // - Imported packages (flat or nested) via rebuildOcaPackageFromEditorState()
       // - Manual flat schemas via text DSL generation
       // - Manual nested schemas (throws helpful error - not yet supported)
       await exportData();

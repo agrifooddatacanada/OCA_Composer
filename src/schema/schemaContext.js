@@ -28,10 +28,7 @@ import { MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
 import { makeSchemaStore } from "./schemaStore";
 import { canonicalizeSchemaId } from "../utils/schemaId";
 import { buildPkgFromState } from "./ocaBuilder";
-import {
-  normalizeOcaPackageFormat,
-  isCanonicalOcaPackageShape
-} from "../utils/packageUtils";
+import { acceptOcaPackageOrNull } from "../utils/packageUtils";
 import { useCreateChildSchemaPlaceholder } from "./createChildSchemaPlaceholder";
 
 /** factories */
@@ -47,8 +44,8 @@ const MultiSchemaContext = createContext();
  */
 function initialPkgFromProp(packageOCA) {
   if (!packageOCA) return null;
-  const n = normalizeOcaPackageFormat(packageOCA);
-  if (isCanonicalOcaPackageShape(n)) return n;
+  const accepted = acceptOcaPackageOrNull(packageOCA);
+  if (accepted) return accepted;
   console.warn(
     "MultiSchemaProvider packageOCA: expected oca_bundle.bundle; starting with null"
   );
@@ -65,15 +62,15 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       _setPkgOCA(null);
       return;
     }
-    const normalized = normalizeOcaPackageFormat(value);
-    if (!isCanonicalOcaPackageShape(normalized)) {
+    const accepted = acceptOcaPackageOrNull(value);
+    if (!accepted) {
       console.warn(
-        "setPkgOCA: value has no oca_bundle.bundle after normalize; clearing package state"
+        "setPkgOCA: value has no oca_bundle.bundle after legacy coercion; clearing package state"
       );
       _setPkgOCA(null);
       return;
     }
-    _setPkgOCA(normalized);
+    _setPkgOCA(accepted);
   }, []);
 
   // Multi-schema state - Use ref to persist across StrictMode remounts
@@ -126,7 +123,7 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
     [pkgOCA]
   );
 
-  const pkgBuildFromState = useCallback(
+  const rebuildOcaPackageFromEditorState = useCallback(
     (pkgOCA) =>
       buildPkgFromState({
         pkgOCA,
@@ -166,7 +163,7 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       // Core actions
       getCurrentSchemaId,
       switchToSchema,
-      pkgBuildFromState,
+      rebuildOcaPackageFromEditorState,
       clearAllSchemas,
       createChildSchemaPlaceholder,
 
@@ -183,7 +180,7 @@ export const MultiSchemaProvider = ({ children, packageOCA = null }) => {
       store,
       oca,
       switchToSchema,
-      pkgBuildFromState,
+      rebuildOcaPackageFromEditorState,
       clearAllSchemas,
       createChildSchemaPlaceholder
     ]

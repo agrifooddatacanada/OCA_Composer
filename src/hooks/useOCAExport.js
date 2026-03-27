@@ -67,7 +67,7 @@ const useOCAExport = () => {
     setCurrentPage
   } = useContext(Context);
 
-  const { getCurrentSchemaId, getSchema, getSchemaById, getAttributesList, pkgBuildFromState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, pkgOCA, setPkgOCA } = useMultiSchema();
+  const { getCurrentSchemaId, getSchema, getSchemaById, getAttributesList, rebuildOcaPackageFromEditorState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, pkgOCA, setPkgOCA } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [error, setError] = useState("");
@@ -760,7 +760,7 @@ const useOCAExport = () => {
       // Determine the true root schema id from the package built from current editor state.
       // This ensures `Finish and Download` exports the full package (root + children)
       // even when the user is currently editing a child schema.
-      const pkgFromState = pkgBuildFromState(pkgOCA);
+      const pkgFromState = rebuildOcaPackageFromEditorState(pkgOCA);
       const rootSchemaId = getPackageBundleId(pkgFromState) || currentSchemaId;
 
       const allSchemaIds = Object.keys(schemaStates);

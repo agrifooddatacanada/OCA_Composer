@@ -17,7 +17,7 @@ import {
   getPackageBundle,
   getPackageDependencies,
   getPackageBundleId,
-  normalizeOcaPackageFormat
+  coerceIfLegacyTopLevelBundle
 } from "../utils/packageUtils";
 import { OCAParser } from "../utils/ocaParser";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
@@ -82,19 +82,19 @@ export function createOcaLoader({
   /**
    * Load all schemas from package
    */
-  const initializeFromPkgUpload = (pkgOCA) => {
+  const loadAllSchemasFromOcaPackage = (pkgOCA) => {
     if (!pkgOCA) return [];
 
     const schemaIds = [];
-    const pkgNormalized = normalizeOcaPackageFormat(pkgOCA);
+    const pkgAfterCoercion = coerceIfLegacyTopLevelBundle(pkgOCA);
 
-    const bundle = getPackageBundle(pkgNormalized);
-    const dependencies = getPackageDependencies(pkgNormalized);
+    const bundle = getPackageBundle(pkgAfterCoercion);
+    const dependencies = getPackageDependencies(pkgAfterCoercion);
 
     if (bundle) {
       const rootId = bundle.d;
       if (rootId) {
-        addSchemaFromOCA(pkgNormalized, rootId);
+        addSchemaFromOCA(pkgAfterCoercion, rootId);
         schemaIds.push(rootId);
       }
     }
@@ -102,7 +102,7 @@ export function createOcaLoader({
     if (dependencies && Array.isArray(dependencies)) {
       dependencies.forEach((dep) => {
         if (dep.d) {
-          addSchemaFromOCA(pkgNormalized, dep.d);
+          addSchemaFromOCA(pkgAfterCoercion, dep.d);
           schemaIds.push(dep.d);
         }
       });
@@ -113,6 +113,6 @@ export function createOcaLoader({
 
   return {
     addSchemaFromOCA,
-    initializeFromPkgUpload
+    loadAllSchemasFromOcaPackage
   };
 }

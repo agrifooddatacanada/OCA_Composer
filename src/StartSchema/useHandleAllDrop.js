@@ -10,7 +10,7 @@ import {
   // getUnitsFramedThatAlreadyExistInOcaPackage
 } from "../utils/helpers";
 import { useMultiSchema } from "../schema/schemaContext";
-import { normalizeOcaPackageFormat } from "../utils/packageUtils";
+import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
 import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
 
 const useHandleAllDrop = () => {
@@ -25,8 +25,8 @@ const useHandleAllDrop = () => {
   
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
-  const { clearAllSchemas, switchToSchema, initializeFromPkgUpload, setPkgOCA, updateSchema } = useMultiSchema();
-  // useZipParser removed - data processing now handled by initializeFromPkgUpload -> OCAParser
+  const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setPkgOCA, updateSchema } = useMultiSchema();
+  // useZipParser removed - data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
 
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
@@ -329,7 +329,7 @@ const useHandleAllDrop = () => {
         setPkgOCA(ocaPackage);
         setZipToReadme(allZipFiles);
 
-        initializeFromPkgUpload(ocaPackage);
+        loadAllSchemasFromOcaPackage(ocaPackage);
 
         switchToSchema(root, ocaPackage);
 
@@ -436,7 +436,7 @@ const useHandleAllDrop = () => {
         throw new Error("No language found in the JSON file");
       }
 
-      // Data processing now handled by initializeFromPkgUpload -> OCAParser
+      // Data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
       // which already extracts all metadata, labels, descriptions, entry codes, etc.
       // into MultiSchemaContext per-schema storage
       
@@ -454,14 +454,14 @@ const useHandleAllDrop = () => {
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const jsonFile = normalizeOcaPackageFormat(JSON.parse(e.target.result));
+        const jsonFile = coerceIfLegacyTopLevelBundle(JSON.parse(e.target.result));
         if (jsonFile?.oca_bundle?.bundle) {
           const modifiedBundle = replaceAttributeCharsInParsedJson(
             jsonFile.oca_bundle.bundle
           );
           setPkgOCA(jsonFile);
 
-          initializeFromPkgUpload(jsonFile);
+          loadAllSchemasFromOcaPackage(jsonFile);
 
           switchToSchema(jsonFile.oca_bundle.bundle.d, jsonFile);
           handleBundleJSONDrop(modifiedBundle, jsonFile);

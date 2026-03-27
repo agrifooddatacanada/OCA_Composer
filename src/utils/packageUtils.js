@@ -4,8 +4,8 @@
  * Canonical shape (Format 1): { type?: "oca_package/1.0", oca_bundle: { bundle, dependencies }, extensions? }
  * Format 3 adds top-level d (and optional type): https://github.com/agrifooddatacanada/OCA_package_standard
  *
- * Legacy uploads used top-level { bundle, dependencies } without oca_bundle; normalizeOcaPackageFormat() maps that
- * to Format 1 on ingest so the rest of the app only reads oca_bundle.
+ * Legacy uploads used top-level { bundle, dependencies } without oca_bundle; coerceIfLegacyTopLevelBundle() wraps only
+ * when that pattern is present; otherwise returns input unchanged. acceptOcaPackageOrNull() then requires oca_bundle.bundle.
  *
  * CHILD SCHEMA STORAGE: oca_bundle.dependencies — each item is a full bundle.
  */
@@ -13,10 +13,10 @@
 import { langNameFromTwoLetters, langNameFromCodeOCA, normalizeToOCACode } from './languageUtils';
 
 /**
- * Map legacy top-level bundle (+ optional dependencies) to canonical oca_bundle shape.
- * No-op if oca_bundle.bundle already exists.
+ * Coerces only when the payload has legacy top-level `bundle` (+ optional `dependencies`) without `oca_bundle.bundle`.
+ * Otherwise returns the input unchanged (no error). Does not validate loadability.
  */
-export function normalizeOcaPackageFormat(pkg) {
+export function coerceIfLegacyTopLevelBundle(pkg) {
   if (!pkg || typeof pkg !== "object") return pkg;
   if (pkg.oca_bundle?.bundle) return pkg;
   if (pkg.bundle) {
@@ -33,7 +33,7 @@ export function normalizeOcaPackageFormat(pkg) {
   return pkg;
 }
 
-export function isCanonicalOcaPackageShape(pkg) {
+function hasRootBundle(pkg) {
   return Boolean(
     pkg &&
       typeof pkg === "object" &&
@@ -41,6 +41,12 @@ export function isCanonicalOcaPackageShape(pkg) {
       typeof pkg.oca_bundle.bundle === "object" &&
       pkg.oca_bundle.bundle !== null
   );
+}
+
+export function acceptOcaPackageOrNull(pkg) {
+  if (pkg == null) return null;
+  const coerced = coerceIfLegacyTopLevelBundle(pkg);
+  return hasRootBundle(coerced) ? coerced : null;
 }
 
 /**

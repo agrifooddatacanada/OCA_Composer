@@ -10,7 +10,7 @@ import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
 import {
   getPackageBundleId,
   getPackageBundle,
-  normalizeOcaPackageFormat
+  coerceIfLegacyTopLevelBundle
 } from "../utils/packageUtils";
 import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
 // eslint-disable-next-line import/prefer-default-export
@@ -37,8 +37,8 @@ export const useHandleSchemaFileDrop = (
     targetResult,
     setTargetResult
   } = useContext(Context);
-  const { clearAllSchemas, switchToSchema, initializeFromPkgUpload, setPkgOCA } = useMultiSchema();
-  // useZipParser removed - data processing now handled by initializeFromPkgUpload -> OCAParser
+  const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setPkgOCA } = useMultiSchema();
+  // useZipParser removed - data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
 
   const [jsonDropMessage, setJsonDropMessage] = useState({
     message: "",
@@ -70,7 +70,7 @@ export const useHandleSchemaFileDrop = (
           setTargetResult(e);
           const textDecoder = new TextDecoder("utf-8");
           const jsonString = textDecoder.decode(e.target.result);
-          const rawParse = normalizeOcaPackageFormat(JSON.parse(jsonString));
+          const rawParse = coerceIfLegacyTopLevelBundle(JSON.parse(jsonString));
           let jsonFile = null;
           let ocaPackageData = null;
           if (rawParse?.oca_bundle?.bundle) {
@@ -101,13 +101,13 @@ export const useHandleSchemaFileDrop = (
             if (pkgToSet) {
               setPkgOCA(pkgToSet);
               try {
-                initializeFromPkgUpload(pkgToSet);
+                loadAllSchemasFromOcaPackage(pkgToSet);
                 const rootId = getPackageBundleId(pkgToSet);
                 if (rootId) switchToSchema(rootId, pkgToSet);
               } catch (err) {
                 // non-fatal; initialization failed but pkgOCA was set — downstream components
                 // should handle missing initialization defensively.
-                console.warn("useHandleSchemaFileDrop: initializeFromPkgUpload failed", err);
+                console.warn("useHandleSchemaFileDrop: loadAllSchemasFromOcaPackage failed", err);
               }
             }
           } catch (err) {
@@ -247,7 +247,7 @@ export const useHandleSchemaFileDrop = (
             throw new Error("No language found in the JSON file");
           }
 
-          // Data processing handled by initializeFromPkgUpload (called during upload)
+          // Data processing handled by loadAllSchemasFromOcaPackage (called during upload)
           // which uses OCAParser to extract all schema data into MultiSchemaContext
           
           setZipToReadme(allJSONFiles);
@@ -298,7 +298,7 @@ export const useHandleSchemaFileDrop = (
             setShowWarningCard(true);
           }
           setPkgOCA(ocaPackage);
-          initializeFromPkgUpload(ocaPackage);
+          loadAllSchemasFromOcaPackage(ocaPackage);
           switchToSchema(root, ocaPackage);
           setZipToReadme(allZipFiles);
         } catch (err) {
@@ -341,7 +341,7 @@ export const useHandleSchemaFileDrop = (
       try {
         setJsonLoading(true);
         // Note: Do NOT call clearAllSchemas() here - it causes race conditions
-        // initializeFromPkgUpload() will properly add the schemas to state
+        // loadAllSchemasFromOcaPackage() will properly add the schemas to state
         
         const reader = new FileReader();
 
@@ -365,9 +365,9 @@ export const useHandleSchemaFileDrop = (
             
             // Initialize schema states from the package (required for MultiSchemaContext)
             try {
-              initializeFromPkgUpload(pkg);
+              loadAllSchemasFromOcaPackage(pkg);
             } catch (err) {
-              console.warn("LinkML: initializeFromPkgUpload failed", err);
+              console.warn("LinkML: loadAllSchemasFromOcaPackage failed", err);
             }
 
             // Set editing schema to root schema
@@ -508,7 +508,7 @@ export const useHandleSchemaFileDrop = (
               languageList.push("en");
             }
 
-            // Data processing handled by initializeFromPkgUpload -> OCAParser
+            // Data processing handled by loadAllSchemasFromOcaPackage -> OCAParser
             // which already extracts all metadata, labels, descriptions, etc.
             
             setZipToReadme(allJSONFiles);
@@ -552,7 +552,7 @@ export const useHandleSchemaFileDrop = (
     [
       clearAllSchemas,
       datasetRawFile.length,
-      initializeFromPkgUpload,
+      loadAllSchemasFromOcaPackage,
       jsonIsParsed,
       setCurrentDataValidatorPage,
       setDatasetDropDisabled,
