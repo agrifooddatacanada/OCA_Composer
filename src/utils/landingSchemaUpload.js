@@ -17,16 +17,16 @@ export function isLandingYamlSchema(file) {
   return n.endsWith(".yaml") || n.endsWith(".yml");
 }
 
-export function syncLandingSchemaDrop(setRawFile, setJsonRawFile, acceptedFiles) {
+export function syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles) {
   const f = acceptedFiles?.[0];
   setRawFile(acceptedFiles);
   if (isLandingZipSchema(f) || isLandingJsonSchema(f)) {
-    setJsonRawFile([]);
+    setSchemaRawFile([]);
     return;
   }
   if (isLandingYamlSchema(f)) {
-    setJsonRawFile(acceptedFiles);
+    setSchemaRawFile(acceptedFiles);
     return;
   }
-  setJsonRawFile([]);
+  setSchemaRawFile([]);
 }

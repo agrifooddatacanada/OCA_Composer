@@ -542,7 +542,7 @@ const useHandleAllDrop = () => {
     } else if (rawFile.length > 0) {
       const pathOrName = (rawFile[0].path || rawFile[0].name || "").toLowerCase();
       if (pathOrName.endsWith(".yaml") || pathOrName.endsWith(".yml")) {
-        // LinkML: useHandleJsonDrop reads jsonRawFile only
+        // LinkML: useHandleSchemaFileDrop reads schemaRawFile only
       } else {
         setDropMessage({ message: messages.uploadFail, type: "error" });
         setLoading(false);

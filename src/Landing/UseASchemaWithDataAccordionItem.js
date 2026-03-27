@@ -16,7 +16,7 @@ import AccordionItemWrapper from "./AccordionItemWrapper";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import Drop from "../StartSchema/Drop";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
-import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
+import { useHandleSchemaFileDrop } from "../OCADataValidator/useHandleSchemaFileDrop";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
@@ -31,15 +31,15 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
   const { pkgUpload } = useMultiSchema();
   const isMultiSchema = hasMultipleSchemas(pkgUpload);
   const {
-    jsonRawFile,
-    setJsonRawFile,
+    schemaRawFile,
+    setSchemaRawFile,
     jsonLoading,
     overallLoading,
     jsonDropDisabled,
     jsonDropMessage,
     setJsonDropMessage,
     setJsonLoading
-  } = useHandleJsonDrop();
+  } = useHandleSchemaFileDrop();
 
   const handleMoveToPreviewSchema = () => {
     navigate("/oca-data-verifier");
@@ -49,11 +49,11 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
   const { setRawFile, rawFile, loading: startLoading } = useHandleAllDrop();
 
   const setFile = (acceptedFiles) => {
-    syncLandingSchemaDrop(setRawFile, setJsonRawFile, acceptedFiles);
+    syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles);
   };
 
   const disableButtonCheck =
-    (rawFile.length === 0 && jsonRawFile.length === 0) ||
+    (rawFile.length === 0 && schemaRawFile.length === 0) ||
     jsonLoading ||
     startLoading;
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
@@ -104,7 +104,7 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
             </Box>
           )}
           <GenerateDataEntryExcel
-            rawFile={rawFile.length > 0 ? rawFile : jsonRawFile}
+            rawFile={rawFile.length > 0 ? rawFile : schemaRawFile}
             setLoading={setJsonLoading}
             disableButtonCheck={disableAdditionalSchemaTools || isMultiSchema}
             isMultiSchema={isMultiSchema}

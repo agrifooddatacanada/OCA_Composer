@@ -22,7 +22,7 @@ import useOCAExport from "../hooks/useOCAExport";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
 import CollaborateOnASchema from "./CollaborateOnASchema";
-import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
+import { useHandleSchemaFileDrop } from "../OCADataValidator/useHandleSchemaFileDrop";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
 import CatalogueInfo from "../CatalogueInfo/CatalogueInfo";
@@ -63,7 +63,7 @@ const AccordionList = () => {
     setIsZip
   } = useHandleAllDrop();
 
-  const { setJsonRawFile } = useHandleJsonDrop();
+  const { setSchemaRawFile } = useHandleSchemaFileDrop();
   const { resetToDefaults } = useOCAExport();
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
@@ -93,7 +93,7 @@ const AccordionList = () => {
   };
 
   const setFile = (acceptedFiles) => {
-    syncLandingSchemaDrop(setRawFile, setJsonRawFile, acceptedFiles);
+    syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles);
   };
 
   const handleClickMarkdownReadme = () => {

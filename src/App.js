@@ -61,7 +61,7 @@ function App() {
   const [selectedOverlay, setSelectedOverlay] = useState("");
 
   // Use for OCA Validator
-  const [jsonRawFile, setJsonRawFile] = useState([]);
+  const [schemaRawFile, setSchemaRawFile] = useState([]);
   const [jsonLoading, setJsonLoading] = useState(false);
   const [jsonDropDisabled, setJsonDropDisabled] = useState(false);
   const [jsonIsParsed, setJsonIsParsed] = useState(false);
@@ -170,7 +170,7 @@ function App() {
     ReactGA.send({ hitType: "pageview", page: window.location.pathname });
   }, []);
 
-  // Re-set all fields when jsonRawFile updates
+  // Re-set all fields when schema file queue (validator / landing yaml) updates
   useEffect(() => {
     setDivisionGroup({
       division: "",
@@ -180,7 +180,7 @@ function App() {
     setIsZip(false);
     setZipToReadme([]);
     // Note: pkgUpload is now in multi-schema context, cleared via clearAllSchemas()
-  }, [jsonRawFile]);
+  }, [schemaRawFile]);
 
   // REMOVED: Legacy useEffect that synced attributesList with editingSchemaId
   // This is now handled by MultiSchemaContext
@@ -221,8 +221,8 @@ function App() {
               setDatasetLoading,
               datasetDropDisabled,
               setDatasetDropDisabled,
-              jsonRawFile,
-              setJsonRawFile,
+              schemaRawFile,
+              setSchemaRawFile,
               datasetRawFile,
               setDatasetRawFile,
               jsonIsParsed,

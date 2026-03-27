@@ -14,7 +14,7 @@ import {
 } from "../utils/packageUtils";
 import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
 // eslint-disable-next-line import/prefer-default-export
-export const useHandleJsonDrop = (
+export const useHandleSchemaFileDrop = (
   firstTimeDisplayWarning,
   setShowWarningCard = () => {}
 ) => {
@@ -25,8 +25,8 @@ export const useHandleJsonDrop = (
     setJsonLoading,
     jsonDropDisabled,
     setJsonDropDisabled,
-    jsonRawFile,
-    setJsonRawFile,
+    schemaRawFile,
+    setSchemaRawFile,
     jsonIsParsed,
     setJsonIsParsed,
     setDatasetLoading,
@@ -53,7 +53,7 @@ export const useHandleJsonDrop = (
   const handleClearJSON = useCallback(() => {
     setJsonIsParsed(false);
     setJsonDropDisabled(false);
-    setJsonRawFile([]);
+    setSchemaRawFile([]);
     setMatchingRowData([]);
     firstTimeMatchingRef.current = true;
     firstTimeDisplayWarning.current = true;
@@ -107,11 +107,11 @@ export const useHandleJsonDrop = (
               } catch (err) {
                 // non-fatal; initialization failed but pkgUpload was set — downstream components
                 // should handle missing initialization defensively.
-                console.warn("useHandleJsonDrop: initializeFromPkgUpload failed", err);
+                console.warn("useHandleSchemaFileDrop: initializeFromPkgUpload failed", err);
               }
             }
           } catch (err) {
-            console.error("useHandleJsonDrop: error setting pkgUpload", err);
+            console.error("useHandleSchemaFileDrop: error setting pkgUpload", err);
           }
 
           const languageList = [];
@@ -302,7 +302,7 @@ export const useHandleJsonDrop = (
           switchToSchema(root, ocaPackage);
           setZipToReadme(allZipFiles);
         } catch (err) {
-          console.warn("useHandleJsonDrop: failed to parse zip as OCA package", err);
+          console.warn("useHandleSchemaFileDrop: failed to parse zip as OCA package", err);
         }
       };
 
@@ -569,21 +569,21 @@ export const useHandleJsonDrop = (
   );
 
   useEffect(() => {
-    if (jsonRawFile && jsonRawFile.length > 0 && jsonRawFile[0].path.includes(".json")) {
-      handleJsonDrop(jsonRawFile);
+    if (schemaRawFile && schemaRawFile.length > 0 && schemaRawFile[0].path.includes(".json")) {
+      handleJsonDrop(schemaRawFile);
     } else if (
-      jsonRawFile &&
-      jsonRawFile.length > 0 &&
-      jsonRawFile[0].path.includes(".zip")
+      schemaRawFile &&
+      schemaRawFile.length > 0 &&
+      schemaRawFile[0].path.includes(".zip")
     ) {
-      handleZipDrop(jsonRawFile);
+      handleZipDrop(schemaRawFile);
     } else if (
-      jsonRawFile &&
-      jsonRawFile.length > 0 &&
-      (jsonRawFile[0].path.includes(".yaml") || jsonRawFile[0].path.includes(".yml"))
+      schemaRawFile &&
+      schemaRawFile.length > 0 &&
+      (schemaRawFile[0].path.includes(".yaml") || schemaRawFile[0].path.includes(".yml"))
     ) {
-      handleYamlDrop(jsonRawFile);
-    } else if (jsonRawFile && jsonRawFile.length > 0) {
+      handleYamlDrop(schemaRawFile);
+    } else if (schemaRawFile && schemaRawFile.length > 0) {
       setJsonDropMessage({ message: messages.uploadFail, type: "error" });
       setJsonLoading(false);
       setDatasetLoading(false);
@@ -594,11 +594,11 @@ export const useHandleJsonDrop = (
         setJsonDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [handleJsonDrop, jsonRawFile]);
+  }, [handleJsonDrop, schemaRawFile]);
 
   return {
-    jsonRawFile,
-    setJsonRawFile,
+    schemaRawFile,
+    setSchemaRawFile,
     jsonLoading,
     overallLoading,
     jsonDropDisabled,

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Box, Button, Typography } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Drop from "../StartSchema/Drop";
-import { useHandleJsonDrop } from "./useHandleJsonDrop";
+import { useHandleSchemaFileDrop } from "./useHandleSchemaFileDrop";
 import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
 import { datasetUploadDescription, datasetUploadTooltip, BETWEEN_SECTION_SPACING } from "../constants/constants";
 import BackNextSkeleton from "../components/BackNextSkeleton";
@@ -14,7 +14,7 @@ import useFontFamily from "../hooks/useFontFamily";
 
 const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const { t } = useTranslation();
-  const { jsonRawFile, setCurrentDataValidatorPage } = useHandleJsonDrop(
+  const { schemaRawFile, setCurrentDataValidatorPage } = useHandleSchemaFileDrop(
     firstTimeDisplayWarning,
     setShowWarningCard
   );
@@ -65,7 +65,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <BackNextSkeleton
         isBack
-        isForward={jsonRawFile.length > 0}
+        isForward={schemaRawFile.length > 0}
         pageForward={handleClickNext}
         pageBack={handleClickBack}
         nextText={datasetRawFile.length === 0 ? "Skip Upload Data" : "Next"}

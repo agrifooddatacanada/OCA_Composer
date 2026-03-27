@@ -17,7 +17,7 @@ import { useMultiSchema } from "../schema/schemaContext";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
-import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
+import { useHandleSchemaFileDrop } from "../OCADataValidator/useHandleSchemaFileDrop";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
 import useLocalStorage from "../hooks/useLocalStorage";
@@ -50,7 +50,7 @@ const UseASchemaAccordionItem = () => {
     setCurrentPage
   } = useHandleAllDrop();
 
-  const { setJsonRawFile } = useHandleJsonDrop();
+  const { setSchemaRawFile } = useHandleSchemaFileDrop();
 
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
@@ -65,7 +65,7 @@ const UseASchemaAccordionItem = () => {
   };
 
   const setFile = (acceptedFiles) => {
-    syncLandingSchemaDrop(setRawFile, setJsonRawFile, acceptedFiles);
+    syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles);
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;

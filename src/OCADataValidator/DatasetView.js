@@ -54,7 +54,7 @@ const DatasetView = () => {
     schemaDataConformantHeader,
     schemaDataConformantRowData,
     setSchemaDataConformantRowData,
-    jsonRawFile
+    schemaRawFile
   } = useContext(Context);
 
   const [schemaColumnDefs, setSchemaColumnDefs] = useState([]);
@@ -128,7 +128,7 @@ const DatasetView = () => {
           });
 
           setSchemaDataConformantRowData(result);
-          if (jsonRawFile.length > 0) {
+          if (schemaRawFile.length > 0) {
             setCurrentDataValidatorPage("AttributeMatchDataValidator");
           } else {
             setCurrentDataValidatorPage("StartDataValidator");
