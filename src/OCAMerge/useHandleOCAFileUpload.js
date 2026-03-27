@@ -19,7 +19,10 @@ import {
   overlays
 } from "../constants/constants";
 import { replaceAttributeCharsInParsedJson } from "../utils/helpers";
-import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
+import {
+  coerceIfLegacyTopLevelBundle,
+  getRootCaptureBaseId
+} from "../utils/packageUtils";
 
 const useHandleOCAFileUpload = () => {
   const {
@@ -139,7 +142,7 @@ const useHandleOCAFileUpload = () => {
           const modifiedBundle = replaceAttributeCharsInParsedJson(
             jsonFile.oca_bundle.bundle
           );
-          const captureBaseSaid = jsonFile?.oca_bundle?.bundle?.capture_base?.d;
+          const captureBaseSaid = getRootCaptureBaseId(jsonFile);
 
           const hasExtensionOverlays = Object.keys(jsonFile?.extensions || {}).length > 0;
 

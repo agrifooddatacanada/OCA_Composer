@@ -3,6 +3,7 @@ import OCADataSetErr from "./utils/Err";
 import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
 import { ADC, ALLOWED_BOOLEAN_VALUES, errorCode, RANGE } from "../constants/constants";
 import { isValidNumber, parseDateString } from "../utils/helpers";
+import { getRootCaptureBaseId } from "../utils/packageUtils";
 
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
@@ -205,9 +206,8 @@ export default class OCABundle {
     const rslt = this.ErrorBuilder.rangeErr;
     // For now, use ADC community's extension overlays for the top-level/main schema bundle
     const rangeOverlay =
-      this.ocaPackage?.extensions?.[ADC]?.[
-        this.ocaPackage?.oca_bundle?.bundle?.capture_base?.d
-      ]?.overlays?.[RANGE];
+      this.ocaPackage?.extensions?.[ADC]?.[getRootCaptureBaseId(this.ocaPackage)]
+        ?.overlays?.[RANGE];
 
     if (rangeOverlay?.attributes) {
       Object.keys(rangeOverlay.attributes).forEach((attribute) => {

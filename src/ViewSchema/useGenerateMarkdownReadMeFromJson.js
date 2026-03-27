@@ -13,7 +13,11 @@
 import i18next from "i18next";
 import { useMultiSchema } from "../schema/schemaContext";
 import { langNameFromTwoLetters, langCodeOCAFromName, langCodeOCAFromTwoLetters } from "../utils/languageUtils";
-import { getPackageLanguages, getPackageDependencies } from "../utils/packageUtils";
+import {
+  getPackageLanguages,
+  getPackageDependencies,
+  getRootCaptureBaseId
+} from "../utils/packageUtils";
 import {
   ADC,
   DEFAULT_THREE_LETTER_LANGUAGE_CODE,
@@ -47,27 +51,23 @@ const getModifiedLayer = (overlay) => {
 const useGenerateMarkdownReadMeFromJson = () => {
   const { ocaPackage } = useMultiSchema();
   const pkg = ocaPackage;
-  
-  // For now, use ADC extension overlays for the top-level/main schema bundle
+  const rootCaptureBaseId = getRootCaptureBaseId(pkg);
+
   const orderingOverlay =
-    pkg?.extensions?.[ADC]?.[pkg?.oca_bundle?.bundle?.capture_base?.d]
-      ?.overlays?.ordering;
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.ordering;
   const hasAttributeOrdering = orderingOverlay?.attribute_ordering?.length > 0;
 
   const sensitiveOverlay =
-    pkg?.extensions?.[ADC]?.[pkg?.oca_bundle?.bundle?.capture_base?.d]
-      ?.overlays?.[SENSITIVE];
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[SENSITIVE];
   const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
     ? sensitiveOverlay?.sensitive_attributes
     : [];
 
   const rangeOverlay =
-    pkg?.extensions?.[ADC]?.[pkg?.oca_bundle?.bundle?.capture_base?.d]
-      ?.overlays?.[RANGE];
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[RANGE];
 
   const unitFramingOverlay =
-    pkg?.extensions?.[ADC]?.[pkg?.oca_bundle?.bundle?.capture_base?.d]
-      ?.overlays?.[UNIT_FRAMING];
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[UNIT_FRAMING];
 
   const generateMarkdownReadMeFromJson = (schemaData, catalogueData) => {
     // Extract languages from the entire package
@@ -119,8 +119,7 @@ const useGenerateMarkdownReadMeFromJson = () => {
     // For now, use ADC extension overlays for the top-level/main schema bundle
     if (Object.keys(pkg?.extensions || {}).length > 0) {
       const overlays =
-        pkg.extensions?.[ADC]?.[pkg?.oca_bundle?.bundle?.capture_base?.d]
-          ?.overlays;
+        pkg.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays;
       const overlayNames = Object.keys(overlays);
       overlayNames.forEach((overlayName) => {
         const overlay = overlays[overlayName];

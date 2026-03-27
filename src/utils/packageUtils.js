@@ -85,6 +85,11 @@ export const getPackageBundleId = (pkg) => {
   return bundle?.d || null;
 };
 
+export const getRootCaptureBaseId = (pkg) => {
+  const bundle = getPackageBundle(pkg);
+  return bundle?.capture_base?.d ?? null;
+};
+
 /**
  * Get extensions from an OCA package
  * @param {Object} pkg - The OCA package object

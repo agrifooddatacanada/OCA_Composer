@@ -42,7 +42,7 @@ import { CustomPalette } from "../constants/customPalette";
 import usePrimaryColor from "../hooks/usePrimaryColor";
 import useFontFamily from "../hooks/useFontFamily";
 import { getCurrentData, getDescriptiveFileName } from "../utils/helpers";
-import { getPackageBundle } from "../utils/packageUtils";
+import { getPackageBundle, getRootCaptureBaseId } from "../utils/packageUtils";
 import { CreateDataEntryExcel } from "../Landing/CreateDataEntryExcel";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import ViewSchema from "../ViewSchema/ViewSchema";
@@ -125,7 +125,7 @@ const flaggedHeader = (
 
   // For now, use ADC community's extension overlays for the top-level/main schema bundle
   const rangeOverlay =
-    ocaPackage?.extensions?.[ADC]?.[ocaPackage?.oca_bundle?.bundle?.capture_base?.d]
+    ocaPackage?.extensions?.[ADC]?.[getRootCaptureBaseId(ocaPackage)]
       ?.overlays?.[RANGE];
   const rangeData = rangeOverlay?.attributes?.[props?.displayName];
 

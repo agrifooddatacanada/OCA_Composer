@@ -15,7 +15,10 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { getCurrentData } from "../utils/helpers";
 import { ADC } from "../constants/constants";
-import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
+import {
+  coerceIfLegacyTopLevelBundle,
+  getRootCaptureBaseId
+} from "../utils/packageUtils";
 
 const userSelectionDropdown = ["Copy from other entry codes", "Upload"];
 
@@ -122,7 +125,7 @@ const useHandleEntryCodeDrop = () => {
     // For now, use ADC extension overlays for the top-level/main schema bundle
     const orderingOverlay =
       ocaPackageData?.extensions?.[ADC]?.[
-        ocaPackageData?.oca_bundle?.bundle?.capture_base?.d
+        getRootCaptureBaseId(ocaPackageData)
       ]?.overlays?.ordering;
     const hasEntryCodeOrdering =
       Object.keys(orderingOverlay?.entry_code_ordering || {}).length > 0;

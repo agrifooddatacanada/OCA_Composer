@@ -23,6 +23,7 @@ import {
 
 import { convertToFormInformationOverlay } from "../Overlays/FormBuilder/utils/convertToFormInformation";
 import ucumUnits from "../constants/ucumUnits";
+import { getRootCaptureBaseId } from "./packageUtils";
 
 export const translateDataType = (type, t = null) => {
   if (!type || !t) return type;
@@ -309,7 +310,7 @@ export const getOrderedAttributeRowData = (attributeRowData, attributeOrdering) 
 
 export const hasEntryCodeOrdering = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  const captureBaseSaid = getRootCaptureBaseId(OCAPackage);
   return Boolean(
     Object.keys(OCAPackage?.extensions || {}).length > 0 &&
       OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.ordering
@@ -319,7 +320,7 @@ export const hasEntryCodeOrdering = (OCAPackage) => {
 
 export const hasAttributeOrdering = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  const captureBaseSaid = getRootCaptureBaseId(OCAPackage);
   return Boolean(
     Object.keys(OCAPackage?.extensions || {}).length > 0 &&
       OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.ordering
@@ -329,7 +330,7 @@ export const hasAttributeOrdering = (OCAPackage) => {
 
 export const hasUnitFramingOverlay = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  const captureBaseSaid = getRootCaptureBaseId(OCAPackage);
   return Boolean(
     Object.keys(OCAPackage?.extensions || {}).length > 0 &&
       OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
@@ -338,7 +339,7 @@ export const hasUnitFramingOverlay = (OCAPackage) => {
 
 export const hasAttributeFramingOverlay = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  const captureBaseSaid = getRootCaptureBaseId(OCAPackage);
   return Boolean(
     Object.keys(OCAPackage?.extensions || {}).length > 0 &&
       OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.attribute_framing
@@ -347,7 +348,7 @@ export const hasAttributeFramingOverlay = (OCAPackage) => {
 
 export const hasRangeOverlay = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  const captureBaseSaid = getRootCaptureBaseId(OCAPackage);
   return Boolean(
     Object.keys(OCAPackage?.extensions || {}).length > 0 &&
       OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.[RANGE]
@@ -356,7 +357,7 @@ export const hasRangeOverlay = (OCAPackage) => {
 
 export const getExtensionOverlays = (OCAPackage) => {
   // For now, use the capture base SAID of the main/top-level bundle
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  const captureBaseSaid = getRootCaptureBaseId(OCAPackage);
   const extensionOverlays = Object.entries(OCAPackage?.extensions || {}).reduce(
     (acc, [extensionName, extensionData]) => {
       const overlay = extensionData?.[captureBaseSaid]?.overlays;
@@ -389,7 +390,7 @@ export const getOrderedAttributeMap = (attributeOrdering, attributeMap) => {
 };
 
 export const getUnitsFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  const captureBaseSaid = getRootCaptureBaseId(OCAPackage);
 
   const unitFramingOverlay = hasUnitFramingOverlay(OCAPackage)
     ? OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.unit_framing
@@ -412,7 +413,7 @@ export const getUnitsFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
 };
 
 export const getAttributesFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
-  const captureBaseSaid = OCAPackage?.oca_bundle?.bundle?.capture_base?.d;
+  const captureBaseSaid = getRootCaptureBaseId(OCAPackage);
 
   const attributeFramingOverlay = hasAttributeFramingOverlay(OCAPackage)
     ? OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.find(

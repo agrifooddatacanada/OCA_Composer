@@ -13,6 +13,7 @@ import CellHeader from "../components/CellHeader";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { getFormatRuleDescription } from "../utils/helpers";
 import { getMapValueForAttributeName } from "../utils/stringUtils";
+import { getRootCaptureBaseId } from "../utils/packageUtils";
 import {
   ADC,
   FIELD_CHARACTER_ENCODING_OVERLAY,
@@ -141,7 +142,7 @@ export default function ViewGrid({
   // Extract unit framing metadata from built package (with edits)
   // But the metadata CAN'T be edited so is this pointless?
   const unitFramingOverlay =
-    packageWithEdits?.extensions?.[ADC]?.[packageWithEdits?.oca_bundle?.bundle?.capture_base?.d]
+    packageWithEdits?.extensions?.[ADC]?.[getRootCaptureBaseId(packageWithEdits)]
       ?.overlays?.[UNIT_FRAMING];
 
   const onGridReady = useCallback(() => {

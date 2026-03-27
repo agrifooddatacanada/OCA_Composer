@@ -41,7 +41,12 @@ import useOCAExport from "../hooks/useOCAExport";
 import usePrimaryColor from "../hooks/usePrimaryColor";
 import useGenerateReadMe from "./useGenerateReadMe";
 import useGenerateTextReadmeFromJson from "./useGenerateTextReadmeFromJson";
-import { getPackageBundle, getPackageBundleId, getPackageDependencies } from "../utils/packageUtils";
+import {
+  getPackageBundle,
+  getPackageBundleId,
+  getPackageDependencies,
+  getRootCaptureBaseId
+} from "../utils/packageUtils";
 import { getMapValueForAttributeName } from "../utils/stringUtils";
 
 import ErrorPopup from "./ErrorPopup";
@@ -352,7 +357,7 @@ export default function ViewSchema({
       return used;
     }
 
-    const captureBaseSaid = pkgFromState?.oca_bundle?.bundle?.capture_base?.d;
+    const captureBaseSaid = getRootCaptureBaseId(pkgFromState);
     const extensionOverlays =
       pkgFromState?.extensions?.adc?.[captureBaseSaid]?.overlays || {};
 

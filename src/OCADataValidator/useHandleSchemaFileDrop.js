@@ -10,7 +10,8 @@ import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
 import {
   getPackageBundleId,
   getPackageBundle,
-  coerceIfLegacyTopLevelBundle
+  coerceIfLegacyTopLevelBundle,
+  getRootCaptureBaseId
 } from "../utils/packageUtils";
 import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
 // eslint-disable-next-line import/prefer-default-export
@@ -164,7 +165,7 @@ export const useHandleSchemaFileDrop = (
           if (jsonFile?.capture_base) {
             const sensitiveOverlay =
               ocaPackageData?.extensions?.[ADC]?.[
-                ocaPackageData?.oca_bundle?.bundle?.capture_base?.d
+                getRootCaptureBaseId(ocaPackageData)
               ]?.overlays?.[SENSITIVE];
 
             const sensitiveAttributes = Array.isArray(
