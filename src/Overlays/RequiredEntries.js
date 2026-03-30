@@ -115,8 +115,7 @@ const RequiredEntries = () => {
   }, [setRequiredEntriesRowData]);
 
   const getRowHeight = useCallback((params) => {
-    const opts = { compact: true };
-    const attrH = measureTextHeight(params.data?.Attribute || "", REQUIRED_ATTR_COL_WIDTH_PX, opts);
+    const attrH = measureTextHeight(params.data?.Attribute || "", REQUIRED_ATTR_COL_WIDTH_PX, {});
     return Math.max(32, attrH + 16);
   }, []);
 
