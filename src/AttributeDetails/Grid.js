@@ -604,9 +604,9 @@ export default function Grid({
     return Math.max(32, maxH + 16);
   }, []);
 
-  const onGridReady = useCallback(() => {
+  const onFirstDataRendered = useCallback(() => {
     setLoading(false);
-  }, []);
+  }, [setLoading]);
 
   return (
     <div style={{ margin: "2rem 2rem 0 2rem" }}>
@@ -632,7 +632,7 @@ export default function Grid({
           onCellValueChanged={(e) => handleCellValueChanged(e)}
           onRowDragLeave={(e) => onRowDragLeave(e)}
           rowDragManaged={rowDragManaged}
-          onGridReady={onGridReady}
+          onFirstDataRendered={onFirstDataRendered}
           overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
         />
       </div>
