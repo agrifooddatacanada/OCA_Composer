@@ -72,8 +72,7 @@ export default function ViewSchema({
 
   const {
     isZip, 
-    isZipEdited,
-    setIsZipEdited,
+    hasLeftSummaryOnce,
     setCurrentPage, 
     history,
     setHistory,
@@ -605,14 +604,13 @@ export default function ViewSchema({
 
   const viewSchemaRightContent = (
     <>
-          {isZip && isExport && !isZipEdited && (
+          {isZip && isExport && !hasLeftSummaryOnce && (
             <>
               <Button
                 color="button"
                 variant="contained"
                 onClick={() => {
                   setCurrentPage("Metadata");
-                  setIsZipEdited(true);
                 }}
                 sx={{
                   alignSelf: "flex-end",
@@ -646,7 +644,7 @@ export default function ViewSchema({
 
 
           {/* Package-level validation: warn if ANY schema in the package has missing attribute types or missing entry codes */}
-          {(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage) && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+          {(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage) && isPageForward && isExport && (!isZip || (isZip && hasLeftSummaryOnce)) && (
             <Alert
               severity="warning"
               sx={{
@@ -693,7 +691,7 @@ export default function ViewSchema({
             </Alert>
           )}
 
-          {isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+          {isPageForward && isExport && (!isZip || (isZip && hasLeftSummaryOnce)) && (
             <Box sx={{ position: "relative" }}>
               <Button
                 color="button"
@@ -1020,7 +1018,7 @@ export default function ViewSchema({
           setLoading={setLoading}
           packageWithEdits={pkgFromState}
         />
-        {addClearButton && isPageForward && isExport && (!isZip || (isZip && isZipEdited)) && (
+        {addClearButton && isPageForward && isExport && (!isZip || (isZip && hasLeftSummaryOnce)) && (
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4, width: "100%" }}>
             <Button
               color="warning"

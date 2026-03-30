@@ -118,7 +118,7 @@ const Home = ({
     getSchema,
     getLanguages
   } = useMultiSchema();
-  const { isZip, setIsZipEdited } = useContext(Context);
+  const { setHasLeftSummaryOnce } = useContext(Context);
 
   // Ensure schema is initialized when entering via EDIT SCHEMA (old flow)
   useEffect(() => {
@@ -199,13 +199,6 @@ const Home = ({
       };
 
       try {
-      if (isZip && (
-        (currentPage === "View" && target.page !== "View") ||
-        (currentPage !== "View" && target.page === "View")
-      )) {
-        setIsZipEdited(true);
-      }
-
       const pageForStepIndex = OVERLAY_SUB_PAGES.has(currentPage) ? "Overlays" : currentPage;
       const currentIndex = steps.findIndex((step) => step.page === pageForStepIndex);
       const isForwardNavigation = index > currentIndex;
@@ -337,8 +330,6 @@ const Home = ({
   [
     steps,
     currentPage,
-    isZip,
-    setIsZipEdited,
     getSchema,
     getLanguages,
     t,
@@ -393,6 +384,14 @@ const Home = ({
       setCurrentPage("LanguageDetails");
     }
   }, [showEntryCodes, currentPage, setCurrentPage]);
+
+  const prevPageForSummaryRef = useRef(null);
+  useEffect(() => {
+    if (prevPageForSummaryRef.current === "View" && currentPage !== "View") {
+      setHasLeftSummaryOnce(true);
+    }
+    prevPageForSummaryRef.current = currentPage;
+  }, [currentPage, setHasLeftSummaryOnce]);
 
   return (
     <>

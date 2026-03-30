@@ -17,6 +17,7 @@ const useHandleAllDrop = () => {
   const {
     setCurrentPage,
     setIsZip,
+    setHasLeftSummaryOnce,
     setZipToReadme,
     setJsonToReadme,
     excelSheetChoice,
@@ -535,9 +536,11 @@ const useHandleAllDrop = () => {
       handleExcelDrop(rawFile);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
       setIsZip(true);
+      setHasLeftSummaryOnce(false);
       handleZipDrop(rawFile);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".json")) {
       setIsZip(true);
+      setHasLeftSummaryOnce(false);
       handleJsonDrop(rawFile);
     } else if (rawFile.length > 0) {
       const pathOrName = (rawFile[0].path || rawFile[0].name || "").toLowerCase();

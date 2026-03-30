@@ -41,7 +41,7 @@ export const pagesArray = [
 
 function App() {
   const [isZip, setIsZip] = useState(false);
-  const [isZipEdited, setIsZipEdited] = useState(false);
+  const [hasLeftSummaryOnce, setHasLeftSummaryOnce] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
   const [jsonToReadme, setJsonToReadme] = useState({});
   const [currentPage, setCurrentPage] = useState("Landing");
@@ -177,8 +177,11 @@ function App() {
       group: ""
     });
 
-    setIsZip(false);
     setZipToReadme([]);
+    if (schemaRawFile.length > 0) {
+      setIsZip(false);
+      setHasLeftSummaryOnce(false);
+    }
     // Note: ocaPackage is now in multi-schema context, cleared via clearAllSchemas()
   }, [schemaRawFile]);
 
@@ -209,8 +212,8 @@ function App() {
               setZipToReadme,
               jsonToReadme,
               setJsonToReadme,
-              isZipEdited,
-              setIsZipEdited,
+              hasLeftSummaryOnce,
+              setHasLeftSummaryOnce,
               setCurrentDataValidatorPage,
               currentDataValidatorPage,
               jsonLoading,

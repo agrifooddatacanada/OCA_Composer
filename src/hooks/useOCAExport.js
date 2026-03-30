@@ -62,6 +62,7 @@ const useOCAExport = () => {
     customIsos,
     overlay,
     setIsZip,
+    setHasLeftSummaryOnce,
     setOverlay,
     setSelectedOverlay,
     setCurrentPage
@@ -901,6 +902,7 @@ const useOCAExport = () => {
    */
   const resetToDefaults = useCallback(() => {
     setIsZip(false);
+    setHasLeftSummaryOnce(false);
     setOcaPackage(null);
     setOverlay(overlayItems);
     setSelectedOverlay("");
@@ -911,6 +913,7 @@ const useOCAExport = () => {
     navigate("/");
   }, [
     setIsZip,
+    setHasLeftSummaryOnce,
     setOcaPackage, setOverlay, setSelectedOverlay,
     clearAllSchemas, setCurrentPage, navigate
   ]);
