@@ -19,7 +19,7 @@ const useHandleAllDrop = (pageForward) => {
     setCurrentPage,
     attributesList,
     setAttributesList,
-    setIsZip,
+    setIsReadmeFirstImport,
     setZipToReadme,
     setJsonToReadme,
     rawFile,
@@ -604,10 +604,10 @@ const useHandleAllDrop = (pageForward) => {
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".xls")) {
       handleExcelDrop(rawFile);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
-      setIsZip(true);
+      setIsReadmeFirstImport(true);
       handleZipDrop(rawFile);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".json")) {
-      setIsZip(true);
+      setIsReadmeFirstImport(true);
       handleJsonDrop(rawFile);
     } else if (rawFile.length > 0) {
       setDropMessage({ message: messages.uploadFail, type: "error" });
@@ -661,7 +661,7 @@ const useHandleAllDrop = (pageForward) => {
     setFileData,
     setCurrentPage,
     switchToLastPage,
-    setIsZip,
+    setIsReadmeFirstImport,
     excelSheetNames,
     setExcelSheetChoice,
     setExcelSheetNames,

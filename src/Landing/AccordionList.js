@@ -60,7 +60,7 @@ const AccordionList = () => {
     dropMessage,
     setDropMessage,
     setCurrentPage,
-    setIsZip
+    setIsReadmeFirstImport
   } = useHandleAllDrop();
 
   const { setSchemaRawFile } = useHandleSchemaFileDrop();
@@ -75,19 +75,19 @@ const AccordionList = () => {
   };
 
   const navigateToEditSchema = () => {
-    setIsZip(false);
+    setIsReadmeFirstImport(false);
     // Always go to Schema Metadata page for editing
     setCurrentPage("Metadata");
     navigate("/start");
   };
 
   const navigateToViewPage = () => {
-    setIsZip(true);
+    setIsReadmeFirstImport(true);
     navigate("/start", { state: { openView: true } });
   };
 
   const navigateToPreviewSchema = () => {
-    setIsZip(true);
+    setIsReadmeFirstImport(true);
     setCurrentDataValidatorPage("SchemaViewDataValidator");
     navigate("/oca-data-verifier");
   };

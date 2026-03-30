@@ -71,7 +71,7 @@ export default function ViewSchema({
   const { t } = useTranslation();
 
   const {
-    isZip, 
+    isReadmeFirstImport, 
     hasLeftSummaryOnce,
     setCurrentPage, 
     history,
@@ -604,7 +604,7 @@ export default function ViewSchema({
 
   const viewSchemaRightContent = (
     <>
-          {isZip && isExport && !hasLeftSummaryOnce && (
+          {isReadmeFirstImport && isExport && !hasLeftSummaryOnce && (
             <>
               <Button
                 color="button"
@@ -644,7 +644,7 @@ export default function ViewSchema({
 
 
           {/* Package-level validation: warn if ANY schema in the package has missing attribute types or missing entry codes */}
-          {(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage) && isPageForward && isExport && (!isZip || (isZip && hasLeftSummaryOnce)) && (
+          {(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage) && isPageForward && isExport && (!isReadmeFirstImport || hasLeftSummaryOnce) && (
             <Alert
               severity="warning"
               sx={{
@@ -691,7 +691,7 @@ export default function ViewSchema({
             </Alert>
           )}
 
-          {isPageForward && isExport && (!isZip || (isZip && hasLeftSummaryOnce)) && (
+          {isPageForward && isExport && (!isReadmeFirstImport || hasLeftSummaryOnce) && (
             <Box sx={{ position: "relative" }}>
               <Button
                 color="button"
@@ -1018,7 +1018,7 @@ export default function ViewSchema({
           setLoading={setLoading}
           packageWithEdits={pkgFromState}
         />
-        {addClearButton && isPageForward && isExport && (!isZip || (isZip && hasLeftSummaryOnce)) && (
+        {addClearButton && isPageForward && isExport && (!isReadmeFirstImport || hasLeftSummaryOnce) && (
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4, width: "100%" }}>
             <Button
               color="warning"
