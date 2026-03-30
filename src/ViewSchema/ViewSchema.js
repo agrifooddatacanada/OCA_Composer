@@ -741,7 +741,7 @@ export default function ViewSchema({
     >
       {loading && (
         <>
-          <Loading />
+          <Loading spinner />
           <Box
             aria-hidden
             sx={{
