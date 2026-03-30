@@ -1,19 +1,25 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MenuItem } from "@mui/material";
+import { MenuItem, Modal, Box } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
-import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA } from "../constants/constants";
+import {
+  TYPE_CHILD_SCHEMA,
+  TYPE_PLACEHOLDER_CHILD_SCHEMA,
+  isChildSchemaType
+} from "../constants/constants";
+import { resolveChildSchemaStateRootId } from "../schema/childSchemaSubtree";
+import DeleteConfirmation from "../Overlays/DeleteConfirmation";
 
 const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAttributeRowData }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showChildSchemaDeleteModal, setShowChildSchemaDeleteModal] = useState(false);
+  const [pendingTypeChange, setPendingTypeChange] = useState(null);
   const skipSyncRef = useRef(false);
   const { t } = useTranslation();
-  const { getSchema, updateSchema, createChildSchemaPlaceholder } = useMultiSchema();
-  
-  // Type dropdown options
-  // Note: "Child Schema" covers both refs: (with SAID) and refn: (placeholder) - distinction is automatic
+  const { getSchema, updateSchema, createChildSchemaPlaceholder, removeChildSchemaSubtree } =
+    useMultiSchema();
+
   const displayValues = [
     { value: "", label: "" },
     { value: "Text", label: "Text" },
@@ -30,17 +36,12 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
   ];
 
   const attributeName = data.Attribute;
-  const currentAttribute = attributeRowData.find(
-    (item) => item.Attribute === attributeName
-  );
-
+  const currentAttribute = attributeRowData.find((item) => item.Attribute === attributeName);
   const index = attributeRowData.findIndex((item) => item.Attribute === attributeName);
-  
-  // Get initial type from attributeRowData (source of truth)
+
   const getInitialType = () => {
     if (!currentAttribute) return "";
     const rawType = currentAttribute.Type;
-    // Normalize placeholder types for display, but preserve empty string
     if (rawType === TYPE_PLACEHOLDER_CHILD_SCHEMA) return TYPE_CHILD_SCHEMA;
     return rawType !== undefined && rawType !== null ? rawType : "";
   };
@@ -56,29 +57,35 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     </MenuItem>
   ));
 
-  const handleChange = (e) => {
-    const newType = e.target.value;
+  const rowType = () => {
+    const row = attributeRowData.find((item) => item.Attribute === attributeName);
+    return row?.Type ?? data?.Type;
+  };
+
+  const applyTypeChange = (newType) => {
     skipSyncRef.current = true;
     setType(newType);
 
-    // Update typesObjectRef
     const newTypesObject = { ...typesObjectRef.current };
     newTypesObject[attributeName] = newType;
     typesObjectRef.current = newTypesObject;
-    
-    // Also update the global context's attributeRowData
+
     const updatedAttributeRowData = attributeRowData.map((item) => {
       if (item.Attribute === attributeName) {
-        return {
+        const next = {
           ...item,
           Type: newType,
           ...(newType === TYPE_CHILD_SCHEMA ? { List: false, EntryCodes: [] } : {})
         };
+        if (!isChildSchemaType(newType)) {
+          delete next.OriginalType;
+        }
+        return next;
       }
       return item;
     });
     setAttributeRowData(updatedAttributeRowData);
-    
+
     if (newType === TYPE_CHILD_SCHEMA) {
       const schemaState = getSchema() || {};
       const prevLists = Array.isArray(schemaState.attributesWithLists)
@@ -102,14 +109,40 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
         attributes: updatedAttributeRowData
       });
     }
-    
-    // If setting type to Child Schema, create a placeholder child schema
-    // so user can immediately navigate to edit it
+
     if (newType === TYPE_CHILD_SCHEMA) {
       createChildSchemaPlaceholder(attributeName);
     }
-    
+
     setIsDropdownOpen(false);
+  };
+
+  const handleChange = (e) => {
+    const newType = e.target.value;
+    const prevTypeRaw = rowType();
+    if (isChildSchemaType(prevTypeRaw) && newType !== TYPE_CHILD_SCHEMA) {
+      setPendingTypeChange(newType);
+      setShowChildSchemaDeleteModal(true);
+      setIsDropdownOpen(false);
+      return;
+    }
+    applyTypeChange(newType);
+  };
+
+  const confirmRemoveChildSchemaType = () => {
+    if (pendingTypeChange === null) return;
+    const row = attributeRowData.find((a) => a.Attribute === attributeName);
+    const rootId = resolveChildSchemaStateRootId(row);
+    if (rootId) removeChildSchemaSubtree(rootId);
+    setShowChildSchemaDeleteModal(false);
+    const next = pendingTypeChange;
+    setPendingTypeChange(null);
+    applyTypeChange(next);
+  };
+
+  const closeChildSchemaDeleteModal = () => {
+    setShowChildSchemaDeleteModal(false);
+    setPendingTypeChange(null);
   };
 
   const handleClick = () => {
@@ -122,7 +155,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       return;
     }
     const currentAttr = attributeRowData.find((i) => i.Attribute === attributeName);
-    
+
     if (currentAttr) {
       let displayType = currentAttr.Type;
       if (displayType === undefined || displayType === null) {
@@ -134,7 +167,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       setType(displayType);
       return;
     }
-    
+
     const fromRef = typesObjectRef.current[attributeName];
     setType(fromRef !== undefined && fromRef !== null ? fromRef : "");
   }, [attributeName, attributeRowData]);
@@ -142,37 +175,75 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
   const handleKeyDown = (e) => {
     const keyPressed = e.key;
     if (keyPressed === "Delete" || keyPressed === "Backspace") {
+      if (isChildSchemaType(rowType())) {
+        e.preventDefault();
+        setPendingTypeChange("");
+        setShowChildSchemaDeleteModal(true);
+        return;
+      }
       skipSyncRef.current = true;
       setType("");
       typesObjectRef.current[attributeName] = "";
-      
-      // Also update the global context
+
       const updatedAttributeRowData = attributeRowData.map((item) => {
         if (item.Attribute === attributeName) {
-          return { ...item, Type: "" };
+          const next = { ...item, Type: "" };
+          delete next.OriginalType;
+          return next;
         }
         return item;
       });
       setAttributeRowData(updatedAttributeRowData);
-      
-      // Update MultiSchemaContext to persist the change
+
       updateSchema({
         attributes: updatedAttributeRowData
       });
     }
   };
 
+  const msg = t(
+    "Removing this Child Schema type deletes this nested schema and all of its data, including any nested child schemas. This cannot be undone."
+  );
+
   return (
-    <DropdownMenuList
-      handleKeyDown={handleKeyDown}
-      type={t(type, { defaultValue: type })}
-      handleChange={handleChange}
-      dropRefs={dropRefs.current[index]}
-      handleClick={handleClick}
-      isDropdownOpen={isDropdownOpen}
-      setIsDropdownOpen={setIsDropdownOpen}
-      typesDisplay={typesDisplay}
-    />
+    <>
+      <Modal
+        disableScrollLock
+        open={showChildSchemaDeleteModal}
+        onClose={closeChildSchemaDeleteModal}
+        sx={{ zIndex: (theme) => theme.zIndex.modal + 2 }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            outline: "none"
+          }}
+        >
+          <DeleteConfirmation
+            variant="contained"
+            confirmationMessage={msg}
+            removeFromSelected={confirmRemoveChildSchemaType}
+            closeModal={closeChildSchemaDeleteModal}
+          />
+        </Box>
+      </Modal>
+      <DropdownMenuList
+        handleKeyDown={handleKeyDown}
+        type={type}
+        renderDisplayValue={(value) =>
+          value ? t(value, { defaultValue: value }) : "\u200B"
+        }
+        handleChange={handleChange}
+        dropRefs={dropRefs.current[index]}
+        handleClick={handleClick}
+        isDropdownOpen={isDropdownOpen}
+        setIsDropdownOpen={setIsDropdownOpen}
+        typesDisplay={typesDisplay}
+      />
+    </>
   );
 };
 

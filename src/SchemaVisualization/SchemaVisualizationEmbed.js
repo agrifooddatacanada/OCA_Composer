@@ -287,7 +287,15 @@ const SchemaVisualizationEmbed = ({
       setEdges([]);
       setHasData(false);
     }
-  }, [getOCAPackage, internalViewMode, viewSwitchLoading, schemaLanguageOverride, t]);
+  }, [
+    getOCAPackage,
+    internalViewMode,
+    viewSwitchLoading,
+    schemaLanguageOverride,
+    currentSchemaId,
+    handleNodeClick,
+    i18n.language
+  ]);
 
   // Generate layout on component mount and when dependencies change
   useEffect(() => {

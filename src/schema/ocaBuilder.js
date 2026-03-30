@@ -23,7 +23,12 @@
 
 import { coerceIfLegacyTopLevelBundle, getPackageBundle, getPackageDependencies } from "../utils/packageUtils";
 import { applyAllOverlays } from "./ocaBuilderOverlays";
-import { TYPE_CHILD_SCHEMA, TYPE_PLACEHOLDER_CHILD_SCHEMA, MANUAL_CREATION_SCHEMA_ID } from "../constants/constants";
+import {
+  TYPE_CHILD_SCHEMA,
+  TYPE_PLACEHOLDER_CHILD_SCHEMA,
+  MANUAL_CREATION_SCHEMA_ID,
+  isChildSchemaType
+} from "../constants/constants";
 import { createMinimalOCASchema, createMetaOverlay } from "./createMinimalOCASchema";
 
 // ============================================================================
@@ -149,6 +154,8 @@ export function buildOcaPackageJsonFromEditorState({ ocaPackage, schemaStates, g
   // Phase 2 & 3: Ensure (if not existing, add) missing dependencies
   ensureChildSchemaDependencies(pkg, schemaStates, getSchemaById);
   ensurePlaceholderDependencies(pkg);
+
+  pruneUnreachableDependencies(pkg);
 
   return pkg;
 }
@@ -305,6 +312,16 @@ export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSch
     const name = attr.Attribute;
     const type = attr.Type;
     const originalType = attr.OriginalType;  // Preserve refs:SAID from loaded package
+
+    if (
+      type !== undefined &&
+      type !== null &&
+      String(type).trim() !== "" &&
+      !isChildSchemaType(type)
+    ) {
+      rebuiltAttributes[name] = type;
+      return;
+    }
 
     // First priority: Check if we have OriginalType with refs:/refn: from loaded package
     if (originalType && typeof originalType === "string" && originalType.startsWith("refs:")) {
@@ -652,5 +669,64 @@ export function pushDependency(pkg, dependency) {
   } else {
     if (!pkg.dependencies) pkg.dependencies = [];
     pkg.dependencies.push(dependency);
+  }
+}
+
+function findDependencyByRefId(dependencies, id) {
+  if (!id || !Array.isArray(dependencies)) return null;
+  const byId = dependencies.find(
+    (d) =>
+      d &&
+      (d.d === id || d.capture_base?.d === id)
+  );
+  if (byId) return byId;
+  return (
+    dependencies.find((d) => {
+      const meta = d?.overlays?.meta;
+      const arr = Array.isArray(meta) ? meta : [];
+      return arr.some((m) => m?.name === id);
+    }) || null
+  );
+}
+
+function pruneUnreachableDependencies(pkg) {
+  const bundle = getPackageBundle(pkg);
+  if (!bundle) return;
+
+  const list = getPackageDependencies(pkg);
+  if (!list || list.length === 0) return;
+
+  const reachable = new Set();
+  const queue = [];
+
+  const enqueueFromAttrs = (attrs) => {
+    if (!attrs || typeof attrs !== "object") return;
+    Object.values(attrs).forEach((v) => {
+      const val = Array.isArray(v) ? v[0] : v;
+      if (typeof val !== "string") return;
+      if (!val.startsWith("refs:") && !val.startsWith("refn:")) return;
+      const refId = val.slice(5);
+      const dep = findDependencyByRefId(list, refId);
+      if (dep?.d && !reachable.has(dep.d)) {
+        reachable.add(dep.d);
+        queue.push(dep);
+      }
+    });
+  };
+
+  enqueueFromAttrs(bundle.capture_base?.attributes);
+
+  while (queue.length) {
+    const dep = queue.shift();
+    enqueueFromAttrs(dep?.capture_base?.attributes);
+  }
+
+  const filtered = list.filter((d) => d && reachable.has(d.d));
+  if (filtered.length === list.length) return;
+
+  if (pkg.oca_bundle) {
+    pkg.oca_bundle.dependencies = filtered;
+  } else {
+    pkg.dependencies = filtered;
   }
 }

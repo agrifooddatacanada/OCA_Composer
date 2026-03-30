@@ -23,8 +23,6 @@ export function useCreateChildSchemaPlaceholder({
   return useCallback((childSchemaId, parentSchemaId) => {
     if (!childSchemaId) return;
 
-    if (schemaStatesRef.current[childSchemaId]) return;
-
     const parentSchema =
       schemaStatesRef.current[parentSchemaId || MANUAL_CREATION_SCHEMA_ID];
 

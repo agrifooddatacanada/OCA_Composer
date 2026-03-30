@@ -1,9 +1,13 @@
-import React from "react";
-import { Box } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Modal } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import CustomPalette from "../constants/customPalette";
 import { useMultiSchema } from "../schema/schemaContext";
+import { isChildSchemaType } from "../constants/constants";
+import { resolveChildSchemaStateRootId } from "../schema/childSchemaSubtree";
+import DeleteConfirmation from "../Overlays/DeleteConfirmation";
 
 const DeleteRenderer = ({
   data,
@@ -14,34 +18,33 @@ const DeleteRenderer = ({
   setCanDelete,
   currentRows
 }) => {
-  const { getSchema, updateSchema } = useMultiSchema();
-  const handleDeleteClick = () => {
+  const { t } = useTranslation();
+  const { getSchema, updateSchema, removeChildSchemaSubtree } = useMultiSchema();
+  const [showChildSchemaDeleteModal, setShowChildSchemaDeleteModal] = useState(false);
+
+  const rowForAttr = () =>
+    (currentRows || []).find((r) => r.Attribute === data.Attribute) || data;
+
+  const executeDeleteRow = () => {
     gridRef.current.api.stopEditing();
-    
-    // Use the latest rows passed from the grid state
+
     const currentRowData = currentRows || [];
     const newAttributeRowData = JSON.parse(JSON.stringify(currentRowData));
-    
-    // Update types from typesObjectRef
+
     newAttributeRowData.forEach((item) => {
       item.Type = typesObjectRef.current[item.Attribute] || "";
     });
-    
-    // Find and remove the attribute
+
     const allAttributes = newAttributeRowData.map((row) => row.Attribute);
     const index = allAttributes.indexOf(data.Attribute);
-    
+
     if (index > -1) {
       newAttributeRowData.splice(index, 1);
-      
-      // Update local state (attributesList is computed automatically from attributes)
+
       setAttributeRowData(newAttributeRowData);
-      
-      // Update canDelete based on remaining attributes (allow deletion down to 0)
+
       setCanDelete(newAttributeRowData.length > 0);
 
-      // Sync MultiSchema state: remove from attributes, attributesWithLists, entryCodes, and lanAttributeRowData
-      // Note: attributesList is computed automatically from attributes array
       const schemaState = getSchema() || {};
       const nextEntryCodes = { ...(schemaState.entryCodes || {}) };
       delete nextEntryCodes[data.Attribute];
@@ -49,7 +52,6 @@ const DeleteRenderer = ({
       const prevLists = schemaState.attributesWithLists || [];
       const nextLists = prevLists.filter((a) => a !== data.Attribute);
 
-      // Clean up LDAD data - remove the deleted attribute from all languages
       const prevLanData = schemaState.lanAttributeRowData || {};
       const nextLanData = {};
       Object.keys(prevLanData).forEach((language) => {
@@ -58,7 +60,6 @@ const DeleteRenderer = ({
         );
       });
 
-      // Clean up overlay data - remove the deleted attribute from all overlay arrays/objects
       const nextFormatRuleData = (schemaState.formatRuleData || []).filter(
         (rule) => rule.Attribute !== data.Attribute
       );
@@ -77,18 +78,15 @@ const DeleteRenderer = ({
       const nextAttributeFramingData = (schemaState.attributeFramingData || []).filter(
         (framing) => framing.Attribute !== data.Attribute
       );
-      
-      // Clean up characterEncodingData (object format)
+
       const nextCharacterEncodingData = { ...(schemaState.characterEncodingData || {}) };
       delete nextCharacterEncodingData[data.Attribute];
 
-      // Update schema state (attributesList is computed automatically from attributes)
       updateSchema({
         attributes: newAttributeRowData,
         entryCodes: nextEntryCodes,
         attributesWithLists: nextLists,
         lanAttributeRowData: nextLanData,
-        // Clean all overlay data
         formatRuleData: nextFormatRuleData,
         rangeData: nextRangeData,
         cardinalityData: nextCardinalityData,
@@ -99,18 +97,76 @@ const DeleteRenderer = ({
       });
     }
   };
-  
+
+  const handleDeleteClick = () => {
+    const row = rowForAttr();
+    const ty = typesObjectRef.current[data.Attribute] ?? row.Type;
+    if (isChildSchemaType(ty)) {
+      setShowChildSchemaDeleteModal(true);
+      return;
+    }
+    executeDeleteRow();
+  };
+
+  const confirmDeleteChildSchemaRow = () => {
+    const row = rowForAttr();
+    const attr = { ...row, Type: typesObjectRef.current[data.Attribute] ?? row.Type };
+    const rootId = resolveChildSchemaStateRootId(attr);
+    if (rootId) removeChildSchemaSubtree(rootId);
+    setShowChildSchemaDeleteModal(false);
+    executeDeleteRow();
+  };
+
+  const closeModal = () => setShowChildSchemaDeleteModal(false);
+
+  const msg = t(
+    "Removing this Child Schema type deletes this nested schema and all of its data, including any nested child schemas. This cannot be undone."
+  );
+
   if (!canDelete) return null;
   return (
-    <Box className="delete-icon-wrapper" sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-      <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
-      <DeleteForeverIcon
-        onClick={handleDeleteClick}
-        sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }}
-        className="delete-icon-solid"
-        title="Delete attribute"
-      />
-    </Box>
+    <>
+      <Modal
+        disableScrollLock
+        open={showChildSchemaDeleteModal}
+        onClose={closeModal}
+        sx={{ zIndex: (theme) => theme.zIndex.modal + 2 }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            outline: "none"
+          }}
+        >
+          <DeleteConfirmation
+            variant="contained"
+            confirmationMessage={msg}
+            removeFromSelected={confirmDeleteChildSchemaRow}
+            closeModal={closeModal}
+          />
+        </Box>
+      </Modal>
+      <Box
+        className="delete-icon-wrapper"
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%"
+        }}
+      >
+        <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
+        <DeleteForeverIcon
+          onClick={handleDeleteClick}
+          sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }}
+          className="delete-icon-solid"
+          title="Delete attribute"
+        />
+      </Box>
+    </>
   );
 };
 

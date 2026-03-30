@@ -29,6 +29,7 @@ import { canonicalizeSchemaId } from "../utils/schemaId";
 import { buildOcaPackageJsonFromEditorState } from "./ocaBuilder";
 import { acceptOcaPackageOrNull } from "../utils/packageUtils";
 import { useCreateChildSchemaPlaceholder } from "./createChildSchemaPlaceholder";
+import { collectDescendantSchemaIds } from "./childSchemaSubtree";
 
 /** factories */
 import { createOcaLoader } from "./ocaLoader";
@@ -145,6 +146,17 @@ export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
       MANUAL_CREATION_SCHEMA_ID,
     });
 
+  const removeChildSchemaSubtree = useCallback((rootSchemaId) => {
+    if (!rootSchemaId) return;
+    setSchemaStates((prev) => {
+      const ids = collectDescendantSchemaIds(rootSchemaId, prev);
+      if (ids.size === 0) return prev;
+      const next = { ...prev };
+      ids.forEach((id) => delete next[id]);
+      return next;
+    });
+  }, [setSchemaStates]);
+
   const oca = useMemo(
     () => createOcaLoader({getSchemaById, setSchemaStates}),
     [getSchemaById, setSchemaStates]
@@ -165,6 +177,7 @@ export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
       rebuildOcaPackageFromEditorState,
       clearAllSchemas,
       createChildSchemaPlaceholder,
+      removeChildSchemaSubtree,
 
       ...store,
       ...oca,
@@ -181,7 +194,8 @@ export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
       switchToSchema,
       rebuildOcaPackageFromEditorState,
       clearAllSchemas,
-      createChildSchemaPlaceholder
+      createChildSchemaPlaceholder,
+      removeChildSchemaSubtree
     ]
   );
 

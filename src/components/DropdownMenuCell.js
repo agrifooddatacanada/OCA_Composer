@@ -10,7 +10,8 @@ export const DropdownMenuList = ({
   isDropdownOpen,
   setIsDropdownOpen,
   typesDisplay,
-  isDisabled = false
+  isDisabled = false,
+  renderDisplayValue
 }) => (
   <Box
     sx={{
@@ -42,7 +43,7 @@ export const DropdownMenuList = ({
         open={isDropdownOpen}
         onClose={() => setIsDropdownOpen(false)}
         onOpen={() => setIsDropdownOpen(true)}
-        renderValue={(value) => value || "\u200B"}
+        renderValue={renderDisplayValue || ((value) => value || "\u200B")}
         MenuProps={{
           disableScrollLock: true
         }}
