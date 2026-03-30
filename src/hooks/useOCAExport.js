@@ -61,8 +61,7 @@ const useOCAExport = () => {
     divisionGroup,
     customIsos,
     overlay,
-    setIsReadmeFirstImport,
-    setHasLeftSummaryOnce,
+    setSummaryExportMode,
     setOverlay,
     setSelectedOverlay,
     setCurrentPage
@@ -901,8 +900,7 @@ const useOCAExport = () => {
    * Reset all application state to defaults and navigate to landing page
    */
   const resetToDefaults = useCallback(() => {
-    setIsReadmeFirstImport(false);
-    setHasLeftSummaryOnce(false);
+    setSummaryExportMode(false);
     setOcaPackage(null);
     setOverlay(overlayItems);
     setSelectedOverlay("");
@@ -912,8 +910,7 @@ const useOCAExport = () => {
     setCurrentPage("Landing");
     navigate("/");
   }, [
-    setIsReadmeFirstImport,
-    setHasLeftSummaryOnce,
+    setSummaryExportMode,
     setOcaPackage, setOverlay, setSelectedOverlay,
     clearAllSchemas, setCurrentPage, navigate
   ]);

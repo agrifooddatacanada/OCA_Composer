@@ -32,7 +32,7 @@ import {
 
 const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setIsReadmeFirstImport } = useContext(Context);
+  const { zipToReadme, jsonToReadme, setSummaryExportMode } = useContext(Context);
   const { ocaPackage } = useMultiSchema();
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
@@ -61,7 +61,7 @@ const UseASchemaAccordionItem = () => {
   };
 
   const navigateToViewPage = () => {
-    setIsReadmeFirstImport(true);
+    setSummaryExportMode(false);
     navigate("/start", { state: { openView: true } });
   };
 

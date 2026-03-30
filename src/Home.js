@@ -102,14 +102,16 @@ const Home = ({
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { setSummaryExportMode } = useContext(Context);
 
   useLayoutEffect(() => {
     if (location.state?.openView) {
+      setSummaryExportMode(false);
       setCurrentPage("View");
       navigate(location.pathname, { replace: true, state: null });
       window.scrollTo(0, 0);
     }
-  }, [location.pathname, location.state, setCurrentPage, navigate]);
+  }, [location.pathname, location.state, setCurrentPage, navigate, setSummaryExportMode]);
   const { 
     currentSchemaId,
     schemaStates, 
@@ -118,7 +120,6 @@ const Home = ({
     getSchema,
     getLanguages
   } = useMultiSchema();
-  const { setHasLeftSummaryOnce } = useContext(Context);
 
   // Ensure schema is initialized when entering via EDIT SCHEMA (old flow)
   useEffect(() => {
@@ -146,6 +147,9 @@ const Home = ({
     const currentIndex = steps.findIndex((step) => step.page === pageForNav);
     if (currentIndex >= 0 && currentIndex < steps.length - 1) {
       const nextStep = steps[currentIndex + 1];
+      if (nextStep.page === "View") {
+        setSummaryExportMode(true);
+      }
       setCurrentPage(nextStep.page);
     }
   };
@@ -321,6 +325,9 @@ const Home = ({
         rangeRef.current.save();
       }
 
+      if (target.page === "View") {
+        setSummaryExportMode(true);
+      }
       setCurrentPage(target.page);
       } finally {
         resetBypassFlags();
@@ -334,6 +341,7 @@ const Home = ({
     getLanguages,
     t,
     setCurrentPage,
+    setSummaryExportMode,
     attributesTypeError,
     entryCodesError
   ]
@@ -388,10 +396,10 @@ const Home = ({
   const prevPageForSummaryRef = useRef(null);
   useEffect(() => {
     if (prevPageForSummaryRef.current === "View" && currentPage !== "View") {
-      setHasLeftSummaryOnce(true);
+      setSummaryExportMode(true);
     }
     prevPageForSummaryRef.current = currentPage;
-  }, [currentPage, setHasLeftSummaryOnce]);
+  }, [currentPage, setSummaryExportMode]);
 
   return (
     <>

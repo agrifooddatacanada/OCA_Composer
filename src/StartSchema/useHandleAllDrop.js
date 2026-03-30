@@ -16,8 +16,7 @@ import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
 const useHandleAllDrop = () => {
   const {
     setCurrentPage,
-    setIsReadmeFirstImport,
-    setHasLeftSummaryOnce,
+    setSummaryExportMode,
     setZipToReadme,
     setJsonToReadme,
     excelSheetChoice,
@@ -535,12 +534,10 @@ const useHandleAllDrop = () => {
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".xls")) {
       handleExcelDrop(rawFile);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
-      setIsReadmeFirstImport(true);
-      setHasLeftSummaryOnce(false);
+      setSummaryExportMode(false);
       handleZipDrop(rawFile);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".json")) {
-      setIsReadmeFirstImport(true);
-      setHasLeftSummaryOnce(false);
+      setSummaryExportMode(false);
       handleJsonDrop(rawFile);
     } else if (rawFile.length > 0) {
       const pathOrName = (rawFile[0].path || rawFile[0].name || "").toLowerCase();
@@ -601,7 +598,6 @@ const useHandleAllDrop = () => {
     setFileData,
     setCurrentPage,
     switchToLastPage,
-    setIsReadmeFirstImport,
     excelSheetNames,
     setExcelSheetChoice,
     setExcelSheetNames,

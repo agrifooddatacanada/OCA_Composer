@@ -44,7 +44,7 @@ const AccordionList = () => {
   const isMobile = useMediaQuery("(max-width: 736px)");
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, schemaDescription } =
+  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, schemaDescription, setSummaryExportMode } =
     useContext(Context);
   const { ocaPackage } = useMultiSchema();
   const { toTextFile } = useGenerateReadMe();
@@ -59,8 +59,7 @@ const AccordionList = () => {
     dropDisabled,
     dropMessage,
     setDropMessage,
-    setCurrentPage,
-    setIsReadmeFirstImport
+    setCurrentPage
   } = useHandleAllDrop();
 
   const { setSchemaRawFile } = useHandleSchemaFileDrop();
@@ -75,19 +74,16 @@ const AccordionList = () => {
   };
 
   const navigateToEditSchema = () => {
-    setIsReadmeFirstImport(false);
-    // Always go to Schema Metadata page for editing
     setCurrentPage("Metadata");
     navigate("/start");
   };
 
   const navigateToViewPage = () => {
-    setIsReadmeFirstImport(true);
+    setSummaryExportMode(false);
     navigate("/start", { state: { openView: true } });
   };
 
   const navigateToPreviewSchema = () => {
-    setIsReadmeFirstImport(true);
     setCurrentDataValidatorPage("SchemaViewDataValidator");
     navigate("/oca-data-verifier");
   };
