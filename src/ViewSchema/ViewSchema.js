@@ -286,8 +286,20 @@ export default function ViewSchema({
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [loading, setLoading] = useState(true);
+  /** Full-screen loader only after this delay so sub-250ms loads never flash the overlay. */
+  const LOADING_OVERLAY_DELAY_MS = 250;
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   const [visualizationMode, setVisualizationMode] = useState("detailed"); // "detailed" for left-right, "tree" for top-down
   const [vizVersion, setVizVersion] = useState(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setShowLoadingOverlay(false);
+      return;
+    }
+    const id = setTimeout(() => setShowLoadingOverlay(true), LOADING_OVERLAY_DELAY_MS);
+    return () => clearTimeout(id);
+  }, [loading]);
 
   // Track the last known root digest to detect when package structure actually changes
   const lastRootDigestRef = useRef(null);
@@ -741,13 +753,14 @@ export default function ViewSchema({
     >
       {loading && (
         <>
-          <Loading spinner />
+          {showLoadingOverlay && <Loading spinner />}
           <Box
             aria-hidden
             sx={{
               width: "100%",
               minHeight: "calc(100vh - 21rem)",
-              pointerEvents: "none"
+              pointerEvents: "none",
+              bgcolor: "background.default"
             }}
           />
         </>
