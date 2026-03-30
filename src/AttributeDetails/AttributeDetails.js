@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useLayoutEffect,
   forwardRef,
   useImperativeHandle,
   useCallback
@@ -48,7 +49,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
   const [addByTab, setAddByTab] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [showInvalidCharModal, setShowInvalidCharModal] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const navigationSafe = useRef();
   const gridRef = useRef();
@@ -61,6 +62,11 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
 
   // Track initialization to prevent unnecessary package parsing
   const initializedSchemaRef = useRef(null);
+  const prevI18nLangRef = useRef(i18n.language);
+
+  useLayoutEffect(() => {
+    setLoading(true);
+  }, [currentSchemaId, i18n.language]);
 
   // Update types object when attribute data changes
   useEffect(() => {
@@ -106,6 +112,9 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
    *    - hasAttributesArray=false, so we CAN initialize from completeSchema
    */
   useEffect(() => {
+    const languageChanged = prevI18nLangRef.current !== i18n.language;
+    prevI18nLangRef.current = i18n.language;
+
     // Get schema state (MultiSchemaContext handles the fallback internally)
     const schemaState = getSchema();
     
@@ -145,7 +154,9 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
           setAttributeRowData(mergedAttributes);
         }
       }
-      setLoading(false);
+      if (sameAttrs && !languageChanged) {
+        setLoading(false);
+      }
       initializedSchemaRef.current = currentSchemaId;
       return;
     }
@@ -187,7 +198,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
         ) {
           displayType = TYPE_CHILD_SCHEMA;
         }
-        setLoading(false);
         return {
           Attribute: key,
           Type: displayType,
@@ -201,8 +211,11 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       // Avoid redundant updates to prevent flicker
       const sameAttrs =
         JSON.stringify(attributeRowData) === JSON.stringify(newAttributeRowData);
-      if (!sameAttrs) setAttributeRowData(newAttributeRowData);
-      setLoading(false);
+      if (!sameAttrs) {
+        setAttributeRowData(newAttributeRowData);
+      } else if (!languageChanged) {
+        setLoading(false);
+      }
 
       // Save to MultiSchemaContext (attributesList is computed automatically)
       updateSchema({
@@ -216,14 +229,16 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       // Handle manual schema creation case (no completeSchema but also no existing attributes)
       // Initialize with empty arrays to allow user to start adding attributes
       const emptyAttributeRowData = [];
-      
+      const alreadyEmpty = attributeRowData.length === 0;
       setAttributeRowData(emptyAttributeRowData);
 
       // Save empty state to MultiSchemaContext (attributesList is computed automatically)
       updateSchema({
         attributes: emptyAttributeRowData
       });
-      setLoading(false);
+      if (alreadyEmpty && !languageChanged) {
+        setLoading(false);
+      }
       initializedSchemaRef.current = currentSchemaId;
     } else {
       // Some other case
@@ -722,22 +737,20 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       {/* We removed the generic errorMessage ErrorPopup to restore the inline error display for other general errors */}
       <Box sx={{ width: "calc(752px + 4rem)", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
         <div ref={refContainer}>
-          {!loading && (
-            <Grid
-              gridRef={gridRef}
-              addButton1={addButton1}
-              addButton2={addButton2}
-              setErrorMessage={setErrorMessage}
-              canDelete={canDelete}
-              setCanDelete={setCanDelete}
-              setAddByTab={setAddByTab}
-              typesObjectRef={typesObjectRef}
-              setLoading={setLoading}
-              attributeRowData={attributeRowData}
-              setAttributeRowData={setAttributeRowData}
-              triggerInvalidCharModal={() => setShowInvalidCharModal(true)}
-            />
-          )}
+          <Grid
+            gridRef={gridRef}
+            addButton1={addButton1}
+            addButton2={addButton2}
+            setErrorMessage={setErrorMessage}
+            canDelete={canDelete}
+            setCanDelete={setCanDelete}
+            setAddByTab={setAddByTab}
+            typesObjectRef={typesObjectRef}
+            setLoading={setLoading}
+            attributeRowData={attributeRowData}
+            setAttributeRowData={setAttributeRowData}
+            triggerInvalidCharModal={() => setShowInvalidCharModal(true)}
+          />
         </div>
         <Box sx={{ mt: TABLE_TO_BUTTON_GAP, mb: BETWEEN_SECTION_SPACING, mr: "2rem" }}>
           <AddAttribute
