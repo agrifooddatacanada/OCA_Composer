@@ -72,8 +72,12 @@ const gridStyle = `
   .ag-header-viewport {
     overflow-x: hidden;
   }
-  .ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height {
-    min-height: 80px !important;
+  .attribute-details-grid.ag-theme-balham {
+    height: min(70vh, 560px);
+    min-height: 120px;
+  }
+  .attribute-details-grid .ag-root-wrapper {
+    height: 100%;
   }
   .attribute-details-grid .ag-body-horizontal-scroll {
     display: none !important;
@@ -615,6 +619,7 @@ export default function Grid({
         <AgGridReact
           key={i18n.language}
           ref={gridRef}
+          style={{ width: "100%", height: "100%" }}
           getRowId={(params) => (params.data && (params.data._rid || params.data.Attribute))}
           rowData={attributeRowData}
           columnDefs={columnDefs}
@@ -622,7 +627,6 @@ export default function Grid({
           rowSelection="multiple"
           suppressRowClickSelection
           suppressCellSelection={false}
-          domLayout="autoHeight"
           getRowHeight={getRowHeight}
           suppressHorizontalScroll
           suppressRowHoverHighlight
