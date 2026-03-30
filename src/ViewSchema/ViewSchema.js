@@ -325,6 +325,7 @@ export default function ViewSchema({
       }
       setCurrentPage("Details");
       navigate("/start");
+      window.scrollTo(0, 0);
     },
     [currentSchemaId, switchToSchema, pkgFromState, ocaPackage, setCurrentPage, navigate]
   );
