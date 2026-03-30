@@ -6,7 +6,7 @@ const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem, centerItem,
   return (
     <Stack
       direction='row'
-      justifyContent='space-between'
+      alignItems='center'
       sx={{
         pl: isMobile ? 2 : 4,
         pr: isMobile ? 2 : 4,
@@ -14,21 +14,22 @@ const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem, centerItem,
         borderColor: headerColor || CustomPalette.GREY_300,
         backgroundColor: headerColor,
         position: 'relative',
-        zIndex: 1210
+        zIndex: 1210,
+        minWidth: 0,
+        gap: 1
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>{leftItem}</Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{leftItem}</Box>
       {centerItem && (
         <Box
           sx={{
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
+            flex: '1 1 0%',
+            minWidth: 0,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            pointerEvents: centerItemInteractive ? 'auto' : 'none',
+            px: { xs: 0.5, sm: 1 },
+            pointerEvents: centerItemInteractive ? 'auto' : 'none'
           }}
         >
           {centerItem}
@@ -37,9 +38,12 @@ const HeaderWrapper = ({ isMobile, headerColor, leftItem, rightItem, centerItem,
       <Stack
         direction='row'
         sx={{
+          flexShrink: 0,
           width: isMobile ? 'fit-content' : 300,
+          minWidth: isMobile ? 'fit-content' : 300,
           alignItems: 'center',
           justifyContent: 'flex-end',
+          ml: centerItem ? 0 : 'auto'
         }}
       >
         {rightItem}

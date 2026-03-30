@@ -103,8 +103,11 @@ export default function Header({ currentPage }) {
             sx={{
               color: CustomPalette.GREY_600,
               fontSize: "0.875rem",
-              maxWidth: 1100,
+              maxWidth: "min(100%, 1100px)",
+              width: "100%",
+              minWidth: 0,
               textAlign: "center",
+              wordBreak: "break-word",
               pointerEvents: "none"
             }}
           >
