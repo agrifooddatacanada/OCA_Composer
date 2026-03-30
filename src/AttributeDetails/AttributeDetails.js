@@ -696,7 +696,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       isForward
       pageForward={pageForwardSave}
     >
-      {loading && <Loading />}
+      {loading && <Loading spinner />}
       {showCard && (
         <ErrorPopup onClose={() => setShowCard(false)}>
           <Box>
