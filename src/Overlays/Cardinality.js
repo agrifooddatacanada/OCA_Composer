@@ -38,6 +38,9 @@ import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { useOverlayGridOnGridReady } from "./gridUtils";
 import "../App.css";
 
+const CARDINALITY_COL_SUM_PX = 160 + 200 + 140;
+const CARDINALITY_GRID_OUTER_MIN_PX = CARDINALITY_COL_SUM_PX + 12;
+
 const gridOptions = {
   domLayout: "autoHeight",
   singleClickEdit: true,
@@ -514,7 +517,13 @@ const Cardinality = () => {
       >
         <Box
           className="ag-theme-balham"
-          sx={{ width: "50%", height: "100%", maxWidth: "600px" }}
+          sx={{
+            width: "50%",
+            height: "100%",
+            maxWidth: "600px",
+            minWidth: CARDINALITY_GRID_OUTER_MIN_PX,
+            boxSizing: "border-box"
+          }}
         >
           <style>{gridStyles}</style>
           <AgGridReact

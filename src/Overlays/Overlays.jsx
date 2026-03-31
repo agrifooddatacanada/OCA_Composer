@@ -11,7 +11,14 @@ import { getListOfSelectedOverlays } from "../utils/overlayUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import DeleteConfirmation from "./DeleteConfirmation";
-import { shouldDisableRangeOverlay, getRangeOverlayDisabledReason, shouldDisableFormInformationOverlay, getFormInformationDisabledReason } from "../utils/helpers";
+import {
+  shouldDisableRangeOverlay,
+  getRangeOverlayDisabledReason,
+  shouldDisableFormInformationOverlay,
+  getFormInformationDisabledReason,
+  shouldDisableCardinalityOverlay,
+  getCardinalityOverlayDisabledReason
+} from "../utils/helpers";
 import {
   FIELD_CHARACTER_ENCODING_OVERLAY,
   FIELD_CONFORMANCE_OVERLAY,
@@ -79,6 +86,7 @@ const Overlays = ({ pageBack, pageForward }) => {
         rangeRowData,
         formatRuleData
       ) ||
+      getCardinalityOverlayDisabledReason(overlayKey, attributeRowData) ||
       ""
     );
   };
@@ -90,6 +98,8 @@ const Overlays = ({ pageBack, pageForward }) => {
 
     // Form Information overlay can be selected only if format overlay is selected
     if (shouldDisableFormInformationOverlay(overlayKey, selectedKeys)) return;
+
+    if (shouldDisableCardinalityOverlay(overlayKey, attributeRowData)) return;
 
     // Get current overlay selections
     const currentSelections = getOverlaySelections();
@@ -193,7 +203,9 @@ const Overlays = ({ pageBack, pageForward }) => {
                     attributeRowData,
                     rangeRowData,
                     formatRuleData
-                  ) || shouldDisableFormInformationOverlay(overlayKey, selectedKeys);
+                  ) ||
+                  shouldDisableFormInformationOverlay(overlayKey, selectedKeys) ||
+                  shouldDisableCardinalityOverlay(overlayKey, attributeRowData);
                 const disabledReason = isDisabled ? getDisabledReason(overlayKey) : "";
                 
                 return (

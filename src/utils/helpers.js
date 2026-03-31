@@ -8,6 +8,7 @@ import {
   customDateFormatParsers,
   DEFAULT_LANGUAGE,
   DISALLOWED_CHARACTERS,
+  FIELD_CARDINALITY_OVERLAY,
   FIELD_FORMAT_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_RANGE_OVERLAY,
@@ -966,6 +967,19 @@ export const shouldDisableRangeOverlay = (
 export const shouldDisableFormInformationOverlay = (overlayKey, selectedKeys) =>
   overlayKey === FIELD_FORM_INFORMATION_OVERLAY &&
   !selectedKeys.includes(FIELD_FORMAT_OVERLAY);
+
+export const shouldDisableCardinalityOverlay = (overlayKey, attributes) => {
+  if (overlayKey !== FIELD_CARDINALITY_OVERLAY) return false;
+  return !attributes.some((attr) => attr?.Type && String(attr.Type).includes("Array"));
+};
+
+export const getCardinalityOverlayDisabledReason = (overlayKey, attributes) => {
+  if (overlayKey !== FIELD_CARDINALITY_OVERLAY) return "";
+  if (!shouldDisableCardinalityOverlay(overlayKey, attributes)) return "";
+  return i18next.t(
+    "Entry limits can only be created for attributes with an array data type"
+  );
+};
 
 export const getRangeOverlayDisabledReason = (
   overlayKey,
