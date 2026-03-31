@@ -13,8 +13,8 @@ import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import {
-  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
-  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
+  AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX,
+  AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX,
   AG_GRID_VIRTUALIZE_MIN_ROWS,
   MAX_ATTR_DESCRIPTION_CHARS,
   MAX_ATTR_LABEL_CHARS
@@ -358,7 +358,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
               lanGridFixedViewport
                 ? "height: min(70vh, 560px); min-height: 120px;"
                 : !hasGridRows
-                  ? `min-height: ${AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX}px;`
+                  ? `min-height: ${AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX}px;`
                   : "min-height: 0;"
             }
           }
@@ -369,7 +369,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
             !hasGridRows && !lanGridFixedViewport
               ? `
           .lan-grid .ag-root.ag-layout-auto-height .ag-body-viewport {
-            min-height: ${AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX}px !important;
+            min-height: ${AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX}px !important;
           }
           `
               : ""

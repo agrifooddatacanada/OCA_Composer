@@ -137,6 +137,24 @@ export const gridStyles = `
   min-height: 100px !important;
 }
 
+/* Labels, Attributes, Summary: half the default no-rows overlay floor */
+.view-schema-grid.ag-theme-balham .ag-root-wrapper:has(.ag-overlay:not(.ag-hidden) .ag-overlay-no-rows-wrapper),
+.lan-grid.ag-theme-balham .ag-root-wrapper:has(.ag-overlay:not(.ag-hidden) .ag-overlay-no-rows-wrapper),
+.attribute-details-grid.ag-theme-balham .ag-root-wrapper:has(.ag-overlay:not(.ag-hidden) .ag-overlay-no-rows-wrapper) {
+  min-height: 50px !important;
+}
+.view-schema-grid.ag-theme-balham
+  .ag-root-wrapper:has(.ag-overlay:not(.ag-hidden) .ag-overlay-no-rows-wrapper)
+  .ag-root-wrapper-body,
+.lan-grid.ag-theme-balham
+  .ag-root-wrapper:has(.ag-overlay:not(.ag-hidden) .ag-overlay-no-rows-wrapper)
+  .ag-root-wrapper-body,
+.attribute-details-grid.ag-theme-balham
+  .ag-root-wrapper:has(.ag-overlay:not(.ag-hidden) .ag-overlay-no-rows-wrapper)
+  .ag-root-wrapper-body {
+  min-height: 50px !important;
+}
+
 .ag-header-cell:last-child {
   border-right: none !important;
   --ag-header-column-separator-display: none !important;

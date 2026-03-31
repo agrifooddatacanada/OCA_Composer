@@ -17,8 +17,8 @@ import DeleteRenderer from "./DeleteRenderer";
 import TypeRenderer from "./TypeRenderer";
 import { useMultiSchema } from "../schema/schemaContext";
 import {
-  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
-  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
+  AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX,
+  AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX,
   AG_GRID_VIRTUALIZE_MIN_ROWS
 } from "../constants/constants";
 
@@ -108,7 +108,7 @@ export default function Grid({
     () => `
   .attribute-details-grid.ag-theme-balham {
     ${attrGridFixedViewport ? "height: min(70vh, 560px);" : ""}
-    min-height: ${noAttributes ? AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX : 120}px;
+    min-height: ${noAttributes ? AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX : 120}px;
   }
   .attribute-details-grid .ag-root-wrapper {
     height: ${attrGridFixedViewport ? "100%" : "auto"};
@@ -117,7 +117,7 @@ export default function Grid({
     noAttributes && !attrGridFixedViewport
       ? `
   .attribute-details-grid .ag-body-viewport {
-    min-height: ${AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX}px !important;
+    min-height: ${AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX}px !important;
   }
   `
       : ""

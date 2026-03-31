@@ -24,6 +24,12 @@ export const AG_GRID_VIRTUALIZE_MIN_ROWS = AG_GRID_OVERLAY_VIRTUALIZE_MIN_ROWS;
 export const AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX = 220;
 export const AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX = 160;
 
+/** Tighter empty area for main wizard grids (Labels, Attributes, Summary schema table). */
+export const AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX =
+  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX / 2;
+export const AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX =
+  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX / 2;
+
 export const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
 
 /**

@@ -28,8 +28,8 @@ import {
   MAX_ATTR_LABEL_CHARS,
   UNIT_FRAMING,
   CUSTOM_FORMAT_RULE,
-  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
-  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
+  AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX,
+  AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX,
   AG_GRID_VIRTUALIZE_MIN_ROWS
 } from "../constants/constants";
 import SelectedFeatureHeader from "./SelectedFeatureHeader";
@@ -569,7 +569,7 @@ export default function ViewGrid({
     rowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
   const noAttributes = (schemaState?.attributes || []).length === 0;
   const viewSchemaBodyViewportMinHeight = noAttributes
-    ? `${AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX}px`
+    ? `${AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX}px`
     : "unset";
 
   const viewSchemaAutoHeightTightBodyCss = viewSchemaGridFixedViewport
@@ -585,7 +585,7 @@ export default function ViewGrid({
       <style>{`
 .view-schema-grid.ag-theme-balham {
   ${viewSchemaGridFixedViewport ? "height: min(70vh, 560px);" : ""}
-  min-height: ${noAttributes ? AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX : 120}px;
+  min-height: ${noAttributes ? AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX : 120}px;
 }
 .view-schema-grid .ag-root-wrapper {
   height: ${viewSchemaGridFixedViewport ? "100%" : "auto"};
