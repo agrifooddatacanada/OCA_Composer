@@ -21,7 +21,6 @@ import MuiLink from "@mui/material/Link";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { AgGridReact } from "../components/AgGridReact";
-import "../utils/debugAgGridLayout";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { useTranslation } from "react-i18next";
@@ -725,7 +724,6 @@ const UnitFraming = () => {
           sx={{
             width: GRID_WIDTH,
             overflow: "hidden",
-            /* minHeight removed: was 120px and left empty band when header+rows < 120 (see __ocpDebugAgGridLayout) */
             "& .ag-root-wrapper": { height: "auto" },
             "& .ag-root-wrapper-body.ag-layout-auto-height": { alignItems: "flex-start" },
             "& .ag-layout-auto-height .ag-center-cols-clipper": { minHeight: 0 },

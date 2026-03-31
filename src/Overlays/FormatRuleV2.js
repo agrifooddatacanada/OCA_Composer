@@ -26,7 +26,6 @@ import {
   MAX_ATTR_DESCRIPTION_CHARS
 } from "../constants/constants";
 import { getAllGridRowData } from "./gridUtils";
-import "../utils/debugAgGridLayout";
 import { getFormatRuleDescription } from "../utils/helpers";
 import { measureTextHeight } from "../utils/measureTextLines";
 import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
@@ -421,9 +420,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
                   "& .ag-root-wrapper": { height: "100%" }
                 }
               : {
-                  /* no outer minHeight — 120px forced a gap under few/short rows */
                   "& .ag-root-wrapper": { height: "auto" },
-                  /* Emotion runs late vs stray <style> tags — tight autoHeight body (ag-grid flex defaults leave a band under rows) */
                   "& .ag-root-wrapper-body.ag-layout-auto-height": {
                     alignItems: "flex-start"
                   },
