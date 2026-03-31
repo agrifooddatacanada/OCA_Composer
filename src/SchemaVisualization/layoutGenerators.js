@@ -10,6 +10,82 @@ import {
 } from "./dataUtils";
 
 /**
+ * Find a package dependency for a refn: placeholder name (by bundle id or meta overlay name).
+ */
+const findDependencyForPlaceholderName = (
+  placeholderName,
+  dependencies,
+  langCodeOCA
+) => {
+  if (!dependencies?.length) return null;
+  return (
+    dependencies.find((dep) => {
+      if (dep.d === placeholderName) return true;
+      const metaOverlays = dep.overlays?.meta;
+      const metaOverlay = Array.isArray(metaOverlays)
+        ? metaOverlays.find((m) => m.language === langCodeOCA) || metaOverlays[0]
+        : null;
+      return metaOverlay?.name === placeholderName;
+    }) || null
+  );
+};
+
+/**
+ * True when the dependency for this refn: name has at least one capture_base attribute.
+ */
+const placeholderDependencyHasNonEmptyAttributes = (
+  placeholderName,
+  dependencies,
+  langCodeOCA
+) => {
+  const dep = findDependencyForPlaceholderName(
+    placeholderName,
+    dependencies,
+    langCodeOCA
+  );
+  const attrs = dep?.capture_base?.attributes;
+  return (
+    attrs &&
+    typeof attrs === "object" &&
+    Object.keys(attrs).length > 0
+  );
+};
+
+/**
+ * For detailed view: refn: fields whose child schema already has attributes should display
+ * as "Child Schema" on the parent (same as refs:), not "Placeholder Child Schema".
+ */
+const enrichFieldsForChildSchemaDisplay = (
+  fields,
+  dependencies,
+  langCodeOCA
+) =>
+  fields.map((field) => {
+    if (
+      !field.isPlaceholder ||
+      typeof field.type !== "string" ||
+      !field.type.startsWith("refn:")
+    ) {
+      return field;
+    }
+    const placeholderName = field.type.replace("refn:", "");
+    if (
+      !placeholderDependencyHasNonEmptyAttributes(
+        placeholderName,
+        dependencies,
+        langCodeOCA
+      )
+    ) {
+      return field;
+    }
+    return {
+      ...field,
+      isPlaceholder: false,
+      isMaterializedChildSchema: true
+    };
+  });
+
+/**
  * DATA STRUCTURE DOCUMENTATION
  *
  * Node Structure:
@@ -401,13 +477,19 @@ export const generateDetailedLayout = (
   const processNode = (nodeId, nodeType, title, fields, level = 0) => {
     if (allNodes.has(nodeId)) return;
 
+    const displayFields = enrichFieldsForChildSchemaDisplay(
+      fields,
+      dependencies,
+      langCodeOCA
+    );
+
     // No more field processing here - handled in UI component
     const nodeData = {
       id: nodeId,
       type: "detailedLR",
       data: {
         title: truncateText(title, 20),
-        fields, // Raw fields - truncation handled in UI
+        fields: displayFields, // Enriched so materialized refn: shows as Child Schema on parent
         nodeType, // Ensure nodeType is explicitly set
         currentSchemaId,
         nodeId
@@ -447,60 +529,43 @@ export const generateDetailedLayout = (
       } else if (field.isPlaceholder) {
         // Extract the placeholder name from the refn: reference (e.g., "refn:placeholder1" -> "placeholder1")
         const placeholderName = field.type.replace("refn:", "");
-        
-        // Use the placeholder name as the node ID for lookups
         const placeholderId = placeholderName;
 
-        // Check if this placeholder schema now has actual attributes in dependencies
         let placeholderFields = [];
-        // Default title is the label from the parent schema
         let placeholderTitle = field.originalName || field.name;
-        let hasRealAttributes = false; // Track if placeholder has real attributes
 
-        // Look for the schema in dependencies to see if it has attributes
-        // Check by dependency ID (matches placeholder name) or by meta overlay name
-        if (dependencies) {
-          const dependencyWithAttributes = dependencies.find((dep) => {
-            // First check if the dependency's d field matches the placeholder name
-            if (dep.d === placeholderName) return true;
-            
-            // Fall back to checking the meta overlay name
-            const metaOverlays = dep.overlays?.meta;
-            const metaOverlay = Array.isArray(metaOverlays)
-              ? (metaOverlays.find((m) => m.language === langCodeOCA) || metaOverlays[0])
-              : null;
-            return metaOverlay?.name === placeholderName;
-          });
+        const dependencyWithAttributes = findDependencyForPlaceholderName(
+          placeholderName,
+          dependencies,
+          langCodeOCA
+        );
+        const hasRealAttributes = placeholderDependencyHasNonEmptyAttributes(
+          placeholderName,
+          dependencies,
+          langCodeOCA
+        );
 
-          // Check if it has actual attributes (not just an empty object)
-          hasRealAttributes = dependencyWithAttributes &&
-            dependencyWithAttributes.capture_base?.attributes &&
-            Object.keys(dependencyWithAttributes.capture_base.attributes).length > 0;
+        if (hasRealAttributes && dependencyWithAttributes) {
+          const metaOverlays = dependencyWithAttributes.overlays?.meta;
+          const metaOverlay = Array.isArray(metaOverlays)
+            ? metaOverlays.find((m) => m.language === langCodeOCA) ||
+              metaOverlays[0]
+            : null;
 
-          // Only override the title if the placeholder has real attributes
-          if (hasRealAttributes && dependencyWithAttributes) {
-            // Get the schema metadata name
-            const metaOverlays = dependencyWithAttributes.overlays?.meta;
-            const metaOverlay = Array.isArray(metaOverlays)
-              ? (metaOverlays.find((m) => m.language === langCodeOCA) || metaOverlays[0])
-              : null;
-            
-            // Use schema metadata name if available
-            if (metaOverlay?.name) {
-              placeholderTitle = metaOverlay.name;
-            }
-            
-            // This placeholder now has real attributes, use them
-            const labelOverlays = dependencyWithAttributes.overlays?.label;
-            const labelAttributes = Array.isArray(labelOverlays) 
-              ? (labelOverlays.find((l) => l.language === langCodeOCA)?.attribute_labels || {})
-              : {};
-            
-            placeholderFields = processAttributes(
-              dependencyWithAttributes.capture_base.attributes,
-              labelAttributes
-            );
+          if (metaOverlay?.name) {
+            placeholderTitle = metaOverlay.name;
           }
+
+          const labelOverlays = dependencyWithAttributes.overlays?.label;
+          const labelAttributes = Array.isArray(labelOverlays)
+            ? labelOverlays.find((l) => l.language === langCodeOCA)
+                ?.attribute_labels || {}
+            : {};
+
+          placeholderFields = processAttributes(
+            dependencyWithAttributes.capture_base.attributes,
+            labelAttributes
+          );
         }
 
         // Node type: "placeholder" if no attributes, "reference" if it has attributes

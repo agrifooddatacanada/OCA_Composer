@@ -4,6 +4,7 @@
  * TERMINOLOGY:
  * - isReference: true when the field type is refs:SAID (linked child schema)
  * - isPlaceholder: true when the field type is refn:name (placeholder child schema)
+ * - isMaterializedChildSchema: refn: whose dependency already has attributes (show as Child Schema)
  * - Both display as "Child Schema" variants to the user
  */
 import React from "react";
@@ -22,7 +23,9 @@ const FIELD_NAME_MAX_LENGTH = 35;
  * @returns {string} Human-readable type for display
  */
 const getFieldDisplayType = (field) => {
-  if (field.isReference) return TYPE_CHILD_SCHEMA;
+  if (field.isReference || field.isMaterializedChildSchema) {
+    return TYPE_CHILD_SCHEMA;
+  }
   if (field.isPlaceholder) return "Placeholder Child Schema";
   return field.type;
 };
@@ -128,9 +131,11 @@ export const DetailedNode = ({ data }) => {
 
   // Sort fields to prioritize child schemas and placeholder child schemas first
   const sortedFields = [...fields].sort((a, b) => {
-    // References come first
-    if (a.isReference && !b.isReference) return -1;
-    if (!a.isReference && b.isReference) return 1;
+    const aChild = a.isReference || a.isMaterializedChildSchema;
+    const bChild = b.isReference || b.isMaterializedChildSchema;
+    // References / materialized refn come first
+    if (aChild && !bChild) return -1;
+    if (!aChild && bChild) return 1;
 
     // Placeholders come second
     if (a.isPlaceholder && !b.isPlaceholder) return -1;
@@ -142,10 +147,16 @@ export const DetailedNode = ({ data }) => {
 
   // Separate child schemas/placeholder child schemas from regular fields
   const childSchemas = sortedFields.filter(
-    (field) => field.isReference || field.isPlaceholder
+    (field) =>
+      field.isReference ||
+      field.isPlaceholder ||
+      field.isMaterializedChildSchema
   );
   const regularFields = sortedFields.filter(
-    (field) => !field.isReference && !field.isPlaceholder
+    (field) =>
+      !field.isReference &&
+      !field.isPlaceholder &&
+      !field.isMaterializedChildSchema
   );
 
   // Always show all child schemas and placeholder child schemas, then add regular fields up to the limit
@@ -245,7 +256,13 @@ export const DetailedNode = ({ data }) => {
             return (
               <div
                 key={field.originalName || field.name || `field-${index}`}
-                className={`field ${field.isReference ? "Reference" : field.isPlaceholder ? "Placeholder" : field.type}`}
+                className={`field ${
+                  field.isReference || field.isMaterializedChildSchema
+                    ? "Reference"
+                    : field.isPlaceholder
+                      ? "Placeholder"
+                      : field.type
+                }`}
               >
                 <span
                   className="field-name"
@@ -257,7 +274,9 @@ export const DetailedNode = ({ data }) => {
                   {fieldName}
                 </span>
                 <span className="field-type">{t(getFieldDisplayType(field))}</span>
-                {(field.isReference || field.isPlaceholder) && (
+                {(field.isReference ||
+                  field.isPlaceholder ||
+                  field.isMaterializedChildSchema) && (
                   <FieldHandle field={field} />
                 )}
               </div>
