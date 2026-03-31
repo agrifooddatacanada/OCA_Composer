@@ -27,7 +27,11 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import { useTranslation } from "react-i18next";
 import { styled } from "@mui/material/styles";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
+import {
+  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
+  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
+  BETWEEN_SECTION_SPACING
+} from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, greyCellStyle, preWrapWordBreak } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
@@ -344,6 +348,7 @@ const UnitFraming = () => {
     setSelectedOverlay
   } = useMultiSchema();
   const schemaState = getSchema();
+  const noAttributes = (schemaState?.attributes || []).length === 0;
   const deleteHandler = useDeleteOverlayHandler(FIELD_UNIT_FRAMING_OVERLAY);
 
   // Get unit framing data from schema state, sync with current attributes
@@ -728,8 +733,9 @@ const UnitFraming = () => {
             "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
               flex: "0 0 auto",
               height: "auto",
-              minHeight: 0
-            }
+              minHeight: noAttributes ? AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX : 0
+            },
+            ...(noAttributes ? { minHeight: AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX } : {})
           }}
         >
           <style>{gridStyles}</style>

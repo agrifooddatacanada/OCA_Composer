@@ -20,6 +20,10 @@ export const TOOLTIP_ICON_GAP = 1.5;
 export const AG_GRID_OVERLAY_VIRTUALIZE_MIN_ROWS = 20;
 export const AG_GRID_VIRTUALIZE_MIN_ROWS = AG_GRID_OVERLAY_VIRTUALIZE_MIN_ROWS;
 
+/** When the schema has no attributes, grid body min height so “No rows” overlay can sit in empty space. */
+export const AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX = 220;
+export const AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX = 160;
+
 export const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
 
 /**

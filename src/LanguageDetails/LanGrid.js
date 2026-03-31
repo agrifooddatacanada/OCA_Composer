@@ -12,7 +12,13 @@ import CellHeader from "../components/CellHeader";
 import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import { AG_GRID_VIRTUALIZE_MIN_ROWS, MAX_ATTR_DESCRIPTION_CHARS, MAX_ATTR_LABEL_CHARS } from "../constants/constants";
+import {
+  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
+  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
+  AG_GRID_VIRTUALIZE_MIN_ROWS,
+  MAX_ATTR_DESCRIPTION_CHARS,
+  MAX_ATTR_LABEL_CHARS
+} from "../constants/constants";
 import { langCodeOCAFromName } from "../utils/languageUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
 import TextareaCellEditor from "../components/TextareaCellEditor";
@@ -273,6 +279,8 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   const lanGridFixedViewport =
     attributeRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const rowsForCurrentLanguage = lanAttributeRowData[currentLanguage] ?? [];
+  const hasGridRows = rowsForCurrentLanguage.length > 0;
 
   useLayoutEffect(() => {
     const api = gridRef.current?.api;
@@ -317,13 +325,16 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       style={{
         width: 885,
         overflowX: "hidden",
-        backgroundColor: CustomPalette.GREY_200,
+        ...(hasGridRows ? { backgroundColor: CustomPalette.GREY_200 } : {}),
         ...(lanGridFixedViewport ? {} : { height: "fit-content" })
       }}
     >
       <style>
         {gridStyles}
         {`
+          ${
+            hasGridRows
+              ? `
           .lan-grid .ag-root-wrapper,
           .lan-grid .ag-root-wrapper-body,
           .lan-grid .ag-body-viewport,
@@ -339,11 +350,29 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           .lan-grid .ag-header-cell[col-id="Description"] {
             background-color: ${CustomPalette.WHITE} !important;
           }
+          `
+              : ""
+          }
           .lan-grid.ag-theme-balham {
-            ${lanGridFixedViewport ? "height: min(70vh, 560px); min-height: 120px;" : "min-height: 0;"}
+            ${
+              lanGridFixedViewport
+                ? "height: min(70vh, 560px); min-height: 120px;"
+                : !hasGridRows
+                  ? `min-height: ${AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX}px;`
+                  : "min-height: 0;"
+            }
           }
           .lan-grid .ag-root-wrapper {
             height: ${lanGridFixedViewport ? "100%" : "auto"};
+          }
+          ${
+            !hasGridRows && !lanGridFixedViewport
+              ? `
+          .lan-grid .ag-root.ag-layout-auto-height .ag-body-viewport {
+            min-height: ${AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX}px !important;
+          }
+          `
+              : ""
           }
           .lan-grid .ag-body-horizontal-scroll {
             display: none !important;
@@ -382,31 +411,25 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           }
         `}
       </style>
-      {attributeRowData.length > 0 ? (
-        <AgGridReact
-          key={`${i18n.language}-${lanGridFixedViewport ? "fx" : "ah"}`}
-          ref={gridRef}
-          domLayout={lanGridFixedViewport ? undefined : "autoHeight"}
-          style={{
-            width: "100%",
-            height: lanGridFixedViewport ? "100%" : "auto"
-          }}
-          rowData={lanAttributeRowData[currentLanguage] ?? []}
-          columnDefs={columnDefs}
-          onCellKeyDown={onCellKeyDown}
-          onCellValueChanged={onCellValueChanged}
-          onGridReady={onGridReady}
-          getRowHeight={getRowHeight}
-          suppressHorizontalScroll
-          getRowId={(params) => params.data.Attribute}
-          immutableData={true}
-          overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
-        />
-      ) : (
-        <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
-          {t("No attributes available")}
-        </div>
-      )}
+      <AgGridReact
+        key={`${i18n.language}-${lanGridFixedViewport ? "fx" : "ah"}`}
+        ref={gridRef}
+        domLayout={lanGridFixedViewport ? undefined : "autoHeight"}
+        style={{
+          width: "100%",
+          height: lanGridFixedViewport ? "100%" : "auto"
+        }}
+        rowData={lanAttributeRowData[currentLanguage] ?? []}
+        columnDefs={columnDefs}
+        onCellKeyDown={onCellKeyDown}
+        onCellValueChanged={onCellValueChanged}
+        onGridReady={onGridReady}
+        getRowHeight={getRowHeight}
+        suppressHorizontalScroll
+        getRowId={(params) => params.data.Attribute}
+        immutableData={true}
+        overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
+      />
     </div>
   );
 }

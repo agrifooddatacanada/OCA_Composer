@@ -16,7 +16,11 @@ import ListHeader from "./ListHeader";
 import DeleteRenderer from "./DeleteRenderer";
 import TypeRenderer from "./TypeRenderer";
 import { useMultiSchema } from "../schema/schemaContext";
-import { AG_GRID_VIRTUALIZE_MIN_ROWS } from "../constants/constants";
+import {
+  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
+  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
+  AG_GRID_VIRTUALIZE_MIN_ROWS
+} from "../constants/constants";
 
 const ATTRIBUTE_GRID_COLUMN_SUM_PX = 40 + 150 + 125 + 128 + 150 + 100 + 44;
 
@@ -99,17 +103,27 @@ export default function Grid({
   const { t, i18n } = useTranslation();
   const attrGridFixedViewport =
     attributeRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const noAttributes = attributeRowData.length === 0;
   const attributeGridViewportStyle = useMemo(
     () => `
   .attribute-details-grid.ag-theme-balham {
     ${attrGridFixedViewport ? "height: min(70vh, 560px);" : ""}
-    min-height: 120px;
+    min-height: ${noAttributes ? AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX : 120}px;
   }
   .attribute-details-grid .ag-root-wrapper {
     height: ${attrGridFixedViewport ? "100%" : "auto"};
   }
+  ${
+    noAttributes && !attrGridFixedViewport
+      ? `
+  .attribute-details-grid .ag-body-viewport {
+    min-height: ${AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX}px !important;
+  }
+  `
+      : ""
+  }
 `,
-    [attrGridFixedViewport]
+    [attrGridFixedViewport, noAttributes]
   );
 
   const { renameAttribute } = useMultiSchema();

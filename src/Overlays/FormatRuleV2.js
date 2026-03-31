@@ -15,6 +15,8 @@ import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { FormatRuleTypeRenderer } from "./FormatRuleCellRender";
 import Loading from "../components/Loading";
 import {
+  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
+  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
   AG_GRID_VIRTUALIZE_MIN_ROWS,
   BETWEEN_SECTION_SPACING,
   CUSTOM_FORMAT_RULE,
@@ -373,6 +375,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
 
   const formatGridScrollViewport =
     gridRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const noAttributes = (schemaState?.attributes || []).length === 0;
 
   return (
     <BackNextSkeleton
@@ -429,8 +432,11 @@ const FormatRulesV2 = forwardRef((props, ref) => {
                   "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
                     flex: "0 0 auto",
                     height: "auto",
-                    minHeight: 0
-                  }
+                    minHeight: noAttributes ? AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX : 0
+                  },
+                  ...(noAttributes
+                    ? { minHeight: AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX }
+                    : {})
                 })
           }}
         >
