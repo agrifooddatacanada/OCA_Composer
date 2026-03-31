@@ -313,11 +313,12 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
 
   return (
     <div
-      className="lan-grid ag-theme-balham"
+      className={`lan-grid ag-theme-balham${lanGridFixedViewport ? "" : " ag-grid-compact"}`}
       style={{
         width: 885,
         overflowX: "hidden",
-        backgroundColor: CustomPalette.GREY_200
+        backgroundColor: CustomPalette.GREY_200,
+        ...(lanGridFixedViewport ? {} : { height: "fit-content" })
       }}
     >
       <style>
@@ -339,8 +340,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
             background-color: ${CustomPalette.WHITE} !important;
           }
           .lan-grid.ag-theme-balham {
-            ${lanGridFixedViewport ? "height: min(70vh, 560px);" : ""}
-            min-height: 120px;
+            ${lanGridFixedViewport ? "height: min(70vh, 560px); min-height: 120px;" : "min-height: 0;"}
           }
           .lan-grid .ag-root-wrapper {
             height: ${lanGridFixedViewport ? "100%" : "auto"};

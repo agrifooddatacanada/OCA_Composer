@@ -32,15 +32,6 @@ const gridStyle = `
   .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
     height: 100%;
   }
-  .ag-theme-balham.ag-grid-compact {
-    height: auto !important;
-  }
-  .ag-theme-balham.ag-grid-compact .ag-root-wrapper {
-    height: auto !important;
-  }
-  .ag-theme-balham.ag-grid-compact .ag-center-cols-clipper {
-    min-height: unset !important;
-  }
   .ag-row .delete-icon-solid {
     display: none;
   }
@@ -625,7 +616,7 @@ export default function Grid({
   return (
     <div style={{ margin: "2rem 2rem 0 2rem" }}>
       <div
-        className="attribute-details-grid ag-theme-balham"
+        className={`attribute-details-grid ag-theme-balham${attrGridFixedViewport ? "" : " ag-grid-compact"}`}
         style={{
           width: ATTRIBUTE_GRID_COLUMN_SUM_PX,
           overflowX: "hidden"

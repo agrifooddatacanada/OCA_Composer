@@ -9,22 +9,19 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
 import TextareaCellEditor from "../components/TextareaCellEditor";
-import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
+import { formatRuleGridCss, gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
-import DeleteConfirmation from "./DeleteConfirmation";
 import { FormatRuleTypeRenderer } from "./FormatRuleCellRender";
 import Loading from "../components/Loading";
 import {
   AG_GRID_VIRTUALIZE_MIN_ROWS,
   BETWEEN_SECTION_SPACING,
   CUSTOM_FORMAT_RULE,
-  FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
   isChildSchemaType,
   isRangeEligibleAttributeType,
   MAX_ATTR_DESCRIPTION_CHARS
 } from "../constants/constants";
-import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { getAllGridRowData } from "./gridUtils";
 import { getFormatRuleDescription } from "../utils/helpers";
 import { measureTextHeight } from "../utils/measureTextLines";
@@ -47,7 +44,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     updateSchema,
     updateOverlaySelection,
     setSelectedOverlay,
-    getFormatRuleData,
     getRangeData,
     setFormatRuleRowData,
     setRangeRowData,
@@ -55,9 +51,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     getCurrentSchemaId
   } = useMultiSchema();
   const schemaState = getSchema();
-  const deleteHandler = useDeleteOverlayHandler(FIELD_FORMAT_OVERLAY);
-  
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
   const [customFormatRuleAnchorEl, setCustomFormatRuleAnchorEl] = useState(null);
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
@@ -85,14 +79,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       .map((attr) => {
         const formatRegex = getMapValueForAttributeName(attributeFormats, attr.Attribute) || "";
 
-      // Determine whether the stored regex matches a built-in description for this type
-      const description = formatRegex ? getFormatRuleDescription(attr.Type, formatRegex) : "";
-      const isBuiltInFormat = Boolean(formatRegex && description);
-
-      // If it's a built-in format, put it in the "Format Rule" column.
-      // If it's not built-in but exists (custom regex), rehydrate it into the custom column
-      // so the user sees and can edit their custom regex.
-      const customFormat = formatRegex && !isBuiltInFormat ? formatRegex : "";
+        const description = formatRegex ? getFormatRuleDescription(attr.Type, formatRegex) : "";
+        const isBuiltInFormat = Boolean(formatRegex && description);
+        const customFormat = formatRegex && !isBuiltInFormat ? formatRegex : "";
 
         return {
           Attribute: attr.Attribute,
@@ -249,6 +238,12 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     [t]
   );
 
+  const onFormatFirstDataRendered = useCallback(() => {
+    if (gridRef.current?.api) {
+      gridRef.current.api.resetRowHeights();
+    }
+  }, []);
+
   const columnDefs = useMemo(
     () => [
       {
@@ -327,7 +322,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         wrapText: true
       }
     ],
-    [t, setFormatRuleRowData]
+    [t]
   );
 
   const onCellValueChanged = useCallback((params) => {
@@ -373,9 +368,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
 
   const formatGridUseFixedViewport =
     gridRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
-  const formatGridViewportStyle = formatGridUseFixedViewport
-    ? `.format-rule-v2-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.format-rule-v2-grid .ag-root-wrapper{height:100%}`
-    : `.format-rule-v2-grid.ag-theme-balham{min-height:80px}.format-rule-v2-grid .ag-root-wrapper{height:auto}.format-rule-v2-grid .ag-root-wrapper-body.ag-layout-auto-height{min-height:unset!important}.format-rule-v2-grid .ag-layout-auto-height .ag-center-cols-clipper{min-height:unset!important}.format-rule-v2-grid .ag-layout-auto-height .ag-body-viewport{flex:none!important;min-height:unset!important}.format-rule-v2-grid .ag-body-viewport-wrapper{min-height:unset!important}.format-rule-v2-grid .ag-layout-auto-height .ag-body-viewport-wrapper{flex:none!important;min-height:unset!important}.format-rule-v2-grid .ag-body-viewport.ag-layout-auto-height{min-height:unset!important}.format-rule-v2-grid .ag-layout-auto-height .ag-full-width-container{min-height:unset!important}`;
 
   return (
     <BackNextSkeleton
@@ -385,12 +377,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       pageBack={() => setCurrentPage("Overlays")}
     >
       {loading && <Loading />}
-      {showDeleteConfirmation && (
-        <DeleteConfirmation
-          removeFromSelected={deleteHandler}
-          closeModal={() => setShowDeleteConfirmation(false)}
-        />
-      )}
       <Popover
         open={Boolean(customFormatRuleAnchorEl)}
         anchorEl={customFormatRuleAnchorEl}
@@ -412,26 +398,29 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           marginBottom: BETWEEN_SECTION_SPACING,
           gap: "3rem",
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
+          flexDirection: "column"
         }}
       >
-        <Box className="format-rule-v2-grid ag-theme-balham" sx={{ width: 808 }}>
+        <Box
+          className={`format-rule-v2-grid ag-theme-balham${formatGridUseFixedViewport ? "" : " ag-grid-compact"}`}
+          sx={{ width: 808 }}
+        >
           <style>{gridStyles}</style>
-          <style>{formatGridViewportStyle}</style>
+          <style>{formatRuleGridCss(formatGridUseFixedViewport)}</style>
           <AgGridReact
             key={`${i18n.language}-${formatGridUseFixedViewport ? "fx" : "ah"}`}
             ref={gridRef}
             domLayout={formatGridUseFixedViewport ? undefined : "autoHeight"}
-            style={
-              formatGridUseFixedViewport
-                ? { width: "100%", height: "100%" }
-                : { width: "100%", height: "auto" }
-            }
+            style={{
+              width: "100%",
+              height: formatGridUseFixedViewport ? "100%" : "auto"
+            }}
             rowData={gridRowData}
             columnDefs={columnDefs}
             getRowHeight={getRowHeight}
             suppressHorizontalScroll
+            suppressScrollOnNewData
+            onFirstDataRendered={onFormatFirstDataRendered}
             onCellValueChanged={onCellValueChanged}
             onCellKeyDown={handleCellKeyDown}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
@@ -439,7 +428,15 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         </Box>
         <Typography
           variant="body2"
-          sx={{ color: "text.secondary", textAlign: "center", mt: 2, maxWidth: 790, px: 1, lineHeight: 1.5 }}
+          sx={{
+            color: "text.secondary",
+            textAlign: "center",
+            alignSelf: "center",
+            mt: 2,
+            maxWidth: 790,
+            px: 1,
+            lineHeight: 1.5
+          }}
         >
           {t("Rules are documented in the", { defaultValue: "Rules are documented in the" })}{" "}
           <MuiLink

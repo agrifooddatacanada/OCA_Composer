@@ -190,7 +190,7 @@ const RequiredEntries = () => {
         }}
       >
         <div
-          className="required-entries-grid ag-theme-balham"
+          className={`required-entries-grid ag-theme-balham${requiredGridFixedViewport ? "" : " ag-grid-compact"}`}
           style={{ width: "100%", minWidth: requiredOuterWidthPx, overflow: "hidden" }}
         >
           <style>{gridStyles}</style>

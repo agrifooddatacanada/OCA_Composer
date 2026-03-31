@@ -744,7 +744,10 @@ const FormInformation = () => {
           </Box>
         </Box>
         <div ref={refContainer}>
-          <Box className="form-information-grid ag-theme-balham" sx={{ width: 1003 }}>
+          <Box
+            className={`form-information-grid ag-theme-balham${formInfoGridFixedViewport ? "" : " ag-grid-compact"}`}
+            sx={{ width: 1003 }}
+          >
             <style>{gridStyles}</style>
             <style>{`
 .form-information-grid.ag-theme-balham {

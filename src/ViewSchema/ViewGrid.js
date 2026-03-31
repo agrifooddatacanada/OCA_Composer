@@ -560,7 +560,7 @@ export default function ViewGrid({
 
   return (
     <div
-      className="view-schema-grid ag-theme-balham"
+      className={`view-schema-grid ag-theme-balham${viewSchemaGridFixedViewport ? "" : " ag-grid-compact"}`}
       style={{ width: "100%" }}
     >
       <style>{gridStyles}</style>
