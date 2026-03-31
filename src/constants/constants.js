@@ -17,6 +17,8 @@ export const ENTRY_CODE_DELETE_WIDTH = 44;
 export const HEADER_TO_CONTENT_GAP_PX = 12;
 export const BETWEEN_SECTION_SPACING = 6;
 export const TOOLTIP_ICON_GAP = 1.5;
+export const AG_GRID_OVERLAY_VIRTUALIZE_MIN_ROWS = 20;
+export const AG_GRID_VIRTUALIZE_MIN_ROWS = AG_GRID_OVERLAY_VIRTUALIZE_MIN_ROWS;
 
 export const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
 

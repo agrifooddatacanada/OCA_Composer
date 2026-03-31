@@ -7,7 +7,6 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
@@ -16,9 +15,12 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import { FormatRuleTypeRenderer } from "./FormatRuleCellRender";
 import Loading from "../components/Loading";
 import {
+  AG_GRID_VIRTUALIZE_MIN_ROWS,
+  BETWEEN_SECTION_SPACING,
   CUSTOM_FORMAT_RULE,
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
+  isChildSchemaType,
   isRangeEligibleAttributeType,
   MAX_ATTR_DESCRIPTION_CHARS
 } from "../constants/constants";
@@ -27,7 +29,6 @@ import { getAllGridRowData } from "./gridUtils";
 import { getFormatRuleDescription } from "../utils/helpers";
 import { measureTextHeight } from "../utils/measureTextLines";
 import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
-import { isChildSchemaType } from "../constants/constants";
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -370,6 +371,12 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     }
   }, []);
 
+  const formatGridUseFixedViewport =
+    gridRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const formatGridViewportStyle = formatGridUseFixedViewport
+    ? `.format-rule-v2-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.format-rule-v2-grid .ag-root-wrapper{height:100%}`
+    : `.format-rule-v2-grid.ag-theme-balham{min-height:80px}.format-rule-v2-grid .ag-root-wrapper{height:auto}.format-rule-v2-grid .ag-root-wrapper-body.ag-layout-auto-height{min-height:unset!important}.format-rule-v2-grid .ag-layout-auto-height .ag-center-cols-clipper{min-height:unset!important}.format-rule-v2-grid .ag-layout-auto-height .ag-body-viewport{flex:none!important;min-height:unset!important}.format-rule-v2-grid .ag-body-viewport-wrapper{min-height:unset!important}.format-rule-v2-grid .ag-layout-auto-height .ag-body-viewport-wrapper{flex:none!important;min-height:unset!important}.format-rule-v2-grid .ag-body-viewport.ag-layout-auto-height{min-height:unset!important}.format-rule-v2-grid .ag-layout-auto-height .ag-full-width-container{min-height:unset!important}`;
+
   return (
     <BackNextSkeleton
       isForward
@@ -411,11 +418,16 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       >
         <Box className="format-rule-v2-grid ag-theme-balham" sx={{ width: 808 }}>
           <style>{gridStyles}</style>
-          <style>{`.format-rule-v2-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.format-rule-v2-grid .ag-root-wrapper{height:100%}`}</style>
+          <style>{formatGridViewportStyle}</style>
           <AgGridReact
-            key={i18n.language}
+            key={`${i18n.language}-${formatGridUseFixedViewport ? "fx" : "ah"}`}
             ref={gridRef}
-            style={{ width: "100%", height: "100%" }}
+            domLayout={formatGridUseFixedViewport ? undefined : "autoHeight"}
+            style={
+              formatGridUseFixedViewport
+                ? { width: "100%", height: "100%" }
+                : { width: "100%", height: "auto" }
+            }
             rowData={gridRowData}
             columnDefs={columnDefs}
             getRowHeight={getRowHeight}

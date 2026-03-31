@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
+import { BETWEEN_SECTION_SPACING, AG_GRID_VIRTUALIZE_MIN_ROWS } from "../constants/constants";
 import { flexCenter, gridStyles, greyCellStyle } from "../constants/styles";
 import CellHeader from "../components/CellHeader";
 import CheckboxColumnHeader from "../AttributeDetails/CheckboxColumnHeader";
@@ -13,12 +13,10 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import { FIELD_CONFORMANCE_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
-
 const REQUIRED_GRID_WIDTH_PX = 330;
 const REQUIRED_ATTR_COL_WIDTH_PX = Math.round((REQUIRED_GRID_WIDTH_PX * 100) / 170);
 const REQUIRED_CHECK_COL_WIDTH_PX = REQUIRED_GRID_WIDTH_PX - REQUIRED_ATTR_COL_WIDTH_PX;
 const REQUIRED_COLUMN_SUM_PX = REQUIRED_ATTR_COL_WIDTH_PX + REQUIRED_CHECK_COL_WIDTH_PX;
-const REQUIRED_GRID_OUTER_WIDTH_PX = REQUIRED_COLUMN_SUM_PX + 18;
 
 const RequiredEntryHeader = ({ gridRef, t }) => {
   const inputRef = useRef();
@@ -106,6 +104,9 @@ const RequiredEntries = () => {
   
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const gridRef = useRef();
+  const requiredGridFixedViewport =
+    requiredEntriesRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const requiredOuterWidthPx = REQUIRED_COLUMN_SUM_PX;
 
   // Add callback to handle data changes in the grid
   const handleCellValueChanged = useCallback((event) => {
@@ -181,16 +182,16 @@ const RequiredEntries = () => {
           gap: "3rem",
           display: "flex",
           flexDirection: "column",
-          width: REQUIRED_GRID_OUTER_WIDTH_PX,
-          minWidth: REQUIRED_GRID_OUTER_WIDTH_PX,
-          maxWidth: REQUIRED_GRID_OUTER_WIDTH_PX,
+          width: requiredOuterWidthPx,
+          minWidth: requiredOuterWidthPx,
+          maxWidth: requiredOuterWidthPx,
           boxSizing: "border-box",
           textAlign: "left",
         }}
       >
         <div
           className="required-entries-grid ag-theme-balham"
-          style={{ width: "100%", minWidth: REQUIRED_GRID_OUTER_WIDTH_PX, overflow: "hidden" }}
+          style={{ width: "100%", minWidth: requiredOuterWidthPx, overflow: "hidden" }}
         >
           <style>{gridStyles}</style>
           <style>{`
@@ -205,17 +206,21 @@ const RequiredEntries = () => {
     margin: 0;
   }
   .required-entries-grid.ag-theme-balham {
-    height: min(70vh, 560px);
+    ${requiredGridFixedViewport ? "height: min(70vh, 560px);" : ""}
     min-height: 120px;
   }
   .required-entries-grid .ag-root-wrapper {
-    height: 100%;
+    height: ${requiredGridFixedViewport ? "100%" : "auto"};
   }
 `}</style>
           <AgGridReact
-            key={i18n.language}
+            key={`${i18n.language}-${requiredGridFixedViewport ? "fx" : "ah"}`}
             ref={gridRef}
-            style={{ width: "100%", height: "100%" }}
+            domLayout={requiredGridFixedViewport ? undefined : "autoHeight"}
+            style={{
+              width: "100%",
+              height: requiredGridFixedViewport ? "100%" : "auto"
+            }}
             rowData={requiredEntriesRowData}
             columnDefs={columnDefs}
             getRowId={(params) => params.data?.Attribute ?? ""}

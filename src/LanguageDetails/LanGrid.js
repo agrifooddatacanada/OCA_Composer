@@ -12,7 +12,7 @@ import CellHeader from "../components/CellHeader";
 import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import { MAX_ATTR_DESCRIPTION_CHARS, MAX_ATTR_LABEL_CHARS } from "../constants/constants";
+import { AG_GRID_VIRTUALIZE_MIN_ROWS, MAX_ATTR_DESCRIPTION_CHARS, MAX_ATTR_LABEL_CHARS } from "../constants/constants";
 import { langCodeOCAFromName } from "../utils/languageUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
 import TextareaCellEditor from "../components/TextareaCellEditor";
@@ -271,6 +271,9 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     setLoading(false);
   }, [setLoading]);
 
+  const lanGridFixedViewport =
+    attributeRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+
   useLayoutEffect(() => {
     const api = gridRef.current?.api;
     if (!api || !lanAttributeRowData[currentLanguage]?.length) return;
@@ -336,11 +339,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
             background-color: ${CustomPalette.WHITE} !important;
           }
           .lan-grid.ag-theme-balham {
-            height: min(70vh, 560px);
+            ${lanGridFixedViewport ? "height: min(70vh, 560px);" : ""}
             min-height: 120px;
           }
           .lan-grid .ag-root-wrapper {
-            height: 100%;
+            height: ${lanGridFixedViewport ? "100%" : "auto"};
           }
           .lan-grid .ag-body-horizontal-scroll {
             display: none !important;
@@ -381,9 +384,13 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       </style>
       {attributeRowData.length > 0 ? (
         <AgGridReact
-          key={i18n.language}
+          key={`${i18n.language}-${lanGridFixedViewport ? "fx" : "ah"}`}
           ref={gridRef}
-          style={{ width: "100%", height: "100%" }}
+          domLayout={lanGridFixedViewport ? undefined : "autoHeight"}
+          style={{
+            width: "100%",
+            height: lanGridFixedViewport ? "100%" : "auto"
+          }}
           rowData={lanAttributeRowData[currentLanguage] ?? []}
           columnDefs={columnDefs}
           onCellKeyDown={onCellKeyDown}

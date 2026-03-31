@@ -111,10 +111,11 @@ export const gridStyles = `
   height: 100%;
 }
 
-.ag-center-cols-clipper {
-  /* Ensure center columns fill the grid height so pinned columns stay aligned
-     (fixes duplicate-looking sidebar appearing under the last row when dataset
-     is short). */
+.ag-theme-balham .ag-body-viewport {
+  scrollbar-gutter: stable;
+}
+
+.ag-theme-balham .ag-root-wrapper-body.ag-layout-normal .ag-center-cols-clipper {
   min-height: 100% !important;
 }
 

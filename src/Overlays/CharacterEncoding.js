@@ -9,7 +9,7 @@ import useCharacterEncodingType, {
   CharacterEncodingTypeRenderer
 } from "./useCharacterEncodingType";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
+import { BETWEEN_SECTION_SPACING, AG_GRID_VIRTUALIZE_MIN_ROWS } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, greyCellStyle } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
@@ -154,6 +154,9 @@ const CharacterEncoding = () => {
 
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 
+  const encodingGridFixedViewport =
+    characterEncodingRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+
   const onFirstDataRendered = useCallback(() => {
     requestAnimationFrame(() => {
       const firstRow = gridContainerRef.current?.querySelector(".ag-row");
@@ -191,13 +194,25 @@ const CharacterEncoding = () => {
         }}
       >
         <Box style={{ display: "flex" }}>
-          <Box ref={gridContainerRef} className="character-encoding-grid ag-theme-balham" sx={{ width: 380 }}>
+          <Box ref={gridContainerRef} className="character-encoding-grid ag-theme-balham" sx={{ width: 400 }}>
             <style>{gridStyles}</style>
-            <style>{`.character-encoding-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.character-encoding-grid .ag-root-wrapper{height:100%}`}</style>
+            <style>{`
+.character-encoding-grid.ag-theme-balham {
+  ${encodingGridFixedViewport ? "height: min(70vh, 560px);" : ""}
+  min-height: 120px;
+}
+.character-encoding-grid .ag-root-wrapper {
+  height: ${encodingGridFixedViewport ? "100%" : "auto"};
+}
+`}</style>
             <AgGridReact
-              key={i18n.language}
+              key={`${i18n.language}-${encodingGridFixedViewport ? "fx" : "ah"}`}
               ref={gridRef}
-              style={{ width: "100%", height: "100%" }}
+              domLayout={encodingGridFixedViewport ? undefined : "autoHeight"}
+              style={{
+                width: "100%",
+                height: encodingGridFixedViewport ? "100%" : "auto"
+              }}
               rowData={characterEncodingRowData}
               columnDefs={columnDefs}
               getRowId={(params) => params.data?.Attribute ?? ""}

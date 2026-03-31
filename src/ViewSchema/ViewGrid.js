@@ -27,7 +27,8 @@ import {
   MAX_ATTR_DESCRIPTION_CHARS,
   MAX_ATTR_LABEL_CHARS,
   UNIT_FRAMING,
-  CUSTOM_FORMAT_RULE
+  CUSTOM_FORMAT_RULE,
+  AG_GRID_VIRTUALIZE_MIN_ROWS
 } from "../constants/constants";
 import SelectedFeatureHeader from "./SelectedFeatureHeader";
 
@@ -57,14 +58,6 @@ const gridStyles = `
 
 .ag-center-cols-clipper {
   min-height: unset !important;
-}
-
-.view-schema-grid.ag-theme-balham {
-  height: min(70vh, 560px);
-  min-height: 120px;
-}
-.view-schema-grid .ag-root-wrapper {
-  height: 100%;
 }
 
 .ag-cell[col-id="List"] {
@@ -562,16 +555,37 @@ export default function ViewGrid({
     setRowData(newRowData);
   }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchema, t]);
 
+  const viewSchemaGridFixedViewport =
+    rowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+
   return (
     <div
       className="view-schema-grid ag-theme-balham"
       style={{ width: "100%" }}
     >
       <style>{gridStyles}</style>
+      <style>{`
+.view-schema-grid.ag-theme-balham {
+  ${viewSchemaGridFixedViewport ? "height: min(70vh, 560px);" : ""}
+  min-height: 120px;
+}
+.view-schema-grid .ag-root-wrapper {
+  height: ${viewSchemaGridFixedViewport ? "100%" : "auto"};
+}
+${
+  viewSchemaGridFixedViewport
+    ? ""
+    : `.view-schema-grid .ag-root-wrapper-body.ag-layout-auto-height{min-height:unset!important}.view-schema-grid .ag-layout-auto-height .ag-center-cols-clipper{min-height:unset!important}.view-schema-grid .ag-layout-auto-height .ag-body-viewport{flex:none!important;min-height:unset!important}.view-schema-grid .ag-body-viewport-wrapper{min-height:unset!important}.view-schema-grid .ag-layout-auto-height .ag-body-viewport-wrapper{flex:none!important;min-height:unset!important}`
+}
+`}</style>
       <AgGridReact
-        key={i18n.language}
+        key={`${i18n.language}-${viewSchemaGridFixedViewport ? "fx" : "ah"}`}
         ref={gridRef}
-        style={{ width: "100%", height: "100%" }}
+        domLayout={viewSchemaGridFixedViewport ? undefined : "autoHeight"}
+        style={{
+          width: "100%",
+          height: viewSchemaGridFixedViewport ? "100%" : "auto"
+        }}
         rowData={rowData}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}

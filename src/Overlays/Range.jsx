@@ -8,6 +8,7 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import {
+  AG_GRID_VIRTUALIZE_MIN_ROWS,
   BETWEEN_SECTION_SPACING,
   FIELD_RANGE_OVERLAY,
   isRangeEligibleAttributeType
@@ -266,6 +267,12 @@ const Range = forwardRef((props, ref) => {
     }
   };
 
+  const rangeGridFixedViewport =
+    rangeRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const rangeGridViewportStyle = rangeGridFixedViewport
+    ? `.range-overlay-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.range-overlay-grid .ag-root-wrapper{height:100%}`
+    : `.range-overlay-grid.ag-theme-balham{min-height:80px}.range-overlay-grid .ag-root-wrapper{height:auto}.range-overlay-grid .ag-root-wrapper-body.ag-layout-auto-height{min-height:unset!important}.range-overlay-grid .ag-layout-auto-height .ag-center-cols-clipper{min-height:unset!important}.range-overlay-grid .ag-layout-auto-height .ag-body-viewport{flex:none!important;min-height:unset!important}.range-overlay-grid .ag-body-viewport-wrapper{min-height:unset!important}.range-overlay-grid .ag-layout-auto-height .ag-body-viewport-wrapper{flex:none!important;min-height:unset!important}`;
+
   const handleValidate = () => {
     gridRef.current.api.stopEditing();
     setShouldRevalidate(false);
@@ -320,7 +327,7 @@ const Range = forwardRef((props, ref) => {
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         <Box className="range-overlay-grid ag-theme-balham" sx={{ width: 940.5 }}>
           <style>{gridStyles}</style>
-          <style>{`.range-overlay-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.range-overlay-grid .ag-root-wrapper{height:100%}`}</style>
+          <style>{rangeGridViewportStyle}</style>
           <Box sx={{ display: "flex", alignItems: "center", mb: "1.6rem", position: "relative" }}>
             <Tooltip title={t("Range bounds must match the format rules.")} placement="top" arrow>
               <IconButton size="small" sx={{ position: "absolute", left: -32, top: "50%", transform: "translateY(-50%)" }} aria-label="Range bounds info">
@@ -353,9 +360,13 @@ const Range = forwardRef((props, ref) => {
             )}
           </Box>
           <AgGridReact
-            key={i18n.language}
+            key={`${i18n.language}-${rangeGridFixedViewport ? "fx" : "ah"}`}
             ref={gridRef}
-            style={{ width: "100%", height: "100%" }}
+            domLayout={rangeGridFixedViewport ? undefined : "autoHeight"}
+            style={{
+              width: "100%",
+              height: rangeGridFixedViewport ? "100%" : "auto"
+            }}
             rowData={rangeRowData}
             columnDefs={columnDefs}
             getRowHeight={getRowHeight}

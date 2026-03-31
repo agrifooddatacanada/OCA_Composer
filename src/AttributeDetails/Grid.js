@@ -16,6 +16,9 @@ import ListHeader from "./ListHeader";
 import DeleteRenderer from "./DeleteRenderer";
 import TypeRenderer from "./TypeRenderer";
 import { useMultiSchema } from "../schema/schemaContext";
+import { AG_GRID_VIRTUALIZE_MIN_ROWS } from "../constants/constants";
+
+const ATTRIBUTE_GRID_COLUMN_SUM_PX = 40 + 150 + 125 + 128 + 150 + 100 + 44;
 
 // styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
 const gridStyle = `
@@ -72,13 +75,6 @@ const gridStyle = `
   .ag-header-viewport {
     overflow-x: hidden;
   }
-  .attribute-details-grid.ag-theme-balham {
-    height: min(70vh, 560px);
-    min-height: 120px;
-  }
-  .attribute-details-grid .ag-root-wrapper {
-    height: 100%;
-  }
   .attribute-details-grid .ag-body-horizontal-scroll {
     display: none !important;
   }
@@ -110,7 +106,21 @@ export default function Grid({
   triggerInvalidCharModal
 }) {
   const { t, i18n } = useTranslation();
-  
+  const attrGridFixedViewport =
+    attributeRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const attributeGridViewportStyle = useMemo(
+    () => `
+  .attribute-details-grid.ag-theme-balham {
+    ${attrGridFixedViewport ? "height: min(70vh, 560px);" : ""}
+    min-height: 120px;
+  }
+  .attribute-details-grid .ag-root-wrapper {
+    height: ${attrGridFixedViewport ? "100%" : "auto"};
+  }
+`,
+    [attrGridFixedViewport]
+  );
+
   const { renameAttribute } = useMultiSchema();
   
   // Derive attributesList from attributeRowData (single source of truth)
@@ -614,12 +624,23 @@ export default function Grid({
 
   return (
     <div style={{ margin: "2rem 2rem 0 2rem" }}>
-      <div className="attribute-details-grid ag-theme-balham" style={{ width: 755, overflowX: "hidden" }}>
+      <div
+        className="attribute-details-grid ag-theme-balham"
+        style={{
+          width: ATTRIBUTE_GRID_COLUMN_SUM_PX,
+          overflowX: "hidden"
+        }}
+      >
         <style>{gridStyle}</style>
+        <style>{attributeGridViewportStyle}</style>
         <AgGridReact
-          key={i18n.language}
+          key={`${i18n.language}-${attrGridFixedViewport ? "fx" : "ah"}`}
           ref={gridRef}
-          style={{ width: "100%", height: "100%" }}
+          domLayout={attrGridFixedViewport ? undefined : "autoHeight"}
+          style={{
+            width: "100%",
+            height: attrGridFixedViewport ? "100%" : "auto"
+          }}
           getRowId={(params) => (params.data && (params.data._rid || params.data.Attribute))}
           rowData={attributeRowData}
           columnDefs={columnDefs}

@@ -19,6 +19,7 @@ import {
   formatCodeDateDescription,
   formatCodeNumericDescription,
   formatCodeTextDescription,
+  AG_GRID_VIRTUALIZE_MIN_ROWS,
   MAX_ATTR_LABEL_CHARS,
   FIELD_FORM_INFORMATION_OVERLAY
 } from "../constants/constants";
@@ -112,6 +113,8 @@ const FormInformation = () => {
     const rowByAttr = Object.fromEntries((rawRows || []).map((r) => [r.Attribute, r]));
     return attributesList.map((attr) => rowByAttr[attr] || { Attribute: attr, Label: "", Placeholder: "", Description: "", List: "" });
   }, [rawRows, attributesList]);
+  const formInfoGridFixedViewport =
+    currentRows.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
   const primaryLanguage = languages?.[0] || LanguageConstants.DEFAULT_LANG_NAME;
 
   // Normalize any lan/form placeholder keys that use OCA 3-letter codes (e.g., 'eng') into UI language names (e.g., 'English')
@@ -743,11 +746,23 @@ const FormInformation = () => {
         <div ref={refContainer}>
           <Box className="form-information-grid ag-theme-balham" sx={{ width: 1003 }}>
             <style>{gridStyles}</style>
-            <style>{`.form-information-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.form-information-grid .ag-root-wrapper{height:100%}`}</style>
+            <style>{`
+.form-information-grid.ag-theme-balham {
+  ${formInfoGridFixedViewport ? "height: min(70vh, 560px);" : ""}
+  min-height: 120px;
+}
+.form-information-grid .ag-root-wrapper {
+  height: ${formInfoGridFixedViewport ? "100%" : "auto"};
+}
+`}</style>
             <AgGridReact
-              key={i18n.language}
+              key={`${i18n.language}-${formInfoGridFixedViewport ? "fx" : "ah"}`}
               ref={gridRef}
-              style={{ width: "100%", height: "100%" }}
+              domLayout={formInfoGridFixedViewport ? undefined : "autoHeight"}
+              style={{
+                width: "100%",
+                height: formInfoGridFixedViewport ? "100%" : "auto"
+              }}
               rowData={currentRows}
               getRowId={(params) => params.data.Attribute}
               columnDefs={columnDefs}
