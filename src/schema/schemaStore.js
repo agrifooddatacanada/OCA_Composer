@@ -120,6 +120,9 @@ export const createDefaultSchemaState = () => ({
   deletedAttributes: []  // Track attribute names that user explicitly deleted
 });
 
+/** Stable read fallback when no entry exists yet — do not mutate; updateSchema uses a fresh default for writes */
+const READONLY_EMPTY_SCHEMA_STATE = createDefaultSchemaState();
+
 export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurrentSchemaId }) => {
     
   // ============================================================================
@@ -129,7 +132,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   const getSchema = () => {
     const schemaId = getCurrentSchemaId();
     const allStates = getAllSchemaStates();
-    return allStates[schemaId] || createDefaultSchemaState();
+    return allStates[schemaId] || READONLY_EMPTY_SCHEMA_STATE;
   };
 
   const getSchemaById = (schemaId) => {

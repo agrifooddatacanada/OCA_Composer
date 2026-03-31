@@ -168,54 +168,14 @@ export const gridStyles = `
 }
 `;
 
-export function formatRuleGridCss(useFixedViewport) {
-  const fixedClipper = `
+/** @param {boolean} scrollViewport - true: tall scrollable box; false: autoHeight, grows with rows (no gap under last row) */
+export function formatRuleGridCss(scrollViewport) {
+  const shared = `
 .format-rule-v2-grid.ag-theme-balham .ag-root-wrapper-body.ag-layout-normal .ag-center-cols-clipper,
 .format-rule-v2-grid.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height .ag-center-cols-clipper,
 .format-rule-v2-grid.ag-theme-balham .ag-layout-auto-height .ag-center-cols-container {
   min-height: unset !important;
 }
-`;
-  const compactAutoHeight = `
-.format-rule-v2-grid.ag-grid-compact .ag-root-wrapper-body.ag-layout-auto-height {
-  align-items: flex-start;
-  min-height: 0 !important;
-}
-.format-rule-v2-grid.ag-grid-compact .ag-body-clipper.ag-layout-auto-height {
-  flex: none !important;
-  height: auto !important;
-  min-height: 0 !important;
-}
-.format-rule-v2-grid.ag-grid-compact .ag-body.ag-layout-auto-height {
-  flex: none !important;
-  min-height: 0 !important;
-}
-.format-rule-v2-grid.ag-grid-compact .ag-body-viewport.ag-layout-auto-height {
-  flex: none !important;
-  height: auto !important;
-  min-height: 0 !important;
-}
-.format-rule-v2-grid.ag-grid-compact .ag-body-viewport-wrapper {
-  min-height: 0 !important;
-}
-.format-rule-v2-grid.ag-grid-compact .ag-layout-auto-height .ag-body-viewport-wrapper {
-  flex: none !important;
-  min-height: 0 !important;
-}
-.format-rule-v2-grid.ag-grid-compact .ag-root.ag-layout-auto-height {
-  flex: 0 0 auto !important;
-  min-height: 0 !important;
-}
-`;
-  return `
-.format-rule-v2-grid.ag-theme-balham {
-  ${useFixedViewport ? "height: min(70vh, 560px);" : ""}
-  min-height: ${useFixedViewport ? "120px" : "0"};
-}
-.format-rule-v2-grid .ag-root-wrapper {
-  height: ${useFixedViewport ? "100%" : "auto"};
-}
-${useFixedViewport ? fixedClipper : compactAutoHeight}
 .format-rule-v2-grid .ag-body-horizontal-scroll {
   display: none !important;
   height: 0 !important;
@@ -225,5 +185,33 @@ ${useFixedViewport ? fixedClipper : compactAutoHeight}
 .format-rule-v2-grid .ag-body-viewport {
   scrollbar-gutter: auto !important;
 }
+`;
+  if (scrollViewport) {
+    return `
+.format-rule-v2-grid.ag-theme-balham {
+  height: min(70vh, 560px);
+  min-height: 120px;
+}
+.format-rule-v2-grid .ag-root-wrapper {
+  height: 100%;
+}
+${shared}
+`;
+  }
+  return `
+.format-rule-v2-grid.ag-theme-balham {
+  min-height: 120px;
+  height: auto;
+}
+.format-rule-v2-grid .ag-root-wrapper {
+  height: auto;
+}
+.format-rule-v2-grid .ag-center-cols-clipper {
+  min-height: unset !important;
+}
+.format-rule-v2-grid .ag-root-wrapper-body.ag-layout-auto-height {
+  min-height: unset !important;
+}
+${shared}
 `;
 }

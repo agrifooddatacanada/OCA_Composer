@@ -57,9 +57,10 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   const gridRef = useRef();
   const [gridRowData, setGridRowData] = useState([]);
   
-  // Initialize grid data ONCE when schema loads
+  // Initialize grid data when schema loads
   useEffect(() => {
-    if (!schemaState?.attributes) {
+    const attrs = schemaState?.attributes;
+    if (!Array.isArray(attrs)) {
       setGridRowData([]);
       setLoading(false);
       return;
@@ -68,7 +69,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     // Get existing format rules from attributeFormats object
     const attributeFormats = schemaState.attributeFormats || {};
 
-    const initialData = schemaState.attributes
+    const initialData = attrs
       .filter((attr) => {
         const rawType = attr?.Type || "Text";
         const baseType = rawType.includes("Array")
@@ -79,7 +80,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       .map((attr) => {
         const formatRegex = getMapValueForAttributeName(attributeFormats, attr.Attribute) || "";
 
-        const description = formatRegex ? getFormatRuleDescription(attr.Type, formatRegex) : "";
+        const description = formatRegex
+          ? getFormatRuleDescription(attr.Type || "Text", formatRegex)
+          : "";
         const isBuiltInFormat = Boolean(formatRegex && description);
         const customFormat = formatRegex && !isBuiltInFormat ? formatRegex : "";
 
@@ -366,7 +369,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     }
   }, []);
 
-  const formatGridUseFixedViewport =
+  const formatGridScrollViewport =
     gridRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
 
   return (
@@ -401,19 +404,16 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           flexDirection: "column"
         }}
       >
-        <Box
-          className={`format-rule-v2-grid ag-theme-balham${formatGridUseFixedViewport ? "" : " ag-grid-compact"}`}
-          sx={{ width: 790 }}
-        >
+        <Box className="format-rule-v2-grid ag-theme-balham" sx={{ width: 790 }}>
           <style>{gridStyles}</style>
-          <style>{formatRuleGridCss(formatGridUseFixedViewport)}</style>
+          <style>{formatRuleGridCss(formatGridScrollViewport)}</style>
           <AgGridReact
-            key={`${i18n.language}-${formatGridUseFixedViewport ? "fx" : "ah"}`}
+            key={`${i18n.language}-${formatGridScrollViewport ? "fx" : "ah"}`}
             ref={gridRef}
-            domLayout={formatGridUseFixedViewport ? undefined : "autoHeight"}
+            domLayout={formatGridScrollViewport ? undefined : "autoHeight"}
             style={{
               width: "100%",
-              height: formatGridUseFixedViewport ? "100%" : "auto"
+              height: formatGridScrollViewport ? "100%" : "auto"
             }}
             rowData={gridRowData}
             columnDefs={columnDefs}
