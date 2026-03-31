@@ -12,6 +12,7 @@ import {
   FIELD_FORMAT_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_RANGE_OVERLAY,
+  isFormatEligibleAttributeType,
   isRangeEligibleAttributeType,
   formatCodeBinaryDescription,
   formatCodeDateDescription,
@@ -1024,6 +1025,58 @@ export const getFormInformationDisabledReason = (overlayKey, selectedKeys) =>
   shouldDisableFormInformationOverlay(overlayKey, selectedKeys)
     ? i18next.t("Form Information prerequisite tooltip")
     : "";
+
+export const hasAnyAttributes = (attributes) => Array.isArray(attributes) && attributes.length > 0;
+
+export const hasFormatEligibleAttribute = (attributes) =>
+  hasAnyAttributes(attributes) &&
+  attributes.some((attr) => isFormatEligibleAttributeType(attr?.Type));
+
+export const isOverlayAddDisabled = (
+  overlayKey,
+  selectedKeys,
+  attributes,
+  rangeRowData,
+  formatRuleData = []
+) => {
+  if (!hasAnyAttributes(attributes)) return true;
+  if (overlayKey === FIELD_FORMAT_OVERLAY && !hasFormatEligibleAttribute(attributes)) return true;
+  return (
+    shouldDisableRangeOverlay(overlayKey, selectedKeys, attributes, rangeRowData, formatRuleData) ||
+    shouldDisableFormInformationOverlay(overlayKey, selectedKeys) ||
+    shouldDisableCardinalityOverlay(overlayKey, attributes)
+  );
+};
+
+/** Tooltip when the add button is disabled; no-attributes message wins over overlay-specific reasons. */
+export const getOverlayAddDisabledReason = (
+  overlayKey,
+  selectedKeys,
+  attributes,
+  rangeRowData,
+  formatRuleData = []
+) => {
+  if (!hasAnyAttributes(attributes)) {
+    return i18next.t("Add at least one attribute before adding schema features.");
+  }
+  if (overlayKey === FIELD_FORMAT_OVERLAY && !hasFormatEligibleAttribute(attributes)) {
+    return i18next.t(
+      "Format requires Text, Numeric, DateTime, or Binary attributes (including Array variants of those types)."
+    );
+  }
+  return (
+    getFormInformationDisabledReason(overlayKey, selectedKeys) ||
+    getRangeOverlayDisabledReason(
+      overlayKey,
+      selectedKeys,
+      attributes,
+      rangeRowData,
+      formatRuleData
+    ) ||
+    getCardinalityOverlayDisabledReason(overlayKey, attributes) ||
+    ""
+  );
+};
 
 export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();
 export const isValidNumber = (value) => !Number.isNaN(Number.parseFloat(value));

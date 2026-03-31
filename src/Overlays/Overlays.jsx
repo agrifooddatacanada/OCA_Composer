@@ -12,12 +12,8 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import DeleteConfirmation from "./DeleteConfirmation";
 import {
-  shouldDisableRangeOverlay,
-  getRangeOverlayDisabledReason,
-  shouldDisableFormInformationOverlay,
-  getFormInformationDisabledReason,
-  shouldDisableCardinalityOverlay,
-  getCardinalityOverlayDisabledReason
+  isOverlayAddDisabled,
+  getOverlayAddDisabledReason
 } from "../utils/helpers";
 import {
   FIELD_CHARACTER_ENCODING_OVERLAY,
@@ -76,30 +72,9 @@ const Overlays = ({ pageBack, pageForward }) => {
   // Convert overlay into a list of keys (constant identifiers)
   const { selectedKeys, unselectedKeys } = getListOfSelectedOverlays(overlay);
 
-  const getDisabledReason = (overlayKey) => {
-    return (
-      getFormInformationDisabledReason(overlayKey, selectedKeys) ||
-      getRangeOverlayDisabledReason(
-        overlayKey,
-        selectedKeys,
-        attributeRowData,
-        rangeRowData,
-        formatRuleData
-      ) ||
-      getCardinalityOverlayDisabledReason(overlayKey, attributeRowData) ||
-      ""
-    );
-  };
-
   const addToSelected = (overlayKey) => {
-    // Range overlay can be selected only if format overlay is selected
-    if (shouldDisableRangeOverlay(overlayKey, selectedKeys, attributeRowData, rangeRowData, formatRuleData))
+    if (isOverlayAddDisabled(overlayKey, selectedKeys, attributeRowData, rangeRowData, formatRuleData))
       return;
-
-    // Form Information overlay can be selected only if format overlay is selected
-    if (shouldDisableFormInformationOverlay(overlayKey, selectedKeys)) return;
-
-    if (shouldDisableCardinalityOverlay(overlayKey, attributeRowData)) return;
 
     // Get current overlay selections
     const currentSelections = getOverlaySelections();
@@ -196,17 +171,22 @@ const Overlays = ({ pageBack, pageForward }) => {
                 .filter((overlayKey) => overlayKey && overlayKey.trim() !== "") // Filter out empty/null keys
                 .map((overlayKey) => {
                 const displayName = overlayKey;
-                const isDisabled =
-                  shouldDisableRangeOverlay(
-                    overlayKey,
-                    selectedKeys,
-                    attributeRowData,
-                    rangeRowData,
-                    formatRuleData
-                  ) ||
-                  shouldDisableFormInformationOverlay(overlayKey, selectedKeys) ||
-                  shouldDisableCardinalityOverlay(overlayKey, attributeRowData);
-                const disabledReason = isDisabled ? getDisabledReason(overlayKey) : "";
+                const isDisabled = isOverlayAddDisabled(
+                  overlayKey,
+                  selectedKeys,
+                  attributeRowData,
+                  rangeRowData,
+                  formatRuleData
+                );
+                const disabledReason = isDisabled
+                  ? getOverlayAddDisabledReason(
+                      overlayKey,
+                      selectedKeys,
+                      attributeRowData,
+                      rangeRowData,
+                      formatRuleData
+                    )
+                  : "";
                 
                 return (
                   <Tooltip key={overlayKey} title={isDisabled ? disabledReason : ""} placement="right" arrow>

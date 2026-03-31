@@ -406,6 +406,8 @@
   "No attributes available for range overlay": "Aucun attribut disponible pour la superposition de plage.",
   "Range overlay requires format overlay to be selected": "La superposition de plage nécessite d'abord l'ajout de 'Format'.",
   "Range overlay requires Numeric or DateTime attributes": "La superposition de plage nécessite des attributs numériques ou DateTime avec des règles de format.",
+  "Add at least one attribute before adding schema features.": "Ajoutez au moins un attribut avant d’ajouter des fonctionnalités au schéma.",
+  "Format requires Text, Numeric, DateTime, or Binary attributes (including Array variants of those types).": "Le format exige au moins un attribut Texte, Numérique, Date-heure ou Binaire (y compris les types Tableau de ces types).",
   "Please re-verify the data!": "Veuillez revérifier les données !",
   "Please click above and add codes.": "Veuillez cliquer ci-dessus et ajouter des codes.",
   "Please click above and select types.": "Veuillez cliquer ci-dessus et sélectionner des types.",

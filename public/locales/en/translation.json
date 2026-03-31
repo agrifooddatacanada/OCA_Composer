@@ -412,6 +412,8 @@
   "No attributes available for range overlay": "No attributes available for range overlay.",
   "Range overlay requires format overlay to be selected": "Range overlay requires 'Formats' to be added first.",
   "Range overlay requires Numeric or DateTime attributes": "Range overlay requires Numeric or DateTime attributes with format rules.",
+  "Add at least one attribute before adding schema features.": "Add at least one attribute before adding schema features.",
+  "Format requires Text, Numeric, DateTime, or Binary attributes (including Array variants of those types).": "Format requires at least one Text, Numeric, DateTime, or Binary attribute (including Array variants of those types).",
   "Please re-verify the data!": "Please re-verify the data!",
   "Please click above and add codes.": "Please click above and add codes.",
   "Please click above and select types.": "Please click above and select types.",
