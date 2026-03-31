@@ -17,6 +17,8 @@ import { measureTextHeight } from "../utils/measureTextLines";
 const REQUIRED_GRID_WIDTH_PX = 330;
 const REQUIRED_ATTR_COL_WIDTH_PX = Math.round((REQUIRED_GRID_WIDTH_PX * 100) / 170);
 const REQUIRED_CHECK_COL_WIDTH_PX = REQUIRED_GRID_WIDTH_PX - REQUIRED_ATTR_COL_WIDTH_PX;
+const REQUIRED_COLUMN_SUM_PX = REQUIRED_ATTR_COL_WIDTH_PX + REQUIRED_CHECK_COL_WIDTH_PX;
+const REQUIRED_GRID_OUTER_WIDTH_PX = REQUIRED_COLUMN_SUM_PX + 18;
 
 const RequiredEntryHeader = ({ gridRef, t }) => {
   const inputRef = useRef();
@@ -179,16 +181,16 @@ const RequiredEntries = () => {
           gap: "3rem",
           display: "flex",
           flexDirection: "column",
-          width: REQUIRED_GRID_WIDTH_PX,
-          minWidth: REQUIRED_GRID_WIDTH_PX,
-          maxWidth: REQUIRED_GRID_WIDTH_PX,
+          width: REQUIRED_GRID_OUTER_WIDTH_PX,
+          minWidth: REQUIRED_GRID_OUTER_WIDTH_PX,
+          maxWidth: REQUIRED_GRID_OUTER_WIDTH_PX,
           boxSizing: "border-box",
           textAlign: "left",
         }}
       >
         <div
           className="required-entries-grid ag-theme-balham"
-          style={{ width: "100%", minWidth: REQUIRED_GRID_WIDTH_PX, overflow: "hidden" }}
+          style={{ width: "100%", minWidth: REQUIRED_GRID_OUTER_WIDTH_PX, overflow: "hidden" }}
         >
           <style>{gridStyles}</style>
           <style>{`
