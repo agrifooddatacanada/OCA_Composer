@@ -159,6 +159,13 @@ export const gridStyles = `
 .delete-icon-wrapper:hover .delete-icon-solid {
   display: inline-flex;
 }
+
+/* Overlay tables use fixed column widths; stable scrollbar gutter reads as ~15px empty space on the right */
+.character-encoding-grid.ag-theme-balham .ag-body-viewport,
+.format-rule-v2-grid.ag-theme-balham .ag-body-viewport,
+.range-overlay-grid.ag-theme-balham .ag-body-viewport {
+  scrollbar-gutter: auto;
+}
 `;
 
 export function formatRuleGridCss(useFixedViewport) {

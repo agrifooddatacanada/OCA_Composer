@@ -403,7 +403,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       >
         <Box
           className={`format-rule-v2-grid ag-theme-balham${formatGridUseFixedViewport ? "" : " ag-grid-compact"}`}
-          sx={{ width: 808 }}
+          sx={{ width: 790 }}
         >
           <style>{gridStyles}</style>
           <style>{formatRuleGridCss(formatGridUseFixedViewport)}</style>

@@ -197,7 +197,7 @@ const CharacterEncoding = () => {
           <Box
             ref={gridContainerRef}
             className={`character-encoding-grid ag-theme-balham${encodingGridFixedViewport ? "" : " ag-grid-compact"}`}
-            sx={{ width: 400 }}
+            sx={{ width: 380 }}
           >
             <style>{gridStyles}</style>
             <style>{`

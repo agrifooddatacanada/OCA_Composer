@@ -327,7 +327,7 @@ const Range = forwardRef((props, ref) => {
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         <Box
           className={`range-overlay-grid ag-theme-balham${rangeGridFixedViewport ? "" : " ag-grid-compact"}`}
-          sx={{ width: 940.5 }}
+          sx={{ width: 920 }}
         >
           <style>{gridStyles}</style>
           <style>{rangeGridViewportStyle}</style>
