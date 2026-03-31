@@ -735,7 +735,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
         </ErrorPopup>
       )}
       {/* We removed the generic errorMessage ErrorPopup to restore the inline error display for other general errors */}
-      <Box sx={{ width: "calc(752px + 4rem)", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+      <Box sx={{ width: "calc(764px + 4rem)", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
         <div ref={refContainer}>
           <Grid
             gridRef={gridRef}

@@ -614,7 +614,7 @@ export default function Grid({
 
   return (
     <div style={{ margin: "2rem 2rem 0 2rem" }}>
-      <div className="attribute-details-grid ag-theme-balham" style={{ width: 737, overflowX: "hidden" }}>
+      <div className="attribute-details-grid ag-theme-balham" style={{ width: 755, overflowX: "hidden" }}>
         <style>{gridStyle}</style>
         <AgGridReact
           key={i18n.language}
