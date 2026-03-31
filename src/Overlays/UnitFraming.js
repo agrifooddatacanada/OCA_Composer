@@ -21,6 +21,8 @@ import MuiLink from "@mui/material/Link";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { AgGridReact } from "../components/AgGridReact";
+import "../utils/debugAgGridLayout";
+import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { useTranslation } from "react-i18next";
 import { styled } from "@mui/material/styles";
@@ -713,16 +715,28 @@ const UnitFraming = () => {
                 : t("Frame all units")}
           </Button>
         </Box>
-        <Box className="unit-framing-grid ag-theme-balham" sx={{ width: GRID_WIDTH, overflowX: "hidden" }}>
+        <Box
+          className="unit-framing-grid ag-theme-balham ag-grid-compact"
+          sx={{
+            width: GRID_WIDTH,
+            overflow: "hidden",
+            /* minHeight removed: was 120px and left empty band when header+rows < 120 (see __ocpDebugAgGridLayout) */
+            "& .ag-root-wrapper": { height: "auto" },
+            "& .ag-root-wrapper-body.ag-layout-auto-height": { alignItems: "flex-start" },
+            "& .ag-layout-auto-height .ag-center-cols-clipper": { minHeight: 0 },
+            "& .ag-layout-auto-height .ag-center-cols-container": { minHeight: 0 },
+            "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
+              flex: "0 0 auto",
+              height: "auto",
+              minHeight: 0
+            }
+          }}
+        >
           <style>{gridStyles}</style>
-          <style>{`
-            .unit-framing-grid .ag-center-cols-clipper { min-height: unset !important; }
-            .unit-framing-grid .ag-root-wrapper-body.ag-layout-auto-height { min-height: unset !important; }
-            .unit-framing-grid .ag-body-horizontal-scroll { display: none !important; }
-          `}</style>
           <AgGridReact
             key={i18n.language}
             ref={gridRef}
+            containerStyle={{ width: "100%", height: "auto" }}
             rowData={tempToDisplayRowData}
             columnDefs={columnDefsWithCallbacks}
             domLayout="autoHeight"

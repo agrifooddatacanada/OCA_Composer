@@ -5,11 +5,12 @@ import { AgGridReact } from "../components/AgGridReact";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
+import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
 import TextareaCellEditor from "../components/TextareaCellEditor";
-import { formatRuleGridCss, gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
+import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { FormatRuleTypeRenderer } from "./FormatRuleCellRender";
 import Loading from "../components/Loading";
@@ -23,6 +24,7 @@ import {
   MAX_ATTR_DESCRIPTION_CHARS
 } from "../constants/constants";
 import { getAllGridRowData } from "./gridUtils";
+import "../utils/debugAgGridLayout";
 import { getFormatRuleDescription } from "../utils/helpers";
 import { measureTextHeight } from "../utils/measureTextLines";
 import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
@@ -404,14 +406,40 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           flexDirection: "column"
         }}
       >
-        <Box className="format-rule-v2-grid ag-theme-balham" sx={{ width: 790 }}>
+        <Box
+          className={`format-rule-v2-grid ag-theme-balham${formatGridScrollViewport ? "" : " ag-grid-compact"}`}
+          sx={{
+            width: 790,
+            overflow: "hidden",
+            ...(formatGridScrollViewport
+              ? {
+                  height: "min(70vh, 560px)",
+                  minHeight: 120,
+                  "& .ag-root-wrapper": { height: "100%" }
+                }
+              : {
+                  /* no outer minHeight — 120px forced a gap under few/short rows */
+                  "& .ag-root-wrapper": { height: "auto" },
+                  /* Emotion runs late vs stray <style> tags — tight autoHeight body (ag-grid flex defaults leave a band under rows) */
+                  "& .ag-root-wrapper-body.ag-layout-auto-height": {
+                    alignItems: "flex-start"
+                  },
+                  "& .ag-layout-auto-height .ag-center-cols-clipper": { minHeight: 0 },
+                  "& .ag-layout-auto-height .ag-center-cols-container": { minHeight: 0 },
+                  "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
+                    flex: "0 0 auto",
+                    height: "auto",
+                    minHeight: 0
+                  }
+                })
+          }}
+        >
           <style>{gridStyles}</style>
-          <style>{formatRuleGridCss(formatGridScrollViewport)}</style>
           <AgGridReact
             key={`${i18n.language}-${formatGridScrollViewport ? "fx" : "ah"}`}
             ref={gridRef}
             domLayout={formatGridScrollViewport ? undefined : "autoHeight"}
-            style={{
+            containerStyle={{
               width: "100%",
               height: formatGridScrollViewport ? "100%" : "auto"
             }}
