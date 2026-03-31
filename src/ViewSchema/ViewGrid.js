@@ -75,6 +75,10 @@ const gridStyles = `
   padding-right: 17px;
 }
 
+.view-schema-grid .ag-pinned-left-cols-container {
+  border-right: 1px solid var(--ag-border-color, #babfc7);
+}
+
 .ag-header-cell:last-child {
   border-right: none !important;
   --ag-header-column-separator-display: none !important;
@@ -173,6 +177,10 @@ export default function ViewGrid({
         {
           field: "Attribute",
           headerName: t("Attribute"),
+          width: 120,
+          pinned: "left",
+          lockPosition: "left",
+          suppressMovable: true,
           wrapText: true,
           headerComponent: CellHeader,
           headerComponentParams: {
