@@ -318,9 +318,9 @@ const Range = forwardRef((props, ref) => {
         </Alert>
       )}
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
-        <Box className="ag-theme-balham" sx={{ width: 921.5 }}>
+        <Box className="range-overlay-grid ag-theme-balham" sx={{ width: 940.5 }}>
           <style>{gridStyles}</style>
-          <style>{`.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height { min-height: unset !important; }`}</style>
+          <style>{`.range-overlay-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.range-overlay-grid .ag-root-wrapper{height:100%}`}</style>
           <Box sx={{ display: "flex", alignItems: "center", mb: "1.6rem", position: "relative" }}>
             <Tooltip title={t("Range bounds must match the format rules.")} placement="top" arrow>
               <IconButton size="small" sx={{ position: "absolute", left: -32, top: "50%", transform: "translateY(-50%)" }} aria-label="Range bounds info">
@@ -355,9 +355,9 @@ const Range = forwardRef((props, ref) => {
           <AgGridReact
             key={i18n.language}
             ref={gridRef}
+            style={{ width: "100%", height: "100%" }}
             rowData={rangeRowData}
             columnDefs={columnDefs}
-            domLayout="autoHeight"
             getRowHeight={getRowHeight}
             stopEditingWhenCellsLoseFocus
             onGridReady={onGridReady}

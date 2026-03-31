@@ -409,7 +409,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           alignItems: "center"
         }}
       >
-        <Box className="format-rule-v2-grid ag-theme-balham" sx={{ width: 790 }}>
+        <Box className="format-rule-v2-grid ag-theme-balham" sx={{ width: 808 }}>
           <style>{gridStyles}</style>
           <style>{`.format-rule-v2-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.format-rule-v2-grid .ag-root-wrapper{height:100%}`}</style>
           <AgGridReact
