@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext, useCallback, memo, useMemo } from "react";
+import React, { useState, useRef, useEffect, useContext, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "../components/AgGridReact";
 import { Box } from "@mui/material";
@@ -59,8 +59,12 @@ const gridStyles = `
   min-height: unset !important;
 }
 
-.ag-root-wrapper-body.ag-layout-auto-height {
-  min-height: 80px !important;
+.view-schema-grid.ag-theme-balham {
+  height: min(70vh, 560px);
+  min-height: 120px;
+}
+.view-schema-grid .ag-root-wrapper {
+  height: 100%;
 }
 
 .ag-cell[col-id="List"] {
@@ -166,12 +170,6 @@ export default function ViewGrid({
     (params) => computeRowPixelHeight(params.data),
     [computeRowPixelHeight]
   );
-
-  const reservedGridMinHeight = useMemo(() => {
-    const headerRowPx = 49;
-    if (!rowData.length) return headerRowPx + 80;
-    return headerRowPx + rowData.reduce((sum, row) => sum + computeRowPixelHeight(row), 0);
-  }, [rowData, computeRowPixelHeight]);
 
   useEffect(() => {
     const getColumns = () => {
@@ -567,16 +565,16 @@ export default function ViewGrid({
   return (
     <div
       className="view-schema-grid ag-theme-balham"
-      style={{ width: "100%", minHeight: reservedGridMinHeight }}
+      style={{ width: "100%" }}
     >
       <style>{gridStyles}</style>
       <AgGridReact
         key={i18n.language}
         ref={gridRef}
+        style={{ width: "100%", height: "100%" }}
         rowData={rowData}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
-        domLayout="autoHeight"
         onGridReady={onGridReady}
         getRowHeight={getRowHeight}
         overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}

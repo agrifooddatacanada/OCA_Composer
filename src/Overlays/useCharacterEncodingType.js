@@ -1,11 +1,15 @@
-import { React, useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { displayValues } from "../constants/constants";
 
-export const CharacterEncodingTypeRenderer = ({ value, node, onValueChange }) => {
+export const CharacterEncodingTypeRenderer = ({ value, node }) => {
   const [type, setType] = useState(value);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    setType(value);
+  }, [value]);
 
   const handleChange = (e) => {
     setType(e.target.value);
@@ -14,11 +18,6 @@ export const CharacterEncodingTypeRenderer = ({ value, node, onValueChange }) =>
       "Character Encoding": e.target.value
     });
     setIsDropdownOpen(false);
-    
-    // Notify parent component that value changed
-    if (onValueChange) {
-      onValueChange();
-    }
   };
 
   const handleClick = () => {
@@ -66,18 +65,16 @@ const useCharacterEncodingType = (gridRef, characterEncodingRowData, setCharacte
   }, [gridRef, setCharacterEncodingRowData]);
 
   const applyAllFunc = useCallback(() => {
-    const getFirstNode = gridRef.current?.api.getRenderedNodes()[0];
-    const firstAttribute = getFirstNode?.data?.["Character Encoding"];
-    const newCharacterEncodingRowData = [];
-    characterEncodingRowData.forEach((item) => {
-      newCharacterEncodingRowData.push({
-        ...item,
-        "Character Encoding": firstAttribute || ""
+    const api = gridRef.current?.api;
+    const first = api?.getDisplayedRowAtIndex(0)?.data?.["Character Encoding"];
+    if (api == null || first === undefined) return;
+    api.forEachNode((node) => {
+      node.updateData({
+        ...node.data,
+        "Character Encoding": first
       });
     });
-
-    setCharacterEncodingRowData(newCharacterEncodingRowData);
-  }, [characterEncodingRowData, gridRef, setCharacterEncodingRowData]);
+  }, [gridRef]);
 
   return { handleSave, applyAllFunc };
 };

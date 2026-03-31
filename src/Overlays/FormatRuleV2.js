@@ -9,6 +9,7 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
+import TextareaCellEditor from "../components/TextareaCellEditor";
 import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import DeleteConfirmation from "./DeleteConfirmation";
@@ -18,7 +19,8 @@ import {
   CUSTOM_FORMAT_RULE,
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
-  isRangeEligibleAttributeType
+  isRangeEligibleAttributeType,
+  MAX_ATTR_DESCRIPTION_CHARS
 } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { getAllGridRowData } from "./gridUtils";
@@ -318,6 +320,8 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         editable: (params) => !params.data["Format Rule"],
         cellStyle: (params) =>
           params?.data?.["Format Rule"] ? greyCellStyle : preWrapWordBreak,
+        cellEditor: TextareaCellEditor,
+        cellEditorParams: { maxLength: MAX_ATTR_DESCRIPTION_CHARS },
         width: 200,
         wrapText: true
       }
@@ -405,15 +409,15 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           alignItems: "center"
         }}
       >
-        <Box className="ag-theme-balham" sx={{ width: 790 }}>
+        <Box className="format-rule-v2-grid ag-theme-balham" sx={{ width: 790 }}>
           <style>{gridStyles}</style>
-          <style>{`.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height { min-height: 80px !important; }`}</style>
+          <style>{`.format-rule-v2-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.format-rule-v2-grid .ag-root-wrapper{height:100%}`}</style>
           <AgGridReact
             key={i18n.language}
             ref={gridRef}
+            style={{ width: "100%", height: "100%" }}
             rowData={gridRowData}
             columnDefs={columnDefs}
-            domLayout="autoHeight"
             getRowHeight={getRowHeight}
             suppressHorizontalScroll
             onCellValueChanged={onCellValueChanged}

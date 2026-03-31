@@ -335,11 +335,12 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           .lan-grid .ag-header-cell[col-id="Description"] {
             background-color: ${CustomPalette.WHITE} !important;
           }
-          .ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height {
-            min-height: 80px !important;
+          .lan-grid.ag-theme-balham {
+            height: min(70vh, 560px);
+            min-height: 120px;
           }
-          .ag-theme-balham.ag-layout-auto-height {
-            height: auto !important;
+          .lan-grid .ag-root-wrapper {
+            height: 100%;
           }
           .lan-grid .ag-body-horizontal-scroll {
             display: none !important;
@@ -382,11 +383,11 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         <AgGridReact
           key={i18n.language}
           ref={gridRef}
+          style={{ width: "100%", height: "100%" }}
           rowData={lanAttributeRowData[currentLanguage] ?? []}
           columnDefs={columnDefs}
           onCellKeyDown={onCellKeyDown}
           onCellValueChanged={onCellValueChanged}
-          domLayout="autoHeight"
           onGridReady={onGridReady}
           getRowHeight={getRowHeight}
           suppressHorizontalScroll

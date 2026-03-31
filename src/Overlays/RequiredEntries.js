@@ -202,13 +202,22 @@ const RequiredEntries = () => {
     height: 13px;
     margin: 0;
   }
+  .required-entries-grid.ag-theme-balham {
+    height: min(70vh, 560px);
+    min-height: 120px;
+  }
+  .required-entries-grid .ag-root-wrapper {
+    height: 100%;
+  }
 `}</style>
           <AgGridReact
             key={i18n.language}
             ref={gridRef}
+            style={{ width: "100%", height: "100%" }}
             rowData={requiredEntriesRowData}
             columnDefs={columnDefs}
-            domLayout="autoHeight"
+            getRowId={(params) => params.data?.Attribute ?? ""}
+            suppressScrollOnNewData
             getRowHeight={getRowHeight}
             suppressHorizontalScroll
             suppressColumnVirtualisation

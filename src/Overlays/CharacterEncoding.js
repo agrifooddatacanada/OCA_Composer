@@ -81,15 +81,6 @@ const CharacterEncoding = () => {
     setCharacterEncodingRowData
   );
 
-  // Callback to save data when cell renderer changes a value
-  const handleCellRendererChange = useCallback(() => {
-    if (gridRef.current?.api) {
-      const allRowData = [];
-      gridRef.current.api.forEachNode((node) => allRowData.push(node.data));
-      setCharacterEncodingRowData(allRowData);
-    }
-  }, [setCharacterEncodingRowData]);
-
   const getRowHeight = useCallback((params) => {
     const attrH = measureTextHeight(params.data?.Attribute || "", 164);
     const encH = measureTextHeight(String(params.data?.["Character Encoding"] ?? ""), 184);
@@ -122,13 +113,12 @@ const CharacterEncoding = () => {
         },
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
-          attr: params.data.Attribute,
-          onValueChange: handleCellRendererChange
+          attr: params.data.Attribute
         }),
         width: 200
       }
     ],
-    [t, handleCellRendererChange]
+    [t]
   );
 
   const handleForward = useCallback(() => {
@@ -201,15 +191,17 @@ const CharacterEncoding = () => {
         }}
       >
         <Box style={{ display: "flex" }}>
-          <Box ref={gridContainerRef} className="ag-theme-balham" sx={{ width: 380 }}>
+          <Box ref={gridContainerRef} className="character-encoding-grid ag-theme-balham" sx={{ width: 380 }}>
             <style>{gridStyles}</style>
-            <style>{`.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height { min-height: unset !important; }`}</style>
+            <style>{`.character-encoding-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.character-encoding-grid .ag-root-wrapper{height:100%}`}</style>
             <AgGridReact
               key={i18n.language}
               ref={gridRef}
+              style={{ width: "100%", height: "100%" }}
               rowData={characterEncodingRowData}
               columnDefs={columnDefs}
-              domLayout="autoHeight"
+              getRowId={(params) => params.data?.Attribute ?? ""}
+              suppressScrollOnNewData
               getRowHeight={getRowHeight}
               suppressHorizontalScroll
               onGridReady={onGridReady}

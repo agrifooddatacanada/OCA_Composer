@@ -212,13 +212,14 @@ const MatchingEntryCodeHeader = () => {
         flex: 1,
         mb: BETWEEN_SECTION_SPACING,
       }}>
-        <div className="ag-theme-balham" style={{ width: '400px' }}>
+        <div className="matching-entry-code-grid ag-theme-balham" style={{ width: '400px' }}>
+          <style>{`.matching-entry-code-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.matching-entry-code-grid .ag-root-wrapper{height:100%}`}</style>
           <style>{gridStyles}</style>
           <AgGridReact
             ref={gridRef}
+            style={{ width: "100%", height: "100%" }}
             rowData={matchingEntryCodes}
             columnDefs={columnDefs}
-            domLayout="autoHeight"
           />
         </div>
       </Box>

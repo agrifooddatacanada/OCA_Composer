@@ -741,15 +741,16 @@ const FormInformation = () => {
           </Box>
         </Box>
         <div ref={refContainer}>
-          <Box className="ag-theme-balham" sx={{ width: 1003 }}>
+          <Box className="form-information-grid ag-theme-balham" sx={{ width: 1003 }}>
             <style>{gridStyles}</style>
+            <style>{`.form-information-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.form-information-grid .ag-root-wrapper{height:100%}`}</style>
             <AgGridReact
               key={i18n.language}
               ref={gridRef}
+              style={{ width: "100%", height: "100%" }}
               rowData={currentRows}
               getRowId={(params) => params.data.Attribute}
               columnDefs={columnDefs}
-              domLayout="autoHeight"
               suppressHorizontalScroll
               onCellKeyDown={onCellKeyDown}
               animateRows={true}
