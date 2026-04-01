@@ -18,6 +18,10 @@ import { greyCellStyle, gridStyles } from "../constants/styles";
 import "../App.css";
 import { Context } from "../App";
 import OCABundle from "./validator";
+import {
+  getDecimalSeparatorFromOCAPackage,
+  getFormatPatternForDecimalSeparator
+} from "./utils/decimalFormatPattern";
 import Languages from "./Languages";
 import ErrorFilterSelect from "./ErrorFilterSelect";
 import CellHeader from "../components/CellHeader";
@@ -100,6 +104,11 @@ const flaggedHeader = (
   );
   const formatRegex = formatRule?.[CUSTOM_FORMAT_RULE] || formatRule?.FormatText || "";
   const attributeType = formatRule?.Type;
+  const decimalSep = getDecimalSeparatorFromOCAPackage(OCAPackage);
+  const displayFormatRegex =
+    attributeType?.includes("Numeric") && formatRegex
+      ? getFormatPatternForDecimalSeparator(formatRegex, decimalSep)
+      : formatRegex;
   let selectedOption = [];
   if (attributeType?.includes("Date")) {
     selectedOption = formatCodeDateDescription;
@@ -178,7 +187,7 @@ const flaggedHeader = (
                       >
                         - RegEx:{" "}
                       </span>{" "}
-                      {formatRegex}
+                      {displayFormatRegex}
                     </Typography>
                     <Typography>
                       {formatRegex in selectedOption && (

@@ -2,6 +2,10 @@ import { Duration } from "luxon";
 import OCADataSetErr from "./utils/Err";
 import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
 import { ADC, ALLOWED_BOOLEAN_VALUES, errorCode, RANGE } from "../constants/constants";
+import {
+  getDecimalSeparatorFromOCAPackage,
+  getFormatPatternForDecimalSeparator
+} from "./utils/decimalFormatPattern";
 import { isValidNumber, parseDateString } from "../constants/utils";
 
 // The version number of the OCA Technical Specification which this script is
@@ -122,6 +126,30 @@ export default class OCABundle {
     return defaultCheKey || DEFAULT_ENCODING;
   }
 
+  /**
+   * Returns the decimal separator from the schema's decimal_separator overlay (ADC extension).
+   * Format validation is strict: values must use this separator (the other is rejected).
+   * @returns {string} The decimal separator character, default '.' if not set.
+   */
+  getDecimalSeparator() {
+    return getDecimalSeparatorFromOCAPackage(this.OCAPackage);
+  }
+
+  /**
+   * Normalizes a numeric string to use '.' as decimal separator for parsing only (e.g. range checks).
+   * Format validation uses strict decimal separator matching instead.
+   * @param {string} str - Raw value (e.g. "3,14" or "3.14").
+   * @param {string} decimalSeparator - The schema's decimal separator (e.g. ',' or '.').
+   * @returns {string} String with '.' as decimal (e.g. "3.14").
+   */
+  // eslint-disable-next-line class-methods-use-this
+  normalizeNumericString(str, decimalSeparator) {
+    if (str == null || String(str).trim() === "") return String(str ?? "");
+    const s = String(str).trim();
+    if (decimalSeparator === ".") return s;
+    return s.split(decimalSeparator).join(".");
+  }
+
   // The start validation methods...
   /**
    * Validates all attributes for existence in the OCA Bundle.
@@ -215,12 +243,15 @@ export default class OCABundle {
         const { lower, lower_inclusive, upper, upper_inclusive } =
           rangeOverlay.attributes[attribute];
         const attributeType = this.getAttributeType(attribute);
+        const decimalSep = this.getDecimalSeparator();
 
         dataset[attribute]?.forEach((rowValue, i) => {
           if (attributeType === "Numeric") {
-            const rowValueNum = Number.parseFloat(rowValue);
-            if (isValidNumber(lower)) {
-              const lowerBound = Number.parseFloat(lower);
+            const normalizedRow = this.normalizeNumericString(rowValue, decimalSep);
+            const rowValueNum = Number.parseFloat(normalizedRow);
+            const normalizedLower = this.normalizeNumericString(lower, decimalSep);
+            if (isValidNumber(normalizedLower)) {
+              const lowerBound = Number.parseFloat(normalizedLower);
               if (rowValueNum < lowerBound) {
                 rslt.errs[attribute][i] = {
                   type: errorCode.Range,
@@ -236,8 +267,9 @@ export default class OCABundle {
               }
             }
 
-            if (isValidNumber(upper)) {
-              const upperBound = Number.parseFloat(upper);
+            const normalizedUpper = this.normalizeNumericString(upper, decimalSep);
+            if (isValidNumber(normalizedUpper)) {
+              const upperBound = Number.parseFloat(normalizedUpper);
               if (rowValueNum > upperBound) {
                 rslt.errs[attribute][i] = {
                   type: errorCode.Range,
@@ -333,6 +365,8 @@ export default class OCABundle {
         hasEntryCodes = true;
       }
 
+      const decimalSep = this.getDecimalSeparator();
+
       try {
         for (let i = 0; i < dataset[attr]?.length; i++) {
           const dataEntry = dataset[attr][i];
@@ -376,11 +410,18 @@ export default class OCABundle {
               }
 
               for (let j = 0; j < nonEmptyDataArr.length; j++) {
+                const isNumeric =
+                  (typeof attrType[0] === "string" && attrType[0].includes("Numeric")) ||
+                  attrType[0] === "Numeric";
+                const effectiveFormat = isNumeric
+                  ? getFormatPatternForDecimalSeparator(attrFormat, decimalSep)
+                  : attrFormat;
+                const valueStr = String(nonEmptyDataArr[j]);
                 if (
                   !matchFormat(
                     attrType[0],
-                    attrFormat,
-                    String(nonEmptyDataArr[j]),
+                    effectiveFormat,
+                    valueStr,
                     hasEntryCodes
                   )
                 ) {
@@ -441,31 +482,38 @@ export default class OCABundle {
               // Not a valid Array format string.
               rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
             }
-          } else if (
-            !matchFormat(attrType, attrFormat, String(dataEntry), hasEntryCodes)
-          ) {
-            if (attrConformance === "O" && String(dataEntry).trim() === "") {
-              continue;
-            } else if (attrConformance === "M" && String(dataEntry).trim() === "") {
-              rslt.errs[attr][i] = {
-                type: "FE",
-                detail: `${MISSING_MSG} Supported format: ${attrFormat}.`
-              };
-            } else if (attrType.includes("Boolean")) {
-              rslt.errs[attr][i] = {
-                type: "FE",
-                detail: `${FORMAT_ERR_MSG} Supported format: ${JSON.stringify(ALLOWED_BOOLEAN_VALUES)}`
-              };
-            } else if (attrFormat == null) {
-              rslt.errs[attr][i] = {
-                type: "DTE",
-                detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.`
-              };
-            } else {
-              rslt.errs[attr][i] = {
-                type: "FE",
-                detail: `${FORMAT_ERR_MSG}`
-              };
+          } else {
+            const isNumeric =
+              (typeof attrType === "string" && attrType.includes("Numeric")) ||
+              attrType === "Numeric";
+            const effectiveFormat = isNumeric
+              ? getFormatPatternForDecimalSeparator(attrFormat, decimalSep)
+              : attrFormat;
+            const valueStr = String(dataEntry);
+            if (!matchFormat(attrType, effectiveFormat, valueStr, hasEntryCodes)) {
+              if (attrConformance === "O" && String(dataEntry).trim() === "") {
+                continue;
+              } else if (attrConformance === "M" && String(dataEntry).trim() === "") {
+                rslt.errs[attr][i] = {
+                  type: "FE",
+                  detail: `${MISSING_MSG} Supported format: ${attrFormat}.`
+                };
+              } else if (attrType.includes("Boolean")) {
+                rslt.errs[attr][i] = {
+                  type: "FE",
+                  detail: `${FORMAT_ERR_MSG} Supported format: ${JSON.stringify(ALLOWED_BOOLEAN_VALUES)}`
+                };
+              } else if (attrFormat == null) {
+                rslt.errs[attr][i] = {
+                  type: "DTE",
+                  detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.`
+                };
+              } else {
+                rslt.errs[attr][i] = {
+                  type: "FE",
+                  detail: `${FORMAT_ERR_MSG}`
+                };
+              }
             }
           }
         }

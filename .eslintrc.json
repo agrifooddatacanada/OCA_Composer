@@ -9,6 +9,7 @@
     "sourceType": "module"
   },
   "rules": {
+    "import/prefer-default-export": "off",
     "quotes": ["error", "double"], // Quotation style: enforce double quotes
     "semi": ["error", "always"], // Require semicolons
     "arrow-parens": ["error", "always"], // Require parentheses around arrow function arguments
