@@ -6,6 +6,8 @@ import React, {
   forwardRef,
   useImperativeHandle,
   useMemo,
+  useLayoutEffect,
+  useCallback
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Box, Typography } from "@mui/material";
@@ -13,6 +15,7 @@ import { Context } from "../App";
 import SingleTable from "./SingleTable";
 import { removeSpacesAndColonFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import Loading from "../components/Loading";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -24,7 +27,7 @@ const errorMessages = {
   quoteMisuse: "Fields cannot contain quotes or commas"
 };
 const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -54,10 +57,36 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
   const codeRefs = useRef();
   const pageForwardDisabledRef = useRef(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const gridReadyRef = useRef(new Set());
   const hasInitializedFromOverlays = useRef({});
   
   // Local state for entry code grid data (schema-specific)
   const [localEntryCodeRowData, setLocalEntryCodeRowData] = useState([]);
+
+  const attributeListKey = selectedAttributesList.join("|");
+
+  useLayoutEffect(() => {
+    setLoading(true);
+    gridReadyRef.current = new Set();
+  }, [currentSchemaId, attributeListKey, i18n.language]);
+
+  useEffect(() => {
+    if (selectedAttributesList.length === 0) {
+      setLoading(false);
+    }
+  }, [selectedAttributesList.length]);
+
+  const handleEntryCodeGridFirstDataRendered = useCallback(
+    (gridIndex) => {
+      gridReadyRef.current.add(gridIndex);
+      const n = selectedAttributesList.length;
+      if (n > 0 && gridReadyRef.current.size >= n) {
+        setLoading(false);
+      }
+    },
+    [selectedAttributesList.length]
+  );
   
   // Memoize the complete schema to avoid triggering useEffect unnecessarily
   const completeSchema = useMemo(() => schemaState?.completeSchema, [schemaState?.completeSchema]);
@@ -429,6 +458,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
       chosenTable={chosenTable}
       setChosenTable={setChosenTable}
       setShowCard={setShowWarning}
+      onFirstDataRendered={handleEntryCodeGridFirstDataRendered}
       entryCodeData={Array.isArray(localEntryCodeRowData[index]) ? localEntryCodeRowData[index] : []}
       setEntryCodeData={(newData) => {
         setLocalEntryCodeRowData(prev => {
@@ -448,6 +478,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
       pageForward={pageForwardSave}
       errorMessage={onValidationError ? "" : errorMessage}
     >
+      {loading && <Loading spinner />}
       {showWarning && (
         <WarningEntryCodeDelete
           title={t("Warning")}

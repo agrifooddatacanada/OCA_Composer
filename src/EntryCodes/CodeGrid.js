@@ -70,7 +70,7 @@ const LanguageHeader = ({ languageNames, languageName }) => {
   );
 };
 
-export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable, entryCodeData = [], setEntryCodeData }) {
+export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable, onFirstDataRendered: onGridFirstDataRendered, entryCodeData = [], setEntryCodeData }) {
   const { t, i18n } = useTranslation();
 
   const { getLanguages } = useMultiSchema();
@@ -325,6 +325,10 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     return () => cancelAnimationFrame(raf);
   }, [entryCodeData?.length, codeRefs, index]);
 
+  const handleFirstDataRendered = useCallback(() => {
+    onGridFirstDataRendered?.(index);
+  }, [index, onGridFirstDataRendered]);
+
   const onCellKeyDown = useCallback(
     (e) => {
       const keyPressed = e.event.code;
@@ -433,6 +437,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
             suppressHorizontalScroll
             getRowHeight={getRowHeight}
             onCellKeyDown={onCellKeyDown}
+            onFirstDataRendered={handleFirstDataRendered}
             onCellClicked={() => setChosenTable(index)}
             onRowDragEnd={onRowDragEnd}
             onRowDragLeave={onRowDragLeave}
