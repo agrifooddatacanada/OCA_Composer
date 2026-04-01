@@ -79,6 +79,11 @@ const gridStyles = `
   border-right: 1px solid var(--ag-border-color, #babfc7);
 }
 
+.view-schema-grid .ag-horizontal-left-spacer,
+.view-schema-grid .ag-horizontal-right-spacer {
+  overflow-x: hidden !important;
+}
+
 .ag-header-cell:last-child {
   border-right: none !important;
   --ag-header-column-separator-display: none !important;
