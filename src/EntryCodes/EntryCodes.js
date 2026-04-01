@@ -29,6 +29,7 @@ export default function EntryCodes() {
   const codeRefs = useRef();
   const pageForwardDisabledRef = useRef(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [warningNextPage, setWarningNextPage] = useState("UploadEntryCodes");
 
   // Create codeRefs so there can be multiple grids on the page
   useEffect(() => {
@@ -116,6 +117,7 @@ export default function EntryCodes() {
       chosenTable={chosenTable}
       setChosenTable={setChosenTable}
       setShowCard={setShowWarning}
+      setWarningNextPage={setWarningNextPage}
     />
   ));
 
@@ -134,7 +136,7 @@ export default function EntryCodes() {
             t("Your current entry codes for this attribute will be overwritten")
           ]}
           setShowCard={setShowWarning}
-          handleForward={() => setCurrentPage("UploadEntryCodes")}
+          handleForward={() => setCurrentPage(warningNextPage)}
         />
       )}
       <Box sx={{ width: "90%", margin: "auto" }}>
