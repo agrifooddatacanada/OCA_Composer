@@ -2,7 +2,8 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useCallback
+  useCallback,
+  useState
 } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "../components/AgGridReact";
@@ -19,62 +20,98 @@ import {
   ENTRY_CODE_DRAG_WIDTH,
   ENTRY_CODE_CODE_WIDTH,
   ENTRY_CODE_LANG_WIDTH,
-  ENTRY_CODE_DELETE_WIDTH
+  ENTRY_CODE_DELETE_WIDTH,
+  AG_GRID_VIRTUALIZE_MIN_ROWS
 } from "../constants/constants";
 import { preWrapWordBreak, flexCenter } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
 import TextareaCellEditor from "../components/TextareaCellEditor";
-import { LanguageConstants } from "../utils/languageUtils";
+import { LanguageConstants, langCodeOCAFromName } from "../utils/languageUtils";
 import { useMultiSchema } from "../schema/schemaContext";
 
 const codeGridStyle = `
+  .entry-codes-grid.ag-theme-balham {
+    --ag-border-color: ${CustomPalette.GREY_300};
+    --ag-secondary-border-color: ${CustomPalette.GREY_300};
+    --ag-row-border-color: ${CustomPalette.GREY_300};
+    --ag-header-background-color: #fff;
+    --ag-borders: solid 1px;
+    --ag-borders-critical: solid 1px;
+    --ag-borders-secondary: solid 1px;
+    --ag-header-column-separator-display: none;
+  }
+  .entry-codes-grid.ag-theme-balham .ag-root-wrapper {
+    border: 1px solid ${CustomPalette.GREY_300};
+  }
+  .entry-codes-grid .ag-header-cell {
+    border-right: 1px solid ${CustomPalette.GREY_300} !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-top: none !important;
+  }
+  .entry-codes-grid .ag-header {
+    border-bottom: 1px solid ${CustomPalette.GREY_300} !important;
+  }
   .entry-codes-grid .ag-cell {
-    border-right: 1px solid ${CustomPalette.GREY_300};
+    border-right: 1px solid ${CustomPalette.GREY_300} !important;
+    border-bottom: 1px solid ${CustomPalette.GREY_300} !important;
+    border-left: none !important;
+    border-top: none !important;
+  }
+  .entry-codes-grid .ag-pinned-left-header,
+  .entry-codes-grid .ag-pinned-left-cols-container {
+    border-right: none !important;
+  }
+  .entry-codes-grid .ag-pinned-right-header,
+  .entry-codes-grid .ag-pinned-right-cols-container {
+    border-left: none !important;
+  }
+  .entry-codes-grid .ag-pinned-right-header .ag-header-cell-resize::after {
+    display: none !important;
+  }
+  .entry-codes-grid .ag-cell[col-id="Code"],
+  .entry-codes-grid .ag-cell[col-id="Code"] .ag-cell-wrapper,
+  .entry-codes-grid .ag-cell[col-id="Code"] .ag-cell-value {
+    min-width: 0;
+    overflow: hidden !important;
+  }
+  .entry-codes-grid .ag-cell[col-id="Code"] textarea {
+    overflow: hidden !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .entry-codes-grid .ag-cell[col-id="Code"] textarea::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
   }
   .entry-codes-grid .ag-header-cell-label {
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  .ag-cell {
-    line-height: 1.5;
+  .entry-codes-grid .ag-cell[col-id="Delete"] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
-  .ag-select-list {
+  .entry-codes-grid .ag-cell.entry-code-delete-cell,
+  .entry-codes-grid .ag-cell.entry-code-delete-cell .ag-cell-wrapper,
+  .entry-codes-grid .ag-cell.entry-code-delete-cell .ag-cell-value {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .entry-codes-grid .ag-cell.entry-code-delete-cell .ag-cell-wrapper {
+    width: 100%;
+    height: 100%;
+  }
+  .entry-codes-grid .ag-select-list {
     height: 90px;
     overflow-y: auto;
   }
-  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
-    height: 100%;
-  }
-  .ag-header-cell:last-child,
-  .ag-header-cell[col-id="Delete"] {
-    border-right: none !important;
-    --ag-header-column-separator-display: none !important;
-  }
-  .ag-header-cell:last-child *,
-  .ag-header-cell[col-id="Delete"] * {
-    border-right: none !important;
-    box-shadow: none !important;
-  }
-  .ag-header-viewport .ag-header-cell:last-child {
-    border-right: none !important;
-  }
-  .ag-header-container {
-    border-right: none !important;
-  }
-  .entry-codes-grid .ag-cell:last-child {
-    border-right: none !important;
-  }
-  .ag-header-row .ag-header-cell:last-child::after {
-    display: none !important;
-  }
-  .ag-header-viewport {
-    overflow-x: hidden;
-  }
-  .entry-codes-grid .ag-body-horizontal-scroll {
-    display: none !important;
-  }
-  .entry-codes-grid .ag-center-cols-clipper {
+  .entry-codes-grid .ag-center-cols-clipper,
+  .entry-codes-grid.ag-theme-balham.ag-grid-compact .ag-center-cols-clipper,
+  .entry-codes-grid.ag-theme-balham.ag-grid-compact .ag-center-cols-container {
     min-height: unset !important;
   }
   .entry-codes-grid .ag-root-wrapper-body.ag-layout-auto-height {
@@ -83,31 +120,35 @@ const codeGridStyle = `
   .entry-codes-grid .ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
     min-height: 88px !important;
   }
-  .ag-row .delete-icon-solid {
+  .entry-codes-grid .ag-row .delete-icon-solid {
     display: none;
   }
-  .ag-row:hover .delete-icon-outline {
+  .entry-codes-grid .ag-row:hover .delete-icon-outline {
     display: none;
   }
-  .ag-row:hover .delete-icon-solid {
-    display: inline-flex;
+  .entry-codes-grid .ag-row:hover .delete-icon-solid {
+    display: block;
   }
-  .ag-row:hover .ag-cell {
+  .entry-codes-grid .ag-row:hover .ag-cell {
     background-color: ${CustomPalette.PINK_200} !important;
   }
-  .ag-cell-value {
+  .entry-codes-grid .ag-cell-value {
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  .ag-cell, .ag-full-width-row .ag-cell-wrapper.ag-row-group {
+  .entry-codes-grid .ag-cell,
+  .entry-codes-grid .ag-full-width-row .ag-cell-wrapper.ag-row-group {
     line-height: 1.5;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .ag-cell .ag-drag-handle {
+  .entry-codes-grid .ag-cell .ag-drag-handle {
     margin-right: 0;
+  }
+  .entry-codes-grid-fixed-viewport.ag-theme-balham .ag-root-wrapper {
+    height: 100%;
   }
 `;
 
@@ -129,11 +170,11 @@ const CodeHeader = () => {
   );
 };
 
-const LanguageHeader = ({ languages, language }) => {
+const LanguageHeader = ({ languageNames, languageName }) => {
   const { t } = useTranslation();
   return (
     <div className="ag-cell-label-container">
-      {language === (languages?.[0] || LanguageConstants.DEFAULT_LANG_NAME) && (
+      {languageName === (languageNames?.[0] || LanguageConstants.DEFAULT_LANG_NAME) && (
         <Tooltip
           title={t(
             "A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes"
@@ -145,7 +186,7 @@ const LanguageHeader = ({ languages, language }) => {
         </Tooltip>
       )}
       <div className="ag-header-cell-label" style={{ textTransform: "capitalize" }}>
-        {t(language, { defaultValue: language })}
+        {t(languageName, { defaultValue: languageName })}
       </div>
     </div>
   );
@@ -153,24 +194,72 @@ const LanguageHeader = ({ languages, language }) => {
 
 export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable, entryCodeData = [], setEntryCodeData }) {
   const { t, i18n } = useTranslation();
-  
-  // Get schema-specific languages (not global)
-  const { getSchema } = useMultiSchema();
-  const schemaState = getSchema();
-  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
-  
-  const gridWidth = useMemo(
+
+  const { getLanguages } = useMultiSchema();
+  const languageNames = getLanguages();
+
+  const langSpecs = useMemo(
     () =>
-      ENTRY_CODE_DRAG_WIDTH +
-      ENTRY_CODE_CODE_WIDTH +
-      languages.length * ENTRY_CODE_LANG_WIDTH +
-      ENTRY_CODE_DELETE_WIDTH,
-    [languages.length]
+      languageNames.map((name) => ({
+        name,
+        field: langCodeOCAFromName(name)
+      })),
+    [languageNames]
   );
+
   const refContainer = useRef(null);
+  const frameRef = useRef(null);
   const buttonRef = useRef();
   const entryCodeDataRef = useRef(entryCodeData);
   entryCodeDataRef.current = entryCodeData;
+  const entryRowIdByDataRef = useRef(new WeakMap());
+  const entryRowIdSeqRef = useRef(0);
+
+  const getRowId = useCallback((params) => {
+    const d = params.data;
+    if (d == null) return `ec-${++entryRowIdSeqRef.current}`;
+    const map = entryRowIdByDataRef.current;
+    let id = map.get(d);
+    if (id == null) {
+      id = `ec-${++entryRowIdSeqRef.current}`;
+      map.set(d, id);
+    }
+    return id;
+  }, []);
+
+  const manyCodes = entryCodeData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+
+  const minTablePx = useMemo(
+    () =>
+      ENTRY_CODE_DRAG_WIDTH +
+      ENTRY_CODE_CODE_WIDTH +
+      langSpecs.length * ENTRY_CODE_LANG_WIDTH +
+      ENTRY_CODE_DELETE_WIDTH,
+    [langSpecs.length]
+  );
+
+  const [wideTable, setWideTable] = useState(false);
+
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const measure = () => {
+      const w = el.clientWidth;
+      if (w <= 0) return;
+      setWideTable(w < minTablePx);
+    };
+    measure();
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [minTablePx]);
+
+  const gridFixedHeightMode = wideTable;
+  const gridViewportHeight = wideTable
+    ? manyCodes
+      ? "min(70vh, 560px)"
+      : "min(420px, min(70vh, 560px))"
+    : "auto";
 
   const handleDeleteRow = useCallback(
     (elementIndex) => {
@@ -192,28 +281,26 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     });
 
     const newEntryCodeRow = { Code: "" };
-    // Use language names as field keys (normalized at source)
-    languages.forEach((lang) => {
-      newEntryCodeRow[lang] = "";
+    langSpecs.forEach(({ field }) => {
+      newEntryCodeRow[field] = "";
     });
 
     const newRowData = [...entryCodeData, { ...newEntryCodeRow }];
     setEntryCodeData(newRowData);
-  }, [codeRefs, entryCodeData, languages, setEntryCodeData]);
+  }, [codeRefs, entryCodeData, langSpecs, setEntryCodeData]);
 
-  // Saves elements in proper order after dragging
   const onRowDragEnd = (event) => {
     codeRefs.current.forEach((grid) => {
       grid?.current?.api?.stopEditing();
     });
 
-    const oldEntryCodeIndex = entryCodeData.findIndex(
-      (item) => item.Code === event.node.data.Code
-    );
+    const data = event.node?.data;
+    const oldEntryCodeIndex = entryCodeData.findIndex((item) => item === data);
+    if (oldEntryCodeIndex < 0 || data == null) return;
     const newEntryCodeIndex = event.node.rowIndex;
+    if (oldEntryCodeIndex === newEntryCodeIndex) return;
 
     const newEntryCodeRowData = [...entryCodeData];
-
     const [movedItem] = newEntryCodeRowData.splice(oldEntryCodeIndex, 1);
     newEntryCodeRowData.splice(newEntryCodeIndex, 0, movedItem);
 
@@ -230,22 +317,55 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     const idx = params?.node?.rowIndex ?? params?.rowIndex ?? -1;
     if (idx < 0) return null;
     return (
-        <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-        <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          gridTemplateRows: "1fr",
+          placeItems: "center",
+          width: "100%",
+          height: "100%",
+          minHeight: 24
+        }}
+      >
+        <DeleteOutlineIcon
+          className="delete-icon-outline"
+          sx={{ gridArea: "1 / 1", color: CustomPalette.GREY_600 }}
+        />
         <DeleteForeverIcon
-          onClick={() => handleDeleteRow(idx)}
-          sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }}
           className="delete-icon-solid"
+          onClick={() => handleDeleteRow(idx)}
+          sx={{ gridArea: "1 / 1", color: CustomPalette.PRIMARY, cursor: "pointer" }}
         />
       </Box>
     );
   };
 
+  const resolveLangCellText = useCallback(
+    (data, field, name) => {
+      if (!data) return "";
+      const oca = data[field];
+      if (oca != null && oca !== "") return oca;
+      const named = data[name];
+      return named != null ? named : "";
+    },
+    []
+  );
+
   const columnDefs = useMemo(() => {
-    const languageHeaders = languages.map((lang) => ({
-      field: lang,
+    const languageHeaders = langSpecs.map(({ name, field }) => ({
+      field,
       editable: true,
-      headerComponent: () => LanguageHeader({ languages, language: lang }),
+      valueGetter: (params) => resolveLangCellText(params.data, field, name),
+      valueSetter: (params) => {
+        const d = params.data;
+        if (!d) return false;
+        d[field] = params.newValue;
+        d[name] = params.newValue;
+        return true;
+      },
+      headerComponent: () =>
+        LanguageHeader({ languageNames, languageName: name }),
       wrapText: true,
       cellEditor: TextareaCellEditor,
       cellStyle: () => ({ ...preWrapWordBreak, ...flexCenter }),
@@ -256,11 +376,15 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
         field: "Drag",
         headerName: "",
         width: ENTRY_CODE_DRAG_WIDTH,
+        pinned: "left",
+        lockPinned: true,
         rowDrag: true
       },
       {
         field: "Code",
         editable: true,
+        pinned: "left",
+        lockPinned: true,
         headerComponent: CodeHeader,
         wrapText: true,
         cellEditor: TextareaCellEditor,
@@ -272,12 +396,16 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
         field: "Delete",
         headerName: "",
         width: ENTRY_CODE_DELETE_WIDTH,
+        pinned: "right",
+        lockPinned: true,
+        resizable: false,
         sortable: false,
         editable: false,
+        cellClass: "entry-code-delete-cell",
         cellRenderer: DeleteCell
       }
     ];
-  }, [languages]);
+  }, [langSpecs, languageNames, resolveLangCellText]);
 
   const defaultColDef = useMemo(
     () => ({
@@ -288,15 +416,21 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     []
   );
 
-  const getRowHeight = useCallback((params) => {
-    const codeH = measureTextHeight(params.data?.Code || "", ENTRY_CODE_CODE_WIDTH, {});
-    let maxH = codeH;
-    languages.forEach((lang) => {
-      const langH = measureTextHeight(params.data?.[lang] || "", ENTRY_CODE_LANG_WIDTH, {});
-      maxH = Math.max(maxH, langH);
-    });
-    return Math.max(56, maxH + 16);
-  }, [languages]);
+  const ocaFields = useMemo(() => langSpecs.map((s) => s.field), [langSpecs]);
+
+  const getRowHeight = useCallback(
+    (params) => {
+      const codeH = measureTextHeight(params.data?.Code || "", ENTRY_CODE_CODE_WIDTH, {});
+      let maxH = codeH;
+      langSpecs.forEach(({ field, name }) => {
+        const text = resolveLangCellText(params.data, field, name);
+        const langH = measureTextHeight(text, ENTRY_CODE_LANG_WIDTH, {});
+        maxH = Math.max(maxH, langH);
+      });
+      return Math.max(56, maxH + 16);
+    },
+    [langSpecs, resolveLangCellText]
+  );
 
   const prevRowCountRef = useRef(0);
   useEffect(() => {
@@ -316,7 +450,8 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
       const keyPressed = e.event.code;
 
       const isLastRow = e.node.lastChild;
-      const isLastColumn = e.column.colId === languages[languages.length - 1];
+      const lastOca = ocaFields[ocaFields.length - 1];
+      const isLastColumn = lastOca && e.column.colId === lastOca;
       if (keyPressed === "Tab") {
         if (isLastRow && isLastColumn) {
           buttonRef.current.click();
@@ -328,10 +463,9 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
         }
       }
     },
-    [languages]
+    [ocaFields]
   );
 
-  // Stops grid editing on all other grid components - not just current grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
       const clickedGrid = event.target.closest(".ag-root-wrapper");
@@ -363,38 +497,92 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   }, [codeRefs, chosenTable]);
 
   return (
-    <Box style={{ margin: "2rem 2rem 0 2rem", display: "flex", flexDirection: "column" }}>
-      <Box sx={{ maxWidth: "100%", overflowX: "auto" }}>
-        <div className="entry-codes-grid ag-theme-balham" style={{ width: gridWidth, overflowX: "hidden" }}>
+    <Box
+      style={{ margin: "2rem 2rem 0 2rem", display: "flex", flexDirection: "column" }}
+      sx={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box" }}
+    >
+      <Box
+        ref={frameRef}
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          minWidth: 0,
+          overflowX: "hidden",
+          overflowY: gridFixedHeightMode ? "hidden" : manyCodes ? "auto" : "visible",
+          ...(gridFixedHeightMode ? {} : manyCodes ? { maxHeight: "min(70vh, 560px)" } : {})
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            boxSizing: "border-box"
+          }}
+        >
+        <div
+          className={`entry-codes-grid ag-theme-balham${gridFixedHeightMode ? " entry-codes-grid-fixed-viewport" : " ag-grid-compact"}`}
+          style={{
+            width: "100%",
+            minWidth: 0,
+            height: gridFixedHeightMode ? gridViewportHeight : "fit-content",
+            display: gridFixedHeightMode ? "flex" : undefined,
+            flexDirection: gridFixedHeightMode ? "column" : undefined
+          }}
+        >
         <style>{codeGridStyle}</style>
-        <div ref={refContainer}>
+        <div
+          ref={refContainer}
+          style={{
+            flex: gridFixedHeightMode ? 1 : undefined,
+            minHeight: gridFixedHeightMode ? 0 : undefined,
+            width: "100%"
+          }}
+        >
           <AgGridReact
-            key={i18n.language}
+            key={`${i18n.language}-${gridFixedHeightMode ? "fx" : "ah"}`}
             ref={codeRefs.current[index]}
             rowData={entryCodeData}
+            getRowId={getRowId}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
-            domLayout="autoHeight"
-            getRowHeight={getRowHeight}
+            domLayout={gridFixedHeightMode ? undefined : "autoHeight"}
+            style={{
+              width: "100%",
+              height: gridFixedHeightMode ? "100%" : "auto"
+            }}
             suppressHorizontalScroll
+            getRowHeight={getRowHeight}
             onCellKeyDown={onCellKeyDown}
             onCellClicked={() => setChosenTable(index)}
             onRowDragEnd={onRowDragEnd}
             onRowDragLeave={onRowDragLeave}
             onCellValueChanged={(e) => {
-              if (e.column.colId === "Code" || languages.includes(e.column.colId)) {
+              if (e.column.colId === "Code" || ocaFields.includes(e.column.colId)) {
                 e.api.refreshCells({ rowNodes: [e.node], force: true });
                 requestAnimationFrame(() => e.api.resetRowHeights());
               }
             }}
             rowDragManaged
+            suppressScrollOnNewData
           />
         </div>
         </div>
+        </Box>
       </Box>
 
-      <Box sx={{ width: gridWidth, display: "flex", flexDirection: "column", alignItems: "flex-end", mt: TABLE_TO_BUTTON_GAP, mr: "2rem" }}>
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          minWidth: 0,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          mt: TABLE_TO_BUTTON_GAP,
+          pr: "2rem",
+          boxSizing: "border-box"
+        }}
+      >
         <Button
           onClick={handleAddRow}
           color="button"
