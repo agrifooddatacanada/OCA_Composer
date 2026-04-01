@@ -1,4 +1,4 @@
-const json = [
+const entryCodePicklists = [
   {
     id: 1,
     name: {
@@ -559,16 +559,16 @@ const json = [
   {
     id: 8,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil aeration status",
       fr: "Statut d’aération du sol"
     },
+    description: {
+      en: "Qualitative oxygen availability status.",
+      fr: "Statut qualitatif de disponibilité en oxygène."
+    },
     keywords: {
-      en: ["Qualitative oxygen availability status."],
-      fr: ["Statut qualitatif de disponibilité en oxygène."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -596,19 +596,19 @@ const json = [
   {
     id: 9,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Bulk density class",
       fr: "Classe de densit� apparente"
     },
+    description: {
+      en: "Generalized classes; specific restrictive thresholds depend on texture.",
+      fr: "Classes g�n�ralis�es; les seuils restrictifs d�pendent de la texture."
+    },
     keywords: {
-      en: ["Generalized classes; specific restrictive thresholds depend on texture."],
-      fr: ["Classes g�n�ralis�es; les seuils restrictifs d�pendent de la texture."]
+      en: [],
+      fr: []
     },
     category: "general",
-    source: "https://soilquality.nres.illinois.edu/bulk-density/",
+    source: "",
     languages: ["en", "fr"],
     headers: ["Code", "en", "fr"],
     rows: [
@@ -632,16 +632,16 @@ const json = [
   {
     id: 10,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Carbon-to-Nitrogen (C:N) ratio class",
       fr: "Classe du rapport carbone-azote (C:N)"
     },
+    description: {
+      en: "C:N ratio categories.",
+      fr: "Catégories de C:N."
+    },
     keywords: {
-      en: ["C:N ratio categories."],
-      fr: ["Catégories de C:N."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -669,16 +669,16 @@ const json = [
   {
     id: 11,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil colloid fraction class",
       fr: "Classe de fraction colloïdale du sol"
     },
+    description: {
+      en: "Relative abundance of colloids.",
+      fr: "Abondance relative des colloïdes."
+    },
     keywords: {
-      en: ["Relative abundance of colloids."],
-      fr: ["Abondance relative des colloïdes."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -706,16 +706,16 @@ const json = [
   {
     id: 12,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil compressibility class",
       fr: "Classe de compressibilité du sol"
     },
+    description: {
+      en: "Relative compressibility category.",
+      fr: "Catégorie de compressibilité relative."
+    },
     keywords: {
-      en: ["Relative compressibility category."],
-      fr: ["Catégorie de compressibilité relative."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -804,19 +804,20 @@ const json = [
   {
     id: 14,
     name: {
-      en: "",
-      fr: ""
+      en: "Effective rooting depth class",
+      fr: "Classe de profondeur d’enracinement efficace"
     },
     description: {
-      en: "",
-      fr: ""
+      en: "Depth available for roots.",
+      fr: "Profondeur disponible pour les racines."
     },
     keywords: {
       en: [],
       fr: []
     },
-    category: "en",
-    source: "",
+    category: "general",
+    source:
+      "https://ucanr.edu/?legacy-file=29072.pdf&legacy-file-path=sites/gardenweb/files/",
     languages: ["en", "fr"],
     headers: ["Code", "en", "fr"],
     rows: [
@@ -850,16 +851,16 @@ const json = [
   {
     id: 15,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil erodibility class",
       fr: "Classe d’érodibilité du sol"
     },
+    description: {
+      en: "Susceptibility to erosion (qualitative).",
+      fr: "Susceptibilité à l’érosion (qualitative)."
+    },
     keywords: {
-      en: ["Susceptibility to erosion (qualitative)."],
-      fr: ["Susceptibilité à l’érosion (qualitative)."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -887,16 +888,16 @@ const json = [
   {
     id: 16,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil fertility class",
       fr: "Classe de fertilité du sol"
     },
+    description: {
+      en: "General inherent soil fertility.",
+      fr: "Fertilité intrinsèque générale."
+    },
     keywords: {
-      en: ["General inherent soil fertility."],
-      fr: ["Fertilité intrinsèque générale."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -924,16 +925,16 @@ const json = [
   {
     id: 17,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil mineral content type",
       fr: "Type de contenu minéral du sol"
     },
+    description: {
+      en: "Dominant mineralogical character.",
+      fr: "Caractère minéralogique dominant."
+    },
     keywords: {
-      en: ["Dominant mineralogical character."],
-      fr: ["Caractère minéralogique dominant."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -966,16 +967,16 @@ const json = [
   {
     id: 18,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil organic matter class",
       fr: "Classe de matière organique du sol"
     },
+    description: {
+      en: "Organic matter percentage class.",
+      fr: "Classe de pourcentage de matiÃ¨re organique."
+    },
     keywords: {
-      en: ["Organic matter percentage class."],
-      fr: ["Classe de pourcentage de matiÃ¨re organique."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -1013,16 +1014,16 @@ const json = [
   {
     id: 19,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil permeability class",
       fr: "Classe de perméabilité du sol"
     },
+    description: {
+      en: "Saturated hydraulic conductivity (qualitative classes).",
+      fr: "Conductivité hydraulique saturée (classes qualitatives)."
+    },
     keywords: {
-      en: ["Saturated hydraulic conductivity (qualitative classes)."],
-      fr: ["Conductivité hydraulique saturée (classes qualitatives)."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -1060,16 +1061,16 @@ const json = [
   {
     id: 20,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil pH class",
       fr: "Classe de pH du sol"
     },
+    description: {
+      en: "Standard NRCS soil pH range classes.",
+      fr: "Plages de pH normalisées (NRCS)"
+    },
     keywords: {
-      en: ["Standard NRCS soil pH range classes."],
-      fr: ["Plages de pH normalisées (NRCS)"]
+      en: [],
+      fr: []
     },
     category: "general",
     source: "https://www.nrcs.usda.gov/sites/default/files/2022-10/soil_ph.pdf",
@@ -1136,16 +1137,16 @@ const json = [
   {
     id: 21,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil plasticity class",
       fr: "Classe de plasticité du sol"
     },
+    description: {
+      en: "Plasticity category (Atterberg-related).",
+      fr: "Catégorie de plasticité (liée aux limites d’Atterberg)."
+    },
     keywords: {
-      en: ["Plasticity category (Atterberg-related)."],
-      fr: ["Catégorie de plasticité (liée aux limites d’Atterberg)."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -1173,16 +1174,16 @@ const json = [
   {
     id: 22,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil porosity class",
       fr: "Classe de porosité du sol"
     },
+    description: {
+      en: "Total porosity class.",
+      fr: "Classe de porosité totale"
+    },
     keywords: {
-      en: ["Total porosity class."],
-      fr: ["Classe de porosité totale"]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -1220,16 +1221,16 @@ const json = [
   {
     id: 23,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil salinity type (dominant anion)",
       fr: "Type de salinité du sol (anion dominant)"
     },
+    description: {
+      en: "Dominant salt type in saline conditions.",
+      fr: "Type de sel dominant en conditions salines."
+    },
     keywords: {
-      en: ["Dominant salt type in saline conditions."],
-      fr: ["Type de sel dominant en conditions salines."]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -1262,20 +1263,16 @@ const json = [
   {
     id: 24,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil salinity class (ECe)",
       fr: "Classe de salinit� du sol (ECe)"
     },
+    description: {
+      en: "Classes based on electrical conductivity of the saturation paste extract (dS/m).",
+      fr: "Classes bas�es sur la conductivit� �lectrique de l�extrait de p�te satur�e (dS/m)."
+    },
     keywords: {
-      en: [
-        "Classes based on electrical conductivity of the saturation paste extract (dS/m)."
-      ],
-      fr: [
-        "Classes bas�es sur la conductivit� �lectrique de l�extrait de p�te satur�e (dS/m)."
-      ]
+      en: [],
+      fr: []
     },
     category: "general",
     source:
@@ -1313,20 +1310,16 @@ const json = [
   {
     id: 25,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil sodicity class (SAR/ESP)",
       fr: "Classe de sodicité du sol (SAR/ESP)"
     },
+    description: {
+      en: "Classification using Sodium Adsorption Ratio (SAR) and/or Exchangeable Sodium Percentage (ESP).",
+      fr: "Classification selon le rapport d’adsorption du sodium (SAR) et/ou le pourcentage de sodium échangeable (ESP)."
+    },
     keywords: {
-      en: [
-        "Classification using Sodium Adsorption Ratio (SAR) and/or Exchangeable Sodium Percentage (ESP)."
-      ],
-      fr: [
-        "Classification selon le rapport d’adsorption du sodium (SAR) et/ou le pourcentage de sodium échangeable (ESP)."
-      ]
+      en: [],
+      fr: []
     },
     category: "general",
     source: "https://www.undrr.org/understanding-disaster-risk/terminology/hips/en0303",
@@ -1348,16 +1341,16 @@ const json = [
   {
     id: 26,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil structure type",
       fr: "Type de structure du sol"
     },
+    description: {
+      en: "Primary ped shapes used in soil description.",
+      fr: "Formes principales des agr�gats (peds)."
+    },
     keywords: {
-      en: ["Primary ped shapes used in soil description."],
-      fr: ["Formes principales des agr�gats (peds)."]
+      en: [],
+      fr: []
     },
     category: "general",
     source: "https://iastate.pressbooks.pub/introsoilscience/chapter/soilstructure/",
@@ -1404,16 +1397,16 @@ const json = [
   {
     id: 27,
     name: {
-      en: "en",
-      fr: "fr"
-    },
-    description: {
       en: "Soil texture class",
       fr: "Classe texturale du sol"
     },
+    description: {
+      en: "USDA-NRCS 12-class soil texture scheme.",
+      fr: "Schéma à 12 classes de l’USDA‑NRCS"
+    },
     keywords: {
-      en: ["USDA-NRCS 12-class soil texture scheme."],
-      fr: ["Schéma à 12 classes de l’USDA‑NRCS"]
+      en: [],
+      fr: []
     },
     category: "general",
     source: "https://www.nrcs.usda.gov/",
@@ -1777,5 +1770,4 @@ const json = [
   }
 ];
 
-const entryCodePicklists = JSON.parse(json);
 export default entryCodePicklists;

@@ -251,7 +251,7 @@
   "Schema Data": "Données de schéma",
   "No Schema Conformant Data": "Aucune donnée conforme au schéma",
   "Warning": "Avertissement",
-  "Your current entry codes for this attribute will be overwritten": "Your current entry codes for this attribute will be overwritten.",
+  "Your current entry codes for this attribute will be overwritten": "Vos codes de saisie actuels pour cet attribut seront écrasés.",
   "Please choose the type:": "Veuillez choisir le type:",
   "Click here to select a .csv file or schema bundle, or drag and drop one here": "Cliquez ici pour sélectionner un fichier .csv ou un ensemble de schémas, ou faites-en un glisser-déposer ici.",
   "Note: Your .csv file contains a list of entry codes. You can also include language labels for each entry code in adjacent columns": "Remarque : Votre fichier .csv contient une liste de codes d'entrée. Vous pouvez également inclure des étiquettes de langue pour chaque code d'entrée dans les colonnes adjacentes",
