@@ -12,7 +12,12 @@
 
 import i18next from "i18next";
 import { useMultiSchema } from "../schema/schemaContext";
-import { langNameFromTwoLetters, langCodeOCAFromName, langCodeOCAFromTwoLetters } from "../utils/languageUtils";
+import {
+  langNameFromTwoLetters,
+  langCodeOCAFromName,
+  langCodeOCAFromTwoLetters,
+  normalizeToOCACode
+} from "../utils/languageUtils";
 import {
   getPackageLanguages,
   getPackageDependencies,
@@ -46,6 +51,21 @@ const getModifiedLayer = (overlay) => {
     digest,
     ...rest
   };
+};
+
+const findMetaOverlay = (layers, preferredOCACode) => {
+  const preferred = normalizeToOCACode(preferredOCACode);
+  const match = (code) =>
+    layers.find(
+      (layer) =>
+        layer.layerName.includes("meta") &&
+        normalizeToOCACode(layer.language) === code
+    );
+  return (
+    match(preferred) ||
+    match(DEFAULT_THREE_LETTER_LANGUAGE_CODE) ||
+    layers.find((layer) => layer.layerName.includes("meta"))
+  );
 };
 
 const useGenerateMarkdownReadMeFromJson = () => {
@@ -131,12 +151,11 @@ const useGenerateMarkdownReadMeFromJson = () => {
       });
     }
 
-    const metaOverlayCurrentLanguage = layers.find(
-      (layer) =>
-        layer.layerName.includes("meta") &&
-        (layer.language === currentLanguageCode ||
-          layer.language === DEFAULT_THREE_LETTER_LANGUAGE_CODE)
-    );
+    const metaOverlayCurrentLanguage =
+      findMetaOverlay(layers, currentLanguageCode) || {
+        name: "Unnamed schema",
+        description: ""
+      };
 
     fileContent += generateFrontMatter(metaOverlayCurrentLanguage, catalogueData);
     fileContent += generateSchemaInformation(
@@ -225,11 +244,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
           }
         }
         
-        const childMetaOverlay = childLayers.find(
-          (layer) =>
-            layer.layerName.includes("meta") &&
-            (layer.language === currentLanguageCode ||
-              layer.language === DEFAULT_THREE_LETTER_LANGUAGE_CODE)
+        const childMetaOverlay = findMetaOverlay(
+          childLayers,
+          currentLanguageCode
         );
         
         const childAttributeNames = Object.keys(childCaptureBase.attributes || {});

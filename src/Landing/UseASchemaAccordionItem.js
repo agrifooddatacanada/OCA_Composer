@@ -23,7 +23,6 @@ import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdown
 import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
-import { hasMultipleSchemas } from "../utils/schemaUtils";
 import { syncLandingSchemaDrop } from "../utils/landingSchemaUpload";
 import {
   isOcaPackageIntegrityValid,
@@ -70,15 +69,13 @@ const UseASchemaAccordionItem = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
-  const isMultiSchema = hasMultipleSchemas(ocaPackage);
-  
+
   let isInvalidOcaPackage = false;
   if (ocaPackage && shouldVerifyOcaPackageCryptographically(ocaPackage)) {
     isInvalidOcaPackage = !isOcaPackageIntegrityValid(ocaPackage);
   }
-  
+
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
-  const disableMultiSchemaTools = disableAdditionalSchemaTools || isMultiSchema;
 
   const handleClickMarkdownReadme = () => {
     const jsonSchemaIsUploaded = Object.keys(jsonToReadme).length > 0;
@@ -194,7 +191,7 @@ const UseASchemaAccordionItem = () => {
             color="navButton"
             onClick={handleClickMarkdownReadme}
             sx={buttonStyles}
-            disabled={disableMultiSchemaTools}
+            disabled={disableAdditionalSchemaTools}
           >
             {t("Generate Markdown Readme")}
           </Button>

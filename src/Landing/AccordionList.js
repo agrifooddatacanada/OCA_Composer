@@ -274,13 +274,13 @@ const AccordionList = () => {
                 border: `1px solid ${CustomPalette.PRIMARY}`
               }}
             >
-              <CatalogueInfo isDisabled={disableMultiSchemaTools} />
+              <CatalogueInfo isDisabled={disableAdditionalSchemaTools} />
               <Button
                 variant="contained"
                 color="navButton"
                 onClick={handleClickMarkdownReadme}
                 sx={{ ...buttonStyles, marginTop: "12px" }}
-                disabled={disableMultiSchemaTools}
+                disabled={disableAdditionalSchemaTools}
               >
                 {t("Generate Markdown Readme")}
               </Button>

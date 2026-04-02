@@ -1,10 +1,6 @@
-html {
-  scrollbar-gutter: stable;
-}
-
+/* Disable horizontal scrolling on mobile devices */
 body {
   overflow-x: hidden;
-  overflow-y: scroll;
 }
 
 body.format-rules-no-scrollbar::-webkit-scrollbar {
