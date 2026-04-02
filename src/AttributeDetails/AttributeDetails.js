@@ -62,7 +62,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
 
   // Track initialization to prevent unnecessary package parsing
   const initializedSchemaRef = useRef(null);
-  const prevI18nLangRef = useRef(i18n.language);
 
   useLayoutEffect(() => {
     setLoading(true);
@@ -112,9 +111,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
    *    - hasAttributesArray=false, so we CAN initialize from completeSchema
    */
   useEffect(() => {
-    const languageChanged = prevI18nLangRef.current !== i18n.language;
-    prevI18nLangRef.current = i18n.language;
-
     // Get schema state (MultiSchemaContext handles the fallback internally)
     const schemaState = getSchema();
     
@@ -128,7 +124,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     if (initializedSchemaRef.current === currentSchemaId && 
         schemaState?.attributes && 
         JSON.stringify(schemaState.attributes) === JSON.stringify(attributeRowData)) {
-      setLoading(false);
       return;
     }
 
@@ -153,9 +148,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
           });
           setAttributeRowData(mergedAttributes);
         }
-      }
-      if (sameAttrs && !languageChanged) {
-        setLoading(false);
       }
       initializedSchemaRef.current = currentSchemaId;
       return;
@@ -213,8 +205,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
         JSON.stringify(attributeRowData) === JSON.stringify(newAttributeRowData);
       if (!sameAttrs) {
         setAttributeRowData(newAttributeRowData);
-      } else if (!languageChanged) {
-        setLoading(false);
       }
 
       // Save to MultiSchemaContext (attributesList is computed automatically)
@@ -229,20 +219,14 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       // Handle manual schema creation case (no completeSchema but also no existing attributes)
       // Initialize with empty arrays to allow user to start adding attributes
       const emptyAttributeRowData = [];
-      const alreadyEmpty = attributeRowData.length === 0;
       setAttributeRowData(emptyAttributeRowData);
 
       // Save empty state to MultiSchemaContext (attributesList is computed automatically)
       updateSchema({
         attributes: emptyAttributeRowData
       });
-      if (alreadyEmpty && !languageChanged) {
-        setLoading(false);
-      }
       initializedSchemaRef.current = currentSchemaId;
     } else {
-      // Some other case
-      setLoading(false);
       initializedSchemaRef.current = currentSchemaId;
     }
   }, [currentSchemaId, i18n.language]); // Removed function dependencies that cause infinite loops
@@ -735,7 +719,16 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
         </ErrorPopup>
       )}
       {/* We removed the generic errorMessage ErrorPopup to restore the inline error display for other general errors */}
-      <Box sx={{ width: "fit-content", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+      <Box
+        sx={{
+          width: "fit-content",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          visibility: loading ? "hidden" : "visible",
+          pointerEvents: loading ? "none" : "auto"
+        }}
+      >
         <div ref={refContainer}>
           <Grid
             gridRef={gridRef}
@@ -746,6 +739,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
             setCanDelete={setCanDelete}
             setAddByTab={setAddByTab}
             typesObjectRef={typesObjectRef}
+            loading={loading}
             setLoading={setLoading}
             attributeRowData={attributeRowData}
             setAttributeRowData={setAttributeRowData}

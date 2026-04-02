@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "../components/AgGridReact";
 
@@ -95,6 +95,7 @@ export default function Grid({
   setCanDelete,
   setAddByTab,
   typesObjectRef,
+  loading,
   setLoading,
   attributeRowData,
   setAttributeRowData,
@@ -127,6 +128,46 @@ export default function Grid({
   );
 
   const { renameAttribute } = useMultiSchema();
+
+  const loadingRef = useRef(loading);
+  loadingRef.current = loading;
+  const endLoadCancelledRef = useRef(false);
+  const loadDebounceRafRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (loading) {
+      endLoadCancelledRef.current = true;
+      if (loadDebounceRafRef.current != null) {
+        cancelAnimationFrame(loadDebounceRafRef.current);
+        loadDebounceRafRef.current = null;
+      }
+    }
+  }, [loading]);
+
+  const scheduleEndBlockingLoad = useCallback(() => {
+    if (!loadingRef.current) return;
+    endLoadCancelledRef.current = false;
+    if (loadDebounceRafRef.current != null) {
+      cancelAnimationFrame(loadDebounceRafRef.current);
+    }
+    loadDebounceRafRef.current = requestAnimationFrame(() => {
+      loadDebounceRafRef.current = null;
+      if (endLoadCancelledRef.current) return;
+      requestAnimationFrame(() => {
+        if (endLoadCancelledRef.current) return;
+        const api = gridRef.current?.api;
+        if (attributeRowData.length > 0 && !api) return;
+        if (api && attributeRowData.length > 0) api.resetRowHeights();
+        requestAnimationFrame(() => {
+          if (endLoadCancelledRef.current) return;
+          requestAnimationFrame(() => {
+            if (endLoadCancelledRef.current) return;
+            setLoading(false);
+          });
+        });
+      });
+    });
+  }, [attributeRowData, setLoading]);
   
   // Derive attributesList from attributeRowData (single source of truth)
   const attributesList = useMemo(
@@ -624,8 +665,12 @@ export default function Grid({
   }, []);
 
   const onFirstDataRendered = useCallback(() => {
-    setLoading(false);
-  }, [setLoading]);
+    scheduleEndBlockingLoad();
+  }, [scheduleEndBlockingLoad]);
+
+  const onModelUpdated = useCallback(() => {
+    scheduleEndBlockingLoad();
+  }, [scheduleEndBlockingLoad]);
 
   return (
     <div style={{ margin: "2rem 2rem 0 2rem" }}>
@@ -663,6 +708,7 @@ export default function Grid({
           onRowDragLeave={(e) => onRowDragLeave(e)}
           rowDragManaged={rowDragManaged}
           onFirstDataRendered={onFirstDataRendered}
+          onModelUpdated={onModelUpdated}
           overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
         />
       </div>
