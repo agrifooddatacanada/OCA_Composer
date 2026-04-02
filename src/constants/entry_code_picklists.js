@@ -2,6 +2,67 @@ const entryCodePicklists = [
   {
     id: 1,
     name: {
+      en: "Agreement scale",
+      fr: "Échelle d’accord"
+    },
+    description: {
+      en: "Standard agreement response scale from strongly agree to strongly disagree.",
+      fr: "Échelle de réponses standard allant de tout à fait d’accord à tout à fait en désaccord."
+    },
+    keywords: {
+      en: ["agreement;likert scale;survey responses"],
+      fr: ["accord;échelle de Likert;réponses de sondage"]
+    },
+    category: "general",
+    source: "",
+    languages: ["en", "fr"],
+    headers: ["Code", "en", "fr"],
+    rows: [
+      {
+        Code: "1",
+        en: "Strongly agree",
+        fr: "Tout à fait d’accord"
+      },
+      {
+        Code: "2",
+        en: "Agree",
+        fr: "D’accord"
+      },
+      {
+        Code: "3",
+        en: "Mildly agree",
+        fr: "Plutôt d’accord"
+      },
+      {
+        Code: "4",
+        en: "Neither agree nor disagree",
+        fr: "Ni d’accord ni en désaccord"
+      },
+      {
+        Code: "5",
+        en: "Mildly disagree",
+        fr: "Plutôt pas d’accord"
+      },
+      {
+        Code: "6",
+        en: "Disagree",
+        fr: "Pas d’accord"
+      },
+      {
+        Code: "7",
+        en: "Strongly disagree",
+        fr: "Tout à fait en désaccord"
+      },
+      {
+        Code: "8",
+        en: "Don't know",
+        fr: "Ne sait pas"
+      }
+    ]
+  },
+  {
+    id: 2,
+    name: {
       en: "Canadian Provinces",
       fr: "Provinces canadiennes"
     },
@@ -86,7 +147,104 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 2,
+    id: 3,
+    name: {
+      en: "Comfort level scale",
+      fr: "Échelle de niveau de confort"
+    },
+    description: {
+      en: "Level of comfort or discomfort expressed in relation to a subject option or comparison.",
+      fr: "Niveau de confort ou d’inconfort exprimé par rapport à un sujet une option ou une comparaison."
+    },
+    keywords: {
+      en: ["comfort level;attitudes;perceptions;survey responses"],
+      fr: ["niveau de confort;attitudes;perceptions;réponses de sondage"]
+    },
+    category: "general",
+    source: "",
+    languages: ["en", "fr"],
+    headers: ["Code", "en", "fr"],
+    rows: [
+      {
+        Code: "MLC",
+        en: "Much less comfortable with genetically modified rice than cellular agriculture",
+        fr: "Beaucoup moins à l’aise avec le riz génétiquement modifié qu’avec l’agriculture cellulaire"
+      },
+      {
+        Code: "LC",
+        en: "Less comfortable",
+        fr: "Moins à l’aise"
+      },
+      {
+        Code: "LLC",
+        en: "A little less comfortable",
+        fr: "Un peu moins à l’aise"
+      },
+      {
+        Code: "SLC",
+        en: "Same level of comfort",
+        fr: "Même niveau de confort"
+      },
+      {
+        Code: "LMC",
+        en: "A little more comfortable",
+        fr: "Un peu plus à l’aise"
+      },
+      {
+        Code: "MC",
+        en: "More comfortable",
+        fr: "Plus à l’aise"
+      },
+      {
+        Code: "MMC",
+        en: "Much more comfortable with genetically modified rice than cellular agriculture",
+        fr: "Beaucoup plus à l’aise avec le riz génétiquement modifié qu’avec l’agriculture cellulaire"
+      },
+      {
+        Code: "DK",
+        en: "Don't know",
+        fr: "Ne sait pas"
+      }
+    ]
+  },
+  {
+    id: 4,
+    name: {
+      en: "Awareness of concept",
+      fr: "Sensibilisation à un concept"
+    },
+    description: {
+      en: "Whether the respondent has previously heard of or is aware of a concept topic or subject.",
+      fr: "Indique si la personne répondante a déjà entendu parler ou est consciente d’un concept d’un sujet ou d’un thème."
+    },
+    keywords: {
+      en: ["awareness;familiarity;knowledge;survey responses"],
+      fr: ["sensibilisation;familiarité;connaissance;réponses de sondage"]
+    },
+    category: "general",
+    source: "",
+    languages: ["en", "fr"],
+    headers: ["Code", "en", "fr"],
+    rows: [
+      {
+        Code: "Y",
+        en: "Yes",
+        fr: "Oui"
+      },
+      {
+        Code: "N",
+        en: "No",
+        fr: "Non"
+      },
+      {
+        Code: "DK",
+        en: "I don't know",
+        fr: "Je ne sais pas"
+      }
+    ]
+  },
+  {
+    id: 5,
     name: {
       en: "days",
       fr: "jours"
@@ -142,7 +300,68 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 3,
+    id: 6,
+    name: {
+      en: "Education level",
+      fr: "Niveau de scolarité"
+    },
+    description: {
+      en: "Highest level of education completed by the respondent.",
+      fr: "Niveau de scolarité le plus élevé atteint par la personne répondante."
+    },
+    keywords: {
+      en: ["education level;schooling;highest education;demographics"],
+      fr: ["niveau de scolarité;formation;scolarité;données démographiques"]
+    },
+    category: "general",
+    source: "",
+    languages: ["en", "fr"],
+    headers: ["Code", "en", "fr"],
+    rows: [
+      {
+        Code: "PES",
+        en: "Primary or elementary school",
+        fr: "École primaire"
+      },
+      {
+        Code: "SEC",
+        en: "Secondary (high school diploma or equivalent)",
+        fr: "École secondaire (diplôme d’études secondaires ou équivalent)"
+      },
+      {
+        Code: "AT",
+        en: "Apprenticeship or trades",
+        fr: "Apprentissage ou métiers spécialisés"
+      },
+      {
+        Code: "CNU",
+        en: "College or other non-university level",
+        fr: "Collège ou autre niveau non universitaire"
+      },
+      {
+        Code: "PS",
+        en: "Professional school",
+        fr: "École professionnelle"
+      },
+      {
+        Code: "UBD",
+        en: "University bachelor level degree",
+        fr: "Baccalauréat universitaire"
+      },
+      {
+        Code: "UGS",
+        en: "University graduate school",
+        fr: "Études universitaires supérieures"
+      },
+      {
+        Code: "PNS",
+        en: "Prefer not to say",
+        fr: "Préfère ne pas répondre"
+      }
+    ]
+  },
+  {
+    id: 7,
     name: {
       en: "Eight Point Cardinality",
       fr: "Cardinalité à huit points"
@@ -203,7 +422,157 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 4,
+    id: 8,
+    name: {
+      en: "Frequency scale",
+      fr: "Échelle de fréquence"
+    },
+    description: {
+      en: "Frequency with which an activity behaviour or event occurs over a typical time period.",
+      fr: "Fréquence à laquelle une activité un comportement ou un événement se produit sur une période typique."
+    },
+    keywords: {
+      en: ["frequency scale;occurrence rate;survey responses"],
+      fr: ["échelle de fréquence;taux d’occurrence;réponses de sondage"]
+    },
+    category: "general",
+    source: "",
+    languages: ["en", "fr"],
+    headers: ["Code", "en", "fr"],
+    rows: [
+      {
+        Code: "ED",
+        en: "Every day",
+        fr: "Tous les jours"
+      },
+      {
+        Code: "FTW",
+        en: "A few times per week",
+        fr: "Quelques fois par semaine"
+      },
+      {
+        Code: "OW",
+        en: "Once a week",
+        fr: "Une fois par semaine"
+      },
+      {
+        Code: "OM",
+        en: "Once a month",
+        fr: "Une fois par mois"
+      },
+      {
+        Code: "FT",
+        en: "A few times per year",
+        fr: "Quelques fois par année"
+      },
+      {
+        Code: "NV",
+        en: "Never",
+        fr: "Jamais"
+      }
+    ]
+  },
+  {
+    id: 9,
+    name: {
+      en: "Gender identity",
+      fr: "Identité de genre"
+    },
+    description: {
+      en: "Self-identified gender of the respondent.",
+      fr: "Genre avec lequel la personne répondante s’identifie."
+    },
+    keywords: {
+      en: ["gender identity;demographics;self-identification;survey responses"],
+      fr: [
+        "identité de genre;données démographiques;auto-identification;réponses de sondage"
+      ]
+    },
+    category: "general",
+    source: "",
+    languages: ["en", "fr"],
+    headers: ["Code", "en", "fr"],
+    rows: [
+      {
+        Code: "F",
+        en: "Female",
+        fr: "Femme"
+      },
+      {
+        Code: "M",
+        en: "Male",
+        fr: "Homme"
+      },
+      {
+        Code: "NB",
+        en: "Non-binary (gender diverse)",
+        fr: "Non binaire (diversité de genre)"
+      },
+      {
+        Code: "OTH",
+        en: "Other",
+        fr: "Autre"
+      },
+      {
+        Code: "PNS",
+        en: "Prefer not to say",
+        fr: "Préfère ne pas répondre"
+      }
+    ]
+  },
+  {
+    id: 10,
+    name: {
+      en: "Household structure",
+      fr: "Structure du ménage"
+    },
+    description: {
+      en: "Composition and living arrangement of the household.",
+      fr: "Composition et type de cohabitation du ménage."
+    },
+    keywords: {
+      en: ["household structure;living arrangement;household composition;demographics"],
+      fr: ["structure du ménage;composition du ménage;mode de vie;données démographiques"]
+    },
+    category: "general",
+    source: "",
+    languages: ["en", "fr"],
+    headers: ["Code", "en", "fr"],
+    rows: [
+      {
+        Code: "LO",
+        en: "I live on my own",
+        fr: "Je vis seul·e"
+      },
+      {
+        Code: "CLT",
+        en: "Couple living together",
+        fr: "Couple vivant ensemble"
+      },
+      {
+        Code: "FC",
+        en: "Family with children",
+        fr: "Famille avec enfants"
+      },
+      {
+        Code: "MLG",
+        en: "Multigenerational (two or more families living together)",
+        fr: "Ménage multigénérationnel (deux familles ou plus vivant ensemble)"
+      },
+      {
+        Code: "Oth",
+        en: "Other",
+        fr: "Autre"
+      },
+      {
+        Code: "PNS",
+        en: "Prefer not to say",
+        fr: "Préfère ne pas répondre"
+      }
+    ]
+  },
+  {
+    id: 11,
     name: {
       en: "months",
       fr: "mois"
@@ -284,7 +653,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 5,
+    id: 12,
     name: {
       en: "Parent material chemical property",
       fr: "Propriété chimique du matériau parental"
@@ -345,7 +714,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 6,
+    id: 13,
     name: {
       en: "Parent material texture",
       fr: "Texture du matériau parental"
@@ -456,7 +825,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 7,
+    id: 14,
     name: {
       en: "Sixteen Point Cardinality",
       fr: "Cardinalité à seize points"
@@ -557,7 +926,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 8,
+    id: 15,
     name: {
       en: "Soil aeration status",
       fr: "Statut d’aération du sol"
@@ -594,14 +963,14 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 9,
+    id: 16,
     name: {
       en: "Bulk density class",
-      fr: "Classe de densit� apparente"
+      fr: "Classe de densité apparente"
     },
     description: {
       en: "Generalized classes; specific restrictive thresholds depend on texture.",
-      fr: "Classes g�n�ralis�es; les seuils restrictifs d�pendent de la texture."
+      fr: "Classes généralisées; les seuils restrictifs dépendent de la texture."
     },
     keywords: {
       en: [],
@@ -620,17 +989,17 @@ const entryCodePicklists = [
       {
         Code: "BDM",
         en: "Moderate",
-        fr: "Mod�r�"
+        fr: "Modéré"
       },
       {
         Code: "BDH",
         en: "High",
-        fr: "�lev�"
+        fr: "Élevé"
       }
     ]
   },
   {
-    id: 10,
+    id: 17,
     name: {
       en: "Carbon-to-Nitrogen (C:N) ratio class",
       fr: "Classe du rapport carbone-azote (C:N)"
@@ -667,7 +1036,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 11,
+    id: 18,
     name: {
       en: "Soil colloid fraction class",
       fr: "Classe de fraction colloïdale du sol"
@@ -704,7 +1073,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 12,
+    id: 19,
     name: {
       en: "Soil compressibility class",
       fr: "Classe de compressibilité du sol"
@@ -741,7 +1110,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 13,
+    id: 20,
     name: {
       en: "Soil Drainage Class",
       fr: "Classe de drainage du sol"
@@ -802,7 +1171,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 14,
+    id: 21,
     name: {
       en: "Effective rooting depth class",
       fr: "Classe de profondeur d’enracinement efficace"
@@ -849,7 +1218,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 15,
+    id: 22,
     name: {
       en: "Soil erodibility class",
       fr: "Classe d’érodibilité du sol"
@@ -886,7 +1255,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 16,
+    id: 23,
     name: {
       en: "Soil fertility class",
       fr: "Classe de fertilité du sol"
@@ -923,7 +1292,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 17,
+    id: 24,
     name: {
       en: "Soil mineral content type",
       fr: "Type de contenu minéral du sol"
@@ -965,14 +1334,14 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 18,
+    id: 25,
     name: {
       en: "Soil organic matter class",
       fr: "Classe de matière organique du sol"
     },
     description: {
       en: "Organic matter percentage class.",
-      fr: "Classe de pourcentage de matiÃ¨re organique."
+      fr: "Classe de pourcentage de matière organique."
     },
     keywords: {
       en: [],
@@ -1012,7 +1381,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 19,
+    id: 26,
     name: {
       en: "Soil permeability class",
       fr: "Classe de perméabilité du sol"
@@ -1059,7 +1428,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 20,
+    id: 27,
     name: {
       en: "Soil pH class",
       fr: "Classe de pH du sol"
@@ -1135,7 +1504,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 21,
+    id: 28,
     name: {
       en: "Soil plasticity class",
       fr: "Classe de plasticité du sol"
@@ -1172,7 +1541,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 22,
+    id: 29,
     name: {
       en: "Soil porosity class",
       fr: "Classe de porosité du sol"
@@ -1219,7 +1588,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 23,
+    id: 30,
     name: {
       en: "Soil salinity type (dominant anion)",
       fr: "Type de salinité du sol (anion dominant)"
@@ -1261,14 +1630,14 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 24,
+    id: 31,
     name: {
       en: "Soil salinity class (ECe)",
-      fr: "Classe de salinit� du sol (ECe)"
+      fr: "Classe de salinité du sol (ECe)"
     },
     description: {
       en: "Classes based on electrical conductivity of the saturation paste extract (dS/m).",
-      fr: "Classes bas�es sur la conductivit� �lectrique de l�extrait de p�te satur�e (dS/m)."
+      fr: "Classes basées sur la conductivité électrique de l’extrait de pâte saturée (dS/m)."
     },
     keywords: {
       en: [],
@@ -1288,12 +1657,12 @@ const entryCodePicklists = [
       {
         Code: "SS",
         en: "Slightly saline",
-        fr: "L�g�rement salin"
+        fr: "Légèrement salin"
       },
       {
         Code: "MS",
         en: "Moderately saline",
-        fr: "Mod�r�ment salin"
+        fr: "Modérément salin"
       },
       {
         Code: "STS",
@@ -1303,12 +1672,12 @@ const entryCodePicklists = [
       {
         Code: "VSS",
         en: "Very strongly saline",
-        fr: "Tr�s fortement salin"
+        fr: "Très fortement salin"
       }
     ]
   },
   {
-    id: 25,
+    id: 32,
     name: {
       en: "Soil sodicity class (SAR/ESP)",
       fr: "Classe de sodicité du sol (SAR/ESP)"
@@ -1339,14 +1708,14 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 26,
+    id: 33,
     name: {
       en: "Soil structure type",
       fr: "Type de structure du sol"
     },
     description: {
       en: "Primary ped shapes used in soil description.",
-      fr: "Formes principales des agr�gats (peds)."
+      fr: "Formes principales des agrégats (peds)."
     },
     keywords: {
       en: [],
@@ -1395,7 +1764,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 27,
+    id: 34,
     name: {
       en: "Soil texture class",
       fr: "Classe texturale du sol"
@@ -1476,7 +1845,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 28,
+    id: 35,
     name: {
       en: "Maturity Levels",
       fr: "Niveaux de maturité"
@@ -1537,14 +1906,75 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 29,
+    id: 36,
+    name: {
+      en: "Support scale",
+      fr: "Échelle de soutien"
+    },
+    description: {
+      en: "Level of support or opposition expressed toward a proposal idea policy or action.",
+      fr: "Niveau de soutien ou d’opposition exprimé à l’égard d’une proposition d’une idée d’une politique ou d’une action."
+    },
+    keywords: {
+      en: ["support;opposition;attitudes;survey responses"],
+      fr: ["soutien;opposition;attitudes;réponses de sondage"]
+    },
+    category: "general",
+    source: "",
+    languages: ["en", "fr"],
+    headers: ["Code", "en", "fr"],
+    rows: [
+      {
+        Code: "SO",
+        en: "Strongly oppose",
+        fr: "Fermement opposé·e"
+      },
+      {
+        Code: "OP",
+        en: "Oppose",
+        fr: "Opposé·e"
+      },
+      {
+        Code: "MO",
+        en: "Mildly oppose",
+        fr: "Plutôt opposé·e"
+      },
+      {
+        Code: "NOS",
+        en: "Neither oppose nor support",
+        fr: "Ni opposé·e ni favorable"
+      },
+      {
+        Code: "MS",
+        en: "Mildly support",
+        fr: "Plutôt favorable"
+      },
+      {
+        Code: "SU",
+        en: "Support",
+        fr: "Favorable"
+      },
+      {
+        Code: "SS",
+        en: "Strongly support",
+        fr: "Fermement favorable"
+      },
+      {
+        Code: "DK",
+        en: "Don't know",
+        fr: "Ne sait pas"
+      }
+    ]
+  },
+  {
+    id: 37,
     name: {
       en: "Thirty-two Point Cardinality",
       fr: "Cardinalité à trente-deux points"
     },
     description: {
-      en: "The 32?wind compass rose subdivides the circle even further by adding quarter?winds, which fall halfway between each pair of 16?wind points. These �by� directions�such as north by east, northeast by north, and southwest by west—create a system of 32 points spaced at 11.25?degree intervals. Historically used in maritime navigation, this finer resolution allows much more accurate description of direction.",
-      fr: "La rose des vents à 32 points subdivise davantage le cercle en ajoutant des quarts de vent, situés à mi-chemin entre chaque paire de points à 16 points. Ces directions par comme le nord par l'est, le nord-est par le nord et le sud-ouest par l'ouest créent un système de 32 points espacés de 11,25 degrés. Historiquement utilisée en navigation maritime, cette résolution plus fine permet une description beaucoup plus précise de la direction."
+      en: 'The 32 wind compass rose subdivides the circle even further by adding quarter winds, which fall halfway between each pair of 16 wind points. These "by" directions—such as north by east, northeast by north, and southwest by west—create a system of 32 points spaced at 11.25 degree intervals. Historically used in maritime navigation, this finer resolution allows much more accurate description of direction.',
+      fr: "La rose des vents à 32 points subdivise davantage le cercle en ajoutant des quarts de vent, situés à mi-chemin entre chaque paire de points à 16 points. Ces directions par— comme le nord par l'est, le nord-est par le nord et le sud-ouest par l'ouest — créent un système de 32 points espacés de 11,25 degrés. Historiquement utilisée en navigation maritime, cette résolution plus fine permet une description beaucoup plus précise de la direction."
     },
     keywords: {
       en: [],
@@ -1718,7 +2148,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 30,
+    id: 38,
     name: {
       en: "Water Table Characteristics",
       fr: "Caractéristiques de la nappe phréatique"
