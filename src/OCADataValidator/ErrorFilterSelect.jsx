@@ -36,6 +36,7 @@ function ErrorFilterSelect({ errorName, setErrorNameList, disabled }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const primaryColor = usePrimaryColor();
+  const fontFamily = useFontFamily();
   // Add these helper functions at component level
   const handleShowAllData = () => setErrorNameList([SHOW_ALL_DATA]);
 

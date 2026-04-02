@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
 import { AgGridReact } from "../components/AgGridReact";
@@ -92,9 +92,15 @@ const AttributeMatch = () => {
     setNotToVerifyAttributes
   } = useContext(Context);
 
-  const { getLanguages, getAttributesList, getSchema } = useMultiSchema();
+  const { getLanguages, getAttributesList, getSchema, schemaStates, currentSchemaId, ocaPackage } =
+    useMultiSchema();
   const _rawLanguages = getLanguages();
   const languages = Array.isArray(_rawLanguages) && _rawLanguages.length ? _rawLanguages : [LanguageConstants.DEFAULT_LANG_NAME];
+
+  const attributeSignature = useMemo(() => {
+    const names = getAttributesList();
+    return Array.isArray(names) ? names.join("\0") : "";
+  }, [schemaStates, currentSchemaId, ocaPackage]);
 
   const [type, setType] = useState(() => {
     const siteLanguage = getUILangName();
@@ -216,9 +222,8 @@ const AttributeMatch = () => {
       ogSchemaDataConformantHeaderRef.current = schemaDataConformantHeader;
     }
 
-      const unassignedVariables = [...ogSchemaDataConformantHeaderRef.current];
+    const unassignedVariables = [...ogSchemaDataConformantHeaderRef.current];
     if (firstTimeMatchingRef.current) {
-      // If user already has matching data, preserve it and attempt to auto-fill Dataset
       if (matchingRowData && matchingRowData?.length > 0) {
         const newMatchingRowData = matchingRowData.map((node) => {
           const index = matchingFunction(unassignedVariables, node.Attribute);
@@ -228,28 +233,29 @@ const AttributeMatch = () => {
         });
         setMatchingRowData(newMatchingRowData);
       } else {
-        // Seed matchingRowData from the active schema attributes (first visit)
-        const schema = getSchema();
         const attributeNames = Array.isArray(getAttributesList()) ? getAttributesList() : [];
-        const lanAttributeRowData = schema?.lanAttributeRowData || {};
-        const langLabelArray = lanAttributeRowData[type] || [];
-        const labelMap = {};
-        langLabelArray.forEach((l) => {
-          labelMap[l.Attribute] = l.Label || "";
-        });
+        if (attributeNames.length > 0) {
+          const schema = getSchema();
+          const lanAttributeRowData = schema?.lanAttributeRowData || {};
+          const langLabelArray = lanAttributeRowData[type] || [];
+          const labelMap = {};
+          langLabelArray.forEach((l) => {
+            labelMap[l.Attribute] = l.Label || "";
+          });
 
-        const newMatchingRowData = attributeNames.map((attr) => {
-          const index = matchingFunction(unassignedVariables, attr);
-          const datasetMatch = index !== -1 ? unassignedVariables[index] : "";
-          if (index !== -1) unassignedVariables.splice(index, 1);
-          return {
-            Attribute: attr,
-            [type]: labelMap[attr] || "",
-            Dataset: datasetMatch
-          };
-        });
+          const newMatchingRowData = attributeNames.map((attr) => {
+            const index = matchingFunction(unassignedVariables, attr);
+            const datasetMatch = index !== -1 ? unassignedVariables[index] : "";
+            if (index !== -1) unassignedVariables.splice(index, 1);
+            return {
+              Attribute: attr,
+              [type]: labelMap[attr] || "",
+              Dataset: datasetMatch
+            };
+          });
 
-        setMatchingRowData(newMatchingRowData);
+          setMatchingRowData(newMatchingRowData);
+        }
       }
     } else {
       for (const node of matchingRowData) {
@@ -261,7 +267,7 @@ const AttributeMatch = () => {
     }
 
     setNotToVerifyAttributes(unassignedVariables);
-  }, [schemaDataConformantHeader]);
+  }, [schemaDataConformantHeader, attributeSignature, type, matchingFunction]);
 
   useEffect(() => {
     const columnDefs = [
@@ -306,7 +312,9 @@ const AttributeMatch = () => {
 
   // helper that checks if all attributes are matched to their respective datasets and disables the forward button if not
   const areAllColumnsMatched = useCallback(
-    () => matchingRowData.every((row) => row.Dataset && row.Dataset !== ""),
+    () =>
+      matchingRowData.length > 0 &&
+      matchingRowData.every((row) => row.Dataset && row.Dataset !== ""),
     [matchingRowData]
   );
 

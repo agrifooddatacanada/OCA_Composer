@@ -4,6 +4,7 @@ import { Alert, Box, Button } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Context } from "../App";
+import { CustomPalette } from "../constants/customPalette";
 import usePrimaryColor from "../hooks/usePrimaryColor";
 import useFontFamily from "../hooks/useFontFamily";
 
@@ -88,7 +89,8 @@ const BackNextSkeleton = ({
               gap: 2,
               alignItems: "center",
               flex: 1,
-              justifyContent: rightContent ? "flex-start" : "flex-end",
+              justifyContent: "flex-end",
+              flexWrap: "wrap",
               minWidth: 0
             }}
           >
@@ -105,21 +107,7 @@ const BackNextSkeleton = ({
                 {t(nextText)} <ArrowForwardIosIcon />
               </Button>
             )}
-            {rightContent && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  right: 0,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  display: "flex",
-                  gap: 2,
-                  alignItems: "center"
-                }}
-              >
-                {rightContent}
-              </Box>
-            )}
+            {rightContent}
             {errorMessage.length > 0 && (
               <Alert
                 severity="error"

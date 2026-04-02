@@ -54,7 +54,8 @@ const DatasetView = () => {
     schemaDataConformantHeader,
     schemaDataConformantRowData,
     setSchemaDataConformantRowData,
-    schemaRawFile
+    schemaRawFile,
+    datasetRawFile
   } = useContext(Context);
 
   const [schemaColumnDefs, setSchemaColumnDefs] = useState([]);
@@ -128,7 +129,11 @@ const DatasetView = () => {
           });
 
           setSchemaDataConformantRowData(result);
-          if (schemaRawFile.length > 0) {
+          if (
+            schemaRawFile.length > 0 ||
+            datasetRawFile.length > 0 ||
+            (schemaDataConformantHeader?.length ?? 0) > 0
+          ) {
             setCurrentDataValidatorPage("AttributeMatchDataValidator");
           } else {
             setCurrentDataValidatorPage("StartDataValidator");
