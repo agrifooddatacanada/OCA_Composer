@@ -507,7 +507,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
               Attribute: attr.Attribute,
               Label: attr.Attribute, // Default label is attribute name
               Description: attr.Description || "",
-              List: "Not a List"
+              List: ""
             });
           }
         });

@@ -124,7 +124,7 @@ export const ListRenderer = memo((props) => {
   const notAListText = t("Not a List");
 
   if (!listText || listText === notAListText) {
-    return <Box>{notAListText}</Box>;
+    return <Box />;
   }
 
   return <TruncatedListCell value={listText} />;
@@ -524,7 +524,7 @@ export default function ViewGrid({
       item.List =
         item.List && item.List[currentLanguage]
           ? item.List[currentLanguage]
-          : t("Not a List");
+          : "";
 
       // Translate Type column value
       item.Type = item.Type;
@@ -568,7 +568,7 @@ export default function ViewGrid({
     });
 
     setRowData(newRowData);
-  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchema, t]);
+  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchema]);
 
   const viewSchemaGridFixedViewport =
     rowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;

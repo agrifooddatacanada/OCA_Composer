@@ -178,6 +178,7 @@
   "Unit": "Unit",
   "Type": "Type",
   "List": "List",
+  "These are the entry codes for Array type attributes.": "These are the entry codes for Array type attributes.",
   "The units of each attribute (or leave blank if the attribute is...": "The units of each attribute (or leave blank if the attribute is not a measurement and has no units).",
   "Rather than allow free text entry into a record,...": "Rather than allowing free text entry into a record, you may wish to limit entries to one of a few in a list. For example, you may wish to create a list of choices for gender, or for experimental farm name, or for species. You will then be able to create entries for your list that will be part of the schema.",
   "Sensitive": "Sensitive",

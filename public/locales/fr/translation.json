@@ -175,6 +175,7 @@
   "Unit": "Unité",
   "Type": "Type",
   "List": "Liste",
+  "These are the entry codes for Array type attributes.": "Il s'agit des codes d'entrée pour les attributs de type Tableau.",
   "The units of each attribute (or leave blank if the attribute is...": "Les unités de chaque attribut (ou laisser vide si l'attribut n'est pas une mesure et n'a pas d'unités).",
   "Rather than allow free text entry into a record,...": "Plutôt que d'autoriser la saisie de texte libre dans un enregistrement, vous souhaiterez peut-être limiter les entrées à l'une des quelques entrées d'une liste. Par exemple, vous souhaiterez peut-être créer une liste de choix pour le sexe, le nom de la ferme expérimentale ou l'espèce. Vous pourrez alors créer des entrées pour votre liste qui feront partie du schéma.",
   "Sensitive": "Sensible",

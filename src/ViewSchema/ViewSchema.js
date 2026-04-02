@@ -534,7 +534,6 @@ export default function ViewSchema({
               descriptionObj[lang] = langData?.Description || "";
               labelObj[lang] = langData?.Label || "";
 
-              // Build list text from entry codes for this language, or Not a List
               if (codesForAttr.length > 0) {
                 const items = codesForAttr
                   .map((row) => {
@@ -542,9 +541,9 @@ export default function ViewSchema({
                     return row[lang] || row.Code;
                   })
                   .filter(Boolean);
-                listObj[lang] = items.length > 0 ? items.join(" | ") : t("Not a List");
+                listObj[lang] = items.length > 0 ? items.join(" | ") : "";
               } else {
-                listObj[lang] = t("Not a List");
+                listObj[lang] = "";
               }
             });
 

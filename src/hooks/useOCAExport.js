@@ -162,7 +162,7 @@ const useOCAExport = () => {
         
         rowObject.Label = lanRow.Label || "";
         rowObject.Description = lanRow.Description || "";
-        rowObject.List = lanRow.List || (attrRow.List ? "" : "Not a List");
+        rowObject.List = lanRow.List || "";
         rowObject.Language = language;
         rowData.push(rowObject);
       });

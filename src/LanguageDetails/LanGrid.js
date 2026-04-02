@@ -103,11 +103,6 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     () => schemaState?.attributes || [],
     [schemaState?.attributes]
   );
-  const attributesWithLists = useMemo(
-    () => schemaState?.attributesWithLists || [],
-    [schemaState?.attributesWithLists]
-  );
-
   // effectiveAttributesList is now just attributesList (already computed correctly)
   const effectiveAttributesList = attributesList;
 
@@ -127,7 +122,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         effectiveAttributesList.forEach((item) => {
           let listDisplay = attributeRowData.find((obj) => obj.Attribute === item)?.List;
           if (!listDisplay) {
-            listDisplay = t("Not a List");
+            listDisplay = "";
           } else {
             const listDisplayArray = [];
             stableEntryCodes[item]?.forEach((row) => {
@@ -136,7 +131,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
               if (value) listDisplayArray.push(value);
             });
             const listDisplayString = listDisplayArray.join(" | ");
-            listDisplay = listDisplayString || t("Not a List");
+            listDisplay = listDisplayString || "";
           }
           
           const overlaylangCodeOCA = langCodeOCAFromName(language);
@@ -166,7 +161,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           
           let listDisplay = item.List;
           if (!listDisplay) {
-            listDisplay = t("Not a List");
+            listDisplay = "";
           } else {
             const listDisplayArray = [];
             stableEntryCodes[item.Attribute]?.forEach((row) => {
@@ -175,7 +170,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
               if (value) listDisplayArray.push(value);
             });
             const listDisplayString = listDisplayArray.join(" | ");
-            listDisplay = listDisplayString || t("Not a List");
+            listDisplay = listDisplayString || "";
           }
 
           newLanguageList.push({
@@ -245,14 +240,17 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     },
     {
       field: "List",
-      headerName: t("List"),
       editable: false,
       width: 305,
       cellRenderer: (params) => <TruncatedListCell value={params.value} />,
-      cellStyle: (params) =>
-        attributesWithLists.includes(params.data.Attribute) ? {} : greyCellStyle
+      cellStyle: () => greyCellStyle,
+      headerComponent: CellHeader,
+      headerComponentParams: {
+        headerText: t("List"),
+        helpText: t("These are the entry codes for Array type attributes.")
+      }
     }
-  ], [t, attributesWithLists]);
+  ], [t]);
 
   const getRowHeight = useCallback((params) => {
     const attrH = measureTextHeight(params.data?.Attribute || "", 120, {});
@@ -346,8 +344,10 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
           .lan-grid .ag-cell[col-id="Description"] {
             background-color: ${CustomPalette.WHITE} !important;
           }
+          .lan-grid .ag-header-cell[col-id="Attribute"],
           .lan-grid .ag-header-cell[col-id="Label"],
-          .lan-grid .ag-header-cell[col-id="Description"] {
+          .lan-grid .ag-header-cell[col-id="Description"],
+          .lan-grid .ag-header-cell[col-id="List"] {
             background-color: ${CustomPalette.WHITE} !important;
           }
           `
