@@ -102,11 +102,11 @@ const ExportButton = ({ handleSave, validatedData, currentSchemaName }) => {
         color="button"
         variant="contained"
         sx={{
-          alignSelf: "flex-end",
           display: "flex",
           justifyContent: "space-around",
           padding: "0.5rem 1rem",
-          fontFamily
+          fontFamily,
+          flexShrink: 0
         }}
       >
         {t("Download Data")}

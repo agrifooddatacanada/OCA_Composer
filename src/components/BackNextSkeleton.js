@@ -42,56 +42,77 @@ const BackNextSkeleton = ({
         <Box
           sx={{
             width: "100%",
-            display: "flex",
-            justifyContent: "space-between",
+            display: "grid",
+            gridTemplateColumns: "auto minmax(0, 1fr) auto",
+            alignItems: "start",
+            columnGap: 2,
             position: "relative",
             zIndex: 1250,
             bgcolor: "background.default"
           }}
         >
-          {isBack ? (
-            <Button
-              color="navButton"
-              sx={{
-                textAlign: "left",
-                alignSelf: "flex-start",
-                color: primaryColor,
-                fontFamily
-              }}
-              onClick={pageBack}
-            >
-              <ArrowBackIosIcon /> {t(backText)}
-            </Button>
-          ) : (
-            <Box />
-          )}
-          {middleText && (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: CustomPalette.GREY_200,
-
-                marginLeft: "2rem",
-                marginRight: "2rem",
-                paddingLeft: "1rem",
-                paddingRight: "1rem"
-              }}
-            >
-              <p>{middleText}</p>
-            </Box>
-          )}
+          <Box sx={{ justifySelf: "start" }}>
+            {isBack ? (
+              <Button
+                color="navButton"
+                sx={{
+                  textAlign: "left",
+                  color: primaryColor,
+                  fontFamily
+                }}
+                onClick={pageBack}
+              >
+                <ArrowBackIosIcon /> {t(backText)}
+              </Button>
+            ) : null}
+          </Box>
+          <Box
+            sx={{
+              justifySelf: "stretch",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minWidth: 0,
+              px: 1
+            }}
+          >
+            {middleText ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: CustomPalette.GREY_200,
+                  paddingLeft: "1rem",
+                  paddingRight: "1rem",
+                  py: 0.5,
+                  maxWidth: "100%",
+                  boxSizing: "border-box"
+                }}
+              >
+                <Box
+                  component="p"
+                  sx={{
+                    m: 0,
+                    textAlign: "center",
+                    fontFamily,
+                    overflowWrap: "break-word"
+                  }}
+                >
+                  {middleText}
+                </Box>
+              </Box>
+            ) : null}
+          </Box>
           <Box
             sx={{
               position: "relative",
+              justifySelf: "end",
               display: "flex",
               gap: 2,
               alignItems: "center",
-              flex: 1,
-              justifyContent: "flex-end",
               flexWrap: "wrap",
-              minWidth: 0
+              flexShrink: 0
             }}
           >
             {isForward && (
@@ -101,7 +122,8 @@ const BackNextSkeleton = ({
                 disabled={disableForward}
                 sx={{
                   color: primaryColor,
-                  fontFamily
+                  fontFamily,
+                  flexShrink: 0
                 }}
               >
                 {t(nextText)} <ArrowForwardIosIcon />

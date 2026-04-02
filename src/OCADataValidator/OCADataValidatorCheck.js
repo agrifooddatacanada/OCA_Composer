@@ -1146,16 +1146,18 @@ const OCADataValidatorCheck = ({
             sx={{
               width: "100%",
               display: "flex",
-              justifyContent: "space-between"
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              columnGap: 2
             }}
           >
             <Button
               color="navButton"
               sx={{
                 textAlign: "left",
-                alignSelf: "flex-start",
                 color: primaryColor,
-                fontFamily
+                fontFamily,
+                flexShrink: 0
               }}
               onClick={handleMoveBack}
             >
@@ -1169,8 +1171,11 @@ const OCADataValidatorCheck = ({
                 alignItems: "center",
                 backgroundColor: CustomPalette.RED_100,
                 width: "400px",
+                maxWidth: "min(400px, 100%)",
                 marginLeft: "1rem",
-                marginRight: "1rem"
+                marginRight: "1rem",
+                flexShrink: 1,
+                minWidth: 0
               }}
             >
               <ErrorOutlineIcon
@@ -1186,7 +1191,10 @@ const OCADataValidatorCheck = ({
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "row"
+                flexDirection: "row",
+                alignItems: "flex-start",
+                gap: 2,
+                flexShrink: 0
               }}
             >
               {/* <ExportButton handleSave={handleSave} inputDataType={datasetRawFileType} /> */}
