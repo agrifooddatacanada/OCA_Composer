@@ -392,14 +392,17 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
           maxWidth: "100%",
           minWidth: 0,
           overflowX: "hidden",
-          overflowY: gridFixedHeightMode ? "hidden" : manyCodes ? "auto" : "visible",
-          ...(gridFixedHeightMode ? {} : manyCodes ? { maxHeight: "min(70vh, 560px)" } : {})
+          overflowY: gridFixedHeightMode ? "hidden" : "visible"
         }}
       >
         <Box
           sx={{
-            width: "100%",
-            boxSizing: "border-box"
+            width: gridFixedHeightMode ? "100%" : `min(${minTablePx}px, 100%)`,
+            maxWidth: "100%",
+            boxSizing: "border-box",
+            ...(manyCodes && !gridFixedHeightMode
+              ? { maxHeight: "min(70vh, 560px)", overflowY: "auto" }
+              : {})
           }}
         >
         <div
@@ -434,7 +437,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
               width: "100%",
               height: gridFixedHeightMode ? "100%" : "auto"
             }}
-            suppressHorizontalScroll
+            suppressHorizontalScroll={!gridFixedHeightMode}
             getRowHeight={getRowHeight}
             onCellKeyDown={onCellKeyDown}
             onFirstDataRendered={handleFirstDataRendered}

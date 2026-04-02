@@ -121,4 +121,15 @@ export const codeGridStyle = `
   .entry-codes-grid-fixed-viewport.ag-theme-balham .ag-root-wrapper {
     height: 100%;
   }
+  .entry-codes-grid .ag-horizontal-left-spacer,
+  .entry-codes-grid .ag-horizontal-right-spacer {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .entry-codes-grid .ag-horizontal-left-spacer::-webkit-scrollbar,
+  .entry-codes-grid .ag-horizontal-right-spacer::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
 `;

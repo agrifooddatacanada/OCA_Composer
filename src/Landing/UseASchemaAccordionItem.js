@@ -55,9 +55,9 @@ const UseASchemaAccordionItem = () => {
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
   const navigateToEditSchema = () => {
-    // Always go to Schema Metadata page for editing
     setCurrentPage("Metadata");
     navigate("/start");
+    window.scrollTo(0, 0);
   };
 
   const navigateToViewPage = () => {

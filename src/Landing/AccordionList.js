@@ -76,6 +76,7 @@ const AccordionList = () => {
   const navigateToEditSchema = () => {
     setCurrentPage("Metadata");
     navigate("/start");
+    window.scrollTo(0, 0);
   };
 
   const navigateToViewPage = () => {
