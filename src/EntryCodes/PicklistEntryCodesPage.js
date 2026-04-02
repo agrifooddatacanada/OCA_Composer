@@ -212,13 +212,13 @@ export default function PicklistEntryCodesPage() {
             mb: 2
           }}
         >
-          {t("Picklists")}
+          {t("Entry Codes")}
         </Typography>
 
         <TextField
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("Search picklists")}
+          placeholder={t("Search entry codes")}
           fullWidth
           sx={{
             mb: 3,
