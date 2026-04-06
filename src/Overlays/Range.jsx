@@ -105,7 +105,7 @@ const Range = forwardRef((props, ref) => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Format Rule"),
-          helpText: `${t("The format rule that is applied to the attribute")}.`
+          helpText: t("The format rule that is applied to the attribute")
         },
         valueFormatter: (params) =>
           getFormatRuleDescription(params.data.Type, params.value, t) || params.value
@@ -118,7 +118,7 @@ const Range = forwardRef((props, ref) => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Lower Bound"),
-          helpText: `${t("The lower bound of the range")}.`
+          helpText: t("The lower bound of the range")
         },
         cellStyle: getCellValidationStyle,
         wrapText: true
@@ -131,7 +131,7 @@ const Range = forwardRef((props, ref) => {
           gridRef,
           field: "LowerInclusive",
           columnName: t("Inclusive"),
-          helpText: `${t("Whether or not the lower bound is included in the range")}.`
+          helpText: t("Whether or not the lower bound is included in the range")
         },
         cellRenderer: CheckboxRenderer,
         cellRendererParams: {
@@ -148,7 +148,7 @@ const Range = forwardRef((props, ref) => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Upper Bound"),
-          helpText: `${t("The upper bound of the range")}.`
+          helpText: t("The upper bound of the range")
         },
         cellStyle: getCellValidationStyle,
         wrapText: true
@@ -161,7 +161,7 @@ const Range = forwardRef((props, ref) => {
           gridRef,
           field: "UpperInclusive",
           columnName: t("Inclusive"),
-          helpText: `${t("Whether or not the upper bound is included in the range")}.`
+          helpText: t("Whether or not the upper bound is included in the range")
         },
         cellRenderer: CheckboxRenderer,
         cellRendererParams: {

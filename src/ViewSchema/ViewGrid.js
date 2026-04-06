@@ -306,7 +306,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Lower Bound"),
-              helpText: `${t("The lower bound of the range")}.`
+              helpText: t("The lower bound of the range")
             }
           });
 
@@ -317,7 +317,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Lower Inclusive"),
-              helpText: `${t("Whether or not the lower bound is included in the range")}.`
+              helpText: t("Whether or not the lower bound is included in the range")
             },
             cellRenderer: CheckboxRenderer
           });
@@ -329,7 +329,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Upper Bound"),
-              helpText: `${t("The upper bound of the range")}.`
+              helpText: t("The upper bound of the range")
             }
           });
 
@@ -340,7 +340,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Upper Inclusive"),
-              helpText: `${t("Whether or not the upper bound is included in the range")}.`
+              helpText: t("Whether or not the upper bound is included in the range")
             },
             cellRenderer: CheckboxRenderer
           });
