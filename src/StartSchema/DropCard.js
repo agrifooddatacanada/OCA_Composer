@@ -156,23 +156,6 @@ export default function DropCard({
                       }}
                     />
                   )}
-
-                  {dropDisabled === true && (
-                    <Typography
-                      sx={{
-                        fontSize: 14,
-                        mb: 2,
-                        color: CustomPalette.GREY_600,
-                        fontFamily,
-                        whiteSpace: "pre-line",
-                        textAlign: "center"
-                      }}
-                      gutterBottom
-                    >
-                      Use the buttons below to add a <strong>new</strong> file or{" "}
-                      <strong>edit</strong> the uploaded file.
-                    </Typography>
-                  )}
                 </Box>
 
                 <Typography

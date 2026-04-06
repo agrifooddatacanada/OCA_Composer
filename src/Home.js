@@ -415,7 +415,7 @@ const Home = ({
             stepErrors={stepErrors}
           />
         )}
-        {currentPage === "Start" && <StartSchema pageForward={pageForward} />}
+        {currentPage === "Start" && <StartSchema />}
         {currentPage === "Metadata" && (
           <SchemaMetadata
             ref={schemaMetadataRef}

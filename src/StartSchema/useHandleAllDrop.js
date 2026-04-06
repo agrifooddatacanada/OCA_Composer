@@ -31,7 +31,6 @@ const useHandleAllDrop = () => {
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
   const [dropMessage, setDropMessage] = useState({ message: "", type: "" });
-  const [switchToLastPage, setSwitchToLastPage] = useState(false);
   const [excelSheetNames, setExcelSheetNames] = useState([]);
   const [tempExcel, setTempExcel] = useState(null);
 
@@ -334,6 +333,8 @@ const useHandleAllDrop = () => {
         switchToSchema(root, ocaPackage);
 
         handleBundleJSONDrop(ocaPackage.oca_bundle.bundle, ocaPackage);
+        setLoading(false);
+        setCurrentPage("View");
         } catch (error) {
           console.error("Zip upload error:", error);
           setDropMessage({ message: messages.uploadFail, type: "error" });
@@ -345,13 +346,6 @@ const useHandleAllDrop = () => {
       };
 
       reader.readAsArrayBuffer(acceptedFiles[0]);
-
-      setTimeout(() => {
-        setDropDisabled(true);
-        setDropMessage({ message: "", type: "" });
-        setLoading(false);
-        setSwitchToLastPage(true);
-      }, 900);
     } catch (error) {
       console.error("Zip upload error:", error);
       setDropMessage({ message: messages.uploadFail, type: "error" });
@@ -454,32 +448,37 @@ const useHandleAllDrop = () => {
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const jsonFile = coerceIfLegacyTopLevelBundle(JSON.parse(e.target.result));
-        if (jsonFile?.oca_bundle?.bundle) {
-          const modifiedBundle = replaceAttributeCharsInParsedJson(
-            jsonFile.oca_bundle.bundle
-          );
-          setOcaPackage(jsonFile);
+        try {
+          const jsonFile = coerceIfLegacyTopLevelBundle(JSON.parse(e.target.result));
+          if (jsonFile?.oca_bundle?.bundle) {
+            const modifiedBundle = replaceAttributeCharsInParsedJson(
+              jsonFile.oca_bundle.bundle
+            );
+            setOcaPackage(jsonFile);
 
-          loadAllSchemasFromOcaPackage(jsonFile);
+            loadAllSchemasFromOcaPackage(jsonFile);
 
-          switchToSchema(jsonFile.oca_bundle.bundle.d, jsonFile);
-          handleBundleJSONDrop(modifiedBundle, jsonFile);
-        } else if (jsonFile?.schema?.[0]) {
-          handleBundleJSONDrop(jsonFile?.schema?.[0]);
-        } else {
-          handleBundleJSONDrop(jsonFile);
+            switchToSchema(jsonFile.oca_bundle.bundle.d, jsonFile);
+            handleBundleJSONDrop(modifiedBundle, jsonFile);
+          } else if (jsonFile?.schema?.[0]) {
+            handleBundleJSONDrop(jsonFile?.schema?.[0]);
+          } else {
+            handleBundleJSONDrop(jsonFile);
+          }
+          setDropMessage({ message: "", type: "" });
+          setLoading(false);
+          setCurrentPage("View");
+        } catch (error) {
+          console.error("Json upload error:", error);
+          setDropMessage({ message: messages.uploadFail, type: "error" });
+          setLoading(false);
+          setTimeout(() => {
+            setDropMessage({ message: "", type: "" });
+          }, 2500);
         }
       };
 
       reader.readAsText(acceptedFiles[0]);
-
-      setTimeout(() => {
-        setDropDisabled(true);
-        setDropMessage({ message: "", type: "" });
-        setLoading(false);
-        setSwitchToLastPage(true);
-      }, 900);
     } catch (error) {
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
@@ -585,6 +584,17 @@ const useHandleAllDrop = () => {
     }
   }, [loading]);
 
+  const resetUploadState = useCallback(() => {
+    setFileData([]);
+    setRawFile([]);
+    setDropDisabled(false);
+    setLoading(false);
+    setDropMessage({ message: "", type: "" });
+    setExcelSheetNames([]);
+    setTempExcel(null);
+    setExcelSheetChoice(-1);
+  }, [setExcelSheetChoice]);
+
   return {
     rawFile,
     setRawFile,
@@ -597,7 +607,7 @@ const useHandleAllDrop = () => {
     setDropDisabled,
     setFileData,
     setCurrentPage,
-    switchToLastPage,
+    resetUploadState,
     excelSheetNames,
     setExcelSheetChoice,
     setExcelSheetNames,
