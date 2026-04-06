@@ -209,7 +209,8 @@ export const gridStyles = `
 
 .character-encoding-grid.ag-theme-balham,
 .form-information-grid.ag-theme-balham,
-.required-entries-grid.ag-theme-balham {
+.required-entries-grid.ag-theme-balham,
+.cardinality-overlay-grid.ag-theme-balham {
   min-height: 120px;
 }
 .overlay-grid-fixed-viewport.ag-theme-balham:not(.ag-grid-compact) {

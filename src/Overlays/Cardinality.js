@@ -24,7 +24,7 @@ import { useTranslation } from "react-i18next";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
+import { AG_GRID_VIRTUALIZE_MIN_ROWS, BETWEEN_SECTION_SPACING } from "../constants/constants";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { gridStyles, greyCellStyle } from "../constants/styles";
@@ -41,7 +41,6 @@ import "../App.css";
 const CARDINALITY_COL_SUM_PX = 160 + 200 + 140;
 
 const gridOptions = {
-  domLayout: "autoHeight",
   singleClickEdit: true,
   stopEditingWhenCellsLoseFocus: true
 };
@@ -431,6 +430,9 @@ const Cardinality = () => {
 
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 
+  const cardinalityGridFixedViewport =
+    cardinalityData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+
   const getRowHeight = useCallback((params) => {
     const attrH = measureTextHeight(params.data?.Attribute || "", 144);
     const labelH = measureTextHeight(params.data?.Label || "", 184);
@@ -515,18 +517,19 @@ const Cardinality = () => {
         }}
       >
         <Box
-          className="cardinality-overlay-grid overlay-grid-suppress-hscroll ag-theme-balham"
+          className={`cardinality-overlay-grid overlay-grid-suppress-hscroll${cardinalityGridFixedViewport ? " overlay-grid-fixed-viewport" : ""} ag-theme-balham${cardinalityGridFixedViewport ? "" : " ag-grid-compact"}`}
           sx={{
             width: "50%",
-            height: "100%",
             maxWidth: "600px",
             minWidth: CARDINALITY_COL_SUM_PX,
-            boxSizing: "border-box"
+            boxSizing: "border-box",
+            alignSelf: "flex-start",
+            ...(!cardinalityGridFixedViewport ? { height: "auto" } : {})
           }}
         >
           <style>{gridStyles}</style>
           <AgGridReact
-            key={i18n.language}
+            key={`${i18n.language}-${cardinalityGridFixedViewport ? "fx" : "ah"}`}
             ref={cardinalityRef}
             onCellClicked={handleCellClick}
             onCellKeyDown={handleCellKeyDown}
@@ -534,6 +537,11 @@ const Cardinality = () => {
             rowData={cardinalityData}
             columnDefs={columnDefs}
             gridOptions={gridOptions}
+            domLayout={cardinalityGridFixedViewport ? undefined : "autoHeight"}
+            style={{
+              width: "100%",
+              height: cardinalityGridFixedViewport ? "100%" : "auto"
+            }}
             suppressHorizontalScroll
             onGridReady={onGridReady}
             getRowHeight={getRowHeight}
