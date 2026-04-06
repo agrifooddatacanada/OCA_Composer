@@ -184,7 +184,8 @@ export const gridStyles = `
 .character-encoding-grid.ag-theme-balham .ag-body-viewport,
 .format-rule-v2-grid.ag-theme-balham .ag-body-viewport,
 .range-overlay-grid.ag-theme-balham .ag-body-viewport,
-.unit-framing-grid.ag-theme-balham .ag-body-viewport {
+.unit-framing-grid.ag-theme-balham .ag-body-viewport,
+.form-information-grid.ag-theme-balham .ag-body-viewport {
   scrollbar-gutter: auto;
 }
 `;
