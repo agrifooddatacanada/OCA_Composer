@@ -127,6 +127,70 @@ export default function Grid({
   loadingRef.current = loading;
   const endLoadCancelledRef = useRef(false);
   const loadDebounceRafRef = useRef(null);
+  const gridShellRef = useRef(null);
+  const shellWidthRafRef = useRef(null);
+  const [outerShellWidthPx, setOuterShellWidthPx] = useState(
+    ATTRIBUTE_GRID_COLUMN_SUM_PX
+  );
+
+  const syncAttributeGridShellWidth = useCallback(() => {
+    const shell = gridShellRef.current;
+    if (!shell) return;
+    const vs = shell.querySelector(".ag-body-vertical-scroll");
+    const next =
+      !vs || vs.classList.contains("ag-scrollbar-invisible")
+        ? ATTRIBUTE_GRID_COLUMN_SUM_PX
+        : ATTRIBUTE_GRID_COLUMN_SUM_PX + vs.offsetWidth;
+    setOuterShellWidthPx((prev) => (prev !== next ? next : prev));
+  }, []);
+
+  const scheduleAttributeGridShellWidth = useCallback(() => {
+    if (shellWidthRafRef.current != null) return;
+    shellWidthRafRef.current = requestAnimationFrame(() => {
+      shellWidthRafRef.current = null;
+      syncAttributeGridShellWidth();
+    });
+  }, [syncAttributeGridShellWidth]);
+
+  useLayoutEffect(() => {
+    const shell = gridShellRef.current;
+    if (!shell) return undefined;
+    let ro = null;
+    let cancelled = false;
+    const frame = requestAnimationFrame(() => {
+      if (cancelled) return;
+      const vp = shell.querySelector(".ag-body-viewport");
+      if (!vp) {
+        scheduleAttributeGridShellWidth();
+        return;
+      }
+      ro = new ResizeObserver(() => {
+        if (!cancelled) scheduleAttributeGridShellWidth();
+      });
+      ro.observe(vp);
+      scheduleAttributeGridShellWidth();
+    });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      ro?.disconnect();
+    };
+  }, [
+    attrGridFixedViewport,
+    attributeRowData.length,
+    i18n.language,
+    scheduleAttributeGridShellWidth
+  ]);
+
+  useEffect(() => {
+    const onResize = () => scheduleAttributeGridShellWidth();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [scheduleAttributeGridShellWidth]);
+
+  const onGridReady = useCallback(() => {
+    scheduleAttributeGridShellWidth();
+  }, [scheduleAttributeGridShellWidth]);
 
   useLayoutEffect(() => {
     if (loading) {
@@ -659,19 +723,22 @@ export default function Grid({
   }, []);
 
   const onFirstDataRendered = useCallback(() => {
+    scheduleAttributeGridShellWidth();
     scheduleEndBlockingLoad();
-  }, [scheduleEndBlockingLoad]);
+  }, [scheduleAttributeGridShellWidth, scheduleEndBlockingLoad]);
 
   const onModelUpdated = useCallback(() => {
+    scheduleAttributeGridShellWidth();
     scheduleEndBlockingLoad();
-  }, [scheduleEndBlockingLoad]);
+  }, [scheduleAttributeGridShellWidth, scheduleEndBlockingLoad]);
 
   return (
     <div style={{ margin: "2rem 2rem 0 2rem" }}>
       <div
+        ref={gridShellRef}
         className={`attribute-details-grid overlay-grid-suppress-hscroll ag-theme-balham${attrGridFixedViewport ? "" : " ag-grid-compact"}`}
         style={{
-          width: ATTRIBUTE_GRID_COLUMN_SUM_PX,
+          width: outerShellWidthPx,
           overflowX: "hidden"
         }}
       >
@@ -702,6 +769,7 @@ export default function Grid({
           onCellValueChanged={(e) => handleCellValueChanged(e)}
           onRowDragLeave={(e) => onRowDragLeave(e)}
           rowDragManaged={rowDragManaged}
+          onGridReady={onGridReady}
           onFirstDataRendered={onFirstDataRendered}
           onModelUpdated={onModelUpdated}
           overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
