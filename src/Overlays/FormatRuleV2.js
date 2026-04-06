@@ -409,7 +409,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         }}
       >
         <Box
-          className={`format-rule-v2-grid ag-theme-balham${formatGridScrollViewport ? "" : " ag-grid-compact"}`}
+          className={`format-rule-v2-grid overlay-grid-suppress-hscroll ag-theme-balham${formatGridScrollViewport ? "" : " ag-grid-compact"}`}
           sx={{
             width: 790,
             overflow: "hidden",

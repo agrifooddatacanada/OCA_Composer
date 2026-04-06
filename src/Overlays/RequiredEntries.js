@@ -190,29 +190,10 @@ const RequiredEntries = () => {
         }}
       >
         <div
-          className={`required-entries-grid ag-theme-balham${requiredGridFixedViewport ? "" : " ag-grid-compact"}`}
+          className={`required-entries-grid overlay-grid-suppress-hscroll${requiredGridFixedViewport ? " overlay-grid-fixed-viewport" : ""} ag-theme-balham${requiredGridFixedViewport ? "" : " ag-grid-compact"}`}
           style={{ width: "100%", minWidth: requiredOuterWidthPx, overflow: "hidden" }}
         >
           <style>{gridStyles}</style>
-          <style>{`
-  .required-entries-grid .ag-cell[col-id="Attribute"] .ag-cell-value {
-    text-align: center;
-    width: 100%;
-  }
-  .required-entries-grid .ag-header-cell[col-id="Required Entry"] input[type="checkbox"],
-  .required-entries-grid .ag-cell[col-id="Required Entry"] input[type="checkbox"] {
-    width: 13px;
-    height: 13px;
-    margin: 0;
-  }
-  .required-entries-grid.ag-theme-balham {
-    ${requiredGridFixedViewport ? "height: min(70vh, 560px);" : ""}
-    min-height: 120px;
-  }
-  .required-entries-grid .ag-root-wrapper {
-    height: ${requiredGridFixedViewport ? "100%" : "auto"};
-  }
-`}</style>
           <AgGridReact
             key={`${i18n.language}-${requiredGridFixedViewport ? "fx" : "ah"}`}
             ref={gridRef}

@@ -515,7 +515,7 @@ const Cardinality = () => {
         }}
       >
         <Box
-          className="ag-theme-balham"
+          className="cardinality-overlay-grid overlay-grid-suppress-hscroll ag-theme-balham"
           sx={{
             width: "50%",
             height: "100%",

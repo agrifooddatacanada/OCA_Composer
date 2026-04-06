@@ -9,7 +9,7 @@ import TypeTooltip from "./TypeTooltip";
 import CellHeader from "../components/CellHeader";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import { measureTextHeight } from "../utils/measureTextLines";
-import { flexCenter, preWrapWordBreak } from "../constants/styles";
+import { flexCenter, gridStyles, preWrapWordBreak } from "../constants/styles";
 import CheckboxRenderer from "./CheckboxRenderer";
 import FlaggedHeader from "./FlaggedHeader";
 import ListHeader from "./ListHeader";
@@ -65,12 +65,6 @@ const gridStyle = `
     border-right: none !important;
   }
   .ag-header-row .ag-header-cell:last-child::after {
-    display: none !important;
-  }
-  .ag-header-viewport {
-    overflow-x: hidden;
-  }
-  .attribute-details-grid .ag-body-horizontal-scroll {
     display: none !important;
   }
   .attribute-details-grid .ag-header-cell[col-id="Sensitive"] input[type="checkbox"],
@@ -675,12 +669,13 @@ export default function Grid({
   return (
     <div style={{ margin: "2rem 2rem 0 2rem" }}>
       <div
-        className={`attribute-details-grid ag-theme-balham${attrGridFixedViewport ? "" : " ag-grid-compact"}`}
+        className={`attribute-details-grid overlay-grid-suppress-hscroll ag-theme-balham${attrGridFixedViewport ? "" : " ag-grid-compact"}`}
         style={{
           width: ATTRIBUTE_GRID_COLUMN_SUM_PX,
           overflowX: "hidden"
         }}
       >
+        <style>{gridStyles}</style>
         <style>{gridStyle}</style>
         <style>{attributeGridViewportStyle}</style>
         <AgGridReact

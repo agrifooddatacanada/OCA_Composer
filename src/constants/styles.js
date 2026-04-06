@@ -186,7 +186,54 @@ export const gridStyles = `
 .range-overlay-grid.ag-theme-balham .ag-body-viewport,
 .unit-framing-grid.ag-theme-balham .ag-body-viewport,
 .form-information-grid.ag-theme-balham .ag-body-viewport,
+.required-entries-grid.ag-theme-balham .ag-body-viewport,
+.cardinality-overlay-grid.ag-theme-balham .ag-body-viewport,
+.attribute-details-grid.ag-theme-balham .ag-body-viewport,
 .lan-grid.ag-theme-balham .ag-body-viewport {
   scrollbar-gutter: auto;
 }
+
+.overlay-grid-suppress-hscroll.ag-theme-balham .ag-body-horizontal-scroll {
+  display: none !important;
+}
+.overlay-grid-suppress-hscroll.ag-theme-balham .ag-header-viewport,
+.overlay-grid-suppress-hscroll.ag-theme-balham .ag-body-viewport,
+.overlay-grid-suppress-hscroll.ag-theme-balham .ag-center-cols-viewport {
+  padding-right: 0 !important;
+  overflow-x: hidden !important;
+}
+.overlay-grid-suppress-hscroll.ag-theme-balham .ag-root-wrapper,
+.overlay-grid-suppress-hscroll.ag-theme-balham .ag-body-viewport-wrapper {
+  overflow-x: hidden !important;
+}
+
+.character-encoding-grid.ag-theme-balham,
+.form-information-grid.ag-theme-balham,
+.required-entries-grid.ag-theme-balham {
+  min-height: 120px;
+}
+.overlay-grid-fixed-viewport.ag-theme-balham:not(.ag-grid-compact) {
+  height: min(70vh, 560px);
+}
+.overlay-grid-fixed-viewport.ag-theme-balham:not(.ag-grid-compact) .ag-root-wrapper {
+  height: 100%;
+}
+
+.required-entries-grid .ag-cell[col-id="Attribute"] .ag-cell-value {
+  text-align: center;
+  width: 100%;
+}
+.required-entries-grid .ag-header-cell[col-id="Required Entry"] input[type="checkbox"],
+.required-entries-grid .ag-cell[col-id="Required Entry"] input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+}
 `;
+
+export function rangeOverlayViewportCss(fixedViewport) {
+  if (fixedViewport) {
+    return `.range-overlay-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.range-overlay-grid .ag-root-wrapper{height:100%}`;
+  }
+  return `.range-overlay-grid.ag-theme-balham{min-height:80px}.range-overlay-grid .ag-root-wrapper{height:auto}.range-overlay-grid .ag-root-wrapper-body.ag-layout-auto-height{min-height:unset!important}.range-overlay-grid .ag-layout-auto-height .ag-center-cols-clipper{min-height:unset!important}.range-overlay-grid .ag-layout-auto-height .ag-body-viewport{flex:none!important;min-height:unset!important}.range-overlay-grid .ag-body-viewport-wrapper{min-height:unset!important}.range-overlay-grid .ag-layout-auto-height .ag-body-viewport-wrapper{flex:none!important;min-height:unset!important}`;
+}

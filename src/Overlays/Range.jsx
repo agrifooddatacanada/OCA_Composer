@@ -15,7 +15,7 @@ import {
 } from "../constants/constants";
 import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
-import { flexCenter, gridStyles, greyCellStyle } from "../constants/styles";
+import { flexCenter, gridStyles, greyCellStyle, rangeOverlayViewportCss } from "../constants/styles";
 import CheckboxHeader from "../components/CheckboxHeader";
 import Loading from "../components/Loading";
 import CheckboxRenderer from "../AttributeDetails/CheckboxRenderer";
@@ -269,10 +269,6 @@ const Range = forwardRef((props, ref) => {
 
   const rangeGridFixedViewport =
     rangeRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
-  const rangeGridViewportStyle = rangeGridFixedViewport
-    ? `.range-overlay-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.range-overlay-grid .ag-root-wrapper{height:100%}`
-    : `.range-overlay-grid.ag-theme-balham{min-height:80px}.range-overlay-grid .ag-root-wrapper{height:auto}.range-overlay-grid .ag-root-wrapper-body.ag-layout-auto-height{min-height:unset!important}.range-overlay-grid .ag-layout-auto-height .ag-center-cols-clipper{min-height:unset!important}.range-overlay-grid .ag-layout-auto-height .ag-body-viewport{flex:none!important;min-height:unset!important}.range-overlay-grid .ag-body-viewport-wrapper{min-height:unset!important}.range-overlay-grid .ag-layout-auto-height .ag-body-viewport-wrapper{flex:none!important;min-height:unset!important}`;
-
   const handleValidate = () => {
     gridRef.current.api.stopEditing();
     setShouldRevalidate(false);
@@ -326,11 +322,11 @@ const Range = forwardRef((props, ref) => {
       )}
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         <Box
-          className={`range-overlay-grid ag-theme-balham${rangeGridFixedViewport ? "" : " ag-grid-compact"}`}
+          className={`range-overlay-grid overlay-grid-suppress-hscroll ag-theme-balham${rangeGridFixedViewport ? "" : " ag-grid-compact"}`}
           sx={{ width: 920 }}
         >
           <style>{gridStyles}</style>
-          <style>{rangeGridViewportStyle}</style>
+          <style>{rangeOverlayViewportCss(rangeGridFixedViewport)}</style>
           <Box sx={{ display: "flex", alignItems: "center", mb: "1.6rem", position: "relative" }}>
             <Tooltip title={t("Range bounds must match the format rules.")} placement="top" arrow>
               <IconButton size="small" sx={{ position: "absolute", left: -32, top: "50%", transform: "translateY(-50%)" }} aria-label="Range bounds info">
@@ -376,6 +372,7 @@ const Range = forwardRef((props, ref) => {
             stopEditingWhenCellsLoseFocus
             onGridReady={onGridReady}
             onCellValueChanged={onCellValueChanged}
+            suppressHorizontalScroll
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
         </Box>

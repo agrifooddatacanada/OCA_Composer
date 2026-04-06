@@ -745,19 +745,10 @@ const FormInformation = () => {
         </Box>
         <div ref={refContainer}>
           <Box
-            className={`form-information-grid ag-theme-balham${formInfoGridFixedViewport ? "" : " ag-grid-compact"}`}
+            className={`form-information-grid overlay-grid-suppress-hscroll${formInfoGridFixedViewport ? " overlay-grid-fixed-viewport" : ""} ag-theme-balham${formInfoGridFixedViewport ? "" : " ag-grid-compact"}`}
             sx={{ width: 1003 }}
           >
             <style>{gridStyles}</style>
-            <style>{`
-.form-information-grid.ag-theme-balham {
-  ${formInfoGridFixedViewport ? "height: min(70vh, 560px);" : ""}
-  min-height: 120px;
-}
-.form-information-grid .ag-root-wrapper {
-  height: ${formInfoGridFixedViewport ? "100%" : "auto"};
-}
-`}</style>
             <AgGridReact
               key={`${i18n.language}-${formInfoGridFixedViewport ? "fx" : "ah"}`}
               ref={gridRef}

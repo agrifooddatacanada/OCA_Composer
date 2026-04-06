@@ -196,19 +196,10 @@ const CharacterEncoding = () => {
         <Box style={{ display: "flex" }}>
           <Box
             ref={gridContainerRef}
-            className={`character-encoding-grid ag-theme-balham${encodingGridFixedViewport ? "" : " ag-grid-compact"}`}
+            className={`character-encoding-grid overlay-grid-suppress-hscroll${encodingGridFixedViewport ? " overlay-grid-fixed-viewport" : ""} ag-theme-balham${encodingGridFixedViewport ? "" : " ag-grid-compact"}`}
             sx={{ width: 380 }}
           >
             <style>{gridStyles}</style>
-            <style>{`
-.character-encoding-grid.ag-theme-balham {
-  ${encodingGridFixedViewport ? "height: min(70vh, 560px);" : ""}
-  min-height: 120px;
-}
-.character-encoding-grid .ag-root-wrapper {
-  height: ${encodingGridFixedViewport ? "100%" : "auto"};
-}
-`}</style>
             <AgGridReact
               key={`${i18n.language}-${encodingGridFixedViewport ? "fx" : "ah"}`}
               ref={gridRef}
