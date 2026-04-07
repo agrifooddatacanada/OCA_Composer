@@ -7,9 +7,11 @@
  * - isMaterializedChildSchema: refn: whose dependency already has attributes (show as Child Schema)
  * - Both display as "Child Schema" variants to the user
  */
-import React from "react";
-import { Handle, Position, NodeToolbar } from "@xyflow/react";
+import React, { useCallback, useRef, useState } from "react";
+import { Handle, Position } from "@xyflow/react";
 import EditIcon from "@mui/icons-material/Edit";
+import Tooltip from "@mui/material/Tooltip";
+import Popover from "@mui/material/Popover";
 import "./SchemaVisualization.css";
 import { useTranslation } from "react-i18next";
 import { TYPE_CHILD_SCHEMA } from "../constants/constants";
@@ -103,7 +105,19 @@ export const TreeNode = ({ data }) => {
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
       <div className="tree-node-content">
-        <div className="tree-node-label">{data.label}</div>
+        {data.labelFull && data.labelFull !== data.label ? (
+          <Tooltip
+            title={data.labelFull}
+            placement="top"
+            arrow
+            enterDelay={300}
+            PopperProps={{ style: { zIndex: 5000 } }}
+          >
+            <div className="tree-node-label">{data.label}</div>
+          </Tooltip>
+        ) : (
+          <div className="tree-node-label">{data.label}</div>
+        )}
         {data.onNodeClick && (
           <button
             type="button"
@@ -127,7 +141,9 @@ export const TreeNode = ({ data }) => {
  */
 export const DetailedNode = ({ data }) => {
   const { t } = useTranslation();
-  const { title, fields = [], nodeType } = data;
+  const { title, titleFull, fields = [], nodeType } = data;
+  const headerFullName = titleFull ?? title;
+  const headerTruncated = headerFullName !== title;
 
   // Sort fields to prioritize child schemas and placeholder child schemas first
   const sortedFields = [...fields].sort((a, b) => {
@@ -169,14 +185,55 @@ export const DetailedNode = ({ data }) => {
   const visibleFields = [...childSchemas, ...visibleRegularFields];
   const hiddenFieldsCount = regularFields.length - visibleRegularFields.length;
 
-  // Prepare tooltip content for truncated fields
-  const truncatedFields = visibleFields.filter((field) => {
-    const originalName = field.originalName || field.name || "";
-    return originalName.length > FIELD_NAME_MAX_LENGTH;
-  });
+  const [hiddenFieldsAnchorEl, setHiddenFieldsAnchorEl] = useState(null);
+  const [hiddenFieldsOpen, setHiddenFieldsOpen] = useState(false);
+  const hiddenFieldsCloseTimerRef = useRef(null);
 
-  // Only show toolbar if there's actually content to display
-  const showToolbar = truncatedFields.length > 0 || hiddenFieldsCount > 0;
+  const clearHiddenFieldsCloseTimer = useCallback(() => {
+    if (hiddenFieldsCloseTimerRef.current) {
+      clearTimeout(hiddenFieldsCloseTimerRef.current);
+      hiddenFieldsCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleHiddenFieldsClose = useCallback(() => {
+    clearHiddenFieldsCloseTimer();
+    hiddenFieldsCloseTimerRef.current = setTimeout(() => {
+      setHiddenFieldsOpen(false);
+      hiddenFieldsCloseTimerRef.current = null;
+    }, 200);
+  }, [clearHiddenFieldsCloseTimer]);
+
+  const handleHiddenFieldsRowEnter = useCallback(
+    (e) => {
+      clearHiddenFieldsCloseTimer();
+      setHiddenFieldsAnchorEl(e.currentTarget);
+      setHiddenFieldsOpen(true);
+    },
+    [clearHiddenFieldsCloseTimer]
+  );
+
+  const handleHiddenFieldsRowLeave = useCallback(() => {
+    scheduleHiddenFieldsClose();
+  }, [scheduleHiddenFieldsClose]);
+
+  const handleHiddenFieldsPaperEnter = useCallback(() => {
+    clearHiddenFieldsCloseTimer();
+  }, [clearHiddenFieldsCloseTimer]);
+
+  const handleHiddenFieldsPaperLeave = useCallback(() => {
+    scheduleHiddenFieldsClose();
+  }, [scheduleHiddenFieldsClose]);
+
+  const handleHiddenFieldsClick = useCallback(
+    (e) => {
+      e.stopPropagation();
+      clearHiddenFieldsCloseTimer();
+      setHiddenFieldsAnchorEl(e.currentTarget);
+      setHiddenFieldsOpen((prev) => !prev);
+    },
+    [clearHiddenFieldsCloseTimer]
+  );
 
   const isRootNode = data.nodeId === "root";
   const isHighlighted = isRootNode
@@ -185,41 +242,40 @@ export const DetailedNode = ({ data }) => {
 
   return (
     <>
-      {showToolbar && (
-        <NodeToolbar
-          isVisible={data.forceToolbarVisible || undefined}
-          position={Position.Top}
-          style={{
-            background: "rgba(0, 0, 0, 0.9)",
-            color: "white",
-            padding: "8px 12px",
-            borderRadius: "6px",
-            fontSize: "12px",
-            maxWidth: "400px",
-            whiteSpace: "pre-line"
+      {hiddenFieldsCount > 0 && (
+        <Popover
+          open={hiddenFieldsOpen}
+          anchorEl={hiddenFieldsAnchorEl}
+          onClose={() => setHiddenFieldsOpen(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+          disableRestoreFocus
+          disableAutoFocus
+          disableEnforceFocus
+          hideBackdrop
+          sx={{ zIndex: 5000 }}
+          PaperProps={{
+            onMouseEnter: handleHiddenFieldsPaperEnter,
+            onMouseLeave: handleHiddenFieldsPaperLeave,
+            sx: {
+              backgroundColor: "rgba(0, 0, 0, 0.9)",
+              color: "white",
+              p: 1.5,
+              maxWidth: 400,
+              fontSize: "12px",
+              whiteSpace: "pre-line"
+            }
           }}
         >
-          {truncatedFields.length > 0 && (
-            <div style={{ marginBottom: "8px" }}>
-              <strong>Full field names:</strong>
-              {truncatedFields.map((field) => (
-                <div key={field.originalName || field.name}>
-                  • {field.originalName || field.name} ({t(getFieldDisplayType(field))})
-                </div>
-              ))}
-            </div>
-          )}
-          {hiddenFieldsCount > 0 && (
-            <div>
-              <strong>Hidden fields ({hiddenFieldsCount}):</strong>
-              {regularFields.slice(maxRegularFields).map((field) => (
-                <div key={field.originalName || field.name}>
-                  • {field.originalName || field.name} ({t(getFieldDisplayType(field))})
-                </div>
-              ))}
-            </div>
-          )}
-        </NodeToolbar>
+          <div>
+            <strong>Hidden fields ({hiddenFieldsCount}):</strong>
+            {regularFields.slice(maxRegularFields).map((field) => (
+              <div key={field.originalName || field.name}>
+                • {field.originalName || field.name} ({t(getFieldDisplayType(field))})
+              </div>
+            ))}
+          </div>
+        </Popover>
       )}
 
       <div className={`detailed-node ${nodeType} ${isHighlighted ? "highlighted" : ""}`}>
@@ -229,7 +285,27 @@ export const DetailedNode = ({ data }) => {
         )}
 
         <div className="detailed-header">
-          <span>{title}</span>
+          {headerTruncated ? (
+            <Tooltip
+              title={headerFullName}
+              placement="top"
+              arrow
+              enterDelay={300}
+              PopperProps={{ style: { zIndex: 5000 } }}
+            >
+              <span
+                className="detailed-header-title"
+                style={{
+                  cursor: "help",
+                  textDecoration: "underline dotted"
+                }}
+              >
+                {title}
+              </span>
+            </Tooltip>
+          ) : (
+            <span className="detailed-header-title">{title}</span>
+          )}
           {data.onNodeClick && (
             <button
               type="button"
@@ -264,15 +340,29 @@ export const DetailedNode = ({ data }) => {
                       : field.type
                 }`}
               >
-                <span
-                  className="field-name"
-                  style={{
-                    cursor: isLong ? "help" : "default",
-                    textDecoration: isLong ? "underline dotted" : "none"
-                  }}
-                >
-                  {fieldName}
-                </span>
+                {isLong ? (
+                  <Tooltip
+                    title={originalName}
+                    placement="top"
+                    arrow
+                    enterDelay={300}
+                    enterTouchDelay={0}
+                    PopperProps={{ style: { zIndex: 5000 } }}
+                  >
+                    <span
+                      className="field-name nodrag nopan"
+                      style={{
+                        cursor: "help",
+                        textDecoration: "underline dotted"
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {fieldName}
+                    </span>
+                  </Tooltip>
+                ) : (
+                  <span className="field-name">{fieldName}</span>
+                )}
                 <span className="field-type">{t(getFieldDisplayType(field))}</span>
                 {(field.isReference ||
                   field.isPlaceholder ||
@@ -290,12 +380,22 @@ export const DetailedNode = ({ data }) => {
               style={{ fontStyle: "italic", color: "#666" }}
             >
               <span
-                className="field-name"
+                role="button"
+                tabIndex={0}
+                className="field-name nodrag nopan"
                 style={{
                   cursor: "help",
                   textDecoration: "underline dotted"
                 }}
-                title={t("Select node to see hidden fields")}
+                onMouseEnter={handleHiddenFieldsRowEnter}
+                onMouseLeave={handleHiddenFieldsRowLeave}
+                onClick={handleHiddenFieldsClick}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleHiddenFieldsClick(e);
+                  }
+                }}
               >
                 ... {t("more fields", { count: hiddenFieldsCount })}
               </span>

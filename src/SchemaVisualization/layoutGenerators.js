@@ -403,6 +403,7 @@ export const generateTreeLayout = (
       id: nodeData.id,
       data: {
         label: nodeLabel,
+        labelFull: nodeData.name,
         title: nodeLabel,
         fields: [],
         currentSchemaId,
@@ -489,6 +490,7 @@ export const generateDetailedLayout = (
       type: "detailedLR",
       data: {
         title: truncateText(title, 20),
+        titleFull: title,
         fields: displayFields, // Enriched so materialized refn: shows as Child Schema on parent
         nodeType, // Ensure nodeType is explicitly set
         currentSchemaId,
