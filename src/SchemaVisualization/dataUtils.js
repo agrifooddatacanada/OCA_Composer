@@ -105,7 +105,9 @@ export const getDependencyInfo = (depId, dependencyMap, langCodeOCA = "eng") => 
   // Get meta overlay for name - ensure it's an array
   const metaArray = Array.isArray(dependency.overlays?.meta) ? dependency.overlays.meta : [];
   const metaOverlay = metaArray.find((m) => m.language === langCodeOCA) || metaArray[0];
-  const name = metaOverlay?.name || depId;
+  const metaName =
+    typeof metaOverlay?.name === "string" ? metaOverlay.name.trim() : "";
+  const name = metaName || depId;
 
   // Get label overlay for field labels - ensure it's an array
   const labelArray = Array.isArray(dependency.overlays?.label) ? dependency.overlays.label : [];

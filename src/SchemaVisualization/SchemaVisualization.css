@@ -13,7 +13,6 @@
 }
 
 .placeholder-node:hover {
-  transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(255, 152, 0, 0.3);
 }
 
@@ -478,7 +477,6 @@
 }
 
 .tree-node:hover {
-  transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -501,4 +499,27 @@
   color: #333;
   white-space: pre-line;
   text-align: center;
+}
+
+.tree-node-label-truncated {
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+
+.tree-node-attributes-button {
+  background: transparent;
+  border: none;
+  color: #555;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  padding: 2px 6px;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.tree-node-attributes-button:hover {
+  color: #94002a;
 }

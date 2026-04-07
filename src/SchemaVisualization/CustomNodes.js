@@ -7,17 +7,28 @@
  * - isMaterializedChildSchema: refn: whose dependency already has attributes (show as Child Schema)
  * - Both display as "Child Schema" variants to the user
  */
-import React, { useCallback, useRef, useState } from "react";
+import React, { useMemo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import EditIcon from "@mui/icons-material/Edit";
 import Tooltip from "@mui/material/Tooltip";
-import Popover from "@mui/material/Popover";
 import "./SchemaVisualization.css";
 import { useTranslation } from "react-i18next";
 import { TYPE_CHILD_SCHEMA } from "../constants/constants";
 
 // Constants
 const FIELD_NAME_MAX_LENGTH = 35;
+
+const TREE_ATTR_TOOLTIP_FONT_PX = 12;
+const TREE_ATTR_TOOLTIP_LINE_HEIGHT = 1.4;
+const TREE_ATTR_TOOLTIP_VISIBLE_LINES = 6;
+const TREE_ATTR_TOOLTIP_LIST_MAX_PX = Math.round(
+  TREE_ATTR_TOOLTIP_FONT_PX *
+    TREE_ATTR_TOOLTIP_LINE_HEIGHT *
+    TREE_ATTR_TOOLTIP_VISIBLE_LINES
+);
+
+const TREE_ATTR_TOOLTIP_SCROLL_AFTER_LINES = 5;
+const DETAILED_HIDDEN_FIELDS_SCROLL_AFTER_LINES = 6;
 
 /**
  * Get display type for a field in the visualization
@@ -31,6 +42,75 @@ const getFieldDisplayType = (field) => {
   if (field.isPlaceholder) return "Placeholder Child Schema";
   return field.type;
 };
+
+function TreeAttributesPopover({ fields, t }) {
+  const list = fields || [];
+  const tooltipTitle = useMemo(() => {
+    const needsScroll = list.length > TREE_ATTR_TOOLTIP_SCROLL_AFTER_LINES;
+    return (
+      <div>
+        <strong>
+          {t("tree node field count", { count: list.length })}:
+        </strong>
+        <div
+          style={{
+            marginTop: 6,
+            fontSize: TREE_ATTR_TOOLTIP_FONT_PX,
+            lineHeight: TREE_ATTR_TOOLTIP_LINE_HEIGHT,
+            ...(needsScroll
+              ? {
+                  maxHeight: TREE_ATTR_TOOLTIP_LIST_MAX_PX,
+                  overflowY: "auto"
+                }
+              : { overflowY: "visible" })
+          }}
+        >
+          {list.map((field, index) => (
+            <div key={field.originalName || field.name || `attr-${index}`}>
+              • {field.originalName || field.name} ({t(getFieldDisplayType(field))})
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }, [list, t]);
+
+  if (list.length === 0) return null;
+
+  return (
+    <Tooltip
+      title={tooltipTitle}
+      placement="top"
+      arrow
+      enterDelay={300}
+      enterTouchDelay={0}
+      leaveDelay={200}
+      PopperProps={{ style: { zIndex: 5000 } }}
+      componentsProps={{
+        tooltip: {
+          sx: {
+            bgcolor: "#000",
+            color: "#fff",
+            maxWidth: 400,
+            textAlign: "left",
+            fontSize: `${TREE_ATTR_TOOLTIP_FONT_PX}px`,
+            lineHeight: TREE_ATTR_TOOLTIP_LINE_HEIGHT,
+            "& .MuiTooltip-arrow": { color: "#000" }
+          }
+        },
+        arrow: { sx: { color: "#000" } }
+      }}
+    >
+      <button
+        type="button"
+        className="tree-node-attributes-button nodrag nopan"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {t("tree node field count", { count: list.length })}
+      </button>
+    </Tooltip>
+  );
+}
 
 // Helper component for field handles
 const FieldHandle = ({ field }) => (
@@ -69,9 +149,25 @@ export const PlaceholderNode = ({ data }) => {
       <Handle type="target" position={Position.Top} />
       <div className="placeholder-node-content">
         <div className="placeholder-label">
-          <div className="placeholder-name">{displayName}</div>
+          {data.labelFull && data.labelFull !== data.label ? (
+            <Tooltip
+              title={data.labelFull}
+              placement="top"
+              arrow
+              enterDelay={300}
+              enterTouchDelay={0}
+              PopperProps={{ style: { zIndex: 5000 } }}
+            >
+              <div className="placeholder-name tree-node-label-truncated">
+                {displayName}
+              </div>
+            </Tooltip>
+          ) : (
+            <div className="placeholder-name">{displayName}</div>
+          )}
           <div className="placeholder-status">{t("(placeholder)")}</div>
         </div>
+        <TreeAttributesPopover fields={data.fields || []} t={t} />
         {data.onNodeClick && (
           <button
             type="button"
@@ -111,13 +207,17 @@ export const TreeNode = ({ data }) => {
             placement="top"
             arrow
             enterDelay={300}
+            enterTouchDelay={0}
             PopperProps={{ style: { zIndex: 5000 } }}
           >
-            <div className="tree-node-label">{data.label}</div>
+            <div className="tree-node-label tree-node-label-truncated">
+              {data.label}
+            </div>
           </Tooltip>
         ) : (
           <div className="tree-node-label">{data.label}</div>
         )}
+        <TreeAttributesPopover fields={data.fields || []} t={t} />
         {data.onNodeClick && (
           <button
             type="button"
@@ -185,55 +285,34 @@ export const DetailedNode = ({ data }) => {
   const visibleFields = [...childSchemas, ...visibleRegularFields];
   const hiddenFieldsCount = regularFields.length - visibleRegularFields.length;
 
-  const [hiddenFieldsAnchorEl, setHiddenFieldsAnchorEl] = useState(null);
-  const [hiddenFieldsOpen, setHiddenFieldsOpen] = useState(false);
-  const hiddenFieldsCloseTimerRef = useRef(null);
-
-  const clearHiddenFieldsCloseTimer = useCallback(() => {
-    if (hiddenFieldsCloseTimerRef.current) {
-      clearTimeout(hiddenFieldsCloseTimerRef.current);
-      hiddenFieldsCloseTimerRef.current = null;
-    }
-  }, []);
-
-  const scheduleHiddenFieldsClose = useCallback(() => {
-    clearHiddenFieldsCloseTimer();
-    hiddenFieldsCloseTimerRef.current = setTimeout(() => {
-      setHiddenFieldsOpen(false);
-      hiddenFieldsCloseTimerRef.current = null;
-    }, 200);
-  }, [clearHiddenFieldsCloseTimer]);
-
-  const handleHiddenFieldsRowEnter = useCallback(
-    (e) => {
-      clearHiddenFieldsCloseTimer();
-      setHiddenFieldsAnchorEl(e.currentTarget);
-      setHiddenFieldsOpen(true);
-    },
-    [clearHiddenFieldsCloseTimer]
-  );
-
-  const handleHiddenFieldsRowLeave = useCallback(() => {
-    scheduleHiddenFieldsClose();
-  }, [scheduleHiddenFieldsClose]);
-
-  const handleHiddenFieldsPaperEnter = useCallback(() => {
-    clearHiddenFieldsCloseTimer();
-  }, [clearHiddenFieldsCloseTimer]);
-
-  const handleHiddenFieldsPaperLeave = useCallback(() => {
-    scheduleHiddenFieldsClose();
-  }, [scheduleHiddenFieldsClose]);
-
-  const handleHiddenFieldsClick = useCallback(
-    (e) => {
-      e.stopPropagation();
-      clearHiddenFieldsCloseTimer();
-      setHiddenFieldsAnchorEl(e.currentTarget);
-      setHiddenFieldsOpen((prev) => !prev);
-    },
-    [clearHiddenFieldsCloseTimer]
-  );
+  const hiddenFieldsTooltipTitle = useMemo(() => {
+    const rows = regularFields.slice(maxRegularFields);
+    const needsScroll = rows.length > DETAILED_HIDDEN_FIELDS_SCROLL_AFTER_LINES;
+    return (
+      <div>
+        <strong>Hidden fields ({hiddenFieldsCount}):</strong>
+        <div
+          style={{
+            marginTop: 6,
+            fontSize: TREE_ATTR_TOOLTIP_FONT_PX,
+            lineHeight: TREE_ATTR_TOOLTIP_LINE_HEIGHT,
+            ...(needsScroll
+              ? {
+                  maxHeight: TREE_ATTR_TOOLTIP_LIST_MAX_PX,
+                  overflowY: "auto"
+                }
+              : { overflowY: "visible" })
+          }}
+        >
+          {rows.map((field) => (
+            <div key={field.originalName || field.name}>
+              • {field.originalName || field.name} ({t(getFieldDisplayType(field))})
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }, [regularFields, maxRegularFields, hiddenFieldsCount, t]);
 
   const isRootNode = data.nodeId === "root";
   const isHighlighted = isRootNode
@@ -241,44 +320,7 @@ export const DetailedNode = ({ data }) => {
     : data.currentSchemaId === data.nodeId;
 
   return (
-    <>
-      {hiddenFieldsCount > 0 && (
-        <Popover
-          open={hiddenFieldsOpen}
-          anchorEl={hiddenFieldsAnchorEl}
-          onClose={() => setHiddenFieldsOpen(false)}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          transformOrigin={{ vertical: "bottom", horizontal: "center" }}
-          disableRestoreFocus
-          disableAutoFocus
-          disableEnforceFocus
-          hideBackdrop
-          sx={{ zIndex: 5000 }}
-          PaperProps={{
-            onMouseEnter: handleHiddenFieldsPaperEnter,
-            onMouseLeave: handleHiddenFieldsPaperLeave,
-            sx: {
-              backgroundColor: "rgba(0, 0, 0, 0.9)",
-              color: "white",
-              p: 1.5,
-              maxWidth: 400,
-              fontSize: "12px",
-              whiteSpace: "pre-line"
-            }
-          }}
-        >
-          <div>
-            <strong>Hidden fields ({hiddenFieldsCount}):</strong>
-            {regularFields.slice(maxRegularFields).map((field) => (
-              <div key={field.originalName || field.name}>
-                • {field.originalName || field.name} ({t(getFieldDisplayType(field))})
-              </div>
-            ))}
-          </div>
-        </Popover>
-      )}
-
-      <div className={`detailed-node ${nodeType} ${isHighlighted ? "highlighted" : ""}`}>
+    <div className={`detailed-node ${nodeType} ${isHighlighted ? "highlighted" : ""}`}>
         {/* Only show input handle for non-root nodes */}
         {nodeType !== "root" && (
           <Handle type="target" position={Position.Left} style={{ top: "20px" }} />
@@ -291,6 +333,7 @@ export const DetailedNode = ({ data }) => {
               placement="top"
               arrow
               enterDelay={300}
+              enterTouchDelay={0}
               PopperProps={{ style: { zIndex: 5000 } }}
             >
               <span
@@ -379,31 +422,46 @@ export const DetailedNode = ({ data }) => {
               className="field hidden-fields-indicator"
               style={{ fontStyle: "italic", color: "#666" }}
             >
-              <span
-                role="button"
-                tabIndex={0}
-                className="field-name nodrag nopan"
-                style={{
-                  cursor: "help",
-                  textDecoration: "underline dotted"
-                }}
-                onMouseEnter={handleHiddenFieldsRowEnter}
-                onMouseLeave={handleHiddenFieldsRowLeave}
-                onClick={handleHiddenFieldsClick}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleHiddenFieldsClick(e);
-                  }
+              <Tooltip
+                title={hiddenFieldsTooltipTitle}
+                placement="top"
+                arrow
+                enterDelay={300}
+                enterTouchDelay={0}
+                leaveDelay={200}
+                PopperProps={{ style: { zIndex: 5000 } }}
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      bgcolor: "#000",
+                      color: "#fff",
+                      maxWidth: 400,
+                      textAlign: "left",
+                      fontSize: `${TREE_ATTR_TOOLTIP_FONT_PX}px`,
+                      lineHeight: TREE_ATTR_TOOLTIP_LINE_HEIGHT,
+                      "& .MuiTooltip-arrow": { color: "#000" }
+                    }
+                  },
+                  arrow: { sx: { color: "#000" } }
                 }}
               >
-                ... {t("more fields", { count: hiddenFieldsCount })}
-              </span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className="field-name nodrag nopan"
+                  style={{
+                    cursor: "help",
+                    textDecoration: "underline dotted"
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  ... {t("more fields", { count: hiddenFieldsCount })}
+                </span>
+              </Tooltip>
               <span className="field-type" />
             </div>
           )}
         </div>
       </div>
-    </>
   );
 };

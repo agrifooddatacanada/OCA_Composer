@@ -119,8 +119,7 @@ const enrichFieldsForChildSchemaDisplay = (
  */
 const calculateNodeDimensions = (node, viewMode = "detailed") => {
   if (viewMode === "tree") {
-    // Simple fixed size for tree view - uniform sizing for clean hierarchy
-    return { width: 180, height: 60 };
+    return { width: 180, height: 92 };
   }
 
   // Complex sizing for detailed view based on expected content
@@ -237,9 +236,23 @@ export const generateTreeLayout = (
   const { attributes, dependencies, overlays } = schemaData;
   const dependencyMap = createDependencyMap(dependencies);
 
-  // Get label overlay for attribute labels using the specified language
-  const labelOverlay =
-    overlays?.label?.find((l) => l.language === langCodeOCA) || overlays?.label?.[0] || {};
+  const labelOverlayList = Array.isArray(overlays?.label)
+    ? overlays.label
+    : overlays?.label
+      ? [overlays.label]
+      : [];
+  const labelOverlayRaw =
+    labelOverlayList.find((l) => l.language === langCodeOCA) ||
+    labelOverlayList[0] ||
+    {};
+  const mergedAttributeLabels = {
+    ...(schemaData.labels || {}),
+    ...(labelOverlayRaw.attribute_labels || {})
+  };
+  const labelOverlay = {
+    ...labelOverlayRaw,
+    attribute_labels: mergedAttributeLabels
+  };
 
   // Get meta overlay for root schema name using the specified language
   const rootMetaOverlay = Array.isArray(overlays?.meta)
@@ -255,18 +268,21 @@ export const generateTreeLayout = (
     nodeType
   }) => {
     const labels = nodeLabelOverlay?.attribute_labels || {};
-    // Use metadata name if available, otherwise:
-    // - For root node: use rootLabel (passed from parent, e.g., "sample_questionnaire")
-    // - For child nodes: use nodeId (the schema ID, e.g., "placeholder1")
-    const nodeName = metaOverlay?.name 
-      ? metaOverlay.name 
-      : (nodeId === "root" ? rootLabel : nodeId);
+    const metaName =
+      typeof metaOverlay?.name === "string" ? metaOverlay.name.trim() : "";
+    const nodeName = metaName
+      ? metaName
+      : nodeId === "root"
+        ? rootLabel
+        : nodeId;
 
     const nodeData = {
       id: nodeId,
       name: nodeName,
       type: nodeType,
-      children: []
+      children: [],
+      schemaAttributes: nodeAttributes || {},
+      attributeLabels: labels
     };
 
     // Process all attributes to find child schemas and placeholder child schemas
@@ -289,11 +305,22 @@ export const generateTreeLayout = (
             ? (refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0])
             : null;
 
+          const parentFieldLabel = labels[key] || key;
+          const refMetaName =
+            typeof refMetaOverlay?.name === "string"
+              ? refMetaOverlay.name.trim()
+              : "";
+          const useBundledMeta =
+            Boolean(refMetaName && refMetaName !== refId && refMetaOverlay);
+          const metaForChild = useBundledMeta
+            ? refMetaOverlay
+            : { ...(refMetaOverlay || {}), name: parentFieldLabel };
+
           const childNode = buildHierarchy({
             nodeId: refId,
             attributes: refDep.capture_base.attributes,
             labelOverlay: refLabelOverlay,
-            metaOverlay: refMetaOverlay,
+            metaOverlay: metaForChild,
             nodeType: "reference"
           });
           if (childNode) {
@@ -340,11 +367,21 @@ export const generateTreeLayout = (
           const refLabelOverlay = Array.isArray(refLabelOverlays)
             ? (refLabelOverlays.find((l) => l.language === langCodeOCA) || refLabelOverlays[0])
             : null;
-          
-          // Use schema metadata name if available for nodes with attributes
-          if (refMetaOverlay?.name) {
-            displayName = refMetaOverlay.name;
-          }
+
+          const parentFieldLabel = labels[key] || key;
+          const refMetaName =
+            typeof refMetaOverlay?.name === "string"
+              ? refMetaOverlay.name.trim()
+              : "";
+          const useBundledMeta =
+            Boolean(
+              refMetaName &&
+                refMetaName !== placeholderName &&
+                refMetaOverlay
+            );
+          const metaForChild = useBundledMeta
+            ? refMetaOverlay
+            : { ...(refMetaOverlay || {}), name: parentFieldLabel };
 
           // Recursively build hierarchy for placeholder with attributes
           // Once a placeholder has attributes, treat it as a reference (not placeholder)
@@ -352,7 +389,7 @@ export const generateTreeLayout = (
             nodeId: placeholderName,
             attributes: refDep.capture_base.attributes,
             labelOverlay: refLabelOverlay,
-            metaOverlay: refMetaOverlay,
+            metaOverlay: metaForChild,
             nodeType: "reference"
           });
           if (childNode) {
@@ -365,7 +402,9 @@ export const generateTreeLayout = (
             id: placeholderName,
             name: displayName,
             type: "placeholder",
-            children: []
+            children: [],
+            schemaAttributes: {},
+            attributeLabels: {}
           });
         }
       }
@@ -398,6 +437,16 @@ export const generateTreeLayout = (
 
     const nodeLabel = truncateText(nodeData.name, 20);
 
+    const rawTreeFields = processAttributes(
+      nodeData.schemaAttributes || {},
+      nodeData.attributeLabels || {}
+    );
+    const treeFields = enrichFieldsForChildSchemaDisplay(
+      rawTreeFields,
+      dependencies,
+      langCodeOCA
+    );
+
     // Add node to nodes array
     nodes.push({
       id: nodeData.id,
@@ -405,7 +454,7 @@ export const generateTreeLayout = (
         label: nodeLabel,
         labelFull: nodeData.name,
         title: nodeLabel,
-        fields: [],
+        fields: treeFields,
         currentSchemaId,
         nodeId: nodeData.id
       },
@@ -510,9 +559,10 @@ export const generateDetailedLayout = (
 
         // Use child schema's meta name as the display title
         // If the dependency isn't found, use the attribute label as fallback
-        const displayTitle = referencedInfo.name !== referencedId 
-          ? referencedInfo.name  // Found: use meta overlay name
-          : field.originalName || field.name;  // Not found: use attribute label
+        const displayTitle =
+          referencedInfo.name !== referencedId
+            ? referencedInfo.name
+            : field.originalName || field.name;
 
         processNode(
           referencedId,
