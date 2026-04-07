@@ -190,3 +190,65 @@ export const getPackageLanguages = (pkg) => {
   
   return Array.from(languageSet);
 };
+
+export const isOcaPackageLibSaidLength = (value) =>
+  typeof value === "string" && value.length === 44;
+
+function provisionalBundleDigest44() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  const arr = new Uint8Array(44);
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    crypto.getRandomValues(arr);
+  } else {
+    for (let i = 0; i < 44; i++) arr[i] = Math.floor(Math.random() * 256);
+  }
+  return Array.from(arr, (b) => chars[b % chars.length]).join("");
+}
+
+function rewriteRefsInCaptureAttributes(attributes, idMap) {
+  if (!attributes || typeof attributes !== "object") return;
+  Object.keys(attributes).forEach((name) => {
+    const value = attributes[name];
+    if (typeof value === "string" && value.startsWith("refs:")) {
+      const id = value.slice(5);
+      if (idMap[id]) attributes[name] = `refs:${idMap[id]}`;
+    } else if (
+      Array.isArray(value) &&
+      value[0] &&
+      typeof value[0] === "string" &&
+      value[0].startsWith("refs:")
+    ) {
+      const id = value[0].slice(5);
+      if (idMap[id]) attributes[name] = [`refs:${idMap[id]}`];
+    }
+  });
+}
+
+export function normalizeNonSaidBundleDigestsForOcaPackage(pkg, adcMerged) {
+  if (!pkg || typeof pkg !== "object" || !adcMerged || typeof adcMerged !== "object") return;
+
+  const root = getPackageBundle(pkg);
+  const deps = getPackageDependencies(pkg) || [];
+  const bundles = [root, ...deps].filter(Boolean);
+
+  const idMap = {};
+  bundles.forEach((b) => {
+    if (!b?.d || isOcaPackageLibSaidLength(b.d)) return;
+    if (!idMap[b.d]) idMap[b.d] = provisionalBundleDigest44();
+  });
+
+  if (Object.keys(idMap).length === 0) return;
+
+  bundles.forEach((b) => {
+    if (b.d && idMap[b.d]) b.d = idMap[b.d];
+    rewriteRefsInCaptureAttributes(b.capture_base?.attributes, idMap);
+  });
+
+  Object.keys(idMap).forEach((oldId) => {
+    const newId = idMap[oldId];
+    if (adcMerged[oldId] !== undefined) {
+      adcMerged[newId] = adcMerged[oldId];
+      delete adcMerged[oldId];
+    }
+  });
+}

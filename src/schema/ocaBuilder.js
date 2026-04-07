@@ -54,6 +54,42 @@ function schemaHasEdits(schemaState) {
   return schemaState?.initialized || (schemaState?.attributes && schemaState.attributes.length > 0);
 }
 
+function schemaStateMatchesRefnLogicalName(state, logicalName) {
+  if (!state || logicalName === undefined || logicalName === null || logicalName === "") {
+    return false;
+  }
+  if (state.metadata?.name === logicalName) return true;
+  if (state.completeSchema?.metadata?.name === logicalName) return true;
+  const loc = state.metadata?.localized;
+  if (loc && typeof loc === "object") {
+    for (const block of Object.values(loc)) {
+      if (block?.name === logicalName) return true;
+    }
+  }
+  return false;
+}
+
+function findChildSchemaStateEntry(schemaStates, ...logicalNames) {
+  if (!schemaStates) return undefined;
+  const names = [
+    ...new Set(
+      logicalNames.filter((n) => n !== undefined && n !== null && n !== "")
+    )
+  ];
+  if (names.length === 0) return undefined;
+  for (const logicalName of names) {
+    const byId = Object.entries(schemaStates).find(([id]) => id === logicalName);
+    if (byId) return byId;
+  }
+  for (const logicalName of names) {
+    const byMeta = Object.entries(schemaStates).find(([, s]) =>
+      schemaStateMatchesRefnLogicalName(s, logicalName)
+    );
+    if (byMeta) return byMeta;
+  }
+  return undefined;
+}
+
 /**
  * Find the display name for a child schema by looking up its parent's attribute label
  * Searches through all schemas to find which attribute references this child via refn:
@@ -339,8 +375,8 @@ export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSch
       }
     } else if (originalType && typeof originalType === "string" && originalType.startsWith("refn:")) {
       // Check if placeholder now has attributes - if so, convert to refs:
-      // Search for child schema by ID (manual creation) or metadata.name (imports)
-      const childEntry = Object.entries(schemaStates).find(([id, s]) => id === name || s.metadata?.name === name);
+      const refnTarget = originalType.replace(/^refn:/, "");
+      const childEntry = findChildSchemaStateEntry(schemaStates, name, refnTarget);
       const childSchemaId = childEntry?.[0];
       const childSchemaState = childEntry?.[1];
       const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
@@ -367,9 +403,8 @@ export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSch
           rebuiltAttributes[name] = originalType;
         }
       } else if (originalType[0].startsWith("refn:")) {
-        // Check if placeholder now has attributes - if so, convert to refs:
-        // Search for child schema by ID (manual creation) or metadata.name (imports)
-        const childEntry = Object.entries(schemaStates).find(([id, s]) => id === name || s.metadata?.name === name);
+        const refnTarget = originalType[0].replace(/^refn:/, "");
+        const childEntry = findChildSchemaStateEntry(schemaStates, name, refnTarget);
         const childSchemaId = childEntry?.[0];
         const childSchemaState = childEntry?.[1];
         const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
@@ -409,8 +444,8 @@ export function rebuildAttributes(schema, schemaState, schemaStates = {}, getSch
         } else {
           // refn: reference - check if it now has attributes
           if (originalValue.startsWith("refn:")) {
-            // Search for child schema by ID (manual creation) or metadata.name (imports)
-            const childEntry = Object.entries(schemaStates).find(([id, s]) => id === name || s.metadata?.name === name);
+            const refnTarget = originalValue.replace(/^refn:/, "");
+            const childEntry = findChildSchemaStateEntry(schemaStates, name, refnTarget);
             const childSchemaId = childEntry?.[0];
             const childSchemaState = childEntry?.[1];
             const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
@@ -506,9 +541,16 @@ export function ensureChildSchemaDependencies(
         // Handle refn: placeholders that now have attributes
         if (typeof value === "string" && value.startsWith("refn:")) {
           const refnSchemaName = value.replace("refn:", "");
-          const refnSchemaState = getSchemaById(refnSchemaName);
-          if (schemaHasEdits(refnSchemaState) && refnSchemaState.attributes && refnSchemaState.attributes.length > 0) {
-            childSchemasToCreate.set(refnSchemaName, refnSchemaState);
+          const entry = findChildSchemaStateEntry(schemaStates, key, refnSchemaName);
+          const refnSchemaId = entry?.[0];
+          const refnSchemaState = entry?.[1];
+          if (
+            refnSchemaId &&
+            schemaHasEdits(refnSchemaState) &&
+            refnSchemaState.attributes &&
+            refnSchemaState.attributes.length > 0
+          ) {
+            childSchemasToCreate.set(refnSchemaId, refnSchemaState);
           }
         }
         // Handle refs: references from original package - always preserve child schemas with attributes

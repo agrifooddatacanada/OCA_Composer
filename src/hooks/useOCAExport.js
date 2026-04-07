@@ -4,7 +4,13 @@ import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { langCodeOCAFromName, langTwoLettersFromName } from "../utils/languageUtils";
-import { getPackageBundle, getPackageDependencies, findSchemaById, getPackageBundleId } from "../utils/packageUtils";
+import {
+  getPackageBundle,
+  getPackageDependencies,
+  findSchemaById,
+  getPackageBundleId,
+  normalizeNonSaidBundleDigestsForOcaPackage
+} from "../utils/packageUtils";
 import {
   ADC,
   ORDERING,
@@ -36,7 +42,7 @@ import {
   getAttributeFramingInput,
   getFormInformationInput,
   normalizeEscapedQuotes,
-  escapeForOCAString
+  escapeForOCADoubleQuotedValue
 } from "../utils/helpers";
 import { getMapValueForAttributeName } from "../utils/stringUtils";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
@@ -99,14 +105,20 @@ const useOCAExport = () => {
 
   // Build OCA package from schema state using text DSL generation
   // Works for both single schemas and multi-schema packages
-  const buildPackageFromTextDSL = async (schemaId, childSaidMap = {}) => {
+  const buildPackageFromTextDSL = async (schemaId, childSaidMap = {}, dslOptions = {}) => {
     const schemaState = getSchemaById(schemaId);
     const metadata = schemaState?.metadata || {};
     
     // Extract all data for this schema
     const languages = metadata.languages || ["English"];
-    const attributeRowData = schemaState?.attributes || [];
-    const attributesList = attributeRowData.map(attr => attr.Attribute);
+    const rawAttributeRows = schemaState?.attributes || [];
+    const attributeIndicesKept = rawAttributeRows
+      .map((attr, idx) =>
+        attr && String(attr.Attribute ?? "").trim() !== "" ? idx : -1
+      )
+      .filter((idx) => idx >= 0);
+    const attributeRowData = attributeIndicesKept.map((idx) => rawAttributeRows[idx]);
+    const attributesList = attributeRowData.map((attr) => attr.Attribute);
     const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
     const savedEntryCodes = schemaState?.entryCodes || {};
     const attributeFormats = schemaState?.attributeFormats || {};
@@ -139,7 +151,14 @@ const useOCAExport = () => {
       acc[attr.Attribute] = attr.List;
       return acc;
     }, {});
-    
+
+    const filteredEntryCodes = {};
+    Object.entries(attributeListMap).forEach(([attribute, isList]) => {
+      if (isList && savedEntryCodes[attribute]) {
+        filteredEntryCodes[attribute] = savedEntryCodes[attribute];
+      }
+    });
+
     // Build data array: [0] = schema metadata, [1+] = attribute data per language
     const dataArray = [];
     const descriptionRow = languages.map((language) => ({
@@ -152,14 +171,14 @@ const useOCAExport = () => {
     languages.forEach((language) => {
       const rowData = [];
       const lanRows = lanAttributeRowData[language] || [];
-      attributeRowData.forEach((attrRow, index) => {
+      attributeIndicesKept.forEach((originalIndex) => {
+        const attrRow = rawAttributeRows[originalIndex];
+        const lanRow = lanRows[originalIndex] || {};
         const rowObject = { Language: language, Attribute: attrRow.Attribute || "" };
-        const lanRow = lanRows[index] || {};
         rowObject.Flagged = attrRow.Sensitive ? "Y" : "";
         rowObject.Unit = attrRow.Unit || "";
-        // Keep "Child Schema" type as-is; conversion to refs:/refn: happens at DSL generation
         rowObject.Type = attrRow.Type || "";
-        
+
         rowObject.Label = lanRow.Label || "";
         rowObject.Description = lanRow.Description || "";
         rowObject.List = lanRow.List || "";
@@ -168,8 +187,20 @@ const useOCAExport = () => {
       });
       dataArray.push(rowData);
     });
-    
-    // Build text DSL
+
+    let data = "";
+    let bundle;
+
+    if (dslOptions.skipRemoteBundleGeneration) {
+      const extKey = dslOptions.extensionBundleDigestKey || schemaId;
+      const cbDigest = dslOptions.captureBaseDigestForForm || extKey;
+      bundle = {
+        bundle: {
+          d: extKey,
+          capture_base: { d: cbDigest }
+        }
+      };
+    } else {
     const schemaMetadata = dataArray[0];
     const languagesWithCode = [];
     const allLanguageCodes = [];
@@ -202,12 +233,10 @@ const useOCAExport = () => {
     // Add attributes (capture base)
     buildText += "# add attributes (capture base)\n";
 
-    // Only emit the `ADD Attribute` DSL when there are attributes to list. A
-    // bare `ADD Attribute` (no attribute pairs) is invalid and causes the
-    // OCA parser to fail with "expected attr_pairs".
     if (attributesList.length > 0) {
-      buildText += "ADD Attribute";
+      buildText += "ADD ATTRIBUTE";
       attributesList.forEach((item, index) => {
+        if (!String(item ?? "").trim()) return;
         let attributeType = Array.isArray(dataArray[1][index].Type)
           ? `Array[${dataArray[1][index].Type[0]}]`
           : dataArray[1][index].Type;
@@ -248,12 +277,12 @@ const useOCAExport = () => {
             attributeType = `refn:${item}`;
           }
         }
-        
+
         buildText += ` ${item}=${attributeType}`;
       });
       buildText += "\n";
     } else {
-      buildText += "# (no attributes present - skipped ADD Attribute)\n";
+      buildText += "# (no attributes present - skipped ADD ATTRIBUTE)\n";
     }
 
     // Add classification
@@ -270,10 +299,15 @@ const useOCAExport = () => {
         (obj) => obj.Language === language.language
       );
       const parsedDescription = normalizeEscapedQuotes(schemaMetadata[languageIndex].Description || "");
-      const escapedDescription = escapeForOCAString(parsedDescription);
+      const rawMetaName = normalizeEscapedQuotes(schemaMetadata[languageIndex].Name || "");
+      const metaNameForDsl =
+        rawMetaName.trim() !== ""
+          ? rawMetaName
+          : String(schemaDescription[language.language]?.name || schemaId || "schema").trim() ||
+            String(schemaId || "schema");
       buildText += `\nADD Meta ${language.code} PROPS`;
-      buildText += ` name="${escapeForOCAString(normalizeEscapedQuotes(schemaMetadata[languageIndex].Name || ""))}"`;
-      buildText += ` description="${escapedDescription}"`;
+      buildText += ` name="${escapeForOCADoubleQuotedValue(metaNameForDsl)}"`;
+      buildText += ` description="${escapeForOCADoubleQuotedValue(parsedDescription)}"`;
     });
     buildText += "\n";
 
@@ -340,7 +374,9 @@ const useOCAExport = () => {
             .slice(1)
             .findIndex((element) => element[0].Language === language.language) + 1;
         if (dataArray[languageIndex][index].Label && dataArray[languageIndex][index].Label !== "") {
-          const escapedLabel = escapeForOCAString(normalizeEscapedQuotes(dataArray[languageIndex][index].Label));
+          const escapedLabel = escapeForOCADoubleQuotedValue(
+            normalizeEscapedQuotes(dataArray[languageIndex][index].Label)
+          );
           labelText += ` ${item}="${escapedLabel}"`;
         }
       });
@@ -362,7 +398,9 @@ const useOCAExport = () => {
         if (
           dataArray[languageIndex][index].Description && 
           dataArray[languageIndex][index].Description !== "") {
-          const escapedDescription = escapeForOCAString(normalizeEscapedQuotes(dataArray[languageIndex][index].Description));
+          const escapedDescription = escapeForOCADoubleQuotedValue(
+            normalizeEscapedQuotes(dataArray[languageIndex][index].Description)
+          );
           informationText += ` ${item}="${escapedDescription}"`;
         }
       });
@@ -379,8 +417,14 @@ const useOCAExport = () => {
     let entryCodesText = "";
     attributesList.forEach((item) => {
       if (attributeListMap[item] && savedEntryCodes[item] && savedEntryCodes[item].length > 0) {
-        const codes = savedEntryCodes[item].map((entry) => `"${entry.Code}"`).join(", ");
-        entryCodesText += ` ${item}=[${codes}]`;
+        const codes = savedEntryCodes[item]
+          .map((entry) => String(entry?.Code ?? "").trim())
+          .filter((c) => c !== "")
+          .map((c) => `"${escapeForOCADoubleQuotedValue(c)}"`)
+          .join(", ");
+        if (codes) {
+          entryCodesText += ` ${item}=[${codes}]`;
+        }
       }
     });
     
@@ -398,11 +442,15 @@ const useOCAExport = () => {
             
             let entryString = "";
             for (const entry of savedEntryCodes[item]) {
-              // Look up label using full language name
+              const code = String(entry?.Code ?? "").trim();
+              if (!code) continue;
               const label = entry[languageName] || "";
-              if (label) {
-                entryString += `, "${entry.Code}": "${label}"`;
-              }
+              if (!label) continue;
+              const escapedCode = escapeForOCADoubleQuotedValue(code);
+              const escapedLabel = escapeForOCADoubleQuotedValue(
+                normalizeEscapedQuotes(label)
+              );
+              entryString += `, "${escapedCode}": "${escapedLabel}"`;
             }
             if (entryString) {
               entryText += ` ${item}={${entryString.slice(2)}}`;
@@ -456,27 +504,22 @@ const useOCAExport = () => {
       }
     }
 
-    const data = buildText;
+    data = buildText;
 
-    // Defensive validation: reject DSLs that contain a bare `ADD Attribute` line.
-    // The OCA parser reports `expected attr_pairs` for `ADD Attribute` with no
-    // following attribute=type pairs. If this happens, abort early and log the
-    // full DSL so we can debug why attributes are missing from schema state.
-    if (/^ADD Attribute\s*$/m.test(data)) {
-      console.error("Generated DSL contains bare 'ADD Attribute' — aborting export. DSL follows:\n", data);
+    if (/^ADD ATTRIBUTE\s*$/m.test(data)) {
+      console.error("Generated DSL contains bare 'ADD ATTRIBUTE' — aborting export. DSL follows:\n", data);
       throw new Error(
-        "Export aborted: generated OCA DSL contains an empty `ADD Attribute` line. Please ensure the schema has attributes and try again. (DSL logged to console)"
+        "Export aborted: generated OCA DSL contains an empty `ADD ATTRIBUTE` line. Please ensure the schema has attributes and try again. (DSL logged to console)"
       );
     }
 
-    const filteredEntryCodes = {};
-    Object.entries(attributeListMap).forEach(([attribute, isList]) => {
-      if (isList && savedEntryCodes[attribute]) {
-        filteredEntryCodes[attribute] = savedEntryCodes[attribute];
-      }
-    });
+    bundle = await generateOCABundle(data);
+    }
 
-    const bundle = await generateOCABundle(data);
+    const formCaptureBaseDigest =
+      dslOptions.skipRemoteBundleGeneration && dslOptions.captureBaseDigestForForm
+        ? dslOptions.captureBaseDigestForForm
+        : bundle.bundle?.capture_base?.d || bundle.bundle?.d;
 
     const sensitiveAttributes = attributeRowData
       .filter((item) => item.Sensitive)
@@ -560,7 +603,12 @@ const useOCAExport = () => {
       ...(overlaySelections[FIELD_FORM_INFORMATION_OVERLAY]
         ? {
             form_overlay: {
-              form_overlays: getFormInformationInput(schemaState.formBuilderPages || [], languages, schemaDescription, bundle.bundle.d)
+              form_overlays: getFormInformationInput(
+                schemaState.formBuilderPages || [],
+                languages,
+                schemaDescription,
+                formCaptureBaseDigest
+              )
             }
           }
         : {})
@@ -591,11 +639,6 @@ const useOCAExport = () => {
       if (ocaPackage) {
         const originalRootId = getPackageBundleId(ocaPackage);
         
-        // CRITICAL: Ensure all schemas from OCA package are in schemaStates
-        // If user only edited a child schema, the root might not be initialized
-        const bundle = getPackageBundle(ocaPackage);
-        const dependencies = getPackageDependencies(ocaPackage);
-        
         // Check if root is initialized; if not, something is wrong
         const rootState = getSchemaById(originalRootId);
         
@@ -617,76 +660,51 @@ const useOCAExport = () => {
           throw new Error(`Root schema ID mismatch. Expected: ${originalRootId}`);
         }
         
-        // Separate root from dependencies
-        const dependencyIds = schemaIds.filter(id => id !== originalRootId);
-        
-        // Get original root schema to map child SAIDs to attribute names
-        let originalRootSchema = null;
-        if (ocaPackage) {
-          originalRootSchema = findSchemaById(ocaPackage, originalRootId);
-        }
-        
-        // Step 1: Build all dependency schemas FIRST to get their SAIDs
-        const childSaidMap = {};
-        const depResults = [];
-        
-        for (const depId of dependencyIds) {
-          const depState = schemaStates[depId];
-          // Skip empty schemas - they'll become refn: placeholders in parent
-          if (!depState?.attributes || depState.attributes.length === 0) {
-            continue;
-          }
-          
-          const { bundle, extension, textDSL } = await buildPackageFromTextDSL(depId);
-          const said = bundle?.bundle?.d;
-          if (said) {
-            // Map attribute names to child SAIDs
-            if (originalRootSchema?.capture_base?.attributes) {
-              Object.entries(originalRootSchema.capture_base.attributes).forEach(([attrName, attrValue]) => {
-                const valueStr = Array.isArray(attrValue) ? attrValue[0] : attrValue;
-                const extractedSaid = valueStr?.toString().match(/refs?n?:([^)]+)/)?.[1];
-                if (extractedSaid === depId) {
-                  childSaidMap[attrName] = said;
-                }
-              });
-            }
-            // Fallback for edge cases
-            childSaidMap[depId] = said;
-          }
-          depResults.push({ schemaId: depId, bundle, extension, textDSL });
-        }
-        
-        // Step 2: Build root schema WITH child SAIDs so it can use refs:SAID
-        const { bundle: rootBundle, extension: rootExtension, textDSL: rootTextDSL } = 
-          await buildPackageFromTextDSL(originalRootId, childSaidMap);
+        const pkgRebuilt = rebuildOcaPackageFromEditorState(ocaPackage);
+        const pkgForExport = JSON.parse(JSON.stringify(pkgRebuilt));
+        const rootBundle = getPackageBundle(pkgForExport);
+        const dependencies = getPackageDependencies(pkgForExport) || [];
 
         if (!rootBundle) {
-          throw new Error("Could not find root schema");
+          throw new Error("Could not find root schema in rebuilt package");
         }
 
-        // Merge all extensions (root + all children) into one extension object
+        const adcMerged = {};
+
+        const mergeExtensionsForBundle = async (schemaBundle) => {
+          const bid = schemaBundle?.d;
+          if (!bid) return;
+          const st = getSchemaById(bid);
+          if (!st?.initialized) return;
+          const capD = schemaBundle?.capture_base?.d || bid;
+          const { extension } = await buildPackageFromTextDSL(
+            bid,
+            {},
+            {
+              skipRemoteBundleGeneration: true,
+              extensionBundleDigestKey: bid,
+              captureBaseDigestForForm: capD
+            }
+          );
+          Object.assign(adcMerged, extension.extensions[ADC]);
+        };
+
+        await mergeExtensionsForBundle(rootBundle);
+        for (const dep of dependencies) {
+          await mergeExtensionsForBundle(dep);
+        }
+
+        normalizeNonSaidBundleDigestsForOcaPackage(pkgForExport, adcMerged);
+
         const mergedExtension = {
           extensions: {
-            adc: {
-              ...rootExtension.extensions.adc, // Root schema extensions
-              // Add all child schema extensions
-              ...depResults.reduce((acc, dep) => {
-                if (dep.extension?.extensions?.adc) {
-                  return { ...acc, ...dep.extension.extensions.adc };
-                }
-                return acc;
-              }, {})
-            }
+            adc: adcMerged
           }
         };
 
-        // Collect child bundles for dependencies
-        const childBundles = depResults.map(dep => dep.bundle.bundle);
-        
-        // Create bundle with dependencies
         const bundleWithDeps = {
-          bundle: rootBundle.bundle,
-          dependencies: childBundles
+          bundle: rootBundle,
+          dependencies
         };
 
         // Validate mergedExtension before handing to OcaPackage (catch malformed overlays early)
@@ -729,8 +747,7 @@ const useOCAExport = () => {
           throw new Error(`Failed to parse Extension JSON: ${e.message}`);
         }
 
-        // Use root bundle for filename extraction
-        const rootBundleData = rootBundle.bundle;
+        const rootBundleData = rootBundle;
         
         // Extract schema name from meta overlays for filename
         const metaOverlays = rootBundleData?.overlays?.meta;

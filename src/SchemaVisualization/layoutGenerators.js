@@ -341,14 +341,17 @@ export const generateTreeLayout = (
           }
         }
       } else if (isRefn) {
-        // For placeholder child schemas, extract the placeholder name from refn: reference
         const placeholderName = value.replace("refn:", "");
-        const refDep = dependencyMap[placeholderName];
-        
-        // Check if placeholder actually has attributes (not just an empty object)
+        const refDep = findDependencyForPlaceholderName(
+          placeholderName,
+          dependencies,
+          langCodeOCA
+        );
+
         const attributesObj = refDep?.capture_base?.attributes;
-        const hasAttributes = attributesObj && 
-          typeof attributesObj === 'object' &&
+        const hasAttributes =
+          attributesObj &&
+          typeof attributesObj === "object" &&
           Object.keys(attributesObj).length > 0;
         
         // Get metadata for display name
@@ -383,10 +386,8 @@ export const generateTreeLayout = (
             ? refMetaOverlay
             : { ...(refMetaOverlay || {}), name: parentFieldLabel };
 
-          // Recursively build hierarchy for placeholder with attributes
-          // Once a placeholder has attributes, treat it as a reference (not placeholder)
           const childNode = buildHierarchy({
-            nodeId: placeholderName,
+            nodeId: refDep.d || placeholderName,
             attributes: refDep.capture_base.attributes,
             labelOverlay: refLabelOverlay,
             metaOverlay: metaForChild,
@@ -396,10 +397,8 @@ export const generateTreeLayout = (
             nodeData.children.push(childNode);
           }
         } else {
-          // True placeholder with no attributes yet - just create a leaf node
-          // For empty placeholders, prefer attribute label over metadata to avoid showing placeholder name
           nodeData.children.push({
-            id: placeholderName,
+            id: refDep?.d || placeholderName,
             name: displayName,
             type: "placeholder",
             children: [],
@@ -578,14 +577,8 @@ export const generateDetailedLayout = (
           sourceHandle: field.originalName || field.name,
           target: referencedId
         });
-      } else if (field.isPlaceholder) {
-        // Extract the placeholder name from the refn: reference (e.g., "refn:placeholder1" -> "placeholder1")
+      } else if (field.type?.startsWith("refn:")) {
         const placeholderName = field.type.replace("refn:", "");
-        const placeholderId = placeholderName;
-
-        let placeholderFields = [];
-        let placeholderTitle = field.originalName || field.name;
-
         const dependencyWithAttributes = findDependencyForPlaceholderName(
           placeholderName,
           dependencies,
@@ -596,6 +589,10 @@ export const generateDetailedLayout = (
           dependencies,
           langCodeOCA
         );
+        const childId = dependencyWithAttributes?.d || placeholderName;
+
+        let placeholderFields = [];
+        let placeholderTitle = field.originalName || field.name;
 
         if (hasRealAttributes && dependencyWithAttributes) {
           const metaOverlays = dependencyWithAttributes.overlays?.meta;
@@ -620,11 +617,10 @@ export const generateDetailedLayout = (
           );
         }
 
-        // Node type: "placeholder" if no attributes, "reference" if it has attributes
         const nodeType = hasRealAttributes ? "reference" : "placeholder";
 
         processNode(
-          placeholderId,
+          childId,
           nodeType,
           placeholderTitle,
           placeholderFields,
@@ -632,10 +628,10 @@ export const generateDetailedLayout = (
         );
 
         allEdges.push({
-          id: `${nodeId}-${placeholderId}`,
+          id: `${nodeId}-${childId}`,
           source: nodeId,
           sourceHandle: field.originalName || field.name,
-          target: placeholderId
+          target: childId
         });
       }
     });

@@ -737,11 +737,8 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   const attributeTypeMap = coreOverlays.capture_base.attributes;
   let fileContent = "# Add attributes (capture base)\n";
 
-  // Emit the `ADD Attribute` line only when we actually have attributes to list.
-  // A bare `ADD Attribute` (no attr_pairs) is invalid DSL and will cause the
-  // OCA parser to report `expected attr_pairs`.
   if (attributes.length > 0) {
-    fileContent += "ADD Attribute";
+    fileContent += "ADD ATTRIBUTE";
 
     attributes.forEach((attribute) => {
       const attributeType = Array.isArray(attributeTypeMap[attribute])
@@ -752,7 +749,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
 
     fileContent += "\n";
   } else {
-    fileContent += "# (no attributes present - skipped ADD Attribute)\n";
+    fileContent += "# (no attributes present - skipped ADD ATTRIBUTE)\n";
   }
 
   // Classification
@@ -947,6 +944,19 @@ export const downloadJsonFile = (data, fileName) => {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+};
+
+export const normalizeEscapedQuotes = (s) => (typeof s === 'string' ? s.replace(/\\"/g, '"').replace(/\\'/g, "'") : s);
+
+export const escapeForOCAString = (s) => {
+  if (typeof s !== 'string') return s;
+  // First escape backslashes, then escape double quotes, single quotes, and dashes for OCA output
+  return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'").replace(/-/g, "\\-");
+};
+
+export const escapeForOCADoubleQuotedValue = (s) => {
+  if (typeof s !== "string") return s;
+  return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 };
 
 export const getFormatRuleDescription = (attributeType, formatRule, t = null) => {
