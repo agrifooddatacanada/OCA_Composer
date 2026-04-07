@@ -992,7 +992,7 @@ export const getRangeOverlayDisabledReason = (
   if (overlayKey !== FIELD_RANGE_OVERLAY) return "";
   
   if (!selectedKeys.includes(FIELD_FORMAT_OVERLAY)) {
-    return i18next.t("Range overlay requires format overlay to be selected");
+    return i18next.t("Range overlay requires 'Formats' to be added first.");
   }
   
   // Check if there are any Numeric/DateTime attributes
@@ -1001,7 +1001,9 @@ export const getRangeOverlayDisabledReason = (
   );
   
   if (!hasNumericOrDateTimeAttributes) {
-    return i18next.t("Range overlay requires Numeric or DateTime attributes");
+    return i18next.t(
+      "Range overlay requires Numeric or DateTime attributes with format rules."
+    );
   }
   
   // Check if any Numeric/DateTime attributes have format rules
@@ -1023,7 +1025,7 @@ export const getRangeOverlayDisabledReason = (
 
 export const getFormInformationDisabledReason = (overlayKey, selectedKeys) =>
   shouldDisableFormInformationOverlay(overlayKey, selectedKeys)
-    ? i18next.t("Form Information prerequisite tooltip")
+    ? i18next.t("Form Information requires 'Format' to be added first.")
     : "";
 
 export const hasAnyAttributes = (attributes) => Array.isArray(attributes) && attributes.length > 0;
@@ -1061,7 +1063,7 @@ export const getOverlayAddDisabledReason = (
   }
   if (overlayKey === FIELD_FORMAT_OVERLAY && !hasFormatEligibleAttribute(attributes)) {
     return i18next.t(
-      "Format requires Text, Numeric, DateTime, or Binary attributes (including Array variants of those types)."
+      "Format requires at least one Text, Numeric, DateTime, or Binary attribute (including Array variants of those types)."
     );
   }
   return (

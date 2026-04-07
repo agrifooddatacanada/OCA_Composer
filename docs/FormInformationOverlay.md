@@ -198,7 +198,7 @@ File: `src/App.js`
 Folder: `public/locales/`
 
 - Uses `i18next` and locale resources under `en/` and `fr/`.
-- Disabled reasons and tooltip strings are sourced via translation keys (e.g., `"Form Information prerequisite tooltip"`).
+- Disabled reasons and tooltip strings are sourced via translation keys (e.g., the English UI string as key, such as `"Form Information requires 'Format' to be added first."`).
 - The Form Information editor also respects global UI language for tab ordering.
 
 ---
