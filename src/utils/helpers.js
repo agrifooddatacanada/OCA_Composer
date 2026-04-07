@@ -1,13 +1,16 @@
 import i18next from "i18next";
 import Fuse from "fuse.js";
 import { DateTime, Duration } from "luxon";
-import { langCodeOCAFromName, langNameFromTwoLetters, langTwoLettersFromCodeOCA } from "./languageUtils";
+import {
+  langCodeOCAFromName,
+  langNameFromTwoLetters,
+  langTwoLettersFromCodeOCA
+} from "./languageUtils";
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
   customDateFormatParsers,
   DEFAULT_LANGUAGE,
-  DISALLOWED_CHARACTERS,
   FIELD_CARDINALITY_OVERLAY,
   FIELD_FORMAT_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
@@ -23,30 +26,33 @@ import {
   SSSOM_MAPPER_API_URL
 } from "../constants/constants";
 
-import { convertToFormInformationOverlay } from "../Overlays/FormBuilder/utils/convertToFormInformation";
+import {
+  buildFormOverlayInteraction,
+  convertToFormInformationOverlay
+} from "../Overlays/FormBuilder/utils/convertToFormInformation";
 import ucumUnits from "../constants/ucumUnits";
 import { getRootCaptureBaseId } from "./packageUtils";
 
 export const translateDataType = (type, t = null) => {
   if (!type || !t) return type;
-  
+
   const typeMap = {
-    'Text': t('Text'),
-    'Numeric': t('Numeric'),
-    'Boolean': t('Boolean'),
-    'Binary': t('Binary'),
-    'Binaryfile': t('Binaryfile'),
-    'DateTime': t('DateTime'),
-    'Array[Text]': t('Array[Text]'),
-    'Array[Numeric]': t('Array[Numeric]'),
-    'Array[Boolean]': t('Array[Boolean]'),
-    'Array[Binary]': t('Array[Binary]'),
-    'Array[Binaryfile]': t('Array[Binaryfile]'),
-    'Array[DateTime]': t('Array[DateTime]'),
-    'Child Schema': t('Child Schema'),
-    'Placeholder Child Schema': t('Placeholder Child Schema')
+    Text: t("Text"),
+    Numeric: t("Numeric"),
+    Boolean: t("Boolean"),
+    Binary: t("Binary"),
+    Binaryfile: t("Binaryfile"),
+    DateTime: t("DateTime"),
+    "Array[Text]": t("Array[Text]"),
+    "Array[Numeric]": t("Array[Numeric]"),
+    "Array[Boolean]": t("Array[Boolean]"),
+    "Array[Binary]": t("Array[Binary]"),
+    "Array[Binaryfile]": t("Array[Binaryfile]"),
+    "Array[DateTime]": t("Array[DateTime]"),
+    "Child Schema": t("Child Schema"),
+    "Placeholder Child Schema": t("Placeholder Child Schema")
   };
-  
+
   return typeMap[type] || type;
 };
 
@@ -70,26 +76,23 @@ export const getCurrentData = (currentApi, includedError) => {
  */
 export const getDescriptiveFileName = (schemaNameOrDescription, commonFileName) => {
   let schemaName = null;
-  
+
   // Handle string input (new format)
-  if (typeof schemaNameOrDescription === 'string') {
+  if (typeof schemaNameOrDescription === "string") {
     schemaName = schemaNameOrDescription;
   }
   // Handle legacy schemaDescription object format
-  else if (schemaNameOrDescription && typeof schemaNameOrDescription === 'object') {
+  else if (schemaNameOrDescription && typeof schemaNameOrDescription === "object") {
     const currentLanguage = langNameFromTwoLetters(i18next.language) || DEFAULT_LANGUAGE;
     schemaName = schemaNameOrDescription[currentLanguage]?.name;
   }
-  
+
   const fileName = `${schemaName ? `${schemaName.split(" ")[0]}_` : ""}${commonFileName}`;
   return fileName;
 };
 
 // Helper function to replace specified characters in object keys
-export const replaceCharsInKeys = (
-  obj,
-  replacement = "_"
-) => {
+export const replaceCharsInKeys = (obj, replacement = "_") => {
   if (!obj) return obj;
 
   // Pattern matches anything that IS NOT a letter, number, underscore, hyphen, or period
@@ -117,10 +120,7 @@ export const replaceCharsInKeys = (
   return converted;
 };
 
-export const hasDisallowedChars = (str) => {
-  // Only allow letters, numbers, underscores, hyphens, and periods
-  return /[^a-zA-Z0-9_\-.]/.test(str);
-};
+export const hasDisallowedChars = (str) => /[^a-zA-Z0-9_\-.]/.test(str);
 
 // Sanitize attributes in JSON string from ZIP schema upload
 export const replaceAttributeCharsInJsonString = (jsonString, parsed = false) => {
@@ -479,14 +479,17 @@ export const searchUnits = (unit) => {
   };
 };
 
-export const getAttributeFramingInput = (attributeFramingRowData, attributesList = null) => {
+export const getAttributeFramingInput = (
+  attributeFramingRowData,
+  attributesList = null
+) => {
   const attributeFramingInput = {};
   // Create a Set of valid attributes if provided for O(1) lookup
   const validAttributes = attributesList ? new Set(attributesList) : null;
-  
+
   for (const row of attributeFramingRowData) {
     if (!row.objectId) continue;
-    
+
     // Skip if attribute doesn't exist in the schema
     if (validAttributes && !validAttributes.has(row.Attribute)) continue;
 
@@ -500,11 +503,15 @@ export const getAttributeFramingInput = (attributeFramingRowData, attributesList
   return attributeFramingInput;
 };
 
-export const getRangeOverlayInput = (rangeRowData, formatRuleRowData, attributesList = null) => {
+export const getRangeOverlayInput = (
+  rangeRowData,
+  formatRuleRowData,
+  attributesList = null
+) => {
   const rangeOverlayInput = {};
   // Create a Set of valid attributes if provided for O(1) lookup
   const validAttributes = attributesList ? new Set(attributesList) : null;
-  
+
   rangeRowData.forEach((row) => {
     if (row.LowerBound === "" && row.UpperBound === "") return;
 
@@ -514,7 +521,11 @@ export const getRangeOverlayInput = (rangeRowData, formatRuleRowData, attributes
     const attributeFormatData = formatRuleRowData.find(
       (item) => item.Attribute === row.Attribute
     );
-    if (!attributeFormatData?.FormatText && !attributeFormatData?.[CUSTOM_FORMAT_RULE] && !attributeFormatData?.["Format Rule"])
+    if (
+      !attributeFormatData?.FormatText &&
+      !attributeFormatData?.[CUSTOM_FORMAT_RULE] &&
+      !attributeFormatData?.["Format Rule"]
+    )
       return;
 
     rangeOverlayInput[row.Attribute] = {
@@ -533,9 +544,7 @@ export const getFormInformationInput = (
   schemaDescription,
   captureBase
 ) => {
-  const threeLetterCodes = languages.map(
-    (lang) => langCodeOCAFromName(lang)
-  );
+  const threeLetterCodes = languages.map((lang) => langCodeOCAFromName(lang));
 
   const schemaName = {};
   languages.forEach((lang, index) => {
@@ -549,7 +558,7 @@ export const getFormInformationInput = (
     schemaName
   );
 
-  const formOverlays = threeLetterCodes.map((langCode) => ({
+  const formOverlays = threeLetterCodes.map((langCode, langIndex) => ({
     language: langCode,
     capture_base: captureBase,
     pages: baseFormInfo.pages,
@@ -558,7 +567,7 @@ export const getFormInformationInput = (
     sidebar_label: baseFormInfo.sidebar_label,
     description: baseFormInfo.description,
     title: baseFormInfo.title,
-    interaction: baseFormInfo.interaction
+    interaction: buildFormOverlayInteraction(formBuilderPages, languages, langIndex)
   }));
 
   return formOverlays;
@@ -619,11 +628,14 @@ export const generateOCABundle = async (OCAFileData) => {
 
     // Check for API-level errors (even with 200 status)
     if (responseData.success === false || responseData.errors) {
+      // eslint-disable-next-line no-console
       console.error("API returned error response:", responseData);
       // Log the submitted DSL so we can inspect why the parser rejected it
       try {
+        // eslint-disable-next-line no-console
         console.error("Submitted OCA DSL:", OCAFileData);
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error("Failed to log submitted DSL:", e);
       }
 
@@ -632,7 +644,7 @@ export const generateOCABundle = async (OCAFileData) => {
       if (responseData.errors) {
         if (Array.isArray(responseData.errors)) {
           errorMessages = responseData.errors
-            .map(e => (typeof e === "object" ? JSON.stringify(e) : String(e)))
+            .map((e) => (typeof e === "object" ? JSON.stringify(e) : String(e)))
             .join(", ");
         } else if (typeof responseData.errors === "object") {
           errorMessages = JSON.stringify(responseData.errors);
@@ -640,17 +652,23 @@ export const generateOCABundle = async (OCAFileData) => {
           errorMessages = String(responseData.errors);
         }
       }
-      throw new Error(`OCA Bundle generation failed: ${errorMessages} (see console for submitted DSL)`);
+      throw new Error(
+        `OCA Bundle generation failed: ${errorMessages} (see console for submitted DSL)`
+      );
     }
 
     if (!response.ok) {
+      // eslint-disable-next-line no-console
       console.error("API returned error status:", response.status, responseData);
-      throw new Error(`Failed to generate OCA bundle: ${response.statusText} - ${JSON.stringify(responseData)}`);
+      throw new Error(
+        `Failed to generate OCA bundle: ${response.statusText} - ${JSON.stringify(responseData)}`
+      );
     }
 
     const { said } = responseData;
-    
+
     if (!said) {
+      // eslint-disable-next-line no-console
       console.error("No SAID in response:", responseData);
       throw new Error("API response missing SAID field");
     }
@@ -701,6 +719,19 @@ export const getLabelofParentClass = async (uri) => {
   return responseData;
 };
 
+export const normalizeEscapedQuotes = (s) =>
+  typeof s === "string" ? s.replace(/\\"/g, '"').replace(/\\'/g, "'") : s;
+
+export const escapeForOCAString = (s) => {
+  if (typeof s !== "string") return s;
+  // First escape backslashes, then escape double quotes, single quotes, and dashes for OCA output
+  return String(s)
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/'/g, "\\'")
+    .replace(/-/g, "\\-");
+};
+
 export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   const attributes = Object.keys(coreOverlays.capture_base.attributes);
   const attributeTypeMap = coreOverlays.capture_base.attributes;
@@ -739,7 +770,9 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
 
     // Escape quotes in name and description
     const escapedName = escapeForOCAString(normalizeEscapedQuotes(item.name || ""));
-    const escapedDesc = escapeForOCAString(normalizeEscapedQuotes(item.description || ""));
+    const escapedDesc = escapeForOCAString(
+      normalizeEscapedQuotes(item.description || "")
+    );
     fileContent += `\nADD Meta ${twoLetterLang} PROPS name="${escapedName}" description="${escapedDesc}"`;
   });
   fileContent += "\n";
@@ -747,9 +780,9 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Format overlay
   fileContent += "# Add format overlay\n";
   if (coreOverlays.format) {
-    const formatEntries = Object.entries(coreOverlays.format.attribute_formats || {}).filter(
-      ([attr, rule]) => attributes.includes(attr) && rule
-    );
+    const formatEntries = Object.entries(
+      coreOverlays.format.attribute_formats || {}
+    ).filter(([attr, rule]) => attributes.includes(attr) && rule);
     if (formatEntries.length > 0) {
       fileContent += "ADD Format ATTRS";
       formatEntries.forEach(([attribute, formatRule]) => {
@@ -764,9 +797,9 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Conformance overlay
   fileContent += "# Add conformance overlay\n";
   if (coreOverlays.conformance) {
-    const confEntries = Object.entries(coreOverlays.conformance.attribute_conformance || {}).filter(
-      ([attr]) => attributes.includes(attr)
-    );
+    const confEntries = Object.entries(
+      coreOverlays.conformance.attribute_conformance || {}
+    ).filter(([attr]) => attributes.includes(attr));
     if (confEntries.length > 0) {
       fileContent += "ADD CONFORMANCE ATTRS";
       confEntries.forEach(([attribute, val]) => {
@@ -784,7 +817,8 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
         attributes.includes(attr)
       );
       if (labels.length > 0) {
-        const twoLetterLang = langTwoLettersFromCodeOCA(item.language || "") || item.language;
+        const twoLetterLang =
+          langTwoLettersFromCodeOCA(item.language || "") || item.language;
         fileContent += `\nADD Label ${twoLetterLang} ATTRS`;
         labels.forEach(([attribute, labelVal]) => {
           // Escape quotes in labels
@@ -804,7 +838,8 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
         attributes.includes(attr)
       );
       if (infos.length > 0) {
-        const twoLetterLang = langTwoLettersFromCodeOCA(item.language || "") || item.language;
+        const twoLetterLang =
+          langTwoLettersFromCodeOCA(item.language || "") || item.language;
         fileContent += `\nADD Information ${twoLetterLang} ATTRS`;
         infos.forEach(([attribute, infoVal]) => {
           // Escape quotes in information/descriptions
@@ -834,11 +869,12 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
 
     if (coreOverlays.entry) {
       coreOverlays.entry.forEach((item) => {
-        const entriesForAttrs = Object.entries(item.attribute_entries || {}).filter(([attr]) =>
-          attributes.includes(attr)
+        const entriesForAttrs = Object.entries(item.attribute_entries || {}).filter(
+          ([attr]) => attributes.includes(attr)
         );
         if (entriesForAttrs.length > 0) {
-          const twoLetterLang = langTwoLettersFromCodeOCA(item.language || "") || item.language;
+          const twoLetterLang =
+            langTwoLettersFromCodeOCA(item.language || "") || item.language;
           fileContent += `ADD ENTRY ${twoLetterLang} ATTRS`;
           entriesForAttrs.forEach(([attribute, entries]) => {
             const entriesText = Object.keys(entries)
@@ -855,9 +891,9 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Cardinality overlay
   fileContent += "# Add cardinality overlay\n";
   if (coreOverlays.cardinality) {
-    const cardinalityEntries = Object.entries(coreOverlays.cardinality.attribute_cardinality || {}).filter(
-      ([attr]) => attributes.includes(attr)
-    );
+    const cardinalityEntries = Object.entries(
+      coreOverlays.cardinality.attribute_cardinality || {}
+    ).filter(([attr]) => attributes.includes(attr));
     if (cardinalityEntries.length > 0) {
       fileContent += "ADD CARDINALITY ATTRS";
       cardinalityEntries.forEach(([attribute, val]) => {
@@ -870,8 +906,8 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Unit overlay
   fileContent += "# Add units overlay\n";
   if (coreOverlays.unit) {
-    const unitEntries = Object.entries(coreOverlays.unit.attribute_unit || {}).filter(([attr]) =>
-      attributes.includes(attr)
+    const unitEntries = Object.entries(coreOverlays.unit.attribute_unit || {}).filter(
+      ([attr]) => attributes.includes(attr)
     );
     if (unitEntries.length > 0) {
       fileContent += "ADD Unit ATTRS";
@@ -885,9 +921,9 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   // Character encoding overlay
   fileContent += "# Add character encoding overlay\n";
   if (coreOverlays.character_encoding) {
-    const charEncEntries = Object.entries(coreOverlays.character_encoding.attribute_character_encoding || {}).filter(
-      ([attr]) => attributes.includes(attr)
-    );
+    const charEncEntries = Object.entries(
+      coreOverlays.character_encoding.attribute_character_encoding || {}
+    ).filter(([attr]) => attributes.includes(attr));
     if (charEncEntries.length > 0) {
       fileContent += "ADD CHARACTER_ENCODING ATTRS";
       charEncEntries.forEach(([attribute, val]) => {
@@ -913,18 +949,10 @@ export const downloadJsonFile = (data, fileName) => {
   URL.revokeObjectURL(url);
 };
 
-export const normalizeEscapedQuotes = (s) => (typeof s === 'string' ? s.replace(/\\"/g, '"').replace(/\\'/g, "'") : s);
-
-export const escapeForOCAString = (s) => {
-  if (typeof s !== 'string') return s;
-  // First escape backslashes, then escape double quotes, single quotes, and dashes for OCA output
-  return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'").replace(/-/g, "\\-");
-};
-
 export const getFormatRuleDescription = (attributeType, formatRule, t = null) => {
   const normalizedRule = normalizeEscapedQuotes(formatRule);
-  
-  let description = attributeType.includes("Date")
+
+  const description = attributeType.includes("Date")
     ? formatCodeDateDescription[normalizedRule]
     : attributeType.includes("Numeric")
       ? formatCodeNumericDescription[normalizedRule]
@@ -948,21 +976,18 @@ export const shouldDisableRangeOverlay = (
   formatRuleData = []
 ) => {
   if (overlayKey !== FIELD_RANGE_OVERLAY) return false;
-  
+
   // Check if there are any Numeric/DateTime attributes with format rules
   // Need to match formatRuleData against attributes to get Type info
   const hasAttributesWithFormatRules = formatRuleData.some((rule) => {
     if (!rule["Format Rule"] && !rule[CUSTOM_FORMAT_RULE]) return false;
-    
+
     // Find the corresponding attribute to get its Type
-    const attribute = attributes.find(attr => attr.Attribute === rule.Attribute);
+    const attribute = attributes.find((attr) => attr.Attribute === rule.Attribute);
     return attribute && isRangeEligibleAttributeType(attribute.Type);
   });
-  
-  return (
-    !hasAttributesWithFormatRules ||
-    !selectedKeys.includes(FIELD_FORMAT_OVERLAY)
-  );
+
+  return !hasAttributesWithFormatRules || !selectedKeys.includes(FIELD_FORMAT_OVERLAY);
 };
 
 export const shouldDisableFormInformationOverlay = (overlayKey, selectedKeys) =>
@@ -990,36 +1015,38 @@ export const getRangeOverlayDisabledReason = (
   formatRuleData = []
 ) => {
   if (overlayKey !== FIELD_RANGE_OVERLAY) return "";
-  
+
   if (!selectedKeys.includes(FIELD_FORMAT_OVERLAY)) {
     return i18next.t("Range overlay requires 'Formats' to be added first.");
   }
-  
+
   // Check if there are any Numeric/DateTime attributes
   const hasNumericOrDateTimeAttributes = attributes.some(
     (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
   );
-  
+
   if (!hasNumericOrDateTimeAttributes) {
     return i18next.t(
       "Range overlay requires Numeric or DateTime attributes with format rules."
     );
   }
-  
+
   // Check if any Numeric/DateTime attributes have format rules
   // Need to match formatRuleData against attributes to get Type info
   const hasAttributesWithFormatRules = formatRuleData.some((rule) => {
     if (!rule["Format Rule"] && !rule[CUSTOM_FORMAT_RULE]) return false;
-    
+
     // Find the corresponding attribute to get its Type
-    const attribute = attributes.find(attr => attr.Attribute === rule.Attribute);
+    const attribute = attributes.find((attr) => attr.Attribute === rule.Attribute);
     return attribute && isRangeEligibleAttributeType(attribute.Type);
   });
-  
+
   if (!hasAttributesWithFormatRules) {
-    return i18next.t("A format rule must be applied to at least one numeric, date, or time attribute before a range rule can be added.");
+    return i18next.t(
+      "A format rule must be applied to at least one numeric, date, or time attribute before a range rule can be added."
+    );
   }
-  
+
   return "";
 };
 
@@ -1028,7 +1055,8 @@ export const getFormInformationDisabledReason = (overlayKey, selectedKeys) =>
     ? i18next.t("Form Information requires 'Format' to be added first.")
     : "";
 
-export const hasAnyAttributes = (attributes) => Array.isArray(attributes) && attributes.length > 0;
+export const hasAnyAttributes = (attributes) =>
+  Array.isArray(attributes) && attributes.length > 0;
 
 export const hasFormatEligibleAttribute = (attributes) =>
   hasAnyAttributes(attributes) &&
@@ -1042,9 +1070,16 @@ export const isOverlayAddDisabled = (
   formatRuleData = []
 ) => {
   if (!hasAnyAttributes(attributes)) return true;
-  if (overlayKey === FIELD_FORMAT_OVERLAY && !hasFormatEligibleAttribute(attributes)) return true;
+  if (overlayKey === FIELD_FORMAT_OVERLAY && !hasFormatEligibleAttribute(attributes))
+    return true;
   return (
-    shouldDisableRangeOverlay(overlayKey, selectedKeys, attributes, rangeRowData, formatRuleData) ||
+    shouldDisableRangeOverlay(
+      overlayKey,
+      selectedKeys,
+      attributes,
+      rangeRowData,
+      formatRuleData
+    ) ||
     shouldDisableFormInformationOverlay(overlayKey, selectedKeys) ||
     shouldDisableCardinalityOverlay(overlayKey, attributes)
   );

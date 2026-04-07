@@ -1,23 +1,21 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, Box, Typography, IconButton, Collapse, Tooltip } from "@mui/material";
+import { Card, CardContent, Box, Typography, IconButton, Collapse, Tooltip, Button } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useDrag, useDrop } from 'react-dnd';
 import { DragIndicator as DragIcon, Edit as EditIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
 import { FORM_BUILDER_CARD_WIDTH, isChildSchemaType } from "../../constants/constants";
-import {
-  formatCodeBinaryDescription,
-  formatCodeDateDescription,
-  formatCodeNumericDescription,
-  formatCodeTextDescription
-} from "../../constants/constants";
 import QuestionAnswerPreview from "./QuestionAnswerPreview";
 import getMultilingualText from "./utils/getMultilingualText";
 import { textWrapStyle } from "../../constants/styles";
 import DND_TYPES from './dnd/types';
 
 import { getFormatRuleDescription } from "../../utils/helpers";
+import {
+  isReferenceQuestion,
+  normalizeShowingAttribute
+} from "./utils/referenceQuestionUtils";
 
 const findDescription = (formatText, attributeType, t) => {
   return getFormatRuleDescription(attributeType, formatText, t) || "";
@@ -88,7 +86,16 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
   const questionDescription = getMultilingualText(question.description, currentLanguage, '');
   const isLongDescription = questionDescription && questionDescription.length > 180;
   const [descExpanded, setDescExpanded] = React.useState(false);
+  const isReference = isReferenceQuestion(question);
   const isChildSchema = isChildSchemaType(question.attributeType);
+  const referenceButtonPreview = getMultilingualText(
+    question.referenceButtonText,
+    currentLanguage,
+    ""
+  );
+  const referencePreviewKeys = normalizeShowingAttribute(
+    question.showingAttribute || question.showing_attribute
+  );
 
   return (
     <Card 
@@ -188,14 +195,64 @@ const DraggableQuestion = ({ question, index, pageIndex, sectionIndex, currentLa
               <Typography variant="body2" sx={{ color: CustomPalette.GREY_600 }}>
                 {formatRuleDescription || (question.attributeType ? t(question.attributeType) : t("No format rule"))}
               </Typography>
-              {isChildSchema && (
+              {(isChildSchema || isReference) && (
                 <Tooltip title={t("Navigate to the child schema's form overlay to see child schema questions.")} placement="top" arrow>
                   <HelpOutlineIcon sx={{ fontSize: 15, color: CustomPalette.GREY_600 }} />
                 </Tooltip>
               )}
             </Box>
 
-            {!isChildSchema && (
+            {isReference && (
+              <Collapse in={expanded}>
+                <Box
+                  sx={{
+                    p: 2,
+                    mb: 1,
+                    backgroundColor: CustomPalette.GREY_50,
+                    borderRadius: 1,
+                    border: `1px solid ${CustomPalette.GREY_200}`
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: CustomPalette.GREY_600,
+                      fontWeight: 600,
+                      mb: 1.5,
+                      display: "block",
+                      textAlign: "center"
+                    }}
+                  >
+                    {t("Reference preview")}:
+                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      disableElevation
+                      tabIndex={-1}
+                      sx={{
+                        backgroundColor: CustomPalette.PRIMARY,
+                        textTransform: "none",
+                        pointerEvents: "none"
+                      }}
+                    >
+                      {referenceButtonPreview || t("+ Add")}
+                    </Button>
+                    {referencePreviewKeys.length > 0 && (
+                      <Typography
+                        variant="caption"
+                        sx={{ color: CustomPalette.GREY_600, textAlign: "center", maxWidth: "100%" }}
+                      >
+                        {t("Preview fields")}: {referencePreviewKeys.join(", ")}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              </Collapse>
+            )}
+
+            {!isReference && (
             <Collapse in={expanded}>
               <Box sx={{ 
                 p: 2, 

@@ -2,6 +2,10 @@
 import { v4 as uuidv4 } from "uuid";
 import { languageNameToAlpha3Codes } from "../../../constants/isoCodes";
 import { LanguageConstants } from "../../../utils/languageUtils";
+import {
+  normalizeReferenceButtonTextMap,
+  normalizeShowingAttribute
+} from "./referenceQuestionUtils";
 
 const createQuestionFromAttribute = (
   attribute,
@@ -65,8 +69,10 @@ const createQuestionFromAttribute = (
     const overlayLanguageName =
       languages.find(
         (lang) => languageNameToAlpha3Codes[lang.toLowerCase()] === overlayLangCode
-      ) || languages[0] || LanguageConstants.DEFAULT_LANG_NAME;
-    
+      ) ||
+      languages[0] ||
+      LanguageConstants.DEFAULT_LANG_NAME;
+
     options = savedEntryCodes[attribute].map((entryCodeObj) => {
       const code = entryCodeObj.Code;
       const optionLabels = {};
@@ -79,7 +85,10 @@ const createQuestionFromAttribute = (
         id: uuidv4(),
         code,
         value: code,
-        label: optionLabels[overlayLanguageName] || optionLabels[languages[0] || LanguageConstants.DEFAULT_LANG_NAME] || code,
+        label:
+          optionLabels[overlayLanguageName] ||
+          optionLabels[languages[0] || LanguageConstants.DEFAULT_LANG_NAME] ||
+          code,
         labels: optionLabels
       };
     });
@@ -101,12 +110,19 @@ const createQuestionFromAttribute = (
     attribute,
     title: titleObj,
     attributeType,
+    ...(interactionData?.type && { interactionType: interactionData.type }),
     formatText,
     ...(Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
     ...(Object.keys(descriptionObj).length > 0 && { description: descriptionObj }),
     ...(options.length > 0 && { options }),
     ...(booleanValues && { booleanValues }),
-    ...(interactionData?.input_type && { inputType: interactionData.input_type })
+    ...(interactionData?.input_type && { inputType: interactionData.input_type }),
+    ...(interactionData?.referenceButtonText && {
+      referenceButtonText: interactionData.referenceButtonText
+    }),
+    ...(interactionData?.showingAttribute && {
+      showingAttribute: interactionData.showingAttribute
+    })
   };
 
   return question;
@@ -244,13 +260,21 @@ const convertOverlayToFormBuilder = (
     let merged = null;
     const placeholderObj = {};
     const descriptionObj = {};
+    const referenceButtonTextObj = {};
+    let showingAttribute = [];
 
     langCodes.forEach((langCode) => {
       const data = interactionArgs[langCode]?.[attribute];
       if (!data) return;
 
       if (!merged) {
-        const { placeholder, description, ...rest } = data;
+        const {
+          placeholder,
+          description,
+          reference_button_text,
+          showing_attribute,
+          ...rest
+        } = data;
         merged = { ...rest };
       }
 
@@ -271,6 +295,26 @@ const convertOverlayToFormBuilder = (
           descriptionObj[langCode] = data.description;
         }
       }
+
+      if (data.reference_button_text !== undefined) {
+        const originalLang = languages[threeLetterCodes.indexOf(langCode)] || langCode;
+        const normalizedMap = normalizeReferenceButtonTextMap(
+          data.reference_button_text,
+          [originalLang]
+        );
+        const mappedValue =
+          normalizedMap[originalLang] ||
+          normalizedMap[langCode] ||
+          normalizedMap.default ||
+          "";
+        if (mappedValue) {
+          referenceButtonTextObj[originalLang] = mappedValue;
+        }
+      }
+
+      if (showingAttribute.length === 0 && data.showing_attribute !== undefined) {
+        showingAttribute = normalizeShowingAttribute(data.showing_attribute);
+      }
     });
 
     if (Object.keys(placeholderObj).length > 0) {
@@ -278,6 +322,12 @@ const convertOverlayToFormBuilder = (
     }
     if (Object.keys(descriptionObj).length > 0) {
       merged.description = descriptionObj;
+    }
+    if (Object.keys(referenceButtonTextObj).length > 0) {
+      merged.referenceButtonText = referenceButtonTextObj;
+    }
+    if (showingAttribute.length > 0) {
+      merged.showingAttribute = showingAttribute;
     }
 
     return merged;
@@ -304,8 +354,7 @@ const convertOverlayToFormBuilder = (
         descriptions,
         threeLetterCodes,
         languages,
-        pageIndex,
-        overlayLangCode
+        pageIndex
       );
 
     const page = {
@@ -335,8 +384,7 @@ const convertOverlayToFormBuilder = (
           descriptions,
           threeLetterCodes,
           languages,
-          sections.length,
-          overlayLangCode
+          sections.length
         );
 
         const sectionQuestions = sectionAttributes

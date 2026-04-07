@@ -13,6 +13,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuidv4 } from 'uuid';
 import { langNameFromTwoLetters, LanguageConstants, getLanguageButtonBorderRadius } from "../../utils/languageUtils";
 import i18next from "i18next";
+import { isChildSchemaType } from "../../constants/constants";
 
 import AttributePalette from "./AttributePalette";
 import DroppablePage from "./DroppablePage";
@@ -34,7 +35,8 @@ const FormBuilder = () => {
     getSchema,
     updateSchema,
     getAttributesList,
-    getFormatRuleData
+    getFormatRuleData,
+    schemaStates
   } = useMultiSchema();
   const schemaState = getSchema();
   
@@ -122,6 +124,76 @@ const FormBuilder = () => {
   const isUpdatingFromFormBuilder = useRef(false);
 
   const usedAttributes = useUsedAttributes(pages);
+  const childAttributeOptionsByParent = useMemo(() => {
+    const schemaEntries = Object.entries(schemaStates || {});
+    const schemaIdsByMetadataName = schemaEntries.reduce((acc, [schemaId, state]) => {
+      const name = state?.metadata?.name;
+      if (!name) return acc;
+      if (!acc[name]) acc[name] = [];
+      acc[name].push(schemaId);
+      return acc;
+    }, {});
+
+    const getSchemaById = (schemaId) => {
+      if (!schemaId) return null;
+      return schemaStates?.[schemaId] || null;
+    };
+
+    const getSchemaByUniqueMetadataName = (name, parentAttribute) => {
+      if (!name) return null;
+      const ids = schemaIdsByMetadataName[name] || [];
+      if (ids.length === 1) {
+        return schemaStates?.[ids[0]] || null;
+      }
+      if (ids.length > 1) {
+        console.warn(
+          "[FormBuilder] Ambiguous child schema metadata.name match for reference preview.",
+          { parentAttribute, metadataName: name, candidateSchemaIds: ids }
+        );
+      }
+      return null;
+    };
+
+    const extractReferencedSchemaId = (originalType) => {
+      if (typeof originalType !== "string") return "";
+      const trimmed = originalType.trim();
+      if (trimmed.startsWith("refs:") || trimmed.startsWith("refn:")) {
+        return trimmed.split(":").slice(1).join(":").trim();
+      }
+      const arrayMatch = trimmed.match(/^Array\[(refs|refn):(.+)\]$/i);
+      return arrayMatch?.[2]?.trim() || "";
+    };
+
+    const result = {};
+    (attributeRowData || []).forEach((attr) => {
+      const originalType = attr?.OriginalType;
+      const parentAttribute = attr?.Attribute;
+      const type = attr?.Type;
+      if (!parentAttribute) return;
+
+      const isReferenceByOriginalType =
+        typeof originalType === "string" &&
+        (originalType.trim().startsWith("refs:") ||
+          originalType.trim().startsWith("refn:") ||
+          /^Array\[(refs|refn):.+\]$/i.test(originalType.trim()));
+
+      if (!isReferenceByOriginalType && !isChildSchemaType(type)) {
+        return;
+      }
+
+      const referencedSchemaId = extractReferencedSchemaId(originalType);
+      const childSchemaState =
+        getSchemaById(referencedSchemaId) ||
+        getSchemaById(parentAttribute) ||
+        getSchemaByUniqueMetadataName(parentAttribute, parentAttribute);
+      const childKeys = (childSchemaState?.attributes || [])
+        .map((childAttr) => childAttr?.Attribute)
+        .filter(Boolean);
+
+      result[parentAttribute] = childKeys;
+    });
+    return result;
+  }, [attributeRowData, schemaStates]);
 
   useEffect(() => {
     updateSchema({ formBuilderPages: pages });
@@ -538,7 +610,14 @@ const FormBuilder = () => {
         </Box>
       </DndProvider>
 
-      <QuestionEditorDialog open={showQuestionDialog} onClose={() => setShowQuestionDialog(false)} question={editingQuestion} onSave={handleSaveQuestion} languages={languages} />
+      <QuestionEditorDialog
+        open={showQuestionDialog}
+        onClose={() => setShowQuestionDialog(false)}
+        question={editingQuestion}
+        onSave={handleSaveQuestion}
+        languages={languages}
+        childAttributeOptions={childAttributeOptionsByParent[editingQuestion?.attribute] || []}
+      />
       <SectionEditorDialog open={showSectionDialog} onClose={() => setShowSectionDialog(false)} section={editingSection} onSave={handleSaveSection} languages={languages} />
       <PageEditorDialog open={showPageDialog} onClose={() => setShowPageDialog(false)} page={editingPage} onSave={handleSavePage} languages={languages} />
     </BackNextSkeleton>
