@@ -4,7 +4,7 @@ export const DEFAULT_LANGUAGE_CODE = "en";
 export const DEFAULT_THREE_LETTER_LANGUAGE_CODE = "eng";
 export const DEFAULT_LANGUAGE = "English";
 export const MAX_ATTR_LABEL_CHARS = 250;
-export const MAX_ATTR_DESCRIPTION_CHARS = 250;
+export const MAX_ATTR_DESCRIPTION_CHARS = 1000;
 export const MAX_QUESTION_DESCRIPTION_CHARS = 1000;
 
 export const FORM_BUILDER_CARD_WIDTH = 720;
@@ -34,13 +34,13 @@ export const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
 
 /**
  * Schema Type Constants
- * 
+ *
  * TERMINOLOGY GUIDE:
  * - "Child Schema" = UI term for linked schema with cryptographic SAID
  * - "Placeholder Child Schema" = UI term for named reference (not yet defined)
  * - `refs:SAID`    = OCA spec: linked schema with cryptographic SAID identifier
  * - `refn:name`    = OCA spec: named reference (placeholder for schema not yet defined)
- * 
+ *
  * INTERNAL CONVENTION:
  * - Use TYPE_CHILD_SCHEMA ("Child Schema") for refs: references
  * - Use TYPE_PLACEHOLDER_CHILD_SCHEMA ("Placeholder Child Schema") for refn: references
@@ -237,49 +237,6 @@ export const codeToDivision = {
   RDF60: "Humanities and the arts"
 };
 
-/**
- * Parse classification code from various formats and return division/group
- * Handles: "RDF40", "CRDC:RDF40", "ANZSRC-FOR:07 AGRICULTURAL...", etc.
- */
-export const parseClassificationCode = (classificationCode) => {
-  if (!classificationCode || typeof classificationCode !== 'string') {
-    return null;
-  }
-
-  let rdfCode = null;
-  const trimmed = classificationCode.trim();
-  
-  // Format 1: Just the code ("RDF40" or "RDF401")
-  if (/^RDF\d+(-\d+)?$/.test(trimmed)) {
-    rdfCode = trimmed;
-  }
-  // Format 2: "CRDC:RDF40" or "ANZSRC-FOR:07..."
-  else {
-    const match = trimmed.match(/RDF\d+(-\d+)?/);
-    if (match) {
-      rdfCode = match[0];
-    }
-  }
-  
-  if (!rdfCode) {
-    return null;
-  }
-  
-  // Check if it's a group code or division code
-  const division = codeToDivision[rdfCode];
-  const group = codeToGroup[rdfCode];
-  
-  if (group && division) {
-    // It's a group code - return both
-    return { division, group };
-  } else if (division) {
-    // It's a division code only - return division with empty group
-    return { division, group: '' };
-  }
-  
-  return null;
-};
-
 export const codeToGroup = {
   "": "",
   RDF101: "Mathematics and statistics",
@@ -326,6 +283,50 @@ export const codeToGroup = {
   RDF603: "Philosophy",
   RDF604: "Arts (arts, history of arts, performing arts, music), architecture and design",
   RDF605: "Other humanities"
+};
+
+/**
+ * Parse classification code from various formats and return division/group
+ * Handles: "RDF40", "CRDC:RDF40", "ANZSRC-FOR:07 AGRICULTURAL...", etc.
+ */
+export const parseClassificationCode = (classificationCode) => {
+  if (!classificationCode || typeof classificationCode !== "string") {
+    return null;
+  }
+
+  let rdfCode = null;
+  const trimmed = classificationCode.trim();
+
+  // Format 1: Just the code ("RDF40" or "RDF401")
+  if (/^RDF\d+(-\d+)?$/.test(trimmed)) {
+    rdfCode = trimmed;
+  } else {
+    // Format 2: "CRDC:RDF40" or "ANZSRC-FOR:07..."
+    const match = trimmed.match(/RDF\d+(-\d+)?/);
+    if (match) {
+      [rdfCode] = match;
+    }
+  }
+
+  if (!rdfCode) {
+    return null;
+  }
+
+  // Check if it's a group code or division code
+  const division = codeToDivision[rdfCode];
+  const group = codeToGroup[rdfCode];
+
+  if (group && division) {
+    // It's a group code - return both
+    return { division, group };
+  }
+
+  if (division) {
+    // It's a division code only - return division with empty group
+    return { division, group: "" };
+  }
+
+  return null;
 };
 
 export const dataTypes = [
