@@ -508,11 +508,14 @@ const OCADataValidatorCheck = ({
         return false;
       }
 
-      // check if all cells pass validation
+      // check if all cells pass validation (warnings do not fail validation)
       return currData.every((row) => {
         if (!row.error) return true;
         return Object.values(row.error).every(
-          (cellErrors) => !cellErrors || cellErrors.length === 0
+          (cellErrors) =>
+            !cellErrors ||
+            cellErrors.length === 0 ||
+            cellErrors.every((e) => e?.type === errorCode.Warning)
         );
       });
     } catch (error) {
@@ -581,7 +584,11 @@ const OCADataValidatorCheck = ({
       return greyCellStyle;
     }
     if (params.data?.error && error?.length > 0) {
-      return { backgroundColor: "#ffd7e9" };
+      const onlyWarnings =
+        error.every((e) => e?.type === errorCode.Warning);
+      return {
+        backgroundColor: onlyWarnings ? "#fff9c4" : "#ffd7e9"
+      };
     }
     if (params.data?.error) {
       return { backgroundColor: "#d2f8d2" };
@@ -1034,7 +1041,10 @@ const OCADataValidatorCheck = ({
         (row) =>
           !row?.error ||
           Object.values(row.error).every(
-            (cellErrors) => !cellErrors || cellErrors.length === 0
+            (cellErrors) =>
+              !cellErrors ||
+              cellErrors.length === 0 ||
+              cellErrors.every((e) => e?.type === errorCode.Warning)
           )
       );
     }
@@ -1267,6 +1277,29 @@ const OCADataValidatorCheck = ({
                 }}
               >
                 {t("Fail Verification")}
+              </span>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                marginRight: "2rem"
+              }}
+            >
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: "#fff9c4",
+                  marginRight: "15px"
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                }}
+              >
+                {t("Warning")}
               </span>
             </Box>
             <Box

@@ -1,16 +1,21 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
+import { errorCode } from "../constants/constants";
 
 const CustomTooltip = (props) => {
   const { data, colDef, api, color } = props;
   const error = data?.error?.[colDef.field] || [];
   const dataLength = api.getRenderedNodes().length;
+  const onlyWarnings =
+    error.length > 0 && error.every((e) => e?.type === errorCode.Warning);
+  const issueLabel = onlyWarnings ? "Warning" : "Error";
+  const backgroundColor = onlyWarnings ? "#fff9c4" : color || "#999";
 
   return dataLength > 4 && error.length > 0 ? (
     <Box
       className="custom-tooltip"
       style={{
-        backgroundColor: color || "#999",
+        backgroundColor,
         borderRadius: "8px",
         padding: "15px",
         boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
@@ -30,7 +35,7 @@ const CustomTooltip = (props) => {
           textOverflow: "ellipsis"
         }}
       >
-        Error ({error.length}):
+        {issueLabel} ({error.length}):
       </Typography>
       {error.map((err, index) => (
         <Typography
@@ -50,7 +55,7 @@ const CustomTooltip = (props) => {
     <Box
       className="custom-tooltip"
       style={{
-        backgroundColor: color || "#999",
+        backgroundColor,
         borderRadius: "8px",
         padding: "5px",
         boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
@@ -70,7 +75,7 @@ const CustomTooltip = (props) => {
           fontSize: "14px"
         }}
       >
-        Error ({error.length}):{" "}
+        {issueLabel} ({error.length}):{" "}
         <span
           style={{
             wordWrap: "break-word",

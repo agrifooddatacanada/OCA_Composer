@@ -1,11 +1,20 @@
 import { Duration } from "luxon";
 import OCADataSetErr from "./utils/Err";
 import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
-import { ADC, ALLOWED_BOOLEAN_VALUES, errorCode, RANGE } from "../constants/constants";
+import {
+  ADC,
+  ALLOWED_BOOLEAN_VALUES,
+  errorCode,
+  RANGE
+} from "../constants/constants";
 import {
   getDecimalSeparatorFromOCAPackage,
   getFormatPatternForDecimalSeparator
 } from "./utils/decimalFormatPattern";
+import {
+  getArrayDelimiterForAttribute,
+  getArrayDelimiterMismatchMessage
+} from "./utils/arrayDelimiterOverlay";
 import { isValidNumber, parseDateString } from "../constants/utils";
 
 // The version number of the OCA Technical Specification which this script is
@@ -587,6 +596,39 @@ export default class OCABundle {
     return rslt.errs;
   }
 
+  /**
+   * Warns when array-typed cell values use a different delimiter than the schema's array_delimiter overlay.
+   */
+  validateArrayDelimiter(dataset) {
+    const rslt = this.ErrorBuilder.warningErr;
+    const attributes = this.getAttributes();
+    for (const attr in attributes) {
+      if (!Object.prototype.hasOwnProperty.call(attributes, attr)) {
+        continue;
+      }
+      const attrType = this.getAttributeType(attr);
+      if (!attrType.includes("Array") && !Array.isArray(attrType)) {
+        continue;
+      }
+      const schemaDelim = getArrayDelimiterForAttribute(this.OCAPackage, attr);
+      if (!schemaDelim) {
+        continue;
+      }
+      rslt.errs[attr] = {};
+      for (let i = 0; i < dataset[attr]?.length; i++) {
+        const dataEntry = dataset[attr][i];
+        if (dataEntry === undefined || dataEntry === null) {
+          continue;
+        }
+        const msg = getArrayDelimiterMismatchMessage(dataEntry, schemaDelim);
+        if (msg) {
+          rslt.errs[attr][i] = { type: errorCode.Warning, detail: msg };
+        }
+      }
+    }
+    return rslt.errs;
+  }
+
   validateCharacterEncoding(dataset) {
     const attributes = this.getAttributes();
     const rslt = this.ErrorBuilder.characterEcodeErr;
@@ -651,6 +693,7 @@ export default class OCABundle {
     rslt.entryCodeErr.errs = this.validateEntryCodes(dataset);
     rslt.characterEcodeErr.errs = this.validateCharacterEncoding(dataset);
     rslt.rangeErr.errs = this.validateRange(dataset);
+    rslt.warningErr.errs = this.validateArrayDelimiter(dataset);
     return rslt.updateErr();
   }
 }

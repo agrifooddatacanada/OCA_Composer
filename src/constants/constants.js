@@ -478,7 +478,8 @@ export const errorCode = {
   "Entry Codes": "EC",
   "Character Encoding": "CHE",
   "Data Type": "DTE",
-  Range: "RE"
+  Range: "RE",
+  Warning: "W"
 };
 
 export const OVERLAYS_WORD = "overlays";

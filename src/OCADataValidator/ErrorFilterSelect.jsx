@@ -21,7 +21,14 @@ const MenuProps = {
   }
 };
 
-const ERROR_GROUP = ["Format", "Entry Codes", "Character Encoding", "Data Type", "Range"];
+const ERROR_GROUP = [
+  "Format",
+  "Entry Codes",
+  "Character Encoding",
+  "Data Type",
+  "Range",
+  "Warning"
+];
 
 function getStyles(name, errorName, theme) {
   return {
