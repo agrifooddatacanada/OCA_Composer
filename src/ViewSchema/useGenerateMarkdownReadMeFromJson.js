@@ -68,6 +68,61 @@ const findMetaOverlay = (layers, preferredOCACode) => {
   );
 };
 
+const getLanguagesFromLayers = (layers) => {
+  const languageCodes = new Set();
+  layers.forEach((layer) => {
+    if (layer.language) {
+      languageCodes.add(normalizeToOCACode(layer.language));
+    }
+  });
+
+  const languages = [];
+  languageCodes.forEach((code) => {
+    const languageName = langNameFromTwoLetters(code);
+    if (languageName) {
+      languages.push(languageName);
+    }
+  });
+
+  if (!languages.some((language) => languageCodeOCAFromName(language) === DEFAULT_THREE_LETTER_LANGUAGE_CODE)) {
+    languages.unshift(langNameFromTwoLetters(DEFAULT_THREE_LETTER_LANGUAGE_CODE) || "English");
+  }
+
+  return languages;
+};
+
+const buildLayersAndSaidRows = (schemaData) => {
+  const layers = [];
+  const layersForSaidTable = [];
+
+  for (const overlayName of Object.keys(schemaData.overlays || {})) {
+    const overlay = schemaData.overlays[overlayName];
+    if (Array.isArray(overlay)) {
+      overlay.forEach((langSpecificOverlay) => {
+        const modifiedLayer = getModifiedLayer(langSpecificOverlay);
+        const layerNameWithoutVersion = `${modifiedLayer.layerName.split("/")[0]}${modifiedLayer.language ? ` (${modifiedLayer.language})` : ""}`;
+        layersForSaidTable.push({
+          name: layerNameWithoutVersion,
+          digest: modifiedLayer.digest,
+          type: langSpecificOverlay.type
+        });
+        layers.push(modifiedLayer);
+      });
+    } else {
+      const modifiedLayer = getModifiedLayer(overlay);
+      const layerNameWithoutVersion = `${modifiedLayer.layerName.split("/")[0]}${modifiedLayer.language ? ` (${modifiedLayer.language})` : ""}`;
+      layersForSaidTable.push({
+        name: layerNameWithoutVersion,
+        digest: modifiedLayer.digest,
+        type: overlay.type
+      });
+      layers.push(modifiedLayer);
+    }
+  }
+
+  return { layers, layersForSaidTable };
+};
+
 const useGenerateMarkdownReadMeFromJson = () => {
   const { ocaPackage } = useMultiSchema();
   const pkg = ocaPackage;
@@ -107,33 +162,7 @@ const useGenerateMarkdownReadMeFromJson = () => {
       ? orderingOverlay?.attribute_ordering
       : Object.keys(captureBaseOverlay.attributes);
 
-    const layers = [];
-    const layersForSaidTable = [];
-
-    for (const overlayName of Object.keys(schemaData.overlays)) {
-      const overlay = schemaData.overlays[overlayName];
-      if (Array.isArray(overlay)) {
-        overlay.forEach((langSpecificOverlay) => {
-          const modifiedLayer = getModifiedLayer(langSpecificOverlay);
-          const layerNameWithoutVersion = `${modifiedLayer.layerName.split("/")[0]}${modifiedLayer.language ? ` (${modifiedLayer.language})` : ""}`;
-          layersForSaidTable.push({
-            name: layerNameWithoutVersion,
-            digest: modifiedLayer.digest,
-            type: langSpecificOverlay.type
-          });
-          layers.push(modifiedLayer);
-        });
-      } else {
-        const modifiedLayer = getModifiedLayer(overlay);
-        const layerNameWithoutVersion = `${modifiedLayer.layerName.split("/")[0]}${modifiedLayer.language ? ` (${modifiedLayer.language})` : ""}`;
-        layersForSaidTable.push({
-          name: layerNameWithoutVersion,
-          digest: modifiedLayer.digest,
-          type: overlay.type
-        });
-        layers.push(modifiedLayer);
-      }
-    }
+    const { layers, layersForSaidTable } = buildLayersAndSaidRows(schemaData);
 
     // Include extension overlays if any
     // For now, use ADC extension overlays for the top-level/main schema bundle
@@ -216,8 +245,6 @@ const useGenerateMarkdownReadMeFromJson = () => {
       layersForSaidTable
     );
     
-    // Process child schemas if any (stored in dependencies array)
-    // Use helper to handle both package formats: {dependencies: [...]} and {oca_bundle: {dependencies: [...]}}
     const childSchemas = getPackageDependencies(pkg);
     
     if (Array.isArray(childSchemas) && childSchemas.length > 0) {
@@ -227,54 +254,115 @@ const useGenerateMarkdownReadMeFromJson = () => {
       
       childSchemas.forEach((childSchemaData, index) => {
         const childCaptureBase = childSchemaData.capture_base;
-        const childLayers = [];
-        const childLayersForSaidTable = [];
-        
-        // Process child schema overlays
-        for (const overlayName of Object.keys(childSchemaData.overlays || {})) {
-          const overlay = childSchemaData.overlays[overlayName];
-          if (Array.isArray(overlay)) {
-            overlay.forEach((langSpecificOverlay) => {
-              const modifiedLayer = getModifiedLayer(langSpecificOverlay);
-              childLayers.push(modifiedLayer);
+        const childCaptureBaseId = childCaptureBase?.d;
+        const childOrderingOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.ordering;
+        const childHasAttributeOrdering = childOrderingOverlay?.attribute_ordering?.length > 0;
+
+        const childSensitiveOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[SENSITIVE];
+        const childSensitiveAttributes = Array.isArray(childSensitiveOverlay?.sensitive_attributes)
+          ? childSensitiveOverlay.sensitive_attributes
+          : [];
+
+        const childRangeOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[RANGE];
+
+        const childUnitFramingOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[UNIT_FRAMING];
+
+        const { layers: childLayers, layersForSaidTable: childLayersForSaidTable } =
+          buildLayersAndSaidRows(childSchemaData);
+        const childLanguages = getLanguagesFromLayers(childLayers);
+        const childLanguageCodeLookupMap = {};
+        childLanguages.forEach((lang) => {
+          childLanguageCodeLookupMap[lang.toLowerCase()] = langCodeOCAFromName(lang);
+        });
+
+        const childMetaOverlay = findMetaOverlay(childLayers, currentLanguageCode) || {
+          name: "Unnamed Child Schema",
+          description: ""
+        };
+
+        const childAttributeNames = childHasAttributeOrdering
+          ? childOrderingOverlay.attribute_ordering
+          : Object.keys(childCaptureBase.attributes || {});
+
+        const childExtensionOverlays =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays;
+        if (childExtensionOverlays) {
+          Object.keys(childExtensionOverlays).forEach((overlayName) => {
+            const overlay = childExtensionOverlays[overlayName];
+            if (Array.isArray(overlay)) {
+              overlay.forEach((entry) => {
+                childLayersForSaidTable.push({
+                  name: overlayName,
+                  digest: entry.d,
+                  type: entry.type
+                });
+              });
+              return;
+            }
+            childLayersForSaidTable.push({
+              name: overlayName,
+              digest: overlay.d,
+              type: overlay.type
             });
-          } else {
-            const modifiedLayer = getModifiedLayer(overlay);
-            childLayers.push(modifiedLayer);
-          }
+          });
         }
-        
-        const childMetaOverlay = findMetaOverlay(
-          childLayers,
-          currentLanguageCode
-        );
-        
-        const childAttributeNames = Object.keys(childCaptureBase.attributes || {});
         
         fileContent += `\nCHILD SCHEMA ${index + 1}\n`;
         fileContent += "******************************************************************\n";
-        fileContent += `Schema SAID: ${childCaptureBase.d}\n`;
-        fileContent += `Schema Name: ${childMetaOverlay?.name || 'Unnamed Child Schema'}\n`;
-        fileContent += `Description: ${childMetaOverlay?.description || ''}\n\n`;
-        
-        fileContent += "Schema attributes: data type\n";
-        childAttributeNames.forEach(attrName => {
-          const attrType = childCaptureBase.attributes[attrName];
-          fileContent += `    ${attrName}: ${Array.isArray(attrType) ? `Array[${attrType[0]}]` : attrType}\n`;
+        fileContent += generateSchemaInformation(
+          childMetaOverlay,
+          childCaptureBase,
+          null,
+          null
+        );
+        fileContent += generateSchemaQuickView({
+          layers: childLayers,
+          attributeNames: childAttributeNames,
+          currentLanguageCode,
+          defaultLanguageCode: DEFAULT_THREE_LETTER_LANGUAGE_CODE
         });
-        
-        // Add child schema overlays details
-        childLayers.forEach(layer => {
-          if (layer.layerName !== 'meta/1.1') {
-            fileContent += "\n******************************************************************\n";
-            fileContent += `Layer name: spec/overlays/${layer.layerName}\n`;
-            fileContent += `SAID/digest: ${layer.digest}\n`;
-            if (layer.language) {
-              fileContent += `Language: ${layer.language}\n`;
-            }
-            fileContent += "\n";
-          }
+        fileContent += generateInternationalSchemaInformation(
+          childLayers,
+          childLanguages,
+          childLanguageCodeLookupMap
+        );
+        fileContent += generateEntryCodeTables(
+          childLayers,
+          childLanguages,
+          childLanguageCodeLookupMap,
+          childOrderingOverlay
+        );
+        fileContent += generateLanguageIndependentSchemaDetailsTable({
+          layers: childLayers,
+          captureBaseOverlay: childCaptureBase,
+          attributeNames: childAttributeNames,
+          sensitiveAttributes: childSensitiveAttributes,
+          rangeOverlay: childRangeOverlay,
+          unitFramingOverlay: childUnitFramingOverlay
         });
+        if (childUnitFramingOverlay?.framing_metadata) {
+          fileContent += generateUnitFramingMetadataTable(
+            childUnitFramingOverlay.framing_metadata
+          );
+        }
+        fileContent += generateLanguageSpecificSchemaDetailsTable({
+          layers: childLayers,
+          attributeNames: childAttributeNames,
+          languages: childLanguages,
+          languageCodeLookupMap: childLanguageCodeLookupMap,
+          orderingOverlay: childOrderingOverlay
+        });
+        fileContent += generateSAIDTableForJson(
+          {
+            captureBaseSAID: childCaptureBase.d,
+            bundleSAID: childSchemaData.d
+          },
+          childLayersForSaidTable
+        );
         
         fileContent += "******************************************************************\n";
       });
