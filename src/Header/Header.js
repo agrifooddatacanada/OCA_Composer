@@ -25,6 +25,16 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     Details: { header: t("Attribute Details"), toolTipText: t("Each column of your dataset is an attribute in your schema. Here you can add, remove, and edit attributes and their details."), helpLink: `${base}/${lang}/AttributeDetails/` },
     Codes: { header: t("Add Entry Codes"), toolTipText: t("Entry codes are options you want available to users as a..."), helpLink: `${base}/${lang}/AddEntryCode/` },
     UploadEntryCodes: { header: t("Upload Entry Codes"), toolTipText: t("Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from."), helpLink: `${base}/${lang}/AddEntryCode/` },
+    MatchingEntryCodes: {
+      header: t("Map each column from your uploaded file."),
+      toolTipText: t("Map each column from your uploaded file."),
+      helpLink: `${base}/${lang}/AddEntryCode/`
+    },
+    MatchingJSONEntryCodes: {
+      header: t("Map each column from your uploaded file."),
+      toolTipText: t("Map each column from your uploaded file."),
+      helpLink: `${base}/${lang}/AddEntryCode/`
+    },
     LanguageDetails: { header: t("Language Dependent Attribute Details"), toolTipText: t("You can add labels and descriptions in each language to help users of your schema. By having languages separate from the underlying structure it means you can share your schema in multiple languages."), helpLink: `${base}/${lang}/LanguageAttribute/` },
     View: { header: t("Review Schema"), toolTipText: t("Before finishing your schema you can preview the final contents on this page"), helpLink: `${base}/${lang}/ViewSchema/` },
     Overlays: { header: t("Add Additional Optional Information"), toolTipText: t("A variety of additional information can be added to your schema using overlays."), helpLink: `${base}/${lang}/Overlays/` },

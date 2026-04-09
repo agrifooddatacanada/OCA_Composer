@@ -707,5 +707,8 @@
   "Define how many values your Array[] datatype attributes can have.": "Define how many values your Array[] datatype attributes can have.",
   "Layout Builder": "Layout Builder",
   "Drag attributes from the left into pages or sections. Each attribute can be used once.": "Drag attributes from the left into pages or sections. Each attribute can be used once.",
-  "Placeholder Editor": "Placeholder Editor"
+  "Placeholder Editor": "Placeholder Editor",
+  "Assigned Column Name": "Assigned Column Name",
+  "Imported Column Name": "Imported Column Name",
+  "Map each column from your uploaded file.": "Map each column from your uploaded file."
 }

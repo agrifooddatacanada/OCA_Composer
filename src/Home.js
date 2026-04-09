@@ -62,6 +62,18 @@ const OVERLAY_SUB_PAGES = new Set([
   "FormatRules"
 ]);
 
+const ENTRY_CODES_FLOW_PAGES = new Set([
+  "UploadEntryCodes",
+  "MatchingEntryCodes",
+  "MatchingJSONEntryCodes"
+]);
+
+const pageIdForStepper = (page) => {
+  if (OVERLAY_SUB_PAGES.has(page)) return "Overlays";
+  if (ENTRY_CODES_FLOW_PAGES.has(page)) return "Codes";
+  return page;
+};
+
 const EMPTY_STEP_ERRORS = {};
 
 const STEPS_BASE = [
@@ -141,7 +153,7 @@ const Home = ({
     return [...STEPS_BASE.slice(0, 2), ENTRY_CODES_STEP, ...STEPS_BASE.slice(2)];
   }, [showEntryCodes]);
 
-  const pageForNav = OVERLAY_SUB_PAGES.has(currentPage) ? "Overlays" : currentPage;
+  const pageForNav = pageIdForStepper(currentPage);
 
   const pageForward = () => {
     const currentIndex = steps.findIndex((step) => step.page === pageForNav);
@@ -203,7 +215,7 @@ const Home = ({
       };
 
       try {
-      const pageForStepIndex = OVERLAY_SUB_PAGES.has(currentPage) ? "Overlays" : currentPage;
+      const pageForStepIndex = pageIdForStepper(currentPage);
       const currentIndex = steps.findIndex((step) => step.page === pageForStepIndex);
       const isForwardNavigation = index > currentIndex;
 
@@ -366,7 +378,7 @@ const Home = ({
   }, [currentPage]);
 
   const activeStep = useMemo(() => {
-    const pageForStep = OVERLAY_SUB_PAGES.has(currentPage) ? "Overlays" : currentPage;
+    const pageForStep = pageIdForStepper(currentPage);
     let idx = steps.findIndex((s) => s.page === pageForStep);
     if (idx === -1) idx = steps.findIndex((s) => s.page === currentPage);
     return idx >= 0 ? idx : 0;

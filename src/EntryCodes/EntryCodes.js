@@ -306,8 +306,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
   ]);
 
   const handleSave = () => {
-    codeRefs.current.forEach((grid) => {
-      grid.current.api.stopEditing();
+    codeRefs.current?.forEach((grid) => {
+      grid?.current?.api?.stopEditing();
     });
 
     // Build object keyed by attribute from the grid's visible array state
@@ -389,8 +389,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
   };
 
   const saveWithoutValidation = () => {
-    codeRefs.current.forEach((grid) => {
-      grid.current.api.stopEditing();
+    codeRefs.current?.forEach((grid) => {
+      grid?.current?.api?.stopEditing();
     });
 
     const rowsArray = Array.isArray(localEntryCodeRowData) ? localEntryCodeRowData : [];
@@ -478,7 +478,6 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
       pageForward={pageForwardSave}
       errorMessage={onValidationError ? "" : errorMessage}
     >
-      {loading && <Loading spinner />}
       {showWarning && (
         <WarningEntryCodeDelete
           title={t("Warning")}
@@ -487,12 +486,13 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
           ]}
           setShowCard={setShowWarning}
           handleForward={() => {
+            saveWithoutValidation();
             setCurrentPage("UploadEntryCodes");
             window.scrollTo(0, 0);
           }}
         />
       )}
-      <Box sx={{ width: "90%", margin: "auto", mb: BETWEEN_SECTION_SPACING, minHeight: 400 }}>
+      <Box sx={{ width: "90%", margin: "auto", mb: BETWEEN_SECTION_SPACING, minHeight: 400, position: "relative" }}>
         <Typography
           sx={{
             fontSize: 15,
@@ -506,6 +506,25 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
           )}
         </Typography>
         {selectedAttributes.length > 0 && allCodesDisplay}
+        {loading && (
+          <Box
+            sx={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              minHeight: 320,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "background.default",
+              zIndex: 1
+            }}
+          >
+            <Loading spinner />
+          </Box>
+        )}
       </Box>
     </BackNextSkeleton>
   );

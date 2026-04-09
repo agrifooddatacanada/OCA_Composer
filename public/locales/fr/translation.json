@@ -686,5 +686,8 @@
   "Define how many values your Array[] datatype attributes can have.": "Définissez combien de valeurs vos attributs de type de données Array[] (Tableau) peuvent avoir.",
   "Layout Builder": "Constructeur de mise en page",
   "Drag attributes from the left into pages or sections. Each attribute can be used once.": "Faites glisser les attributs de la gauche vers des pages ou des sections. Chaque attribut peut être utilisé une fois.",
-  "Placeholder Editor": "Éditeur d'espace réservé"
+  "Placeholder Editor": "Éditeur d'espace réservé",
+  "Assigned Column Name": "Nom de colonne attribué",
+  "Imported Column Name": "Nom de colonne importé",
+  "Map each column from your uploaded file.": "Associez chaque colonne de votre fichier importé."
 }

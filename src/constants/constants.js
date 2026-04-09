@@ -14,6 +14,7 @@ export const ENTRY_CODE_DRAG_WIDTH = 40;
 export const ENTRY_CODE_CODE_WIDTH = 200;
 export const ENTRY_CODE_LANG_WIDTH = 200;
 export const ENTRY_CODE_DELETE_WIDTH = 44;
+export const ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX = 1120;
 export const HEADER_TO_CONTENT_GAP_PX = 12;
 export const BETWEEN_SECTION_SPACING = 6;
 export const TOOLTIP_ICON_GAP = 1.5;

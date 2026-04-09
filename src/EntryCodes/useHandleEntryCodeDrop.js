@@ -14,13 +14,42 @@ import { messages } from "../constants/messages";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { getCurrentData } from "../utils/helpers";
-import { ADC } from "../constants/constants";
+import {
+  ADC,
+  AG_GRID_VIRTUALIZE_MIN_ROWS,
+  ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX
+} from "../constants/constants";
 import {
   coerceIfLegacyTopLevelBundle,
   getRootCaptureBaseId
 } from "../utils/packageUtils";
 
+const ENTRY_CODE_PREVIEW_MIN_COL = 88;
+const ENTRY_CODE_PREVIEW_MAX_COL = 260;
+const ENTRY_CODE_PREVIEW_CHAR_PX = 7;
+const ENTRY_CODE_PREVIEW_COL_GUTTER = 40;
+
 const userSelectionDropdown = ["Copy from other entry codes", "Upload"];
+
+function getPersistedEntryCodeUploadUi(rowData, headers, summary, list) {
+  const hasCsv =
+    Array.isArray(rowData) &&
+    rowData.length > 0 &&
+    Array.isArray(headers) &&
+    headers.length > 0;
+  if (hasCsv) {
+    return { dropDisabled: true, fileType: "csvORxls" };
+  }
+  const hasBundle =
+    (summary != null &&
+      typeof summary === "object" &&
+      Object.keys(summary).length > 0) ||
+    (Array.isArray(list) && list.length > 0);
+  if (hasBundle) {
+    return { dropDisabled: true, fileType: "json" };
+  }
+  return { dropDisabled: false, fileType: "" };
+}
 
 const useHandleEntryCodeDrop = () => {
   const { t } = useTranslation();
@@ -31,10 +60,19 @@ const useHandleEntryCodeDrop = () => {
     setEntryCodeHeaders,
     setCurrentPage,
     setChosenEntryCodeIndex,
+    tempEntryCodeSummary,
     setTempEntryCodeSummary,
+    tempEntryList,
     setTempEntryList,
     chosenEntryCodeIndex
   } = useContext(Context);
+
+  const persistedOnMount = getPersistedEntryCodeUploadUi(
+    tempEntryCodeRowData,
+    entryCodeHeaders,
+    tempEntryCodeSummary,
+    tempEntryList
+  );
   
   // Use MultiSchemaContext for schema-specific data
   const { getSchema, updateSchema } = useMultiSchema();
@@ -58,11 +96,11 @@ const useHandleEntryCodeDrop = () => {
   }, [schemaState?.entryCodes, updateSchema]);
   const [rawFile, setRawFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [dropDisabled, setDropDisabled] = useState(false);
+  const [dropDisabled, setDropDisabled] = useState(persistedOnMount.dropDisabled);
   const [dropMessage, setDropMessage] = useState({ message: "", type: "" });
   const [tableLength, setTableLength] = useState(0);
   const [columnDefs, setColumnDefs] = useState([]);
-  const [fileType, setFileType] = useState("");
+  const [fileType, setFileType] = useState(persistedOnMount.fileType);
   const [selectionValue, setSelectionValue] = useState("Upload");
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [selectedAttrToCopy, setSelectedAttrToCopy] = useState("");
@@ -77,7 +115,16 @@ const useHandleEntryCodeDrop = () => {
     setDropDisabled(false);
     setRawFile([]);
     setEntryCodeHeaders([]);
-  }, []);
+    setTempEntryCodeRowData([]);
+    setTempEntryCodeSummary(undefined);
+    setTempEntryList([]);
+    setFileType("");
+  }, [
+    setEntryCodeHeaders,
+    setTempEntryCodeRowData,
+    setTempEntryCodeSummary,
+    setTempEntryList
+  ]);
 
   const processCSVFile = useCallback((file) => {
     try {
@@ -293,24 +340,59 @@ const useHandleEntryCodeDrop = () => {
         setDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [processCSVFile, rawFile]);
+  }, [processCSVFile, processJSONFile, processZipFile, rawFile]);
 
   useEffect(() => {
+    const rows = Array.isArray(tempEntryCodeRowData) ? tempEntryCodeRowData : [];
+    const widths = entryCodeHeaders.map((header) => {
+      const field = header;
+      let maxChars = String(field).length;
+      for (let i = 0; i < rows.length; i += 1) {
+        const val = rows[i]?.[field];
+        if (val != null && val !== "") {
+          maxChars = Math.max(maxChars, String(val).length);
+        }
+      }
+      return Math.min(
+        ENTRY_CODE_PREVIEW_MAX_COL,
+        Math.max(
+          ENTRY_CODE_PREVIEW_MIN_COL,
+          Math.ceil(maxChars * ENTRY_CODE_PREVIEW_CHAR_PX + ENTRY_CODE_PREVIEW_COL_GUTTER)
+        )
+      );
+    });
+    const rawSum = widths.reduce((a, b) => a + b, 0);
+    const scale =
+      rawSum > ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX && rawSum > 0
+        ? ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX / rawSum
+        : 1;
     const titles = [];
     let newTableLength = 0;
-    entryCodeHeaders.forEach((header) => {
+    entryCodeHeaders.forEach((header, idx) => {
+      const w = Math.max(
+        ENTRY_CODE_PREVIEW_MIN_COL,
+        Math.floor(widths[idx] * scale)
+      );
       titles.push({
         headerName: header,
         field: header,
-        width: 100,
+        width: w,
+        minWidth: ENTRY_CODE_PREVIEW_MIN_COL,
+        wrapText: true,
+        autoHeight: true,
         resizable: true,
         editable: true
       });
-      newTableLength += 100;
+      newTableLength += w;
     });
     setTableLength(newTableLength);
     setColumnDefs(titles);
-  }, [entryCodeHeaders]);
+  }, [entryCodeHeaders, tempEntryCodeRowData]);
+
+  const entryCodePreviewFixedViewport = useMemo(
+    () => (tempEntryCodeRowData?.length || 0) >= AG_GRID_VIRTUALIZE_MIN_ROWS,
+    [tempEntryCodeRowData]
+  );
 
   useEffect(() => {
     const unfilteredAttributes = attributeRowData.filter((item) => item.List === true);
@@ -328,6 +410,26 @@ const useHandleEntryCodeDrop = () => {
     unfilteredAttrRef.current = unfilteredAttributes.map((item) => item.Attribute);
     setSelectedAttributesList(attributeArray);
   }, [attributeRowData, entryCodeRowData, chosenEntryCodeIndex]);
+
+  const hasActiveEntryCodeUpload = useMemo(() => {
+    const csvReady =
+      Array.isArray(tempEntryCodeRowData) &&
+      tempEntryCodeRowData.length > 0 &&
+      Array.isArray(entryCodeHeaders) &&
+      entryCodeHeaders.length > 0;
+    const bundleReady =
+      (tempEntryCodeSummary != null &&
+        typeof tempEntryCodeSummary === "object" &&
+        Object.keys(tempEntryCodeSummary).length > 0) ||
+      (Array.isArray(tempEntryList) && tempEntryList.length > 0);
+    return Boolean(rawFile?.length || csvReady || bundleReady);
+  }, [
+    rawFile,
+    tempEntryCodeRowData,
+    entryCodeHeaders,
+    tempEntryCodeSummary,
+    tempEntryList
+  ]);
 
   return {
     rawFile,
@@ -352,7 +454,9 @@ const useHandleEntryCodeDrop = () => {
     attributeListDropdown,
     selectedAttrToCopy,
     setSelectedAttrToCopy,
-    entryCodeHeaders
+    entryCodeHeaders,
+    hasActiveEntryCodeUpload,
+    entryCodePreviewFixedViewport
   };
 };
 

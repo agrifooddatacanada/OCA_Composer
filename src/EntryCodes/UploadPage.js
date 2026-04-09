@@ -1,10 +1,13 @@
 import React from "react";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
+import {
+  BETWEEN_SECTION_SPACING,
+  ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX
+} from "../constants/constants";
 import { Box, Button, FormControl, Select, Typography } from "@mui/material";
 import Drop from "../StartSchema/Drop";
 import useHandleEntryCodeDrop from "./useHandleEntryCodeDrop";
-import { gridStyles } from "../constants/styles";
+import { gridStyles, entryCodeUploadPreviewGridLayoutCss } from "../constants/styles";
 import { AgGridReact } from "../components/AgGridReact";
 import { CustomPalette } from "../constants/customPalette";
 import csvFileExample from "../assets/csv_example.png";
@@ -34,21 +37,29 @@ const UploadPage = () => {
     userSelectionListDropdown,
     attributeListDropdown,
     selectedAttrToCopy,
-    setSelectedAttrToCopy
+    setSelectedAttrToCopy,
+    hasActiveEntryCodeUpload,
+    entryCodePreviewFixedViewport
   } = useHandleEntryCodeDrop();
+
+  const previewGridWidthPx = Math.min(
+    Math.max(tableLength + 2, 1),
+    ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX
+  );
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <BackNextSkeleton
         isBack
         pageBack={() => {
+          handleClearUpload();
           setCurrentPage("Codes");
           setChosenEntryCodeIndex(-1);
         }}
         isForward={
           (selectionValue === "Copy from other entry codes" &&
             selectedAttrToCopy !== "") ||
-          (selectionValue === "Upload" && rawFile?.length > 0)
+          (selectionValue === "Upload" && hasActiveEntryCodeUpload)
         }
         pageForward={handleSave}
       />
@@ -112,19 +123,19 @@ const UploadPage = () => {
               color="button"
               onClick={handleClearUpload}
               sx={{ width: 230 }}
-              disabled={!rawFile || rawFile?.length === 0}
+              disabled={!hasActiveEntryCodeUpload}
             >
               {t("Clear Entry Code File")}
             </Button>
           </Box>
-          {rawFile?.length > 0 && fileType === "csvORxls" ? (
+          {hasActiveEntryCodeUpload && fileType === "csvORxls" ? (
             <Typography
               variant="h4"
               style={{ marginTop: "60px", color: CustomPalette.PRIMARY }}
             >
               {t("Preview of the data")}
             </Typography>
-          ) : fileType === "json" ? (
+          ) : hasActiveEntryCodeUpload && (fileType === "json" || fileType === "zip") ? (
             <Typography
               variant="h4"
               style={{ marginTop: "60px", color: "Gray", marginBottom: "4rem" }}
@@ -143,22 +154,34 @@ const UploadPage = () => {
               />
             </>
           )}
-          {rawFile?.length > 0 && fileType === "csvORxls" && (
+          {hasActiveEntryCodeUpload && fileType === "csvORxls" && (
             <div
-              className="ag-theme-balham"
+              className={`entry-code-upload-preview-grid ag-theme-balham overlay-grid-suppress-hscroll${
+                entryCodePreviewFixedViewport ? "" : " ag-grid-compact"
+              }`}
               style={{
-                width: tableLength,
-                maxWidth: "90%",
+                width: previewGridWidthPx,
+                maxWidth: "100%",
                 marginTop: "30px",
-                height: "45vh"
+                overflowX: "hidden",
+                boxSizing: "border-box",
+                ...(entryCodePreviewFixedViewport ? {} : { height: "fit-content" })
               }}
             >
-              <style>{gridStyles}</style>
+              <style>{`${gridStyles}${entryCodeUploadPreviewGridLayoutCss(
+                entryCodePreviewFixedViewport
+              )}`}</style>
               <AgGridReact
+                key={entryCodePreviewFixedViewport ? "fx" : "ah"}
                 ref={gridRef}
                 rowData={tempEntryCodeRowData}
                 columnDefs={columnDefs}
-                defaultColDef={columnDefs}
+                domLayout={entryCodePreviewFixedViewport ? undefined : "autoHeight"}
+                style={{
+                  width: "100%",
+                  height: entryCodePreviewFixedViewport ? "100%" : "auto"
+                }}
+                suppressHorizontalScroll
                 suppressFieldDotNotation={true}
               />
             </div>
