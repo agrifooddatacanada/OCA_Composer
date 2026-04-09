@@ -946,14 +946,6 @@ export const downloadJsonFile = (data, fileName) => {
   URL.revokeObjectURL(url);
 };
 
-export const normalizeEscapedQuotes = (s) => (typeof s === 'string' ? s.replace(/\\"/g, '"').replace(/\\'/g, "'") : s);
-
-export const escapeForOCAString = (s) => {
-  if (typeof s !== 'string') return s;
-  // First escape backslashes, then escape double quotes, single quotes, and dashes for OCA output
-  return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'").replace(/-/g, "\\-");
-};
-
 export const escapeForOCADoubleQuotedValue = (s) => {
   if (typeof s !== "string") return s;
   return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
