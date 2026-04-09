@@ -24,7 +24,7 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     Metadata: { header: t("Schema Metadata"), toolTipText: t("Describe your schema using metadata to help others find, understand, and use your schema."), helpLink: `${base}/${lang}/SchemaMetadata/` },
     Details: { header: t("Attribute Details"), toolTipText: t("Each column of your dataset is an attribute in your schema. Here you can add, remove, and edit attributes and their details."), helpLink: `${base}/${lang}/AttributeDetails/` },
     Codes: { header: t("Add Entry Codes"), toolTipText: t("Entry codes are options you want available to users as a..."), helpLink: `${base}/${lang}/AddEntryCode/` },
-    UploadEntryCodes: { header: t("Upload Entry Codes"), toolTipText: t("Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from."), helpLink: `${base}/${lang}/AddEntryCode/` },
+    UploadEntryCodes: { header: t("Upload Entry Codes"), toolTipText: t("Upload a new file containing your entry codes and optionally edit them, or select an existing attribute to copy its entry codes from."), helpLink: `${base}/${lang}/AddEntryCode/` },
     MatchingEntryCodes: {
       header: t("Map each column from your uploaded file."),
       toolTipText: t("Map each column from your uploaded file."),

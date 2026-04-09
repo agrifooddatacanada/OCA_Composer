@@ -23,13 +23,79 @@ import {
   coerceIfLegacyTopLevelBundle,
   getRootCaptureBaseId
 } from "../utils/packageUtils";
+import { languageNameToAlpha3Codes } from "../constants/isoCodes";
+import {
+  langNameFromCodeOCA,
+  langNameFromTwoLetters,
+  LanguageConstants
+} from "../utils/languageUtils";
 
 const ENTRY_CODE_PREVIEW_MIN_COL = 88;
 const ENTRY_CODE_PREVIEW_MAX_COL = 260;
+const ENTRY_CODE_PREVIEW_LANG_MAX_COL = 168;
 const ENTRY_CODE_PREVIEW_CHAR_PX = 7;
 const ENTRY_CODE_PREVIEW_COL_GUTTER = 40;
 
+function isEntryCodePreviewLanguageColumn(header) {
+  const h = String(header ?? "").trim();
+  if (/^header_empty_placeholder_\d+$/.test(h)) return false;
+  return !/^code$/i.test(h);
+}
+
+function getUploadedFilePathLabel(file) {
+  if (!file) return "";
+  return String(file.path ?? file.name ?? "").toLowerCase();
+}
+
+function schemaBundleHasEntryCodes(summary, list) {
+  if (Array.isArray(list) && list.length > 0) return true;
+  if (summary == null || typeof summary !== "object") return false;
+  for (const key of Object.keys(summary)) {
+    const v = summary[key];
+    if (v == null) continue;
+    if (Array.isArray(v)) {
+      if (v.length > 0) return true;
+    } else if (typeof v === "object") {
+      if (Object.keys(v).length > 0) return true;
+    } else if (String(v).trim() !== "") {
+      return true;
+    }
+  }
+  return false;
+}
+
 const userSelectionDropdown = ["Copy from other entry codes", "Upload"];
+
+function translateEntryCodePreviewColumnHeader(rawHeader, t, schemaLanguageNames) {
+  const h = String(rawHeader ?? "").trim();
+  if (/^header_empty_placeholder_\d+$/.test(h)) {
+    return h;
+  }
+  if (/^code$/i.test(h)) {
+    return t("Entry Code");
+  }
+  const fromOca = langNameFromCodeOCA(h);
+  if (fromOca) {
+    return t(fromOca);
+  }
+  const fromTwo = langNameFromTwoLetters(h);
+  if (fromTwo) {
+    return t(fromTwo);
+  }
+  const lower = h.toLowerCase();
+  for (const name of schemaLanguageNames) {
+    if (name.toLowerCase() === lower) {
+      return t(name);
+    }
+  }
+  for (const key of Object.keys(languageNameToAlpha3Codes)) {
+    if (key.toLowerCase() === lower) {
+      const cap = key.charAt(0).toUpperCase() + key.slice(1);
+      return t(cap);
+    }
+  }
+  return h;
+}
 
 function getPersistedEntryCodeUploadUi(rowData, headers, summary, list) {
   const hasCsv =
@@ -52,7 +118,7 @@ function getPersistedEntryCodeUploadUi(rowData, headers, summary, list) {
 }
 
 const useHandleEntryCodeDrop = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     tempEntryCodeRowData,
     setTempEntryCodeRowData,
@@ -77,6 +143,13 @@ const useHandleEntryCodeDrop = () => {
   // Use MultiSchemaContext for schema-specific data
   const { getSchema, updateSchema } = useMultiSchema();
   const schemaState = getSchema();
+
+  const schemaLanguageNames = useMemo(() => {
+    const langs = schemaState?.metadata?.languages;
+    return Array.isArray(langs) && langs.length
+      ? langs
+      : [...LanguageConstants.FALLBACK_LANG_NAMES];
+  }, [schemaState?.metadata?.languages]);
   
   // Get attribute and entry code data from schema state
   const attributeRowData = useMemo(
@@ -139,21 +212,13 @@ const useHandleEntryCodeDrop = () => {
           return `header_empty_placeholder_${index}`;
         },
         complete: (results) => {
+          setTempEntryCodeSummary(undefined);
+          setTempEntryList([]);
           setTempEntryCodeRowData(results.data);
           setEntryCodeHeaders(results.meta.fields);
+          setFileType("csvORxls");
           setLoading(false);
           setDropDisabled(true);
-
-          setDropMessage({
-            message: messages.successfulUpload,
-            type: "success"
-          });
-
-          setTimeout(() => {
-            setDropDisabled(true);
-            setDropMessage({ message: "", type: "" });
-            setLoading(false);
-          }, 900);
         }
       });
     } catch {
@@ -163,7 +228,12 @@ const useHandleEntryCodeDrop = () => {
         setDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, []);
+  }, [
+    setEntryCodeHeaders,
+    setTempEntryCodeRowData,
+    setTempEntryCodeSummary,
+    setTempEntryList
+  ]);
 
   const handleBundleJSONDrop = useCallback((jsonFile, ocaPackageData = null) => {
     const entryList = [];
@@ -320,20 +390,18 @@ const useHandleEntryCodeDrop = () => {
   );
 
   useEffect(() => {
-    if (
-      rawFile &&
-      rawFile.length > 0 &&
-      (rawFile[0].path.includes(".csv") || rawFile[0].path.includes(".xls"))
-    ) {
+    if (!rawFile || rawFile.length === 0) return;
+    const label = getUploadedFilePathLabel(rawFile[0]);
+    if (/\.(csv|xls|xlsx)$/i.test(label)) {
       setFileType("csvORxls");
       processCSVFile(rawFile[0]);
-    } else if (rawFile && rawFile.length > 0 && rawFile[0].path.includes(".json")) {
+    } else if (/\.json$/i.test(label)) {
       setFileType("json");
       processJSONFile(rawFile[0]);
-    } else if (rawFile && rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
+    } else if (/\.zip$/i.test(label)) {
       setFileType("zip");
       processZipFile(rawFile[0]);
-    } else if (rawFile && rawFile.length > 0) {
+    } else {
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
       setTimeout(() => {
@@ -346,20 +414,29 @@ const useHandleEntryCodeDrop = () => {
     const rows = Array.isArray(tempEntryCodeRowData) ? tempEntryCodeRowData : [];
     const widths = entryCodeHeaders.map((header) => {
       const field = header;
-      let maxChars = String(field).length;
+      const displayHeader = translateEntryCodePreviewColumnHeader(
+        header,
+        t,
+        schemaLanguageNames
+      );
+      let maxChars = Math.max(String(field).length, String(displayHeader).length);
       for (let i = 0; i < rows.length; i += 1) {
         const val = rows[i]?.[field];
         if (val != null && val !== "") {
           maxChars = Math.max(maxChars, String(val).length);
         }
       }
-      return Math.min(
+      let colW = Math.min(
         ENTRY_CODE_PREVIEW_MAX_COL,
         Math.max(
           ENTRY_CODE_PREVIEW_MIN_COL,
           Math.ceil(maxChars * ENTRY_CODE_PREVIEW_CHAR_PX + ENTRY_CODE_PREVIEW_COL_GUTTER)
         )
       );
+      if (isEntryCodePreviewLanguageColumn(header)) {
+        colW = Math.min(colW, ENTRY_CODE_PREVIEW_LANG_MAX_COL);
+      }
+      return colW;
     });
     const rawSum = widths.reduce((a, b) => a + b, 0);
     const scale =
@@ -374,7 +451,11 @@ const useHandleEntryCodeDrop = () => {
         Math.floor(widths[idx] * scale)
       );
       titles.push({
-        headerName: header,
+        headerName: translateEntryCodePreviewColumnHeader(
+          header,
+          t,
+          schemaLanguageNames
+        ),
         field: header,
         width: w,
         minWidth: ENTRY_CODE_PREVIEW_MIN_COL,
@@ -387,7 +468,7 @@ const useHandleEntryCodeDrop = () => {
     });
     setTableLength(newTableLength);
     setColumnDefs(titles);
-  }, [entryCodeHeaders, tempEntryCodeRowData]);
+  }, [entryCodeHeaders, tempEntryCodeRowData, t, i18n.language, schemaLanguageNames]);
 
   const entryCodePreviewFixedViewport = useMemo(
     () => (tempEntryCodeRowData?.length || 0) >= AG_GRID_VIRTUALIZE_MIN_ROWS,
@@ -431,6 +512,31 @@ const useHandleEntryCodeDrop = () => {
     tempEntryList
   ]);
 
+  const bundleHasEntryCodes = useMemo(
+    () => schemaBundleHasEntryCodes(tempEntryCodeSummary, tempEntryList),
+    [tempEntryCodeSummary, tempEntryList]
+  );
+
+  const entryCodeUploadForwardEnabled = useMemo(() => {
+    if (fileType === "csvORxls") {
+      return (
+        Array.isArray(tempEntryCodeRowData) &&
+        tempEntryCodeRowData.length > 0 &&
+        Array.isArray(entryCodeHeaders) &&
+        entryCodeHeaders.length > 0
+      );
+    }
+    if (fileType === "json" || fileType === "zip") {
+      return bundleHasEntryCodes;
+    }
+    return false;
+  }, [
+    fileType,
+    tempEntryCodeRowData,
+    entryCodeHeaders,
+    bundleHasEntryCodes
+  ]);
+
   return {
     rawFile,
     setRawFile,
@@ -456,6 +562,8 @@ const useHandleEntryCodeDrop = () => {
     setSelectedAttrToCopy,
     entryCodeHeaders,
     hasActiveEntryCodeUpload,
+    bundleHasEntryCodes,
+    entryCodeUploadForwardEnabled,
     entryCodePreviewFixedViewport
   };
 };

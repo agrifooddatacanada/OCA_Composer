@@ -98,7 +98,6 @@ export default function Drop({
       }, [3500]);
     },
     onDropAccepted: () => {
-      setDropMessage({ message: messages.fileAccepted, type: "success" });
       setLoading(true);
     },
     disabled: dropDisabled
