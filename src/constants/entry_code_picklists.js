@@ -246,6 +246,267 @@ const entryCodePicklists = [
   {
     id: 5,
     name: {
+      en: "Data Quality Codes",
+      fr: "Codes de qualité des données"
+    },
+    description: {
+      en: "A controlled picklist of codes used to describe the quality",
+      fr: "Une liste de choix contrôlée de codes utilisés pour décrire la qualité"
+    },
+    keywords: {
+      en: ["status"],
+      fr: ["le statut et la provenance des valeurs de données de recherche"]
+    },
+    category: "general",
+    source: "",
+    languages: ["en", "fr"],
+    headers: ["Code", "en", "fr"],
+    rows: [
+      {
+        Code: "1",
+        en: "Unaltered data",
+        fr: "Données non modifiées"
+      },
+      {
+        Code: "2",
+        en: "Manually corrected data",
+        fr: "Données corrigées manuellement"
+      },
+      {
+        Code: "3",
+        en: "Calibration corrected data",
+        fr: "Données corrigées par étalonnage"
+      },
+      {
+        Code: "4",
+        en: "Estimated data",
+        fr: "Données estimées"
+      },
+      {
+        Code: "5",
+        en: "Modelled data",
+        fr: "Données modélisées"
+      },
+      {
+        Code: "6",
+        en: "Derived data",
+        fr: "Données dérivées"
+      },
+      {
+        Code: "7",
+        en: "Aggregated data",
+        fr: "Données agrégées"
+      },
+      {
+        Code: "8",
+        en: "Interpolated data",
+        fr: "Données interpolées"
+      },
+      {
+        Code: "9",
+        en: "Extrapolated data",
+        fr: "Données extrapolées"
+      },
+      {
+        Code: "10",
+        en: "Rounded data",
+        fr: "Données arrondies"
+      },
+      {
+        Code: "11",
+        en: "Standardized data",
+        fr: "Données normalisées"
+      },
+      {
+        Code: "12",
+        en: "Transformed data",
+        fr: "Données transformées"
+      },
+      {
+        Code: "13",
+        en: "Validated data",
+        fr: "Données validées"
+      },
+      {
+        Code: "14",
+        en: "Verified data",
+        fr: "Données vérifiées"
+      },
+      {
+        Code: "15",
+        en: "Provisional data",
+        fr: "Données provisoires"
+      },
+      {
+        Code: "16",
+        en: "Preliminary data",
+        fr: "Données préliminaires"
+      },
+      {
+        Code: "17",
+        en: "Final data",
+        fr: "Données finales"
+      },
+      {
+        Code: "18",
+        en: "Revised data",
+        fr: "Données révisées"
+      },
+      {
+        Code: "19",
+        en: "Deprecated data",
+        fr: "Données dépréciées"
+      },
+      {
+        Code: "20",
+        en: "Duplicated data",
+        fr: "Données dupliquées"
+      },
+      {
+        Code: "100",
+        en: "Null value",
+        fr: "Valeur nulle"
+      },
+      {
+        Code: "101",
+        en: "Missing value",
+        fr: "Valeur manquante"
+      },
+      {
+        Code: "102",
+        en: "Not applicable",
+        fr: "Sans objet"
+      },
+      {
+        Code: "103",
+        en: "Not measured",
+        fr: "Non mesuré"
+      },
+      {
+        Code: "104",
+        en: "Not reported",
+        fr: "Non déclaré"
+      },
+      {
+        Code: "105",
+        en: "Value masked for privacy",
+        fr: "Valeur masquée pour des raisons de confidentialité"
+      },
+      {
+        Code: "106",
+        en: "Value withheld",
+        fr: "Valeur retenue"
+      },
+      {
+        Code: "107",
+        en: "Value redacted",
+        fr: "Valeur expurgée"
+      },
+      {
+        Code: "200",
+        en: "Below detection limit",
+        fr: "Sous la limite de détection"
+      },
+      {
+        Code: "201",
+        en: "Above detection limit",
+        fr: "Au-dessus de la limite de détection"
+      },
+      {
+        Code: "202",
+        en: "Below quantification limit",
+        fr: "Sous la limite de quantification"
+      },
+      {
+        Code: "203",
+        en: "Above quantification limit",
+        fr: "Au-dessus de la limite de quantification"
+      },
+      {
+        Code: "204",
+        en: "Below reporting threshold",
+        fr: "Sous le seuil de déclaration"
+      },
+      {
+        Code: "205",
+        en: "Above reporting threshold",
+        fr: "Au-dessus du seuil de déclaration"
+      },
+      {
+        Code: "300",
+        en: "Suspect data",
+        fr: "Données suspectes"
+      },
+      {
+        Code: "301",
+        en: "Outlier",
+        fr: "Valeur aberrante"
+      },
+      {
+        Code: "302",
+        en: "Instrument error",
+        fr: "Erreur d'instrument"
+      },
+      {
+        Code: "303",
+        en: "Transcription error",
+        fr: "Erreur de transcription"
+      },
+      {
+        Code: "304",
+        en: "Sampling error",
+        fr: "Erreur d'échantillonnage"
+      },
+      {
+        Code: "305",
+        en: "Processing error",
+        fr: "Erreur de traitement"
+      },
+      {
+        Code: "306",
+        en: "Contamination detected",
+        fr: "Contamination détectée"
+      },
+      {
+        Code: "307",
+        en: "Data entry error",
+        fr: "Erreur de saisie de données"
+      },
+      {
+        Code: "308",
+        en: "Unit conversion error",
+        fr: "Erreur de conversion d'unité"
+      },
+      {
+        Code: "309",
+        en: "Reference material failure",
+        fr: "Défaillance du matériau de référence"
+      },
+      {
+        Code: "400",
+        en: "Data pending review",
+        fr: "Données en attente de révision"
+      },
+      {
+        Code: "401",
+        en: "Data under embargo",
+        fr: "Données sous embargo"
+      },
+      {
+        Code: "402",
+        en: "Data archived",
+        fr: "Données archivées"
+      },
+      {
+        Code: "403",
+        en: "Data retracted",
+        fr: "Données rétractées"
+      }
+    ]
+  },
+  {
+    id: 6,
+    name: {
       en: "days",
       fr: "jours"
     },
@@ -300,7 +561,94 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 6,
+    id: 7,
+    name: {
+      en: "Highest level of education (Statistics Canada)",
+      fr: "Niveau de scolarité le plus élevé (Statistique Canada)"
+    },
+    description: {
+      en: "Highest certificate diploma or degree completed based on Statistics Canada census classification.",
+      fr: "Certificat diplôme ou grade le plus élevé obtenu selon la classification du recensement de Statistique Canada."
+    },
+    keywords: {
+      en: ["education level;highest certificate;Statistics Canada;census education"],
+      fr: ["niveau de scolarité;plus haut diplôme;Statistique Canada;recensement"]
+    },
+    category: "general",
+    source:
+      "https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop038",
+    languages: ["en", "fr"],
+    headers: ["Code", "en", "fr"],
+    rows: [
+      {
+        Code: "NCD",
+        en: "No certificate diploma or degree",
+        fr: "Aucun certificat diplôme ou grade"
+      },
+      {
+        Code: "SEC",
+        en: "High (secondary) school diploma or equivalency certificate",
+        fr: "Diplôme d’études secondaires ou certificat d’équivalence"
+      },
+      {
+        Code: "NTC",
+        en: "Non-apprenticeship trades certificate or diploma",
+        fr: "Certificat ou diplôme de métiers sans apprentissage"
+      },
+      {
+        Code: "APP",
+        en: "Apprenticeship certificate",
+        fr: "Certificat d’apprentissage"
+      },
+      {
+        Code: "C31",
+        en: "College CEGEP or other non-university certificate or diploma from a program of 3 months to less than 1 year",
+        fr: "Certificat ou diplôme collégial cégep ou autre établissement non universitaire programme de 3 mois à moins d’un an"
+      },
+      {
+        Code: "C12",
+        en: "College CEGEP or other non-university certificate or diploma from a program of 1 year to 2 years",
+        fr: "Certificat ou diplôme collégial cégep ou autre établissement non universitaire programme de 1 à 2 ans"
+      },
+      {
+        Code: "C2P",
+        en: "College CEGEP or other non-university certificate or diploma from a program of more than 2 years",
+        fr: "Certificat ou diplôme collégial cégep ou autre établissement non universitaire programme de plus de 2 ans"
+      },
+      {
+        Code: "UCB",
+        en: "University certificate or diploma below bachelor level",
+        fr: "Certificat ou diplôme universitaire inférieur au baccalauréat"
+      },
+      {
+        Code: "BD",
+        en: "Bachelor’s degree",
+        fr: "Baccalauréat"
+      },
+      {
+        Code: "UCA",
+        en: "University certificate or diploma above bachelor level",
+        fr: "Certificat ou diplôme universitaire supérieur au baccalauréat"
+      },
+      {
+        Code: "MDP",
+        en: "Degree in medicine dentistry veterinary medicine or optometry",
+        fr: "Diplôme en médecine dentisterie médecine vétérinaire ou optométrie"
+      },
+      {
+        Code: "MS",
+        en: "Master’s degree",
+        fr: "Maîtrise"
+      },
+      {
+        Code: "PHD",
+        en: "Earned doctorate",
+        fr: "Doctorat"
+      }
+    ]
+  },
+  {
+    id: 8,
     name: {
       en: "Education level",
       fr: "Niveau de scolarité"
@@ -361,7 +709,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 7,
+    id: 9,
     name: {
       en: "Eight Point Cardinality",
       fr: "Cardinalité à huit points"
@@ -422,7 +770,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 8,
+    id: 10,
     name: {
       en: "Frequency scale",
       fr: "Échelle de fréquence"
@@ -473,7 +821,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 9,
+    id: 11,
     name: {
       en: "Gender identity",
       fr: "Identité de genre"
@@ -521,7 +869,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 10,
+    id: 12,
     name: {
       en: "Household structure",
       fr: "Structure du ménage"
@@ -572,7 +920,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 11,
+    id: 13,
     name: {
       en: "months",
       fr: "mois"
@@ -653,7 +1001,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 12,
+    id: 14,
     name: {
       en: "Parent material chemical property",
       fr: "Propriété chimique du matériau parental"
@@ -714,7 +1062,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 13,
+    id: 15,
     name: {
       en: "Parent material texture",
       fr: "Texture du matériau parental"
@@ -825,7 +1173,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 14,
+    id: 16,
     name: {
       en: "Sixteen Point Cardinality",
       fr: "Cardinalité à seize points"
@@ -926,7 +1274,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 15,
+    id: 17,
     name: {
       en: "Soil aeration status",
       fr: "Statut d’aération du sol"
@@ -963,7 +1311,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 16,
+    id: 18,
     name: {
       en: "Bulk density class",
       fr: "Classe de densité apparente"
@@ -999,7 +1347,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 17,
+    id: 19,
     name: {
       en: "Carbon-to-Nitrogen (C:N) ratio class",
       fr: "Classe du rapport carbone-azote (C:N)"
@@ -1036,7 +1384,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 18,
+    id: 20,
     name: {
       en: "Soil colloid fraction class",
       fr: "Classe de fraction colloïdale du sol"
@@ -1073,7 +1421,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 19,
+    id: 21,
     name: {
       en: "Soil compressibility class",
       fr: "Classe de compressibilité du sol"
@@ -1110,7 +1458,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 20,
+    id: 22,
     name: {
       en: "Soil Drainage Class",
       fr: "Classe de drainage du sol"
@@ -1171,7 +1519,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 21,
+    id: 23,
     name: {
       en: "Effective rooting depth class",
       fr: "Classe de profondeur d’enracinement efficace"
@@ -1218,7 +1566,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 22,
+    id: 24,
     name: {
       en: "Soil erodibility class",
       fr: "Classe d’érodibilité du sol"
@@ -1255,7 +1603,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 23,
+    id: 25,
     name: {
       en: "Soil fertility class",
       fr: "Classe de fertilité du sol"
@@ -1292,7 +1640,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 24,
+    id: 26,
     name: {
       en: "Soil mineral content type",
       fr: "Type de contenu minéral du sol"
@@ -1334,7 +1682,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 25,
+    id: 27,
     name: {
       en: "Soil organic matter class",
       fr: "Classe de matière organique du sol"
@@ -1381,7 +1729,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 26,
+    id: 28,
     name: {
       en: "Soil permeability class",
       fr: "Classe de perméabilité du sol"
@@ -1428,7 +1776,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 27,
+    id: 29,
     name: {
       en: "Soil pH class",
       fr: "Classe de pH du sol"
@@ -1504,7 +1852,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 28,
+    id: 30,
     name: {
       en: "Soil plasticity class",
       fr: "Classe de plasticité du sol"
@@ -1541,7 +1889,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 29,
+    id: 31,
     name: {
       en: "Soil porosity class",
       fr: "Classe de porosité du sol"
@@ -1588,7 +1936,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 30,
+    id: 32,
     name: {
       en: "Soil salinity type (dominant anion)",
       fr: "Type de salinité du sol (anion dominant)"
@@ -1630,7 +1978,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 31,
+    id: 33,
     name: {
       en: "Soil salinity class (ECe)",
       fr: "Classe de salinité du sol (ECe)"
@@ -1677,7 +2025,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 32,
+    id: 34,
     name: {
       en: "Soil sodicity class (SAR/ESP)",
       fr: "Classe de sodicité du sol (SAR/ESP)"
@@ -1708,7 +2056,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 33,
+    id: 35,
     name: {
       en: "Soil structure type",
       fr: "Type de structure du sol"
@@ -1764,7 +2112,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 34,
+    id: 36,
     name: {
       en: "Soil texture class",
       fr: "Classe texturale du sol"
@@ -1845,7 +2193,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 35,
+    id: 37,
     name: {
       en: "Maturity Levels",
       fr: "Niveaux de maturité"
@@ -1906,7 +2254,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 36,
+    id: 38,
     name: {
       en: "Support scale",
       fr: "Échelle de soutien"
@@ -1967,12 +2315,13 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 37,
+    id: 39,
     name: {
       en: "Thirty-two Point Cardinality",
       fr: "Cardinalité à trente-deux points"
     },
     description: {
+      // eslint-disable-next-line quotes
       en: 'The 32 wind compass rose subdivides the circle even further by adding quarter winds, which fall halfway between each pair of 16 wind points. These "by" directions—such as north by east, northeast by north, and southwest by west—create a system of 32 points spaced at 11.25 degree intervals. Historically used in maritime navigation, this finer resolution allows much more accurate description of direction.',
       fr: "La rose des vents à 32 points subdivise davantage le cercle en ajoutant des quarts de vent, situés à mi-chemin entre chaque paire de points à 16 points. Ces directions par— comme le nord par l'est, le nord-est par le nord et le sud-ouest par l'ouest — créent un système de 32 points espacés de 11,25 degrés. Historiquement utilisée en navigation maritime, cette résolution plus fine permet une description beaucoup plus précise de la direction."
     },
@@ -2148,7 +2497,7 @@ const entryCodePicklists = [
     ]
   },
   {
-    id: 38,
+    id: 40,
     name: {
       en: "Water Table Characteristics",
       fr: "Caractéristiques de la nappe phréatique"
