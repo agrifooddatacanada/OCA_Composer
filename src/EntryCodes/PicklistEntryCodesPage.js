@@ -13,7 +13,8 @@ import {
   Divider,
   InputAdornment,
   TextField,
-  Typography
+  Typography,
+  Link
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import BackNextSkeleton from "../components/BackNextSkeleton";
@@ -324,6 +325,33 @@ export default function PicklistEntryCodesPage() {
               </Card>
             );
           })}
+        </Box>
+        <Box
+          sx={{
+            width: "80%",
+            marginTop: "2rem",
+            marginLeft: "auto",
+            marginRight: "auto"
+          }}
+        >
+          {t("All entry codes are documented in the")}{" "}
+          <Link
+            href="https://github.com/agrifooddatacanada/picklists_for_schemas"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("Picklist GitHub repository")}
+          </Link>
+          . {t("Request a new Picklist to be added by")}{" "}
+          <Link
+            href="https://github.com/agrifooddatacanada/picklists_for_schemas/issues"
+            rel="noreferrer"
+            target="_blank"
+          >
+            {t("raising an issue in the repository")}
+          </Link>{" "}
+          {t("or email us at")} <Link href="mailto:adc@uoguelph.ca">adc@uoguelph.ca</Link>
+          .
         </Box>
       </Box>
 
