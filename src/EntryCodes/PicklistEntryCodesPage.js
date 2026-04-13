@@ -21,7 +21,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
 import entryCodePicklists from "../constants/entry_code_picklists";
-import { languageCodesObject } from "../constants/isoCodes";
+import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
 
 function normalizeString(value) {
   return (value ?? "").toString().toLowerCase();
@@ -42,6 +42,23 @@ function getUiLang2(i18nLanguage) {
   return lang.includes("-") ? lang.split("-")[0] : lang;
 }
 
+/** 2-letter language keys for picklist rows, order from picklist.languages when present. */
+function getPicklistLanguageColumns(picklist) {
+  if (Array.isArray(picklist?.languages) && picklist.languages.length > 0) {
+    return [...picklist.languages];
+  }
+  const first = picklist?.rows?.[0];
+  if (first && typeof first === "object") {
+    return Object.keys(first).filter((k) => k !== "Code");
+  }
+  return ["en"];
+}
+
+function languageColumnLabel(code) {
+  const name = codesToLanguages?.[code];
+  return name ? `${name} (${code})` : code;
+}
+
 function PicklistDetailsModal({ open, onClose, picklist }) {
   const { t, i18n } = useTranslation();
   const uiLang2 = getUiLang2(i18n.language);
@@ -52,6 +69,8 @@ function PicklistDetailsModal({ open, onClose, picklist }) {
   const description = getPicklistText(picklist.description, uiLang2, "");
   const keywords = picklist.keywords?.[uiLang2] ?? picklist.keywords?.en ?? [];
   const codesCount = Array.isArray(picklist.rows) ? picklist.rows.length : 0;
+  const langColumns = getPicklistLanguageColumns(picklist);
+  const gridTemplateColumns = `minmax(88px, auto) repeat(${langColumns.length}, minmax(120px, 1fr))`;
 
   return (
     <Dialog
@@ -102,26 +121,45 @@ function PicklistDetailsModal({ open, onClose, picklist }) {
             borderRadius: "8px"
           }}
         >
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "180px 1fr",
-              gap: 1,
-              p: 2
-            }}
-          >
-            {(picklist.rows || []).map((row, idx) => {
-              const label = row?.[uiLang2] ?? row?.en ?? "";
-              return (
+          <Box sx={{ minWidth: "min-content" }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns,
+                gap: 1,
+                p: 2,
+                alignItems: "start"
+              }}
+            >
+              <Typography sx={{ fontWeight: "bold", textAlign: "left" }}>
+                {t("Code")}
+              </Typography>
+              {langColumns.map((code) => (
+                <Typography
+                  key={code}
+                  sx={{ fontWeight: "bold", textAlign: "left", wordBreak: "break-word" }}
+                >
+                  {languageColumnLabel(code)}
+                </Typography>
+              ))}
+
+              {(picklist.rows || []).map((row, idx) => (
                 // eslint-disable-next-line react/no-array-index-key
                 <React.Fragment key={`${row?.Code ?? "code"}-${idx}`}>
                   <Typography sx={{ fontFamily: "monospace", textAlign: "left" }}>
                     {row?.Code ?? ""}
                   </Typography>
-                  <Typography sx={{ textAlign: "left" }}>{label}</Typography>
+                  {langColumns.map((code) => (
+                    <Typography
+                      key={code}
+                      sx={{ textAlign: "left", wordBreak: "break-word" }}
+                    >
+                      {row?.[code] ?? ""}
+                    </Typography>
+                  ))}
                 </React.Fragment>
-              );
-            })}
+              ))}
+            </Box>
           </Box>
         </Box>
       </DialogContent>
