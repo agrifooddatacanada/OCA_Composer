@@ -9,7 +9,6 @@ import { mapLinkMLToOCABundle } from "../SchemaTranslator/mapLinkMLToOCABundle";
 import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
 import {
   getPackageBundleId,
-  getPackageBundle,
   coerceIfLegacyTopLevelBundle,
   getRootCaptureBaseId
 } from "../utils/packageUtils";
@@ -372,8 +371,7 @@ export const useHandleSchemaFileDrop = (
             }
 
             // Set editing schema to root schema
-            const pkgBundle = getPackageBundle(pkg);
-            const rootSchemaId = getPackageBundleId(pkg) || pkgBundle?.capture_base?.d || 'generated_schema';
+            const rootSchemaId = getPackageBundleId(pkg) ?? getRootCaptureBaseId(pkg) ?? 'generated_schema';
             switchToSchema(rootSchemaId, pkg);
 
             // Extract the bundle for processing - exactly the same structure expected by JSON processing

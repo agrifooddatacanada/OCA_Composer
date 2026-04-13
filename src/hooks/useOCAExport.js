@@ -8,7 +8,8 @@ import {
   getPackageBundle,
   getPackageDependencies,
   findSchemaById,
-  getPackageBundleId
+  getPackageBundleId,
+  getRootCaptureBaseId
 } from "../utils/packageUtils";
 import {
   ADC,
@@ -505,7 +506,7 @@ const useOCAExport = () => {
     bundle = await generateOCABundle(data);
 
     const formCaptureBaseDigest =
-      bundle.bundle?.capture_base?.d || bundle.bundle?.d;
+      getRootCaptureBaseId(bundle) ?? getPackageBundleId(bundle);
 
     const sensitiveAttributes = attributeRowData
       .filter((item) => item.Sensitive)
