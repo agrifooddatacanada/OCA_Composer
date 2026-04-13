@@ -8,8 +8,7 @@ import {
   getPackageBundle,
   getPackageDependencies,
   findSchemaById,
-  getPackageBundleId,
-  normalizeNonSaidBundleDigestsForOcaPackage
+  getPackageBundleId
 } from "../utils/packageUtils";
 import {
   ADC,
@@ -105,7 +104,7 @@ const useOCAExport = () => {
 
   // Build OCA package from schema state using text DSL generation
   // Works for both single schemas and multi-schema packages
-  const buildPackageFromTextDSL = async (schemaId, childSaidMap = {}, dslOptions = {}) => {
+  const buildPackageFromTextDSL = async (schemaId, childSaidMap = {}) => {
     const schemaState = getSchemaById(schemaId);
     const metadata = schemaState?.metadata || {};
     
@@ -191,16 +190,6 @@ const useOCAExport = () => {
     let data = "";
     let bundle;
 
-    if (dslOptions.skipRemoteBundleGeneration) {
-      const extKey = dslOptions.extensionBundleDigestKey || schemaId;
-      const cbDigest = dslOptions.captureBaseDigestForForm || extKey;
-      bundle = {
-        bundle: {
-          d: extKey,
-          capture_base: { d: cbDigest }
-        }
-      };
-    } else {
     const schemaMetadata = dataArray[0];
     const languagesWithCode = [];
     const allLanguageCodes = [];
@@ -514,12 +503,9 @@ const useOCAExport = () => {
     }
 
     bundle = await generateOCABundle(data);
-    }
 
     const formCaptureBaseDigest =
-      dslOptions.skipRemoteBundleGeneration && dslOptions.captureBaseDigestForForm
-        ? dslOptions.captureBaseDigestForForm
-        : bundle.bundle?.capture_base?.d || bundle.bundle?.d;
+      bundle.bundle?.capture_base?.d || bundle.bundle?.d;
 
     const sensitiveAttributes = attributeRowData
       .filter((item) => item.Sensitive)
@@ -670,23 +656,25 @@ const useOCAExport = () => {
         }
 
         const adcMerged = {};
+        const apiBundleByOriginalId = {};
+        const bundleIdRemap = {};
 
         const mergeExtensionsForBundle = async (schemaBundle) => {
           const bid = schemaBundle?.d;
           if (!bid) return;
           const st = getSchemaById(bid);
           if (!st?.initialized) return;
-          const capD = schemaBundle?.capture_base?.d || bid;
-          const { extension } = await buildPackageFromTextDSL(
-            bid,
-            {},
-            {
-              skipRemoteBundleGeneration: true,
-              extensionBundleDigestKey: bid,
-              captureBaseDigestForForm: capD
-            }
-          );
-          Object.assign(adcMerged, extension.extensions[ADC]);
+          const result = await buildPackageFromTextDSL(bid, {});
+
+          const generatedBundle = getPackageBundle(result.bundle);
+          if (generatedBundle?.d) {
+            apiBundleByOriginalId[bid] = generatedBundle;
+            bundleIdRemap[bid] = generatedBundle.d;
+          }
+
+          if (result?.extension?.extensions?.[ADC]) {
+            Object.assign(adcMerged, result.extension.extensions[ADC]);
+          }
         };
 
         await mergeExtensionsForBundle(rootBundle);
@@ -694,17 +682,43 @@ const useOCAExport = () => {
           await mergeExtensionsForBundle(dep);
         }
 
-        normalizeNonSaidBundleDigestsForOcaPackage(pkgForExport, adcMerged);
-
         const mergedExtension = {
           extensions: {
             adc: adcMerged
           }
         };
 
+        const rewriteRefsForRemappedBundles = (bundleObj) => {
+          const attrs = bundleObj?.capture_base?.attributes;
+          if (!attrs || typeof attrs !== "object") return;
+          Object.keys(attrs).forEach((attrName) => {
+            const value = attrs[attrName];
+            if (typeof value === "string" && value.startsWith("refs:")) {
+              const oldId = value.slice(5);
+              if (bundleIdRemap[oldId]) attrs[attrName] = `refs:${bundleIdRemap[oldId]}`;
+            } else if (
+              Array.isArray(value) &&
+              typeof value[0] === "string" &&
+              value[0].startsWith("refs:")
+            ) {
+              const oldId = value[0].slice(5);
+              if (bundleIdRemap[oldId]) attrs[attrName] = [`refs:${bundleIdRemap[oldId]}`];
+            }
+          });
+        };
+
+        const exportedRootBundle =
+          apiBundleByOriginalId[rootBundle.d] || rootBundle;
+        const exportedDependencies = dependencies.map(
+          (dep) => apiBundleByOriginalId[dep.d] || dep
+        );
+
+        rewriteRefsForRemappedBundles(exportedRootBundle);
+        exportedDependencies.forEach(rewriteRefsForRemappedBundles);
+
         const bundleWithDeps = {
-          bundle: rootBundle,
-          dependencies
+          bundle: exportedRootBundle,
+          dependencies: exportedDependencies
         };
 
         // Validate mergedExtension before handing to OcaPackage (catch malformed overlays early)
