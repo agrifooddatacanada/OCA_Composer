@@ -936,67 +936,79 @@ const entryCodePicklists = [
     category: "general",
     source: "",
     languages: ["en", "fr"],
-    headers: ["Code", "en", "fr"],
+    headers: ["Code", "Month_number", "en", "fr"],
     rows: [
       {
-        Code: "Jan",
-        en: "January",
-        fr: "janvier"
+        Code: "January",
+        Month_number: "01",
+        en: "Jan",
+        fr: "janv"
       },
       {
-        Code: "Feb",
-        en: "February",
-        fr: "février"
+        Code: "February",
+        Month_number: "02",
+        en: "Feb",
+        fr: "févr"
       },
       {
-        Code: "Mar",
-        en: "March",
+        Code: "March",
+        Month_number: "03",
+        en: "Mar",
         fr: "mars"
       },
       {
-        Code: "Apr",
-        en: "April",
-        fr: "avril"
+        Code: "April",
+        Month_number: "04",
+        en: "Apr",
+        fr: "avr"
       },
       {
         Code: "May",
+        Month_number: "05",
         en: "May",
         fr: "mai"
       },
       {
-        Code: "Jun",
-        en: "June",
+        Code: "June",
+        Month_number: "06",
+        en: "Jun",
         fr: "juin"
       },
       {
-        Code: "Jul",
-        en: "July",
-        fr: "juillet"
+        Code: "July",
+        Month_number: "07",
+        en: "Jul",
+        fr: "juil"
       },
       {
-        Code: "Aug",
-        en: "August",
+        Code: "August",
+        Month_number: "08",
+        en: "Aug",
         fr: "août"
       },
       {
-        Code: "Sep",
-        en: "September",
-        fr: "septembre"
+        Code: "September",
+        Month_number: "09",
+        en: "Sep",
+        fr: "sept"
       },
       {
-        Code: "Oct",
-        en: "October",
-        fr: "octobre"
+        Code: "October",
+        Month_number: "10",
+        en: "Oct",
+        fr: "octo"
       },
       {
-        Code: "Nov",
-        en: "November",
-        fr: "novembre"
+        Code: "November",
+        Month_number: "11",
+        en: "Nov",
+        fr: "nov"
       },
       {
-        Code: "Dec",
-        en: "December",
-        fr: "décembre"
+        Code: "December",
+        Month_number: "12",
+        en: "Dec",
+        fr: "déc"
       }
     ]
   },
