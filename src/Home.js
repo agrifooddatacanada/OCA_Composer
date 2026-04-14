@@ -21,6 +21,7 @@ import Cardinality from "./Overlays/Cardinality";
 import UnitFraming from "./Overlays/UnitFraming";
 import FormInformation from "./Overlays/FormInformation";
 import FormBuilder from "./Overlays/FormBuilder";
+import PicklistEntryCodesPage from "./EntryCodes/PicklistEntryCodesPage";
 import DataStandards from "./Overlays/DataStandards";
 import Range from "./Overlays/Range";
 import AttributeFraming from "./Overlays/AttributeFraming";
@@ -64,6 +65,7 @@ const OVERLAY_SUB_PAGES = new Set([
 
 const ENTRY_CODES_FLOW_PAGES = new Set([
   "UploadEntryCodes",
+  "PicklistEntryCodes",
   "MatchingEntryCodes",
   "MatchingJSONEntryCodes"
 ]);
@@ -452,6 +454,7 @@ const Home = ({
           />
         )}
         {currentPage === "UploadEntryCodes" && <UploadEntryCodesPage />}
+        {currentPage === "PicklistEntryCodes" && <PicklistEntryCodesPage />}
         {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
         {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
 

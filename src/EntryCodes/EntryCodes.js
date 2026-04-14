@@ -57,6 +57,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
   const codeRefs = useRef();
   const pageForwardDisabledRef = useRef(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [warningNextPage, setWarningNextPage] = useState("UploadEntryCodes");
   const [loading, setLoading] = useState(true);
   const gridReadyRef = useRef(new Set());
   const hasInitializedFromOverlays = useRef({});
@@ -467,6 +468,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
           return updated;
         });
       }}
+      setWarningNextPage={setWarningNextPage}
     />
   ));
 
@@ -487,7 +489,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
           setShowCard={setShowWarning}
           handleForward={() => {
             saveWithoutValidation();
-            setCurrentPage("UploadEntryCodes");
+            setCurrentPage(warningNextPage);
             window.scrollTo(0, 0);
           }}
         />

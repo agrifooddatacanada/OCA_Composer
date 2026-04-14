@@ -493,6 +493,10 @@
   "Additional instructions or commentary text that appears below the question label.": "Instructions supplémentaires ou texte de commentaire qui apparaît sous l'étiquette de la question.",
   "Section Labels": "Étiquettes de section",
   "Page Labels": "Étiquettes de page",
+  "Search entry codes": "Rechercher des codes d'entrée",
+  "All entry codes are documented in the": "Tous les codes d'accès sont documentés dans le",
+  "Picklist GitHub repository": "Dépôt GitHub de la liste de sélection",
+  "Request a new Picklist to be added by": "Demander l'ajout d'une nouvelle liste de sélection par",
   "Semantic Engine is currently undergoing maintenance and schemas cannot be exported at this time": "Semantic Engine est actuellement en maintenance et les schémas ne peuvent pas être exportés pour le moment",
   "For future editing, download your schema as-is and later upload it to the Semantic Engine.": "Pour une modification ultérieure, téléchargez votre schéma tel quel et téléversez-le plus tard sur le moteur sémantique.",
   "This is the": "C'est le",
@@ -690,5 +694,6 @@
   "Placeholder Editor": "Éditeur d'espace réservé",
   "Assigned Column Name": "Nom de colonne attribué",
   "Imported Column Name": "Nom de colonne importé",
-  "Map each column from your uploaded file.": "Associez chaque colonne de votre fichier importé."
+  "Map each column from your uploaded file.": "Associez chaque colonne de votre fichier importé.",
+  "Watch this site - we are adding more content. Soon you will find this page at ": "Consultez régulièrement ce site : nous y ajoutons du contenu. Bientôt, vous trouverez cette page à l'adresse suivante : "
 }

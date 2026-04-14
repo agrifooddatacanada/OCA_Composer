@@ -1424,7 +1424,10 @@ const OCADataValidatorCheck = ({
               onCellKeyDown={onCellKeyDown}
               suppressFieldDotNotation
               onGridReady={() => {
-                handleValidate();
+                // Wait for row data to be loaded before validating
+                setTimeout(() => {
+                  handleValidate();
+                }, 0);
               }}
             />
           </div>

@@ -1,26 +1,42 @@
 import React, { useContext } from "react";
 import { Box, Tooltip, Typography } from "@mui/material";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import ListAltIcon from "@mui/icons-material/ListAlt";
 import { CustomPalette } from "../constants/customPalette";
 import CodeGrid from "./CodeGrid";
-import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { Context } from "../App";
 
-export default function SingleTable({ attribute, index, codeRefs, chosenTable, setChosenTable, setShowCard, onFirstDataRendered, entryCodeData, setEntryCodeData }) {
-  const { setChosenEntryCodeIndex } = useContext(Context);
+export default function SingleTable({
+  attribute,
+  index,
+  codeRefs,
+  chosenTable,
+  setChosenTable,
+  setShowCard,
+  onFirstDataRendered,
+  entryCodeData,
+  setEntryCodeData,
+  setWarningNextPage
+}) {
+  const { setChosenEntryCodeIndex, setCurrentPage } = useContext(Context);
+  const hasExistingCodes =
+    Array.isArray(entryCodeData) &&
+    entryCodeData.length > 0 &&
+    String(entryCodeData[0]?.Code ?? "").trim() !== "";
 
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "flex-start",
+        alignItems: "flex-start"
       }}
     >
       <Box
         sx={{
           display: "flex",
           flexDirection: "row",
-          alignItems: "flex-start",
+          alignItems: "flex-start"
         }}
       >
         <Typography
@@ -29,7 +45,7 @@ export default function SingleTable({ attribute, index, codeRefs, chosenTable, s
             fontWeight: "bold",
             textAlign: "left",
             margin: "1rem 0 1rem 0",
-            color: CustomPalette.PRIMARY,
+            color: CustomPalette.PRIMARY
           }}
         >
           {attribute.Attribute}
@@ -41,17 +57,47 @@ export default function SingleTable({ attribute, index, codeRefs, chosenTable, s
               margin: "1.1rem 0 1rem 1rem",
               ":hover": {
                 color: CustomPalette.PRIMARY,
-                cursor: "pointer",
+                cursor: "pointer"
               }
             }}
             onClick={() => {
               setChosenEntryCodeIndex(index);
+              setWarningNextPage("UploadEntryCodes");
               setShowCard(true);
             }}
           />
         </Tooltip>
+        <Tooltip title="Choose from existing entry codes">
+          <ListAltIcon
+            sx={{
+              color: "gray",
+              margin: "1.1rem 0 1rem 0.5rem",
+              ":hover": {
+                color: CustomPalette.PRIMARY,
+                cursor: "pointer"
+              }
+            }}
+            onClick={() => {
+              setChosenEntryCodeIndex(index);
+              if (hasExistingCodes) {
+                setWarningNextPage("PicklistEntryCodes");
+                setShowCard(true);
+              } else {
+                setCurrentPage("PicklistEntryCodes");
+              }
+            }}
+          />
+        </Tooltip>
       </Box>
-      <CodeGrid index={index} codeRefs={codeRefs} chosenTable={chosenTable} setChosenTable={setChosenTable} onFirstDataRendered={onFirstDataRendered} entryCodeData={entryCodeData} setEntryCodeData={setEntryCodeData} />
+      <CodeGrid
+        index={index}
+        codeRefs={codeRefs}
+        chosenTable={chosenTable}
+        setChosenTable={setChosenTable}
+        onFirstDataRendered={onFirstDataRendered}
+        entryCodeData={entryCodeData}
+        setEntryCodeData={setEntryCodeData}
+      />
     </Box>
   );
 }
