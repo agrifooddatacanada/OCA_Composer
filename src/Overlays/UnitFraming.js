@@ -428,12 +428,8 @@ const UnitFraming = () => {
     [updateSchema]
   );
 
-  // Get unframed unit list - calculate from unitFramedRowData
+  // Get unframed unit list - always calculate from current row data
   const unframedUnitList = useMemo(() => {
-    if (frameAllUnits) {
-      return [];
-    }
-    
     // Get unique units that don't have UCUM codes yet
     const uniqueUnits = new Map();
     const dataArray = Array.isArray(unitFramedRowData) ? unitFramedRowData : [];
@@ -444,7 +440,7 @@ const UnitFraming = () => {
     });
     
     return Array.from(uniqueUnits.keys());
-  }, [unitFramedRowData, frameAllUnits]);
+  }, [unitFramedRowData]);
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -453,6 +449,15 @@ const UnitFraming = () => {
   const { tempToDisplayRowData, setTempToDisplayRowData } = useUnitData(
     unitFramedRowData
   );
+
+  const hasUnframedUnits = unframedUnitList.length > 0;
+  const effectiveFrameAllUnits = frameAllUnits && !hasUnframedUnits;
+
+  useEffect(() => {
+    if (frameAllUnits && hasUnframedUnits) {
+      setFrameAllUnits(false);
+    }
+  }, [frameAllUnits, hasUnframedUnits, setFrameAllUnits]);
 
   // Callback to save data when cell value changes via autocomplete
   const handleCellChanged = useCallback(() => {
@@ -644,9 +649,8 @@ const UnitFraming = () => {
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 
   const showLoading = loading && unitFramedRowData?.length > LOADING_THRESHOLD;
-  const hasUnframedUnits = unframedUnitList && unframedUnitList.length > 0;
   const unframedUnitsText =
-    !frameAllUnits && hasUnframedUnits
+    !effectiveFrameAllUnits && hasUnframedUnits
       ? `${t("Unframed units")}: [${unframedUnitList.join(", ")}]`
       : "";
 
@@ -704,15 +708,15 @@ const UnitFraming = () => {
           <Button
             color="button"
             variant="contained"
-            disabled={frameAllUnits || !hasUnframedUnits}
+            disabled={effectiveFrameAllUnits || !hasUnframedUnits}
             onClick={handleFrameAllUnits}
             sx={{
               padding: "0.5rem 1rem",
               minWidth: BUTTON_MIN_WIDTH,
-              ...((frameAllUnits || !hasUnframedUnits) && buttonDisabledStyles)
+              ...((effectiveFrameAllUnits || !hasUnframedUnits) && buttonDisabledStyles)
             }}
           >
-            {frameAllUnits
+            {effectiveFrameAllUnits
               ? t("All units are framed")
               : !hasUnframedUnits
                 ? t("No units to frame")
