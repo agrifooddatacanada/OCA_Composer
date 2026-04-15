@@ -725,7 +725,6 @@ const UnitFraming = () => {
             width: GRID_WIDTH,
             overflow: "hidden",
             "& .ag-root-wrapper": { height: "auto" },
-            "& .ag-root-wrapper-body.ag-layout-auto-height": { alignItems: "flex-start" },
             "& .ag-layout-auto-height .ag-center-cols-clipper": { minHeight: 0 },
             "& .ag-layout-auto-height .ag-center-cols-container": { minHeight: 0 },
             "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
