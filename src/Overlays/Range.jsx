@@ -26,6 +26,32 @@ import { matchFormat } from "../OCADataValidator/utils/matchRules";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { getAllGridRowData, useOverlayGridOnGridReady } from "./gridUtils";
 
+const RANGE_FORMAT_ALERT_MS = 3000;
+
+function computeRangeErrors(rows) {
+  const nextErrors = {};
+  for (const row of rows) {
+    if (row.LowerBound === "" && row.UpperBound === "") continue;
+    if (row.LowerBound) {
+      if (!matchFormat(row.Type, row.FormatRule, row.LowerBound, false)) {
+        nextErrors[row.Attribute] = { ...nextErrors[row.Attribute], LowerBound: true };
+      }
+    }
+    if (row.UpperBound) {
+      if (!matchFormat(row.Type, row.FormatRule, row.UpperBound, false)) {
+        nextErrors[row.Attribute] = { ...nextErrors[row.Attribute], UpperBound: true };
+      }
+    }
+  }
+  return nextErrors;
+}
+
+function hasRangeValidationFailures(errors) {
+  return Object.values(errors).some((attrErrors) =>
+    Object.values(attrErrors).some(Boolean)
+  );
+}
+
 const Range = forwardRef((props, ref) => {
   const {
     setCurrentPage,
@@ -176,48 +202,84 @@ const Range = forwardRef((props, ref) => {
 
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 
-  const handleSave = () => {
+  const flashRangeValidationAlert = useCallback(() => {
+    setShowValidationError(true);
+    setTimeout(() => {
+      setShowValidationError(false);
+    }, RANGE_FORMAT_ALERT_MS);
+  }, []);
+
+  const validateGrid = useCallback(
+    (options = {}) => {
+      const { flashOnError = true } = options;
+      const api = gridRef.current?.api;
+      if (!api) {
+        return true;
+      }
+      api.stopEditing();
+      const newData = getCurrentData(api, true);
+      const nextErrors = computeRangeErrors(newData);
+      setErrors(nextErrors);
+      if (hasRangeValidationFailures(nextErrors)) {
+        if (flashOnError) {
+          flashRangeValidationAlert();
+        }
+        api.refreshCells({ force: true });
+        return false;
+      }
+      return true;
+    },
+    [flashRangeValidationAlert]
+  );
+
+  const handleSave = useCallback(() => {
+    if (!gridRef.current?.api) return;
     gridRef.current.api.stopEditing();
     const rowData = getAllGridRowData(gridRef.current.api);
     setRangeRowData(rowData);
-  };
+  }, [setRangeRowData]);
 
-  // Expose save() to parent (Home) so navigation (stepper) can trigger an immediate save
-  useImperativeHandle(ref, () => ({
-    save: handleSave
-  }));
+  useImperativeHandle(
+    ref,
+    () => ({
+      validate: () => validateGrid({ flashOnError: true }),
+      save: handleSave
+    }),
+    [validateGrid, handleSave]
+  );
 
   const handleForward = () => {
-    const hasValidationError = Object.values(errors).some((attrErrors) =>
-      Object.values(attrErrors).some((isError) => isError)
-    );
-
-    if (hasValidationError) {
-      setShowValidationError(true);
-      setTimeout(() => {
-        setShowValidationError(false);
-      }, 3000);
+    if (!validateGrid()) {
       return;
     }
-
     handleSave();
     setSelectedOverlay("");
     setCurrentPage("Overlays");
   };
 
-  // Save changes when component unmounts (user navigates away)
+  const handleLeaveToOverlays = () => {
+    if (!validateGrid()) {
+      return;
+    }
+    handleSave();
+    setCurrentPage("Overlays");
+  };
+
   useEffect(() => {
     return () => {
       if (gridRef.current?.api) {
         gridRef.current.api.stopEditing();
         const rowData = getAllGridRowData(gridRef.current.api);
         if (rowData && rowData.length > 0) {
-          setRangeRowData(rowData);
+          const nextErrors = computeRangeErrors(rowData);
+          if (!hasRangeValidationFailures(nextErrors)) {
+            setRangeRowData(rowData);
+          }
         }
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - only run on mount/unmount
+  }, []);
 
   // Initialize attributeRanges from attributeFormats if empty (e.g., after deletion and re-adding)
   useEffect(() => {
@@ -250,10 +312,6 @@ const Range = forwardRef((props, ref) => {
     }
   }, [schemaState?.attributeFormats, schemaState?.attributeRanges, schemaState?.attributes, updateSchema]);
 
-  const handleBack = () => {
-    setShowDeleteConfirmation(true);
-  };
-
   const onCellValueChanged = (params) => {
     if (params.colDef.field === "LowerBound" || params.colDef.field === "UpperBound") {
       params.column.colDef.cellStyle = { "background-color": "none" };
@@ -270,34 +328,8 @@ const Range = forwardRef((props, ref) => {
   const rangeGridFixedViewport =
     rangeRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
   const handleValidate = () => {
-    gridRef.current.api.stopEditing();
     setShouldRevalidate(false);
-    setErrors({});
-    const newData = getCurrentData(gridRef.current.api, true);
-
-    newData.forEach((row) => {
-      if (row.LowerBound === "" && row.UpperBound === "") return;
-      if (row.LowerBound) {
-        const isValid = matchFormat(row.Type, row.FormatRule, row.LowerBound, false);
-        setErrors((prev) => ({
-          ...prev,
-          [row.Attribute]: {
-            ...prev[row.Attribute],
-            LowerBound: !isValid
-          }
-        }));
-      }
-      if (row.UpperBound) {
-        const isValid = matchFormat(row.Type, row.FormatRule, row.UpperBound, false);
-        setErrors((prev) => ({
-          ...prev,
-          [row.Attribute]: {
-            ...prev[row.Attribute],
-            UpperBound: !isValid
-          }
-        }));
-      }
-    });
+    validateGrid({ flashOnError: false });
   };
 
   return (
@@ -305,7 +337,7 @@ const Range = forwardRef((props, ref) => {
       isForward
       isBack
       pageForward={handleForward}
-      pageBack={() => setCurrentPage("Overlays")}
+      pageBack={handleLeaveToOverlays}
     >
       {loading && <Loading />}
       {showDeleteConfirmation && (

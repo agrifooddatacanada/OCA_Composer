@@ -155,27 +155,6 @@ const Home = ({
     return [...STEPS_BASE.slice(0, 2), ENTRY_CODES_STEP, ...STEPS_BASE.slice(2)];
   }, [showEntryCodes]);
 
-  const pageForNav = pageIdForStepper(currentPage);
-
-  const pageForward = () => {
-    const currentIndex = steps.findIndex((step) => step.page === pageForNav);
-    if (currentIndex >= 0 && currentIndex < steps.length - 1) {
-      const nextStep = steps[currentIndex + 1];
-      if (nextStep.page === "View") {
-        setSummaryExportMode(true);
-      }
-      setCurrentPage(nextStep.page);
-    }
-  };
-
-  const pageBack = () => {
-    const currentIndex = steps.findIndex((step) => step.page === pageForNav);
-    if (currentIndex > 0) {
-      const prevStep = steps[currentIndex - 1];
-      setCurrentPage(prevStep.page);
-    }
-  };
-
   const entryCodesRef = useRef(null);
   const [entryCodesError, setEntryCodesError] = useState("");
   const [attributesTypeError, setAttributesTypeError] = useState("");
@@ -188,6 +167,39 @@ const Home = ({
   const schemaMetadataRef = useRef(null);
   const formatRulesRef = useRef(null);
   const rangeRef = useRef(null);
+
+  const pageForNav = pageIdForStepper(currentPage);
+
+  const pageForward = () => {
+    if (currentPage === "Range" && rangeRef.current?.validate && !rangeRef.current.validate()) {
+      return;
+    }
+    if (currentPage === "Range" && rangeRef.current?.save) {
+      rangeRef.current.save();
+    }
+    const currentIndex = steps.findIndex((step) => step.page === pageForNav);
+    if (currentIndex >= 0 && currentIndex < steps.length - 1) {
+      const nextStep = steps[currentIndex + 1];
+      if (nextStep.page === "View") {
+        setSummaryExportMode(true);
+      }
+      setCurrentPage(nextStep.page);
+    }
+  };
+
+  const pageBack = () => {
+    if (currentPage === "Range" && rangeRef.current?.validate && !rangeRef.current.validate()) {
+      return;
+    }
+    if (currentPage === "Range" && rangeRef.current?.save) {
+      rangeRef.current.save();
+    }
+    const currentIndex = steps.findIndex((step) => step.page === pageForNav);
+    if (currentIndex > 0) {
+      const prevStep = steps[currentIndex - 1];
+      setCurrentPage(prevStep.page);
+    }
+  };
 
   useEffect(() => {
     if (!entryCodesError) return;
@@ -334,6 +346,11 @@ const Home = ({
       // FormatRules and Range expose save methods for immediate save if needed
       if (currentPage === "FormatRules" && formatRulesRef.current && typeof formatRulesRef.current.save === "function") {
         formatRulesRef.current.save();
+      }
+      if (currentPage === "Range" && rangeRef.current && typeof rangeRef.current.validate === "function") {
+        if (!rangeRef.current.validate()) {
+          return;
+        }
       }
       if (currentPage === "Range" && rangeRef.current && typeof rangeRef.current.save === "function") {
         rangeRef.current.save();
