@@ -401,6 +401,7 @@ const Range = forwardRef((props, ref) => {
             rowData={rangeRowData}
             columnDefs={columnDefs}
             getRowHeight={getRowHeight}
+            suppressRowHoverHighlight
             stopEditingWhenCellsLoseFocus
             onGridReady={onGridReady}
             onCellValueChanged={onCellValueChanged}

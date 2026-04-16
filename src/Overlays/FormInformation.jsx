@@ -783,6 +783,7 @@ const FormInformation = () => {
               getRowId={(params) => params.data.Attribute}
               columnDefs={columnDefs}
               domLayout="autoHeight"
+              suppressRowHoverHighlight
               suppressHorizontalScroll
               onCellKeyDown={onCellKeyDown}
               animateRows={true}

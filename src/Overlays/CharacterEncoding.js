@@ -211,6 +211,7 @@ const CharacterEncoding = () => {
               rowData={characterEncodingRowData}
               columnDefs={columnDefs}
               getRowId={(params) => params.data?.Attribute ?? ""}
+              suppressRowHoverHighlight
               suppressScrollOnNewData
               getRowHeight={getRowHeight}
               suppressHorizontalScroll

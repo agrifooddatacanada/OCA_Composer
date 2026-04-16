@@ -107,9 +107,10 @@ const DataStandards = () => {
           <AgGridReact
           key={i18n.language}
           ref={gridRef}
-          rowData={dataStandardsRowData} 
-          columnDefs={columnDefs} 
+          rowData={dataStandardsRowData}
+          columnDefs={columnDefs}
           domLayout="autoHeight"
+          suppressRowHoverHighlight
           stopEditingWhenCellsLoseFocus
           onGridReady={onGridReady}
           overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}

@@ -449,6 +449,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
             rowData={gridRowData}
             columnDefs={columnDefs}
             getRowHeight={getRowHeight}
+            suppressRowHoverHighlight
             suppressHorizontalScroll
             suppressScrollOnNewData
             onFirstDataRendered={onFormatFirstDataRendered}

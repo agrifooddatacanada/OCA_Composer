@@ -722,6 +722,7 @@ const UnitFraming = () => {
             columnDefs={columnDefsWithCallbacks}
             domLayout="autoHeight"
             getRowHeight={getRowHeight}
+            suppressRowHoverHighlight
             suppressHorizontalScroll
             onGridReady={onGridReady}
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}

@@ -805,17 +805,13 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                   style={{ width: "100%", maxWidth: "100%" }}
                 >
                   <style>{gridStyles}</style>
-                  <style>{`
-                    .ag-theme-balham .ag-row:hover {
-                      background-color: ${CustomPalette.PINK_100} !important;
-                    }
-                  `}</style>
                   <AgGridReact
                     key={i18n.language}
                     ref={gridRef}
                     rowData={searchResults}
                     columnDefs={searchResultsColumnDefs}
                     domLayout="autoHeight"
+                    suppressRowHoverHighlight
                     stopEditingWhenCellsLoseFocus
                     onGridReady={() => {
                       globalGridRef = gridRef;
@@ -1482,6 +1478,7 @@ const AttributeFraming = () => {
                 rowData={attributeFramingRowData}
                 columnDefs={columnDefs}
                 domLayout="autoHeight"
+                suppressRowHoverHighlight
                 stopEditingWhenCellsLoseFocus
                 suppressHorizontalScroll={false}
                 onGridReady={() => setGridReady(true)}

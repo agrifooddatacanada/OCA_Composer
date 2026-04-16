@@ -205,6 +205,7 @@ const RequiredEntries = () => {
             rowData={requiredEntriesRowData}
             columnDefs={columnDefs}
             getRowId={(params) => params.data?.Attribute ?? ""}
+            suppressRowHoverHighlight
             suppressScrollOnNewData
             getRowHeight={getRowHeight}
             suppressHorizontalScroll

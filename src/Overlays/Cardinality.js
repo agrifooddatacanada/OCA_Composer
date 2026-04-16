@@ -537,6 +537,7 @@ const Cardinality = () => {
             rowData={cardinalityData}
             columnDefs={columnDefs}
             gridOptions={gridOptions}
+            suppressRowHoverHighlight
             domLayout={cardinalityGridFixedViewport ? undefined : "autoHeight"}
             style={{
               width: "100%",
