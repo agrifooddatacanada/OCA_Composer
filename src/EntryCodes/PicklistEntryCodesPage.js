@@ -21,7 +21,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
 import entryCodePicklists from "../constants/entry_code_picklists";
-import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
+import { codesToLanguages } from "../constants/isoCodes";
 
 function normalizeString(value) {
   return (value ?? "").toString().toLowerCase();
@@ -59,6 +59,23 @@ function languageColumnLabel(code) {
   return name ? `${name} (${code})` : code;
 }
 
+/** All non-Code columns for the View modal: prefer `headers` order when present. */
+function getPicklistPreviewColumns(picklist) {
+  if (Array.isArray(picklist?.headers) && picklist.headers.length > 0) {
+    const fromHeaders = picklist.headers.filter((h) => h && h !== "Code");
+    if (fromHeaders.length > 0) return fromHeaders;
+  }
+  return getPicklistLanguageColumns(picklist);
+}
+
+function previewColumnHeaderLabel(picklist, key) {
+  const isLangColumn =
+    (Array.isArray(picklist?.languages) && picklist.languages.includes(key)) ||
+    Boolean(codesToLanguages?.[key]);
+  if (isLangColumn) return languageColumnLabel(key);
+  return key.replace(/_/g, " ");
+}
+
 function PicklistDetailsModal({ open, onClose, picklist }) {
   const { t, i18n } = useTranslation();
   const uiLang2 = getUiLang2(i18n.language);
@@ -69,8 +86,8 @@ function PicklistDetailsModal({ open, onClose, picklist }) {
   const description = getPicklistText(picklist.description, uiLang2, "");
   const keywords = picklist.keywords?.[uiLang2] ?? picklist.keywords?.en ?? [];
   const codesCount = Array.isArray(picklist.rows) ? picklist.rows.length : 0;
-  const langColumns = getPicklistLanguageColumns(picklist);
-  const gridTemplateColumns = `minmax(88px, auto) repeat(${langColumns.length}, minmax(120px, 1fr))`;
+  const previewColumns = getPicklistPreviewColumns(picklist);
+  const gridTemplateColumns = `minmax(88px, auto) repeat(${previewColumns.length}, minmax(120px, 1fr))`;
 
   return (
     <Dialog
@@ -134,12 +151,12 @@ function PicklistDetailsModal({ open, onClose, picklist }) {
               <Typography sx={{ fontWeight: "bold", textAlign: "left" }}>
                 {t("Code")}
               </Typography>
-              {langColumns.map((code) => (
+              {previewColumns.map((colKey) => (
                 <Typography
-                  key={code}
+                  key={colKey}
                   sx={{ fontWeight: "bold", textAlign: "left", wordBreak: "break-word" }}
                 >
-                  {languageColumnLabel(code)}
+                  {previewColumnHeaderLabel(picklist, colKey)}
                 </Typography>
               ))}
 
@@ -149,12 +166,12 @@ function PicklistDetailsModal({ open, onClose, picklist }) {
                   <Typography sx={{ fontFamily: "monospace", textAlign: "left" }}>
                     {row?.Code ?? ""}
                   </Typography>
-                  {langColumns.map((code) => (
+                  {previewColumns.map((colKey) => (
                     <Typography
-                      key={code}
+                      key={colKey}
                       sx={{ textAlign: "left", wordBreak: "break-word" }}
                     >
-                      {row?.[code] ?? ""}
+                      {row?.[colKey] ?? ""}
                     </Typography>
                   ))}
                 </React.Fragment>
@@ -176,20 +193,10 @@ export default function PicklistEntryCodesPage() {
   const { t, i18n } = useTranslation();
   const uiLang2 = getUiLang2(i18n.language);
 
-  const { setCurrentPage, chosenEntryCodeIndex, languages, setEntryCodeRowData } =
-    useContext(Context);
+  const { setCurrentPage, setPendingPicklist } = useContext(Context);
 
   const [query, setQuery] = useState("");
   const [viewPicklist, setViewPicklist] = useState(null);
-
-  const languageTo2Letter = useMemo(() => {
-    const map = {};
-    (languages || []).forEach((langName) => {
-      const code = languageCodesObject?.[langName.toLowerCase()];
-      if (code) map[langName] = code;
-    });
-    return map;
-  }, [languages]);
 
   const filteredPicklists = useMemo(() => {
     const q = normalizeString(query).trim();
@@ -212,24 +219,9 @@ export default function PicklistEntryCodesPage() {
     });
   }, [query, uiLang2]);
 
-  const applyPicklist = (picklist) => {
-    const rows = Array.isArray(picklist?.rows) ? picklist.rows : [];
-    const newRows = rows.map((row) => {
-      const newObj = { Code: row?.Code ?? "" };
-      (languages || []).forEach((langName) => {
-        const lang2 = languageTo2Letter[langName];
-        newObj[langName] = lang2 ? (row?.[lang2] ?? "") : "";
-      });
-      return newObj;
-    });
-
-    setEntryCodeRowData((prev) => {
-      const next = [...(prev || [])];
-      next[chosenEntryCodeIndex] = newRows.length ? newRows : next[chosenEntryCodeIndex];
-      return next;
-    });
-
-    setCurrentPage("Codes");
+  const goToPicklistCodeColumnMatch = (picklist) => {
+    setPendingPicklist(picklist);
+    setCurrentPage("MatchingPicklistEntryCodes");
   };
 
   return (
@@ -351,7 +343,7 @@ export default function PicklistEntryCodesPage() {
                   <Button
                     variant="contained"
                     color="navButton"
-                    onClick={() => applyPicklist(picklist)}
+                    onClick={() => goToPicklistCodeColumnMatch(picklist)}
                     sx={{
                       backgroundColor: CustomPalette.PRIMARY,
                       ":hover": { backgroundColor: CustomPalette.SECONDARY }
