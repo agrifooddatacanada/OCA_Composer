@@ -16,45 +16,53 @@ const entryCodePicklists = [
     category: "general",
     source: "",
     languages: ["en", "fr"],
-    headers: ["Code", "en", "fr"],
+    headers: ["Code", "short_code", "en", "fr"],
     rows: [
       {
         Code: "1",
+        short_code: "SA",
         en: "Strongly agree",
         fr: "Tout à fait d’accord"
       },
       {
         Code: "2",
+        short_code: "AG",
         en: "Agree",
         fr: "D’accord"
       },
       {
         Code: "3",
+        short_code: "MA",
         en: "Mildly agree",
         fr: "Plutôt d’accord"
       },
       {
         Code: "4",
+        short_code: "NAD",
         en: "Neither agree nor disagree",
         fr: "Ni d’accord ni en désaccord"
       },
       {
         Code: "5",
+        short_code: "MD",
         en: "Mildly disagree",
         fr: "Plutôt pas d’accord"
       },
       {
         Code: "6",
+        short_code: "DA",
         en: "Disagree",
         fr: "Pas d’accord"
       },
       {
         Code: "7",
+        short_code: "SD",
         en: "Strongly disagree",
         fr: "Tout à fait en désaccord"
       },
       {
         Code: "8",
+        short_code: "DK",
         en: "Don't know",
         fr: "Ne sait pas"
       }
@@ -77,70 +85,83 @@ const entryCodePicklists = [
     category: "general",
     source: "",
     languages: ["en", "fr"],
-    headers: ["Code", "en", "fr"],
+    headers: ["Code", "SGC_code", "en", "fr"],
     rows: [
       {
         Code: "AB",
+        SGC_code: "48",
         en: "Alberta",
         fr: "L'Alberta"
       },
       {
         Code: "BC",
+        SGC_code: "59",
         en: "British Columbia",
         fr: "La Colombie-Britannique"
       },
       {
         Code: "MB",
+        SGC_code: "46",
         en: "Manitoba",
         fr: "Le Manitoba"
       },
       {
         Code: "NB",
+        SGC_code: "13",
         en: "New Brunswick",
         fr: "Le Nouveau-Brunswick"
       },
       {
         Code: "NL",
+        SGC_code: "10",
         en: "Newfoundland and Labrador",
         fr: "La Terre-Neuve-et-Labrador"
       },
       {
         Code: "NS",
+        SGC_code: "12",
         en: "Nova Scotia",
         fr: "La Nouvelle-Écosse"
       },
       {
         Code: "NT",
+        SGC_code: "61",
         en: "Northwest Territories",
         fr: "Les Territoires du Nord-Ouest"
       },
       {
         Code: "NU",
+        SGC_code: "62",
         en: "Nunavut",
         fr: "Le Nunavut"
       },
       {
         Code: "ON",
+        SGC_code: "35",
         en: "Ontario",
         fr: "L'Ontario"
       },
       {
         Code: "PE",
+        SGC_code: "11",
         en: "Prince Edward Island",
         fr: "Île-du-Prince-Édouard"
       },
       {
         Code: "QC",
+        SGC_code: "24",
         en: "Quebec",
         fr: "Le Québec"
       },
       {
         Code: "SK",
+        SGC_code: "47",
         en: "Saskatchewan",
         fr: "La Saskatchewan"
       },
       {
         Code: "YT",
+        SGC_code: "60",
         en: "Yukon",
         fr: "Le Yukon"
       }

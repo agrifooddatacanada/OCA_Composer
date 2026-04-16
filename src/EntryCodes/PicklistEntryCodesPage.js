@@ -21,7 +21,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
 import entryCodePicklists from "../constants/entry_code_picklists";
-import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
+import { codesToLanguages } from "../constants/isoCodes";
 
 function normalizeString(value) {
   return (value ?? "").toString().toLowerCase();
@@ -193,20 +193,10 @@ export default function PicklistEntryCodesPage() {
   const { t, i18n } = useTranslation();
   const uiLang2 = getUiLang2(i18n.language);
 
-  const { setCurrentPage, chosenEntryCodeIndex, languages, setEntryCodeRowData } =
-    useContext(Context);
+  const { setCurrentPage, setPendingPicklist } = useContext(Context);
 
   const [query, setQuery] = useState("");
   const [viewPicklist, setViewPicklist] = useState(null);
-
-  const languageTo2Letter = useMemo(() => {
-    const map = {};
-    (languages || []).forEach((langName) => {
-      const code = languageCodesObject?.[langName.toLowerCase()];
-      if (code) map[langName] = code;
-    });
-    return map;
-  }, [languages]);
 
   const filteredPicklists = useMemo(() => {
     const q = normalizeString(query).trim();
@@ -229,24 +219,9 @@ export default function PicklistEntryCodesPage() {
     });
   }, [query, uiLang2]);
 
-  const applyPicklist = (picklist) => {
-    const rows = Array.isArray(picklist?.rows) ? picklist.rows : [];
-    const newRows = rows.map((row) => {
-      const newObj = { Code: row?.Code ?? "" };
-      (languages || []).forEach((langName) => {
-        const lang2 = languageTo2Letter[langName];
-        newObj[langName] = lang2 ? (row?.[lang2] ?? "") : "";
-      });
-      return newObj;
-    });
-
-    setEntryCodeRowData((prev) => {
-      const next = [...(prev || [])];
-      next[chosenEntryCodeIndex] = newRows.length ? newRows : next[chosenEntryCodeIndex];
-      return next;
-    });
-
-    setCurrentPage("Codes");
+  const goToPicklistCodeColumnMatch = (picklist) => {
+    setPendingPicklist(picklist);
+    setCurrentPage("MatchingPicklistEntryCodes");
   };
 
   return (
@@ -368,7 +343,7 @@ export default function PicklistEntryCodesPage() {
                   <Button
                     variant="contained"
                     color="navButton"
-                    onClick={() => applyPicklist(picklist)}
+                    onClick={() => goToPicklistCodeColumnMatch(picklist)}
                     sx={{
                       backgroundColor: CustomPalette.PRIMARY,
                       ":hover": { backgroundColor: CustomPalette.SECONDARY }
