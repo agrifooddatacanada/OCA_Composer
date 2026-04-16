@@ -36,7 +36,7 @@ import SelectedFeatureHeader from "./SelectedFeatureHeader";
 
 const gridStyles = `
 .ag-cell {
-  line-height: 1 !important;
+  line-height: 1.25 !important;
   padding: 0 6px !important;
   display: flex !important;
   align-items: center !important;
