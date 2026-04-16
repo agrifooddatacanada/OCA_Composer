@@ -281,6 +281,16 @@ const FormInformation = () => {
               };
             }
 
+            const hasExplicitFormPlaceholder =
+              Object.prototype.hasOwnProperty.call(langPlaceholders, attr);
+
+            if (hasExplicitFormPlaceholder) {
+              return {
+                ...item,
+                Placeholder: langPlaceholders[attr] ?? ""
+              };
+            }
+
             let dateTimeDefaultPlaceholder = "";
             const isDateTimeType = attrType === "DateTime" || attrType === "Array[DateTime]";
             if (isDateTimeType) {
@@ -338,7 +348,6 @@ const FormInformation = () => {
                 finalPlaceholder = "";
               }
             }
-
 
             return {
               ...item,
