@@ -168,7 +168,12 @@ const Overlays = ({ pageBack, pageForward }) => {
               }}
             >
               {unselectedKeys
-                .filter((overlayKey) => overlayKey && overlayKey.trim() !== "") // Filter out empty/null keys
+                .filter(
+                  (overlayKey) =>
+                    overlayKey &&
+                    overlayKey.trim() !== "" &&
+                    overlayKey !== FIELD_ATTRIBUTE_FRAMING_OVERLAY
+                )
                 .map((overlayKey) => {
                 const displayName = overlayKey;
                 const isDisabled = isOverlayAddDisabled(
