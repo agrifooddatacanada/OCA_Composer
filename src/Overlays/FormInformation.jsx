@@ -3,7 +3,7 @@ import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
-import { AgGridReact } from "../components/AgGridReact";
+import { AgGridReact } from "ag-grid-react";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
 import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
@@ -19,7 +19,6 @@ import {
   formatCodeDateDescription,
   formatCodeNumericDescription,
   formatCodeTextDescription,
-  AG_GRID_VIRTUALIZE_MIN_ROWS,
   MAX_ATTR_LABEL_CHARS,
   FIELD_FORM_INFORMATION_OVERLAY
 } from "../constants/constants";
@@ -42,7 +41,10 @@ const findDescription = (formatText, attributeType, t = null) => {
   else description = normalized;
   
   if (description && t) {
-    return t(description, { defaultValue: description });
+    if (i18next.exists(description)) {
+      return t(description, { defaultValue: description });
+    }
+    return description;
   }
   return description;
 };
@@ -113,8 +115,6 @@ const FormInformation = () => {
     const rowByAttr = Object.fromEntries((rawRows || []).map((r) => [r.Attribute, r]));
     return attributesList.map((attr) => rowByAttr[attr] || { Attribute: attr, Label: "", Placeholder: "", Description: "", List: "" });
   }, [rawRows, attributesList]);
-  const formInfoGridFixedViewport =
-    currentRows.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
   const primaryLanguage = languages?.[0] || LanguageConstants.DEFAULT_LANG_NAME;
 
   // Normalize any lan/form placeholder keys that use OCA 3-letter codes (e.g., 'eng') into UI language names (e.g., 'English')
@@ -602,18 +602,27 @@ const FormInformation = () => {
           const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
           const isEditable = PLACEHOLDER_EDITABLE_TYPES.includes(attrType);
           if (!isEditable) return true;
-          const newValue = params.newValue || "";
+          const newValue = params.newValue ?? "";
           params.data.Placeholder = newValue;
 
-          const newFormPlaceholders = (() => {
-            const prev = formPlaceholdersByLanguage || {};
-            const next = { ...(prev || {}) };
-            const langMap = { ...(next[currentLanguage] || {}) };
-            langMap[attr] = newValue;
-            next[currentLanguage] = langMap;
-            return next;
-          })();
-          updateSchema({ formPlaceholdersByLanguage: newFormPlaceholders });
+          const prevLan = lanAttributeRowData || {};
+          const langRows = prevLan[currentLanguage] || [];
+          const rowByAttr = Object.fromEntries(langRows.map((r) => [r.Attribute, r]));
+          const updatedLanRows = attributesList.map((a) => {
+            const r = rowByAttr[a] || { Attribute: a, Label: "", Placeholder: "", Description: "", List: "" };
+            return a === attr ? { ...r, Placeholder: newValue } : r;
+          });
+
+          const prevFp = formPlaceholdersByLanguage || {};
+          const nextFp = { ...prevFp };
+          const langMap = { ...(nextFp[currentLanguage] || {}) };
+          langMap[attr] = newValue;
+          nextFp[currentLanguage] = langMap;
+
+          updateSchema({
+            formPlaceholdersByLanguage: nextFp,
+            lanAttributeRowData: { ...prevLan, [currentLanguage]: updatedLanRows }
+          });
           return true;
         },
         valueGetter: (params) => {
@@ -655,9 +664,16 @@ const FormInformation = () => {
     gridRef.current.api.stopEditing();
     const rows = [];
     gridRef.current.api.forEachNode((node) => rows.push(node.data));
-    const primaryRows = lanAttributeRowData?.[primaryLanguage] || [];
+    const gridByAttr = Object.fromEntries(rows.map((r) => [r.Attribute, r]));
+    const primaryRows =
+      resolveLanguageData(lanAttributeRowData, primaryLanguage) ||
+      lanAttributeRowData?.[primaryLanguage] ||
+      [];
+    const useGridForPrimaryLabels = currentLanguage === primaryLanguage;
     for (const attr of attributesList) {
-      const row = primaryRows.find((r) => r.Attribute === attr);
+      const row = useGridForPrimaryLabels
+        ? gridByAttr[attr]
+        : primaryRows.find((r) => r.Attribute === attr);
       if (!row?.Label || `${row.Label}`.trim() === "") {
         return {
           ok: false,
@@ -666,7 +682,7 @@ const FormInformation = () => {
       }
     }
     return { ok: true, rows };
-  }, [attributesList, lanAttributeRowData, primaryLanguage, t]);
+  }, [attributesList, lanAttributeRowData, primaryLanguage, currentLanguage, t]);
 
   const handleForward = useCallback(() => {
     handleSave();
@@ -717,7 +733,9 @@ const FormInformation = () => {
             position: "relative",
             display: "flex",
             flexDirection: "column-reverse",
-            alignItems: languages.length < 6 ? "flex-start" : "flex-end"
+            alignItems: languages.length < 6 ? "flex-start" : "flex-end",
+            mb: 2,
+            gap: 1
           }}
         >
           {languageButtonDisplay}
@@ -745,21 +763,17 @@ const FormInformation = () => {
         </Box>
         <div ref={refContainer}>
           <Box
-            className={`form-information-grid overlay-grid-suppress-hscroll${formInfoGridFixedViewport ? " overlay-grid-fixed-viewport" : ""} ag-theme-balham${formInfoGridFixedViewport ? "" : " ag-grid-compact"}`}
+            className="ag-theme-balham form-information-grid overlay-grid-suppress-hscroll"
             sx={{ width: 1003 }}
           >
             <style>{gridStyles}</style>
             <AgGridReact
-              key={`${i18n.language}-${formInfoGridFixedViewport ? "fx" : "ah"}`}
+              key={i18n.language}
               ref={gridRef}
-              domLayout={formInfoGridFixedViewport ? undefined : "autoHeight"}
-              style={{
-                width: "100%",
-                height: formInfoGridFixedViewport ? "100%" : "auto"
-              }}
               rowData={currentRows}
               getRowId={(params) => params.data.Attribute}
               columnDefs={columnDefs}
+              domLayout="autoHeight"
               suppressHorizontalScroll
               onCellKeyDown={onCellKeyDown}
               animateRows={true}

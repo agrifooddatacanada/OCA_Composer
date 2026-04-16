@@ -47,7 +47,6 @@ const BackNextSkeleton = ({
             alignItems: "start",
             columnGap: 2,
             position: "relative",
-            zIndex: 1250,
             bgcolor: "background.default"
           }}
         >
@@ -130,21 +129,30 @@ const BackNextSkeleton = ({
               </Button>
             )}
             {rightContent}
-            {errorMessage.length > 0 && (
-              <Alert
-                severity="error"
-                style={{
-                  position: "absolute",
-                  zIndex: 9999,
-                  right: "20%",
-                  transform: "translateY(-90%)"
-                }}
-              >
-                {errorMessage}
-              </Alert>
-            )}
           </Box>
         </Box>
+        {errorMessage.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+              mt: 1,
+              mb: 1
+            }}
+          >
+            <Alert
+              severity="error"
+              sx={{
+                width: "fit-content",
+                maxWidth: "min(100%, 42rem)",
+                boxSizing: "border-box"
+              }}
+            >
+              {errorMessage}
+            </Alert>
+          </Box>
+        )}
         {children}
       </Box>
     </Box>

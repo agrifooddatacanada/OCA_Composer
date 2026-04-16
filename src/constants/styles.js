@@ -215,6 +215,12 @@ export const gridStyles = `
 .cardinality-overlay-grid.ag-theme-balham {
   min-height: 120px;
 }
+
+.form-information-grid.ag-theme-balham .ag-cell[col-id="Placeholder"] .ag-cell-wrapper,
+.form-information-grid.ag-theme-balham .ag-cell[col-id="Placeholder"] .ag-cell-value {
+  width: 100%;
+  max-width: 100%;
+}
 .overlay-grid-fixed-viewport.ag-theme-balham:not(.ag-grid-compact) {
   height: min(70vh, 560px);
 }
