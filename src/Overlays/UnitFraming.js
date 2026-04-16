@@ -96,7 +96,7 @@ const useUnitData = (currentUnitFramedRowData) => {
 };
 
 const TrashCanButton = memo((props) => {
-  const { setUnitFramedRowData, setFrameAllUnits, unitFramedRowData } = props;
+  const { setUnitFramedRowData, unitFramedRowData } = props;
 
   const handleDelete = useCallback(() => {
     // Ensure unitFramedRowData is an array
@@ -114,9 +114,6 @@ const TrashCanButton = memo((props) => {
     );
     setUnitFramedRowData(newData);
 
-    // When deleting a unit, turn off frame all units flag
-    setFrameAllUnits(false);
-
     // Update the grid cell display
     props.node.updateData({
       ...props.node.data,
@@ -126,7 +123,7 @@ const TrashCanButton = memo((props) => {
     });
 
     props?.onRefresh();
-  }, [props.node.data, setUnitFramedRowData, setFrameAllUnits, unitFramedRowData, props]);
+  }, [props.node.data, setUnitFramedRowData, unitFramedRowData, props]);
 
   const isVisible = props.node.data?.Unit !== "";
   if (!isVisible) return null;
@@ -419,15 +416,6 @@ const UnitFraming = () => {
     [updateSchema, schemaState]
   );
 
-  // Get frame all units flag from schema state
-  const frameAllUnits = schemaState?.frameAllUnits || false;
-  const setFrameAllUnits = useCallback(
-    (value) => {
-      updateSchema({ frameAllUnits: value });
-    },
-    [updateSchema]
-  );
-
   // Get unframed unit list - always calculate from current row data
   const unframedUnitList = useMemo(() => {
     // Get unique units that don't have UCUM codes yet
@@ -451,13 +439,7 @@ const UnitFraming = () => {
   );
 
   const hasUnframedUnits = unframedUnitList.length > 0;
-  const effectiveFrameAllUnits = frameAllUnits && !hasUnframedUnits;
-
-  useEffect(() => {
-    if (frameAllUnits && hasUnframedUnits) {
-      setFrameAllUnits(false);
-    }
-  }, [frameAllUnits, hasUnframedUnits, setFrameAllUnits]);
+  const allUnitsAreFramed = unitFramedRowData.length > 0 && !hasUnframedUnits;
 
   // Callback to save data when cell value changes via autocomplete
   const handleCellChanged = useCallback(() => {
@@ -506,7 +488,7 @@ const UnitFraming = () => {
     requestAnimationFrame(() => api.resetRowHeights());
   }, [tempToDisplayRowData]);
 
-  // Pass setUnitFramedRowData and setFrameAllUnits to column defs
+  // Pass row update helpers to the delete renderer
   const columnDefsWithCallbacks = useMemo(() => 
     columnDefs.map(col => {
       if (col.field === 'Delete') {
@@ -514,7 +496,6 @@ const UnitFraming = () => {
           ...col,
           cellRendererParams: (params) => ({
             setUnitFramedRowData,
-            setFrameAllUnits,
             unitFramedRowData,
             onRefresh: () => {
               gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
@@ -524,7 +505,7 @@ const UnitFraming = () => {
       }
       return col;
     }),
-    [columnDefs, setUnitFramedRowData, setFrameAllUnits, unitFramedRowData]
+    [columnDefs, setUnitFramedRowData, unitFramedRowData]
   );
 
 
@@ -637,12 +618,8 @@ const UnitFraming = () => {
     });
 
     setUnitFramedRowData(framedData);
-
-    // tempToDisplayRowData will be auto-updated by useUnitData useEffect
-    setFrameAllUnits(true);
   }, [
     unitFramedRowData,
-    setFrameAllUnits,
     setUnitFramedRowData
   ]);
 
@@ -650,7 +627,7 @@ const UnitFraming = () => {
 
   const showLoading = loading && unitFramedRowData?.length > LOADING_THRESHOLD;
   const unframedUnitsText =
-    !effectiveFrameAllUnits && hasUnframedUnits
+    !allUnitsAreFramed && hasUnframedUnits
       ? `${t("Unframed units")}: [${unframedUnitList.join(", ")}]`
       : "";
 
@@ -708,15 +685,15 @@ const UnitFraming = () => {
           <Button
             color="button"
             variant="contained"
-            disabled={effectiveFrameAllUnits || !hasUnframedUnits}
+            disabled={allUnitsAreFramed || !hasUnframedUnits}
             onClick={handleFrameAllUnits}
             sx={{
               padding: "0.5rem 1rem",
               minWidth: BUTTON_MIN_WIDTH,
-              ...((effectiveFrameAllUnits || !hasUnframedUnits) && buttonDisabledStyles)
+              ...((allUnitsAreFramed || !hasUnframedUnits) && buttonDisabledStyles)
             }}
           >
-            {effectiveFrameAllUnits
+            {allUnitsAreFramed
               ? t("All units are framed")
               : !hasUnframedUnits
                 ? t("No units to frame")
