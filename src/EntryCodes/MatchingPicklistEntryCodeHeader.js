@@ -8,10 +8,15 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Box, Typography } from "@mui/material";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
-import { gridStyles } from "../constants/styles";
+import {
+  gridStyles,
+  greyCellStyle,
+  matchingEntryCodeGridStyles,
+  matchingEntryCodePageBoxSx
+} from "../constants/styles";
 import { languageCodesObject } from "../constants/isoCodes";
 import { DataHeaderRenderer } from "./MatchingEntryCodeHeader";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -68,6 +73,7 @@ export default function MatchingPicklistEntryCodeHeader() {
   const languages = getLanguages();
 
   const [matchingRows, setMatchingRows] = useState([]);
+  const [gridLayoutReady, setGridLayoutReady] = useState(false);
   const gridRef = useRef(null);
 
   const codeColumnOptions = useMemo(
@@ -102,6 +108,10 @@ export default function MatchingPicklistEntryCodeHeader() {
     setMatchingRows(newRows);
   }, [pendingPicklist, languages, languageTo2Letter, setCurrentPage]);
 
+  useEffect(() => {
+    setGridLayoutReady(false);
+  }, [matchingRows, codeColumnOptions]);
+
   const changeDataFromTable = useCallback((e, params) => {
     const { value } = e.target;
     const langKey = params.node?.data?.lang;
@@ -114,15 +124,20 @@ export default function MatchingPicklistEntryCodeHeader() {
   const columnDefs = useMemo(
     () => [
       {
-        headerName: "Items",
+        headerName: t("Assigned Column Name"),
         field: "lang",
-        width: 200,
-        editable: false
+        width: 240,
+        suppressSizeToFit: true,
+        editable: false,
+        cellClass: "matching-entry-code-assigned-cell",
+        cellStyle: () => greyCellStyle
       },
       {
-        headerName: "Data Header",
+        headerName: t("Imported Column Name"),
         field: "matchingDataHeader",
-        width: 220,
+        width: 240,
+        suppressSizeToFit: true,
+        cellClass: "matching-entry-code-data-header-cell",
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
           dataHeaders: ["", ...codeColumnOptions],
@@ -133,7 +148,7 @@ export default function MatchingPicklistEntryCodeHeader() {
         })
       }
     ],
-    [codeColumnOptions, changeDataFromTable]
+    [codeColumnOptions, changeDataFromTable, t]
   );
 
   const handleBack = () => {
@@ -199,24 +214,25 @@ export default function MatchingPicklistEntryCodeHeader() {
         isForward={canForward && codeColumnOptions.length > 0}
         pageForward={handleSave}
       />
-      <Box
-        sx={{
-          marginBottom: "2rem",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          px: "1rem"
-        }}
-      >
+      <Box sx={matchingEntryCodePageBoxSx}>
         {codeColumnOptions.length > 0 ? (
-          <div className="ag-theme-balham" style={{ width: "422px", maxWidth: "100%" }}>
-            <style>{gridStyles}</style>
+          <div className="matching-entry-code-grid matching-entry-code-grid-root ag-theme-balham overlay-grid-suppress-hscroll">
+            <style>{`${gridStyles}${matchingEntryCodeGridStyles}`}</style>
+            <div
+              className={`matching-entry-code-grid--inner${
+                gridLayoutReady ? "" : " matching-entry-code-grid--pending"
+              }`}
+            >
             <AgGridReact
               ref={gridRef}
+              style={{ width: "100%" }}
               rowData={matchingRows}
               columnDefs={columnDefs}
               domLayout="autoHeight"
+              suppressHorizontalScroll
+              onFirstDataRendered={() => setGridLayoutReady(true)}
             />
+            </div>
           </div>
         ) : (
           <Typography color="text.secondary">

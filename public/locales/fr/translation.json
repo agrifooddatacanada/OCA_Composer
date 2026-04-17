@@ -702,6 +702,8 @@
   "Assigned Column Name": "Nom de colonne attribué",
   "Imported Column Name": "Nom de colonne importé",
   "Map each column from your uploaded file.": "Associez chaque colonne de votre fichier importé.",
+  "Check and edit (if needed) how imported column names are being assigned.": "Vérifiez et modifiez (au besoin) la façon dont les noms de colonnes importés sont attribués.",
+  "Choose from existing entry codes. These can still be edited later.": "Choisissez parmi les codes d'entrée existants. Ceux-ci peuvent encore être modifiés plus tard.",
   "Watch this site - we are adding more content. Soon you will find this page at ": "Consultez régulièrement ce site : nous y ajoutons du contenu. Bientôt, vous trouverez cette page à l'adresse suivante : "
   "Watch this site - we are adding more content. Soon you will find this page at ": "Consultez régulièrement ce site : nous y ajoutons du contenu. Bientôt, vous trouverez cette page à l'adresse suivante : ",
   "Placeholder text to display when field is empty": "Texte d'espace réservé à afficher lorsque le champ est vide",

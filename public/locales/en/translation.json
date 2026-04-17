@@ -734,6 +734,8 @@ nd re-uploading.",
   "Assigned Column Name": "Assigned Column Name",
   "Imported Column Name": "Imported Column Name",
   "Map each column from your uploaded file.": "Map each column from your uploaded file.",
+  "Check and edit (if needed) how imported column names are being assigned.": "Check and edit (if needed) how imported column names are being assigned.",
+  "Choose from existing entry codes. These can still be edited later.": "Choose from existing entry codes. These can still be edited later.",
   "Watch this site - we are adding more content. Soon you will find this page at ": "Watch this site - we are adding more content. Soon you will find this page at "
   "Watch this site - we are adding more content. Soon you will find this page at ": "Watch this site - we are adding more content. Soon you will find this page at ",
   "Placeholder text to display when field is empty": "Placeholder text to display when field is empty",

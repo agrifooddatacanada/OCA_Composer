@@ -67,7 +67,7 @@ export default function SingleTable({
             }}
           />
         </Tooltip>
-        <Tooltip title="Choose from existing entry codes">
+        <Tooltip title="Choose from existing entry codes.">
           <ListAltIcon
             sx={{
               color: "gray",

@@ -22,6 +22,11 @@ export const DataHeaderRenderer = memo(
   forwardRef((props, ref) => {
     const { t } = useTranslation();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const formatImportedColumnLabel = useCallback((value) => {
+      if (value === 'en') return t('English');
+      if (value === 'fr') return t('French');
+      return t(value, { defaultValue: value });
+    }, [t]);
 
     const handleChange = (e) => {
       props.changeDataFromTable(e);
@@ -46,14 +51,14 @@ export const DataHeaderRenderer = memo(
           value={value}
           sx={matchingEntryCodeMenuItemSx}
         >
-          {value === "" ? "" : t(value, { defaultValue: value })}
+          {value === "" ? "" : formatImportedColumnLabel(value)}
         </MenuItem>
       );
     });
 
     const renderDisplayValue = (value) => {
       if (value === "" || value == null) return "\u200B";
-      return t(value, { defaultValue: value });
+      return formatImportedColumnLabel(value);
     };
 
     return (

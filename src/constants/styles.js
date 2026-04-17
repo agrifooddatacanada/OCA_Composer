@@ -304,10 +304,12 @@ export const matchingEntryCodeGridStyles = `
   background-color: ${CustomPalette.GREY_200} !important;
 }
 .matching-entry-code-grid .matching-entry-code-data-header-cell .MuiSelect-select {
-  padding-right: 6px !important;
+  padding-right: 24px !important;
 }
 .matching-entry-code-grid .matching-entry-code-data-header-cell .MuiSelect-icon {
-  right: 0 !important;
+  right: 4px !important;
+  display: inline-flex !important;
+  visibility: visible !important;
 }
 `;
 

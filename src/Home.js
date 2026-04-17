@@ -68,7 +68,8 @@ const ENTRY_CODES_FLOW_PAGES = new Set([
   "UploadEntryCodes",
   "PicklistEntryCodes",
   "MatchingEntryCodes",
-  "MatchingJSONEntryCodes"
+  "MatchingJSONEntryCodes",
+  "MatchingPicklistEntryCodes"
 ]);
 
 const pageIdForStepper = (page) => {
