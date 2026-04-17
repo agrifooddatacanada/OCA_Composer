@@ -19,7 +19,8 @@ import { useMultiSchema } from "../schema/schemaContext";
 import {
   AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX,
   AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX,
-  AG_GRID_VIRTUALIZE_MIN_ROWS
+  AG_GRID_VIRTUALIZE_MIN_ROWS,
+  isUnitEligibleAttributeType
 } from "../constants/constants";
 
 const ATTRIBUTE_GRID_COLUMN_SUM_PX = 40 + 150 + 125 + 128 + 150 + 100 + 44;
@@ -35,6 +36,10 @@ const gridStyle = `
   }
   .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
     height: 100%;
+  }
+  .unit-cell-disabled {
+    color: rgba(0, 0, 0, 0.38);
+    background-color: rgba(0, 0, 0, 0.04);
   }
   .ag-row .delete-icon-solid {
     display: none;
@@ -310,7 +315,7 @@ export default function Grid({
       },
       {
         field: "Unit",
-        editable: true,
+        editable: (params) => isUnitEligibleAttributeType(params.data?.Type),
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Unit"),
@@ -320,6 +325,10 @@ export default function Grid({
         },
         wrapText: true,
         cellEditor: TextareaCellEditor,
+        valueGetter: (params) =>
+          isUnitEligibleAttributeType(params.data?.Type) ? params.data?.Unit || "" : "",
+        cellClass: (params) =>
+          isUnitEligibleAttributeType(params.data?.Type) ? "" : "unit-cell-disabled",
         cellStyle: () => ({
           ...preWrapWordBreak,
           ...flexCenter
@@ -391,7 +400,31 @@ export default function Grid({
       const keyPressed = e.event.code;
       const isUnitRow = e.column.colId === "Unit";
       const isTypeColumn = e.column.colId === "Type";
+      const isUnitEditable = isUnitEligibleAttributeType(e.data?.Type);
+      if (isUnitRow && !isUnitEditable) {
+        if (e.event.shiftKey && keyPressed === "Tab" && e.rowIndex > 0) {
+          e.api.startEditingCell({
+            rowIndex: e.rowIndex,
+            colKey: "Attribute"
+          });
+          return;
+        }
+        if (keyPressed === "Tab") {
+          e.api.startEditingCell({
+            rowIndex: e.rowIndex,
+            colKey: "Type"
+          });
+          return;
+        }
+      }
       if (keyPressed === "Enter" && isUnitRow) {
+        if (!isUnitEditable) {
+          e.api.startEditingCell({
+            rowIndex: e.rowIndex,
+            colKey: "Type"
+          });
+          return;
+        }
         // Copies current cell value to cell below if it's empty
         const { api } = e;
         const editingRowIndex = e.rowIndex;
@@ -435,7 +468,7 @@ export default function Grid({
         }
       }
 
-      const tabbingColumns = ["Attribute", "Unit", "Type"];
+      const tabbingColumns = isUnitEditable ? ["Attribute", "Unit", "Type"] : ["Attribute", "Type"];
       const isShiftTab = e.event.shiftKey && keyPressed === "Tab";
       if (isShiftTab) {
         // Traverses grid backwards
@@ -510,6 +543,13 @@ export default function Grid({
           }, waitTime);
           // Focuses correct next cell when tabbing
         } else if (e.column.colId === "Unit") {
+          if (!isUnitEditable) {
+            e.api.startEditingCell({
+              rowIndex: e.rowIndex,
+              colKey: "Type"
+            });
+            return;
+          }
           const typeColumn = e.columnApi.getColumn("Type");
           if (typeColumn) {
             e.api.setFocusedCell(e.rowIndex, "Type");
@@ -702,6 +742,9 @@ export default function Grid({
     }
     if (e.colDef.field === "Attribute" || e.colDef.field === "Unit") {
       if (e.colDef.field === "Unit") {
+        if (!isUnitEligibleAttributeType(e.data?.Type)) {
+          return;
+        }
         setAttributeRowData((prev) =>
           prev.map((row, i) =>
             i === e.rowIndex ? { ...row, Unit: e.newValue } : row

@@ -21,7 +21,7 @@ import {
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { hasDisallowedChars } from "../utils/helpers";
-import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA, FIELD_UNIT_FRAMING_OVERLAY, TABLE_TO_BUTTON_GAP } from "../constants/constants";
+import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA, FIELD_UNIT_FRAMING_OVERLAY, TABLE_TO_BUTTON_GAP, isUnitEligibleAttributeType } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { langNameFromTwoLetters, langCodeOCAFromName } from "../utils/languageUtils";
 
@@ -40,7 +40,11 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
 
   const [attributeRowData, setAttributeRowData] = useState(() => {
     const schema = getSchema();
-    return Array.isArray(schema?.attributes) ? schema.attributes : [];
+    return Array.isArray(schema?.attributes)
+      ? schema.attributes.map((item) =>
+          isUnitEligibleAttributeType(item.Type) ? item : { ...item, Unit: "" }
+        )
+      : [];
   });
 
   const [errorMessage, setErrorMessage] = useState("");
@@ -139,12 +143,19 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       if (!sameAttrs) {
         // If attributeRowData is empty, just use schemaState.attributes directly
         if (attributeRowData.length === 0) {
-          setAttributeRowData(schemaState.attributes);
+          setAttributeRowData(
+            schemaState.attributes.map((item) =>
+              isUnitEligibleAttributeType(item.Type) ? item : { ...item, Unit: "" }
+            )
+          );
         } else {
           const mergedAttributes = schemaState.attributes.map((schemaAttr) => {
             const existingAttr = attributeRowData.find(existing => existing.Attribute === schemaAttr.Attribute);
             // Preserve _rid if it exists in current data
-            return existingAttr?._rid ? { ...schemaAttr, _rid: existingAttr._rid } : schemaAttr;
+            const nextAttr = isUnitEligibleAttributeType(schemaAttr.Type)
+              ? schemaAttr
+              : { ...schemaAttr, Unit: "" };
+            return existingAttr?._rid ? { ...nextAttr, _rid: existingAttr._rid } : nextAttr;
           });
           setAttributeRowData(mergedAttributes);
         }
@@ -196,6 +207,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
           Description: "",
           Required: false,
           EntryCodes: [],
+          Unit: "",
           List: displayType === TYPE_CHILD_SCHEMA ? false : hasEntryCodes
         };
       });
@@ -248,7 +260,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     const index = new Map(persisted.map((r) => [`${r.Attribute}|||${r.Unit}`, r]));
 
     return attributes
-      .filter((a) => a.Unit && String(a.Unit).trim() !== "")
+      .filter((a) => isUnitEligibleAttributeType(a.Type) && a.Unit && String(a.Unit).trim() !== "")
       .map((attr) => {
         const key = `${attr.Attribute}|||${attr.Unit}`;
         const existing = index.get(key);
@@ -505,7 +517,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       const existingUnitFramed = schemaState?.unitFramedData || [];
       const deletedRows = existingUnitFramed.filter((r) => r.deleted === true);
       const newUnitFramedData = attributeRowData
-        .filter((a) => a.Unit && String(a.Unit).trim() !== "")
+        .filter((a) => isUnitEligibleAttributeType(a.Type) && a.Unit && String(a.Unit).trim() !== "")
         .map((attr) => {
           const existingRow = existingUnitFramed.find(
             (r) => r.Attribute === attr.Attribute && r.Unit === attr.Unit
@@ -592,7 +604,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     const deletedRows = existingUnitFramed.filter((r) => r.deleted === true);
 
     const newUnitFramedData = currentData
-      .filter((a) => a.Unit && String(a.Unit).trim() !== "")
+      .filter((a) => isUnitEligibleAttributeType(a.Type) && a.Unit && String(a.Unit).trim() !== "")
       .map((attr) => {
         const existingRow = existingUnitFramed.find(
           (r) => r.Attribute === attr.Attribute && r.Unit === attr.Unit

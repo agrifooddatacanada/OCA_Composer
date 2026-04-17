@@ -79,6 +79,11 @@ export const isRangeEligibleAttributeType = (typeStr) => {
   return base === "Numeric" || base === "DateTime";
 };
 
+export const isUnitEligibleAttributeType = (typeStr) => {
+  const base = getScalarOrArrayElementTypeForRange(typeStr);
+  return base === "Numeric" || base === "DateTime";
+};
+
 /** Text, Numeric, DateTime, Binary, or Array[…] of those (same set as Format Rules UI). */
 const FORMAT_OVERLAY_ELIGIBLE_BASE = new Set(["Text", "Numeric", "DateTime", "Binary"]);
 

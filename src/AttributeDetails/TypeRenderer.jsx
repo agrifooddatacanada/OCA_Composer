@@ -6,7 +6,8 @@ import { useMultiSchema } from "../schema/schemaContext";
 import {
   TYPE_CHILD_SCHEMA,
   TYPE_PLACEHOLDER_CHILD_SCHEMA,
-  isChildSchemaType
+  isChildSchemaType,
+  isUnitEligibleAttributeType
 } from "../constants/constants";
 import { resolveChildSchemaStateRootId } from "../schema/childSchemaSubtree";
 import DeleteConfirmation from "../Overlays/DeleteConfirmation";
@@ -75,7 +76,8 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
         const next = {
           ...item,
           Type: newType,
-          ...(newType === TYPE_CHILD_SCHEMA ? { List: false, EntryCodes: [] } : {})
+          ...(newType === TYPE_CHILD_SCHEMA ? { List: false, EntryCodes: [] } : {}),
+          ...(isUnitEligibleAttributeType(newType) ? {} : { Unit: "" })
         };
         if (!isChildSchemaType(newType)) {
           delete next.OriginalType;
