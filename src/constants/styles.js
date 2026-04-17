@@ -216,6 +216,24 @@ export const gridStyles = `
   min-height: 120px;
 }
 
+.form-information-grid.ag-theme-balham .ag-root-wrapper-body.ag-layout-auto-height {
+  min-height: unset !important;
+}
+.form-information-grid.ag-theme-balham .ag-layout-auto-height .ag-center-cols-clipper {
+  min-height: unset !important;
+}
+.form-information-grid.ag-theme-balham .ag-layout-auto-height .ag-body-viewport {
+  flex: none !important;
+  min-height: unset !important;
+}
+.form-information-grid.ag-theme-balham .ag-body-viewport-wrapper {
+  min-height: unset !important;
+}
+.form-information-grid.ag-theme-balham .ag-layout-auto-height .ag-body-viewport-wrapper {
+  flex: none !important;
+  min-height: unset !important;
+}
+
 .form-information-grid.ag-theme-balham .ag-cell[col-id="Placeholder"] .ag-cell-wrapper,
 .form-information-grid.ag-theme-balham .ag-cell[col-id="Placeholder"] .ag-cell-value {
   width: 100%;
