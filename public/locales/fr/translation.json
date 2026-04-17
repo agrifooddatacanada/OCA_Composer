@@ -251,7 +251,7 @@
   "Schema Data": "Données de schéma",
   "No Schema Conformant Data": "Aucune donnée conforme au schéma",
   "Warning": "Avertissement",
-  "Your current entry codes for this attribute will be overwritten": "Your current entry codes for this attribute will be overwritten.",
+  "Your current entry codes for this attribute will be overwritten": "Vos codes de saisie actuels pour cet attribut seront écrasés.",
   "Please choose the type:": "Veuillez choisir le type:",
   "Click here to select a .csv file or schema bundle, or drag and drop one here": "Cliquez ici pour sélectionner un fichier .csv ou un ensemble de schémas, ou faites-en un glisser-déposer ici.",
   "Note: Your .csv file contains a list of entry codes. You can also include language labels for each entry code in adjacent columns": "Remarque : Votre fichier .csv contient une liste de codes d'entrée. Vous pouvez également inclure des étiquettes de langue pour chaque code d'entrée dans les colonnes adjacentes",
@@ -428,7 +428,13 @@
   "Additional instructions or commentary text that appears below the question label.": "Instructions supplémentaires ou texte de commentaire qui apparaît sous l'étiquette de la question.",
   "Section Labels": "Étiquettes de section",
   "Page Labels": "Étiquettes de page",
+  "Search entry codes": "Rechercher des codes d'entrée",
+  "All entry codes are documented in the": "Tous les codes d'accès sont documentés dans le",
+  "Picklist GitHub repository": "Dépôt GitHub de la liste de sélection",
+  "Request a new Picklist to be added by": "Demander l'ajout d'une nouvelle liste de sélection par",
   "Semantic Engine is currently undergoing maintenance and schemas cannot be exported at this time": "Semantic Engine est actuellement en maintenance et les schémas ne peuvent pas être exportés pour le moment",
   "Watch this site - we are adding more content. Soon you will find this page at ": "Consultez régulièrement ce site : nous y ajoutons du contenu. Bientôt, vous trouverez cette page à l'adresse suivante : ",
-  "Placeholder text to display when field is empty": "Texte d'espace réservé à afficher lorsque le champ est vide"
+  "Placeholder text to display when field is empty": "Texte d'espace réservé à afficher lorsque le champ est vide",
+  "Data Header": "En-tête de données",
+  "No columns found in this picklist.": "Aucune colonne n'a été trouvée dans cette liste de valeurs."
 }

@@ -22,6 +22,8 @@ import Footer from "./Footer/Footer";
 import UploadPage from "./EntryCodes/UploadPage";
 import MatchingEntryCodeHeader from "./EntryCodes/MatchingEntryCodeHeader";
 import MatchingJSONEntryCodeHeader from "./EntryCodes/MatchingJSONEntryCodeHeader";
+import PicklistEntryCodesPage from "./EntryCodes/PicklistEntryCodesPage";
+import MatchingPicklistEntryCodeHeader from "./EntryCodes/MatchingPicklistEntryCodeHeader";
 import StepperProgressIndicator from "./StepperProgressIndicator/StepperProgressIndicator";
 import DataStandards from "./Overlays/DataStandards";
 import Range from "./Overlays/Range";
@@ -80,6 +82,8 @@ const Home = ({
       "Cardinality",
       "UnitFraming",
       "UploadEntryCodes",
+      "PicklistEntryCodes",
+      "MatchingPicklistEntryCodes",
       "MatchingEntryCodes",
       "MatchingJSONEntryCodes",
       "DataStandards",
@@ -148,6 +152,10 @@ const Home = ({
         {currentPage === "FormInformation" && <FormInformation />}
         {currentPage === "FormBuilder" && <FormBuilder />}
         {currentPage === "UploadEntryCodes" && <UploadPage />}
+        {currentPage === "PicklistEntryCodes" && <PicklistEntryCodesPage />}
+        {currentPage === "MatchingPicklistEntryCodes" && (
+          <MatchingPicklistEntryCodeHeader />
+        )}
         {currentPage === "MatchingEntryCodes" && <MatchingEntryCodeHeader />}
         {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
         {currentPage === "DataStandards" && <DataStandards />}

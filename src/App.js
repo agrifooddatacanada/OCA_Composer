@@ -128,6 +128,7 @@ function App() {
   const [entryCodeHeaders, setEntryCodeHeaders] = useState([]);
   const [tempEntryCodeRowData, setTempEntryCodeRowData] = useState([]);
   const [chosenEntryCodeIndex, setChosenEntryCodeIndex] = useState(-1);
+  const [pendingPicklist, setPendingPicklist] = useState(null);
   const [tempEntryCodeSummary, setTempEntryCodeSummary] = useState(undefined);
   const [tempEntryList, setTempEntryList] = useState([]);
   const [firstNavigationToDataset, setFirstNavigationToDataset] = useState(false);
@@ -772,6 +773,8 @@ function App() {
             setTempEntryCodeRowData,
             chosenEntryCodeIndex,
             setChosenEntryCodeIndex,
+            pendingPicklist,
+            setPendingPicklist,
             tempEntryCodeSummary,
             setTempEntryCodeSummary,
             tempEntryList,

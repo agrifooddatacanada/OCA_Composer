@@ -428,7 +428,13 @@
   "Additional instructions or commentary text that appears below the question label.": "Additional instructions or commentary text that appears below the question label.",
   "Section Labels": "Section Labels",
   "Page Labels": "Page Labels",
+  "Search entry codes": "Search entry codes",
+  "All entry codes are documented in the": "All entry codes are documented in the",
+  "Picklist GitHub repository": "Picklist GitHub repository",
+  "Request a new Picklist to be added by": "Request a new Picklist to be added by",
   "Semantic Engine is currently undergoing maintenance and schemas cannot be exported at this time": "Semantic Engine is currently undergoing maintenance and schemas cannot be exported at this time",
   "Watch this site - we are adding more content. Soon you will find this page at ": "Watch this site - we are adding more content. Soon you will find this page at ",
-  "Placeholder text to display when field is empty": "Placeholder text to display when field is empty"
+  "Placeholder text to display when field is empty": "Placeholder text to display when field is empty",
+  "Data Header": "Data Header",
+  "No columns found in this picklist.": "No columns found in this picklist."
 }
