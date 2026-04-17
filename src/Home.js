@@ -22,6 +22,7 @@ import UnitFraming from "./Overlays/UnitFraming";
 import FormInformation from "./Overlays/FormInformation";
 import FormBuilder from "./Overlays/FormBuilder";
 import PicklistEntryCodesPage from "./EntryCodes/PicklistEntryCodesPage";
+import MatchingPicklistEntryCodeHeader from "./EntryCodes/MatchingPicklistEntryCodeHeader";
 import DataStandards from "./Overlays/DataStandards";
 import Range from "./Overlays/Range";
 import AttributeFraming from "./Overlays/AttributeFraming";
@@ -500,6 +501,9 @@ const Home = ({
         {currentPage === "UnitFraming" && <UnitFraming />}
         {currentPage === "FormInformation" && <FormInformation />}
         {currentPage === "FormBuilder" && <FormBuilder />}
+        {currentPage === "MatchingPicklistEntryCodes" && (
+          <MatchingPicklistEntryCodeHeader />
+        )}
         {currentPage === "DataStandards" && <DataStandards />}
         {currentPage === "Range" && <Range ref={rangeRef} />}
         {currentPage === "AttributeFraming" && <AttributeFraming />}
