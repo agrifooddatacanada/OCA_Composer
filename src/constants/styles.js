@@ -275,7 +275,7 @@ export const matchingEntryCodeGridStyles = `
   pointer-events: none;
 }
 .matching-entry-code-grid.overlay-grid-suppress-hscroll.ag-theme-balham .ag-body-viewport {
-  scrollbar-gutter: stable !important;
+  scrollbar-gutter: auto !important;
 }
 .matching-entry-code-grid .matching-entry-code-data-header-cell {
   justify-content: stretch !important;
@@ -304,10 +304,10 @@ export const matchingEntryCodeGridStyles = `
   background-color: ${CustomPalette.GREY_200} !important;
 }
 .matching-entry-code-grid .matching-entry-code-data-header-cell .MuiSelect-select {
-  padding-right: 24px !important;
+  padding-right: 22px !important;
 }
 .matching-entry-code-grid .matching-entry-code-data-header-cell .MuiSelect-icon {
-  right: 4px !important;
+  right: 0 !important;
   display: inline-flex !important;
   visibility: visible !important;
 }
