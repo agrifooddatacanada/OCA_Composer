@@ -102,6 +102,7 @@ export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
 export const FIELD_RANGE_OVERLAY = "Range";
 export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
 export const FIELD_FORM_INFORMATION_OVERLAY = "Form Information";
+export const FIELD_DATA_SEPARATOR_OVERLAY = "Data Separator";
 
 export const overlayItems = {
   [FIELD_CHARACTER_ENCODING_OVERLAY]: false,
@@ -112,7 +113,8 @@ export const overlayItems = {
   [FIELD_UNIT_FRAMING_OVERLAY]: false,
   [FIELD_RANGE_OVERLAY]: false,
   [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
-  [FIELD_FORM_INFORMATION_OVERLAY]: false
+  [FIELD_FORM_INFORMATION_OVERLAY]: false,
+  [FIELD_DATA_SEPARATOR_OVERLAY]: false
 };
 
 export const classification = {
@@ -628,6 +630,11 @@ export const RANGE = "range";
 
 // Attribute Framing Overlay
 export const ATTRIBUTE_FRAMING = "attribute_framing";
+
+// Data Separator Overlays (ADC extension)
+export const DECIMAL_SEPARATOR = "decimal_separator";
+export const FILE_DELIMITER = "file_delimiter";
+export const ARRAY_DELIMITER = "array_delimiter";
 
 export const overlays = [
   CHARACTER_ENCODING,

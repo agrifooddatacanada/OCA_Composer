@@ -92,6 +92,19 @@ export const createDefaultSchemaState = () => ({
   unitData: [],
   unitFramedData: [],
   attributeFramingData: [],
+  // Data Separator overlay (ADC extension) - per-schema
+  decimalSeparator: ".",
+  fileDelimiterData: {
+    fieldDelimiter: ",",
+    quoteChar: "\"",
+    escapeChar: "\\",
+    lineTerminator: "lf",
+    dataStartRow: 1
+  },
+  arrayDelimiterData: {},
+  enableDecimalSeparator: false,
+  enableFileDelimiter: false,
+  enableArrayDelimiter: false,
   // Flags
   frameAllUnits: false,
   frameAllAttributes: false,

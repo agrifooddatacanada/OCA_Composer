@@ -7,15 +7,14 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import { getListOfSelectedOverlays } from "../utils/overlayUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import DeleteConfirmation from "./DeleteConfirmation";
 import {
   isOverlayAddDisabled,
   getOverlayAddDisabledReason
 } from "../utils/helpers";
 import {
+  BETWEEN_SECTION_SPACING,
   FIELD_CHARACTER_ENCODING_OVERLAY,
   FIELD_CONFORMANCE_OVERLAY,
   FIELD_CARDINALITY_OVERLAY,
@@ -24,9 +23,10 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_RANGE_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-  FIELD_FORMAT_OVERLAY
+  FIELD_FORMAT_OVERLAY,
+  FIELD_DATA_SEPARATOR_OVERLAY
 } from "../constants/constants";
-import { deleteOverlayData } from "../utils/overlayUtils";
+import { deleteOverlayData, getListOfSelectedOverlays } from "../utils/overlayUtils";
 
 // Centralized overlay key to page mapping
 // Uses constant keys (FIELD_*_OVERLAY) instead of display strings
@@ -39,7 +39,8 @@ const OVERLAY_TO_PAGE = {
   [FIELD_DATA_STANDARDS_OVERLAY]: "DataStandards",
   [FIELD_RANGE_OVERLAY]: "Range",
   [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: "AttributeFraming",
-  [FIELD_FORMAT_OVERLAY]: "FormatRules"
+  [FIELD_FORMAT_OVERLAY]: "FormatRules",
+  [FIELD_DATA_SEPARATOR_OVERLAY]: "DataSeparator"
 };
 
 const Overlays = ({ pageBack, pageForward }) => {
@@ -65,7 +66,7 @@ const Overlays = ({ pageBack, pageForward }) => {
   const attributeRowData = schemaState?.attributes || []; // Full attribute objects with Type field
   const formatRuleData = getFormatRuleData();
   const overlay = getOverlaySelections();
-  
+
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedItemToDelete, setSelectedItemToDelete] = useState("");
 
