@@ -365,7 +365,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Character Encoding"),
-              helpText: t("The character encoding that is applied to the attribute")
+              helpText: t("You can use the default encodings below if you don't know the encodings the data source uses. For new data, utf-8 is a good choice.")
             }
           });
         } else if (overlayKey === FIELD_FORMAT_OVERLAY) {
@@ -377,7 +377,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Format Rule"),
-              helpText: t("The format rule that is applied to the attribute")
+              helpText: t("Specify the format of values for Text, Numeric, DateTime, and Binary attributes.")
             },
             valueFormatter: (params) =>
               getFormatRuleDescription(params.data.Type, params.value, t) || params.value
@@ -390,7 +390,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Cardinality"),
-              helpText: t("The cardinality that is applied to the attribute")
+              helpText: t("Define how many values your Array[] datatype attributes can have.")
             }
           });
         } else if (overlayKey === FIELD_ATTRIBUTE_FRAMING_OVERLAY) {
@@ -401,7 +401,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Attribute Framing"),
-              helpText: t("The attribute framing that is applied to the attribute")
+              helpText: t("Link attributes to terms drawn from an ontology or controlled vocabulary.")
             }
           });
         } else if (overlayKey === FIELD_UNIT_FRAMING_OVERLAY) {
@@ -480,7 +480,7 @@ export default function ViewGrid({
               helpText: isRequired
                 ? t("Check for each attribute where the data entry cannot be left empty in a dataset")
                 : isFormat
-                  ? t("The format rule that is applied to the attribute")
+                  ? t("Specify the format of values for Text, Numeric, DateTime, and Binary attributes.")
                   : t("Overlay value for this attribute") + "."
             },
             cellRenderer: useCheckbox ? CheckboxRenderer : null

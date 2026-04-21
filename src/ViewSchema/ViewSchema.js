@@ -860,7 +860,7 @@ export default function ViewSchema({
           <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
             <Tooltip
               title={t(
-                "Language specific information describing general schema information"
+                "Language-specific information describing general schema information"
               )}
               placement="right"
               arrow
@@ -898,9 +898,7 @@ export default function ViewSchema({
               </Typography>
               <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
                 <Tooltip
-                  title={t("Visual representation of references between schemas", {
-                    defaultValue: "Visual representation of references between schemas"
-                  }) + "."}
+                  title={t("Visual representation of references between schemas")}
                   placement="right"
                   arrow
                 >
