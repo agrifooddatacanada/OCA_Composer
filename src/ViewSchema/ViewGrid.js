@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect, useContext, useCallback, memo } from "react";
+import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "../components/AgGridReact";
 import { Box } from "@mui/material";
-import { Context } from "../App";
+import { AgGridReact } from "../components/AgGridReact";
 import { useMultiSchema } from "../schema/schemaContext";
 import { greyCellStyle } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
@@ -14,6 +13,7 @@ import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { getFormatRuleDescription } from "../utils/helpers";
 import { getMapValueForAttributeName } from "../utils/stringUtils";
 import { getRootCaptureBaseId } from "../utils/packageUtils";
+import TruncatedListCell from "../components/TruncatedListCell";
 import {
   ADC,
   FIELD_CHARACTER_ENCODING_OVERLAY,
@@ -24,15 +24,14 @@ import {
   FIELD_CARDINALITY_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
+  FIELD_DATA_SEPARATOR_OVERLAY,
   MAX_ATTR_DESCRIPTION_CHARS,
   MAX_ATTR_LABEL_CHARS,
   UNIT_FRAMING,
-  CUSTOM_FORMAT_RULE,
   AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX,
   AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX,
   AG_GRID_VIRTUALIZE_MIN_ROWS
 } from "../constants/constants";
-import SelectedFeatureHeader from "./SelectedFeatureHeader";
 
 const gridStyles = `
 .ag-cell {
@@ -116,7 +115,6 @@ const CheckboxRenderer = ({ value }) => {
   return <input type="checkbox" ref={inputRef} disabled />;
 };
 
-import TruncatedListCell from "../components/TruncatedListCell";
 
 export const ListRenderer = memo((props) => {
   const { t } = useTranslation();
@@ -238,20 +236,20 @@ export default function ViewGrid({
           valueFormatter: (params) => {
             const type = params.value;
             const typeMap = {
-              'Text': t('Text'),
-              'Numeric': t('Numeric'),
-              'Boolean': t('Boolean'),
-              'Binary': t('Binary'),
-              'Binaryfile': t('Binaryfile'),
-              'DateTime': t('DateTime'),
-              'Array[Text]': t('Array[Text]'),
-              'Array[Numeric]': t('Array[Numeric]'),
-              'Array[Boolean]': t('Array[Boolean]'),
-              'Array[Binary]': t('Array[Binary]'),
-              'Array[Binaryfile]': t('Array[Binaryfile]'),
-              'Array[DateTime]': t('Array[DateTime]'),
-              'Child Schema': t('Child Schema'),
-              'Placeholder Child Schema': t('Placeholder Child Schema')
+              "Text": t("Text"),
+              "Numeric": t("Numeric"),
+              "Boolean": t("Boolean"),
+              "Binary": t("Binary"),
+              "Binaryfile": t("Binaryfile"),
+              "DateTime": t("DateTime"),
+              "Array[Text]": t("Array[Text]"),
+              "Array[Numeric]": t("Array[Numeric]"),
+              "Array[Boolean]": t("Array[Boolean]"),
+              "Array[Binary]": t("Array[Binary]"),
+              "Array[Binaryfile]": t("Array[Binaryfile]"),
+              "Array[DateTime]": t("Array[DateTime]"),
+              "Child Schema": t("Child Schema"),
+              "Placeholder Child Schema": t("Placeholder Child Schema")
             };
             return typeMap[type] || type;
           }
@@ -448,6 +446,33 @@ export default function ViewGrid({
             },
             cellRenderer: CheckboxRenderer
           });
+        } else if (overlayKey === FIELD_DATA_SEPARATOR_OVERLAY) {
+          // Data Separator is the only overlay with an attribute-specific part
+          // (the Array Delimiter). Only surface the column when the user has
+          // actually enabled the Array Delimiter sub-section.
+          if (!schemaState?.enableArrayDelimiter) return;
+
+          const arrayDelimiterLabel = (value) => {
+            switch (value) {
+              case ",": return t("Comma (,)");
+              case "\t": return t("Tab (\\t)");
+              case ";": return t("Semicolon (;)");
+              case "|": return t("Pipe (|)");
+              default: return value || "";
+            }
+          };
+
+          predefinedColumns.push({
+            field: "ArrayDelimiter",
+            width: 160,
+            autoHeight: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Array Delimiter"),
+              helpText: t("Delimiter used between values inside this array attribute")
+            },
+            valueFormatter: (params) => arrayDelimiterLabel(params.value)
+          });
         } else {
           // Map overlay feature names to actual data fields when needed
           const normalized = (overlayKey || "").toString().toLowerCase();
@@ -492,7 +517,7 @@ export default function ViewGrid({
     };
 
     setColumnDefs(getColumns());
-  }, [overlay, t, displayArray, unitFramingOverlay?.framing_metadata]);
+  }, [overlay, t, displayArray, unitFramingOverlay?.framing_metadata, schemaState?.enableArrayDelimiter]);
 
   useEffect(() => {
     const api = gridRef.current?.api;
@@ -509,11 +534,11 @@ export default function ViewGrid({
     const attributeFormats = schemaState?.attributeFormats || {};
 
     // Initialize attributeFormats if overlay is selected but data doesn't exist
-    if (overlay && overlay[FIELD_FORMAT_OVERLAY] && typeof schemaState?.attributeFormats === 'undefined') {
+    if (overlay && overlay[FIELD_FORMAT_OVERLAY] && typeof schemaState?.attributeFormats === "undefined") {
       updateSchema({ attributeFormats: {} });
     }
 
-    newRowData.forEach((item, index) => {
+    newRowData.forEach((item) => {
       // Add null checks to prevent errors
       item.Description =
         item.Description && item.Description[currentLanguage]
@@ -527,7 +552,7 @@ export default function ViewGrid({
           : "";
 
       // Translate Type column value
-      item.Type = item.Type;
+      item.Type = item.Type; // why is this self assigned?
       
       // Get cardinality value from object
       const cardinalityValue = getMapValueForAttributeName(attributeCardinality, item.Attribute);
@@ -564,11 +589,23 @@ export default function ViewGrid({
           );
           item[FIELD_FORM_INFORMATION_OVERLAY] = hasPlaceholder;
         }
+
+        // Array Delimiter: only populated for Array[...] attributes when the
+        // Array Delimiter sub-section of the Data Separator overlay is enabled.
+        if (overlay[FIELD_DATA_SEPARATOR_OVERLAY] && schemaState?.enableArrayDelimiter) {
+          const isArrayType = typeof item.Type === "string" && item.Type.startsWith("Array[");
+          if (isArrayType) {
+            const arrayDelimiterData = schemaState?.arrayDelimiterData || {};
+            item.ArrayDelimiter = arrayDelimiterData[item.Attribute] ?? "";
+          } else {
+            item.ArrayDelimiter = "";
+          }
+        }
       }
     });
 
     setRowData(newRowData);
-  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchema]);
+  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, schemaState?.arrayDelimiterData, schemaState?.enableArrayDelimiter, updateSchema]);
 
   const viewSchemaGridFixedViewport =
     rowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
