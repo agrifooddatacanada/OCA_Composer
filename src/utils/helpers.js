@@ -68,6 +68,15 @@ export const getCurrentData = (currentApi, includedError) => {
   return newData;
 };
 
+// this function is used to pretty print the delimiter value in the markdown table or excel sheet
+export const prettyPrintDelimiter = (value) => {
+  if (value === "\t") return "\\t (tab)";
+  if (value === ",") return ", (comma)";
+  if (value === ";") return "; (semicolon)";
+  if (value === "|") return "\\| (pipe)";
+  return value;
+};
+
 /**
  * Generate a descriptive filename with optional schema name prefix
  * @param {string|Object} schemaNameOrDescription - Either a string name or legacy schemaDescription object
@@ -720,14 +729,14 @@ export const getLabelofParentClass = async (uri) => {
 };
 
 export const normalizeEscapedQuotes = (s) =>
-  typeof s === "string" ? s.replace(/\\"/g, '"').replace(/\\'/g, "'") : s;
+  typeof s === "string" ? s.replace(/\\"/g, "\"").replace(/\\'/g, "'") : s;
 
 export const escapeForOCAString = (s) => {
   if (typeof s !== "string") return s;
   // First escape backslashes, then escape double quotes, single quotes, and dashes for OCA output
   return String(s)
     .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
+    .replace(/"/g, "\\\"")
     .replace(/'/g, "\\'")
     .replace(/-/g, "\\-");
 };
@@ -948,7 +957,7 @@ export const downloadJsonFile = (data, fileName) => {
 
 export const escapeForOCADoubleQuotedValue = (s) => {
   if (typeof s !== "string") return s;
-  return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    return String(s).replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
 };
 
 export const getFormatRuleDescription = (attributeType, formatRule, t = null) => {
