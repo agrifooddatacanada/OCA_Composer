@@ -101,7 +101,7 @@
   "Help with this page": "Aide avec cette page",
   "Page Help": "Aide de la page",
   "Attribute": "Attribut",
-  "Select the formatting rule that applies to data for each attribute": "Sélectionnez la règle de forma  "Select the formatting rule that applies to data for each attribute": "Sélectionnez la règle de formatage qui s'applique aux données pour chaque attribut.",
+  "Select the formatting rule that applies to data for each attribute": "Sélectionnez la règle de formatage qui s'applique aux données pour chaque attribut.",
   "Dropdowns are available for types Text, Numeric, DateTime, Binary, and Arrays of those types": "Des listes déroulantes sont disponibles pour les types Texte, Numérique, DateTime, Binaire et les tableaux de ces types.",
   "Enter a custom regular expression for the attribute's data": "Saisissez une expression régulière personnalisée pour les données de l'attribut",
   "The format rule that is applied to the attribute": "La règle de format appliquée à l'attribut.",
@@ -704,7 +704,6 @@
   "Map each column from your uploaded file.": "Associez chaque colonne de votre fichier importé.",
   "Check and edit (if needed) how imported column names are being assigned.": "Vérifiez et modifiez (au besoin) la façon dont les noms de colonnes importés sont attribués.",
   "Choose from existing entry codes. These can still be edited later.": "Choisissez parmi les codes d'entrée existants. Ceux-ci peuvent encore être modifiés plus tard.",
-  "Watch this site - we are adding more content. Soon you will find this page at ": "Consultez régulièrement ce site : nous y ajoutons du contenu. Bientôt, vous trouverez cette page à l'adresse suivante : "
   "Watch this site - we are adding more content. Soon you will find this page at ": "Consultez régulièrement ce site : nous y ajoutons du contenu. Bientôt, vous trouverez cette page à l'adresse suivante : ",
   "Placeholder text to display when field is empty": "Texte d'espace réservé à afficher lorsque le champ est vide",
   "Data Header": "En-tête de données",
