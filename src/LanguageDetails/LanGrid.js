@@ -247,7 +247,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       headerComponent: CellHeader,
       headerComponentParams: {
         headerText: t("List"),
-        helpText: t("These are the entry codes for Array type attributes.")
+        helpText: t("Entry codes for Array type attributes")
       }
     }
   ], [t]);
