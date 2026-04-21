@@ -55,7 +55,7 @@ const LanguageHeader = ({ languageNames, languageName }) => {
       {languageName === (languageNames?.[0] || LanguageConstants.DEFAULT_LANG_NAME) && (
         <Tooltip
           title={t(
-            "A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes"
+            "A longer and more user-friendly language-specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes"
           )}
           placement="top"
           arrow

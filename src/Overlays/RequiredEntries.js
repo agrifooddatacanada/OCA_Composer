@@ -138,7 +138,7 @@ const RequiredEntries = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),
-          helpText: t("This is the name for the attribute and, for example...")
+          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
         },
       },
       {

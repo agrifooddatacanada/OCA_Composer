@@ -377,7 +377,7 @@ const SchemaMetadata = forwardRef(({
             >
               <Tooltip
                 title={t(
-                  "Add another language to your schema. Without changing the basic structure of your schema..."
+                  "Add another language to your schema. Without changing the basic structure of your schema, you can ensure it can be shared and used in different languages."
                 )}
                 placement="left"
                 arrow

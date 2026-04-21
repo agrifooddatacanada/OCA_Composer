@@ -502,7 +502,7 @@ const FormInformation = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),
-          helpText: t("This is the name for the attribute and, for example...")
+          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
         }
       },
       {
@@ -562,7 +562,7 @@ const FormInformation = () => {
         headerComponentParams: {
           headerText: t("Label"),
           constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
-          helpText: t("This is the language specific label for an attribute")
+          helpText: t("Language-specific label for an attribute")
         },
         cellEditorParams: { maxLength: MAX_ATTR_LABEL_CHARS },
         valueSetter: (params) => {

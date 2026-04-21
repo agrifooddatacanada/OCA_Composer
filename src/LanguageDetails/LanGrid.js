@@ -199,7 +199,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       headerComponent: CellHeader,
       headerComponentParams: {
         headerText: t("Attribute"),
-        helpText: t("This is the name for the attribute and, for example...")
+        helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
       }
     },
     {
@@ -213,7 +213,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       headerComponentParams: {
         headerText: t("Label"),
         constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
-        helpText: t("This is the language specific label for an attribute")
+        helpText: t("Language-specific label for an attribute")
       },
       cellEditorParams: {
         maxLength: MAX_ATTR_LABEL_CHARS
@@ -235,7 +235,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         constraint: t("max description chars", {
           maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
         }),
-        helpText: t("This is a language specific description of the attribute...")
+        helpText: t("Language-specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute")
       }
     },
     {

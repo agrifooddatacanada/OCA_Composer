@@ -330,7 +330,7 @@ const AttributeMatch = () => {
         }}
         isForward
         pageForward={handleSavePage}
-        middleText={t("You must match your dataset columns...")}
+        middleText={t("You must match your dataset columns (variables) to the attributes in your schema. The verifier attempts to match names automatically. If there are mismatches or unassigned matches you can correct that here.")}
         disableForward={!areAllColumnsMatched()}
       />
       <Box

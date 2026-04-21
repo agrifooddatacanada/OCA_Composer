@@ -1015,7 +1015,7 @@ export default function ViewSchema({
           <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
             <Tooltip
               title={t(
-                "The details of the schema including attribute names and their features as well as language specific information"
+                "Attributes and all details relevant to them"
               )}
               placement="right"
               arrow

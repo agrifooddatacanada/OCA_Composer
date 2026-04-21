@@ -452,7 +452,7 @@ const Cardinality = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),
-          helpText: t("This is the name for the attribute and, for example...")
+          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
         }
       },
       {
@@ -464,7 +464,7 @@ const Cardinality = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Label"),
-          helpText: t("This is the language specific label for an attribute")
+          helpText: t("Language-specific label for an attribute")
         }
       },
       {

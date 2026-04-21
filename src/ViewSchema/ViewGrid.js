@@ -190,7 +190,7 @@ export default function ViewGrid({
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Attribute"),
-            helpText: t("This is the name for the attribute and, for example...")
+            helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
           }
         },
         {
@@ -202,11 +202,11 @@ export default function ViewGrid({
             helpText: (
               <>
                 <div>
-                  {t("If the attribute could be considered Personally Identifiable...")}
+                  {t("If the attribute could be considered Personally Identifiable Information (PII) you can flag the attribute here. This will be documented in the schema and downstream users of your schema will understand they need to take care of the data that has been flagged.")}
                 </div>
                 <br />
                 <div>
-                  {t("Examples of PII include names, locations, postal codes...")}
+                  {t("Examples of PII include names, locations, postal codes, telephone numbers, identifying genetic data, race, gender, ethnicity, etc.")}
                 </div>
               </>
             )
@@ -222,7 +222,7 @@ export default function ViewGrid({
           headerComponentParams: {
             headerText: t("Unit"),
             helpText: t(
-              "The units of each attribute (or leave blank if the attribute is..."
+              "The units of each attribute. Leave blank if the attribute is not a measurement and has no units."
             )
           }
         },
@@ -264,7 +264,7 @@ export default function ViewGrid({
           headerComponentParams: {
             headerText: t("Label"),
             constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
-            helpText: t("This is the language specific label for an attribute")
+            helpText: t("Language-specific label for an attribute")
           }
         },
         {
@@ -278,7 +278,7 @@ export default function ViewGrid({
             constraint: t("max description chars", {
               maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
             }),
-            helpText: t("This is a language specific description of the attribute...")
+            helpText: t("Language-specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute")
           }
         },
         {
@@ -290,7 +290,7 @@ export default function ViewGrid({
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("List"),
-            helpText: t("Rather than allow free text entry into a record, you may...")
+            helpText: t("Rather than allowing free text entry into a record, you may wish to limit entries to one of a few in a list. For example, you may wish to create a list of choices for gender, or for experimental farm name, or for species. You will then be able to create entries for your list that will be part of the schema.")
           },
           cellRenderer: ListRenderer
         }

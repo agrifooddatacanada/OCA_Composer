@@ -23,7 +23,7 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     Create: { header: t("Names"), toolTipText: t("Enter the column names below. These are the column headers in the tabular data set no matter the language."), helpLink: `${base}/${lang}/CreatingOCASchema/` },
     Metadata: { header: t("Schema Metadata"), toolTipText: t("Describe your schema using metadata to help others find, understand, and use your schema."), helpLink: `${base}/${lang}/SchemaMetadata/` },
     Details: { header: t("Attribute Details"), toolTipText: t("Each column of your dataset is an attribute in your schema. Here you can add, remove, and edit attributes and their details."), helpLink: `${base}/${lang}/AttributeDetails/` },
-    Codes: { header: t("Add Entry Codes"), toolTipText: t("Entry codes are options you want available to users as a..."), helpLink: `${base}/${lang}/AddEntryCode/` },
+    Codes: { header: t("Add Entry Codes"), toolTipText: t("Entry codes are a list of choices for a specific attribute. For example, to limit gender entry to one of three choices you can use entry codes M, F, and X. Then for the English entries you can enter Male, Female and Other."), helpLink: `${base}/${lang}/AddEntryCode/` },
     UploadEntryCodes: { header: t("Upload Entry Codes"), toolTipText: t("Upload a new file containing your entry codes and optionally edit them, or select an existing attribute to copy its entry codes from."), helpLink: `${base}/${lang}/AddEntryCode/` },
     PicklistEntryCodes: {
       header: t("Choose from existing entry codes. These can still be edited later."),
