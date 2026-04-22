@@ -74,7 +74,7 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
 
       <AccordionDetails sx={{ textAlign: "start" }}>
         <Typography>
-          {t("Use your machine-readable schema bundle to help you collect schema conformant data, or to verify that data you have collected follows the rules in the schema.")}
+          {t("Use your machine-readable schema bundle to help you collect...")}
         </Typography>
 
         <Drop

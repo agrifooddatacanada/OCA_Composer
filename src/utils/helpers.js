@@ -1005,7 +1005,7 @@ export const getCardinalityOverlayDisabledReason = (overlayKey, attributes) => {
   if (overlayKey !== FIELD_CARDINALITY_OVERLAY) return "";
   if (!shouldDisableCardinalityOverlay(overlayKey, attributes)) return "";
   return i18next.t(
-    "Entry limits can only be created for attributes with an array data type"
+    "Entry limits can only be created for attributes with an array datatype"
   );
 };
 
