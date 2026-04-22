@@ -110,7 +110,7 @@ export default function MatchingPicklistEntryCodeHeader() {
 
   useEffect(() => {
     setGridLayoutReady(false);
-  }, [matchingRows, codeColumnOptions]);
+  }, [codeColumnOptions, languages, pendingPicklist]);
 
   const changeDataFromTable = useCallback((e, params) => {
     const { value } = e.target;
