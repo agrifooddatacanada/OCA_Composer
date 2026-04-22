@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
 import DropCard from "./DropCard";
@@ -74,7 +74,7 @@ export default function Drop({
     }
   }, [version]);
 
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+  const { getRootProps, getInputProps } = useDropzone({
     accept: acceptFormat,
     maxSize: MAX_FILE_SIZE,
     onDropRejected: (file) => {
@@ -97,8 +97,9 @@ export default function Drop({
         setDropMessage({ message: "", type: "" });
       }, [3500]);
     },
-    onDropAccepted: () => {
+    onDropAccepted: (files) => {
       setLoading(true);
+      setFile(files);
     },
     disabled: dropDisabled
   });
@@ -121,12 +122,6 @@ export default function Drop({
   const handleDragLeave = () => {
     setHover(false);
   };
-
-  useEffect(() => {
-    if (acceptedFiles && acceptedFiles.length > 0) {
-      setFile(acceptedFiles);
-    }
-  }, [acceptedFiles, setFile]);
 
   const downloadIconColor = useMemo(
     () =>
