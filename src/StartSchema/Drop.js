@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
 import DropCard from "./DropCard";
@@ -103,6 +103,11 @@ export default function Drop({
     disabled: dropDisabled
   });
   const [hover, setHover] = useState(false);
+  const setFileRef = useRef(setFile);
+
+  useEffect(() => {
+    setFileRef.current = setFile;
+  }, [setFile]);
 
   const spinningAnimation =
     "spin 1.5s linear infinite; @keyframes spin {from {transform: rotate(0deg);}to {transform: rotate(-360deg);}";
@@ -124,9 +129,9 @@ export default function Drop({
 
   useEffect(() => {
     if (acceptedFiles && acceptedFiles.length > 0) {
-      setFile(acceptedFiles);
+      setFileRef.current(acceptedFiles);
     }
-  }, [acceptedFiles, setFile]);
+  }, [acceptedFiles]);
 
   const downloadIconColor = useMemo(
     () =>
