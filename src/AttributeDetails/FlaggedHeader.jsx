@@ -23,10 +23,10 @@ const FlaggedHeader = ({ gridRef }) => {
       helpText={
         <>
           <div>
-            {t("If the attribute could be considered Personally Identifiable Information (PII) you can flag the attribute here. This will be documented in the schema and downstream users of your schema will understand they need to take care of the data that has been flagged.")}
+            {t("If the attribute could be considered Personally Identifiable...")}
           </div>
           <br />
-          <div>{t("Examples of PII include names, locations, postal codes, telephone numbers, identifying genetic data, race, gender, ethnicity, etc.")}</div>
+          <div>{t("Examples of PII include names, locations, postal codes...")}</div>
         </>
       }
       onCheckboxChange={handleCheckboxChange}

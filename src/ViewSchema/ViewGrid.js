@@ -202,11 +202,11 @@ export default function ViewGrid({
             helpText: (
               <>
                 <div>
-                  {t("If the attribute could be considered Personally Identifiable Information (PII) you can flag the attribute here. This will be documented in the schema and downstream users of your schema will understand they need to take care of the data that has been flagged.")}
+                  {t("If the attribute could be considered Personally Identifiable...")}
                 </div>
                 <br />
                 <div>
-                  {t("Examples of PII include names, locations, postal codes, telephone numbers, identifying genetic data, race, gender, ethnicity, etc.")}
+                  {t("Examples of PII include names, locations, postal codes...")}
                 </div>
               </>
             )
@@ -365,7 +365,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Character Encoding"),
-              helpText: t("You can use the default encodings below if you don't know the encodings the data source uses. For new data, utf-8 is a good choice.")
+              helpText: t("The character encoding that is applied to the attribute")
             }
           });
         } else if (overlayKey === FIELD_FORMAT_OVERLAY) {
@@ -377,7 +377,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Format Rule"),
-              helpText: t("Specify the format of values for Text, Numeric, DateTime, and Binary attributes.")
+              helpText: t("The format rule that is applied to the attribute")
             },
             valueFormatter: (params) =>
               getFormatRuleDescription(params.data.Type, params.value, t) || params.value
@@ -390,7 +390,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Cardinality"),
-              helpText: t("Define how many values your Array[] datatype attributes can have.")
+              helpText: t("The cardinality that is applied to the attribute")
             }
           });
         } else if (overlayKey === FIELD_ATTRIBUTE_FRAMING_OVERLAY) {
@@ -401,7 +401,7 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Attribute Framing"),
-              helpText: t("Link attributes to terms drawn from an ontology or controlled vocabulary.")
+              helpText: t("The attribute framing that is applied to the attribute")
             }
           });
         } else if (overlayKey === FIELD_UNIT_FRAMING_OVERLAY) {
@@ -480,7 +480,7 @@ export default function ViewGrid({
               helpText: isRequired
                 ? t("Check for each attribute where the data entry cannot be left empty in a dataset")
                 : isFormat
-                  ? t("Specify the format of values for Text, Numeric, DateTime, and Binary attributes.")
+                  ? t("The format rule that is applied to the attribute")
                   : t("Overlay value for this attribute") + "."
             },
             cellRenderer: useCheckbox ? CheckboxRenderer : null
