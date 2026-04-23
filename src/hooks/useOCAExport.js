@@ -42,7 +42,8 @@ import {
   getAttributeFramingInput,
   getFormInformationInput,
   normalizeEscapedQuotes,
-  escapeForOCADoubleQuotedValue
+  escapeForOCADoubleQuotedValue,
+  escapeForOCAEntryToken
 } from "../utils/helpers";
 import { getMapValueForAttributeName } from "../utils/stringUtils";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
@@ -234,7 +235,13 @@ const useOCAExport = () => {
         // Convert "Child Schema" or "Placeholder Child Schema" UI type to OCA spec refs:/refn: format
         // - refs:SAID = child schema with cryptographic identifier (has been built)
         // - refn:name = named reference placeholder (not yet built)
-        const isChildSchema = attributeType === "Child Schema" || attributeType === "Placeholder Child Schema";
+        const isReferenceType =
+          typeof attributeType === "string" &&
+          (attributeType.startsWith("refs:") || attributeType.startsWith("refn:"));
+        const isChildSchema =
+          attributeType === "Child Schema" ||
+          attributeType === "Placeholder Child Schema" ||
+          isReferenceType;
         
         if (isChildSchema) {
           const originalValue = originalSchema?.capture_base?.attributes?.[item];
@@ -242,7 +249,7 @@ const useOCAExport = () => {
           
           if (childSaid) {
             // Child schema was pre-built, use its SAID
-            attributeType = `refs:${childSaid}`;
+            attributeType = `refn:${item}`;
           } else if (originalValue && typeof originalValue === 'string' && (originalValue.startsWith('refs:') || originalValue.startsWith('refn:'))) {
             // Check if this refs: child schema exists and has attributes
             if (originalValue.startsWith('refs:')) {
@@ -255,12 +262,12 @@ const useOCAExport = () => {
                 // Child schema is empty - convert to placeholder
                 attributeType = `refn:${item}`;
               } else {
-                // Use existing refs: from original schema
-                attributeType = originalValue;
+                // Use named reference syntax accepted by the DSL parser
+                attributeType = `refn:${item}`;
               }
             } else {
-              // Use existing refn: from original schema
-              attributeType = originalValue;
+              // Preserve named reference syntax for the DSL parser
+              attributeType = `refn:${item}`;
             }
           } else {
             // Fallback: named reference placeholder (child not yet built)
@@ -268,7 +275,7 @@ const useOCAExport = () => {
           }
         }
 
-        buildText += ` ${item}=${attributeType}`;
+        buildText += ` ${escapeForOCAEntryToken(item)}=${escapeForOCAEntryToken(attributeType)}`;
       });
       buildText += "\n";
     } else {
@@ -410,7 +417,7 @@ const useOCAExport = () => {
         const codes = savedEntryCodes[item]
           .map((entry) => String(entry?.Code ?? "").trim())
           .filter((c) => c !== "")
-          .map((c) => `"${escapeForOCADoubleQuotedValue(c)}"`)
+          .map((c) => `"${escapeForOCAEntryToken(c)}"`)
           .join(", ");
         if (codes) {
           entryCodesText += ` ${item}=[${codes}]`;
@@ -436,8 +443,8 @@ const useOCAExport = () => {
               if (!code) continue;
               const label = entry[languageName] || "";
               if (!label) continue;
-              const escapedCode = escapeForOCADoubleQuotedValue(code);
-              const escapedLabel = escapeForOCADoubleQuotedValue(
+              const escapedCode = escapeForOCAEntryToken(code);
+              const escapedLabel = escapeForOCAEntryToken(
                 normalizeEscapedQuotes(label)
               );
               entryString += `, "${escapedCode}": "${escapedLabel}"`;
@@ -503,7 +510,34 @@ const useOCAExport = () => {
       );
     }
 
-    bundle = await generateOCABundle(data);
+    try {
+      bundle = await generateOCABundle(data);
+    } catch (e) {
+      const errMsg = String(e?.message || "");
+      const hasReferenceAttributes = attributesList.some((attrName) => {
+        const t = originalSchema?.capture_base?.attributes?.[attrName];
+        return (
+          (typeof t === "string" && (t.startsWith("refs:") || t.startsWith("refn:"))) ||
+          (Array.isArray(t) && typeof t[0] === "string" && (t[0].startsWith("refs:") || t[0].startsWith("refn:")))
+        );
+      });
+
+      if (errMsg.includes("key is empty") && hasReferenceAttributes && originalSchema) {
+        console.warn(
+          "Falling back to existing schema bundle for export because API rejected reference ADD ATTRIBUTE DSL.",
+          { schemaId, error: errMsg }
+        );
+        bundle = {
+          type: "oca_package/1.0",
+          oca_bundle: {
+            bundle: JSON.parse(JSON.stringify(originalSchema)),
+            dependencies: []
+          }
+        };
+      } else {
+        throw e;
+      }
+    }
 
     const formCaptureBaseDigest =
       getRootCaptureBaseId(bundle) ?? getPackageBundleId(bundle);
@@ -651,6 +685,10 @@ const useOCAExport = () => {
         const pkgForExport = JSON.parse(JSON.stringify(pkgRebuilt));
         const rootBundle = getPackageBundle(pkgForExport);
         const dependencies = getPackageDependencies(pkgForExport) || [];
+        const originalBundleById = {};
+        [rootBundle, ...dependencies].filter(Boolean).forEach((schemaBundle) => {
+          if (schemaBundle?.d) originalBundleById[schemaBundle.d] = schemaBundle;
+        });
 
         if (!rootBundle) {
           throw new Error("Could not find root schema in rebuilt package");
@@ -659,18 +697,40 @@ const useOCAExport = () => {
         const adcMerged = {};
         const apiBundleByOriginalId = {};
         const bundleIdRemap = {};
+        const materializedSchemaSaidMap = {};
 
-        const mergeExtensionsForBundle = async (schemaBundle) => {
+        const getSchemaMaterializationKey = (schemaId) => {
+          const state = getSchemaById(schemaId);
+          return state?.metadata?.localized?.eng?.name || state?.metadata?.name || schemaId;
+        };
+
+        const buildChildSaidMapForBundle = (schemaBundle) => {
+          const childSaidMap = {};
+          const attrs = schemaBundle?.capture_base?.attributes || {};
+          Object.entries(attrs).forEach(([attrName, attrType]) => {
+            if (typeof attrType === "string" && attrType.startsWith("refs:")) {
+              const oldId = attrType.slice(5);
+              if (bundleIdRemap[oldId]) {
+                childSaidMap[attrName] = bundleIdRemap[oldId];
+              }
+            }
+          });
+          return childSaidMap;
+        };
+
+        const mergeExtensionsForBundle = async (schemaBundle, childSaidMap = {}) => {
           const bid = schemaBundle?.d;
           if (!bid) return;
           const st = getSchemaById(bid);
           if (!st?.initialized) return;
-          const result = await buildPackageFromTextDSL(bid, {});
+          const result = await buildPackageFromTextDSL(bid, childSaidMap);
 
           const generatedBundle = getPackageBundle(result.bundle);
           if (generatedBundle?.d) {
             apiBundleByOriginalId[bid] = generatedBundle;
             bundleIdRemap[bid] = generatedBundle.d;
+            materializedSchemaSaidMap[bid] = generatedBundle.d;
+            materializedSchemaSaidMap[getSchemaMaterializationKey(bid)] = generatedBundle.d;
           }
 
           if (result?.extension?.extensions?.[ADC]) {
@@ -678,10 +738,11 @@ const useOCAExport = () => {
           }
         };
 
-        await mergeExtensionsForBundle(rootBundle);
         for (const dep of dependencies) {
           await mergeExtensionsForBundle(dep);
         }
+        const rootChildSaidMap = buildChildSaidMapForBundle(rootBundle);
+        await mergeExtensionsForBundle(rootBundle, rootChildSaidMap);
 
         const mergedExtension = {
           extensions: {
@@ -689,21 +750,60 @@ const useOCAExport = () => {
           }
         };
 
-        const rewriteRefsForRemappedBundles = (bundleObj) => {
+        const rewriteRefsForRemappedBundles = (bundleObj, originalBundleId) => {
           const attrs = bundleObj?.capture_base?.attributes;
           if (!attrs || typeof attrs !== "object") return;
+
+          const getReferenceToken = (rawValue) => {
+            const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+            if (typeof value !== "string") return null;
+            if (value.startsWith("refs:") || value.startsWith("refn:")) return value.slice(5);
+            return null;
+          };
+
+          const resolveRemappedSaid = (token) => {
+            if (!token) return null;
+            if (bundleIdRemap[token]) return bundleIdRemap[token];
+            if (materializedSchemaSaidMap[token]) return materializedSchemaSaidMap[token];
+            const byMaterializationKey = materializedSchemaSaidMap[getSchemaMaterializationKey(token)];
+            if (byMaterializationKey) return byMaterializationKey;
+            return null;
+          };
+
           Object.keys(attrs).forEach((attrName) => {
             const value = attrs[attrName];
             if (typeof value === "string" && value.startsWith("refs:")) {
               const oldId = value.slice(5);
-              if (bundleIdRemap[oldId]) attrs[attrName] = `refs:${bundleIdRemap[oldId]}`;
+              const remapped = resolveRemappedSaid(oldId);
+              if (remapped) attrs[attrName] = `refs:${remapped}`;
+            } else if (typeof value === "string" && value.startsWith("refn:")) {
+              const targetName = value.slice(5);
+              let remapped = resolveRemappedSaid(targetName);
+              if (!remapped && originalBundleId) {
+                const originalValue = originalBundleById[originalBundleId]?.capture_base?.attributes?.[attrName];
+                remapped = resolveRemappedSaid(getReferenceToken(originalValue));
+              }
+              if (remapped) attrs[attrName] = `refs:${remapped}`;
             } else if (
               Array.isArray(value) &&
               typeof value[0] === "string" &&
               value[0].startsWith("refs:")
             ) {
               const oldId = value[0].slice(5);
-              if (bundleIdRemap[oldId]) attrs[attrName] = [`refs:${bundleIdRemap[oldId]}`];
+              const remapped = resolveRemappedSaid(oldId);
+              if (remapped) attrs[attrName] = [`refs:${remapped}`];
+            } else if (
+              Array.isArray(value) &&
+              typeof value[0] === "string" &&
+              value[0].startsWith("refn:")
+            ) {
+              const targetName = value[0].slice(5);
+              let remapped = resolveRemappedSaid(targetName);
+              if (!remapped && originalBundleId) {
+                const originalValue = originalBundleById[originalBundleId]?.capture_base?.attributes?.[attrName];
+                remapped = resolveRemappedSaid(getReferenceToken(originalValue));
+              }
+              if (remapped) attrs[attrName] = [`refs:${remapped}`];
             }
           });
         };
@@ -714,8 +814,8 @@ const useOCAExport = () => {
           (dep) => apiBundleByOriginalId[dep.d] || dep
         );
 
-        rewriteRefsForRemappedBundles(exportedRootBundle);
-        exportedDependencies.forEach(rewriteRefsForRemappedBundles);
+        rewriteRefsForRemappedBundles(exportedRootBundle, rootBundle.d);
+        exportedDependencies.forEach((dep, idx) => rewriteRefsForRemappedBundles(dep, dependencies[idx]?.d));
 
         const bundleWithDeps = {
           bundle: exportedRootBundle,
@@ -858,9 +958,47 @@ const useOCAExport = () => {
       };
       
       // Create final package with root and dependencies
+      const schemaSaidMap = {};
+      schemaSaidMap[getSchemaMaterializationKey(rootSchemaId)] = bundle.bundle.d;
+      childBundles.forEach((childBundle, index) => {
+        const childId = childSchemaIds[index];
+        if (!childBundle?.d || !childId) return;
+        schemaSaidMap[getSchemaMaterializationKey(childId)] = childBundle.d;
+      });
+
+      const rewriteFinalBundleRefs = (bundleObj) => {
+        const attrs = bundleObj?.capture_base?.attributes;
+        if (!attrs || typeof attrs !== "object") return;
+        Object.keys(attrs).forEach((attrName) => {
+          const value = attrs[attrName];
+          if (typeof value === "string" && value.startsWith("refn:")) {
+            const targetName = value.slice(5);
+            if (schemaSaidMap[targetName]) attrs[attrName] = `refs:${schemaSaidMap[targetName]}`;
+          } else if (typeof value === "string" && value.startsWith("refs:")) {
+            const oldId = value.slice(5);
+            if (bundleIdRemap[oldId]) attrs[attrName] = `refs:${bundleIdRemap[oldId]}`;
+            else if (schemaSaidMap[oldId]) attrs[attrName] = `refs:${schemaSaidMap[oldId]}`;
+          } else if (Array.isArray(value) && typeof value[0] === "string") {
+            if (value[0].startsWith("refn:")) {
+              const targetName = value[0].slice(5);
+              if (schemaSaidMap[targetName]) attrs[attrName] = [`refs:${schemaSaidMap[targetName]}`];
+            } else if (value[0].startsWith("refs:")) {
+              const oldId = value[0].slice(5);
+              if (bundleIdRemap[oldId]) attrs[attrName] = [`refs:${bundleIdRemap[oldId]}`];
+              else if (schemaSaidMap[oldId]) attrs[attrName] = [`refs:${schemaSaidMap[oldId]}`];
+            }
+          }
+        });
+      };
+
+      const finalBundle = JSON.parse(JSON.stringify(bundle.bundle));
+      const finalDependencies = childBundles.map((childBundle) => JSON.parse(JSON.stringify(childBundle)));
+      rewriteFinalBundleRefs(finalBundle);
+      finalDependencies.forEach(rewriteFinalBundleRefs);
+
       const finalPackage = {
-        bundle: bundle.bundle,
-        dependencies: childBundles
+        bundle: finalBundle,
+        dependencies: finalDependencies
       };
       
       // Merge extensions into the final package

@@ -614,6 +614,317 @@ const fetchOCABundle = async (said) => {
   return data;
 };
 
+const postOCADslForValidation = async (dslText) => {
+  try {
+    const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain"
+      },
+      body: dslText
+    });
+
+    const responseContentType = response.headers.get("content-type") || "";
+    const rawText = await response.text();
+
+    let responseData = null;
+    let parseError = null;
+    try {
+      responseData = rawText ? JSON.parse(rawText) : {};
+    } catch (e) {
+      parseError = String(e);
+      responseData = { parseError, rawTextPreview: String(rawText || "").slice(0, 200) };
+    }
+
+    const isHtmlResponse = /^\s*</.test(rawText || "");
+    const transportIssue =
+      response.status >= 500 ||
+      parseError !== null ||
+      isHtmlResponse ||
+      (!responseContentType.toLowerCase().includes("application/json") && !response.ok);
+
+    const failed =
+      !response.ok ||
+      responseData?.success === false ||
+      (Array.isArray(responseData?.errors) && responseData.errors.length > 0) ||
+      (responseData?.errors && !Array.isArray(responseData.errors));
+
+    return {
+      ok: transportIssue ? null : !failed,
+      transportIssue,
+      status: response.status,
+      statusText: response.statusText,
+      responseData
+    };
+  } catch (error) {
+    return {
+      ok: null,
+      transportIssue: true,
+      status: 0,
+      statusText: "network_error",
+      responseData: { error: String(error) }
+    };
+  }
+};
+
+const splitTopLevelTokens = (text) => {
+  const tokens = [];
+  let current = "";
+  let inQuotes = false;
+  let escaped = false;
+  let braceDepth = 0;
+  let bracketDepth = 0;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+
+    if (escaped) {
+      current += ch;
+      escaped = false;
+      continue;
+    }
+
+    if (ch === "\\") {
+      current += ch;
+      escaped = true;
+      continue;
+    }
+
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+      current += ch;
+      continue;
+    }
+
+    if (!inQuotes) {
+      if (ch === "{") braceDepth += 1;
+      if (ch === "}") braceDepth = Math.max(0, braceDepth - 1);
+      if (ch === "[") bracketDepth += 1;
+      if (ch === "]") bracketDepth = Math.max(0, bracketDepth - 1);
+
+      if (ch === " " && braceDepth === 0 && bracketDepth === 0) {
+        if (current.trim()) tokens.push(current.trim());
+        current = "";
+        continue;
+      }
+    }
+
+    current += ch;
+  }
+
+  if (current.trim()) tokens.push(current.trim());
+  return tokens;
+};
+
+const isolateOCADslFailure = async (dslText) => {
+  const lines = String(dslText || "").split(/\r?\n/);
+  const debugLimit = 120;
+  let calls = 0;
+  const unstableEvents = [];
+
+  const validate = async (content) => {
+    if (calls >= debugLimit) {
+      return {
+        ok: null,
+        transportIssue: true,
+        status: 0,
+        statusText: "debug_limit_reached",
+        responseData: { errors: ["debug_limit_reached"] }
+      };
+    }
+
+    let latest = null;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      calls += 1;
+      latest = await postOCADslForValidation(content);
+      if (!latest.transportIssue) return latest;
+      if (calls >= debugLimit) break;
+    }
+
+    return latest || {
+      ok: null,
+      transportIssue: true,
+      status: 0,
+      statusText: "unknown_transport_error",
+      responseData: { errors: ["unknown_transport_error"] }
+    };
+  };
+
+  let failingLineIndex = -1;
+  let failingResponse = null;
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const candidate = lines.slice(0, i + 1).join("\n");
+    const result = await validate(candidate);
+    if (result.transportIssue) {
+      unstableEvents.push({ lineNumber: i + 1, status: result.status, statusText: result.statusText });
+      continue;
+    }
+    if (result.ok === false) {
+      failingLineIndex = i;
+      failingResponse = result;
+      break;
+    }
+  }
+
+  if (failingLineIndex < 0) {
+    return {
+      calls,
+      unstable: unstableEvents.length > 0,
+      unstableEvents: unstableEvents.slice(0, 10),
+      message:
+        unstableEvents.length > 0
+          ? "No deterministic failing line isolated because API debug probes were unstable (5xx/non-JSON)."
+          : "No failing line isolated (full DSL may depend on context not reproduced incrementally)."
+    };
+  }
+
+  const failingLine = lines[failingLineIndex] || "";
+  const lineResult = {
+    lineNumber: failingLineIndex + 1,
+    line: failingLine,
+    apiError: failingResponse?.responseData
+  };
+
+  const attrsMarker = " ATTRS";
+  const attrsIdx = failingLine.indexOf(attrsMarker);
+  if (attrsIdx < 0) {
+    return {
+      calls,
+      failingLine: lineResult,
+      tokenAnalysis: { message: "Line has no ATTRS segment; token analysis skipped." }
+    };
+  }
+
+  const linePrefix = failingLine.slice(0, attrsIdx + attrsMarker.length).trim();
+  const tokenText = failingLine.slice(attrsIdx + attrsMarker.length).trim();
+  const tokens = splitTopLevelTokens(tokenText);
+
+  if (tokens.length === 0) {
+    return {
+      calls,
+      failingLine: lineResult,
+      tokenAnalysis: { message: "No tokens after ATTRS." }
+    };
+  }
+
+  const beforeLines = lines.slice(0, failingLineIndex);
+  const singleTokenFailures = [];
+
+  for (let i = 0; i < tokens.length; i += 1) {
+    const tokenCandidate = [...beforeLines, `${linePrefix} ${tokens[i]}`].join("\n");
+    const tokenResult = await validate(tokenCandidate);
+    if (tokenResult.transportIssue) {
+      unstableEvents.push({
+        lineNumber: failingLineIndex + 1,
+        tokenIndex: i,
+        status: tokenResult.status,
+        statusText: tokenResult.statusText
+      });
+      continue;
+    }
+    if (tokenResult.ok === false) {
+      singleTokenFailures.push({
+        tokenIndex: i,
+        token: tokens[i],
+        apiError: tokenResult.responseData
+      });
+    }
+  }
+
+  let firstFailingPrefix = null;
+  for (let i = 0; i < tokens.length; i += 1) {
+    const prefixTokens = tokens.slice(0, i + 1).join(" ");
+    const prefixCandidate = [...beforeLines, `${linePrefix} ${prefixTokens}`].join("\n");
+    const prefixResult = await validate(prefixCandidate);
+    if (prefixResult.transportIssue) {
+      unstableEvents.push({
+        lineNumber: failingLineIndex + 1,
+        tokenIndex: i,
+        status: prefixResult.status,
+        statusText: prefixResult.statusText
+      });
+      continue;
+    }
+    if (prefixResult.ok === false) {
+      firstFailingPrefix = {
+        tokenIndex: i,
+        token: tokens[i],
+        apiError: prefixResult.responseData
+      };
+      break;
+    }
+  }
+
+  return {
+    calls,
+    unstable: unstableEvents.length > 0,
+    unstableEvents: unstableEvents.slice(0, 10),
+    failingLine: lineResult,
+    tokenAnalysis: {
+      tokenCount: tokens.length,
+      singleTokenFailures,
+      firstFailingPrefix
+    }
+  };
+};
+
+const validateDslWithRetry = async (dslText, attempts = 2) => {
+  let latest = null;
+  for (let i = 0; i < attempts; i += 1) {
+    latest = await postOCADslForValidation(dslText);
+    if (!latest.transportIssue) break;
+  }
+  return latest;
+};
+
+const runDifferentialDslChecks = async (dslText) => {
+  const lines = String(dslText || "").split(/\r?\n/);
+  const hasEntry = lines.some((l) => l.startsWith("ADD ENTRY "));
+  const hasEntryCode = lines.some((l) => l.startsWith("ADD ENTRY_CODE "));
+  const hasLabel = lines.some((l) => l.startsWith("ADD Label "));
+
+  const variants = [
+    {
+      id: "without_entry",
+      enabled: hasEntry,
+      text: lines.filter((l) => !l.startsWith("ADD ENTRY ")).join("\n")
+    },
+    {
+      id: "without_entry_code",
+      enabled: hasEntryCode,
+      text: lines.filter((l) => !l.startsWith("ADD ENTRY_CODE ")).join("\n")
+    },
+    {
+      id: "without_entry_and_entry_code",
+      enabled: hasEntry || hasEntryCode,
+      text: lines
+        .filter((l) => !l.startsWith("ADD ENTRY ") && !l.startsWith("ADD ENTRY_CODE "))
+        .join("\n")
+    },
+    {
+      id: "without_label",
+      enabled: hasLabel,
+      text: lines.filter((l) => !l.startsWith("ADD Label ")).join("\n")
+    }
+  ].filter((v) => v.enabled);
+
+  const results = [];
+  for (const variant of variants) {
+    const response = await validateDslWithRetry(variant.text, 2);
+    results.push({
+      id: variant.id,
+      ok: response?.ok,
+      transportIssue: response?.transportIssue,
+      status: response?.status,
+      statusText: response?.statusText,
+      errors: response?.responseData?.errors || null
+    });
+  }
+
+  return results;
+};
+
 export const generateOCABundle = async (OCAFileData) => {
   try {
     const response = await fetch(`${OCA_REPOSITORY_API_URL}/oca-bundles`, {
@@ -630,10 +941,31 @@ export const generateOCABundle = async (OCAFileData) => {
     if (responseData.success === false || responseData.errors) {
       // eslint-disable-next-line no-console
       console.error("API returned error response:", responseData);
+      let isolationSummary = "";
       // Log the submitted DSL so we can inspect why the parser rejected it
       try {
         // eslint-disable-next-line no-console
         console.error("Submitted OCA DSL:", OCAFileData);
+
+        const serializedErrors = JSON.stringify(responseData?.errors || "");
+        if (serializedErrors.includes("key is empty")) {
+          const isolation = await isolateOCADslFailure(OCAFileData);
+          const differential = await runDifferentialDslChecks(OCAFileData);
+          const isDeterministic = !isolation?.unstable && Boolean(isolation?.failingLine?.lineNumber);
+          const failLine = isolation?.failingLine?.lineNumber;
+          const failToken =
+            isolation?.tokenAnalysis?.firstFailingPrefix?.token ||
+            isolation?.tokenAnalysis?.singleTokenFailures?.[0]?.token;
+          if (isDeterministic) {
+            isolationSummary = ` [isolation: line ${failLine}${failToken ? `, token ${failToken}` : ""}]`;
+          } else if (isolation?.unstable) {
+            isolationSummary = " [isolation: API unstable during debug probes]";
+          }
+          // eslint-disable-next-line no-console
+          console.error("Systematic OCA DSL failure isolation:", isolation);
+          // eslint-disable-next-line no-console
+          console.error("Differential DSL checks:", differential);
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Failed to log submitted DSL:", e);
@@ -653,7 +985,7 @@ export const generateOCABundle = async (OCAFileData) => {
         }
       }
       throw new Error(
-        `OCA Bundle generation failed: ${errorMessages} (see console for submitted DSL)`
+        `OCA Bundle generation failed: ${errorMessages}${isolationSummary} (see console for submitted DSL)`
       );
     }
 
@@ -858,7 +1190,9 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
     if (filteredEntryCodes.length > 0) {
       fileContent += "ADD ENTRY_CODE ATTRS";
       filteredEntryCodes.forEach(([attribute, codes]) => {
-        const codesInQuotes = (codes || []).map((code) => `"${code}"`);
+        const codesInQuotes = (codes || []).map(
+          (code) => `"${escapeForOCAEntryToken(String(code ?? ""))}"`
+        );
         fileContent += ` ${attribute}=[${codesInQuotes.join(", ")}]`;
       });
       fileContent += "\n";
@@ -875,7 +1209,12 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
           fileContent += `ADD ENTRY ${twoLetterLang} ATTRS`;
           entriesForAttrs.forEach(([attribute, entries]) => {
             const entriesText = Object.keys(entries)
-              .map((code) => `"${code}": "${entries[code]}"`)
+              .map(
+                (code) =>
+                  `"${escapeForOCAEntryToken(String(code ?? ""))}": "${escapeForOCAEntryToken(
+                    normalizeEscapedQuotes(String(entries[code] ?? ""))
+                  )}"`
+              )
               .join(", ");
             fileContent += ` ${attribute}={${entriesText}}`;
           });
@@ -949,6 +1288,11 @@ export const downloadJsonFile = (data, fileName) => {
 export const escapeForOCADoubleQuotedValue = (s) => {
   if (typeof s !== "string") return s;
   return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+};
+
+export const escapeForOCAEntryToken = (s) => {
+  if (typeof s !== "string") return s;
+  return escapeForOCADoubleQuotedValue(s).replace(/,/g, "\\,");
 };
 
 export const getFormatRuleDescription = (attributeType, formatRule, t = null) => {
