@@ -106,7 +106,7 @@ const useOCAExport = () => {
 
   // Build OCA package from schema state using text DSL generation
   // Works for both single schemas and multi-schema packages
-  const buildPackageFromTextDSL = async (schemaId, childSaidMap = {}) => {
+  const buildPackageFromTextDSL = async (schemaId) => {
     const schemaState = getSchemaById(schemaId);
     const metadata = schemaState?.metadata || {};
     
@@ -232,9 +232,6 @@ const useOCAExport = () => {
           ? `Array[${dataArray[1][index].Type[0]}]`
           : dataArray[1][index].Type;
         
-        // Convert "Child Schema" or "Placeholder Child Schema" UI type to OCA spec refs:/refn: format
-        // - refs:SAID = child schema with cryptographic identifier (has been built)
-        // - refn:name = named reference placeholder (not yet built)
         const isReferenceType =
           typeof attributeType === "string" &&
           (attributeType.startsWith("refs:") || attributeType.startsWith("refn:"));
@@ -244,35 +241,7 @@ const useOCAExport = () => {
           isReferenceType;
         
         if (isChildSchema) {
-          const originalValue = originalSchema?.capture_base?.attributes?.[item];
-          const childSaid = childSaidMap[item];
-          
-          if (childSaid) {
-            // Child schema was pre-built, use its SAID
-            attributeType = `refn:${item}`;
-          } else if (originalValue && typeof originalValue === 'string' && (originalValue.startsWith('refs:') || originalValue.startsWith('refn:'))) {
-            // Check if this refs: child schema exists and has attributes
-            if (originalValue.startsWith('refs:')) {
-              const refSaid = originalValue.replace('refs:', '');
-              // Try to find the child schema in schemaStates
-              const childSchemaState = getSchemaById(refSaid);
-              const hasAttributes = childSchemaState?.attributes && childSchemaState.attributes.length > 0;
-              
-              if (!hasAttributes) {
-                // Child schema is empty - convert to placeholder
-                attributeType = `refn:${item}`;
-              } else {
-                // Use named reference syntax accepted by the DSL parser
-                attributeType = `refn:${item}`;
-              }
-            } else {
-              // Preserve named reference syntax for the DSL parser
-              attributeType = `refn:${item}`;
-            }
-          } else {
-            // Fallback: named reference placeholder (child not yet built)
-            attributeType = `refn:${item}`;
-          }
+          attributeType = `refn:${item}`;
         }
 
         buildText += ` ${escapeForOCAEntryToken(item)}=${escapeForOCAEntryToken(attributeType)}`;
@@ -510,34 +479,7 @@ const useOCAExport = () => {
       );
     }
 
-    try {
-      bundle = await generateOCABundle(data);
-    } catch (e) {
-      const errMsg = String(e?.message || "");
-      const hasReferenceAttributes = attributesList.some((attrName) => {
-        const t = originalSchema?.capture_base?.attributes?.[attrName];
-        return (
-          (typeof t === "string" && (t.startsWith("refs:") || t.startsWith("refn:"))) ||
-          (Array.isArray(t) && typeof t[0] === "string" && (t[0].startsWith("refs:") || t[0].startsWith("refn:")))
-        );
-      });
-
-      if (errMsg.includes("key is empty") && hasReferenceAttributes && originalSchema) {
-        console.warn(
-          "Falling back to existing schema bundle for export because API rejected reference ADD ATTRIBUTE DSL.",
-          { schemaId, error: errMsg }
-        );
-        bundle = {
-          type: "oca_package/1.0",
-          oca_bundle: {
-            bundle: JSON.parse(JSON.stringify(originalSchema)),
-            dependencies: []
-          }
-        };
-      } else {
-        throw e;
-      }
-    }
+    bundle = await generateOCABundle(data);
 
     const formCaptureBaseDigest =
       getRootCaptureBaseId(bundle) ?? getPackageBundleId(bundle);
@@ -704,26 +646,12 @@ const useOCAExport = () => {
           return state?.metadata?.localized?.eng?.name || state?.metadata?.name || schemaId;
         };
 
-        const buildChildSaidMapForBundle = (schemaBundle) => {
-          const childSaidMap = {};
-          const attrs = schemaBundle?.capture_base?.attributes || {};
-          Object.entries(attrs).forEach(([attrName, attrType]) => {
-            if (typeof attrType === "string" && attrType.startsWith("refs:")) {
-              const oldId = attrType.slice(5);
-              if (bundleIdRemap[oldId]) {
-                childSaidMap[attrName] = bundleIdRemap[oldId];
-              }
-            }
-          });
-          return childSaidMap;
-        };
-
-        const mergeExtensionsForBundle = async (schemaBundle, childSaidMap = {}) => {
+        const mergeExtensionsForBundle = async (schemaBundle) => {
           const bid = schemaBundle?.d;
           if (!bid) return;
           const st = getSchemaById(bid);
           if (!st?.initialized) return;
-          const result = await buildPackageFromTextDSL(bid, childSaidMap);
+          const result = await buildPackageFromTextDSL(bid);
 
           const generatedBundle = getPackageBundle(result.bundle);
           if (generatedBundle?.d) {
@@ -741,8 +669,7 @@ const useOCAExport = () => {
         for (const dep of dependencies) {
           await mergeExtensionsForBundle(dep);
         }
-        const rootChildSaidMap = buildChildSaidMapForBundle(rootBundle);
-        await mergeExtensionsForBundle(rootBundle, rootChildSaidMap);
+        await mergeExtensionsForBundle(rootBundle);
 
         const mergedExtension = {
           extensions: {
@@ -899,15 +826,8 @@ const useOCAExport = () => {
       const childSchemaIds = allSchemaIds.filter((id) => id !== rootSchemaId);
 
       // Step 1: Build all child schemas first to get their SAIDs
-      const childSaidMap = {};
       const childBundles = [];
       const childExtensions = []; // Store child extensions
-      
-      // Get root schema's original attributes to map child SAIDs to attribute names
-      let originalRootSchema = null;
-      if (ocaPackage) {
-        originalRootSchema = findSchemaById(ocaPackage, rootSchemaId);
-      }
 
       for (const childId of childSchemaIds) {
         const childState = schemaStates[childId];
@@ -916,30 +836,14 @@ const useOCAExport = () => {
           const { bundle: childBundle, extension: childExtension } = await buildPackageFromTextDSL(childId);
           const said = childBundle?.bundle?.d;
           if (said) {
-            // Map attribute names to child SAIDs instead of schema IDs to SAIDs
-            // Check original root schema attributes to find which attribute(s) reference this child
-            if (originalRootSchema?.capture_base?.attributes) {
-              Object.entries(originalRootSchema.capture_base.attributes).forEach(([attrName, attrValue]) => {
-                const valueStr = Array.isArray(attrValue) ? attrValue[0] : attrValue;
-                const extractedSaid = valueStr?.toString().match(/refs?n?:([^)]+)/)?.[1];
-                if (extractedSaid === childId) {
-                  childSaidMap[attrName] = said;
-                }
-              });
-            }
-            // Also handle manually created schemas where childId === attributeName
-            if (!originalRootSchema || childId === childId.toLowerCase() || childId.startsWith('q')) {
-              childSaidMap[childId] = said;
-            }
-            
             childBundles.push(childBundle.bundle);
             childExtensions.push(childExtension);
           }
         }
       }
 
-      // Step 2: Build root schema with child SAIDs (use rootSchemaId, not the currently open editor id)
-      const { bundle, extension, textDSL } = await buildPackageFromTextDSL(rootSchemaId, childSaidMap);
+      // Step 2: Build root schema (use rootSchemaId, not the currently open editor id)
+      const { bundle, extension, textDSL } = await buildPackageFromTextDSL(rootSchemaId);
       
       // Merge all extensions (root + all children)
       const mergedExtension = {
