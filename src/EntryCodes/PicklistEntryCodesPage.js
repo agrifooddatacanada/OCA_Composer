@@ -19,9 +19,16 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import { CustomPalette } from "../constants/customPalette";
 import entryCodePicklists from "../constants/entry_code_picklists";
 import { codesToLanguages } from "../constants/isoCodes";
+import {
+  buildLanguageTo2Letter,
+  defaultPicklistColumnForField,
+  getPicklistCodeColumnOptions,
+  shouldSkipPicklistMatching
+} from "./picklistMatchingUtils";
 
 function normalizeString(value) {
   return (value ?? "").toString().toLowerCase();
@@ -193,7 +200,13 @@ export default function PicklistEntryCodesPage() {
   const { t, i18n } = useTranslation();
   const uiLang2 = getUiLang2(i18n.language);
 
-  const { setCurrentPage, setPendingPicklist } = useContext(Context);
+  const {
+    setCurrentPage,
+    setPendingPicklist,
+    chosenEntryCodeIndex
+  } = useContext(Context);
+  const { getSchema, updateSchema, getLanguages } = useMultiSchema();
+  const languages = getLanguages();
 
   const [query, setQuery] = useState("");
   const [viewPicklist, setViewPicklist] = useState(null);
@@ -219,7 +232,57 @@ export default function PicklistEntryCodesPage() {
     });
   }, [query, uiLang2]);
 
+  const tryAutoApplyPicklist = (picklist) => {
+    const opts = getPicklistCodeColumnOptions(picklist);
+    const languageTo2Letter = buildLanguageTo2Letter(languages);
+    const schemaFields = ["Code", ...(languages || [])];
+
+    const pickByLang = {};
+    schemaFields.forEach((fieldName) => {
+      const pickCol = defaultPicklistColumnForField(fieldName, opts, languageTo2Letter);
+      if (pickCol) pickByLang[fieldName] = pickCol;
+    });
+
+    const hasAllMappings = schemaFields.every((fieldName) => Boolean(pickByLang[fieldName]));
+    if (!hasAllMappings) return false;
+
+    const rows = Array.isArray(picklist?.rows) ? picklist.rows : [];
+    const newRows = rows.map((row) => {
+      const newObj = {};
+      schemaFields.forEach((fieldName) => {
+        const pickCol = pickByLang[fieldName];
+        const raw = pickCol ? row?.[pickCol] : undefined;
+        newObj[fieldName] = raw != null && raw !== "" ? String(raw) : "";
+      });
+      return newObj;
+    });
+
+    if (newRows.length === 0) return false;
+
+    const schema = getSchema() || {};
+    const attrsWithList = (schema.attributes || [])
+      .filter((a) => a.List)
+      .map((a) => a.Attribute);
+    const attrName = attrsWithList[chosenEntryCodeIndex];
+    if (!attrName) return false;
+
+    const prevEntryCodes = schema.entryCodes || {};
+    updateSchema({
+      entryCodes: {
+        ...prevEntryCodes,
+        [attrName]: newRows
+      }
+    });
+    setPendingPicklist(null);
+    setCurrentPage("Codes");
+    return true;
+  };
+
   const goToPicklistCodeColumnMatch = (picklist) => {
+    if (shouldSkipPicklistMatching(picklist, languages) && tryAutoApplyPicklist(picklist)) {
+      return;
+    }
+
     setPendingPicklist(picklist);
     setCurrentPage("MatchingPicklistEntryCodes");
   };
