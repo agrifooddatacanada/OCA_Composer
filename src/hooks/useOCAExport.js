@@ -49,21 +49,19 @@ import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFr
 const currentEnv = process.env.REACT_APP_ENV;
 
 /**
- * Unified OCA Export Hook
- * 
- * Handles all OCA export scenarios:
- * 1. Imported packages (flat or nested) - uses exportSchemaChanges()
- * 2. Manually created schemas (flat) - builds from scratch using text DSL
- * 3. Manually created schemas (nested) - builds and merges child schemas
- * 
- * Unified export hook - handles export and reset functionality for all schema types.
+ * Export OCA packages from editor state.
+ *
+ * Rules:
+ * 1. UI state is the source of truth for export.
+ * 2. refs:* tokens must resolve to materialized SAIDs; unresolved refs fail export.
+ * 3. refn:* tokens are placeholders; unresolved placeholders are preserved.
+ * 4. Imported and manual flows both rebuild via DSL/API and rewrite references before packaging.
  */
 const useOCAExport = () => {
   const navigate = useNavigate();
   
   // Global settings (not schema-specific)
   const {
-    divisionGroup,
     customIsos,
     overlay,
     setSummaryExportMode,
@@ -102,6 +100,58 @@ const useOCAExport = () => {
     URL.revokeObjectURL(url);
   };
 
+  const buildSchemaDescriptionByLanguage = (metadata, languages, schemaId) => {
+    const schemaDescription = {};
+    languages.forEach((language) => {
+      const langCodeOCA = langCodeOCAFromName(language);
+      const localized = metadata.localized?.[langCodeOCA] || {};
+      schemaDescription[language] = {
+        name: localized.name || metadata.name || schemaId || "",
+        description: localized.description || metadata.description || ""
+      };
+    });
+    return schemaDescription;
+  };
+
+  const buildUniqueLanguageCodes = (languages) => {
+    const languagesWithCode = [];
+    const allLanguageCodes = [];
+
+    languages.forEach((language) => {
+      const languageObject = {};
+      languageObject.language = language;
+      // Use two-letter codes because DSL parsing with three-letter codes is not reliable.
+      languageObject.code =
+        langTwoLettersFromName(language) ||
+        customIsos[language.toLowerCase()] ||
+        "unknown";
+
+      if (allLanguageCodes.includes(languageObject.code)) {
+        let number = 2;
+        let newCode = `${languageObject.code}_${number}`;
+        while (allLanguageCodes.includes(newCode)) {
+          number++;
+          newCode = `${languageObject.code}_${number}`;
+        }
+        languageObject.code = newCode;
+      }
+
+      allLanguageCodes.push(languageObject.code);
+      languagesWithCode.push(languageObject);
+    });
+
+    return languagesWithCode;
+  };
+
+  const throwUnresolvedReferenceError = (unresolvedTokens) => {
+    if (!unresolvedTokens?.length) return;
+    throw new Error(
+      `Unresolved reference tokens from UI state: ${unresolvedTokens.slice(0, 6).join(", ")}`
+    );
+  };
+
+  const deepCloneJson = (value) => JSON.parse(JSON.stringify(value));
+
   // Build OCA package from schema state using text DSL generation
   // Works for both single schemas and multi-schema packages
   const buildPackageFromTextDSL = async (schemaId) => {
@@ -130,15 +180,7 @@ const useOCAExport = () => {
     const classificationCode = metadata?.classification || null;
     
     // Build schema description for each language
-    const schemaDescription = {};
-    languages.forEach((language) => {
-      const langCodeOCA = langCodeOCAFromName(language);
-      const localized = metadata.localized?.[langCodeOCA] || {};
-      schemaDescription[language] = {
-        name: localized.name || metadata.name || "",
-        description: localized.description || metadata.description || ""
-      };
-    });
+    const schemaDescription = buildSchemaDescriptionByLanguage(metadata, languages, schemaId);
     
     const attributeListMap = attributeRowData.reduce((acc, attr) => {
       acc[attr.Attribute] = attr.List;
@@ -185,31 +227,7 @@ const useOCAExport = () => {
     let bundle;
 
     const schemaMetadata = dataArray[0];
-    const languagesWithCode = [];
-    const allLanguageCodes = [];
-
-    languages.forEach((language) => {
-      const languageObject = {};
-      languageObject.language = language;
-      languageObject.code =
-      // API does not accept 3-letter OCA codes? langCodeOCAFromName() gave unhelpful parsing error: "expected label, meta,..."
-        langTwoLettersFromName(language) ||
-        customIsos[language.toLowerCase()] ||
-        "unknown";
-
-      if (allLanguageCodes.includes(languageObject.code)) {
-        let number = 2;
-        let newCode = `${languageObject.code}_${number}`;
-        while (allLanguageCodes.includes(newCode)) {
-          number++;
-          newCode = `${languageObject.code}_${number}`;
-        }
-        languageObject.code = newCode;
-      }
-
-      allLanguageCodes.push(languageObject.code);
-      languagesWithCode.push(languageObject);
-    });
+    const languagesWithCode = buildUniqueLanguageCodes(languages);
 
     let buildText = "";
 
@@ -505,7 +523,7 @@ const useOCAExport = () => {
     const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData, attributesList);
     const retainedUniqueFramedUnits = unitFramedRowData.filter((row) => !row.deleted);
 
-    const extension_overlay_object = {
+    const extensionOverlayPayload = {
       ordering_overlay: {
         type: ORDERING,
         attribute_ordering: attributesList,
@@ -569,11 +587,11 @@ const useOCAExport = () => {
         : {})
     };
 
-    const extension_overlays = [extension_overlay_object];
+    const extensionOverlays = [extensionOverlayPayload];
     const extension = {
       extensions: {
         [ADC]: {
-          [getPackageBundleId(bundle) || "bundle_id"]: extension_overlays
+          [getPackageBundleId(bundle) || "bundle_id"]: extensionOverlays
         }
       }
     };
@@ -584,6 +602,70 @@ const useOCAExport = () => {
   const getSchemaMaterializationKey = (schemaId) => {
     const state = getSchemaById(schemaId);
     return state?.metadata?.localized?.eng?.name || state?.metadata?.name || schemaId;
+  };
+
+  const setResolvedSaidForSchema = (saidByReferenceToken, schemaId, said) => {
+    if (!schemaId || !said) return;
+    saidByReferenceToken[schemaId] = said;
+    saidByReferenceToken[getSchemaMaterializationKey(schemaId)] = said;
+  };
+
+  const createResolveSaid = (saidByReferenceToken) => (token) => {
+    if (!token) return null;
+    if (saidByReferenceToken[token]) return saidByReferenceToken[token];
+    const byMaterializationKey = saidByReferenceToken[getSchemaMaterializationKey(token)];
+    if (byMaterializationKey) return byMaterializationKey;
+    return null;
+  };
+
+  const getReferenceToken = (rawValue) => {
+    const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (typeof value !== "string") return null;
+    if (value.startsWith("refs:") || value.startsWith("refn:")) return value.slice(5);
+    return null;
+  };
+
+  const seedResolvedAliasTokensFromBundles = (schemaBundles, saidByReferenceToken) => {
+    const resolveSaid = createResolveSaid(saidByReferenceToken);
+    (schemaBundles || []).filter(Boolean).forEach((schemaBundle) => {
+      const attrs = schemaBundle?.capture_base?.attributes;
+      if (!attrs || typeof attrs !== "object") return;
+      Object.entries(attrs).forEach(([attrName, rawValue]) => {
+        const token = getReferenceToken(rawValue);
+        if (!token) return;
+        const resolvedSaid = resolveSaid(token);
+        if (resolvedSaid) {
+          saidByReferenceToken[attrName] = resolvedSaid;
+        }
+      });
+    });
+  };
+
+  const rewriteBundleRefs = ({ schemaBundle, resolveSaid }) => {
+    const attrs = schemaBundle?.capture_base?.attributes;
+    if (!attrs || typeof attrs !== "object") return [];
+
+    const unresolvedTokens = [];
+
+    Object.keys(attrs).forEach((attrName) => {
+      const value = attrs[attrName];
+      const token = getReferenceToken(value);
+      if (!token) return;
+
+      const isRefn = (Array.isArray(value) ? value[0] : value)?.startsWith("refn:");
+      const resolvedSaid = resolveSaid(token);
+      if (!resolvedSaid) {
+        if (isRefn) return;
+        unresolvedTokens.push(`${schemaBundle?.d || "bundle"}.${attrName}:${token}`);
+        return;
+      }
+
+      attrs[attrName] = Array.isArray(value)
+        ? [`refs:${resolvedSaid}`]
+        : `refs:${resolvedSaid}`;
+    });
+
+    return unresolvedTokens;
   };
 
   const validateExtension = (ext) => {
@@ -614,322 +696,230 @@ const useOCAExport = () => {
     });
   };
 
+  const generateOcaPackageJson = (extension, bundlePayload) => {
+    validateExtension(extension);
+    try {
+      const ocaPackageService = new OcaPackage(extension, bundlePayload);
+      return JSON.parse(ocaPackageService.GenerateOcaPackage());
+    } catch (e) {
+      console.error("Failed to generate OCA package from extension:", e, extension);
+      throw new Error(`Failed to parse Extension JSON: ${e.message}`);
+    }
+  };
+
+  const exportImportedPackage = async () => {
+    const saidByReferenceToken = {};
+    const originalRootId = getPackageBundleId(ocaPackage);
+
+    const rootState = getSchemaById(originalRootId);
+    if (!rootState || !rootState.initialized) {
+      console.error("Root schema not initialized:", originalRootId);
+      console.error("Available schemas:", Object.keys(schemaStates));
+      throw new Error(`Root schema ${originalRootId} is not initialized. Please try reloading the schema.`);
+    }
+
+    const schemaIds = Object.keys(schemaStates).filter((id) => {
+      const state = getSchemaById(id);
+      return state?.initialized;
+    });
+    if (!schemaIds.includes(originalRootId)) {
+      console.error("Root ID not in schemaStates:", originalRootId);
+      console.error("Available:", schemaIds);
+      throw new Error(`Root schema ID mismatch. Expected: ${originalRootId}`);
+    }
+
+    const pkgRebuilt = rebuildOcaPackageFromEditorState(ocaPackage);
+    const pkgForExport = deepCloneJson(pkgRebuilt);
+    const rootBundle = getPackageBundle(pkgForExport);
+    const dependencies = getPackageDependencies(pkgForExport) || [];
+
+    if (!rootBundle) {
+      throw new Error("Could not find root schema in rebuilt package");
+    }
+
+    const adcMerged = {};
+    const generatedBundleByOriginalId = {};
+
+    const mergeExtensionsForBundle = async (schemaBundle) => {
+      const bid = schemaBundle?.d;
+      if (!bid) return;
+      const st = getSchemaById(bid);
+      if (!st?.initialized) return;
+      const result = await buildPackageFromTextDSL(bid);
+
+      const generatedBundle = getPackageBundle(result.bundle);
+      if (generatedBundle?.d) {
+        generatedBundleByOriginalId[bid] = generatedBundle;
+        setResolvedSaidForSchema(saidByReferenceToken, bid, generatedBundle.d);
+      }
+
+      if (result?.extension?.extensions?.[ADC]) {
+        Object.assign(adcMerged, result.extension.extensions[ADC]);
+      }
+    };
+
+    for (const dep of dependencies) {
+      await mergeExtensionsForBundle(dep);
+    }
+    await mergeExtensionsForBundle(rootBundle);
+
+    const mergedExtension = {
+      extensions: {
+        adc: adcMerged
+      }
+    };
+
+    // UI-only aliasing: allow refn:<attribute_name> tokens to resolve via rebuilt graph.
+    seedResolvedAliasTokensFromBundles([rootBundle, ...dependencies], saidByReferenceToken);
+    const resolveImportedSaid = createResolveSaid(saidByReferenceToken);
+
+    const exportedRootBundle =
+      generatedBundleByOriginalId[rootBundle.d] || rootBundle;
+    const exportedDependencies = dependencies.map(
+      (dep) => generatedBundleByOriginalId[dep.d] || dep
+    );
+
+    const unresolvedTokens = [];
+    unresolvedTokens.push(...rewriteBundleRefs({
+      schemaBundle: exportedRootBundle,
+      resolveSaid: resolveImportedSaid
+    }));
+    exportedDependencies.forEach((dep) => {
+      unresolvedTokens.push(...rewriteBundleRefs({
+        schemaBundle: dep,
+        resolveSaid: resolveImportedSaid
+      }));
+    });
+
+    throwUnresolvedReferenceError(unresolvedTokens);
+
+    const bundleWithDeps = {
+      bundle: exportedRootBundle,
+      dependencies: exportedDependencies
+    };
+
+    const exportPackage = generateOcaPackageJson(mergedExtension, bundleWithDeps);
+
+    const rootBundleData = exportedRootBundle;
+    const metaOverlays = rootBundleData?.overlays?.meta;
+    const engMeta = Array.isArray(metaOverlays)
+      ? metaOverlays.find((m) => m.language === 'eng') || metaOverlays[0]
+      : null;
+    const schemaName = engMeta?.name || getPackageBundleId(rootBundleData) || "schema";
+
+    const packageFileName = schemaName.split(" ")[0] + "_OCA_package.json";
+    downloadJsonFile(exportPackage, packageFileName);
+
+    if (rootBundleData?.overlays?.meta) {
+      await jsonToTextFile(rootBundleData, exportPackage);
+    }
+
+    if (currentEnv === "DEV" && rootBundleData) {
+      const bundleFileName = schemaName.split(" ")[0] + "_OCA_bundle.json";
+      downloadJsonFile(rootBundleData, bundleFileName);
+    }
+
+    return true;
+  };
+
+  const exportManualPackage = async () => {
+    const pkgFromState = rebuildOcaPackageFromEditorState(ocaPackage);
+    const rootSchemaId = getPackageBundleId(pkgFromState) || currentSchemaId;
+
+    const allSchemaIds = Object.keys(schemaStates);
+    const childSchemaIds = allSchemaIds.filter((id) => id !== rootSchemaId);
+
+    const childBuilds = [];
+    for (const childId of childSchemaIds) {
+      const childState = schemaStates[childId];
+      if (childState?.attributes && childState.attributes.length > 0) {
+        const { bundle: childBundle, extension: childExtension } = await buildPackageFromTextDSL(childId);
+        const said = childBundle?.bundle?.d;
+        if (said) {
+          childBuilds.push({
+            schemaId: childId,
+            bundle: childBundle.bundle,
+            extension: childExtension
+          });
+        }
+      }
+    }
+
+    const { bundle, extension, textDSL } = await buildPackageFromTextDSL(rootSchemaId);
+
+    const mergedExtension = {
+      extensions: {
+        adc: {
+          ...extension.extensions.adc,
+          ...childBuilds.map((b) => b.extension).reduce((acc, childExt) => {
+            if (childExt?.extensions?.adc) {
+              return { ...acc, ...childExt.extensions.adc };
+            }
+            return acc;
+          }, {})
+        }
+      }
+    };
+
+    const saidByReferenceToken = {};
+    setResolvedSaidForSchema(saidByReferenceToken, rootSchemaId, bundle.bundle.d);
+    childBuilds.forEach(({ schemaId, bundle: childBundle }) => {
+      setResolvedSaidForSchema(saidByReferenceToken, schemaId, childBundle.d);
+    });
+
+    const rebuiltRootBundle = getPackageBundle(pkgFromState);
+    const rebuiltDependencies = getPackageDependencies(pkgFromState) || [];
+    seedResolvedAliasTokensFromBundles([rebuiltRootBundle, ...rebuiltDependencies], saidByReferenceToken);
+
+    const resolveManualSaid = createResolveSaid(saidByReferenceToken);
+
+    const finalBundle = deepCloneJson(bundle.bundle);
+    const finalDependencies = childBuilds.map(({ bundle: childBundle }) => deepCloneJson(childBundle));
+    const unresolvedTokens = [];
+    unresolvedTokens.push(...rewriteBundleRefs({ schemaBundle: finalBundle, resolveSaid: resolveManualSaid }));
+    finalDependencies.forEach((dep) => unresolvedTokens.push(...rewriteBundleRefs({ schemaBundle: dep, resolveSaid: resolveManualSaid })));
+
+    throwUnresolvedReferenceError(unresolvedTokens);
+
+    const finalPackage = {
+      bundle: finalBundle,
+      dependencies: finalDependencies
+    };
+
+    const exportedPackageJson = generateOcaPackageJson(mergedExtension, {
+      bundle: finalPackage.bundle,
+      dependencies: finalPackage.dependencies
+    });
+
+    try {
+      if (finalPackage.bundle?.capture_base) {
+        await jsonToTextFile(finalPackage.bundle, exportedPackageJson);
+      }
+    } catch (readmeError) {
+      console.warn("Could not generate README:", readmeError);
+    }
+
+    const rootState = getSchemaById(rootSchemaId);
+    const schemaNameForFile = rootState?.metadata?.name || rootState?.metadata?.localized?.eng?.name || null;
+
+    downloadJsonFile(exportedPackageJson, getDescriptiveFileName(schemaNameForFile, "OCA_package.json"));
+
+    if (currentEnv === "DEV") {
+      downloadTextFile(textDSL, getDescriptiveFileName(schemaNameForFile, "OCA_file.txt"));
+      downloadJsonFile(finalPackage, getDescriptiveFileName(schemaNameForFile, "OCA_bundle.json"));
+    }
+
+    return true;
+  };
+
   // MAIN EXPORT FUNCTION
   const exportData = async () => {
     try {
       setError("");
-
-
-
-      // For imported packages: Build ALL schemas from UI state to get fresh SAID digests
-      // This matches agreeable-mushroom behavior - decompose bundle to UI state,
-      // then rebuild from scratch which naturally generates new SAIDs
       if (ocaPackage) {
-        const bundleIdRemap = {};
-        const originalRootId = getPackageBundleId(ocaPackage);
-        
-        // Check if root is initialized; if not, something is wrong
-        const rootState = getSchemaById(originalRootId);
-        
-        if (!rootState || !rootState.initialized) {
-          console.error("Root schema not initialized:", originalRootId);
-          console.error("Available schemas:", Object.keys(schemaStates));
-          throw new Error(`Root schema ${originalRootId} is not initialized. Please try reloading the schema.`);
-        }
-        
-        const schemaIds = Object.keys(schemaStates).filter(id => {
-          const state = getSchemaById(id);
-          return state?.initialized;
-        });
-        
-        // Verify originalRootId is in the list
-        if (!schemaIds.includes(originalRootId)) {
-          console.error("Root ID not in schemaStates:", originalRootId);
-          console.error("Available:", schemaIds);
-          throw new Error(`Root schema ID mismatch. Expected: ${originalRootId}`);
-        }
-        
-        const pkgRebuilt = rebuildOcaPackageFromEditorState(ocaPackage);
-        const pkgForExport = JSON.parse(JSON.stringify(pkgRebuilt));
-        const rootBundle = getPackageBundle(pkgForExport);
-        const dependencies = getPackageDependencies(pkgForExport) || [];
-        const originalBundleById = {};
-        [rootBundle, ...dependencies].filter(Boolean).forEach((schemaBundle) => {
-          if (schemaBundle?.d) originalBundleById[schemaBundle.d] = schemaBundle;
-        });
-
-        if (!rootBundle) {
-          throw new Error("Could not find root schema in rebuilt package");
-        }
-
-        const adcMerged = {};
-        const apiBundleByOriginalId = {};
-        const materializedSchemaSaidMap = {};
-
-        const mergeExtensionsForBundle = async (schemaBundle) => {
-          const bid = schemaBundle?.d;
-          if (!bid) return;
-          const st = getSchemaById(bid);
-          if (!st?.initialized) return;
-          const result = await buildPackageFromTextDSL(bid);
-
-          const generatedBundle = getPackageBundle(result.bundle);
-          if (generatedBundle?.d) {
-            // materialized: schema state became a concrete API-generated bundle SAID
-            apiBundleByOriginalId[bid] = generatedBundle;
-            bundleIdRemap[bid] = generatedBundle.d;
-            materializedSchemaSaidMap[bid] = generatedBundle.d;
-            materializedSchemaSaidMap[getSchemaMaterializationKey(bid)] = generatedBundle.d;
-          }
-
-          if (result?.extension?.extensions?.[ADC]) {
-            Object.assign(adcMerged, result.extension.extensions[ADC]);
-          }
-        };
-
-        for (const dep of dependencies) {
-          await mergeExtensionsForBundle(dep);
-        }
-        await mergeExtensionsForBundle(rootBundle);
-
-        const mergedExtension = {
-          extensions: {
-            adc: adcMerged
-          }
-        };
-
-        const rewriteRefsForRemappedBundles = (bundleObj, originalBundleId) => {
-          const attrs = bundleObj?.capture_base?.attributes;
-          if (!attrs || typeof attrs !== "object") return;
-
-          const getReferenceToken = (rawValue) => {
-            const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
-            if (typeof value !== "string") return null;
-            if (value.startsWith("refs:") || value.startsWith("refn:")) return value.slice(5);
-            return null;
-          };
-
-          const resolveRemappedSaid = (token) => {
-            // resolve: convert any known ref token (old id/name) to the latest generated SAID
-            if (!token) return null;
-            if (bundleIdRemap[token]) return bundleIdRemap[token];
-            if (materializedSchemaSaidMap[token]) return materializedSchemaSaidMap[token];
-            const byMaterializationKey = materializedSchemaSaidMap[getSchemaMaterializationKey(token)];
-            if (byMaterializationKey) return byMaterializationKey;
-            return null;
-          };
-
-          Object.keys(attrs).forEach((attrName) => {
-            const value = attrs[attrName];
-            if (typeof value === "string" && value.startsWith("refs:")) {
-              const oldId = value.slice(5);
-              // remapped: old reference token now points to regenerated child SAID
-              const remapped = resolveRemappedSaid(oldId);
-              if (remapped) attrs[attrName] = `refs:${remapped}`;
-            } else if (typeof value === "string" && value.startsWith("refn:")) {
-              const targetName = value.slice(5);
-              let remapped = resolveRemappedSaid(targetName);
-              if (!remapped && originalBundleId) {
-                const originalValue = originalBundleById[originalBundleId]?.capture_base?.attributes?.[attrName];
-                remapped = resolveRemappedSaid(getReferenceToken(originalValue));
-              }
-              if (remapped) attrs[attrName] = `refs:${remapped}`;
-            } else if (
-              Array.isArray(value) &&
-              typeof value[0] === "string" &&
-              value[0].startsWith("refs:")
-            ) {
-              const oldId = value[0].slice(5);
-              const remapped = resolveRemappedSaid(oldId);
-              if (remapped) attrs[attrName] = [`refs:${remapped}`];
-            } else if (
-              Array.isArray(value) &&
-              typeof value[0] === "string" &&
-              value[0].startsWith("refn:")
-            ) {
-              const targetName = value[0].slice(5);
-              let remapped = resolveRemappedSaid(targetName);
-              if (!remapped && originalBundleId) {
-                const originalValue = originalBundleById[originalBundleId]?.capture_base?.attributes?.[attrName];
-                remapped = resolveRemappedSaid(getReferenceToken(originalValue));
-              }
-              if (remapped) attrs[attrName] = [`refs:${remapped}`];
-            }
-          });
-        };
-
-        const exportedRootBundle =
-          apiBundleByOriginalId[rootBundle.d] || rootBundle;
-        const exportedDependencies = dependencies.map(
-          (dep) => apiBundleByOriginalId[dep.d] || dep
-        );
-
-        rewriteRefsForRemappedBundles(exportedRootBundle, rootBundle.d);
-        exportedDependencies.forEach((dep, idx) => rewriteRefsForRemappedBundles(dep, dependencies[idx]?.d));
-
-        const bundleWithDeps = {
-          bundle: exportedRootBundle,
-          dependencies: exportedDependencies
-        };
-
-        validateExtension(mergedExtension);
-        // Use OcaPackage library to generate package with correct digests
-        let exportPackage;
-        try {
-          const ocaPackageService = new OcaPackage(mergedExtension, bundleWithDeps);
-          exportPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
-        } catch (e) {
-          console.error('Failed to generate OCA package from extension:', e, mergedExtension);
-          throw new Error(`Failed to parse Extension JSON: ${e.message}`);
-        }
-
-        const rootBundleData = rootBundle;
-        
-        // Extract schema name from meta overlays for filename
-        const metaOverlays = rootBundleData?.overlays?.meta;
-        const engMeta = Array.isArray(metaOverlays) 
-          ? metaOverlays.find(m => m.language === 'eng') || metaOverlays[0]
-          : null;
-        const schemaName = engMeta?.name || getPackageBundleId(rootBundleData) || "schema";
-        
-        // Download OCA_package.json with regenerated digests
-        const packageFileName = schemaName.split(" ")[0] + "_OCA_package.json";
-        downloadJsonFile(exportPackage, packageFileName);
-        
-        // Generate README_OCA_schema.txt (schema name extracted from bundle automatically)
-        if (rootBundleData?.overlays?.meta) {
-          await jsonToTextFile(rootBundleData, exportPackage);
-        }
-        
-        // Download OCA_bundle.json only on testing site
-        if (currentEnv === "DEV" && rootBundleData) {
-          const bundleFileName = schemaName.split(" ")[0] + "_OCA_bundle.json";
-          downloadJsonFile(rootBundleData, bundleFileName);
-        }
-        
-        return true;
+        return await exportImportedPackage();
       }
-
-      // Determine the true root schema id from the package built from current editor state.
-      // This ensures `Finish and Download` exports the full package (root + children)
-      // even when the user is currently editing a child schema.
-      const pkgFromState = rebuildOcaPackageFromEditorState(ocaPackage);
-      const rootSchemaId = getPackageBundleId(pkgFromState) || currentSchemaId;
-
-      const allSchemaIds = Object.keys(schemaStates);
-      const childSchemaIds = allSchemaIds.filter((id) => id !== rootSchemaId);
-
-      // Step 1: Build all child schemas first to get their SAIDs
-      const childBundles = [];
-      const childExtensions = []; // Store child extensions
-
-      for (const childId of childSchemaIds) {
-        const childState = schemaStates[childId];
-        // Only build if the child has attributes (empty schemas become refn: placeholders)
-        if (childState?.attributes && childState.attributes.length > 0) {
-          const { bundle: childBundle, extension: childExtension } = await buildPackageFromTextDSL(childId);
-          const said = childBundle?.bundle?.d;
-          if (said) {
-            childBundles.push(childBundle.bundle);
-            childExtensions.push(childExtension);
-          }
-        }
-      }
-
-      // Step 2: Build root schema (use rootSchemaId, not the currently open editor id)
-      const { bundle, extension, textDSL } = await buildPackageFromTextDSL(rootSchemaId);
-      
-      // Merge all extensions (root + all children)
-      const mergedExtension = {
-        extensions: {
-          adc: {
-            ...extension.extensions.adc, // Root schema extensions
-            // Add all child schema extensions
-            ...childExtensions.reduce((acc, childExt) => {
-              if (childExt?.extensions?.adc) {
-                return { ...acc, ...childExt.extensions.adc };
-              }
-              return acc;
-            }, {})
-          }
-        }
-      };
-      
-      // Create final package with root and dependencies
-      const schemaSaidMap = {};
-      // materialized/remapped map for final rewrite in manual flow
-      schemaSaidMap[getSchemaMaterializationKey(rootSchemaId)] = bundle.bundle.d;
-      childBundles.forEach((childBundle, index) => {
-        const childId = childSchemaIds[index];
-        if (!childBundle?.d || !childId) return;
-        schemaSaidMap[getSchemaMaterializationKey(childId)] = childBundle.d;
-      });
-
-      const rewriteFinalBundleRefs = (bundleObj) => {
-        const attrs = bundleObj?.capture_base?.attributes;
-        if (!attrs || typeof attrs !== "object") return;
-        // rewrite: mutate refn:/old refs: values into refs:<new SAID>
-        Object.keys(attrs).forEach((attrName) => {
-          const value = attrs[attrName];
-          if (typeof value === "string" && value.startsWith("refn:")) {
-            const targetName = value.slice(5);
-            if (schemaSaidMap[targetName]) attrs[attrName] = `refs:${schemaSaidMap[targetName]}`;
-          } else if (typeof value === "string" && value.startsWith("refs:")) {
-            const oldId = value.slice(5);
-            if (bundleIdRemap[oldId]) attrs[attrName] = `refs:${bundleIdRemap[oldId]}`;
-            else if (schemaSaidMap[oldId]) attrs[attrName] = `refs:${schemaSaidMap[oldId]}`;
-          } else if (Array.isArray(value) && typeof value[0] === "string") {
-            if (value[0].startsWith("refn:")) {
-              const targetName = value[0].slice(5);
-              if (schemaSaidMap[targetName]) attrs[attrName] = [`refs:${schemaSaidMap[targetName]}`];
-            } else if (value[0].startsWith("refs:")) {
-              const oldId = value[0].slice(5);
-              if (bundleIdRemap[oldId]) attrs[attrName] = [`refs:${bundleIdRemap[oldId]}`];
-              else if (schemaSaidMap[oldId]) attrs[attrName] = [`refs:${schemaSaidMap[oldId]}`];
-            }
-          }
-        });
-      };
-
-      const finalBundle = JSON.parse(JSON.stringify(bundle.bundle));
-      const finalDependencies = childBundles.map((childBundle) => JSON.parse(JSON.stringify(childBundle)));
-      rewriteFinalBundleRefs(finalBundle);
-      finalDependencies.forEach(rewriteFinalBundleRefs);
-
-      const finalPackage = {
-        bundle: finalBundle,
-        dependencies: finalDependencies
-      };
-      
-      validateExtension(mergedExtension);
-      let exportedPackageJson;
-      try {
-        const ocaPackageService = new OcaPackage(mergedExtension, { bundle: finalPackage.bundle, dependencies: finalPackage.dependencies });
-        exportedPackageJson = JSON.parse(ocaPackageService.GenerateOcaPackage());
-      } catch (e) {
-        console.error('Failed to generate OCA package from extension:', e, mergedExtension);
-        throw new Error(`Failed to parse Extension JSON: ${e.message}`);
-      }
-
-      try {
-        if (finalPackage.bundle?.capture_base) {
-          await jsonToTextFile(finalPackage.bundle, exportedPackageJson);
-        }
-      } catch (readmeError) {
-        console.warn("Could not generate README:", readmeError);
-      }
-
-      const rootState = getSchemaById(rootSchemaId);
-      const schemaNameForFile = rootState?.metadata?.name || rootState?.metadata?.localized?.eng?.name || null;
-
-      downloadJsonFile(exportedPackageJson, getDescriptiveFileName(schemaNameForFile, "OCA_package.json"));
-
-      if (currentEnv === "DEV") {
-        downloadTextFile(textDSL, getDescriptiveFileName(schemaNameForFile, "OCA_file.txt"));
-        downloadJsonFile(finalPackage, getDescriptiveFileName(schemaNameForFile, "OCA_bundle.json"));
-      }
-
-      return true;
+      return await exportManualPackage();
     } catch (error) {
       console.error("Export failed:", error);
       setError(error.message || "Export failed");
