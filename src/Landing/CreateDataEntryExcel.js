@@ -4,9 +4,10 @@ import { langTwoLettersFromName } from "../utils/languageUtils";
 import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson,
-  normalizeEscapedQuotes
+  normalizeEscapedQuotes,
+  prettyPrintDelimiter
 } from "../utils/helpers";
-import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
+import { ADC, RANGE, SENSITIVE, UNIT_FRAMING, DECIMAL_SEPARATOR, FILE_DELIMITER, ARRAY_DELIMITER } from "../constants/constants";
 import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
 
 // Custom error-handling function
@@ -119,6 +120,9 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let rangeOverlay = null;
   let unitFramingOverlay = null;
   let extensionOverlayColumnCount = 0;
+  let decimalSeparatorOverlay = null;
+  let fileDelimiterOverlay = null;
+  let arrayDelimiterOverlay = null;
 
   if (isOcaPackage) {
     const extensions = inPutJsonResult[2];
@@ -141,6 +145,18 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
         if (overlays[overlayKey].type.includes(UNIT_FRAMING)) {
           unitFramingOverlay = overlays[overlayKey];
+        }
+
+        if (overlays[overlayKey].type.includes(DECIMAL_SEPARATOR)) {
+          decimalSeparatorOverlay = overlays[overlayKey];
+        }
+
+        if (overlays[overlayKey].type.includes(FILE_DELIMITER)) {
+          fileDelimiterOverlay = overlays[overlayKey];
+        }
+
+        if (overlays[overlayKey].type.includes(ARRAY_DELIMITER)) {
+          arrayDelimiterOverlay = overlays[overlayKey];
         }
       }
     }
@@ -380,6 +396,30 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   sheet1.getCell(introSectionCurrentRow, 2).value =
     `Schema classification: ${schemaClassification}`;
   introSectionCurrentRow += 2;
+
+  if (decimalSeparatorOverlay || fileDelimiterOverlay) {
+    sheet1.getCell(introSectionCurrentRow, 1).value = "Global Schema Values:";
+    formatFirstPage(sheet1.getCell(introSectionCurrentRow, 1));
+    introSectionCurrentRow++;
+
+    if (decimalSeparatorOverlay) {
+      sheet1.getCell(introSectionCurrentRow, 2).value = `Decimal Separator: '${decimalSeparatorOverlay.delimiter}'`;
+      introSectionCurrentRow++;
+    }
+    
+    if (fileDelimiterOverlay) {
+      sheet1.getCell(introSectionCurrentRow, 2).value = `File Delimiter: '${prettyPrintDelimiter(fileDelimiterOverlay.delimiter)}'`;
+      introSectionCurrentRow++;
+      sheet1.getCell(introSectionCurrentRow, 2).value = `Quote Character: ${fileDelimiterOverlay.quote_char}`;
+      introSectionCurrentRow++;
+      sheet1.getCell(introSectionCurrentRow, 2).value = `Escape Character: '${fileDelimiterOverlay.escape_char}'`;
+      introSectionCurrentRow++;
+      sheet1.getCell(introSectionCurrentRow, 2).value = `Line Terminator: '${fileDelimiterOverlay.line_terminator}'`;
+      introSectionCurrentRow++;
+      sheet1.getCell(introSectionCurrentRow, 2).value = `Data Start Row: '${fileDelimiterOverlay.data_start_row}'`;
+      introSectionCurrentRow++;
+    }
+  }
 
   sheet1.getCell(introSectionCurrentRow, 1).value = "What is a schema?";
   formatFirstPage(sheet1.getCell(introSectionCurrentRow, 1));
@@ -934,6 +974,33 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     } catch (error) {
       throw new WorkbookError(
         ".. Error in formatting range columns (header and rows) ..."
+      );
+    }
+  }
+
+  if (arrayDelimiterOverlay) {
+    const columns = ["Array Delimiter"];
+    const startColumnIndex = jsonData.length + 3 + extensionOverlayColumnCount - skipped;
+    try {
+      columns.forEach((column, i) => {
+        const columnIndex = startColumnIndex + i;
+        const columnHeaderCell = sheet1.getCell(shift + 1, columnIndex);
+        sheet1.getColumn(columnIndex).width = 15;
+        columnHeaderCell.value = column;
+        formatHeader(columnHeaderCell);
+
+        Object.keys(arrayDelimiterOverlay.attributes).forEach((attribute) => {
+          const rowIndex = mappingAttrKeysandAttrValues[attribute];
+          if (!rowIndex) return;
+
+          const valueCell = sheet1.getCell(shift + rowIndex, columnIndex);
+          valueCell.value = arrayDelimiterOverlay.attributes[attribute];
+        });
+        extensionOverlayColumnCount += 1;
+      });
+    } catch (error) {
+      throw new WorkbookError(
+        ".. Error in formatting array delimiter columns (header and rows) ..."
       );
     }
   }
