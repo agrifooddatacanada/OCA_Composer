@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState, useCallback } from "react";
+import { useContext, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
@@ -7,7 +7,6 @@ import { langCodeOCAFromName, langTwoLettersFromName } from "../utils/languageUt
 import {
   getPackageBundle,
   getPackageDependencies,
-  findSchemaById,
   getPackageBundleId,
   getRootCaptureBaseId
 } from "../utils/packageUtils";
@@ -29,7 +28,6 @@ import {
   FIELD_CARDINALITY_OVERLAY,
   RANGE,
   ATTRIBUTE_FRAMING,
-  FORM,
   FIELD_FORM_INFORMATION_OVERLAY,
   overlayItems
 } from "../constants/constants";
@@ -74,7 +72,7 @@ const useOCAExport = () => {
     setCurrentPage
   } = useContext(Context);
 
-  const { getCurrentSchemaId, getSchema, getSchemaById, getAttributesList, rebuildOcaPackageFromEditorState, schemaStates, currentSchemaId: activeSchemaId, clearAllSchemas, ocaPackage, setOcaPackage } = useMultiSchema();
+  const { getCurrentSchemaId, getSchemaById, rebuildOcaPackageFromEditorState, schemaStates, clearAllSchemas, ocaPackage, setOcaPackage } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [error, setError] = useState("");
@@ -130,12 +128,6 @@ const useOCAExport = () => {
     const unitFramedRowData = schemaState?.unitFramedData || [];
     const overlaySelections = schemaState?.overlaySelections || overlay;
     const classificationCode = metadata?.classification || null;
-    
-    // Get original schema from ocaPackage to preserve reference types
-    let originalSchema = null;
-    if (ocaPackage) {
-      originalSchema = findSchemaById(ocaPackage, schemaId);
-    }
     
     // Build schema description for each language
     const schemaDescription = {};
@@ -589,6 +581,39 @@ const useOCAExport = () => {
     return { bundle, extension, textDSL: data };
   };
 
+  const getSchemaMaterializationKey = (schemaId) => {
+    const state = getSchemaById(schemaId);
+    return state?.metadata?.localized?.eng?.name || state?.metadata?.name || schemaId;
+  };
+
+  const validateExtension = (ext) => {
+    if (!ext || typeof ext !== 'object') throw new Error('extension must be an object');
+    const adc = ext.extensions?.adc;
+    if (!adc || typeof adc !== 'object') return;
+    Object.entries(adc).forEach(([schemaKey, overlays]) => {
+      if (!overlays || (typeof overlays !== 'object' && !Array.isArray(overlays))) {
+        throw new Error(`extensions.adc.${schemaKey} must be an object or array`);
+      }
+      const overlayArray = Array.isArray(overlays) ? overlays : [overlays];
+      overlayArray.forEach((ov, idx) => {
+        if (!ov || typeof ov !== 'object') throw new Error(`overlay at extensions.adc.${schemaKey}[${idx}] is not an object`);
+        if (ov.form_overlay) {
+          const fo = ov.form_overlay.form_overlays;
+          if (!Array.isArray(fo)) throw new Error('form_overlay.form_overlays must be an array');
+          fo.forEach((page, pidx) => {
+            if (!page || typeof page !== 'object') throw new Error(`form_overlays[${pidx}] must be an object`);
+            if (page.labels && typeof page.labels === 'object') {
+              Object.entries(page.labels).forEach(([lang, label]) => {
+                if (typeof lang !== 'string') throw new Error('form overlay page label language key is not a string');
+                if (typeof label !== 'string') throw new Error(`form overlay page label for ${lang} must be a string`);
+              });
+            }
+          });
+        }
+      });
+    });
+  };
+
   // MAIN EXPORT FUNCTION
   const exportData = async () => {
     try {
@@ -600,6 +625,7 @@ const useOCAExport = () => {
       // This matches agreeable-mushroom behavior - decompose bundle to UI state,
       // then rebuild from scratch which naturally generates new SAIDs
       if (ocaPackage) {
+        const bundleIdRemap = {};
         const originalRootId = getPackageBundleId(ocaPackage);
         
         // Check if root is initialized; if not, something is wrong
@@ -638,13 +664,7 @@ const useOCAExport = () => {
 
         const adcMerged = {};
         const apiBundleByOriginalId = {};
-        const bundleIdRemap = {};
         const materializedSchemaSaidMap = {};
-
-        const getSchemaMaterializationKey = (schemaId) => {
-          const state = getSchemaById(schemaId);
-          return state?.metadata?.localized?.eng?.name || state?.metadata?.name || schemaId;
-        };
 
         const mergeExtensionsForBundle = async (schemaBundle) => {
           const bid = schemaBundle?.d;
@@ -655,6 +675,7 @@ const useOCAExport = () => {
 
           const generatedBundle = getPackageBundle(result.bundle);
           if (generatedBundle?.d) {
+            // materialized: schema state became a concrete API-generated bundle SAID
             apiBundleByOriginalId[bid] = generatedBundle;
             bundleIdRemap[bid] = generatedBundle.d;
             materializedSchemaSaidMap[bid] = generatedBundle.d;
@@ -689,6 +710,7 @@ const useOCAExport = () => {
           };
 
           const resolveRemappedSaid = (token) => {
+            // resolve: convert any known ref token (old id/name) to the latest generated SAID
             if (!token) return null;
             if (bundleIdRemap[token]) return bundleIdRemap[token];
             if (materializedSchemaSaidMap[token]) return materializedSchemaSaidMap[token];
@@ -701,6 +723,7 @@ const useOCAExport = () => {
             const value = attrs[attrName];
             if (typeof value === "string" && value.startsWith("refs:")) {
               const oldId = value.slice(5);
+              // remapped: old reference token now points to regenerated child SAID
               const remapped = resolveRemappedSaid(oldId);
               if (remapped) attrs[attrName] = `refs:${remapped}`;
             } else if (typeof value === "string" && value.startsWith("refn:")) {
@@ -747,35 +770,6 @@ const useOCAExport = () => {
         const bundleWithDeps = {
           bundle: exportedRootBundle,
           dependencies: exportedDependencies
-        };
-
-        // Validate mergedExtension before handing to OcaPackage (catch malformed overlays early)
-        const validateExtension = (ext) => {
-          if (!ext || typeof ext !== 'object') throw new Error('extension must be an object');
-          const adc = ext.extensions?.adc;
-          if (!adc || typeof adc !== 'object') return; // nothing to validate
-          Object.entries(adc).forEach(([schemaKey, overlays]) => {
-            if (!overlays || (typeof overlays !== 'object' && !Array.isArray(overlays))) {
-              throw new Error(`extensions.adc.${schemaKey} must be an object or array`);
-            }
-            const overlayArray = Array.isArray(overlays) ? overlays : [overlays];
-            overlayArray.forEach((ov, idx) => {
-              if (!ov || typeof ov !== 'object') throw new Error(`overlay at extensions.adc.${schemaKey}[${idx}] is not an object`);
-              if (ov.form_overlay) {
-                const fo = ov.form_overlay.form_overlays || ov.form_overlay.form_overlays;
-                if (!Array.isArray(fo)) throw new Error('form_overlay.form_overlays must be an array');
-                fo.forEach((page, pidx) => {
-                  if (!page || typeof page !== 'object') throw new Error(`form_overlays[${pidx}] must be an object`);
-                  if (page.labels && typeof page.labels === 'object') {
-                    Object.entries(page.labels).forEach(([lang, label]) => {
-                      if (typeof lang !== 'string') throw new Error('form overlay page label language key is not a string');
-                      if (typeof label !== 'string') throw new Error(`form overlay page label for ${lang} must be a string`);
-                    });
-                  }
-                });
-              }
-            });
-          });
         };
 
         validateExtension(mergedExtension);
@@ -863,6 +857,7 @@ const useOCAExport = () => {
       
       // Create final package with root and dependencies
       const schemaSaidMap = {};
+      // materialized/remapped map for final rewrite in manual flow
       schemaSaidMap[getSchemaMaterializationKey(rootSchemaId)] = bundle.bundle.d;
       childBundles.forEach((childBundle, index) => {
         const childId = childSchemaIds[index];
@@ -873,6 +868,7 @@ const useOCAExport = () => {
       const rewriteFinalBundleRefs = (bundleObj) => {
         const attrs = bundleObj?.capture_base?.attributes;
         if (!attrs || typeof attrs !== "object") return;
+        // rewrite: mutate refn:/old refs: values into refs:<new SAID>
         Object.keys(attrs).forEach((attrName) => {
           const value = attrs[attrName];
           if (typeof value === "string" && value.startsWith("refn:")) {
@@ -905,35 +901,6 @@ const useOCAExport = () => {
         dependencies: finalDependencies
       };
       
-      // Merge extensions into the final package
-      const validateExtension = (ext) => {
-        if (!ext || typeof ext !== 'object') throw new Error('extension must be an object');
-        const adc = ext.extensions?.adc;
-        if (!adc || typeof adc !== 'object') return; // nothing to validate
-        Object.entries(adc).forEach(([schemaKey, overlays]) => {
-          if (!overlays || (typeof overlays !== 'object' && !Array.isArray(overlays))) {
-            throw new Error(`extensions.adc.${schemaKey} must be an object or array`);
-          }
-          const overlayArray = Array.isArray(overlays) ? overlays : [overlays];
-          overlayArray.forEach((ov, idx) => {
-            if (!ov || typeof ov !== 'object') throw new Error(`overlay at extensions.adc.${schemaKey}[${idx}] is not an object`);
-            if (ov.form_overlay) {
-              const fo = ov.form_overlay.form_overlays || ov.form_overlay.form_overlays;
-              if (!Array.isArray(fo)) throw new Error('form_overlay.form_overlays must be an array');
-              fo.forEach((page, pidx) => {
-                if (!page || typeof page !== 'object') throw new Error(`form_overlays[${pidx}] must be an object`);
-                if (page.labels && typeof page.labels === 'object') {
-                  Object.entries(page.labels).forEach(([lang, label]) => {
-                    if (typeof lang !== 'string') throw new Error('form overlay page label language key is not a string');
-                    if (typeof label !== 'string') throw new Error(`form overlay page label for ${lang} must be a string`);
-                  });
-                }
-              });
-            }
-          });
-        });
-      };
-
       validateExtension(mergedExtension);
       let exportedPackageJson;
       try {
