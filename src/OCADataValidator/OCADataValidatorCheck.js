@@ -8,12 +8,12 @@ import React, {
   useState
 } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "../components/AgGridReact";
 import { Box, Button, Drawer, IconButton, Typography } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { AgGridReact } from "../components/AgGridReact";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import "../App.css";
 import { Context } from "../App";
@@ -51,6 +51,7 @@ import AutoCompleteEditor from "../components/AutoCompleteEditor";
 import CustomTooltip from "./CustomTooltip";
 import { LanguageConstants } from "../utils/languageUtils";
 import EntryCodeDropdownSelector from "./EntryCodeDropdownSelector";
+import { getFormatPatternForDecimalSeparator } from "./utils/decimalFormatPattern";
 
 export const TrashCanButton = memo((props) => {
   const onClick = useCallback(() => {
@@ -98,6 +99,8 @@ const flaggedHeader = (
   lang,
   ocaPackage = null
 ) => {
+  const { getSchema } = useMultiSchema();
+  const schemaState = getSchema();
   const labelDescription = lanAttributeRowData[lang];
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
   const formatRule = formatRuleRowData.find(
@@ -105,6 +108,12 @@ const flaggedHeader = (
   );
   const formatRegex = formatRule?.[CUSTOM_FORMAT_RULE] || formatRule?.FormatText || "";
   const attributeType = formatRule?.Type;
+  const decimalSeparator = schemaState?.decimalSeparator || ".";
+  const displayFormatRegex = 
+    attributeType?.includes("Numeric") && formatRegex 
+    ? getFormatPatternForDecimalSeparator(formatRegex, decimalSeparator) 
+    : formatRegex;
+
   let selectedOption = [];
   if (attributeType?.includes("Date")) {
     selectedOption = formatCodeDateDescription;
@@ -183,7 +192,7 @@ const flaggedHeader = (
                       >
                         - RegEx:{" "}
                       </span>{" "}
-                      {formatRegex}
+                      {displayFormatRegex}
                     </Typography>
                     <Typography>
                       {formatRegex in selectedOption && (
@@ -362,7 +371,6 @@ const OCADataValidatorCheck = ({
   const schemaDescription = schemaState?.metadata?.localized || {};
 
   const { t } = useTranslation();
-  const { currentTheme } = useContext(Context);
   const primaryColor = usePrimaryColor();
   const fontFamily = useFontFamily();
 
@@ -649,7 +657,7 @@ const OCADataValidatorCheck = ({
       }
     });
 
-    const validate = bundle.validate(prepareInput);
+    const validate = bundle.validate(prepareInput, schemaState?.decimalSeparator || ".");
 
     // Update `rowData` with validation results
     const updatedRowData = newData.map((data, index) => ({
