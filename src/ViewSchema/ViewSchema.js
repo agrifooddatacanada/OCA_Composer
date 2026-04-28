@@ -717,17 +717,13 @@ export default function ViewSchema({
                   textAlign: "center"
                 }}
                 disabled={exportDisabled}
-                title={(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage)
-                  ? t("Complete all required fields across the package to enable download", { defaultValue: "Complete all required fields across the package to enable download" })
-                  : ""}
               >
                 {t("Download", { defaultValue: "Download" })}
               </Button>
               <Tooltip
                 title={
                   <span>
-                    {t("For future editing, download your schema as-is and later upload it to the Semantic Engine.")}{" "}
-                    ({t("This is the")} <em>.json</em> {t("file. The")} <em>.txt</em> {t("file is a human-friendly description of your schema.")})
+                    {t("For future editing, download your schema as-is and later upload it to the Semantic Engine.")}
                   </span>
                 }
                 placement="bottom"
@@ -737,6 +733,13 @@ export default function ViewSchema({
                   <HelpOutlineIcon sx={{ fontSize: 15, color: CustomPalette.GREY_600 }} />
                 </Box>
               </Tooltip>
+              <Box sx={{ position: "absolute", top: "100%", right: 0, mt: 0.5, fontSize: "0.7rem", color: CustomPalette.GREY_600, lineHeight: 1.4, whiteSpace: "nowrap" }}>
+                <Box sx={{ textAlign: "right" }}>
+                  {t("1) Schema in", { defaultValue: "1) Schema in" })} .txt {t("format, readable and archivable.", { defaultValue: "format, readable and archivable." })}<br />
+                  {t("2) Schema in", { defaultValue: "2) Schema in" })} .json {t("format. Can be used by computers including", { defaultValue: "format. Can be used by computers including" })}<br />
+                  {t("tools on the Semantic Engine.", { defaultValue: "tools on the Semantic Engine." })}
+                </Box>
+              </Box>
             </Box>
           )}
 
