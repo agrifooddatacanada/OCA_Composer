@@ -100,6 +100,7 @@
   "Write column (attribute) names manually or drag and drop an existing dataset (Excel or .csv file) to import names. The first row must contain the column headers.": "Saisissez les noms de colonnes (attributs) manuellement ou effectuez un glisser-déposer d'un jeu de données existant (fichier Excel ou .csv) pour importer les noms. La première ligne doit contenir les en-têtes de colonnes.",
   "Help with this page": "Aide avec cette page",
   "Page Help": "Aide de la page",
+  "Help": "AIDE",
   "Attribute": "Attribut",
   "Select the formatting rule that applies to data for each attribute": "Sélectionnez la règle de formatage qui s'applique aux données pour chaque attribut.",
   "Dropdowns are available for types Text, Numeric, DateTime, Binary, and Arrays of those types": "Des listes déroulantes sont disponibles pour les types Texte, Numérique, DateTime, Binaire et les tableaux de ces types.",

@@ -17,7 +17,6 @@ import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
 import {
-  getPrioritizedLangNames,
   getBestLangName,
   langCodeOCAFromName,
   LanguageConstants
@@ -92,9 +91,7 @@ export default function ViewSchema({
   const schemaState = getSchema();
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
 
-  const filteredLanguages = React.useMemo(() => {
-    return getPrioritizedLangNames(languages);
-  }, [languages]);
+  const filteredLanguages = React.useMemo(() => [...languages], [languages]);
 
   // Schema language state - defaults to null (use i18n), can be overridden by schema buttons
   const [schemaLanguageOverride, setSchemaLanguageOverride] = useState(null);

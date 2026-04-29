@@ -12,7 +12,6 @@ import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import Loading from "../components/Loading";
 import { useMultiSchema } from "../schema/schemaContext";
 import { 
-  getPrioritizedLangNames, 
   langCodeOCAFromName,
   LanguageConstants
 } from "../utils/languageUtils";
@@ -40,9 +39,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const attributesWithLists = schemaState?.attributesWithLists || [];
 
-  const filteredLanguages = useMemo(() => {
-    return getPrioritizedLangNames(languages);
-  }, [languages]);
+  const filteredLanguages = useMemo(() => [...languages], [languages]);
 
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
   

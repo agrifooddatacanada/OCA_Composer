@@ -123,6 +123,7 @@
   "Write column names or drag and drop an existing dataset (Excel or .csv file) to import names (the first row must contain the column headers). You can edit these later.": "Write column names or drag and drop an existing dataset (Excel or .csv file) to import names (the first row must contain the column headers). You can edit these later.",
   "Help with this page": "Help with this page",
   "Page Help": "Page Help",
+  "Help": "HELP",
   "Schema Metadata": "Schema Metadata",
   "Attribute Details": "Attribute Details",
   "Attribute Details for": "Attribute Details for",

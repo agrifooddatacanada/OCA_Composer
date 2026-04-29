@@ -91,14 +91,7 @@ const FormInformation = () => {
     initializationRef.current = false;
   }, [currentSchemaId]);
 
-  const languageIndex = languages.findIndex(
-    (item) => langNameFromTwoLetters(i18next.language) === item
-  );
-  const filteredLanguages = [...languages];
-  if (languageIndex !== -1 && languageIndex !== 0) {
-    const removedLanguage = filteredLanguages.splice(languageIndex, 1);
-    filteredLanguages.unshift(removedLanguage[0]);
-  }
+  const filteredLanguages = useMemo(() => [...languages], [languages]);
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
   
   // Update currentLanguage when languages array changes

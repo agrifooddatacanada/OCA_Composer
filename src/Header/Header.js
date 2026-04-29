@@ -250,7 +250,7 @@ export default function Header({ currentPage }) {
             {!location.pathname.includes("_help") && helpLink !== "" && (
               <Button
                 color="button"
-                variant="contained"
+                variant="outlined"
                 target="_blank"
                 sx={{
                   my: 2,
@@ -262,7 +262,7 @@ export default function Header({ currentPage }) {
                   window.open(`${helpLink}`, "_blank", "rel=noopener noreferrer")
                 }
               >
-                {t("Page Help")}
+                {t("Help", { defaultValue: "HELP" })}
               </Button>
             )}
             <div>
