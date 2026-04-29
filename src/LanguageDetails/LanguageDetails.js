@@ -290,7 +290,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
           sx={{
             position: "relative",
             display: "flex",
-            flexDirection: "column-reverse",
+            flexDirection: "column",
             alignItems: "flex-start",
             mb: 2,
             gap: 1

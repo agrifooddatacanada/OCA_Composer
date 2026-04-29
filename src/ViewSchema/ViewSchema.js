@@ -785,7 +785,7 @@ export default function ViewSchema({
         sx={{
           position: "relative",
           display: "flex",
-          flexDirection: "column-reverse",
+          flexDirection: "column",
           alignItems: "flex-start",
           mb: `${HEADER_TO_CONTENT_GAP_PX}px`,
           width: "70rem"
