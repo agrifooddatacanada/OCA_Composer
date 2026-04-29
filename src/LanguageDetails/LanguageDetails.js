@@ -251,16 +251,13 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
   );
 
   const handleCopy = () => {
-    // In lanAttributeRowData, I want to iteratively go through each language and copy the Atrribute value to the Label value
-    const languages = Object.keys(lanAttributeRowData);
     const newLanAttributeRowData = JSON.parse(JSON.stringify(lanAttributeRowData));
-    for (const lang of languages) {
-      newLanAttributeRowData[lang].forEach((item) => {
+    if (newLanAttributeRowData[currentLanguage]) {
+      newLanAttributeRowData[currentLanguage].forEach((item) => {
         item.Label = item.Attribute;
       });
     }
     
-    // Update schema state with the modified data
     updateSchema({
       lanAttributeRowData: newLanAttributeRowData
     });
