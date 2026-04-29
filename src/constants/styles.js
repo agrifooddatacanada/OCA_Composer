@@ -12,6 +12,8 @@ export const agGridEditableCellHoverCss = `
 }
 `;
 
+export const AG_GRID_DROPDOWN_CELL_CLASS = "ag-grid-dropdown-cell";
+
 export const preWrapWordBreak = {
   whiteSpace: "pre-wrap",
   wordBreak: "break-word"
@@ -274,6 +276,11 @@ export const gridStyles = `
   width: 13px;
   height: 13px;
   margin: 0;
+}
+.ag-theme-balham .ag-cell.${AG_GRID_DROPDOWN_CELL_CLASS}.ag-cell-focus:not(.ag-cell-range-selected):focus-within,
+.ag-theme-balham .ag-context-menu-open .ag-cell.${AG_GRID_DROPDOWN_CELL_CLASS}.ag-cell-focus:not(.ag-cell-range-selected) {
+  border-color: transparent !important;
+  border-right-color: var(--ag-border-color, #bdc3c7) !important;
 }
 ${agGridEditableCellHoverCss}
 `;

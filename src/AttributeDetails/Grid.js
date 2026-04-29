@@ -9,7 +9,12 @@ import TypeTooltip from "./TypeTooltip";
 import CellHeader from "../components/CellHeader";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import { measureTextHeight } from "../utils/measureTextLines";
-import { flexCenter, gridStyles, preWrapWordBreak } from "../constants/styles";
+import {
+  AG_GRID_DROPDOWN_CELL_CLASS,
+  flexCenter,
+  gridStyles,
+  preWrapWordBreak
+} from "../constants/styles";
 import CheckboxRenderer from "./CheckboxRenderer";
 import FlaggedHeader from "./FlaggedHeader";
 import ListHeader from "./ListHeader";
@@ -342,6 +347,7 @@ export default function Grid({
           headerText: t("Type"),
           helpText: <TypeTooltip />
         },
+        cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
         cellRenderer: TypeRenderer,
         cellRendererParams: (params) => ({
           data: params.data,

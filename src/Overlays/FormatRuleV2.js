@@ -10,7 +10,12 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import CellHeader from "../components/CellHeader";
 import TextareaCellEditor from "../components/TextareaCellEditor";
-import { gridStyles, preWrapWordBreak, greyCellStyle } from "../constants/styles";
+import {
+  AG_GRID_DROPDOWN_CELL_CLASS,
+  gridStyles,
+  preWrapWordBreak,
+  greyCellStyle
+} from "../constants/styles";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { FormatRuleTypeRenderer } from "./FormatRuleCellRender";
 import Loading from "../components/Loading";
@@ -305,6 +310,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
 
           return hasDropdown && !hasCustom ? allowOverflowStyle : greyCellStyle;
         },
+        cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
         cellRenderer: FormatRuleTypeRenderer,
         width: 260,
         cellRendererParams: () => ({

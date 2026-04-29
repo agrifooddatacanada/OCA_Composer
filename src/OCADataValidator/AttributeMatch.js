@@ -7,7 +7,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { Context } from "../App";
 import Languages from "./Languages";
-import { greyCellStyle, gridStyles } from "../constants/styles";
+import { greyCellStyle, gridStyles, AG_GRID_DROPDOWN_CELL_CLASS } from "../constants/styles";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -296,6 +296,7 @@ const AttributeMatch = () => {
           {
             headerName: t("Dataset"),
             field: "Dataset",
+            cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
             cellRendererFramework: DataHeaderRenderer,
             cellRendererParams: (params) => ({
               dataHeaders: ogSchemaDataConformantHeaderRef.current,

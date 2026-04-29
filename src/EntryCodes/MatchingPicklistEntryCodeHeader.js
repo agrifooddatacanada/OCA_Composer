@@ -12,6 +12,7 @@ import { AgGridReact } from "../components/AgGridReact";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
 import {
+  AG_GRID_DROPDOWN_CELL_CLASS,
   gridStyles,
   greyCellStyle,
   matchingEntryCodeGridStyles,
@@ -94,7 +95,7 @@ export default function MatchingPicklistEntryCodeHeader() {
         field: "matchingDataHeader",
         width: 240,
         suppressSizeToFit: true,
-        cellClass: "matching-entry-code-data-header-cell",
+        cellClass: `matching-entry-code-data-header-cell ${AG_GRID_DROPDOWN_CELL_CLASS}`,
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
           dataHeaders: ["", ...codeColumnOptions],

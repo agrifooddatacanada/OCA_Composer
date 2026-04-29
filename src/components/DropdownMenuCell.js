@@ -45,9 +45,15 @@ export const DropdownMenuList = ({
         value={type || ""}
         label="Type"
         onChange={handleChange}
+        disableUnderline
         sx={{
           height: "100%",
           fontSize: "small",
+          "&::before, &::after": { display: "none" },
+          "& .MuiSelect-select": {
+            backgroundColor: "transparent !important",
+            background: "none !important"
+          },
           ...(stretchInCell
             ? {
                 width: "100%",

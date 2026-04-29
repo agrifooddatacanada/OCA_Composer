@@ -11,7 +11,8 @@ import {
   matchingEntryCodeGridStyles,
   matchingEntryCodePageBoxSx,
   matchingEntryCodeMenuItemSx,
-  matchingEntryCodeSelectHostBoxSx
+  matchingEntryCodeSelectHostBoxSx,
+  AG_GRID_DROPDOWN_CELL_CLASS
 } from '../constants/styles';
 import { AgGridReact } from '../components/AgGridReact';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
@@ -225,7 +226,7 @@ const MatchingEntryCodeHeader = () => {
         field: 'matchingDataHeader',
         width: 240,
         suppressSizeToFit: true,
-        cellClass: 'matching-entry-code-data-header-cell',
+        cellClass: `matching-entry-code-data-header-cell ${AG_GRID_DROPDOWN_CELL_CLASS}`,
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
           dataHeaders: ['', ...entryCodeHeaders],

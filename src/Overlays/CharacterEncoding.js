@@ -11,7 +11,11 @@ import useCharacterEncodingType, {
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING, AG_GRID_VIRTUALIZE_MIN_ROWS } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
-import { gridStyles, greyCellStyle } from "../constants/styles";
+import {
+  AG_GRID_DROPDOWN_CELL_CLASS,
+  gridStyles,
+  greyCellStyle
+} from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
@@ -111,6 +115,7 @@ const CharacterEncoding = () => {
           helpText:
             "Character encoding of the data for each attribute. Sometimes data is encoded in a specific character encoding which can be recorded here."
         },
+        cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
         cellRenderer: CharacterEncodingTypeRenderer,
         cellRendererParams: (params) => ({
           attr: params.data.Attribute
