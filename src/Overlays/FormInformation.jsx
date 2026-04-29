@@ -27,6 +27,7 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { useOverlayGridOnGridReady } from "./gridUtils";
+import usePrimaryColor from "../hooks/usePrimaryColor";
 
 import "ag-grid-community/styles/ag-theme-balham.css";
 
@@ -54,6 +55,7 @@ const PLACEHOLDER_EDITABLE_TYPES = ["Text", "Array[Text]", "DateTime", "Array[Da
 
 const FormInformation = () => {
   const { t, i18n } = useTranslation();
+  const primaryColor = usePrimaryColor();
   const { setCurrentPage } = useContext(Context);
 
   const {
@@ -404,7 +406,7 @@ const FormInformation = () => {
         display: "flex",
         flexWrap: "wrap",
         alignItems: "flex-end",
-        alignSelf: languages.length < 6 ? "flex-start" : "flex-end",
+        alignSelf: "flex-start",
         borderBottom: `1px solid ${CustomPalette.GREY_300}`
       }}
     >
@@ -708,7 +710,7 @@ const FormInformation = () => {
       )}
       <Box sx={{ margin: "2rem", marginTop: "0.5rem", marginBottom: BETWEEN_SECTION_SPACING }}>
         <Box sx={{ mb: 1 }}>
-          <Typography variant="h4" sx={{ fontWeight: "bold", color: CustomPalette.GREY_800, textAlign: "center", mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: "bold", color: primaryColor, textAlign: "center", mb: 4 }}>
             {t("Placeholder Editor")}
           </Typography>
         </Box>
@@ -717,7 +719,7 @@ const FormInformation = () => {
             position: "relative",
             display: "flex",
             flexDirection: "column-reverse",
-            alignItems: languages.length < 6 ? "flex-start" : "flex-end",
+            alignItems: "flex-start",
             mb: 2,
             gap: 1
           }}
