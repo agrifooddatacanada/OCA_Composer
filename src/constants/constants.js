@@ -318,17 +318,17 @@ export const parseClassificationCode = (classificationCode) => {
     return null;
   }
 
-  // Check if it's a group code or division code
-  const division = codeToDivision[rdfCode];
   const group = codeToGroup[rdfCode];
-
-  if (group && division) {
-    // It's a group code - return both
-    return { division, group };
+  if (group) {
+    let divisionCode = rdfCode.substring(0, 5);
+    if (divisionCode === "RDF20" || divisionCode === "RDF21") {
+      divisionCode = "RDF20-21";
+    }
+    return { division: codeToDivision[divisionCode] || "", group };
   }
 
+  const division = codeToDivision[rdfCode];
   if (division) {
-    // It's a division code only - return division with empty group
     return { division, group: "" };
   }
 
