@@ -395,63 +395,86 @@ const FormInformation = () => {
 
   const FORM_INFO_GRID_WIDTH = 1003;
 
-  const languageStrip = (
-    <Box
-      sx={{
-        width: FORM_INFO_GRID_WIDTH,
-        maxWidth: "100%",
-        display: "flex",
-        flexWrap: "wrap",
-        alignItems: "flex-end",
-        alignSelf: "flex-start",
-        borderBottom: `1px solid ${CustomPalette.GREY_300}`,
-        boxSizing: "border-box"
-      }}
-    >
-      {filteredLanguages.map((language) => {
-        const selected = currentLanguage === language;
-        return (
-          <Button
-            key={language}
-            onClick={() => {
-              handleSave();
-              setCurrentLanguage(language);
-            }}
-            variant="text"
-            color="inherit"
-            sx={{
-              textTransform: "none",
-              fontWeight: 400,
-              borderRadius: 0,
-              px: 2,
-              py: 1.25,
-              flex: "1 1 0",
-              minWidth: 0,
-              maxWidth: { xs: "100%", sm: "none" },
-              color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
-              bgcolor: "transparent",
-              boxShadow: "none",
-              borderBottom: "2px solid",
-              borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
-              mb: "-1px",
-              "&:hover": {
-                bgcolor: "rgba(0, 0, 0, 0.04)",
-                color: CustomPalette.BLACK
-              }
-            }}
-          >
-            <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
-              {t(language, { defaultValue: language })}
-            </Typography>
-          </Button>
-        );
-      })}
-    </Box>
-  );
-
   const handleSave = useCallback(() => {
     if (gridRef.current?.api) gridRef.current.api.stopEditing();
   }, []);
+
+  const languageLanguageTabWidth =
+    filteredLanguages.length < 5 ? "12rem" : "8.335rem";
+  const languageDisplayChunks = useMemo(() => {
+    const rows = [];
+    for (let i = 0; i < filteredLanguages.length; i += 6) {
+      rows.push(filteredLanguages.slice(i, i + 6).filter(Boolean));
+    }
+    return rows;
+  }, [filteredLanguages]);
+
+  const languageStrip = (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 1,
+        width: FORM_INFO_GRID_WIDTH,
+        maxWidth: "100%",
+        boxSizing: "border-box"
+      }}
+    >
+      {languageDisplayChunks.map((segment) => (
+        <Box
+          key={segment.join("-")}
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            alignSelf: "flex-start",
+            borderBottom: `1px solid ${CustomPalette.GREY_300}`,
+            boxSizing: "border-box"
+          }}
+        >
+          {segment.map((language) => {
+            const selected = currentLanguage === language;
+            return (
+              <Button
+                key={language}
+                onClick={() => {
+                  handleSave();
+                  setCurrentLanguage(language);
+                }}
+                variant="text"
+                color="inherit"
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 400,
+                  borderRadius: 0,
+                  px: 2,
+                  py: 1.25,
+                  width: languageLanguageTabWidth,
+                  minWidth: languageLanguageTabWidth,
+                  maxWidth: { xs: "100%", sm: "none" },
+                  color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+                  bgcolor: "transparent",
+                  boxShadow: "none",
+                  borderBottom: "2px solid",
+                  borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+                  mb: "-1px",
+                  "&:hover": {
+                    bgcolor: "rgba(0, 0, 0, 0.04)",
+                    color: CustomPalette.BLACK
+                  }
+                }}
+              >
+                <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
+                  {t(language, { defaultValue: language })}
+                </Typography>
+              </Button>
+            );
+          })}
+        </Box>
+      ))}
+    </Box>
+  );
 
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 

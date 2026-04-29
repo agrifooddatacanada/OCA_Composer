@@ -4,7 +4,7 @@ import { AgGridReact } from "../components/AgGridReact";
 import { Box } from "@mui/material";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
-import { greyCellStyle } from "../constants/styles";
+import { agGridEditableCellHoverCss, greyCellStyle } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
@@ -34,7 +34,7 @@ import {
 } from "../constants/constants";
 import SelectedFeatureHeader from "./SelectedFeatureHeader";
 
-const gridStyles = `
+const viewGridStyles = `
 .ag-cell {
   line-height: 1.25 !important;
   padding: 0 6px !important;
@@ -586,7 +586,7 @@ export default function ViewGrid({
       className={`view-schema-grid ag-theme-balham${viewSchemaGridFixedViewport ? "" : " ag-grid-compact"}`}
       style={{ width: "100%" }}
     >
-      <style>{gridStyles}</style>
+      <style>{`${viewGridStyles}${agGridEditableCellHoverCss}`}</style>
       <style>{`
 .view-schema-grid.ag-theme-balham {
   ${viewSchemaGridFixedViewport ? "height: min(70vh, 560px);" : ""}

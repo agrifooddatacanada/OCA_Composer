@@ -21,7 +21,7 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import { hasDisallowedChars } from "../utils/helpers";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import { measureTextHeight } from "../utils/measureTextLines";
-import { flexCenter, preWrapWordBreak } from "../constants/styles";
+import { flexCenter, preWrapWordBreak, agGridEditableCellHoverCss } from "../constants/styles";
 import { TABLE_TO_BUTTON_GAP, BETWEEN_SECTION_SPACING } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 
@@ -585,7 +585,7 @@ export default function CreateManually() {
           <Box sx={{ width: 565 }}>
             <Box style={{ display: "flex" }}>
               <Box className="create-schema-grid ag-theme-balham" style={{ width: 565, overflowX: "hidden" }} ref={refContainer}>
-            <style>{gridStyle}</style>
+            <style>{`${gridStyle}${agGridEditableCellHoverCss}`}</style>
             <AgGridReact
               ref={gridRef}
               rowData={rowData}

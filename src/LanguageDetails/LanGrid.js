@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { AgGridReact } from "../components/AgGridReact";
 import { useMultiSchema } from "../schema/schemaContext";
 import CellHeader from "../components/CellHeader";
-import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
+import { agGridEditableCellHoverCss, greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import {
@@ -354,6 +354,8 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
               : ""
           }
           .lan-grid.ag-theme-balham {
+            --ag-row-hover-color: transparent;
+            --ag-column-hover-color: transparent;
             ${
               lanGridFixedViewport
                 ? "height: min(70vh, 560px); min-height: 120px;"
@@ -410,6 +412,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
             width: 100%;
           }
         `}
+        {agGridEditableCellHoverCss}
       </style>
       <AgGridReact
         key={`${i18n.language}-${lanGridFixedViewport ? "fx" : "ah"}`}
@@ -426,6 +429,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         onGridReady={onGridReady}
         getRowHeight={getRowHeight}
         suppressHorizontalScroll
+        suppressRowHoverHighlight
         getRowId={(params) => params.data.Attribute}
         immutableData={true}
         overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}

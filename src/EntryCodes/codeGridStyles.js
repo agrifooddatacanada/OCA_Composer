@@ -6,6 +6,7 @@ export const codeGridStyle = `
     --ag-secondary-border-color: ${CustomPalette.GREY_300};
     --ag-row-border-color: transparent;
     --ag-header-background-color: #fff;
+    --ag-row-hover-color: transparent;
     --ag-borders: none;
     --ag-borders-critical: none;
     --ag-borders-secondary: none;
@@ -135,9 +136,6 @@ export const codeGridStyle = `
   }
   .entry-codes-grid .ag-row:hover .delete-icon-solid {
     display: block;
-  }
-  .entry-codes-grid .ag-row:hover .ag-cell {
-    background-color: ${CustomPalette.PINK_200} !important;
   }
   .entry-codes-grid .ag-cell-value {
     display: flex;

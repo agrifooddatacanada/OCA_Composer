@@ -22,7 +22,7 @@ import {
   ENTRY_CODE_DELETE_WIDTH,
   AG_GRID_VIRTUALIZE_MIN_ROWS
 } from "../constants/constants";
-import { preWrapWordBreak, flexCenter } from "../constants/styles";
+import { agGridEditableCellHoverCss, flexCenter, preWrapWordBreak } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import { LanguageConstants, langCodeOCAFromName } from "../utils/languageUtils";
@@ -415,7 +415,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
             flexDirection: gridFixedHeightMode ? "column" : undefined
           }}
         >
-        <style>{codeGridStyle}</style>
+        <style>{`${codeGridStyle}${agGridEditableCellHoverCss}`}</style>
         <div
           ref={refContainer}
           style={{

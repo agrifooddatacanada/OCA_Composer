@@ -109,60 +109,84 @@ export default function ViewSchema({
 
   const VIEW_SCHEMA_LANGUAGE_STRIP_WIDTH = "70rem";
 
+  const viewSchemaLanguageTabWidth =
+    filteredLanguages.length < 5 ? "12rem" : "8.335rem";
+  const viewSchemaLanguageChunks = useMemo(() => {
+    const rows = [];
+    for (let i = 0; i < filteredLanguages.length; i += 6) {
+      rows.push(filteredLanguages.slice(i, i + 6).filter(Boolean));
+    }
+    return rows;
+  }, [filteredLanguages]);
+
   const languageStrip = (
     <Box
       sx={{
         width: VIEW_SCHEMA_LANGUAGE_STRIP_WIDTH,
         maxWidth: "100%",
         display: "flex",
-        flexWrap: "wrap",
-        alignItems: "flex-end",
-        borderBottom: `1px solid ${CustomPalette.GREY_300}`,
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 1,
         boxSizing: "border-box"
       }}
     >
-      {filteredLanguages.map((language) => {
-        const selected = getCurrentLanguage() === language;
-        let minimizedLanguage = language.slice(0, 9);
-        if (minimizedLanguage !== language) {
-          minimizedLanguage += "...";
-        }
-        return (
-          <Button
-            key={language}
-            onClick={() => {
-              setSchemaLanguageOverride(language);
-              setVizVersion((v) => v + 1);
-            }}
-            variant="text"
-            color="inherit"
-            sx={{
-              textTransform: "none",
-              fontWeight: 400,
-              borderRadius: 0,
-              px: 2,
-              py: 1.25,
-              flex: "1 1 0",
-              minWidth: 0,
-              maxWidth: { xs: "100%", sm: "none" },
-              color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
-              bgcolor: "transparent",
-              boxShadow: "none",
-              borderBottom: "2px solid",
-              borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
-              mb: "-1px",
-              "&:hover": {
-                bgcolor: "rgba(0, 0, 0, 0.04)",
-                color: CustomPalette.BLACK
-              }
-            }}
-          >
-            <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
-              {t(minimizedLanguage, { defaultValue: minimizedLanguage })}
-            </Typography>
-          </Button>
-        );
-      })}
+      {viewSchemaLanguageChunks.map((segment) => (
+        <Box
+          key={segment.join("-")}
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            alignSelf: "flex-start",
+            borderBottom: `1px solid ${CustomPalette.GREY_300}`,
+            boxSizing: "border-box"
+          }}
+        >
+          {segment.map((language) => {
+            const selected = getCurrentLanguage() === language;
+            let minimizedLanguage = language.slice(0, 9);
+            if (minimizedLanguage !== language) {
+              minimizedLanguage += "...";
+            }
+            return (
+              <Button
+                key={language}
+                onClick={() => {
+                  setSchemaLanguageOverride(language);
+                  setVizVersion((v) => v + 1);
+                }}
+                variant="text"
+                color="inherit"
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 400,
+                  borderRadius: 0,
+                  px: 2,
+                  py: 1.25,
+                  width: viewSchemaLanguageTabWidth,
+                  minWidth: viewSchemaLanguageTabWidth,
+                  maxWidth: { xs: "100%", sm: "none" },
+                  color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+                  bgcolor: "transparent",
+                  boxShadow: "none",
+                  borderBottom: "2px solid",
+                  borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+                  mb: "-1px",
+                  "&:hover": {
+                    bgcolor: "rgba(0, 0, 0, 0.04)",
+                    color: CustomPalette.BLACK
+                  }
+                }}
+              >
+                <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
+                  {t(minimizedLanguage, { defaultValue: minimizedLanguage })}
+                </Typography>
+              </Button>
+            );
+          })}
+        </Box>
+      ))}
     </Box>
   );
   
