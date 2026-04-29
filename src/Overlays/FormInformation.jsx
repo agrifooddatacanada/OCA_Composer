@@ -393,24 +393,22 @@ const FormInformation = () => {
     return () => document.removeEventListener("click", handleClickOutsideGrid);
   }, [gridRef, refContainer]);
 
-  const displayLanguageArray = [];
-  for (let i = 0; i < filteredLanguages.length; i += 6) {
-    const languageRow = filteredLanguages.slice(i, i + 6).filter(Boolean);
-    displayLanguageArray.push(languageRow);
-  }
+  const FORM_INFO_GRID_WIDTH = 1003;
 
-  const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
+  const languageStrip = (
     <Box
-      key={index}
       sx={{
+        width: FORM_INFO_GRID_WIDTH,
+        maxWidth: "100%",
         display: "flex",
         flexWrap: "wrap",
         alignItems: "flex-end",
         alignSelf: "flex-start",
-        borderBottom: `1px solid ${CustomPalette.GREY_300}`
+        borderBottom: `1px solid ${CustomPalette.GREY_300}`,
+        boxSizing: "border-box"
       }}
     >
-      {languageSegment.map((language) => {
+      {filteredLanguages.map((language) => {
         const selected = currentLanguage === language;
         return (
           <Button
@@ -427,8 +425,9 @@ const FormInformation = () => {
               borderRadius: 0,
               px: 2,
               py: 1.25,
-              width: languages.length < 5 ? "12rem" : "8.335rem",
-              minWidth: languages.length < 5 ? "12rem" : "8.335rem",
+              flex: "1 1 0",
+              minWidth: 0,
+              maxWidth: { xs: "100%", sm: "none" },
               color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
               bgcolor: "transparent",
               boxShadow: "none",
@@ -448,7 +447,7 @@ const FormInformation = () => {
         );
       })}
     </Box>
-  ));
+  );
 
   const handleSave = useCallback(() => {
     if (gridRef.current?.api) gridRef.current.api.stopEditing();
@@ -724,7 +723,7 @@ const FormInformation = () => {
             gap: 1
           }}
         >
-          {languageButtonDisplay}
+          {languageStrip}
           <Box
             sx={{
               position: "absolute",
@@ -750,7 +749,7 @@ const FormInformation = () => {
         <div ref={refContainer}>
           <Box
             className="ag-theme-balham form-information-grid overlay-grid-suppress-hscroll"
-            sx={{ width: 1003 }}
+            sx={{ width: FORM_INFO_GRID_WIDTH, maxWidth: "100%" }}
           >
             <style>{gridStyles}</style>
             <AgGridReact

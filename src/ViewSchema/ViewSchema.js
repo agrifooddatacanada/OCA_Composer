@@ -107,68 +107,64 @@ export default function ViewSchema({
     setVizVersion((v) => v + 1); // Force visualization update
   }, [t]); // Track i18n language changes
 
-  // Language selector display logic
-  const displayLanguageArray = [];
-  for (let i = 0; i < filteredLanguages.length; i += 7) {
-    const languageRow = filteredLanguages.slice(i, i + 7).filter(Boolean);
-    displayLanguageArray.push(languageRow);
-  }
+  const VIEW_SCHEMA_LANGUAGE_STRIP_WIDTH = "70rem";
 
-  const createLanguageRow = (languageArray) =>
-    languageArray.map((language) => {
-      const selected = getCurrentLanguage() === language;
-      let minimizedLanguage = language.slice(0, 9);
-      if (minimizedLanguage !== language) {
-        minimizedLanguage += "...";
-      }
-      return (
-        <Button
-          key={language}
-          onClick={() => {
-            setSchemaLanguageOverride(language);
-            setVizVersion((v) => v + 1);
-          }}
-          variant="text"
-          color="inherit"
-          sx={{
-            textTransform: "none",
-            fontWeight: 400,
-            borderRadius: 0,
-            px: 2,
-            py: 1.25,
-            minWidth: languages.length < 5 ? "12rem" : "10rem",
-            color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
-            bgcolor: "transparent",
-            boxShadow: "none",
-            borderBottom: "2px solid",
-            borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
-            mb: "-1px",
-            "&:hover": {
-              bgcolor: "rgba(0, 0, 0, 0.04)",
-              color: CustomPalette.BLACK
-            }
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: 400 }}>
-            {t(minimizedLanguage, { defaultValue: minimizedLanguage })}
-          </Typography>
-        </Button>
-      );
-    });
-
-  const languageButtonDisplay = displayLanguageArray.map((languageSegment) => (
+  const languageStrip = (
     <Box
-      key={languageSegment.join(",")}
       sx={{
+        width: VIEW_SCHEMA_LANGUAGE_STRIP_WIDTH,
+        maxWidth: "100%",
         display: "flex",
         flexWrap: "wrap",
         alignItems: "flex-end",
-        borderBottom: `1px solid ${CustomPalette.GREY_300}`
+        borderBottom: `1px solid ${CustomPalette.GREY_300}`,
+        boxSizing: "border-box"
       }}
     >
-      {createLanguageRow(languageSegment)}
+      {filteredLanguages.map((language) => {
+        const selected = getCurrentLanguage() === language;
+        let minimizedLanguage = language.slice(0, 9);
+        if (minimizedLanguage !== language) {
+          minimizedLanguage += "...";
+        }
+        return (
+          <Button
+            key={language}
+            onClick={() => {
+              setSchemaLanguageOverride(language);
+              setVizVersion((v) => v + 1);
+            }}
+            variant="text"
+            color="inherit"
+            sx={{
+              textTransform: "none",
+              fontWeight: 400,
+              borderRadius: 0,
+              px: 2,
+              py: 1.25,
+              flex: "1 1 0",
+              minWidth: 0,
+              maxWidth: { xs: "100%", sm: "none" },
+              color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+              bgcolor: "transparent",
+              boxShadow: "none",
+              borderBottom: "2px solid",
+              borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+              mb: "-1px",
+              "&:hover": {
+                bgcolor: "rgba(0, 0, 0, 0.04)",
+                color: CustomPalette.BLACK
+              }
+            }}
+          >
+            <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
+              {t(minimizedLanguage, { defaultValue: minimizedLanguage })}
+            </Typography>
+          </Button>
+        );
+      })}
     </Box>
-  ));
+  );
   
   const [showLink, setShowLink] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
@@ -791,7 +787,7 @@ export default function ViewSchema({
           width: "70rem"
         }}
       >
-        {languageButtonDisplay}
+        {languageStrip}
         <Box
           sx={{
             position: "absolute",

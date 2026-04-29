@@ -172,27 +172,22 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
     save: handleSave
   }));
 
-  // Formats language button display in a way that is displayed cleanly
+  const LDAD_LANGUAGE_STRIP_WIDTH = 885;
 
-  const displayLanguageArray = [];
-
-  for (let i = 0; i < filteredLanguages.length; i += 6) {
-    const languageRow = filteredLanguages.slice(i, i + 6).filter(Boolean);
-    displayLanguageArray.push(languageRow);
-  }
-
-  const languageButtonDisplay = displayLanguageArray.map((languageSegment) => (
+  const languageStrip = (
     <Box
-      key={`language-segment-${languageSegment.join("-")}`}
       sx={{
+        width: LDAD_LANGUAGE_STRIP_WIDTH,
+        maxWidth: "100%",
         display: "flex",
         flexWrap: "wrap",
         alignItems: "flex-end",
         alignSelf: "flex-start",
-        borderBottom: `1px solid ${CustomPalette.GREY_300}`
+        borderBottom: `1px solid ${CustomPalette.GREY_300}`,
+        boxSizing: "border-box"
       }}
     >
-      {languageSegment.map((language) => {
+      {filteredLanguages.map((language) => {
         const selected = currentLanguage === language;
         return (
           <Button
@@ -209,8 +204,9 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
               borderRadius: 0,
               px: 2,
               py: 1.25,
-              width: languages.length < 5 ? "12rem" : "8.335rem",
-              minWidth: languages.length < 5 ? "12rem" : "8.335rem",
+              flex: "1 1 0",
+              minWidth: 0,
+              maxWidth: { xs: "100%", sm: "none" },
               color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
               bgcolor: "transparent",
               boxShadow: "none",
@@ -230,7 +226,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
         );
       })}
     </Box>
-  ));
+  );
 
   const handleCopy = () => {
     // In lanAttributeRowData, I want to iteratively go through each language and copy the Atrribute value to the Label value
@@ -296,7 +292,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
             gap: 1
           }}
         >
-          {languageButtonDisplay}
+          {languageStrip}
           <Box
             sx={{
               position: "absolute",
