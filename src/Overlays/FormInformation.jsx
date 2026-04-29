@@ -404,73 +404,55 @@ const FormInformation = () => {
     displayLanguageArray.push(languageRow);
   }
 
-  const createLanguageRow = (languageArray, rowIndex) => {
-    const languageRowDisplay = languageArray.map((language, index) => {
-      let isFirstButton;
-      if (languages.length > 6) {
-        if (
-          displayLanguageArray[rowIndex + 1] &&
-          displayLanguageArray[rowIndex + 1].length === 6
-        ) {
-          isFirstButton =
-            language === displayLanguageArray[displayLanguageArray.length - 1][0];
-        } else {
-          isFirstButton = index === 0;
-        }
-      } else {
-        isFirstButton = index === 0;
-      }
-      const isLastButton = language === filteredLanguages[languages.length - 1];
-      let borderRadius = "";
-      if (isFirstButton && isLastButton) borderRadius = "8px 8px 0 0";
-      else if (isFirstButton) borderRadius = "8px 0 0 0";
-      else if (isLastButton) borderRadius = "0 8px 0 0";
-      else borderRadius = "0";
-      return (
-        <Button
-          key={language}
-          onClick={() => {
-            handleSave();
-            setCurrentLanguage(language);
-          }}
-          color="button"
-          variant="contained"
-          sx={{
-            backgroundColor:
-              currentLanguage === language
-                ? CustomPalette.PRIMARY
-                : CustomPalette.WHITE,
-            color:
-              currentLanguage === language
-                ? "white"
-                : CustomPalette.PRIMARY,
-            borderRadius,
-            width: languages.length < 5 ? "12rem" : "8.335rem",
-            boxShadow: "none",
-            border: `1px solid ${CustomPalette.PRIMARY}`,
-            "&:hover": {
-              backgroundColor:
-                currentLanguage === language
-                  ? CustomPalette.PRIMARY
-                  : CustomPalette.WHITE,
-              boxShadow:
-                currentLanguage === language
-                  ? "none"
-                  : undefined
-            }
-          }}
-        >
-          <Typography noWrap variant="button">
-            {t(language, { defaultValue: language })}
-          </Typography>
-        </Button>
-      );
-    });
-    return languageRowDisplay;
-  };
-
   const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
-    <Box key={index}>{createLanguageRow(languageSegment, index)}</Box>
+    <Box
+      key={index}
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "flex-end",
+        alignSelf: languages.length < 6 ? "flex-start" : "flex-end",
+        borderBottom: `1px solid ${CustomPalette.GREY_300}`
+      }}
+    >
+      {languageSegment.map((language) => {
+        const selected = currentLanguage === language;
+        return (
+          <Button
+            key={language}
+            onClick={() => {
+              handleSave();
+              setCurrentLanguage(language);
+            }}
+            variant="text"
+            color="inherit"
+            sx={{
+              textTransform: "none",
+              fontWeight: 400,
+              borderRadius: 0,
+              px: 2,
+              py: 1.25,
+              width: languages.length < 5 ? "12rem" : "8.335rem",
+              minWidth: languages.length < 5 ? "12rem" : "8.335rem",
+              color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+              bgcolor: "transparent",
+              boxShadow: "none",
+              borderBottom: "2px solid",
+              borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+              mb: "-1px",
+              "&:hover": {
+                bgcolor: "rgba(0, 0, 0, 0.04)",
+                color: CustomPalette.BLACK
+              }
+            }}
+          >
+            <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
+              {t(language, { defaultValue: language })}
+            </Typography>
+          </Button>
+        );
+      })}
+    </Box>
   ));
 
   const handleSave = useCallback(() => {

@@ -7,8 +7,6 @@ import {
   Button,
   Typography,
   Tooltip,
-  ToggleButton,
-  ToggleButtonGroup,
   Alert
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -22,8 +20,7 @@ import {
   getPrioritizedLangNames,
   getBestLangName,
   langCodeOCAFromName,
-  LanguageConstants,
-  getLanguageButtonBorderRadius
+  LanguageConstants
 } from "../utils/languageUtils";
 import { 
   TYPE_CHILD_SCHEMA, 
@@ -120,56 +117,60 @@ export default function ViewSchema({
     displayLanguageArray.push(languageRow);
   }
 
-  const createLanguageRow = (languageArray, rowIndex) => {
-    const languageRowDisplay = languageArray.map((language, index) => {
-      const borderRadius = getLanguageButtonBorderRadius(index, languageArray, rowIndex, displayLanguageArray, languages.length, 7);
+  const createLanguageRow = (languageArray) =>
+    languageArray.map((language) => {
+      const selected = getCurrentLanguage() === language;
       let minimizedLanguage = language.slice(0, 9);
       if (minimizedLanguage !== language) {
         minimizedLanguage += "...";
       }
       return (
         <Button
+          key={language}
           onClick={() => {
             setSchemaLanguageOverride(language);
-            setVizVersion((v) => v + 1); // Force visualization update
+            setVizVersion((v) => v + 1);
           }}
-          key={language}
-          color="button"
-          variant="contained"
+          variant="text"
+          color="inherit"
           sx={{
-            backgroundColor:
-              getCurrentLanguage() === language
-                ? primaryColor
-                : CustomPalette.WHITE,
-            color:
-              getCurrentLanguage() === language
-                ? "white"
-                : primaryColor,
-            borderRadius,
+            textTransform: "none",
+            fontWeight: 400,
+            borderRadius: 0,
+            px: 2,
+            py: 1.25,
             minWidth: languages.length < 5 ? "12rem" : "10rem",
+            color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+            bgcolor: "transparent",
             boxShadow: "none",
-            border: `1px solid ${primaryColor}`,
+            borderBottom: "2px solid",
+            borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+            mb: "-1px",
             "&:hover": {
-              backgroundColor:
-                getCurrentLanguage() === language
-                  ? primaryColor
-                  : CustomPalette.WHITE,
-              boxShadow:
-                getCurrentLanguage() === language
-                  ? "none"
-                  : undefined
+              bgcolor: "rgba(0, 0, 0, 0.04)",
+              color: CustomPalette.BLACK
             }
           }}
         >
-          <Typography variant="button">{t(minimizedLanguage, { defaultValue: minimizedLanguage })}</Typography>
+          <Typography variant="body2" sx={{ fontWeight: 400 }}>
+            {t(minimizedLanguage, { defaultValue: minimizedLanguage })}
+          </Typography>
         </Button>
       );
     });
-    return languageRowDisplay;
-  };
 
-  const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
-    <Box key={languageSegment.join(",")}>{createLanguageRow(languageSegment, index)}</Box>
+  const languageButtonDisplay = displayLanguageArray.map((languageSegment) => (
+    <Box
+      key={languageSegment.join(",")}
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "flex-end",
+        borderBottom: `1px solid ${CustomPalette.GREY_300}`
+      }}
+    >
+      {createLanguageRow(languageSegment)}
+    </Box>
   ));
   
   const [showLink, setShowLink] = useState(false);
@@ -910,53 +911,51 @@ export default function ViewSchema({
               </Box>
             </Box>
 
-            {/* Mode toggle switch */}
             <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
-              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <ToggleButtonGroup
-                  exclusive
-                  value={visualizationMode}
-                  onChange={(_e, val) => {
-                    if (val) setVisualizationMode(val);
-                  }}
-                  size="small"
-                  color="primary"
-                  sx={{
-                    "& .MuiToggleButton-root": {
-                      border: `1px solid ${primaryColor}`,
-                      color: primaryColor,
-                      backgroundColor: CustomPalette.WHITE,
-                      boxShadow: "none",
-                      minWidth: languages.length < 5 ? "12rem" : "10rem",
-                      "&:hover": {
-                        boxShadow: "0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)"
-                      },
-                      "&.Mui-selected": {
-                        backgroundColor: primaryColor,
-                        color: "white",
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "flex-end",
+                  borderBottom: `1px solid ${CustomPalette.GREY_300}`
+                }}
+              >
+                {[
+                  { value: "detailed", label: t("Left-Right", { defaultValue: "Left-Right" }) },
+                  { value: "tree", label: t("Top-Down", { defaultValue: "Top-Down" }) }
+                ].map(({ value, label }) => {
+                  const selected = visualizationMode === value;
+                  return (
+                    <Button
+                      key={value}
+                      variant="text"
+                      color="inherit"
+                      onClick={() => setVisualizationMode(value)}
+                      sx={{
+                        textTransform: "none",
+                        fontWeight: 400,
+                        borderRadius: 0,
+                        px: 2,
+                        py: 1.25,
+                        minWidth: languages.length < 5 ? "12rem" : "10rem",
+                        color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+                        bgcolor: "transparent",
+                        boxShadow: "none",
+                        borderBottom: "2px solid",
+                        borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+                        mb: "-1px",
                         "&:hover": {
-                          backgroundColor: primaryColor,
-                          boxShadow: "none"
+                          bgcolor: "rgba(0, 0, 0, 0.04)",
+                          color: CustomPalette.BLACK
                         }
-                      },
-                      "&:first-of-type": {
-                        borderTopLeftRadius: "8px",
-                        borderBottomLeftRadius: "8px"
-                      },
-                      "&:last-of-type": {
-                        borderTopRightRadius: "8px",
-                        borderBottomRightRadius: "8px"
-                      }
-                    }
-                  }}
-                >
-                  <ToggleButton value="detailed">
-                    {t("Left-Right", { defaultValue: "Left-Right" })}
-                  </ToggleButton>
-                  <ToggleButton value="tree">
-                    {t("Top-Down", { defaultValue: "Top-Down" })}
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ fontWeight: 400 }}>
+                        {label}
+                      </Typography>
+                    </Button>
+                  );
+                })}
               </Box>
             </Box>
 
