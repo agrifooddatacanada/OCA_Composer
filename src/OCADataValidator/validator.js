@@ -5,6 +5,7 @@ import { ADC, ALLOWED_BOOLEAN_VALUES, errorCode, RANGE } from "../constants/cons
 import { isValidNumber, parseDateString } from "../utils/helpers";
 import { getRootCaptureBaseId } from "../utils/packageUtils";
 import { getFormatPatternForDecimalSeparator } from "./utils/decimalFormatPattern";
+import { getArrayDelimiterMismatchMessage } from "./utils/arrayDelimiterOverlay";
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
 const OCA_VERSION = "1.0";
@@ -207,10 +208,11 @@ export default class OCABundle {
     let newDataArr = [];
 
     dataArr.forEach((item) => {
-      if (item.includes(",")) {
-        newDataArr = newDataArr.concat(item.split(","));
+      const trimmedItem = item.trim();
+      if (trimmedItem.includes(",")) {
+        newDataArr = newDataArr.concat(trimmedItem.split(",").map((s) => s.trim()));
       } else {
-        newDataArr.push(item);
+        newDataArr.push(trimmedItem);
       }
     });
 
@@ -530,7 +532,7 @@ export default class OCABundle {
         }
 
         const dataEntryWithSpaces = String(dataset[attr][i]);
-        const dataEntry = dataEntryWithSpaces.replace(/,\s*/g, ",");
+        const dataEntry = dataEntryWithSpaces.replace(/([,;|])\s*/g, "$1");
 
         if (attrType.includes("Array") || Array.isArray(attrType)) {
           const dataArr = this.processEntries(dataEntry);
@@ -562,6 +564,39 @@ export default class OCABundle {
               attrEntryCodes[attr]
             )}]`
           };
+        }
+      }
+    }
+    return rslt.errs;
+  }
+
+  /**
+   * Warns when array-typed cell values use a different delimiter than the schema's array_delimiter overlay.
+   */
+  validateArrayDelimiter(dataset, arrayDelimiterData) {
+    const rslt = this.ErrorBuilder.warningErr;
+    const attributes = this.getAttributes();
+    for (const attr in attributes) {
+      if (!Object.prototype.hasOwnProperty.call(attributes, attr)) {
+        continue;
+      }
+      const attrType = this.getAttributeType(attr);
+      if (!attrType.includes("Array") && !Array.isArray(attrType)) {
+        continue;
+      }
+      const schemaDelim = arrayDelimiterData[attr];
+      if (!schemaDelim) {
+        continue;
+      }
+      rslt.errs[attr] = {};
+      for (let i = 0; i < dataset[attr]?.length; i++) {
+        const dataEntry = dataset[attr][i];
+        if (dataEntry === undefined || dataEntry === null) {
+          continue;
+        }
+        const msg = getArrayDelimiterMismatchMessage(dataEntry, schemaDelim);
+        if (msg) {
+          rslt.errs[attr][i] = { type: errorCode.Warning, detail: msg };
         }
       }
     }
@@ -625,13 +660,14 @@ export default class OCABundle {
     return { isError: versionError, message: errorMessage };
   }
 
-  validate(dataset, decimalSeparator = ".") {
+  validate(dataset, decimalSeparator = ".", arrayDelimiterData = {}) {
     const rslt = this.ErrorBuilder;
     rslt.attErr.errs = this.validateAttribute(dataset);
     rslt.formatErr.errs = this.validateFormat(dataset, decimalSeparator);
     rslt.entryCodeErr.errs = this.validateEntryCodes(dataset);
     rslt.characterEcodeErr.errs = this.validateCharacterEncoding(dataset);
     rslt.rangeErr.errs = this.validateRange(dataset, decimalSeparator);
+    rslt.warningErr.errs = this.validateArrayDelimiter(dataset, arrayDelimiterData);
     return rslt.updateErr();
   }
 }

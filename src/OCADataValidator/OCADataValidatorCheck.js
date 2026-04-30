@@ -545,11 +545,11 @@ const OCADataValidatorCheck = ({
         return false;
       }
 
-      // check if all cells pass validation
+      // check if all cells pass validation (warnings don not fail validation)
       return currData.every((row) => {
         if (!row.error) return true;
         return Object.values(row.error).every(
-          (cellErrors) => !cellErrors || cellErrors.length === 0
+          (cellErrors) => !cellErrors || cellErrors.length === 0 || cellErrors.every((error) => error?.type === errorCode.Warning)
         );
       });
     } catch (error) {
@@ -618,7 +618,10 @@ const OCADataValidatorCheck = ({
       return greyCellStyle;
     }
     if (params.data?.error && error?.length > 0) {
-      return { backgroundColor: "#ffd7e9" };
+      const onlyWarning = error.every((e) => e?.type === errorCode.Warning);
+      return {
+        backgroundColor: onlyWarning ? "#fff9c4" : "#ffd7e9"
+      };
     }
     if (params.data?.error) {
       return { backgroundColor: "#d2f8d2" };
@@ -656,8 +659,7 @@ const OCADataValidatorCheck = ({
         }
       }
     });
-
-    const validate = bundle.validate(prepareInput, schemaState?.decimalSeparator || ".");
+    const validate = bundle.validate(prepareInput, schemaState?.decimalSeparator || ".", schemaState?.arrayDelimiterData || {});
 
     // Update `rowData` with validation results
     const updatedRowData = newData.map((data, index) => ({
@@ -1124,7 +1126,7 @@ const OCADataValidatorCheck = ({
         (row) =>
           !row?.error ||
           Object.values(row.error).every(
-            (cellErrors) => !cellErrors || cellErrors.length === 0
+            (cellErrors) => !cellErrors || cellErrors.length === 0 || cellErrors.every((error) => error?.type === errorCode.Warning)
           )
       );
     }
@@ -1279,8 +1281,7 @@ const OCADataValidatorCheck = ({
                   onClick={handleValidate}
                   disabled={isValidateButtonEnabled}
                   sx={{
-                    fontFamily:
-                      fontFamily
+                    fontFamily
                   }}
                 >
                   {t("Verify")}
@@ -1291,8 +1292,7 @@ const OCADataValidatorCheck = ({
                       marginLeft: "20px",
                       color: "red",
                       fontWeight: "bold",
-                      fontFamily:
-                        fontFamily
+                      fontFamily
                     }}
                   >
                     {t("Please re-verify the data!")}
@@ -1363,6 +1363,29 @@ const OCADataValidatorCheck = ({
                 }}
               >
                 {t("Fail Verification")}
+              </span>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                marginRight: "2rem"
+              }}
+            >
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: "#fff9c4",
+                  marginRight: "15px"
+                }}
+              />
+              <span
+                style={{
+                  fontFamily
+                }}
+              >
+                {t("Warning")}
               </span>
             </Box>
             <Box
