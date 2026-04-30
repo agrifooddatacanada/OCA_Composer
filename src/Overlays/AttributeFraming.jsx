@@ -671,7 +671,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Type of Match"),
-          helpText: t("Mapping vocabulary ...")
+          helpText: t("Mapping vocabulary to reasonate the relationship between the attribute and ontologies terms")
         }
       },
       {
@@ -1246,7 +1246,7 @@ const AttributeFraming = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Subject"),
-          helpText: t("This is the name for the attribute and, for example...")
+          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
         }
       },
       {
@@ -1258,7 +1258,7 @@ const AttributeFraming = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Predicate"),
-          helpText: t("Mapping vocabulary ...")
+          helpText: t("Mapping vocabulary to reasonate the relationship between the attribute and ontologies terms")
         }
       },
       {

@@ -11,8 +11,9 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuidv4 } from 'uuid';
-import { langNameFromTwoLetters, LanguageConstants, getLanguageButtonBorderRadius } from "../../utils/languageUtils";
+import { langNameFromTwoLetters, LanguageConstants } from "../../utils/languageUtils";
 import i18next from "i18next";
+import usePrimaryColor from "../../hooks/usePrimaryColor";
 import { isChildSchemaType } from "../../constants/constants";
 
 import AttributePalette from "./AttributePalette";
@@ -26,6 +27,7 @@ import { moveQuestionToPage, moveQuestionToSection, moveSectionBetweenPages, reo
 
 const FormBuilder = () => {
   const { t } = useTranslation();
+  const primaryColor = usePrimaryColor();
   const {
     setCurrentPage,
     setSelectedOverlay
@@ -50,15 +52,16 @@ const FormBuilder = () => {
   const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
   const FormInformationRowData = schemaState?.FormInformationRowData || [];
   const formBuilderPages = schemaState?.formBuilderPages || [];
-  const languageIndex = languages.findIndex(
-    (item) => langNameFromTwoLetters(i18next.language) === item
+  const filteredLanguages = useMemo(() => [...languages], [languages]);
+  const [currentLanguage, setCurrentLanguage] = useState(
+    filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME
   );
-  const filteredLanguages = [...languages];
-  if (languageIndex !== -1 && languageIndex !== 0) {
-    const removedLanguage = filteredLanguages.splice(languageIndex, 1);
-    filteredLanguages.unshift(removedLanguage[0]);
-  }
-  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
+
+  useEffect(() => {
+    if (!languages.includes(currentLanguage)) {
+      setCurrentLanguage(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
+    }
+  }, [languages, currentLanguage, filteredLanguages]);
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {
@@ -447,66 +450,138 @@ const FormBuilder = () => {
     setCurrentPage("FormInformation");
   }, [setCurrentPage]);
 
-  // Build Language Tabs
+  // Build language tabs (same pattern as Form Information / Language Details)
   const displayLanguageArray = [];
   for (let i = 0; i < filteredLanguages.length; i += 6) {
     const languageRow = filteredLanguages.slice(i, i + 6).filter(Boolean);
     displayLanguageArray.push(languageRow);
   }
 
-  const createLanguageRow = (languageArray, rowIndex) => {
-    const languageRowDisplay = languageArray.map((language, index) => {
-      const borderRadius = getLanguageButtonBorderRadius(index, languageArray, rowIndex, displayLanguageArray, languages.length, 6);
+  const renderLanguageTabButtons = (languageSegment) =>
+    languageSegment.map((language) => {
+      const selected = currentLanguage === language;
       return (
         <Button
           key={language}
           onClick={() => setCurrentLanguage(language)}
-          color="button"
-          variant="contained"
+          variant="text"
+          color="inherit"
           sx={{
-            backgroundColor:
-              currentLanguage === language
-                ? CustomPalette.PRIMARY
-                : CustomPalette.WHITE,
-            color:
-              currentLanguage === language
-                ? "white"
-                : CustomPalette.PRIMARY,
-            borderRadius,
-            minWidth: languages.length < 5 ? "12rem" : "10rem",
+            textTransform: "none",
+            fontWeight: 400,
+            borderRadius: 0,
+            px: 2,
+            py: 1.25,
+            width: languages.length < 5 ? "12rem" : "8.335rem",
+            minWidth: languages.length < 5 ? "12rem" : "8.335rem",
+            color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+            bgcolor: "transparent",
             boxShadow: "none",
-            border: `1px solid ${CustomPalette.PRIMARY}`,
+            borderBottom: "2px solid",
+            borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+            mb: "-1px",
             "&:hover": {
-              backgroundColor:
-                currentLanguage === language
-                  ? CustomPalette.PRIMARY
-                  : CustomPalette.WHITE,
-              boxShadow:
-                currentLanguage === language
-                  ? "none"
-                  : undefined
+              bgcolor: "rgba(0, 0, 0, 0.04)",
+              color: CustomPalette.BLACK
             }
           }}
         >
-          <Typography noWrap variant="button">
+          <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
             {t(language, { defaultValue: language })}
           </Typography>
         </Button>
       );
     });
-    return languageRowDisplay;
-  };
 
-  const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
-    <Box key={index}>{createLanguageRow(languageSegment, index)}</Box>
-  ));
+  const addPageButton = (
+    <Button
+      startIcon={<AddIcon />}
+      onClick={handleAddPage}
+      variant="contained"
+      color="button"
+      sx={{
+        flexShrink: 0,
+        alignSelf: "flex-end",
+        backgroundColor: CustomPalette.PRIMARY,
+        "&:hover": {
+          backgroundColor: CustomPalette.DARK
+        }
+      }}
+    >
+      {t("Add Page")}
+    </Button>
+  );
+
+  const languageButtonDisplay = [];
+  if (displayLanguageArray.length === 0) {
+    languageButtonDisplay.push(
+      <Box
+        key="add-page-only"
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          width: "100%",
+          borderBottom: `1px solid ${CustomPalette.GREY_300}`
+        }}
+      >
+        {addPageButton}
+      </Box>
+    );
+  } else {
+    displayLanguageArray.forEach((languageSegment, index) => {
+      const isLast = index === displayLanguageArray.length - 1;
+      if (!isLast) {
+        languageButtonDisplay.push(
+          <Box
+            key={index}
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "flex-end",
+              alignSelf: "flex-start",
+              borderBottom: `1px solid ${CustomPalette.GREY_300}`
+            }}
+          >
+            {renderLanguageTabButtons(languageSegment)}
+          </Box>
+        );
+      } else {
+        languageButtonDisplay.push(
+          <Box
+            key={index}
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              gap: 1,
+              width: "100%"
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "flex-end",
+                minWidth: 0,
+                borderBottom: `1px solid ${CustomPalette.GREY_300}`
+              }}
+            >
+              {renderLanguageTabButtons(languageSegment)}
+            </Box>
+            {addPageButton}
+          </Box>
+        );
+      }
+    });
+  }
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={handleBack}>
       <DndProvider backend={HTML5Backend}>
         <Box sx={{ margin: "2rem", marginTop: "0.5rem", marginBottom: BETWEEN_SECTION_SPACING }}>
           <Box sx={{ mb: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800, textAlign: 'center', mb: 4 }}>
+            <Typography variant="h4" sx={{ fontWeight: "bold", color: primaryColor, textAlign: "center", mb: 4 }}>
               {t("Layout Builder")}
             </Typography>
           </Box>
@@ -515,28 +590,14 @@ const FormBuilder = () => {
             sx={{
               position: "relative",
               display: "flex",
-              flexDirection: "column-reverse",
-              alignItems: languages.length < 6 ? "flex-start" : "flex-end",
+              flexDirection: "column",
+              alignItems: "flex-start",
               mb: 2,
               gap: 1
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', justifyContent: 'space-between', width: '100%' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>{languageButtonDisplay}</Box>
-              <Button 
-                startIcon={<AddIcon />} 
-                onClick={handleAddPage} 
-                variant="contained" 
-                color="button"
-                sx={{ 
-                  backgroundColor: CustomPalette.PRIMARY,
-                  '&:hover': {
-                    backgroundColor: CustomPalette.DARK
-                  }
-                }}
-              >
-                {t("Add Page")}
-              </Button>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1, width: "100%" }}>
+              {languageButtonDisplay}
             </Box>
             <Box
               sx={{
@@ -561,12 +622,12 @@ const FormBuilder = () => {
             </Box>
           </Box>
 
-          <Box 
-            sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '320px 1fr' }, 
-              gap: 3, 
-              alignItems: 'start'
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "320px 1fr" },
+              gap: 3,
+              alignItems: "start"
             }}
           >
             <AttributePalette
@@ -579,8 +640,7 @@ const FormBuilder = () => {
               currentLanguage={currentLanguage}
               languages={languages}
             />
-
-            <Box sx={{ width: '100%' }}>
+            <Box sx={{ width: "100%" }}>
               {pages.map((page, pageIndex) => (
               <DroppablePage
                   key={page.id}

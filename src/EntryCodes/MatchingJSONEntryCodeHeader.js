@@ -7,7 +7,7 @@ import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import BackNextSkeleton from '../components/BackNextSkeleton';
 import { BETWEEN_SECTION_SPACING } from '../constants/constants';
 import { AgGridReact } from '../components/AgGridReact';
-import { gridStyles } from '../constants/styles';
+import { gridStyles, AG_GRID_DROPDOWN_CELL_CLASS } from '../constants/styles';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
 
 export const DataHeaderRenderer = memo(
@@ -119,6 +119,7 @@ const MatchingJSONEntryCodeHeader = () => {
         headerName: 'Matching Attributes',
         field: 'matchingDataHeader',
         width: 200,
+        cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
           dataHeaders: languageList,

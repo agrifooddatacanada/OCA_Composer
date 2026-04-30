@@ -7,8 +7,6 @@ import {
   Button,
   Typography,
   Tooltip,
-  ToggleButton,
-  ToggleButtonGroup,
   Alert
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -19,11 +17,9 @@ import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
 import {
-  getPrioritizedLangNames,
   getBestLangName,
   langCodeOCAFromName,
-  LanguageConstants,
-  getLanguageButtonBorderRadius
+  LanguageConstants
 } from "../utils/languageUtils";
 import { 
   TYPE_CHILD_SCHEMA, 
@@ -95,9 +91,7 @@ export default function ViewSchema({
   const schemaState = getSchema();
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
 
-  const filteredLanguages = React.useMemo(() => {
-    return getPrioritizedLangNames(languages);
-  }, [languages]);
+  const filteredLanguages = React.useMemo(() => [...languages], [languages]);
 
   // Schema language state - defaults to null (use i18n), can be overridden by schema buttons
   const [schemaLanguageOverride, setSchemaLanguageOverride] = useState(null);
@@ -113,64 +107,88 @@ export default function ViewSchema({
     setVizVersion((v) => v + 1); // Force visualization update
   }, [t]); // Track i18n language changes
 
-  // Language selector display logic
-  const displayLanguageArray = [];
-  for (let i = 0; i < filteredLanguages.length; i += 7) {
-    const languageRow = filteredLanguages.slice(i, i + 7).filter(Boolean);
-    displayLanguageArray.push(languageRow);
-  }
+  const VIEW_SCHEMA_LANGUAGE_STRIP_WIDTH = "70rem";
 
-  const createLanguageRow = (languageArray, rowIndex) => {
-    const languageRowDisplay = languageArray.map((language, index) => {
-      const borderRadius = getLanguageButtonBorderRadius(index, languageArray, rowIndex, displayLanguageArray, languages.length, 7);
-      let minimizedLanguage = language.slice(0, 9);
-      if (minimizedLanguage !== language) {
-        minimizedLanguage += "...";
-      }
-      return (
-        <Button
-          onClick={() => {
-            setSchemaLanguageOverride(language);
-            setVizVersion((v) => v + 1); // Force visualization update
-          }}
-          key={language}
-          color="button"
-          variant="contained"
+  const viewSchemaLanguageTabWidth =
+    filteredLanguages.length < 5 ? "12rem" : "8.335rem";
+  const viewSchemaLanguageChunks = useMemo(() => {
+    const rows = [];
+    for (let i = 0; i < filteredLanguages.length; i += 6) {
+      rows.push(filteredLanguages.slice(i, i + 6).filter(Boolean));
+    }
+    return rows;
+  }, [filteredLanguages]);
+
+  const languageStrip = (
+    <Box
+      sx={{
+        width: VIEW_SCHEMA_LANGUAGE_STRIP_WIDTH,
+        maxWidth: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 1,
+        boxSizing: "border-box"
+      }}
+    >
+      {viewSchemaLanguageChunks.map((segment) => (
+        <Box
+          key={segment.join("-")}
           sx={{
-            backgroundColor:
-              getCurrentLanguage() === language
-                ? primaryColor
-                : CustomPalette.WHITE,
-            color:
-              getCurrentLanguage() === language
-                ? "white"
-                : primaryColor,
-            borderRadius,
-            minWidth: languages.length < 5 ? "12rem" : "10rem",
-            boxShadow: "none",
-            border: `1px solid ${primaryColor}`,
-            "&:hover": {
-              backgroundColor:
-                getCurrentLanguage() === language
-                  ? primaryColor
-                  : CustomPalette.WHITE,
-              boxShadow:
-                getCurrentLanguage() === language
-                  ? "none"
-                  : undefined
-            }
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            alignSelf: "flex-start",
+            borderBottom: `1px solid ${CustomPalette.GREY_300}`,
+            boxSizing: "border-box"
           }}
         >
-          <Typography variant="button">{t(minimizedLanguage, { defaultValue: minimizedLanguage })}</Typography>
-        </Button>
-      );
-    });
-    return languageRowDisplay;
-  };
-
-  const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
-    <Box key={languageSegment.join(",")}>{createLanguageRow(languageSegment, index)}</Box>
-  ));
+          {segment.map((language) => {
+            const selected = getCurrentLanguage() === language;
+            let minimizedLanguage = language.slice(0, 9);
+            if (minimizedLanguage !== language) {
+              minimizedLanguage += "...";
+            }
+            return (
+              <Button
+                key={language}
+                onClick={() => {
+                  setSchemaLanguageOverride(language);
+                  setVizVersion((v) => v + 1);
+                }}
+                variant="text"
+                color="inherit"
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 400,
+                  borderRadius: 0,
+                  px: 2,
+                  py: 1.25,
+                  width: viewSchemaLanguageTabWidth,
+                  minWidth: viewSchemaLanguageTabWidth,
+                  maxWidth: { xs: "100%", sm: "none" },
+                  color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+                  bgcolor: "transparent",
+                  boxShadow: "none",
+                  borderBottom: "2px solid",
+                  borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+                  mb: "-1px",
+                  "&:hover": {
+                    bgcolor: "rgba(0, 0, 0, 0.04)",
+                    color: CustomPalette.BLACK
+                  }
+                }}
+              >
+                <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
+                  {t(minimizedLanguage, { defaultValue: minimizedLanguage })}
+                </Typography>
+              </Button>
+            );
+          })}
+        </Box>
+      ))}
+    </Box>
+  );
   
   const [showLink, setShowLink] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
@@ -717,17 +735,13 @@ export default function ViewSchema({
                   textAlign: "center"
                 }}
                 disabled={exportDisabled}
-                title={(hasInvalidAttributesInPackage || hasMissingEntryCodesInPackage)
-                  ? t("Complete all required fields across the package to enable download", { defaultValue: "Complete all required fields across the package to enable download" })
-                  : ""}
               >
                 {t("Download", { defaultValue: "Download" })}
               </Button>
               <Tooltip
                 title={
                   <span>
-                    {t("For future editing, download your schema as-is and later upload it to the Semantic Engine.")}{" "}
-                    ({t("This is the")} <em>.json</em> {t("file. The")} <em>.txt</em> {t("file is a human-friendly description of your schema.")})
+                    {t("For future editing, download your schema as-is and later upload it to the Semantic Engine.")}
                   </span>
                 }
                 placement="bottom"
@@ -737,6 +751,13 @@ export default function ViewSchema({
                   <HelpOutlineIcon sx={{ fontSize: 15, color: CustomPalette.GREY_600 }} />
                 </Box>
               </Tooltip>
+              <Box sx={{ position: "absolute", top: "100%", right: 0, mt: 0.5, fontSize: "0.7rem", color: CustomPalette.GREY_600, lineHeight: 1.4, whiteSpace: "nowrap" }}>
+                <Box sx={{ textAlign: "right" }}>
+                  {t("1) Schema in", { defaultValue: "1) Schema in" })} .txt {t("format, readable and archivable.", { defaultValue: "format, readable and archivable." })}<br />
+                  {t("2) Schema in", { defaultValue: "2) Schema in" })} .json {t("format. Can be used by computers including", { defaultValue: "format. Can be used by computers including" })}<br />
+                  {t("tools on the Semantic Engine.", { defaultValue: "tools on the Semantic Engine." })}
+                </Box>
+              </Box>
             </Box>
           )}
 
@@ -784,13 +805,13 @@ export default function ViewSchema({
         sx={{
           position: "relative",
           display: "flex",
-          flexDirection: "column-reverse",
+          flexDirection: "column",
           alignItems: "flex-start",
           mb: `${HEADER_TO_CONTENT_GAP_PX}px`,
           width: "70rem"
         }}
       >
-        {languageButtonDisplay}
+        {languageStrip}
         <Box
           sx={{
             position: "absolute",
@@ -860,7 +881,7 @@ export default function ViewSchema({
           <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
             <Tooltip
               title={t(
-                "Language specific information describing general schema information"
+                "Language-specific information describing general schema information"
               )}
               placement="right"
               arrow
@@ -898,9 +919,7 @@ export default function ViewSchema({
               </Typography>
               <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
                 <Tooltip
-                  title={t("Visual representation of references between schemas", {
-                    defaultValue: "Visual representation of references between schemas"
-                  }) + "."}
+                  title={t("Visual representation of references between schemas")}
                   placement="right"
                   arrow
                 >
@@ -909,53 +928,51 @@ export default function ViewSchema({
               </Box>
             </Box>
 
-            {/* Mode toggle switch */}
             <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
-              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <ToggleButtonGroup
-                  exclusive
-                  value={visualizationMode}
-                  onChange={(_e, val) => {
-                    if (val) setVisualizationMode(val);
-                  }}
-                  size="small"
-                  color="primary"
-                  sx={{
-                    "& .MuiToggleButton-root": {
-                      border: `1px solid ${primaryColor}`,
-                      color: primaryColor,
-                      backgroundColor: CustomPalette.WHITE,
-                      boxShadow: "none",
-                      minWidth: languages.length < 5 ? "12rem" : "10rem",
-                      "&:hover": {
-                        boxShadow: "0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)"
-                      },
-                      "&.Mui-selected": {
-                        backgroundColor: primaryColor,
-                        color: "white",
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "flex-end",
+                  borderBottom: `1px solid ${CustomPalette.GREY_300}`
+                }}
+              >
+                {[
+                  { value: "detailed", label: t("Left-Right", { defaultValue: "Left-Right" }) },
+                  { value: "tree", label: t("Top-Down", { defaultValue: "Top-Down" }) }
+                ].map(({ value, label }) => {
+                  const selected = visualizationMode === value;
+                  return (
+                    <Button
+                      key={value}
+                      variant="text"
+                      color="inherit"
+                      onClick={() => setVisualizationMode(value)}
+                      sx={{
+                        textTransform: "none",
+                        fontWeight: 400,
+                        borderRadius: 0,
+                        px: 2,
+                        py: 1.25,
+                        minWidth: languages.length < 5 ? "12rem" : "10rem",
+                        color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+                        bgcolor: "transparent",
+                        boxShadow: "none",
+                        borderBottom: "2px solid",
+                        borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+                        mb: "-1px",
                         "&:hover": {
-                          backgroundColor: primaryColor,
-                          boxShadow: "none"
+                          bgcolor: "rgba(0, 0, 0, 0.04)",
+                          color: CustomPalette.BLACK
                         }
-                      },
-                      "&:first-of-type": {
-                        borderTopLeftRadius: "8px",
-                        borderBottomLeftRadius: "8px"
-                      },
-                      "&:last-of-type": {
-                        borderTopRightRadius: "8px",
-                        borderBottomRightRadius: "8px"
-                      }
-                    }
-                  }}
-                >
-                  <ToggleButton value="detailed">
-                    {t("Left-Right", { defaultValue: "Left-Right" })}
-                  </ToggleButton>
-                  <ToggleButton value="tree">
-                    {t("Top-Down", { defaultValue: "Top-Down" })}
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ fontWeight: 400 }}>
+                        {label}
+                      </Typography>
+                    </Button>
+                  );
+                })}
               </Box>
             </Box>
 
@@ -1015,7 +1032,7 @@ export default function ViewSchema({
           <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
             <Tooltip
               title={t(
-                "The details of the schema including attribute names and their features as well as language specific information"
+                "Attributes and all details relevant to them"
               )}
               placement="right"
               arrow

@@ -21,7 +21,7 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import { hasDisallowedChars } from "../utils/helpers";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import { measureTextHeight } from "../utils/measureTextLines";
-import { flexCenter, preWrapWordBreak } from "../constants/styles";
+import { flexCenter, preWrapWordBreak, agGridEditableCellHoverCss } from "../constants/styles";
 import { TABLE_TO_BUTTON_GAP, BETWEEN_SECTION_SPACING } from "../constants/constants";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
 
@@ -138,6 +138,7 @@ export default function CreateManually() {
   const [addErrorMessage, setAddErrorMessage] = useState("");
   const [forwardErrorMessage, setForwardErrorMessage] = useState("");
   const [backErrorMessage, setBackErrorMessage] = useState("");
+  const [duplicateWarning, setDuplicateWarning] = useState("");
   const [showInvalidCharModal, setShowInvalidCharModal] = useState(false);
   // Get current attributes from MultiSchemaContext (computed from attributes array)
   const attributesList = getAttributesList();
@@ -328,8 +329,7 @@ export default function CreateManually() {
   };
 
   const handleAddRow = () => {
-    // Check if we just want to add a row without validating
-    // This allows users to add multiple empty rows before filling them in
+    gridRef.current.api.stopEditing();
     const newRow = { Name: "" };
     setRowData((prevState) => [...prevState, newRow]);
   };
@@ -422,40 +422,32 @@ export default function CreateManually() {
   };
 
   const savedAttributeName = useRef("");
+  const revertingDuplicate = useRef(false);
 
   // Handles 'attribute' column updates
   // To prevent row dragging bugs, attribute names can't be blank or duplicates
   // When the value is updated to handle duplicates, this function runs again
 
   const handleCellValueChanged = (e) => {
+    if (revertingDuplicate.current) {
+      revertingDuplicate.current = false;
+      requestAnimationFrame(() => e.api.resetRowHeights());
+      return;
+    }
     const currentIndex = e.rowIndex;
     const allAttributeNames = gridRef.current.props.rowData.map((item) => item.Name);
     if (e.newValue) {
-      // Renames duplicate values to <value>_(number)
-      const findMultipleOccurrences = (array, value) => {
-        const occurrences = array.filter((item) => item === value);
-        return occurrences.length > 1;
-      };
-      let valueToAdd = e.newValue;
-      if (findMultipleOccurrences(allAttributeNames, valueToAdd)) {
-        savedAttributeName.current = e.oldValue;
-        let i = 2;
-        let tempValue = `${valueToAdd}_(${i})`;
-
-        while (allAttributeNames.includes(tempValue)) {
-          i += 1;
-          tempValue = `${valueToAdd}_(${i})`;
-        }
-
-        valueToAdd = tempValue;
+      const isDuplicate = allAttributeNames.filter((item) => item === e.newValue).length > 1;
+      if (isDuplicate) {
+        setDuplicateWarning(t("Please enter a unique name."));
+        revertingDuplicate.current = true;
         const rowNode = gridRef.current.api.getRowNode(currentIndex);
-        rowNode.setDataValue("Name", valueToAdd);
+        rowNode.setDataValue("Name", e.oldValue || "");
+        setTimeout(() => setDuplicateWarning(""), 2500);
+        return;
       }
-    } else {
-      // Allow the cell to be left blank
-      const rowNode = gridRef.current.api.getRowNode(currentIndex);
-      rowNode.setDataValue("Name", e.newValue);
     }
+    setDuplicateWarning("");
     requestAnimationFrame(() => e.api.resetRowHeights());
   };
 
@@ -550,6 +542,19 @@ export default function CreateManually() {
           )}
 
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", minHeight: "60px" }}>
+            {duplicateWarning && (
+              <Alert
+                severity="error"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  py: 0,
+                  mb: 1
+                }}
+              >
+                {duplicateWarning}
+              </Alert>
+            )}
             {backErrorMessage && (
               <Alert
                 severity="error"
@@ -580,7 +585,7 @@ export default function CreateManually() {
           <Box sx={{ width: 565 }}>
             <Box style={{ display: "flex" }}>
               <Box className="create-schema-grid ag-theme-balham" style={{ width: 565, overflowX: "hidden" }} ref={refContainer}>
-            <style>{gridStyle}</style>
+            <style>{`${gridStyle}${agGridEditableCellHoverCss}`}</style>
             <AgGridReact
               ref={gridRef}
               rowData={rowData}

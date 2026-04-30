@@ -15,6 +15,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { AgGridReact } from "../components/AgGridReact";
 import { greyCellStyle, gridStyles } from "../constants/styles";
+import { greyCellStyle, gridStyles, AG_GRID_DROPDOWN_CELL_CLASS } from "../constants/styles";
 import "../App.css";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -973,6 +974,7 @@ const OCADataValidatorCheck = ({
             tooltipComponentParams: { color: "#F88379" },
             tooltipValueGetter: (params) => ({ value: params.value }),
             editable: true,
+            cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
             cellRendererFramework: EntryCodeDropdownSelector
           });
         } else {

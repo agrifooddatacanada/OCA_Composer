@@ -9,7 +9,12 @@ import TypeTooltip from "./TypeTooltip";
 import CellHeader from "../components/CellHeader";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import { measureTextHeight } from "../utils/measureTextLines";
-import { flexCenter, gridStyles, preWrapWordBreak } from "../constants/styles";
+import {
+  AG_GRID_DROPDOWN_CELL_CLASS,
+  flexCenter,
+  gridStyles,
+  preWrapWordBreak
+} from "../constants/styles";
 import CheckboxRenderer from "./CheckboxRenderer";
 import FlaggedHeader from "./FlaggedHeader";
 import ListHeader from "./ListHeader";
@@ -289,7 +294,7 @@ export default function Grid({
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),
-          helpText: t("This is the name for the attribute and, for example...")
+          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
         },
         editable: true,
         wrapText: true,
@@ -320,7 +325,7 @@ export default function Grid({
         headerComponentParams: {
           headerText: t("Unit"),
           helpText: t(
-            "The units of each attribute (or leave blank if the attribute is..."
+            "The units of each attribute. Leave blank if the attribute is not a measurement and has no units."
           )
         },
         wrapText: true,
@@ -342,6 +347,7 @@ export default function Grid({
           headerText: t("Type"),
           helpText: <TypeTooltip />
         },
+        cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
         cellRenderer: TypeRenderer,
         cellRendererParams: (params) => ({
           data: params.data,

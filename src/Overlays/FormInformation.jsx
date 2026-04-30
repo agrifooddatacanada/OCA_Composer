@@ -27,6 +27,7 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { useOverlayGridOnGridReady } from "./gridUtils";
+import usePrimaryColor from "../hooks/usePrimaryColor";
 
 import "ag-grid-community/styles/ag-theme-balham.css";
 
@@ -54,6 +55,7 @@ const PLACEHOLDER_EDITABLE_TYPES = ["Text", "Array[Text]", "DateTime", "Array[Da
 
 const FormInformation = () => {
   const { t, i18n } = useTranslation();
+  const primaryColor = usePrimaryColor();
   const { setCurrentPage } = useContext(Context);
 
   const {
@@ -91,14 +93,7 @@ const FormInformation = () => {
     initializationRef.current = false;
   }, [currentSchemaId]);
 
-  const languageIndex = languages.findIndex(
-    (item) => langNameFromTwoLetters(i18next.language) === item
-  );
-  const filteredLanguages = [...languages];
-  if (languageIndex !== -1 && languageIndex !== 0) {
-    const removedLanguage = filteredLanguages.splice(languageIndex, 1);
-    filteredLanguages.unshift(removedLanguage[0]);
-  }
+  const filteredLanguages = useMemo(() => [...languages], [languages]);
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
   
   // Update currentLanguage when languages array changes
@@ -398,84 +393,88 @@ const FormInformation = () => {
     return () => document.removeEventListener("click", handleClickOutsideGrid);
   }, [gridRef, refContainer]);
 
-  const displayLanguageArray = [];
-  for (let i = 0; i < filteredLanguages.length; i += 6) {
-    const languageRow = filteredLanguages.slice(i, i + 6).filter(Boolean);
-    displayLanguageArray.push(languageRow);
-  }
-
-  const createLanguageRow = (languageArray, rowIndex) => {
-    const languageRowDisplay = languageArray.map((language, index) => {
-      let isFirstButton;
-      if (languages.length > 6) {
-        if (
-          displayLanguageArray[rowIndex + 1] &&
-          displayLanguageArray[rowIndex + 1].length === 6
-        ) {
-          isFirstButton =
-            language === displayLanguageArray[displayLanguageArray.length - 1][0];
-        } else {
-          isFirstButton = index === 0;
-        }
-      } else {
-        isFirstButton = index === 0;
-      }
-      const isLastButton = language === filteredLanguages[languages.length - 1];
-      let borderRadius = "";
-      if (isFirstButton && isLastButton) borderRadius = "8px 8px 0 0";
-      else if (isFirstButton) borderRadius = "8px 0 0 0";
-      else if (isLastButton) borderRadius = "0 8px 0 0";
-      else borderRadius = "0";
-      return (
-        <Button
-          key={language}
-          onClick={() => {
-            handleSave();
-            setCurrentLanguage(language);
-          }}
-          color="button"
-          variant="contained"
-          sx={{
-            backgroundColor:
-              currentLanguage === language
-                ? CustomPalette.PRIMARY
-                : CustomPalette.WHITE,
-            color:
-              currentLanguage === language
-                ? "white"
-                : CustomPalette.PRIMARY,
-            borderRadius,
-            width: languages.length < 5 ? "12rem" : "8.335rem",
-            boxShadow: "none",
-            border: `1px solid ${CustomPalette.PRIMARY}`,
-            "&:hover": {
-              backgroundColor:
-                currentLanguage === language
-                  ? CustomPalette.PRIMARY
-                  : CustomPalette.WHITE,
-              boxShadow:
-                currentLanguage === language
-                  ? "none"
-                  : undefined
-            }
-          }}
-        >
-          <Typography noWrap variant="button">
-            {t(language, { defaultValue: language })}
-          </Typography>
-        </Button>
-      );
-    });
-    return languageRowDisplay;
-  };
-
-  const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
-    <Box key={index}>{createLanguageRow(languageSegment, index)}</Box>
-  ));
+  const FORM_INFO_GRID_WIDTH = 1003;
 
   const handleSave = useCallback(() => {
     if (gridRef.current?.api) gridRef.current.api.stopEditing();
   }, []);
+
+  const languageLanguageTabWidth =
+    filteredLanguages.length < 5 ? "12rem" : "8.335rem";
+  const languageDisplayChunks = useMemo(() => {
+    const rows = [];
+    for (let i = 0; i < filteredLanguages.length; i += 6) {
+      rows.push(filteredLanguages.slice(i, i + 6).filter(Boolean));
+    }
+    return rows;
+  }, [filteredLanguages]);
+
+  const languageStrip = (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 1,
+        width: FORM_INFO_GRID_WIDTH,
+        maxWidth: "100%",
+        boxSizing: "border-box"
+      }}
+    >
+      {languageDisplayChunks.map((segment) => (
+        <Box
+          key={segment.join("-")}
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            alignSelf: "flex-start",
+            borderBottom: `1px solid ${CustomPalette.GREY_300}`,
+            boxSizing: "border-box"
+          }}
+        >
+          {segment.map((language) => {
+            const selected = currentLanguage === language;
+            return (
+              <Button
+                key={language}
+                onClick={() => {
+                  handleSave();
+                  setCurrentLanguage(language);
+                }}
+                variant="text"
+                color="inherit"
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 400,
+                  borderRadius: 0,
+                  px: 2,
+                  py: 1.25,
+                  width: languageLanguageTabWidth,
+                  minWidth: languageLanguageTabWidth,
+                  maxWidth: { xs: "100%", sm: "none" },
+                  color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+                  bgcolor: "transparent",
+                  boxShadow: "none",
+                  borderBottom: "2px solid",
+                  borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+                  mb: "-1px",
+                  "&:hover": {
+                    bgcolor: "rgba(0, 0, 0, 0.04)",
+                    color: CustomPalette.BLACK
+                  }
+                }}
+              >
+                <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
+                  {t(language, { defaultValue: language })}
+                </Typography>
+              </Button>
+            );
+          })}
+        </Box>
+      ))}
+    </Box>
+  );
 
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 
@@ -502,7 +501,7 @@ const FormInformation = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),
-          helpText: t("This is the name for the attribute and, for example...")
+          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
         }
       },
       {
@@ -562,7 +561,7 @@ const FormInformation = () => {
         headerComponentParams: {
           headerText: t("Label"),
           constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
-          helpText: t("This is the language specific label for an attribute")
+          helpText: t("Language-specific label for an attribute")
         },
         cellEditorParams: { maxLength: MAX_ATTR_LABEL_CHARS },
         valueSetter: (params) => {
@@ -733,7 +732,7 @@ const FormInformation = () => {
       )}
       <Box sx={{ margin: "2rem", marginTop: "0.5rem", marginBottom: BETWEEN_SECTION_SPACING }}>
         <Box sx={{ mb: 1 }}>
-          <Typography variant="h4" sx={{ fontWeight: "bold", color: CustomPalette.GREY_800, textAlign: "center", mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: "bold", color: primaryColor, textAlign: "center", mb: 4 }}>
             {t("Placeholder Editor")}
           </Typography>
         </Box>
@@ -741,13 +740,13 @@ const FormInformation = () => {
           sx={{
             position: "relative",
             display: "flex",
-            flexDirection: "column-reverse",
-            alignItems: languages.length < 6 ? "flex-start" : "flex-end",
+            flexDirection: "column",
+            alignItems: "flex-start",
             mb: 2,
             gap: 1
           }}
         >
-          {languageButtonDisplay}
+          {languageStrip}
           <Box
             sx={{
               position: "absolute",
@@ -773,7 +772,7 @@ const FormInformation = () => {
         <div ref={refContainer}>
           <Box
             className="ag-theme-balham form-information-grid overlay-grid-suppress-hscroll"
-            sx={{ width: 1003 }}
+            sx={{ width: FORM_INFO_GRID_WIDTH, maxWidth: "100%" }}
           >
             <style>{gridStyles}</style>
             <AgGridReact

@@ -441,7 +441,7 @@ const UserSelection = () => {
       }
 
       const overlayKey = key.split(" - ")?.[0];
-      // Non-language specific overlays
+      // Non-language-specific overlays
       if (
         overlayKey === CHARACTER_ENCODING ||
         overlayKey === FORMAT ||
@@ -452,7 +452,7 @@ const UserSelection = () => {
         if (value) {
           coreOverlays[overlayKey] = value;
         }
-        // Language specific overlays
+        // Language-specific overlays
       } else if (
         overlayKey === META ||
         overlayKey === LABEL ||

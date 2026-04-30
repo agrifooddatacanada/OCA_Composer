@@ -51,7 +51,7 @@ const ListHeader = ({ gridRef }) => {
   return (
     <CheckboxColumnHeader
       label={t("List")}
-      helpText={t("Rather than allow free text entry into a record, you may...")}
+      helpText={t("Rather than allowing free text entry into a record, you may wish to limit entries to one of a few in a list. For example, you may wish to create a list of choices for gender, or for experimental farm name, or for species. You will then be able to create entries for your list that will be part of the schema.")}
       onCheckboxChange={handleCheckboxChange}
       inputRef={inputRef}
     />

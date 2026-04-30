@@ -11,7 +11,8 @@ import {
   matchingEntryCodeGridStyles,
   matchingEntryCodePageBoxSx,
   matchingEntryCodeMenuItemSx,
-  matchingEntryCodeSelectHostBoxSx
+  matchingEntryCodeSelectHostBoxSx,
+  AG_GRID_DROPDOWN_CELL_CLASS
 } from '../constants/styles';
 import { AgGridReact } from '../components/AgGridReact';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
@@ -101,9 +102,46 @@ const MatchingEntryCodeHeader = () => {
   
   const gridRef = useRef();
 
+  const matchingFunction = useCallback((unassignedVar, attr) => {
+    for (let i = 0; i < unassignedVar.length; i++) {
+      if (unassignedVar[i].toLowerCase() === attr.toLowerCase()) {
+        return i;
+      }
+    }
+    for (let i = 0; i < unassignedVar.length; i++) {
+      if (unassignedVar[i].toLowerCase().includes(attr.toLowerCase())) {
+        return i;
+      }
+    }
+    return -1;
+  }, []);
+
+  const buildMatchingEntryCodes = useCallback(() => {
+    const unassignedVariables = [...entryCodeHeaders];
+    const newLanguages = [INTERNAL_CODE_ROW_KEY, ...languages];
+    const newMatchingEntryCodes = [];
+    for (const lang of newLanguages) {
+      const newObj = {};
+      newObj.lang = lang;
+      const index = matchingFunction(unassignedVariables, lang);
+      newObj.matchingDataHeader = index !== -1 ? unassignedVariables[index] : "";
+      newMatchingEntryCodes.push(newObj);
+      if (index !== -1) {
+        unassignedVariables.splice(index, 1);
+      }
+    }
+    return newMatchingEntryCodes;
+  }, [entryCodeHeaders, languages, matchingFunction]);
+
+  const [matchingRows, setMatchingRows] = useState(() => buildMatchingEntryCodes());
+
+  useLayoutEffect(() => {
+    setMatchingRows(buildMatchingEntryCodes());
+  }, [buildMatchingEntryCodes]);
+
   const handleSave = () => {
     const newLanguages = [INTERNAL_CODE_ROW_KEY, ...languages];
-    const currentData = gridRef.current.api.getRenderedNodes()?.map(node => node?.data);
+    const currentData = matchingRows;
     const assignedData = [];
     const matchingEntryCodeMap = {};
     for (const ec of currentData) {
@@ -151,24 +189,16 @@ const MatchingEntryCodeHeader = () => {
   };
 
   const changeDataFromTable = useCallback((e, params) => {
-    params.node.updateData({
-      ...params.node.data,
-      matchingDataHeader: e.target.value,
-    });
-  }, []);
-
-  const matchingFunction = useCallback((unassignedVar, attr) => {
-    for (let i = 0; i < unassignedVar.length; i++) {
-      if (unassignedVar[i].toLowerCase() === attr.toLowerCase()) {
-        return i;
-      }
-    }
-    for (let i = 0; i < unassignedVar.length; i++) {
-      if (unassignedVar[i].toLowerCase().includes(attr.toLowerCase())) {
-        return i;
-      }
-    }
-    return -1;
+    const { value } = e.target;
+    const langKey = params.node?.data?.lang;
+    if (langKey === undefined) return;
+    setMatchingRows((prev) =>
+      prev.map((row) =>
+        row.lang === langKey
+          ? { ...row, matchingDataHeader: value }
+          : row
+      )
+    );
   }, []);
 
   const formatAssignedColumnCell = useCallback(
@@ -196,7 +226,7 @@ const MatchingEntryCodeHeader = () => {
         field: 'matchingDataHeader',
         width: 240,
         suppressSizeToFit: true,
-        cellClass: 'matching-entry-code-data-header-cell',
+        cellClass: `matching-entry-code-data-header-cell ${AG_GRID_DROPDOWN_CELL_CLASS}`,
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
           dataHeaders: ['', ...entryCodeHeaders],
@@ -209,28 +239,11 @@ const MatchingEntryCodeHeader = () => {
     ];
   }, [entryCodeHeaders, changeDataFromTable, t, formatAssignedColumnCell]);
 
-  const matchingEntryCodes = useMemo(() => {
-    const unassignedVariables = [...entryCodeHeaders];
-    const newLanguages = [INTERNAL_CODE_ROW_KEY, ...languages];
-    const newMatchingEntryCodes = [];
-    for (const lang of newLanguages) {
-      const newObj = {};
-      newObj.lang = lang;
-      const index = matchingFunction(unassignedVariables, lang);
-      newObj.matchingDataHeader = index !== -1 ? unassignedVariables[index] : "";
-      newMatchingEntryCodes.push(newObj);
-      if (index !== -1) {
-        unassignedVariables.splice(index, 1);
-      }
-    }
-    return newMatchingEntryCodes;
-  }, [entryCodeHeaders, languages, matchingFunction]);
-
   const [gridLayoutReady, setGridLayoutReady] = useState(false);
 
   useLayoutEffect(() => {
     setGridLayoutReady(false);
-  }, [matchingEntryCodes, entryCodeHeaders, languages]);
+  }, [entryCodeHeaders, languages]);
 
   const handleGridFirstDataRendered = useCallback(() => {
     setGridLayoutReady(true);
@@ -255,7 +268,7 @@ const MatchingEntryCodeHeader = () => {
             <AgGridReact
               ref={gridRef}
               style={{ width: "100%" }}
-              rowData={matchingEntryCodes}
+              rowData={matchingRows}
               columnDefs={columnDefs}
               domLayout="autoHeight"
               suppressHorizontalScroll

@@ -1,5 +1,18 @@
+import { alpha } from "@mui/material/styles";
 import { CustomPalette } from "./customPalette";
 import { BETWEEN_SECTION_SPACING } from "./constants";
+
+export const agGridEditableCellHoverCss = `
+.ag-theme-balham .ag-cell:not(.unit-cell-disabled):hover {
+  background-color: ${alpha(CustomPalette.PRIMARY, 0.04)};
+}
+.lan-grid.ag-theme-balham .ag-cell[col-id="Label"]:hover,
+.lan-grid.ag-theme-balham .ag-cell[col-id="Description"]:hover {
+  background-color: ${alpha(CustomPalette.PRIMARY, 0.04)} !important;
+}
+`;
+
+export const AG_GRID_DROPDOWN_CELL_CLASS = "ag-grid-dropdown-cell";
 
 export const preWrapWordBreak = {
   whiteSpace: "pre-wrap",
@@ -195,6 +208,14 @@ export const gridStyles = `
   scrollbar-gutter: auto;
 }
 
+.entry-code-upload-preview-grid.ag-theme-balham {
+  --ag-row-hover-color: transparent;
+}
+
+.matching-entry-code-grid.ag-theme-balham {
+  --ag-row-hover-color: transparent;
+}
+
 .overlay-grid-suppress-hscroll.ag-theme-balham .ag-body-horizontal-scroll {
   display: none !important;
 }
@@ -256,6 +277,12 @@ export const gridStyles = `
   height: 13px;
   margin: 0;
 }
+.ag-theme-balham .ag-cell.${AG_GRID_DROPDOWN_CELL_CLASS}.ag-cell-focus:not(.ag-cell-range-selected):focus-within,
+.ag-theme-balham .ag-context-menu-open .ag-cell.${AG_GRID_DROPDOWN_CELL_CLASS}.ag-cell-focus:not(.ag-cell-range-selected) {
+  border-color: transparent !important;
+  border-right-color: var(--ag-border-color, #bdc3c7) !important;
+}
+${agGridEditableCellHoverCss}
 `;
 
 export const matchingEntryCodeGridStyles = `

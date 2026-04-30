@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Box } from "@mui/material";
 import { AgGridReact } from "../components/AgGridReact";
 import { useMultiSchema } from "../schema/schemaContext";
-import { greyCellStyle } from "../constants/styles";
+import { agGridEditableCellHoverCss, greyCellStyle } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
@@ -33,7 +33,7 @@ import {
   AG_GRID_VIRTUALIZE_MIN_ROWS
 } from "../constants/constants";
 
-const gridStyles = `
+const viewGridStyles = `
 .ag-cell {
   line-height: 1.25 !important;
   padding: 0 6px !important;
@@ -188,7 +188,7 @@ export default function ViewGrid({
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Attribute"),
-            helpText: t("This is the name for the attribute and, for example...")
+            helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
           }
         },
         {
@@ -220,7 +220,7 @@ export default function ViewGrid({
           headerComponentParams: {
             headerText: t("Unit"),
             helpText: t(
-              "The units of each attribute (or leave blank if the attribute is..."
+              "The units of each attribute. Leave blank if the attribute is not a measurement and has no units."
             )
           }
         },
@@ -262,7 +262,7 @@ export default function ViewGrid({
           headerComponentParams: {
             headerText: t("Label"),
             constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
-            helpText: t("This is the language specific label for an attribute")
+            helpText: t("Language-specific label for an attribute")
           }
         },
         {
@@ -276,7 +276,7 @@ export default function ViewGrid({
             constraint: t("max description chars", {
               maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
             }),
-            helpText: t("This is a language specific description of the attribute...")
+            helpText: t("Language-specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute")
           }
         },
         {
@@ -288,7 +288,7 @@ export default function ViewGrid({
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("List"),
-            helpText: t("Rather than allow free text entry into a record, you may...")
+            helpText: t("Rather than allowing free text entry into a record, you may wish to limit entries to one of a few in a list. For example, you may wish to create a list of choices for gender, or for experimental farm name, or for species. You will then be able to create entries for your list that will be part of the schema.")
           },
           cellRenderer: ListRenderer
         }
@@ -623,7 +623,7 @@ export default function ViewGrid({
       className={`view-schema-grid ag-theme-balham${viewSchemaGridFixedViewport ? "" : " ag-grid-compact"}`}
       style={{ width: "100%" }}
     >
-      <style>{gridStyles}</style>
+      <style>{`${viewGridStyles}${agGridEditableCellHoverCss}`}</style>
       <style>{`
 .view-schema-grid.ag-theme-balham {
   ${viewSchemaGridFixedViewport ? "height: min(70vh, 560px);" : ""}

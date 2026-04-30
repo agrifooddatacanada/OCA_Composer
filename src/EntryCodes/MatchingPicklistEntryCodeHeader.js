@@ -12,54 +12,19 @@ import { AgGridReact } from "../components/AgGridReact";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
 import {
+  AG_GRID_DROPDOWN_CELL_CLASS,
   gridStyles,
   greyCellStyle,
   matchingEntryCodeGridStyles,
   matchingEntryCodePageBoxSx
 } from "../constants/styles";
-import { languageCodesObject } from "../constants/isoCodes";
 import { DataHeaderRenderer } from "./MatchingEntryCodeHeader";
 import { useMultiSchema } from "../schema/schemaContext";
-
-/** Column names available from the picklist (row keys / headers). */
-export function getPicklistCodeColumnOptions(picklist) {
-  if (!picklist) return [];
-  if (Array.isArray(picklist.headers) && picklist.headers.length > 0) {
-    return [...new Set(picklist.headers.filter(Boolean))];
-  }
-  const keys = new Set();
-  (picklist.rows || []).forEach((row) => {
-    if (row && typeof row === "object") {
-      Object.keys(row).forEach((k) => keys.add(k));
-    }
-  });
-  return [...keys];
-}
-
-function matchingFunction(pool, attr) {
-  for (let i = 0; i < pool.length; i += 1) {
-    if (pool[i].toLowerCase() === attr.toLowerCase()) {
-      return i;
-    }
-  }
-  for (let i = 0; i < pool.length; i += 1) {
-    if (pool[i].toLowerCase().includes(attr.toLowerCase())) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-function defaultPicklistColumnForField(fieldName, options, languageTo2Letter) {
-  if (!options.length) return "";
-  if (fieldName === "Code") {
-    return options.includes("Code") ? "Code" : options[0];
-  }
-  const iso = languageTo2Letter[fieldName];
-  if (iso && options.includes(iso)) return iso;
-  const idx = matchingFunction(options, fieldName);
-  return idx !== -1 ? options[idx] : "";
-}
+import {
+  buildLanguageTo2Letter,
+  defaultPicklistColumnForField,
+  getPicklistCodeColumnOptions
+} from "./picklistMatchingUtils";
 
 export default function MatchingPicklistEntryCodeHeader() {
   const { t } = useTranslation();
@@ -81,14 +46,7 @@ export default function MatchingPicklistEntryCodeHeader() {
     [pendingPicklist]
   );
 
-  const languageTo2Letter = useMemo(() => {
-    const map = {};
-    (languages || []).forEach((langName) => {
-      const code = languageCodesObject?.[langName.toLowerCase()];
-      if (code) map[langName] = code;
-    });
-    return map;
-  }, [languages]);
+  const languageTo2Letter = useMemo(() => buildLanguageTo2Letter(languages), [languages]);
 
   useEffect(() => {
     if (!pendingPicklist) {
@@ -110,7 +68,7 @@ export default function MatchingPicklistEntryCodeHeader() {
 
   useEffect(() => {
     setGridLayoutReady(false);
-  }, [matchingRows, codeColumnOptions]);
+  }, [codeColumnOptions, languages, pendingPicklist]);
 
   const changeDataFromTable = useCallback((e, params) => {
     const { value } = e.target;
@@ -137,7 +95,7 @@ export default function MatchingPicklistEntryCodeHeader() {
         field: "matchingDataHeader",
         width: 240,
         suppressSizeToFit: true,
-        cellClass: "matching-entry-code-data-header-cell",
+        cellClass: `matching-entry-code-data-header-cell ${AG_GRID_DROPDOWN_CELL_CLASS}`,
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
           dataHeaders: ["", ...codeColumnOptions],

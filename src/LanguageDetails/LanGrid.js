@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { AgGridReact } from "../components/AgGridReact";
 import { useMultiSchema } from "../schema/schemaContext";
 import CellHeader from "../components/CellHeader";
-import { greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
+import { agGridEditableCellHoverCss, greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import {
@@ -199,7 +199,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       headerComponent: CellHeader,
       headerComponentParams: {
         headerText: t("Attribute"),
-        helpText: t("This is the name for the attribute and, for example...")
+        helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
       }
     },
     {
@@ -213,7 +213,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       headerComponentParams: {
         headerText: t("Label"),
         constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
-        helpText: t("This is the language specific label for an attribute")
+        helpText: t("Language-specific label for an attribute")
       },
       cellEditorParams: {
         maxLength: MAX_ATTR_LABEL_CHARS
@@ -235,7 +235,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         constraint: t("max description chars", {
           maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
         }),
-        helpText: t("This is a language specific description of the attribute...")
+        helpText: t("Language-specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute")
       }
     },
     {
@@ -247,7 +247,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
       headerComponent: CellHeader,
       headerComponentParams: {
         headerText: t("List"),
-        helpText: t("These are the entry codes for Array type attributes.")
+        helpText: t("Entry codes for Array type attributes")
       }
     }
   ], [t]);
@@ -354,6 +354,8 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
               : ""
           }
           .lan-grid.ag-theme-balham {
+            --ag-row-hover-color: transparent;
+            --ag-column-hover-color: transparent;
             ${
               lanGridFixedViewport
                 ? "height: min(70vh, 560px); min-height: 120px;"
@@ -410,6 +412,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
             width: 100%;
           }
         `}
+        {agGridEditableCellHoverCss}
       </style>
       <AgGridReact
         key={`${i18n.language}-${lanGridFixedViewport ? "fx" : "ah"}`}
@@ -426,6 +429,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         onGridReady={onGridReady}
         getRowHeight={getRowHeight}
         suppressHorizontalScroll
+        suppressRowHoverHighlight
         getRowId={(params) => params.data.Attribute}
         immutableData={true}
         overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}

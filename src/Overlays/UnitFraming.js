@@ -274,10 +274,7 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         width: 100,
         cellStyle: () => ({ ...greyCellStyle, overflow: "auto" }),
         headerComponent: () => (
-          <CellHeader
-            headerText={t("Unit")}
-            helpText={t("The units defined in schema")}
-          />
+          <CellHeader headerText={t("Unit")} />
         )
       },
       {
@@ -290,7 +287,7 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         editable: true,
         onCellValueChanged: createOnCellValueChanged(searchUnits, "code", onCellChanged),
         headerComponent: () => (
-          <CellHeader headerText={t("UCUM Code")} helpText={t("UCUM Code")} />
+          <CellHeader headerText={t("UCUM Code")} />
         )
       },
       {
@@ -303,7 +300,7 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         editable: true,
         onCellValueChanged: createOnCellValueChanged(searchUnits, "label", onCellChanged),
         headerComponent: () => (
-          <CellHeader headerText={t("UCUM Label")} helpText={t("UCUM Label")} />
+          <CellHeader headerText={t("UCUM Label")} />
         )
       },
       {
@@ -316,10 +313,7 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         editable: true,
         onCellValueChanged: createOnCellValueChanged(searchUnits, "description", onCellChanged),
         headerComponent: () => (
-          <CellHeader
-            headerText={t("UCUM Unit Description")}
-            helpText={t("UCUM Unit Description")}
-          />
+          <CellHeader headerText={t("UCUM Unit Description")} />
         )
       },
       {

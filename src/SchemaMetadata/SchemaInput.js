@@ -244,7 +244,7 @@ export default function SchemaInput({
           {language === primaryLanguage && (
             <Tooltip
               title={t(
-                "The name of the schema. It is recommended to use a more general..."
+                "The name of the schema. It is recommended to use a more general name rather than one that identifies a specific dataset or experiment."
               )}
               placement="right"
               arrow
@@ -286,7 +286,7 @@ export default function SchemaInput({
           </Typography>
           {language === primaryLanguage && (
             <Tooltip
-              title={t("The description of the schema that will help yourself...")}
+              title={t("The description of the schema that will help yourself and others determine what kind of data the schema describes.")}
               placement="right"
               arrow
             >
