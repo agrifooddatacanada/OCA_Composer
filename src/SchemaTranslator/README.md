@@ -49,6 +49,7 @@ This module provides functionality to translate LinkML schemas to OCA (Overlays 
 | ----------------------- | ---------------------------------------- | ------------------- |
 | Slot `slot_uri`       | `attr_standards: { "field": "uri" }`   | Semantic references |
 | Slot `unit.ucum_code` | `attribute_units: { "field": "code" }` | UCUM codes only     |
+| Annotations `flagged` | conformance |      |
 
 #### Enumerations
 
@@ -62,14 +63,10 @@ This module provides functionality to translate LinkML schemas to OCA (Overlays 
 | OCA Feature         | Potential LinkML Source     | Status           |
 | ------------------- | --------------------------- | ---------------- |
 | Cardinality Overlay | Array constraints           | Not implemented  |
-| Conditional Overlay | No equivalent               | Gap              |
-| Conformance Overlay | `required` property       | Could map to M/O |
-| Mapping Overlay     | Slot aliases                | Not implemented  |
+| Conformance Overlay | `required` property         | Not implemented; Could map to M/O |
+| Attribute Mapping   | No equivalent               | Gap              |
 | Entry Code Mapping  | No equivalent               | Gap              |
-| Subset Overlay      | No equivalent               | Gap              |
 | Unit Mapping        | Redundant with Unit Overlay | Not needed       |
-| Layout Overlay      | Under review                | Not implemented  |
-| Sensitive Overlay   | Under review                | Not implemented  |
 
 ### Example Mapping
 
