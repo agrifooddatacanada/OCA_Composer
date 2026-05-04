@@ -541,7 +541,8 @@ const useHandleAllDrop = () => {
     } else if (rawFile.length > 0) {
       const pathOrName = (rawFile[0].path || rawFile[0].name || "").toLowerCase();
       if (pathOrName.endsWith(".yaml") || pathOrName.endsWith(".yml")) {
-        // LinkML: useHandleSchemaFileDrop reads schemaRawFile only
+        setLoading(false);
+        setDropDisabled(true);
       } else {
         setDropMessage({ message: messages.uploadFail, type: "error" });
         setLoading(false);
