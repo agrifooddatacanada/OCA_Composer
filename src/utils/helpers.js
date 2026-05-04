@@ -1090,8 +1090,14 @@ export const getLabelofParentClass = async (uri) => {
   return responseData;
 };
 
-export const normalizeEscapedQuotes = (s) =>
-  typeof s === "string" ? s.replace(/\\"/g, '"').replace(/\\'/g, "'") : s;
+export const normalizeEscapedQuotes = (s) => {
+  if (typeof s !== "string") return s;
+  return s
+    .replace(/\\-/g, "-")
+    .replace(/\\'/g, "'")
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, "\\");
+};
 
 export const escapeForOCAString = (s) => {
   if (typeof s !== "string") return s;
