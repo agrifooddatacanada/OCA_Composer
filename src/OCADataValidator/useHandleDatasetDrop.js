@@ -1,10 +1,89 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
-import { Context } from '../App';
+import { useCallback, useContext, useEffect, useState } from "react";
 import Papa from "papaparse";
-import { messages } from '../constants/messages';
 import * as XLSX from "xlsx";
+import { messages } from "../constants/messages";
+import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 
-export const useHandleDatasetDrop = () => {
+/**
+ * Decode CSV/TSV bytes: UTF-8 BOM / UTF-16 LE / UTF-16 BE, then strict UTF-8 or legacy ANSI.
+ * - Papa strips UTF-8 BOM only for string input, not File streaming.
+ * - UTF-16 exports must not be read as UTF-8.
+ * - Excel "ANSI" / Windows-1252 uses byte 0xB0 for °; that byte is invalid UTF-8 alone, so
+ *   default TextDecoder replaces it with U+FFFD (�). We use fatal UTF-8 and fall back to
+ *   windows-1252 when the file is not valid UTF-8.
+ */
+function decodeWindows1252OrLatin1(buf) {
+  try {
+    return new TextDecoder("windows-1252").decode(buf);
+  } catch {
+    return new TextDecoder("iso-8859-1").decode(buf);
+  }
+}
+
+function decodeBytesToString(buf) {
+  if (buf.length === 0) {
+    return "";
+  }
+  if (buf.length >= 3 && buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+    try {
+      return new TextDecoder("utf-8", { fatal: true }).decode(buf.slice(3));
+    } catch {
+      return decodeWindows1252OrLatin1(buf.slice(3));
+    }
+  }
+  if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xfe) {
+    return new TextDecoder("utf-16le").decode(buf.slice(2));
+  }
+  if (buf.length >= 2 && buf[0] === 0xfe && buf[1] === 0xff) {
+    return new TextDecoder("utf-16be").decode(buf.slice(2));
+  }
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(buf);
+  } catch {
+    return decodeWindows1252OrLatin1(buf);
+  }
+}
+
+function readDelimitedFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const buf = new Uint8Array(e.target.result);
+      resolve(decodeBytesToString(buf));
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+/**
+ * UTF-8 C2 A1 is ¡ (U+00A1); C2 B0 is ° (U+00B0). Some TSV/CSV exports mis-encode the degree
+ * sign as ¡. CP1252 byte 0xA1 is also ¡ vs 0xB0 for °. Replace ¡ with ° only when a digit
+ * precedes ¡ (e.g. 45¡30, -12.5¡) so leading Spanish ¡ is not touched.
+ */
+function normalizeInvertedExclamationAsDegree(value) {
+  if (typeof value !== "string") {
+    return value;
+  }
+  if (/\d\s*\u00A1/.test(value)) {
+    return value.replace(/\u00A1/g, "\u00B0");
+  }
+  return value;
+}
+
+function normalizeDelimiter(delimiter) {
+  if (delimiter === "\\t") return "\t";
+  return delimiter;
+}
+
+function delimiterToFileType(delimiter) {
+  if (delimiter === ",") return "CSV";
+  if (delimiter === "\t") return "TSV";
+  return "";
+}
+
+export default function useHandleDatasetDrop() {
   const {
     datasetLoading,
     setDatasetLoading,
@@ -33,7 +112,8 @@ export const useHandleDatasetDrop = () => {
   } = useContext(Context);
 
   const [excelSheetNames, setExcelSheetNames] = useState([]);
-
+  const { getSchema } = useMultiSchema();
+  const schemaState = getSchema();
   const datasetLoadingState = () => {
     setDatasetLoading(true);
     setJsonLoading(true);
@@ -54,33 +134,63 @@ export const useHandleDatasetDrop = () => {
     firstTimeMatchingRef.current = true;
   }, []);
 
-  const processCSVFile = useCallback((file) => {
+  const processDelimitedTextFile = useCallback(async (file, delimiter) => {
+    let text;
     try {
-      Papa.parse(file, {
+      text = await readDelimitedFileAsText(file);
+    } catch {
+      setDatasetDropMessage({ message: messages.parseUploadFail, type: "error" });
+      setDatasetLoading(false);
+      setJsonLoading(false);
+      if (schemaRawFile.length === 0) {
+        setJsonDropDisabled(false);
+      }
+      setTimeout(() => {
+        setDatasetDropMessage({ message: "", type: "" });
+      }, 2500);
+      return;
+    }
+
+    try {
+      Papa.parse(text, {
+        delimiter,
         header: true,
         skipEmptyLines: "greedy",
-        transformHeader: function(header, index) {
-          if (header !== "") {
-            return header;
-          }
-          //without this, papaparse will save blank headers as "", "_1", "_2", etc.
-          return `header_empty_placeholder_${index}`;
+        fastMode: false,
+        transform: normalizeInvertedExclamationAsDegree,
+        transformHeader: (header, index) => {
+          const raw =
+            header !== ""
+              ? header
+              : `header_empty_placeholder_${index}`;
+          return normalizeInvertedExclamationAsDegree(raw);
         },
-        complete: function(results) {
+        complete: (results) => {
           setSchemaDataConformantHeader(results.meta.fields);
           setSchemaDataConformantRowData(results.data);
 
           setDatasetLoading(false);
           setDatasetDropDisabled(true);
 
+          const schemaDelimiter = normalizeDelimiter(schemaState?.fileDelimiterData?.fieldDelimiter);
+          const expectedFileType = delimiterToFileType(schemaDelimiter);
+          const uploadedFileType = delimiterToFileType(delimiter);
+          const hasDelimiterMismatch =
+            expectedFileType !== "" &&
+            uploadedFileType !== "" &&
+            expectedFileType !== uploadedFileType;
           setDatasetDropMessage({
-            message: messages.successfulUpload,
-            type: "success",
+            message: hasDelimiterMismatch
+              ? messages.delimiterMismatchWarning(expectedFileType, uploadedFileType)
+              : messages.successfulUpload,
+            type: hasDelimiterMismatch ? "warning" : "success",
           });
 
           setTimeout(() => {
             setDatasetDropDisabled(true);
-            setDatasetDropMessage({ message: "", type: "" });
+            if (!hasDelimiterMismatch) {
+              setDatasetDropMessage({ message: "", type: "" });
+            }
             setDatasetLoading(false);
             setJsonLoading(false);
             if (schemaRawFile.length === 0) {
@@ -89,7 +199,7 @@ export const useHandleDatasetDrop = () => {
 
             if (!datasetIsParsed) {
               setDatasetIsParsed(true);
-              if (schemaRawFile.length > 0) {
+              if (schemaRawFile.length > 0 && !hasDelimiterMismatch) {
                 setCurrentDataValidatorPage("AttributeMatchDataValidator");
               } 
             }
@@ -105,7 +215,7 @@ export const useHandleDatasetDrop = () => {
       }
       setTimeout(() => {
         setDatasetDropMessage({ message: "", type: "" });
-      }, [2500]);
+      }, 2500);
     }
   }, [datasetIsParsed, schemaRawFile]);
 
@@ -161,8 +271,7 @@ export const useHandleDatasetDrop = () => {
 
   const processExcelFile = useCallback(async (workbook, index) => {
 
-    let schemaConformantDataName;
-    schemaConformantDataName = workbook.SheetNames[index];
+    const schemaConformantDataName = workbook.SheetNames[index];
 
     const worksheet = workbook.Sheets[schemaConformantDataName];
 
@@ -171,7 +280,7 @@ export const useHandleDatasetDrop = () => {
       return;
     }
 
-    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    const range = XLSX.utils.decode_range(worksheet["!ref"]);
 
     // Find the last row index.
     let lastRowIndex = range.s.r;
@@ -182,7 +291,7 @@ export const useHandleDatasetDrop = () => {
         const cellRef = XLSX.utils.encode_cell(cellAddress);
         const cell = worksheet[cellRef];
 
-        if (cell && cell.v !== undefined && cell.v !== '') {
+        if (cell && cell.v !== undefined && cell.v !== "") {
           if (row > lastRowIndex) {
             lastRowIndex = row;
           }
@@ -241,7 +350,9 @@ export const useHandleDatasetDrop = () => {
 
   useEffect(() => {
     if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && datasetRawFile[0].path.includes(".csv")) {
-      processCSVFile(datasetRawFile[0]);
+      processDelimitedTextFile(datasetRawFile[0], ",");
+    } else if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && datasetRawFile[0].path.includes(".tsv")) {
+      processDelimitedTextFile(datasetRawFile[0], "\t");
     } else if (datasetRawFile && datasetRawFile.length > 0 && !datasetIsParsed && (datasetRawFile[0].path.includes(".xls") || datasetRawFile[0].path.includes(".xlsx"))) {
       handleExcelDrop(datasetRawFile[0]);
     } else if (datasetRawFile && !datasetIsParsed && datasetRawFile.length > 0) {
@@ -273,4 +384,4 @@ export const useHandleDatasetDrop = () => {
     firstNavigationToDataset,
     setDatasetLoading
   };
-};
+}

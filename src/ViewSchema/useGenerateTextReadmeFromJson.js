@@ -5,7 +5,16 @@ import {
   normalizeEscapedQuotes
 } from "../utils/helpers";
 import { getPackageDependencies } from "../utils/packageUtils";
-import { ADC, FORM, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
+import {
+  ADC,
+  FORM,
+  RANGE,
+  SENSITIVE,
+  UNIT_FRAMING,
+  DECIMAL_SEPARATOR,
+  FILE_DELIMITER,
+  ARRAY_DELIMITER
+} from "../constants/constants";
 
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL
@@ -426,6 +435,66 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
     }
   }
 
+  // Data Separator overlays (ADC extensions): decimal_separator, file_delimiter, array_delimiter.
+  // Raw characters like "\t" wouldn't render cleanly, so we prettify them here.
+  const prettyDelimiter = (value) => {
+    if (value === "\t") return "\\t (tab)";
+    if (value === undefined || value === null || value === "") return "";
+    return `"${value}"`;
+  };
+
+  if (Object.prototype.hasOwnProperty.call(extensionOverlays, DECIMAL_SEPARATOR)) {
+    const decimalOverlay = extensionOverlays[DECIMAL_SEPARATOR];
+    if (decimalOverlay?.delimiter) {
+      lines.push(
+        `Layer name: ${decimalOverlay.type}\n`,
+        ...(decimalOverlay.d ? [`SAID/digest: ${decimalOverlay.d}\n`] : []),
+        "\n",
+        `Decimal separator: ${prettyDelimiter(decimalOverlay.delimiter)}\n`,
+        "\n",
+        "******************************************************************\n"
+      );
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(extensionOverlays, FILE_DELIMITER)) {
+    const fileOverlay = extensionOverlays[FILE_DELIMITER];
+    if (fileOverlay?.delimiter !== undefined) {
+      lines.push(
+        `Layer name: ${fileOverlay.type}\n`,
+        ...(fileOverlay.d ? [`SAID/digest: ${fileOverlay.d}\n`] : []),
+        "\n",
+        `Field delimiter: ${prettyDelimiter(fileOverlay.delimiter)}\n`,
+        `Quote character: ${prettyDelimiter(fileOverlay.quote_char)}\n`,
+        `Escape character: ${prettyDelimiter(fileOverlay.escape_char)}\n`,
+        `Line terminator: ${fileOverlay.line_terminator || ""}\n`,
+        `Data start row: ${fileOverlay.data_start_row ?? ""}\n`,
+        "\n",
+        "******************************************************************\n"
+      );
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(extensionOverlays, ARRAY_DELIMITER)) {
+    const arrayOverlay = extensionOverlays[ARRAY_DELIMITER];
+    const arrayAttributes = arrayOverlay?.attributes || {};
+
+    if (Object.keys(arrayAttributes).length > 0) {
+      lines.push(
+        `Layer name: ${arrayOverlay.type}\n`,
+        ...(arrayOverlay.d ? [`SAID/digest: ${arrayOverlay.d}\n`] : []),
+        "\n",
+        `Schema attributes: ${arrayOverlay.type}\n`
+      );
+
+      Object.entries(arrayAttributes).forEach(([attribute, delimiter]) => {
+        lines.push(`   ${attribute}: ${prettyDelimiter(delimiter)}\n`);
+      });
+
+      lines.push("\n", "******************************************************************\n");
+    }
+  }
+
   const formOverlayArray = getFormOverlayArray(extensionOverlays);
   if (Array.isArray(formOverlayArray) && formOverlayArray.length > 0) {
     const form_overlays_txt = [];
@@ -596,9 +665,6 @@ const useGenerateTextReadmeFromJson = () => {
     // Check if ordering overlay can be retrieved from oca package
     const orderingOverlay =
       ocaPackage?.extensions?.[ADC]?.[json_bundle.capture_base.d]?.overlays?.ordering;
-    const hasAttributeOrdering = orderingOverlay?.attribute_ordering?.length > 0;
-    const hasEntryCodeOrdering =
-      Object.keys(orderingOverlay?.entry_code_ordering || {}).length > 0;
 
     // Step 2: __init__ of OCA ReadMe file
     const text_file = [];
@@ -741,12 +807,12 @@ const useGenerateTextReadmeFromJson = () => {
         text_file.push(`\nCHILD SCHEMA ${index + 1}\n`);
         text_file.push("******************************************************************\n");
         text_file.push(`Schema SAID: ${childCaptureBase.d}\n`);
-        text_file.push(`Schema Name: ${childMetaOverlay?.name || 'Unnamed Child Schema'}\n`);
-        text_file.push(`Description: ${childMetaOverlay?.description || ''}\n\n`);
+        text_file.push(`Schema Name: ${childMetaOverlay?.name || "Unnamed Child Schema"}\n`);
+        text_file.push(`Description: ${childMetaOverlay?.description || ""}\n\n`);
         
         text_file.push("Schema attributes: data type\n");
         const childAttributes = childCaptureBase.attributes || {};
-        Object.keys(childAttributes).forEach(attrName => {
+        Object.keys(childAttributes).forEach((attrName) => {
           const attrType = childAttributes[attrName];
           const typeDisplay = Array.isArray(attrType) ? `Array[${attrType[0]}]` : attrType;
           text_file.push(`    ${attrName}: ${typeDisplay}\n`);
@@ -840,7 +906,7 @@ const useGenerateTextReadmeFromJson = () => {
       const metaOverlays = Array.isArray(json_bundle.overlays.meta) 
         ? json_bundle.overlays.meta 
         : [json_bundle.overlays.meta];
-      const engMeta = metaOverlays.find(m => m.language === 'eng') || metaOverlays[0];
+      const engMeta = metaOverlays.find((m) => m.language === "eng") || metaOverlays[0];
       nameForFile = engMeta?.name || null;
     }
     

@@ -29,6 +29,10 @@ import {
   RANGE,
   ATTRIBUTE_FRAMING,
   FIELD_FORM_INFORMATION_OVERLAY,
+  FIELD_DATA_SEPARATOR_OVERLAY,
+  DECIMAL_SEPARATOR,
+  FILE_DELIMITER,
+  ARRAY_DELIMITER,
   overlayItems
 } from "../constants/constants";
 import {
@@ -176,6 +180,17 @@ const useOCAExport = () => {
     const attributeRanges = schemaState?.attributeRanges || {};
     const attributeFramingRowData = schemaState?.attributeFramingData || [];
     const unitFramedRowData = schemaState?.unitFramedData || [];
+    const decimalSeparator = schemaState?.decimalSeparator || ".";
+    const fileDelimiterData = schemaState?.fileDelimiterData || {};
+    const arrayDelimiterData =
+      schemaState?.arrayDelimiterData &&
+      typeof schemaState.arrayDelimiterData === "object" &&
+      !Array.isArray(schemaState.arrayDelimiterData)
+        ? schemaState.arrayDelimiterData
+        : {};
+    const enableDecimalSeparator = !!schemaState?.enableDecimalSeparator;
+    const enableFileDelimiter = !!schemaState?.enableFileDelimiter;
+    const enableArrayDelimiter = !!schemaState?.enableArrayDelimiter;
     const overlaySelections = schemaState?.overlaySelections || overlay;
     const classificationCode = metadata?.classification || null;
     
@@ -582,6 +597,36 @@ const useOCAExport = () => {
                 schemaDescription,
                 formCaptureBaseDigest
               )
+            }
+          }
+        : {}),
+      ...(overlaySelections[FIELD_DATA_SEPARATOR_OVERLAY] && enableDecimalSeparator
+        ? {
+            decimal_separator_overlay: {
+              type: DECIMAL_SEPARATOR,
+              decimal_separator: decimalSeparator
+            }
+          }
+        : {}),
+      ...(overlaySelections[FIELD_DATA_SEPARATOR_OVERLAY] && enableFileDelimiter
+        ? {
+            file_delimiter_overlay: {
+              type: FILE_DELIMITER,
+              delimiter: fileDelimiterData.fieldDelimiter,
+              quote_char: fileDelimiterData.quoteChar,
+              escape_char: fileDelimiterData.escapeChar,
+              line_terminator: fileDelimiterData.lineTerminator,
+              data_start_row: fileDelimiterData.dataStartRow
+            }
+          }
+        : {}),
+      ...(overlaySelections[FIELD_DATA_SEPARATOR_OVERLAY] &&
+      enableArrayDelimiter &&
+      Object.keys(arrayDelimiterData).length > 0
+        ? {
+            array_delimiter_overlay: {
+              type: ARRAY_DELIMITER,
+              attributes: { ...arrayDelimiterData }
             }
           }
         : {})

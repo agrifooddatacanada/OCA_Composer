@@ -3,6 +3,8 @@ import {
   scenarioParentIctGroupMap
 } from "../constants/catalogueInfo";
 
+import { prettyPrintDelimiter } from "../utils/helpers";
+
 const generateTable = (columns, rows) => {
   const header = `| ${columns.join(" | ")} |\n| ${columns.map(() => "---").join(" | ")} |\n`;
   const body = rows.map((row) => `| ${row.join(" | ")} |`).join("\n");
@@ -106,11 +108,15 @@ export const generateSchemaQuickView = ({
 export const generateInternationalSchemaInformation = (
   layers,
   languages,
-  languageCodeLookupMap
+  languageCodeLookupMap,
+  decimal_separator,
+  file_delimiter,
 ) => {
   const markdownContent = ["## International schema information\n\n"];
   const columns = ["Language", "Name", "Description"];
   const rows = [];
+  const delimiterColumns = ["Delimiter", "Value"];
+  const delimiterRows = [];
 
   languages.forEach((language) => {
     const languageCode = languageCodeLookupMap[language.toLowerCase()];
@@ -122,6 +128,22 @@ export const generateInternationalSchemaInformation = (
   });
 
   markdownContent.push(generateTable(columns, rows), "\n\n");
+
+  if (decimal_separator || file_delimiter) {
+    if (decimal_separator) {
+      delimiterRows.push(["Decimal separator", decimal_separator.delimiter]);
+    }
+    if (file_delimiter) {
+      delimiterRows.push(["File delimiter", file_delimiter.delimiter]);
+      delimiterRows.push(["Quote character", file_delimiter.quote_char]);
+      delimiterRows.push(["Escape character", file_delimiter.escape_char]);
+      delimiterRows.push(["Line terminator", file_delimiter.line_terminator]);
+      delimiterRows.push(["Data start row", file_delimiter.data_start_row]);
+    }
+  
+    markdownContent.push("### Global Schema Values\n\n");
+    markdownContent.push(generateTable(delimiterColumns, delimiterRows), "\n\n");
+  }
 
   return markdownContent.join("");
 };
@@ -235,7 +257,8 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   attributeNames,
   sensitiveAttributes = [],
   rangeOverlay = null,
-  unitFramingOverlay = null
+  unitFramingOverlay = null,
+  arrayDelimiterOverlay = null
 }) => {
   const hcfFlaggedAttributes = Array.isArray(captureBaseOverlay.flagged_attributes)
     ? captureBaseOverlay.flagged_attributes
@@ -285,6 +308,10 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
 
   if (unitFramingUnits.length > 0) {
     columns.push("Unit Framing");
+  }
+
+  if (arrayDelimiterOverlay) {
+    columns.push("Array Delimiter");
   }
 
   const rows = attributeNames.map((attribute) => {
@@ -343,6 +370,11 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
     if (unitFramingOverlay?.units?.[unit]) {
       const unitFramingData = unitFramingOverlay.units[unit];
       row.push(unitFramingData.term_id);
+    }
+
+    if (arrayDelimiterOverlay?.attributes?.[attribute]) {
+      const arrayDelimiter = arrayDelimiterOverlay.attributes[attribute];
+      row.push(prettyPrintDelimiter(arrayDelimiter));
     }
 
     return row;

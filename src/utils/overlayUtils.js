@@ -13,7 +13,8 @@ import {
   FIELD_UNIT_FRAMING_OVERLAY,
   FIELD_CONFORMANCE_OVERLAY,
   FIELD_DATA_STANDARDS_OVERLAY,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  FIELD_DATA_SEPARATOR_OVERLAY
 } from '../constants/constants';
 import { useMultiSchema } from '../schema/schemaContext';
 import { useContext, useCallback } from 'react';
@@ -40,7 +41,21 @@ export const resetOverlayValues = (overlayType) => {
       _requiresAttributeUpdate: true
     },
     [FIELD_DATA_STANDARDS_OVERLAY]: { dataStandardsData: [] },
-    [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { attributeFramingData: [] }
+    [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { attributeFramingData: [] },
+    [FIELD_DATA_SEPARATOR_OVERLAY]: {
+      decimalSeparator: ".",
+      fileDelimiterData: {
+        fieldDelimiter: ",",
+        quoteChar: "\"",
+        escapeChar: "\\",
+        lineTerminator: "lf",
+        dataStartRow: 1
+      },
+      arrayDelimiterData: {},
+      enableDecimalSeparator: false,
+      enableFileDelimiter: false,
+      enableArrayDelimiter: false
+    }
   };
 
   const clearData = overlayConfig[overlayType];

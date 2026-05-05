@@ -102,6 +102,7 @@ export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
 export const FIELD_RANGE_OVERLAY = "Range";
 export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
 export const FIELD_FORM_INFORMATION_OVERLAY = "Form Information";
+export const FIELD_DATA_SEPARATOR_OVERLAY = "Data Separator";
 
 export const overlayItems = {
   [FIELD_CHARACTER_ENCODING_OVERLAY]: false,
@@ -112,7 +113,8 @@ export const overlayItems = {
   [FIELD_UNIT_FRAMING_OVERLAY]: false,
   [FIELD_RANGE_OVERLAY]: false,
   [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
-  [FIELD_FORM_INFORMATION_OVERLAY]: false
+  [FIELD_FORM_INFORMATION_OVERLAY]: false,
+  [FIELD_DATA_SEPARATOR_OVERLAY]: false
 };
 
 export const classification = {
@@ -575,7 +577,7 @@ export const dewvSchemaUploadDescription =
 export const textUploadDescription =
   "Click here to select schema bundle (.zip OR .json) or drag and drop one here";
 export const datasetUploadDescription =
-  "Click here to select an Excel or CSV dataset or drag and drop one here";
+  "Click here to select an Excel, CSV, or TSV dataset or drag and drop one here";
 export const defaultTooltip =
   "To make it easier to create a schema you can drag and drop your existing dataset that...";
 export const jsonUploadTooltip =
@@ -583,7 +585,7 @@ export const jsonUploadTooltip =
 export const dewcSchemaUploadTooltip =
   "To make it easier to upload a schema you can drag and drop your existing dataset that you are creating the schema for. This schema should be the machine-readable schema bundle generated from the Semantic Engine.";
 export const datasetUploadTooltip =
-  "To make it easier to upload a dataset you can drag and drop your existing dataset that you are creating the schema for. This dataset should be in table format as an Excel or .csv format";
+  "To make it easier to upload a dataset you can drag and drop your existing dataset that you are creating the schema for. This dataset should be in table format as an Excel, CSV, or TSV file";
 export const defaultNoteDescription =
   "Note: None of this data will be uploaded to a server and all processing happens on device.";
 
@@ -592,7 +594,8 @@ export const errorCode = {
   "Entry Codes": "EC",
   "Character Encoding": "CHE",
   "Data Type": "DTE",
-  Range: "RE"
+  Range: "RE",
+  Warning: "W"
 };
 
 export const OVERLAYS_WORD = "overlays";
@@ -628,6 +631,11 @@ export const RANGE = "range";
 
 // Attribute Framing Overlay
 export const ATTRIBUTE_FRAMING = "attribute_framing";
+
+// Data Separator Overlays (ADC extension)
+export const DECIMAL_SEPARATOR = "decimal_separator";
+export const FILE_DELIMITER = "file_delimiter";
+export const ARRAY_DELIMITER = "array_delimiter";
 
 export const overlays = [
   CHARACTER_ENCODING,

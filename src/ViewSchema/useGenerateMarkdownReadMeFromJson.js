@@ -28,7 +28,10 @@ import {
   DEFAULT_THREE_LETTER_LANGUAGE_CODE,
   RANGE,
   SENSITIVE,
-  UNIT_FRAMING
+  UNIT_FRAMING,
+  DECIMAL_SEPARATOR,
+  FILE_DELIMITER,
+  ARRAY_DELIMITER
 } from "../constants/constants";
 import {
   downloadMarkdownFile,
@@ -84,7 +87,7 @@ const getLanguagesFromLayers = (layers) => {
     }
   });
 
-  if (!languages.some((language) => languageCodeOCAFromName(language) === DEFAULT_THREE_LETTER_LANGUAGE_CODE)) {
+  if (!languages.some((language) => langCodeOCAFromName(language) === DEFAULT_THREE_LETTER_LANGUAGE_CODE)) {
     languages.unshift(langNameFromTwoLetters(DEFAULT_THREE_LETTER_LANGUAGE_CODE) || "English");
   }
 
@@ -143,6 +146,15 @@ const useGenerateMarkdownReadMeFromJson = () => {
 
   const unitFramingOverlay =
     pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[UNIT_FRAMING];
+
+  const decimalSeparatorOverlay =
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[DECIMAL_SEPARATOR];
+
+  const fileDelimiterOverlay =
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[FILE_DELIMITER];
+
+  const arrayDelimiterOverlay =
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[ARRAY_DELIMITER];
 
   const generateMarkdownReadMeFromJson = (schemaData, catalogueData) => {
     // Extract languages from the entire package
@@ -208,7 +220,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
     fileContent += generateInternationalSchemaInformation(
       layers,
       languages,
-      languageCodeLookupMap
+      languageCodeLookupMap,
+      decimalSeparatorOverlay,
+      fileDelimiterOverlay
     );
     fileContent += generateEntryCodeTables(
       layers,
@@ -222,7 +236,8 @@ const useGenerateMarkdownReadMeFromJson = () => {
       attributeNames,
       sensitiveAttributes,
       rangeOverlay,
-      unitFramingOverlay
+      unitFramingOverlay,
+      arrayDelimiterOverlay
     });
     if (unitFramingOverlay?.framing_metadata) {
       fileContent += generateUnitFramingMetadataTable(

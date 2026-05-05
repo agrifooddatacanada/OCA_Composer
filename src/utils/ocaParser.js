@@ -9,9 +9,13 @@ import {
   FIELD_RANGE_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
+  FIELD_DATA_SEPARATOR_OVERLAY,
   TYPE_CHILD_SCHEMA,
   TYPE_PLACEHOLDER_CHILD_SCHEMA,
-  SENSITIVE
+  SENSITIVE,
+  DECIMAL_SEPARATOR,
+  FILE_DELIMITER,
+  ARRAY_DELIMITER
 } from "../constants/constants";
 import { langNameFromTwoLetters, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
@@ -179,11 +183,16 @@ export class OCAParser {
     const formOverlayData = flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId]?.overlays?.form_overlay || 
                            flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId]?.overlays?.form;
     const hasFormExtension = !!formOverlayData && (Array.isArray(formOverlayData) ? formOverlayData.length > 0 : !!formOverlayData.form_overlays);
+    // Parse Data Separator ADC overlays (decimal/file/array) into UI-shaped fields.
+    // Supports both ADC extension shapes: array-of-overlay-objects and { overlays: {...} }.
+    const dataSeparator = this._parseDataSeparatorOverlays(adcExtensions);
+
     const overlaySelections = this._buildOverlaySelections(
       schemaData.overlays, 
       hasUnitFramingExtension,
       hasRangeExtension,
-      hasFormExtension
+      hasFormExtension,
+      dataSeparator.hasAny
     );
 
     // Build localized metadata from meta overlays
@@ -206,6 +215,15 @@ export class OCAParser {
       frameAllAttributes: false,
       unframedUnitList: [],
       unframedAttributeList: [],
+      // Data Separator overlay fields (imported from ADC extensions)
+      decimalSeparator: dataSeparator.decimalSeparator,
+      enableDecimalSeparator: dataSeparator.enableDecimalSeparator,
+      ...(dataSeparator.fileDelimiterData
+        ? { fileDelimiterData: dataSeparator.fileDelimiterData }
+        : {}),
+      enableFileDelimiter: dataSeparator.enableFileDelimiter,
+      arrayDelimiterData: dataSeparator.arrayDelimiterData,
+      enableArrayDelimiter: dataSeparator.enableArrayDelimiter,
       initialized: true  // CRITICAL: Marks schema as parsed (don't re-parse)
     };
   }
@@ -707,7 +725,7 @@ export class OCAParser {
    * Build overlay selections based on present overlays
    * @private
    */
-  static _buildOverlaySelections(overlays, hasUnitFramingExtension = false, hasRangeExtension = false, hasFormExtension = false) {
+  static _buildOverlaySelections(overlays, hasUnitFramingExtension = false, hasRangeExtension = false, hasFormExtension = false, hasDataSeparatorExtension = false) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
@@ -723,9 +741,86 @@ export class OCAParser {
       [FIELD_UNIT_FRAMING_OVERLAY]: !!(unitOverlay?.attribute_units || unitOverlay?.attribute_unit) && hasUnitFramingExtension, // Only enable if explicit framing exists
       [FIELD_RANGE_OVERLAY]: hasRangeExtension,
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
-      [FIELD_FORM_INFORMATION_OVERLAY]: hasFormExtension
+      [FIELD_FORM_INFORMATION_OVERLAY]: hasFormExtension,
+      [FIELD_DATA_SEPARATOR_OVERLAY]: hasDataSeparatorExtension
     };
     return selections;
+  }
+
+  /**
+   * Parse Data Separator ADC extension overlays into the UI state shape.
+   *
+   * Reads from either supported ADC shape:
+   *   - Array:  [{ decimal_separator_overlay: {...}, file_delimiter_overlay: {...}, ... }]
+   *   - Object: { overlays: { decimal_separator: {...}, file_delimiter: {...}, ... } }
+   *
+   * Returns the fields consumed by DataSeparator.jsx:
+   *   - decimalSeparator / enableDecimalSeparator
+   *   - fileDelimiterData / enableFileDelimiter
+   *   - arrayDelimiterData / enableArrayDelimiter
+   *   - hasAny: true when any of the three overlays were found (used to flip
+   *     FIELD_DATA_SEPARATOR_OVERLAY on in overlaySelections so the overlay
+   *     appears as "already added" after import).
+   *
+   * @private
+   */
+  static _parseDataSeparatorOverlays(adcExtensions) {
+    const result = {
+      decimalSeparator: ".",
+      enableDecimalSeparator: false,
+      fileDelimiterData: null,
+      enableFileDelimiter: false,
+      arrayDelimiterData: {},
+      enableArrayDelimiter: false,
+      hasAny: false
+    };
+
+    if (!adcExtensions) return result;
+
+    let decimalOverlay;
+    let fileOverlay;
+    let arrayOverlay;
+
+    if (Array.isArray(adcExtensions)) {
+      decimalOverlay = adcExtensions.find((ov) => ov?.decimal_separator_overlay)?.decimal_separator_overlay;
+      fileOverlay = adcExtensions.find((ov) => ov?.file_delimiter_overlay)?.file_delimiter_overlay;
+      arrayOverlay = adcExtensions.find((ov) => ov?.array_delimiter_overlay)?.array_delimiter_overlay;
+    } else {
+      const overlays = adcExtensions?.overlays || {};
+      decimalOverlay = overlays.decimal_separator_overlay || overlays[DECIMAL_SEPARATOR];
+      fileOverlay = overlays.file_delimiter_overlay || overlays[FILE_DELIMITER];
+      arrayOverlay = overlays.array_delimiter_overlay || overlays[ARRAY_DELIMITER];
+    }
+
+    if (decimalOverlay) {
+      if (decimalOverlay.delimiter) {
+        result.decimalSeparator = decimalOverlay.delimiter;
+      }
+      result.enableDecimalSeparator = true;
+      result.hasAny = true;
+    }
+
+    if (fileOverlay) {
+      result.fileDelimiterData = {
+        fieldDelimiter: fileOverlay.delimiter ?? ",",
+        quoteChar: fileOverlay.quote_char ?? "\"",
+        escapeChar: fileOverlay.escape_char ?? "\\",
+        lineTerminator: fileOverlay.line_terminator ?? "lf",
+        dataStartRow: typeof fileOverlay.data_start_row === "number"
+          ? fileOverlay.data_start_row
+          : Number.parseInt(fileOverlay.data_start_row ?? 1, 10) || 1
+      };
+      result.enableFileDelimiter = true;
+      result.hasAny = true;
+    }
+
+    if (arrayOverlay?.attributes && typeof arrayOverlay.attributes === "object") {
+      result.arrayDelimiterData = { ...arrayOverlay.attributes };
+      result.enableArrayDelimiter = true;
+      result.hasAny = true;
+    }
+
+    return result;
   }
 
   /**
