@@ -20,11 +20,7 @@ export function isLandingYamlSchema(file) {
 export function syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles) {
   const f = acceptedFiles?.[0];
   setRawFile(acceptedFiles);
-  if (isLandingZipSchema(f) || isLandingJsonSchema(f)) {
-    setSchemaRawFile([]);
-    return;
-  }
-  if (isLandingYamlSchema(f)) {
+  if (isLandingZipSchema(f) || isLandingJsonSchema(f) || isLandingYamlSchema(f)) {
     setSchemaRawFile(acceptedFiles);
     return;
   }
