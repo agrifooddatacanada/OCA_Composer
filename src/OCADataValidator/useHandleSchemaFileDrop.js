@@ -45,6 +45,30 @@ export const useHandleSchemaFileDrop = (
     type: ""
   });
 
+  const finishUploadUi = useCallback(() => {
+    setJsonDropDisabled(true);
+    setJsonDropMessage({ message: "", type: "" });
+    setJsonLoading(false);
+    setDatasetLoading(false);
+    if (datasetRawFile.length === 0) {
+      setDatasetDropDisabled(false);
+    }
+    if (!jsonIsParsed) {
+      setJsonIsParsed(true);
+      setCurrentDataValidatorPage("SchemaViewDataValidator");
+    }
+  }, [
+    datasetRawFile.length,
+    jsonIsParsed,
+    setCurrentDataValidatorPage,
+    setDatasetDropDisabled,
+    setDatasetLoading,
+    setJsonDropDisabled,
+    setJsonDropMessage,
+    setJsonIsParsed,
+    setJsonLoading
+  ]);
+
   const overallLoading = useCallback(() => {
     setJsonLoading(true);
     setDatasetLoading(true);
@@ -66,10 +90,11 @@ export const useHandleSchemaFileDrop = (
         setJsonLoading(true);
         const reader = new FileReader();
 
-        reader.onload = async (e) => {
-          setTargetResult(e);
-          const textDecoder = new TextDecoder("utf-8");
-          const jsonString = textDecoder.decode(e.target.result);
+        reader.onload = (e) => {
+          try {
+            setTargetResult(e);
+            const textDecoder = new TextDecoder("utf-8");
+            const jsonString = textDecoder.decode(e.target.result);
           const rawParse = coerceIfLegacyTopLevelBundle(JSON.parse(jsonString));
           let jsonFile = null;
           let ocaPackageData = null;
@@ -251,25 +276,21 @@ export const useHandleSchemaFileDrop = (
           // which uses OCAParser to extract all schema data into MultiSchemaContext
           
           setZipToReadme(allJSONFiles);
-        };
-
-        reader.readAsArrayBuffer(acceptedFiles[0]);
-
-        reader.onloadend = () => {
-          setTimeout(() => {
-            setJsonDropDisabled(true);
-            setJsonDropMessage({ message: "", type: "" });
+          finishUploadUi();
+          } catch (error) {
+            setJsonDropMessage({ message: messages.uploadFail, type: "error" });
             setJsonLoading(false);
             setDatasetLoading(false);
             if (datasetRawFile.length === 0) {
               setDatasetDropDisabled(false);
             }
-            if (!jsonIsParsed) {
-              setJsonIsParsed(true);
-              setCurrentDataValidatorPage("SchemaViewDataValidator");
-            }
-          }, 900);
+            setTimeout(() => {
+              setJsonDropMessage({ message: "", type: "" });
+            }, 2500);
+          }
         };
+
+        reader.readAsArrayBuffer(acceptedFiles[0]);
       } catch (error) {
         setJsonDropMessage({ message: messages.uploadFail, type: "error" });
         setJsonLoading(false);
@@ -279,10 +300,10 @@ export const useHandleSchemaFileDrop = (
         }
         setTimeout(() => {
           setJsonDropMessage({ message: "", type: "" });
-        }, [2500]);
+        }, 2500);
       }
     },
-    [datasetRawFile.length, jsonIsParsed]
+    [datasetRawFile.length, finishUploadUi, jsonIsParsed, loadAllSchemasFromOcaPackage, setDatasetDropDisabled, setJsonDropMessage, setJsonLoading, setDatasetLoading, setOcaPackage, setShowWarningCard, setTargetResult, setZipToReadme, switchToSchema]
   );
 
   const handleZipDrop = useCallback((acceptedFiles) => {
@@ -301,28 +322,22 @@ export const useHandleSchemaFileDrop = (
           loadAllSchemasFromOcaPackage(ocaPackage);
           switchToSchema(root, ocaPackage);
           setZipToReadme(allZipFiles);
+          finishUploadUi();
         } catch (err) {
           console.warn("useHandleSchemaFileDrop: failed to parse zip as OCA package", err);
-        }
-      };
-
-      reader.readAsArrayBuffer(acceptedFiles[0]);
-
-      reader.onloadend = () => {
-        setTimeout(() => {
-          setJsonDropDisabled(true);
-          setJsonDropMessage({ message: "", type: "" });
+          setJsonDropMessage({ message: messages.uploadFail, type: "error" });
           setJsonLoading(false);
           setDatasetLoading(false);
           if (datasetRawFile.length === 0) {
             setDatasetDropDisabled(false);
           }
-          if (!jsonIsParsed) {
-            setJsonIsParsed(true);
-            setCurrentDataValidatorPage("SchemaViewDataValidator");
-          }
-        }, 900);
+          setTimeout(() => {
+            setJsonDropMessage({ message: "", type: "" });
+          }, 2500);
+        }
       };
+
+      reader.readAsArrayBuffer(acceptedFiles[0]);
     } catch (error) {
       setJsonDropMessage({ message: messages.uploadFail, type: "error" });
       setJsonLoading(false);
@@ -332,207 +347,116 @@ export const useHandleSchemaFileDrop = (
       }
       setTimeout(() => {
         setJsonDropMessage({ message: "", type: "" });
-      }, [2500]);
+      }, 2500);
     }
-  }, []);
+  }, [
+    datasetRawFile.length,
+    finishUploadUi,
+    loadAllSchemasFromOcaPackage,
+    setDatasetDropDisabled,
+    setDatasetLoading,
+    setJsonDropMessage,
+    setJsonLoading,
+    setOcaPackage,
+    setShowWarningCard,
+    setTargetResult,
+    setZipToReadme,
+    switchToSchema
+  ]);
 
   const handleYamlDrop = useCallback(
     (acceptedFiles) => {
       try {
         setJsonLoading(true);
-        // Note: Do NOT call clearAllSchemas() here - it causes race conditions
-        // loadAllSchemasFromOcaPackage() will properly add the schemas to state
-        
+
         const reader = new FileReader();
 
-        reader.onload = async (e) => {
-          setTargetResult(e);
-          const textDecoder = new TextDecoder("utf-8");
-          const yamlString = textDecoder.decode(e.target.result);
-
+        reader.onload = (e) => {
           try {
-            // Parse YAML content
+            setTargetResult(e);
+            const yamlString = e.target.result;
+
             const linkmlSchema = yaml.load(yamlString);
-
-            // Convert LinkML to OCA bundle
             const bundle = mapLinkMLToOCABundle(linkmlSchema);
-
-            // Create OCA package
             const pkg = transformToPackage(bundle);
 
-            // Store OCA package in MultiSchema context and initialize editor state
+            const jsonFile = pkg.oca_bundle.bundle;
+            const allJSONFiles = [];
+
+            if (jsonFile?.overlays?.meta) {
+              allJSONFiles.push(...jsonFile.overlays.meta.map((m) => JSON.stringify(m)));
+            }
+            if (jsonFile?.overlays?.information) {
+              allJSONFiles.push(
+                ...jsonFile.overlays.information.map((o) => JSON.stringify(o))
+              );
+            }
+            if (jsonFile?.overlays?.label) {
+              allJSONFiles.push(...jsonFile.overlays.label.map((o) => JSON.stringify(o)));
+            }
+            if (jsonFile?.capture_base) {
+              if (jsonFile.capture_base.flagged_attributes?.length > 0) {
+                setShowWarningCard(true);
+              }
+              allJSONFiles.push(JSON.stringify(jsonFile.capture_base));
+            }
+            if (Array.isArray(jsonFile?.overlays?.unit)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.unit[0]));
+            }
+            if (Array.isArray(jsonFile?.overlays?.conformance)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.conformance[0]));
+            }
+            if (Array.isArray(jsonFile?.overlays?.character_encoding)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.character_encoding[0]));
+            }
+            if (Array.isArray(jsonFile?.overlays?.entry_code)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.entry_code[0]));
+            }
+            if (Array.isArray(jsonFile?.overlays?.format)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.format[0]));
+            }
+            if (jsonFile?.overlays?.entry) {
+              allJSONFiles.push(
+                ...jsonFile.overlays.entry.map((e2) => JSON.stringify(e2))
+              );
+            }
+            if (Array.isArray(jsonFile?.overlays?.cardinality)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.cardinality[0]));
+            }
+            if (Array.isArray(jsonFile?.overlays?.standard)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.standard[0]));
+            }
+
+            const rootSchemaId =
+              getPackageBundleId(pkg) ?? getRootCaptureBaseId(pkg) ?? "generated_schema";
+
             setOcaPackage(pkg);
-            
-            // Initialize schema states from the package (required for MultiSchemaContext)
             try {
               loadAllSchemasFromOcaPackage(pkg);
             } catch (err) {
               console.warn("LinkML: loadAllSchemasFromOcaPackage failed", err);
             }
-
-            // Set editing schema to root schema
-            const rootSchemaId = getPackageBundleId(pkg) ?? getRootCaptureBaseId(pkg) ?? 'generated_schema';
             switchToSchema(rootSchemaId, pkg);
-
-            // Extract the bundle for processing - exactly the same structure expected by JSON processing
-            const jsonFile = pkg.oca_bundle.bundle;
-            const languageList = [];
-            const informationList = [];
-            const labelList = [];
-            const metaList = [];
-            const entryList = [];
-            const allJSONFiles = [];
-            let loadRoot;
-            let entryCodeSummary = {};
-            let conformance;
-            let characterEncoding;
-            let loadUnits;
-            let formatRules;
-            let cardinalityData;
-            let dataStandards;
-
-            // load up metadata file in OCA bundle (same as handleJsonDrop)
-            if (jsonFile?.overlays?.meta) {
-              metaList.push(...jsonFile.overlays.meta);
-              languageList.push(
-                ...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2))
-              );
-
-              // ONLY for README
-              const readmeMeta = jsonFile.overlays.meta.map((meta) =>
-                JSON.stringify(meta)
-              );
-              allJSONFiles.push(...readmeMeta);
-            }
-
-            if (jsonFile?.overlays?.information) {
-              informationList.push(...jsonFile.overlays.information);
-
-              // ONLY for README
-              const readmeInformation = jsonFile.overlays.information.map((information) =>
-                JSON.stringify(information)
-              );
-              allJSONFiles.push(...readmeInformation);
-            }
-
-            if (jsonFile?.overlays?.label) {
-              labelList.push(...jsonFile.overlays.label);
-
-              // ONLY for README
-              const readmeLabel = jsonFile.overlays.label.map((label) =>
-                JSON.stringify(label)
-              );
-              allJSONFiles.push(...readmeLabel);
-            }
-
-            if (jsonFile.capture_base) {
-              if (jsonFile.capture_base.flagged_attributes?.length > 0) {
-                setShowWarningCard(true);
-              }
-              loadRoot = { ...jsonFile.capture_base };
-
-              // ONLY for README
-              allJSONFiles.push(JSON.stringify(loadRoot));
-            }
-
-            // Critical fix: For YAML processing, every overlay is in array format
-            // The unit overlay is in jsonFile.overlays.unit as an array
-            if (jsonFile?.overlays?.unit && Array.isArray(jsonFile.overlays.unit)) {
-              [loadUnits] = jsonFile.overlays.unit;
-              // ONLY for README
-              allJSONFiles.push(JSON.stringify(loadUnits));
-            }
-
-            if (
-              jsonFile?.overlays?.conformance &&
-              Array.isArray(jsonFile.overlays.conformance)
-            ) {
-              [conformance] = jsonFile.overlays.conformance;
-              // ONLY for README
-              allJSONFiles.push(JSON.stringify(conformance));
-            }
-
-            if (
-              jsonFile?.overlays?.character_encoding &&
-              Array.isArray(jsonFile.overlays.character_encoding)
-            ) {
-              [characterEncoding] = jsonFile.overlays.character_encoding;
-              // ONLY for README
-              allJSONFiles.push(JSON.stringify(characterEncoding));
-            }
-
-            if (
-              jsonFile?.overlays?.entry_code &&
-              Array.isArray(jsonFile.overlays.entry_code)
-            ) {
-              [entryCodeSummary] = jsonFile.overlays.entry_code;
-              // ONLY for README
-              allJSONFiles.push(JSON.stringify(entryCodeSummary));
-            }
-
-            if (jsonFile?.overlays?.format && Array.isArray(jsonFile.overlays.format)) {
-              [formatRules] = jsonFile.overlays.format;
-              // ONLY for README
-              allJSONFiles.push(JSON.stringify(formatRules));
-            }
-
-            if (jsonFile?.overlays?.entry) {
-              entryList.push(...jsonFile.overlays.entry);
-              // ONLY for README
-              const readmeEntry = jsonFile.overlays.entry.map((entry) =>
-                JSON.stringify(entry)
-              );
-              allJSONFiles.push(...readmeEntry);
-            }
-
-            if (
-              jsonFile?.overlays?.cardinality &&
-              Array.isArray(jsonFile.overlays.cardinality)
-            ) {
-              [cardinalityData] = jsonFile.overlays.cardinality;
-              // ONLY for README
-              allJSONFiles.push(JSON.stringify(cardinalityData));
-            }
-
-            if (
-              jsonFile?.overlays?.standard &&
-              Array.isArray(jsonFile.overlays.standard)
-            ) {
-              [dataStandards] = jsonFile.overlays.standard;
-              // ONLY for README
-              allJSONFiles.push(JSON.stringify(dataStandards));
-            }
-
-            if (!languageList || languageList.length === 0) {
-              languageList.push("en");
-            }
-
-            // Data processing handled by loadAllSchemasFromOcaPackage -> OCAParser
-            // which already extracts all metadata, labels, descriptions, etc.
-            
             setZipToReadme(allJSONFiles);
+
+            finishUploadUi();
           } catch (error) {
-            throw new Error(`Invalid YAML file or conversion failed: ${error.message}`);
-          }
-        };
-
-        reader.readAsArrayBuffer(acceptedFiles[0]);
-
-        reader.onloadend = () => {
-          setTimeout(() => {
-            setJsonDropDisabled(true);
-            setJsonDropMessage({ message: "", type: "" });
+            setJsonDropMessage({
+              message: `${messages.uploadFail}: ${error.message}`,
+              type: "error"
+            });
             setJsonLoading(false);
             setDatasetLoading(false);
             if (datasetRawFile.length === 0) {
               setDatasetDropDisabled(false);
             }
-            if (!jsonIsParsed) {
-              setJsonIsParsed(true);
-              setCurrentDataValidatorPage("SchemaViewDataValidator");
-            }
-          }, 900);
+            setTimeout(() => {
+              setJsonDropMessage({ message: "", type: "" });
+            }, 2500);
+          }
         };
+
+        reader.readAsText(acceptedFiles[0]);
       } catch (error) {
         setJsonDropMessage({
           message: `${messages.uploadFail}: ${error.message}`,
@@ -545,12 +469,13 @@ export const useHandleSchemaFileDrop = (
         }
         setTimeout(() => {
           setJsonDropMessage({ message: "", type: "" });
-        }, [2500]);
+        }, 2500);
       }
     },
     [
       clearAllSchemas,
       datasetRawFile.length,
+      finishUploadUi,
       loadAllSchemasFromOcaPackage,
       jsonIsParsed,
       setCurrentDataValidatorPage,
@@ -591,9 +516,9 @@ export const useHandleSchemaFileDrop = (
       }
       setTimeout(() => {
         setJsonDropMessage({ message: "", type: "" });
-      }, [2500]);
+      }, 2500);
     }
-  }, [handleJsonDrop, schemaRawFile]);
+  }, [schemaRawFile]);
 
   return {
     schemaRawFile,

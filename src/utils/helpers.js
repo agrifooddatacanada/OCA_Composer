@@ -471,10 +471,46 @@ export const options = {
   distance: 100
 };
 
+let _fuseInstance = null;
+const getFuseInstance = () => {
+  if (!_fuseInstance) {
+    _fuseInstance = new Fuse(ucumUnits, options);
+  }
+  return _fuseInstance;
+};
+
+let _ucumCodeMap = null;
+const getUcumCodeMap = () => {
+  if (!_ucumCodeMap) {
+    _ucumCodeMap = new Map();
+    for (const u of ucumUnits) {
+      if (u?.code && !_ucumCodeMap.has(u.code)) {
+        _ucumCodeMap.set(u.code, u);
+      }
+    }
+  }
+  return _ucumCodeMap;
+};
+
+const _searchCache = new Map();
+const SEARCH_CACHE_LIMIT = 200;
+
 export const searchUnits = (unit) => {
   if (!unit) return { firstMatch: null, results: [] };
 
-  const fuse = new Fuse(ucumUnits, options);
+  if (_searchCache.has(unit)) {
+    return _searchCache.get(unit);
+  }
+
+  const exact = getUcumCodeMap().get(unit);
+  if (exact) {
+    const result = { firstMatch: exact, results: [exact] };
+    if (_searchCache.size >= SEARCH_CACHE_LIMIT) _searchCache.clear();
+    _searchCache.set(unit, result);
+    return result;
+  }
+
+  const fuse = getFuseInstance();
   const searchResults = fuse.search(unit);
   const slicedResults = searchResults.slice(0, 20).map((result) => result.item);
 
@@ -482,10 +518,13 @@ export const searchUnits = (unit) => {
     (code) => slicedResults.find((item) => item.code === code)
   );
 
-  return {
+  const result = {
     firstMatch: uniqueResults[0] || null,
     results: uniqueResults
   };
+  if (_searchCache.size >= SEARCH_CACHE_LIMIT) _searchCache.clear();
+  _searchCache.set(unit, result);
+  return result;
 };
 
 export const getAttributeFramingInput = (
@@ -1060,8 +1099,14 @@ export const getLabelofParentClass = async (uri) => {
   return responseData;
 };
 
-export const normalizeEscapedQuotes = (s) =>
-  typeof s === "string" ? s.replace(/\\"/g, "\"").replace(/\\'/g, "'") : s;
+export const normalizeEscapedQuotes = (s) => {
+  if (typeof s !== "string") return s;
+  return s
+    .replace(/\\-/g, "-")
+    .replace(/\\'/g, "'")
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, "\\");
+};
 
 export const escapeForOCAString = (s) => {
   if (typeof s !== "string") return s;
