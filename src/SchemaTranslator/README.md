@@ -1,6 +1,6 @@
 # Schema Translator Module
 
-Th mode provides functionality to translate [LinkML](https://linkml.io/linkml/) schemas to [OCA (Overlays Capture Architecture)](https://oca.colossi.network/) format.
+This module provides functionality to translate [LinkML](https://linkml.io/linkml/) schemas to [OCA (Overlays Capture Architecture)](https://oca.colossi.network/) format.
 
 ## Overview
 
@@ -85,8 +85,6 @@ slots:
 
 ## TODO
 
-- **Keep insertion order of attributes in LinkML schema** - Currently attribute order may not be preserved during translation
-- Implement the features listed in the "⚠️ To Do" section of the translation table above
 - Add validation for LinkML schema structure before translation
 
 ## Examples
