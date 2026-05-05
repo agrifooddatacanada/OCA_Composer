@@ -151,7 +151,7 @@ The Form Builder writes normalized `formBuilderPages` to context for export.
 
 ## Export: OCA Package Integration
 
-File: `src/hooks/useOCAExport.js`
+File: `src/ViewSchema/useExportLogicV2.js`
 
 Export flow includes multiple overlays and extensions. The Form Information overlay is conditionally added when selected and data exists.
 
@@ -198,7 +198,7 @@ File: `src/App.js`
 Folder: `public/locales/`
 
 - Uses `i18next` and locale resources under `en/` and `fr/`.
-- Disabled reasons and tooltip strings are sourced via translation keys (e.g., the English UI string as key, such as `"Form Information requires 'Format' to be added first."`).
+- Disabled reasons and tooltip strings are sourced via translation keys (e.g., `"Form Information prerequisite tooltip"`).
 - The Form Information editor also respects global UI language for tab ordering.
 
 ---

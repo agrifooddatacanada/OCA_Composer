@@ -15,19 +15,19 @@ function WarningEntryCodeDelete({
 
   return (
     <Box
-      sx={(theme) => ({
+      style={{
         position: "fixed",
         top: 0,
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: theme.zIndex.modal,
+        zIndex: 50,
         backdropFilter: "blur(5px)",
         backgroundColor: "rgba(0, 0, 0, 0.3)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-      })}
+      }}
     >
       <Box
         sx={{

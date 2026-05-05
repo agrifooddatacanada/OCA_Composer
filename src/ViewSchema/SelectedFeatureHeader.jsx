@@ -5,10 +5,10 @@ function SelectedFeatureHeader({ feature }) {
   const { t } = useTranslation();
   return (
     <span style={{ margin: "auto" }}>
-      {feature === "Required Entry"
+      {feature === "Make selected entries required"
         ? t("Required Entry")
-        : feature === "Format"
-          ? t("Format Rule")
+        : feature === "Add format rule for data"
+          ? t("Format Rules")
           : t(feature)}
     </span>
   );

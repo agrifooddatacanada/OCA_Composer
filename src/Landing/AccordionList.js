@@ -1,11 +1,8 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Box, Button, Typography, useMediaQuery, Tooltip } from "@mui/material";
-import {
-  isOcaPackageIntegrityValid,
-  shouldVerifyOcaPackageCryptographically
-} from "../utils/verifyOcaIntegrity";
+import { Box, Button, Typography, useMediaQuery } from "@mui/material";
+import { VerifyOcaPackage } from "oca_package";
 import UseASchemaAccordionItem from "./UseASchemaAccordionItem";
 import UseASchemaWithDataAccordionItem from "./UseASchemaWithDataAccordionItem";
 import SchemaAccordionItem from "./SchemaAccordionItem";
@@ -17,20 +14,17 @@ import Drop from "../StartSchema/Drop";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
 import { Context } from "../App";
-import { useMultiSchema } from "../schema/schemaContext";
-import useOCAExport from "../hooks/useOCAExport";
-import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
+import useExportLogic from "../ViewSchema/useExportLogic";
+import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
 import CollaborateOnASchema from "./CollaborateOnASchema";
-import { useHandleSchemaFileDrop } from "../OCADataValidator/useHandleSchemaFileDrop";
+import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
 import CatalogueInfo from "../CatalogueInfo/CatalogueInfo";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
-import { hasMultipleSchemas } from "../utils/schemaUtils";
-import { syncLandingSchemaDrop } from "../utils/landingSchemaUpload";
 
 const buttonStyles = {
   backgroundColor: CustomPalette.PRIMARY,
@@ -44,11 +38,10 @@ const AccordionList = () => {
   const isMobile = useMediaQuery("(max-width: 736px)");
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, schemaDescription, setSummaryExportMode } =
+  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, OCAPackage } =
     useContext(Context);
-  const { ocaPackage } = useMultiSchema();
   const { toTextFile } = useGenerateReadMe();
-  const { jsonToTextFile } = useGenerateTextReadmeFromJson();
+  const { jsonToTextFile } = useGenerateReadMeV2();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
   const { generateMarkdownReadMeFromJson } = useGenerateMarkdownReadMeFromJson();
   const {
@@ -59,38 +52,41 @@ const AccordionList = () => {
     dropDisabled,
     dropMessage,
     setDropMessage,
-    setCurrentPage
+    setCurrentPage,
+    setIsZip
   } = useHandleAllDrop();
 
-  const { setSchemaRawFile } = useHandleSchemaFileDrop();
-  const { resetToDefaults } = useOCAExport();
+  const { setJsonRawFile } = useHandleJsonDrop();
+  const { resetToDefaults } = useExportLogic();
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
   const navigateToStartPage = () => {
     resetToDefaults();
     setCurrentPage("Start");
     navigate("/start");
-    window.scrollTo(0, 0);
   };
 
-  const navigateToEditSchema = () => {
+  const navigateToMetadataPage = () => {
+    setIsZip(false);
     setCurrentPage("Metadata");
     navigate("/start");
-    window.scrollTo(0, 0);
   };
 
   const navigateToViewPage = () => {
-    setSummaryExportMode(false);
-    navigate("/start", { state: { openView: true } });
+    setIsZip(true);
+    setCurrentPage("View");
+    navigate("/start");
   };
 
   const navigateToPreviewSchema = () => {
+    setIsZip(true);
     setCurrentDataValidatorPage("SchemaViewDataValidator");
     navigate("/oca-data-verifier");
   };
 
   const setFile = (acceptedFiles) => {
-    syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles);
+    setRawFile(acceptedFiles);
+    setJsonRawFile(acceptedFiles);
   };
 
   const handleClickMarkdownReadme = () => {
@@ -106,14 +102,8 @@ const AccordionList = () => {
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
-  const isMultiSchema = hasMultipleSchemas(ocaPackage);
-  let isInvalidOcaPackage = false;
-
-  if (ocaPackage && shouldVerifyOcaPackageCryptographically(ocaPackage)) {
-    isInvalidOcaPackage = !isOcaPackageIntegrityValid(ocaPackage);
-  }
+  const isInvalidOcaPackage = OCAPackage && !VerifyOcaPackage(OCAPackage, OCAPackage.d);
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
-  const disableMultiSchemaTools = disableAdditionalSchemaTools || isMultiSchema;
 
   return (
     <Box
@@ -148,7 +138,7 @@ const AccordionList = () => {
           <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
           <CollaborateOnASchema navigateToStartPage={navigateToStartPage} />
           <StoreASchemaAccordionItem />
-          <UseASchemaAccordionItem />
+          <UseASchemaAccordionItem isInvalidOcaPackage={isInvalidOcaPackage} />
           <UseASchemaWithDataAccordionItem isInvalidOcaPackage={isInvalidOcaPackage} />
           {/* <OCADataValidatorItem /> */}
         </Box>
@@ -243,7 +233,7 @@ const AccordionList = () => {
             <Button
               variant="contained"
               color="navButton"
-              onClick={navigateToEditSchema}
+              onClick={navigateToMetadataPage}
               sx={buttonStyles}
               disabled={disableButtonCheck}
             >
@@ -254,7 +244,7 @@ const AccordionList = () => {
               color="navButton"
               onClick={() => {
                 if (Object.keys(jsonToReadme).length > 0) {
-                  jsonToTextFile(jsonToReadme, ocaPackage, schemaDescription);
+                  jsonToTextFile(jsonToReadme, OCAPackage);
                 } else if (zipToReadme.length > 0) {
                   toTextFile(zipToReadme);
                 }
@@ -288,29 +278,20 @@ const AccordionList = () => {
             <GenerateDataEntryExcel
               rawFile={rawFile}
               setLoading={setLoading}
-              disableButtonCheck={disableMultiSchemaTools}
-              isMultiSchema={isMultiSchema}
+              disableButtonCheck={disableAdditionalSchemaTools}
             />
-            <Tooltip
-              title={isMultiSchema ? t("Not available for multi-level schemas") : ""}
-              arrow
+            <Button
+              variant="contained"
+              color="navButton"
+              onClick={navigateToPreviewSchema}
+              sx={{
+                ...buttonStyles,
+                marginBottom: "30px"
+              }}
+              disabled={disableAdditionalSchemaTools}
             >
-              <span style={{ width: "100%", maxWidth: "300px", display: "inline-block", marginTop: "30px", marginBottom: "30px" }}>
-                <Button
-                  variant="contained"
-                  color="navButton"
-                  onClick={navigateToPreviewSchema}
-                  sx={{
-                    backgroundColor: CustomPalette.PRIMARY,
-                    ":hover": { backgroundColor: CustomPalette.SECONDARY },
-                    width: "100%"
-                  }}
-                  disabled={disableMultiSchemaTools}
-                >
-                  {t("Enter/Verify Data in Webpage")}
-                </Button>
-              </span>
-            </Tooltip>
+              {t("Enter/Verify Data in Webpage")}
+            </Button>
           </Box>
         </Box>
       </Box>

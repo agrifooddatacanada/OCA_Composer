@@ -13,28 +13,21 @@ import { CustomPalette } from "../constants/customPalette";
 import AccordionItemWrapper from "./AccordionItemWrapper";
 import Drop from "../StartSchema/Drop";
 import { Context } from "../App";
-import { useMultiSchema } from "../schema/schemaContext";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
-import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
-import { useHandleSchemaFileDrop } from "../OCADataValidator/useHandleSchemaFileDrop";
+import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
+import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
-import { syncLandingSchemaDrop } from "../utils/landingSchemaUpload";
-import {
-  isOcaPackageIntegrityValid,
-  shouldVerifyOcaPackageCryptographically
-} from "../utils/verifyOcaIntegrity";
 
-const UseASchemaAccordionItem = () => {
+const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setSummaryExportMode } = useContext(Context);
-  const { ocaPackage } = useMultiSchema();
+  const { zipToReadme, jsonToReadme, OCAPackage } = useContext(Context);
   const { toTextFile } = useGenerateReadMe();
-  const { jsonToTextFile } = useGenerateTextReadmeFromJson();
+  const { jsonToTextFile } = useGenerateReadMeV2();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
   const { generateMarkdownReadMeFromJson } = useGenerateMarkdownReadMeFromJson();
   const { t } = useTranslation();
@@ -49,32 +42,26 @@ const UseASchemaAccordionItem = () => {
     setCurrentPage
   } = useHandleAllDrop();
 
-  const { setSchemaRawFile } = useHandleSchemaFileDrop();
+  const { setJsonRawFile } = useHandleJsonDrop();
 
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
-  const navigateToEditSchema = () => {
+  const navigateToMetadataPage = () => {
     setCurrentPage("Metadata");
     navigate("/start");
-    window.scrollTo(0, 0);
   };
 
   const navigateToViewPage = () => {
-    setSummaryExportMode(false);
-    navigate("/start", { state: { openView: true } });
+    setCurrentPage("View");
+    navigate("/start");
   };
 
   const setFile = (acceptedFiles) => {
-    syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles);
+    setRawFile(acceptedFiles);
+    setJsonRawFile(acceptedFiles);
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
-
-  let isInvalidOcaPackage = false;
-  if (ocaPackage && shouldVerifyOcaPackageCryptographically(ocaPackage)) {
-    isInvalidOcaPackage = !isOcaPackageIntegrityValid(ocaPackage);
-  }
-
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
 
   const handleClickMarkdownReadme = () => {
@@ -164,7 +151,7 @@ const UseASchemaAccordionItem = () => {
           <Button
             variant="contained"
             color="navButton"
-            onClick={navigateToEditSchema}
+            onClick={navigateToMetadataPage}
             sx={buttonStyles}
             disabled={disableButtonCheck}
           >
@@ -175,8 +162,7 @@ const UseASchemaAccordionItem = () => {
             color="navButton"
             onClick={() => {
               if (Object.keys(jsonToReadme).length > 0) {
-                // Schema name will be extracted from jsonToReadme automatically
-                jsonToTextFile(jsonToReadme, ocaPackage);
+                jsonToTextFile(jsonToReadme, OCAPackage);
               } else if (zipToReadme.length > 0) {
                 toTextFile(zipToReadme);
               }

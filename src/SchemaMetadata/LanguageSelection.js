@@ -1,8 +1,8 @@
 import { Box, Button, Alert } from "@mui/material";
-import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import React, { useContext, useState } from "react";
 import { CustomPalette } from "../constants/customPalette";
-import { removeSpacesFromString } from "../utils/stringUtils";
+import { Context } from "../App";
+import { removeSpacesFromString } from "../constants/removeSpaces";
 import { allLanguagesWithCodesArray } from "../constants/isoCodes";
 
 const languageList = [
@@ -31,13 +31,10 @@ const languageEntryErrors = {
 export default function LanguageSelection({
   setShowLanguages,
   setEditingLanguage,
-  setShowIsoInput,
-  languages,
-  setLanguages,
-  schemaDescription,
-  setSchemaDescription
+  setShowIsoInput
 }) {
-  const { t } = useTranslation();
+  const { languages, setLanguages, schemaDescription, setSchemaDescription } =
+    useContext(Context);
   // const [newLanguage, setNewLanguage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const toTitleCase = (str) =>
@@ -142,7 +139,7 @@ export default function LanguageSelection({
         }
       }}
     >
-      {t(item, { defaultValue: item })}
+      {item}
     </Button>
   ));
   return (

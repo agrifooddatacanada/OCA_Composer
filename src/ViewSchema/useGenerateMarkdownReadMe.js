@@ -1,17 +1,9 @@
-/**
- * Hook to generate Markdown README from ZIP schema bundles.
- * 
- * Used by:
- * - "Generate Markdown Readme" button when a ZIP file was uploaded
- * 
- * Input: ZIP file contents (array of files)
- * Output: Markdown file (.md) with formatted schema documentation
- * 
- * Note: For JSON packages, see useGenerateMarkdownReadmeFromJson.
- */
+// Generate markdown readme from schema bundle zip
 
+import { useContext } from "react";
 import i18next from "i18next";
-import { langNameFromTwoLetters, langTwoLettersFromName, langNameFromCodeOCA } from "../utils/languageUtils";
+import { Context } from "../App";
+import { codesToLanguages, languageCodesObject } from "../constants/isoCodes";
 import { DEFAULT_LANGUAGE_CODE } from "../constants/constants";
 import {
   downloadMarkdownFile,
@@ -27,6 +19,14 @@ import {
 } from "./markdownReadmeUtils";
 
 const useGenerateMarkdownReadMe = () => {
+  const { languages } = useContext(Context);
+  // Ensuring that the currently selected site language is one of the languages of the schema
+  const currentLanguageCode = languages.some(
+    (language) => language === codesToLanguages[i18next.language]
+  )
+    ? i18next.language
+    : "en";
+
   // The schema bundle items are in JSON
   const generateMarkdownReadMe = (schemaBundleItems, catalogueData) => {
     let fileContent = "";
@@ -50,26 +50,6 @@ const useGenerateMarkdownReadMe = () => {
         ...rest
       });
     });
-    
-    // Extract languages from the bundle itself (look at meta, label, information, entry overlays)
-    const languageSet = new Set();
-    layers.forEach(layer => {
-      if (layer.language) {
-        // Convert UI code (en, fr) to language name (English, French)
-        const langName = langNameFromTwoLetters(layer.language) || 
-                        // Convert any language code format to language name
-                        (langNameFromCodeOCA(layer.language) || langNameFromTwoLetters(layer.language) || layer.language);
-        languageSet.add(langName);
-      }
-    });
-    const languages = Array.from(languageSet);
-    
-    // Ensuring that the currently selected site language is one of the languages of the schema
-    const currentLanguageCode = languages.some(
-      (language) => language === langNameFromTwoLetters(i18next.language)
-    )
-      ? i18next.language
-      : "en";
 
     const metaOverlayCurrentLanguage = layers.find(
       (layer) =>
@@ -81,12 +61,6 @@ const useGenerateMarkdownReadMe = () => {
       layer.layerName.includes("capture_base")
     );
     const attributeNames = Object.keys(captureBaseOverlay.attributes);
-
-    // Build language code lookup map
-    const languageCodeLookupMap = {};
-    languages.forEach(lang => {
-      languageCodeLookupMap[lang.toLowerCase()] = langTwoLettersFromName(lang);
-    });
 
     fileContent += generateFrontMatter(metaOverlayCurrentLanguage, catalogueData);
     fileContent += generateSchemaInformation(
@@ -103,9 +77,9 @@ const useGenerateMarkdownReadMe = () => {
     fileContent += generateInternationalSchemaInformation(
       layers,
       languages,
-      languageCodeLookupMap
+      languageCodesObject
     );
-    fileContent += generateEntryCodeTables(layers, languages, languageCodeLookupMap);
+    fileContent += generateEntryCodeTables(layers, languages, languageCodesObject);
     fileContent += generateLanguageIndependentSchemaDetailsTable({
       layers,
       captureBaseOverlay,
@@ -115,7 +89,7 @@ const useGenerateMarkdownReadMe = () => {
       layers,
       attributeNames,
       languages,
-      languageCodeLookupMap
+      languageCodeLookupMap: languageCodesObject
     });
     fileContent += generateSAIDTable(captureBaseSAID, layerToSAIDMap);
     fileContent += generateCreationTimestamp();

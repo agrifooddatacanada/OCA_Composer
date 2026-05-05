@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { 
   Box, TextField, Typography, Divider, FormControl, InputLabel, 
   Select, MenuItem, FormControlLabel, Checkbox
@@ -7,17 +7,15 @@ import { useTranslation } from "react-i18next";
 import BaseEditorDialog from "./BaseEditorDialog";
 import MultilingualFieldGroup from "./MultilingualFieldGroup";
 import {
+  formatCodeBinaryDescription,
+  formatCodeDateDescription,
+  formatCodeNumericDescription,
+  formatCodeTextDescription,
   MAX_ATTR_LABEL_CHARS,
   MAX_QUESTION_DESCRIPTION_CHARS
 } from "../../../constants/constants";
 import { CustomPalette } from "../../../constants/customPalette";
 import { getDateTimePickerConfig } from "../utils/getDateTimePickerConfig";
-import { getFormatRuleDescription } from "../../../utils/helpers";
-import {
-  isReferenceQuestion,
-  normalizeReferenceButtonTextMap,
-  normalizeShowingAttribute
-} from "../utils/referenceQuestionUtils";
 
 // Boolean value pairs for form inputs
 const BOOLEAN_VALUE_PAIRS = [
@@ -36,21 +34,20 @@ const BOOLEAN_VALUE_PAIRS = [
 ];
 
 const findDescription = (formatText, attributeType) => {
-  return getFormatRuleDescription(attributeType, formatText) || "";
+  if (!formatText) return "";
+  if (attributeType.includes("Date")) return formatCodeDateDescription[formatText] || "";
+  if (attributeType.includes("Numeric"))
+    return formatCodeNumericDescription[formatText] || "";
+  if (attributeType.includes("Binary"))
+    return formatCodeBinaryDescription[formatText] || "";
+  if (attributeType.includes("Text")) return formatCodeTextDescription[formatText] || "";
+  return formatText;
 };
 
 const QUESTION_TYPES = { TEXT: 'text', MULTIPLE_CHOICE: 'multiple_choice', CHECKBOX: 'checkbox', RADIO: 'radio', DROPDOWN: 'dropdown', NUMBER: 'number', EMAIL: 'email', DATE: 'date', TEXTAREA: 'textarea' };
 
-const QuestionEditorDialog = ({
-  open,
-  onClose,
-  question,
-  onSave,
-  languages = ['English'],
-  childAttributeOptions = []
-}) => {
+const QuestionEditorDialog = ({ open, onClose, question, onSave, languages = ['English'] }) => {
   const { t } = useTranslation();
-  const [referencePreviewInput, setReferencePreviewInput] = useState("");
   const [formData, setFormData] = useState({ 
     title: {}, 
     placeholder: {}, 
@@ -82,28 +79,12 @@ const QuestionEditorDialog = ({
       }
       
       const defaultDescription = {};
-      const defaultReferenceButtonText = {};
       languages.forEach(lang => {
         defaultTitle[lang] = question.title?.[lang] || '';
         // Use existing placeholder or DateTime default
         defaultPlaceholder[lang] = question.placeholder?.[lang] || (isDateTimeType ? dateTimeDefaultPlaceholder : '');
         defaultDescription[lang] = question.description?.[lang] || '';
       });
-
-      const normalizedReferenceButtonText = normalizeReferenceButtonTextMap(
-        question.referenceButtonText || question.reference_button_text,
-        languages
-      );
-      languages.forEach((lang) => {
-        defaultReferenceButtonText[lang] =
-          normalizedReferenceButtonText[lang] ||
-          normalizedReferenceButtonText.default ||
-          "";
-      });
-      const normalizedShowingAttribute = normalizeShowingAttribute(
-        question.showingAttribute || question.showing_attribute
-      );
-      setReferencePreviewInput(normalizedShowingAttribute.join(", "));
       
       let booleanPairId = question.booleanPairId || 'true-false';
       let booleanPairIds = question.booleanPairIds || ['true-false'];
@@ -120,7 +101,6 @@ const QuestionEditorDialog = ({
       }
       
       setFormData({ 
-        ...question,
         title: defaultTitle,
         placeholder: defaultPlaceholder,
         description: defaultDescription,
@@ -129,34 +109,14 @@ const QuestionEditorDialog = ({
         attribute: question.attribute || '',
         required: question.required || false, 
         options: question.options || [],
-        referenceButtonText: defaultReferenceButtonText,
-        showingAttribute: normalizedShowingAttribute,
         booleanPairId,
-        booleanPairIds
+        booleanPairIds,
+        ...question 
       }); 
     }
   }, [question, languages]);
   
-  const handleSave = () => {
-    const sanitizedShowingAttribute = normalizeShowingAttribute(referencePreviewInput);
-    const sanitizedReferenceButtonText = normalizeReferenceButtonTextMap(
-      formData.referenceButtonText || formData.reference_button_text
-    );
-    const payload = { ...formData };
-
-    if (isReferenceQuestion(formData)) {
-      payload.referenceButtonText = sanitizedReferenceButtonText;
-      payload.showingAttribute = sanitizedShowingAttribute;
-    } else {
-      delete payload.referenceButtonText;
-      delete payload.showingAttribute;
-      delete payload.reference_button_text;
-      delete payload.showing_attribute;
-    }
-
-    onSave(payload);
-    onClose();
-  };
+  const handleSave = () => { onSave(formData); onClose(); };
   
   const handleFieldChange = (lang, field, value) => {
     setFormData(prev => ({
@@ -168,11 +128,6 @@ const QuestionEditorDialog = ({
   const needsOptions = [QUESTION_TYPES.MULTIPLE_CHOICE, QUESTION_TYPES.CHECKBOX, QUESTION_TYPES.RADIO, QUESTION_TYPES.DROPDOWN].includes(formData.type);
   
   const formatRuleDescription = findDescription(formData.formatText, formData.attributeType);
-  const isReferenceQuestionField = isReferenceQuestion(formData);
-  const selectedReferencePreviewKeys = useMemo(
-    () => normalizeShowingAttribute(referencePreviewInput),
-    [referencePreviewInput]
-  );
   
   const isPlaceholderAvailable = ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"].includes(formData.attributeType);
   
@@ -399,58 +354,6 @@ const QuestionEditorDialog = ({
             ]}
             onChange={handleFieldChange}
           />
-
-          {isReferenceQuestionField && (
-            <>
-              <Divider />
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                {t("Reference preview settings")}
-              </Typography>
-              <MultilingualFieldGroup
-                languages={languages}
-                formData={formData}
-                fields={[
-                  {
-                    name: "referenceButtonText",
-                    label: t("Reference button text"),
-                    maxLength: MAX_ATTR_LABEL_CHARS,
-                    helperText: t("Label shown on the action button used to add/select a referenced item.")
-                  }
-                ]}
-                onChange={handleFieldChange}
-              />
-              {childAttributeOptions.length > 0 && (
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="caption" sx={{ color: CustomPalette.GREY_600, display: "block", mb: 0.5 }}>
-                    {t("Choose from the following attributes to be shown in the preview:")}
-                  </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", columnGap: 2 }}>
-                    {childAttributeOptions.map((attrKey) => (
-                      <FormControlLabel
-                        key={attrKey}
-                        control={
-                          <Checkbox
-                            size="small"
-                            checked={selectedReferencePreviewKeys.includes(attrKey)}
-                            onChange={(e) => {
-                              const current = normalizeShowingAttribute(referencePreviewInput);
-                              const next = e.target.checked
-                                ? [...current, attrKey]
-                                : current.filter((item) => item !== attrKey);
-                              const sanitized = normalizeShowingAttribute(next);
-                              setReferencePreviewInput(sanitized.join(", "));
-                              setFormData((prev) => ({ ...prev, showingAttribute: sanitized }));
-                            }}
-                          />
-                        }
-                        label={<Typography variant="body2">{attrKey}</Typography>}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              )}
-            </>
-          )}
           
           {needsOptions && formData.options && formData.options.length > 0 && (
             <>

@@ -31,7 +31,7 @@ const WriteASchemaAccordionItem = ({ navigateToStartPage }) => {
         </Typography>
         <Typography sx={{ marginTop: "20px", marginBottom: "20px" }}>
           {t(
-            "You will either be documenting an existing dataset or you will start with an idea of what columns or variables you will be collecting for your dataset."
+            "You will either be documenting an existing dataset or you will start with..."
           )}{" "}
           <CustomAnchorLink
             link={`https://agrifooddatacanada.github.io/OCA_Composer_help_pages/${i18next.language === "en-US" || i18next.language === "en-CA" ? "en" : i18next.language}/DesignDataset/`}

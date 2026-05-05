@@ -1,50 +1,29 @@
 import React, { useState, useRef, useEffect, useContext, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "../components/AgGridReact";
-import { Box } from "@mui/material";
+import { AgGridReact } from "ag-grid-react";
+import { Box, MenuItem } from "@mui/material";
 import { Context } from "../App";
-import { useMultiSchema } from "../schema/schemaContext";
-import { agGridEditableCellHoverCss, greyCellStyle } from "../constants/styles";
-import { measureTextHeight } from "../utils/measureTextLines";
+import { greyCellStyle } from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import { getListOfSelectedOverlays } from "../utils/overlayUtils";
+import getListOfSelectedOverlays from "../constants/getListOfSelectedOverlays";
 import CellHeader from "../components/CellHeader";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
-import { getFormatRuleDescription } from "../utils/helpers";
-import { getMapValueForAttributeName } from "../utils/stringUtils";
-import { getRootCaptureBaseId } from "../utils/packageUtils";
+import { DropdownMenuList } from "../components/DropdownMenuCell";
 import {
   ADC,
-  FIELD_CHARACTER_ENCODING_OVERLAY,
   FIELD_RANGE_OVERLAY,
   FIELD_UNIT_FRAMING_OVERLAY,
-  FIELD_FORMAT_OVERLAY,
-  FIELD_CONFORMANCE_OVERLAY,
-  FIELD_CARDINALITY_OVERLAY,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   MAX_ATTR_DESCRIPTION_CHARS,
   MAX_ATTR_LABEL_CHARS,
-  UNIT_FRAMING,
-  CUSTOM_FORMAT_RULE,
-  AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX,
-  AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX,
-  AG_GRID_VIRTUALIZE_MIN_ROWS
+  UNIT_FRAMING
 } from "../constants/constants";
 import SelectedFeatureHeader from "./SelectedFeatureHeader";
 
-const viewGridStyles = `
+const gridStyles = `
 .ag-cell {
-  line-height: 1.25 !important;
-  padding: 0 6px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.ag-row {
-  border-bottom-width: 1px !important;
+  line-height: 1.5
 }
 
 .ag-header-cell-label {
@@ -58,45 +37,16 @@ const viewGridStyles = `
   overflow-y: scroll;
 }
 
-.ag-center-cols-clipper {
-  min-height: unset !important;
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 8px;
+  height: 8px;
 }
 
-.ag-cell[col-id="List"] {
-  overflow: hidden;
-  padding: 0 0 0 6px !important;
-}
-
-.ag-cell[col-id="Format Rule"] {
-  padding: 6px !important;
-}
-
-.view-schema-grid .ag-header-viewport {
-  padding-right: 17px;
-}
-
-.view-schema-grid .ag-pinned-left-cols-container {
-  border-right: 1px solid var(--ag-border-color, #babfc7);
-}
-
-.view-schema-grid .ag-horizontal-left-spacer,
-.view-schema-grid .ag-horizontal-right-spacer {
-  overflow-x: hidden !important;
-}
-
-.ag-header-cell:last-child {
-  border-right: none !important;
-  --ag-header-column-separator-display: none !important;
-}
-.ag-header-cell:last-child * {
-  border-right: none !important;
-  box-shadow: none !important;
-}
-.ag-header-row .ag-header-cell:last-child::after {
-  display: none !important;
-}
-.ag-center-cols-viewport .ag-cell:last-child {
-  border-right: none !important;
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0,0,0,.5);
+  box-shadow: 0 0 1px rgba(255,255,255,.5);
 }
 `;
 
@@ -116,85 +66,71 @@ const CheckboxRenderer = ({ value }) => {
   return <input type="checkbox" ref={inputRef} disabled />;
 };
 
-import TruncatedListCell from "../components/TruncatedListCell";
-
 export const ListRenderer = memo((props) => {
-  const { t } = useTranslation();
-  const listText = props?.data?.List;
-  const notAListText = t("Not a List");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  if (!listText || listText === notAListText) {
-    return <Box />;
-  }
+  const handleChange = () => {
+    setIsDropdownOpen(false);
+  };
 
-  return <TruncatedListCell value={listText} />;
+  const handleClick = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const typesDisplay = props.data?.List?.split(" | ").map((value) => (
+    <MenuItem
+      key={value}
+      value={value}
+      sx={{ border: "none", height: "2rem", fontSize: "small" }}
+    >
+      {value}
+    </MenuItem>
+  ));
+
+  return props.data?.List === "Not a List" ? (
+    <Box>Not a List </Box>
+  ) : (
+    <DropdownMenuList
+      handleKeyDown={() => {}}
+      type={props.node.data.List.substring(0, 18)}
+      handleChange={handleChange}
+      handleClick={handleClick}
+      isDropdownOpen={isDropdownOpen}
+      setIsDropdownOpen={setIsDropdownOpen}
+      typesDisplay={typesDisplay}
+    />
+  );
 });
 
-export default function ViewGrid({
-  displayArray,
-  currentLanguage,
-  setLoading = () => {},
-  packageWithEdits = null
-}) {
-  const { t, i18n } = useTranslation();
-  
-  // Get overlay data from MultiSchemaContext
-  const { getOverlaySelections, getSchema, updateSchema } = useMultiSchema();
-  const overlay = getOverlaySelections();
-  const schemaState = getSchema();
-  
+export default function ViewGrid({ displayArray, currentLanguage, setLoading }) {
+  const { t } = useTranslation();
+  const { overlay, cardinalityData, OCAPackage } = useContext(Context);
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
-  const gridRef = useRef();
 
-  // Extract unit framing metadata from built package (with edits)
-  // But the metadata CAN'T be edited so is this pointless?
   const unitFramingOverlay =
-    packageWithEdits?.extensions?.[ADC]?.[getRootCaptureBaseId(packageWithEdits)]
+    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
       ?.overlays?.[UNIT_FRAMING];
 
   const onGridReady = useCallback(() => {
-    if (setLoading) {
-      setLoading(false);
-    }
-  }, [setLoading]);
-
-  const computeRowPixelHeight = useCallback((data) => {
-    const opts = { compact: true };
-    const attrH = measureTextHeight(data?.Attribute || "", 104, opts);
-    const unitH = measureTextHeight(data?.Unit || "", 74, opts);
-    const typeH = measureTextHeight(data?.Type || "", 104, opts);
-    const labelH = measureTextHeight(data?.Label || "", 154, opts);
-    const descH = measureTextHeight(data?.Description || "", 334, opts);
-    const maxH = Math.max(attrH, unitH, typeH, labelH, descH);
-    return Math.max(32, maxH + 14);
+    setLoading(false);
   }, []);
-
-  const getRowHeight = useCallback(
-    (params) => computeRowPixelHeight(params.data),
-    [computeRowPixelHeight]
-  );
 
   useEffect(() => {
     const getColumns = () => {
-      
       const predefinedColumns = [
         {
           field: "Attribute",
-          headerName: t("Attribute"),
-          width: 120,
-          pinned: "left",
-          lockPosition: "left",
-          suppressMovable: true,
-          wrapText: true,
+          headerName: t("Attributes"),
+          autoHeight: true,
           headerComponent: CellHeader,
           headerComponentParams: {
-            headerText: t("Attribute"),
-            helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
+            headerText: t("Attributes"),
+            helpText: t("This is the name for the attribute and, for example...")
           }
         },
         {
-          field: "Sensitive",
+          field: "Flagged",
           width: 98,
           headerComponent: CellHeader,
           headerComponentParams: {
@@ -217,88 +153,67 @@ export default function ViewGrid({
           field: "Unit",
           headerName: t("Unit"),
           width: 90,
-          wrapText: true,
+          autoHeight: true,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Unit"),
             helpText: t(
-              "The units of each attribute. Leave blank if the attribute is not a measurement and has no units."
+              "The units of each attribute (or leave blank if the attribute is..."
             )
           }
         },
         {
           field: "Type",
           headerName: t("Type"),
-          wrapText: true,
+          autoHeight: true,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Type"),
             helpText: <TypeTooltip />
-          },
-          valueFormatter: (params) => {
-            const type = params.value;
-            const typeMap = {
-              'Text': t('Text'),
-              'Numeric': t('Numeric'),
-              'Boolean': t('Boolean'),
-              'Binary': t('Binary'),
-              'Binaryfile': t('Binaryfile'),
-              'DateTime': t('DateTime'),
-              'Array[Text]': t('Array[Text]'),
-              'Array[Numeric]': t('Array[Numeric]'),
-              'Array[Boolean]': t('Array[Boolean]'),
-              'Array[Binary]': t('Array[Binary]'),
-              'Array[Binaryfile]': t('Array[Binaryfile]'),
-              'Array[DateTime]': t('Array[DateTime]'),
-              'Child Schema': t('Child Schema'),
-              'Placeholder Child Schema': t('Placeholder Child Schema')
-            };
-            return typeMap[type] || type;
           }
         },
         {
           field: "Label",
-          wrapText: true,
-          width: 215,
+          autoHeight: true,
+          width: 170,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Label"),
             constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
-            helpText: t("Language-specific label for an attribute")
+            helpText: t("This is the language specific label for an attribute")
           }
         },
         {
           field: "Description",
           flex: 1,
           minWidth: 350,
-          wrapText: true,
+          autoHeight: true,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Description"),
             constraint: t("max description chars", {
               maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
             }),
-            helpText: t("Language-specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute")
+            helpText: t("This is a language specific description of the attribute...")
           }
         },
         {
           field: "List",
           headerName: t("List"),
-          flex: 2,
-          minWidth: 320,
-          wrapText: false,
+          width: 173,
+          autoHeight: true,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("List"),
-            helpText: t("Rather than allowing free text entry into a record, you may wish to limit entries to one of a few in a list. For example, you may wish to create a list of choices for gender, or for experimental farm name, or for species. You will then be able to create entries for your list that will be part of the schema.")
+            helpText: t("Rather than allow free text entry into a record, you may...")
           },
           cellRenderer: ListRenderer
         }
       ];
 
-      const { selectedKeys } = getListOfSelectedOverlays(overlay);
-      selectedKeys.forEach((overlayKey) => {
-        if (overlayKey === FIELD_RANGE_OVERLAY) {
+      const { selectedFeatures } = getListOfSelectedOverlays(overlay);
+      selectedFeatures.forEach((feature) => {
+        if (feature === FIELD_RANGE_OVERLAY) {
           predefinedColumns.push({
             field: "LowerBound",
             width: 130,
@@ -312,11 +227,11 @@ export default function ViewGrid({
 
           predefinedColumns.push({
             field: "LowerInclusive",
-            width: 140,
+            width: 120,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {
-              headerText: t("Lower Inclusive"),
+              headerText: t("Inclusive"),
               helpText: t("Whether or not the lower bound is included in the range")
             },
             cellRenderer: CheckboxRenderer
@@ -335,94 +250,27 @@ export default function ViewGrid({
 
           predefinedColumns.push({
             field: "UpperInclusive",
-            width: 140,
-            autoHeight: true,
-            headerComponent: CellHeader,
-            headerComponentParams: {
-              headerText: t("Upper Inclusive"),
-              helpText: t("Whether or not the upper bound is included in the range")
-            },
-            cellRenderer: CheckboxRenderer
-          });
-        } else if (overlayKey === FIELD_CONFORMANCE_OVERLAY) {
-          // Handle Required column
-          predefinedColumns.push({
-            field: "Required",
             width: 120,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {
-              headerText: t("Required"),
-              helpText: t("Check for each attribute where the data entry cannot be left empty in a dataset")
+              headerText: t("Inclusive"),
+              helpText: t("Whether or not the upper bound is included in the range")
             },
             cellRenderer: CheckboxRenderer
           });
-        } else if (overlayKey === FIELD_CHARACTER_ENCODING_OVERLAY) {
-          predefinedColumns.push({
-            field: FIELD_CHARACTER_ENCODING_OVERLAY,
-            width: 180,
-            autoHeight: true,
-            headerComponent: CellHeader,
-            headerComponentParams: {
-              headerText: t("Character Encoding"),
-              helpText: t("The character encoding that is applied to the attribute")
-            }
-          });
-        } else if (overlayKey === FIELD_FORMAT_OVERLAY) {
-          // Handle Format Rule column
-          predefinedColumns.push({
-            field: "Format Rule",
-            width: 160,
-            autoHeight: true,
-            headerComponent: CellHeader,
-            headerComponentParams: {
-              headerText: t("Format Rule"),
-              helpText: t("The format rule that is applied to the attribute")
-            },
-            valueFormatter: (params) =>
-              getFormatRuleDescription(params.data.Type, params.value, t) || params.value
-          });
-        } else if (overlayKey === FIELD_CARDINALITY_OVERLAY) {
-          predefinedColumns.push({
-            field: FIELD_CARDINALITY_OVERLAY,
-            width: 140,
-            autoHeight: true,
-            headerComponent: CellHeader,
-            headerComponentParams: {
-              headerText: t("Cardinality"),
-              helpText: t("The cardinality that is applied to the attribute")
-            }
-          });
-        } else if (overlayKey === FIELD_ATTRIBUTE_FRAMING_OVERLAY) {
-          predefinedColumns.push({
-            field: FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-            width: 180,
-            autoHeight: true,
-            headerComponent: CellHeader,
-            headerComponentParams: {
-              headerText: t("Attribute Framing"),
-              helpText: t("The attribute framing that is applied to the attribute")
-            }
-          });
-        } else if (overlayKey === FIELD_UNIT_FRAMING_OVERLAY) {
-          const baseHelpText = t("The unit framing that is applied to the attribute");
-          let helpText = baseHelpText;
+        } else if (feature === FIELD_UNIT_FRAMING_OVERLAY) {
+          let helpText = "";
           if (unitFramingOverlay?.framing_metadata) {
-            const helpTextElements = Object.entries(unitFramingOverlay.framing_metadata).map(
-              ([key, value], index) => (
-                <React.Fragment key={key}>
-                  {index > 0 && <br />}
-                  <strong>{key}:</strong> &quot;{value}&quot;
-                </React.Fragment>
-              )
-            );
-            helpText = (
-              <>
-                {baseHelpText}
-                <br />
-                {helpTextElements}
-              </>
-            );
+            const helpTextElements = Object.entries(
+              unitFramingOverlay.framing_metadata
+            ).map(([key, value], index) => (
+              <React.Fragment key={key}>
+                {index > 0 && <br />}
+                <strong>{key}:</strong> &quot;{value}&quot;
+              </React.Fragment>
+            ));
+            helpText = <>{helpTextElements}</>;
           }
 
           predefinedColumns.push({
@@ -435,11 +283,11 @@ export default function ViewGrid({
               helpText
             }
           });
-        } else if (overlayKey === FIELD_FORM_INFORMATION_OVERLAY) {
+        } else if (feature === FIELD_FORM_INFORMATION_OVERLAY) {
           predefinedColumns.push({
-            field: FIELD_FORM_INFORMATION_OVERLAY,
+            field: "Add Form Information",
             headerName: t("Form"),
-            width: 102,
+            width: 98,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {
@@ -449,41 +297,16 @@ export default function ViewGrid({
             cellRenderer: CheckboxRenderer
           });
         } else {
-          // Map overlay feature names to actual data fields when needed
-          const normalized = (overlayKey || "").toString().toLowerCase();
-          const isFormat =
-            normalized === "format rules" ||
-            normalized === "format rule" ||
-            normalized === "format";
-          const isRequired =
-            normalized === "required entry" ||
-            normalized === "required entry" ||
-            normalized === "required";
-          const mappedField = isFormat
-            ? "Format Rule"
-            : isRequired
-              ? "Required"
-              : overlayKey;
-          const useCheckbox = isRequired || overlayKey === FIELD_CONFORMANCE_OVERLAY;
-
           predefinedColumns.push({
-            field: mappedField,
+            field: feature,
             width: 160,
             autoHeight: true,
-            headerComponent: CellHeader,
+            headerComponent: SelectedFeatureHeader,
             headerComponentParams: {
-              headerText: isFormat
-                ? t("Format Rule")
-                : isRequired
-                  ? t("Required")
-                  : t(overlayKey),
-              helpText: isRequired
-                ? t("Check for each attribute where the data entry cannot be left empty in a dataset")
-                : isFormat
-                  ? t("The format rule that is applied to the attribute")
-                  : t("Overlay value for this attribute") + "."
+              feature
             },
-            cellRenderer: useCheckbox ? CheckboxRenderer : null
+            cellRenderer:
+              feature === "Make selected entries required" ? CheckboxRenderer : null
           });
         }
       });
@@ -492,125 +315,34 @@ export default function ViewGrid({
     };
 
     setColumnDefs(getColumns());
-  }, [overlay, t, displayArray, unitFramingOverlay?.framing_metadata]);
-
-  useEffect(() => {
-    const api = gridRef.current?.api;
-    if (!api) return;
-    const raf = requestAnimationFrame(() => {
-      api.resetRowHeights();
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [currentLanguage]);
+  }, [overlay, t]);
 
   useEffect(() => {
     const newRowData = JSON.parse(JSON.stringify(displayArray));
-    const attributeCardinality = schemaState?.attributeCardinality || {};
-    const attributeFormats = schemaState?.attributeFormats || {};
-
-    // Initialize attributeFormats if overlay is selected but data doesn't exist
-    if (overlay && overlay[FIELD_FORMAT_OVERLAY] && typeof schemaState?.attributeFormats === 'undefined') {
-      updateSchema({ attributeFormats: {} });
-    }
+    const newCardinalityData = JSON.parse(JSON.stringify(cardinalityData));
 
     newRowData.forEach((item, index) => {
-      // Add null checks to prevent errors
-      item.Description =
-        item.Description && item.Description[currentLanguage]
-          ? item.Description[currentLanguage]
-          : "";
-      item.Label =
-        item.Label && item.Label[currentLanguage] ? item.Label[currentLanguage] : "";
-      item.List =
-        item.List && item.List[currentLanguage]
-          ? item.List[currentLanguage]
-          : "";
+      item.Description = item.Description[currentLanguage];
+      item.Label = item.Label[currentLanguage];
+      item.List = item.List[currentLanguage];
 
-      // Translate Type column value
-      item.Type = item.Type;
-      
-      // Get cardinality value from object
-      const cardinalityValue = getMapValueForAttributeName(attributeCardinality, item.Attribute);
-      if (cardinalityValue) {
-        item.Cardinality = cardinalityValue;
-      }
-      
-      // Add Required and Format Rule data from overlay selections
-      if (overlay) {
-        // Add Required field data
-        if (overlay[FIELD_CONFORMANCE_OVERLAY]) {
-          // Load required data from schema state
-          const requiredOverlayData = schemaState?.requiredOverlayData;
-          if (requiredOverlayData) {
-            const requiredItem = requiredOverlayData.find((req) => req.Attribute === item.Attribute);
-            item.Required = requiredItem ? requiredItem.Required : false;
-          } else {
-            item.Required = item.Required || false; // Default to false if not set
-          }
-        }
-        
-        // Add Format Rule field data
-        if (overlay[FIELD_FORMAT_OVERLAY]) {
-          // Get format rule from object
-          item["Format Rule"] = getMapValueForAttributeName(attributeFormats, item.Attribute) || "";
-        }
-        
-        // Add Form Information checkbox data
-        if (overlay[FIELD_FORM_INFORMATION_OVERLAY]) {
-          // Check if this attribute has a placeholder defined in any language
-          const formPlaceholders = schemaState?.formPlaceholdersByLanguage || {};
-          const hasPlaceholder = Object.values(formPlaceholders).some(
-            langPlaceholders => langPlaceholders && langPlaceholders[item.Attribute]
-          );
-          item[FIELD_FORM_INFORMATION_OVERLAY] = hasPlaceholder;
-        }
+      if (newCardinalityData[index] && newCardinalityData[index].EntryLimit) {
+        item.Cardinality = newCardinalityData[index].EntryLimit;
       }
     });
 
     setRowData(newRowData);
-  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, updateSchema]);
-
-  const viewSchemaGridFixedViewport =
-    rowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
-  const noAttributes = (schemaState?.attributes || []).length === 0;
-  const viewSchemaBodyViewportMinHeight = noAttributes
-    ? `${AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX}px`
-    : "unset";
-
-  const viewSchemaAutoHeightTightBodyCss = viewSchemaGridFixedViewport
-    ? ""
-    : `.view-schema-grid .ag-root-wrapper-body.ag-layout-auto-height{min-height:unset!important}.view-schema-grid .ag-layout-auto-height .ag-center-cols-clipper{min-height:unset!important}.view-schema-grid .ag-layout-auto-height .ag-body-viewport{flex:none!important;min-height:${viewSchemaBodyViewportMinHeight}!important}.view-schema-grid .ag-body-viewport-wrapper{min-height:unset!important}.view-schema-grid .ag-layout-auto-height .ag-body-viewport-wrapper{flex:none!important;min-height:unset!important}`;
+  }, [displayArray, cardinalityData, currentLanguage]);
 
   return (
-    <div
-      className={`view-schema-grid ag-theme-balham${viewSchemaGridFixedViewport ? "" : " ag-grid-compact"}`}
-      style={{ width: "100%" }}
-    >
-      <style>{`${viewGridStyles}${agGridEditableCellHoverCss}`}</style>
-      <style>{`
-.view-schema-grid.ag-theme-balham {
-  ${viewSchemaGridFixedViewport ? "height: min(70vh, 560px);" : ""}
-  min-height: ${noAttributes ? AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX : 120}px;
-}
-.view-schema-grid .ag-root-wrapper {
-  height: ${viewSchemaGridFixedViewport ? "100%" : "auto"};
-}
-${viewSchemaAutoHeightTightBodyCss}
-`}</style>
+    <div className="ag-theme-balham" style={{ width: "100%" }}>
+      <style>{gridStyles}</style>
       <AgGridReact
-        key={`${i18n.language}-${viewSchemaGridFixedViewport ? "fx" : "ah"}`}
-        ref={gridRef}
-        domLayout={viewSchemaGridFixedViewport ? undefined : "autoHeight"}
-        style={{
-          width: "100%",
-          height: viewSchemaGridFixedViewport ? "100%" : "auto"
-        }}
         rowData={rowData}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
+        domLayout="autoHeight"
         onGridReady={onGridReady}
-        getRowHeight={getRowHeight}
-        overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
       />
     </div>
   );

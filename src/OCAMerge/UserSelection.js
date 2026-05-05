@@ -32,11 +32,9 @@ import MergeDifferenceModal from "./MergeDifferenceModal";
 import {
   generateOCABundle,
   generateOCAFileFromMergedOverlays,
-  searchUnits,
-  normalizeEscapedQuotes,
-  getDescriptiveFileName
-} from "../utils/helpers";
-import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
+  searchUnits
+} from "../constants/utils";
+import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
 
 const checkIfKeyInList = (key, list) => {
   const lowercaseSearchString = key.toLowerCase();
@@ -127,8 +125,7 @@ const UserSelection = () => {
     selectedOverlaysOCAFile2,
     parsedOCAFile1,
     OCAFile1Raw,
-    OCAFile2Raw,
-    schemaDescription
+    OCAFile2Raw
   } = useContext(Context);
   const [data, setData] = useState([]);
   const [showDifference, setShowDifference] = useState(false);
@@ -137,7 +134,7 @@ const UserSelection = () => {
     rowData: []
   });
 
-  const { jsonToTextFile } = useGenerateTextReadmeFromJson();
+  const { jsonToTextFile } = useGenerateReadMeV2();
 
   const fileName1 = OCAFile1Raw[0].path;
   const fileName1WithoutExt = fileName1.substring(0, fileName1.lastIndexOf("."));
@@ -202,21 +199,27 @@ const UserSelection = () => {
       let overlayData1 = null;
       let overlayData2 = null;
       if (item.key === UNIT) {
-        // OCA spec uses attribute_unit (singular)
-        overlayData1 = value1?.[comparisonObj] || value1?.attribute_unit || {};
-        overlayData2 = value2?.[comparisonObj] || value2?.attribute_unit || {};
+        // In case of zip bundle, the unit is in attribute_units
+        overlayData1 = value1?.[comparisonObj] || value1?.attribute_units || {};
+        overlayData2 = value2?.[comparisonObj] || value2?.attribute_units || {};
       } else if (item.key.includes(INFORMATION)) {
         const informationOverlayData1 = value1?.[comparisonObj] || {};
         const informationOverlayData2 = value2?.[comparisonObj] || {};
 
         // Removing any escape characters for " and '
         overlayData1 = Object.keys(informationOverlayData1).reduce((acc, key) => {
-          acc[key] = normalizeEscapedQuotes(informationOverlayData1[key]);
+          acc[key] = informationOverlayData1[key]
+            // eslint-disable-next-line quotes
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
           return acc;
         }, {});
 
         overlayData2 = Object.keys(informationOverlayData2).reduce((acc, key) => {
-          acc[key] = normalizeEscapedQuotes(informationOverlayData2[key]);
+          acc[key] = informationOverlayData2[key]
+            // eslint-disable-next-line quotes
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
           return acc;
         }, {});
       } else {
@@ -441,7 +444,7 @@ const UserSelection = () => {
       }
 
       const overlayKey = key.split(" - ")?.[0];
-      // Non-language-specific overlays
+      // Non-language specific overlays
       if (
         overlayKey === CHARACTER_ENCODING ||
         overlayKey === FORMAT ||
@@ -452,7 +455,7 @@ const UserSelection = () => {
         if (value) {
           coreOverlays[overlayKey] = value;
         }
-        // Language-specific overlays
+        // Language specific overlays
       } else if (
         overlayKey === META ||
         overlayKey === LABEL ||
@@ -472,102 +475,17 @@ const UserSelection = () => {
       }
     });
 
-    // Sanitize overlays: drop any attribute-mapped keys that are not part of the selected capture_base.
-    // This prevents emitted DSL from containing unknown attribute keys (e.g. "d", "i", "passed")
-    const captureAttrs = Object.keys(coreOverlays.capture_base?.attributes || {});
-    const isValidAttr = (a) => captureAttrs.includes(a);
-
-    // Non-language overlays that map attribute -> value
-    if (coreOverlays.format?.attribute_formats) {
-      coreOverlays.format.attribute_formats = Object.fromEntries(
-        Object.entries(coreOverlays.format.attribute_formats).filter(([k]) => isValidAttr(k))
-      );
-      if (Object.keys(coreOverlays.format.attribute_formats).length === 0) delete coreOverlays.format;
-    }
-
-    if (coreOverlays.conformance?.attribute_conformance) {
-      coreOverlays.conformance.attribute_conformance = Object.fromEntries(
-        Object.entries(coreOverlays.conformance.attribute_conformance).filter(([k]) => isValidAttr(k))
-      );
-      if (Object.keys(coreOverlays.conformance.attribute_conformance).length === 0) delete coreOverlays.conformance;
-    }
-
-    if (coreOverlays.entry_code?.attribute_entry_codes) {
-      coreOverlays.entry_code.attribute_entry_codes = Object.fromEntries(
-        Object.entries(coreOverlays.entry_code.attribute_entry_codes).filter(([k]) => isValidAttr(k))
-      );
-      if (Object.keys(coreOverlays.entry_code.attribute_entry_codes).length === 0) delete coreOverlays.entry_code;
-    }
-
-    if (coreOverlays.unit) {
-      const unitMap = coreOverlays.unit.attribute_unit || coreOverlays.unit.attribute_units || {};
-      const filteredUnits = Object.fromEntries(Object.entries(unitMap).filter(([k]) => isValidAttr(k)));
-      if (coreOverlays.unit.attribute_unit) coreOverlays.unit.attribute_unit = filteredUnits;
-      else coreOverlays.unit.attribute_units = filteredUnits;
-      if (Object.keys(filteredUnits).length === 0) delete coreOverlays.unit;
-    }
-
-    if (coreOverlays.cardinality?.attribute_cardinality) {
-      coreOverlays.cardinality.attribute_cardinality = Object.fromEntries(
-        Object.entries(coreOverlays.cardinality.attribute_cardinality).filter(([k]) => isValidAttr(k))
-      );
-      if (Object.keys(coreOverlays.cardinality.attribute_cardinality).length === 0) delete coreOverlays.cardinality;
-    }
-
-    if (coreOverlays.character_encoding?.attribute_character_encoding) {
-      coreOverlays.character_encoding.attribute_character_encoding = Object.fromEntries(
-        Object.entries(coreOverlays.character_encoding.attribute_character_encoding).filter(([k]) => isValidAttr(k))
-      );
-      if (Object.keys(coreOverlays.character_encoding.attribute_character_encoding).length === 0) delete coreOverlays.character_encoding;
-    }
-
-    // Language-specific overlays (arrays): filter per-item attribute maps
-    ["label", "information", "entry"].forEach((key) => {
-      if (Array.isArray(coreOverlays[key])) {
-        coreOverlays[key] = coreOverlays[key]
-          .map((item) => {
-            const copy = { ...item };
-            if (copy.attribute_labels) {
-              copy.attribute_labels = Object.fromEntries(
-                Object.entries(copy.attribute_labels).filter(([k]) => isValidAttr(k))
-              );
-            }
-            if (copy.attribute_information) {
-              copy.attribute_information = Object.fromEntries(
-                Object.entries(copy.attribute_information).filter(([k]) => isValidAttr(k))
-              );
-            }
-            if (copy.attribute_entries) {
-              copy.attribute_entries = Object.fromEntries(
-                Object.entries(copy.attribute_entries).filter(([k]) => isValidAttr(k))
-              );
-            }
-            return copy;
-          })
-          .filter((item) =>
-            Boolean(
-              (item.attribute_labels && Object.keys(item.attribute_labels).length > 0) ||
-                (item.attribute_information && Object.keys(item.attribute_information).length > 0) ||
-                (item.attribute_entries && Object.keys(item.attribute_entries).length > 0)
-            )
-          );
-
-        if (coreOverlays[key].length === 0) delete coreOverlays[key];
-      }
-    });
-
     return { coreOverlays, extensionOverlays };
   };
 
   const exportToJsonFile = (data) => {
-    const jsonString = JSON.stringify(data, null, 2);
+    const jsonString = JSON.stringify(data);
     const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.href = url;
-    // Use descriptive package naming for merged exports
-    a.download = getDescriptiveFileName("merged_schema", "OCA_package.json");
+    a.download = "merged_schema.json";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -639,9 +557,7 @@ const UserSelection = () => {
     const ocaPackageService = new OcaPackage(extension, bundle);
     const ocaPackage = JSON.parse(ocaPackageService.GenerateOcaPackage());
 
-    // Use "merged_schema" as the name for merged exports so the README and package
-    // filenames are consistent (e.g. merged_schema_OCA_package_README.txt)
-    jsonToTextFile(bundle.bundle, ocaPackage, "merged_schema");
+    jsonToTextFile(bundle.bundle, ocaPackage);
 
     exportToJsonFile(ocaPackage);
   };
@@ -790,12 +706,18 @@ const UserSelection = () => {
     if (key.includes(INFORMATION)) {
       // Removing any escape characters for " and '
       const parsedValue1 = Object.keys(value1).reduce((acc, key) => {
-        acc[key] = normalizeEscapedQuotes(value1[key]);
+        acc[key] = value1[key]
+          // eslint-disable-next-line quotes
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'");
         return acc;
       }, {});
 
       const parsedValue2 = Object.keys(value2).reduce((acc, key) => {
-        acc[key] = normalizeEscapedQuotes(value2[key]);
+        acc[key] = value2[key]
+          // eslint-disable-next-line quotes
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'");
         return acc;
       }, {});
 

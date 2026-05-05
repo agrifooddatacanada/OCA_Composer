@@ -1,15 +1,12 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { React, useCallback, useContext, useState } from "react";
 import { MenuItem } from "@mui/material";
+import { Context } from "../App";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { displayValues } from "../constants/constants";
 
 export const CharacterEncodingTypeRenderer = ({ value, node }) => {
   const [type, setType] = useState(value);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  useEffect(() => {
-    setType(value);
-  }, [value]);
 
   const handleChange = (e) => {
     setType(e.target.value);
@@ -55,7 +52,9 @@ export const CharacterEncodingTypeRenderer = ({ value, node }) => {
   );
 };
 
-const useCharacterEncodingType = (gridRef, characterEncodingRowData, setCharacterEncodingRowData) => {
+const useCharacterEncodingType = (gridRef) => {
+  const { characterEncodingRowData, setCharacterEncodingRowData } = useContext(Context);
+
   const handleSave = useCallback(() => {
     gridRef.current.api.stopEditing();
     const attributeWithCharacterEncoding = gridRef.current.api
@@ -65,16 +64,18 @@ const useCharacterEncodingType = (gridRef, characterEncodingRowData, setCharacte
   }, [gridRef, setCharacterEncodingRowData]);
 
   const applyAllFunc = useCallback(() => {
-    const api = gridRef.current?.api;
-    const first = api?.getDisplayedRowAtIndex(0)?.data?.["Character Encoding"];
-    if (api == null || first === undefined) return;
-    api.forEachNode((node) => {
-      node.updateData({
-        ...node.data,
-        "Character Encoding": first
+    const getFirstNode = gridRef.current?.api.getRenderedNodes()[0];
+    const firstAttribute = getFirstNode?.data?.["Character Encoding"];
+    const newCharacterEncodingRowData = [];
+    characterEncodingRowData.forEach((item) => {
+      newCharacterEncodingRowData.push({
+        ...item,
+        "Character Encoding": firstAttribute || ""
       });
     });
-  }, [gridRef]);
+
+    setCharacterEncodingRowData(newCharacterEncodingRowData);
+  }, [characterEncodingRowData, gridRef, setCharacterEncodingRowData]);
 
   return { handleSave, applyAllFunc };
 };

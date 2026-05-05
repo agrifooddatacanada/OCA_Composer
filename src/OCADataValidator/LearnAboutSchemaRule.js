@@ -32,7 +32,7 @@ const LearnAboutSchemaRule = () => {
         </TypographyTag>
         <br />
         <TypographyTag>
-          <strong>Data Type –</strong> one of the few requirements for an OCA schema, data type specifies which data type each attribute in a dataset contains: Text, Numeric, Boolean, Binary, DateTime or their corresponding arrays. An array value allows a data entry to contain multiple entries in a single field.
+          <strong>DataType –</strong> one of the few requirements for an OCA schema, DataType specifies which DataType each attribute in a dataset contains: Text, Numeric, Boolean, Binary, DateTime or their corresponding arrays. An array value allows a data entry to contain multiple entries in a single field.
         </TypographyTag>
         <br />
         <TypographyTag>
@@ -44,7 +44,7 @@ const LearnAboutSchemaRule = () => {
         </TypographyTag>
         <br />
         <TypographyTag>
-          <strong>Cardinality –</strong> for array data types, cardinality lets the user optionally specify the minimum and/or maximum number of elements in the array, or an exact number of elements. For example, you may want to write a rule that up to 5 elements are required for a specific attribute.
+          <strong>Cardinality –</strong> for array DataTypes, cardinality lets the user optionally specify the minimum and/or maximum number of elements in the array, or an exact number of elements. For example, you may want to write a rule that up to 5 elements are required for a specific attribute.
         </TypographyTag>
         <br />
         <TypographyTag>

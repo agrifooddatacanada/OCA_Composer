@@ -7,8 +7,7 @@ import Drop from "../StartSchema/Drop";
 import {
   datasetUploadTooltip,
   jsonUploadTooltip,
-  textUploadDescription,
-  BETWEEN_SECTION_SPACING
+  textUploadDescription
 } from "../constants/constants";
 import MergeDifferenceModal from "./MergeDifferenceModal";
 
@@ -108,8 +107,7 @@ const UploadingStart = () => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          flex: 1,
-          mb: BETWEEN_SECTION_SPACING
+          flex: 1
         }}
       >
         <Box sx={{ height: "3rem" }} />

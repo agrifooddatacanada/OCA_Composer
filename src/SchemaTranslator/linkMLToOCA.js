@@ -5,34 +5,18 @@ import { mapLinkMLToOCABundle } from "./mapLinkMLToOCABundle";
 
 /**
  * Transforms an OCA bundle into an OCA package
- * @param {Object} bundle - The OCA bundle to package (includes extensions and captureBaseId)
+ * @param {Object} bundle - The OCA bundle to package
  * @returns {Object} The OCA package
  */
 export function transformToPackage(bundle) {
-  const pkg = {
+  return {
     type: "oca_package/1.0",
-    __composerImportSource: "linkml",
     oca_bundle: {
-      bundle: {
-        d: bundle.d,
-        capture_base: bundle.capture_base,
-        overlays: bundle.overlays
-      }
+      bundle
     },
     dependencies: [],
-    extensions: {}
+    extensions: []
   };
-
-  // Add ADC extensions if present
-  if (bundle.extensions) {
-    pkg.extensions.adc = {
-      [bundle.captureBaseId]: {
-        overlays: bundle.extensions
-      }
-    };
-  }
-
-  return pkg;
 }
 
 /**

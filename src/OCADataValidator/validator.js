@@ -2,8 +2,7 @@ import { Duration } from "luxon";
 import OCADataSetErr from "./utils/Err";
 import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
 import { ADC, ALLOWED_BOOLEAN_VALUES, errorCode, RANGE } from "../constants/constants";
-import { isValidNumber, parseDateString } from "../utils/helpers";
-import { getRootCaptureBaseId } from "../utils/packageUtils";
+import { isValidNumber, parseDateString } from "../constants/utils";
 
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
@@ -44,15 +43,15 @@ export default class OCABundle {
     this.captureBase = null;
     this.overlays = {};
     this.ErrorBuilder = new OCADataSetErr();
-    this.ocaPackage = null;
+    this.OCAPackage = null;
   }
 
   // Load the OCA bundle from a JSON file.
-  async loadedBundle(bundle, ocaPackage) {
+  async loadedBundle(bundle, OCAPackage) {
     try {
       this.captureBase = bundle[CB_KEY];
       this.overlays = bundle[OVERLAYS_KEY];
-      this.ocaPackage = ocaPackage;
+      this.OCAPackage = OCAPackage;
     } catch (error) {
       console.error("Error loading bundle:", error);
       throw error;
@@ -206,8 +205,9 @@ export default class OCABundle {
     const rslt = this.ErrorBuilder.rangeErr;
     // For now, use ADC community's extension overlays for the top-level/main schema bundle
     const rangeOverlay =
-      this.ocaPackage?.extensions?.[ADC]?.[getRootCaptureBaseId(this.ocaPackage)]
-        ?.overlays?.[RANGE];
+      this.OCAPackage?.extensions?.[ADC]?.[
+        this.OCAPackage?.oca_bundle?.bundle?.capture_base?.d
+      ]?.overlays?.[RANGE];
 
     if (rangeOverlay?.attributes) {
       Object.keys(rangeOverlay.attributes).forEach((attribute) => {
@@ -464,7 +464,7 @@ export default class OCABundle {
             } else {
               rslt.errs[attr][i] = {
                 type: "FE",
-                detail: `${FORMAT_ERR_MSG} Format rule for this column is ${attrFormat}.`
+                detail: `${FORMAT_ERR_MSG}`
               };
             }
           }

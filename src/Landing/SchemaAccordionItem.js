@@ -37,7 +37,7 @@ const SchemaAccordionItem = () => {
 
       <AccordionDetails sx={{ textAlign: "start" }}>
         <Typography>
-          {t("Schemas are an important piece of data documentation. Schemas work together with a dataset and describe data features such as column names, units, and descriptions etc.")}
+          {t("Schemas are an important piece of data documentation. Schemas work...")}
         </Typography>
         <Typography sx={{ marginTop: "20px" }}>
           {t(

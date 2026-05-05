@@ -19,13 +19,14 @@ const steps = [
 ];
 
 const OCADataValidator = () => {
-  const { currentDataValidatorPage, setSchemaRawFile } = useContext(Context);
+  const { currentDataValidatorPage, setRawFile, setJsonRawFile } = useContext(Context);
   const [showWarningCard, setShowWarningCard] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const firstTimeDisplayWarning = useRef(true);
 
   const setFile = (receivedFiles) => {
-    setSchemaRawFile(receivedFiles);
+    setRawFile(receivedFiles);
+    setJsonRawFile(receivedFiles);
   };
 
   useFileListener(setFile);

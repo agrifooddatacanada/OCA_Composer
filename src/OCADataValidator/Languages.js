@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { Box, FormControl, MenuItem, Select } from "@mui/material";
-import usePrimaryColor from "../hooks/usePrimaryColor";
-import useFontFamily from "../hooks/useFontFamily";
+import { CustomPalette } from "../constants/customPalette";
+import { Context } from "../App";
 
 const Languages = ({
   languages,
@@ -13,8 +13,7 @@ const Languages = ({
   setIsDropdownOpen
 }) => {
   const { t } = useTranslation();
-  const primaryColor = usePrimaryColor();
-  const fontFamily = useFontFamily();
+  const { currentTheme } = useContext(Context);
   const typesDisplay = languages.map((value) => (
     <MenuItem key={value} value={value} sx={{ border: "none", height: "2rem" }}>
       {value}
@@ -30,11 +29,11 @@ const Languages = ({
     >
       <Box
         sx={{
-          color: primaryColor,
+          color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
           fontWeight: "bold",
           alignSelf: "center",
           textAlign: "center",
-          fontFamily
+          fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
         }}
       >
         {t("Language")}: &nbsp;&nbsp;

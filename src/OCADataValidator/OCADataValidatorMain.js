@@ -3,23 +3,21 @@ import { useTranslation } from "react-i18next";
 import { Box, Button, Typography } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Drop from "../StartSchema/Drop";
-import { useHandleSchemaFileDrop } from "./useHandleSchemaFileDrop";
+import { useHandleJsonDrop } from "./useHandleJsonDrop";
 import { useHandleDatasetDrop } from "./useHandleDatasetDrop";
-import { datasetUploadDescription, datasetUploadTooltip, BETWEEN_SECTION_SPACING } from "../constants/constants";
+import { datasetUploadDescription, datasetUploadTooltip } from "../constants/constants";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import ExcelSheetSelection from "../components/ExcelSheetSelection";
 import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
-import useFontFamily from "../hooks/useFontFamily";
 
 const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) => {
   const { t } = useTranslation();
-  const { schemaRawFile, setCurrentDataValidatorPage } = useHandleSchemaFileDrop(
+  const { jsonRawFile, setCurrentDataValidatorPage } = useHandleJsonDrop(
     firstTimeDisplayWarning,
     setShowWarningCard
   );
   const { currentTheme } = useContext(Context);
-  const fontFamily = useFontFamily();
   const {
     datasetRawFile,
     setDatasetRawFile,
@@ -65,7 +63,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <BackNextSkeleton
         isBack
-        isForward={schemaRawFile.length > 0}
+        isForward={jsonRawFile.length > 0}
         pageForward={handleClickNext}
         pageBack={handleClickBack}
         nextText={datasetRawFile.length === 0 ? "Skip Upload Data" : "Next"}
@@ -77,8 +75,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          flex: 1,
-          mb: BETWEEN_SECTION_SPACING
+          flex: 1
         }}
       >
         <Box sx={{ height: "3rem" }} />
@@ -95,7 +92,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
               sx={{
                 textAlign: "start",
                 color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
-                fontFamily
+                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
               }}
             >
               {t("Optional: Upload Data")}
@@ -149,7 +146,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             sx={{
               width: 190,
               mr: 2,
-              fontFamily
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
             }}
             disabled={datasetRawFile.length === 0}
           >
@@ -161,7 +158,7 @@ const OCADataValidatorMain = ({ setShowWarningCard, firstTimeDisplayWarning }) =
             sx={{
               width: 200,
               ml: 2,
-              fontFamily
+              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
             }}
             onClick={handleClickViewData}
             disabled={datasetRawFile.length === 0}

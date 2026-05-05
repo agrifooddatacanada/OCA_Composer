@@ -7,10 +7,7 @@ export default function Footer() {
   const { currentTheme } = useContext(Context);
   const logos = currentTheme?.logos;
   return (
-    <Stack
-      component="footer"
-      sx={{ flexShrink: 0 }}
-    >
+    <>
       <Divider orientation="horizontal" flexItem />
       <Stack
         direction="row"
@@ -18,7 +15,7 @@ export default function Footer() {
         alignItems="stretch"
         sx={{
           padding: "2rem",
-          minHeight: 180
+          height: "100%"
         }}
       >
         <Stack direction="column" sx={{ gap: "0.5rem" }}>
@@ -31,9 +28,7 @@ export default function Footer() {
             >
               <img
                 src={logoAgri}
-                width={200}
-                height={60}
-                style={{ width: "200px", height: "auto", cursor: "pointer", display: "inline-block" }}
+                style={{ width: "200px", cursor: "pointer", display: "inline-block" }}
                 alt="Agri Logo"
               />
             </a>
@@ -53,6 +48,6 @@ export default function Footer() {
           </div>
         </Stack>
       </Stack>
-    </Stack>
+    </>
   );
 }

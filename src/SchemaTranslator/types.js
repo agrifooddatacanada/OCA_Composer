@@ -85,7 +85,7 @@
 /**
  * @typedef {Object} Unit
  * @property {string} metric_system - The metric system used
- * @property {Object.<string, string>} attribute_unit - Map of attribute units (OCA spec)
+ * @property {Object.<string, string>} attribute_units - Map of attribute units
  */
 
 /**

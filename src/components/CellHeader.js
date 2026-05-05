@@ -10,9 +10,7 @@ const CellHeader = ({ headerText, constraint, helpText }) => (
     </span>
     {helpText && (
       <Tooltip title={helpText} placement="top" arrow>
-        <span style={{ display: "inline-flex", alignItems: "center" }}>
-          <HelpOutlineIcon sx={{ fontSize: 15, marginLeft: "8px" }} />
-        </span>
+        <HelpOutlineIcon sx={{ fontSize: 15, marginLeft: "3px" }} />
       </Tooltip>
     )}
   </>

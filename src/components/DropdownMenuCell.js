@@ -10,32 +10,21 @@ export const DropdownMenuList = ({
   isDropdownOpen,
   setIsDropdownOpen,
   typesDisplay,
-  isDisabled = false,
-  renderDisplayValue,
-  stretchInCell = false,
-  selectChevronPaddingPx = 28
+  isDisabled = false
 }) => (
   <Box
     sx={{
       height: "105%",
       display: "flex",
       alignItems: "center",
-      width: "100%",
-      minWidth: 0,
-      ...(stretchInCell
-        ? { flex: 1, alignSelf: "stretch", maxWidth: "100%" }
-        : {})
+      width: "100%"
     }}
   >
     <FormControl
       fullWidth
       variant="standard"
       sx={{
-        height: "100%",
-        minWidth: 0,
-        ...(stretchInCell
-          ? { width: "100%", maxWidth: "100%", flex: 1 }
-          : {})
+        height: "100%"
       }}
       onKeyDown={handleKeyDown}
       disabled={isDisabled}
@@ -45,45 +34,15 @@ export const DropdownMenuList = ({
         value={type || ""}
         label="Type"
         onChange={handleChange}
-        disableUnderline
         sx={{
           height: "100%",
-          fontSize: "small",
-          "&::before, &::after": { display: "none" },
-          "& .MuiSelect-select": {
-            backgroundColor: "transparent !important",
-            background: "none !important"
-          },
-          ...(stretchInCell
-            ? {
-                width: "100%",
-                maxWidth: "100%",
-                boxSizing: "border-box",
-                "& .MuiInput-root, & .MuiInputBase-root": {
-                  width: "100%",
-                  maxWidth: "100%"
-                },
-                "& .MuiSelect-select": {
-                  width: "100% !important",
-                  minWidth: "0 !important",
-                  maxWidth: "100% !important",
-                  boxSizing: "border-box",
-                  paddingRight: `${selectChevronPaddingPx}px !important`
-                },
-                "& .MuiSelect-icon": {
-                  right: 0
-                }
-              }
-            : {})
+          fontSize: "small"
         }}
         onClick={handleClick}
         open={isDropdownOpen}
         onClose={() => setIsDropdownOpen(false)}
         onOpen={() => setIsDropdownOpen(true)}
-        renderValue={renderDisplayValue || ((value) => value || "\u200B")}
-        MenuProps={{
-          disableScrollLock: true
-        }}
+        renderValue={(value) => value}
       >
         {typesDisplay}
       </Select>

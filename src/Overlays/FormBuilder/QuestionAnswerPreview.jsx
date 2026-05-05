@@ -24,8 +24,7 @@ import {
   Event as EventIcon 
 } from "@mui/icons-material";
 import { CustomPalette } from "../../constants/customPalette";
-import { langNameFromTwoLetters } from "../../utils/languageUtils";
-import { getFormatRuleDescription } from "../../utils/helpers";
+import { codesToLanguages } from "../../constants/isoCodes";
 import i18next from "i18next";
 import {
   formatCodeTextDescription,
@@ -87,7 +86,18 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
   const { attributeType, formatText, options = [], placeholder, title, inputType } = question;
   
   const getFormatDescription = (formatRegex, type) => {
-    return getFormatRuleDescription(type, formatRegex) || '';
+    if (!formatRegex) return '';
+    
+    if (type?.includes('DateTime')) {
+      return formatCodeDateDescription[formatRegex] || '';
+    } else if (type?.includes('Numeric')) {
+      return formatCodeNumericDescription[formatRegex] || '';
+    } else if (type?.includes('Binary')) {
+      return formatCodeBinaryDescription[formatRegex] || '';
+    } else if (type?.includes('Text')) {
+      return formatCodeTextDescription[formatRegex] || '';
+    }
+    return '';
   };
   
   const formatDescription = getFormatDescription(formatText, attributeType);
@@ -95,7 +105,7 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
   // Get placeholder text for current language
   const getPlaceholder = () => {
     if (typeof placeholder === 'object' && placeholder !== null) {
-      const userLanguage = langNameFromTwoLetters(i18next.language);
+      const userLanguage = codesToLanguages?.[i18next.language];
       const langPlaceholder = placeholder[currentLanguage] !== undefined 
         ? placeholder[currentLanguage]
         : (placeholder[userLanguage] !== undefined ? placeholder[userLanguage] : placeholder[Object.keys(placeholder)[0]]);
@@ -111,7 +121,7 @@ const QuestionAnswerPreview = ({ question, currentLanguage, compact = false }) =
   // Get option label for current language
   const getOptionLabel = (option) => {
     if (typeof option.labels === 'object' && option.labels !== null) {
-      const userLanguage = langNameFromTwoLetters(i18next.language);
+      const userLanguage = codesToLanguages?.[i18next.language];
       return option.labels[currentLanguage] || option.labels[userLanguage] || option.labels[Object.keys(option.labels)[0]];
     }
     return option.label || option.value || option.code || 'Option';

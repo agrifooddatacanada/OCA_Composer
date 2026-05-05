@@ -1,82 +1,64 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Box } from "@mui/material";
-import { AgGridReact } from "../components/AgGridReact";
+import { useContext, useMemo, useRef, useState } from "react";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import CellHeader from "../components/CellHeader";
+import { useTranslation } from "react-i18next";
 import DataStandardAutocompleteEditor from "./DataStandards/DataStandardAutocompleteEditor";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { Context } from "../App";
-import { useMultiSchema } from "../schema/schemaContext";
 import DeleteConfirmation from "./DeleteConfirmation";
+import { Box } from "@mui/material";
+import { AgGridReact } from "ag-grid-react";
 import Loading from "../components/Loading";
-import { FIELD_DATA_STANDARDS_OVERLAY } from "../constants/constants";
-import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { useOverlayGridOnGridReady } from "./gridUtils";
 
 const DataStandards = () => {
   const {
+    dataStandardsRowData,
+    setDataStandardsRowData,
     setCurrentPage,
     setSelectedOverlay,
-    setOverlay
+    setOverlay,
   } = useContext(Context);
-  
-  // Use MultiSchema context with standard pattern
-  const { 
-    getSchema, 
-    updateSchema,
-    updateOverlaySelection
-  } = useMultiSchema();
-  const schemaState = getSchema();
-  const deleteHandler = useDeleteOverlayHandler(FIELD_DATA_STANDARDS_OVERLAY);
-  
-  // Always get data from schema state - no fallback needed
-  const dataStandardsRowData = useMemo(() => 
-    schemaState?.dataStandardsData || []
-  , [schemaState?.dataStandardsData]);
-  
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const gridRef = useRef();
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const handleDeleteCurrentOverlay = () => {
+    setOverlay((prev) => ({
+      ...prev,
+      "Data Standards": {
+        ...prev["Data Standards"],
+        selected: false,
+      },
+    }));
 
+    setSelectedOverlay('');
+    setCurrentPage('Overlays');
+  };
 
   const handleSave = () => {
     gridRef.current.api.stopEditing();
-    const rowData = gridRef.current.api.getRenderedNodes()?.map((rowNode) => rowNode?.data);
-    updateSchema({dataStandardsData: rowData});
-  };
+    const rowData = gridRef.current.api.getRenderedNodes()?.map(rowNode => rowNode?.data);
+    setDataStandardsRowData(rowData);
+  }
 
   const handleForward = () => {
     handleSave();
-    setSelectedOverlay("");
-    setCurrentPage("Overlays");
+    setSelectedOverlay('');
+    setCurrentPage('Overlays');
   };
-
-  // Save changes when component unmounts (user navigates away)
-  useEffect(() => {
-    return () => {
-      if (gridRef.current?.api) {
-        gridRef.current.api.stopEditing();
-        const rowData = gridRef.current.api.getRenderedNodes()?.map((rowNode) => rowNode?.data);
-        if (rowData && rowData.length > 0) {
-          updateSchema({dataStandardsData: rowData});
-        }
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - only run on mount/unmount
 
   const handleBack = () => {
     setShowDeleteConfirmation(true);
+  }
+
+  const onGridReady = () => {
+    setLoading(false);
   };
 
-  const onGridReady = useOverlayGridOnGridReady(setLoading);
-
-  const columnDefs = useMemo(() => [
+  const columnDefs = useMemo(() => {
+    return [
       {
         field: "Attribute",
         width: 180,
@@ -85,40 +67,38 @@ const DataStandards = () => {
         headerComponent: () => <CellHeader headerText={t("Attributes")} helpText='This is the name for the attribute and, for example, will be the column header in every tabular data set no matter what language.' />,
       },
       {
-        field: "DataStandard",
-        headerComponent: () => <CellHeader headerText={t("Data Standard")} helpText='This is the data standard that the values of an attribute should follow' />,
+        field: 'DataStandard',
+        headerComponent: () => <CellHeader headerText={t('Data Standard')} helpText='This is the data standard that the values of an attribute should follow' />,
         cellRenderer: DataStandardAutocompleteEditor,
         flex: 1
       }
-    ], [t]);
+    ];
+  }, [t]);
 
   return (
-    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setCurrentPage("Overlays")}>
+    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={handleBack} backText="Remove overlay">
       {loading && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={deleteHandler}
+          removeFromSelected={handleDeleteCurrentOverlay}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}
-      <Box sx={{ mb: BETWEEN_SECTION_SPACING }}>
+      <Box>
         <Box className='ag-theme-balham' sx={{ width: 430 }}>
           <style>{gridStyles}</style>
           <AgGridReact
-          key={i18n.language}
           ref={gridRef}
-          rowData={dataStandardsRowData}
-          columnDefs={columnDefs}
+          rowData={dataStandardsRowData} 
+          columnDefs={columnDefs} 
           domLayout="autoHeight"
-          suppressRowHoverHighlight
-          stopEditingWhenCellsLoseFocus
+          stopEditingWhenCellsLoseFocus={true}
           onGridReady={onGridReady}
-          overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
           />
         </Box>
       </Box>
     </BackNextSkeleton>
-  );
-};
+  )
+}
 
 export default DataStandards;

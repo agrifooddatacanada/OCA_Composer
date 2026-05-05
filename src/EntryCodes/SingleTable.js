@@ -13,16 +13,11 @@ export default function SingleTable({
   chosenTable,
   setChosenTable,
   setShowCard,
-  onFirstDataRendered,
-  entryCodeData,
-  setEntryCodeData,
   setWarningNextPage
 }) {
-  const { setChosenEntryCodeIndex, setCurrentPage } = useContext(Context);
-  const hasExistingCodes =
-    Array.isArray(entryCodeData) &&
-    entryCodeData.length > 0 &&
-    String(entryCodeData[0]?.Code ?? "").trim() !== "";
+  const { setChosenEntryCodeIndex, setCurrentPage, entryCodeRowData } =
+    useContext(Context);
+  const hasExistingCodes = entryCodeRowData?.[index]?.[0]?.Code !== "";
 
   return (
     <Box
@@ -67,7 +62,7 @@ export default function SingleTable({
             }}
           />
         </Tooltip>
-        <Tooltip title="Choose from existing entry codes.">
+        <Tooltip title="Choose from existing entry codes">
           <ListAltIcon
             sx={{
               color: "gray",
@@ -94,9 +89,6 @@ export default function SingleTable({
         codeRefs={codeRefs}
         chosenTable={chosenTable}
         setChosenTable={setChosenTable}
-        onFirstDataRendered={onFirstDataRendered}
-        entryCodeData={entryCodeData}
-        setEntryCodeData={setEntryCodeData}
       />
     </Box>
   );

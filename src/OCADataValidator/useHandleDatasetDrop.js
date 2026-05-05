@@ -17,7 +17,7 @@ export const useHandleDatasetDrop = () => {
     setDatasetIsParsed,
     setJsonLoading,
     setJsonDropDisabled,
-    schemaRawFile,
+    jsonRawFile,
     setMatchingRowData,
     setSchemaDataConformantHeader,
     setSchemaDataConformantRowData,
@@ -83,13 +83,13 @@ export const useHandleDatasetDrop = () => {
             setDatasetDropMessage({ message: "", type: "" });
             setDatasetLoading(false);
             setJsonLoading(false);
-            if (schemaRawFile.length === 0) {
+            if (jsonRawFile.length === 0) {
               setJsonDropDisabled(false);
             }
 
             if (!datasetIsParsed) {
               setDatasetIsParsed(true);
-              if (schemaRawFile.length > 0) {
+              if (jsonRawFile.length > 0) {
                 setCurrentDataValidatorPage("AttributeMatchDataValidator");
               } 
             }
@@ -100,14 +100,14 @@ export const useHandleDatasetDrop = () => {
       setDatasetDropMessage({ message: messages.parseUploadFail, type: "error" });
       setDatasetLoading(false);
       setJsonLoading(false);
-      if (schemaRawFile.length === 0) {
+      if (jsonRawFile.length === 0) {
         setJsonDropDisabled(false);
       }
       setTimeout(() => {
         setDatasetDropMessage({ message: "", type: "" });
       }, [2500]);
     }
-  }, [datasetIsParsed, schemaRawFile]);
+  }, [datasetIsParsed, jsonRawFile]);
 
   const handleExcelDrop = useCallback((acceptedFiles) => {
 
@@ -137,7 +137,7 @@ export const useHandleDatasetDrop = () => {
           setDatasetDropMessage({ message: "", type: "" });
           setDatasetLoading(false);
           setJsonLoading(false);
-          if (schemaRawFile.length === 0) {
+          if (jsonRawFile.length === 0) {
             setJsonDropDisabled(false);
           }
         }, 900);
@@ -145,7 +145,7 @@ export const useHandleDatasetDrop = () => {
         setDatasetDropMessage({ message: error.message ? error.message : messages.parseUploadFail, type: "error" });
         setDatasetLoading(false);
         setJsonLoading(false);
-        if (schemaRawFile.length === 0) {
+        if (jsonRawFile.length === 0) {
           setJsonDropDisabled(false);
         }
         setTimeout(() => {
@@ -157,7 +157,7 @@ export const useHandleDatasetDrop = () => {
 
     if (rABS) reader.readAsBinaryString(acceptedFiles);
     else reader.readAsArrayBuffer(acceptedFiles);
-  }, [datasetIsParsed, schemaRawFile]);
+  }, [datasetIsParsed, jsonRawFile]);
 
   const processExcelFile = useCallback(async (workbook, index) => {
 
@@ -248,7 +248,7 @@ export const useHandleDatasetDrop = () => {
       setDatasetDropMessage({ message: messages.uploadFail, type: "error" });
       setDatasetLoading(false);
       setJsonLoading(false);
-      if (schemaRawFile.length === 0) {
+      if (jsonRawFile.length === 0) {
         setJsonDropDisabled(false);
       }
       setTimeout(() => {

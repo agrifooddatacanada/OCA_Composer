@@ -1,126 +1,62 @@
 import React, { useContext, useState, useRef, useCallback, useEffect } from "react";
-import { AgGridReact } from "../components/AgGridReact";
+import { AgGridReact } from "ag-grid-react";
 import { useTranslation } from "react-i18next";
-import { Box, Button, Alert, Typography, ButtonBase, Stepper, Step, StepLabel } from "@mui/material";
+import { Box, Button, Alert, Typography } from "@mui/material";
 
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 import { Context } from "../App";
-import { useMultiSchema } from "../schema/schemaContext";
-import BackNextSkeleton from "../components/BackNextSkeleton";
 
 import { CustomPalette } from "../constants/customPalette";
-import { removeSpacesFromString } from "../utils/stringUtils";
+import { removeSpacesFromString } from "../constants/removeSpaces";
 
 import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-balham.css";
-import { hasDisallowedChars } from "../utils/helpers";
-import TextareaCellEditor from "../components/TextareaCellEditor";
-import { measureTextHeight } from "../utils/measureTextLines";
-import { flexCenter, preWrapWordBreak, agGridEditableCellHoverCss } from "../constants/styles";
-import { TABLE_TO_BUTTON_GAP, BETWEEN_SECTION_SPACING } from "../constants/constants";
-import ErrorPopup from "../ViewSchema/ErrorPopup";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import { hasDisallowedChars } from "../constants/utils";
 
 // !important overrides default grid style that sets the minimum height of the grid container
 // Without the min-height, it looks awkward when the component is empty or has only a couple attributes
 const gridStyle = `
-  .create-schema-grid .ag-cell {
+  .ag-center-cols-clipper {
+    min-height: unset !important;
+  }
+  
+  .ag-theme-alpine .ag-cell {
     border-right: 1px solid ${CustomPalette.GREY_300};
   }
-  .create-schema-grid .ag-header-cell-label {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .ag-cell {
-    line-height: 1.5;
-  }
-  .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
-    height: 100%;
-  }
-  .ag-header-cell:last-child,
-  .ag-header-cell[col-id="Delete"] {
-    border-right: none !important;
-    --ag-header-column-separator-display: none !important;
-  }
-  .ag-header-cell:last-child *,
-  .ag-header-cell[col-id="Delete"] * {
-    border-right: none !important;
-    box-shadow: none !important;
-  }
-  .ag-header-viewport .ag-header-cell:last-child {
-    border-right: none !important;
-  }
-  .ag-header-container {
-    border-right: none !important;
-  }
-  .create-schema-grid .ag-cell:last-child {
-    border-right: none !important;
-  }
-  .ag-header-row .ag-header-cell:last-child::after {
-    display: none !important;
-  }
-  .ag-header-viewport {
-    overflow-x: hidden;
-  }
-  .create-schema-grid .ag-body-horizontal-scroll {
-    display: none !important;
-  }
-  .create-schema-grid .ag-center-cols-clipper {
-    min-height: unset !important;
-  }
-  .create-schema-grid .ag-root-wrapper-body.ag-layout-auto-height {
-    min-height: unset !important;
-  }
-  .create-schema-grid .ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
-    min-height: 88px !important;
-  }
-  .ag-row .delete-icon-solid {
-    display: none;
-  }
-  .ag-row:hover .delete-icon-outline {
-    display: none;
-  }
-  .ag-row:hover .delete-icon-solid {
-    display: inline-flex;
-  }
-  .ag-row:hover .ag-cell {
-    background-color: ${CustomPalette.PINK_200} !important;
-  }
+  
   .ag-cell-value {
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  .ag-cell, .ag-full-width-row .ag-cell-wrapper.ag-row-group {
-    line-height: 1.5;
+  
+  .ag-header-cell-label {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
   }
-  .ag-cell .ag-drag-handle {
-    margin-right: 0;
+  .ag-header-cell {
+    border: 0.5px solid ${CustomPalette.GREY_300};}
   }
-  .ag-overlay-no-rows-center {
-    font-size: 14px;
-  }
-`;
+  `;
 
-const DeleteRenderer = ({ node, onDelete }) => (
-  <Box className="delete-icon-wrapper" sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: "100%", width: "100%" }}>
-    <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
-    <DeleteForeverIcon
-      onClick={() => onDelete(node.rowIndex)}
-      sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }}
-      className="delete-icon-solid"
-      title="Delete attribute"
+const DeleteRenderer = ({ node, canDelete, onDelete }) =>
+  canDelete && (
+    <DeleteOutlineIcon
+      sx={{
+        pr: 1,
+        color: CustomPalette.GREY_600,
+        transition: "all 0.2s ease-in-out"
+      }}
+      onClick={() => {
+        onDelete(node.rowIndex);
+      }}
     />
-  </Box>
-);
+  );
 
 export default function CreateManually() {
   const addRef = useRef();
@@ -128,80 +64,52 @@ export default function CreateManually() {
   const refContainer = useRef();
   const { t } = useTranslation();
 
-  // Keep minimal legacy Context usage for navigation
-  const { setCurrentPage } = useContext(Context);
-
-  // Use MultiSchemaContext for all attribute management
-  const { updateSchema, getSchema, getAttributesList } = useMultiSchema();
+  const { setCurrentPage, setAttributesList, attributesList, setFileData } =
+    useContext(Context);
 
   const [rowData, setRowData] = useState([{ Name: "" }]);
   const [addErrorMessage, setAddErrorMessage] = useState("");
   const [forwardErrorMessage, setForwardErrorMessage] = useState("");
   const [backErrorMessage, setBackErrorMessage] = useState("");
-  const [duplicateWarning, setDuplicateWarning] = useState("");
-  const [showInvalidCharModal, setShowInvalidCharModal] = useState(false);
-  // Get current attributes from MultiSchemaContext (computed from attributes array)
-  const attributesList = getAttributesList();
+  const [canDelete, setCanDelete] = useState(attributesList.length > 1);
 
   const handleDeleteRow = (rowIndex) => {
     gridRef.current.api.stopEditing();
     const newRowData = rowData.filter((item, index) => index !== rowIndex);
     setRowData(newRowData);
+    if (newRowData.length <= 1) {
+      setCanDelete(false);
+    }
   };
 
-  // Only sync from context when navigating BACK to this page with existing data
-  // Don't interfere with fresh manual creation (when attributesList is empty)
   useEffect(() => {
+    const allRowData = [];
     if (attributesList.length > 0) {
-      // User navigated back to this page with saved attributes
-      const allRowData = attributesList.map((item) => ({ Name: item }));
-      setRowData(allRowData);
+      attributesList.forEach((item) => {
+        allRowData.push({ Name: item });
+      });
+    } else {
+      allRowData.push({ Name: "" });
     }
-    // Don't watch rowData - let it be managed by user actions only
-  }, [attributesList.length]);
 
-  useEffect(() => {
-    const api = gridRef.current?.api;
-    if (!api || rowData.length === 0) return;
-    const raf = requestAnimationFrame(() => api.resetRowHeights());
-    return () => cancelAnimationFrame(raf);
-  }, [rowData]);
+    setRowData(allRowData);
+  }, [attributesList]);
 
   const columnDefs = [
     { field: "Drag", headerName: "", width: 50, rowDrag: true },
-    {
-      field: "Name",
-      headerName: t("Attribute Name"),
-      width: 470,
-      editable: true,
-      wrapText: true,
-      cellEditor: TextareaCellEditor,
-      cellEditorParams: {
-        context: { triggerInvalidCharModal: () => setShowInvalidCharModal(true) }
-      },
-      cellStyle: () => ({
-        ...preWrapWordBreak,
-        ...flexCenter
-      })
-    },
+    { field: "Name", headerName: t("Attribute Name"), width: 470, editable: true },
     {
       field: "Delete",
       headerName: "",
       cellRenderer: DeleteRenderer,
       cellRendererParams: (params) => ({
         node: params.node,
+        canDelete,
         onDelete: handleDeleteRow
       }),
-      cellStyle: () => flexCenter,
-      width: 44
+      width: 50
     }
   ];
-
-  const getRowHeight = useCallback((params) => {
-    if (!params.data) return 40;
-    const nameH = measureTextHeight(params.data.Name || "", 515, {});
-    return Math.max(nameH, 40) + 16;
-  }, []);
 
   const defaultColDef = {
     tabToNextCell: true
@@ -281,8 +189,11 @@ export default function CreateManually() {
     });
 
     if (hasDisallowedCharacters) {
-      setShowInvalidCharModal(true);
+      errorSettingFunction(t("AttributeDisallowedCharErrorMessage"));
       gridRef.current.api.setFocusedCell(errorIndex, "Name");
+      setTimeout(() => {
+        errorSettingFunction("");
+      }, [2500]);
       return;
     }
 
@@ -299,13 +210,13 @@ export default function CreateManually() {
           if (spacesCounter === 1 && errorIndex === 0 && allAttributes.length === 0) {
             resetFunction();
           } else {
-            errorSettingFunction(t("Attribute Names cannot be empty."));
+            errorSettingFunction(t("Attribute Names cannot be empty"));
             setTimeout(() => {
               errorSettingFunction("");
             }, [2500]);
           }
         } else {
-          errorSettingFunction(t("Attribute Names cannot be empty."));
+          errorSettingFunction(t("Attribute Names cannot be empty"));
           gridRef.current.api.setFocusedCell(errorIndex, "Name");
           setTimeout(() => {
             errorSettingFunction("");
@@ -325,31 +236,16 @@ export default function CreateManually() {
 
   const addRowSuccess = () => {
     const newRow = { Name: "" };
+    setCanDelete(true);
     setRowData((prevState) => [...prevState, newRow]);
   };
 
   const handleAddRow = () => {
-    gridRef.current.api.stopEditing();
-    const newRow = { Name: "" };
-    setRowData((prevState) => [...prevState, newRow]);
+    validateRowData(setAddErrorMessage, addRowSuccess);
   };
 
   const pageForwardSuccess = (attributes) => {
-    // Save to MultiSchemaContext only
-    const attributeRowData = attributes.map(attr => ({
-      Attribute: attr,
-      Type: "", // Will be filled in AttributeDetails
-      Description: "",
-      Required: false,
-      EntryCodes: [],
-      List: false
-    }));
-    
-    // attributesList is computed automatically from attributes
-    updateSchema({
-      attributes: attributeRowData
-    });
-    
+    setAttributesList(attributes);
     setCurrentPage("Metadata");
   };
 
@@ -358,28 +254,12 @@ export default function CreateManually() {
   };
 
   const pageBackSuccess = (attributes) => {
-    // Save to MultiSchemaContext only
-    const attributeRowData = attributes.map(attr => ({
-      Attribute: attr,
-      Type: "",
-      Description: "",
-      Required: false,
-      EntryCodes: [],
-      List: false
-    }));
-    
-    // attributesList is computed automatically from attributes
-    updateSchema({
-      attributes: attributeRowData
-    });
+    setAttributesList(attributes);
     setCurrentPage("Start");
   };
 
   const pageBackReset = () => {
-    // Clear MultiSchemaContext data (attributesList is computed automatically)
-    updateSchema({
-      attributes: []
-    });
+    setAttributesList([]);
     setCurrentPage("Start");
   };
 
@@ -388,12 +268,13 @@ export default function CreateManually() {
   };
 
   const handleClearAll = () => {
-    // Clear MultiSchemaContext data (attributesList is computed automatically)
-    updateSchema({
-      attributes: []
-    });
     setRowData([{ Name: "" }]);
-  };  // Stops grid editing when clicking outside grid
+    setAttributesList([]);
+    setFileData([]);
+    setCanDelete(false);
+  };
+
+  // Stops grid editing when clicking outside grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
       if (
@@ -422,215 +303,200 @@ export default function CreateManually() {
   };
 
   const savedAttributeName = useRef("");
-  const revertingDuplicate = useRef(false);
 
   // Handles 'attribute' column updates
   // To prevent row dragging bugs, attribute names can't be blank or duplicates
   // When the value is updated to handle duplicates, this function runs again
 
   const handleCellValueChanged = (e) => {
-    if (revertingDuplicate.current) {
-      revertingDuplicate.current = false;
-      requestAnimationFrame(() => e.api.resetRowHeights());
-      return;
-    }
     const currentIndex = e.rowIndex;
     const allAttributeNames = gridRef.current.props.rowData.map((item) => item.Name);
     if (e.newValue) {
-      const isDuplicate = allAttributeNames.filter((item) => item === e.newValue).length > 1;
-      if (isDuplicate) {
-        setDuplicateWarning(t("Please enter a unique name."));
-        revertingDuplicate.current = true;
+      // Renames duplicate values to <value>_(number)
+      const findMultipleOccurrences = (array, value) => {
+        const occurrences = array.filter((item) => item === value);
+        return occurrences.length > 1;
+      };
+      let valueToAdd = e.newValue;
+      if (findMultipleOccurrences(allAttributeNames, valueToAdd)) {
+        savedAttributeName.current = e.oldValue;
+        let i = 2;
+        let tempValue = `${valueToAdd}_(${i})`;
+
+        while (allAttributeNames.includes(tempValue)) {
+          i += 1;
+          tempValue = `${valueToAdd}_(${i})`;
+        }
+
+        valueToAdd = tempValue;
         const rowNode = gridRef.current.api.getRowNode(currentIndex);
-        rowNode.setDataValue("Name", e.oldValue || "");
-        setTimeout(() => setDuplicateWarning(""), 2500);
-        return;
+        rowNode.setDataValue("Name", valueToAdd);
       }
+    } else {
+      // Re-save blank attribute as previous attribute
+      const rowNode = gridRef.current.api.getRowNode(currentIndex);
+      rowNode.setDataValue("Name", e.oldValue);
+
+      e.api.startEditingCell({
+        rowIndex: e.rowIndex,
+        colKey: "Name"
+      });
     }
-    setDuplicateWarning("");
-    requestAnimationFrame(() => e.api.resetRowHeights());
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
-      {/* Pseudo-stepper for consistent layout */}
-      <Box sx={{ px: 10, py: 4, display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <Stepper activeStep={0} alternativeLabel sx={{ width: "100%" }}>
-          <Step
-            sx={{
-              "& .MuiStepLabel-root": { alignItems: "center" },
-              "& .MuiStepLabel-labelContainer": { display: "flex", justifyContent: "center" }
-            }}
-          >
-            <StepLabel icon={<Box sx={{ width: 24, height: 24 }} />}>
-              <Box sx={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <ButtonBase
-                  component="span"
-                  sx={{
-                    cursor: "default",
-                    alignSelf: "center",
-                    px: 2,
-                    py: 0.5,
-                    border: `1px solid ${CustomPalette.PRIMARY}`,
-                    borderRadius: 1,
-                    backgroundColor: CustomPalette.PRIMARY,
-                    color: "white",
-                    boxShadow: "none",
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    lineHeight: 1.2,
-                    maxWidth: "140px",
-                    minHeight: "32px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    whiteSpace: "normal",
-                    wordBreak: "break-word",
-                    visibility: "hidden",
-                    pointerEvents: "none"
-                  }}
-                >
-                  {t("Write Names")}
-                </ButtonBase>
-              </Box>
-            </StepLabel>
-          </Step>
-        </Stepper>
-      </Box>
-
-      <BackNextSkeleton
-        isBack
-        pageBack={() => handleBack()}
-        isForward
-        pageForward={() => handleForward()}
+    <Box
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width: "80%",
+        margin: "auto"
+      }}
+    >
+      <Box
+        sx={{
+          alignSelf: "flex-start",
+          display: "flex",
+          justifyContent: "space-between",
+          width: "100%"
+        }}
       >
-        <Box
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            width: "80%",
-            margin: "auto",
-            position: "relative"
+        <Button color="button" onClick={() => handleBack()} sx={{ m: 3 }}>
+          <ArrowBackIosIcon />
+          {t("Back")}
+        </Button>
+        {backErrorMessage && (
+          <Alert
+            severity="error"
+            sx={{ ml: "2rem", display: "flex", alignItems: "center" }}
+          >
+            <Box sx={{ pl: 2, pr: 2 }}>
+              {backErrorMessage}
+              <br />
+              <b>Fix errors</b> or <b>clear all fields</b> to continue.
+            </Box>
+          </Alert>
+        )}
+        {forwardErrorMessage.length > 0 && (
+          <Alert severity="error" sx={{ display: "flex", alignItems: "center" }}>
+            {forwardErrorMessage}
+          </Alert>
+        )}
+        <Button color="button" onClick={() => handleForward()} sx={{ m: "0.4rem" }}>
+          {t("Next")}
+          <ArrowForwardIosIcon />
+        </Button>
+      </Box>
+      <Box sx={{ mb: 5 }}>
+        <Typography
+          sx={{
+            fontSize: 35,
+            fontWeight: "bold",
+            color: CustomPalette.PRIMARY,
+            p: 0
           }}
         >
-          {showInvalidCharModal && (
-            <ErrorPopup onClose={() => setShowInvalidCharModal(false)}>
-              <Box sx={{ textAlign: "center", mb: 2 }}>
-                <Typography variant="h6" fontWeight="semibold" sx={{ mb: 2 }}>
-                  {t("Attribute names are limited to the following characters:")}
-                </Typography>
-                <Box sx={{ display: "flex", justifyContent: "center" }}>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: 1, columnGap: 3, textAlign: "left" }}>
-                    {[
-                      { label: "Numbers", value: "0-9" },
-                      { label: "Letters", value: "a-z, A-Z" },
-                      { label: "Underline", value: "_" },
-                      { label: "Hyphen", value: "-" },
-                      { label: "Period", value: "." }
-                    ].map((item, i) => (
-                      <React.Fragment key={i}>
-                        <Typography variant="body1">{t(item.label)}:</Typography>
-                        <Typography variant="body1">{item.value}</Typography>
-                      </React.Fragment>
-                    ))}
-                  </Box>
-                </Box>
-              </Box>
-            </ErrorPopup>
+          {t("Attribute Names")}
+        </Typography>
+        <Typography
+          sx={{
+            mt: -0.5,
+            fontWeight: "bold",
+            fontSize: 20,
+            color: CustomPalette.GREY_800
+          }}
+        >
+          {t("Enter the name of each attribute below")}
+        </Typography>
+        <Typography
+          sx={{
+            mt: 2,
+            mx: "auto",
+            fontWeight: "light",
+            fontStyle: "italic",
+            fontSize: 14,
+            maxWidth: "55ch"
+          }}
+        >
+          {t(
+            "Attribute names are limited to the following characters: numbers: 0-9, letters: a-z and A-Z, underline: _, hyphen: -, period: ."
           )}
-
-          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", minHeight: "60px" }}>
-            {duplicateWarning && (
-              <Alert
-                severity="error"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  py: 0,
-                  mb: 1
-                }}
-              >
-                {duplicateWarning}
-              </Alert>
-            )}
-            {backErrorMessage && (
-              <Alert
-                severity="error"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  py: 0
-                }}
-              >
-                <Box sx={{ pl: 2, pr: 2 }}>
-                  {backErrorMessage}
-                </Box>
-              </Alert>
-            )}
-            {forwardErrorMessage.length > 0 && (
-              <Alert
-                severity="error"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  py: 0
-                }}
-              >
-                {forwardErrorMessage}
-              </Alert>
-            )}
-          </Box>
-          <Box sx={{ width: 565 }}>
-            <Box style={{ display: "flex" }}>
-              <Box className="create-schema-grid ag-theme-balham" style={{ width: 565, overflowX: "hidden" }} ref={refContainer}>
-            <style>{`${gridStyle}${agGridEditableCellHoverCss}`}</style>
+        </Typography>
+        <Typography
+          sx={{
+            mt: 2,
+            fontWeight: "light",
+            fontStyle: "italic",
+            fontSize: 14
+          }}
+        >
+          {t(
+            "This will be the column header in every tabular data set no matter what language"
+          )}
+          <br />
+          {t("Every attribute must be unique, and no entries can be left blank")}
+        </Typography>
+      </Box>
+      <Box>
+        <Box style={{ display: "flex" }}>
+          <Box className="ag-theme-alpine" style={{ width: 565 }} ref={refContainer}>
+            <style>{gridStyle}</style>
             <AgGridReact
               ref={gridRef}
               rowData={rowData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               domLayout="autoHeight"
-              getRowHeight={getRowHeight}
-              suppressHorizontalScroll
               rowDragManaged
               animateRows
               onRowDragEnd={(e) => onRowDragEnd(e)}
               onCellKeyDown={onCellKeyDown}
               onRowDragLeave={(e) => onRowDragLeave(e)}
               onCellValueChanged={(e) => handleCellValueChanged(e)}
-              overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
             />
           </Box>
         </Box>
-        <Box sx={{ mt: TABLE_TO_BUTTON_GAP, mb: BETWEEN_SECTION_SPACING, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-          <Button
-            onClick={handleAddRow}
-            color="button"
-            variant="contained"
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignSelf: "flex-end",
-              m: 0,
-              mb: 2
-            }}
-            ref={addRef}
-          >
-            {t("Add row")} &nbsp;
-            <AddCircleIcon />
-          </Button>
+        <Box>
+          <Box sx={{ display: "flex", alignItems: "center", mt: "2rem" }}>
+            <Button
+              onClick={handleAddRow}
+              color="button"
+              variant="contained"
+              sx={{
+                width: "10rem",
+                m: "1rem 3rem 1rem 0",
+                display: "flex",
+                alignItems: "center"
+              }}
+              ref={addRef}
+            >
+              {t("Add row")} <AddCircleIcon sx={{ marginLeft: "10px" }} />
+            </Button>
 
-          {addErrorMessage.length > 0 && (
-            <Alert severity="error" sx={{ maxWidth: "42ch" }}>
-              {addErrorMessage}
-            </Alert>
-          )}
+            {addErrorMessage.length > 0 && (
+              <Alert severity="error" sx={{ maxWidth: "42ch" }}>
+                {addErrorMessage}
+              </Alert>
+            )}
+          </Box>
+          <Button
+            color="warning"
+            variant="outlined"
+            onClick={handleClearAll}
+            sx={{
+              alignSelf: "flex-end",
+              width: "10rem",
+              display: "flex",
+              justifyContent: "space-around",
+              p: 1,
+              mb: 5
+            }}
+          >
+            {t("Clear All")}
+          </Button>
         </Box>
       </Box>
-      </Box>
-      </BackNextSkeleton>
     </Box>
   );
 }

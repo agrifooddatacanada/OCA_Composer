@@ -1,8 +1,7 @@
 import { Typography } from "@mui/material";
 import React from "react";
-import Spinner from "./Spinner";
 
-const Loading = ({ text, spinner }) => {
+const Loading = ({ text }) => {
   const loadingContainerStyle = {
     position: "fixed",
     top: "70px",
@@ -14,7 +13,7 @@ const Loading = ({ text, spinner }) => {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1200
+    zIndex: 49
   };
 
   const textStyle = {
@@ -24,11 +23,7 @@ const Loading = ({ text, spinner }) => {
 
   return (
     <div style={loadingContainerStyle}>
-      {spinner ? (
-        <Spinner text={text || "Loading..."} size={40} />
-      ) : (
-        <Typography style={textStyle}>{text || "Loading..."}</Typography>
-      )}
+      <Typography style={textStyle}>{text || "Loading..."}</Typography>
     </div>
   );
 };

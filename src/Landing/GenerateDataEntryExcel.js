@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Button,
   Dialog,
@@ -10,16 +10,14 @@ import {
   FormControl,
   InputLabel,
   Box,
-  Typography,
-  Tooltip
+  Typography
 } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CustomPalette } from "../constants/customPalette";
+import { Context } from "../App";
 import { CreateDataEntryExcel } from "./CreateDataEntryExcel";
-import { getDescriptiveFileName } from "../utils/helpers";
+import { getDescriptiveFileName } from "../constants/utils";
 import { useTranslation } from "react-i18next";
-import { useMultiSchema } from "../schema/schemaContext";
-import { langCodeOCAFromName, LanguageConstants } from "../utils/languageUtils";
 
 const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) => {
   let workbook = null;
@@ -58,33 +56,14 @@ const downloadDataEntry = (acceptedFiles, setLoading, selectedLang, fileName) =>
   }
 };
 
-const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck, isMultiSchema }) => {
+const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck }) => {
   const { t } = useTranslation();
-  const { getSchema } = useMultiSchema();
-  const schemaState = getSchema();
-  
-  // Get schema-specific languages (not global)
-  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
-  
-  // Build schemaDescription from MultiSchemaContext
-  const schemaDescription = useMemo(() => {
-    const metadata = schemaState?.metadata || {};
-    const result = {};
-    languages.forEach((language) => {
-      const langCodeOCA = langCodeOCAFromName(language);
-      const localized = metadata.localized?.[langCodeOCA] || {};
-      result[language] = {
-        name: localized.name || metadata.name || "",
-        description: localized.description || metadata.description || ""
-      };
-    });
-    return result;
-  }, [schemaState, languages]);
+  const { languages, schemaDescription } = useContext(Context);
   const appearAnimation =
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
 
   const [open, setOpen] = useState(false);
-  const defaultLang = languages.includes("English") ? "English" : (languages[0] || LanguageConstants.DEFAULT_LANG_NAME);
+  const defaultLang = languages.includes("English") ? "English" : languages[0];
   const [selectedLang, setSelectedLang] = useState(defaultLang);
 
   useEffect(() => {
@@ -109,26 +88,21 @@ const GenerateDataEntryExcel = ({ rawFile, setLoading, disableButtonCheck, isMul
 
   return (
     <>
-      <Tooltip
-        title={isMultiSchema ? t("Not available for multi-level schemas") : ""}
-        arrow
+      <Button
+        variant="contained"
+        color="navButton"
+        onClick={handleClickOpen}
+        sx={{
+          backgroundColor: CustomPalette.PRIMARY,
+          ":hover": { backgroundColor: CustomPalette.SECONDARY },
+          width: "100%",
+          maxWidth: "300px",
+          marginTop: "30px"
+        }}
+        disabled={disableButtonCheck}
       >
-        <span style={{ width: "100%", maxWidth: "300px", display: "inline-block", marginTop: "30px" }}>
-          <Button
-            variant="contained"
-            color="navButton"
-            onClick={handleClickOpen}
-            sx={{
-              backgroundColor: CustomPalette.PRIMARY,
-              ":hover": { backgroundColor: CustomPalette.SECONDARY },
-              width: "100%"
-            }}
-            disabled={disableButtonCheck}
-          >
-            {t("Generate Data Entry Excel")}
-          </Button>
-        </span>
-      </Tooltip>
+        {t("Generate Data Entry Excel")}
+      </Button>
       <Dialog
         open={open}
         onClose={() => handleClose(false)}

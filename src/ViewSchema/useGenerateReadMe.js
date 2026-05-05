@@ -1,16 +1,6 @@
-/**
- * Hook to generate text-based README (OCA_READ_ME/1.0 format) from ZIP schema bundles.
- * 
- * Used by:
- * - "Download README" button when a ZIP file was uploaded
- * 
- * Input: ZIP file contents (array of files)
- * Output: Text file (.txt) with human-readable schema documentation
- * 
- * Note: This is the legacy/ZIP version. For JSON packages, see useGenerateTextReadmeFromJson.
- */
-
-import { getDescriptiveFileName } from "../utils/helpers";
+import { useContext } from "react";
+import { Context } from "../App";
+import { getDescriptiveFileName } from "../constants/utils";
 
 const readmeText = `
 BEGIN_REFERENCE_MATERIAL
@@ -36,7 +26,8 @@ For the OCA_BUNDLE, each section between rows of ****'s contains the details of 
 END_REFERENCE_MATERIAL\n\n`;
 
 const useGenerateReadMe = () => {
-  const toTextFile = async (jsonFilesArray, schemaDescription = null) => {
+  const { schemaDescription } = useContext(Context);
+  const toTextFile = async (jsonFilesArray) => {
     // declare the variables
     const textFile = [];
     const variablesArray = [];
@@ -231,8 +222,7 @@ const useGenerateReadMe = () => {
     const text = textFile.join("");
     const textBlob = new Blob([text], { type: "text/plain" });
     const downloadUrl = URL.createObjectURL(textBlob);
-    // Use same naming as package + _README for consistency
-    const fileName = getDescriptiveFileName(schemaDescription, "OCA_package_README.txt");
+    const fileName = getDescriptiveFileName(schemaDescription, "README_OCA_schema.txt");
 
     const link = document.createElement("a");
     link.href = downloadUrl;

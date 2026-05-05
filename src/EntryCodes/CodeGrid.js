@@ -1,34 +1,71 @@
 import React, {
+  useContext,
   useEffect,
   useMemo,
+  useState,
   useRef,
-  useCallback,
-  useState
+  useCallback
 } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "../components/AgGridReact";
+import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-balham.css";
-import { Button, Tooltip, Box } from "@mui/material";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import { Button, Tooltip, Typography, Box } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import {
-  TABLE_TO_BUTTON_GAP,
-  ENTRY_CODE_DRAG_WIDTH,
-  ENTRY_CODE_CODE_WIDTH,
-  ENTRY_CODE_LANG_WIDTH,
-  ENTRY_CODE_DELETE_WIDTH,
-  AG_GRID_VIRTUALIZE_MIN_ROWS
-} from "../constants/constants";
-import { agGridEditableCellHoverCss, flexCenter, preWrapWordBreak } from "../constants/styles";
-import { measureTextHeight } from "../utils/measureTextLines";
-import TextareaCellEditor from "../components/TextareaCellEditor";
-import { LanguageConstants, langCodeOCAFromName } from "../utils/languageUtils";
-import { useMultiSchema } from "../schema/schemaContext";
-import { codeGridStyle } from "./codeGridStyles";
+import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
+import { preWrapWordBreak } from "../constants/styles";
+
+// Overrides the default grid styles in a way that allows input fields to not look awkward when word wrapping happens
+const gridStyle = `
+.ag-center-cols-clipper {
+  min-height: unset !important;
+}
+
+.ag-theme-alpine .ag-cell {
+  border-right: 1px solid ${CustomPalette.GREY_300};
+}
+
+.ag-cell-value {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ag-header-cell-label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.ag-header-cell {
+  border: 0.5px solid ${CustomPalette.GREY_300};}
+}
+
+.ag-cell {
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ag-cell, .ag-full-width-row .ag-cell-wrapper.ag-row-group {
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
+  height: 100%
+}
+
+.ag-cell .ag-drag-handle {
+  margin-right: 0;
+}
+`;
 
 const CodeHeader = () => {
   const { t } = useTranslation();
@@ -48,14 +85,14 @@ const CodeHeader = () => {
   );
 };
 
-const LanguageHeader = ({ languageNames, languageName }) => {
+const LanguageHeader = ({ languages, language }) => {
   const { t } = useTranslation();
   return (
     <div className="ag-cell-label-container">
-      {languageName === (languageNames?.[0] || LanguageConstants.DEFAULT_LANG_NAME) && (
+      {language === languages[0] && (
         <Tooltip
           title={t(
-            "A longer and more user-friendly language-specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes"
+            "A longer and more user-friendly language specific label for each entry code. This label will not be recorded in the dataset but can be used at the time of data entry to help users enter codes"
           )}
           placement="top"
           arrow
@@ -63,279 +100,136 @@ const LanguageHeader = ({ languageNames, languageName }) => {
           <HelpOutlineIcon sx={{ fontSize: 15 }} />
         </Tooltip>
       )}
-      <div className="ag-header-cell-label" style={{ textTransform: "capitalize" }}>
-        {t(languageName, { defaultValue: languageName })}
+      <div className="ag-header-cell-label">
+        <Typography noWrap variant="subtitle2" sx={{ textTransform: "capitalize" }}>
+          {language}
+        </Typography>
       </div>
     </div>
   );
 };
 
-export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable, onFirstDataRendered: onGridFirstDataRendered, entryCodeData = [], setEntryCodeData }) {
-  const { t, i18n } = useTranslation();
-
-  const { getLanguages } = useMultiSchema();
-  const languageNames = getLanguages();
-
-  const langSpecs = useMemo(
-    () =>
-      languageNames.map((name) => ({
-        name,
-        field: langCodeOCAFromName(name)
-      })),
-    [languageNames]
-  );
-
+export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable }) {
+  const { t } = useTranslation();
+  const { languages, setEntryCodeRowData, entryCodeRowData } = useContext(Context);
+  const [buttonArray, setButtonArray] = useState([]);
+  const [gridWidth, setGridWidth] = useState(500);
+  const [hoveredRowIndex, setHoveredRowIndex] = useState(-1);
   const refContainer = useRef(null);
-  const frameRef = useRef(null);
+  const boxRefs = useRef([]);
   const buttonRef = useRef();
-  const entryCodeDataRef = useRef(entryCodeData);
-  entryCodeDataRef.current = entryCodeData;
-  const entryRowIdByDataRef = useRef(new WeakMap());
-  const entryRowIdSeqRef = useRef(0);
-
-  const getRowId = useCallback((params) => {
-    const d = params.data;
-    if (d == null) return `ec-${++entryRowIdSeqRef.current}`;
-    const map = entryRowIdByDataRef.current;
-    let id = map.get(d);
-    if (id == null) {
-      id = `ec-${++entryRowIdSeqRef.current}`;
-      map.set(d, id);
-    }
-    return id;
-  }, []);
-
-  const manyCodes = entryCodeData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
-
-  const minTablePx = useMemo(
-    () =>
-      ENTRY_CODE_DRAG_WIDTH +
-      ENTRY_CODE_CODE_WIDTH +
-      langSpecs.length * ENTRY_CODE_LANG_WIDTH +
-      ENTRY_CODE_DELETE_WIDTH,
-    [langSpecs.length]
-  );
-
-  const [wideTable, setWideTable] = useState(false);
-
-  useEffect(() => {
-    const el = frameRef.current;
-    if (!el) return;
-    const measure = () => {
-      const w = el.clientWidth;
-      if (w <= 0) return;
-      setWideTable(w < minTablePx);
-    };
-    measure();
-    const ro = new ResizeObserver(() => measure());
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [minTablePx]);
-
-  const gridFixedHeightMode = wideTable;
-  const gridViewportHeight = wideTable
-    ? manyCodes
-      ? "min(70vh, 560px)"
-      : "min(420px, min(70vh, 560px))"
-    : "auto";
 
   const handleDeleteRow = useCallback(
     (elementIndex) => {
       codeRefs.current.forEach((grid) => {
-        grid?.current?.api?.stopEditing();
+        grid.current.api.stopEditing();
       });
 
-      const currentData = entryCodeDataRef.current;
-      const newEntryCodeRowData = JSON.parse(JSON.stringify(currentData));
+      const newEntryCodeRowData = JSON.parse(JSON.stringify(entryCodeRowData[index]));
       newEntryCodeRowData.splice(elementIndex, 1);
-      setEntryCodeData(newEntryCodeRowData);
+      setEntryCodeRowData((prevState) => {
+        const newState = [...prevState];
+        newState[index] = newEntryCodeRowData;
+        return newState;
+      });
     },
-    [codeRefs, setEntryCodeData]
+    [codeRefs, entryCodeRowData, index, setEntryCodeRowData]
   );
 
   const handleAddRow = useCallback(() => {
     codeRefs.current.forEach((grid) => {
-      grid?.current?.api?.stopEditing();
+      grid.current.api.stopEditing();
     });
 
     const newEntryCodeRow = { Code: "" };
-    langSpecs.forEach(({ field }) => {
-      newEntryCodeRow[field] = "";
+    languages.forEach((lang) => {
+      newEntryCodeRow[lang] = "";
     });
 
-    const newRowData = [...entryCodeData, { ...newEntryCodeRow }];
-    setEntryCodeData(newRowData);
-  }, [codeRefs, entryCodeData, langSpecs, setEntryCodeData]);
+    const newRowData = [...entryCodeRowData[index], { ...newEntryCodeRow }];
+    setEntryCodeRowData((prevState) => {
+      const newState = [...prevState];
+      newState[index] = newRowData;
+      return newState;
+    });
+  }, [codeRefs, entryCodeRowData, index, languages, setEntryCodeRowData]);
 
-  const onRowDragEnd = useCallback(
-    (event) => {
-      codeRefs.current.forEach((grid) => {
-        grid?.current?.api?.stopEditing();
-      });
-
-      const data = event.node?.data;
-      const oldEntryCodeIndex = entryCodeData.findIndex((item) => item === data);
-      if (oldEntryCodeIndex < 0 || data == null) return;
-      const newEntryCodeIndex = event.node.rowIndex;
-      if (oldEntryCodeIndex === newEntryCodeIndex) return;
-
-      const newEntryCodeRowData = [...entryCodeData];
-      const [movedItem] = newEntryCodeRowData.splice(oldEntryCodeIndex, 1);
-      newEntryCodeRowData.splice(newEntryCodeIndex, 0, movedItem);
-
-      setEntryCodeData(newEntryCodeRowData);
-    },
-    [entryCodeData, codeRefs, setEntryCodeData]
-  );
-
-  const onRowDragLeave = useCallback(() => {
+  // Saves elements in proper order after dragging
+  const onRowDragEnd = (event) => {
     codeRefs.current.forEach((grid) => {
-      grid?.current?.api?.stopEditing();
+      grid.current.api.stopEditing();
     });
-  }, [codeRefs]);
 
-  const resolveLangCellText = useCallback(
-    (data, field, name) => {
-      if (!data) return "";
-      const oca = data[field];
-      if (oca != null && oca !== "") return oca;
-      const named = data[name];
-      return named != null ? named : "";
-    },
-    []
-  );
+    const oldEntryCodeIndex = entryCodeRowData[index].findIndex(
+      (item) => item.Code === event.node.data.Code
+    );
+    const newEntryCodeIndex = event.node.rowIndex;
+
+    const newEntryCodeRowData = [...entryCodeRowData[index]];
+
+    const [movedItem] = newEntryCodeRowData.splice(oldEntryCodeIndex, 1);
+    newEntryCodeRowData.splice(newEntryCodeIndex, 0, movedItem);
+
+    setEntryCodeRowData((prevState) => {
+      const newState = [...prevState];
+      newState[index] = newEntryCodeRowData;
+      return newState;
+    });
+  };
+
+  const onRowDragLeave = () => {
+    codeRefs.current.forEach((grid) => {
+      grid.current.api.stopEditing();
+    });
+  };
 
   const columnDefs = useMemo(() => {
-    const DeleteCell = (params) => {
-      const idx = params?.node?.rowIndex ?? params?.rowIndex ?? -1;
-      if (idx < 0) return null;
-      return (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "1fr",
-            gridTemplateRows: "1fr",
-            placeItems: "center",
-            width: "100%",
-            height: "100%",
-            minHeight: 24
-          }}
-        >
-          <DeleteOutlineIcon
-            className="delete-icon-outline"
-            sx={{ gridArea: "1 / 1", color: CustomPalette.GREY_600 }}
-          />
-          <DeleteForeverIcon
-            className="delete-icon-solid"
-            onClick={() => handleDeleteRow(idx)}
-            sx={{ gridArea: "1 / 1", color: CustomPalette.PRIMARY, cursor: "pointer" }}
-          />
-        </Box>
-      );
-    };
-    const languageHeaders = langSpecs.map(({ name, field }) => ({
-      field,
+    const languageHeaders = languages.map((language) => ({
+      field: language,
       editable: true,
-      valueGetter: (params) => resolveLangCellText(params.data, field, name),
-      valueSetter: (params) => {
-        const d = params.data;
-        if (!d) return false;
-        d[field] = params.newValue;
-        d[name] = params.newValue;
-        return true;
-      },
-      headerComponent: () =>
-        LanguageHeader({ languageNames, languageName: name }),
-      wrapText: true,
-      cellEditor: TextareaCellEditor,
-      cellStyle: () => ({ ...preWrapWordBreak, ...flexCenter }),
-      width: ENTRY_CODE_LANG_WIDTH
+      headerComponent: () => LanguageHeader({ languages, language }),
+      autoHeight: true,
+      cellStyle: () => preWrapWordBreak
     }));
     return [
       {
         field: "Drag",
         headerName: "",
-        width: ENTRY_CODE_DRAG_WIDTH,
-        pinned: "left",
-        lockPinned: true,
+        width: 40,
         rowDrag: true
       },
       {
         field: "Code",
         editable: true,
-        pinned: "left",
-        lockPinned: true,
         headerComponent: CodeHeader,
-        wrapText: true,
-        cellEditor: TextareaCellEditor,
-        cellStyle: () => ({ ...preWrapWordBreak, ...flexCenter }),
-        width: ENTRY_CODE_CODE_WIDTH
+        autoHeight: true,
+        cellStyle: () => preWrapWordBreak
       },
-      ...languageHeaders,
-      {
-        field: "Delete",
-        headerName: "",
-        width: ENTRY_CODE_DELETE_WIDTH,
-        pinned: "right",
-        lockPinned: true,
-        resizable: false,
-        sortable: false,
-        editable: false,
-        cellClass: "entry-code-delete-cell",
-        cellRenderer: DeleteCell
-      }
+      ...languageHeaders
     ];
-  }, [langSpecs, languageNames, resolveLangCellText, handleDeleteRow]);
+  }, [languages, entryCodeRowData, index]);
 
   const defaultColDef = useMemo(
     () => ({
-      width: ENTRY_CODE_LANG_WIDTH,
+      width: 200,
       tabToNextCell: true,
-      cellStyle: () => ({ backgroundColor: "white" })
+      cellStyle: (params) => {
+        if (params.node.rowIndex === hoveredRowIndex) {
+          return { backgroundColor: CustomPalette.PINK_200 };
+        }
+        return { backgroundColor: "white" };
+      }
     }),
-    []
+    [hoveredRowIndex]
   );
 
-  const ocaFields = useMemo(() => langSpecs.map((s) => s.field), [langSpecs]);
-
-  const getRowHeight = useCallback(
-    (params) => {
-      const codeH = measureTextHeight(params.data?.Code || "", ENTRY_CODE_CODE_WIDTH, {});
-      let maxH = codeH;
-      langSpecs.forEach(({ field, name }) => {
-        const text = resolveLangCellText(params.data, field, name);
-        const langH = measureTextHeight(text, ENTRY_CODE_LANG_WIDTH, {});
-        maxH = Math.max(maxH, langH);
-      });
-      return Math.max(56, maxH + 16);
-    },
-    [langSpecs, resolveLangCellText]
-  );
-
-  const prevRowCountRef = useRef(0);
-  useEffect(() => {
-    const rowCount = entryCodeData?.length ?? 0;
-    if (prevRowCountRef.current === rowCount) return;
-    prevRowCountRef.current = rowCount;
-    const api = codeRefs.current?.[index]?.current?.api;
-    if (!api) return;
-    const raf = requestAnimationFrame(() => {
-      requestAnimationFrame(() => api.resetRowHeights());
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [entryCodeData?.length, codeRefs, index]);
-
-  const handleFirstDataRendered = useCallback(() => {
-    onGridFirstDataRendered?.(index);
-  }, [index, onGridFirstDataRendered]);
-
+  // Creates "add-by-tab" behaviour
   const onCellKeyDown = useCallback(
     (e) => {
       const keyPressed = e.event.code;
 
       const isLastRow = e.node.lastChild;
-      const lastOca = ocaFields[ocaFields.length - 1];
-      const isLastColumn = lastOca && e.column.colId === lastOca;
+      const isLastColumn = e.column.colId === languages[languages.length - 1];
       if (keyPressed === "Tab") {
         if (isLastRow && isLastColumn) {
           buttonRef.current.click();
@@ -347,9 +241,93 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
         }
       }
     },
-    [ocaFields]
+    [languages]
   );
 
+  // Sets grid width based on number of Languages
+  useEffect(() => {
+    if (languages.length > 3) {
+      setGridWidth(892);
+    } else {
+      switch (languages.length) {
+        case 1:
+          setGridWidth(442);
+          break;
+        case 2:
+          setGridWidth(642);
+          break;
+        case 3:
+          setGridWidth(842);
+          break;
+        default:
+          setGridWidth(500);
+          break;
+      }
+    }
+  }, [languages]);
+
+  // Because grid width varies dependent on number of languages, delete icons float outside of the grid component, and are linked by index
+  // There is an empty box at the top to make the icons line up correctly
+  // Hover effect helps with clarity since the delete icons are floating beside
+  useEffect(() => {
+    if (entryCodeRowData[index].length > 0) {
+      const newButtonArray = [];
+      boxRefs.current = [];
+      newButtonArray.push(<Box sx={{ height: "2.2rem" }} key={0} />);
+      entryCodeRowData[index].forEach((item, index) => {
+        const ref = React.createRef();
+        boxRefs.current.push(ref);
+        newButtonArray.push(
+          <Box
+            key={item.Code}
+            ref={ref}
+            sx={{
+              ml: 1
+            }}
+          >
+            {hoveredRowIndex === index ? (
+              <DeleteForeverIcon
+                onClick={() => handleDeleteRow(index)}
+                sx={{
+                  color: CustomPalette.PRIMARY
+                }}
+              />
+            ) : (
+              <DeleteOutlineIcon
+                sx={{
+                  color: CustomPalette.GREY_600
+                }}
+              />
+            )}
+          </Box>
+        );
+      });
+      if (newButtonArray.length > 2) {
+        setButtonArray(newButtonArray);
+      } else {
+        setButtonArray(null);
+      }
+    }
+  }, [entryCodeRowData, hoveredRowIndex, index]);
+
+  useEffect(() => {
+    const handleMousemove = (event) => {
+      const hoveredIndex = boxRefs.current.findIndex((ref) =>
+        ref.current?.contains(event.target)
+      );
+      if (hoveredIndex !== -1) {
+        setHoveredRowIndex(hoveredIndex);
+      } else {
+        setHoveredRowIndex(-1);
+      }
+    };
+    document.addEventListener("mousemove", handleMousemove);
+    return () => {
+      document.removeEventListener("mousemove", handleMousemove);
+    };
+  }, []);
+
+  // Stops grid editing on all other grid components - not just current grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
       const clickedGrid = event.target.closest(".ag-root-wrapper");
@@ -381,110 +359,61 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
   }, [codeRefs, chosenTable]);
 
   return (
-    <Box
-      style={{ margin: "2rem 2rem 0 2rem", display: "flex", flexDirection: "column" }}
-      sx={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box" }}
-    >
-      <Box
-        ref={frameRef}
-        sx={{
-          width: "100%",
-          maxWidth: "100%",
-          minWidth: 0,
-          overflowX: "hidden",
-          overflowY: gridFixedHeightMode ? "hidden" : "visible"
-        }}
-      >
+    <Box style={{ margin: "3rem", display: "flex", flexDirection: "column" }}>
+      <Box style={{ display: "flex" }}>
+        <Box className="ag-theme-alpine" style={{ width: gridWidth }}>
+          <style>{gridStyle}</style>
+          <div ref={refContainer}>
+            <AgGridReact
+              ref={codeRefs.current[index]}
+              rowData={entryCodeRowData[index]}
+              columnDefs={columnDefs}
+              defaultColDef={defaultColDef}
+              domLayout="autoHeight"
+              onCellKeyDown={onCellKeyDown}
+              onCellClicked={() => setChosenTable(index)}
+              onRowDragEnd={onRowDragEnd}
+              onRowDragLeave={onRowDragLeave}
+              rowDragManaged
+            />
+          </div>
+        </Box>
         <Box
-          sx={{
-            width: gridFixedHeightMode ? "100%" : `min(${minTablePx}px, 100%)`,
-            maxWidth: "100%",
-            boxSizing: "border-box",
-            ...(manyCodes && !gridFixedHeightMode
-              ? { maxHeight: "min(70vh, 560px)", overflowY: "auto" }
-              : {})
-          }}
-        >
-        <div
-          className={`entry-codes-grid ag-theme-balham${gridFixedHeightMode ? " entry-codes-grid-fixed-viewport" : " ag-grid-compact"}`}
           style={{
-            width: "100%",
-            minWidth: 0,
-            height: gridFixedHeightMode ? gridViewportHeight : "fit-content",
-            display: gridFixedHeightMode ? "flex" : undefined,
-            flexDirection: gridFixedHeightMode ? "column" : undefined
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end"
           }}
         >
-        <style>{`${codeGridStyle}${agGridEditableCellHoverCss}`}</style>
-        <div
-          ref={refContainer}
-          style={{
-            flex: gridFixedHeightMode ? 1 : undefined,
-            minHeight: gridFixedHeightMode ? 0 : undefined,
-            width: "100%"
-          }}
-        >
-          <AgGridReact
-            key={`${i18n.language}-${gridFixedHeightMode ? "fx" : "ah"}`}
-            ref={codeRefs.current[index]}
-            rowData={entryCodeData}
-            getRowId={getRowId}
-            overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            domLayout={gridFixedHeightMode ? undefined : "autoHeight"}
-            style={{
-              width: "100%",
-              height: gridFixedHeightMode ? "100%" : "auto"
+          <Box
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-around"
             }}
-            suppressHorizontalScroll={!gridFixedHeightMode}
-            getRowHeight={getRowHeight}
-            onCellKeyDown={onCellKeyDown}
-            onFirstDataRendered={handleFirstDataRendered}
-            onCellClicked={() => setChosenTable(index)}
-            onRowDragEnd={onRowDragEnd}
-            onRowDragLeave={onRowDragLeave}
-            onCellValueChanged={(e) => {
-              if (e.column.colId === "Code" || ocaFields.includes(e.column.colId)) {
-                e.api.refreshCells({ rowNodes: [e.node], force: true });
-                requestAnimationFrame(() => e.api.resetRowHeights());
-              }
-            }}
-            rowDragManaged
-            suppressScrollOnNewData
-          />
-        </div>
-        </div>
+          >
+            {buttonArray}
+          </Box>
         </Box>
       </Box>
 
-      <Box
+      <Button
+        onClick={handleAddRow}
+        color="button"
+        variant="contained"
         sx={{
-          width: "100%",
-          maxWidth: "100%",
-          minWidth: 0,
+          alignSelf: "flex-end",
+          width: "10rem",
+          margin: "1rem 3.3rem 0 0",
           display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          mt: TABLE_TO_BUTTON_GAP,
-          pr: "2rem",
-          boxSizing: "border-box"
+          alignItems: "center",
+          justifyContent: "space-around"
         }}
+        ref={buttonRef}
       >
-        <Button
-          onClick={handleAddRow}
-          color="button"
-          variant="contained"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1.5
-          }}
-          ref={buttonRef}
-        >
-        {t("Add Code", { defaultValue: "Add Code" })} <AddCircleIcon />
-        </Button>
-      </Box>
+        {t("Add row")} <AddCircleIcon />
+      </Button>
     </Box>
   );
 }

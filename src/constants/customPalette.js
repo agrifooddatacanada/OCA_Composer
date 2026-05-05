@@ -21,5 +21,3 @@ export const CustomPalette = {
   RED_100: "#ffc2d2",
   DARK: "#66011e"
 };
-
-export default CustomPalette;

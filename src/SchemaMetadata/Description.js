@@ -1,31 +1,30 @@
 import { Box } from "@mui/material";
-import React from "react";
+import React, { useContext } from "react";
+import { Context } from "../App";
 import SchemaInput from "./SchemaInput";
-import Classification from "./Classification";
 
-export default function Description({ setShowIsoInput, setEditingLanguage, languages, setLanguages }) {
+export default function Description({ setShowIsoInput, setEditingLanguage }) {
+  const { languages } = useContext(Context);
+
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
-      <Classification />
-      <Box
-        sx={{
-          overflowX: "auto",
-          overflowY: "visible",
-          width: "100%",
-        }}
-      >
-        <Box sx={{ display: "flex", width: "max-content" }}>
-          {languages.map((value) => (
-            <SchemaInput
-              language={value}
-              key={value}
-              setShowIsoInput={setShowIsoInput}
-              setEditingLanguage={setEditingLanguage}
-              languages={languages}
-              setLanguages={setLanguages}
-            />
-          ))}
-        </Box>
+    <Box
+      sx={{
+        overflow: "auto",
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+      }}
+    >
+      <Box sx={{ display: "flex", width: "max-content" }}>
+        {languages.map((value, index) => (
+          <SchemaInput
+            language={value}
+            key={value}
+            setShowIsoInput={setShowIsoInput}
+            setEditingLanguage={setEditingLanguage}
+            index={index}
+          />
+        ))}
       </Box>
     </Box>
   );

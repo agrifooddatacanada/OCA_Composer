@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "../components/AgGridReact";
+import { AgGridReact } from "ag-grid-react";
 import { CustomPalette } from "../constants/customPalette";
-import { agGridEditableCellHoverCss, preWrapWordBreak } from "../constants/styles";
+import { preWrapWordBreak } from "../constants/styles";
 
-const mergeDiffGridStyles = `
+const gridStyles = `
 .ag-header-cell-label {
   display: flex;
   justify-content: center;
@@ -162,7 +162,7 @@ function MergeDifferenceModal({ file1Name, file2Name, setShowCard, dataDifferenc
             }}
           >
             <div className="ag-theme-balham" style={{ width: 600, height: "100%" }}>
-              <style>{`${mergeDiffGridStyles}${agGridEditableCellHoverCss}`}</style>
+              <style>{gridStyles}</style>
               <AgGridReact
                 rowData={displayValues}
                 columnDefs={columnDefs}

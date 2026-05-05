@@ -8,23 +8,52 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Box, Typography } from "@mui/material";
-import { AgGridReact } from "../components/AgGridReact";
+import { AgGridReact } from "ag-grid-react";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
-import {
-  AG_GRID_DROPDOWN_CELL_CLASS,
-  gridStyles,
-  greyCellStyle,
-  matchingEntryCodeGridStyles,
-  matchingEntryCodePageBoxSx
-} from "../constants/styles";
+import { gridStyles } from "../constants/styles";
+import { languageCodesObject } from "../constants/isoCodes";
 import { DataHeaderRenderer } from "./MatchingEntryCodeHeader";
-import { useMultiSchema } from "../schema/schemaContext";
-import {
-  buildLanguageTo2Letter,
-  defaultPicklistColumnForField,
-  getPicklistCodeColumnOptions
-} from "./picklistMatchingUtils";
+
+/** Column names available from the picklist (row keys / headers). */
+export function getPicklistCodeColumnOptions(picklist) {
+  if (!picklist) return [];
+  if (Array.isArray(picklist.headers) && picklist.headers.length > 0) {
+    return [...new Set(picklist.headers.filter(Boolean))];
+  }
+  const keys = new Set();
+  (picklist.rows || []).forEach((row) => {
+    if (row && typeof row === "object") {
+      Object.keys(row).forEach((k) => keys.add(k));
+    }
+  });
+  return [...keys];
+}
+
+function matchingFunction(pool, attr) {
+  for (let i = 0; i < pool.length; i += 1) {
+    if (pool[i].toLowerCase() === attr.toLowerCase()) {
+      return i;
+    }
+  }
+  for (let i = 0; i < pool.length; i += 1) {
+    if (pool[i].toLowerCase().includes(attr.toLowerCase())) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function defaultPicklistColumnForField(fieldName, options, languageTo2Letter) {
+  if (!options.length) return "";
+  if (fieldName === "Code") {
+    return options.includes("Code") ? "Code" : options[0];
+  }
+  const iso = languageTo2Letter[fieldName];
+  if (iso && options.includes(iso)) return iso;
+  const idx = matchingFunction(options, fieldName);
+  return idx !== -1 ? options[idx] : "";
+}
 
 export default function MatchingPicklistEntryCodeHeader() {
   const { t } = useTranslation();
@@ -32,13 +61,12 @@ export default function MatchingPicklistEntryCodeHeader() {
     pendingPicklist,
     setPendingPicklist,
     setCurrentPage,
-    chosenEntryCodeIndex
+    chosenEntryCodeIndex,
+    languages,
+    setEntryCodeRowData
   } = useContext(Context);
-  const { getSchema, updateSchema, getLanguages } = useMultiSchema();
-  const languages = getLanguages();
 
   const [matchingRows, setMatchingRows] = useState([]);
-  const [gridLayoutReady, setGridLayoutReady] = useState(false);
   const gridRef = useRef(null);
 
   const codeColumnOptions = useMemo(
@@ -46,7 +74,14 @@ export default function MatchingPicklistEntryCodeHeader() {
     [pendingPicklist]
   );
 
-  const languageTo2Letter = useMemo(() => buildLanguageTo2Letter(languages), [languages]);
+  const languageTo2Letter = useMemo(() => {
+    const map = {};
+    (languages || []).forEach((langName) => {
+      const code = languageCodesObject?.[langName.toLowerCase()];
+      if (code) map[langName] = code;
+    });
+    return map;
+  }, [languages]);
 
   useEffect(() => {
     if (!pendingPicklist) {
@@ -66,10 +101,6 @@ export default function MatchingPicklistEntryCodeHeader() {
     setMatchingRows(newRows);
   }, [pendingPicklist, languages, languageTo2Letter, setCurrentPage]);
 
-  useEffect(() => {
-    setGridLayoutReady(false);
-  }, [codeColumnOptions, languages, pendingPicklist]);
-
   const changeDataFromTable = useCallback((e, params) => {
     const { value } = e.target;
     const langKey = params.node?.data?.lang;
@@ -82,20 +113,15 @@ export default function MatchingPicklistEntryCodeHeader() {
   const columnDefs = useMemo(
     () => [
       {
-        headerName: t("Assigned Column Name"),
+        headerName: "Items",
         field: "lang",
-        width: 240,
-        suppressSizeToFit: true,
-        editable: false,
-        cellClass: "matching-entry-code-assigned-cell",
-        cellStyle: () => greyCellStyle
+        width: 200,
+        editable: false
       },
       {
-        headerName: t("Imported Column Name"),
+        headerName: "Data Header",
         field: "matchingDataHeader",
-        width: 240,
-        suppressSizeToFit: true,
-        cellClass: `matching-entry-code-data-header-cell ${AG_GRID_DROPDOWN_CELL_CLASS}`,
+        width: 220,
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
           dataHeaders: ["", ...codeColumnOptions],
@@ -106,7 +132,7 @@ export default function MatchingPicklistEntryCodeHeader() {
         })
       }
     ],
-    [codeColumnOptions, changeDataFromTable, t]
+    [codeColumnOptions, changeDataFromTable]
   );
 
   const handleBack = () => {
@@ -135,20 +161,11 @@ export default function MatchingPicklistEntryCodeHeader() {
       return newObj;
     });
 
-    const schema = getSchema() || {};
-    const attrsWithList = (schema.attributes || [])
-      .filter((a) => a.List)
-      .map((a) => a.Attribute);
-    const attrName = attrsWithList[chosenEntryCodeIndex];
-    if (attrName && newRows.length > 0) {
-      const prevEntryCodes = schema.entryCodes || {};
-      updateSchema({
-        entryCodes: {
-          ...prevEntryCodes,
-          [attrName]: newRows
-        }
-      });
-    }
+    setEntryCodeRowData((prev) => {
+      const next = [...(prev || [])];
+      next[chosenEntryCodeIndex] = newRows.length ? newRows : next[chosenEntryCodeIndex];
+      return next;
+    });
     setPendingPicklist(null);
     setCurrentPage("Codes");
   };
@@ -172,25 +189,24 @@ export default function MatchingPicklistEntryCodeHeader() {
         isForward={canForward && codeColumnOptions.length > 0}
         pageForward={handleSave}
       />
-      <Box sx={matchingEntryCodePageBoxSx}>
+      <Box
+        sx={{
+          marginBottom: "2rem",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          px: "1rem"
+        }}
+      >
         {codeColumnOptions.length > 0 ? (
-          <div className="matching-entry-code-grid matching-entry-code-grid-root ag-theme-balham overlay-grid-suppress-hscroll">
-            <style>{`${gridStyles}${matchingEntryCodeGridStyles}`}</style>
-            <div
-              className={`matching-entry-code-grid--inner${
-                gridLayoutReady ? "" : " matching-entry-code-grid--pending"
-              }`}
-            >
+          <div className="ag-theme-balham" style={{ width: "422px", maxWidth: "100%" }}>
+            <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
-              style={{ width: "100%" }}
               rowData={matchingRows}
               columnDefs={columnDefs}
               domLayout="autoHeight"
-              suppressHorizontalScroll
-              onFirstDataRendered={() => setGridLayoutReady(true)}
             />
-            </div>
           </div>
         ) : (
           <Typography color="text.secondary">

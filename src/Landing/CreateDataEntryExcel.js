@@ -1,13 +1,11 @@
 import ExcelJS from "exceljs";
 import JSZip from "jszip";
-import { langTwoLettersFromName } from "../utils/languageUtils";
+import { codesToLanguages } from "../constants/isoCodes";
 import {
   replaceAttributeCharsInJsonString,
-  replaceAttributeCharsInParsedJson,
-  normalizeEscapedQuotes
-} from "../utils/helpers";
+  replaceAttributeCharsInParsedJson
+} from "../constants/utils";
 import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
-import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -24,16 +22,19 @@ function readJSON(originJsonData_jsonSaid, e) {
   try {
     const textDecoder = new TextDecoder("utf-8");
     const jsonString = textDecoder.decode(e.target.result);
-    const rawJson = coerceIfLegacyTopLevelBundle(JSON.parse(jsonString));
+    const rawJson = JSON.parse(jsonString);
 
+    // check if the json is a valid oca-package or just a normal oca-bundle
     let json = null;
     if (rawJson.type && rawJson.type.includes("oca_package")) {
       isOcaPackage = true;
       extensions = rawJson.extensions;
       ocaPackageSaid = rawJson?.d || "";
       json = rawJson.oca_bundle.bundle;
-    } else if (rawJson.oca_bundle?.bundle) {
+    } else if (rawJson.oca_bundle && rawJson.oca_bundle.bundle) {
       json = rawJson.oca_bundle.bundle;
+    } else if (rawJson.bundle) {
+      json = rawJson.bundle;
     } else {
       throw new WorkbookError(".. Error in reading the json file ...");
     }
@@ -94,8 +95,9 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   if (selectedLang === "English") {
     selectedLang = DEFAULT_LANGUAGE;
   } else {
-    // Convert language name (e.g. "English") to 2-letter code (e.g. "en")
-    selectedLang = langTwoLettersFromName(selectedLang);
+    selectedLang = Object.keys(codesToLanguages).find(
+      (key) => codesToLanguages[key] === selectedLang
+    );
   }
 
   let inPutJsonResult = null;
@@ -330,7 +332,10 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     schemaTitle = metaOverlays[0].name;
     schemaDescription = metaOverlays[0].description
       ? // eslint-disable-next-line quotes
-        normalizeEscapedQuotes(metaOverlays[0].description)
+        metaOverlays[0].description
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'")
+          .replace(/\\-/g, "-")
       : "";
     schemaLanguage = metaOverlays[0].language;
     schemaClassification = jsonData.find(
@@ -864,7 +869,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
   if (Object.keys(unitFramingOverlay?.units || {}).length > 0) {
     const unitOverlay = jsonData.find((overlay) => overlay.type.includes("/unit/"));
-    const attributeUnitMap = unitOverlay?.attribute_unit || unitOverlay?.attribute_units;
+    const attributeUnitMap = unitOverlay?.attribute_units || unitOverlay?.attribute_unit;
     if (attributeUnitMap) {
       const columns = ["Unit Framing"];
       const startColumnIndex =

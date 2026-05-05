@@ -83,6 +83,7 @@ const AttributePalette = ({
     }}>
       <Box sx={{ p: 1.5, borderBottom: `1px solid ${CustomPalette.GREY_300}`, backgroundColor: CustomPalette.GREY_200 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: CustomPalette.GREY_800 }}>{t("Attributes")}</Typography>
+        <Typography variant="caption" sx={{ color: CustomPalette.GREY_600 }}>{t("Drag into the form")}</Typography>
       </Box>
       <Box sx={{ p: 1.5, maxHeight: 'calc(100vh - 12rem)', overflowY: 'auto' }}>
         {(attributesList || []).filter((attr) => !usedAttributes.has(attr)).map((attr) => {
