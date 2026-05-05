@@ -21,27 +21,27 @@ export default function TypeTooltip() {
   const { t } = useTranslation();
 
   const listArray = [
-    { name: t("Text"), content: t("text, mixed text and numbers") },
-    { name: t("Numeric"), content: t("only numbers") },
+    { name: t("Text"), content: t("a combination of characters") },
+    { name: t("Numeric"), content: t("a number") },
     {
       name: t("Boolean"),
-      content: t(
-        "a data type where the data only has two possible variables: true or false"
-      )
+      content: t("a binary value (e.g., true/false)")
     },
     {
       name: t("Binaryfile"),
-      content: t("a data type that defines a binary code signal")
+      content: t("a binary code signal")
     },
     {
-      name: t("DateTime"),
-      content: t("a data type that defines dates. Common formats include dates ...")
+      name: t("DateTime/Duration"),
+      content: t("a date and/or time, or a duration (e.g., YYYY-MM-DD, hh:mm:ss, PnYnMnD)")
     },
     {
       name: t("Array [attribute type]"),
-      content: t(
-        "a data type that defines a structure that holds several data items or elements of the same data type"
-      )
+      content: t("a structure holding several elements of the same data type")
+    },
+    {
+      name: t("Child Schema"),
+      content: t("a separate table containing any combination of the above")
     }
   ];
 

@@ -1,14 +1,14 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
 import DropCard from "./DropCard";
 import { messages } from "../constants/messages";
 import { CustomPalette } from "../constants/customPalette";
 import LandingDropZone from "../Landing/LandingDropZone";
-import { Context } from "../App";
+import usePrimaryColor from "../hooks/usePrimaryColor";
 import { lightenColor } from "../utils/colorUtils";
 import { MAX_FILE_SIZE } from "../constants/constants";
-import { toMegabytes } from "../constants/utils";
+import { toMegabytes } from "../utils/helpers";
 
 export default function Drop({
   setFile,
@@ -23,20 +23,22 @@ export default function Drop({
   interfaceType = 0,
   noteDescription
 }) {
-  const { currentTheme } = useContext(Context);
   const { t } = useTranslation();
+  const primaryColor = usePrimaryColor();
 
   const acceptFormat = useMemo(() => {
     if (version === 0) {
       return {
         "application/vnd.ms-excel": [".csv", ".xls", ".xlsx"],
         "application/zip": [".zip"],
+        "application/x-zip-compressed": [".zip"],
         "application/json": [".json"]
       };
     }
     if (version === 1) {
       return {
         "application/zip": [".zip"],
+        "application/x-zip-compressed": [".zip"],
         "application/json": [".json"],
         "text/yaml": [".yaml", ".yml"],
         "application/x-yaml": [".yaml", ".yml"]
@@ -61,6 +63,7 @@ export default function Drop({
       return {
         "application/vnd.ms-excel": [".csv"],
         "application/zip": [".zip"],
+        "application/x-zip-compressed": [".zip"],
         "application/json": [".json"]
       };
     }
@@ -95,12 +98,16 @@ export default function Drop({
       }, [3500]);
     },
     onDropAccepted: () => {
-      setDropMessage({ message: messages.fileAccepted, type: "success" });
       setLoading(true);
     },
     disabled: dropDisabled
   });
   const [hover, setHover] = useState(false);
+  const setFileRef = useRef(setFile);
+
+  useEffect(() => {
+    setFileRef.current = setFile;
+  }, [setFile]);
 
   const spinningAnimation =
     "spin 1.5s linear infinite; @keyframes spin {from {transform: rotate(0deg);}to {transform: rotate(-360deg);}";
@@ -122,18 +129,18 @@ export default function Drop({
 
   useEffect(() => {
     if (acceptedFiles && acceptedFiles.length > 0) {
-      setFile(acceptedFiles);
+      setFileRef.current(acceptedFiles);
     }
-  }, [acceptedFiles, setFile]);
+  }, [acceptedFiles]);
 
   const downloadIconColor = useMemo(
     () =>
       dropDisabled === true
         ? CustomPalette.GREY_600
         : hover === true
-          ? lightenColor(currentTheme?.primaryColor ?? CustomPalette.PRIMARY, 10) // this function dynamically lightens whatever the primary color is defined in the themeConstants.js
-          : (currentTheme?.primaryColor ?? CustomPalette.PRIMARY),
-    [dropDisabled, hover]
+          ? lightenColor(primaryColor, 10)
+          : primaryColor,
+    [dropDisabled, hover, primaryColor]
   );
 
   return (

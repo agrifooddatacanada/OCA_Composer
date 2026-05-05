@@ -20,7 +20,7 @@ const MultilingualFieldGroup = ({
             <TextField 
               key={field.name}
               label={field.label}
-              value={formData[field.name]?.[lang] || ''} 
+              value={formData[field.name]?.[lang] ?? ''} 
               onChange={(e) => onChange(lang, field.name, e.target.value)} 
               fullWidth 
               size="small"

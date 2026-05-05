@@ -1,40 +1,36 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
-import JSZip from "jszip";
 import Papa from "papaparse";
 import { Context } from "../App";
-import useZipParser from "./useZipParser";
-import { removeSpacesFromString } from "../constants/removeSpaces";
+import { removeSpacesFromString } from "../utils/stringUtils";
 import { messages } from "../constants/messages";
 import {
   replaceAttributeCharsInJsonString,
   replaceAttributeCharsInParsedJson
   // getUnitsFramedThatAlreadyExistInOcaPackage
-} from "../constants/utils";
+} from "../utils/helpers";
+import { useMultiSchema } from "../schema/schemaContext";
+import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
+import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
 
-const useHandleAllDrop = (pageForward) => {
+const useHandleAllDrop = () => {
   const {
-    setFileData,
-    fileData,
     setCurrentPage,
-    attributesList,
-    setAttributesList,
-    setIsZip,
+    setSummaryExportMode,
     setZipToReadme,
     setJsonToReadme,
-    rawFile,
-    setRawFile,
     excelSheetChoice,
-    setExcelSheetChoice,
-    setOCAPackage
+    setExcelSheetChoice
   } = useContext(Context);
-  const { processLanguages, processMetadata, processLabelsDescriptionRootUnitsEntries } =
-    useZipParser();
+  
+  const [fileData, setFileData] = useState([]);
+  const [rawFile, setRawFile] = useState([]);
+  const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setOcaPackage, updateSchema } = useMultiSchema();
+  // useZipParser removed - data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
 
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(false);
   const [dropMessage, setDropMessage] = useState({ message: "", type: "" });
-  const [switchToLastPage, setSwitchToLastPage] = useState(false);
   const [excelSheetNames, setExcelSheetNames] = useState([]);
   const [tempExcel, setTempExcel] = useState(null);
 
@@ -122,6 +118,7 @@ const useHandleAllDrop = (pageForward) => {
           setDropMessage({ message: "", type: "" });
         }, [2500]);
       }
+      return dataArray;
     },
     [setFileData]
   );
@@ -287,8 +284,8 @@ const useHandleAllDrop = (pageForward) => {
       acceptedFiles.forEach((file) => {
         const reader = new FileReader();
         const rABS = !!reader.readAsBinaryString; // converts object to boolean
-        reader.onabort = () => console.log("file reading was aborted");
-        reader.onerror = () => console.log("file reading has failed");
+        reader.onabort = () => {}; // console.log("file reading was aborted");
+        reader.onerror = () => {}; // console.log("file reading has failed");
         reader.onload = (e) => {
           const bstr = e.target.result;
           const workbook = XLSX.read(bstr, {
@@ -318,123 +315,46 @@ const useHandleAllDrop = (pageForward) => {
   const handleZipDrop = useCallback((acceptedFiles) => {
     try {
       setLoading(true);
+      // Clear multi-schema context when uploading a new file
+      clearAllSchemas();
+
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const zip = await JSZip.loadAsync(e.target.result);
-        const languageList = [];
-        const informationList = [];
-        const labelList = [];
-        const metaList = [];
-        const entryList = [];
-        const allZipFiles = [];
-        let entryCodeSummary = {};
-        let conformance;
-        let characterEncoding;
-        let loadUnits;
-        let formatRules;
-        let cardinalityData;
-        let dataStandards;
+        try {
+        const { ocaPackage, allZipFiles, root } =
+          await parseOcaZipArrayBuffer(e.target.result);
 
-        // load up metadata file in OCA bundle
-        const loadMetadataFile = await zip.files["meta.json"].async("text");
-        const metadataJson = JSON.parse(loadMetadataFile);
-        const { root } = metadataJson;
-        allZipFiles.push(loadMetadataFile);
-
-        // loop through all files in OCA bundle
-        for (const [key, file] of Object.entries(metadataJson.files[root])) {
-          /* eslint-disable-next-line no-await-in-loop */
-          const content = await zip.files[`${file}.json`].async("text");
-          // Sanitize attributes in JSON content; replace disallowed characters in attribute names
-          const convertedContent = replaceAttributeCharsInJsonString(content);
-          const parsedData = JSON.parse(convertedContent);
-
-          if (key.includes("meta")) {
-            metaList.push(parsedData);
-            languageList.push(key.substring(6, 8));
-          }
-
-          if (key.includes("information")) {
-            informationList.push(parsedData);
-          } else if (key.includes("format")) {
-            // Format word is inside Information word, so we need to check if it is a format or information
-            formatRules = parsedData;
-          }
-
-          if (key === "standard") {
-            dataStandards = parsedData;
-          }
-
-          if (key.includes("label")) {
-            labelList.push(parsedData);
-          }
-
-          if (key.includes("entry (")) {
-            entryList.push(parsedData);
-          }
-
-          if (key.includes("entry_code")) {
-            entryCodeSummary = parsedData;
-          }
-
-          if (key.includes("conformance")) {
-            conformance = parsedData;
-          }
-
-          if (key.includes("character_encoding")) {
-            characterEncoding = parsedData;
-          }
-
-          if (key.includes("unit")) {
-            loadUnits = parsedData;
-          }
-
-          if (key.includes("cardinality")) {
-            cardinalityData = parsedData;
-          }
-
-          allZipFiles.push(convertedContent);
-        }
-
-        const loadRoot = await zip.files[`${metadataJson.root}.json`].async("text");
-        const convertedLoadRoot = replaceAttributeCharsInJsonString(loadRoot);
-        allZipFiles.push(convertedLoadRoot);
-
-        processLanguages(languageList);
-        processMetadata(metaList);
-        processLabelsDescriptionRootUnitsEntries(
-          labelList,
-          informationList,
-          JSON.parse(convertedLoadRoot),
-          loadUnits,
-          entryCodeSummary,
-          entryList,
-          conformance,
-          characterEncoding,
-          languageList,
-          formatRules,
-          cardinalityData,
-          dataStandards
-        );
+        setOcaPackage(ocaPackage);
         setZipToReadme(allZipFiles);
+
+        loadAllSchemasFromOcaPackage(ocaPackage);
+
+        switchToSchema(root, ocaPackage);
+
+        handleBundleJSONDrop(ocaPackage.oca_bundle.bundle, ocaPackage);
+        setLoading(false);
+        setCurrentPage("View");
+        } catch (error) {
+          console.error("Zip upload error:", error);
+          setDropMessage({ message: messages.uploadFail, type: "error" });
+          setLoading(false);
+          setTimeout(() => {
+            setDropMessage({ message: "", type: "" });
+          }, 2500);
+        }
       };
 
       reader.readAsArrayBuffer(acceptedFiles[0]);
-
-      setTimeout(() => {
-        setDropDisabled(true);
-        setDropMessage({ message: "", type: "" });
-        setLoading(false);
-        setSwitchToLastPage(true);
-      }, 900);
     } catch (error) {
+      console.error("Zip upload error:", error);
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
       setTimeout(() => {
         setDropMessage({ message: "", type: "" });
       }, [2500]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleBundleJSONDrop = useCallback(
@@ -510,68 +430,55 @@ const useHandleAllDrop = (pageForward) => {
         throw new Error("No language found in the JSON file");
       }
 
-      processLanguages(languageList);
-      processMetadata(metaList);
-      processLabelsDescriptionRootUnitsEntries(
-        labelList,
-        informationList,
-        loadRoot,
-        loadUnits,
-        entryCodeSummary,
-        entryList,
-        conformance,
-        characterEncoding,
-        languageList,
-        formatRules,
-        cardinalityData,
-        dataStandards,
-        ocaPackageData
-      );
+      // Data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
+      // which already extracts all metadata, labels, descriptions, entry codes, etc.
+      // into MultiSchemaContext per-schema storage
+      
       setJsonToReadme(jsonFile);
     },
-    [
-      processLabelsDescriptionRootUnitsEntries,
-      processLanguages,
-      processMetadata,
-      setZipToReadme
-    ]
+    [setZipToReadme]
   );
 
   const handleJsonDrop = useCallback((acceptedFiles) => {
     try {
       setLoading(true);
+      // Clear multi-schema context when uploading a new file
+      clearAllSchemas();
+
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const jsonFile = JSON.parse(e.target.result);
-        // First check if the json file is an OCA package that has OCA bundle
-        if (jsonFile?.oca_bundle?.bundle) {
-          const modifiedBundle = replaceAttributeCharsInParsedJson(
-            jsonFile.oca_bundle.bundle
-          );
-          // setUnitFramedThatAlreadyExistInOcaPackage(
-          //   getUnitsFramedThatAlreadyExistInOcaPackage(jsonFile)
-          // );
-          setOCAPackage(jsonFile);
-          handleBundleJSONDrop(modifiedBundle, jsonFile);
-        } else if (jsonFile?.bundle) {
-          const modifiedJsonFile = replaceAttributeCharsInParsedJson(jsonFile.bundle);
-          handleBundleJSONDrop(modifiedJsonFile);
-        } else if (jsonFile?.schema?.[0]) {
-          handleBundleJSONDrop(jsonFile?.schema?.[0]);
-        } else {
-          handleBundleJSONDrop(jsonFile);
+        try {
+          const jsonFile = coerceIfLegacyTopLevelBundle(JSON.parse(e.target.result));
+          if (jsonFile?.oca_bundle?.bundle) {
+            const modifiedBundle = replaceAttributeCharsInParsedJson(
+              jsonFile.oca_bundle.bundle
+            );
+            setOcaPackage(jsonFile);
+
+            loadAllSchemasFromOcaPackage(jsonFile);
+
+            switchToSchema(jsonFile.oca_bundle.bundle.d, jsonFile);
+            handleBundleJSONDrop(modifiedBundle, jsonFile);
+          } else if (jsonFile?.schema?.[0]) {
+            handleBundleJSONDrop(jsonFile?.schema?.[0]);
+          } else {
+            handleBundleJSONDrop(jsonFile);
+          }
+          setDropMessage({ message: "", type: "" });
+          setLoading(false);
+          setCurrentPage("View");
+        } catch (error) {
+          console.error("Json upload error:", error);
+          setDropMessage({ message: messages.uploadFail, type: "error" });
+          setLoading(false);
+          setTimeout(() => {
+            setDropMessage({ message: "", type: "" });
+          }, 2500);
         }
       };
 
       reader.readAsText(acceptedFiles[0]);
-
-      setTimeout(() => {
-        setDropDisabled(true);
-        setDropMessage({ message: "", type: "" });
-        setLoading(false);
-        setSwitchToLastPage(true);
-      }, 900);
     } catch (error) {
       setDropMessage({ message: messages.uploadFail, type: "error" });
       setLoading(false);
@@ -582,12 +489,34 @@ const useHandleAllDrop = (pageForward) => {
   }, []);
 
   const handlePageForward = useCallback(() => {
-    if (rawFile[0].path.includes(".xls") || rawFile[0].path.includes(".xlsx")) {
+    let listToUpdate = fileData.map((item) => item[0]);
+
+    if (rawFile && rawFile.length > 0 && (rawFile[0].path.includes(".xls") || rawFile[0].path.includes(".xlsx"))) {
       const index = excelSheetNames.indexOf(excelSheetChoice);
-      processExcelFile(tempExcel, index);
+      const dataArray = processExcelFile(tempExcel, index);
+      if (dataArray) {
+        listToUpdate = dataArray.map((item) => item[0]);
+      }
     }
-    pageForward();
-  }, [excelSheetChoice, excelSheetNames, pageForward, processExcelFile, tempExcel]);
+
+    if (listToUpdate && listToUpdate.length > 0) {
+      const attributeRowData = listToUpdate.map((attr) => ({
+        Attribute: attr,
+        Type: "",
+        Description: "",
+        Required: false,
+        EntryCodes: [],
+        List: false
+      }));
+
+      // Initialize the schema with these attributes
+      updateSchema({
+        attributes: attributeRowData
+      });
+    }
+
+    setCurrentPage("Metadata");
+  }, [fileData, excelSheetChoice, excelSheetNames, setCurrentPage, processExcelFile, tempExcel, rawFile, updateSchema]);
 
   useEffect(() => {
     if (rawFile.length > 0 && rawFile[0].size > 1000000) {
@@ -604,22 +533,31 @@ const useHandleAllDrop = (pageForward) => {
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".xls")) {
       handleExcelDrop(rawFile);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".zip")) {
-      setIsZip(true);
+      setSummaryExportMode(false);
       handleZipDrop(rawFile);
     } else if (rawFile.length > 0 && rawFile[0].path.includes(".json")) {
-      setIsZip(true);
+      setSummaryExportMode(false);
       handleJsonDrop(rawFile);
     } else if (rawFile.length > 0) {
-      setDropMessage({ message: messages.uploadFail, type: "error" });
-      setLoading(false);
-      setTimeout(() => {
-        setDropMessage({ message: "", type: "" });
-      }, [2500]);
+      const pathOrName = (rawFile[0].path || rawFile[0].name || "").toLowerCase();
+      if (pathOrName.endsWith(".yaml") || pathOrName.endsWith(".yml")) {
+        setLoading(false);
+        setDropDisabled(true);
+      } else {
+        setDropMessage({ message: messages.uploadFail, type: "error" });
+        setLoading(false);
+        setTimeout(() => {
+          setDropMessage({ message: "", type: "" });
+        }, [2500]);
+      }
     }
   }, [rawFile, handleExcelDrop, handleZipDrop, processCSVFile, setFileData]);
 
+  // Derive attributesList from fileData
+  const attributesList = fileData.map(item => item[0]);
+  
   useEffect(() => {
-    if (fileData.length > 0 || attributesList.length > 0) {
+    if (fileData.length > 0) {
       setDropDisabled(true);
     }
   }, [fileData]);
@@ -647,8 +585,18 @@ const useHandleAllDrop = (pageForward) => {
     }
   }, [loading]);
 
+  const resetUploadState = useCallback(() => {
+    setFileData([]);
+    setRawFile([]);
+    setDropDisabled(false);
+    setLoading(false);
+    setDropMessage({ message: "", type: "" });
+    setExcelSheetNames([]);
+    setTempExcel(null);
+    setExcelSheetChoice(-1);
+  }, [setExcelSheetChoice]);
+
   return {
-    setAttributesList,
     rawFile,
     setRawFile,
     attributesList,
@@ -660,8 +608,7 @@ const useHandleAllDrop = (pageForward) => {
     setDropDisabled,
     setFileData,
     setCurrentPage,
-    switchToLastPage,
-    setIsZip,
+    resetUploadState,
     excelSheetNames,
     setExcelSheetChoice,
     setExcelSheetNames,

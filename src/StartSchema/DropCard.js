@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, Typography, Alert, Tooltip, Box } from "@mui/material";
+import { Card, CardContent, Typography, Alert, Tooltip, Box, Button } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import LoopIcon from "@mui/icons-material/Loop";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -12,6 +12,8 @@ import {
   defaultUploadedDescription
 } from "../constants/constants";
 import { Context } from "../App";
+import usePrimaryColor from "../hooks/usePrimaryColor";
+import useFontFamily from "../hooks/useFontFamily";
 
 export default function DropCard({
   loading,
@@ -32,126 +34,155 @@ export default function DropCard({
 }) {
   const { t } = useTranslation();
   const { currentTheme } = useContext(Context);
+  const primaryColor = usePrimaryColor();
+  const fontFamily = useFontFamily();
   return (
     <section
       className="container"
-      style={{ height: "16rem", marginTop: "3rem", marginBottom: "1rem" }}
+      style={{
+        minHeight: "16rem",
+        marginTop: "3rem",
+        marginBottom: "1rem",
+        paddingTop: dropMessage?.message?.length > 0 ? "2.75rem" : 0
+      }}
     >
       <div {...getRootProps({ className: "dropzone" })}>
         <input {...getInputProps()} />
-        <Box>
-          {tipDescription && (
-            <Box
+        <Box sx={{ position: "relative", width: "100%", maxWidth: "100%" }}>
+          {dropMessage?.message?.length > 0 && (
+            <Alert
+              severity={dropMessage?.type}
               sx={{
-                textAlign: "right",
-                height: "0rem",
-                transform: "translateX(25px)",
-                color: CustomPalette.GREY_600
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)",
+                bottom: "100%",
+                mb: 1,
+                zIndex: 9999,
+                maxWidth: "min(100%, 360px)"
               }}
             >
-              <Tooltip
-                title={<div style={{ whiteSpace: "pre-line" }}>{t(tipDescription)}</div>}
-                arrow
-                placement="right"
-              >
-                <HelpOutlineIcon sx={{ fontSize: 15 }} />
-              </Tooltip>
-            </Box>
+              {dropMessage?.message}
+            </Alert>
           )}
-          <Card
-            sx={{
-              maxWidth: 575,
-              margin: "auto",
-              border: "1px dashed grey",
-              transition: "all 0.2s ease-in-out",
-              boxShadow: hover === true && dropDisabled === false ? 9 : 0,
-              height: "15rem"
-            }}
-            onMouseOver={handleHover}
-            onMouseLeave={handleHoverLeave}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          >
-            {dropMessage?.message?.length > 0 && (
-              <Alert
-                severity={dropMessage?.type}
-                style={{
-                  position: "absolute",
-                  zIndex: 9999,
-                  left: "50%",
-                  transform: "translate(-50%, -110%)"
+          <Box>
+            {tipDescription && (
+              <Box
+                sx={{
+                  textAlign: "right",
+                  height: "0rem",
+                  transform: "translateX(25px)",
+                  color: CustomPalette.GREY_600
                 }}
               >
-                {dropMessage?.message}
-              </Alert>
+                <Tooltip
+                  title={<div style={{ whiteSpace: "pre-line" }}>{t(tipDescription)}</div>}
+                  arrow
+                  placement="right"
+                >
+                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
+                </Tooltip>
+              </Box>
             )}
+            <Card
+              sx={{
+                position: "relative",
+                overflow: "visible",
+                maxWidth: 575,
+                margin: "auto",
+                border: "1px dashed grey",
+                transition: "all 0.2s ease-in-out",
+                boxShadow: hover === true && dropDisabled === false ? 9 : 0,
+                height: "15rem"
+              }}
+              onMouseOver={handleHover}
+              onMouseLeave={handleHoverLeave}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+            >
+            <CardContent sx={{ pr: 10, pl: 10, pt: 2, pb: 1 }}>
+              <Box
+                sx={{
+                  height: "100%",
+                  minHeight: "11rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center"
+                }}
+              >
+                <Box
+                  sx={{
+                    flex: 1,
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  {dropDisabled === false && loading === false && (
+                    <Button
+                      variant="contained"
+                      color="button"
+                      sx={{
+                        width: 250,
+                        mt: 1,
+                        mb: 1,
+                        textTransform: "none",
+                        whiteSpace: "pre-line",
+                        textAlign: "center",
+                        lineHeight: 1.2
+                      }}
+                    >
+                      {t(description)}
+                    </Button>
+                  )}
 
-            <CardContent sx={{ pr: 10, pl: 10 }}>
-              {loading === true ? (
-                <LoopIcon
+                  {loading === true ? (
+                    <LoopIcon
+                      sx={{
+                        color: CustomPalette.GREY_300,
+                        my: 1,
+                        fontSize: "60px",
+                        animation: spinningAnimation,
+                        transition: "all 0.2s ease-in-out"
+                      }}
+                    />
+                  ) : dropDisabled === true ? (
+                    <CheckCircleOutlineIcon
+                      sx={{
+                        my: 1,
+                        fontSize: "60px",
+                        color: CustomPalette.PRIMARY
+                      }}
+                    />
+                  ) : (
+                    <DownloadIcon
+                      sx={{
+                        color: downloadIconColor,
+                        my: 1,
+                        fontSize: "60px",
+                        transition: "all 0.2s ease-in-out"
+                      }}
+                    />
+                  )}
+                </Box>
+
+                <Typography
                   sx={{
-                    color: CustomPalette.GREY_300,
-                    m: 2,
-                    fontSize: "60px",
-                    animation: spinningAnimation,
-                    transition: "all 0.2s ease-in-out"
+                    fontSize: 12,
+                    color: CustomPalette.GREY_600,
+                    fontFamily,
+                    textAlign: "center",
+                    pb: 0
                   }}
-                />
-              ) : dropDisabled === true ? (
-                <CheckCircleOutlineIcon
-                  sx={{
-                    m: 2,
-                    fontSize: "60px",
-                    // color: CustomPalette.GREEN_400,
-                    color: CustomPalette.PRIMARY
-                  }}
-                />
-              ) : (
-                <DownloadIcon
-                  sx={{
-                    color: downloadIconColor,
-                    m: 2,
-                    fontSize: "60px",
-                    transition: "all 0.2s ease-in-out",
-                    transform:
-                      hover === true && dropDisabled === false && "translateY(5px)"
-                  }}
-                />
-              )}
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  mb: 2,
-                  color:
-                    dropDisabled === false
-                      ? (currentTheme?.primaryColor ?? CustomPalette.PRIMARY)
-                      : CustomPalette.GREY_600,
-                  fontFamily:
-                    currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif",
-                  whiteSpace: "pre-line"
-                }}
-                gutterBottom
-              >
-                {dropDisabled === false ? (
-                  t(description)
-                ) : (
-                  <>
-                    Use the buttons below to add a <strong>new</strong> file or{" "}
-                    <strong>edit</strong> the uploaded file.
-                  </>
-                )}
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 12,
-                  color: CustomPalette.GREY_600,
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
-                }}
-              >
-                {t(noteDescription)}
-              </Typography>
+                >
+                  {t(noteDescription)}
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
+          </Box>
         </Box>
       </div>
     </section>

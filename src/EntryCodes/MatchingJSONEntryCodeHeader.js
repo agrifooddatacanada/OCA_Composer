@@ -1,10 +1,13 @@
 import React, { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContext } from 'react';
 import { Context } from '../App';
+import { useMultiSchema } from '../schema/schemaContext';
+import { langCodeOCAFromName, LanguageConstants } from '../utils/languageUtils';
 import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import BackNextSkeleton from '../components/BackNextSkeleton';
-import { AgGridReact } from 'ag-grid-react';
-import { gridStyles } from '../constants/styles';
+import { BETWEEN_SECTION_SPACING } from '../constants/constants';
+import { AgGridReact } from '../components/AgGridReact';
+import { gridStyles, AG_GRID_DROPDOWN_CELL_CLASS } from '../constants/styles';
 import { DropdownMenuList } from '../components/DropdownMenuCell';
 
 export const DataHeaderRenderer = memo(
@@ -60,20 +63,33 @@ export const DataHeaderRenderer = memo(
 );
 
 const MatchingJSONEntryCodeHeader = () => {
-  const { tempEntryCodeSummary, tempEntryList, languages, setCurrentPage, setEntryCodeRowData, chosenEntryCodeIndex, attributeRowData } = useContext(Context);
+  const { tempEntryCodeSummary, tempEntryList, setCurrentPage, chosenEntryCodeIndex } = useContext(Context);
+  
+  // Use MultiSchemaContext for schema-specific data
+  const { getSchema, updateSchema } = useMultiSchema();
+  const schemaState = getSchema();
+  const attributeRowData = schemaState?.attributes || [];
+  
+  // Get schema-specific languages (not global)
+  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
+  
+  // Get the attribute name for the chosen index
+  const listAttributes = attributeRowData.filter(attr => attr.List === true);
+  const targetAttributeName = listAttributes[chosenEntryCodeIndex]?.Attribute;
+  
   const [languageList, setLanguageList] = useState([]);
-  const [attributeList, setAttributeList] = useState([]);
+  const [uploadedFileAttributes, setUploadedFileAttributes] = useState([]);
   const [matchingLanguages, setMatchingLanguages] = useState([]);
   const [attrValue, setAttrValue] = useState([]);
   const gridRef = useRef();
 
   const attributeListDropdown = useMemo(() => {
-    return attributeList.map((division) => {
+    return uploadedFileAttributes.map((division) => {
       return (
         <MenuItem sx={{ height: '38px' }} key={division} value={division}>{division}</MenuItem>
       );
     });
-  }, [attributeList]);
+  }, [uploadedFileAttributes]);
 
   const changeDataFromTable = useCallback((e, params) => {
     let saveNode = undefined;
@@ -103,6 +119,7 @@ const MatchingJSONEntryCodeHeader = () => {
         headerName: 'Matching Attributes',
         field: 'matchingDataHeader',
         width: 200,
+        cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
           dataHeaders: languageList,
@@ -124,18 +141,26 @@ const MatchingJSONEntryCodeHeader = () => {
       for (const code of entryCodes) {
         const newObj = { Code: code };
         for (const lang of languages) {
+          // Convert language name to OCA code (e.g., "English" -> "eng")
+          const langCodeOCA = langCodeOCAFromName(lang);
           const correspondingHeader = matchingData.find(item => item.lang === lang)?.matchingDataHeader;
           const correspondingEntryCodes = tempEntryList.find(item => item.language === correspondingHeader);
           const value = correspondingEntryCodes?.['attribute_entries']?.[attrValue]?.[code];
-          newObj[lang] = value ? value : '';
+          newObj[langCodeOCA] = value ? value : '';
         }
         newEntryCodeRowData.push(newObj);
       }
-      setEntryCodeRowData(prev => {
-        const newData = [...prev];
-        newData[chosenEntryCodeIndex] = newEntryCodeRowData;
-        return newData;
-      });
+      
+      // Save to MultiSchemaContext using attribute name as key
+      if (targetAttributeName) {
+        const currentEntryCodes = schemaState?.entryCodes || {};
+        updateSchema({
+          entryCodes: {
+            ...currentEntryCodes,
+            [targetAttributeName]: newEntryCodeRowData
+          }
+        });
+      }
       setCurrentPage('Codes');
     }
   };
@@ -171,7 +196,7 @@ const MatchingJSONEntryCodeHeader = () => {
     });
     const matchingIndex = matchingFunction(attrList, chosenAttribute);
     setMatchingLanguages(matchingValues);
-    setAttributeList(attrList);
+    setUploadedFileAttributes(attrList);
     setAttrValue(matchingIndex !== -1 ? attrList[matchingIndex] : attrList[0]);
     setLanguageList(tempLanguagesList);
   }, []);
@@ -183,14 +208,15 @@ const MatchingJSONEntryCodeHeader = () => {
         pageBack={() => {
           setCurrentPage('UploadEntryCodes');
         }}
-        isForward={attributeList?.length > 0}
+        isForward={uploadedFileAttributes?.length > 0}
         pageForward={handleSave} />
-      {attributeList?.length > 0 ?
+      {uploadedFileAttributes?.length > 0 ?
         <Box
           sx={{
             // margin: '2rem',
             marginLeft: 11,
             marginTop: 2,
+            marginBottom: BETWEEN_SECTION_SPACING,
             gap: '3rem',
             display: 'flex',
             flexDirection: 'column',
@@ -211,13 +237,14 @@ const MatchingJSONEntryCodeHeader = () => {
               {attributeListDropdown}
             </Select>
           </FormControl>
-          <div className="ag-theme-balham" style={{ width: '400px' }}>
+          <div className="matching-entry-code-grid ag-theme-balham" style={{ width: '400px' }}>
+            <style>{`.matching-entry-code-grid.ag-theme-balham{height:min(70vh,560px);min-height:120px}.matching-entry-code-grid .ag-root-wrapper{height:100%}`}</style>
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
+              style={{ width: "100%", height: "100%" }}
               rowData={matchingLanguages}
               columnDefs={columnDefs}
-              domLayout="autoHeight"
             />
           </div>
         </Box> :
@@ -227,6 +254,7 @@ const MatchingJSONEntryCodeHeader = () => {
           alignItems: 'center',
           justifyContent: 'center',
           flex: 1,
+          mb: BETWEEN_SECTION_SPACING,
         }}>
           <Typography variant="h5">No entry codes in this schema</Typography>
         </Box>}

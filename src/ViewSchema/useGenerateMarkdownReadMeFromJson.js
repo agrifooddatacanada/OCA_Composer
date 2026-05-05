@@ -1,11 +1,28 @@
-import { useContext } from "react";
+/**
+ * Hook to generate Markdown README from JSON OCA packages.
+ * 
+ * Used by:
+ * - "Generate Markdown Readme" button when a JSON file was uploaded
+ * 
+ * Input: JSON OCA package (already parsed)
+ * Output: Markdown file (.md) with formatted schema documentation including child schemas
+ * 
+ * Note: For ZIP files, see useGenerateMarkdownReadMe.
+ */
+
 import i18next from "i18next";
-import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import {
-  codesToLanguages,
-  languageNameToAlpha3Codes,
-  toThreeLetterCode
-} from "../constants/isoCodes";
+  langNameFromTwoLetters,
+  langCodeOCAFromName,
+  langCodeOCAFromTwoLetters,
+  normalizeToOCACode
+} from "../utils/languageUtils";
+import {
+  getPackageLanguages,
+  getPackageDependencies,
+  getRootCaptureBaseId
+} from "../utils/packageUtils";
 import {
   ADC,
   DEFAULT_THREE_LETTER_LANGUAGE_CODE,
@@ -36,37 +53,108 @@ const getModifiedLayer = (overlay) => {
   };
 };
 
+const findMetaOverlay = (layers, preferredOCACode) => {
+  const preferred = normalizeToOCACode(preferredOCACode);
+  const match = (code) =>
+    layers.find(
+      (layer) =>
+        layer.layerName.includes("meta") &&
+        normalizeToOCACode(layer.language) === code
+    );
+  return (
+    match(preferred) ||
+    match(DEFAULT_THREE_LETTER_LANGUAGE_CODE) ||
+    layers.find((layer) => layer.layerName.includes("meta"))
+  );
+};
+
+const getLanguagesFromLayers = (layers) => {
+  const languageCodes = new Set();
+  layers.forEach((layer) => {
+    if (layer.language) {
+      languageCodes.add(normalizeToOCACode(layer.language));
+    }
+  });
+
+  const languages = [];
+  languageCodes.forEach((code) => {
+    const languageName = langNameFromTwoLetters(code);
+    if (languageName) {
+      languages.push(languageName);
+    }
+  });
+
+  if (!languages.some((language) => languageCodeOCAFromName(language) === DEFAULT_THREE_LETTER_LANGUAGE_CODE)) {
+    languages.unshift(langNameFromTwoLetters(DEFAULT_THREE_LETTER_LANGUAGE_CODE) || "English");
+  }
+
+  return languages;
+};
+
+const buildLayersAndSaidRows = (schemaData) => {
+  const layers = [];
+  const layersForSaidTable = [];
+
+  for (const overlayName of Object.keys(schemaData.overlays || {})) {
+    const overlay = schemaData.overlays[overlayName];
+    if (Array.isArray(overlay)) {
+      overlay.forEach((langSpecificOverlay) => {
+        const modifiedLayer = getModifiedLayer(langSpecificOverlay);
+        const layerNameWithoutVersion = `${modifiedLayer.layerName.split("/")[0]}${modifiedLayer.language ? ` (${modifiedLayer.language})` : ""}`;
+        layersForSaidTable.push({
+          name: layerNameWithoutVersion,
+          digest: modifiedLayer.digest,
+          type: langSpecificOverlay.type
+        });
+        layers.push(modifiedLayer);
+      });
+    } else {
+      const modifiedLayer = getModifiedLayer(overlay);
+      const layerNameWithoutVersion = `${modifiedLayer.layerName.split("/")[0]}${modifiedLayer.language ? ` (${modifiedLayer.language})` : ""}`;
+      layersForSaidTable.push({
+        name: layerNameWithoutVersion,
+        digest: modifiedLayer.digest,
+        type: overlay.type
+      });
+      layers.push(modifiedLayer);
+    }
+  }
+
+  return { layers, layersForSaidTable };
+};
+
 const useGenerateMarkdownReadMeFromJson = () => {
-  const { languages, OCAPackage } = useContext(Context);
-  // For now, use ADC extension overlays for the top-level/main schema bundle
+  const { ocaPackage } = useMultiSchema();
+  const pkg = ocaPackage;
+  const rootCaptureBaseId = getRootCaptureBaseId(pkg);
+
   const orderingOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
-      ?.overlays?.ordering;
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.ordering;
   const hasAttributeOrdering = orderingOverlay?.attribute_ordering?.length > 0;
 
   const sensitiveOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
-      ?.overlays?.[SENSITIVE];
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[SENSITIVE];
   const sensitiveAttributes = Array.isArray(sensitiveOverlay?.sensitive_attributes)
     ? sensitiveOverlay?.sensitive_attributes
     : [];
 
   const rangeOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
-      ?.overlays?.[RANGE];
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[RANGE];
 
   const unitFramingOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
-      ?.overlays?.[UNIT_FRAMING];
-
-  // Ensuring that the currently selected site language is one of the languages of the schema
-  const currentLanguageCode = languages.some(
-    (language) => language === codesToLanguages[i18next.language]
-  )
-    ? toThreeLetterCode(i18next.language)
-    : DEFAULT_THREE_LETTER_LANGUAGE_CODE;
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[UNIT_FRAMING];
 
   const generateMarkdownReadMeFromJson = (schemaData, catalogueData) => {
+    // Extract languages from the entire package
+    const languages = getPackageLanguages(pkg);
+    
+    // Ensuring that the currently selected site language is one of the languages of the schema
+    const currentLanguageCode = languages.some(
+      (language) => language === langNameFromTwoLetters(i18next.language)
+    )
+      ? langCodeOCAFromTwoLetters(i18next.language)
+      : DEFAULT_THREE_LETTER_LANGUAGE_CODE;
+    
     let fileContent = "";
     const captureBaseOverlay = schemaData.capture_base;
     const captureBaseSAID = captureBaseOverlay.d;
@@ -74,40 +162,13 @@ const useGenerateMarkdownReadMeFromJson = () => {
       ? orderingOverlay?.attribute_ordering
       : Object.keys(captureBaseOverlay.attributes);
 
-    const layers = [];
-    const layersForSaidTable = [];
-
-    for (const overlayName of Object.keys(schemaData.overlays)) {
-      const overlay = schemaData.overlays[overlayName];
-      if (Array.isArray(overlay)) {
-        overlay.forEach((langSpecificOverlay) => {
-          const modifiedLayer = getModifiedLayer(langSpecificOverlay);
-          const layerNameWithoutVersion = `${modifiedLayer.layerName.split("/")[0]}${modifiedLayer.language ? ` (${modifiedLayer.language})` : ""}`;
-          layersForSaidTable.push({
-            name: layerNameWithoutVersion,
-            digest: modifiedLayer.digest,
-            type: langSpecificOverlay.type
-          });
-          layers.push(modifiedLayer);
-        });
-      } else {
-        const modifiedLayer = getModifiedLayer(overlay);
-        const layerNameWithoutVersion = `${modifiedLayer.layerName.split("/")[0]}${modifiedLayer.language ? ` (${modifiedLayer.language})` : ""}`;
-        layersForSaidTable.push({
-          name: layerNameWithoutVersion,
-          digest: modifiedLayer.digest,
-          type: overlay.type
-        });
-        layers.push(modifiedLayer);
-      }
-    }
+    const { layers, layersForSaidTable } = buildLayersAndSaidRows(schemaData);
 
     // Include extension overlays if any
     // For now, use ADC extension overlays for the top-level/main schema bundle
-    if (Object.keys(OCAPackage?.extensions || {}).length > 0) {
+    if (Object.keys(pkg?.extensions || {}).length > 0) {
       const overlays =
-        OCAPackage.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
-          ?.overlays;
+        pkg.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays;
       const overlayNames = Object.keys(overlays);
       overlayNames.forEach((overlayName) => {
         const overlay = overlays[overlayName];
@@ -119,20 +180,25 @@ const useGenerateMarkdownReadMeFromJson = () => {
       });
     }
 
-    const metaOverlayCurrentLanguage = layers.find(
-      (layer) =>
-        layer.layerName.includes("meta") &&
-        (layer.language === currentLanguageCode ||
-          layer.language === DEFAULT_THREE_LETTER_LANGUAGE_CODE)
-    );
+    const metaOverlayCurrentLanguage =
+      findMetaOverlay(layers, currentLanguageCode) || {
+        name: "Unnamed schema",
+        description: ""
+      };
 
     fileContent += generateFrontMatter(metaOverlayCurrentLanguage, catalogueData);
     fileContent += generateSchemaInformation(
       metaOverlayCurrentLanguage,
       captureBaseOverlay,
       catalogueData,
-      OCAPackage
+      pkg
     );
+    // Build language code lookup map
+    const languageCodeLookupMap = {};
+    languages.forEach(lang => {
+      languageCodeLookupMap[lang.toLowerCase()] = langCodeOCAFromName(lang);
+    });
+
     fileContent += generateSchemaQuickView({
       layers,
       attributeNames,
@@ -142,12 +208,12 @@ const useGenerateMarkdownReadMeFromJson = () => {
     fileContent += generateInternationalSchemaInformation(
       layers,
       languages,
-      languageNameToAlpha3Codes
+      languageCodeLookupMap
     );
     fileContent += generateEntryCodeTables(
       layers,
       languages,
-      languageNameToAlpha3Codes,
+      languageCodeLookupMap,
       orderingOverlay
     );
     fileContent += generateLanguageIndependentSchemaDetailsTable({
@@ -167,17 +233,144 @@ const useGenerateMarkdownReadMeFromJson = () => {
       layers,
       attributeNames,
       languages,
-      languageCodeLookupMap: languageNameToAlpha3Codes,
+      languageCodeLookupMap,
       orderingOverlay
     });
     fileContent += generateSAIDTableForJson(
       {
         captureBaseSAID,
         bundleSAID: schemaData.d,
-        ...(OCAPackage?.d && { packageSAID: OCAPackage.d })
+        ...(pkg?.d && { packageSAID: pkg.d })
       },
       layersForSaidTable
     );
+    
+    const childSchemas = getPackageDependencies(pkg);
+    
+    if (Array.isArray(childSchemas) && childSchemas.length > 0) {
+      fileContent += "\n\n";
+      fileContent += "BEGIN_CHILD_SCHEMAS\n";
+      fileContent += "******************************************************************\n";
+      
+      childSchemas.forEach((childSchemaData, index) => {
+        const childCaptureBase = childSchemaData.capture_base;
+        const childCaptureBaseId = childCaptureBase?.d;
+        const childOrderingOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.ordering;
+        const childHasAttributeOrdering = childOrderingOverlay?.attribute_ordering?.length > 0;
+
+        const childSensitiveOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[SENSITIVE];
+        const childSensitiveAttributes = Array.isArray(childSensitiveOverlay?.sensitive_attributes)
+          ? childSensitiveOverlay.sensitive_attributes
+          : [];
+
+        const childRangeOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[RANGE];
+
+        const childUnitFramingOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[UNIT_FRAMING];
+
+        const { layers: childLayers, layersForSaidTable: childLayersForSaidTable } =
+          buildLayersAndSaidRows(childSchemaData);
+        const childLanguages = getLanguagesFromLayers(childLayers);
+        const childLanguageCodeLookupMap = {};
+        childLanguages.forEach((lang) => {
+          childLanguageCodeLookupMap[lang.toLowerCase()] = langCodeOCAFromName(lang);
+        });
+
+        const childMetaOverlay = findMetaOverlay(childLayers, currentLanguageCode) || {
+          name: "Unnamed Child Schema",
+          description: ""
+        };
+
+        const childAttributeNames = childHasAttributeOrdering
+          ? childOrderingOverlay.attribute_ordering
+          : Object.keys(childCaptureBase.attributes || {});
+
+        const childExtensionOverlays =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays;
+        if (childExtensionOverlays) {
+          Object.keys(childExtensionOverlays).forEach((overlayName) => {
+            const overlay = childExtensionOverlays[overlayName];
+            if (Array.isArray(overlay)) {
+              overlay.forEach((entry) => {
+                childLayersForSaidTable.push({
+                  name: overlayName,
+                  digest: entry.d,
+                  type: entry.type
+                });
+              });
+              return;
+            }
+            childLayersForSaidTable.push({
+              name: overlayName,
+              digest: overlay.d,
+              type: overlay.type
+            });
+          });
+        }
+        
+        fileContent += `\nCHILD SCHEMA ${index + 1}\n`;
+        fileContent += "******************************************************************\n";
+        fileContent += generateSchemaInformation(
+          childMetaOverlay,
+          childCaptureBase,
+          null,
+          null
+        );
+        fileContent += generateSchemaQuickView({
+          layers: childLayers,
+          attributeNames: childAttributeNames,
+          currentLanguageCode,
+          defaultLanguageCode: DEFAULT_THREE_LETTER_LANGUAGE_CODE
+        });
+        fileContent += generateInternationalSchemaInformation(
+          childLayers,
+          childLanguages,
+          childLanguageCodeLookupMap
+        );
+        fileContent += generateEntryCodeTables(
+          childLayers,
+          childLanguages,
+          childLanguageCodeLookupMap,
+          childOrderingOverlay
+        );
+        fileContent += generateLanguageIndependentSchemaDetailsTable({
+          layers: childLayers,
+          captureBaseOverlay: childCaptureBase,
+          attributeNames: childAttributeNames,
+          sensitiveAttributes: childSensitiveAttributes,
+          rangeOverlay: childRangeOverlay,
+          unitFramingOverlay: childUnitFramingOverlay
+        });
+        if (childUnitFramingOverlay?.framing_metadata) {
+          fileContent += generateUnitFramingMetadataTable(
+            childUnitFramingOverlay.framing_metadata
+          );
+        }
+        fileContent += generateLanguageSpecificSchemaDetailsTable({
+          layers: childLayers,
+          attributeNames: childAttributeNames,
+          languages: childLanguages,
+          languageCodeLookupMap: childLanguageCodeLookupMap,
+          orderingOverlay: childOrderingOverlay
+        });
+        fileContent += generateSAIDTableForJson(
+          {
+            captureBaseSAID: childCaptureBase.d,
+            bundleSAID: childSchemaData.d
+          },
+          childLayersForSaidTable
+        );
+        
+        fileContent += "******************************************************************\n";
+      });
+      
+      fileContent += "END_CHILD_SCHEMAS\n";
+      fileContent += "******************************************************************\n";
+    }
+    
     fileContent += generateCreationTimestamp();
 
     const fileName = `${metaOverlayCurrentLanguage.name.split(" ")[0]}_OCA_schema.md`;

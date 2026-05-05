@@ -1,6 +1,8 @@
-import React, { useCallback, useContext, useState, useEffect } from "react";
+import React, { useCallback, useContext, useState, useEffect, useMemo, useRef } from "react";
 import { Context } from "../../App";
+import { useMultiSchema } from "../../schema/schemaContext";
 import BackNextSkeleton from "../../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../../constants/constants";
 import { Box, Button, Typography, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../../constants/customPalette";
@@ -9,8 +11,10 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuidv4 } from 'uuid';
-import { codesToLanguages } from "../../constants/isoCodes";
+import { langNameFromTwoLetters, LanguageConstants } from "../../utils/languageUtils";
 import i18next from "i18next";
+import usePrimaryColor from "../../hooks/usePrimaryColor";
+import { isChildSchemaType } from "../../constants/constants";
 
 import AttributePalette from "./AttributePalette";
 import DroppablePage from "./DroppablePage";
@@ -23,38 +27,45 @@ import { moveQuestionToPage, moveQuestionToSection, moveSectionBetweenPages, reo
 
 const FormBuilder = () => {
   const { t } = useTranslation();
+  const primaryColor = usePrimaryColor();
   const {
-    FormInformationRowData,
-    setFormInformationRowData,
-    formBuilderPages,
-    setFormBuilderPages,
     setCurrentPage,
-    attributesList,
-    setSelectedOverlay,
-    languages,
-    formatRuleRowData,
-    attributeRowData,
-    lanAttributeRowData,
-    setLanAttributeRowData,
-    savedEntryCodes,
-    attributesWithLists,
-    schemaDescription
+    setSelectedOverlay
   } = useContext(Context);
 
+  const {
+    getSchema,
+    updateSchema,
+    getAttributesList,
+    getFormatRuleData,
+    schemaStates
+  } = useMultiSchema();
+  const schemaState = getSchema();
   
-  const languageIndex = languages.findIndex(
-    (item) => codesToLanguages?.[i18next.language] === item
+  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
+  const savedEntryCodes = schemaState?.entryCodes || {};
+  const attributesWithLists = schemaState?.attributesWithLists || [];
+  
+  const attributesList = getAttributesList();
+  const formatRuleRowData = getFormatRuleData();
+  const attributeRowData = schemaState?.attributes || [];
+  const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
+  const FormInformationRowData = schemaState?.FormInformationRowData || [];
+  const formBuilderPages = schemaState?.formBuilderPages || [];
+  const filteredLanguages = useMemo(() => [...languages], [languages]);
+  const [currentLanguage, setCurrentLanguage] = useState(
+    filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME
   );
-  const filteredLanguages = [...languages];
-  if (languageIndex !== -1 && languageIndex !== 0) {
-    const removedLanguage = filteredLanguages.splice(languageIndex, 1);
-    filteredLanguages.unshift(removedLanguage[0]);
-  }
-  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
+
+  useEffect(() => {
+    if (!languages.includes(currentLanguage)) {
+      setCurrentLanguage(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
+    }
+  }, [languages, currentLanguage, filteredLanguages]);
 
   // Update currentLanguage when global UI language changes
   useEffect(() => {
-    const userLanguage = codesToLanguages?.[i18next.language];
+    const userLanguage = langNameFromTwoLetters(i18next.language);
     if (userLanguage && languages.includes(userLanguage)) {
       setCurrentLanguage(userLanguage);
     }
@@ -113,15 +124,90 @@ const FormBuilder = () => {
   const [targetPageIndex, setTargetPageIndex] = useState(-1);
   const [targetSectionIndex, setTargetSectionIndex] = useState(null);
 
-  const usedAttributes = useUsedAttributes(pages);
+  const isUpdatingFromFormBuilder = useRef(false);
 
-  // Sync pages to persistent state whenever it changes
+  const usedAttributes = useUsedAttributes(pages);
+  const childAttributeOptionsByParent = useMemo(() => {
+    const schemaEntries = Object.entries(schemaStates || {});
+    const schemaIdsByMetadataName = schemaEntries.reduce((acc, [schemaId, state]) => {
+      const name = state?.metadata?.name;
+      if (!name) return acc;
+      if (!acc[name]) acc[name] = [];
+      acc[name].push(schemaId);
+      return acc;
+    }, {});
+
+    const getSchemaById = (schemaId) => {
+      if (!schemaId) return null;
+      return schemaStates?.[schemaId] || null;
+    };
+
+    const getSchemaByUniqueMetadataName = (name, parentAttribute) => {
+      if (!name) return null;
+      const ids = schemaIdsByMetadataName[name] || [];
+      if (ids.length === 1) {
+        return schemaStates?.[ids[0]] || null;
+      }
+      if (ids.length > 1) {
+        console.warn(
+          "[FormBuilder] Ambiguous child schema metadata.name match for reference preview.",
+          { parentAttribute, metadataName: name, candidateSchemaIds: ids }
+        );
+      }
+      return null;
+    };
+
+    const extractReferencedSchemaId = (originalType) => {
+      if (typeof originalType !== "string") return "";
+      const trimmed = originalType.trim();
+      if (trimmed.startsWith("refs:") || trimmed.startsWith("refn:")) {
+        return trimmed.split(":").slice(1).join(":").trim();
+      }
+      const arrayMatch = trimmed.match(/^Array\[(refs|refn):(.+)\]$/i);
+      return arrayMatch?.[2]?.trim() || "";
+    };
+
+    const result = {};
+    (attributeRowData || []).forEach((attr) => {
+      const originalType = attr?.OriginalType;
+      const parentAttribute = attr?.Attribute;
+      const type = attr?.Type;
+      if (!parentAttribute) return;
+
+      const isReferenceByOriginalType =
+        typeof originalType === "string" &&
+        (originalType.trim().startsWith("refs:") ||
+          originalType.trim().startsWith("refn:") ||
+          /^Array\[(refs|refn):.+\]$/i.test(originalType.trim()));
+
+      if (!isReferenceByOriginalType && !isChildSchemaType(type)) {
+        return;
+      }
+
+      const referencedSchemaId = extractReferencedSchemaId(originalType);
+      const childSchemaState =
+        getSchemaById(referencedSchemaId) ||
+        getSchemaById(parentAttribute) ||
+        getSchemaByUniqueMetadataName(parentAttribute, parentAttribute);
+      const childKeys = (childSchemaState?.attributes || [])
+        .map((childAttr) => childAttr?.Attribute)
+        .filter(Boolean);
+
+      result[parentAttribute] = childKeys;
+    });
+    return result;
+  }, [attributeRowData, schemaStates]);
+
   useEffect(() => {
-    setFormBuilderPages(pages);
-  }, [pages, setFormBuilderPages]);
+    updateSchema({ formBuilderPages: pages });
+  }, [pages, updateSchema]);
 
   useEffect(() => {
     if (!pages || pages.length === 0) return;
+    if (isUpdatingFromFormBuilder.current) {
+      isUpdatingFromFormBuilder.current = false;
+      return;
+    }
 
     const syncQuestionData = (question) => {
       const { attribute } = question;
@@ -146,7 +232,8 @@ const FormBuilder = () => {
 
       const updatedDescription = {};
       languages.forEach(lang => {
-        updatedDescription[lang] = question.description?.[lang] || '';
+        const langData = lanAttributeRowData?.[lang]?.find(item => item.Attribute === attribute);
+        updatedDescription[lang] = langData?.FormDescription || question.description?.[lang] || '';
       });
 
       let updatedOptions = question.options || [];
@@ -163,7 +250,7 @@ const FormBuilder = () => {
             id: existingOption?.id || uuidv4(),
             code: entryCode.Code,
             value: entryCode.Code,
-            label: optionLabels[languages[0]] || entryCode.Code,
+            label: optionLabels[languages[0] || LanguageConstants.DEFAULT_LANG_NAME] || entryCode.Code,
             labels: optionLabels
           };
         });
@@ -200,7 +287,6 @@ const FormBuilder = () => {
     if (hasChanges) {
       setPages(syncedPages);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lanAttributeRowData, formatRuleRowData, attributeRowData, savedEntryCodes, attributesWithLists, languages]);
 
   const handleAddPage = () => {
@@ -235,32 +321,6 @@ const FormBuilder = () => {
 
   const handleEditQuestion = (question, questionIndex, pageIndex, sectionIndex = null) => { setEditingQuestion(question); setEditingQuestionIndex(questionIndex); setTargetPageIndex(pageIndex); setTargetSectionIndex(sectionIndex); setShowQuestionDialog(true); };
   const handleDeleteQuestion = (questionIndex, pageIndex, sectionIndex = null) => {
-
-    const page = pages[pageIndex];
-    let q;
-    if (sectionIndex !== null) {
-      q = page?.sections?.[sectionIndex]?.questions?.[questionIndex];
-    } else {
-      q = page?.questions?.[questionIndex];
-    }
-    if (q?.attribute) {
-      setLanAttributeRowData((prev) => {
-        const updated = { ...prev };
-        languages.forEach((lang) => {
-          const arr = updated[lang] || [];
-          const idx = arr.findIndex((it) => it.Attribute === q.attribute);
-          if (idx !== -1) {
-            const existing = arr[idx];
-            const newPlaceholder = typeof q.placeholder === 'object' && q.placeholder !== null ? (q.placeholder[lang] || existing.Placeholder || '') : (q.placeholder || existing.Placeholder || '');
-            const newFormDescription = typeof q.description === 'object' && q.description !== null ? (q.description[lang] || existing.FormDescription || '') : (q.description || existing.FormDescription || '');
-            const newLabel = typeof q.title === 'object' && q.title !== null ? (q.title[lang] || existing.Label || q.attribute) : (q.title || existing.Label || q.attribute);
-            arr[idx] = { ...existing, Label: newLabel, Placeholder: newPlaceholder, FormDescription: newFormDescription };
-          }
-        });
-        return updated;
-      });
-    }
-
     setPages(prev => prev.map((p, i) => {
       if (i !== pageIndex) return p;
       if (sectionIndex !== null) return { ...p, sections: p.sections.map((s, si) => si === sectionIndex ? { ...s, questions: (s.questions || []).filter((_, qi) => qi !== questionIndex) } : s) };
@@ -270,6 +330,33 @@ const FormBuilder = () => {
   };
   const handleSaveQuestion = (questionData) => {
     const question = { ...questionData, id: questionData.id || uuidv4() };
+    
+    if (question.attribute) {
+      isUpdatingFromFormBuilder.current = true;
+      const newLanData = (() => {
+        const updated = { ...lanAttributeRowData };
+        languages.forEach((lang) => {
+          const arr = updated[lang] || [];
+          const idx = arr.findIndex((it) => it.Attribute === question.attribute);
+          if (idx !== -1) {
+            const existing = arr[idx];
+            const newLabel = typeof question.title === 'object' && question.title !== null 
+              ? (question.title[lang] || existing.Label || question.attribute) 
+              : (question.title || existing.Label || question.attribute);
+            const newPlaceholder = typeof question.placeholder === 'object' && question.placeholder !== null 
+              ? (question.placeholder[lang] || existing.Placeholder || '') 
+              : (question.placeholder || existing.Placeholder || '');
+            const newFormDescription = typeof question.description === 'object' && question.description !== null 
+              ? (question.description[lang] || existing.FormDescription || '') 
+              : (question.description || existing.FormDescription || '');
+            arr[idx] = { ...existing, Label: newLabel, Placeholder: newPlaceholder, FormDescription: newFormDescription };
+          }
+        });
+        return updated;
+      })();
+      updateSchema({ lanAttributeRowData: newLanData });
+    }
+    
     setPages(prev => prev.map((p, i) => {
       if (i !== targetPageIndex) return p;
       if (editingQuestionIndex >= 0) {
@@ -314,7 +401,7 @@ const FormBuilder = () => {
           id: uuidv4(),
           code: entryCode.Code,
           value: entryCode.Code,
-          label: optionLabels[languages[0]] || entryCode.Code,
+          label: optionLabels[languages[0] || LanguageConstants.DEFAULT_LANG_NAME] || entryCode.Code,
           labels: optionLabels
         });
       });
@@ -346,219 +433,201 @@ const FormBuilder = () => {
     setPages(prev => prev.map((p, pi) => pi !== pageIndex ? p : ({ ...p, sections: p.sections.map((s, si) => si !== sectionIndex ? s : ({ ...s, questions: [ ...(s.questions || []), newQuestion ] })) })));
   };
 
-  // Helper function to sync label, placeholder and FORM description back to lanAttributeRowData
-  const syncQuestionFieldsToLanData = useCallback(() => {
-    const questionsByAttribute = {};
-    const formDescriptionsByAttribute = {};
-    const titlesByAttribute = {};
-    pages.forEach(page => {
-      [...(page.questions || []), ...(page.sections || []).flatMap(s => s.questions || [])].forEach(q => {
-        if (q?.attribute && q.placeholder) {
-          questionsByAttribute[q.attribute] = q.placeholder;
-        }
-        if (q?.attribute && q.description) {
-          formDescriptionsByAttribute[q.attribute] = q.description;
-        }
-        if (q?.attribute && q.title) {
-          titlesByAttribute[q.attribute] = q.title;
-        }
-      });
-    });
-    
-    setLanAttributeRowData(prevLanData => {
-      const updatedLanData = { ...prevLanData };
-      
-      languages.forEach(lang => {
-        if (updatedLanData[lang]) {
-          updatedLanData[lang] = updatedLanData[lang].map(item => {
-            const attr = item.Attribute;
-            const questionPlaceholder = questionsByAttribute[attr];
-            const questionDescription = formDescriptionsByAttribute[attr];
-            const questionTitle = titlesByAttribute[attr];
-            let newItem = { ...item };
-
-            if (questionPlaceholder) {
-              if (typeof questionPlaceholder === 'object' && questionPlaceholder !== null) {
-                newItem.Placeholder = questionPlaceholder[lang] || '';
-              } else if (typeof questionPlaceholder === 'string') {
-                newItem.Placeholder = questionPlaceholder;
-              }
-            }
-
-       
-            if (questionDescription) {
-              if (typeof questionDescription === 'object' && questionDescription !== null) {
-                newItem.FormDescription = questionDescription[lang] || '';
-              } else if (typeof questionDescription === 'string') {
-                newItem.FormDescription = questionDescription;
-              }
-            }
-
-            if (questionTitle) {
-              if (typeof questionTitle === 'object' && questionTitle !== null) {
-                newItem.Label = questionTitle[lang] || newItem.Label || attr;
-              } else if (typeof questionTitle === 'string') {
-                newItem.Label = questionTitle || newItem.Label || attr;
-              }
-            }
-
-            return newItem;
-          });
-        }
-      });
-      
-      return updatedLanData;
-    });
-  }, [pages, languages, setLanAttributeRowData]);
-
-  useEffect(() => {
-    syncQuestionFieldsToLanData();
-  }, [pages, syncQuestionFieldsToLanData]);
-
   const validateForm = useCallback(() => ({ ok: true }), []);
 
   const handleForward = useCallback(() => {
     const validation = validateForm();
     if (!validation.ok) return;
     
-    // Convert pages to form information format
     const formData = convertToFormInformation(pages);
-    setFormInformationRowData(formData);
+    updateSchema({ FormInformationRowData: formData });
 
     setSelectedOverlay("");
     setCurrentPage("Overlays");
-  }, [validateForm, pages, setFormInformationRowData, setSelectedOverlay, setCurrentPage, languages, schemaDescription]);
+  }, [validateForm, pages, updateSchema, setSelectedOverlay, setCurrentPage, languages]);
 
   const handleBack = useCallback(() => {
     setCurrentPage("FormInformation");
   }, [setCurrentPage]);
 
-  // Build Language Tabs
+  // Build language tabs (same pattern as Form Information / Language Details)
   const displayLanguageArray = [];
   for (let i = 0; i < filteredLanguages.length; i += 6) {
     const languageRow = filteredLanguages.slice(i, i + 6).filter(Boolean);
     displayLanguageArray.push(languageRow);
   }
 
-  const createLanguageRow = (languageArray, rowIndex) => {
-    const languageRowDisplay = languageArray.map((language, index) => {
-      let isFirstButton;
-      if (languages.length > 6) {
-        if (
-          displayLanguageArray[rowIndex + 1] &&
-          displayLanguageArray[rowIndex + 1].length === 6
-        ) {
-          isFirstButton =
-            language === displayLanguageArray[displayLanguageArray.length - 1][0];
-        } else {
-          isFirstButton = index === 0;
-        }
-      } else {
-        isFirstButton = index === 0;
-      }
-      const isLastButton = language === filteredLanguages[languages.length - 1];
-      let borderRadius = "";
-      if (isFirstButton && isLastButton) borderRadius = "8px 8px 0 0";
-      else if (isFirstButton) borderRadius = "8px 0 0 0";
-      else if (isLastButton) borderRadius = "0 8px 0 0";
-      else borderRadius = "0";
+  const renderLanguageTabButtons = (languageSegment) =>
+    languageSegment.map((language) => {
+      const selected = currentLanguage === language;
       return (
         <Button
           key={language}
           onClick={() => setCurrentLanguage(language)}
-          color="button"
-          variant="contained"
+          variant="text"
+          color="inherit"
           sx={{
-            backgroundColor:
-              currentLanguage === language
-                ? CustomPalette.PRIMARY
-                : CustomPalette.SECONDARY,
-            borderRadius,
+            textTransform: "none",
+            fontWeight: 400,
+            borderRadius: 0,
+            px: 2,
+            py: 1.25,
             width: languages.length < 5 ? "12rem" : "8.335rem",
+            minWidth: languages.length < 5 ? "12rem" : "8.335rem",
+            color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+            bgcolor: "transparent",
             boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.PRIMARY}`
+            borderBottom: "2px solid",
+            borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+            mb: "-1px",
+            "&:hover": {
+              bgcolor: "rgba(0, 0, 0, 0.04)",
+              color: CustomPalette.BLACK
+            }
           }}
         >
-          <Typography noWrap={true} variant="button">
-            {language}
+          <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
+            {t(language, { defaultValue: language })}
           </Typography>
         </Button>
       );
     });
-    return languageRowDisplay;
-  };
 
-  const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
-    <Box key={index}>{createLanguageRow(languageSegment, index)}</Box>
-  ));
+  const addPageButton = (
+    <Button
+      startIcon={<AddIcon />}
+      onClick={handleAddPage}
+      variant="contained"
+      color="button"
+      sx={{
+        flexShrink: 0,
+        alignSelf: "flex-end",
+        backgroundColor: CustomPalette.PRIMARY,
+        "&:hover": {
+          backgroundColor: CustomPalette.DARK
+        }
+      }}
+    >
+      {t("Add Page")}
+    </Button>
+  );
+
+  const languageButtonDisplay = [];
+  if (displayLanguageArray.length === 0) {
+    languageButtonDisplay.push(
+      <Box
+        key="add-page-only"
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          width: "100%",
+          borderBottom: `1px solid ${CustomPalette.GREY_300}`
+        }}
+      >
+        {addPageButton}
+      </Box>
+    );
+  } else {
+    displayLanguageArray.forEach((languageSegment, index) => {
+      const isLast = index === displayLanguageArray.length - 1;
+      if (!isLast) {
+        languageButtonDisplay.push(
+          <Box
+            key={index}
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "flex-end",
+              alignSelf: "flex-start",
+              borderBottom: `1px solid ${CustomPalette.GREY_300}`
+            }}
+          >
+            {renderLanguageTabButtons(languageSegment)}
+          </Box>
+        );
+      } else {
+        languageButtonDisplay.push(
+          <Box
+            key={index}
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              gap: 1,
+              width: "100%"
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "flex-end",
+                minWidth: 0,
+                borderBottom: `1px solid ${CustomPalette.GREY_300}`
+              }}
+            >
+              {renderLanguageTabButtons(languageSegment)}
+            </Box>
+            {addPageButton}
+          </Box>
+        );
+      }
+    });
+  }
 
   return (
     <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={handleBack}>
       <DndProvider backend={HTML5Backend}>
-        <Box sx={{ margin: "2rem" }}>
-          {/* Language Tabs*/}
+        <Box sx={{ margin: "2rem", marginTop: "0.5rem", marginBottom: BETWEEN_SECTION_SPACING }}>
+          <Box sx={{ mb: 1 }}>
+            <Typography variant="h4" sx={{ fontWeight: "bold", color: primaryColor, textAlign: "center", mb: 4 }}>
+              {t("Layout Builder")}
+            </Typography>
+          </Box>
+
           <Box
             sx={{
+              position: "relative",
               display: "flex",
-              flexDirection: "column-reverse",
-              alignItems: languages.length < 6 ? "flex-start" : "flex-end",
-              mb: 2
+              flexDirection: "column",
+              alignItems: "flex-start",
+              mb: 2,
+              gap: 1
             }}
           >
-            {languageButtonDisplay}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1, width: "100%" }}>
+              {languageButtonDisplay}
+            </Box>
+            <Box
+              sx={{
+                position: "absolute",
+                right: "100%",
+                top: "50%",
+                transform: "translateY(-50%)",
+                marginRight: 1,
+                color: CustomPalette.GREY_600
+              }}
+            >
+              <Tooltip
+                title={t("Toggles between the one or more languages used in the schema")}
+                placement="left"
+                arrow
+                PopperProps={{
+                  sx: { "& .MuiTooltip-tooltip": { width: 100 } }
+                }}
+              >
+                <HelpOutlineIcon sx={{ fontSize: 15 }} />
+              </Tooltip>
+            </Box>
           </Box>
+
           <Box
             sx={{
-              textAlign: "left",
-              transform: "translate(-25px, -25px)",
-              color: CustomPalette.GREY_600,
-              height: "0rem"
-            }}
-          >
-            <Tooltip
-              title={t("Toggles between the one or more languages used in the schema")}
-              placement="left"
-              arrow
-              PopperProps={{
-                sx: { "& .MuiTooltip-tooltip": { width: 100 } }
-              }}
-            >
-              <HelpOutlineIcon sx={{ fontSize: 15 }} />
-            </Tooltip>
-          </Box>
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: CustomPalette.GREY_800 }}>
-              {t("Form Builder")}
-            </Typography>
-            <Button 
-              startIcon={<AddIcon />} 
-              onClick={handleAddPage} 
-              variant="contained" 
-              color="button"
-              sx={{ 
-                backgroundColor: CustomPalette.PRIMARY,
-                '&:hover': {
-                  backgroundColor: CustomPalette.DARK
-                }
-              }}
-            >
-              {t("Add Page")}
-            </Button>
-          </Box>
-
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="body1" sx={{ color: CustomPalette.GREY_600 }}>
-              {t("Drag attributes from the left into pages or sections. Each attribute can be used once.")}
-            </Typography>
-          </Box>
-
-          <Box 
-            sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '320px 1fr' }, 
-              gap: 3, 
-              alignItems: 'start'
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "320px 1fr" },
+              gap: 3,
+              alignItems: "start"
             }}
           >
             <AttributePalette
@@ -571,8 +640,7 @@ const FormBuilder = () => {
               currentLanguage={currentLanguage}
               languages={languages}
             />
-
-            <Box sx={{ width: '100%' }}>
+            <Box sx={{ width: "100%" }}>
               {pages.map((page, pageIndex) => (
               <DroppablePage
                   key={page.id}
@@ -602,7 +670,14 @@ const FormBuilder = () => {
         </Box>
       </DndProvider>
 
-      <QuestionEditorDialog open={showQuestionDialog} onClose={() => setShowQuestionDialog(false)} question={editingQuestion} onSave={handleSaveQuestion} languages={languages} />
+      <QuestionEditorDialog
+        open={showQuestionDialog}
+        onClose={() => setShowQuestionDialog(false)}
+        question={editingQuestion}
+        onSave={handleSaveQuestion}
+        languages={languages}
+        childAttributeOptions={childAttributeOptionsByParent[editingQuestion?.attribute] || []}
+      />
       <SectionEditorDialog open={showSectionDialog} onClose={() => setShowSectionDialog(false)} section={editingSection} onSave={handleSaveSection} languages={languages} />
       <PageEditorDialog open={showPageDialog} onClose={() => setShowPageDialog(false)} page={editingPage} onSave={handleSavePage} languages={languages} />
     </BackNextSkeleton>

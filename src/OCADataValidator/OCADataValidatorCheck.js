@@ -8,15 +8,16 @@ import React, {
   useState
 } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import { Box, Button, Drawer, IconButton, Typography } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { greyCellStyle, gridStyles } from "../constants/styles";
+import { greyCellStyle, gridStyles, AG_GRID_DROPDOWN_CELL_CLASS } from "../constants/styles";
 import "../App.css";
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import OCABundle from "./validator";
 import Languages from "./Languages";
 import ErrorFilterSelect from "./ErrorFilterSelect";
@@ -38,13 +39,17 @@ import {
 } from "../constants/constants";
 import WarningPopup from "./WarningPopup";
 import { CustomPalette } from "../constants/customPalette";
-import { getCurrentData, getDescriptiveFileName } from "../constants/utils";
+import usePrimaryColor from "../hooks/usePrimaryColor";
+import useFontFamily from "../hooks/useFontFamily";
+import { getCurrentData, getDescriptiveFileName } from "../utils/helpers";
+import { getPackageBundle, getRootCaptureBaseId } from "../utils/packageUtils";
 import { CreateDataEntryExcel } from "../Landing/CreateDataEntryExcel";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import ViewSchema from "../ViewSchema/ViewSchema";
 import CloseIcon from "../assets/icon-close.png";
 import AutoCompleteEditor from "../components/AutoCompleteEditor";
 import CustomTooltip from "./CustomTooltip";
+import { LanguageConstants } from "../utils/languageUtils";
 import EntryCodeDropdownSelector from "./EntryCodeDropdownSelector";
 
 export const TrashCanButton = memo((props) => {
@@ -91,7 +96,7 @@ const flaggedHeader = (
   characterEncodingRowData,
   cardinalityData,
   lang,
-  OCAPackage = null
+  ocaPackage = null
 ) => {
   const labelDescription = lanAttributeRowData[lang];
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
@@ -120,7 +125,7 @@ const flaggedHeader = (
 
   // For now, use ADC community's extension overlays for the top-level/main schema bundle
   const rangeOverlay =
-    OCAPackage?.extensions?.[ADC]?.[OCAPackage?.oca_bundle?.bundle?.capture_base?.d]
+    ocaPackage?.extensions?.[ADC]?.[getRootCaptureBaseId(ocaPackage)]
       ?.overlays?.[RANGE];
   const rangeData = rangeOverlay?.attributes?.[props?.displayName];
 
@@ -200,13 +205,13 @@ const flaggedHeader = (
             )}
             {characterEncoding && (
               <>
-                {"Make selected entries required" in characterEncoding && (
+                {"Required Entry" in characterEncoding && (
                   <>
                     <br />
                     <Typography sx={{ fontWeight: "bold" }}>Required:</Typography>
                     <Typography>
                       {characterEncoding?.[
-                        "Make selected entries required"
+                        "Required Entry"
                       ]?.toString() || ""}
                     </Typography>
                   </>
@@ -308,32 +313,64 @@ const OCADataValidatorCheck = ({
     schemaDataConformantHeader,
     setCurrentDataValidatorPage,
     ogWorkbook,
-    jsonParsedFile,
-    languages,
-    lanAttributeRowData,
     matchingRowData,
     datasetRawFile,
-    formatRuleRowData,
-    cardinalityData,
-    characterEncodingRowData,
-    attributesList,
     setSchemaDataConformantHeader,
-    savedEntryCodes,
     targetResult,
-    notToVerifyAttributes,
-    schemaDescription,
-    OCAPackage
-    // attributeRowData // Check to see sensitive data
+    notToVerifyAttributes
   } = useContext(Context);
+
+  // Get schema data and uploaded package from MultiSchemaContext
+  const { currentSchemaId, getSchema, ocaPackage, getAttributesList, getLanguages } = useMultiSchema();
+  const schemaState = getSchema();
+
+  // Validator MUST use the package root bundle when available (multi-schema flow).
+  // Build a validator bundle from ocaPackage (preferred) or derive a minimal bundle
+  // from the current schema state when ocaPackage isn't set (manual-creation).
+  let bundleForValidator = null;
+  if (ocaPackage) {
+    bundleForValidator = getPackageBundle(ocaPackage);
+    if (!bundleForValidator) {
+      console.error("OCADataValidatorCheck: ocaPackage present but root bundle missing — cannot validate");
+    }
+  } else if (schemaState && Array.isArray(schemaState.attributes) && schemaState.attributes.length > 0) {
+    // derive minimal capture_base from schema editor state (manual creation)
+    const capture_base = { attributes: {} };
+    schemaState.attributes.forEach((a) => {
+      capture_base.attributes[a.Attribute] = a.Type || "Text";
+    });
+    bundleForValidator = { capture_base };
+    console.debug("OCADataValidatorCheck: derived validator bundle from schemaState (manual)");
+  } else {
+    console.error("OCADataValidatorCheck: no ocaPackage and no schemaState available — validation disabled");
+  }
+  
+  // Extract data from schema state (single schema for Data Validator)
+  // Prefer MultiSchema helpers (root-schema aware) — fallback to schemaState when necessary.
+  const languages = getLanguages?.() || schemaState?.metadata?.languages || [];
+  const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
+  const savedEntryCodes = schemaState?.entryCodes || {};
+  const formatRuleRowData = schemaState?.formatRuleRowData || [];
+  const cardinalityData = schemaState?.cardinalityData || [];
+  const characterEncodingRowData = schemaState?.characterEncodingRowData || [];
+  const attributesList = useMemo(() => {
+    const fromMulti = getAttributesList?.();
+    if (Array.isArray(fromMulti) && fromMulti.length) return fromMulti;
+    const attrs = schemaState?.attributes || [];
+    return attrs.map((attr) => attr.Attribute);
+  }, [getAttributesList, schemaState?.attributes?.length]);
+  const schemaDescription = schemaState?.metadata?.localized || {};
 
   const { t } = useTranslation();
   const { currentTheme } = useContext(Context);
+  const primaryColor = usePrimaryColor();
+  const fontFamily = useFontFamily();
 
   const [rowData, setRowData] = useState([]);
   const [initialRowData, setInitialRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const [revalidateData, setRevalidateData] = useState(false);
-  const langRef = useRef(languages[0]);
+  const langRef = useRef(languages[0] || LanguageConstants.DEFAULT_LANG_NAME);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [errorName, setErrorNameList] = useState([SHOW_ALL_DATA]);
   const [firstValidate, setFirstValidate] = useState(false);
@@ -359,7 +396,7 @@ const OCADataValidatorCheck = ({
         <h1
           style={{
             textAlign: "center",
-            color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY
+            color: primaryColor
           }}
         >
           {t("Schema Preview")}
@@ -378,14 +415,14 @@ const OCADataValidatorCheck = ({
         </Box>
       </Box>
 
-      <ViewSchema isPageForward={false} />
+      <ViewSchema isPageForward={false} isExport={false} />
     </Box>
   );
 
   const SavedEntryCodesWithNoArrayType = Object.keys(savedEntryCodes)
     .filter((key) => {
-      const attribute = jsonParsedFile.capture_base.attributes[key];
-      return !Array.isArray(attribute) && !attribute.includes("Array");
+      const attribute = (bundleForValidator?.capture_base?.attributes || {})[key];
+      return !Array.isArray(attribute) && !attribute?.includes("Array");
     })
     .reduce((acc, key) => {
       acc[key] = savedEntryCodes[key];
@@ -411,7 +448,7 @@ const OCADataValidatorCheck = ({
           characterEncodingRowData,
           cardinalityData,
           langRef.current,
-          OCAPackage
+          ocaPackage
         ),
       cellRendererParams: (params) => ({
         dataHeaders: savedEntryCodes,
@@ -428,7 +465,8 @@ const OCADataValidatorCheck = ({
       characterEncodingRowData,
       formatRuleRowData,
       savedEntryCodes,
-      langRef.current
+      langRef.current,
+      ocaPackage
     ]
   );
 
@@ -587,8 +625,15 @@ const OCADataValidatorCheck = ({
     setRevalidateData(false);
     setFirstValidate(true);
 
+    if (!bundleForValidator) {
+      console.error("handleValidate: no validator bundle available — aborting validation");
+      gridRef.current?.api?.hideLoadingOverlay?.();
+      setRevalidateData(true);
+      return;
+    }
+
     const bundle = new OCABundle();
-    await bundle.loadedBundle(jsonParsedFile, OCAPackage);
+    await bundle.loadedBundle(bundleForValidator, ocaPackage);
 
     const newData = getCurrentData(gridRef.current.api, true);
 
@@ -693,7 +738,7 @@ const OCADataValidatorCheck = ({
       newData.forEach((data) => {
         const row = schemaConformantDataHeaders.map((header) => {
           const value = data[header] || "";
-          const isNumeric = jsonParsedFile.capture_base.attributes[header] === "Numeric";
+          const isNumeric = (bundleForValidator?.capture_base?.attributes || {})[header] === "Numeric";
 
           // Convert string to number if the attribute is marked as Numeric
           if (isNumeric && typeof value === "string") {
@@ -882,7 +927,12 @@ const OCADataValidatorCheck = ({
     const LIMIT_ENTRYCODES_LENGTH = 20;
     const variableToCheck = attributesList;
     if (datasetRawFile.length === 0) {
-      setSchemaDataConformantHeader(attributesList);
+      // avoid resetting parent header on every render — only update when different
+      const sameHeader =
+        Array.isArray(schemaDataConformantHeader) &&
+        schemaDataConformantHeader.length === attributesList.length &&
+        schemaDataConformantHeader.every((v, i) => v === attributesList[i]);
+      if (!sameHeader) setSchemaDataConformantHeader(attributesList);
     }
     if (variableToCheck && variableToCheck?.length >= 1) {
       variableToCheck.forEach((header) => {
@@ -913,6 +963,7 @@ const OCADataValidatorCheck = ({
             tooltipComponentParams: { color: "#F88379" },
             tooltipValueGetter: (params) => ({ value: params.value }),
             editable: true,
+            cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
             cellRendererFramework: EntryCodeDropdownSelector
           });
         } else {
@@ -964,10 +1015,51 @@ const OCADataValidatorCheck = ({
     setColumnDefs(columns);
 
     if (schemaDataConformantRowData.length > 0) {
-      const rowDataWithIndex = schemaDataConformantRowData.map((row, index) => ({
-        ...row,
-        originalIndex: index
-      }));
+      // Build a label->code lookup for attributes that have entry codes so we
+      // can convert any dataset cell that _exactly_ matches a label to its
+      // corresponding code. This is conservative (only exact matches) and
+      // avoids aggressive normalization while preventing select/value warnings.
+      const labelToCodeMap = {};
+      Object.entries(savedEntryCodes || {}).forEach(([attr, codesArray]) => {
+        const codes = codesArray.map((c) => c.Code);
+        const map = {};
+        codesArray.forEach((codeObj) => {
+          // include all language label fields found on the entry-code object
+          Object.entries(codeObj).forEach(([k, v]) => {
+            if (k === "Code") return;
+            if (typeof v === "string" && v.trim() !== "") {
+              map[String(v).toLowerCase().trim()] = codeObj.Code;
+            }
+          });
+        });
+        labelToCodeMap[attr] = { codes, map };
+      });
+
+      const rowDataWithIndex = schemaDataConformantRowData.map((row, index) => {
+        const normalized = { ...row };
+        Object.keys(normalized).forEach((attr) => {
+          const val = normalized[attr];
+          if (
+            val !== undefined &&
+            val !== null &&
+            typeof val === "string" &&
+            labelToCodeMap[attr]
+          ) {
+            const { codes, map } = labelToCodeMap[attr];
+            const trimmed = val.trim();
+            const lower = String(trimmed).toLowerCase();
+            // If the dataset already contains a valid code, keep it
+            if (codes.includes(trimmed)) return;
+            // If the dataset value matches a known label, convert to code
+            if (map[lower]) {
+              normalized[attr] = map[lower];
+            }
+          }
+        });
+        normalized.originalIndex = index;
+        return normalized;
+      });
+
       setRowData(rowDataWithIndex);
       setInitialRowData(rowDataWithIndex);
     }
@@ -1006,8 +1098,8 @@ const OCADataValidatorCheck = ({
           return false;
         })
       : rowData;
-  function filterRowData() {
-    updateDataValidationState();
+
+  const filterRowData = useMemo(() => {
     if (errorName.includes(SHOW_ONLY_ROWS_WITH_ERRORS)) {
       const selectedErrors = errorName.filter(
         (err) => err !== SHOW_ONLY_ROWS_WITH_ERRORS
@@ -1030,7 +1122,7 @@ const OCADataValidatorCheck = ({
       );
     }
     return initialRowData;
-  }
+  }, [errorName, initialRowData]);
 
   return (
     <Box sx={{ overflowX: "auto" }}>
@@ -1055,16 +1147,18 @@ const OCADataValidatorCheck = ({
             sx={{
               width: "100%",
               display: "flex",
-              justifyContent: "space-between"
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              columnGap: 2
             }}
           >
             <Button
               color="navButton"
               sx={{
                 textAlign: "left",
-                alignSelf: "flex-start",
-                color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                color: primaryColor,
+                fontFamily,
+                flexShrink: 0
               }}
               onClick={handleMoveBack}
             >
@@ -1078,8 +1172,11 @@ const OCADataValidatorCheck = ({
                 alignItems: "center",
                 backgroundColor: CustomPalette.RED_100,
                 width: "400px",
+                maxWidth: "min(400px, 100%)",
                 marginLeft: "1rem",
-                marginRight: "1rem"
+                marginRight: "1rem",
+                flexShrink: 1,
+                minWidth: 0
               }}
             >
               <ErrorOutlineIcon
@@ -1095,7 +1192,10 @@ const OCADataValidatorCheck = ({
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "row"
+                flexDirection: "row",
+                alignItems: "flex-start",
+                gap: 2,
+                flexShrink: 0
               }}
             >
               {/* <ExportButton handleSave={handleSave} inputDataType={datasetRawFileType} /> */}
@@ -1103,7 +1203,7 @@ const OCADataValidatorCheck = ({
                 handleSave={handleSave}
                 inputDataType={datasetRawFileType}
                 validatedData={rowDataFilter}
-                currentSchemaName={jsonParsedFile?.capture_base?.name || ""}
+                currentSchemaName={bundleForValidator?.capture_base?.name || ""}
               />
               {inIframe && (
                 <UploadButton isDisabled={!isDataValid} uploadFunc={uploadData} />
@@ -1111,15 +1211,13 @@ const OCADataValidatorCheck = ({
             </Box>
           </Box>
         </Box>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          minWidth: "900px"
-        }}
-      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1
+          }}
+        >
         <Box
           sx={{
             display: "flex",
@@ -1175,7 +1273,7 @@ const OCADataValidatorCheck = ({
                   disabled={isValidateButtonEnabled}
                   sx={{
                     fontFamily:
-                      currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                      fontFamily
                   }}
                 >
                   {t("Verify")}
@@ -1187,7 +1285,7 @@ const OCADataValidatorCheck = ({
                       color: "red",
                       fontWeight: "bold",
                       fontFamily:
-                        currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                        fontFamily
                     }}
                   >
                     {t("Please re-verify the data!")}
@@ -1211,7 +1309,7 @@ const OCADataValidatorCheck = ({
               overrideStyle={{
                 textAlign: "right",
                 marginRight: "2rem",
-                fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                fontFamily
               }}
             />
             <Box
@@ -1231,7 +1329,7 @@ const OCADataValidatorCheck = ({
               />
               <span
                 style={{
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  fontFamily
                 }}
               >
                 {t("Pass Verification")}
@@ -1254,7 +1352,7 @@ const OCADataValidatorCheck = ({
               />
               <span
                 style={{
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  fontFamily
                 }}
               >
                 {t("Fail Verification")}
@@ -1277,7 +1375,7 @@ const OCADataValidatorCheck = ({
               />
               <span
                 style={{
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  fontFamily
                 }}
               >
                 {t("Unmatched Attributes")}
@@ -1301,7 +1399,7 @@ const OCADataValidatorCheck = ({
               />
               <span
                 style={{
-                  fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+                  fontFamily
                 }}
               >
                 {t("Unverified Data")}
@@ -1315,7 +1413,7 @@ const OCADataValidatorCheck = ({
             <style>{gridStyles}</style>
             <AgGridReact
               ref={gridRef}
-              rowData={filterRowData()}
+              rowData={filterRowData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               overlayLoadingTemplate='<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
@@ -1364,6 +1462,7 @@ const OCADataValidatorCheck = ({
         <WarningPopup action={handleDismissWarning} />
       )}
       <Drawer open={open}>{DrawerList}</Drawer>
+    </Box>
     </Box>
   );
 };

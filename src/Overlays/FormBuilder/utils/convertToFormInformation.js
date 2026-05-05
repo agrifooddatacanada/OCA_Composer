@@ -1,4 +1,9 @@
-import { languageNameToAlpha3Codes } from "../../../constants/isoCodes";
+import { langCodeOCAFromName } from "../../../utils/languageUtils";
+import {
+  isReferenceQuestion,
+  normalizeReferenceButtonTextMap,
+  normalizeShowingAttribute
+} from "./referenceQuestionUtils";
 
 const getQuestionTypeInfo = (attributeType) => {
   const type = attributeType || "";
@@ -9,6 +14,24 @@ const getQuestionTypeInfo = (attributeType) => {
     isNumericType: type === "Numeric" || type === "Array[Numeric]",
     isDateTimeType: type === "DateTime" || type === "Array[DateTime]"
   };
+};
+
+/**
+ * Visit each question on pages in stable order (section questions, then direct page questions).
+ * @param {Array} pages
+ * @param {(q: object) => void} onQuestion
+ */
+const walkFormBuilderQuestions = (pages, onQuestion) => {
+  (pages || []).forEach((page) => {
+    (page.sections || []).forEach((section) => {
+      (section.questions || []).forEach((q) => {
+        if (q?.attribute) onQuestion(q);
+      });
+    });
+    (page.questions || []).forEach((q) => {
+      if (q?.attribute && !q.sectionId) onQuestion(q);
+    });
+  });
 };
 
 const processPlaceholder = (question, threeLetterCodes, languages) => {
@@ -45,7 +68,6 @@ const processDescription = (question, threeLetterCodes, languages) => {
     }
   });
 
-  // Only return description if at least one language has non-empty content
   const hasDescription = Object.values(descriptionObj).some(
     (desc) => desc && typeof desc === "string" && desc.trim().length > 0
   );
@@ -53,10 +75,24 @@ const processDescription = (question, threeLetterCodes, languages) => {
   return { descriptionObj, hasDescription };
 };
 
-const processQuestionForInteraction = (question, threeLetterCodes, languages) => {
+/**
+ * Build one attribute's `interaction[0].arguments[attr]` object.
+ * @param {object} question
+ * @param {string[]} threeLetterCodes
+ * @param {string[]} languages
+ * @param {{ referenceLangIndex: number }} options - index into `languages` for per-overlay `reference_button_text` string
+ */
+const processQuestionForInteraction = (
+  question,
+  threeLetterCodes,
+  languages,
+  options
+) => {
+  const { referenceLangIndex } = options;
   const { attributeType, isBooleanType } = getQuestionTypeInfo(
     question.attributeType || question.type
   );
+  const isReferenceQuestionField = isReferenceQuestion(question);
   const { placeholderObj, supportsPlaceholder } = processPlaceholder(
     question,
     threeLetterCodes,
@@ -72,14 +108,43 @@ const processQuestionForInteraction = (question, threeLetterCodes, languages) =>
     : null;
   const hasOptions =
     question.options && Array.isArray(question.options) && question.options.length > 0;
+  const referenceButtonTextMap = normalizeReferenceButtonTextMap(
+    question.referenceButtonText || question.reference_button_text,
+    languages
+  );
+
+  let referenceButtonTextForOverlay = "";
+  if (
+    isReferenceQuestionField &&
+    typeof referenceLangIndex === "number" &&
+    languages[referenceLangIndex] !== undefined
+  ) {
+    const langName = languages[referenceLangIndex];
+    const raw = referenceButtonTextMap[langName];
+    if (typeof raw === "string" && raw.trim()) {
+      referenceButtonTextForOverlay = raw.trim();
+    }
+  }
+
+  const showingAttribute = normalizeShowingAttribute(
+    question.showingAttribute || question.showing_attribute
+  );
 
   return {
-    type: attributeType,
+    type: isReferenceQuestionField ? "reference" : attributeType,
     ...(supportsPlaceholder &&
       Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
     ...(hasDescription && { description: descriptionObj }),
     ...(booleanOptions && { options: booleanOptions }),
-    ...(hasOptions && question.inputType && { input_type: question.inputType })
+    ...(hasOptions && question.inputType && { input_type: question.inputType }),
+    ...(isReferenceQuestionField &&
+      referenceButtonTextForOverlay && {
+        reference_button_text: referenceButtonTextForOverlay
+      }),
+    ...(isReferenceQuestionField &&
+      showingAttribute.length > 0 && {
+        showing_attribute: showingAttribute
+      })
   };
 };
 
@@ -95,18 +160,44 @@ const addQuestionDescriptionToObject = (
     const originalLang = languages[index];
     const questionDesc = question.description?.[originalLang];
 
-    // Only add if description exists and is not empty after trimming
     if (
       questionDesc &&
       typeof questionDesc === "string" &&
       questionDesc.trim().length > 0
     ) {
-      // Don't overwrite existing descriptions (defensive check)
       if (!description[langCode][question.attribute]) {
         description[langCode][question.attribute] = questionDesc;
       }
     }
   });
+};
+
+/**
+ * Form overlay `interaction` for a single exported language overlay (ADC / bundle).
+ * @param {Array} pages - Form Builder pages
+ * @param {string[]} languages - UI language names aligned with schema
+ * @param {number} langIndex - index into `languages` / exported overlay list
+ * @returns {[{ arguments: Record<string, object> }]}
+ */
+export const buildFormOverlayInteraction = (pages, languages, langIndex) => {
+  const threeLetterCodes = languages.map((lang) => {
+    if (lang.length === 3) return lang;
+    return langCodeOCAFromName(lang);
+  });
+
+  const argumentsObj = {};
+  walkFormBuilderQuestions(pages, (q) => {
+    argumentsObj[q.attribute] = processQuestionForInteraction(
+      q,
+      threeLetterCodes,
+      languages,
+      {
+        referenceLangIndex: langIndex
+      }
+    );
+  });
+
+  return [{ arguments: argumentsObj }];
 };
 
 export const convertToFormInformation = (pages) => {
@@ -142,12 +233,10 @@ export const convertToFormInformationOverlay = (
   const sidebarLabel = {};
   const description = {};
   const title = {};
-  const interaction = [{ arguments: {} }];
 
-  // Convert language names to three-letter codes for the overlay structure
   const threeLetterCodes = languages.map((lang) => {
     if (lang.length === 3) return lang;
-    return languageNameToAlpha3Codes[lang.toLowerCase()] || lang;
+    return langCodeOCAFromName(lang);
   });
 
   threeLetterCodes.forEach((lang) => {
@@ -197,18 +286,12 @@ export const convertToFormInformationOverlay = (
 
         section.questions.forEach((q) => {
           if (q?.attribute) {
-            interaction[0].arguments[q.attribute] = processQuestionForInteraction(
-              q,
-              threeLetterCodes,
-              languages
-            );
             addQuestionDescriptionToObject(q, description, threeLetterCodes, languages);
           }
         });
       }
     });
 
-    // Process direct page questions (not in sections)
     const directQuestions = (page.questions || [])
       .filter((q) => !q.sectionId)
       .map((q) => q.attribute)
@@ -219,11 +302,6 @@ export const convertToFormInformationOverlay = (
 
       page.questions.forEach((q) => {
         if (q?.attribute && !q.sectionId) {
-          interaction[0].arguments[q.attribute] = processQuestionForInteraction(
-            q,
-            threeLetterCodes,
-            languages
-          );
           addQuestionDescriptionToObject(q, description, threeLetterCodes, languages);
         }
       });
@@ -238,7 +316,6 @@ export const convertToFormInformationOverlay = (
     page_labels: pageLabels,
     sidebar_label: sidebarLabel,
     description,
-    interaction,
     title
   };
 };

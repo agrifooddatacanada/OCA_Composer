@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Box } from "@mui/material";
-import CellHeader from "../components/CellHeader";
+import CheckboxColumnHeader from "./CheckboxColumnHeader";
 
 const FlaggedHeader = ({ gridRef }) => {
   const { t } = useTranslation();
@@ -10,7 +9,7 @@ const FlaggedHeader = ({ gridRef }) => {
   const handleCheckboxChange = (event) => {
     const { checked } = event.target;
     gridRef.current.api.forEachNode((node) => {
-      node.setDataValue("Flagged", checked);
+      node.setDataValue("Sensitive", checked);
     });
   };
 
@@ -19,13 +18,8 @@ const FlaggedHeader = ({ gridRef }) => {
   }, []);
 
   return (
-    <CellHeader
-      headerText={
-        <Box sx={{ display: "flex", direction: "row", alignItems: "center" }}>
-          {t("Sensitive")}{" "}
-          <input type="checkbox" ref={inputRef} onChange={handleCheckboxChange} />
-        </Box>
-      }
+    <CheckboxColumnHeader
+      label={t("Sensitive")}
       helpText={
         <>
           <div>
@@ -35,6 +29,8 @@ const FlaggedHeader = ({ gridRef }) => {
           <div>{t("Examples of PII include names, locations, postal codes...")}</div>
         </>
       }
+      onCheckboxChange={handleCheckboxChange}
+      inputRef={inputRef}
     />
   );
 };

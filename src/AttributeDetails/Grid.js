@@ -1,20 +1,34 @@
-import React, { useState, useRef, useEffect, useContext, useCallback } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "ag-grid-react";
-
-import { Context } from "../App";
+import { AgGridReact } from "../components/AgGridReact";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 
 import TypeTooltip from "./TypeTooltip";
 import CellHeader from "../components/CellHeader";
-import { flexCenter, preWrapWordBreak } from "../constants/styles";
+import TextareaCellEditor from "../components/TextareaCellEditor";
+import { measureTextHeight } from "../utils/measureTextLines";
+import {
+  AG_GRID_DROPDOWN_CELL_CLASS,
+  flexCenter,
+  gridStyles,
+  preWrapWordBreak
+} from "../constants/styles";
 import CheckboxRenderer from "./CheckboxRenderer";
 import FlaggedHeader from "./FlaggedHeader";
 import ListHeader from "./ListHeader";
 import DeleteRenderer from "./DeleteRenderer";
 import TypeRenderer from "./TypeRenderer";
+import { useMultiSchema } from "../schema/schemaContext";
+import {
+  AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX,
+  AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX,
+  AG_GRID_VIRTUALIZE_MIN_ROWS,
+  isUnitEligibleAttributeType
+} from "../constants/constants";
+
+const ATTRIBUTE_GRID_COLUMN_SUM_PX = 40 + 150 + 125 + 128 + 150 + 100 + 44;
 
 // styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
 const gridStyle = `
@@ -27,6 +41,49 @@ const gridStyle = `
   }
   .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
     height: 100%;
+  }
+  .unit-cell-disabled {
+    color: rgba(0, 0, 0, 0.38);
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .ag-row .delete-icon-solid {
+    display: none;
+  }
+  .delete-icon-wrapper:hover .delete-icon-outline {
+    display: none;
+  }
+  .delete-icon-wrapper:hover .delete-icon-solid {
+    display: inline-flex;
+  }
+  .ag-header-cell:last-child,
+  .ag-header-cell[col-id="Delete"] {
+    border-right: none !important;
+    --ag-header-column-separator-display: none !important;
+  }
+  .ag-header-cell:last-child *,
+  .ag-header-cell[col-id="Delete"] * {
+    border-right: none !important;
+    box-shadow: none !important;
+  }
+  .ag-header-viewport .ag-header-cell:last-child {
+    border-right: none !important;
+  }
+  .ag-header-container {
+    border-right: none !important;
+  }
+  .ag-center-cols-viewport .ag-cell:last-child {
+    border-right: none !important;
+  }
+  .ag-header-row .ag-header-cell:last-child::after {
+    display: none !important;
+  }
+  .attribute-details-grid .ag-header-cell[col-id="Sensitive"] input[type="checkbox"],
+  .attribute-details-grid .ag-header-cell[col-id="List"] input[type="checkbox"],
+  .attribute-details-grid .ag-cell[col-id="Sensitive"] input[type="checkbox"],
+  .attribute-details-grid .ag-cell[col-id="List"] input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    margin: 0;
   }
   `;
 
@@ -42,22 +99,152 @@ export default function Grid({
   setCanDelete,
   setAddByTab,
   typesObjectRef,
-  setLoading
+  loading,
+  setLoading,
+  attributeRowData,
+  setAttributeRowData,
+  triggerInvalidCharModal
 }) {
-  const { t } = useTranslation();
-  const {
-    attributesList,
-    setAttributesList,
-    attributeRowData,
-    setAttributeRowData,
-    lanAttributeRowData,
-    setLanAttributeRowData,
-    setCharacterEncodingRowData,
-    setFormatRuleRowData,
-    setCardinalityData,
-    setAttributesWithLists,
-    setSavedEntryCodes
-  } = useContext(Context);
+  const { t, i18n } = useTranslation();
+  const attrGridFixedViewport =
+    attributeRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const noAttributes = attributeRowData.length === 0;
+  const attributeGridViewportStyle = useMemo(
+    () => `
+  .attribute-details-grid.ag-theme-balham {
+    ${attrGridFixedViewport ? "height: min(70vh, 560px);" : ""}
+    min-height: ${noAttributes ? AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX : 120}px;
+  }
+  .attribute-details-grid .ag-root-wrapper {
+    height: ${attrGridFixedViewport ? "100%" : "auto"};
+  }
+  ${
+    noAttributes && !attrGridFixedViewport
+      ? `
+  .attribute-details-grid .ag-body-viewport {
+    min-height: ${AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX}px !important;
+  }
+  `
+      : ""
+  }
+`,
+    [attrGridFixedViewport, noAttributes]
+  );
+
+  const { renameAttribute } = useMultiSchema();
+
+  const loadingRef = useRef(loading);
+  loadingRef.current = loading;
+  const endLoadCancelledRef = useRef(false);
+  const loadDebounceRafRef = useRef(null);
+  const gridShellRef = useRef(null);
+  const shellWidthRafRef = useRef(null);
+  const [outerShellWidthPx, setOuterShellWidthPx] = useState(
+    ATTRIBUTE_GRID_COLUMN_SUM_PX
+  );
+
+  const syncAttributeGridShellWidth = useCallback(() => {
+    const shell = gridShellRef.current;
+    if (!shell) return;
+    const vs = shell.querySelector(".ag-body-vertical-scroll");
+    const next =
+      !vs || vs.classList.contains("ag-scrollbar-invisible")
+        ? ATTRIBUTE_GRID_COLUMN_SUM_PX
+        : ATTRIBUTE_GRID_COLUMN_SUM_PX + vs.offsetWidth;
+    setOuterShellWidthPx((prev) => (prev !== next ? next : prev));
+  }, []);
+
+  const scheduleAttributeGridShellWidth = useCallback(() => {
+    if (shellWidthRafRef.current != null) return;
+    shellWidthRafRef.current = requestAnimationFrame(() => {
+      shellWidthRafRef.current = null;
+      syncAttributeGridShellWidth();
+    });
+  }, [syncAttributeGridShellWidth]);
+
+  useLayoutEffect(() => {
+    const shell = gridShellRef.current;
+    if (!shell) return undefined;
+    let ro = null;
+    let cancelled = false;
+    const frame = requestAnimationFrame(() => {
+      if (cancelled) return;
+      const vp = shell.querySelector(".ag-body-viewport");
+      if (!vp) {
+        scheduleAttributeGridShellWidth();
+        return;
+      }
+      ro = new ResizeObserver(() => {
+        if (!cancelled) scheduleAttributeGridShellWidth();
+      });
+      ro.observe(vp);
+      scheduleAttributeGridShellWidth();
+    });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      ro?.disconnect();
+    };
+  }, [
+    attrGridFixedViewport,
+    attributeRowData.length,
+    i18n.language,
+    scheduleAttributeGridShellWidth
+  ]);
+
+  useEffect(() => {
+    const onResize = () => scheduleAttributeGridShellWidth();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [scheduleAttributeGridShellWidth]);
+
+  const onGridReady = useCallback(() => {
+    scheduleAttributeGridShellWidth();
+  }, [scheduleAttributeGridShellWidth]);
+
+  useLayoutEffect(() => {
+    if (loading) {
+      endLoadCancelledRef.current = true;
+      if (loadDebounceRafRef.current != null) {
+        cancelAnimationFrame(loadDebounceRafRef.current);
+        loadDebounceRafRef.current = null;
+      }
+    }
+  }, [loading]);
+
+  const scheduleEndBlockingLoad = useCallback(() => {
+    if (!loadingRef.current) return;
+    endLoadCancelledRef.current = false;
+    if (loadDebounceRafRef.current != null) {
+      cancelAnimationFrame(loadDebounceRafRef.current);
+    }
+    loadDebounceRafRef.current = requestAnimationFrame(() => {
+      loadDebounceRafRef.current = null;
+      if (endLoadCancelledRef.current) return;
+      requestAnimationFrame(() => {
+        if (endLoadCancelledRef.current) return;
+        const api = gridRef.current?.api;
+        if (attributeRowData.length > 0 && !api) return;
+        if (api && attributeRowData.length > 0) api.resetRowHeights();
+        requestAnimationFrame(() => {
+          if (endLoadCancelledRef.current) return;
+          requestAnimationFrame(() => {
+            if (endLoadCancelledRef.current) return;
+            setLoading(false);
+          });
+        });
+      });
+    });
+  }, [attributeRowData, setLoading]);
+  
+  // Derive attributesList from attributeRowData (single source of truth)
+  const attributesList = useMemo(
+    () => attributeRowData.map((item) => item.Attribute),
+    [attributeRowData]
+  );
+  
+  // Note: attributesList is now computed - no need to update it separately
+  
   const [columnDefs, setColumnDefs] = useState([]);
   const canDrag = useRef(true);
 
@@ -68,9 +255,28 @@ export default function Grid({
 
   const dropRefs = useRef(attributeRowData.map(() => React.createRef()));
 
+  // Ensure stable row ids so rows don't disappear when toggling List or editing
+  useEffect(() => {
+    const missingId = attributeRowData.some((r) => !r._rid);
+    if (!missingId) return;
+    const stamped = Date.now();
+    const next = attributeRowData.map((r, i) =>
+      r._rid ? r : { ...r, _rid: `${stamped}_${i}` }
+    );
+    setAttributeRowData(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attributeRowData]);
+
   useEffect(() => {
     dropRefs.current = attributeRowData.map(() => React.createRef());
   }, [attributesList, attributeRowData]);
+
+  useEffect(() => {
+    const api = gridRef.current?.api;
+    if (!api || attributeRowData.length === 0) return;
+    const raf = requestAnimationFrame(() => api.resetRowHeights());
+    return () => cancelAnimationFrame(raf);
+  }, [attributeRowData]);
 
   useEffect(() => {
     setColumnDefs([
@@ -88,10 +294,14 @@ export default function Grid({
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),
-          helpText: t("This is the name for the attribute and, for example...")
+          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
         },
         editable: true,
-        autoHeight: true,
+        wrapText: true,
+        cellEditor: TextareaCellEditor,
+        cellEditorParams: {
+          context: { setErrorMessage, triggerInvalidCharModal }
+        },
         cellStyle: () => ({
           ...preWrapWordBreak,
           ...flexCenter
@@ -99,33 +309,36 @@ export default function Grid({
         width: 150
       },
       {
-        field: "Flagged",
+        field: "Sensitive",
         headerComponent: FlaggedHeader,
         headerComponentParams: {
           gridRef
         },
         cellRenderer: CheckboxRenderer,
-        cellRendererParams: {
-          gridRef
-        },
         checkboxSelection: false,
         cellStyle: () => flexCenter
       },
       {
         field: "Unit",
-        editable: true,
+        editable: (params) => isUnitEligibleAttributeType(params.data?.Type),
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Unit"),
           helpText: t(
-            "The units of each attribute (or leave blank if the attribute is..."
+            "The units of each attribute. Leave blank if the attribute is not a measurement and has no units."
           )
         },
-        autoHeight: true,
+        wrapText: true,
+        cellEditor: TextareaCellEditor,
+        valueGetter: (params) =>
+          isUnitEligibleAttributeType(params.data?.Type) ? params.data?.Unit || "" : "",
+        cellClass: (params) =>
+          isUnitEligibleAttributeType(params.data?.Type) ? "" : "unit-cell-disabled",
         cellStyle: () => ({
           ...preWrapWordBreak,
           ...flexCenter
-        })
+        }),
+        width: 128
       },
       {
         field: "Type",
@@ -134,12 +347,14 @@ export default function Grid({
           headerText: t("Type"),
           helpText: <TypeTooltip />
         },
+        cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
         cellRenderer: TypeRenderer,
         cellRendererParams: (params) => ({
           data: params.data,
           attributeRowData,
           typesObjectRef,
-          dropRefs
+          dropRefs,
+          setAttributeRowData
         }),
         width: 150
       },
@@ -151,7 +366,13 @@ export default function Grid({
         },
         cellRenderer: CheckboxRenderer,
         cellRendererParams: {
-          gridRef
+          onLocalToggle: (attributeName, checked) => {
+            setAttributeRowData((prev) =>
+              prev.map((row) =>
+                row.Attribute === attributeName ? { ...row, List: checked } : row
+              )
+            );
+          }
         },
         checkboxSelection: false,
         cellStyle: () => flexCenter,
@@ -165,16 +386,16 @@ export default function Grid({
           data: params.data,
           gridRef,
           typesObjectRef,
-          setAttributesList,
+          currentRows: attributeRowData,
           setAttributeRowData,
           canDelete,
           setCanDelete
         }),
         cellStyle: () => flexCenter,
-        width: 60
+        width: 44
       }
     ]);
-  }, [attributesList]);
+  }, [attributesList, attributeRowData, canDelete, typesObjectRef]);
 
   const defaultColDef = {
     width: 125
@@ -185,7 +406,31 @@ export default function Grid({
       const keyPressed = e.event.code;
       const isUnitRow = e.column.colId === "Unit";
       const isTypeColumn = e.column.colId === "Type";
+      const isUnitEditable = isUnitEligibleAttributeType(e.data?.Type);
+      if (isUnitRow && !isUnitEditable) {
+        if (e.event.shiftKey && keyPressed === "Tab" && e.rowIndex > 0) {
+          e.api.startEditingCell({
+            rowIndex: e.rowIndex,
+            colKey: "Attribute"
+          });
+          return;
+        }
+        if (keyPressed === "Tab") {
+          e.api.startEditingCell({
+            rowIndex: e.rowIndex,
+            colKey: "Type"
+          });
+          return;
+        }
+      }
       if (keyPressed === "Enter" && isUnitRow) {
+        if (!isUnitEditable) {
+          e.api.startEditingCell({
+            rowIndex: e.rowIndex,
+            colKey: "Type"
+          });
+          return;
+        }
         // Copies current cell value to cell below if it's empty
         const { api } = e;
         const editingRowIndex = e.rowIndex;
@@ -229,7 +474,7 @@ export default function Grid({
         }
       }
 
-      const tabbingColumns = ["Attribute", "Unit", "Type"];
+      const tabbingColumns = isUnitEditable ? ["Attribute", "Unit", "Type"] : ["Attribute", "Type"];
       const isShiftTab = e.event.shiftKey && keyPressed === "Tab";
       if (isShiftTab) {
         // Traverses grid backwards
@@ -260,14 +505,14 @@ export default function Grid({
               (attribute) => attribute.Attribute === currentAttributeName
             ) !== -1
           ) {
-            setErrorMessage(t("Please enter a unique attribute name"));
+            setErrorMessage(t("Please enter a unique name."));
             setTimeout(() => {
               setErrorMessage("");
             }, [2000]);
             return;
           }
           if (currentAttributeName === "") {
-            setErrorMessage(t("Please enter a unique attribute name"));
+            setErrorMessage(t("Please enter a name."));
             setTimeout(() => {
               setErrorMessage("");
             }, [2000]);
@@ -296,7 +541,7 @@ export default function Grid({
                 setAddByTab(false);
               }, 2);
             } catch (error) {
-              setErrorMessage("Something went wrong when adding cell by tab. Try again.");
+              setErrorMessage(t("Something went wrong when adding cell by tab. Try again."));
               setTimeout(() => {
                 setErrorMessage("");
               }, [2000]);
@@ -304,6 +549,13 @@ export default function Grid({
           }, waitTime);
           // Focuses correct next cell when tabbing
         } else if (e.column.colId === "Unit") {
+          if (!isUnitEditable) {
+            e.api.startEditingCell({
+              rowIndex: e.rowIndex,
+              colKey: "Type"
+            });
+            return;
+          }
           const typeColumn = e.columnApi.getColumn("Type");
           if (typeColumn) {
             e.api.setFocusedCell(e.rowIndex, "Type");
@@ -332,7 +584,7 @@ export default function Grid({
                 colKey: tabbingColumns[currentIndex + 1]
               });
             } else {
-              setErrorMessage(t("Please enter a unique attribute name"));
+              setErrorMessage(t("Please enter a unique name."));
               setTimeout(() => {
                 setErrorMessage("");
               }, [2000]);
@@ -386,7 +638,9 @@ export default function Grid({
   const onRowDragLeave = () => {
     const newRowData = JSON.parse(JSON.stringify(attributeRowData));
     newRowData.forEach((item) => {
-      item.Type = typesObjectRef.current[item.Attribute] || item.Type;
+      // Preserve empty string as valid Type value (don't use || which treats "" as falsy)
+      const typeFromRef = typesObjectRef.current[item.Attribute];
+      item.Type = typeFromRef !== undefined ? typeFromRef : item.Type;
     });
     setAttributeRowData(newRowData);
     const onMouseUpEvent = new MouseEvent("mouseup");
@@ -408,92 +662,13 @@ export default function Grid({
     typesObjectRef.current = updatedTypesObjRefValue;
   };
 
-  // Update attribute in language-specific row data
-  const updateLanAttributeRowData = (oldAttributeValue, newAttributeValue) => {
-    const updatedLanAttributeRowData = {};
-    for (const lang in lanAttributeRowData) {
-      if (Object.prototype.hasOwnProperty.call(lanAttributeRowData, lang)) {
-        const attributes = lanAttributeRowData[lang];
-        const attributeIndex = attributes.findIndex(
-          (row) => row.Attribute === oldAttributeValue
-        );
-        const attribute = attributes[attributeIndex];
-        const updatedAttributes = attributes.map((row, i) => {
-          if (i === attributeIndex) {
-            return { ...attribute, Attribute: newAttributeValue };
-          }
-          return row;
-        });
-        updatedLanAttributeRowData[lang] = updatedAttributes;
-      }
-    }
-    setLanAttributeRowData(updatedLanAttributeRowData);
-  };
-
-  const updateCharacterEncodingRowData = (oldAttributeValue, newAttributeValue) => {
-    setCharacterEncodingRowData((prevData) =>
-      prevData.map((row) => {
-        if (row.Attribute === oldAttributeValue) {
-          return { ...row, Attribute: newAttributeValue };
-        }
-        return row;
-      })
-    );
-  };
-
-  const updateFormatRuleRowData = (oldAttributeValue, newAttributeValue) => {
-    setFormatRuleRowData((prevData) =>
-      prevData.map((row) => {
-        if (row.Attribute === oldAttributeValue) {
-          return { ...row, Attribute: newAttributeValue };
-        }
-        return row;
-      })
-    );
-  };
-
-  const updateCardinalityData = (oldAttributeValue, newAttributeValue) => {
-    setCardinalityData((prevData) =>
-      prevData.map((row) => {
-        if (row.Attribute === oldAttributeValue) {
-          return { ...row, Attribute: newAttributeValue };
-        }
-        return row;
-      })
-    );
-  };
-
-  const updateAttributesWithLists = (oldAttributeValue, newAttributeValue) => {
-    setAttributesWithLists((prevData) =>
-      prevData.map((attributeName) => {
-        if (attributeName === oldAttributeValue) {
-          return newAttributeValue;
-        }
-        return attributeName;
-      })
-    );
-  };
-
-  const updateSavedEntryCodes = (oldAttributeValue, newAttributeValue) => {
-    setSavedEntryCodes((prevData) => {
-      const updatedSavedEntryCodes = { ...prevData };
-      if (updatedSavedEntryCodes[oldAttributeValue]) {
-        updatedSavedEntryCodes[newAttributeValue] =
-          updatedSavedEntryCodes[oldAttributeValue];
-        delete updatedSavedEntryCodes[oldAttributeValue];
-      }
-      return updatedSavedEntryCodes;
-    });
-  };
-
   const handleCellValueChanged = (e) => {
     // Only handle event if the user changed the attribute name; do not handle programmatic update
     if (e.source !== "edit") return;
     const isAttributeNameChange = e.colDef.field === "Attribute";
-    const currentIndex = e.rowIndex;
     if (isAttributeNameChange) {
-      const allAttributeNames = gridRef.current.props.rowData.map(
-        (item) => item.Attribute
+      const allAttributeNames = attributeRowData.map((item, i) =>
+        i === e.rowIndex ? e.newValue : item.Attribute
       );
       if (e.newValue) {
         // Renames duplicate values to <value>_(number)
@@ -504,59 +679,60 @@ export default function Grid({
         let valueToAdd = e.newValue;
         if (findMultipleOccurrences(allAttributeNames, valueToAdd)) {
           savedAttributeName.current = e.oldValue;
-          let i = 2;
-          let tempValue = `${valueToAdd}_(${i})`;
+          let i = 1;
+          let tempValue = `${valueToAdd}_${i}`;
 
           while (allAttributeNames.includes(tempValue)) {
             i += 1;
-            tempValue = `${valueToAdd}_(${i})`;
+            tempValue = `${valueToAdd}_${i}`;
           }
 
           valueToAdd = tempValue;
-          const rowNode = gridRef.current.api.getRowNode(currentIndex);
-          rowNode.setDataValue("Attribute", valueToAdd);
+          const rowId = e.data?._rid;
+          setAttributeRowData((prev) =>
+            prev.map((row) =>
+              row._rid === rowId ? { ...row, Attribute: valueToAdd } : row
+            )
+          );
 
           // Update typesObjectRef using updated new value
           const newAttributeName = valueToAdd;
           const oldAttributeName = e.oldValue;
 
           updateTypesObjRef(oldAttributeName, newAttributeName);
-          updateLanAttributeRowData(oldAttributeName, newAttributeName);
-          updateCharacterEncodingRowData(oldAttributeName, newAttributeName);
-          updateFormatRuleRowData(oldAttributeName, newAttributeName);
-          updateCardinalityData(oldAttributeName, newAttributeName);
-          updateAttributesWithLists(oldAttributeName, newAttributeName);
-          updateSavedEntryCodes(oldAttributeName, newAttributeName);
+          renameAttribute(oldAttributeName, newAttributeName);
         } else {
-          // Finds correct key to re-save the new typesObjectRef value
+          setAttributeRowData((prev) =>
+            prev.map((row, i) =>
+              i === e.rowIndex ? { ...row, Attribute: e.newValue } : row
+            )
+          );
           if (e.oldValue) {
             savedAttributeName.current = e.oldValue;
           } else if (e.oldValue !== "") {
             savedAttributeName.current = e.newValue;
           }
 
-          // Update typesObjectRef when values are updated
           const newAttributeName = e.newValue;
           const oldAttributeName = savedAttributeName.current;
           if (oldAttributeName !== newAttributeName) {
             updateTypesObjRef(oldAttributeName, newAttributeName);
-            updateLanAttributeRowData(oldAttributeName, newAttributeName);
-            updateCharacterEncodingRowData(oldAttributeName, newAttributeName);
-            updateFormatRuleRowData(oldAttributeName, newAttributeName);
-            updateCardinalityData(oldAttributeName, newAttributeName);
-            updateAttributesWithLists(oldAttributeName, newAttributeName);
-            updateSavedEntryCodes(oldAttributeName, newAttributeName);
+            renameAttribute(oldAttributeName, newAttributeName);
           }
         }
       } else {
-        // Re-save blank attribute as previous attribute
-        const rowNode = gridRef.current.api.getRowNode(currentIndex);
-        rowNode.setDataValue("Attribute", e.oldValue);
-
-        e.api.startEditingCell({
-          rowIndex: e.rowIndex,
-          colKey: "Attribute"
-        });
+        const rowId = e.data?._rid;
+        setAttributeRowData((prev) =>
+          prev.map((row) =>
+            row._rid === rowId ? { ...row, Attribute: e.oldValue } : row
+          )
+        );
+        setTimeout(() => {
+          e.api.startEditingCell({
+            rowIndex: e.rowIndex,
+            colKey: "Attribute"
+          });
+        }, 0);
       }
 
       // Prevents Row Dragging when attribute names are blank
@@ -570,25 +746,72 @@ export default function Grid({
         setRowDragManaged(true);
       }
     }
+    if (e.colDef.field === "Attribute" || e.colDef.field === "Unit") {
+      if (e.colDef.field === "Unit") {
+        if (!isUnitEligibleAttributeType(e.data?.Type)) {
+          return;
+        }
+        setAttributeRowData((prev) =>
+          prev.map((row, i) =>
+            i === e.rowIndex ? { ...row, Unit: e.newValue } : row
+          )
+        );
+      }
+      e.api.refreshCells({ rowNodes: [e.node], force: true });
+      requestAnimationFrame(() => e.api.resetRowHeights());
+    }
   };
 
-  const onGridReady = useCallback(() => {
-    setLoading(false);
+  const getRowHeight = useCallback((params) => {
+    const opts = { compact: true };
+    const attrH = measureTextHeight(params.data?.Attribute || "", 150, {});
+    const unitH = measureTextHeight(params.data?.Unit || "", 128, {});
+    const typeH = measureTextHeight(params.data?.Type || "", 150, opts);
+    const maxH = Math.max(attrH, unitH, typeH);
+    return Math.max(32, maxH + 16);
   }, []);
 
+  const onFirstDataRendered = useCallback(() => {
+    scheduleAttributeGridShellWidth();
+    scheduleEndBlockingLoad();
+  }, [scheduleAttributeGridShellWidth, scheduleEndBlockingLoad]);
+
+  const onModelUpdated = useCallback(() => {
+    scheduleAttributeGridShellWidth();
+    scheduleEndBlockingLoad();
+  }, [scheduleAttributeGridShellWidth, scheduleEndBlockingLoad]);
+
   return (
-    <div style={{ margin: "2rem" }}>
-      <div className="ag-theme-balham" style={{ width: 752 }}>
+    <div style={{ margin: "2rem 2rem 0 2rem" }}>
+      <div
+        ref={gridShellRef}
+        className={`attribute-details-grid overlay-grid-suppress-hscroll ag-theme-balham${attrGridFixedViewport ? "" : " ag-grid-compact"}`}
+        style={{
+          width: outerShellWidthPx,
+          overflowX: "hidden"
+        }}
+      >
+        <style>{gridStyles}</style>
         <style>{gridStyle}</style>
+        <style>{attributeGridViewportStyle}</style>
         <AgGridReact
+          key={`${i18n.language}-${attrGridFixedViewport ? "fx" : "ah"}`}
           ref={gridRef}
+          domLayout={attrGridFixedViewport ? undefined : "autoHeight"}
+          style={{
+            width: "100%",
+            height: attrGridFixedViewport ? "100%" : "auto"
+          }}
+          getRowId={(params) => (params.data && (params.data._rid || params.data.Attribute))}
           rowData={attributeRowData}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           rowSelection="multiple"
           suppressRowClickSelection
           suppressCellSelection={false}
-          domLayout="autoHeight"
+          getRowHeight={getRowHeight}
+          suppressHorizontalScroll
+          suppressRowHoverHighlight
           onCellKeyDown={onCellKeyDown}
           animateRows
           onRowDragEnd={(e) => onRowDragEnd(e)}
@@ -596,6 +819,9 @@ export default function Grid({
           onRowDragLeave={(e) => onRowDragLeave(e)}
           rowDragManaged={rowDragManaged}
           onGridReady={onGridReady}
+          onFirstDataRendered={onFirstDataRendered}
+          onModelUpdated={onModelUpdated}
+          overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
         />
       </div>
     </div>

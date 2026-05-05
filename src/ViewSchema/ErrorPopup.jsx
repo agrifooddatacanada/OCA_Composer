@@ -15,7 +15,7 @@ const ErrorPopup = ({ onClose, children }) => {
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: 50,
+        zIndex: 9998,
         backdropFilter: "blur(5px)",
         backgroundColor: "rgba(0, 0, 0, 0.3)"
       }}
@@ -25,7 +25,7 @@ const ErrorPopup = ({ onClose, children }) => {
           position: "absolute",
           left: "50%",
           top: 150,
-          zIndex: 100,
+          zIndex: 9999,
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-around",

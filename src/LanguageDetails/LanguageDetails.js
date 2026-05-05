@@ -1,44 +1,74 @@
-import React, { useRef, useContext, useState, useEffect } from "react";
+import React, { useRef, useContext, useState, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from "react";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
 import { Context } from "../App";
 import LanGrid from "./LanGrid";
-import { CustomPalette } from "../constants/customPalette";
-import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
+import CustomPalette from "../constants/customPalette";
+import { removeSpacesFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import Loading from "../components/Loading";
-import { codesToLanguages } from "../constants/isoCodes";
+import { useMultiSchema } from "../schema/schemaContext";
+import { 
+  langCodeOCAFromName,
+  LanguageConstants
+} from "../utils/languageUtils";
 
-export default function LanguageDetails({ pageBack, pageForward }) {
+const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForward }, ref) {
   const { t } = useTranslation();
+  
+  // Use MultiSchemaContext
   const {
-    languages,
-    lanAttributeRowData,
-    setLanAttributeRowData,
-    attributesWithLists,
+    getSchema,
+    updateSchema,
+    getLanguages
+  } = useMultiSchema();
+
+  // Global context
+  const {
     setCurrentPage
   } = useContext(Context);
 
-  const languageIndex = languages.findIndex(
-    (item) => codesToLanguages?.[i18next.language] === item
-  );
-  const filteredLanguages = [...languages];
-  if (languageIndex !== -1 && languageIndex !== 0) {
-    const removedLanguage = filteredLanguages.splice(languageIndex, 1);
-    filteredLanguages.unshift(removedLanguage[0]);
-  }
-  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0]);
+  // Get schema-specific languages
+  const languages = getLanguages();
+
+  // Get schema state data
+  const schemaState = getSchema();
+  const lanAttributeRowData = schemaState?.lanAttributeRowData || {};
+  const attributesWithLists = schemaState?.attributesWithLists || [];
+
+  const filteredLanguages = useMemo(() => [...languages], [languages]);
+
+  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
+  
+  // Update currentLanguage when languages array changes
+  // NOTE: We do NOT auto-sync with UI language to preserve user's schema language selection
+  useEffect(() => {
+    // If current language is no longer in the list, switch to first available
+    if (!languages.includes(currentLanguage)) {
+      setCurrentLanguage(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
+    }
+    // Don't auto-switch based on UI language - let user control schema language independently
+  }, [languages, filteredLanguages, currentLanguage]);
+
   const [loading, setLoading] = useState(true);
+  const setLoadingIfChanged = useCallback((next) => {
+    setLoading((prev) => (prev === next ? prev : next));
+  }, []);
   const gridRef = useRef();
   const refContainer = useRef();
   const entryCodesRef = useRef();
+
+  // Note: lanAttributeRowData is now managed per-schema in MultiSchemaContext
+  // No need to reset global state when switching schemas
 
   // Stops grid editing when clicking outside grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
       if (
+        gridRef.current &&
         gridRef.current.api &&
         refContainer.current &&
         !refContainer.current.contains(event.target)
@@ -47,31 +77,85 @@ export default function LanguageDetails({ pageBack, pageForward }) {
       }
     };
 
-    document.addEventListener("click", handleClickOutsideGrid);
+    // Only add the event listener if the grid is loaded (not loading)
+    if (!loading) {
+      document.addEventListener("click", handleClickOutsideGrid);
+    }
 
     return () => {
       document.removeEventListener("click", handleClickOutsideGrid);
     };
-  }, [gridRef, refContainer]);
+  }, [gridRef, refContainer, loading]);
 
   const handleSave = () => {
     entryCodesRef.current = false;
-    gridRef.current.api.stopEditing();
-    const newLanAttributeRowData = JSON.parse(JSON.stringify(lanAttributeRowData));
+    if (gridRef.current && gridRef.current.api) {
+      gridRef.current.api.stopEditing();
+    }
+    const storedLan = getSchema()?.lanAttributeRowData || {};
     const noSpacesObject = {};
     languages.forEach((language) => {
-      noSpacesObject[language] = removeSpacesFromArrayOfObjects(
-        newLanAttributeRowData[language]
-      );
+      const rows = lanAttributeRowData[language] ?? storedLan[language];
+      if (rows && Array.isArray(rows)) {
+        noSpacesObject[language] = removeSpacesFromArrayOfObjects(
+          JSON.parse(JSON.stringify(rows))
+        );
+      } else {
+        noSpacesObject[language] = [];
+      }
     });
-    setLanAttributeRowData(noSpacesObject);
-    if (attributesWithLists.length > 0) {
-      entryCodesRef.current = true;
+    
+    // Save to MultiSchemaContext for both manual and loaded schemas
+    // Convert LDAD data to schema overlays
+    const schemaState = getSchema();
+    const currentSchema = schemaState?.completeSchema || {};
+    const updatedOverlays = { ...currentSchema.overlays };
+
+    // Create label overlays from LDAD data
+    const labelOverlays = [];
+    languages.forEach((language) => {
+      const langData = noSpacesObject[language] || [];
+      if (langData.length > 0) {
+        // Convert language name to ISO 639-2 (3-letter) code for overlay
+        // Use the existing languageNameToAlpha3Codes mapping
+        const languageCode = langCodeOCAFromName(language) || 
+                             language.toLowerCase().slice(0, 3); // Fallback to first 3 chars
+        
+        const attributeLabels = {};
+        langData.forEach((item) => {
+          if (item.Attribute && item.Label && item.Label.trim() !== '') {
+            attributeLabels[item.Attribute] = item.Label;
+          }
+        });
+
+        if (Object.keys(attributeLabels).length > 0) {
+          labelOverlays.push({
+            language: languageCode,
+            attribute_labels: attributeLabels
+          });
+        }
+      }
+    });
+
+    // Update the overlays
+    if (labelOverlays.length > 0) {
+      updatedOverlays.label = labelOverlays;
     }
+
+    updateSchema({
+      lanAttributeRowData: noSpacesObject, // Keep for compatibility during transition
+      overlays: updatedOverlays,  // Save overlays directly to schema state
+      completeSchema: {
+        ...currentSchema,
+        overlays: updatedOverlays
+      }
+    });
+    
+    entryCodesRef.current = attributesWithLists.length > 0;
   };
   const handlePageBack = () => {
     handleSave();
-    if (entryCodesRef.current) {
+    if (entryCodesRef.current && attributesWithLists.length > 0) {
       setCurrentPage("Codes");
     } else {
       pageBack();
@@ -83,89 +167,100 @@ export default function LanguageDetails({ pageBack, pageForward }) {
     pageForward();
   };
 
-  // Formats language button display in a way that is displayed cleanly
+  // Expose save method to parent (Home) so it can persist edits on navigation
+  useImperativeHandle(ref, () => ({
+    save: handleSave
+  }));
 
-  const displayLanguageArray = [];
+  const LDAD_LANGUAGE_STRIP_WIDTH = 885;
 
-  for (let i = 0; i < filteredLanguages.length; i += 6) {
-    const languageRow = filteredLanguages.slice(i, i + 6).filter(Boolean);
-    displayLanguageArray.push(languageRow);
-  }
+  const ldadLanguageTabWidth = languages.length < 5 ? "12rem" : "8.335rem";
+  const ldadLanguageChunks = useMemo(() => {
+    const rows = [];
+    for (let i = 0; i < filteredLanguages.length; i += 6) {
+      rows.push(filteredLanguages.slice(i, i + 6).filter(Boolean));
+    }
+    return rows;
+  }, [filteredLanguages]);
 
-  const createLanguageRow = (languageArray, rowIndex) => {
-    const languageRowDisplay = languageArray.map((language, index) => {
-      let isFirstButton;
-      if (languages.length > 6) {
-        if (
-          displayLanguageArray[rowIndex + 1] &&
-          displayLanguageArray[rowIndex + 1].length === 6
-        ) {
-          isFirstButton =
-            language === displayLanguageArray[displayLanguageArray.length - 1][0];
-        } else {
-          isFirstButton = index === 0;
-        }
-      } else {
-        isFirstButton = index === 0;
-      }
-      const isLastButton = language === filteredLanguages[languages.length - 1];
-
-      let borderRadius = "";
-
-      if (isFirstButton && isLastButton) {
-        borderRadius = "8px 8px 0 0";
-      } else if (isFirstButton) {
-        borderRadius = "8px 0 0 0";
-      } else if (isLastButton) {
-        borderRadius = "0 8px 0 0";
-      } else {
-        borderRadius = "0";
-      }
-      return (
-        <Button
-          key={language}
-          onClick={() => {
-            handleSave();
-            setCurrentLanguage(language);
-          }}
-          color="button"
-          variant="contained"
+  const languageStrip = (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 1,
+        width: LDAD_LANGUAGE_STRIP_WIDTH,
+        maxWidth: "100%",
+        boxSizing: "border-box"
+      }}
+    >
+      {ldadLanguageChunks.map((segment) => (
+        <Box
+          key={segment.join("-")}
           sx={{
-            backgroundColor:
-              currentLanguage === language
-                ? CustomPalette.PRIMARY
-                : CustomPalette.SECONDARY,
-            borderRadius,
-            width: languages.length < 5 ? "12rem" : "8.335rem",
-            boxShadow: "none",
-            border: `0.5px solid ${CustomPalette.PRIMARY}`
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            alignSelf: "flex-start",
+            borderBottom: `1px solid ${CustomPalette.GREY_300}`,
+            boxSizing: "border-box"
           }}
         >
-          {" "}
-          <Typography noWrap variant="button">
-            {language}
-          </Typography>
-        </Button>
-      );
-    });
-    return languageRowDisplay;
-  };
-  const languageButtonDisplay = displayLanguageArray.map((languageSegment, index) => (
-    <Box key={`language-segment-${languageSegment.join("-")}`}>
-      {createLanguageRow(languageSegment, index)}
+          {segment.map((language) => {
+            const selected = currentLanguage === language;
+            return (
+              <Button
+                key={language}
+                onClick={() => {
+                  handleSave();
+                  setCurrentLanguage(language);
+                }}
+                variant="text"
+                color="inherit"
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 400,
+                  borderRadius: 0,
+                  px: 2,
+                  py: 1.25,
+                  width: ldadLanguageTabWidth,
+                  minWidth: ldadLanguageTabWidth,
+                  maxWidth: { xs: "100%", sm: "none" },
+                  color: selected ? CustomPalette.BLACK : CustomPalette.GREY_600,
+                  bgcolor: "transparent",
+                  boxShadow: "none",
+                  borderBottom: "2px solid",
+                  borderBottomColor: selected ? CustomPalette.BLACK : "transparent",
+                  mb: "-1px",
+                  "&:hover": {
+                    bgcolor: "rgba(0, 0, 0, 0.04)",
+                    color: CustomPalette.BLACK
+                  }
+                }}
+              >
+                <Typography noWrap variant="body2" sx={{ fontWeight: 400 }}>
+                  {t(language, { defaultValue: language })}
+                </Typography>
+              </Button>
+            );
+          })}
+        </Box>
+      ))}
     </Box>
-  ));
+  );
 
   const handleCopy = () => {
-    // In lanAttributeRowData, I want to iteratively go through each language and copy the Atrribute value to the Label value
-    const languages = Object.keys(lanAttributeRowData);
     const newLanAttributeRowData = JSON.parse(JSON.stringify(lanAttributeRowData));
-    for (const lang of languages) {
-      newLanAttributeRowData[lang].forEach((item) => {
+    if (newLanAttributeRowData[currentLanguage]) {
+      newLanAttributeRowData[currentLanguage].forEach((item) => {
         item.Label = item.Attribute;
       });
     }
-    setLanAttributeRowData(newLanAttributeRowData);
+    
+    updateSchema({
+      lanAttributeRowData: newLanAttributeRowData
+    });
   };
 
   return (
@@ -175,10 +270,11 @@ export default function LanguageDetails({ pageBack, pageForward }) {
       isForward
       pageForward={pageForwardSave}
     >
-      {loading && lanAttributeRowData[languages[0]]?.length > 40 && <Loading />}
+      {loading && lanAttributeRowData[languages[0] || LanguageConstants.DEFAULT_LANG_NAME]?.length > 40 && <Loading />}
       <Box
         sx={{
-          margin: "2rem"
+          margin: "2rem",
+          marginBottom: BETWEEN_SECTION_SPACING
         }}
       >
         <Box
@@ -202,49 +298,52 @@ export default function LanguageDetails({ pageBack, pageForward }) {
               p: 1
             }}
           >
-            Copy Attribute -{">"} Label
+            {t("Copy Attribute -> Label", { defaultValue: "Copy Attribute -> Label" })}
           </Button>
         </Box>
         <Box
           sx={{
+            position: "relative",
             display: "flex",
-            flexDirection: "column-reverse",
-            alignItems: languages.length < 6 ? "flex-start" : "flex-end"
+            flexDirection: "column",
+            alignItems: "flex-start",
+            mb: 2,
+            gap: 1
           }}
         >
-          {languageButtonDisplay}
-        </Box>
-        <Box
-          sx={{
-            textAlign: "left",
-            transform: "translate(-25px, -25px)",
-            color: CustomPalette.GREY_600,
-            height: "0rem"
-          }}
-        >
-          <Tooltip
-            title={t("Toggles between the one or more languages used in the schema")}
-            placement="left"
-            arrow
-            PopperProps={{
-              sx: {
-                "& .MuiTooltip-tooltip": {
-                  width: 100
-                }
-              }
+          {languageStrip}
+          <Box
+            sx={{
+              position: "absolute",
+              right: "100%",
+              top: "50%",
+              transform: "translateY(-50%)",
+              marginRight: 1,
+              color: CustomPalette.GREY_600
             }}
           >
-            <HelpOutlineIcon sx={{ fontSize: 15 }} />
-          </Tooltip>
+            <Tooltip
+              title={t("Toggles between the one or more languages used in the schema")}
+              placement="left"
+              arrow
+              PopperProps={{
+                sx: { "& .MuiTooltip-tooltip": { width: 100 } }
+              }}
+            >
+              <HelpOutlineIcon sx={{ fontSize: 15 }} />
+            </Tooltip>
+          </Box>
         </Box>
         <div ref={refContainer}>
           <LanGrid
             gridRef={gridRef}
             currentLanguage={currentLanguage}
-            setLoading={setLoading}
+            setLoading={setLoadingIfChanged}
           />
         </div>
       </Box>
     </BackNextSkeleton>
   );
-}
+});
+
+export default LanguageDetails;

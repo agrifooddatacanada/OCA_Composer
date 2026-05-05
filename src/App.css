@@ -3,6 +3,10 @@ body {
   overflow-x: hidden;
 }
 
+body.format-rules-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Set maximum width to the device width on mobile devices */
 @media (max-width: 767px) {
   body {

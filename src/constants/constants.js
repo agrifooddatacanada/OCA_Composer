@@ -4,41 +4,115 @@ export const DEFAULT_LANGUAGE_CODE = "en";
 export const DEFAULT_THREE_LETTER_LANGUAGE_CODE = "eng";
 export const DEFAULT_LANGUAGE = "English";
 export const MAX_ATTR_LABEL_CHARS = 250;
-export const MAX_ATTR_DESCRIPTION_CHARS = 250;
+export const MAX_ATTR_DESCRIPTION_CHARS = 1000;
 export const MAX_QUESTION_DESCRIPTION_CHARS = 1000;
 
 export const FORM_BUILDER_CARD_WIDTH = 720;
+export const SECTION_SPACING = 2;
+export const TABLE_TO_BUTTON_GAP = 2; // theme units, gap between table and Add Attribute button
+export const ENTRY_CODE_DRAG_WIDTH = 40;
+export const ENTRY_CODE_CODE_WIDTH = 200;
+export const ENTRY_CODE_LANG_WIDTH = 200;
+export const ENTRY_CODE_DELETE_WIDTH = 44;
+export const ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX = 1120;
+export const HEADER_TO_CONTENT_GAP_PX = 12;
+export const BETWEEN_SECTION_SPACING = 6;
+export const TOOLTIP_ICON_GAP = 1.5;
+export const AG_GRID_OVERLAY_VIRTUALIZE_MIN_ROWS = 20;
+export const AG_GRID_VIRTUALIZE_MIN_ROWS = AG_GRID_OVERLAY_VIRTUALIZE_MIN_ROWS;
 
-export const SCHEMA_MODE_SINGLE = "single";
-export const SCHEMA_MODE_MULTI_LEVEL = "multi-level";
+/** When the schema has no attributes, grid body min height so “No rows” overlay can sit in empty space. */
+export const AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX = 220;
+export const AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX = 160;
+
+/** Tighter empty area for main wizard grids (Labels, Attributes, Summary schema table). */
+export const AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX =
+  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX / 2;
+export const AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX =
+  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX / 2;
+
+export const MANUAL_CREATION_SCHEMA_ID = "manual-creation-schema";
+
+/**
+ * Schema Type Constants
+ *
+ * TERMINOLOGY GUIDE:
+ * - "Child Schema" = UI term for linked schema with cryptographic SAID
+ * - "Placeholder Child Schema" = UI term for named reference (not yet defined)
+ * - `refs:SAID`    = OCA spec: linked schema with cryptographic SAID identifier
+ * - `refn:name`    = OCA spec: named reference (placeholder for schema not yet defined)
+ *
+ * INTERNAL CONVENTION:
+ * - Use TYPE_CHILD_SCHEMA ("Child Schema") for refs: references
+ * - Use TYPE_PLACEHOLDER_CHILD_SCHEMA ("Placeholder Child Schema") for refn: references
+ * - Convert to refs:/refn: at export time in useOCAExport.js
+ * - When parsing OCA packages, convert to appropriate type based on refs: vs refn:
+ */
+export const TYPE_CHILD_SCHEMA = "Child Schema";
+export const TYPE_PLACEHOLDER_CHILD_SCHEMA = "Placeholder Child Schema";
+
+/**
+ * Check if a type represents a child/nested schema
+ * @param {string} type - The attribute type to check
+ * @returns {boolean} True if the type is a child schema reference
+ */
+export const isChildSchemaType = (type) => {
+  if (!type || typeof type !== "string") return false;
+  const t = type.trim();
+  return (
+    t === TYPE_CHILD_SCHEMA ||
+    t === TYPE_PLACEHOLDER_CHILD_SCHEMA ||
+    t.startsWith("refs:") ||
+    t.startsWith("refn:")
+  );
+};
+
+export const getScalarOrArrayElementTypeForRange = (typeStr) => {
+  if (!typeStr || typeof typeStr !== "string") return "";
+  const t = typeStr.trim();
+  const m = t.match(/^Array\[(.+)\]$/i);
+  return m ? m[1].trim() : t;
+};
+
+export const isRangeEligibleAttributeType = (typeStr) => {
+  const base = getScalarOrArrayElementTypeForRange(typeStr);
+  return base === "Numeric" || base === "DateTime";
+};
+
+export const isUnitEligibleAttributeType = (typeStr) => {
+  const base = getScalarOrArrayElementTypeForRange(typeStr);
+  return base === "Numeric" || base === "DateTime";
+};
+
+/** Text, Numeric, DateTime, Binary, or Array[…] of those (same set as Format Rules UI). */
+const FORMAT_OVERLAY_ELIGIBLE_BASE = new Set(["Text", "Numeric", "DateTime", "Binary"]);
+
+export const isFormatEligibleAttributeType = (typeStr) => {
+  const base = getScalarOrArrayElementTypeForRange(typeStr);
+  return FORMAT_OVERLAY_ELIGIBLE_BASE.has(base);
+};
 
 // Fields for overlay items
 export const FIELD_CHARACTER_ENCODING_OVERLAY = "Character Encoding";
-export const FIELD_FORMAT_OVERLAY = "Add format rule for data";
-export const FIELD_CONFORMANCE_OVERLAY = "Make selected entries required";
+export const FIELD_FORMAT_OVERLAY = "Format";
+export const FIELD_CONFORMANCE_OVERLAY = "Required Entry";
 export const FIELD_CARDINALITY_OVERLAY = "Cardinality";
 export const FIELD_DATA_STANDARDS_OVERLAY = "Data Standards";
 export const FIELD_UNIT_FRAMING_OVERLAY = "Unit Framing";
-export const FIELD_RANGE_OVERLAY = "Add range rule for data";
+export const FIELD_RANGE_OVERLAY = "Range";
 export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
-export const FIELD_FORM_INFORMATION_OVERLAY = "Add Form Information";
+export const FIELD_FORM_INFORMATION_OVERLAY = "Form Information";
 
 export const overlayItems = {
-  [FIELD_CHARACTER_ENCODING_OVERLAY]: { feature: "Character Encoding", selected: false },
-  [FIELD_CONFORMANCE_OVERLAY]: {
-    feature: "Make selected entries required",
-    selected: false
-  },
-  [FIELD_FORMAT_OVERLAY]: {
-    feature: "Add format rule for data",
-    selected: false
-  },
-  [FIELD_CARDINALITY_OVERLAY]: { feature: "Cardinality", selected: false },
-  [FIELD_DATA_STANDARDS_OVERLAY]: { feature: "Data Standards", selected: false },
-  [FIELD_UNIT_FRAMING_OVERLAY]: { feature: "Unit Framing", selected: false },
-  [FIELD_RANGE_OVERLAY]: { feature: "Add range rule for data", selected: false },
-  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { feature: "Attribute Framing", selected: false },
-  [FIELD_FORM_INFORMATION_OVERLAY]: { feature: "Add Form Information", selected: false }
+  [FIELD_CHARACTER_ENCODING_OVERLAY]: false,
+  [FIELD_CONFORMANCE_OVERLAY]: false,
+  [FIELD_FORMAT_OVERLAY]: false,
+  [FIELD_CARDINALITY_OVERLAY]: false,
+  [FIELD_DATA_STANDARDS_OVERLAY]: false,
+  [FIELD_UNIT_FRAMING_OVERLAY]: false,
+  [FIELD_RANGE_OVERLAY]: false,
+  [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
+  [FIELD_FORM_INFORMATION_OVERLAY]: false
 };
 
 export const classification = {
@@ -217,6 +291,50 @@ export const codeToGroup = {
   RDF605: "Other humanities"
 };
 
+/**
+ * Parse classification code from various formats and return division/group
+ * Handles: "RDF40", "CRDC:RDF40", "ANZSRC-FOR:07 AGRICULTURAL...", etc.
+ */
+export const parseClassificationCode = (classificationCode) => {
+  if (!classificationCode || typeof classificationCode !== "string") {
+    return null;
+  }
+
+  let rdfCode = null;
+  const trimmed = classificationCode.trim();
+
+  // Format 1: Just the code ("RDF40" or "RDF401")
+  if (/^RDF\d+(-\d+)?$/.test(trimmed)) {
+    rdfCode = trimmed;
+  } else {
+    // Format 2: "CRDC:RDF40" or "ANZSRC-FOR:07..."
+    const match = trimmed.match(/RDF\d+(-\d+)?/);
+    if (match) {
+      [rdfCode] = match;
+    }
+  }
+
+  if (!rdfCode) {
+    return null;
+  }
+
+  const group = codeToGroup[rdfCode];
+  if (group) {
+    let divisionCode = rdfCode.substring(0, 5);
+    if (divisionCode === "RDF20" || divisionCode === "RDF21") {
+      divisionCode = "RDF20-21";
+    }
+    return { division: codeToDivision[divisionCode] || "", group };
+  }
+
+  const division = codeToDivision[rdfCode];
+  if (division) {
+    return { division, group: "" };
+  }
+
+  return null;
+};
+
 export const dataTypes = [
   "Binary",
   "Boolean",
@@ -228,8 +346,7 @@ export const dataTypes = [
   "Array[Boolean]",
   "Array[DateTime]",
   "Array[Numeric]",
-  "Array[Text]",
-  "Array[Child Schema]"
+  "Array[Text]"
 ];
 
 export const descriptionToFormatCodeText = {
@@ -450,7 +567,7 @@ export const dataStandardOptions = [
 ];
 
 export const defaultUploadedDescription =
-  "Click here to select a spreadsheet or drag and drop one here";
+  "Import a spreadsheet by click or drag-and-drop.";
 export const jsonUploadDescription =
   "Click here to select an OCA schema or drag and drop one here";
 export const dewvSchemaUploadDescription =
