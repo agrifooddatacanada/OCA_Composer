@@ -119,32 +119,40 @@ function buildRangeOverlay(slots) {
 function buildCardinalityOverlay(slots, linkmlSchema) {
   const cardinalityData = {};
 
-  // First, check slots directly for cardinality properties
   Object.entries(slots).forEach(([slotName, slot]) => {
     let minCard = null;
     let maxCard = null;
 
-    // Check for minimum and maximum cardinality
-    if (slot.minimum_cardinality !== undefined) {
-      minCard = slot.minimum_cardinality;
-    }
-    if (slot.maximum_cardinality !== undefined) {
-      maxCard = slot.maximum_cardinality;
+    if (slot.exact_cardinality !== undefined) {
+      minCard = slot.exact_cardinality;
+      maxCard = slot.exact_cardinality;
+    } else {
+      if (slot.minimum_cardinality !== undefined) {
+        minCard = slot.minimum_cardinality;
+      }
+      if (slot.maximum_cardinality !== undefined) {
+        maxCard = slot.maximum_cardinality;
+      }
     }
 
-    // If not multivalued or cardinality not specified, skip
-    if (slot.multivalued && minCard === null && maxCard === null) {
-      return;
+    const isMultivalued = slot.multivalued === true;
+
+    // Only add cardinality if it's explicitly constrained or represents an array (multivalued)
+    if (minCard === null && maxCard === null && !isMultivalued) {
+      return; // Skip standard single-value fields without explicit cardinality
     }
 
-    // Build cardinality string
-    if (minCard !== null && maxCard !== null) {
-      cardinalityData[slotName] = `${minCard}-${maxCard}`;
-    } else if (minCard !== null) {
-      cardinalityData[slotName] = `${minCard}-*`;
-    } else if (maxCard !== null) {
-      cardinalityData[slotName] = `0-${maxCard}`;
+    const required = slot.required === true;
+
+    if (minCard === null) {
+      minCard = required ? 1 : 0;
     }
+
+    if (maxCard === null) {
+      maxCard = isMultivalued ? '*' : 1;
+    }
+
+    cardinalityData[slotName] = `${minCard}-${maxCard}`;
   });
 
   // Return overlay only if there's cardinality data
@@ -350,7 +358,11 @@ export function mapLinkMLToOCABundle(linkmlSchema) {
 
       // OCA does not support Event or Type?
       if (/Event|Type/.test(slot.range)) {
-        range = "";
+        range = "Text"; // Default to Text instead of empty string, though originally was ""
+      }
+      
+      if (slot.multivalued) {
+          range = `Array[${range}]`;
       }
 
       return [key, range];
