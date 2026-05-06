@@ -312,12 +312,12 @@ const AttributeMatch = () => {
   }, [type, t]);
 
   // helper that checks if all attributes are matched to their respective datasets and disables the forward button if not
-  const areAllColumnsMatched = useCallback(
-    () =>
-      matchingRowData.length > 0 &&
-      matchingRowData.every((row) => row.Dataset && row.Dataset !== ""),
-    [matchingRowData]
-  );
+  // const areAllColumnsMatched = useCallback(
+  //   () =>
+  //     matchingRowData.length > 0 &&
+  //     matchingRowData.every((row) => row.Dataset && row.Dataset !== ""),
+  //   [matchingRowData]
+  // );
 
   return (
     <>
@@ -332,7 +332,6 @@ const AttributeMatch = () => {
         isForward
         pageForward={handleSavePage}
         middleText={t("You must match your dataset columns (variables) to the attributes in your schema. The verifier attempts to match names automatically. If there are mismatches or unassigned matches you can correct that here.")}
-        disableForward={!areAllColumnsMatched()}
       />
       <Box
         sx={{
