@@ -934,7 +934,7 @@ const OCADataValidatorCheck = ({
 
   useEffect(() => {
     const columns = [];
-    const LIMIT_ENTRYCODES_LENGTH = 20;
+    const LIMIT_ENTRYCODES_LENGTH = 50;
     const variableToCheck = attributesList;
     if (datasetRawFile.length === 0) {
       // avoid resetting parent header on every render — only update when different
