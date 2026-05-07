@@ -171,6 +171,7 @@ const Home = ({
   const schemaMetadataRef = useRef(null);
   const formatRulesRef = useRef(null);
   const rangeRef = useRef(null);
+  const cardinalityRef = useRef(null);
 
   const pageForNav = pageIdForStepper(currentPage);
 
@@ -180,6 +181,9 @@ const Home = ({
     }
     if (currentPage === "Range" && rangeRef.current?.save) {
       rangeRef.current.save();
+    }
+    if (currentPage === "Cardinality" && cardinalityRef.current?.save) {
+      cardinalityRef.current.save();
     }
     const currentIndex = steps.findIndex((step) => step.page === pageForNav);
     if (currentIndex >= 0 && currentIndex < steps.length - 1) {
@@ -194,6 +198,9 @@ const Home = ({
   const pageBack = () => {
     if (currentPage === "Range" && rangeRef.current?.validate && !rangeRef.current.validate()) {
       return;
+    }
+    if (currentPage === "Cardinality" && cardinalityRef.current?.save) {
+      cardinalityRef.current.save();
     }
     if (currentPage === "Range" && rangeRef.current?.save) {
       rangeRef.current.save();
@@ -345,11 +352,11 @@ const Home = ({
         languageDetailsRef.current.save();
       }
 
-      // Save overlay data when navigating away from overlay pages with grids
-      // All overlays use unmount effects for saving, so they auto-save on navigation
-      // FormatRules and Range expose save methods for immediate save if needed
       if (currentPage === "FormatRules" && formatRulesRef.current && typeof formatRulesRef.current.save === "function") {
         formatRulesRef.current.save();
+      }
+      if (currentPage === "Cardinality" && cardinalityRef.current && typeof cardinalityRef.current.save === "function") {
+        cardinalityRef.current.save();
       }
       if (currentPage === "Range" && rangeRef.current && typeof rangeRef.current.validate === "function") {
         if (!rangeRef.current.validate()) {
@@ -500,7 +507,7 @@ const Home = ({
         )}
         {currentPage === "CharacterEncoding" && <CharacterEncoding />}
         {currentPage === "RequiredEntries" && <RequiredEntries />}
-        {currentPage === "Cardinality" && <Cardinality />}
+        {currentPage === "Cardinality" && <Cardinality ref={cardinalityRef} />}
         {currentPage === "UnitFraming" && <UnitFraming />}
         {currentPage === "FormInformation" && <FormInformation />}
         {currentPage === "FormBuilder" && <FormBuilder />}

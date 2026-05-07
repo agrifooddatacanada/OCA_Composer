@@ -4,7 +4,9 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
-  useRef
+  useRef,
+  forwardRef,
+  useImperativeHandle
 } from "react";
 import {
   Box,
@@ -35,7 +37,7 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
 import { FIELD_CARDINALITY_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { useOverlayGridOnGridReady } from "./gridUtils";
+import { getAllGridRowData, useOverlayGridOnGridReady } from "./gridUtils";
 import "../App.css";
 
 const CARDINALITY_COL_SUM_PX = 160 + 200 + 140;
@@ -45,7 +47,7 @@ const gridOptions = {
   stopEditingWhenCellsLoseFocus: true
 };
 
-const Cardinality = () => {
+const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
   const { t, i18n } = useTranslation();
   const {
     setCurrentPage
@@ -84,7 +86,7 @@ const Cardinality = () => {
       });
   }, [getCardinalityData, schemaState?.attributes, schemaState?.attributeCardinality, schemaState?.lanAttributeRowData]);
   
-  const cardinalityRef = useRef();
+  const gridRef = useRef();
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedCellData, setSelectedCellData] = useState(null);
@@ -110,12 +112,19 @@ const Cardinality = () => {
   const [dialogMessage, setDialogMessage] = useState("");
 
   const handleSave = useCallback(() => {
-    cardinalityRef.current.api.stopEditing();
-    const newCardinalityData = cardinalityRef.current.api
-      .getRenderedNodes()
-      ?.map((node) => node?.data);
-    setCardinalityData(newCardinalityData);
+    const api = gridRef.current?.api;
+    if (!api) return;
+    api.stopEditing();
+    setCardinalityData(getAllGridRowData(api));
   }, [setCardinalityData]);
+
+  useImperativeHandle(
+    forwardedRef,
+    () => ({
+      save: handleSave
+    }),
+    [handleSave]
+  );
 
   const handleForward = useCallback(() => {
     handleSave();
@@ -123,21 +132,10 @@ const Cardinality = () => {
     setCurrentPage("Overlays");
   }, [handleSave, setCurrentPage, setSelectedOverlay]);
 
-  // Save changes when component unmounts (user navigates away)
-  useEffect(() => {
-    return () => {
-      if (cardinalityRef.current?.api) {
-        cardinalityRef.current.api.stopEditing();
-        const newCardinalityData = cardinalityRef.current.api
-          .getRenderedNodes()
-          ?.map((node) => node?.data);
-        if (newCardinalityData && newCardinalityData.length > 0) {
-          setCardinalityData(newCardinalityData);
-        }
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - only run on mount/unmount
+  const handleLeaveToOverlays = useCallback(() => {
+    handleSave();
+    setCurrentPage("Overlays");
+  }, [handleSave, setCurrentPage]);
 
   const handleCellClick = useCallback((params) => {
     if (params.data?.Type?.includes("Array")) {
@@ -267,13 +265,13 @@ const Cardinality = () => {
   );
 
   const handleDeleteRow = useCallback((params) => {
-    cardinalityRef.current?.api?.stopEditing?.();
+    gridRef.current?.api?.stopEditing?.();
     setSelectedCellData({ ...params?.data, rowIndex: params?.rowIndex });
     params.node.updateData({
       ...params.node.data,
       EntryLimit: ""
     });
-    cardinalityRef.current.api.redrawRows({ rowNodes: [params.node] });
+    gridRef.current.api.redrawRows({ rowNodes: [params.node] });
     setExactValue("");
     setMinValue("");
     setMaxValue("");
@@ -286,7 +284,7 @@ const Cardinality = () => {
       const isDeleteKey = key === "Delete" || code === "Delete" || key === "Backspace" || code === "Backspace";
       if (!isDeleteKey) return;
 
-      const api = cardinalityRef.current?.api;
+      const api = gridRef.current?.api;
       const focusedCell = api?.getFocusedCell?.();
       if (!api || !focusedCell) return;
 
@@ -400,7 +398,7 @@ const Cardinality = () => {
         return;
       }
 
-      const getRowToUpdate = cardinalityRef.current.api.getRowNode(
+      const getRowToUpdate = gridRef.current.api.getRowNode(
         selectedCellData.rowIndex
       );
       const entryLimitValue = exactValue
@@ -496,7 +494,7 @@ const Cardinality = () => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={() => setCurrentPage("Overlays")}
+      pageBack={handleLeaveToOverlays}
     >
       {loading && cardinalityData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
@@ -530,7 +528,7 @@ const Cardinality = () => {
           <style>{gridStyles}</style>
           <AgGridReact
             key={`${i18n.language}-${cardinalityGridFixedViewport ? "fx" : "ah"}`}
-            ref={cardinalityRef}
+            ref={gridRef}
             onCellClicked={handleCellClick}
             onCellKeyDown={handleCellKeyDown}
             onCellValueChanged={handleCellValueChanged}
@@ -667,6 +665,6 @@ const Cardinality = () => {
       </Dialog>
     </BackNextSkeleton>
   );
-};
+});
 
 export default Cardinality;
