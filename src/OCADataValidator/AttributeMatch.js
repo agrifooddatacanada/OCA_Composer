@@ -280,12 +280,6 @@ const AttributeMatch = () => {
     setColumnDefs(columnDefs);
   }, [type, t]);
 
-  // helper that checks if all attributes are matched to their respective datasets and disables the forward button if not
-  const areAllColumnsMatched = useCallback(
-    () => matchingRowData.every((row) => row.Dataset && row.Dataset !== ""),
-    [matchingRowData]
-  );
-
   return (
     <>
       <BackNextSkeleton
@@ -299,7 +293,6 @@ const AttributeMatch = () => {
         isForward
         pageForward={handleSavePage}
         middleText={t("You must match your dataset columns...")}
-        disableForward={!areAllColumnsMatched()}
       />
       <Box
         sx={{
