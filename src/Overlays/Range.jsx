@@ -77,7 +77,7 @@ const Range = forwardRef((props, ref) => {
   
   const { t, i18n } = useTranslation();
   const gridRef = useRef();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [shouldRevalidate, setShouldRevalidate] = useState(false);
   const [errors, setErrors] = useState({});

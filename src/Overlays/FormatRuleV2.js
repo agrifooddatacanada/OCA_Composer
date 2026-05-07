@@ -18,7 +18,6 @@ import {
 } from "../constants/styles";
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { FormatRuleTypeRenderer } from "./FormatRuleCellRender";
-import Loading from "../components/Loading";
 import {
   AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
   AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
@@ -61,23 +60,15 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   const schemaState = getSchema();
 
   const [customFormatRuleAnchorEl, setCustomFormatRuleAnchorEl] = useState(null);
-  const [loading, setLoading] = useState(true);
   const gridRef = useRef();
-  const [gridRowData, setGridRowData] = useState([]);
-  
-  // Initialize grid data when schema loads
-  useEffect(() => {
-    const attrs = schemaState?.attributes;
-    if (!Array.isArray(attrs)) {
-      setGridRowData([]);
-      setLoading(false);
-      return;
-    }
 
-    // Get existing format rules from attributeFormats object
+  const gridRowData = useMemo(() => {
+    const attrs = schemaState?.attributes;
+    if (!Array.isArray(attrs)) return [];
+
     const attributeFormats = schemaState.attributeFormats || {};
 
-    const initialData = attrs
+    return attrs
       .filter((attr) => {
         const rawType = attr?.Type || "Text";
         const baseType = rawType.includes("Array")
@@ -101,10 +92,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           [CUSTOM_FORMAT_RULE]: customFormat
         };
       });
-
-    setGridRowData(initialData);
-    setLoading(false);
-  }, [schemaState?.attributes, schemaState?.attributeFormats]); // Re-init when attributes or formats change
+  }, [schemaState?.attributes, schemaState?.attributeFormats]);
   
   // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(
@@ -368,7 +356,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       isBack
       pageBack={handleLeaveToOverlays}
     >
-      {loading && <Loading />}
       <Popover
         open={Boolean(customFormatRuleAnchorEl)}
         anchorEl={customFormatRuleAnchorEl}
