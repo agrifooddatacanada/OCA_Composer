@@ -11,6 +11,7 @@ import {
 } from "../constants/constants";
 import { resolveChildSchemaStateRootId } from "../schema/childSchemaSubtree";
 import DeleteConfirmation from "../Overlays/DeleteConfirmation";
+import { removeAttributeFromMap } from "../utils/stringUtils";
 
 const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAttributeRowData }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -88,29 +89,27 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     });
     setAttributeRowData(updatedAttributeRowData);
 
+    const schemaState = getSchema() || {};
+    const prevType = (attributeRowData.find((item) => item.Attribute === attributeName))?.Type ?? data?.Type;
+    const typeChanged = prevType !== newType;
+
+    const schemaUpdate = { attributes: updatedAttributeRowData };
+    if (typeChanged) {
+      schemaUpdate.attributeFormats = removeAttributeFromMap(schemaState.attributeFormats, attributeName);
+    }
+
     if (newType === TYPE_CHILD_SCHEMA) {
-      const schemaState = getSchema() || {};
       const prevLists = Array.isArray(schemaState.attributesWithLists)
         ? schemaState.attributesWithLists
         : [];
       const prevEntryCodes = schemaState.entryCodes || {};
 
-      const nextLists = prevLists.filter((a) => a !== attributeName);
-      const nextEntryCodes = { ...prevEntryCodes };
-      if (nextEntryCodes[attributeName]) {
-        delete nextEntryCodes[attributeName];
-      }
-
-      updateSchema({
-        attributes: updatedAttributeRowData,
-        attributesWithLists: nextLists,
-        entryCodes: nextEntryCodes
-      });
-    } else {
-      updateSchema({
-        attributes: updatedAttributeRowData
-      });
+      schemaUpdate.attributesWithLists = prevLists.filter((a) => a !== attributeName);
+      schemaUpdate.entryCodes = { ...prevEntryCodes };
+      delete schemaUpdate.entryCodes[attributeName];
     }
+
+    updateSchema(schemaUpdate);
 
     if (newType === TYPE_CHILD_SCHEMA) {
       createChildSchemaPlaceholder(attributeName);
@@ -198,7 +197,8 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       setAttributeRowData(updatedAttributeRowData);
 
       updateSchema({
-        attributes: updatedAttributeRowData
+        attributes: updatedAttributeRowData,
+        attributeFormats: removeAttributeFromMap((getSchema() || {}).attributeFormats, attributeName)
       });
     }
   };

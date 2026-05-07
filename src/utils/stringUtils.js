@@ -25,6 +25,17 @@ export const getMapValueForAttributeName = (map, attributeName) => {
   }
   return undefined;
 };
+
+export const removeAttributeFromMap = (map, attributeName) => {
+  if (!map || typeof map !== "object" || Array.isArray(map)) return {};
+  const result = { ...map };
+  if (typeof attributeName !== "string") return result;
+  const norm = normalizeAttributeNameKey(attributeName);
+  for (const k of Object.keys(result)) {
+    if (normalizeAttributeNameKey(k) === norm) delete result[k];
+  }
+  return result;
+};
 export const replaceColonFromString = (string) => {
   if (typeof string === "string") {
     return string.replace(/:/g, "-");
