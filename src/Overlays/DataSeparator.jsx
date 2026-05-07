@@ -170,8 +170,9 @@ const DataSeparator = () => {
     setCurrentPage("Overlays");
   };
 
-  const handleBack = () => {
-    setShowDeleteConfirmation(true);
+  const handleLeaveToOverlays = () => {
+    persistFileDelimiterData();
+    setCurrentPage("Overlays");
   };
 
   return (
@@ -179,8 +180,7 @@ const DataSeparator = () => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={handleBack}
-      backText={t("Remove overlay")}
+      pageBack={handleLeaveToOverlays}
     >
       {showDeleteConfirmation && (
         <DeleteConfirmation
