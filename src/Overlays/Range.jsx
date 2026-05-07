@@ -265,22 +265,6 @@ const Range = forwardRef((props, ref) => {
     setCurrentPage("Overlays");
   };
 
-  useEffect(() => {
-    return () => {
-      if (gridRef.current?.api) {
-        gridRef.current.api.stopEditing();
-        const rowData = getAllGridRowData(gridRef.current.api);
-        if (rowData && rowData.length > 0) {
-          const nextErrors = computeRangeErrors(rowData);
-          if (!hasRangeValidationFailures(nextErrors)) {
-            setRangeRowData(rowData);
-          }
-        }
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Initialize attributeRanges from attributeFormats if empty (e.g., after deletion and re-adding)
   useEffect(() => {
     const attributeFormats = schemaState?.attributeFormats || {};

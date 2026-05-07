@@ -1,4 +1,13 @@
-import React, { useContext, useEffect, useRef, useState, useMemo, useCallback } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+  forwardRef,
+  useImperativeHandle
+} from "react";
 import { Box } from "@mui/material";
 import { AgGridReact } from "../components/AgGridReact";
 import { useTranslation } from "react-i18next";
@@ -63,7 +72,7 @@ const CheckboxRenderer = ({ value, rowIndex, colDef, api }) => {
   return <input type="checkbox" ref={inputRef} onChange={handleChange} />;
 };
 
-const RequiredEntries = () => {
+const RequiredEntries = forwardRef(function RequiredEntries(_props, ref) {
   const { t, i18n } = useTranslation();
   const {
     setCurrentPage,
@@ -160,7 +169,34 @@ const RequiredEntries = () => {
     [t]
   );
 
+  const flushGridToSchema = useCallback(() => {
+    const api = gridRef.current?.api;
+    if (!api) return;
+    api.stopEditing();
+    const rows = [];
+    api.forEachNode((node) => {
+      if (node.data) rows.push(node.data);
+    });
+    if (rows.length > 0) {
+      setRequiredEntriesRowData(rows);
+    }
+  }, [setRequiredEntriesRowData]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: flushGridToSchema
+    }),
+    [flushGridToSchema]
+  );
+
+  const handleLeaveToOverlays = useCallback(() => {
+    flushGridToSchema();
+    setCurrentPage("Overlays");
+  }, [flushGridToSchema, setCurrentPage]);
+
   const handleForward = () => {
+    flushGridToSchema();
     setSelectedOverlay("");
     setCurrentPage("Overlays");
   };
@@ -168,7 +204,7 @@ const RequiredEntries = () => {
 
 
   return (
-    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setCurrentPage("Overlays")}>
+    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={handleLeaveToOverlays}>
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={deleteHandler}
@@ -219,6 +255,6 @@ const RequiredEntries = () => {
       </Box>
     </BackNextSkeleton>
   );
-};
+});
 
 export default RequiredEntries;

@@ -172,6 +172,27 @@ const Home = ({
   const formatRulesRef = useRef(null);
   const rangeRef = useRef(null);
   const cardinalityRef = useRef(null);
+  const characterEncodingRef = useRef(null);
+  const requiredEntriesRef = useRef(null);
+  const dataStandardsRef = useRef(null);
+  const unitFramingRef = useRef(null);
+  const attributeFramingRef = useRef(null);
+
+  const saveNonRangeOverlayGrids = useCallback(() => {
+    const refByPage = {
+      FormatRules: formatRulesRef,
+      CharacterEncoding: characterEncodingRef,
+      RequiredEntries: requiredEntriesRef,
+      DataStandards: dataStandardsRef,
+      UnitFraming: unitFramingRef,
+      AttributeFraming: attributeFramingRef,
+      Cardinality: cardinalityRef
+    };
+    const overlayRef = refByPage[currentPage];
+    if (overlayRef?.current?.save && typeof overlayRef.current.save === "function") {
+      overlayRef.current.save();
+    }
+  }, [currentPage]);
 
   const pageForNav = pageIdForStepper(currentPage);
 
@@ -179,11 +200,9 @@ const Home = ({
     if (currentPage === "Range" && rangeRef.current?.validate && !rangeRef.current.validate()) {
       return;
     }
+    saveNonRangeOverlayGrids();
     if (currentPage === "Range" && rangeRef.current?.save) {
       rangeRef.current.save();
-    }
-    if (currentPage === "Cardinality" && cardinalityRef.current?.save) {
-      cardinalityRef.current.save();
     }
     const currentIndex = steps.findIndex((step) => step.page === pageForNav);
     if (currentIndex >= 0 && currentIndex < steps.length - 1) {
@@ -199,9 +218,7 @@ const Home = ({
     if (currentPage === "Range" && rangeRef.current?.validate && !rangeRef.current.validate()) {
       return;
     }
-    if (currentPage === "Cardinality" && cardinalityRef.current?.save) {
-      cardinalityRef.current.save();
-    }
+    saveNonRangeOverlayGrids();
     if (currentPage === "Range" && rangeRef.current?.save) {
       rangeRef.current.save();
     }
@@ -352,12 +369,8 @@ const Home = ({
         languageDetailsRef.current.save();
       }
 
-      if (currentPage === "FormatRules" && formatRulesRef.current && typeof formatRulesRef.current.save === "function") {
-        formatRulesRef.current.save();
-      }
-      if (currentPage === "Cardinality" && cardinalityRef.current && typeof cardinalityRef.current.save === "function") {
-        cardinalityRef.current.save();
-      }
+      saveNonRangeOverlayGrids();
+
       if (currentPage === "Range" && rangeRef.current && typeof rangeRef.current.validate === "function") {
         if (!rangeRef.current.validate()) {
           return;
@@ -379,6 +392,7 @@ const Home = ({
   [
     steps,
     currentPage,
+    saveNonRangeOverlayGrids,
     getSchema,
     getLanguages,
     t,
@@ -505,18 +519,18 @@ const Home = ({
         {currentPage === "Overlays" && (
           <Overlays pageBack={pageBack} pageForward={pageForward} />
         )}
-        {currentPage === "CharacterEncoding" && <CharacterEncoding />}
-        {currentPage === "RequiredEntries" && <RequiredEntries />}
+        {currentPage === "CharacterEncoding" && <CharacterEncoding ref={characterEncodingRef} />}
+        {currentPage === "RequiredEntries" && <RequiredEntries ref={requiredEntriesRef} />}
         {currentPage === "Cardinality" && <Cardinality ref={cardinalityRef} />}
-        {currentPage === "UnitFraming" && <UnitFraming />}
+        {currentPage === "UnitFraming" && <UnitFraming ref={unitFramingRef} />}
         {currentPage === "FormInformation" && <FormInformation />}
         {currentPage === "FormBuilder" && <FormBuilder />}
         {currentPage === "MatchingPicklistEntryCodes" && (
           <MatchingPicklistEntryCodeHeader />
         )}
-        {currentPage === "DataStandards" && <DataStandards />}
+        {currentPage === "DataStandards" && <DataStandards ref={dataStandardsRef} />}
         {currentPage === "Range" && <Range ref={rangeRef} />}
-        {currentPage === "AttributeFraming" && <AttributeFraming />}
+        {currentPage === "AttributeFraming" && <AttributeFraming ref={attributeFramingRef} />}
         {currentPage === "FormatRules" && <FormatRuleV2 ref={formatRulesRef} />}
         {currentPage === "DataSeparator" && <DataSeparator />}
       </Box>

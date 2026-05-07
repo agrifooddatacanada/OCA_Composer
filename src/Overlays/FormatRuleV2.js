@@ -171,6 +171,11 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     setCurrentPage("Overlays");
   }, [handleSave, setSelectedOverlay, setCurrentPage]);
 
+  const handleLeaveToOverlays = useCallback(() => {
+    handleSave();
+    setCurrentPage("Overlays");
+  }, [handleSave, setCurrentPage]);
+
   // Expose save method to parent (Home) for navigation handling
   useImperativeHandle(ref, () => ({
     save: handleSave
@@ -190,32 +195,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       body.classList.remove("format-rules-no-scrollbar");
     };
   }, []);
-
-  // Save changes when component unmounts (user navigates away)
-  useEffect(() => {
-    return () => {
-      // Save on unmount - capture the grid data at unmount time
-      if (gridRef.current?.api) {
-        const newFormatRuleRowData = getAllGridRowData(gridRef.current.api);
-        if (newFormatRuleRowData && newFormatRuleRowData.length > 0) {
-          const currentSchema = getSchema();
-          const attributeFormats = { ...(currentSchema?.attributeFormats || {}) };
-          newFormatRuleRowData.forEach((row) => {
-            const formatRule = row["Format Rule"] || row[CUSTOM_FORMAT_RULE];
-            const norm = normalizeAttributeNameKey(row.Attribute);
-            Object.keys(attributeFormats).forEach((k) => {
-              if (normalizeAttributeNameKey(k) === norm) delete attributeFormats[k];
-            });
-            if (formatRule) {
-              attributeFormats[norm] = formatRule;
-            }
-          });
-          updateSchema({ attributeFormats });
-        }
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - only run on mount/unmount
 
   const getRowHeight = useCallback(
     (params) => {
@@ -387,7 +366,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={() => setCurrentPage("Overlays")}
+      pageBack={handleLeaveToOverlays}
     >
       {loading && <Loading />}
       <Popover

@@ -1,5 +1,13 @@
 import { Box, Button } from "@mui/material";
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  forwardRef
+} from "react";
 import { AgGridReact } from "../components/AgGridReact";
 import { useTranslation } from "react-i18next";
 import { Context } from "../App";
@@ -24,7 +32,7 @@ import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
 import { useOverlayGridOnGridReady } from "./gridUtils";
 
-const CharacterEncoding = () => {
+const CharacterEncoding = forwardRef(function CharacterEncoding(_props, ref) {
   const { t, i18n } = useTranslation();
   const { setCurrentPage } = useContext(Context);
 
@@ -85,6 +93,19 @@ const CharacterEncoding = () => {
     setCharacterEncodingRowData
   );
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: handleSave
+    }),
+    [handleSave]
+  );
+
+  const handleLeaveToOverlays = useCallback(() => {
+    handleSave();
+    setCurrentPage("Overlays");
+  }, [handleSave, setCurrentPage]);
+
   const getRowHeight = useCallback((params) => {
     const attrH = measureTextHeight(params.data?.Attribute || "", 164);
     const encH = measureTextHeight(String(params.data?.["Character Encoding"] ?? ""), 184);
@@ -132,31 +153,6 @@ const CharacterEncoding = () => {
     setCurrentPage("Overlays");
   }, [handleSave, setCurrentPage, setSelectedOverlay]);
 
-  // Save changes when component unmounts (user navigates away)
-  useEffect(() => {
-    return () => {
-      // Save on unmount - capture the grid data at unmount time
-      if (gridRef.current?.api) {
-        gridRef.current.api.stopEditing();
-        const attributeWithCharacterEncoding = gridRef.current.api
-          .getRenderedNodes()
-          ?.map((node) => node?.data);
-        
-        // Transform UI data to simple object format
-        if (attributeWithCharacterEncoding && attributeWithCharacterEncoding.length > 0) {
-          const characterEncodingData = {};
-          attributeWithCharacterEncoding.forEach(row => {
-            if (row.Attribute && row["Character Encoding"]) {
-              characterEncodingData[row.Attribute] = row["Character Encoding"];
-            }
-          });
-          updateSchema({ characterEncodingData });
-        }
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - only run on mount/unmount
-
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 
   const encodingGridFixedViewport =
@@ -180,7 +176,7 @@ const CharacterEncoding = () => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={() => setCurrentPage("Overlays")}
+      pageBack={handleLeaveToOverlays}
     >
       {loading && characterEncodingRowData?.length > 40 && <Loading />}
       {showDeleteConfirmation && (
@@ -252,6 +248,6 @@ const CharacterEncoding = () => {
       </Box>
     </BackNextSkeleton>
   );
-};
+});
 
 export default CharacterEncoding;

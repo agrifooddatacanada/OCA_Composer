@@ -1,4 +1,12 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  forwardRef,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { useTranslation } from "react-i18next";
 import { Box } from "@mui/material";
 import { AgGridReact } from "../components/AgGridReact";
@@ -13,9 +21,9 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
 import { FIELD_DATA_STANDARDS_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { useOverlayGridOnGridReady } from "./gridUtils";
+import { useOverlayGridOnGridReady, getAllGridRowData } from "./gridUtils";
 
-const DataStandards = () => {
+const DataStandards = forwardRef(function DataStandards(_props, ref) {
   const {
     setCurrentPage,
     setSelectedOverlay,
@@ -44,31 +52,31 @@ const DataStandards = () => {
 
 
 
-  const handleSave = () => {
-    gridRef.current.api.stopEditing();
-    const rowData = gridRef.current.api.getRenderedNodes()?.map((rowNode) => rowNode?.data);
-    updateSchema({dataStandardsData: rowData});
-  };
+  const handleSave = useCallback(() => {
+    const api = gridRef.current?.api;
+    if (!api) return;
+    api.stopEditing();
+    updateSchema({ dataStandardsData: getAllGridRowData(api) });
+  }, [updateSchema]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: handleSave
+    }),
+    [handleSave]
+  );
+
+  const handleLeaveToOverlays = useCallback(() => {
+    handleSave();
+    setCurrentPage("Overlays");
+  }, [handleSave, setCurrentPage]);
 
   const handleForward = () => {
     handleSave();
     setSelectedOverlay("");
     setCurrentPage("Overlays");
   };
-
-  // Save changes when component unmounts (user navigates away)
-  useEffect(() => {
-    return () => {
-      if (gridRef.current?.api) {
-        gridRef.current.api.stopEditing();
-        const rowData = gridRef.current.api.getRenderedNodes()?.map((rowNode) => rowNode?.data);
-        if (rowData && rowData.length > 0) {
-          updateSchema({dataStandardsData: rowData});
-        }
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - only run on mount/unmount
 
   const handleBack = () => {
     setShowDeleteConfirmation(true);
@@ -93,7 +101,7 @@ const DataStandards = () => {
     ], [t]);
 
   return (
-    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={() => setCurrentPage("Overlays")}>
+    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={handleLeaveToOverlays}>
       {loading && <Loading />}
       {showDeleteConfirmation && (
         <DeleteConfirmation
@@ -119,6 +127,6 @@ const DataStandards = () => {
       </Box>
     </BackNextSkeleton>
   );
-};
+});
 
 export default DataStandards;

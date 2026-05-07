@@ -8,7 +8,9 @@ import React, {
   useRef,
   useState,
   useEffect,
-  useCallback
+  useCallback,
+  forwardRef,
+  useImperativeHandle
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -38,6 +40,7 @@ import CellHeader from "../components/CellHeader";
 import Spinner from "../components/Spinner";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import DeleteConfirmation from "./DeleteConfirmation";
+import { getAllGridRowData } from "./gridUtils";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import {
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
@@ -1072,7 +1075,7 @@ const updateFramedAttributes = (attributeFramingRowData, displayedFramedAttribut
       : row;
   });
 
-const AttributeFraming = () => {
+const AttributeFraming = forwardRef(function AttributeFraming(_props, ref) {
   const {
     setCurrentPage
   } = useContext(Context);
@@ -1146,8 +1149,9 @@ const AttributeFraming = () => {
       console.warn("Error stopping grid editing:", error);
     }
 
-    const displayedFramedAttributes =
-      gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data) || [];
+    const displayedFramedAttributes = gridRef.current?.api
+      ? getAllGridRowData(gridRef.current.api)
+      : [];
 
     // Update with any current changes from the grid
     const updatedAttributeFramingRowData = updateFramedAttributes(
@@ -1334,7 +1338,7 @@ const AttributeFraming = () => {
       ? `${t("Unframed attributes")}: [${unframedAttributeList.join(", ")}]`
       : t("No attributes to frame");
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (!gridReady || !gridRef.current?.api) {
       console.warn("Grid not ready for save operation");
       return;
@@ -1342,43 +1346,33 @@ const AttributeFraming = () => {
 
     try {
       gridRef.current.api.stopEditing();
-      const rowData = gridRef.current.api.getRenderedNodes()?.map((node) => node?.data);
-      if (rowData) {
+      const rowData = getAllGridRowData(gridRef.current.api);
+      if (rowData.length > 0) {
         setAttributeFramingRowData(rowData);
       }
     } catch (error) {
       console.error("Error saving grid data:", error);
     }
-  };
+  }, [gridReady, setAttributeFramingRowData]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: handleSave
+    }),
+    [handleSave]
+  );
+
+  const handleLeaveToOverlays = useCallback(() => {
+    handleSave();
+    setCurrentPage("Overlays");
+  }, [handleSave, setCurrentPage]);
 
   const handleForward = () => {
     handleSave();
     setSelectedOverlay("");
     setCurrentPage("Overlays");
   };
-
-  // Save changes when component unmounts (user navigates away)
-  useEffect(() => {
-    return () => {
-      if (gridRef.current?.api) {
-        try {
-          gridRef.current.api.stopEditing();
-          const rowData = [];
-          gridRef.current.api.forEachNode((node) => {
-            if (node.data) {
-              rowData.push(node.data);
-            }
-          });
-          if (rowData.length > 0) {
-            setAttributeFramingRowData(rowData);
-          }
-        } catch (error) {
-          console.error("Error saving on unmount:", error);
-        }
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - only run on mount/unmount
 
   const handleBack = () => {
     setShowDeleteConfirmation(true);
@@ -1389,7 +1383,7 @@ const AttributeFraming = () => {
       isForward
       isBack
       pageForward={handleForward}
-      pageBack={() => setCurrentPage("Overlays")}
+      pageBack={handleLeaveToOverlays}
     >
       {showDeleteConfirmation && (
         <DeleteConfirmation
@@ -1490,6 +1484,6 @@ const AttributeFraming = () => {
       </Box>
     </BackNextSkeleton>
   );
-};
+});
 
 export default AttributeFraming;

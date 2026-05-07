@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { MenuItem } from "@mui/material";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { displayValues } from "../constants/constants";
+import { getAllGridRowData } from "./gridUtils";
 
 export const CharacterEncodingTypeRenderer = ({ value, node }) => {
   const [type, setType] = useState(value);
@@ -55,13 +56,12 @@ export const CharacterEncodingTypeRenderer = ({ value, node }) => {
   );
 };
 
-const useCharacterEncodingType = (gridRef, characterEncodingRowData, setCharacterEncodingRowData) => {
+const useCharacterEncodingType = (gridRef, _characterEncodingRowData, setCharacterEncodingRowData) => {
   const handleSave = useCallback(() => {
-    gridRef.current.api.stopEditing();
-    const attributeWithCharacterEncoding = gridRef.current.api
-      .getRenderedNodes()
-      ?.map((node) => node?.data);
-    setCharacterEncodingRowData(attributeWithCharacterEncoding);
+    const api = gridRef.current?.api;
+    if (!api) return;
+    api.stopEditing();
+    setCharacterEncodingRowData(getAllGridRowData(api));
   }, [gridRef, setCharacterEncodingRowData]);
 
   const applyAllFunc = useCallback(() => {

@@ -40,7 +40,7 @@ import Loading from "../components/Loading";
 import { searchUnits } from "../utils/helpers";
 import { FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { useOverlayGridOnGridReady } from "./gridUtils";
+import { useOverlayGridOnGridReady, getAllGridRowData } from "./gridUtils";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 
@@ -327,7 +327,23 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
     [t, gridRef, onCellChanged]
   );
 
-const UnitFraming = () => {
+const mergeDisplayedUnitRowsIntoFramedData = (fullFramedData, displayedRows) =>
+  fullFramedData.map((row) => {
+    const displayedRow = displayedRows.find(
+      (d) => d.Unit === row.Unit && d.Attribute === row.Attribute
+    );
+    if (displayedRow) {
+      return {
+        ...row,
+        "UCUM Code": displayedRow["UCUM Code"],
+        "UCUM Label": displayedRow["UCUM Label"],
+        Description: displayedRow.Description
+      };
+    }
+    return row;
+  });
+
+const UnitFraming = forwardRef((props, ref) => {
   const { t, i18n } = useTranslation();
   const { setCurrentPage } = useContext(Context);
 
@@ -435,35 +451,17 @@ const UnitFraming = () => {
   const hasUnframedUnits = unframedUnitList.length > 0;
   const allUnitsAreFramed = unitFramedRowData.length > 0 && !hasUnframedUnits;
 
-  // Callback to save data when cell value changes via autocomplete
   const handleCellChanged = useCallback(() => {
-    if (gridRef.current?.api) {
-      const displayedFramedUnits =
-        gridRef.current.api.getRenderedNodes()?.map((node) => node?.data) || [];
-      
-      if (displayedFramedUnits.length > 0) {
-        // Update all rows with current grid data
-        const finalUnitFramedRowData = unitFramedRowData.map((row) => {
-          const displayedRow = displayedFramedUnits.find(
-            (displayed) => displayed.Unit === row.Unit && displayed.Attribute === row.Attribute
-          );
+    const api = gridRef.current?.api;
+    if (!api) return;
+    const displayedFramedUnits = getAllGridRowData(api);
+    if (displayedFramedUnits.length === 0) return;
 
-          if (displayedRow) {
-            return {
-              ...row,
-              "UCUM Code": displayedRow["UCUM Code"],
-              "UCUM Label": displayedRow["UCUM Label"],
-              Description: displayedRow.Description
-            };
-          }
-          
-          return row;
-        });
-        
-        setUnitFramedRowData(finalUnitFramedRowData);
-      }
-    }
-  }, [unitFramedRowData, setUnitFramedRowData]);
+    setUnitFramedRowData((currentData) => {
+      const base = Array.isArray(currentData) ? currentData : [];
+      return mergeDisplayedUnitRowsIntoFramedData(base, displayedFramedUnits);
+    });
+  }, [setUnitFramedRowData]);
 
   const columnDefs = useColumnDefs(gridRef, t, handleCellChanged);
 
@@ -505,30 +503,28 @@ const UnitFraming = () => {
 
 
   const handleSave = useCallback(() => {
-    gridRef.current?.api?.stopEditing();
-    const displayedFramedUnits =
-      gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data) || [];
-
-    // Update all rows with current grid data
-    const finalUnitFramedRowData = unitFramedRowData.map((row) => {
-      const displayedRow = displayedFramedUnits.find(
-        (displayed) => displayed.Unit === row.Unit && displayed.Attribute === row.Attribute
-      );
-
-      if (displayedRow) {
-        return {
-          ...row,
-          "UCUM Code": displayedRow["UCUM Code"],
-          "UCUM Label": displayedRow["UCUM Label"],
-          Description: displayedRow.Description
-        };
-      }
-      
-      return row;
+    const api = gridRef.current?.api;
+    if (!api) return;
+    api.stopEditing();
+    const displayedFramedUnits = getAllGridRowData(api);
+    setUnitFramedRowData((currentData) => {
+      const base = Array.isArray(currentData) ? currentData : [];
+      return mergeDisplayedUnitRowsIntoFramedData(base, displayedFramedUnits);
     });
+  }, [setUnitFramedRowData]);
 
-    setUnitFramedRowData(finalUnitFramedRowData);
-  }, [unitFramedRowData, setUnitFramedRowData]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: handleSave
+    }),
+    [handleSave]
+  );
+
+  const handleLeaveToOverlays = useCallback(() => {
+    handleSave();
+    setCurrentPage("Overlays");
+  }, [handleSave, setCurrentPage]);
 
   const handleForward = useCallback(() => {
     handleSave();
@@ -536,64 +532,17 @@ const UnitFraming = () => {
     setCurrentPage("Overlays");
   }, [handleSave, setSelectedOverlay, setCurrentPage]);
 
-  // Save changes when component unmounts (user navigates away)
-  useEffect(() => {
-    return () => {
-      if (gridRef.current?.api) {
-        gridRef.current.api.stopEditing();
-        const displayedFramedUnits =
-          gridRef.current.api.getRenderedNodes()?.map((node) => node?.data) || [];
-        
-        if (displayedFramedUnits.length > 0 || unitFramedRowData.length > 0) {
-          // Update all rows with current grid data
-          const finalUnitFramedRowData = unitFramedRowData.map((row) => {
-            const displayedRow = displayedFramedUnits.find(
-              (displayed) => displayed.Unit === row.Unit && displayed.Attribute === row.Attribute
-            );
-
-            if (displayedRow) {
-              return {
-                ...row,
-                "UCUM Code": displayedRow["UCUM Code"],
-                "UCUM Label": displayedRow["UCUM Label"],
-                Description: displayedRow.Description
-              };
-            }
-            
-            return row;
-          });
-          
-          setUnitFramedRowData(finalUnitFramedRowData);
-        }
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - only run on mount/unmount
-
   const handleFrameAllUnits = useCallback(() => {
-    gridRef.current?.api?.stopEditing();
-    const displayedFramedUnits =
-      gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data) || [];
+    const api = gridRef.current?.api;
+    if (!api) return;
+    api.stopEditing();
+    const displayedFramedUnits = getAllGridRowData(api);
 
-    // Merge displayed data with all rows (including deleted)
-    const updatedData = unitFramedRowData.map((row) => {
-      const displayedRow = displayedFramedUnits.find(
-        (displayed) => displayed.Unit === row.Unit && displayed.Attribute === row.Attribute
-      );
+    const updatedData = mergeDisplayedUnitRowsIntoFramedData(
+      Array.isArray(unitFramedRowData) ? unitFramedRowData : [],
+      displayedFramedUnits
+    );
 
-      if (displayedRow) {
-        return {
-          ...row,
-          "UCUM Code": displayedRow["UCUM Code"],
-          "UCUM Label": displayedRow["UCUM Label"],
-          Description: displayedRow.Description
-        };
-      }
-      
-      return row;
-    });
-    
-    // Auto-populate UCUM codes for all units that don't have them yet
     const framedData = updatedData.map((row) => {
       // If already has UCUM code, preserve it
       if (row["UCUM Code"]) {
@@ -630,7 +579,7 @@ const UnitFraming = () => {
       isForward
       pageForward={handleForward}
       isBack
-      pageBack={() => setCurrentPage("Overlays")}
+      pageBack={handleLeaveToOverlays}
     >
       {showLoading && <Loading />}
       {showDeleteConfirmation && (
@@ -767,6 +716,6 @@ const UnitFraming = () => {
       </Box>
     </BackNextSkeleton>
   );
-};
+});
 
 export default UnitFraming;
