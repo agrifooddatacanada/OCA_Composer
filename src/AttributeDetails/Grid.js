@@ -103,6 +103,7 @@ export default function Grid({
   setLoading,
   attributeRowData,
   setAttributeRowData,
+  onRowOrderCommitted,
   triggerInvalidCharModal
 }) {
   const { t, i18n } = useTranslation();
@@ -631,6 +632,9 @@ export default function Grid({
     });
     newRowData.splice(newIndex, 0, newRowData.splice(oldIndex, 1)[0]);
     setAttributeRowData(newRowData);
+    if (typeof onRowOrderCommitted === "function") {
+      onRowOrderCommitted(newRowData);
+    }
   };
 
   // Drops element when item is taken off grid

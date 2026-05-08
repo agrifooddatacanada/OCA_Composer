@@ -755,6 +755,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
             setLoading={setLoading}
             attributeRowData={attributeRowData}
             setAttributeRowData={setAttributeRowData}
+            onRowOrderCommitted={(rows) => updateSchema({ attributes: rows })}
             triggerInvalidCharModal={() => setShowInvalidCharModal(true)}
           />
         </div>

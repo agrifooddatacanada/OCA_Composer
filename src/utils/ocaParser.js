@@ -19,7 +19,7 @@ import {
 } from "../constants/constants";
 import { langNameFromTwoLetters, langNameFromCodeOCA, LanguageConstants, normalizeToOCACode } from "./languageUtils";
 import { getPackageBundle, getPackageDependencies, getPackageBundleId } from "./packageUtils";
-import { searchUnits, normalizeEscapedQuotes } from "./helpers";
+import { searchUnits, normalizeEscapedQuotes, replaceCharsInKeys } from "./helpers";
 import convertOverlayToFormBuilder from "../Overlays/FormBuilder/utils/convertOverlayToFormBuilder";
 
 /**
@@ -135,12 +135,22 @@ export class OCAParser {
       attributesWithLists
     );
 
+    const orderingOverlay = OCAParser._getAdcOrderingOverlay(adcExtensions);
+    const orderingNamesRaw = orderingOverlay?.attribute_ordering;
+    let attributesOrdered = attributesWithLists;
+    let lanOrdered = lanAttributeRowData;
+    if (Array.isArray(orderingNamesRaw) && orderingNamesRaw.length > 0) {
+      const orderingNames = replaceCharsInKeys(orderingNamesRaw);
+      attributesOrdered = OCAParser._applyAttributeOrder(attributesWithLists, orderingNames);
+      lanOrdered = OCAParser._orderLanRowsForAttributes(lanAttributeRowData, attributesOrdered);
+    }
+
     // Copy descriptions from language data to main attributes for Attribute Details display
     // Use the first available language's description
-    const firstLang = Object.keys(lanAttributeRowData)[0];
-    if (firstLang && lanAttributeRowData[firstLang]) {
-      attributesWithLists.forEach(attr => {
-        const lanData = lanAttributeRowData[firstLang].find(lan => lan.Attribute === attr.Attribute);
+    const firstLang = Object.keys(lanOrdered)[0];
+    if (firstLang && lanOrdered[firstLang]) {
+      attributesOrdered.forEach(attr => {
+        const lanData = lanOrdered[firstLang].find(lan => lan.Attribute === attr.Attribute);
         if (lanData?.Description) {
           attr.Description = lanData.Description;
         }
@@ -151,29 +161,29 @@ export class OCAParser {
     // Pass captureBaseId for extension lookups
     const overlayData = this._parseOverlayData(
       schemaData.overlays, 
-      attributesWithLists,
+      attributesOrdered,
       flatOcaPackageForParsing,
       captureBaseId,
       entryCodes,           // Pass entryCodes for form builder
-      lanAttributeRowData   // Pass lanAttributeRowData for form builder
+      lanOrdered   // Pass lanAttributeRowData for form builder
     );
 
     // Process conformance overlay for Required field in attributes
     this._processConformanceOverlay(
       schemaData.overlays?.conformance, 
-      attributesWithLists
+      attributesOrdered
     );
 
     // Process unit overlay to populate Unit field in attributes
     this._processUnitOverlay(
       schemaData.overlays?.unit,
-      attributesWithLists
+      attributesOrdered
     );
 
     // Process sensitive attributes to populate Sensitive field
     this._processFlaggedAttributes(
       sensitiveAttributeNames,
-      attributesWithLists
+      attributesOrdered
     );
 
     // Initialize overlay selections based on which overlays are present
@@ -200,15 +210,15 @@ export class OCAParser {
 
     return {
       metadata,
-      attributes: attributesWithLists,  // Always an array, even if empty: []
+      attributes: attributesOrdered,  // Always an array, even if empty: []
       // Note: attributesList removed - now computed via getAttributesList() in MultiSchemaContext
       overlays: schemaData.overlays || {},
       overlaySelections,
       entryCodes,
-      attributesWithLists: attributesWithLists
+      attributesWithLists: attributesOrdered
         .filter((a) => a.List)
         .map((a) => a.Attribute),
-      lanAttributeRowData,  // Preserves labels from label overlays
+      lanAttributeRowData: lanOrdered,  // Preserves labels from label overlays
       // Populated display-friendly overlay data for components
       ...overlayData,
       frameAllUnits: false,
@@ -243,6 +253,68 @@ export class OCAParser {
       Unit: "",
       Sensitive: false
     }));
+  }
+
+  static _getAdcOrderingOverlay(adcExtensions) {
+    if (adcExtensions == null) return null;
+    if (Array.isArray(adcExtensions)) {
+      for (let i = 0; i < adcExtensions.length; i += 1) {
+        const ext = adcExtensions[i];
+        const o = ext?.overlays?.ordering ?? ext?.ordering_overlay;
+        if (
+          (Array.isArray(o?.attribute_ordering) && o.attribute_ordering.length > 0) ||
+          (o?.entry_code_ordering && Object.keys(o.entry_code_ordering).length > 0)
+        ) {
+          return o;
+        }
+      }
+      return null;
+    }
+    return adcExtensions.overlays?.ordering ?? adcExtensions.ordering_overlay ?? null;
+  }
+
+  static _applyAttributeOrder(attributesWithLists, orderingNames) {
+    if (!Array.isArray(orderingNames) || orderingNames.length === 0) return attributesWithLists;
+    const byName = new Map(attributesWithLists.map((a) => [a.Attribute, a]));
+    const ordered = [];
+    const used = new Set();
+    orderingNames.forEach((name) => {
+      const row = byName.get(name);
+      if (row) {
+        ordered.push(row);
+        used.add(name);
+      }
+    });
+    attributesWithLists.forEach((row) => {
+      if (!used.has(row.Attribute)) ordered.push(row);
+    });
+    return ordered;
+  }
+
+  static _orderLanRowsForAttributes(lanAttributeRowData, orderedAttributes) {
+    const names = orderedAttributes.map((a) => a.Attribute);
+    const next = {};
+    Object.entries(lanAttributeRowData).forEach(([lang, rows]) => {
+      if (!Array.isArray(rows)) {
+        next[lang] = rows;
+        return;
+      }
+      const byAttr = new Map(rows.map((r) => [r.Attribute, r]));
+      const ord = [];
+      const used = new Set();
+      names.forEach((name) => {
+        const r = byAttr.get(name);
+        if (r) {
+          ord.push(r);
+          used.add(name);
+        }
+      });
+      rows.forEach((r) => {
+        if (!used.has(r.Attribute)) ord.push(r);
+      });
+      next[lang] = ord;
+    });
+    return next;
   }
 
   /**
