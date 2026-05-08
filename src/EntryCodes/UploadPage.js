@@ -1,17 +1,17 @@
-import React from "react";
+import React, { useCallback, useLayoutEffect, useState } from "react";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import {
   BETWEEN_SECTION_SPACING,
-  ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX
+  LAN_GRID_SHELL_WIDTH_PX
 } from "../constants/constants";
 import { Box, Button, FormControl, Select, Typography } from "@mui/material";
 import Drop from "../StartSchema/Drop";
 import useHandleEntryCodeDrop from "./useHandleEntryCodeDrop";
-import { gridStyles, entryCodeUploadPreviewGridLayoutCss } from "../constants/styles";
-import { AgGridReact } from "../components/AgGridReact";
+import EntryCodeUploadPreviewGrid from "./EntryCodeUploadPreviewGrid";
 import { CustomPalette } from "../constants/customPalette";
 import csvFileExample from "../assets/csv_example.png";
 import { useTranslation } from "react-i18next";
+import Spinner from "../components/Spinner";
 
 const UploadPage = () => {
   const { t } = useTranslation();
@@ -25,7 +25,6 @@ const UploadPage = () => {
     setDropMessage,
     handleClearUpload,
     tempEntryCodeRowData,
-    tableLength,
     columnDefs,
     handleSave,
     gridRef,
@@ -41,13 +40,26 @@ const UploadPage = () => {
     hasActiveEntryCodeUpload,
     bundleHasEntryCodes,
     entryCodeUploadForwardEnabled,
-    entryCodePreviewFixedViewport
+    entryCodePreviewFixedViewport,
+    entryCodePreviewShellWidthPx,
+    onEntryCodePreviewCellValueChanged
   } = useHandleEntryCodeDrop();
 
-  const previewGridWidthPx = Math.min(
-    Math.max(tableLength + 2, 1),
-    ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX
-  );
+  const [previewGridReady, setPreviewGridReady] = useState(false);
+
+  const previewCsvCanMount =
+    columnDefs.length > 0 && entryCodePreviewShellWidthPx > 0;
+
+  const previewGridMountKey = `ec-${entryCodePreviewFixedViewport}-${String(rawFile?.[0]?.lastModified ?? "")}-${String(rawFile?.[0]?.name ?? "")}-${columnDefs.map((c) => c.field).join(",")}`;
+
+  useLayoutEffect(() => {
+    if (!hasActiveEntryCodeUpload || fileType !== "csvORxls") return;
+    setPreviewGridReady(false);
+  }, [hasActiveEntryCodeUpload, fileType, previewGridMountKey]);
+
+  const handlePreviewStable = useCallback(() => {
+    setPreviewGridReady(true);
+  }, []);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -97,7 +109,7 @@ const UploadPage = () => {
           sx={{
             display: { xs: "flex", md: "grid" },
             flexDirection: { xs: "column" },
-            gridTemplateColumns: { md: "auto minmax(0, 1fr)" },
+            gridTemplateColumns: { md: "400px minmax(0, 1fr)" },
             alignItems: { xs: "stretch", md: "start" },
             columnGap: { md: 5 },
             rowGap: { xs: 0.5, md: 0 },
@@ -107,7 +119,8 @@ const UploadPage = () => {
             flex: 1,
             width: "100%",
             maxWidth: "100%",
-            boxSizing: "border-box"
+            boxSizing: "border-box",
+            scrollbarGutter: "stable"
           }}
         >
           <Box
@@ -115,18 +128,18 @@ const UploadPage = () => {
               minWidth: 0,
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
-              width: { xs: "100%", md: "max-content" },
-              justifySelf: { md: "start" }
+              alignItems: "stretch",
+              width: { xs: "100%", md: "100%" },
+              justifySelf: { md: "stretch" }
             }}
           >
             <Box
               sx={{
                 width: "100%",
-                maxWidth: { xs: 420, md: 400 },
+                maxWidth: { xs: 420, md: "100%" },
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center"
+                alignItems: "stretch"
               }}
             >
               <Drop
@@ -144,6 +157,7 @@ const UploadPage = () => {
                   "Note: Your .csv file contains a list of entry codes. You can also include language labels for each entry code in adjacent columns"
                 )}
                 version={5}
+                fullWidthCard
               />
               <Box
                 display="flex"
@@ -192,42 +206,54 @@ const UploadPage = () => {
                 </Typography>
                 <Box
                   sx={{
+                    position: "relative",
                     width: "100%",
+                    maxWidth: previewCsvCanMount
+                      ? Math.min(
+                          LAN_GRID_SHELL_WIDTH_PX,
+                          entryCodePreviewShellWidthPx
+                        )
+                      : LAN_GRID_SHELL_WIDTH_PX,
+                    alignSelf: "center",
+                    mt: 2,
+                    minWidth: 0,
                     display: "flex",
                     justifyContent: "center",
-                    mt: 2,
-                    overflowX: "auto",
                     boxSizing: "border-box"
                   }}
                 >
-                  <div
-                    className={`entry-code-upload-preview-grid ag-theme-balham${
-                      entryCodePreviewFixedViewport ? "" : " ag-grid-compact"
-                    }`}
-                    style={{
-                      maxWidth: "100%",
-                      boxSizing: "border-box",
-                      ...(entryCodePreviewFixedViewport ? {} : { height: "fit-content" })
-                    }}
-                  >
-                    <style>{`${gridStyles}${entryCodeUploadPreviewGridLayoutCss(
-                      entryCodePreviewFixedViewport
-                    )}`}</style>
-                    <div style={{ minWidth: Math.min(previewGridWidthPx, ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX) }}>
-                      <AgGridReact
-                        key={entryCodePreviewFixedViewport ? "fx" : "ah"}
-                        ref={gridRef}
-                        rowData={tempEntryCodeRowData}
-                        columnDefs={columnDefs}
-                        domLayout={entryCodePreviewFixedViewport ? undefined : "autoHeight"}
-                        style={{
-                          width: "100%",
-                          height: entryCodePreviewFixedViewport ? "100%" : "auto"
-                        }}
-                        suppressFieldDotNotation={true}
-                      />
-                    </div>
-                  </div>
+                  {hasActiveEntryCodeUpload &&
+                    fileType === "csvORxls" &&
+                    (!previewCsvCanMount || !previewGridReady) && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        inset: 0,
+                        zIndex: 2,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(255,255,255,0.92)",
+                        minHeight: entryCodePreviewFixedViewport
+                          ? { xs: 280, sm: "min(70vh, 560px)" }
+                          : 200
+                      }}
+                    >
+                      <Spinner text={t("Loading...")} size={36} />
+                    </Box>
+                  )}
+                  {previewCsvCanMount && (
+                    <EntryCodeUploadPreviewGrid
+                      gridRef={gridRef}
+                      rowData={tempEntryCodeRowData}
+                      columnDefs={columnDefs}
+                      fixedViewport={entryCodePreviewFixedViewport}
+                      shellWidthPx={entryCodePreviewShellWidthPx}
+                      onPreviewStable={handlePreviewStable}
+                      onCellValueChanged={onEntryCodePreviewCellValueChanged}
+                      gridMountKey={previewGridMountKey}
+                    />
+                  )}
                 </Box>
               </Box>
             ) : hasActiveEntryCodeUpload &&

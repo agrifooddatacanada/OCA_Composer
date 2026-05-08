@@ -21,7 +21,8 @@ export default function Drop({
   description,
   tipDescription,
   interfaceType = 0,
-  noteDescription
+  noteDescription,
+  fullWidthCard = false
 }) {
   const { t } = useTranslation();
   const primaryColor = usePrimaryColor();
@@ -169,6 +170,7 @@ export default function Drop({
           description={description}
           tipDescription={tipDescription}
           noteDescription={noteDescription}
+          fullWidthCard={fullWidthCard}
         />
       )}
     </>

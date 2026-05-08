@@ -15,6 +15,11 @@ export const ENTRY_CODE_CODE_WIDTH = 200;
 export const ENTRY_CODE_LANG_WIDTH = 200;
 export const ENTRY_CODE_DELETE_WIDTH = 44;
 export const ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX = 1120;
+/** Same total width as Language Details (Labels) `LanGrid` shell — preview matches that table. */
+export const LAN_GRID_SHELL_WIDTH_PX = 885;
+/** Minimum time the CSV preview loading overlay stays visible after a new file/columns mount. */
+export const ENTRY_CODE_UPLOAD_PREVIEW_SPINNER_MIN_MS = 250;
+export const ENTRY_CODE_PREVIEW_ROW_ID_KEY = "__ecPreviewRid";
 export const HEADER_TO_CONTENT_GAP_PX = 12;
 export const BETWEEN_SECTION_SPACING = 6;
 export const TOOLTIP_ICON_GAP = 1.5;

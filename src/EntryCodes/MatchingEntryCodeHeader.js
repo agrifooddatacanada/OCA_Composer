@@ -19,6 +19,54 @@ import { DropdownMenuList } from '../components/DropdownMenuCell';
 
 const INTERNAL_CODE_ROW_KEY = 'Code';
 
+function normalizeHeader(h) {
+  return String(h ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+const CODE_COLUMN_HEADERS = new Set(
+  [
+    "code",
+    "abbreviation",
+    "abbr",
+    "short name",
+    "shortname",
+    "short_code",
+    "short code",
+    "id",
+    "key",
+    "symbol",
+    "sku"
+  ].map((s) => s.toLowerCase())
+);
+
+function headerMatchesCodeColumn(header) {
+  const x = normalizeHeader(header);
+  if (!x) return false;
+  if (CODE_COLUMN_HEADERS.has(x)) return true;
+  if (/\bpostcode\b|\bzipcode\b|\bunicode\b/i.test(x)) return false;
+  return /\bcode\b/.test(x);
+}
+
+const LABEL_COLUMN_HEADERS = new Set(
+  [
+    "name",
+    "license name",
+    "title",
+    "label",
+    "description",
+    "full name",
+    "long name",
+    "display name"
+  ].map((s) => s.toLowerCase())
+);
+
+function headerMatchesPrimaryLabelColumn(header) {
+  const x = normalizeHeader(header);
+  return LABEL_COLUMN_HEADERS.has(x);
+}
+
 export const DataHeaderRenderer = memo(
   forwardRef((props, ref) => {
     const { t } = useTranslation();
@@ -103,13 +151,27 @@ const MatchingEntryCodeHeader = () => {
   const gridRef = useRef();
 
   const matchingFunction = useCallback((unassignedVar, attr) => {
+    const attrLc = String(attr ?? "").toLowerCase();
     for (let i = 0; i < unassignedVar.length; i++) {
-      if (unassignedVar[i].toLowerCase() === attr.toLowerCase()) {
+      if (unassignedVar[i].toLowerCase() === attrLc) {
         return i;
       }
     }
+    if (attr === INTERNAL_CODE_ROW_KEY) {
+      for (let i = 0; i < unassignedVar.length; i++) {
+        if (headerMatchesCodeColumn(unassignedVar[i])) {
+          return i;
+        }
+      }
+    } else {
+      for (let i = 0; i < unassignedVar.length; i++) {
+        if (headerMatchesPrimaryLabelColumn(unassignedVar[i])) {
+          return i;
+        }
+      }
+    }
     for (let i = 0; i < unassignedVar.length; i++) {
-      if (unassignedVar[i].toLowerCase().includes(attr.toLowerCase())) {
+      if (unassignedVar[i].toLowerCase().includes(attrLc)) {
         return i;
       }
     }

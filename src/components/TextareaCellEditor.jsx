@@ -17,14 +17,17 @@ const textareaStyle = {
 };
 
 const TextareaCellEditor = forwardRef((props, ref) => {
+  const strictAttrName =
+    props.cellEditorParams?.skipAttributeNameValidation === true
+      ? false
+      : props.cellEditorParams?.enforceAttributeNamingRules === true ||
+        props.colDef?.field === "Attribute";
+
   const [value, setValue] = useState(() => {
     // If the cell editor was opened via a key press, validate the character initially
     if (props.charPress != null) {
       const initialValue = (props.value ?? "") + props.charPress;
-      if (
-        (props.colDef?.field === "Attribute" || props.colDef?.field === "Name") &&
-        hasDisallowedChars(initialValue)
-      ) {
+      if (strictAttrName && hasDisallowedChars(initialValue)) {
         if (props.context?.triggerInvalidCharModal) {
           // Wrap in a setTimeout so the context method is called after render cycle
           setTimeout(() => props.context.triggerInvalidCharModal(), 0);
@@ -67,7 +70,7 @@ const TextareaCellEditor = forwardRef((props, ref) => {
 
   const handleChange = (e) => {
     const newValue = e.target.value;
-    if ((props.colDef?.field === "Attribute" || props.colDef?.field === "Name") && hasDisallowedChars(newValue)) {
+    if (strictAttrName && hasDisallowedChars(newValue)) {
       if (props.context?.triggerInvalidCharModal) {
         props.context.triggerInvalidCharModal();
       }

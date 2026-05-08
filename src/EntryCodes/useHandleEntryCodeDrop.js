@@ -2,6 +2,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState
@@ -17,13 +18,18 @@ import { getCurrentData } from "../utils/helpers";
 import {
   ADC,
   AG_GRID_VIRTUALIZE_MIN_ROWS,
-  ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX
+  ENTRY_CODE_PREVIEW_ROW_ID_KEY,
+  LAN_GRID_SHELL_WIDTH_PX,
+  MAX_ATTR_DESCRIPTION_CHARS
 } from "../constants/constants";
 import {
   coerceIfLegacyTopLevelBundle,
   getRootCaptureBaseId
 } from "../utils/packageUtils";
 import { languageNameToAlpha3Codes } from "../constants/isoCodes";
+import { preWrapWordBreak } from "../constants/styles";
+import CellHeader from "../components/CellHeader";
+import TextareaCellEditor from "../components/TextareaCellEditor";
 import {
   langNameFromCodeOCA,
   langNameFromTwoLetters,
@@ -171,8 +177,8 @@ const useHandleEntryCodeDrop = () => {
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(persistedOnMount.dropDisabled);
   const [dropMessage, setDropMessage] = useState({ message: "", type: "" });
-  const [tableLength, setTableLength] = useState(0);
   const [columnDefs, setColumnDefs] = useState([]);
+  const [entryCodePreviewShellWidthPx, setEntryCodePreviewShellWidthPx] = useState(0);
   const [fileType, setFileType] = useState(persistedOnMount.fileType);
   const [selectionValue, setSelectionValue] = useState("Upload");
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
@@ -199,6 +205,24 @@ const useHandleEntryCodeDrop = () => {
     setTempEntryList
   ]);
 
+  useLayoutEffect(() => {
+    if (!Array.isArray(entryCodeHeaders) || entryCodeHeaders.length === 0) {
+      return;
+    }
+    setTempEntryCodeRowData((rows) => {
+      if (!Array.isArray(rows) || rows.length === 0) {
+        return rows;
+      }
+      if (rows.every((r) => r && r[ENTRY_CODE_PREVIEW_ROW_ID_KEY] != null)) {
+        return rows;
+      }
+      return rows.map((row, i) => ({
+        ...row,
+        [ENTRY_CODE_PREVIEW_ROW_ID_KEY]: row[ENTRY_CODE_PREVIEW_ROW_ID_KEY] ?? `ecp-${i}`
+      }));
+    });
+  }, [entryCodeHeaders, setTempEntryCodeRowData]);
+
   const processCSVFile = useCallback((file) => {
     try {
       Papa.parse(file, {
@@ -214,7 +238,12 @@ const useHandleEntryCodeDrop = () => {
         complete: (results) => {
           setTempEntryCodeSummary(undefined);
           setTempEntryList([]);
-          setTempEntryCodeRowData(results.data);
+          setTempEntryCodeRowData(
+            results.data.map((row, i) => ({
+              ...row,
+              [ENTRY_CODE_PREVIEW_ROW_ID_KEY]: `ecp-${i}`
+            }))
+          );
           setEntryCodeHeaders(results.meta.fields);
           setFileType("csvORxls");
           setLoading(false);
@@ -350,7 +379,13 @@ const useHandleEntryCodeDrop = () => {
     if (selectionValue === "Upload") {
       if (fileType === "csvORxls") {
         const currentData = getCurrentData(gridRef.current.api, true);
-        setTempEntryCodeRowData(currentData);
+        setTempEntryCodeRowData(
+          currentData.map((row) => {
+            const copy = { ...row };
+            delete copy[ENTRY_CODE_PREVIEW_ROW_ID_KEY];
+            return copy;
+          })
+        );
         setCurrentPage("MatchingEntryCodes");
       } else if (fileType === "json" || fileType === "zip") {
         setCurrentPage("MatchingJSONEntryCodes");
@@ -411,6 +446,11 @@ const useHandleEntryCodeDrop = () => {
   }, [processCSVFile, processJSONFile, processZipFile, rawFile]);
 
   useEffect(() => {
+    if (!Array.isArray(entryCodeHeaders) || entryCodeHeaders.length === 0) {
+      setColumnDefs([]);
+      setEntryCodePreviewShellWidthPx(0);
+      return;
+    }
     const rows = Array.isArray(tempEntryCodeRowData) ? tempEntryCodeRowData : [];
     const widths = entryCodeHeaders.map((header) => {
       const field = header;
@@ -440,35 +480,60 @@ const useHandleEntryCodeDrop = () => {
     });
     const rawSum = widths.reduce((a, b) => a + b, 0);
     const scale =
-      rawSum > ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX && rawSum > 0
-        ? ENTRY_CODE_UPLOAD_PREVIEW_MAX_WIDTH_PX / rawSum
+      rawSum > LAN_GRID_SHELL_WIDTH_PX && rawSum > 0
+        ? LAN_GRID_SHELL_WIDTH_PX / rawSum
         : 1;
     const titles = [];
-    let newTableLength = 0;
     entryCodeHeaders.forEach((header, idx) => {
       const w = Math.max(
         ENTRY_CODE_PREVIEW_MIN_COL,
         Math.floor(widths[idx] * scale)
       );
+      const headerText = translateEntryCodePreviewColumnHeader(
+        header,
+        t,
+        schemaLanguageNames
+      );
       titles.push({
-        headerName: translateEntryCodePreviewColumnHeader(
-          header,
-          t,
-          schemaLanguageNames
-        ),
         field: header,
         width: w,
         minWidth: ENTRY_CODE_PREVIEW_MIN_COL,
         wrapText: true,
-        autoHeight: true,
         resizable: true,
-        editable: true
+        editable: true,
+        cellStyle: () => preWrapWordBreak,
+        cellEditor: TextareaCellEditor,
+        cellEditorParams: {
+          maxLength: MAX_ATTR_DESCRIPTION_CHARS,
+          skipAttributeNameValidation: true
+        },
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText
+        }
       });
-      newTableLength += w;
     });
-    setTableLength(newTableLength);
+    const totalW = titles.reduce((sum, col) => sum + (col.width || 0), 0);
+    setEntryCodePreviewShellWidthPx(totalW);
     setColumnDefs(titles);
-  }, [entryCodeHeaders, tempEntryCodeRowData, t, i18n.language, schemaLanguageNames]);
+  }, [entryCodeHeaders, t, i18n.language, schemaLanguageNames]);
+
+  const onEntryCodePreviewCellValueChanged = useCallback(
+    (event) => {
+      if (event.source !== "edit") return;
+      const { field } = event.colDef;
+      const newValue = event.newValue ?? "";
+      const rowIndex = event.node.rowIndex;
+      setTempEntryCodeRowData((prev) => {
+        const next = Array.isArray(prev) ? [...prev] : [];
+        if (rowIndex != null && rowIndex >= 0 && next[rowIndex]) {
+          next[rowIndex] = { ...next[rowIndex], [field]: newValue };
+        }
+        return next;
+      });
+    },
+    [setTempEntryCodeRowData]
+  );
 
   const entryCodePreviewFixedViewport = useMemo(
     () => (tempEntryCodeRowData?.length || 0) >= AG_GRID_VIRTUALIZE_MIN_ROWS,
@@ -547,7 +612,6 @@ const useHandleEntryCodeDrop = () => {
     setDropMessage,
     handleClearUpload,
     tempEntryCodeRowData,
-    tableLength,
     columnDefs,
     handleSave,
     gridRef,
@@ -564,7 +628,9 @@ const useHandleEntryCodeDrop = () => {
     hasActiveEntryCodeUpload,
     bundleHasEntryCodes,
     entryCodeUploadForwardEnabled,
-    entryCodePreviewFixedViewport
+    entryCodePreviewFixedViewport,
+    entryCodePreviewShellWidthPx,
+    onEntryCodePreviewCellValueChanged
   };
 };
 

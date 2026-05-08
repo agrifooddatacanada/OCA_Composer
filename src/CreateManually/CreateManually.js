@@ -177,7 +177,8 @@ export default function CreateManually() {
       wrapText: true,
       cellEditor: TextareaCellEditor,
       cellEditorParams: {
-        context: { triggerInvalidCharModal: () => setShowInvalidCharModal(true) }
+        context: { triggerInvalidCharModal: () => setShowInvalidCharModal(true) },
+        enforceAttributeNamingRules: true
       },
       cellStyle: () => ({
         ...preWrapWordBreak,

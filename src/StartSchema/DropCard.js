@@ -30,7 +30,8 @@ export default function DropCard({
   handleDragLeave,
   description = defaultUploadedDescription,
   tipDescription = defaultTooltip,
-  noteDescription = defaultNoteDescription
+  noteDescription = defaultNoteDescription,
+  fullWidthCard = false
 }) {
   const { t } = useTranslation();
   const { currentTheme } = useContext(Context);
@@ -43,10 +44,15 @@ export default function DropCard({
         minHeight: "16rem",
         marginTop: "3rem",
         marginBottom: "1rem",
-        paddingTop: dropMessage?.message?.length > 0 ? "2.75rem" : 0
+        paddingTop: dropMessage?.message?.length > 0 ? "2.75rem" : 0,
+        ...(fullWidthCard ? { width: "100%", boxSizing: "border-box" } : null)
       }}
     >
-      <div {...getRootProps({ className: "dropzone" })}>
+      <Box
+        component="div"
+        {...getRootProps({ className: "dropzone" })}
+        sx={{ width: "100%", boxSizing: "border-box" }}
+      >
         <input {...getInputProps()} />
         <Box sx={{ position: "relative", width: "100%", maxWidth: "100%" }}>
           {dropMessage?.message?.length > 0 && (
@@ -88,8 +94,16 @@ export default function DropCard({
               sx={{
                 position: "relative",
                 overflow: "visible",
-                maxWidth: 575,
-                margin: "auto",
+                ...(fullWidthCard
+                  ? {
+                      width: "100%",
+                      maxWidth: "100%",
+                      mx: 0
+                    }
+                  : {
+                      maxWidth: 575,
+                      margin: "auto"
+                    }),
                 border: "1px dashed grey",
                 transition: "all 0.2s ease-in-out",
                 boxShadow: hover === true && dropDisabled === false ? 9 : 0,
@@ -184,7 +198,7 @@ export default function DropCard({
           </Card>
           </Box>
         </Box>
-      </div>
+      </Box>
     </section>
   );
 }
