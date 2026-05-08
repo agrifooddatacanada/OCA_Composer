@@ -690,7 +690,7 @@
   "Specify if attributes must have data.": "Précisez si les attributs doivent contenir des données.",
   "Here you can start to define a form of questions. Start by editing placeholder answers for each question. Then hit NEXT to define pages, sections, and more.": "Ici, vous pouvez commencer à définir un formulaire de questions. Commencez par modifier les réponses indicatives pour chaque question. Ensuite, cliquez sur SUIVANT pour définir les pages, les sections et plus encore.",
   "Link attributes to terms drawn from an ontology or controlled vocabulary.": "Associez les attributs à des termes tirés d'une ontologie ou d'un vocabulaire contrôlé.",
-  "Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes.": "Ajoutez des valeurs min. et/ou max. (inclusives ou exclusives) pour les attributs ayant des types de données Numérique ou Date et Heure.",
+  "Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes.": "Ajoutez des valeurs min. et/ou max. (inclusives ou exclusives) pour les attributs ayant des types de données Numérique ou Date et Heure. Seuls les attributs ayant une règle de format sont affichés.",
   "Specify the format of values for Text, Numeric, DateTime, and Binary attributes.": "Spécifiez le format des valeurs pour les attributs Texte, Numérique, Date et Heure, et Binaire.",
   "Link units to terms drawn from an ontology or controlled vocabulary.": "Associez les unités à des termes tirés d'une ontologie ou d'un vocabulaire contrôlé.",
   "Define how many values your Array[] datatype attributes can have.": "Définissez combien de valeurs vos attributs de type de données Array[] (Tableau) peuvent avoir.",

@@ -703,7 +703,7 @@
   "Specify if attributes must have data.": "Specify if attributes must have data.",
   "Here you can start to define a form of questions. Start by editing placeholder answers for each question. Then hit NEXT to define pages, sections, and more.": "Here you can start to define a form of questions. Start by editing placeholder answers for each question. Then hit NEXT to define pages, sections, and more.",
   "Link attributes to terms drawn from an ontology or controlled vocabulary.": "Link attributes to terms drawn from an ontology or controlled vocabulary.",
-  "Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes.": "Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes.",
+  "Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes.": "Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes. Only attributes with format rules are shown.",
   "Specify the format of values for Text, Numeric, DateTime, and Binary attributes.": "Specify the format of values for Text, Numeric, DateTime, and Binary attributes.",
   "Link units to terms drawn from an ontology or controlled vocabulary.": "Link units to terms drawn from an ontology or controlled vocabulary.",
   "Define how many values your Array[] datatype attributes can have.": "Define how many values your Array[] datatype attributes can have.",
