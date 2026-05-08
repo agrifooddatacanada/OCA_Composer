@@ -21,6 +21,7 @@ import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 import { useMultiSchema } from "../schema/schemaContext";
 import { langCodeOCAFromName, langNameFromCodeOCA } from "../utils/languageUtils";
 import { getPackageBundle } from "../utils/packageUtils";
+import { OCAParser } from "../utils/ocaParser";
 
 const errorMessages = {
   fieldEmpty: "Please fill in entry codes.",
@@ -31,7 +32,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const { currentSchemaId, getSchema, updateSchema, getLanguages } = useMultiSchema();
+  const { currentSchemaId, getSchema, updateSchema, getLanguages, ocaPackage } = useMultiSchema();
   const schemaState = getSchema();
   
   // Get languages from schema state (per-schema)
@@ -176,16 +177,22 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
 
       if (Object.keys(initialized).length === 0) return;
 
+      const initializedOrdered = OCAParser.mergeEntryCodesWithAdcOrdering(
+        initialized,
+        ocaPackage,
+        currentSchemaId
+      );
+
       // Update schema state
       updateSchema({
-        entryCodes: { ...entryCodeRowData, ...initialized }
+        entryCodes: { ...entryCodeRowData, ...initializedOrdered }
       });
 
       // Always update the visible grid rows too for immediate UI feedback
       const attributeArray = attrList;
       const alignedEntryCodesArray = attributeArray.map((attr) => {
-        const rowsForAttr = Array.isArray(initialized[attr])
-          ? initialized[attr]
+        const rowsForAttr = Array.isArray(initializedOrdered[attr])
+          ? initializedOrdered[attr]
           : [{ Code: "" }];
         return rowsForAttr.map((r) => ({ ...r }));
       });

@@ -71,24 +71,7 @@ export class OCAParser {
       return null;
     }
 
-    // Get the capture_base ID for looking up extensions
-    // Extensions are keyed by capture_base.d, not bundle.d
-    // For root schema, use bundle.capture_base.d
-    // For child schemas in dependencies, find the matching dependency's capture_base.d
-    let captureBaseId = flatOcaPackageForParsing?.bundle?.capture_base?.d;
-    
-    // Check if this is a child schema by looking in dependencies
-    if (flatOcaPackageForParsing?.dependencies) {
-      const dependency = flatOcaPackageForParsing.dependencies.find(
-        dep => dep.d === schemaId || dep.capture_base?.d === schemaId
-      );
-      if (dependency) {
-        captureBaseId = dependency.capture_base?.d || schemaId;
-      }
-    }
-    
-    // Fallback to schemaId if we couldn't determine capture_base ID
-    captureBaseId = captureBaseId || schemaId;
+    const captureBaseId = OCAParser._resolveCaptureBaseId(flatOcaPackageForParsing, schemaId);
 
     // Extract sensitive attributes from capture_base.flagged_attributes and ADC sensitive extension
     // For child schemas, get from dependencies
@@ -107,6 +90,7 @@ export class OCAParser {
     // Merge with ADC sensitive extension (sensitive_attributes)
     const adcExtensions = flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId] ??
       flatOcaPackageForParsing?.extensions?.adc?.[bundleId];
+    const orderingOverlay = OCAParser._getAdcOrderingOverlay(adcExtensions);
     const sensitiveOverlay = Array.isArray(adcExtensions)
       ? adcExtensions.find((ov) => ov?.sensitive_overlay)?.sensitive_overlay
       : adcExtensions?.overlays?.[SENSITIVE];
@@ -120,6 +104,10 @@ export class OCAParser {
 
     // Parse entry overlays to mark lists and construct entry codes
     const { entryCodes, listSet } = this._parseEntryOverlays(schemaData.overlays?.entry);
+    const entryCodesOrdered = OCAParser._applyEntryCodeOrderFromOverlay(
+      entryCodes,
+      orderingOverlay?.entry_code_ordering
+    );
 
     const attributesWithLists = attributes.map((a) => ({
       ...a,
@@ -135,7 +123,6 @@ export class OCAParser {
       attributesWithLists
     );
 
-    const orderingOverlay = OCAParser._getAdcOrderingOverlay(adcExtensions);
     const orderingNamesRaw = orderingOverlay?.attribute_ordering;
     let attributesOrdered = attributesWithLists;
     let lanOrdered = lanAttributeRowData;
@@ -164,7 +151,7 @@ export class OCAParser {
       attributesOrdered,
       flatOcaPackageForParsing,
       captureBaseId,
-      entryCodes,           // Pass entryCodes for form builder
+      entryCodesOrdered,           // Pass entryCodes for form builder
       lanOrdered   // Pass lanAttributeRowData for form builder
     );
 
@@ -214,7 +201,7 @@ export class OCAParser {
       // Note: attributesList removed - now computed via getAttributesList() in MultiSchemaContext
       overlays: schemaData.overlays || {},
       overlaySelections,
-      entryCodes,
+      entryCodes: entryCodesOrdered,
       attributesWithLists: attributesOrdered
         .filter((a) => a.List)
         .map((a) => a.Attribute),
@@ -236,6 +223,46 @@ export class OCAParser {
       enableArrayDelimiter: dataSeparator.enableArrayDelimiter,
       initialized: true  // CRITICAL: Marks schema as parsed (don't re-parse)
     };
+  }
+
+  static _resolveCaptureBaseId(flatOcaPackage, schemaId) {
+    let captureBaseId = flatOcaPackage?.bundle?.capture_base?.d;
+    if (flatOcaPackage?.dependencies) {
+      const dependency = flatOcaPackage.dependencies.find(
+        (dep) => dep.d === schemaId || dep.capture_base?.d === schemaId
+      );
+      if (dependency) {
+        captureBaseId = dependency.capture_base?.d || schemaId;
+      }
+    }
+    return captureBaseId || schemaId;
+  }
+
+  static getEntryCodeOrderingMapForSchema(ocaPackage, schemaId) {
+    if (!ocaPackage || schemaId == null || schemaId === "") return null;
+    const flatOcaPackage = ocaPackage?.oca_bundle
+      ? {
+          bundle: getPackageBundle(ocaPackage),
+          dependencies: getPackageDependencies(ocaPackage),
+          extensions: ocaPackage.extensions || ocaPackage.oca_bundle.extensions || {}
+        }
+      : ocaPackage;
+    const captureBaseId = OCAParser._resolveCaptureBaseId(flatOcaPackage, schemaId);
+    const bundleId = getPackageBundleId(flatOcaPackage);
+    const adcExtensions =
+      flatOcaPackage?.extensions?.adc?.[captureBaseId] ??
+      flatOcaPackage?.extensions?.adc?.[bundleId];
+    const orderingOverlay = OCAParser._getAdcOrderingOverlay(adcExtensions);
+    const raw = orderingOverlay?.entry_code_ordering;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    if (Object.keys(raw).length === 0) return null;
+    return replaceCharsInKeys(raw);
+  }
+
+  static mergeEntryCodesWithAdcOrdering(entryCodesByAttr, ocaPackage, schemaId) {
+    const map = OCAParser.getEntryCodeOrderingMapForSchema(ocaPackage, schemaId);
+    if (!map) return entryCodesByAttr;
+    return OCAParser._reorderEntryCodeRowsByMap(entryCodesByAttr, map);
   }
 
   /**
@@ -313,6 +340,47 @@ export class OCAParser {
         if (!used.has(r.Attribute)) ord.push(r);
       });
       next[lang] = ord;
+    });
+    return next;
+  }
+
+  static _applyEntryCodeOrderFromOverlay(entryCodes, rawEntryCodeOrdering) {
+    if (!entryCodes || typeof entryCodes !== "object") return entryCodes;
+    if (
+      !rawEntryCodeOrdering ||
+      typeof rawEntryCodeOrdering !== "object" ||
+      Array.isArray(rawEntryCodeOrdering) ||
+      Object.keys(rawEntryCodeOrdering).length === 0
+    ) {
+      return entryCodes;
+    }
+    const orderMap = replaceCharsInKeys(rawEntryCodeOrdering);
+    return OCAParser._reorderEntryCodeRowsByMap(entryCodes, orderMap);
+  }
+
+  static _reorderEntryCodeRowsByMap(entryCodes, orderMap) {
+    if (!orderMap || typeof orderMap !== "object") return entryCodes;
+    const next = { ...entryCodes };
+    Object.keys(orderMap).forEach((attr) => {
+      const order = orderMap[attr];
+      const rows = next[attr];
+      if (!Array.isArray(order) || order.length === 0 || !Array.isArray(rows) || rows.length === 0) {
+        return;
+      }
+      const byCode = new Map(rows.map((r) => [r.Code, r]));
+      const ordered = [];
+      const used = new Set();
+      order.forEach((code) => {
+        const row = byCode.get(code);
+        if (row) {
+          ordered.push(row);
+          used.add(code);
+        }
+      });
+      rows.forEach((row) => {
+        if (!used.has(row.Code)) ordered.push(row);
+      });
+      next[attr] = ordered;
     });
     return next;
   }
