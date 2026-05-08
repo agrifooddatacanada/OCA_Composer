@@ -531,7 +531,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
               zIndex: 1
             }}
           >
-            <Loading spinner />
+            <Loading spinner contained />
           </Box>
         )}
       </Box>

@@ -692,7 +692,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       isForward
       pageForward={pageForwardSave}
     >
-      {loading && <Loading spinner />}
       {showCard && (
         <ErrorPopup onClose={() => setShowCard(false)}>
           <Box>
@@ -733,14 +732,24 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       {/* We removed the generic errorMessage ErrorPopup to restore the inline error display for other general errors */}
       <Box
         sx={{
+          position: "relative",
           width: "fit-content",
           display: "flex",
           flexDirection: "column",
-          alignItems: "flex-end",
-          visibility: loading ? "hidden" : "visible",
-          pointerEvents: loading ? "none" : "auto"
+          alignItems: "flex-end"
         }}
       >
+        {loading && <Loading spinner contained />}
+        <Box
+          sx={{
+            width: "fit-content",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            visibility: loading ? "hidden" : "visible",
+            pointerEvents: loading ? "none" : "auto"
+          }}
+        >
         <div ref={refContainer}>
           <Grid
             gridRef={gridRef}
@@ -776,6 +785,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
             errorMessage={errorMessage}
             triggerInvalidCharModal={() => setShowInvalidCharModal(true)}
           />
+        </Box>
         </Box>
       </Box>
     </BackNextSkeleton>
