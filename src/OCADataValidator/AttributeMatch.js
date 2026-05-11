@@ -1,17 +1,29 @@
-import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
-import { AgGridReact } from "../components/AgGridReact";
 import { Box, List, ListItem, ListItemText, MenuItem, Typography } from "@mui/material";
+import { AgGridReact } from "../components/AgGridReact";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { Context } from "../App";
 import Languages from "./Languages";
-import { greyCellStyle, gridStyles, AG_GRID_DROPDOWN_CELL_CLASS } from "../constants/styles";
+import {
+  greyCellStyle,
+  gridStyles,
+  AG_GRID_DROPDOWN_CELL_CLASS
+} from "../constants/styles";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
 import { useMultiSchema } from "../schema/schemaContext";
-import { langNameFromTwoLetters, getUILangName, LanguageConstants } from "../utils/languageUtils";
+import { getUILangName, LanguageConstants } from "../utils/languageUtils";
 
 export const DataHeaderRenderer = memo((props) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -92,10 +104,19 @@ const AttributeMatch = () => {
     setNotToVerifyAttributes
   } = useContext(Context);
 
-  const { getLanguages, getAttributesList, getSchema, schemaStates, currentSchemaId, ocaPackage } =
-    useMultiSchema();
+  const {
+    getLanguages,
+    getAttributesList,
+    getSchema,
+    schemaStates,
+    currentSchemaId,
+    ocaPackage
+  } = useMultiSchema();
   const _rawLanguages = getLanguages();
-  const languages = Array.isArray(_rawLanguages) && _rawLanguages.length ? _rawLanguages : [LanguageConstants.DEFAULT_LANG_NAME];
+  const languages =
+    Array.isArray(_rawLanguages) && _rawLanguages.length
+      ? _rawLanguages
+      : [LanguageConstants.DEFAULT_LANG_NAME];
 
   const attributeSignature = useMemo(() => {
     const names = getAttributesList();
@@ -104,7 +125,10 @@ const AttributeMatch = () => {
 
   const [type, setType] = useState(() => {
     const siteLanguage = getUILangName();
-    const langNames = Array.isArray(languages) && languages.length ? languages : [LanguageConstants.DEFAULT_LANG_NAME];
+    const langNames =
+      Array.isArray(languages) && languages.length
+        ? languages
+        : [LanguageConstants.DEFAULT_LANG_NAME];
     const chosen =
       siteLanguage === "English"
         ? langNames[0]
@@ -209,11 +233,16 @@ const AttributeMatch = () => {
   // Change selected language when site language changes
   useEffect(() => {
     const siteLanguage = getUILangName();
-    const langNames = Array.isArray(languages) && languages.length ? languages : [LanguageConstants.DEFAULT_LANG_NAME];
+    const langNames =
+      Array.isArray(languages) && languages.length
+        ? languages
+        : [LanguageConstants.DEFAULT_LANG_NAME];
     const newType =
       siteLanguage === "English"
-        ? (langNames[0] || LanguageConstants.DEFAULT_LANG_NAME)
-        : (langNames.find((language) => language.includes(siteLanguage)) || langNames[0] || LanguageConstants.DEFAULT_LANG_NAME);
+        ? langNames[0] || LanguageConstants.DEFAULT_LANG_NAME
+        : langNames.find((language) => language.includes(siteLanguage)) ||
+          langNames[0] ||
+          LanguageConstants.DEFAULT_LANG_NAME;
     setType(newType);
   }, [i18next.language, languages]);
 
@@ -233,7 +262,9 @@ const AttributeMatch = () => {
         });
         setMatchingRowData(newMatchingRowData);
       } else {
-        const attributeNames = Array.isArray(getAttributesList()) ? getAttributesList() : [];
+        const attributeNames = Array.isArray(getAttributesList())
+          ? getAttributesList()
+          : [];
         if (attributeNames.length > 0) {
           const schema = getSchema();
           const lanAttributeRowData = schema?.lanAttributeRowData || {};
@@ -331,7 +362,9 @@ const AttributeMatch = () => {
         }}
         isForward
         pageForward={handleSavePage}
-        middleText={t("You must match your dataset columns (variables) to the attributes in your schema. The verifier attempts to match names automatically. If there are mismatches or unassigned matches you can correct that here.")}
+        middleText={t(
+          "You must match your dataset columns (variables) to the attributes in your schema. The verifier attempts to match names automatically. If there are mismatches or unassigned matches you can correct that here."
+        )}
       />
       <Box
         sx={{
