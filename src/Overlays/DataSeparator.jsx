@@ -60,7 +60,6 @@ const DataSeparator = () => {
   const { setCurrentPage, setSelectedOverlay } = useContext(Context);
   const { getSchema, updateSchema } = useMultiSchema();
   const schemaState = getSchema();
-
   const deleteHandler = useDeleteOverlayHandler(FIELD_DATA_SEPARATOR_OVERLAY);
 
   const attributeRowData = useMemo(
@@ -106,10 +105,10 @@ const DataSeparator = () => {
 
   const FIELD_DELIMITER_OPTIONS = useMemo(
     () => [
-      { value: ",", labelKey: "Comma (,)" },
+      { value: ",", labelKey: "Comma ( , )" },
       { value: "\t", labelKey: "Tab (\\t)" },
-      { value: ";", labelKey: "Semicolon (;)" },
-      { value: "|", labelKey: "Pipe (|)" }
+      { value: ";", labelKey: "Semicolon ( ; )" },
+      { value: "|", labelKey: "Pipe ( | )" }
     ],
     []
   );
@@ -309,7 +308,7 @@ const DataSeparator = () => {
             <SectionTitle
               checked={enableArrayDelimiter && hasArrayAttributes}
               onChange={setEnableArrayDelimiter}
-              title="Array Delimiter"
+              title="Array delimiter"
               help="Delimits values inside array attributes."
             />
             <Divider sx={{ my: 1 }} />
