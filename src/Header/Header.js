@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { getNormalizedUICode, getUICode, setUICode } from "../utils/languageUtils";
 import { Typography, Button, Box, useMediaQuery } from "@mui/material";
+import { getNormalizedUICode, getUICode, setUICode } from "../utils/languageUtils";
 
 import { CustomPalette } from "../constants/customPalette";
 // import logo from "../assets/agri-logo.png";
@@ -77,7 +77,8 @@ function getHeaderMeta(currentPage, t, selectedLanguage) {
     },
     AttributeFraming: { header: t("Add Attribute Framing"), toolTipText: t("Link attributes to terms drawn from an ontology or controlled vocabulary."), helpLink: `${base}/${lang}/AttributeFraming/` },
     UserSelection: { header: "", toolTipText: "", helpLink: `${base}/${lang}/Coauthor/` },
-    Range: { header: t("Add Range Rules for Data"), toolTipText: t("Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes."), helpLink: `${base}/${lang}/Range/` }
+    Range: { header: t("Add Range Rules for Data"), toolTipText: t("Add min. and/or max. values (inclusive or exclusive) for attributes with either Numeric or DateTime datatypes."), helpLink: `${base}/${lang}/Range/` },
+    DataSeparator: { header: t("Data Separator"), toolTipText: t("Configure how fields and lines are delimited in flat files."), helpLink: `${base}/${lang}/DataSeparator/` }
   };
   return switchMap[currentPage] || { header: "", toolTipText: "", helpLink: "" };
 }
