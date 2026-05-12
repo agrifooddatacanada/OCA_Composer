@@ -12,7 +12,7 @@ import CellHeader from "../components/CellHeader";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { langNameFromTwoLetters, langNameFromCodeOCA, langCodeOCAFromName, LanguageConstants, resolveLanguageData } from "../utils/languageUtils";
+import { langNameFromTwoLetters, langNameFromCodeOCA, LanguageConstants, resolveLanguageData } from "../utils/languageUtils";
 import i18next from "i18next";
 import {
   formatCodeBinaryDescription,
@@ -52,6 +52,215 @@ const findDescription = (formatText, attributeType, t = null) => {
 
 const PLACEHOLDER_EDITABLE_TYPES = ["Text", "Array[Text]", "DateTime", "Array[DateTime]", "Numeric", "Array[Numeric]"];
 
+// -----------------------------------------------------------------------------
+// Pure helpers for FormInformation row maintenance.
+//
+// All three return the *same reference* when no work is needed, so the
+// orchestrating effect below can use identity comparison (`!== prev`) instead
+// of stringifying the whole tree.
+// -----------------------------------------------------------------------------
+
+/**
+ * Normalize OCA 3-letter language codes (eng, fra, ...) in row maps to UI
+ * language names (English, French, ...). Returns the original references if
+ * no 3-letter keys are present.
+ */
+const normalizeLanguageKeys = (lanAttributeRowData, formPlaceholdersByLanguage) => {
+  const isOcaKey = (k) => /^[a-z]{3}$/.test(k);
+  const hasOcaLan = Object.keys(lanAttributeRowData || {}).some(isOcaKey);
+  const hasOcaPh = Object.keys(formPlaceholdersByLanguage || {}).some(isOcaKey);
+  if (!hasOcaLan && !hasOcaPh) {
+    return { lanAttributeRowData, formPlaceholdersByLanguage, changed: false };
+  }
+
+  const remap = (obj) => {
+    const out = {};
+    Object.entries(obj || {}).forEach(([k, v]) => {
+      const name = langNameFromCodeOCA(k) || langNameFromTwoLetters(k) || k;
+      out[name] = v;
+    });
+    return out;
+  };
+
+  return {
+    lanAttributeRowData: hasOcaLan ? remap(lanAttributeRowData) : lanAttributeRowData,
+    formPlaceholdersByLanguage: hasOcaPh ? remap(formPlaceholdersByLanguage) : formPlaceholdersByLanguage,
+    changed: true
+  };
+};
+
+/**
+ * Ensure every language has a row array seeded from attributes +
+ * FormInformationRowData + placeholders. Existing populated arrays are left
+ * untouched.
+ */
+const initializeLanguageRows = (
+  lanAttributeRowData,
+  languages,
+  attributesList,
+  attributeRowData,
+  FormInformationRowData,
+  formPlaceholdersByLanguage
+) => {
+  if (!attributesList || attributesList.length === 0) {
+    return { lanAttributeRowData, changed: false };
+  }
+
+  const hasAll =
+    languages.length > 0 &&
+    languages.every(
+      (lang) => Array.isArray(lanAttributeRowData?.[lang]) && lanAttributeRowData[lang].length > 0
+    );
+  if (hasAll) return { lanAttributeRowData, changed: false };
+
+  const next = { ...(lanAttributeRowData || {}) };
+  let changed = false;
+
+  languages.forEach((lang) => {
+    if (Array.isArray(next[lang]) && next[lang].length > 0) return;
+
+    const langPlaceholders = formPlaceholdersByLanguage?.[lang] || {};
+    next[lang] = attributesList.map((attrName, idx) => {
+      const attrType = attributeRowData.find((r) => r.Attribute === attrName)?.Type || "";
+      const baseRow = FormInformationRowData[idx] || {};
+
+      let label = attrName;
+      const baseLabel = baseRow?.Label;
+      if (baseLabel && typeof baseLabel === "object") {
+        label = baseLabel[lang] || label;
+      } else if (typeof baseLabel === "string" && baseLabel.trim()) {
+        label = baseLabel;
+      }
+
+      let placeholder = langPlaceholders[attrName] || "";
+      if (!placeholder) {
+        const basePlaceholder = baseRow?.Placeholder;
+        if (basePlaceholder && typeof basePlaceholder === "object") {
+          placeholder = basePlaceholder[lang] || "";
+        } else if (typeof basePlaceholder === "string") {
+          placeholder = basePlaceholder;
+        }
+      }
+      if (attrType.includes("Binary") || attrType.includes("Boolean")) {
+        placeholder = "";
+      }
+
+      return {
+        Attribute: attrName,
+        Label: label,
+        Placeholder: placeholder,
+        Description: baseRow?.Description || "",
+        List: baseRow?.List || ""
+      };
+    });
+    changed = true;
+  });
+
+  return { lanAttributeRowData: changed ? next : lanAttributeRowData, changed };
+};
+
+/**
+ * Per-row placeholder backfill: clear placeholders for Binary/Boolean,
+ * prefer explicit per-language placeholders, fall back to format-rule
+ * defaults (DateTime / Numeric) and FormInformationRowData. Identity-stable:
+ * unchanged rows / languages / maps reuse their original references.
+ */
+const backfillPlaceholders = (
+  lanAttributeRowData,
+  languages,
+  attributeRowData,
+  formatRuleRowData,
+  FormInformationRowData,
+  formPlaceholdersByLanguage
+) => {
+  if (!lanAttributeRowData || Object.keys(lanAttributeRowData).length === 0) {
+    return { lanAttributeRowData, changed: false };
+  }
+
+  const next = { ...lanAttributeRowData };
+  let anyLangChanged = false;
+
+  languages.forEach((language) => {
+    const prevRows = next[language];
+    if (!Array.isArray(prevRows)) return;
+
+    const langPlaceholders = formPlaceholdersByLanguage?.[language] || {};
+    let rowsChanged = false;
+
+    const newRows = prevRows.map((item, idx) => {
+      const attr = item.Attribute;
+      const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
+
+      if (attrType.includes("Binary") || attrType.includes("Boolean")) {
+        if (item.Placeholder === "") return item;
+        rowsChanged = true;
+        return { ...item, Placeholder: "" };
+      }
+
+      if (Object.prototype.hasOwnProperty.call(langPlaceholders, attr)) {
+        const explicit = langPlaceholders[attr] ?? "";
+        if (item.Placeholder === explicit) return item;
+        rowsChanged = true;
+        return { ...item, Placeholder: explicit };
+      }
+
+      let dateTimeDefault = "";
+      const isDateTime = attrType === "DateTime" || attrType === "Array[DateTime]";
+      if (isDateTime) {
+        const fr = formatRuleRowData.find((r) => r.Attribute === attr);
+        const desc = fr?.FormatText && formatCodeDateDescription[fr.FormatText];
+        if (desc) dateTimeDefault = getDateTimePickerConfig(desc).displayFormat;
+      }
+
+      let numericDefault = "";
+      const isNumeric = attrType === "Numeric" || attrType === "Array[Numeric]";
+      if (isNumeric) {
+        const fr = formatRuleRowData.find((r) => r.Attribute === attr);
+        const desc = fr?.FormatText && formatCodeNumericDescription[fr.FormatText];
+        if (desc) {
+          switch (desc) {
+            case "any integer or decimal number, may begin with + or -":
+              numericDefault = "Enter any integer or decimal number"; break;
+            case "any integer":
+              numericDefault = "Enter any integer"; break;
+            default:
+              numericDefault = desc; break;
+          }
+        }
+      }
+
+      let basePlaceholder = langPlaceholders[attr] || "";
+      if (!basePlaceholder) {
+        const bpv = FormInformationRowData?.[idx]?.Placeholder;
+        if (typeof bpv === "object" && bpv !== null) {
+          basePlaceholder = bpv[language] || "";
+        } else {
+          basePlaceholder = bpv || "";
+        }
+      }
+
+      let finalPlaceholder = item.Placeholder;
+      if (!finalPlaceholder) {
+        if (basePlaceholder) finalPlaceholder = basePlaceholder;
+        else if (isDateTime) finalPlaceholder = dateTimeDefault;
+        else if (isNumeric) finalPlaceholder = numericDefault;
+        else finalPlaceholder = "";
+      }
+
+      if (item.Placeholder === finalPlaceholder) return item;
+      rowsChanged = true;
+      return { ...item, Placeholder: finalPlaceholder };
+    });
+
+    if (rowsChanged) {
+      next[language] = newRows;
+      anyLangChanged = true;
+    }
+  });
+
+  return { lanAttributeRowData: anyLangChanged ? next : lanAttributeRowData, changed: anyLangChanged };
+};
+
 
 const FormInformation = () => {
   const { t, i18n } = useTranslation();
@@ -59,13 +268,11 @@ const FormInformation = () => {
   const { setCurrentPage } = useContext(Context);
 
   const {
-    getCurrentSchemaId,
     getAttributesList,
     getFormatRuleData,
     getSchema,
     updateSchema
   } = useMultiSchema();
-  const currentSchemaId = getCurrentSchemaId();
   const schemaState = getSchema();
   
   // Get schema-specific languages (not global)
@@ -83,15 +290,9 @@ const FormInformation = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
-  const initializationRef = useRef(false);
-  
+
   // Use standard deletion handler
   const deleteHandler = useDeleteOverlayHandler(FIELD_FORM_INFORMATION_OVERLAY);
-  
-  // Reset initialization flag when schema changes
-  useEffect(() => {
-    initializationRef.current = false;
-  }, [currentSchemaId]);
 
   const filteredLanguages = useMemo(() => [...languages], [languages]);
   const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
@@ -112,143 +313,6 @@ const FormInformation = () => {
   }, [rawRows, attributesList]);
   const primaryLanguage = languages?.[0] || LanguageConstants.DEFAULT_LANG_NAME;
 
-  // Normalize any lan/form placeholder keys that use OCA 3-letter codes (e.g., 'eng') into UI language names (e.g., 'English')
-  useEffect(() => {
-    const hasOcaKeys = Object.keys(lanAttributeRowData || {}).some(k => /^[a-z]{3}$/.test(k));
-    const hasOcaPlaceholders = Object.keys(formPlaceholdersByLanguage || {}).some(k => /^[a-z]{3}$/.test(k));
-    if (!hasOcaKeys && !hasOcaPlaceholders) return;
-
-    const normalizedLan = {};
-    Object.entries(lanAttributeRowData || {}).forEach(([k, v]) => {
-      const name = langNameFromCodeOCA(k) || langNameFromTwoLetters(k) || k;
-      normalizedLan[name] = v;
-    });
-
-    const normalizedPlaceholders = {};
-    Object.entries(formPlaceholdersByLanguage || {}).forEach(([k, v]) => {
-      const name = langNameFromCodeOCA(k) || langNameFromTwoLetters(k) || k;
-      normalizedPlaceholders[name] = v;
-    });
-
-    updateSchema({ lanAttributeRowData: normalizedLan, formPlaceholdersByLanguage: normalizedPlaceholders });
-    // also update grid immediately (resolve robustly) and refresh cells so Format column updates
-    try {
-      if (gridRef.current?.api) {
-        const normalizedRows = resolveLanguageData(normalizedLan, currentLanguage) || [];
-        gridRef.current.api.setRowData(normalizedRows);
-        gridRef.current.api.refreshCells({ force: true });
-      }
-    } catch (e) {
-      // ignore
-    }
-  }, [lanAttributeRowData, formPlaceholdersByLanguage, currentLanguage, updateSchema]);
-
-  // Ensure lanAttributeRowData has rows for all languages (import or fresh init)
-  useEffect(() => {
-    // Prevent repeated initialization runs
-    if (initializationRef.current) return;
-
-    // If we already have rows for every language, do nothing
-    const hasAllLanguages = languages && languages.length > 0 &&
-      languages.every((lang) => Array.isArray(lanAttributeRowData?.[lang]) && lanAttributeRowData[lang].length > 0);
-    if (hasAllLanguages) return;
-    if (!attributesList || attributesList.length === 0) return;
-
-    // Build base rows per language from attributes + FormInformationRowData + placeholders
-    const newLan = { ...(lanAttributeRowData || {}) };
-    languages.forEach((lang) => {
-      const existing = newLan[lang];
-      if (existing && existing.length > 0) return; // don't overwrite existing data
-
-      const langPlaceholders = formPlaceholdersByLanguage?.[lang] || {};
-      const rows = attributesList.map((attrName, idx) => {
-        const attrType = attributeRowData.find((r) => r.Attribute === attrName)?.Type || "";
-        const baseRow = FormInformationRowData[idx] || {};
-
-        // Pick label: prefer per-language FormInformationRowData label if object, else string, else attr name
-        let label = attrName;
-        const baseLabel = baseRow?.Label;
-        if (baseLabel && typeof baseLabel === "object" && baseLabel !== null) {
-          label = baseLabel[lang] || label;
-        } else if (typeof baseLabel === "string" && baseLabel.trim()) {
-          label = baseLabel;
-        }
-
-        // Pick placeholder: prefer formPlaceholdersByLanguage, else FormInformationRowData placeholder (object or string)
-        let placeholder = langPlaceholders[attrName] || "";
-        if (!placeholder) {
-          const basePlaceholder = baseRow?.Placeholder;
-          if (basePlaceholder && typeof basePlaceholder === "object" && basePlaceholder !== null) {
-            placeholder = basePlaceholder[lang] || "";
-          } else if (typeof basePlaceholder === "string") {
-            placeholder = basePlaceholder;
-          }
-        }
-
-        // Clear placeholder for Binary/Boolean types
-        if (attrType.includes("Binary") || attrType.includes("Boolean")) {
-          placeholder = "";
-        }
-
-        return {
-          Attribute: attrName,
-          Label: label,
-          Placeholder: placeholder,
-          Description: baseRow?.Description || "",
-          List: baseRow?.List || ""
-        };
-      });
-
-      newLan[lang] = rows;
-    });
-
-    // Only update if we actually added data
-    // If any language is missing and we built rows for it, update the schema state
-    const didAdd = languages.some(
-      (lang) => Array.isArray(newLan[lang]) && newLan[lang].length > 0 && !(Array.isArray(lanAttributeRowData?.[lang]) && lanAttributeRowData[lang].length > 0)
-    );
-
-    // Only perform the update once per component mount to avoid loops
-    if (didAdd && !initializationRef.current) {
-      initializationRef.current = true;
-      updateSchema({ lanAttributeRowData: newLan });
-      // Immediately update grid so UI shows rows even if context update hasn't propagated
-      try {
-        if (gridRef.current?.api) {
-          const newRows = resolveLanguageData(newLan, currentLanguage) || [];
-          gridRef.current.api.setRowData(newRows);
-        }
-      } catch (e) {
-        // ignore grid errors during initialization
-      }
-
-      // Check shortly after to confirm the update persisted in context
-      setTimeout(() => {
-        try {
-          const stateAfter = getSchema();
-          // If attributeFormats exist, force a refresh of cells so Format column renders descriptions
-          try {
-            if (gridRef.current?.api && stateAfter?.attributeFormats && Object.keys(stateAfter.attributeFormats).length > 0) {
-              gridRef.current.api.refreshCells({ force: true });
-            }
-          } catch (e) {
-            // ignore
-          }
-        } catch (e) {
-          console.error('[FormInformation] error reading schema state after update', e);
-        }
-      }, 50);
-    }
-  }, [attributesList,
-     attributeRowData, 
-     currentLanguage, 
-     languages, 
-     FormInformationRowData, 
-     formPlaceholdersByLanguage, 
-     lanAttributeRowData, 
-     updateSchema, 
-     currentSchemaId]);
-
   // Update currentLanguage when global UI language changes
   useEffect(() => {
     const userLanguage = langNameFromTwoLetters(i18next.language);
@@ -257,126 +321,46 @@ const FormInformation = () => {
     }
   }, [i18next.language, languages]);
 
+  // Single orchestrating effect for all lanAttributeRowData maintenance:
+  //   1) normalize OCA 3-letter language keys to UI names
+  //   2) seed missing per-language row arrays
+  //   3) backfill placeholders (Binary/Boolean clear, explicit overrides,
+  //      DateTime/Numeric defaults, FormInformationRowData fallback)
   useEffect(() => {
-    const newLanData = (() => {
-      const prevLanData = lanAttributeRowData || {};
-      const prev = prevLanData;
-      const newLan = JSON.parse(JSON.stringify(prev));
-      languages.forEach((language) => {
-        if (newLan[language]) {
-          const langPlaceholders = formPlaceholdersByLanguage?.[language] || {};
-          newLan[language] = newLan[language].map((item, idx) => {
-            const attr = item.Attribute;
-            const attrType = attributeRowData.find((r) => r.Attribute === attr)?.Type || "";
+    const norm = normalizeLanguageKeys(lanAttributeRowData, formPlaceholdersByLanguage);
+    const init = initializeLanguageRows(
+      norm.lanAttributeRowData,
+      languages,
+      attributesList,
+      attributeRowData,
+      FormInformationRowData,
+      norm.formPlaceholdersByLanguage
+    );
+    const fill = backfillPlaceholders(
+      init.lanAttributeRowData,
+      languages,
+      attributeRowData,
+      formatRuleRowData,
+      FormInformationRowData,
+      norm.formPlaceholdersByLanguage
+    );
 
-            if (attrType.includes("Binary") || attrType.includes("Boolean")) {
-              return {
-                ...item,
-                Placeholder: ""
-              };
-            }
+    if (!norm.changed && !init.changed && !fill.changed) return;
 
-            const hasExplicitFormPlaceholder =
-              Object.prototype.hasOwnProperty.call(langPlaceholders, attr);
-
-            if (hasExplicitFormPlaceholder) {
-              return {
-                ...item,
-                Placeholder: langPlaceholders[attr] ?? ""
-              };
-            }
-
-            let dateTimeDefaultPlaceholder = "";
-            const isDateTimeType = attrType === "DateTime" || attrType === "Array[DateTime]";
-            if (isDateTimeType) {
-              const formatRule = formatRuleRowData.find((rule) => rule.Attribute === attr);
-              if (formatRule?.FormatText) {
-                const formatDescription = formatCodeDateDescription[formatRule.FormatText] || "";
-                if (formatDescription) {
-                  const config = getDateTimePickerConfig(formatDescription);
-                  dateTimeDefaultPlaceholder = config.displayFormat;
-                }
-              }
-            }
-
-            let numericDefaultPlaceholder = "";
-            const isNumericType = attrType === "Numeric" || attrType === "Array[Numeric]";
-            if (isNumericType) {
-              const formatRule = formatRuleRowData.find((rule) => rule.Attribute === attr);
-              if (formatRule?.FormatText) {
-                const formatDescription = formatCodeNumericDescription[formatRule.FormatText] || "";
-                if (formatDescription) {
-                  switch (formatDescription) {
-                    case "any integer or decimal number, may begin with + or -":
-                      numericDefaultPlaceholder = "Enter any integer or decimal number";
-                      break;
-                    case "any integer":
-                      numericDefaultPlaceholder = "Enter any integer";
-                      break;
-                    default:
-                      numericDefaultPlaceholder = formatDescription;
-                      break;
-                  }
-                }
-              }
-            }
-
-            let basePlaceholder = langPlaceholders[attr] || "";
-            if (!basePlaceholder) {
-              const basePlaceholderValue = FormInformationRowData?.[idx]?.Placeholder;
-              if (typeof basePlaceholderValue === "object" && basePlaceholderValue !== null) {
-                basePlaceholder = basePlaceholderValue[language] || "";
-              } else {
-                basePlaceholder = basePlaceholderValue || "";
-              }
-            }
-
-            let finalPlaceholder = item.Placeholder;
-            if (!finalPlaceholder) {
-              if (basePlaceholder) {
-                finalPlaceholder = basePlaceholder;
-              } else if (isDateTimeType) {
-                finalPlaceholder = dateTimeDefaultPlaceholder;
-              } else if (isNumericType) {
-                finalPlaceholder = numericDefaultPlaceholder;
-              } else {
-                finalPlaceholder = "";
-              }
-            }
-
-            return {
-              ...item,
-              Placeholder: finalPlaceholder
-            };
-          });
-        }
-      });
-
-      try {
-        if (JSON.stringify(prev) === JSON.stringify(newLan)) {
-          return prevLanData;
-        }
-      } catch (e) {
-      }
-
-      setTimeout(() => {
-        try {
-          if (gridRef.current?.api) gridRef.current.api.refreshCells({ force: true });
-        } catch (e) {
-        }
-      }, 40);
-
-      return newLan;
-    })();
-    updateSchema({ lanAttributeRowData: newLanData });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const update = { lanAttributeRowData: fill.lanAttributeRowData };
+    if (norm.changed) {
+      update.formPlaceholdersByLanguage = norm.formPlaceholdersByLanguage;
+    }
+    updateSchema(update);
   }, [
+    lanAttributeRowData,
+    formPlaceholdersByLanguage,
     languages,
     attributesList,
-    FormInformationRowData,
     attributeRowData,
+    FormInformationRowData,
     formatRuleRowData,
-    formPlaceholdersByLanguage
+    updateSchema
   ]);
 
   useEffect(() => {

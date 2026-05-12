@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-unresolved
+// eslint-disable-next-line import/no-unresolved -- uuid@13 "exports" not resolved by default import resolver
 import { v4 as uuidv4 } from "uuid";
 import { languageNameToAlpha3Codes } from "../../../constants/isoCodes";
 import { LanguageConstants } from "../../../utils/languageUtils";
@@ -6,6 +6,23 @@ import {
   normalizeReferenceButtonTextMap,
   normalizeShowingAttribute
 } from "./referenceQuestionUtils";
+
+/*
+ * Form builder pages use three parallel fields, and that’s intentional for now:
+ *
+ * - page.items — ordered list of what appears on the page (sections and top-level
+ *   questions, interleaved). This is the list drag-and-drop reorders. Order here
+ *   should match the form overlay’s attribute_order.
+ *
+ * - page.sections / page.questions — lookup tables keyed by id. Don’t use array
+ *   index on these as “display order” for the page; use page.items for that.
+ *
+ * - Section contents: each section still has its own questions[] array. That order
+ *   is the order of fields inside the section, not the same thing as page.items.
+ *
+ * Import walks the overlay’s attribute_order once and fills items in that exact
+ * order so we don’t flatten layouts on load.
+ */
 
 const createQuestionFromAttribute = (
   attribute,
@@ -368,12 +385,33 @@ const convertOverlayToFormBuilder = (
     };
 
     const attributeOrder = pageStruct.attribute_order || [];
+
+    // Walk overlay attribute_order once and populate both `sections` /
+    // `questions` as keyed buckets and `items` as the authoritative mixed
+    // ordering (mirror of overlay JSON order). Previously all sections were
+    // appended before questions in `items`, destroying interleaved layouts.
     const sections = [];
-    const directQuestions = [];
+    const directQuestionObjects = [];
+    const items = [];
 
     attributeOrder.forEach((item) => {
       if (typeof item === "string") {
-        directQuestions.push(item);
+        const question = createQuestionFromAttribute(
+          item,
+          getInteractionData(item),
+          languages,
+          threeLetterCodes,
+          descriptions,
+          attributeRowData,
+          formatRuleRowData,
+          savedEntryCodes,
+          attributesWithLists,
+          lanAttributeRowData,
+          overlayLangCode
+        );
+        if (!question) return;
+        directQuestionObjects.push(question);
+        items.push({ kind: "question", id: question.id });
       } else if (item && typeof item === "object" && item.named_section) {
         const sectionId = item.named_section;
         const sectionAttributes = item.attribute_order || [];
@@ -406,46 +444,23 @@ const convertOverlayToFormBuilder = (
           )
           .filter(Boolean);
 
-        if (sectionQuestions.length > 0) {
-          sections.push({
-            id: sectionId || uuidv4(),
-            labels: sectionLabelsObj,
-            descriptions: sectionDescriptionsObj,
-            questions: sectionQuestions
-          });
-        }
+        // Skip empty sections entirely so `items` never references a missing section.
+        if (sectionQuestions.length === 0) return;
+
+        const sectionObj = {
+          id: sectionId || uuidv4(),
+          labels: sectionLabelsObj,
+          descriptions: sectionDescriptionsObj,
+          questions: sectionQuestions
+        };
+        sections.push(sectionObj);
+        items.push({ kind: "section", id: sectionObj.id });
       }
     });
 
-    // Create questions for direct attributes (not in sections)
-    const directQuestionObjects = directQuestions
-      .map((attribute) =>
-        createQuestionFromAttribute(
-          attribute,
-          getInteractionData(attribute),
-          languages,
-          threeLetterCodes,
-          descriptions,
-          attributeRowData,
-          formatRuleRowData,
-          savedEntryCodes,
-          attributesWithLists,
-          lanAttributeRowData,
-          overlayLangCode
-        )
-      )
-      .filter(Boolean);
-
     page.questions = directQuestionObjects;
     page.sections = sections;
-
-    // Build items array for drag-and-drop
-    const sectionItems = sections.map((s) => ({ kind: "section", id: s.id }));
-    const questionItems = directQuestionObjects.map((q) => ({
-      kind: "question",
-      id: q.id
-    }));
-    page.items = [...sectionItems, ...questionItems];
+    page.items = items;
 
     formBuilderPages.push(page);
   });
