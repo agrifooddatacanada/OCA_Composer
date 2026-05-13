@@ -738,6 +738,7 @@ const splitTopLevelTokens = (text) => {
       continue;
     }
 
+    // eslint-disable-next-line quotes
     if (ch === '"') {
       inQuotes = !inQuotes;
       current += ch;
@@ -784,18 +785,21 @@ const isolateOCADslFailure = async (dslText) => {
     let latest = null;
     for (let attempt = 0; attempt < 3; attempt += 1) {
       calls += 1;
+      // eslint-disable-next-line no-await-in-loop
       latest = await postOCADslForValidation(content);
       if (!latest.transportIssue) return latest;
       if (calls >= debugLimit) break;
     }
 
-    return latest || {
-      ok: null,
-      transportIssue: true,
-      status: 0,
-      statusText: "unknown_transport_error",
-      responseData: { errors: ["unknown_transport_error"] }
-    };
+    return (
+      latest || {
+        ok: null,
+        transportIssue: true,
+        status: 0,
+        statusText: "unknown_transport_error",
+        responseData: { errors: ["unknown_transport_error"] }
+      }
+    );
   };
 
   let failingLineIndex = -1;
@@ -803,9 +807,14 @@ const isolateOCADslFailure = async (dslText) => {
 
   for (let i = 0; i < lines.length; i += 1) {
     const candidate = lines.slice(0, i + 1).join("\n");
+    // eslint-disable-next-line no-await-in-loop
     const result = await validate(candidate);
     if (result.transportIssue) {
-      unstableEvents.push({ lineNumber: i + 1, status: result.status, statusText: result.statusText });
+      unstableEvents.push({
+        lineNumber: i + 1,
+        status: result.status,
+        statusText: result.statusText
+      });
       continue;
     }
     if (result.ok === false) {
@@ -861,6 +870,7 @@ const isolateOCADslFailure = async (dslText) => {
 
   for (let i = 0; i < tokens.length; i += 1) {
     const tokenCandidate = [...beforeLines, `${linePrefix} ${tokens[i]}`].join("\n");
+    // eslint-disable-next-line no-await-in-loop
     const tokenResult = await validate(tokenCandidate);
     if (tokenResult.transportIssue) {
       unstableEvents.push({
@@ -884,6 +894,7 @@ const isolateOCADslFailure = async (dslText) => {
   for (let i = 0; i < tokens.length; i += 1) {
     const prefixTokens = tokens.slice(0, i + 1).join(" ");
     const prefixCandidate = [...beforeLines, `${linePrefix} ${prefixTokens}`].join("\n");
+    // eslint-disable-next-line no-await-in-loop
     const prefixResult = await validate(prefixCandidate);
     if (prefixResult.transportIssue) {
       unstableEvents.push({
@@ -920,6 +931,7 @@ const isolateOCADslFailure = async (dslText) => {
 const validateDslWithRetry = async (dslText, attempts = 2) => {
   let latest = null;
   for (let i = 0; i < attempts; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
     latest = await postOCADslForValidation(dslText);
     if (!latest.transportIssue) break;
   }
@@ -959,6 +971,7 @@ const runDifferentialDslChecks = async (dslText) => {
 
   const results = [];
   for (const variant of variants) {
+    // eslint-disable-next-line no-await-in-loop
     const response = await validateDslWithRetry(variant.text, 2);
     results.push({
       id: variant.id,
@@ -999,7 +1012,8 @@ export const generateOCABundle = async (OCAFileData) => {
         if (serializedErrors.includes("key is empty")) {
           const isolation = await isolateOCADslFailure(OCAFileData);
           const differential = await runDifferentialDslChecks(OCAFileData);
-          const isDeterministic = !isolation?.unstable && Boolean(isolation?.failingLine?.lineNumber);
+          const isDeterministic =
+            !isolation?.unstable && Boolean(isolation?.failingLine?.lineNumber);
           const failLine = isolation?.failingLine?.lineNumber;
           const failToken =
             isolation?.tokenAnalysis?.firstFailingPrefix?.token ||
@@ -1101,11 +1115,14 @@ export const getLabelofParentClass = async (uri) => {
 
 export const normalizeEscapedQuotes = (s) => {
   if (typeof s !== "string") return s;
-  return s
-    .replace(/\\-/g, "-")
-    .replace(/\\'/g, "'")
-    .replace(/\\"/g, '"')
-    .replace(/\\\\/g, "\\");
+  return (
+    s
+      .replace(/\\-/g, "-")
+      .replace(/\\'/g, "'")
+      // eslint-disable-next-line quotes
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, "\\")
+  );
 };
 
 export const escapeForOCAString = (s) => {
@@ -1113,9 +1130,14 @@ export const escapeForOCAString = (s) => {
   // First escape backslashes, then escape double quotes, single quotes, and dashes for OCA output
   return String(s)
     .replace(/\\/g, "\\\\")
-    .replace(/"/g, "\\\"")
+    .replace(/"/g, '\\"')
     .replace(/'/g, "\\'")
     .replace(/-/g, "\\-");
+};
+
+export const escapeForOCADoubleQuotedValue = (s) => {
+  if (typeof s !== "string") return s;
+  return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 };
 
 export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
@@ -1245,7 +1267,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
       fileContent += "ADD ENTRY_CODE ATTRS";
       filteredEntryCodes.forEach(([attribute, codes]) => {
         const codesInQuotes = (codes || []).map(
-          (code) => `"${escapeForOCAEntryToken(String(code ?? ""))}"`
+          (code) => `"${escapeForOCADoubleQuotedValue(String(code ?? ""))}"`
         );
         fileContent += ` ${attribute}=[${codesInQuotes.join(", ")}]`;
       });
@@ -1265,7 +1287,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
             const entriesText = Object.keys(entries)
               .map(
                 (code) =>
-                  `"${escapeForOCAEntryToken(String(code ?? ""))}": "${escapeForOCAEntryToken(
+                  `"${escapeForOCADoubleQuotedValue(String(code ?? ""))}": "${escapeForOCADoubleQuotedValue(
                     normalizeEscapedQuotes(String(entries[code] ?? ""))
                   )}"`
               )
@@ -1337,16 +1359,6 @@ export const downloadJsonFile = (data, fileName) => {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-};
-
-export const escapeForOCADoubleQuotedValue = (s) => {
-  if (typeof s !== "string") return s;
-    return String(s).replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
-};
-
-export const escapeForOCAEntryToken = (s) => {
-  if (typeof s !== "string") return s;
-  return escapeForOCADoubleQuotedValue(s).replace(/,/g, "\\,");
 };
 
 export const getFormatRuleDescription = (attributeType, formatRule, t = null) => {

@@ -44,8 +44,7 @@ import {
   getAttributeFramingInput,
   getFormInformationInput,
   normalizeEscapedQuotes,
-  escapeForOCADoubleQuotedValue,
-  escapeForOCAEntryToken
+  escapeForOCADoubleQuotedValue
 } from "../utils/helpers";
 import { getMapValueForAttributeName } from "../utils/stringUtils";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
@@ -63,7 +62,7 @@ const currentEnv = process.env.REACT_APP_ENV;
  */
 const useOCAExport = () => {
   const navigate = useNavigate();
-  
+
   // Global settings (not schema-specific)
   const {
     customIsos,
@@ -74,7 +73,15 @@ const useOCAExport = () => {
     setCurrentPage
   } = useContext(Context);
 
-  const { getCurrentSchemaId, getSchemaById, rebuildOcaPackageFromEditorState, schemaStates, clearAllSchemas, ocaPackage, setOcaPackage } = useMultiSchema();
+  const {
+    getCurrentSchemaId,
+    getSchemaById,
+    rebuildOcaPackageFromEditorState,
+    schemaStates,
+    clearAllSchemas,
+    ocaPackage,
+    setOcaPackage
+  } = useMultiSchema();
   const currentSchemaId = getCurrentSchemaId();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const [error, setError] = useState("");
@@ -161,14 +168,12 @@ const useOCAExport = () => {
   const buildPackageFromTextDSL = async (schemaId) => {
     const schemaState = getSchemaById(schemaId);
     const metadata = schemaState?.metadata || {};
-    
+
     // Extract all data for this schema
     const languages = metadata.languages || ["English"];
     const rawAttributeRows = schemaState?.attributes || [];
     const attributeIndicesKept = rawAttributeRows
-      .map((attr, idx) =>
-        attr && String(attr.Attribute ?? "").trim() !== "" ? idx : -1
-      )
+      .map((attr, idx) => (attr && String(attr.Attribute ?? "").trim() !== "" ? idx : -1))
       .filter((idx) => idx >= 0);
     const attributeRowData = attributeIndicesKept.map((idx) => rawAttributeRows[idx]);
     const attributesList = attributeRowData.map((attr) => attr.Attribute);
@@ -193,10 +198,14 @@ const useOCAExport = () => {
     const enableArrayDelimiter = !!schemaState?.enableArrayDelimiter;
     const overlaySelections = schemaState?.overlaySelections || overlay;
     const classificationCode = metadata?.classification || null;
-    
+
     // Build schema description for each language
-    const schemaDescription = buildSchemaDescriptionByLanguage(metadata, languages, schemaId);
-    
+    const schemaDescription = buildSchemaDescriptionByLanguage(
+      metadata,
+      languages,
+      schemaId
+    );
+
     const attributeListMap = attributeRowData.reduce((acc, attr) => {
       acc[attr.Attribute] = attr.List;
       return acc;
@@ -256,7 +265,7 @@ const useOCAExport = () => {
         let attributeType = Array.isArray(dataArray[1][index].Type)
           ? `Array[${dataArray[1][index].Type[0]}]`
           : dataArray[1][index].Type;
-        
+
         const isReferenceType =
           typeof attributeType === "string" &&
           (attributeType.startsWith("refs:") || attributeType.startsWith("refn:"));
@@ -264,12 +273,12 @@ const useOCAExport = () => {
           attributeType === "Child Schema" ||
           attributeType === "Placeholder Child Schema" ||
           isReferenceType;
-        
+
         if (isChildSchema) {
           attributeType = `refn:${item}`;
         }
 
-        buildText += ` ${escapeForOCAEntryToken(item)}=${escapeForOCAEntryToken(attributeType)}`;
+        buildText += ` ${escapeForOCADoubleQuotedValue(item)}=${escapeForOCADoubleQuotedValue(attributeType)}`;
       });
       buildText += "\n";
     } else {
@@ -289,13 +298,18 @@ const useOCAExport = () => {
       const languageIndex = schemaMetadata.findIndex(
         (obj) => obj.Language === language.language
       );
-      const parsedDescription = normalizeEscapedQuotes(schemaMetadata[languageIndex].Description || "");
-      const rawMetaName = normalizeEscapedQuotes(schemaMetadata[languageIndex].Name || "");
+      const parsedDescription = normalizeEscapedQuotes(
+        schemaMetadata[languageIndex].Description || ""
+      );
+      const rawMetaName = normalizeEscapedQuotes(
+        schemaMetadata[languageIndex].Name || ""
+      );
       const metaNameForDsl =
         rawMetaName.trim() !== ""
           ? rawMetaName
-          : String(schemaDescription[language.language]?.name || schemaId || "schema").trim() ||
-            String(schemaId || "schema");
+          : String(
+              schemaDescription[language.language]?.name || schemaId || "schema"
+            ).trim() || String(schemaId || "schema");
       buildText += `\nADD Meta ${language.code} PROPS`;
       buildText += ` name="${escapeForOCADoubleQuotedValue(metaNameForDsl)}"`;
       buildText += ` description="${escapeForOCADoubleQuotedValue(parsedDescription)}"`;
@@ -304,7 +318,10 @@ const useOCAExport = () => {
 
     // Add Format Overlay
     buildText += "# Add Format Overlay\n";
-    if (overlaySelections[FIELD_FORMAT_OVERLAY] && Object.keys(attributeFormats).length > 0) {
+    if (
+      overlaySelections[FIELD_FORMAT_OVERLAY] &&
+      Object.keys(attributeFormats).length > 0
+    ) {
       let tempText = "";
       // Iterate over current attributes only (prevents deleted attributes from appearing)
       attributesList.forEach((attrName) => {
@@ -313,6 +330,7 @@ const useOCAExport = () => {
           // Normalize first (unescape any already-escaped quotes), then escape all quotes
           // This prevents double-escaping when format rules contain \" from the original OCA file
           // Only escape double quotes for the DSL; avoid escaping backslashes/hyphens
+          // eslint-disable-next-line quotes
           const escapedRule = normalizeEscapedQuotes(formatRule).replace(/"/g, '\\"');
           tempText += ` ${attrName}="${escapedRule}"`;
         }
@@ -330,7 +348,7 @@ const useOCAExport = () => {
       let conformanceText = "";
       // Required status is stored in the attributes array
       attributesList.forEach((item) => {
-        const attr = attributeRowData.find(a => a.Attribute === item);
+        const attr = attributeRowData.find((a) => a.Attribute === item);
         const isRequired = attr?.Required;
         conformanceText += ` ${item}=${isRequired ? "M" : "O"}`;
       });
@@ -341,11 +359,17 @@ const useOCAExport = () => {
 
     // Add Cardinality Overlay
     buildText += "# Add Cardinality Overlay\n";
-    if (overlaySelections[FIELD_CARDINALITY_OVERLAY] && Object.keys(attributeCardinality).length > 0) {
+    if (
+      overlaySelections[FIELD_CARDINALITY_OVERLAY] &&
+      Object.keys(attributeCardinality).length > 0
+    ) {
       let cardinalityText = "";
       // Iterate over current attributes only (prevents deleted attributes from appearing)
       attributesList.forEach((attrName) => {
-        const cardinalityValue = getMapValueForAttributeName(attributeCardinality, attrName);
+        const cardinalityValue = getMapValueForAttributeName(
+          attributeCardinality,
+          attrName
+        );
         if (cardinalityValue) {
           cardinalityText += ` ${attrName}="${cardinalityValue}"`;
         }
@@ -364,7 +388,10 @@ const useOCAExport = () => {
           dataArray
             .slice(1)
             .findIndex((element) => element[0].Language === language.language) + 1;
-        if (dataArray[languageIndex][index].Label && dataArray[languageIndex][index].Label !== "") {
+        if (
+          dataArray[languageIndex][index].Label &&
+          dataArray[languageIndex][index].Label !== ""
+        ) {
           const escapedLabel = escapeForOCADoubleQuotedValue(
             normalizeEscapedQuotes(dataArray[languageIndex][index].Label)
           );
@@ -387,8 +414,9 @@ const useOCAExport = () => {
             .slice(1)
             .findIndex((element) => element[0].Language === language.language) + 1;
         if (
-          dataArray[languageIndex][index].Description && 
-          dataArray[languageIndex][index].Description !== "") {
+          dataArray[languageIndex][index].Description &&
+          dataArray[languageIndex][index].Description !== ""
+        ) {
           const escapedDescription = escapeForOCADoubleQuotedValue(
             normalizeEscapedQuotes(dataArray[languageIndex][index].Description)
           );
@@ -403,25 +431,29 @@ const useOCAExport = () => {
 
     // Add entry code overlay
     buildText += "# Add entry code overlay\n";
-    
+
     // First add ENTRY_CODE overlay with just the codes
     let entryCodesText = "";
     attributesList.forEach((item) => {
-      if (attributeListMap[item] && savedEntryCodes[item] && savedEntryCodes[item].length > 0) {
+      if (
+        attributeListMap[item] &&
+        savedEntryCodes[item] &&
+        savedEntryCodes[item].length > 0
+      ) {
         const codes = savedEntryCodes[item]
           .map((entry) => String(entry?.Code ?? "").trim())
           .filter((c) => c !== "")
-          .map((c) => `"${escapeForOCAEntryToken(c)}"`)
+          .map((c) => `"${escapeForOCADoubleQuotedValue(c)}"`)
           .join(", ");
         if (codes) {
           entryCodesText += ` ${item}=[${codes}]`;
         }
       }
     });
-    
+
     if (entryCodesText !== "") {
       buildText += `ADD ENTRY_CODE ATTRS${entryCodesText}\n`;
-      
+
       // Then add ENTRY language overlays with code-to-label mappings
       languagesWithCode.forEach((language) => {
         let entryText = "";
@@ -429,16 +461,16 @@ const useOCAExport = () => {
           if (savedEntryCodes[item] && savedEntryCodes[item].length > 0) {
             // Entry codes are stored with FULL language names (English, French, etc.)
             // NOT 3-letter OCA codes (eng, fra)
-            const languageName = language.language;  // Use full name like "English"
-            
+            const languageName = language.language; // Use full name like "English"
+
             let entryString = "";
             for (const entry of savedEntryCodes[item]) {
               const code = String(entry?.Code ?? "").trim();
               if (!code) continue;
               const label = entry[languageName] || "";
               if (!label) continue;
-              const escapedCode = escapeForOCAEntryToken(code);
-              const escapedLabel = escapeForOCAEntryToken(
+              const escapedCode = escapeForOCADoubleQuotedValue(code);
+              const escapedLabel = escapeForOCADoubleQuotedValue(
                 normalizeEscapedQuotes(label)
               );
               entryString += `, "${escapedCode}": "${escapedLabel}"`;
@@ -474,7 +506,7 @@ const useOCAExport = () => {
     if (overlaySelections[FIELD_CHARACTER_ENCODING_OVERLAY]) {
       let encodingText = "";
       let hasEncoding = false;
-      
+
       attributesList.forEach((item, index) => {
         // characterEncodingRowData can be either:
         // - an object mapping attributeName -> encoding (schema state)
@@ -489,7 +521,7 @@ const useOCAExport = () => {
           encodingText += ` ${item}="${encoding}"`;
         }
       });
-      
+
       if (hasEncoding) {
         buildText += `ADD CHARACTER_ENCODING ATTRS${encodingText}\n`;
       }
@@ -498,12 +530,16 @@ const useOCAExport = () => {
     data = buildText;
 
     if (/^ADD ATTRIBUTE\s*$/m.test(data)) {
-      console.error("Generated DSL contains bare 'ADD ATTRIBUTE' — aborting export. DSL follows:\n", data);
+      console.error(
+        "Generated DSL contains bare 'ADD ATTRIBUTE' — aborting export. DSL follows:\n",
+        data
+      );
       throw new Error(
         "Export aborted: generated OCA DSL contains an empty `ADD ATTRIBUTE` line. Please ensure the schema has attributes and try again. (DSL logged to console)"
       );
     }
 
+    // eslint-disable-next-line prefer-const
     bundle = await generateOCABundle(data);
 
     const formCaptureBaseDigest =
@@ -514,15 +550,15 @@ const useOCAExport = () => {
       .map((item) => item.Attribute);
 
     // Convert attributeFormats object to array format for helper functions
-    const formatRuleRowData = attributeRowData.map(attr => ({
+    const formatRuleRowData = attributeRowData.map((attr) => ({
       Attribute: attr.Attribute,
       "Format Rule": getMapValueForAttributeName(attributeFormats, attr.Attribute) || ""
     }));
 
     // Convert attributeRanges object to array format for helper functions
     const rangeRowData = attributeRowData
-      .filter(attr => attr.Type === "Numeric" || attr.Type === "DateTime")
-      .map(attr => {
+      .filter((attr) => attr.Type === "Numeric" || attr.Type === "DateTime")
+      .map((attr) => {
         const range = getMapValueForAttributeName(attributeRanges, attr.Attribute) || {};
         return {
           Attribute: attr.Attribute,
@@ -535,7 +571,11 @@ const useOCAExport = () => {
         };
       });
 
-    const rangeOverlayInput = getRangeOverlayInput(rangeRowData, formatRuleRowData, attributesList);
+    const rangeOverlayInput = getRangeOverlayInput(
+      rangeRowData,
+      formatRuleRowData,
+      attributesList
+    );
     const retainedUniqueFramedUnits = unitFramedRowData.filter((row) => !row.deleted);
 
     const extensionOverlayPayload = {
@@ -544,7 +584,8 @@ const useOCAExport = () => {
         attribute_ordering: attributesList,
         entry_code_ordering: getTransformedEntryCodes(filteredEntryCodes)
       },
-      ...(overlaySelections[FIELD_UNIT_FRAMING_OVERLAY] && retainedUniqueFramedUnits.length > 0
+      ...(overlaySelections[FIELD_UNIT_FRAMING_OVERLAY] &&
+      retainedUniqueFramedUnits.length > 0
         ? {
             unit_framing_overlay: {
               type: UNIT_FRAMING,
@@ -558,7 +599,8 @@ const useOCAExport = () => {
             }
           }
         : {}),
-      ...(overlaySelections[FIELD_RANGE_OVERLAY] && Object.keys(rangeOverlayInput).length > 0
+      ...(overlaySelections[FIELD_RANGE_OVERLAY] &&
+      Object.keys(rangeOverlayInput).length > 0
         ? {
             range_overlay: {
               type: RANGE,
@@ -581,10 +623,14 @@ const useOCAExport = () => {
               framing_metadata: {
                 id: "FOODON",
                 label: "Food Ontology",
-                location: "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl",
+                location:
+                  "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl",
                 version: "1.0"
               },
-              attributes: getAttributeFramingInput(attributeFramingRowData, attributesList)
+              attributes: getAttributeFramingInput(
+                attributeFramingRowData,
+                attributesList
+              )
             }
           }
         : {}),
@@ -714,25 +760,32 @@ const useOCAExport = () => {
   };
 
   const validateExtension = (ext) => {
-    if (!ext || typeof ext !== 'object') throw new Error('extension must be an object');
+    if (!ext || typeof ext !== "object") throw new Error("extension must be an object");
     const adc = ext.extensions?.adc;
-    if (!adc || typeof adc !== 'object') return;
+    if (!adc || typeof adc !== "object") return;
     Object.entries(adc).forEach(([schemaKey, overlays]) => {
-      if (!overlays || (typeof overlays !== 'object' && !Array.isArray(overlays))) {
+      if (!overlays || (typeof overlays !== "object" && !Array.isArray(overlays))) {
         throw new Error(`extensions.adc.${schemaKey} must be an object or array`);
       }
       const overlayArray = Array.isArray(overlays) ? overlays : [overlays];
       overlayArray.forEach((ov, idx) => {
-        if (!ov || typeof ov !== 'object') throw new Error(`overlay at extensions.adc.${schemaKey}[${idx}] is not an object`);
+        if (!ov || typeof ov !== "object")
+          throw new Error(
+            `overlay at extensions.adc.${schemaKey}[${idx}] is not an object`
+          );
         if (ov.form_overlay) {
           const fo = ov.form_overlay.form_overlays;
-          if (!Array.isArray(fo)) throw new Error('form_overlay.form_overlays must be an array');
+          if (!Array.isArray(fo))
+            throw new Error("form_overlay.form_overlays must be an array");
           fo.forEach((page, pidx) => {
-            if (!page || typeof page !== 'object') throw new Error(`form_overlays[${pidx}] must be an object`);
-            if (page.labels && typeof page.labels === 'object') {
+            if (!page || typeof page !== "object")
+              throw new Error(`form_overlays[${pidx}] must be an object`);
+            if (page.labels && typeof page.labels === "object") {
               Object.entries(page.labels).forEach(([lang, label]) => {
-                if (typeof lang !== 'string') throw new Error('form overlay page label language key is not a string');
-                if (typeof label !== 'string') throw new Error(`form overlay page label for ${lang} must be a string`);
+                if (typeof lang !== "string")
+                  throw new Error("form overlay page label language key is not a string");
+                if (typeof label !== "string")
+                  throw new Error(`form overlay page label for ${lang} must be a string`);
               });
             }
           });
@@ -760,7 +813,9 @@ const useOCAExport = () => {
     if (!rootState || !rootState.initialized) {
       console.error("Root schema not initialized:", originalRootId);
       console.error("Available schemas:", Object.keys(schemaStates));
-      throw new Error(`Root schema ${originalRootId} is not initialized. Please try reloading the schema.`);
+      throw new Error(
+        `Root schema ${originalRootId} is not initialized. Please try reloading the schema.`
+      );
     }
 
     const schemaIds = Object.keys(schemaStates).filter((id) => {
@@ -804,6 +859,7 @@ const useOCAExport = () => {
     };
 
     for (const dep of dependencies) {
+      // eslint-disable-next-line no-await-in-loop
       await mergeExtensionsForBundle(dep);
     }
     await mergeExtensionsForBundle(rootBundle);
@@ -815,25 +871,31 @@ const useOCAExport = () => {
     };
 
     // UI-only aliasing: allow refn:<attribute_name> tokens to resolve via rebuilt graph.
-    seedResolvedAliasTokensFromBundles([rootBundle, ...dependencies], saidByReferenceToken);
+    seedResolvedAliasTokensFromBundles(
+      [rootBundle, ...dependencies],
+      saidByReferenceToken
+    );
     const resolveImportedSaid = createResolveSaid(saidByReferenceToken);
 
-    const exportedRootBundle =
-      generatedBundleByOriginalId[rootBundle.d] || rootBundle;
+    const exportedRootBundle = generatedBundleByOriginalId[rootBundle.d] || rootBundle;
     const exportedDependencies = dependencies.map(
       (dep) => generatedBundleByOriginalId[dep.d] || dep
     );
 
     const unresolvedTokens = [];
-    unresolvedTokens.push(...rewriteBundleRefs({
-      schemaBundle: exportedRootBundle,
-      resolveSaid: resolveImportedSaid
-    }));
-    exportedDependencies.forEach((dep) => {
-      unresolvedTokens.push(...rewriteBundleRefs({
-        schemaBundle: dep,
+    unresolvedTokens.push(
+      ...rewriteBundleRefs({
+        schemaBundle: exportedRootBundle,
         resolveSaid: resolveImportedSaid
-      }));
+      })
+    );
+    exportedDependencies.forEach((dep) => {
+      unresolvedTokens.push(
+        ...rewriteBundleRefs({
+          schemaBundle: dep,
+          resolveSaid: resolveImportedSaid
+        })
+      );
     });
 
     throwUnresolvedReferenceError(unresolvedTokens);
@@ -848,11 +910,11 @@ const useOCAExport = () => {
     const rootBundleData = exportedRootBundle;
     const metaOverlays = rootBundleData?.overlays?.meta;
     const engMeta = Array.isArray(metaOverlays)
-      ? metaOverlays.find((m) => m.language === 'eng') || metaOverlays[0]
+      ? metaOverlays.find((m) => m.language === "eng") || metaOverlays[0]
       : null;
     const schemaName = engMeta?.name || getPackageBundleId(rootBundleData) || "schema";
 
-    const packageFileName = schemaName.split(" ")[0] + "_OCA_package.json";
+    const packageFileName = `${schemaName.split(" ")[0]}_OCA_package.json`;
     downloadJsonFile(exportPackage, packageFileName);
 
     if (rootBundleData?.overlays?.meta) {
@@ -860,7 +922,7 @@ const useOCAExport = () => {
     }
 
     if (currentEnv === "DEV" && rootBundleData) {
-      const bundleFileName = schemaName.split(" ")[0] + "_OCA_bundle.json";
+      const bundleFileName = `${schemaName.split(" ")[0]}_OCA_bundle.json`;
       downloadJsonFile(rootBundleData, bundleFileName);
     }
 
@@ -878,7 +940,9 @@ const useOCAExport = () => {
     for (const childId of childSchemaIds) {
       const childState = schemaStates[childId];
       if (childState?.attributes && childState.attributes.length > 0) {
-        const { bundle: childBundle, extension: childExtension } = await buildPackageFromTextDSL(childId);
+        // eslint-disable-next-line no-await-in-loop
+        const { bundle: childBundle, extension: childExtension } =
+          await buildPackageFromTextDSL(childId);
         const said = childBundle?.bundle?.d;
         if (said) {
           childBuilds.push({
@@ -896,12 +960,14 @@ const useOCAExport = () => {
       extensions: {
         adc: {
           ...extension.extensions.adc,
-          ...childBuilds.map((b) => b.extension).reduce((acc, childExt) => {
-            if (childExt?.extensions?.adc) {
-              return { ...acc, ...childExt.extensions.adc };
-            }
-            return acc;
-          }, {})
+          ...childBuilds
+            .map((b) => b.extension)
+            .reduce((acc, childExt) => {
+              if (childExt?.extensions?.adc) {
+                return { ...acc, ...childExt.extensions.adc };
+              }
+              return acc;
+            }, {})
         }
       }
     };
@@ -914,15 +980,26 @@ const useOCAExport = () => {
 
     const rebuiltRootBundle = getPackageBundle(pkgFromState);
     const rebuiltDependencies = getPackageDependencies(pkgFromState) || [];
-    seedResolvedAliasTokensFromBundles([rebuiltRootBundle, ...rebuiltDependencies], saidByReferenceToken);
+    seedResolvedAliasTokensFromBundles(
+      [rebuiltRootBundle, ...rebuiltDependencies],
+      saidByReferenceToken
+    );
 
     const resolveManualSaid = createResolveSaid(saidByReferenceToken);
 
     const finalBundle = deepCloneJson(bundle.bundle);
-    const finalDependencies = childBuilds.map(({ bundle: childBundle }) => deepCloneJson(childBundle));
+    const finalDependencies = childBuilds.map(({ bundle: childBundle }) =>
+      deepCloneJson(childBundle)
+    );
     const unresolvedTokens = [];
-    unresolvedTokens.push(...rewriteBundleRefs({ schemaBundle: finalBundle, resolveSaid: resolveManualSaid }));
-    finalDependencies.forEach((dep) => unresolvedTokens.push(...rewriteBundleRefs({ schemaBundle: dep, resolveSaid: resolveManualSaid })));
+    unresolvedTokens.push(
+      ...rewriteBundleRefs({ schemaBundle: finalBundle, resolveSaid: resolveManualSaid })
+    );
+    finalDependencies.forEach((dep) =>
+      unresolvedTokens.push(
+        ...rewriteBundleRefs({ schemaBundle: dep, resolveSaid: resolveManualSaid })
+      )
+    );
 
     throwUnresolvedReferenceError(unresolvedTokens);
 
@@ -945,13 +1022,23 @@ const useOCAExport = () => {
     }
 
     const rootState = getSchemaById(rootSchemaId);
-    const schemaNameForFile = rootState?.metadata?.name || rootState?.metadata?.localized?.eng?.name || null;
+    const schemaNameForFile =
+      rootState?.metadata?.name || rootState?.metadata?.localized?.eng?.name || null;
 
-    downloadJsonFile(exportedPackageJson, getDescriptiveFileName(schemaNameForFile, "OCA_package.json"));
+    downloadJsonFile(
+      exportedPackageJson,
+      getDescriptiveFileName(schemaNameForFile, "OCA_package.json")
+    );
 
     if (currentEnv === "DEV") {
-      downloadTextFile(textDSL, getDescriptiveFileName(schemaNameForFile, "OCA_file.txt"));
-      downloadJsonFile(finalPackage, getDescriptiveFileName(schemaNameForFile, "OCA_bundle.json"));
+      downloadTextFile(
+        textDSL,
+        getDescriptiveFileName(schemaNameForFile, "OCA_file.txt")
+      );
+      downloadJsonFile(
+        finalPackage,
+        getDescriptiveFileName(schemaNameForFile, "OCA_bundle.json")
+      );
     }
 
     return true;
@@ -980,15 +1067,19 @@ const useOCAExport = () => {
     setOcaPackage(null);
     setOverlay(overlayItems);
     setSelectedOverlay("");
-    
+
     clearAllSchemas();
-    
+
     setCurrentPage("Landing");
     navigate("/");
   }, [
     setSummaryExportMode,
-    setOcaPackage, setOverlay, setSelectedOverlay,
-    clearAllSchemas, setCurrentPage, navigate
+    setOcaPackage,
+    setOverlay,
+    setSelectedOverlay,
+    clearAllSchemas,
+    setCurrentPage,
+    navigate
   ]);
 
   return {
