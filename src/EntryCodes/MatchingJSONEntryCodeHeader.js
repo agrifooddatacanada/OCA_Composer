@@ -63,7 +63,7 @@ export const DataHeaderRenderer = memo(
 );
 
 const MatchingJSONEntryCodeHeader = () => {
-  const { tempEntryCodeSummary, tempEntryList, setCurrentPage, chosenEntryCodeIndex } = useContext(Context);
+  const { tempEntryCodeSummary, tempEntryList, setCurrentPage, chosenEntryCodeIndex, setEntryCodeHeaders, setTempEntryCodeRowData, setTempEntryCodeSummary, setTempEntryList } = useContext(Context);
   
   // Use MultiSchemaContext for schema-specific data
   const { getSchema, updateSchema } = useMultiSchema();
@@ -160,6 +160,10 @@ const MatchingJSONEntryCodeHeader = () => {
             [targetAttributeName]: newEntryCodeRowData
           }
         });
+        setEntryCodeHeaders([]);
+        setTempEntryCodeRowData([]);
+        setTempEntryCodeSummary(undefined);
+        setTempEntryList([]);
       }
       setCurrentPage('Codes');
     }

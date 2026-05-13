@@ -137,7 +137,16 @@ export const DataHeaderRenderer = memo(
 
 const MatchingEntryCodeHeader = () => {
   const { t } = useTranslation();
-  const { setCurrentPage, entryCodeHeaders, tempEntryCodeRowData, chosenEntryCodeIndex } = useContext(Context);
+  const {
+    setCurrentPage,
+    entryCodeHeaders,
+    tempEntryCodeRowData,
+    chosenEntryCodeIndex,
+    setEntryCodeHeaders,
+    setTempEntryCodeRowData,
+    setTempEntryCodeSummary,
+    setTempEntryList
+  } = useContext(Context);
   
   const { getSchema, updateSchema } = useMultiSchema();
   const schemaState = getSchema();
@@ -246,6 +255,10 @@ const MatchingEntryCodeHeader = () => {
           [targetAttributeName]: newRowData
         }
       });
+      setEntryCodeHeaders([]);
+      setTempEntryCodeRowData([]);
+      setTempEntryCodeSummary(undefined);
+      setTempEntryList([]);
     }
     setCurrentPage('Codes');
   };

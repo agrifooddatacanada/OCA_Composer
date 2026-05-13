@@ -136,7 +136,8 @@ const useHandleEntryCodeDrop = () => {
     setTempEntryCodeSummary,
     tempEntryList,
     setTempEntryList,
-    chosenEntryCodeIndex
+    chosenEntryCodeIndex,
+    lastEntryCodeUploadTargetIndexRef
   } = useContext(Context);
 
   const persistedOnMount = getPersistedEntryCodeUploadUi(
@@ -204,6 +205,23 @@ const useHandleEntryCodeDrop = () => {
     setTempEntryCodeSummary,
     setTempEntryList
   ]);
+
+  useLayoutEffect(() => {
+    const prev = lastEntryCodeUploadTargetIndexRef.current;
+    if (prev === chosenEntryCodeIndex) return;
+    if (
+      prev !== null &&
+      prev >= 0 &&
+      chosenEntryCodeIndex >= 0 &&
+      prev !== chosenEntryCodeIndex
+    ) {
+      handleClearUpload();
+      setLoading(false);
+      setDropMessage({ message: "", type: "" });
+      setSelectionValue("Upload");
+    }
+    lastEntryCodeUploadTargetIndexRef.current = chosenEntryCodeIndex;
+  }, [chosenEntryCodeIndex, handleClearUpload, lastEntryCodeUploadTargetIndexRef]);
 
   useLayoutEffect(() => {
     if (!Array.isArray(entryCodeHeaders) || entryCodeHeaders.length === 0) {

@@ -84,6 +84,7 @@ function App() {
   const [pendingPicklist, setPendingPicklist] = useState(null);
   const [tempEntryCodeSummary, setTempEntryCodeSummary] = useState(undefined);
   const [tempEntryList, setTempEntryList] = useState([]);
+  const lastEntryCodeUploadTargetIndexRef = useRef(null);
   const [firstNavigationToDataset, setFirstNavigationToDataset] = useState(false);
   const [excelSheetChoice, setExcelSheetChoice] = useState(-1);
 
@@ -251,6 +252,7 @@ function App() {
               setTempEntryCodeSummary,
               tempEntryList,
               setTempEntryList,
+              lastEntryCodeUploadTargetIndexRef,
               excelSheetChoice,
               setExcelSheetChoice,
               setCurrentOCAMergePage,
