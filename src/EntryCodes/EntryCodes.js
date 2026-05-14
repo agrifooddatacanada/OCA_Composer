@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Box, Typography } from "@mui/material";
 import { Context } from "../App";
 import SingleTable from "./SingleTable";
-import { removeSpacesAndColonFromArrayOfObjects } from "../constants/removeSpaces";
+import { removeSpacesFromArrayOfObjects } from "../constants/removeSpaces";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
 
@@ -86,7 +86,7 @@ export default function EntryCodes() {
     const keys = Object.keys(newEntryCodeObject);
     const newEntryCodesObject = {};
     keys.forEach((item) => {
-      newEntryCodesObject[item] = removeSpacesAndColonFromArrayOfObjects(
+      newEntryCodesObject[item] = removeSpacesFromArrayOfObjects(
         newEntryCodeObject[item]
       );
     });
