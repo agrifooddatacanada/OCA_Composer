@@ -16,7 +16,8 @@ const languageList = [
   "Cree",
   "Ojibway",
   "Inupiaq",
-  "Inuktitut"
+  "Inuktitut",
+  "Dutch"
 ];
 
 const languageEntryErrors = {

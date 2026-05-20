@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { Box, Typography } from "@mui/material";
 import { Context } from "../App";
 import SingleTable from "./SingleTable";
-import { removeSpacesAndColonFromArrayOfObjects } from "../utils/stringUtils";
+import { removeSpacesFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
@@ -32,15 +32,16 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedAttributesList, setSelectedAttributesList] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const { currentSchemaId, getSchema, updateSchema, getLanguages, ocaPackage } = useMultiSchema();
+  const { currentSchemaId, getSchema, updateSchema, getLanguages, ocaPackage } =
+    useMultiSchema();
   const schemaState = getSchema();
-  
+
   // Get languages from schema state (per-schema)
   const languages = getLanguages();
-  
+
   // Global context
   const { setCurrentPage } = useContext(Context);
-  
+
   // Use schema state data directly - no fallback needed
   const attributeRowData = useMemo(
     () => schemaState?.attributes || [],
@@ -62,7 +63,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
   const [loading, setLoading] = useState(true);
   const gridReadyRef = useRef(new Set());
   const hasInitializedFromOverlays = useRef({});
-  
+
   // Local state for entry code grid data (schema-specific)
   const [localEntryCodeRowData, setLocalEntryCodeRowData] = useState([]);
 
@@ -89,16 +90,19 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
     },
     [selectedAttributesList.length]
   );
-  
+
   // Memoize the complete schema to avoid triggering useEffect unnecessarily
-  const completeSchema = useMemo(() => schemaState?.completeSchema, [schemaState?.completeSchema]);
+  const completeSchema = useMemo(
+    () => schemaState?.completeSchema,
+    [schemaState?.completeSchema]
+  );
 
   // Prefill entry codes from overlays on first load if schema state is empty
   // Use a ref object keyed by currentSchemaId to track per-schema initialization
   useEffect(() => {
     // Only run once per schema - prevent repopulation when user edits data
     if (hasInitializedFromOverlays.current[currentSchemaId]) return;
-    
+
     try {
       const attrList = attributeRowData
         .filter((a) => a.List === true)
@@ -112,8 +116,12 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
       // If so, don't overwrite - the user or parser already set them
       const hasExistingData = attrList.some((attr) => {
         const rows = entryCodeRowData?.[attr];
-        return Array.isArray(rows) && rows.length > 0 && rows.some(row => 
-          row.Code || Object.keys(row).some(k => k !== 'Code' && row[k])
+        return (
+          Array.isArray(rows) &&
+          rows.length > 0 &&
+          rows.some(
+            (row) => row.Code || Object.keys(row).some((k) => k !== "Code" && row[k])
+          )
         );
       });
       if (hasExistingData) {
@@ -123,14 +131,14 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
       // Get overlays from the complete schema (works for both bundles and packages)
       // Use memoized completeSchema from below to avoid schemaState dependency
       if (!completeSchema) return;
-      
+
       // Navigate to the bundle overlays (handles both bundle and oca_bundle wrapper)
       const bundleData = getPackageBundle(completeSchema) || completeSchema;
       const overlays = bundleData?.overlays;
       if (!overlays) return;
 
       const overlayCodes = overlays?.entry_code?.attribute_entry_codes || {};
-      
+
       // Convert entry overlay array to object keyed by language code
       const overlayEntries = {};
       if (Array.isArray(overlays?.entry)) {
@@ -142,18 +150,13 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
         });
       }
 
-      // Convert schema language name (e.g., "English") to OCA code (e.g., "eng")
-      const resolveAlpha3 = (lang) => {
-        return langCodeOCAFromName(lang);
-      };
-
       const initialized = {};
       attrList.forEach((attr) => {
         const codes = Array.isArray(overlayCodes?.[attr]) ? overlayCodes[attr] : [];
         if (codes.length === 0) return;
         const rows = codes.map((code) => {
           const row = { Code: code };
-          
+
           // Add translations using full language names (normalize OCA codes to names)
           Object.keys(overlayEntries).forEach((langCodeOCA) => {
             const label = overlayEntries[langCodeOCA]?.[attr]?.[code];
@@ -163,7 +166,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
               row[lang] = label;
             }
           });
-          
+
           // Ensure all schema languages have properties (even if empty)
           languages.forEach((languageName) => {
             if (!row[languageName]) {
@@ -208,7 +211,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
     attributeRowData,
     entryCodeRowData,
     languages,
-    completeSchema,
+    completeSchema
     // updateCurrentSchema and schemaState intentionally omitted to prevent infinite loop
   ]);
 
@@ -239,9 +242,9 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
     // Get overlays from the complete schema (works for both bundles and packages)
     const bundleData = getPackageBundle(completeSchema) || completeSchema || {};
     const overlays = bundleData?.overlays || {};
-    
+
     const overlayCodes = overlays?.entry_code?.attribute_entry_codes || {};
-    
+
     // Convert entry overlay array to object keyed by OCA language code
     const overlayEntries = {};
     if (Array.isArray(overlays?.entry)) {
@@ -267,7 +270,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
         if (codes.length > 0) {
           rowsForAttr = codes.map((code) => {
             const row = { Code: code };
-            
+
             // Add labels for all available overlay translations (using OCA codes as keys)
             Object.keys(overlayEntries).forEach((langCodeOCA) => {
               const label = overlayEntries[langCodeOCA]?.[attr]?.[code];
@@ -275,7 +278,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
                 row[langCodeOCA] = label;
               }
             });
-            
+
             // Ensure all current languages have properties (even if empty)
             languages.forEach((languageName) => {
               const langCodeOCA = langCodeOCAFromName(languageName);
@@ -290,13 +293,14 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
       if (!rowsForAttr || rowsForAttr.length === 0) rowsForAttr = [emptyRow];
       return rowsForAttr.map((r) => ({ ...r }));
     });
-    
+
     // Only update if the data has actually changed or if local state is empty/wrong structure
-    const shouldUpdate = !localEntryCodeRowData || 
-                        !Array.isArray(localEntryCodeRowData) ||
-                        localEntryCodeRowData.length !== attributeArray.length ||
-                        JSON.stringify(alignedEntryCodesArray) !== JSON.stringify(localEntryCodeRowData);
-    
+    const shouldUpdate =
+      !localEntryCodeRowData ||
+      !Array.isArray(localEntryCodeRowData) ||
+      localEntryCodeRowData.length !== attributeArray.length ||
+      JSON.stringify(alignedEntryCodesArray) !== JSON.stringify(localEntryCodeRowData);
+
     if (shouldUpdate) {
       setLocalEntryCodeRowData(alignedEntryCodesArray);
     }
@@ -321,7 +325,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
     // Build object keyed by attribute from the grid's visible array state
     // The visible array is stored in local state (aligned to selectedAttributesList order)
     const rowsArray = Array.isArray(localEntryCodeRowData) ? localEntryCodeRowData : [];
-    
+
     const newEntryCodeObject = {};
     selectedAttributesList.forEach((attrName, index) => {
       const sourceRows = Array.isArray(rowsArray[index]) ? rowsArray[index] : [];
@@ -384,7 +388,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
     const keys = Object.keys(newEntryCodeObject);
     const newEntryCodesObject = {};
     keys.forEach((item) => {
-      newEntryCodesObject[item] = removeSpacesAndColonFromArrayOfObjects(
+      newEntryCodesObject[item] = removeSpacesFromArrayOfObjects(
         newEntryCodeObject[item]
       );
     });
@@ -420,7 +424,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
     const keys = Object.keys(newEntryCodeObject);
     const newEntryCodesObject = {};
     keys.forEach((item) => {
-      newEntryCodesObject[item] = removeSpacesAndColonFromArrayOfObjects(
+      newEntryCodesObject[item] = removeSpacesFromArrayOfObjects(
         newEntryCodeObject[item]
       );
     });
@@ -454,7 +458,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
   // expose save and validate methods to parent (Home) so it can persist edits and validate on navigation
   useImperativeHandle(ref, () => ({
     save: saveWithoutValidation, // Changed from handleSave to avoid validation on backward navigation
-    validate: validate
+    validate
   }));
 
   const allCodesDisplay = selectedAttributesList.map((item, index) => (
@@ -467,9 +471,11 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
       setChosenTable={setChosenTable}
       setShowCard={setShowWarning}
       onFirstDataRendered={handleEntryCodeGridFirstDataRendered}
-      entryCodeData={Array.isArray(localEntryCodeRowData[index]) ? localEntryCodeRowData[index] : []}
+      entryCodeData={
+        Array.isArray(localEntryCodeRowData[index]) ? localEntryCodeRowData[index] : []
+      }
       setEntryCodeData={(newData) => {
-        setLocalEntryCodeRowData(prev => {
+        setLocalEntryCodeRowData((prev) => {
           const updated = [...prev];
           updated[index] = newData;
           return updated;
@@ -501,7 +507,15 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
           }}
         />
       )}
-      <Box sx={{ width: "90%", margin: "auto", mb: BETWEEN_SECTION_SPACING, minHeight: 400, position: "relative" }}>
+      <Box
+        sx={{
+          width: "90%",
+          margin: "auto",
+          mb: BETWEEN_SECTION_SPACING,
+          minHeight: 400,
+          position: "relative"
+        }}
+      >
         <Typography
           sx={{
             fontSize: 15,
