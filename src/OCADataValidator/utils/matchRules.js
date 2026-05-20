@@ -63,6 +63,11 @@ function matchBoolean(dataStr) {
 }
 
 export function matchFormat(attrType, pattern, dataStr, hasEntryCodes) {
+  // If there are entry codes, we don't need to match the format.
+  // Entry codes are handled in the validator.js file.
+  if (hasEntryCodes) {
+    return true;
+  }
   if (attrType.includes("DateTime")) {
     return matchDatetime(pattern, dataStr);
   }
