@@ -9,15 +9,11 @@ import {
   descriptionToFormatCodeNumeric,
   descriptionToFormatCodeText,
   formatCodeBinary,
-  formatCodeBinaryDescription,
   formatCodeDate,
-  formatCodeDateDescription,
   formatCodeNumeric,
-  formatCodeNumericDescription,
-  formatCodeText,
-  formatCodeTextDescription
+  formatCodeText
 } from "../constants/constants";
-import { normalizeEscapedQuotes } from "../utils/helpers";
+import { getFormatRuleDescription } from "../utils/helpers";
 
 export const FormatRuleTypeRenderer = memo(
   // eslint-disable-next-line no-unused-vars
@@ -89,20 +85,7 @@ export const FormatRuleTypeRenderer = memo(
       }
     };
 
-    const findDescription = (value) => {
-      const formattedValue = normalizeEscapedQuotes(value);
-      const description = baseType.includes("Date")
-        ? formatCodeDateDescription[formattedValue]
-        : baseType.includes("Numeric")
-          ? formatCodeNumericDescription[formattedValue]
-          : baseType.includes("Binary")
-            ? formatCodeBinaryDescription[formattedValue]
-            : baseType.includes("Text") || baseType === "Text"
-              ? formatCodeTextDescription[formattedValue]
-              : "";
-      
-      return description ? t(description, { defaultValue: description }) : "";
-    };
+    const findDescription = (value) => getFormatRuleDescription(attributeType, value, t);
 
     const typesDisplay = selectedOption.map((value) => (
       <MenuItem

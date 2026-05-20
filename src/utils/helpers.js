@@ -1113,6 +1113,11 @@ export const getLabelofParentClass = async (uri) => {
   return responseData;
 };
 
+/**
+ * Strips generic string escaping.
+ * WARNING: DO NOT use this on Format Rules or regular expressions.
+ * It will strip backslashes (e.g., \- becomes -) and corrupt the regex.
+ */
 export const normalizeEscapedQuotes = (s) => {
   if (typeof s !== "string") return s;
   return (
@@ -1130,6 +1135,7 @@ export const escapeForOCAString = (s) => {
   // First escape backslashes, then escape double quotes, single quotes, and dashes for OCA output
   return String(s)
     .replace(/\\/g, "\\\\")
+    // eslint-disable-next-line quotes
     .replace(/"/g, '\\"')
     .replace(/'/g, "\\'")
     .replace(/-/g, "\\-");
@@ -1137,7 +1143,19 @@ export const escapeForOCAString = (s) => {
 
 export const escapeForOCADoubleQuotedValue = (s) => {
   if (typeof s !== "string") return s;
+  // eslint-disable-next-line quotes
   return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+};
+
+/**
+ * Safely escapes double quotes for OCA export while preserving regex-specific backslashes.
+ * Format rules are often regular expressions, so we CANNOT use `escapeForOCAString` 
+ * or `normalizeEscapedQuotes` which would destroy regex escapes like \- or \d.
+ */
+export const escapeFormatRuleForOCA = (formatRule) => {
+  if (typeof formatRule !== "string") return formatRule;
+  // eslint-disable-next-line quotes
+  return formatRule.replace(/\\"/g, '"').replace(/"/g, '\\"');
 };
 
 export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
@@ -1191,9 +1209,7 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
     if (formatEntries.length > 0) {
       fileContent += "ADD Format ATTRS";
       formatEntries.forEach(([attribute, formatRule]) => {
-        // Normalize and escape quotes to prevent double-escaping issues
-        const escapedRule = escapeForOCAString(normalizeEscapedQuotes(formatRule));
-        fileContent += ` ${attribute}="${escapedRule}"`;
+        fileContent += ` ${attribute}="${escapeFormatRuleForOCA(formatRule)}"`;
       });
       fileContent += "\n";
     }
@@ -1362,15 +1378,25 @@ export const downloadJsonFile = (data, fileName) => {
 };
 
 export const getFormatRuleDescription = (attributeType, formatRule, t = null) => {
-  const normalizedRule = normalizeEscapedQuotes(formatRule);
+  if (!formatRule) return "";
+  // Unescape backslash-escaped quotes to match against our clear-text dictionary keys.
+  // We don't use 'normalizeEscapedQuotes' here to avoid destructive removal of regex metadata like \-.
+  // eslint-disable-next-line quotes
+  const normalizedRule = formatRule.replace(/\\"/g, '"');
 
-  const description = attributeType.includes("Date")
+  // Extract the underlying data type, stripping away "Array[]" wrappers if present.
+  // e.g. "Array[Text]" becomes "Text".
+  const baseType = attributeType?.includes("Array")
+    ? attributeType.replace(/Array\[|\]/g, "")
+    : attributeType || "";
+
+  const description = baseType.includes("Date")
     ? formatCodeDateDescription[normalizedRule]
-    : attributeType.includes("Numeric")
+    : baseType.includes("Numeric")
       ? formatCodeNumericDescription[normalizedRule]
-      : attributeType.includes("Binary")
+      : baseType.includes("Binary")
         ? formatCodeBinaryDescription[normalizedRule]
-        : attributeType.includes("Text")
+        : baseType.includes("Text") || baseType === "Text"
           ? formatCodeTextDescription[normalizedRule]
           : "";
 

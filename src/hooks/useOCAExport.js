@@ -44,7 +44,8 @@ import {
   getAttributeFramingInput,
   getFormInformationInput,
   normalizeEscapedQuotes,
-  escapeForOCADoubleQuotedValue
+  escapeForOCADoubleQuotedValue,
+  escapeFormatRuleForOCA
 } from "../utils/helpers";
 import { getMapValueForAttributeName } from "../utils/stringUtils";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
@@ -327,12 +328,7 @@ const useOCAExport = () => {
       attributesList.forEach((attrName) => {
         const formatRule = getMapValueForAttributeName(attributeFormats, attrName);
         if (formatRule) {
-          // Normalize first (unescape any already-escaped quotes), then escape all quotes
-          // This prevents double-escaping when format rules contain \" from the original OCA file
-          // Only escape double quotes for the DSL; avoid escaping backslashes/hyphens
-          // eslint-disable-next-line quotes
-          const escapedRule = normalizeEscapedQuotes(formatRule).replace(/"/g, '\\"');
-          tempText += ` ${attrName}="${escapedRule}"`;
+          tempText += ` ${attrName}="${escapeFormatRuleForOCA(formatRule)}"`;
         }
       });
       if (tempText !== "") {
