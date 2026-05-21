@@ -40,6 +40,15 @@ const createQuestionFromAttribute = (
   if (!attribute) return null;
 
   const attributeInfo = attributeRowData.find((r) => r.Attribute === attribute);
+
+  if (Array.isArray(attributeRowData) && attributeRowData.length > 0 && !attributeInfo) {
+    console.warn(
+      `[FormBuilder] Skipping form overlay reference to unknown attribute "${attribute}" ` +
+        "— it is not present in the current schema's attribute list."
+    );
+    return null;
+  }
+
   const attributeType = attributeInfo?.Type || interactionData?.type || "Text";
 
   const formatRule = formatRuleRowData.find((rule) => rule.Attribute === attribute);

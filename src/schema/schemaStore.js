@@ -490,10 +490,78 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
       updatedState.unitFramedData = renameInArrayOfObjectsAttribute(currentState.unitFramedData);
       updatedState.attributeFramingData = renameInArrayOfObjectsAttribute(currentState.attributeFramingData);
       updatedState.dataStandardsData = renameInArrayOfObjectsAttribute(currentState.dataStandardsData);
+      updatedState.FormInformationRowData = renameInArrayOfObjectsAttribute(
+        currentState.FormInformationRowData || []
+      );
 
       updatedState.unitData = renameInStringArray(currentState.unitData || []);
       updatedState.unframedUnitList = renameInStringArray(currentState.unframedUnitList || []);
       updatedState.unframedAttributeList = renameInStringArray(currentState.unframedAttributeList || []);
+
+      updatedState.formPlaceholdersByLanguage = (() => {
+        const fp = currentState.formPlaceholdersByLanguage || {};
+        if (typeof fp !== "object") return fp;
+        let didRename = false;
+        const next = {};
+        Object.keys(fp).forEach((language) => {
+          const langMap = fp[language];
+          const nextMap = renameKeyInObjectByNorm(langMap, newAttributeValue);
+          if (nextMap !== langMap) didRename = true;
+          next[language] = nextMap;
+        });
+        return didRename ? next : fp;
+      })();
+
+      updatedState.formBuilderPages = (() => {
+        const pages = currentState.formBuilderPages;
+        if (!Array.isArray(pages) || pages.length === 0) return pages;
+
+        const renameQuestion = (q) => {
+          if (!q || typeof q !== "object") return q;
+          let next = q;
+          if (typeof q.attribute === "string") {
+            const rowNorm = normalizeAttributeNameKey(q.attribute);
+            const matches = q.attribute === oldAttributeValue || rowNorm === oldNorm;
+            if (matches) next = { ...next, attribute: newAttributeValue };
+          }
+          if (Array.isArray(next.showingAttribute) && next.showingAttribute.length > 0) {
+            const nextShowing = renameInStringArray(next.showingAttribute);
+            if (nextShowing !== next.showingAttribute) {
+              next = { ...next, showingAttribute: nextShowing };
+            }
+          // pre-normalization questions may still carry `showing_attribute`.
+          } else if (Array.isArray(next.showing_attribute) && next.showing_attribute.length > 0) {
+            const nextShowing = renameInStringArray(next.showing_attribute);
+            if (nextShowing !== next.showing_attribute) {
+              next = { ...next, showing_attribute: nextShowing };
+            }
+          }
+          return next;
+        };
+
+        let didRename = false;
+        const nextPages = pages.map((page) => {
+          if (!page) return page;
+          const questions = (page.questions || []).map((q) => {
+            const nextQ = renameQuestion(q);
+            if (nextQ !== q) didRename = true;
+            return nextQ;
+          });
+          const sections = (page.sections || []).map((section) => {
+            const sectionQuestions = (section.questions || []).map((q) => {
+              const nextQ = renameQuestion(q);
+              if (nextQ !== q) didRename = true;
+              return nextQ;
+            });
+            return sectionQuestions === section.questions
+              ? section
+              : { ...section, questions: sectionQuestions };
+          });
+          if (questions === page.questions && sections === page.sections) return page;
+          return { ...page, questions, sections };
+        });
+        return didRename ? nextPages : pages;
+      })();
 
       return {
         ...prev,
