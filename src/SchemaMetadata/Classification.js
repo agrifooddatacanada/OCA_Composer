@@ -65,7 +65,7 @@ const Classification = () => {
   }, [divisionGroup.division, t]);
 
   return (
-    <Box sx={{ textAlign: 'left', marginBottom: '1rem', height: '5rem', width: '22rem' }}>
+    <Box sx={{ textAlign: 'left', marginBottom: '1rem', width: '22rem' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: TOOLTIP_ICON_GAP, marginBottom: '0.35rem', color: CustomPalette.GREY_600 }}>
         <Typography
           sx={{
@@ -84,9 +84,9 @@ const Classification = () => {
             <HelpOutlineIcon sx={{ fontSize: 15 }} />
           </Tooltip>
       </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-        <FormControl variant="standard" sx={{ minWidth: 120, width: '45%' }}>
-          <Typography variant="body2">{t('Divisions')}</Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <FormControl variant="standard" sx={{ minWidth: 120, width: '100%' }}>
+          <Typography variant="body2">{t('Division')}</Typography>
           <Select
             value={divisionGroup.division}
             onChange={(e) => setDivisionGroup(prev => ({ ...prev, division: e.target.value }))}
@@ -96,8 +96,8 @@ const Classification = () => {
             {divisionsDropdown}
           </Select>
         </FormControl>
-        <FormControl variant="standard" sx={{ minWidth: 120, width: '45%', marginBottom: '0.5rem' }}>
-          <Typography variant="body2">{t('Groups')}</Typography>
+        <FormControl variant="standard" sx={{ minWidth: 120, width: '100%', marginBottom: '0.5rem' }}>
+          <Typography variant="body2">{t('Group')}</Typography>
           <Select
             value={divisionGroup.group}
             onChange={(e) => setDivisionGroup(prev => ({ ...prev, group: e.target.value }))}
