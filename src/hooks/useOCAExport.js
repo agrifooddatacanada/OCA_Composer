@@ -45,7 +45,8 @@ import {
   getFormInformationInput,
   normalizeEscapedQuotes,
   escapeForOCADoubleQuotedValue,
-  escapeFormatRuleForOCA
+  escapeFormatRuleForOCA,
+  downloadJsonFile
 } from "../utils/helpers";
 import { getMapValueForAttributeName } from "../utils/stringUtils";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
@@ -90,18 +91,6 @@ const useOCAExport = () => {
   // Shared download utilities
   const downloadTextFile = (data, fileName) => {
     const blob = new Blob([data], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const downloadJsonFile = (data, fileName) => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -936,8 +925,8 @@ const useOCAExport = () => {
     for (const childId of childSchemaIds) {
       const childState = schemaStates[childId];
       if (childState?.attributes && childState.attributes.length > 0) {
-        // eslint-disable-next-line no-await-in-loop
         const { bundle: childBundle, extension: childExtension } =
+          // eslint-disable-next-line no-await-in-loop
           await buildPackageFromTextDSL(childId);
         const said = childBundle?.bundle?.d;
         if (said) {

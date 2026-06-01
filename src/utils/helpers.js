@@ -1133,12 +1133,14 @@ export const normalizeEscapedQuotes = (s) => {
 export const escapeForOCAString = (s) => {
   if (typeof s !== "string") return s;
   // First escape backslashes, then escape double quotes, single quotes, and dashes for OCA output
-  return String(s)
-    .replace(/\\/g, "\\\\")
-    // eslint-disable-next-line quotes
-    .replace(/"/g, '\\"')
-    .replace(/'/g, "\\'")
-    .replace(/-/g, "\\-");
+  return (
+    String(s)
+      .replace(/\\/g, "\\\\")
+      // eslint-disable-next-line quotes
+      .replace(/"/g, '\\"')
+      .replace(/'/g, "\\'")
+      .replace(/-/g, "\\-")
+  );
 };
 
 export const escapeForOCADoubleQuotedValue = (s) => {
@@ -1149,7 +1151,7 @@ export const escapeForOCADoubleQuotedValue = (s) => {
 
 /**
  * Safely escapes double quotes for OCA export while preserving regex-specific backslashes.
- * Format rules are often regular expressions, so we CANNOT use `escapeForOCAString` 
+ * Format rules are often regular expressions, so we CANNOT use `escapeForOCAString`
  * or `normalizeEscapedQuotes` which would destroy regex escapes like \- or \d.
  */
 export const escapeFormatRuleForOCA = (formatRule) => {
@@ -1365,7 +1367,8 @@ export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
 };
 
 export const downloadJsonFile = (data, fileName) => {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  // const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
 
