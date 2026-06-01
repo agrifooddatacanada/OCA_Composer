@@ -12,8 +12,10 @@ import {
   Checkbox,
   FormControlLabel,
   Tooltip,
-  Divider
+  Divider,
+  Button
 } from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
 import { useTranslation } from "react-i18next";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import BackNextSkeleton from "../components/BackNextSkeleton";
@@ -84,6 +86,7 @@ const DataSeparator = () => {
   const enableArrayDelimiter = !!schemaState?.enableArrayDelimiter;
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [fileSaved, setFileSaved] = useState(false);
 
   const hasArrayAttributes = useMemo(
     () => attributeRowData.some((row) => String(row?.Type || "").startsWith("Array[")),
@@ -161,6 +164,12 @@ const DataSeparator = () => {
         dataStartRow
       }
     });
+  };
+
+  const handleSaveFileDelimiter = () => {
+    persistFileDelimiterData();
+    setFileSaved(true);
+    setTimeout(() => setFileSaved(false), 2000);
   };
 
   const handleForward = () => {
@@ -298,6 +307,16 @@ const DataSeparator = () => {
                 }
                 fullWidth
               />
+              <Button
+                variant="contained"
+                size="small"
+                disabled={!enableFileDelimiter}
+                startIcon={<SaveIcon />}
+                onClick={handleSaveFileDelimiter}
+                color={fileSaved ? "success" : "primary"}
+              >
+                {fileSaved ? t("Saved") : t("Save")}
+              </Button>
             </Box>
           </CardContent>
         </Card>
