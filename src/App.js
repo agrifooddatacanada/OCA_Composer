@@ -13,6 +13,7 @@ import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
 import { MultiSchemaProvider, useMultiSchema } from "./schema/schemaContext";
+import SessionDraftManager from "./components/SessionDraftManager";
 import { getCurrentTheme } from "./utils/themeDetector";
 import { CustomPalette } from "./constants/customPalette";
 // import Tutorial from "./Tutorial/Tutorial";
@@ -197,6 +198,7 @@ function App() {
             value={{
               divisionGroup,
               setDivisionGroup,
+              currentPage,
               setCurrentPage,
               history,
               setHistory,
@@ -292,6 +294,7 @@ function App() {
               }}
             >
               <BrowserRouter>
+                <SessionDraftManager />
                 <Routes>
                   <Route path="/" element={<Landing />} />
                   <Route

@@ -30,6 +30,7 @@ import { buildOcaPackageJsonFromEditorState } from "./ocaBuilder";
 import { acceptOcaPackageOrNull } from "../utils/packageUtils";
 import { useCreateChildSchemaPlaceholder } from "./createChildSchemaPlaceholder";
 import { collectDescendantSchemaIds } from "./childSchemaSubtree";
+import { clearDraft } from "../hooks/useSessionDraft";
 
 /** factories */
 import { createOcaLoader } from "./ocaLoader";
@@ -162,6 +163,19 @@ export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
     [getSchemaById, setSchemaStates]
   );
 
+  const restoreDraft = useCallback((draft) => {
+    if (draft.schemaStates) {
+      schemaStatesRef.current = draft.schemaStates;
+      _setSchemaStates(draft.schemaStates);
+    }
+    if (draft.currentSchemaId) {
+      setCurrentSchemaId(draft.currentSchemaId);
+    }
+    if (draft.ocaPackage) {
+      _setOcaPackage(draft.ocaPackage);
+    }
+  }, []);
+
   // Context value
   const contextValue = useMemo(
     () => ({
@@ -178,6 +192,8 @@ export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
       clearAllSchemas,
       createChildSchemaPlaceholder,
       removeChildSchemaSubtree,
+      clearDraft,
+      restoreDraft,
 
       ...store,
       ...oca,

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { OcaPackage } from "oca_package";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
+import { clearDraft } from "./useSessionDraft";
 import { langCodeOCAFromName, langTwoLettersFromName } from "../utils/languageUtils";
 import {
   getPackageBundle,
@@ -1033,10 +1034,14 @@ const useOCAExport = () => {
   const exportData = async () => {
     try {
       setError("");
+      let result;
       if (ocaPackage) {
-        return await exportImportedPackage();
+        result = await exportImportedPackage();
+      } else {
+        result = await exportManualPackage();
       }
-      return await exportManualPackage();
+      if (result) clearDraft();
+      return result;
     } catch (error) {
       console.error("Export failed:", error);
       setError(error.message || "Export failed");
@@ -1054,6 +1059,7 @@ const useOCAExport = () => {
     setSelectedOverlay("");
 
     clearAllSchemas();
+    clearDraft();
 
     setCurrentPage("Landing");
     navigate("/");

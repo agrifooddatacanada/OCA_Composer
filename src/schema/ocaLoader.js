@@ -21,6 +21,7 @@ import {
 } from "../utils/packageUtils";
 import { OCAParser } from "../utils/ocaParser";
 import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
+import { createDefaultSchemaState } from "./schemaStore";
 
 // Re-export utilities used by other schema modules
 export { getPackageBundle, getPackageBundleId } from "../utils/packageUtils";
@@ -64,10 +65,11 @@ export function createOcaLoader({
       existingState?.initialized ? null : parseSchemaFromOCA(schemaId, ocaPackage);
 
     setSchemaStates(prev => {
+      const base = prev[schemaId] || createDefaultSchemaState();
       const newState = {
         ...prev,
         [schemaId]: {
-            ...prev[schemaId],
+            ...base,
             ...(parsedState || {}),
             completeSchema,
             initialized: true
