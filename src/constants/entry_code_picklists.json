@@ -1,0 +1,2915 @@
+{
+  "AgreementScale": {
+    "id": 1,
+    "name": {
+      "en": "Agreement scale",
+      "fr": "Échelle d’accord"
+    },
+    "description": {
+      "en": "Standard agreement response scale from strongly agree to strongly disagree.",
+      "fr": "Échelle de réponses standard allant de tout à fait d’accord à tout à fait en désaccord."
+    },
+    "keywords": {
+      "agreement": {
+        "en": "agreement",
+        "fr": "accord"
+      },
+      "likert scale": {
+        "en": "likert scale",
+        "fr": "échelle de Likert"
+      },
+      "survey responses": {
+        "en": "survey responses",
+        "fr": "réponses de sondage"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "short_code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "1",
+        "short_code": "SA",
+        "en": "Strongly agree",
+        "fr": "Tout à fait d’accord"
+      },
+      {
+        "Code": "2",
+        "short_code": "AG",
+        "en": "Agree",
+        "fr": "D’accord"
+      },
+      {
+        "Code": "3",
+        "short_code": "MA",
+        "en": "Mildly agree",
+        "fr": "Plutôt d’accord"
+      },
+      {
+        "Code": "4",
+        "short_code": "NAD",
+        "en": "Neither agree nor disagree",
+        "fr": "Ni d’accord ni en désaccord"
+      },
+      {
+        "Code": "5",
+        "short_code": "MD",
+        "en": "Mildly disagree",
+        "fr": "Plutôt pas d’accord"
+      },
+      {
+        "Code": "6",
+        "short_code": "DA",
+        "en": "Disagree",
+        "fr": "Pas d’accord"
+      },
+      {
+        "Code": "7",
+        "short_code": "SD",
+        "en": "Strongly disagree",
+        "fr": "Tout à fait en désaccord"
+      },
+      {
+        "Code": "8",
+        "short_code": "DK",
+        "en": "Don't know",
+        "fr": "Ne sait pas"
+      }
+    ]
+  },
+  "CanadianProvinces": {
+    "id": 2,
+    "name": {
+      "en": "Canadian Provinces",
+      "fr": "Provinces canadiennes"
+    },
+    "description": {
+      "en": "List of Canadian provinces and their codes",
+      "fr": "Liste des provinces canadiennes et leurs codes"
+    },
+    "keywords": {
+      "canada": {
+        "en": "canada",
+        "fr": "Canada"
+      },
+      "province": {
+        "en": "province",
+        "fr": "province"
+      },
+      "geography": {
+        "en": "geography",
+        "fr": "géographie"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "SGC_code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "AB",
+        "SGC_code": "48",
+        "en": "Alberta",
+        "fr": "L'Alberta"
+      },
+      {
+        "Code": "BC",
+        "SGC_code": "59",
+        "en": "British Columbia",
+        "fr": "La Colombie-Britannique"
+      },
+      {
+        "Code": "MB",
+        "SGC_code": "46",
+        "en": "Manitoba",
+        "fr": "Le Manitoba"
+      },
+      {
+        "Code": "NB",
+        "SGC_code": "13",
+        "en": "New Brunswick",
+        "fr": "Le Nouveau-Brunswick"
+      },
+      {
+        "Code": "NL",
+        "SGC_code": "10",
+        "en": "Newfoundland and Labrador",
+        "fr": "La Terre-Neuve-et-Labrador"
+      },
+      {
+        "Code": "NS",
+        "SGC_code": "12",
+        "en": "Nova Scotia",
+        "fr": "La Nouvelle-Écosse"
+      },
+      {
+        "Code": "NT",
+        "SGC_code": "61",
+        "en": "Northwest Territories",
+        "fr": "Les Territoires du Nord-Ouest"
+      },
+      {
+        "Code": "NU",
+        "SGC_code": "62",
+        "en": "Nunavut",
+        "fr": "Le Nunavut"
+      },
+      {
+        "Code": "ON",
+        "SGC_code": "35",
+        "en": "Ontario",
+        "fr": "L'Ontario"
+      },
+      {
+        "Code": "PE",
+        "SGC_code": "11",
+        "en": "Prince Edward Island",
+        "fr": "Île-du-Prince-Édouard"
+      },
+      {
+        "Code": "QC",
+        "SGC_code": "24",
+        "en": "Quebec",
+        "fr": "Le Québec"
+      },
+      {
+        "Code": "SK",
+        "SGC_code": "47",
+        "en": "Saskatchewan",
+        "fr": "La Saskatchewan"
+      },
+      {
+        "Code": "YT",
+        "SGC_code": "60",
+        "en": "Yukon",
+        "fr": "Le Yukon"
+      }
+    ]
+  },
+  "ComfortLevelScale": {
+    "id": 3,
+    "name": {
+      "en": "Comfort level scale",
+      "fr": "Échelle de niveau de confort"
+    },
+    "description": {
+      "en": "Level of comfort or discomfort expressed in relation to a subject option or comparison.",
+      "fr": "Niveau de confort ou d’inconfort exprimé par rapport à un sujet une option ou une comparaison."
+    },
+    "keywords": {
+      "comfort level": {
+        "en": "comfort level",
+        "fr": "niveau de confort"
+      },
+      "attitudes": {
+        "en": "attitudes",
+        "fr": "attitudes"
+      },
+      "perceptions": {
+        "en": "perceptions",
+        "fr": "perceptions"
+      },
+      "survey responses": {
+        "en": "survey responses",
+        "fr": "réponses de sondage"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "MLC",
+        "en": "Much less comfortable with genetically modified rice than cellular agriculture",
+        "fr": "Beaucoup moins à l’aise avec le riz génétiquement modifié qu’avec l’agriculture cellulaire"
+      },
+      {
+        "Code": "LC",
+        "en": "Less comfortable",
+        "fr": "Moins à l’aise"
+      },
+      {
+        "Code": "LLC",
+        "en": "A little less comfortable",
+        "fr": "Un peu moins à l’aise"
+      },
+      {
+        "Code": "SLC",
+        "en": "Same level of comfort",
+        "fr": "Même niveau de confort"
+      },
+      {
+        "Code": "LMC",
+        "en": "A little more comfortable",
+        "fr": "Un peu plus à l’aise"
+      },
+      {
+        "Code": "MC",
+        "en": "More comfortable",
+        "fr": "Plus à l’aise"
+      },
+      {
+        "Code": "MMC",
+        "en": "Much more comfortable with genetically modified rice than cellular agriculture",
+        "fr": "Beaucoup plus à l’aise avec le riz génétiquement modifié qu’avec l’agriculture cellulaire"
+      },
+      {
+        "Code": "DK",
+        "en": "Don't know",
+        "fr": "Ne sait pas"
+      }
+    ]
+  },
+  "AwarenessOfConcept": {
+    "id": 4,
+    "name": {
+      "en": "Awareness of concept",
+      "fr": "Sensibilisation à un concept"
+    },
+    "description": {
+      "en": "Whether the respondent has previously heard of or is aware of a concept topic or subject.",
+      "fr": "Indique si la personne répondante a déjà entendu parler ou est consciente d’un concept d’un sujet ou d’un thème."
+    },
+    "keywords": {
+      "awareness": {
+        "en": "awareness",
+        "fr": "sensibilisation"
+      },
+      "familiarity": {
+        "en": "familiarity",
+        "fr": "familiarité"
+      },
+      "knowledge": {
+        "en": "knowledge",
+        "fr": "connaissance"
+      },
+      "survey responses": {
+        "en": "survey responses",
+        "fr": "réponses de sondage"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "Y",
+        "en": "Yes",
+        "fr": "Oui"
+      },
+      {
+        "Code": "N",
+        "en": "No",
+        "fr": "Non"
+      },
+      {
+        "Code": "DK",
+        "en": "I don't know",
+        "fr": "Je ne sais pas"
+      }
+    ]
+  },
+  "DataQualityCodes": {
+    "id": 5,
+    "name": {
+      "en": "Data Quality Codes",
+      "fr": "Codes de qualité des données"
+    },
+    "description": {
+      "en": "A controlled picklist of codes used to describe the quality",
+      "fr": "Une liste de choix contrôlée de codes utilisés pour décrire la qualité"
+    },
+    "keywords": {
+      "status": {
+        "en": "status",
+        "fr": "le statut et la provenance des valeurs de données de recherche"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "1",
+        "en": "Unaltered data",
+        "fr": "Données non modifiées"
+      },
+      {
+        "Code": "2",
+        "en": "Manually corrected data",
+        "fr": "Données corrigées manuellement"
+      },
+      {
+        "Code": "3",
+        "en": "Calibration corrected data",
+        "fr": "Données corrigées par étalonnage"
+      },
+      {
+        "Code": "4",
+        "en": "Estimated data",
+        "fr": "Données estimées"
+      },
+      {
+        "Code": "5",
+        "en": "Modelled data",
+        "fr": "Données modélisées"
+      },
+      {
+        "Code": "6",
+        "en": "Derived data",
+        "fr": "Données dérivées"
+      },
+      {
+        "Code": "7",
+        "en": "Aggregated data",
+        "fr": "Données agrégées"
+      },
+      {
+        "Code": "8",
+        "en": "Interpolated data",
+        "fr": "Données interpolées"
+      },
+      {
+        "Code": "9",
+        "en": "Extrapolated data",
+        "fr": "Données extrapolées"
+      },
+      {
+        "Code": "10",
+        "en": "Rounded data",
+        "fr": "Données arrondies"
+      },
+      {
+        "Code": "11",
+        "en": "Standardized data",
+        "fr": "Données normalisées"
+      },
+      {
+        "Code": "12",
+        "en": "Transformed data",
+        "fr": "Données transformées"
+      },
+      {
+        "Code": "13",
+        "en": "Validated data",
+        "fr": "Données validées"
+      },
+      {
+        "Code": "14",
+        "en": "Verified data",
+        "fr": "Données vérifiées"
+      },
+      {
+        "Code": "15",
+        "en": "Provisional data",
+        "fr": "Données provisoires"
+      },
+      {
+        "Code": "16",
+        "en": "Preliminary data",
+        "fr": "Données préliminaires"
+      },
+      {
+        "Code": "17",
+        "en": "Final data",
+        "fr": "Données finales"
+      },
+      {
+        "Code": "18",
+        "en": "Revised data",
+        "fr": "Données révisées"
+      },
+      {
+        "Code": "19",
+        "en": "Deprecated data",
+        "fr": "Données dépréciées"
+      },
+      {
+        "Code": "20",
+        "en": "Duplicated data",
+        "fr": "Données dupliquées"
+      },
+      {
+        "Code": "100",
+        "en": "Null value",
+        "fr": "Valeur nulle"
+      },
+      {
+        "Code": "101",
+        "en": "Missing value",
+        "fr": "Valeur manquante"
+      },
+      {
+        "Code": "102",
+        "en": "Not applicable",
+        "fr": "Sans objet"
+      },
+      {
+        "Code": "103",
+        "en": "Not measured",
+        "fr": "Non mesuré"
+      },
+      {
+        "Code": "104",
+        "en": "Not reported",
+        "fr": "Non déclaré"
+      },
+      {
+        "Code": "105",
+        "en": "Value masked for privacy",
+        "fr": "Valeur masquée pour des raisons de confidentialité"
+      },
+      {
+        "Code": "106",
+        "en": "Value withheld",
+        "fr": "Valeur retenue"
+      },
+      {
+        "Code": "107",
+        "en": "Value redacted",
+        "fr": "Valeur expurgée"
+      },
+      {
+        "Code": "200",
+        "en": "Below detection limit",
+        "fr": "Sous la limite de détection"
+      },
+      {
+        "Code": "201",
+        "en": "Above detection limit",
+        "fr": "Au-dessus de la limite de détection"
+      },
+      {
+        "Code": "202",
+        "en": "Below quantification limit",
+        "fr": "Sous la limite de quantification"
+      },
+      {
+        "Code": "203",
+        "en": "Above quantification limit",
+        "fr": "Au-dessus de la limite de quantification"
+      },
+      {
+        "Code": "204",
+        "en": "Below reporting threshold",
+        "fr": "Sous le seuil de déclaration"
+      },
+      {
+        "Code": "205",
+        "en": "Above reporting threshold",
+        "fr": "Au-dessus du seuil de déclaration"
+      },
+      {
+        "Code": "300",
+        "en": "Suspect data",
+        "fr": "Données suspectes"
+      },
+      {
+        "Code": "301",
+        "en": "Outlier",
+        "fr": "Valeur aberrante"
+      },
+      {
+        "Code": "302",
+        "en": "Instrument error",
+        "fr": "Erreur d'instrument"
+      },
+      {
+        "Code": "303",
+        "en": "Transcription error",
+        "fr": "Erreur de transcription"
+      },
+      {
+        "Code": "304",
+        "en": "Sampling error",
+        "fr": "Erreur d'échantillonnage"
+      },
+      {
+        "Code": "305",
+        "en": "Processing error",
+        "fr": "Erreur de traitement"
+      },
+      {
+        "Code": "306",
+        "en": "Contamination detected",
+        "fr": "Contamination détectée"
+      },
+      {
+        "Code": "307",
+        "en": "Data entry error",
+        "fr": "Erreur de saisie de données"
+      },
+      {
+        "Code": "308",
+        "en": "Unit conversion error",
+        "fr": "Erreur de conversion d'unité"
+      },
+      {
+        "Code": "309",
+        "en": "Reference material failure",
+        "fr": "Défaillance du matériau de référence"
+      },
+      {
+        "Code": "400",
+        "en": "Data pending review",
+        "fr": "Données en attente de révision"
+      },
+      {
+        "Code": "401",
+        "en": "Data under embargo",
+        "fr": "Données sous embargo"
+      },
+      {
+        "Code": "402",
+        "en": "Data archived",
+        "fr": "Données archivées"
+      },
+      {
+        "Code": "403",
+        "en": "Data retracted",
+        "fr": "Données rétractées"
+      }
+    ]
+  },
+  "Days": {
+    "id": 6,
+    "name": {
+      "en": "days",
+      "fr": "jours"
+    },
+    "description": {
+      "en": "Days of the week",
+      "fr": "Jours de la semaine"
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "Mon",
+        "en": "Monday",
+        "fr": "Lundi"
+      },
+      {
+        "Code": "Tues",
+        "en": "Tuesday",
+        "fr": "Mardi"
+      },
+      {
+        "Code": "Wed",
+        "en": "Wednesday",
+        "fr": "Mercredi"
+      },
+      {
+        "Code": "Thurs",
+        "en": "Thursday",
+        "fr": "Jeudi"
+      },
+      {
+        "Code": "Fri",
+        "en": "Friday",
+        "fr": "Vendredi"
+      },
+      {
+        "Code": "Sat",
+        "en": "Saturday",
+        "fr": "Samedi"
+      },
+      {
+        "Code": "Sun",
+        "en": "Sunday",
+        "fr": "Dimanche"
+      }
+    ]
+  },
+  "Highest level of education (Statistics Canada)": {
+    "id": 7,
+    "name": {
+      "en": "Highest level of education (Statistics Canada)",
+      "fr": "Niveau de scolarité le plus élevé (Statistique Canada)"
+    },
+    "description": {
+      "en": "Highest certificate diploma or degree completed based on Statistics Canada census classification.",
+      "fr": "Certificat diplôme ou grade le plus élevé obtenu selon la classification du recensement de Statistique Canada."
+    },
+    "keywords": {
+      "education level": {
+        "en": "education level",
+        "fr": "niveau de scolarité"
+      },
+      "highest certificate": {
+        "en": "highest certificate",
+        "fr": "plus haut diplôme"
+      },
+      "Statistics Canada": {
+        "en": "Statistics Canada",
+        "fr": "Statistique Canada"
+      },
+      "census education": {
+        "en": "census education",
+        "fr": "recensement"
+      }
+    },
+    "category": "general",
+    "source": "https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop038",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "NCD",
+        "en": "No certificate diploma or degree",
+        "fr": "Aucun certificat diplôme ou grade"
+      },
+      {
+        "Code": "SEC",
+        "en": "High (secondary) school diploma or equivalency certificate",
+        "fr": "Diplôme d’études secondaires ou certificat d’équivalence"
+      },
+      {
+        "Code": "NTC",
+        "en": "Non-apprenticeship trades certificate or diploma",
+        "fr": "Certificat ou diplôme de métiers sans apprentissage"
+      },
+      {
+        "Code": "APP",
+        "en": "Apprenticeship certificate",
+        "fr": "Certificat d’apprentissage"
+      },
+      {
+        "Code": "C31",
+        "en": "College CEGEP or other non-university certificate or diploma from a program of 3 months to less than 1 year",
+        "fr": "Certificat ou diplôme collégial cégep ou autre établissement non universitaire programme de 3 mois à moins d’un an"
+      },
+      {
+        "Code": "C12",
+        "en": "College CEGEP or other non-university certificate or diploma from a program of 1 year to 2 years",
+        "fr": "Certificat ou diplôme collégial cégep ou autre établissement non universitaire programme de 1 à 2 ans"
+      },
+      {
+        "Code": "C2P",
+        "en": "College CEGEP or other non-university certificate or diploma from a program of more than 2 years",
+        "fr": "Certificat ou diplôme collégial cégep ou autre établissement non universitaire programme de plus de 2 ans"
+      },
+      {
+        "Code": "UCB",
+        "en": "University certificate or diploma below bachelor level",
+        "fr": "Certificat ou diplôme universitaire inférieur au baccalauréat"
+      },
+      {
+        "Code": "BD",
+        "en": "Bachelor’s degree",
+        "fr": "Baccalauréat"
+      },
+      {
+        "Code": "UCA",
+        "en": "University certificate or diploma above bachelor level",
+        "fr": "Certificat ou diplôme universitaire supérieur au baccalauréat"
+      },
+      {
+        "Code": "MDP",
+        "en": "Degree in medicine dentistry veterinary medicine or optometry",
+        "fr": "Diplôme en médecine dentisterie médecine vétérinaire ou optométrie"
+      },
+      {
+        "Code": "MS",
+        "en": "Master’s degree",
+        "fr": "Maîtrise"
+      },
+      {
+        "Code": "PHD",
+        "en": "Earned doctorate",
+        "fr": "Doctorat"
+      }
+    ]
+  },
+  "EducationLevel": {
+    "id": 8,
+    "name": {
+      "en": "Education level",
+      "fr": "Niveau de scolarité"
+    },
+    "description": {
+      "en": "Highest level of education completed by the respondent.",
+      "fr": "Niveau de scolarité le plus élevé atteint par la personne répondante."
+    },
+    "keywords": {
+      "education level": {
+        "en": "education level",
+        "fr": "niveau de scolarité"
+      },
+      "schooling": {
+        "en": "schooling",
+        "fr": "formation"
+      },
+      "highest education": {
+        "en": "highest education",
+        "fr": "scolarité"
+      },
+      "demographics": {
+        "en": "demographics",
+        "fr": "données démographiques"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "PES",
+        "en": "Primary or elementary school",
+        "fr": "École primaire"
+      },
+      {
+        "Code": "SEC",
+        "en": "Secondary (high school diploma or equivalent)",
+        "fr": "École secondaire (diplôme d’études secondaires ou équivalent)"
+      },
+      {
+        "Code": "AT",
+        "en": "Apprenticeship or trades",
+        "fr": "Apprentissage ou métiers spécialisés"
+      },
+      {
+        "Code": "CNU",
+        "en": "College or other non-university level",
+        "fr": "Collège ou autre niveau non universitaire"
+      },
+      {
+        "Code": "PS",
+        "en": "Professional school",
+        "fr": "École professionnelle"
+      },
+      {
+        "Code": "UBD",
+        "en": "University bachelor level degree",
+        "fr": "Baccalauréat universitaire"
+      },
+      {
+        "Code": "UGS",
+        "en": "University graduate school",
+        "fr": "Études universitaires supérieures"
+      },
+      {
+        "Code": "PNS",
+        "en": "Prefer not to say",
+        "fr": "Préfère ne pas répondre"
+      }
+    ]
+  },
+  "EightPointCardinality": {
+    "id": 9,
+    "name": {
+      "en": "Eight Point Cardinality",
+      "fr": "Cardinalité à huit points"
+    },
+    "description": {
+      "en": "The 8‑wind compass rose consists of the four cardinal directions—north (N), east (E), south (S), and west (W)—arranged at 90‑degree intervals. By bisecting each of these angles, four intercardinal directions are formed: northeast (NE), southeast (SE), southwest (SW), and northwest (NW). Altogether, these eight points provide a simple directional framework commonly used in navigation and maps.",
+      "fr": "La rose des vents à huit points cardinaux se compose des quatre directions cardinales — nord (N), est (E), sud (S) et ouest (O) — disposées à intervalles de 90 degrés. La bissectrice de chacun de ces angles forme les quatre directions intermédiaires : nord-est (NE), sud-est (SE), sud-ouest (SO) et nord-ouest (NO). Ces huit points constituent un système d’orientation simple, couramment utilisé en navigation et en cartographie."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "N",
+        "en": "North",
+        "fr": "Nord"
+      },
+      {
+        "Code": "NE",
+        "en": "Northeast",
+        "fr": "Nord-Est"
+      },
+      {
+        "Code": "E",
+        "en": "East",
+        "fr": "Est"
+      },
+      {
+        "Code": "SE",
+        "en": "Southeast",
+        "fr": "Sud-Est"
+      },
+      {
+        "Code": "S",
+        "en": "South",
+        "fr": "Sud"
+      },
+      {
+        "Code": "SW",
+        "en": "Southwest",
+        "fr": "Sud-Ouest"
+      },
+      {
+        "Code": "W",
+        "en": "West",
+        "fr": "Ouest"
+      },
+      {
+        "Code": "NW",
+        "en": "Northwest",
+        "fr": "Nord-Ouest"
+      }
+    ]
+  },
+  "FrequencyScale": {
+    "id": 10,
+    "name": {
+      "en": "Frequency scale",
+      "fr": "Échelle de fréquence"
+    },
+    "description": {
+      "en": "Frequency with which an activity behaviour or event occurs over a typical time period.",
+      "fr": "Fréquence à laquelle une activité un comportement ou un événement se produit sur une période typique."
+    },
+    "keywords": {
+      "frequency scale": {
+        "en": "frequency scale",
+        "fr": "échelle de fréquence"
+      },
+      "occurrence rate": {
+        "en": "occurrence rate",
+        "fr": "taux d’occurrence"
+      },
+      "survey responses": {
+        "en": "survey responses",
+        "fr": "réponses de sondage"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "ED",
+        "en": "Every day",
+        "fr": "Tous les jours"
+      },
+      {
+        "Code": "FTW",
+        "en": "A few times per week",
+        "fr": "Quelques fois par semaine"
+      },
+      {
+        "Code": "OW",
+        "en": "Once a week",
+        "fr": "Une fois par semaine"
+      },
+      {
+        "Code": "OM",
+        "en": "Once a month",
+        "fr": "Une fois par mois"
+      },
+      {
+        "Code": "FT",
+        "en": "A few times per year",
+        "fr": "Quelques fois par année"
+      },
+      {
+        "Code": "NV",
+        "en": "Never",
+        "fr": "Jamais"
+      }
+    ]
+  },
+  "GenderIdentity": {
+    "id": 11,
+    "name": {
+      "en": "Gender identity",
+      "fr": "Identité de genre"
+    },
+    "description": {
+      "en": "Self-identified gender of the respondent.",
+      "fr": "Genre avec lequel la personne répondante s’identifie."
+    },
+    "keywords": {
+      "gender identity": {
+        "en": "gender identity",
+        "fr": "identité de genre"
+      },
+      "demographics": {
+        "en": "demographics",
+        "fr": "données démographiques"
+      },
+      "self-identification": {
+        "en": "self-identification",
+        "fr": "auto-identification"
+      },
+      "survey responses": {
+        "en": "survey responses",
+        "fr": "réponses de sondage"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "F",
+        "en": "Female",
+        "fr": "Femme"
+      },
+      {
+        "Code": "M",
+        "en": "Male",
+        "fr": "Homme"
+      },
+      {
+        "Code": "NB",
+        "en": "Non-binary (gender diverse)",
+        "fr": "Non binaire (diversité de genre)"
+      },
+      {
+        "Code": "OTH",
+        "en": "Other",
+        "fr": "Autre"
+      },
+      {
+        "Code": "PNS",
+        "en": "Prefer not to say",
+        "fr": "Préfère ne pas répondre"
+      }
+    ]
+  },
+  "HouseholdStructure": {
+    "id": 12,
+    "name": {
+      "en": "Household structure",
+      "fr": "Structure du ménage"
+    },
+    "description": {
+      "en": "Composition and living arrangement of the household.",
+      "fr": "Composition et type de cohabitation du ménage."
+    },
+    "keywords": {
+      "household structure": {
+        "en": "household structure",
+        "fr": "structure du ménage"
+      },
+      "living arrangement": {
+        "en": "living arrangement",
+        "fr": "composition du ménage"
+      },
+      "household composition": {
+        "en": "household composition",
+        "fr": "mode de vie"
+      },
+      "demographics": {
+        "en": "demographics",
+        "fr": "données démographiques"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "LO",
+        "en": "I live on my own",
+        "fr": "Je vis seul·e"
+      },
+      {
+        "Code": "CLT",
+        "en": "Couple living together",
+        "fr": "Couple vivant ensemble"
+      },
+      {
+        "Code": "FC",
+        "en": "Family with children",
+        "fr": "Famille avec enfants"
+      },
+      {
+        "Code": "MLG",
+        "en": "Multigenerational (two or more families living together)",
+        "fr": "Ménage multigénérationnel (deux familles ou plus vivant ensemble)"
+      },
+      {
+        "Code": "Oth",
+        "en": "Other",
+        "fr": "Autre"
+      },
+      {
+        "Code": "PNS",
+        "en": "Prefer not to say",
+        "fr": "Préfère ne pas répondre"
+      }
+    ]
+  },
+  "Months": {
+    "id": 13,
+    "name": {
+      "en": "months",
+      "fr": "mois"
+    },
+    "description": {
+      "en": "Months of the year",
+      "fr": "Mois de l'année"
+    },
+    "keywords": {
+      "date": {
+        "en": "date",
+        "fr": "date"
+      },
+      "calendar": {
+        "en": "calendar",
+        "fr": "calendrier"
+      },
+      "month": {
+        "en": "month",
+        "fr": "mois"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "Month_number",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "January",
+        "Month_number": "01",
+        "en": "Jan",
+        "fr": "janv"
+      },
+      {
+        "Code": "February",
+        "Month_number": "02",
+        "en": "Feb",
+        "fr": "févr"
+      },
+      {
+        "Code": "March",
+        "Month_number": "03",
+        "en": "Mar",
+        "fr": "mars"
+      },
+      {
+        "Code": "April",
+        "Month_number": "04",
+        "en": "Apr",
+        "fr": "avr"
+      },
+      {
+        "Code": "May",
+        "Month_number": "05",
+        "en": "May",
+        "fr": "mai"
+      },
+      {
+        "Code": "June",
+        "Month_number": "06",
+        "en": "Jun",
+        "fr": "juin"
+      },
+      {
+        "Code": "July",
+        "Month_number": "07",
+        "en": "Jul",
+        "fr": "juil"
+      },
+      {
+        "Code": "August",
+        "Month_number": "08",
+        "en": "Aug",
+        "fr": "août"
+      },
+      {
+        "Code": "September",
+        "Month_number": "09",
+        "en": "Sep",
+        "fr": "sept"
+      },
+      {
+        "Code": "October",
+        "Month_number": "10",
+        "en": "Oct",
+        "fr": "octo"
+      },
+      {
+        "Code": "November",
+        "Month_number": "11",
+        "en": "Nov",
+        "fr": "nov"
+      },
+      {
+        "Code": "December",
+        "Month_number": "12",
+        "en": "Dec",
+        "fr": "déc"
+      }
+    ]
+  },
+  "ParentMaterialChemicalProperty": {
+    "id": 14,
+    "name": {
+      "en": "Parent material chemical property",
+      "fr": "Propriété chimique du matériau parental"
+    },
+    "description": {
+      "en": "The chemical composition class of the parent material.",
+      "fr": "La classe de composition chimique du matériau parental."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://sis.agr.gc.ca/cansis/nsdb/soil/v2/snt/pmchem1.html",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "UD",
+        "en": "Undifferentiated",
+        "fr": "Indifférencié"
+      },
+      {
+        "Code": "EA",
+        "en": "Extremely / Strongly Acidic",
+        "fr": "Extrêmement / fortement acide"
+      },
+      {
+        "Code": "AN",
+        "en": "Medium Acid to Neutral",
+        "fr": "Acide moyen à neutre"
+      },
+      {
+        "Code": "WC",
+        "en": "Weakly Calcareous",
+        "fr": "Faiblement calcaire"
+      },
+      {
+        "Code": "VC",
+        "en": "Moderately / Very Strongly Calcareous",
+        "fr": "Modérément / très fortement calcaire"
+      },
+      {
+        "Code": "EC",
+        "en": "Extremely Calcareous",
+        "fr": "Extrêmement calcaire"
+      },
+      {
+        "Code": "SA",
+        "en": "Calcareous and Saline",
+        "fr": "Calcaire et salin"
+      },
+      {
+        "Code": "-",
+        "en": "Not Applicable",
+        "fr": "Sans objet"
+      }
+    ]
+  },
+  "ParentMaterialTexture": {
+    "id": 15,
+    "name": {
+      "en": "Parent material texture",
+      "fr": "Texture du matériau parental"
+    },
+    "description": {
+      "en": "The texture class of the underlying parent material.",
+      "fr": "La classe de texture du matériau parental sous-jacent."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://sis.agr.gc.ca/cansis/nsdb/soil/v2/snt/pmtex1.html",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "VC",
+        "en": "Very Coarse",
+        "fr": "Très grossier"
+      },
+      {
+        "Code": "C",
+        "en": "Coarse",
+        "fr": "Grossier"
+      },
+      {
+        "Code": "MC",
+        "en": "Moderately Coarse",
+        "fr": "Modérément grossier"
+      },
+      {
+        "Code": "M",
+        "en": "Medium",
+        "fr": "Moyen"
+      },
+      {
+        "Code": "MF",
+        "en": "Moderately Fine",
+        "fr": "Modérément fin"
+      },
+      {
+        "Code": "F",
+        "en": "Fine",
+        "fr": "Fin"
+      },
+      {
+        "Code": "VF",
+        "en": "Very Fine",
+        "fr": "Très fin"
+      },
+      {
+        "Code": "CS",
+        "en": "Coarse Skeletal",
+        "fr": "Grossier squelettique"
+      },
+      {
+        "Code": "MS",
+        "en": "Medium Skeletal",
+        "fr": "Moyen squelettique"
+      },
+      {
+        "Code": "FS",
+        "en": "Fine Skeletal",
+        "fr": "Fin squelettique"
+      },
+      {
+        "Code": "FR",
+        "en": "Fragmental",
+        "fr": "Fragmentaire"
+      },
+      {
+        "Code": "SM",
+        "en": "Stratified (Mineral)",
+        "fr": "Stratifié (minéral)"
+      },
+      {
+        "Code": "SU",
+        "en": "Stratified (Mineral and Organic)",
+        "fr": "Stratifié (minéral et organique)"
+      },
+      {
+        "Code": "FI",
+        "en": "Fibric",
+        "fr": "Fibrique"
+      },
+      {
+        "Code": "ME",
+        "en": "Mesic",
+        "fr": "Mésique"
+      },
+      {
+        "Code": "HU",
+        "en": "Humic",
+        "fr": "Humique"
+      },
+      {
+        "Code": "UD",
+        "en": "Undifferentiated",
+        "fr": "Indifférencié"
+      },
+      {
+        "Code": "-",
+        "en": "Not Applicable",
+        "fr": "Sans objet"
+      }
+    ]
+  },
+  "SixteenPointCardinality": {
+    "id": 16,
+    "name": {
+      "en": "Sixteen Point Cardinality",
+      "fr": "Cardinalité à seize points"
+    },
+    "description": {
+      "en": "The 16‑wind compass rose expands on the 8‑point system by adding eight half‑winds. These are created by bisecting each 45‑degree angle between the cardinal and intercardinal points. The added directions are: north‑northeast (NNE), east‑northeast (ENE), east‑southeast (ESE), south‑southeast (SSE), south‑southwest (SSW), west‑southwest (WSW), west‑northwest (WNW), and north‑northwest (NNW). This system provides more precise directional reference at 22.5‑degree increments.",
+      "fr": "La rose des vents à 16 points cardinaux complète la rose des vents à 8 points en ajoutant huit demi-vents. Ces derniers sont obtenus en bissectant chaque angle de 45 degrés entre les points cardinaux et intermédiaires. Les directions ajoutées sont : nord-nord-est (NNE)"
+    },
+    "keywords": {
+      "est-nord-est (ENE)": {
+        "fr": "est-nord-est (ENE)"
+      }
+    },
+    "category": "general",
+    "source": "est-sud-est (ESE)",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "N",
+        "en": "North",
+        "fr": "Nord"
+      },
+      {
+        "Code": "NNE",
+        "en": "North-Northeast",
+        "fr": "Nord-Nord-Est"
+      },
+      {
+        "Code": "NE",
+        "en": "Northeast",
+        "fr": "Nord-Est"
+      },
+      {
+        "Code": "ENE",
+        "en": "East-Northeast",
+        "fr": "Est-Nord-Est"
+      },
+      {
+        "Code": "E",
+        "en": "East",
+        "fr": "Est"
+      },
+      {
+        "Code": "ESE",
+        "en": "East-Southeast",
+        "fr": "Est-Sud-Est"
+      },
+      {
+        "Code": "SE",
+        "en": "Southeast",
+        "fr": "Sud-Est"
+      },
+      {
+        "Code": "SSE",
+        "en": "South-Southeast",
+        "fr": "Sud-Sud-Est"
+      },
+      {
+        "Code": "S",
+        "en": "South",
+        "fr": "Sud"
+      },
+      {
+        "Code": "SSW",
+        "en": "South-Southwest",
+        "fr": "Sud-Sud-Ouest"
+      },
+      {
+        "Code": "SW",
+        "en": "Southwest",
+        "fr": "Sud-Ouest"
+      },
+      {
+        "Code": "WSW",
+        "en": "West-Southwest",
+        "fr": "Ouest-Sud-Ouest"
+      },
+      {
+        "Code": "W",
+        "en": "West",
+        "fr": "Ouest"
+      },
+      {
+        "Code": "WNW",
+        "en": "West-Northwest",
+        "fr": "Ouest-Nord-Ouest"
+      },
+      {
+        "Code": "NW",
+        "en": "Northwest",
+        "fr": "Nord-Ouest"
+      },
+      {
+        "Code": "NNW",
+        "en": "North-Northwest",
+        "fr": "Nord-Nord-Ouest"
+      }
+    ]
+  },
+  "SoilAerationStatus": {
+    "id": 17,
+    "name": {
+      "en": "Soil aeration status",
+      "fr": "Statut d’aération du sol"
+    },
+    "description": {
+      "en": "Qualitative oxygen availability status.",
+      "fr": "Statut qualitatif de disponibilité en oxygène."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://static.ixambee.com/public/miscellaneous-pdf/physical_and_chemical_properties_of_soil1720241418.pdf",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "AERW",
+        "en": "Well-aerated",
+        "fr": "Bien aéré"
+      },
+      {
+        "Code": "AERM",
+        "en": "Moderately aerated",
+        "fr": "Modérément aéré"
+      },
+      {
+        "Code": "AERP",
+        "en": "Poorly aerated (anaerobic)",
+        "fr": "Mal aéré (anaérobie)"
+      }
+    ]
+  },
+  "BulkDensityClass": {
+    "id": 18,
+    "name": {
+      "en": "Bulk density class",
+      "fr": "Classe de densité apparente"
+    },
+    "description": {
+      "en": "Generalized classes; specific restrictive thresholds depend on texture.",
+      "fr": "Classes généralisées; les seuils restrictifs dépendent de la texture."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "BDL",
+        "en": "Low",
+        "fr": "Faible"
+      },
+      {
+        "Code": "BDM",
+        "en": "Moderate",
+        "fr": "Modéré"
+      },
+      {
+        "Code": "BDH",
+        "en": "High",
+        "fr": "Élevé"
+      }
+    ]
+  },
+  "Carbon-to-Nitrogen (C:N) ratio class": {
+    "id": 19,
+    "name": {
+      "en": "Carbon-to-Nitrogen (C:N) ratio class",
+      "fr": "Classe du rapport carbone-azote (C:N)"
+    },
+    "description": {
+      "en": "C:N ratio categories.",
+      "fr": "Catégories de C:N."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://ucanr.edu/?legacy-file=29072.pdf&legacy-file-path=sites/gardenweb/files/",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "CNL",
+        "en": "Low",
+        "fr": "Faible"
+      },
+      {
+        "Code": "CNM",
+        "en": "Medium",
+        "fr": "Moyen"
+      },
+      {
+        "Code": "CNH",
+        "en": "High",
+        "fr": "Élevé"
+      }
+    ]
+  },
+  "SoilColloidFractionClass": {
+    "id": 20,
+    "name": {
+      "en": "Soil colloid fraction class",
+      "fr": "Classe de fraction colloïdale du sol"
+    },
+    "description": {
+      "en": "Relative abundance of colloids.",
+      "fr": "Abondance relative des colloïdes."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://lecture-notes.tiu.edu.iq/wp-content/uploads/2025/03/BIO212_W6_Lect.6_2024-2025.pdf",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "COLL",
+        "en": "Low",
+        "fr": "Faible"
+      },
+      {
+        "Code": "COLM",
+        "en": "Medium",
+        "fr": "Moyenne"
+      },
+      {
+        "Code": "COLH",
+        "en": "High",
+        "fr": "Élevée"
+      }
+    ]
+  },
+  "SoilCompressibilityClass": {
+    "id": 21,
+    "name": {
+      "en": "Soil compressibility class",
+      "fr": "Classe de compressibilité du sol"
+    },
+    "description": {
+      "en": "Relative compressibility category.",
+      "fr": "Catégorie de compressibilité relative."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://www.biologydiscussion.com/soil/physical-and-chemical-properties-of-soil/7220",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "CMPL",
+        "en": "Low",
+        "fr": "Faible"
+      },
+      {
+        "Code": "CMPM",
+        "en": "Moderate",
+        "fr": "Modérée"
+      },
+      {
+        "Code": "CMPH",
+        "en": "High",
+        "fr": "Élevée"
+      }
+    ]
+  },
+  "SoilDrainageClass": {
+    "id": 22,
+    "name": {
+      "en": "Soil Drainage Class",
+      "fr": "Classe de drainage du sol"
+    },
+    "description": {
+      "en": "Indicates the type of drainage found within a soil profile.",
+      "fr": "Indique le type de drainage présent dans un profil de sol."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://sis.agr.gc.ca/cansis/nsdb/soil/v2/snt/drainage.html",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "VR",
+        "en": "Very rapidly drained",
+        "fr": "Très rapidement drainé"
+      },
+      {
+        "Code": "R",
+        "en": "Rapidly drained",
+        "fr": "Rapidement drainé"
+      },
+      {
+        "Code": "W",
+        "en": "Well drained",
+        "fr": "Bien drainé"
+      },
+      {
+        "Code": "MW",
+        "en": "Moderately well drained",
+        "fr": "Modérément bien drainé"
+      },
+      {
+        "Code": "I",
+        "en": "Imperfectly drained",
+        "fr": "Imperfectement drainé"
+      },
+      {
+        "Code": "P",
+        "en": "Poorly drained",
+        "fr": "Mal drainé"
+      },
+      {
+        "Code": "VP",
+        "en": "Very poorly drained",
+        "fr": "Très mal drainé"
+      },
+      {
+        "Code": "-",
+        "en": "Not applicable",
+        "fr": "Sans objet"
+      }
+    ]
+  },
+  "EffectiveRootingDepthClass": {
+    "id": 23,
+    "name": {
+      "en": "Effective rooting depth class",
+      "fr": "Classe de profondeur d’enracinement efficace"
+    },
+    "description": {
+      "en": "Depth available for roots.",
+      "fr": "Profondeur disponible pour les racines."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://ucanr.edu/?legacy-file=29072.pdf&legacy-file-path=sites/gardenweb/files/",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "RDVS",
+        "en": "Very shallow",
+        "fr": "Très faible profondeur"
+      },
+      {
+        "Code": "RDSH",
+        "en": "Shallow",
+        "fr": "Peu profond"
+      },
+      {
+        "Code": "RDM",
+        "en": "Moderate",
+        "fr": "Modéré"
+      },
+      {
+        "Code": "RDD",
+        "en": "Deep",
+        "fr": "Profond"
+      },
+      {
+        "Code": "RDVD",
+        "en": "Very deep",
+        "fr": "Très profond"
+      }
+    ]
+  },
+  "SoilErodibilityClass": {
+    "id": 24,
+    "name": {
+      "en": "Soil erodibility class",
+      "fr": "Classe d’érodibilité du sol"
+    },
+    "description": {
+      "en": "Susceptibility to erosion (qualitative).",
+      "fr": "Susceptibilité à l’érosion (qualitative)."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://www.biologydiscussion.com/soil/physical-and-chemical-properties-of-soil/7220",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "ERL",
+        "en": "Low",
+        "fr": "Faible"
+      },
+      {
+        "Code": "ERM",
+        "en": "Moderate",
+        "fr": "Modérée"
+      },
+      {
+        "Code": "ERH",
+        "en": "High",
+        "fr": "Élevée"
+      }
+    ]
+  },
+  "SoilFertilityClass": {
+    "id": 25,
+    "name": {
+      "en": "Soil fertility class",
+      "fr": "Classe de fertilité du sol"
+    },
+    "description": {
+      "en": "General inherent soil fertility.",
+      "fr": "Fertilité intrinsèque générale."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://ucanr.edu/?legacy-file=29072.pdf&legacy-file-path=sites/gardenweb/files/",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "FERL",
+        "en": "Low",
+        "fr": "Faible"
+      },
+      {
+        "Code": "FERM",
+        "en": "Medium",
+        "fr": "Moyen"
+      },
+      {
+        "Code": "FERH",
+        "en": "High",
+        "fr": "Élevé"
+      }
+    ]
+  },
+  "SoilMineralContentType": {
+    "id": 26,
+    "name": {
+      "en": "Soil mineral content type",
+      "fr": "Type de contenu minéral du sol"
+    },
+    "description": {
+      "en": "Dominant mineralogical character.",
+      "fr": "Caractère minéralogique dominant."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://ucanr.edu/?legacy-file=29072.pdf&legacy-file-path=sites/gardenweb/files/",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "MINQ",
+        "en": "Quartz-rich",
+        "fr": "Riche en quartz"
+      },
+      {
+        "Code": "MINC",
+        "en": "Carbonate-rich",
+        "fr": "Riche en carbonates"
+      },
+      {
+        "Code": "MINA",
+        "en": "Clay-rich",
+        "fr": "Riche en argiles"
+      },
+      {
+        "Code": "MINM",
+        "en": "Mixed mineralogy",
+        "fr": "Minéralogie mixte"
+      }
+    ]
+  },
+  "SoilOrganicMatterClass": {
+    "id": 27,
+    "name": {
+      "en": "Soil organic matter class",
+      "fr": "Classe de matière organique du sol"
+    },
+    "description": {
+      "en": "Organic matter percentage class.",
+      "fr": "Classe de pourcentage de matière organique."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://ucanr.edu/?legacy-file=29072.pdf&legacy-file-path=sites/gardenweb/files/",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "SOMVL",
+        "en": "Very low",
+        "fr": "Très faible"
+      },
+      {
+        "Code": "SOML",
+        "en": "Low",
+        "fr": "Faible"
+      },
+      {
+        "Code": "SOMM",
+        "en": "Moderate",
+        "fr": "Modéré"
+      },
+      {
+        "Code": "SOMH",
+        "en": "High",
+        "fr": "Élevé"
+      },
+      {
+        "Code": "SOMVH",
+        "en": "Very high",
+        "fr": "Très élevé"
+      }
+    ]
+  },
+  "SoilPermeabilityClass": {
+    "id": 28,
+    "name": {
+      "en": "Soil permeability class",
+      "fr": "Classe de perméabilité du sol"
+    },
+    "description": {
+      "en": "Saturated hydraulic conductivity (qualitative classes).",
+      "fr": "Conductivité hydraulique saturée (classes qualitatives)."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://www.biologydiscussion.com/soil/physical-and-chemical-properties-of-soil/7220",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "KPVS",
+        "en": "Very slow",
+        "fr": "Très lente"
+      },
+      {
+        "Code": "KPS",
+        "en": "Slow",
+        "fr": "Lente"
+      },
+      {
+        "Code": "KPM",
+        "en": "Moderate",
+        "fr": "Modérée"
+      },
+      {
+        "Code": "KPR",
+        "en": "Rapid",
+        "fr": "Rapide"
+      },
+      {
+        "Code": "KPVR",
+        "en": "Very rapid",
+        "fr": "Très rapide"
+      }
+    ]
+  },
+  "SoilPhClass": {
+    "id": 29,
+    "name": {
+      "en": "Soil pH class",
+      "fr": "Classe de pH du sol"
+    },
+    "description": {
+      "en": "Standard NRCS soil pH range classes.",
+      "fr": "Plages de pH normalisées (NRCS)"
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://www.nrcs.usda.gov/sites/default/files/2022-10/soil_ph.pdf",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "UA",
+        "en": "Ultra acidic",
+        "fr": "Ultra acide"
+      },
+      {
+        "Code": "EA",
+        "en": "Extremely acidic",
+        "fr": "Extrêmement acide"
+      },
+      {
+        "Code": "VSA",
+        "en": "Very strongly acidic",
+        "fr": "Très fortement acide"
+      },
+      {
+        "Code": "SA",
+        "en": "Strongly acidic",
+        "fr": "Fortement acide"
+      },
+      {
+        "Code": "MA",
+        "en": "Moderately acidic",
+        "fr": "Modérément acide"
+      },
+      {
+        "Code": "SLA",
+        "en": "Slightly acidic",
+        "fr": "Légèrement acide"
+      },
+      {
+        "Code": "NE",
+        "en": "Neutral",
+        "fr": "Neutre"
+      },
+      {
+        "Code": "SLK",
+        "en": "Slightly alkaline",
+        "fr": "Légèrement alcalin"
+      },
+      {
+        "Code": "MK",
+        "en": "Moderately alkaline",
+        "fr": "Modérément alcalin"
+      },
+      {
+        "Code": "SK",
+        "en": "Strongly alkaline",
+        "fr": "Fortement alcalin"
+      },
+      {
+        "Code": "VSK",
+        "en": "Very strongly alkaline",
+        "fr": "Très fortement alcalin"
+      }
+    ]
+  },
+  "SoilPlasticityClass": {
+    "id": 30,
+    "name": {
+      "en": "Soil plasticity class",
+      "fr": "Classe de plasticité du sol"
+    },
+    "description": {
+      "en": "Plasticity category (Atterberg-related).",
+      "fr": "Catégorie de plasticité (liée aux limites d’Atterberg)."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://www.biologydiscussion.com/soil/physical-and-chemical-properties-of-soil/7220",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "PLAL",
+        "en": "Low",
+        "fr": "Faible"
+      },
+      {
+        "Code": "PLAM",
+        "en": "Medium",
+        "fr": "Moyenne"
+      },
+      {
+        "Code": "PLAH",
+        "en": "High",
+        "fr": "Élevée"
+      }
+    ]
+  },
+  "SoilPorosityClass": {
+    "id": 31,
+    "name": {
+      "en": "Soil porosity class",
+      "fr": "Classe de porosité du sol"
+    },
+    "description": {
+      "en": "Total porosity class.",
+      "fr": "Classe de porosité totale"
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://www.biologydiscussion.com/soil/physical-and-chemical-properties-of-soil/7220",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "PORVL",
+        "en": "Very low",
+        "fr": "Très faible"
+      },
+      {
+        "Code": "PORL",
+        "en": "Low",
+        "fr": "Faible"
+      },
+      {
+        "Code": "PORM",
+        "en": "Moderate",
+        "fr": "Modérée"
+      },
+      {
+        "Code": "PORH",
+        "en": "High",
+        "fr": "Élevée"
+      },
+      {
+        "Code": "PORVH",
+        "en": "Very high",
+        "fr": "Très élevée"
+      }
+    ]
+  },
+  "Soil salinity type (dominant anion)": {
+    "id": 32,
+    "name": {
+      "en": "Soil salinity type (dominant anion)",
+      "fr": "Type de salinité du sol (anion dominant)"
+    },
+    "description": {
+      "en": "Dominant salt type in saline conditions.",
+      "fr": "Type de sel dominant en conditions salines."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://ucanr.edu/?legacy-file=29072.pdf&legacy-file-path=sites/gardenweb/files/",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "STCL",
+        "en": "Chloride-dominated",
+        "fr": "À dominante chlorure"
+      },
+      {
+        "Code": "STSO",
+        "en": "Sulfate-dominated",
+        "fr": "À dominante sulfate"
+      },
+      {
+        "Code": "STCB",
+        "en": "Carbonate/bicarbonate-dominated",
+        "fr": "À dominante carbonate/bicarbonate"
+      },
+      {
+        "Code": "STMX",
+        "en": "Mixed salts",
+        "fr": "Mélange de sels"
+      }
+    ]
+  },
+  "Soil salinity class (ECe)": {
+    "id": 33,
+    "name": {
+      "en": "Soil salinity class (ECe)",
+      "fr": "Classe de salinité du sol (ECe)"
+    },
+    "description": {
+      "en": "Classes based on electrical conductivity of the saturation paste extract (dS/m).",
+      "fr": "Classes basées sur la conductivité électrique de l’extrait de pâte saturée (dS/m)."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://www.nrcs.usda.gov/sites/default/files/2022-10/Soil%20Electrical%20Conductivity.pdf",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "NS",
+        "en": "Non-saline",
+        "fr": "Non salin"
+      },
+      {
+        "Code": "SS",
+        "en": "Slightly saline",
+        "fr": "Légèrement salin"
+      },
+      {
+        "Code": "MS",
+        "en": "Moderately saline",
+        "fr": "Modérément salin"
+      },
+      {
+        "Code": "STS",
+        "en": "Strongly saline",
+        "fr": "Fortement salin"
+      },
+      {
+        "Code": "VSS",
+        "en": "Very strongly saline",
+        "fr": "Très fortement salin"
+      }
+    ]
+  },
+  "Soil sodicity class (SAR/ESP)": {
+    "id": 34,
+    "name": {
+      "en": "Soil sodicity class (SAR/ESP)",
+      "fr": "Classe de sodicité du sol (SAR/ESP)"
+    },
+    "description": {
+      "en": "Classification using Sodium Adsorption Ratio (SAR) and/or Exchangeable Sodium Percentage (ESP).",
+      "fr": "Classification selon le rapport d’adsorption du sodium (SAR) et/ou le pourcentage de sodium échangeable (ESP)."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://www.undrr.org/understanding-disaster-risk/terminology/hips/en0303",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "NSD",
+        "en": "Non-sodic",
+        "fr": "Non sodique"
+      },
+      {
+        "Code": "SD",
+        "en": "Sodic",
+        "fr": "Sodique"
+      }
+    ]
+  },
+  "SoilStructureType": {
+    "id": 35,
+    "name": {
+      "en": "Soil structure type",
+      "fr": "Type de structure du sol"
+    },
+    "description": {
+      "en": "Primary ped shapes used in soil description.",
+      "fr": "Formes principales des agrégats (peds)."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://iastate.pressbooks.pub/introsoilscience/chapter/soilstructure/",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "GR",
+        "en": "Granular",
+        "fr": "Granulaire"
+      },
+      {
+        "Code": "BL",
+        "en": "Blocky",
+        "fr": "Blocailleux"
+      },
+      {
+        "Code": "PL",
+        "en": "Platy",
+        "fr": "Planaire"
+      },
+      {
+        "Code": "PR",
+        "en": "Prismatic",
+        "fr": "Prismatique"
+      },
+      {
+        "Code": "CO",
+        "en": "Columnar",
+        "fr": "Columnaire"
+      },
+      {
+        "Code": "MS",
+        "en": "Massive",
+        "fr": "Massif"
+      },
+      {
+        "Code": "SG",
+        "en": "Single-grained",
+        "fr": "Grains simples"
+      }
+    ]
+  },
+  "SoilTextureClass": {
+    "id": 36,
+    "name": {
+      "en": "Soil texture class",
+      "fr": "Classe texturale du sol"
+    },
+    "description": {
+      "en": "USDA-NRCS 12-class soil texture scheme.",
+      "fr": "Schéma à 12 classes de l’USDA‑NRCS"
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://www.nrcs.usda.gov/",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "SND",
+        "en": "Sand",
+        "fr": "Sable"
+      },
+      {
+        "Code": "LSA",
+        "en": "Loamy sand",
+        "fr": "Sable loameux"
+      },
+      {
+        "Code": "SLM",
+        "en": "Sandy loam",
+        "fr": "Limon sableux"
+      },
+      {
+        "Code": "LOM",
+        "en": "Loam",
+        "fr": "Limon"
+      },
+      {
+        "Code": "SIL",
+        "en": "Silt loam",
+        "fr": "Limon limoneux"
+      },
+      {
+        "Code": "SIT",
+        "en": "Silt",
+        "fr": "Limons"
+      },
+      {
+        "Code": "SCL",
+        "en": "Sandy clay loam",
+        "fr": "Limon argilo-sableux"
+      },
+      {
+        "Code": "CLM",
+        "en": "Clay loam",
+        "fr": "Limon argileux"
+      },
+      {
+        "Code": "SCLo",
+        "en": "Silty clay loam",
+        "fr": "Limon argilo-limoneux"
+      },
+      {
+        "Code": "SAC",
+        "en": "Sandy clay",
+        "fr": "Argile sableuse"
+      },
+      {
+        "Code": "SIC",
+        "en": "Silty clay",
+        "fr": "Argile limoneuse"
+      },
+      {
+        "Code": "CLY",
+        "en": "Clay",
+        "fr": "Argile"
+      }
+    ]
+  },
+  "MaturityLevels": {
+    "id": 37,
+    "name": {
+      "en": "Maturity Levels",
+      "fr": "Niveaux de maturité"
+    },
+    "description": {
+      "en": "Key stages in a standard’s lifecycle—from early drafting to publication, long‑term adoption, and eventual retirement. Each status reflects how mature, stable, and widely accepted a standard is at any point in its development.",
+      "fr": ""
+    },
+    "keywords": {
+      "standard lifecycle": {
+        "en": "standard lifecycle",
+        "fr": "cycle de vie standard"
+      },
+      "specification development": {
+        "en": "specification development",
+        "fr": "développement des spécifications"
+      },
+      "version status": {
+        "en": "version status",
+        "fr": "état des versions"
+      }
+    },
+    "category": "general",
+    "source": "https://linkml.io/valuesets/governance/#maturity-levels",
+    "languages": [
+      "en"
+    ],
+    "headers": [
+      "Code",
+      "en"
+    ],
+    "rows": [
+      {
+        "Code": "DRAFT",
+        "en": "Initial development, may change significantly"
+      },
+      {
+        "Code": "WORKING_DRAFT",
+        "en": "Active work by a working group"
+      },
+      {
+        "Code": "COMMITTEE_DRAFT",
+        "en": "Under formal review"
+      },
+      {
+        "Code": "CANDIDATE_RECOMMENDATION",
+        "en": "Ready for implementation testing"
+      },
+      {
+        "Code": "PROPOSED_STANDARD",
+        "en": "Stable, ready for adoption"
+      },
+      {
+        "Code": "STANDARD",
+        "en": "Approved and published"
+      },
+      {
+        "Code": "MATURE_STANDARD",
+        "en": "Well-established with wide adoption"
+      },
+      {
+        "Code": "SUPERSEDED",
+        "en": "Replaced by a newer version"
+      },
+      {
+        "Code": "WITHDRAWN",
+        "en": "No longer recommended"
+      }
+    ]
+  },
+  "SupportScale": {
+    "id": 38,
+    "name": {
+      "en": "Support scale",
+      "fr": "Échelle de soutien"
+    },
+    "description": {
+      "en": "Level of support or opposition expressed toward a proposal idea policy or action.",
+      "fr": "Niveau de soutien ou d’opposition exprimé à l’égard d’une proposition d’une idée d’une politique ou d’une action."
+    },
+    "keywords": {
+      "support": {
+        "en": "support",
+        "fr": "soutien"
+      },
+      "opposition": {
+        "en": "opposition",
+        "fr": "opposition"
+      },
+      "attitudes": {
+        "en": "attitudes",
+        "fr": "attitudes"
+      },
+      "survey responses": {
+        "en": "survey responses",
+        "fr": "réponses de sondage"
+      }
+    },
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "SO",
+        "en": "Strongly oppose",
+        "fr": "Fermement opposé·e"
+      },
+      {
+        "Code": "OP",
+        "en": "Oppose",
+        "fr": "Opposé·e"
+      },
+      {
+        "Code": "MO",
+        "en": "Mildly oppose",
+        "fr": "Plutôt opposé·e"
+      },
+      {
+        "Code": "NOS",
+        "en": "Neither oppose nor support",
+        "fr": "Ni opposé·e ni favorable"
+      },
+      {
+        "Code": "MS",
+        "en": "Mildly support",
+        "fr": "Plutôt favorable"
+      },
+      {
+        "Code": "SU",
+        "en": "Support",
+        "fr": "Favorable"
+      },
+      {
+        "Code": "SS",
+        "en": "Strongly support",
+        "fr": "Fermement favorable"
+      },
+      {
+        "Code": "DK",
+        "en": "Don't know",
+        "fr": "Ne sait pas"
+      }
+    ]
+  },
+  "Thirty-two Point Cardinality": {
+    "id": 39,
+    "name": {
+      "en": "Thirty-two Point Cardinality",
+      "fr": "Cardinalité à trente-deux points"
+    },
+    "description": {
+      "en": "The 32 wind compass rose subdivides the circle even further by adding quarter winds, which fall halfway between each pair of 16 wind points. These \"by\" directions—such as north by east, northeast by north, and southwest by west—create a system of 32 points spaced at 11.25 degree intervals. Historically used in maritime navigation, this finer resolution allows much more accurate description of direction.",
+      "fr": "La rose des vents à 32 points subdivise davantage le cercle en ajoutant des quarts de vent, situés à mi-chemin entre chaque paire de points à 16 points. Ces directions par— comme le nord par l'est, le nord-est par le nord et le sud-ouest par l'ouest — créent un système de 32 points espacés de 11,25 degrés. Historiquement utilisée en navigation maritime, cette résolution plus fine permet une description beaucoup plus précise de la direction."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "N",
+        "en": "North",
+        "fr": "Nord"
+      },
+      {
+        "Code": "N by E",
+        "en": "North by East",
+        "fr": "Nord quart Est"
+      },
+      {
+        "Code": "NNE",
+        "en": "North-Northeast",
+        "fr": "Nord-Nord-Est"
+      },
+      {
+        "Code": "NE by N",
+        "en": "Northeast by North",
+        "fr": "Nord-Est quart Nord"
+      },
+      {
+        "Code": "NE",
+        "en": "Northeast",
+        "fr": "Nord-Est"
+      },
+      {
+        "Code": "NE by E",
+        "en": "Northeast by East",
+        "fr": "Nord-Est quart Est"
+      },
+      {
+        "Code": "ENE",
+        "en": "East-Northeast",
+        "fr": "Est-Nord-Est"
+      },
+      {
+        "Code": "E by N",
+        "en": "East by North",
+        "fr": "Est quart Nord"
+      },
+      {
+        "Code": "E",
+        "en": "East",
+        "fr": "Est"
+      },
+      {
+        "Code": "E by S",
+        "en": "East by South",
+        "fr": "Est quart Sud"
+      },
+      {
+        "Code": "ESE",
+        "en": "East-Southeast",
+        "fr": "Est-Sud-Est"
+      },
+      {
+        "Code": "SE by E",
+        "en": "Southeast by East",
+        "fr": "Sud-Est quart Est"
+      },
+      {
+        "Code": "SE",
+        "en": "Southeast",
+        "fr": "Sud-Est"
+      },
+      {
+        "Code": "SE by S",
+        "en": "Southeast by South",
+        "fr": "Sud-Est quart Sud"
+      },
+      {
+        "Code": "SSE",
+        "en": "South-Southeast",
+        "fr": "Sud-Sud-Est"
+      },
+      {
+        "Code": "S by E",
+        "en": "South by East",
+        "fr": "Sud quart Est"
+      },
+      {
+        "Code": "S",
+        "en": "South",
+        "fr": "Sud"
+      },
+      {
+        "Code": "S by W",
+        "en": "South by West",
+        "fr": "Sud quart Ouest"
+      },
+      {
+        "Code": "SSW",
+        "en": "South-Southwest",
+        "fr": "Sud-Sud-Ouest"
+      },
+      {
+        "Code": "SW by S",
+        "en": "Southwest by South",
+        "fr": "Sud-Ouest quart Sud"
+      },
+      {
+        "Code": "SW",
+        "en": "Southwest",
+        "fr": "Sud-Ouest"
+      },
+      {
+        "Code": "SW by W",
+        "en": "Southwest by West",
+        "fr": "Sud-Ouest quart Ouest"
+      },
+      {
+        "Code": "WSW",
+        "en": "West-Southwest",
+        "fr": "Ouest-Sud-Ouest"
+      },
+      {
+        "Code": "W by S",
+        "en": "West by South",
+        "fr": "Ouest quart Sud"
+      },
+      {
+        "Code": "W",
+        "en": "West",
+        "fr": "Ouest"
+      },
+      {
+        "Code": "W by N",
+        "en": "West by North",
+        "fr": "Ouest quart Nord"
+      },
+      {
+        "Code": "WNW",
+        "en": "West-Northwest",
+        "fr": "Ouest-Nord-Ouest"
+      },
+      {
+        "Code": "NW by W",
+        "en": "Northwest by West",
+        "fr": "Nord-Ouest quart Ouest"
+      },
+      {
+        "Code": "NW",
+        "en": "Northwest",
+        "fr": "Nord-Ouest"
+      },
+      {
+        "Code": "NW by N",
+        "en": "Northwest by North",
+        "fr": "Nord-Ouest quart Nord"
+      },
+      {
+        "Code": "NNW",
+        "en": "North-Northwest",
+        "fr": "Nord-Nord-Ouest"
+      },
+      {
+        "Code": "N by W",
+        "en": "North by West",
+        "fr": "Nord quart Ouest"
+      }
+    ]
+  },
+  "WaterTableCharacteristics": {
+    "id": 40,
+    "name": {
+      "en": "Water Table Characteristics",
+      "fr": "Caractéristiques de la nappe phréatique"
+    },
+    "description": {
+      "en": "Indicates the presence of a water table at a depth of 100cm, and identifies its temporal characteristics.",
+      "fr": "Indique la présence d’une nappe phréatique à une profondeur de 100 cm et précise ses caractéristiques temporelles."
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://sis.agr.gc.ca/cansis/nsdb/soil/v2/snt/watertbl.html",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "YB",
+        "en": "Always",
+        "fr": "Toujours"
+      },
+      {
+        "Code": "YG",
+        "en": "Growing season",
+        "fr": "Saison de croissance"
+      },
+      {
+        "Code": "YN",
+        "en": "Non growing season",
+        "fr": "Hors saison de croissance"
+      },
+      {
+        "Code": "YU",
+        "en": "Unspecified period",
+        "fr": "Période non précisée"
+      },
+      {
+        "Code": "NO",
+        "en": "Never",
+        "fr": "Jamais"
+      },
+      {
+        "Code": "-",
+        "en": "Not applicable",
+        "fr": "Sans objet / Non applicable"
+      }
+    ]
+  }
+}
