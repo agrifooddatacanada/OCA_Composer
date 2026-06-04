@@ -726,6 +726,7 @@
   "Underline": "Underline",
   "Hyphen": "Hyphen",
   "Period": "Period",
+  "The following attributes have invalid names:": "The following attributes have invalid names:",
   "Each column of your dataset is an attribute in your schema. Here you can add, remove, and edit attributes and their details.": "Each column of your dataset is an attribute in your schema. Here you can add, remove, and edit attributes and their details.",
   "Enter the column names below. These are the column headers in the tabular data set no matter the language.": "Enter the column names below. These are the column headers in the tabular data set no matter the language.",
   "Edit placeholder values shown to form users. Then click NEXT to use the form layout builder.": "Edit placeholder values shown to form users. Then click NEXT to use the form layout builder.",
