@@ -1,6 +1,14 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, Typography, Alert, Tooltip, Box, Button } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Alert,
+  Tooltip,
+  Box,
+  Button
+} from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import LoopIcon from "@mui/icons-material/Loop";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -11,8 +19,6 @@ import {
   defaultTooltip,
   defaultUploadedDescription
 } from "../constants/constants";
-import { Context } from "../App";
-import usePrimaryColor from "../hooks/usePrimaryColor";
 import useFontFamily from "../hooks/useFontFamily";
 
 export default function DropCard({
@@ -34,8 +40,6 @@ export default function DropCard({
   fullWidthCard = false
 }) {
   const { t } = useTranslation();
-  const { currentTheme } = useContext(Context);
-  const primaryColor = usePrimaryColor();
   const fontFamily = useFontFamily();
   return (
     <section
@@ -82,7 +86,9 @@ export default function DropCard({
                 }}
               >
                 <Tooltip
-                  title={<div style={{ whiteSpace: "pre-line" }}>{t(tipDescription)}</div>}
+                  title={
+                    <div style={{ whiteSpace: "pre-line" }}>{t(tipDescription)}</div>
+                  }
                   arrow
                   placement="right"
                 >
@@ -114,88 +120,88 @@ export default function DropCard({
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
             >
-            <CardContent sx={{ pr: 10, pl: 10, pt: 2, pb: 1 }}>
-              <Box
-                sx={{
-                  height: "100%",
-                  minHeight: "11rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center"
-                }}
-              >
+              <CardContent sx={{ pr: 10, pl: 10, pt: 2, pb: 1 }}>
                 <Box
                   sx={{
-                    flex: 1,
-                    width: "100%",
+                    height: "100%",
+                    minHeight: "11rem",
                     display: "flex",
                     flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center"
+                    alignItems: "center"
                   }}
                 >
-                  {dropDisabled === false && loading === false && (
-                    <Button
-                      variant="contained"
-                      color="button"
-                      sx={{
-                        width: 250,
-                        mt: 1,
-                        mb: 1,
-                        textTransform: "none",
-                        whiteSpace: "pre-line",
-                        textAlign: "center",
-                        lineHeight: 1.2
-                      }}
-                    >
-                      {t(description)}
-                    </Button>
-                  )}
+                  <Box
+                    sx={{
+                      flex: 1,
+                      width: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}
+                  >
+                    {dropDisabled === false && loading === false && (
+                      <Button
+                        variant="contained"
+                        color="button"
+                        sx={{
+                          width: 250,
+                          mt: 1,
+                          mb: 1,
+                          textTransform: "none",
+                          whiteSpace: "pre-line",
+                          textAlign: "center",
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {t(description)}
+                      </Button>
+                    )}
 
-                  {loading === true ? (
-                    <LoopIcon
-                      sx={{
-                        color: CustomPalette.GREY_300,
-                        my: 1,
-                        fontSize: "60px",
-                        animation: spinningAnimation,
-                        transition: "all 0.2s ease-in-out"
-                      }}
-                    />
-                  ) : dropDisabled === true ? (
-                    <CheckCircleOutlineIcon
-                      sx={{
-                        my: 1,
-                        fontSize: "60px",
-                        color: CustomPalette.PRIMARY
-                      }}
-                    />
-                  ) : (
-                    <DownloadIcon
-                      sx={{
-                        color: downloadIconColor,
-                        my: 1,
-                        fontSize: "60px",
-                        transition: "all 0.2s ease-in-out"
-                      }}
-                    />
-                  )}
+                    {loading === true ? (
+                      <LoopIcon
+                        sx={{
+                          color: CustomPalette.GREY_300,
+                          my: 1,
+                          fontSize: "60px",
+                          animation: spinningAnimation,
+                          transition: "all 0.2s ease-in-out"
+                        }}
+                      />
+                    ) : dropDisabled === true ? (
+                      <CheckCircleOutlineIcon
+                        sx={{
+                          my: 1,
+                          fontSize: "60px",
+                          color: CustomPalette.PRIMARY
+                        }}
+                      />
+                    ) : (
+                      <DownloadIcon
+                        sx={{
+                          color: downloadIconColor,
+                          my: 1,
+                          fontSize: "60px",
+                          transition: "all 0.2s ease-in-out"
+                        }}
+                      />
+                    )}
+                  </Box>
+
+                  <Typography
+                    sx={{
+                      fontSize: 12,
+                      color: CustomPalette.GREY_600,
+                      fontFamily,
+                      textAlign: "center",
+                      pb: 0
+                    }}
+                  >
+                    {t(noteDescription)}
+                  </Typography>
                 </Box>
-
-                <Typography
-                  sx={{
-                    fontSize: 12,
-                    color: CustomPalette.GREY_600,
-                    fontFamily,
-                    textAlign: "center",
-                    pb: 0
-                  }}
-                >
-                  {t(noteDescription)}
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
           </Box>
         </Box>
       </Box>
