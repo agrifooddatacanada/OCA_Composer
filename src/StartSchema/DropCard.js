@@ -48,7 +48,6 @@ export default function DropCard({
         minHeight: "16rem",
         marginTop: "3rem",
         marginBottom: "1rem",
-        paddingTop: dropMessage?.message?.length > 0 ? "2.75rem" : 0,
         ...(fullWidthCard ? { width: "100%", boxSizing: "border-box" } : null)
       }}
     >
@@ -59,22 +58,6 @@ export default function DropCard({
       >
         <input {...getInputProps()} />
         <Box sx={{ position: "relative", width: "100%", maxWidth: "100%" }}>
-          {dropMessage?.message?.length > 0 && (
-            <Alert
-              severity={dropMessage?.type}
-              sx={{
-                position: "absolute",
-                left: "50%",
-                transform: "translateX(-50%)",
-                bottom: "100%",
-                mb: 1,
-                zIndex: 9999,
-                maxWidth: "min(100%, 360px)"
-              }}
-            >
-              {dropMessage?.message}
-            </Alert>
-          )}
           <Box>
             {tipDescription && (
               <Box
@@ -205,6 +188,18 @@ export default function DropCard({
           </Box>
         </Box>
       </Box>
+      {dropMessage?.message?.length > 0 && (
+        <Alert
+          severity={dropMessage?.type}
+          sx={{
+            mt: 1,
+            mx: "auto",
+            maxWidth: "min(100%, 360px)"
+          }}
+        >
+          {dropMessage?.message}
+        </Alert>
+      )}
     </section>
   );
 }
