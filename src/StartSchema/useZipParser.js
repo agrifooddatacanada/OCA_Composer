@@ -261,14 +261,14 @@ const useZipParser = () => {
         Attribute: item,
         Flagged: sensitiveAttributes.includes(item),
         List: attributesWithListType.includes(item),
-        // Type: dataTypes.includes(attributeType)
-        //   ? attributeType
-        //   : attributeType.includes("Array[ref")
-        //     ? "Array[Child Schema]"
-        //     : attributeType.includes("ref")
-        //       ? "Child Schema"
-        //       : "",
-        Type: dataTypes.includes(attributeType) ? attributeType : "",
+        Type: dataTypes.includes(attributeType)
+          ? attributeType
+          : attributeType.includes("Array[ref")
+            ? "Array[Child Schema]"
+            : attributeType.includes("ref")
+              ? "Child Schema"
+              : "",
+        // Type: dataTypes.includes(attributeType) ? attributeType : "",
         Unit: units?.attribute_units?.[item] || units?.attribute_unit?.[item]
       });
 
