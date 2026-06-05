@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Box, Button, Typography, useMediaQuery, Tooltip } from "@mui/material";
@@ -44,8 +44,13 @@ const AccordionList = () => {
   const isMobile = useMediaQuery("(max-width: 736px)");
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, setCurrentDataValidatorPage, schemaDescription, setSummaryExportMode } =
-    useContext(Context);
+  const {
+    zipToReadme,
+    jsonToReadme,
+    setCurrentDataValidatorPage,
+    schemaDescription,
+    setSummaryExportMode
+  } = useContext(Context);
   const { ocaPackage } = useMultiSchema();
   const { toTextFile } = useGenerateReadMe();
   const { jsonToTextFile } = useGenerateTextReadmeFromJson();
@@ -295,7 +300,15 @@ const AccordionList = () => {
               title={isMultiSchema ? t("Not available for multi-level schemas") : ""}
               arrow
             >
-              <span style={{ width: "100%", maxWidth: "300px", display: "inline-block", marginTop: "30px", marginBottom: "30px" }}>
+              <span
+                style={{
+                  width: "100%",
+                  maxWidth: "300px",
+                  display: "inline-block",
+                  marginTop: "30px",
+                  marginBottom: "30px"
+                }}
+              >
                 <Button
                   variant="contained"
                   color="navButton"

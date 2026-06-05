@@ -1,3 +1,4 @@
+import React from "react";
 import { Box } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import Header from "../Header/Header";
@@ -113,8 +114,8 @@ const Tutorial = () => (
         At the Semantic Engine page you would select the sheet that contains the
         information you want to use and click next. You are given a brief alert that all
         schemas need to include some basic header information and every attribute must be
-        given a datatype. If you don't provide this information your schema will not parse
-        correctly.
+        given a datatype. If you don&apos;t provide this information your schema will not
+        parse correctly.
       </TypographyTag>
       <Box sx={{ marginTop: "1.5rem", marginBottom: "1.5rem" }}>
         <img src={ImgDiaryUploadDataset} alt="Selecting the sheet with the dataset." />
@@ -126,8 +127,8 @@ const Tutorial = () => (
       </TypographyTag>
       <TypographyTag>
         Every page of the Semantic Engine has places where you can find help. You can
-        hover over any of the ?'s to find more information, and more in depth help is
-        available on the "help with this page" button.
+        hover over any of the ?&apos;s to find more information, and more in depth help is
+        available on the &quot;help with this page&quot; button.
       </TypographyTag>
       <Box sx={{ marginTop: "1.5rem", marginBottom: "1.5rem" }}>
         <img
@@ -188,7 +189,8 @@ const Tutorial = () => (
       </Box>
       <TypographyTag>
         There are many optional additions you can make to your schema which are called
-        overlays. The "help with this page" button can describe them in more detail.
+        overlays. The &quot;help with this page&quot; button can describe them in more
+        detail.
       </TypographyTag>
       <Box sx={{ marginTop: "1.5rem", marginBottom: "1.5rem" }}>
         <img src={ImgAddOverlays} alt="Adding additional overlays to your schema." />
@@ -205,7 +207,7 @@ const Tutorial = () => (
       </Box>
       <TypographyTag>
         After going through all these steps you have an opportunity to review everything
-        you've added to your schema. You can go back to make corrections or you can
+        you&apos;ve added to your schema. You can go back to make corrections or you can
         continue and Export and Download your schemas.
       </TypographyTag>
       <TypographyTag overrideStyle={{ marginTop: "1.5rem", marginBottom: "1.5rem" }}>

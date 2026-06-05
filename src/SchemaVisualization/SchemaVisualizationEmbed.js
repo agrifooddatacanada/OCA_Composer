@@ -2,7 +2,7 @@
  * Embedded Schema Visualization Component
  * Simplified version for use within the ViewSchema page
  */
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   ReactFlow,
   applyNodeChanges,
@@ -17,11 +17,20 @@ import { useTranslation } from "react-i18next";
 import { PlaceholderNode, DetailedNode, TreeNode } from "./CustomNodes";
 import { generateTreeLayout, generateDetailedLayout } from "./layoutGenerators";
 import { extractSchemaDataFromPackage } from "./dataUtils";
-import { langNameFromTwoLetters, langCodeOCAFromName, langCodeOCAFromTwoLetters, LanguageConstants } from "../utils/languageUtils";
+import {
+  langNameFromTwoLetters,
+  langCodeOCAFromName,
+  langCodeOCAFromTwoLetters,
+  LanguageConstants
+} from "../utils/languageUtils";
 import { TYPE_CHILD_SCHEMA } from "../constants/constants";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import Spinner from "../components/Spinner";
-import { getPackageBundleId, getPackageDependencies, getPackageBundle } from "../utils/packageUtils";
+import {
+  getPackageBundleId,
+  getPackageDependencies,
+  getPackageBundle
+} from "../utils/packageUtils";
 
 const nodeTypes = {
   placeholderNode: PlaceholderNode,
@@ -106,7 +115,7 @@ const SchemaVisualizationEmbed = ({
     const dependencies = [];
     attributeRowData.forEach((attr) => {
       const attrType = attr.Type;
-      
+
       if (attrType === TYPE_CHILD_SCHEMA || attrType === "Placeholder Child Schema") {
         const attrName = attr.Attributes || attr.Attribute;
         dependencies.push({
@@ -161,7 +170,7 @@ const SchemaVisualizationEmbed = ({
 
     // Standardized approach: i18n primary, schema override secondary
     let languageCode = "eng"; // default fallback
-    
+
     if (schemaLanguageOverride) {
       // Schema-specific language override (from schema language buttons)
       // schemaLanguageOverride is a full language name like "French", "English"
@@ -175,7 +184,7 @@ const SchemaVisualizationEmbed = ({
         languageCode = langCodeOCAFromTwoLetters(i18n.language) || "eng";
       }
     }
-    
+
     const processedSchemaData = extractSchemaDataFromPackage(pkg, languageCode);
     if (!processedSchemaData) {
       return;
@@ -201,7 +210,7 @@ const SchemaVisualizationEmbed = ({
           }
         }
       }
-      
+
       if (internalViewMode === "tree") {
         result = generateTreeLayout(
           processedSchemaData,
@@ -316,7 +325,9 @@ const SchemaVisualizationEmbed = ({
     } else {
       // No OCA package available - show message or empty state
       // This should not happen if ViewSchema properly exports schema changes
-      console.warn("SchemaVisualizationEmbed: No valid OCA package data available for visualization");
+      console.warn(
+        "SchemaVisualizationEmbed: No valid OCA package data available for visualization"
+      );
       setNodes([]);
       setEdges([]);
       setHasData(false);
