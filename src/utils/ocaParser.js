@@ -1019,6 +1019,7 @@ export class OCAParser {
     if (fileOverlay) {
       result.fileDelimiterData = {
         fieldDelimiter: fileOverlay.delimiter ?? ",",
+        // eslint-disable-next-line quotes -- Prettier formats a double-quote char as single-quoted
         quoteChar: fileOverlay.quote_char ?? '"',
         escapeChar: fileOverlay.escape_char ?? "\\",
         lineTerminator: fileOverlay.line_terminator ?? "lf",

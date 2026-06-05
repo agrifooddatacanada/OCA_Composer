@@ -55,6 +55,7 @@ export const resetOverlayValues = (overlayType) => {
       decimalSeparator: ".",
       fileDelimiterData: {
         fieldDelimiter: ",",
+        // eslint-disable-next-line quotes -- Prettier formats a double-quote char as single-quoted
         quoteChar: '"',
         escapeChar: "\\",
         lineTerminator: "lf",
