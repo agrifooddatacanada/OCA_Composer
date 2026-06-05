@@ -4,9 +4,7 @@ import ReactGA from "react-ga4";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
 import "./App.css";
 import Home from "./Home";
-import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import Landing from "./Landing/Landing";
-// import HelpStorage from "./Landing/HelpStorage";
 import OCADataValidator from "./OCADataValidator/OCADataValidator";
 import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
@@ -15,7 +13,6 @@ import { MultiSchemaProvider } from "./schema/schemaContext";
 import SessionDraftManager from "./components/SessionDraftManager";
 import { getCurrentTheme } from "./utils/themeDetector";
 import { CustomPalette } from "./constants/customPalette";
-// import Tutorial from "./Tutorial/Tutorial";
 import { overlayItems } from "./constants/constants";
 // import { environVariables } from "./components/environmentConfig";
 
@@ -304,12 +301,6 @@ function App() {
                     }
                   />
                   <Route path="/oca-data-verifier" element={<OCADataValidator />} />
-                  {/* <Route
-                    path='/help_designing_datasets'
-                    element={<GuidanceForDesigningDataSets />}
-                  /> */}
-                  {/* <Route path="/help_storage" element={<HelpStorage />} /> */}
-                  <Route path="/start_schema_help" element={<StartSchemaHelp />} />
                   <Route path="/learn_schema_rule" element={<LearnAboutSchemaRule />} />
                   <Route
                     path="/learn_data_verification"
@@ -320,7 +311,6 @@ function App() {
                     path="/oca-merge"
                     element={<OCAMerge currentOCAMergePage={currentOCAMergePage} />}
                   />
-                  {/* <Route path="/tutorial" element={<Tutorial />} /> */}
                 </Routes>
               </BrowserRouter>
             </Box>
