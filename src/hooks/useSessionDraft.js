@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 const DRAFT_KEY = "oca_composer_draft";
 const DRAFT_VERSION = 1;
@@ -30,7 +30,12 @@ export function clearDraft() {
   }
 }
 
-export function useSessionDraft({ schemaStates, currentSchemaId, ocaPackage, currentPage }) {
+export function useSessionDraft({
+  schemaStates,
+  currentSchemaId,
+  ocaPackage,
+  currentPage
+}) {
   const timerRef = useRef(null);
 
   // Debounced autosave
@@ -46,7 +51,7 @@ export function useSessionDraft({ schemaStates, currentSchemaId, ocaPackage, cur
           schemaStates,
           currentSchemaId: currentSchemaId || null,
           ocaPackage: ocaPackage || null,
-          currentPage: currentPage || null,
+          currentPage: currentPage || null
         };
         window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
       } catch (e) {

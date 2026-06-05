@@ -3,7 +3,6 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ReactGA from "react-ga4";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
 import "./App.css";
-import CustomTheme from "./constants/theme";
 import Home from "./Home";
 import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import Landing from "./Landing/Landing";
@@ -12,16 +11,12 @@ import OCADataValidator from "./OCADataValidator/OCADataValidator";
 import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
-import { MultiSchemaProvider, useMultiSchema } from "./schema/schemaContext";
+import { MultiSchemaProvider } from "./schema/schemaContext";
 import SessionDraftManager from "./components/SessionDraftManager";
 import { getCurrentTheme } from "./utils/themeDetector";
 import { CustomPalette } from "./constants/customPalette";
 // import Tutorial from "./Tutorial/Tutorial";
-import { LanguageConstants } from "./utils/languageUtils";
-import {
-  CUSTOM_FORMAT_RULE,
-  overlayItems
-} from "./constants/constants";
+import { overlayItems } from "./constants/constants";
 // import { environVariables } from "./components/environmentConfig";
 
 export const Context = createContext();

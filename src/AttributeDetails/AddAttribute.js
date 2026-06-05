@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Alert, Box, Button, TextField } from "@mui/material";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
@@ -28,7 +28,7 @@ export default function AddAttribute({
 }) {
   const { t, i18n } = useTranslation();
   const { updateSchema } = useMultiSchema();
-  
+
   // Note: attributesList is now computed - no need to update it separately
   const [newAttribute, setNewAttribute] = useState("");
   const [textFieldWidth, setTextFieldWidth] = useState("10.75rem");
@@ -133,20 +133,22 @@ export default function AddAttribute({
       };
       const updatedAttributeRowData = [...newAttributeRowData, newAttributeObj];
       setAttributeRowData(updatedAttributeRowData);
-      
+
       // Also save to MultiSchemaContext to prevent data loss when List is toggled
       // MultiSchemaContext handles null schemaId internally
       // Preserve any existing _rid values when saving to schema state
       const attributesWithIds = updatedAttributeRowData.map((attr) => {
-        const existingAttr = attributeRowData.find(existing => existing.Attribute === attr.Attribute);
+        const existingAttr = attributeRowData.find(
+          (existing) => existing.Attribute === attr.Attribute
+        );
         return existingAttr?._rid ? { ...attr, _rid: existingAttr._rid } : attr;
       });
-      
+
       // Update only attributes - attributesList is computed automatically
       updateSchema({
         attributes: attributesWithIds
       });
-      
+
       setCanDelete(true);
       setNewAttribute("");
     } else if (!attributeToAdd) {
@@ -219,7 +221,11 @@ export default function AddAttribute({
                   }
                 }}
               />
-              <Button onClick={handleAddRow} ref={addButton2} sx={{ ml: -0.1, minWidth: 0, px: 0.5 }}>
+              <Button
+                onClick={handleAddRow}
+                ref={addButton2}
+                sx={{ ml: -0.1, minWidth: 0, px: 0.5 }}
+              >
                 <AddIcon
                   sx={{
                     color: CustomPalette.SECONDARY,
@@ -232,7 +238,14 @@ export default function AddAttribute({
               </Button>
             </Box>
             {errorMessage && (
-              <Alert severity="error" sx={{ m: 0, flexShrink: 0, "& .MuiAlert-message": { whiteSpace: "nowrap" } }}>
+              <Alert
+                severity="error"
+                sx={{
+                  m: 0,
+                  flexShrink: 0,
+                  "& .MuiAlert-message": { whiteSpace: "nowrap" }
+                }}
+              >
                 {errorMessage}
               </Alert>
             )}

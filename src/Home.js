@@ -1,4 +1,12 @@
-import React, { useEffect, useLayoutEffect, useState, useContext, useRef, useCallback, useMemo } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useContext,
+  useRef,
+  useCallback,
+  useMemo
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import "./App.css";
@@ -45,7 +53,8 @@ const validateEntryCodesFromSchema = (state, languages, t) => {
       if (!row?.Code || !String(row.Code).trim()) return t(messageKey);
       for (const lang of languages) {
         const val = row[lang];
-        if (val === undefined || val === null || !String(val).trim()) return t(messageKey);
+        if (val === undefined || val === null || !String(val).trim())
+          return t(messageKey);
       }
     }
   }
@@ -106,17 +115,13 @@ const isSchemaMetadataComplete = (state) => {
   return values.some((langData) => {
     if (!langData || typeof langData !== "object") return false;
     const name = typeof langData.name === "string" ? langData.name.trim() : "";
-    const description = typeof langData.description === "string" ? langData.description.trim() : "";
+    const description =
+      typeof langData.description === "string" ? langData.description.trim() : "";
     return name !== "" && description !== "";
   });
 };
 
-const Home = ({
-  currentPage,
-  setCurrentPage,
-  pageForward: appPageForward,
-  pageBack: appPageBack
-}) => {
+const Home = ({ currentPage, setCurrentPage }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -130,9 +135,9 @@ const Home = ({
       window.scrollTo(0, 0);
     }
   }, [location.pathname, location.state, setCurrentPage, navigate, setSummaryExportMode]);
-  const { 
+  const {
     currentSchemaId,
-    schemaStates, 
+    schemaStates,
     switchToSchema,
     ocaPackage,
     getSchema,
@@ -197,7 +202,11 @@ const Home = ({
   const pageForNav = pageIdForStepper(currentPage);
 
   const pageForward = () => {
-    if (currentPage === "Range" && rangeRef.current?.validate && !rangeRef.current.validate()) {
+    if (
+      currentPage === "Range" &&
+      rangeRef.current?.validate &&
+      !rangeRef.current.validate()
+    ) {
       return;
     }
     saveNonRangeOverlayGrids();
@@ -215,7 +224,11 @@ const Home = ({
   };
 
   const pageBack = () => {
-    if (currentPage === "Range" && rangeRef.current?.validate && !rangeRef.current.validate()) {
+    if (
+      currentPage === "Range" &&
+      rangeRef.current?.validate &&
+      !rangeRef.current.validate()
+    ) {
       return;
     }
     saveNonRangeOverlayGrids();
@@ -240,168 +253,212 @@ const Home = ({
 
   useEffect(() => {
     if (!attributesTypeError) return;
-    if (attributesTypeErrorTimerRef.current) clearTimeout(attributesTypeErrorTimerRef.current);
-    attributesTypeErrorTimerRef.current = setTimeout(() => setAttributesTypeError(""), 5000);
+    if (attributesTypeErrorTimerRef.current)
+      clearTimeout(attributesTypeErrorTimerRef.current);
+    attributesTypeErrorTimerRef.current = setTimeout(
+      () => setAttributesTypeError(""),
+      5000
+    );
     return () => {
-      if (attributesTypeErrorTimerRef.current) clearTimeout(attributesTypeErrorTimerRef.current);
+      if (attributesTypeErrorTimerRef.current)
+        clearTimeout(attributesTypeErrorTimerRef.current);
     };
   }, [attributesTypeError]);
 
   const handleStepClick = useCallback(
     (index) => {
-    const target = steps[index];
-    if (target?.page) {
-      const resetBypassFlags = () => {
-        bypassMetadataModalRef.current = false;
-        forceInlineStepperErrorsRef.current = false;
-      };
+      const target = steps[index];
+      if (target?.page) {
+        const resetBypassFlags = () => {
+          bypassMetadataModalRef.current = false;
+          forceInlineStepperErrorsRef.current = false;
+        };
 
-      try {
-      const pageForStepIndex = pageIdForStepper(currentPage);
-      const currentIndex = steps.findIndex((step) => step.page === pageForStepIndex);
-      const isForwardNavigation = index > currentIndex;
+        try {
+          const pageForStepIndex = pageIdForStepper(currentPage);
+          const currentIndex = steps.findIndex((step) => step.page === pageForStepIndex);
+          const isForwardNavigation = index > currentIndex;
 
-      // Only validate when navigating FORWARD
-      if (isForwardNavigation) {
-        // Run page-level modal validations first (take priority over stepper inline errors)
-        if (currentPage === "Metadata") {
-          if (!bypassMetadataModalRef.current) {
-            if (schemaMetadataRef.current && typeof schemaMetadataRef.current.showValidationPopup === "function") {
-              const isValid = schemaMetadataRef.current.showValidationPopup(target.page);
-              if (!isValid) {
+          // Only validate when navigating FORWARD
+          if (isForwardNavigation) {
+            // Run page-level modal validations first (take priority over stepper inline errors)
+            if (currentPage === "Metadata") {
+              if (!bypassMetadataModalRef.current) {
+                if (
+                  schemaMetadataRef.current &&
+                  typeof schemaMetadataRef.current.showValidationPopup === "function"
+                ) {
+                  const isValid = schemaMetadataRef.current.showValidationPopup(
+                    target.page
+                  );
+                  if (!isValid) {
+                    return;
+                  }
+                }
+              }
+            }
+
+            if (currentPage === "Details") {
+              if (
+                attributeDetailsRef.current &&
+                typeof attributeDetailsRef.current.save === "function"
+              ) {
+                attributeDetailsRef.current.save();
+              }
+              if (
+                attributeDetailsRef.current &&
+                typeof attributeDetailsRef.current.showValidationPopup === "function"
+              ) {
+                const isValid = attributeDetailsRef.current.showValidationPopup();
+                if (!isValid) {
+                  return;
+                }
+              }
+            }
+
+            const state = getSchema() || {};
+            const metadataComplete = isSchemaMetadataComplete(state);
+            const attributesArray = Array.isArray(state.attributes)
+              ? state.attributes
+              : [];
+            const hasMissingType = attributesArray.some(
+              (attr) => !attr?.Type || String(attr.Type).trim() === ""
+            );
+
+            const attributesStepIndex = steps.findIndex((s) => s.label === "Attributes");
+            const isSkippingAttributes =
+              attributesStepIndex >= 0 &&
+              index > attributesStepIndex &&
+              currentIndex < attributesStepIndex;
+
+            if (isSkippingAttributes) {
+              if (
+                hasMissingType &&
+                (metadataComplete || forceInlineStepperErrorsRef.current)
+              ) {
+                setAttributesTypeError(t("Please click above and select types."));
+                if (entryCodesError) setEntryCodesError("");
                 return;
+              }
+              if (attributesTypeError) setAttributesTypeError("");
+            } else if (attributesTypeError) {
+              setAttributesTypeError("");
+            }
+
+            const entryCodesStepIndex = steps.findIndex((s) => s.label === "Entry Codes");
+            const isSkippingEntryCodes =
+              entryCodesStepIndex >= 0 &&
+              index > entryCodesStepIndex &&
+              currentIndex < entryCodesStepIndex;
+
+            if (isSkippingEntryCodes) {
+              // Entry Codes stepper inline error only applies if all attribute types are selected
+              if (hasMissingType) {
+                if (metadataComplete || forceInlineStepperErrorsRef.current) {
+                  setAttributesTypeError(t("Please click above and select types."));
+                }
+                if (entryCodesError) setEntryCodesError("");
+                return;
+              }
+
+              const languages = getLanguages?.() || state?.metadata?.languages || [];
+              const err = validateEntryCodesFromSchema(state, languages, t);
+              if (err) {
+                setEntryCodesError(err);
+                if (attributesTypeError) setAttributesTypeError("");
+                return;
+              }
+              if (entryCodesError) setEntryCodesError("");
+            }
+
+            // If leaving Entry Codes step, validate and persist any edits before navigation
+            if (currentPage === "Codes") {
+              if (
+                entryCodesRef.current &&
+                typeof entryCodesRef.current.validate === "function"
+              ) {
+                const isValid = entryCodesRef.current.validate();
+                if (!isValid) {
+                  return; // Validation failed, stay on current page
+                }
+              }
+              if (
+                entryCodesRef.current &&
+                typeof entryCodesRef.current.save === "function"
+              ) {
+                entryCodesRef.current.save();
+              }
+            }
+          } else {
+            // When navigating BACKWARD, save without validation
+            if (currentPage === "Details") {
+              if (
+                attributeDetailsRef.current &&
+                typeof attributeDetailsRef.current.save === "function"
+              ) {
+                attributeDetailsRef.current.save();
+              }
+            }
+            if (currentPage === "Codes") {
+              if (
+                entryCodesRef.current &&
+                typeof entryCodesRef.current.save === "function"
+              ) {
+                entryCodesRef.current.save();
               }
             }
           }
-        }
 
-        if (currentPage === "Details") {
-          if (attributeDetailsRef.current && typeof attributeDetailsRef.current.save === "function") {
-            attributeDetailsRef.current.save();
+          // If leaving Language Details step, persist any edits before navigation
+          if (
+            currentPage === "LanguageDetails" &&
+            languageDetailsRef.current &&
+            typeof languageDetailsRef.current.save === "function"
+          ) {
+            languageDetailsRef.current.save();
           }
-          if (attributeDetailsRef.current && typeof attributeDetailsRef.current.showValidationPopup === "function") {
-            const isValid = attributeDetailsRef.current.showValidationPopup();
-            if (!isValid) {
+
+          saveNonRangeOverlayGrids();
+
+          if (
+            currentPage === "Range" &&
+            rangeRef.current &&
+            typeof rangeRef.current.validate === "function"
+          ) {
+            if (!rangeRef.current.validate()) {
               return;
             }
           }
-        }
-
-        const state = getSchema() || {};
-        const metadataComplete = isSchemaMetadataComplete(state);
-        const attributesArray = Array.isArray(state.attributes) ? state.attributes : [];
-        const hasMissingType = attributesArray.some(
-          (attr) => !attr?.Type || String(attr.Type).trim() === ""
-        );
-
-        const attributesStepIndex = steps.findIndex((s) => s.label === "Attributes");
-        const isSkippingAttributes =
-          attributesStepIndex >= 0 &&
-          index > attributesStepIndex &&
-          currentIndex < attributesStepIndex;
-
-        if (isSkippingAttributes) {
-          if (hasMissingType && (metadataComplete || forceInlineStepperErrorsRef.current)) {
-            setAttributesTypeError(t("Please click above and select types."));
-            if (entryCodesError) setEntryCodesError("");
-            return;
-          }
-          if (attributesTypeError) setAttributesTypeError("");
-        } else if (attributesTypeError) {
-          setAttributesTypeError("");
-        }
-
-        const entryCodesStepIndex = steps.findIndex((s) => s.label === "Entry Codes");
-        const isSkippingEntryCodes = entryCodesStepIndex >= 0 && index > entryCodesStepIndex && currentIndex < entryCodesStepIndex;
-
-        if (isSkippingEntryCodes) {
-          // Entry Codes stepper inline error only applies if all attribute types are selected
-          if (hasMissingType) {
-            if (metadataComplete || forceInlineStepperErrorsRef.current) {
-              setAttributesTypeError(t("Please click above and select types."));
-            }
-            if (entryCodesError) setEntryCodesError("");
-            return;
+          if (
+            currentPage === "Range" &&
+            rangeRef.current &&
+            typeof rangeRef.current.save === "function"
+          ) {
+            rangeRef.current.save();
           }
 
-          const languages = getLanguages?.() || state?.metadata?.languages || [];
-          const err = validateEntryCodesFromSchema(state, languages, t);
-          if (err) {
-            setEntryCodesError(err);
-            if (attributesTypeError) setAttributesTypeError("");
-            return;
+          if (target.page === "View") {
+            setSummaryExportMode(true);
           }
-          if (entryCodesError) setEntryCodesError("");
-        }
-
-        // If leaving Entry Codes step, validate and persist any edits before navigation
-        if (currentPage === "Codes") {
-          if (entryCodesRef.current && typeof entryCodesRef.current.validate === "function") {
-            const isValid = entryCodesRef.current.validate();
-            if (!isValid) {
-              return; // Validation failed, stay on current page
-            }
-          }
-          if (entryCodesRef.current && typeof entryCodesRef.current.save === "function") {
-            entryCodesRef.current.save();
-          }
-        }
-      } else {
-        // When navigating BACKWARD, save without validation
-        if (currentPage === "Details") {
-          if (attributeDetailsRef.current && typeof attributeDetailsRef.current.save === "function") {
-            attributeDetailsRef.current.save();
-          }
-        }
-        if (currentPage === "Codes") {
-          if (entryCodesRef.current && typeof entryCodesRef.current.save === "function") {
-            entryCodesRef.current.save();
-          }
+          setCurrentPage(target.page);
+        } finally {
+          resetBypassFlags();
         }
       }
-
-      // If leaving Language Details step, persist any edits before navigation
-      if (
-        currentPage === "LanguageDetails" &&
-        languageDetailsRef.current &&
-        typeof languageDetailsRef.current.save === "function"
-      ) {
-        languageDetailsRef.current.save();
-      }
-
-      saveNonRangeOverlayGrids();
-
-      if (currentPage === "Range" && rangeRef.current && typeof rangeRef.current.validate === "function") {
-        if (!rangeRef.current.validate()) {
-          return;
-        }
-      }
-      if (currentPage === "Range" && rangeRef.current && typeof rangeRef.current.save === "function") {
-        rangeRef.current.save();
-      }
-
-      if (target.page === "View") {
-        setSummaryExportMode(true);
-      }
-      setCurrentPage(target.page);
-      } finally {
-        resetBypassFlags();
-      }
-    }
-  },
-  [
-    steps,
-    currentPage,
-    saveNonRangeOverlayGrids,
-    getSchema,
-    getLanguages,
-    t,
-    setCurrentPage,
-    setSummaryExportMode,
-    attributesTypeError,
-    entryCodesError
-  ]
-);
+    },
+    [
+      steps,
+      currentPage,
+      saveNonRangeOverlayGrids,
+      getSchema,
+      getLanguages,
+      t,
+      setCurrentPage,
+      setSummaryExportMode,
+      attributesTypeError,
+      entryCodesError
+    ]
+  );
 
   const handleContinueNavigationFromMetadataModal = useCallback(
     (targetPage) => {
@@ -488,7 +545,7 @@ const Home = ({
           />
         )}
         {currentPage === "Codes" && (
-          <EntryCodes 
+          <EntryCodes
             ref={entryCodesRef}
             pageBack={pageBack}
             pageForward={pageForward}
@@ -501,26 +558,25 @@ const Home = ({
         {currentPage === "MatchingJSONEntryCodes" && <MatchingJSONEntryCodeHeader />}
 
         {currentPage === "LanguageDetails" && (
-          <LanguageDetails 
+          <LanguageDetails
             ref={languageDetailsRef}
-            pageBack={pageBack} 
-            pageForward={pageForward} 
+            pageBack={pageBack}
+            pageForward={pageForward}
           />
         )}
         {currentPage === "View" && (
-          <ViewSchema 
-            pageBack={pageBack} 
-            addClearButton 
-            isExport 
-            isPageForward 
-          />
+          <ViewSchema pageBack={pageBack} addClearButton isExport isPageForward />
         )}
         {currentPage === "Create" && <CreateManually />}
         {currentPage === "Overlays" && (
           <Overlays pageBack={pageBack} pageForward={pageForward} />
         )}
-        {currentPage === "CharacterEncoding" && <CharacterEncoding ref={characterEncodingRef} />}
-        {currentPage === "RequiredEntries" && <RequiredEntries ref={requiredEntriesRef} />}
+        {currentPage === "CharacterEncoding" && (
+          <CharacterEncoding ref={characterEncodingRef} />
+        )}
+        {currentPage === "RequiredEntries" && (
+          <RequiredEntries ref={requiredEntriesRef} />
+        )}
         {currentPage === "Cardinality" && <Cardinality ref={cardinalityRef} />}
         {currentPage === "UnitFraming" && <UnitFraming ref={unitFramingRef} />}
         {currentPage === "FormInformation" && <FormInformation />}
@@ -530,7 +586,9 @@ const Home = ({
         )}
         {currentPage === "DataStandards" && <DataStandards ref={dataStandardsRef} />}
         {currentPage === "Range" && <Range ref={rangeRef} />}
-        {currentPage === "AttributeFraming" && <AttributeFraming ref={attributeFramingRef} />}
+        {currentPage === "AttributeFraming" && (
+          <AttributeFraming ref={attributeFramingRef} />
+        )}
         {currentPage === "FormatRules" && <FormatRuleV2 ref={formatRulesRef} />}
         {currentPage === "DataSeparator" && <DataSeparator />}
       </Box>

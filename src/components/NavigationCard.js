@@ -1,14 +1,10 @@
 import React from "react";
 import { Box, Button, Typography } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { CustomPalette } from "../constants/customPalette";
 import { useTranslation } from "react-i18next";
+import { CustomPalette } from "../constants/customPalette";
 
-export default function NavigationCard({
-  fieldArray,
-  setShowCard,
-  handleForward,
-}) {
+export default function NavigationCard({ fieldArray, setShowCard, handleForward }) {
   const { t } = useTranslation();
   const arrayDisplay = fieldArray.join(", ");
 
@@ -32,7 +28,7 @@ export default function NavigationCard({
           borderRadius: "0.5rem",
           backgroundColor: CustomPalette.WHITE,
           border: "1px solid",
-          borderColor: CustomPalette.PRIMARY,
+          borderColor: CustomPalette.PRIMARY
         }}
       >
         <Box
@@ -46,18 +42,18 @@ export default function NavigationCard({
             backgroundColor: CustomPalette.RED_100,
             mb: 2,
             px: 2,
-            py: 1.5,
+            py: 1.5
           }}
         >
           <ErrorOutlineIcon
             sx={{
               color: CustomPalette.SECONDARY,
               flexShrink: 0,
-              fontSize: 35,
+              fontSize: 35
             }}
           />
           <Typography variant="body1" sx={{ fontSize: 20, flex: 1, minWidth: 0 }}>
-            {t('There are one or more blank entries in the following field(s)')}
+            {t("There are one or more blank entries in the following field(s)")}
           </Typography>
         </Box>
 
@@ -67,7 +63,7 @@ export default function NavigationCard({
         >
           <em>{arrayDisplay}</em>
         </Typography>
-        <Typography variant="h6">{t('Do you wish to continue?')}</Typography>
+        <Typography variant="h6">{t("Do you wish to continue?")}</Typography>
         <Box sx={{ alignSelf: "flex-end" }}>
           <Button
             variant="outlined"
@@ -75,9 +71,17 @@ export default function NavigationCard({
             onClick={() => {
               setShowCard(false);
             }}
-            sx={{ mr: 2, color: CustomPalette.PRIMARY, borderColor: CustomPalette.PRIMARY, ":hover": { borderColor: CustomPalette.SECONDARY, color: CustomPalette.SECONDARY } }}
+            sx={{
+              mr: 2,
+              color: CustomPalette.PRIMARY,
+              borderColor: CustomPalette.PRIMARY,
+              ":hover": {
+                borderColor: CustomPalette.SECONDARY,
+                color: CustomPalette.SECONDARY
+              }
+            }}
           >
-            {t('Cancel')}
+            {t("Cancel")}
           </Button>
           <Button
             variant="contained"
@@ -85,9 +89,13 @@ export default function NavigationCard({
             onClick={() => {
               handleForward();
             }}
-            sx={{ mr: 2, backgroundColor: CustomPalette.PRIMARY, ":hover": { backgroundColor: CustomPalette.SECONDARY } }}
+            sx={{
+              mr: 2,
+              backgroundColor: CustomPalette.PRIMARY,
+              ":hover": { backgroundColor: CustomPalette.SECONDARY }
+            }}
           >
-            {t('Continue')}
+            {t("Continue")}
           </Button>
         </Box>
       </Box>

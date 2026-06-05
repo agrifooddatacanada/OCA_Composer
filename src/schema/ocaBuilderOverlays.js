@@ -1,12 +1,12 @@
-import { langCodeOCAFromName } from '../utils/languageUtils';
+import { langCodeOCAFromName } from "../utils/languageUtils";
 import { normalizeAttributeNameKey } from "../utils/stringUtils";
 
 /**
  * Applies all overlay changes from editor state to OCA schema structure.
- * 
+ *
  * @param {Object} ocaSchema - OCA package schema to modify (bundle or dependency)
  * @param {Object} editorState - UI editing state with overlay data maps
- * 
+ *
  * Converts UI editing state (flat maps like attributeFormats, attributeCardinality)
  * into OCA overlay structures (format, cardinality, entry, label, etc.).
  */
@@ -19,11 +19,11 @@ export function applyAllOverlays(ocaSchema, editorState) {
   applyDirectOverlays(ocaSchema, editorState);
   applyMetaOverlays(ocaSchema, editorState);
   applyConformanceOverlay(ocaSchema, editorState);
-  applyFormatOverlay(ocaSchema, editorState, validAttributeNames);
+  applyFormatOverlay(ocaSchema, editorState);
   applyCharacterEncodingOverlay(ocaSchema, editorState);
-  applyCardinalityOverlay(ocaSchema, editorState, validAttributeNames);
+  applyCardinalityOverlay(ocaSchema, editorState);
   applyStandardOverlay(ocaSchema, editorState, validAttributeNames);
-  applyRangeOverlay(ocaSchema, editorState, validAttributeNames);
+  applyRangeOverlay(ocaSchema, editorState);
   applyEntryOverlay(ocaSchema, editorState);
   applyLabelAndInfoOverlays(ocaSchema, editorState);
 }
@@ -66,8 +66,10 @@ function applyMetaOverlays(ocaSchema, editorState) {
   const locMeta = editorState.metadata?.localized || {};
   if (Object.keys(locMeta).length === 0) return;
 
-  const existingMeta = Array.isArray(ocaSchema.overlays?.meta) ? ocaSchema.overlays.meta : [];
-  
+  const existingMeta = Array.isArray(ocaSchema.overlays?.meta)
+    ? ocaSchema.overlays.meta
+    : [];
+
   const metaArray = Object.entries(locMeta).map(([lang, obj]) => {
     const existingForLang = existingMeta.find((m) => m?.language === lang) || {};
     return {
@@ -76,32 +78,34 @@ function applyMetaOverlays(ocaSchema, editorState) {
       type: "spec/overlays/meta/1.1",
       language: lang,
       name: obj?.name || "",
-      description: obj?.description || "",
+      description: obj?.description || ""
     };
   });
-  
+
   if (metaArray.length > 0) ocaSchema.overlays.meta = metaArray;
 }
 
 function applyConformanceOverlay(ocaSchema, editorState) {
   if (!editorState.attributes?.length) return;
-  
+
   const hasRequiredFlags = editorState.attributes.some(
     (attr) => attr.Required === true || attr.Required === false
   );
 
   if (!hasRequiredFlags) return;
-  
+
   const conformanceOverlay = {
     d: ocaSchema.overlays?.conformance?.d,
     capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/conformance/1.1",
-    attribute_conformance: {},
+    attribute_conformance: {}
   };
 
   editorState.attributes.forEach((attr) => {
     if (attr.Attribute && (attr.Required === true || attr.Required === false)) {
-      conformanceOverlay.attribute_conformance[attr.Attribute] = attr.Required ? "M" : "O";
+      conformanceOverlay.attribute_conformance[attr.Attribute] = attr.Required
+        ? "M"
+        : "O";
     }
   });
 
@@ -110,18 +114,18 @@ function applyConformanceOverlay(ocaSchema, editorState) {
   }
 }
 
-function applyFormatOverlay(ocaSchema, editorState, validAttributeNames) {
+function applyFormatOverlay(ocaSchema, editorState) {
   const attributeFormats = editorState.attributeFormats || {};
-  
+
   if (Object.keys(attributeFormats).length === 0) return;
 
   const normalizedToRaw = getNormalizedAttributeToRawMap(editorState);
-  
+
   const formatOverlay = {
     d: ocaSchema.overlays?.format?.d,
     capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/format/1.1",
-    attribute_formats: {},
+    attribute_formats: {}
   };
 
   Object.entries(attributeFormats).forEach(([attrName, formatRule]) => {
@@ -140,12 +144,12 @@ function applyFormatOverlay(ocaSchema, editorState, validAttributeNames) {
 function applyCharacterEncodingOverlay(ocaSchema, editorState) {
   const charEncoding = editorState.characterEncodingData || {};
   if (Object.keys(charEncoding).length === 0) return;
-  
+
   const charEncodingOverlay = {
     d: ocaSchema.overlays?.character_encoding?.d,
     capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/character_encoding/1.1",
-    attribute_character_encoding: {},
+    attribute_character_encoding: {}
   };
 
   Object.entries(charEncoding).forEach(([attr, encoding]) => {
@@ -154,21 +158,21 @@ function applyCharacterEncodingOverlay(ocaSchema, editorState) {
 
   if (Object.keys(charEncodingOverlay.attribute_character_encoding).length > 0) {
     ocaSchema.overlays.character_encoding = charEncodingOverlay;
- }
+  }
 }
 
-function applyCardinalityOverlay(ocaSchema, editorState, validAttributeNames) {
+function applyCardinalityOverlay(ocaSchema, editorState) {
   const attributeCardinality = editorState.attributeCardinality || {};
-  
+
   if (Object.keys(attributeCardinality).length === 0) return;
 
   const normalizedToRaw = getNormalizedAttributeToRawMap(editorState);
-  
+
   const cardinalityOverlay = {
     d: ocaSchema.overlays?.cardinality?.d,
     capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/cardinality/1.1",
-    attribute_cardinality: {},
+    attribute_cardinality: {}
   };
 
   Object.entries(attributeCardinality).forEach(([attrName, cardValue]) => {
@@ -187,12 +191,12 @@ function applyCardinalityOverlay(ocaSchema, editorState, validAttributeNames) {
 function applyStandardOverlay(ocaSchema, editorState, validAttributeNames) {
   const dataStandards = editorState.dataStandardsData || [];
   if (dataStandards.length === 0) return;
-  
+
   const standardOverlay = {
     d: ocaSchema.overlays?.standard?.d,
     capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/standard/1.1",
-    attr_standards: {},
+    attr_standards: {}
   };
 
   dataStandards
@@ -208,18 +212,18 @@ function applyStandardOverlay(ocaSchema, editorState, validAttributeNames) {
   }
 }
 
-function applyRangeOverlay(ocaSchema, editorState, validAttributeNames) {
+function applyRangeOverlay(ocaSchema, editorState) {
   const attributeRanges = editorState.attributeRanges || {};
-  
+
   if (Object.keys(attributeRanges).length === 0) return;
 
   const normalizedToRaw = getNormalizedAttributeToRawMap(editorState);
-  
+
   const rangeOverlay = {
     d: ocaSchema.overlays?.range?.d,
     capture_base: ocaSchema.capture_base.d,
     type: "spec/overlays/range/1.1",
-    attributes: {},
+    attributes: {}
   };
 
   Object.entries(attributeRanges).forEach(([attrName, range]) => {
@@ -230,7 +234,7 @@ function applyRangeOverlay(ocaSchema, editorState, validAttributeNames) {
         lower: range.lower || "",
         lower_inclusive: range.lower_inclusive || false,
         upper: range.upper || "",
-        upper_inclusive: range.upper_inclusive || false,
+        upper_inclusive: range.upper_inclusive || false
       };
     }
   });
@@ -243,7 +247,7 @@ function applyRangeOverlay(ocaSchema, editorState, validAttributeNames) {
 function applyEntryOverlay(ocaSchema, editorState) {
   const entryCodes = editorState.entryCodes || {};
   if (Object.keys(entryCodes).length === 0) return;
-  
+
   // Detect all languages present in entry code data
   // Entry codes stored as: { Code: "001", English: "Red", French: "Rouge", ... }
   const languagesSet = new Set();
@@ -258,23 +262,24 @@ function applyEntryOverlay(ocaSchema, editorState) {
       });
     }
   });
-  
+
   const languages = Array.from(languagesSet);
   if (languages.length === 0) return;
-  
+
   // Create one entry overlay per language
   const entryOverlays = [];
-  
+
   languages.forEach((languageName) => {
     // Convert language name to 3-letter OCA code (English -> eng, French -> fra)
-    const langCode = langCodeOCAFromName(languageName) || languageName.toLowerCase().slice(0, 3);
-    
+    const langCode =
+      langCodeOCAFromName(languageName) || languageName.toLowerCase().slice(0, 3);
+
     const entryOverlay = {
-      d: undefined,  // Will be calculated when package is SAIDified
+      d: undefined, // Will be calculated when package is SAIDified
       capture_base: ocaSchema.capture_base.d,
       type: "spec/overlays/entry/1.1",
       language: langCode,
-      attribute_entries: {},
+      attribute_entries: {}
     };
 
     Object.entries(entryCodes).forEach(([attrName, codes]) => {
@@ -293,7 +298,7 @@ function applyEntryOverlay(ocaSchema, editorState) {
       entryOverlays.push(entryOverlay);
     }
   });
-  
+
   if (entryOverlays.length > 0) {
     ocaSchema.overlays.entry = entryOverlays;
   }
@@ -312,14 +317,16 @@ function applyLabelAndInfoOverlays(ocaSchema, editorState) {
     const langCode = langCodeOCAFromName(language) || language.toLowerCase().slice(0, 3);
 
     const existingLabel = ocaSchema.overlays?.label?.find((l) => l.language === langCode);
-    const existingInfo = ocaSchema.overlays?.information?.find((i) => i.language === langCode);
+    const existingInfo = ocaSchema.overlays?.information?.find(
+      (i) => i.language === langCode
+    );
 
     const labelOverlay = {
       d: existingLabel?.d,
       capture_base: ocaSchema.capture_base.d,
       type: "spec/overlays/label/1.0",
       language: langCode,
-      attribute_labels: {},
+      attribute_labels: {}
     };
 
     const informationOverlay = {
@@ -327,22 +334,26 @@ function applyLabelAndInfoOverlays(ocaSchema, editorState) {
       capture_base: ocaSchema.capture_base.d,
       type: "spec/overlays/information/1.0",
       language: langCode,
-      attribute_information: {},
+      attribute_information: {}
     };
 
     if (Array.isArray(rows)) {
       rows.forEach((row) => {
         if (row.Attribute) {
           if (row.Label) labelOverlay.attribute_labels[row.Attribute] = row.Label;
-          if (row.Description) informationOverlay.attribute_information[row.Attribute] = row.Description;
+          if (row.Description)
+            informationOverlay.attribute_information[row.Attribute] = row.Description;
         }
       });
     }
 
-    if (Object.keys(labelOverlay.attribute_labels).length > 0) labelOverlays.push(labelOverlay);
-    if (Object.keys(informationOverlay.attribute_information).length > 0) informationOverlays.push(informationOverlay);
+    if (Object.keys(labelOverlay.attribute_labels).length > 0)
+      labelOverlays.push(labelOverlay);
+    if (Object.keys(informationOverlay.attribute_information).length > 0)
+      informationOverlays.push(informationOverlay);
   });
 
   if (labelOverlays.length > 0) ocaSchema.overlays.label = labelOverlays;
-  if (informationOverlays.length > 0) ocaSchema.overlays.information = informationOverlays;
+  if (informationOverlays.length > 0)
+    ocaSchema.overlays.information = informationOverlays;
 }

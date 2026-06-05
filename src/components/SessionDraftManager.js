@@ -1,5 +1,4 @@
-import React from "react";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { useMultiSchema } from "../schema/schemaContext";
 import { Context } from "../App";
 import { useSessionDraft } from "../hooks/useSessionDraft";

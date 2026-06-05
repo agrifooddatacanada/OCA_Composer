@@ -4,11 +4,7 @@ import Papa from "papaparse";
 import { Context } from "../App";
 import { removeSpacesFromString } from "../utils/stringUtils";
 import { messages } from "../constants/messages";
-import {
-  replaceAttributeCharsInJsonString,
-  replaceAttributeCharsInParsedJson
-  // getUnitsFramedThatAlreadyExistInOcaPackage
-} from "../utils/helpers";
+import { replaceAttributeCharsInParsedJson } from "../utils/helpers";
 import { useMultiSchema } from "../schema/schemaContext";
 import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
 import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
@@ -22,10 +18,16 @@ const useHandleAllDrop = () => {
     excelSheetChoice,
     setExcelSheetChoice
   } = useContext(Context);
-  
+
   const [fileData, setFileData] = useState([]);
   const [rawFile, setRawFile] = useState([]);
-  const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setOcaPackage, updateSchema } = useMultiSchema();
+  const {
+    clearAllSchemas,
+    switchToSchema,
+    loadAllSchemasFromOcaPackage,
+    setOcaPackage,
+    updateSchema
+  } = useMultiSchema();
   // useZipParser removed - data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
 
   const [loading, setLoading] = useState(false);
@@ -312,6 +314,25 @@ const useHandleAllDrop = () => {
     }
   }, []);
 
+  const handleBundleJSONDrop = useCallback(
+    (jsonFile) => {
+      const languageList = [];
+
+      if (jsonFile?.overlays?.meta) {
+        languageList.push(
+          ...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2))
+        );
+      }
+
+      if (!languageList || languageList.length === 0) {
+        throw new Error("No language found in the JSON file");
+      }
+
+      setJsonToReadme(jsonFile);
+    },
+    [setJsonToReadme]
+  );
+
   const handleZipDrop = useCallback((acceptedFiles) => {
     try {
       setLoading(true);
@@ -322,19 +343,20 @@ const useHandleAllDrop = () => {
 
       reader.onload = async (e) => {
         try {
-        const { ocaPackage, allZipFiles, root } =
-          await parseOcaZipArrayBuffer(e.target.result);
+          const { ocaPackage, allZipFiles, root } = await parseOcaZipArrayBuffer(
+            e.target.result
+          );
 
-        setOcaPackage(ocaPackage);
-        setZipToReadme(allZipFiles);
+          setOcaPackage(ocaPackage);
+          setZipToReadme(allZipFiles);
 
-        loadAllSchemasFromOcaPackage(ocaPackage);
+          loadAllSchemasFromOcaPackage(ocaPackage);
 
-        switchToSchema(root, ocaPackage);
+          switchToSchema(root, ocaPackage);
 
-        handleBundleJSONDrop(ocaPackage.oca_bundle.bundle, ocaPackage);
-        setLoading(false);
-        setCurrentPage("View");
+          handleBundleJSONDrop(ocaPackage.oca_bundle.bundle);
+          setLoading(false);
+          setCurrentPage("View");
         } catch (error) {
           console.error("Zip upload error:", error);
           setDropMessage({ message: messages.uploadFail, type: "error" });
@@ -356,88 +378,6 @@ const useHandleAllDrop = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleBundleJSONDrop = useCallback(
-    (jsonFile, ocaPackageData = null) => {
-      const languageList = [];
-      const informationList = [];
-      const labelList = [];
-      const metaList = [];
-      const entryList = [];
-      // const allJSONFiles = undefined;
-      let loadRoot;
-      let entryCodeSummary;
-      let conformance;
-      let characterEncoding;
-      let loadUnits;
-      let formatRules;
-      let cardinalityData;
-      let dataStandards;
-
-      // load up metadata file in OCA bundle
-      if (jsonFile?.overlays?.meta) {
-        metaList.push(...jsonFile.overlays.meta);
-        languageList.push(
-          ...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2))
-        );
-      }
-
-      if (jsonFile?.overlays?.information) {
-        informationList.push(...jsonFile.overlays.information);
-      }
-
-      if (jsonFile?.overlays?.label) {
-        labelList.push(...jsonFile.overlays.label);
-      }
-
-      if (jsonFile?.capture_base) {
-        loadRoot = { ...jsonFile.capture_base };
-      }
-
-      if (jsonFile?.overlays?.unit) {
-        loadUnits = { ...jsonFile.overlays.unit };
-      }
-
-      if (jsonFile?.overlays?.conformance) {
-        conformance = { ...jsonFile.overlays.conformance };
-      }
-
-      if (jsonFile?.overlays?.character_encoding) {
-        characterEncoding = { ...jsonFile.overlays.character_encoding };
-      }
-
-      if (jsonFile?.overlays?.entry_code) {
-        entryCodeSummary = { ...jsonFile.overlays.entry_code };
-      }
-
-      if (jsonFile?.overlays?.format) {
-        formatRules = { ...jsonFile.overlays.format };
-      }
-
-      if (jsonFile?.overlays?.entry) {
-        entryList.push(...jsonFile.overlays.entry);
-      }
-
-      if (jsonFile?.overlays?.cardinality) {
-        cardinalityData = { ...jsonFile.overlays.cardinality };
-      }
-
-      if (jsonFile?.overlays?.standard) {
-        dataStandards = { ...jsonFile.overlays.standard };
-      }
-
-      if (!languageList || languageList.length === 0) {
-        throw new Error("No language found in the JSON file");
-      }
-
-      // Data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
-      // which already extracts all metadata, labels, descriptions, entry codes, etc.
-      // into MultiSchemaContext per-schema storage
-      
-      setJsonToReadme(jsonFile);
-    },
-    [setZipToReadme]
-  );
 
   const handleJsonDrop = useCallback((acceptedFiles) => {
     try {
@@ -491,7 +431,11 @@ const useHandleAllDrop = () => {
   const handlePageForward = useCallback(() => {
     let listToUpdate = fileData.map((item) => item[0]);
 
-    if (rawFile && rawFile.length > 0 && (rawFile[0].path.includes(".xls") || rawFile[0].path.includes(".xlsx"))) {
+    if (
+      rawFile &&
+      rawFile.length > 0 &&
+      (rawFile[0].path.includes(".xls") || rawFile[0].path.includes(".xlsx"))
+    ) {
       const index = excelSheetNames.indexOf(excelSheetChoice);
       const dataArray = processExcelFile(tempExcel, index);
       if (dataArray) {
@@ -516,7 +460,16 @@ const useHandleAllDrop = () => {
     }
 
     setCurrentPage("Metadata");
-  }, [fileData, excelSheetChoice, excelSheetNames, setCurrentPage, processExcelFile, tempExcel, rawFile, updateSchema]);
+  }, [
+    fileData,
+    excelSheetChoice,
+    excelSheetNames,
+    setCurrentPage,
+    processExcelFile,
+    tempExcel,
+    rawFile,
+    updateSchema
+  ]);
 
   useEffect(() => {
     if (rawFile.length > 0 && rawFile[0].size > 1000000) {
@@ -554,8 +507,8 @@ const useHandleAllDrop = () => {
   }, [rawFile, handleExcelDrop, handleZipDrop, processCSVFile, setFileData]);
 
   // Derive attributesList from fileData
-  const attributesList = fileData.map(item => item[0]);
-  
+  const attributesList = fileData.map((item) => item[0]);
+
   useEffect(() => {
     if (fileData.length > 0) {
       setDropDisabled(true);

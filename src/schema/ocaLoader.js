@@ -1,11 +1,11 @@
 /**
  * OCA Package Loader
- * 
+ *
  * Parses OCA packages into editing state.
  * Used when:
  * - Loading an OCA bundle from JSON upload
  * - Initializing app with URL-loaded package
- * 
+ *
  * Responsibilities:
  * - Extract schemas from oca_bundle and dependencies
  * - Parse OCA format into normalized schemaState structure
@@ -16,7 +16,6 @@
 import {
   getPackageBundle,
   getPackageDependencies,
-  getPackageBundleId,
   coerceIfLegacyTopLevelBundle
 } from "../utils/packageUtils";
 import { OCAParser } from "../utils/ocaParser";
@@ -26,10 +25,7 @@ import { createDefaultSchemaState } from "./schemaStore";
 // Re-export utilities used by other schema modules
 export { getPackageBundle, getPackageBundleId } from "../utils/packageUtils";
 
-export function createOcaLoader({
-  getSchemaById,
-  setSchemaStates,
-}) {
+export function createOcaLoader({ getSchemaById, setSchemaStates }) {
   /**
    * LOW-LEVEL: parse schema from OCA (no initialized flag here)
    * Only used internally by addSchemaFromOCA.
@@ -61,18 +57,19 @@ export function createOcaLoader({
 
     const existingState = getSchemaById(schemaId);
     // Only parse if schema not already initialized
-    const parsedState =
-      existingState?.initialized ? null : parseSchemaFromOCA(schemaId, ocaPackage);
+    const parsedState = existingState?.initialized
+      ? null
+      : parseSchemaFromOCA(schemaId, ocaPackage);
 
-    setSchemaStates(prev => {
+    setSchemaStates((prev) => {
       const base = prev[schemaId] || createDefaultSchemaState();
       const newState = {
         ...prev,
         [schemaId]: {
-            ...base,
-            ...(parsedState || {}),
-            completeSchema,
-            initialized: true
+          ...base,
+          ...(parsedState || {}),
+          completeSchema,
+          initialized: true
         }
       };
       return newState;

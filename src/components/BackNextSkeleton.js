@@ -1,9 +1,8 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Box, Button } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
 import usePrimaryColor from "../hooks/usePrimaryColor";
 import useFontFamily from "../hooks/useFontFamily";
@@ -22,7 +21,6 @@ const BackNextSkeleton = ({
   rightContent
 }) => {
   const { t } = useTranslation();
-  const { currentTheme } = useContext(Context);
   const primaryColor = usePrimaryColor();
   const fontFamily = useFontFamily();
   return (

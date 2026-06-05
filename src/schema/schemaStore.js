@@ -1,12 +1,12 @@
 /**
  * Schema Store
- * 
+ *
  * Manages state for each schema in the multi-schema context.
  * Provides getters and setters for:
  * - Core schema data (attributes, metadata, flagged attributes)
  * - Overlay selections (which overlays are enabled)
  * - Overlay data (format rules, cardinality, ranges, etc.)
- * 
+ *
  * Data storage formats:
  * - Attributes: Array of {Attribute, Type, Required} objects (AG-Grid format)
  * - Overlay data: Maps of attributeName -> value (e.g., attributeFormats, attributeCardinality)
@@ -14,9 +14,15 @@
  */
 
 import { LanguageConstants } from "../utils/languageUtils";
-import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
-import { isRangeEligibleAttributeType } from "../constants/constants";
-import { overlayItems, CUSTOM_FORMAT_RULE } from "../constants/constants";
+import {
+  getMapValueForAttributeName,
+  normalizeAttributeNameKey
+} from "../utils/stringUtils";
+import {
+  isRangeEligibleAttributeType,
+  overlayItems,
+  CUSTOM_FORMAT_RULE
+} from "../constants/constants";
 
 export const createDefaultSchemaState = () => ({
   completeSchema: {
@@ -39,7 +45,7 @@ export const createDefaultSchemaState = () => ({
       entry_code: []
     }
   },
-  
+
   metadata: {
     name: "",
     description: "",
@@ -58,10 +64,10 @@ export const createDefaultSchemaState = () => ({
   },
   /**
    * Entry codes: Maps attribute name -> array of code objects
-   * 
+   *
    * IMPORTANT: Language keys use FULL NAMES (English, French), NOT OCA codes (eng, fra)
    * This is the internal UI format. Export functions convert to OCA 3-letter codes.
-   * 
+   *
    * Structure:
    * {
    *   "attribute_name": [
@@ -81,14 +87,14 @@ export const createDefaultSchemaState = () => ({
   lanAttributeRowData: {},
   // Form Information overlay data (per-schema)
   FormInformationRowData: [],
-  formPlaceholdersByLanguage: {},  // Placeholder text by language for form fields (parsed from form overlay)
+  formPlaceholdersByLanguage: {}, // Placeholder text by language for form fields (parsed from form overlay)
   formBuilderPages: [],
   // Overlay display data (populated during initialization)
-  characterEncodingData: {},  // Object mapping attribute name to encoding
-  attributeFormats: {},  // Object mapping attribute name to format rule string
-  attributeCardinality: {},  // Object mapping attribute name to cardinality value
+  characterEncodingData: {}, // Object mapping attribute name to encoding
+  attributeFormats: {}, // Object mapping attribute name to format rule string
+  attributeCardinality: {}, // Object mapping attribute name to cardinality value
   dataStandardsData: [],
-  attributeRanges: {},  // Object mapping attribute name to {lower, upper, lower_inclusive, upper_inclusive}
+  attributeRanges: {}, // Object mapping attribute name to {lower, upper, lower_inclusive, upper_inclusive}
   unitData: [],
   unitFramedData: [],
   attributeFramingData: [],
@@ -96,7 +102,7 @@ export const createDefaultSchemaState = () => ({
   decimalSeparator: ".",
   fileDelimiterData: {
     fieldDelimiter: ",",
-    quoteChar: "\"",
+    quoteChar: '"',
     escapeChar: "\\",
     lineTerminator: "lf",
     dataStartRow: 1
@@ -113,35 +119,38 @@ export const createDefaultSchemaState = () => ({
   // Lifecycle flags
   /**
    * initialized: Marks schema as "ready for export/visualization"
-   * 
+   *
    * Automatically set to true when:
    * - Schema parsed from uploaded OCA package (ocaParser.js)
    * - ANY updateSchema() call is made (metadata, attributes, overlays, etc.)
    * - User saves attributes in AttributeDetails step
    * - ViewSchema ensures root schema is initialized before export
-   * 
+   *
    * Used by buildPackageFromState to determine which schemas to process.
-   * 
+   *
    * Design note: This flag serves dual purpose:
    * 1. "Has been loaded with data" (prevents re-parsing)
    * 2. "Has user edits" (includes in export)
    * Both purposes benefit from "true = touched by user or parser"
    */
   initialized: false,
-  
+
   // Persisted user removals
-  deletedAttributes: []  // Track attribute names that user explicitly deleted
+  deletedAttributes: [] // Track attribute names that user explicitly deleted
 });
 
 /** Stable read fallback when no entry exists yet — do not mutate; updateSchema uses a fresh default for writes */
 const READONLY_EMPTY_SCHEMA_STATE = createDefaultSchemaState();
 
-export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurrentSchemaId }) => {
-    
+export const makeSchemaStore = ({
+  getAllSchemaStates,
+  setSchemaStates,
+  getCurrentSchemaId
+}) => {
   // ============================================================================
   // CORE STATE ACCESS
   // ============================================================================
-  
+
   const getSchema = () => {
     const schemaId = getCurrentSchemaId();
     const allStates = getAllSchemaStates();
@@ -156,13 +165,13 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   // ============================================================================
   // STATE MUTATIONS (SETTERS)
   // ============================================================================
-  
+
   const updateSchema = (updates) => {
     const schemaId = getCurrentSchemaId();
-    
+
     setSchemaStates((prev) => {
       const currentState = prev[schemaId] || createDefaultSchemaState();
-      
+
       const updatedState = { ...currentState, ...updates };
       if (updates.metadata) {
         updatedState.metadata = {
@@ -170,7 +179,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
           ...updates.metadata
         };
       }
-      
+
       // CRITICAL: Mark schema as initialized whenever ANY change is made
       // This ensures schema is processed for export/visualization even if user
       // only edits metadata/overlays without touching attributes
@@ -178,7 +187,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
       if (updates.initialized !== false) {
         updatedState.initialized = true;
       }
-      
+
       return {
         ...prev,
         [schemaId]: updatedState
@@ -188,7 +197,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
 
   const addDeletedAttributes = (attributeNames) => {
     const schemaId = getCurrentSchemaId();
-    
+
     if (!Array.isArray(attributeNames) || attributeNames.length === 0) return;
     setSchemaStates((prev) => {
       const prevState = prev[schemaId] || createDefaultSchemaState();
@@ -212,7 +221,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
           lower: row.LowerBound || "",
           upper: row.UpperBound || "",
           lower_inclusive: row.LowerInclusive ?? false,
-          upper_inclusive: row.UpperInclusive ?? false,
+          upper_inclusive: row.UpperInclusive ?? false
         };
       }
     });
@@ -221,7 +230,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
 
   const setFormatRuleRowData = (newData) => {
     const attributeFormats = {};
-    newData.forEach(row => {
+    newData.forEach((row) => {
       const formatRule = row["Format Rule"] || row[CUSTOM_FORMAT_RULE];
       if (formatRule) {
         attributeFormats[normalizeAttributeNameKey(row.Attribute)] = formatRule;
@@ -232,10 +241,11 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
 
   const setCardinalityData = (newData) => {
     const attributeCardinality = {};
-    newData.forEach(item => {
+    newData.forEach((item) => {
       const cardinalityValue = item.EntryLimit || item.Cardinality || "";
       if (cardinalityValue) {
-        attributeCardinality[normalizeAttributeNameKey(item.Attribute)] = cardinalityValue;
+        attributeCardinality[normalizeAttributeNameKey(item.Attribute)] =
+          cardinalityValue;
       }
     });
     updateSchema({ attributeCardinality });
@@ -244,7 +254,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   // ============================================================================
   // OVERLAY SELECTION STATE
   // ============================================================================
-  
+
   const getOverlaySelections = () => {
     const state = getSchema();
     return state?.overlaySelections || overlayItems;
@@ -262,9 +272,9 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
           ...currentState,
           overlaySelections: {
             ...currentSelections,
-            [overlayKey]: selected,
-          },
-        },
+            [overlayKey]: selected
+          }
+        }
       };
     });
   };
@@ -281,7 +291,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   // ============================================================================
   // COMPUTED/DERIVED DATA (QUERIES)
   // ============================================================================
-  
+
   const getDeletedAttributes = () => {
     const state = getSchema();
     return new Set(state.deletedAttributes || []);
@@ -296,7 +306,9 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   const getLanguages = () => {
     const state = getSchema();
     const langs = state?.metadata?.languages;
-    return Array.isArray(langs) && langs.length ? langs : [LanguageConstants.DEFAULT_LANG_NAME];
+    return Array.isArray(langs) && langs.length
+      ? langs
+      : [LanguageConstants.DEFAULT_LANG_NAME];
   };
 
   const getCardinalityData = () => {
@@ -304,7 +316,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     const attributes = state?.attributes || [];
     const map = state?.attributeCardinality || {};
 
-    return attributes.map(attr => ({
+    return attributes.map((attr) => ({
       Attribute: attr.Attribute,
       Type: attr.Type,
       Cardinality: getMapValueForAttributeName(map, attr.Attribute) || ""
@@ -322,7 +334,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
         Attribute: attr.Attribute,
         Type: attr.Type,
         "Format Rule": rule,
-        FormatText: rule,
+        FormatText: rule
       };
     });
   };
@@ -349,13 +361,14 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
           LowerBound: range.lower || "",
           UpperBound: range.upper || "",
           LowerInclusive: range.lower_inclusive ?? false,
-          UpperInclusive: range.upper_inclusive ?? false,
+          UpperInclusive: range.upper_inclusive ?? false
         };
       });
   };
 
   const renameAttribute = (oldAttributeValue, newAttributeValue) => {
-    if (typeof oldAttributeValue !== "string" || typeof newAttributeValue !== "string") return;
+    if (typeof oldAttributeValue !== "string" || typeof newAttributeValue !== "string")
+      return;
     if (oldAttributeValue === newAttributeValue) return;
 
     const oldNorm = normalizeAttributeNameKey(oldAttributeValue);
@@ -445,13 +458,23 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
       const updatedState = { ...currentState };
 
       updatedState.attributes = renameInArrayOfObjectsAttribute(currentState.attributes);
-      updatedState.attributeFormats = renameOverlayMapKeys(currentState.attributeFormats || {});
-      updatedState.attributeRanges = renameOverlayMapKeys(currentState.attributeRanges || {});
-      updatedState.attributeCardinality = renameOverlayMapKeys(currentState.attributeCardinality || {});
+      updatedState.attributeFormats = renameOverlayMapKeys(
+        currentState.attributeFormats || {}
+      );
+      updatedState.attributeRanges = renameOverlayMapKeys(
+        currentState.attributeRanges || {}
+      );
+      updatedState.attributeCardinality = renameOverlayMapKeys(
+        currentState.attributeCardinality || {}
+      );
 
-      updatedState.formatRuleData = renameInArrayOfObjectsAttribute(currentState.formatRuleData);
+      updatedState.formatRuleData = renameInArrayOfObjectsAttribute(
+        currentState.formatRuleData
+      );
       updatedState.rangeData = renameInArrayOfObjectsAttribute(currentState.rangeData);
-      updatedState.cardinalityData = renameInArrayOfObjectsAttribute(currentState.cardinalityData);
+      updatedState.cardinalityData = renameInArrayOfObjectsAttribute(
+        currentState.cardinalityData
+      );
 
       updatedState.characterEncodingData = renameKeyInObjectByNorm(
         currentState.characterEncodingData || {},
@@ -461,8 +484,12 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
       const entryCodes = currentState.entryCodes || {};
       updatedState.entryCodes = renameKeyInObjectByNorm(entryCodes, newAttributeValue);
 
-      updatedState.attributesWithLists = renameInStringArray(currentState.attributesWithLists || []);
-      updatedState.deletedAttributes = renameInStringArray(currentState.deletedAttributes || []);
+      updatedState.attributesWithLists = renameInStringArray(
+        currentState.attributesWithLists || []
+      );
+      updatedState.deletedAttributes = renameInStringArray(
+        currentState.deletedAttributes || []
+      );
 
       updatedState.lanAttributeRowData = (() => {
         const lan = currentState.lanAttributeRowData || {};
@@ -487,16 +514,26 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
         return didRename ? nextLan : lan;
       })();
 
-      updatedState.unitFramedData = renameInArrayOfObjectsAttribute(currentState.unitFramedData);
-      updatedState.attributeFramingData = renameInArrayOfObjectsAttribute(currentState.attributeFramingData);
-      updatedState.dataStandardsData = renameInArrayOfObjectsAttribute(currentState.dataStandardsData);
+      updatedState.unitFramedData = renameInArrayOfObjectsAttribute(
+        currentState.unitFramedData
+      );
+      updatedState.attributeFramingData = renameInArrayOfObjectsAttribute(
+        currentState.attributeFramingData
+      );
+      updatedState.dataStandardsData = renameInArrayOfObjectsAttribute(
+        currentState.dataStandardsData
+      );
       updatedState.FormInformationRowData = renameInArrayOfObjectsAttribute(
         currentState.FormInformationRowData || []
       );
 
       updatedState.unitData = renameInStringArray(currentState.unitData || []);
-      updatedState.unframedUnitList = renameInStringArray(currentState.unframedUnitList || []);
-      updatedState.unframedAttributeList = renameInStringArray(currentState.unframedAttributeList || []);
+      updatedState.unframedUnitList = renameInStringArray(
+        currentState.unframedUnitList || []
+      );
+      updatedState.unframedAttributeList = renameInStringArray(
+        currentState.unframedAttributeList || []
+      );
 
       updatedState.formPlaceholdersByLanguage = (() => {
         const fp = currentState.formPlaceholdersByLanguage || {};
@@ -529,8 +566,11 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
             if (nextShowing !== next.showingAttribute) {
               next = { ...next, showingAttribute: nextShowing };
             }
-          // pre-normalization questions may still carry `showing_attribute`.
-          } else if (Array.isArray(next.showing_attribute) && next.showing_attribute.length > 0) {
+            // pre-normalization questions may still carry `showing_attribute`.
+          } else if (
+            Array.isArray(next.showing_attribute) &&
+            next.showing_attribute.length > 0
+          ) {
             const nextShowing = renameInStringArray(next.showing_attribute);
             if (nextShowing !== next.showing_attribute) {
               next = { ...next, showing_attribute: nextShowing };
@@ -570,7 +610,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     });
   };
 
-  return { 
+  return {
     // Core state access
     getSchema,
     getSchemaById,
@@ -579,15 +619,15 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
     updateSchema,
     addDeletedAttributes,
     setRangeRowData,
-    setFormatRuleRowData, 
+    setFormatRuleRowData,
     setCardinalityData,
-    
+
     // Overlay selection state
     getOverlaySelections,
     updateOverlaySelection,
     setSelectedOverlay,
     getSelectedOverlay,
-    
+
     // Computed/derived data
     getDeletedAttributes,
     getAttributesList,

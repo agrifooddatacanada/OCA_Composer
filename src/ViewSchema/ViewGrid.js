@@ -115,7 +115,6 @@ const CheckboxRenderer = ({ value }) => {
   return <input type="checkbox" ref={inputRef} disabled />;
 };
 
-
 export const ListRenderer = memo((props) => {
   const { t } = useTranslation();
   const listText = props?.data?.List;
@@ -135,12 +134,12 @@ export default function ViewGrid({
   packageWithEdits = null
 }) {
   const { t, i18n } = useTranslation();
-  
+
   // Get overlay data from MultiSchemaContext
   const { getOverlaySelections, getSchema, updateSchema } = useMultiSchema();
   const overlay = getOverlaySelections();
   const schemaState = getSchema();
-  
+
   const [columnDefs, setColumnDefs] = useState([]);
   const [rowData, setRowData] = useState([]);
   const gridRef = useRef();
@@ -175,7 +174,6 @@ export default function ViewGrid({
 
   useEffect(() => {
     const getColumns = () => {
-      
       const predefinedColumns = [
         {
           field: "Attribute",
@@ -188,7 +186,9 @@ export default function ViewGrid({
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Attribute"),
-            helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
+            helpText: t(
+              "Name for the attribute and, for example, the column header in every tabular data set no matter what language"
+            )
           }
         },
         {
@@ -236,12 +236,12 @@ export default function ViewGrid({
           valueFormatter: (params) => {
             const type = params.value;
             const typeMap = {
-              "Text": t("Text"),
-              "Numeric": t("Numeric"),
-              "Boolean": t("Boolean"),
-              "Binary": t("Binary"),
-              "Binaryfile": t("Binaryfile"),
-              "DateTime": t("DateTime"),
+              Text: t("Text"),
+              Numeric: t("Numeric"),
+              Boolean: t("Boolean"),
+              Binary: t("Binary"),
+              Binaryfile: t("Binaryfile"),
+              DateTime: t("DateTime"),
               "Array[Text]": t("Array[Text]"),
               "Array[Numeric]": t("Array[Numeric]"),
               "Array[Boolean]": t("Array[Boolean]"),
@@ -276,7 +276,9 @@ export default function ViewGrid({
             constraint: t("max description chars", {
               maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
             }),
-            helpText: t("Language-specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute")
+            helpText: t(
+              "Language-specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute"
+            )
           }
         },
         {
@@ -288,7 +290,9 @@ export default function ViewGrid({
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("List"),
-            helpText: t("Rather than allowing free text entry into a record, you may wish to limit entries to one of a few in a list. For example, you may wish to create a list of choices for gender, or for experimental farm name, or for species. You will then be able to create entries for your list that will be part of the schema.")
+            helpText: t(
+              "Rather than allowing free text entry into a record, you may wish to limit entries to one of a few in a list. For example, you may wish to create a list of choices for gender, or for experimental farm name, or for species. You will then be able to create entries for your list that will be part of the schema."
+            )
           },
           cellRenderer: ListRenderer
         }
@@ -351,7 +355,9 @@ export default function ViewGrid({
             headerComponent: CellHeader,
             headerComponentParams: {
               headerText: t("Required"),
-              helpText: t("Check for each attribute where the data entry cannot be left empty in a dataset")
+              helpText: t(
+                "Check for each attribute where the data entry cannot be left empty in a dataset"
+              )
             },
             cellRenderer: CheckboxRenderer
           });
@@ -406,14 +412,14 @@ export default function ViewGrid({
           const baseHelpText = t("The unit framing that is applied to the attribute");
           let helpText = baseHelpText;
           if (unitFramingOverlay?.framing_metadata) {
-            const helpTextElements = Object.entries(unitFramingOverlay.framing_metadata).map(
-              ([key, value], index) => (
-                <React.Fragment key={key}>
-                  {index > 0 && <br />}
-                  <strong>{key}:</strong> &quot;{value}&quot;
-                </React.Fragment>
-              )
-            );
+            const helpTextElements = Object.entries(
+              unitFramingOverlay.framing_metadata
+            ).map(([key, value], index) => (
+              <React.Fragment key={key}>
+                {index > 0 && <br />}
+                <strong>{key}:</strong> &quot;{value}&quot;
+              </React.Fragment>
+            ));
             helpText = (
               <>
                 {baseHelpText}
@@ -454,11 +460,16 @@ export default function ViewGrid({
 
           const arrayDelimiterLabel = (value) => {
             switch (value) {
-              case ",": return t("Comma (,)");
-              case "\t": return t("Tab (\\t)");
-              case ";": return t("Semicolon (;)");
-              case "|": return t("Pipe (|)");
-              default: return value || "";
+              case ",":
+                return t("Comma (,)");
+              case "\t":
+                return t("Tab (\\t)");
+              case ";":
+                return t("Semicolon (;)");
+              case "|":
+                return t("Pipe (|)");
+              default:
+                return value || "";
             }
           };
 
@@ -503,10 +514,12 @@ export default function ViewGrid({
                   ? t("Required")
                   : t(overlayKey),
               helpText: isRequired
-                ? t("Check for each attribute where the data entry cannot be left empty in a dataset")
+                ? t(
+                    "Check for each attribute where the data entry cannot be left empty in a dataset"
+                  )
                 : isFormat
                   ? t("The format rule that is applied to the attribute")
-                  : t("Overlay value for this attribute") + "."
+                  : `${t("Overlay value for this attribute")}.`
             },
             cellRenderer: useCheckbox ? CheckboxRenderer : null
           });
@@ -517,7 +530,13 @@ export default function ViewGrid({
     };
 
     setColumnDefs(getColumns());
-  }, [overlay, t, displayArray, unitFramingOverlay?.framing_metadata, schemaState?.enableArrayDelimiter]);
+  }, [
+    overlay,
+    t,
+    displayArray,
+    unitFramingOverlay?.framing_metadata,
+    schemaState?.enableArrayDelimiter
+  ]);
 
   useEffect(() => {
     const api = gridRef.current?.api;
@@ -534,7 +553,11 @@ export default function ViewGrid({
     const attributeFormats = schemaState?.attributeFormats || {};
 
     // Initialize attributeFormats if overlay is selected but data doesn't exist
-    if (overlay && overlay[FIELD_FORMAT_OVERLAY] && typeof schemaState?.attributeFormats === "undefined") {
+    if (
+      overlay &&
+      overlay[FIELD_FORMAT_OVERLAY] &&
+      typeof schemaState?.attributeFormats === "undefined"
+    ) {
       updateSchema({ attributeFormats: {} });
     }
 
@@ -547,19 +570,17 @@ export default function ViewGrid({
       item.Label =
         item.Label && item.Label[currentLanguage] ? item.Label[currentLanguage] : "";
       item.List =
-        item.List && item.List[currentLanguage]
-          ? item.List[currentLanguage]
-          : "";
+        item.List && item.List[currentLanguage] ? item.List[currentLanguage] : "";
 
-      // Translate Type column value
-      item.Type = item.Type; // why is this self assigned?
-      
       // Get cardinality value from object
-      const cardinalityValue = getMapValueForAttributeName(attributeCardinality, item.Attribute);
+      const cardinalityValue = getMapValueForAttributeName(
+        attributeCardinality,
+        item.Attribute
+      );
       if (cardinalityValue) {
         item.Cardinality = cardinalityValue;
       }
-      
+
       // Add Required and Format Rule data from overlay selections
       if (overlay) {
         // Add Required field data
@@ -567,25 +588,28 @@ export default function ViewGrid({
           // Load required data from schema state
           const requiredOverlayData = schemaState?.requiredOverlayData;
           if (requiredOverlayData) {
-            const requiredItem = requiredOverlayData.find((req) => req.Attribute === item.Attribute);
+            const requiredItem = requiredOverlayData.find(
+              (req) => req.Attribute === item.Attribute
+            );
             item.Required = requiredItem ? requiredItem.Required : false;
           } else {
             item.Required = item.Required || false; // Default to false if not set
           }
         }
-        
+
         // Add Format Rule field data
         if (overlay[FIELD_FORMAT_OVERLAY]) {
           // Get format rule from object
-          item["Format Rule"] = getMapValueForAttributeName(attributeFormats, item.Attribute) || "";
+          item["Format Rule"] =
+            getMapValueForAttributeName(attributeFormats, item.Attribute) || "";
         }
-        
+
         // Add Form Information checkbox data
         if (overlay[FIELD_FORM_INFORMATION_OVERLAY]) {
           // Check if this attribute has a placeholder defined in any language
           const formPlaceholders = schemaState?.formPlaceholdersByLanguage || {};
           const hasPlaceholder = Object.values(formPlaceholders).some(
-            langPlaceholders => langPlaceholders && langPlaceholders[item.Attribute]
+            (langPlaceholders) => langPlaceholders && langPlaceholders[item.Attribute]
           );
           item[FIELD_FORM_INFORMATION_OVERLAY] = hasPlaceholder;
         }
@@ -593,7 +617,8 @@ export default function ViewGrid({
         // Array Delimiter: only populated for Array[...] attributes when the
         // Array Delimiter sub-section of the Data Separator overlay is enabled.
         if (overlay[FIELD_DATA_SEPARATOR_OVERLAY] && schemaState?.enableArrayDelimiter) {
-          const isArrayType = typeof item.Type === "string" && item.Type.startsWith("Array[");
+          const isArrayType =
+            typeof item.Type === "string" && item.Type.startsWith("Array[");
           if (isArrayType) {
             const arrayDelimiterData = schemaState?.arrayDelimiterData || {};
             item.ArrayDelimiter = arrayDelimiterData[item.Attribute] ?? "";
@@ -605,10 +630,20 @@ export default function ViewGrid({
     });
 
     setRowData(newRowData);
-  }, [displayArray, currentLanguage, overlay, schemaState?.attributeFormats, schemaState?.requiredOverlayData, schemaState?.attributeCardinality, schemaState?.formPlaceholdersByLanguage, schemaState?.arrayDelimiterData, schemaState?.enableArrayDelimiter, updateSchema]);
+  }, [
+    displayArray,
+    currentLanguage,
+    overlay,
+    schemaState?.attributeFormats,
+    schemaState?.requiredOverlayData,
+    schemaState?.attributeCardinality,
+    schemaState?.formPlaceholdersByLanguage,
+    schemaState?.arrayDelimiterData,
+    schemaState?.enableArrayDelimiter,
+    updateSchema
+  ]);
 
-  const viewSchemaGridFixedViewport =
-    rowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const viewSchemaGridFixedViewport = rowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
   const noAttributes = (schemaState?.attributes || []).length === 0;
   const viewSchemaBodyViewportMinHeight = noAttributes
     ? `${AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX}px`

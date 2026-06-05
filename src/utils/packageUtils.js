@@ -11,7 +11,7 @@
  * CHILD SCHEMA STORAGE: oca_bundle.dependencies — each item is a full bundle.
  */
 
-import { langNameFromTwoLetters, langNameFromCodeOCA, normalizeToOCACode } from './languageUtils';
+import { langNameFromTwoLetters, langNameFromCodeOCA } from "./languageUtils";
 
 /**
  * Coerces only when the payload has legacy top-level `bundle` (+ optional `dependencies`) without `oca_bundle.bundle`.
@@ -109,14 +109,14 @@ export const getPackageExtensions = (pkg) => {
  */
 export const findSchemaById = (pkg, schemaId) => {
   if (!pkg || !schemaId) return null;
-  
+
   const bundle = getPackageBundle(pkg);
   if (bundle?.d === schemaId) {
     return bundle;
   }
-  
+
   const dependencies = getPackageDependencies(pkg);
-  return dependencies.find(dep => dep.d === schemaId) || null;
+  return dependencies.find((dep) => dep.d === schemaId) || null;
 };
 
 /**
@@ -124,9 +124,7 @@ export const findSchemaById = (pkg, schemaId) => {
  * @param {Object} pkg - The OCA package object
  * @returns {boolean} True if using new format
  */
-export const isOfficialPackageFormat = (pkg) => {
-  return pkg?.oca_bundle !== undefined;
-};
+export const isOfficialPackageFormat = (pkg) => pkg?.oca_bundle !== undefined;
 
 /**
  * Extract all unique languages from an OCA package (parent + all child schemas)
@@ -135,36 +133,37 @@ export const isOfficialPackageFormat = (pkg) => {
  */
 export const getPackageLanguages = (pkg) => {
   const languageSet = new Set();
-  
+
   // Helper to extract languages from a schema
   const extractFromSchema = (schemaData) => {
     if (!schemaData?.overlays) return;
-    
+
     // Check meta overlays for languages
     if (Array.isArray(schemaData.overlays.meta)) {
-      schemaData.overlays.meta.forEach(metaOverlay => {
+      schemaData.overlays.meta.forEach((metaOverlay) => {
         if (metaOverlay.language) {
           // Convert any language code format to language name
           // Try OCA code (3-letter: eng, fra) first, then UI code (2-letter: en, fr)
-          const langName = langNameFromCodeOCA(metaOverlay.language) || 
-                          langNameFromTwoLetters(metaOverlay.language);
+          const langName =
+            langNameFromCodeOCA(metaOverlay.language) ||
+            langNameFromTwoLetters(metaOverlay.language);
           if (langName) {
             languageSet.add(langName);
           }
         }
       });
     }
-    
+
     // Check other language-specific overlays
-    ['label', 'information', 'entry'].forEach(overlayType => {
+    ["label", "information", "entry"].forEach((overlayType) => {
       const overlay = schemaData.overlays[overlayType];
       if (Array.isArray(overlay)) {
-        overlay.forEach(item => {
+        overlay.forEach((item) => {
           if (item.language) {
             // Convert any language code format to language name
             // Try OCA code (3-letter: eng, fra) first, then UI code (2-letter: en, fr)
-            const langName = langNameFromCodeOCA(item.language) || 
-                            langNameFromTwoLetters(item.language);
+            const langName =
+              langNameFromCodeOCA(item.language) || langNameFromTwoLetters(item.language);
             if (langName) {
               languageSet.add(langName);
             }
@@ -173,21 +172,21 @@ export const getPackageLanguages = (pkg) => {
       }
     });
   };
-  
+
   // Extract from parent schema
   const bundle = getPackageBundle(pkg);
   if (bundle) {
     extractFromSchema(bundle);
   }
-  
+
   const childSchemas = getPackageDependencies(pkg);
-  
+
   if (Array.isArray(childSchemas)) {
-    childSchemas.forEach(childBundle => {
+    childSchemas.forEach((childBundle) => {
       extractFromSchema(childBundle);
     });
   }
-  
+
   return Array.from(languageSet);
 };
 
@@ -225,7 +224,8 @@ function rewriteRefsInCaptureAttributes(attributes, idMap) {
 }
 
 export function normalizeNonSaidBundleDigestsForOcaPackage(pkg, adcMerged) {
-  if (!pkg || typeof pkg !== "object" || !adcMerged || typeof adcMerged !== "object") return;
+  if (!pkg || typeof pkg !== "object" || !adcMerged || typeof adcMerged !== "object")
+    return;
 
   const root = getPackageBundle(pkg);
   const deps = getPackageDependencies(pkg) || [];

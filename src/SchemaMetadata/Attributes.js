@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Box, Typography } from "@mui/material";
 import { CustomPalette } from "../constants/customPalette";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -8,7 +8,7 @@ export default function Attributes() {
   const attributesList = getAttributesList();
   return (
     <Box sx={{ width: "100%", overflow: "auto", display: "flex" }}>
-      {attributesList.map((value, index) => (
+      {attributesList.map((value) => (
         <Box
           bgcolor={CustomPalette.RED_100}
           color={CustomPalette.PRIMARY}
@@ -17,9 +17,9 @@ export default function Attributes() {
             marginBottom: "1rem",
             marginRight: "0.2rem",
             boxShadow: `0px 0px 2px ${CustomPalette.SECONDARY} inset`,
-            borderRadius: "0.1rem",
+            borderRadius: "0.1rem"
           }}
-          key={index}
+          key={value}
         >
           <Typography sx={{ fontWeight: "bold" }}>{value}</Typography>
         </Box>

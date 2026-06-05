@@ -113,9 +113,7 @@ function getPersistedEntryCodeUploadUi(rowData, headers, summary, list) {
     return { dropDisabled: true, fileType: "csvORxls" };
   }
   const hasBundle =
-    (summary != null &&
-      typeof summary === "object" &&
-      Object.keys(summary).length > 0) ||
+    (summary != null && typeof summary === "object" && Object.keys(summary).length > 0) ||
     (Array.isArray(list) && list.length > 0);
   if (hasBundle) {
     return { dropDisabled: true, fileType: "json" };
@@ -146,7 +144,7 @@ const useHandleEntryCodeDrop = () => {
     tempEntryCodeSummary,
     tempEntryList
   );
-  
+
   // Use MultiSchemaContext for schema-specific data
   const { getSchema, updateSchema } = useMultiSchema();
   const schemaState = getSchema();
@@ -157,7 +155,7 @@ const useHandleEntryCodeDrop = () => {
       ? langs
       : [...LanguageConstants.FALLBACK_LANG_NAMES];
   }, [schemaState?.metadata?.languages]);
-  
+
   // Get attribute and entry code data from schema state
   const attributeRowData = useMemo(
     () => schemaState?.attributes || [],
@@ -167,13 +165,17 @@ const useHandleEntryCodeDrop = () => {
     () => schemaState?.entryCodes || {},
     [schemaState?.entryCodes]
   );
-  
+
   // Update entry codes in schema state
-  const setEntryCodeRowData = useCallback((updater) => {
-    const currentEntryCodes = schemaState?.entryCodes || {};
-    const newEntryCodes = typeof updater === 'function' ? updater(currentEntryCodes) : updater;
-    updateSchema({ entryCodes: newEntryCodes });
-  }, [schemaState?.entryCodes, updateSchema]);
+  const setEntryCodeRowData = useCallback(
+    (updater) => {
+      const currentEntryCodes = schemaState?.entryCodes || {};
+      const newEntryCodes =
+        typeof updater === "function" ? updater(currentEntryCodes) : updater;
+      updateSchema({ entryCodes: newEntryCodes });
+    },
+    [schemaState?.entryCodes, updateSchema]
+  );
   const [rawFile, setRawFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [dropDisabled, setDropDisabled] = useState(persistedOnMount.dropDisabled);
@@ -241,46 +243,49 @@ const useHandleEntryCodeDrop = () => {
     });
   }, [entryCodeHeaders, setTempEntryCodeRowData]);
 
-  const processCSVFile = useCallback((file) => {
-    try {
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: "greedy",
-        transformHeader: (header, index) => {
-          if (header !== "") {
-            return header;
+  const processCSVFile = useCallback(
+    (file) => {
+      try {
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: "greedy",
+          transformHeader: (header, index) => {
+            if (header !== "") {
+              return header;
+            }
+            // without this, papaparse will save blank headers as "", "_1", "_2", etc.
+            return `header_empty_placeholder_${index}`;
+          },
+          complete: (results) => {
+            setTempEntryCodeSummary(undefined);
+            setTempEntryList([]);
+            setTempEntryCodeRowData(
+              results.data.map((row, i) => ({
+                ...row,
+                [ENTRY_CODE_PREVIEW_ROW_ID_KEY]: `ecp-${i}`
+              }))
+            );
+            setEntryCodeHeaders(results.meta.fields);
+            setFileType("csvORxls");
+            setLoading(false);
+            setDropDisabled(true);
           }
-          // without this, papaparse will save blank headers as "", "_1", "_2", etc.
-          return `header_empty_placeholder_${index}`;
-        },
-        complete: (results) => {
-          setTempEntryCodeSummary(undefined);
-          setTempEntryList([]);
-          setTempEntryCodeRowData(
-            results.data.map((row, i) => ({
-              ...row,
-              [ENTRY_CODE_PREVIEW_ROW_ID_KEY]: `ecp-${i}`
-            }))
-          );
-          setEntryCodeHeaders(results.meta.fields);
-          setFileType("csvORxls");
-          setLoading(false);
-          setDropDisabled(true);
-        }
-      });
-    } catch {
-      setDropMessage({ message: messages.parseUploadFail, type: "error" });
-      setLoading(false);
-      setTimeout(() => {
-        setDropMessage({ message: "", type: "" });
-      }, [2500]);
-    }
-  }, [
-    setEntryCodeHeaders,
-    setTempEntryCodeRowData,
-    setTempEntryCodeSummary,
-    setTempEntryList
-  ]);
+        });
+      } catch {
+        setDropMessage({ message: messages.parseUploadFail, type: "error" });
+        setLoading(false);
+        setTimeout(() => {
+          setDropMessage({ message: "", type: "" });
+        }, [2500]);
+      }
+    },
+    [
+      setEntryCodeHeaders,
+      setTempEntryCodeRowData,
+      setTempEntryCodeSummary,
+      setTempEntryList
+    ]
+  );
 
   const handleBundleJSONDrop = useCallback((jsonFile, ocaPackageData = null) => {
     const entryList = [];
@@ -288,9 +293,8 @@ const useHandleEntryCodeDrop = () => {
     // Check if entry code ordering can be retrieved from oca package
     // For now, use ADC extension overlays for the top-level/main schema bundle
     const orderingOverlay =
-      ocaPackageData?.extensions?.[ADC]?.[
-        getRootCaptureBaseId(ocaPackageData)
-      ]?.overlays?.ordering;
+      ocaPackageData?.extensions?.[ADC]?.[getRootCaptureBaseId(ocaPackageData)]?.overlays
+        ?.ordering;
     const hasEntryCodeOrdering =
       Object.keys(orderingOverlay?.entry_code_ordering || {}).length > 0;
 
@@ -503,10 +507,7 @@ const useHandleEntryCodeDrop = () => {
         : 1;
     const titles = [];
     entryCodeHeaders.forEach((header, idx) => {
-      const w = Math.max(
-        ENTRY_CODE_PREVIEW_MIN_COL,
-        Math.floor(widths[idx] * scale)
-      );
+      const w = Math.max(ENTRY_CODE_PREVIEW_MIN_COL, Math.floor(widths[idx] * scale));
       const headerText = translateEntryCodePreviewColumnHeader(
         header,
         t,
@@ -541,7 +542,7 @@ const useHandleEntryCodeDrop = () => {
       if (event.source !== "edit") return;
       const { field } = event.colDef;
       const newValue = event.newValue ?? "";
-      const rowIndex = event.node.rowIndex;
+      const { rowIndex } = event.node;
       setTempEntryCodeRowData((prev) => {
         const next = Array.isArray(prev) ? [...prev] : [];
         if (rowIndex != null && rowIndex >= 0 && next[rowIndex]) {
@@ -561,15 +562,15 @@ const useHandleEntryCodeDrop = () => {
   useEffect(() => {
     const unfilteredAttributes = attributeRowData.filter((item) => item.List === true);
     // Filter to only show attributes that have entry codes and aren't the currently selected one
-    const filteredAttributes = unfilteredAttributes.filter(
-      (item, index) => {
-        const attrEntryCodes = entryCodeRowData[item.Attribute];
-        return index !== chosenEntryCodeIndex && 
-               Array.isArray(attrEntryCodes) && 
-               attrEntryCodes.length > 0 && 
-               attrEntryCodes[0]?.Code !== "";
-      }
-    );
+    const filteredAttributes = unfilteredAttributes.filter((item, index) => {
+      const attrEntryCodes = entryCodeRowData[item.Attribute];
+      return (
+        index !== chosenEntryCodeIndex &&
+        Array.isArray(attrEntryCodes) &&
+        attrEntryCodes.length > 0 &&
+        attrEntryCodes[0]?.Code !== ""
+      );
+    });
     const attributeArray = filteredAttributes.map((item) => item.Attribute);
     unfilteredAttrRef.current = unfilteredAttributes.map((item) => item.Attribute);
     setSelectedAttributesList(attributeArray);
@@ -613,12 +614,7 @@ const useHandleEntryCodeDrop = () => {
       return bundleHasEntryCodes;
     }
     return false;
-  }, [
-    fileType,
-    tempEntryCodeRowData,
-    entryCodeHeaders,
-    bundleHasEntryCodes
-  ]);
+  }, [fileType, tempEntryCodeRowData, entryCodeHeaders, bundleHasEntryCodes]);
 
   return {
     rawFile,

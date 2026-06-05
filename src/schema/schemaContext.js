@@ -1,13 +1,13 @@
 /**
  * Multi-Schema Context
- * 
+ *
  * Manages multiple OCA schemas within a single editing session.
  * Users can:
  * - Load an OCA package with root + child schemas
  * - Switch between schemas for editing (switchToSchema)
  * - Edit one schema at a time (currentSchemaId tracks which one)
  * - Export all changes back to OCA package format
- * 
+ *
  * Architecture:
  * - schemaStates: Map of schemaId -> editing state
  * - currentSchemaId: Which schema is being edited right now
@@ -78,42 +78,33 @@ export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
   const schemaStatesRef = useRef({});
   const [schemaStates, _setSchemaStates] = useState({});
   const [currentSchemaId, setCurrentSchemaId] = useState();
-  
+
   // Wrapper to keep ref in sync with state
   const setSchemaStates = useCallback((updater) => {
-    _setSchemaStates(prevState => {
-      const newState = typeof updater === 'function' ? updater(prevState) : updater;
+    _setSchemaStates((prevState) => {
+      const newState = typeof updater === "function" ? updater(prevState) : updater;
       schemaStatesRef.current = newState; // Keep ref in sync
       return newState;
     });
   }, []);
-  
-
 
   // Get current working schema ID (with fallback to temp)
-  const getCurrentSchemaId = useCallback(() => 
-    currentSchemaId || MANUAL_CREATION_SCHEMA_ID
-  , [currentSchemaId]);
+  const getCurrentSchemaId = useCallback(
+    () => currentSchemaId || MANUAL_CREATION_SCHEMA_ID,
+    [currentSchemaId]
+  );
 
   const store = useMemo(
     () =>
       makeSchemaStore({
         getAllSchemaStates: () => schemaStatesRef.current,
         setSchemaStates,
-        getCurrentSchemaId,
+        getCurrentSchemaId
       }),
     [setSchemaStates, getCurrentSchemaId]
   );
 
-  const getSchema = useCallback(
-    () => store.getSchema(),
-    [store]
-  );
-
-  const getSchemaById = useCallback(
-    (schemaId) => store.getSchemaById(schemaId),
-    [store]
-  );
+  const getSchemaById = useCallback((schemaId) => store.getSchemaById(schemaId), [store]);
 
   // Switch to editing a different schema
   const switchToSchema = useCallback(
@@ -129,7 +120,7 @@ export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
       buildOcaPackageJsonFromEditorState({
         ocaPackage: ocaPackageArg,
         schemaStates,
-        getSchemaById,
+        getSchemaById
       }),
     [schemaStates, getSchemaById, ocaPackage]
   );
@@ -140,26 +131,28 @@ export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
     setCurrentSchemaId();
   }, []);
 
-  const createChildSchemaPlaceholder =
-    useCreateChildSchemaPlaceholder({
-      schemaStatesRef,
-      setSchemaStates,
-      MANUAL_CREATION_SCHEMA_ID,
-    });
+  const createChildSchemaPlaceholder = useCreateChildSchemaPlaceholder({
+    schemaStatesRef,
+    setSchemaStates,
+    MANUAL_CREATION_SCHEMA_ID
+  });
 
-  const removeChildSchemaSubtree = useCallback((rootSchemaId) => {
-    if (!rootSchemaId) return;
-    setSchemaStates((prev) => {
-      const ids = collectDescendantSchemaIds(rootSchemaId, prev);
-      if (ids.size === 0) return prev;
-      const next = { ...prev };
-      ids.forEach((id) => delete next[id]);
-      return next;
-    });
-  }, [setSchemaStates]);
+  const removeChildSchemaSubtree = useCallback(
+    (rootSchemaId) => {
+      if (!rootSchemaId) return;
+      setSchemaStates((prev) => {
+        const ids = collectDescendantSchemaIds(rootSchemaId, prev);
+        if (ids.size === 0) return prev;
+        const next = { ...prev };
+        ids.forEach((id) => delete next[id]);
+        return next;
+      });
+    },
+    [setSchemaStates]
+  );
 
   const oca = useMemo(
-    () => createOcaLoader({getSchemaById, setSchemaStates}),
+    () => createOcaLoader({ getSchemaById, setSchemaStates }),
     [getSchemaById, setSchemaStates]
   );
 
@@ -196,8 +189,7 @@ export const MultiSchemaProvider = ({ children, initialOcaPackage = null }) => {
       restoreDraft,
 
       ...store,
-      ...oca,
-
+      ...oca
     }),
     [
       schemaStates,

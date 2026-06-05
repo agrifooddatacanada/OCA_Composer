@@ -2,3 +2,4 @@ public
 build
 dist
 coverage
+temp_*.js

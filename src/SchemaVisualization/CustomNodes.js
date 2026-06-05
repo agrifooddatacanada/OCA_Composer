@@ -1,6 +1,6 @@
 /**
  * Custom node components for schema visualization
- * 
+ *
  * TERMINOLOGY:
  * - isReference: true when the field type is refs:SAID (linked child schema)
  * - isPlaceholder: true when the field type is refn:name (placeholder child schema)
@@ -49,9 +49,7 @@ function TreeAttributesPopover({ fields, t }) {
     const needsScroll = list.length > TREE_ATTR_TOOLTIP_SCROLL_AFTER_LINES;
     return (
       <div>
-        <strong>
-          {t("tree node field count", { count: list.length })}:
-        </strong>
+        <strong>{t("tree node field count", { count: list.length })}:</strong>
         <div
           style={{
             marginTop: 6,
@@ -210,9 +208,7 @@ export const TreeNode = ({ data }) => {
             enterTouchDelay={0}
             PopperProps={{ style: { zIndex: 5000 } }}
           >
-            <div className="tree-node-label tree-node-label-truncated">
-              {data.label}
-            </div>
+            <div className="tree-node-label tree-node-label-truncated">{data.label}</div>
           </Tooltip>
         ) : (
           <div className="tree-node-label">{data.label}</div>
@@ -263,16 +259,11 @@ export const DetailedNode = ({ data }) => {
 
   // Separate child schemas/placeholder child schemas from regular fields
   const childSchemas = sortedFields.filter(
-    (field) =>
-      field.isReference ||
-      field.isPlaceholder ||
-      field.isMaterializedChildSchema
+    (field) => field.isReference || field.isPlaceholder || field.isMaterializedChildSchema
   );
   const regularFields = sortedFields.filter(
     (field) =>
-      !field.isReference &&
-      !field.isPlaceholder &&
-      !field.isMaterializedChildSchema
+      !field.isReference && !field.isPlaceholder && !field.isMaterializedChildSchema
   );
 
   // Always show all child schemas and placeholder child schemas, then add regular fields up to the limit
@@ -321,147 +312,157 @@ export const DetailedNode = ({ data }) => {
 
   return (
     <div className={`detailed-node ${nodeType} ${isHighlighted ? "highlighted" : ""}`}>
-        {/* Only show input handle for non-root nodes */}
-        {nodeType !== "root" && (
-          <Handle type="target" position={Position.Left} style={{ top: "20px" }} />
-        )}
+      {/* Only show input handle for non-root nodes */}
+      {nodeType !== "root" && (
+        <Handle type="target" position={Position.Left} style={{ top: "20px" }} />
+      )}
 
-        <div className="detailed-header">
-          {headerTruncated ? (
+      <div className="detailed-header">
+        {headerTruncated ? (
+          <Tooltip
+            title={headerFullName}
+            placement="top"
+            arrow
+            enterDelay={300}
+            enterTouchDelay={0}
+            PopperProps={{ style: { zIndex: 5000 } }}
+          >
+            <span
+              className="detailed-header-title"
+              style={{
+                cursor: "help",
+                textDecoration: "underline dotted"
+              }}
+            >
+              {title}
+            </span>
+          </Tooltip>
+        ) : (
+          <span className="detailed-header-title">{title}</span>
+        )}
+        {data.onNodeClick && (
+          <button
+            type="button"
+            className="edit-schema-button-header"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (data.onNodeClick) {
+                data.onNodeClick(data.nodeId);
+              }
+            }}
+            title={t("Edit this schema")}
+          >
+            {t("Edit")}
+          </button>
+        )}
+      </div>
+
+      <div className="detailed-fields">
+        {visibleFields.map((field, index) => {
+          const fieldName = field.name || "";
+          const originalName = field.originalName || fieldName;
+          const isLong = originalName.length > FIELD_NAME_MAX_LENGTH;
+
+          return (
+            <div
+              key={field.originalName || field.name || `field-${index}`}
+              className={`field ${
+                field.isReference || field.isMaterializedChildSchema
+                  ? "Reference"
+                  : field.isPlaceholder
+                    ? "Placeholder"
+                    : field.type
+              }`}
+            >
+              {isLong ? (
+                <Tooltip
+                  title={originalName}
+                  placement="top"
+                  arrow
+                  enterDelay={300}
+                  enterTouchDelay={0}
+                  PopperProps={{ style: { zIndex: 5000 } }}
+                >
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="field-name nodrag nopan"
+                    style={{
+                      cursor: "help",
+                      textDecoration: "underline dotted"
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.stopPropagation();
+                      }
+                    }}
+                  >
+                    {fieldName}
+                  </span>
+                </Tooltip>
+              ) : (
+                <span className="field-name">{fieldName}</span>
+              )}
+              <span className="field-type">{t(getFieldDisplayType(field))}</span>
+              {(field.isReference ||
+                field.isPlaceholder ||
+                field.isMaterializedChildSchema) && <FieldHandle field={field} />}
+            </div>
+          );
+        })}
+
+        {/* Show hidden field count if there are any */}
+        {hiddenFieldsCount > 0 && (
+          <div
+            className="field hidden-fields-indicator"
+            style={{ fontStyle: "italic", color: "#666" }}
+          >
             <Tooltip
-              title={headerFullName}
+              title={hiddenFieldsTooltipTitle}
               placement="top"
               arrow
               enterDelay={300}
               enterTouchDelay={0}
+              leaveDelay={200}
               PopperProps={{ style: { zIndex: 5000 } }}
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    bgcolor: "#000",
+                    color: "#fff",
+                    maxWidth: 400,
+                    textAlign: "left",
+                    fontSize: `${TREE_ATTR_TOOLTIP_FONT_PX}px`,
+                    lineHeight: TREE_ATTR_TOOLTIP_LINE_HEIGHT,
+                    "& .MuiTooltip-arrow": { color: "#000" }
+                  }
+                },
+                arrow: { sx: { color: "#000" } }
+              }}
             >
               <span
-                className="detailed-header-title"
+                role="button"
+                tabIndex={0}
+                className="field-name nodrag nopan"
                 style={{
                   cursor: "help",
                   textDecoration: "underline dotted"
                 }}
-              >
-                {title}
-              </span>
-            </Tooltip>
-          ) : (
-            <span className="detailed-header-title">{title}</span>
-          )}
-          {data.onNodeClick && (
-            <button
-              type="button"
-              className="edit-schema-button-header"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (data.onNodeClick) {
-                  data.onNodeClick(data.nodeId);
-                }
-              }}
-              title={t("Edit this schema")}
-            >
-              {t("Edit")}
-            </button>
-          )}
-        </div>
-
-        <div className="detailed-fields">
-          {visibleFields.map((field, index) => {
-            const fieldName = field.name || "";
-            const originalName = field.originalName || fieldName;
-            const isLong = originalName.length > FIELD_NAME_MAX_LENGTH;
-
-            return (
-              <div
-                key={field.originalName || field.name || `field-${index}`}
-                className={`field ${
-                  field.isReference || field.isMaterializedChildSchema
-                    ? "Reference"
-                    : field.isPlaceholder
-                      ? "Placeholder"
-                      : field.type
-                }`}
-              >
-                {isLong ? (
-                  <Tooltip
-                    title={originalName}
-                    placement="top"
-                    arrow
-                    enterDelay={300}
-                    enterTouchDelay={0}
-                    PopperProps={{ style: { zIndex: 5000 } }}
-                  >
-                    <span
-                      className="field-name nodrag nopan"
-                      style={{
-                        cursor: "help",
-                        textDecoration: "underline dotted"
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {fieldName}
-                    </span>
-                  </Tooltip>
-                ) : (
-                  <span className="field-name">{fieldName}</span>
-                )}
-                <span className="field-type">{t(getFieldDisplayType(field))}</span>
-                {(field.isReference ||
-                  field.isPlaceholder ||
-                  field.isMaterializedChildSchema) && (
-                  <FieldHandle field={field} />
-                )}
-              </div>
-            );
-          })}
-
-          {/* Show hidden field count if there are any */}
-          {hiddenFieldsCount > 0 && (
-            <div
-              className="field hidden-fields-indicator"
-              style={{ fontStyle: "italic", color: "#666" }}
-            >
-              <Tooltip
-                title={hiddenFieldsTooltipTitle}
-                placement="top"
-                arrow
-                enterDelay={300}
-                enterTouchDelay={0}
-                leaveDelay={200}
-                PopperProps={{ style: { zIndex: 5000 } }}
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      bgcolor: "#000",
-                      color: "#fff",
-                      maxWidth: 400,
-                      textAlign: "left",
-                      fontSize: `${TREE_ATTR_TOOLTIP_FONT_PX}px`,
-                      lineHeight: TREE_ATTR_TOOLTIP_LINE_HEIGHT,
-                      "& .MuiTooltip-arrow": { color: "#000" }
-                    }
-                  },
-                  arrow: { sx: { color: "#000" } }
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.stopPropagation();
+                  }
                 }}
               >
-                <span
-                  role="button"
-                  tabIndex={0}
-                  className="field-name nodrag nopan"
-                  style={{
-                    cursor: "help",
-                    textDecoration: "underline dotted"
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  ... {t("more fields", { count: hiddenFieldsCount })}
-                </span>
-              </Tooltip>
-              <span className="field-type" />
-            </div>
-          )}
-        </div>
+                ... {t("more fields", { count: hiddenFieldsCount })}
+              </span>
+            </Tooltip>
+            <span className="field-type" />
+          </div>
+        )}
       </div>
+    </div>
   );
 };

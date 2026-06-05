@@ -88,12 +88,12 @@ function buildRangeOverlay(slots) {
 
     if (hasMin || hasMax) {
       rangeData[slotName] = {};
-      
+
       if (hasMin) {
         rangeData[slotName].lower = String(slot.minimum_value);
         rangeData[slotName].lower_inclusive = true;
       }
-      
+
       if (hasMax) {
         rangeData[slotName].upper = String(slot.maximum_value);
         rangeData[slotName].upper_inclusive = true;
@@ -116,7 +116,7 @@ function buildRangeOverlay(slots) {
  * @param {Object} linkmlSchema - The LinkML schema
  * @returns {Object|null} A cardinality overlay or null if no cardinality data
  */
-function buildCardinalityOverlay(slots, linkmlSchema) {
+function buildCardinalityOverlay(slots) {
   const cardinalityData = {};
 
   Object.entries(slots).forEach(([slotName, slot]) => {
@@ -149,7 +149,7 @@ function buildCardinalityOverlay(slots, linkmlSchema) {
     }
 
     if (maxCard === null) {
-      maxCard = isMultivalued ? '*' : 1;
+      maxCard = isMultivalued ? "*" : 1;
     }
 
     cardinalityData[slotName] = `${minCard}-${maxCard}`;
@@ -182,7 +182,10 @@ export function buildOverlays(slots, enums, linkmlSchema) {
       key: "attribute_formats",
       data: Object.fromEntries(
         Object.entries(slots)
-          .filter(([, s]) => s.pattern || (s.minimum_value !== undefined || s.maximum_value !== undefined))
+          .filter(
+            ([, s]) =>
+              s.pattern || s.minimum_value !== undefined || s.maximum_value !== undefined
+          )
           .map(([k, s]) => {
             if (s.pattern) {
               return [k, s.pattern];
@@ -227,7 +230,7 @@ export function buildOverlays(slots, enums, linkmlSchema) {
     {
       name: "unit",
       type: "spec/overlays/unit/1.0",
-      key: "attribute_units",  // Correct OCA spec field name (plural)
+      key: "attribute_units", // Correct OCA spec field name (plural)
       data: Object.fromEntries(
         Object.entries(slots)
           .filter(([, slot]) => slot.unit?.ucum_code)
@@ -243,7 +246,7 @@ export function buildOverlays(slots, enums, linkmlSchema) {
         overlays[name] = {
           type,
           capture_base: "",
-          measurement_system: "Metric",  // Default to Metric for LinkML
+          measurement_system: "Metric", // Default to Metric for LinkML
           [key]: data
         };
       }
@@ -299,7 +302,7 @@ export function buildOverlays(slots, enums, linkmlSchema) {
   }
 
   // Cardinality overlay (language-independent)
-  const cardinalityOverlay = buildCardinalityOverlay(slots, linkmlSchema);
+  const cardinalityOverlay = buildCardinalityOverlay(slots);
   if (cardinalityOverlay) {
     overlays.cardinality = cardinalityOverlay;
   }
@@ -360,9 +363,9 @@ export function mapLinkMLToOCABundle(linkmlSchema) {
       if (/Event|Type/.test(slot.range)) {
         range = "Text"; // Default to Text instead of empty string, though originally was ""
       }
-      
+
       if (slot.multivalued) {
-          range = `Array[${range}]`;
+        range = `Array[${range}]`;
       }
 
       return [key, range];
@@ -374,10 +377,10 @@ export function mapLinkMLToOCABundle(linkmlSchema) {
     .map(([key]) => key);
 
   // Generate a deterministic ID based on schema name or timestamp
-  const schemaId = linkmlSchema.name 
-    ? `linkml_${linkmlSchema.name}_${Date.now()}` 
+  const schemaId = linkmlSchema.name
+    ? `linkml_${linkmlSchema.name}_${Date.now()}`
     : `linkml_schema_${Date.now()}`;
-  
+
   const captureBaseId = `${schemaId}_capture_base`;
 
   // Define capture_base separately with digest

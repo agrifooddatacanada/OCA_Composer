@@ -8,8 +8,8 @@ import React, {
   useState,
   forwardRef
 } from "react";
-import { AgGridReact } from "../components/AgGridReact";
 import { useTranslation } from "react-i18next";
+import { AgGridReact } from "../components/AgGridReact";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import "ag-grid-community/styles/ag-theme-balham.css";
@@ -17,7 +17,11 @@ import useCharacterEncodingType, {
   CharacterEncodingTypeRenderer
 } from "./useCharacterEncodingType";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING, AG_GRID_VIRTUALIZE_MIN_ROWS } from "../constants/constants";
+import {
+  BETWEEN_SECTION_SPACING,
+  AG_GRID_VIRTUALIZE_MIN_ROWS,
+  FIELD_CHARACTER_ENCODING_OVERLAY
+} from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import {
   AG_GRID_DROPDOWN_CELL_CLASS,
@@ -27,21 +31,15 @@ import {
 import { CustomPalette } from "../constants/customPalette";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Loading from "../components/Loading";
-import { FIELD_CHARACTER_ENCODING_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
 import { useOverlayGridOnGridReady } from "./gridUtils";
 
-const CharacterEncoding = forwardRef(function CharacterEncoding(_props, ref) {
+const CharacterEncoding = forwardRef((_props, ref) => {
   const { t, i18n } = useTranslation();
   const { setCurrentPage } = useContext(Context);
 
-  const {
-    getSchema,
-    updateSchema,
-    updateOverlaySelection,
-    setSelectedOverlay
-  } = useMultiSchema();
+  const { getSchema, updateSchema, setSelectedOverlay } = useMultiSchema();
   const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CHARACTER_ENCODING_OVERLAY);
 
@@ -49,7 +47,7 @@ const CharacterEncoding = forwardRef(function CharacterEncoding(_props, ref) {
   const characterEncodingRowData = useMemo(() => {
     const characterEncodingData = schemaState?.characterEncodingData || {};
     const attributes = schemaState?.attributes || [];
-    
+
     // Convert data to UI format or initialize with attributes if empty
     if (Object.keys(characterEncodingData).length > 0) {
       return attributes.map((attr) => ({
@@ -70,7 +68,7 @@ const CharacterEncoding = forwardRef(function CharacterEncoding(_props, ref) {
     (newData) => {
       // Transform UI data to simple object format
       const characterEncodingData = {};
-      newData.forEach(row => {
+      newData.forEach((row) => {
         if (row.Attribute && row["Character Encoding"]) {
           characterEncodingData[row.Attribute] = row["Character Encoding"];
         }
@@ -108,7 +106,10 @@ const CharacterEncoding = forwardRef(function CharacterEncoding(_props, ref) {
 
   const getRowHeight = useCallback((params) => {
     const attrH = measureTextHeight(params.data?.Attribute || "", 164);
-    const encH = measureTextHeight(String(params.data?.["Character Encoding"] ?? ""), 184);
+    const encH = measureTextHeight(
+      String(params.data?.["Character Encoding"] ?? ""),
+      184
+    );
     const maxH = Math.max(attrH, encH);
     return Math.max(32, maxH + 8);
   }, []);

@@ -127,8 +127,7 @@ const UserSelection = () => {
     selectedOverlaysOCAFile2,
     parsedOCAFile1,
     OCAFile1Raw,
-    OCAFile2Raw,
-    schemaDescription
+    OCAFile2Raw
   } = useContext(Context);
   const [data, setData] = useState([]);
   const [showDifference, setShowDifference] = useState(false);
@@ -480,45 +479,67 @@ const UserSelection = () => {
     // Non-language overlays that map attribute -> value
     if (coreOverlays.format?.attribute_formats) {
       coreOverlays.format.attribute_formats = Object.fromEntries(
-        Object.entries(coreOverlays.format.attribute_formats).filter(([k]) => isValidAttr(k))
+        Object.entries(coreOverlays.format.attribute_formats).filter(([k]) =>
+          isValidAttr(k)
+        )
       );
-      if (Object.keys(coreOverlays.format.attribute_formats).length === 0) delete coreOverlays.format;
+      if (Object.keys(coreOverlays.format.attribute_formats).length === 0)
+        delete coreOverlays.format;
     }
 
     if (coreOverlays.conformance?.attribute_conformance) {
       coreOverlays.conformance.attribute_conformance = Object.fromEntries(
-        Object.entries(coreOverlays.conformance.attribute_conformance).filter(([k]) => isValidAttr(k))
+        Object.entries(coreOverlays.conformance.attribute_conformance).filter(([k]) =>
+          isValidAttr(k)
+        )
       );
-      if (Object.keys(coreOverlays.conformance.attribute_conformance).length === 0) delete coreOverlays.conformance;
+      if (Object.keys(coreOverlays.conformance.attribute_conformance).length === 0)
+        delete coreOverlays.conformance;
     }
 
     if (coreOverlays.entry_code?.attribute_entry_codes) {
       coreOverlays.entry_code.attribute_entry_codes = Object.fromEntries(
-        Object.entries(coreOverlays.entry_code.attribute_entry_codes).filter(([k]) => isValidAttr(k))
+        Object.entries(coreOverlays.entry_code.attribute_entry_codes).filter(([k]) =>
+          isValidAttr(k)
+        )
       );
-      if (Object.keys(coreOverlays.entry_code.attribute_entry_codes).length === 0) delete coreOverlays.entry_code;
+      if (Object.keys(coreOverlays.entry_code.attribute_entry_codes).length === 0)
+        delete coreOverlays.entry_code;
     }
 
     if (coreOverlays.unit) {
-      const unitMap = coreOverlays.unit.attribute_unit || coreOverlays.unit.attribute_units || {};
-      const filteredUnits = Object.fromEntries(Object.entries(unitMap).filter(([k]) => isValidAttr(k)));
-      if (coreOverlays.unit.attribute_unit) coreOverlays.unit.attribute_unit = filteredUnits;
+      const unitMap =
+        coreOverlays.unit.attribute_unit || coreOverlays.unit.attribute_units || {};
+      const filteredUnits = Object.fromEntries(
+        Object.entries(unitMap).filter(([k]) => isValidAttr(k))
+      );
+      if (coreOverlays.unit.attribute_unit)
+        coreOverlays.unit.attribute_unit = filteredUnits;
       else coreOverlays.unit.attribute_units = filteredUnits;
       if (Object.keys(filteredUnits).length === 0) delete coreOverlays.unit;
     }
 
     if (coreOverlays.cardinality?.attribute_cardinality) {
       coreOverlays.cardinality.attribute_cardinality = Object.fromEntries(
-        Object.entries(coreOverlays.cardinality.attribute_cardinality).filter(([k]) => isValidAttr(k))
+        Object.entries(coreOverlays.cardinality.attribute_cardinality).filter(([k]) =>
+          isValidAttr(k)
+        )
       );
-      if (Object.keys(coreOverlays.cardinality.attribute_cardinality).length === 0) delete coreOverlays.cardinality;
+      if (Object.keys(coreOverlays.cardinality.attribute_cardinality).length === 0)
+        delete coreOverlays.cardinality;
     }
 
     if (coreOverlays.character_encoding?.attribute_character_encoding) {
       coreOverlays.character_encoding.attribute_character_encoding = Object.fromEntries(
-        Object.entries(coreOverlays.character_encoding.attribute_character_encoding).filter(([k]) => isValidAttr(k))
+        Object.entries(
+          coreOverlays.character_encoding.attribute_character_encoding
+        ).filter(([k]) => isValidAttr(k))
       );
-      if (Object.keys(coreOverlays.character_encoding.attribute_character_encoding).length === 0) delete coreOverlays.character_encoding;
+      if (
+        Object.keys(coreOverlays.character_encoding.attribute_character_encoding)
+          .length === 0
+      )
+        delete coreOverlays.character_encoding;
     }
 
     // Language-specific overlays (arrays): filter per-item attribute maps
@@ -547,7 +568,8 @@ const UserSelection = () => {
           .filter((item) =>
             Boolean(
               (item.attribute_labels && Object.keys(item.attribute_labels).length > 0) ||
-                (item.attribute_information && Object.keys(item.attribute_information).length > 0) ||
+                (item.attribute_information &&
+                  Object.keys(item.attribute_information).length > 0) ||
                 (item.attribute_entries && Object.keys(item.attribute_entries).length > 0)
             )
           );

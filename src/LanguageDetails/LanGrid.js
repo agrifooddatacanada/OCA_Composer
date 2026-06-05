@@ -1,15 +1,14 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useCallback,
-  useMemo,
-  useRef
-} from "react";
+import React, { useEffect, useLayoutEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "../components/AgGridReact";
 import { useMultiSchema } from "../schema/schemaContext";
 import CellHeader from "../components/CellHeader";
-import { agGridEditableCellHoverCss, greyCellStyle, gridStyles, preWrapWordBreak } from "../constants/styles";
+import {
+  agGridEditableCellHoverCss,
+  greyCellStyle,
+  gridStyles,
+  preWrapWordBreak
+} from "../constants/styles";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import {
@@ -29,12 +28,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const { t, i18n } = useTranslation();
 
   // Use MultiSchemaContext
-  const {
-    getSchema,
-    getAttributesList,
-    updateSchema,
-    getLanguages
-  } = useMultiSchema();
+  const { getSchema, getAttributesList, updateSchema } = useMultiSchema();
 
   // Get schema-specific languages from per-schema metadata
   const schemaState = getSchema();
@@ -114,7 +108,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   // Sets Language Dependent Attribute row data - simplified version
   useEffect(() => {
     const newLanAttributeRowData = JSON.parse(JSON.stringify(lanAttributeRowData));
-    
+
     languages.forEach((language) => {
       if (!newLanAttributeRowData[language]) {
         // Generate initial data for this language
@@ -133,7 +127,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
             const listDisplayString = listDisplayArray.join(" | ");
             listDisplay = listDisplayString || "";
           }
-          
+
           const overlaylangCodeOCA = langCodeOCAFromName(language);
           newLanguageList.push({
             Attribute: item,
@@ -149,16 +143,16 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         attributeRowData.forEach((item) => {
           let newLabel = "";
           let newDescription = "";
-          
+
           const existingItem = newLanAttributeRowData[language]?.find(
             (i) => i.Attribute === item.Attribute
           );
-          
+
           if (existingItem) {
             newLabel = existingItem.Label;
             newDescription = existingItem.Description;
           }
-          
+
           let listDisplay = item.List;
           if (!listDisplay) {
             listDisplay = "";
@@ -183,74 +177,81 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         newLanAttributeRowData[language] = newLanguageList;
       }
     });
-    
+
     updateSchema({
       lanAttributeRowData: newLanAttributeRowData
     });
   }, [languages, stableEntryCodes, attributeRowData, i18n.language]);
 
-  const columnDefs = useMemo(() => [
-    {
-      field: "Attribute",
-      editable: false,
-      width: 120,
-      wrapText: true,
-      cellStyle: () => greyCellStyle,
-      headerComponent: CellHeader,
-      headerComponentParams: {
-        headerText: t("Attribute"),
-        helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
-      }
-    },
-    {
-      field: "Label",
-      editable: true,
-      width: 200,
-      wrapText: true,
-      cellEditor: TextareaCellEditor,
-      cellStyle: () => preWrapWordBreak,
-      headerComponent: CellHeader,
-      headerComponentParams: {
-        headerText: t("Label"),
-        constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
-        helpText: t("Language-specific label for an attribute")
+  const columnDefs = useMemo(
+    () => [
+      {
+        field: "Attribute",
+        editable: false,
+        width: 120,
+        wrapText: true,
+        cellStyle: () => greyCellStyle,
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Attribute"),
+          helpText: t(
+            "Name for the attribute and, for example, the column header in every tabular data set no matter what language"
+          )
+        }
       },
-      cellEditorParams: {
-        maxLength: MAX_ATTR_LABEL_CHARS
-      }
-    },
-    {
-      field: "Description",
-      editable: true,
-      width: 260,
+      {
+        field: "Label",
+        editable: true,
+        width: 200,
+        wrapText: true,
+        cellEditor: TextareaCellEditor,
+        cellStyle: () => preWrapWordBreak,
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Label"),
+          constraint: t("max label chars", { maxLabelChars: MAX_ATTR_LABEL_CHARS }),
+          helpText: t("Language-specific label for an attribute")
+        },
+        cellEditorParams: {
+          maxLength: MAX_ATTR_LABEL_CHARS
+        }
+      },
+      {
+        field: "Description",
+        editable: true,
+        width: 260,
         cellEditor: TextareaCellEditor,
         cellEditorParams: {
           maxLength: MAX_ATTR_DESCRIPTION_CHARS
         },
-      wrapText: true,
-      cellStyle: () => preWrapWordBreak,
-      headerComponent: CellHeader,
-      headerComponentParams: {
-        headerText: t("Description"),
-        constraint: t("max description chars", {
-          maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
-        }),
-        helpText: t("Language-specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute")
+        wrapText: true,
+        cellStyle: () => preWrapWordBreak,
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("Description"),
+          constraint: t("max description chars", {
+            maxDescriptionChars: MAX_ATTR_DESCRIPTION_CHARS
+          }),
+          helpText: t(
+            "Language-specific description of the attribute and should contain information that will help dataset users understand necessary details about each attribute"
+          )
+        }
+      },
+      {
+        field: "List",
+        editable: false,
+        width: 305,
+        cellRenderer: TruncatedListCell,
+        cellStyle: () => greyCellStyle,
+        headerComponent: CellHeader,
+        headerComponentParams: {
+          headerText: t("List"),
+          helpText: t("Entry codes for Array type attributes")
+        }
       }
-    },
-    {
-      field: "List",
-      editable: false,
-      width: 305,
-      cellRenderer: (params) => <TruncatedListCell value={params.value} />,
-      cellStyle: () => greyCellStyle,
-      headerComponent: CellHeader,
-      headerComponentParams: {
-        headerText: t("List"),
-        helpText: t("Entry codes for Array type attributes")
-      }
-    }
-  ], [t]);
+    ],
+    [t]
+  );
 
   const getRowHeight = useCallback((params) => {
     const attrH = measureTextHeight(params.data?.Attribute || "", 120, {});
@@ -275,8 +276,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
     setLoading(false);
   }, [setLoading]);
 
-  const lanGridFixedViewport =
-    attributeRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const lanGridFixedViewport = attributeRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
   const rowsForCurrentLanguage = lanAttributeRowData[currentLanguage] ?? [];
   const hasGridRows = rowsForCurrentLanguage.length > 0;
 
@@ -431,7 +431,7 @@ export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
         suppressHorizontalScroll
         suppressRowHoverHighlight
         getRowId={(params) => params.data.Attribute}
-        immutableData={true}
+        immutableData
         overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
       />
     </div>

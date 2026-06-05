@@ -9,27 +9,21 @@ import React, {
   useImperativeHandle,
   useMemo
 } from "react";
-import {
-  Box,
-  TextField,
-  Autocomplete,
-  Popper,
-  Button,
-  Typography
-} from "@mui/material";
+import { Box, TextField, Autocomplete, Popper, Button, Typography } from "@mui/material";
 import MuiLink from "@mui/material/Link";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { AgGridReact } from "../components/AgGridReact";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { useTranslation } from "react-i18next";
 import { styled } from "@mui/material/styles";
+import { AgGridReact } from "../components/AgGridReact";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import {
   AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
   AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
-  BETWEEN_SECTION_SPACING
+  BETWEEN_SECTION_SPACING,
+  FIELD_UNIT_FRAMING_OVERLAY
 } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, greyCellStyle, preWrapWordBreak } from "../constants/styles";
@@ -38,7 +32,6 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
 import { searchUnits } from "../utils/helpers";
-import { FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { useOverlayGridOnGridReady, getAllGridRowData } from "./gridUtils";
 import { Context } from "../App";
@@ -76,7 +69,9 @@ const useUnitData = (currentUnitFramedRowData) => {
   const processUnitData = useCallback(() => {
     // Always use currentUnitFramedRowData as the source
     // Ensure it's an array
-    const sourceData = Array.isArray(currentUnitFramedRowData) ? currentUnitFramedRowData : [];
+    const sourceData = Array.isArray(currentUnitFramedRowData)
+      ? currentUnitFramedRowData
+      : [];
 
     // Create unique units map
     const unitFramedRowDataSet = Array.from(
@@ -102,14 +97,14 @@ const TrashCanButton = memo((props) => {
     // Ensure unitFramedRowData is an array
     const dataArray = Array.isArray(unitFramedRowData) ? unitFramedRowData : [];
     const newData = dataArray.map((row) =>
-      row.Unit === props.node.data.Unit 
-        ? { 
-            ...row, 
+      row.Unit === props.node.data.Unit
+        ? {
+            ...row,
             "UCUM Code": "",
             "UCUM Label": "",
             Description: "",
-            deleted: true 
-          } 
+            deleted: true
+          }
         : row
     );
     setUnitFramedRowData(newData);
@@ -128,9 +123,19 @@ const TrashCanButton = memo((props) => {
   const isVisible = props.node.data?.Unit !== "";
   if (!isVisible) return null;
   return (
-    <Box className="delete-icon-wrapper" sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-      <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
-      <DeleteForeverIcon onClick={handleDelete} sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }} className="delete-icon-solid" />
+    <Box
+      className="delete-icon-wrapper"
+      sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+    >
+      <DeleteOutlineIcon
+        sx={{ color: CustomPalette.GREY_600 }}
+        className="delete-icon-outline"
+      />
+      <DeleteForeverIcon
+        onClick={handleDelete}
+        sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }}
+        className="delete-icon-solid"
+      />
     </Box>
   );
 });
@@ -273,9 +278,7 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         editable: false,
         width: 100,
         cellStyle: () => ({ ...greyCellStyle, overflow: "auto" }),
-        headerComponent: () => (
-          <CellHeader headerText={t("Unit")} />
-        )
+        headerComponent: () => <CellHeader headerText={t("Unit")} />
       },
       {
         field: "UCUM Code",
@@ -286,9 +289,7 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         singleClickEdit: true,
         editable: true,
         onCellValueChanged: createOnCellValueChanged(searchUnits, "code", onCellChanged),
-        headerComponent: () => (
-          <CellHeader headerText={t("UCUM Code")} />
-        )
+        headerComponent: () => <CellHeader headerText={t("UCUM Code")} />
       },
       {
         field: "UCUM Label",
@@ -299,9 +300,7 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         singleClickEdit: true,
         editable: true,
         onCellValueChanged: createOnCellValueChanged(searchUnits, "label", onCellChanged),
-        headerComponent: () => (
-          <CellHeader headerText={t("UCUM Label")} />
-        )
+        headerComponent: () => <CellHeader headerText={t("UCUM Label")} />
       },
       {
         field: "Description",
@@ -311,10 +310,12 @@ const useColumnDefs = (gridRef, t, onCellChanged) =>
         cellEditorParams: createCellEditorParams(searchUnits, "description"),
         singleClickEdit: true,
         editable: true,
-        onCellValueChanged: createOnCellValueChanged(searchUnits, "description", onCellChanged),
-        headerComponent: () => (
-          <CellHeader headerText={t("UCUM Unit Description")} />
-        )
+        onCellValueChanged: createOnCellValueChanged(
+          searchUnits,
+          "description",
+          onCellChanged
+        ),
+        headerComponent: () => <CellHeader headerText={t("UCUM Unit Description")} />
       },
       {
         headerName: "",
@@ -348,11 +349,7 @@ const UnitFraming = forwardRef((props, ref) => {
   const { setCurrentPage } = useContext(Context);
 
   // Use MultiSchema context with standard pattern
-  const {
-    getSchema,
-    updateSchema,
-    setSelectedOverlay
-  } = useMultiSchema();
+  const { getSchema, updateSchema, setSelectedOverlay } = useMultiSchema();
   const schemaState = getSchema();
   const noAttributes = (schemaState?.attributes || []).length === 0;
   const deleteHandler = useDeleteOverlayHandler(FIELD_UNIT_FRAMING_OVERLAY);
@@ -363,12 +360,10 @@ const UnitFraming = forwardRef((props, ref) => {
     const existingData = schemaState?.unitFramedData;
     // Ensure existing is always an array
     const existing = Array.isArray(existingData) ? existingData : [];
-    
+
     // Create a map of existing unit framing data by Attribute name
-    const existingMap = new Map(
-      existing.map((row) => [row.Attribute, row])
-    );
-    
+    const existingMap = new Map(existing.map((row) => [row.Attribute, row]));
+
     // Build unit framed data from current attributes (do NOT auto-search UCUM here)
     // AttributeDetails is the single source that auto-populates UCUM codes on save.
     const framedData = attributes
@@ -403,14 +398,14 @@ const UnitFraming = forwardRef((props, ref) => {
           deleted: false
         };
       });
-    
+
     return framedData;
   }, [schemaState?.unitFramedData, schemaState?.attributes]);
 
   const setUnitFramedRowData = useCallback(
     (newDataOrUpdater) => {
       // Handle both direct data and function updater patterns
-      if (typeof newDataOrUpdater === 'function') {
+      if (typeof newDataOrUpdater === "function") {
         const existingData = schemaState?.unitFramedData;
         const currentData = Array.isArray(existingData) ? existingData : [];
         const newData = newDataOrUpdater(currentData);
@@ -436,7 +431,7 @@ const UnitFraming = forwardRef((props, ref) => {
         uniqueUnits.set(row.Unit, true);
       }
     });
-    
+
     return Array.from(uniqueUnits.keys());
   }, [unitFramedRowData]);
 
@@ -444,9 +439,7 @@ const UnitFraming = forwardRef((props, ref) => {
   const [loading, setLoading] = useState(true);
   const gridRef = useRef();
 
-  const { tempToDisplayRowData, setTempToDisplayRowData } = useUnitData(
-    unitFramedRowData
-  );
+  const { tempToDisplayRowData } = useUnitData(unitFramedRowData);
 
   const hasUnframedUnits = unframedUnitList.length > 0;
   const allUnitsAreFramed = unitFramedRowData.length > 0 && !hasUnframedUnits;
@@ -481,26 +474,25 @@ const UnitFraming = forwardRef((props, ref) => {
   }, [tempToDisplayRowData]);
 
   // Pass row update helpers to the delete renderer
-  const columnDefsWithCallbacks = useMemo(() => 
-    columnDefs.map(col => {
-      if (col.field === 'Delete') {
-        return {
-          ...col,
-          cellRendererParams: (params) => ({
-            setUnitFramedRowData,
-            unitFramedRowData,
-            onRefresh: () => {
-              gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
-            }
-          })
-        };
-      }
-      return col;
-    }),
+  const columnDefsWithCallbacks = useMemo(
+    () =>
+      columnDefs.map((col) => {
+        if (col.field === "Delete") {
+          return {
+            ...col,
+            cellRendererParams: (params) => ({
+              setUnitFramedRowData,
+              unitFramedRowData,
+              onRefresh: () => {
+                gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
+              }
+            })
+          };
+        }
+        return col;
+      }),
     [columnDefs, setUnitFramedRowData, unitFramedRowData]
   );
-
-
 
   const handleSave = useCallback(() => {
     const api = gridRef.current?.api;
@@ -548,7 +540,7 @@ const UnitFraming = forwardRef((props, ref) => {
       if (row["UCUM Code"]) {
         return row;
       }
-      
+
       // Auto-search for UCUM data
       const { firstMatch } = searchUnits(row.Unit);
       return {
@@ -561,10 +553,7 @@ const UnitFraming = forwardRef((props, ref) => {
     });
 
     setUnitFramedRowData(framedData);
-  }, [
-    unitFramedRowData,
-    setUnitFramedRowData
-  ]);
+  }, [unitFramedRowData, setUnitFramedRowData]);
 
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 
@@ -653,7 +642,9 @@ const UnitFraming = forwardRef((props, ref) => {
               height: "auto",
               minHeight: noAttributes ? AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX : 0
             },
-            ...(noAttributes ? { minHeight: AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX } : {})
+            ...(noAttributes
+              ? { minHeight: AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX }
+              : {})
           }}
         >
           <style>{gridStyles}</style>

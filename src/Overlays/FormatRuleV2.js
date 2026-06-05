@@ -1,8 +1,17 @@
 import { Box, Popover, Alert, Typography } from "@mui/material";
 import MuiLink from "@mui/material/Link";
-import React, { useCallback, useContext, useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
-import { AgGridReact } from "../components/AgGridReact";
+import React, {
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle
+} from "react";
 import { useTranslation } from "react-i18next";
+import { AgGridReact } from "../components/AgGridReact";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import "ag-grid-community/styles/ag-grid.css";
@@ -32,7 +41,10 @@ import {
 import { getAllGridRowData } from "./gridUtils";
 import { getFormatRuleDescription } from "../utils/helpers";
 import { measureTextHeight } from "../utils/measureTextLines";
-import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
+import {
+  getMapValueForAttributeName,
+  normalizeAttributeNameKey
+} from "../utils/stringUtils";
 
 const allowOverflowStyle = {
   ...preWrapWordBreak,
@@ -41,14 +53,11 @@ const allowOverflowStyle = {
 
 const FormatRulesV2 = forwardRef((props, ref) => {
   const { t, i18n } = useTranslation();
-  const {
-    setCurrentPage
-  } = useContext(Context);
-  
+  const { setCurrentPage } = useContext(Context);
+
   // Use MultiSchema context with standard pattern
-  const { 
-    getSchema, 
-    updateSchema,
+  const {
+    getSchema,
     updateOverlaySelection,
     setSelectedOverlay,
     getRangeData,
@@ -77,7 +86,8 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         return !isChildSchemaType(baseType);
       })
       .map((attr) => {
-        const formatRegex = getMapValueForAttributeName(attributeFormats, attr.Attribute) || "";
+        const formatRegex =
+          getMapValueForAttributeName(attributeFormats, attr.Attribute) || "";
 
         const description = formatRegex
           ? getFormatRuleDescription(attr.Type || "Text", formatRegex)
@@ -93,7 +103,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         };
       });
   }, [schemaState?.attributes, schemaState?.attributeFormats]);
-  
+
   // Get range data using computed getter (filters to Numeric/DateTime with format rules)
   const rangeRowData = useMemo(
     () => getRangeData() || [],
@@ -104,10 +114,10 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     if (!gridRef.current) {
       return;
     }
-    
+
     gridRef.current.api.stopEditing();
     const newFormatRuleRowData = getAllGridRowData(gridRef.current.api);
-    
+
     // Only update if we have data to prevent clearing existing format rules
     if (newFormatRuleRowData.length > 0) {
       setFormatRuleRowData(newFormatRuleRowData);
@@ -125,7 +135,8 @@ const FormatRulesV2 = forwardRef((props, ref) => {
 
       const existingRangeRow = rangeRowData.find(
         (rangeRow) =>
-          normalizeAttributeNameKey(rangeRow.Attribute) === normalizeAttributeNameKey(row.Attribute)
+          normalizeAttributeNameKey(rangeRow.Attribute) ===
+          normalizeAttributeNameKey(row.Attribute)
       );
 
       if (existingRangeRow) {
@@ -171,7 +182,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
 
   useEffect(() => {
     const html = document.documentElement;
-    const body = document.body;
+    const { body } = document;
     const prevScrollbarGutter = html.style.scrollbarGutter;
     const prevScrollbarWidth = body.style.scrollbarWidth;
     html.style.scrollbarGutter = "auto";
@@ -192,7 +203,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       const builtIn = d["Format Rule"] || "";
       const custom = d[CUSTOM_FORMAT_RULE] || "";
       const rawType = d.Type || "Text";
-      const baseType = rawType.includes("Array") ? rawType.replace(/Array\[|\]/g, "") : rawType;
+      const baseType = rawType.includes("Array")
+        ? rawType.replace(/Array\[|\]/g, "")
+        : rawType;
       const hasDropdown =
         baseType.includes("Date") ||
         baseType.includes("Numeric") ||
@@ -204,7 +217,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
       if (custom) {
         formatColH = measureTextHeight(builtIn, 244);
       } else if (hasDropdown) {
-        const desc = builtIn ? getFormatRuleDescription(d.Type || "Text", builtIn, t) || builtIn : "";
+        const desc = builtIn
+          ? getFormatRuleDescription(d.Type || "Text", builtIn, t) || builtIn
+          : "";
         formatColH = measureTextHeight(desc, 244);
       } else {
         formatColH = measureTextHeight(noDd, 244);
@@ -233,7 +248,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),
-          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
+          helpText: t(
+            "Name for the attribute and, for example, the column header in every tabular data set no matter what language"
+          )
         }
       },
       {
@@ -255,7 +272,8 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           headerText: t("Format Rule"),
           helpText: (
             <>
-              {t("Select the formatting rule that applies to data for each attribute")} {t(
+              {t("Select the formatting rule that applies to data for each attribute")}{" "}
+              {t(
                 "Dropdowns are available for types Text, Numeric, DateTime, Binary, and Arrays of those types"
               )}
             </>
@@ -345,8 +363,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     }
   }, []);
 
-  const formatGridScrollViewport =
-    gridRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
+  const formatGridScrollViewport = gridRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
   const noAttributes = (schemaState?.attributes || []).length === 0;
 
   return (
@@ -442,7 +459,9 @@ const FormatRulesV2 = forwardRef((props, ref) => {
             lineHeight: 1.5
           }}
         >
-          {t("Rules are documented in the", { defaultValue: "Rules are documented in the" })}{" "}
+          {t("Rules are documented in the", {
+            defaultValue: "Rules are documented in the"
+          })}{" "}
           <MuiLink
             href="https://github.com/agrifooddatacanada/format_options"
             target="_blank"
@@ -471,6 +490,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   );
 });
 
-FormatRulesV2.displayName = 'FormatRulesV2';
+FormatRulesV2.displayName = "FormatRulesV2";
 
 export default FormatRulesV2;
