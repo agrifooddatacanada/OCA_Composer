@@ -20,8 +20,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { Context } from "../App";
 import { CustomPalette } from "../constants/customPalette";
-import entryCodePicklists from "../constants/entry_code_picklists";
+import entryCodePicklistsByKey from "../constants/entry_code_picklists.json";
 import { codesToLanguages } from "../constants/isoCodes";
+
+const entryCodePicklists = Object.values(entryCodePicklistsByKey).sort(
+  (a, b) => (a.id ?? 0) - (b.id ?? 0)
+);
 
 function normalizeString(value) {
   return (value ?? "").toString().toLowerCase();
@@ -40,6 +44,20 @@ function getUiLang2(i18nLanguage) {
   // i18next may return "en", "en-US", etc.
   const lang = (i18nLanguage || "en").toLowerCase();
   return lang.includes("-") ? lang.split("-")[0] : lang;
+}
+
+/** Localized keyword labels from picklist.keywords (key → { en, fr, ... }). */
+function getPicklistKeywords(keywords, uiLang2) {
+  if (!keywords || typeof keywords !== "object") return [];
+  return Object.values(keywords)
+    .map((keyword) => getPicklistText(keyword, uiLang2, ""))
+    .filter(Boolean);
+}
+
+function getPicklistKeywordsSearchText(keywords, uiLang2) {
+  const labels = getPicklistKeywords(keywords, uiLang2);
+  const keys = keywords && typeof keywords === "object" ? Object.keys(keywords) : [];
+  return [...labels, ...keys].join(" ");
 }
 
 /** 2-letter language keys for picklist rows, order from picklist.languages when present. */
@@ -84,7 +102,7 @@ function PicklistDetailsModal({ open, onClose, picklist }) {
 
   const title = getPicklistText(picklist.name, uiLang2, "");
   const description = getPicklistText(picklist.description, uiLang2, "");
-  const keywords = picklist.keywords?.[uiLang2] ?? picklist.keywords?.en ?? [];
+  const keywords = getPicklistKeywords(picklist.keywords, uiLang2);
   const codesCount = Array.isArray(picklist.rows) ? picklist.rows.length : 0;
   const previewColumns = getPicklistPreviewColumns(picklist);
   const gridTemplateColumns = `minmax(88px, auto) repeat(${previewColumns.length}, minmax(120px, 1fr))`;
@@ -207,8 +225,9 @@ export default function PicklistEntryCodesPage() {
       const description = normalizeString(getPicklistText(p.description, uiLang2, ""));
       const category = normalizeString(p.category);
 
-      const keywordsArr = p.keywords?.[uiLang2] ?? p.keywords?.en ?? p.keywords?.fr ?? [];
-      const keywords = normalizeString((keywordsArr || []).join(" "));
+      const keywords = normalizeString(
+        getPicklistKeywordsSearchText(p.keywords, uiLang2)
+      );
 
       return (
         name.includes(q) ||
@@ -276,7 +295,7 @@ export default function PicklistEntryCodesPage() {
           {filteredPicklists.map((picklist) => {
             const title = getPicklistText(picklist.name, uiLang2, "");
             const description = getPicklistText(picklist.description, uiLang2, "");
-            const keywords = picklist.keywords?.[uiLang2] ?? picklist.keywords?.en ?? [];
+            const keywords = getPicklistKeywords(picklist.keywords, uiLang2);
             const subtitleParts = [
               picklist.category ? `${t("Category")}: ${picklist.category}` : null,
               Array.isArray(picklist.rows)
