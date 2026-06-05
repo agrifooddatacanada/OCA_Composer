@@ -22,7 +22,7 @@ import { langCodeOCAFromName } from "../utils/languageUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import TruncatedListCell from "../components/TruncatedListCell";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 
 export default function LanGrid({ gridRef, currentLanguage, setLoading }) {
   const { t, i18n } = useTranslation();

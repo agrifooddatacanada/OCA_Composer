@@ -2,7 +2,7 @@ import React from "react";
 import { Alert, Box, ButtonBase, Step, StepLabel, Stepper } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 
 function ClickableStepperProgressIndicator({
   activeStep,
@@ -28,7 +28,11 @@ function ClickableStepperProgressIndicator({
       })}
     >
       <Box sx={{ position: "relative", width: "100%", overflow: "visible" }}>
-        <Stepper activeStep={activeStep} alternativeLabel sx={{ width: "100%", overflow: "visible" }}>
+        <Stepper
+          activeStep={activeStep}
+          alternativeLabel
+          sx={{ width: "100%", overflow: "visible" }}
+        >
           {steps.map((step, i) => (
             <Step
               key={step.label}
@@ -37,11 +41,17 @@ function ClickableStepperProgressIndicator({
                 "& .MuiSvgIcon-root.Mui-active": { color: CustomPalette.PRIMARY },
                 "& .MuiSvgIcon-root.Mui-completed": { color: CustomPalette.PRIMARY },
                 "& .MuiStepLabel-root": { alignItems: "center", overflow: "visible" },
-                "& .MuiStepLabel-labelContainer": { display: "flex", justifyContent: "center", overflow: "visible" }
+                "& .MuiStepLabel-labelContainer": {
+                  display: "flex",
+                  justifyContent: "center",
+                  overflow: "visible"
+                }
               }}
             >
               <StepLabel>
-                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <Box
+                  sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+                >
                   <ButtonBase
                     component="span"
                     disableRipple
@@ -56,14 +66,24 @@ function ClickableStepperProgressIndicator({
                       borderRadius: 1,
                       backgroundColor: "transparent",
                       color: CustomPalette.PRIMARY,
-                      boxShadow: i === activeStep
-                        ? "0 0 0 3px rgba(148, 0, 42, 0.35), 0 0 10px rgba(148, 0, 42, 0.25)"
-                        : "none",
+                      boxShadow:
+                        i === activeStep
+                          ? "0 0 0 3px rgba(148, 0, 42, 0.35), 0 0 10px rgba(148, 0, 42, 0.25)"
+                          : "none",
                       animation: i === activeStep ? "stepperPulse 2s infinite" : "none",
                       "@keyframes stepperPulse": {
-                        "0%": { boxShadow: "0 0 0 2px rgba(148, 0, 42, 0.25), 0 0 6px rgba(148, 0, 42, 0.15)" },
-                        "50%": { boxShadow: "0 0 0 5px rgba(148, 0, 42, 0.45), 0 0 14px rgba(148, 0, 42, 0.25)" },
-                        "100%": { boxShadow: "0 0 0 2px rgba(148, 0, 42, 0.25), 0 0 6px rgba(148, 0, 42, 0.15)" }
+                        "0%": {
+                          boxShadow:
+                            "0 0 0 2px rgba(148, 0, 42, 0.25), 0 0 6px rgba(148, 0, 42, 0.15)"
+                        },
+                        "50%": {
+                          boxShadow:
+                            "0 0 0 5px rgba(148, 0, 42, 0.45), 0 0 14px rgba(148, 0, 42, 0.25)"
+                        },
+                        "100%": {
+                          boxShadow:
+                            "0 0 0 2px rgba(148, 0, 42, 0.25), 0 0 6px rgba(148, 0, 42, 0.15)"
+                        }
                       },
                       fontSize: "0.875rem",
                       fontWeight: i === activeStep ? 700 : 500,
@@ -76,14 +96,19 @@ function ClickableStepperProgressIndicator({
                       textAlign: "center",
                       whiteSpace: "normal",
                       wordBreak: "break-word",
-                      transition: "background-color 0.2s ease, box-shadow 0.2s ease, font-weight 0.2s ease",
+                      transition:
+                        "background-color 0.2s ease, box-shadow 0.2s ease, font-weight 0.2s ease",
                       "&:hover": {
-                        backgroundColor: alpha(theme.palette.button.main, theme.palette.action.hoverOpacity),
+                        backgroundColor: alpha(
+                          theme.palette.button.main,
+                          theme.palette.action.hoverOpacity
+                        ),
                         color: CustomPalette.PRIMARY,
                         transform: "none",
-                        boxShadow: i === activeStep
-                          ? "0 0 0 3px rgba(148, 0, 42, 0.35), 0 0 10px rgba(148, 0, 42, 0.25)"
-                          : "none"
+                        boxShadow:
+                          i === activeStep
+                            ? "0 0 0 3px rgba(148, 0, 42, 0.35), 0 0 10px rgba(148, 0, 42, 0.25)"
+                            : "none"
                       }
                     })}
                   >
@@ -112,7 +137,10 @@ function ClickableStepperProgressIndicator({
             })}
           >
             {steps.map((step) => (
-              <Box key={step.label} sx={{ display: "flex", justifyContent: "center", px: 0.5 }}>
+              <Box
+                key={step.label}
+                sx={{ display: "flex", justifyContent: "center", px: 0.5 }}
+              >
                 {stepErrors[step.label] ? (
                   <Alert
                     severity="error"

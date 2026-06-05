@@ -7,7 +7,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "react-i18next";
 import { useMultiSchema } from "../schema/schemaContext";
 import { removeSpacesFromString } from "../utils/stringUtils";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import { hasDisallowedChars } from "../utils/helpers";
 
 export default function AddAttribute({

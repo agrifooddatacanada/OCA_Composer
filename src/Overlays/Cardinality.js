@@ -35,7 +35,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { gridStyles, greyCellStyle } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
 import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";

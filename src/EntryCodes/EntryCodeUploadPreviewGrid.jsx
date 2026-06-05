@@ -13,7 +13,7 @@ import {
   ENTRY_CODE_UPLOAD_PREVIEW_SPINNER_MIN_MS,
   LAN_GRID_SHELL_WIDTH_PX
 } from "../constants/constants";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import { measureTextHeight } from "../utils/measureTextLines";
 
 const PREVIEW_CELL_MIN_W = 88;
