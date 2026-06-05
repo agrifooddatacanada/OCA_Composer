@@ -1,33 +1,6 @@
 import { langCodeOCAFromName } from "../utils/languageUtils";
 import { normalizeAttributeNameKey } from "../utils/stringUtils";
 
-/**
- * Applies all overlay changes from editor state to OCA schema structure.
- *
- * @param {Object} ocaSchema - OCA package schema to modify (bundle or dependency)
- * @param {Object} editorState - UI editing state with overlay data maps
- *
- * Converts UI editing state (flat maps like attributeFormats, attributeCardinality)
- * into OCA overlay structures (format, cardinality, entry, label, etc.).
- */
-export function applyAllOverlays(ocaSchema, editorState) {
-  if (!ocaSchema.overlays) ocaSchema.overlays = {};
-
-  const validAttributeNames = getValidAttributeNames(editorState);
-
-  // Apply each overlay type
-  applyDirectOverlays(ocaSchema, editorState);
-  applyMetaOverlays(ocaSchema, editorState);
-  applyConformanceOverlay(ocaSchema, editorState);
-  applyFormatOverlay(ocaSchema, editorState);
-  applyCharacterEncodingOverlay(ocaSchema, editorState);
-  applyCardinalityOverlay(ocaSchema, editorState);
-  applyStandardOverlay(ocaSchema, editorState, validAttributeNames);
-  applyRangeOverlay(ocaSchema, editorState);
-  applyEntryOverlay(ocaSchema, editorState);
-  applyLabelAndInfoOverlays(ocaSchema, editorState);
-}
-
 // ============================================================================
 // HELPERS
 // ============================================================================
@@ -356,4 +329,35 @@ function applyLabelAndInfoOverlays(ocaSchema, editorState) {
   if (labelOverlays.length > 0) ocaSchema.overlays.label = labelOverlays;
   if (informationOverlays.length > 0)
     ocaSchema.overlays.information = informationOverlays;
+}
+
+// ============================================================================
+// MAIN EXPORT
+// ============================================================================
+
+/**
+ * Applies all overlay changes from editor state to OCA schema structure.
+ *
+ * @param {Object} ocaSchema - OCA package schema to modify (bundle or dependency)
+ * @param {Object} editorState - UI editing state with overlay data maps
+ *
+ * Converts UI editing state (flat maps like attributeFormats, attributeCardinality)
+ * into OCA overlay structures (format, cardinality, entry, label, etc.).
+ */
+export function applyAllOverlays(ocaSchema, editorState) {
+  if (!ocaSchema.overlays) ocaSchema.overlays = {};
+
+  const validAttributeNames = getValidAttributeNames(editorState);
+
+  // Apply each overlay type
+  applyDirectOverlays(ocaSchema, editorState);
+  applyMetaOverlays(ocaSchema, editorState);
+  applyConformanceOverlay(ocaSchema, editorState);
+  applyFormatOverlay(ocaSchema, editorState);
+  applyCharacterEncodingOverlay(ocaSchema, editorState);
+  applyCardinalityOverlay(ocaSchema, editorState);
+  applyStandardOverlay(ocaSchema, editorState, validAttributeNames);
+  applyRangeOverlay(ocaSchema, editorState);
+  applyEntryOverlay(ocaSchema, editorState);
+  applyLabelAndInfoOverlays(ocaSchema, editorState);
 }
