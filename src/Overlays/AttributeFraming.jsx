@@ -8,7 +8,9 @@ import React, {
   useRef,
   useState,
   useEffect,
-  useCallback
+  useCallback,
+  forwardRef,
+  useImperativeHandle
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,17 +27,21 @@ import {
   FormControl,
   CircularProgress
 } from "@mui/material";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "../components/AgGridReact";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import SearchIcon from "@mui/icons-material/Search";
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import Spinner from "../components/Spinner";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
 import DeleteConfirmation from "./DeleteConfirmation";
+import { getAllGridRowData } from "./gridUtils";
+import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import {
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS
@@ -45,7 +51,7 @@ import {
   matchedSubjectAndPredicate,
   searchPredicates,
   getLabelofParentClass
-} from "../constants/utils";
+} from "../utils/helpers";
 
 let globalGridRef = null;
 
@@ -544,7 +550,7 @@ const CustomTreeView = ({ selectedTerm }) => {
 };
 
 const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -668,7 +674,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Type of Match"),
-          helpText: t("Mapping vocabulary ...")
+          helpText: t("Mapping vocabulary to reasonate the relationship between the attribute and ontologies terms")
         }
       },
       {
@@ -802,16 +808,13 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                   style={{ width: "100%", maxWidth: "100%" }}
                 >
                   <style>{gridStyles}</style>
-                  <style>{`
-                    .ag-theme-balham .ag-row:hover {
-                      background-color: ${CustomPalette.PINK_100} !important;
-                    }
-                  `}</style>
                   <AgGridReact
+                    key={i18n.language}
                     ref={gridRef}
                     rowData={searchResults}
                     columnDefs={searchResultsColumnDefs}
                     domLayout="autoHeight"
+                    suppressRowHoverHighlight
                     stopEditingWhenCellsLoseFocus
                     onGridReady={() => {
                       globalGridRef = gridRef;
@@ -819,6 +822,7 @@ const EditAttributeFramingModal = ({ open, onClose, onSave, editingRowData }) =>
                     rowHeight={30}
                     headerHeight={30}
                     suppressHorizontalScroll
+                    overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
                     getRowStyle={(params) => {
                       // Check if the checkbox is actually selected in the row data
                       const isSelected = params.data && params.data.selected === true;
@@ -1071,26 +1075,45 @@ const updateFramedAttributes = (attributeFramingRowData, displayedFramedAttribut
       : row;
   });
 
-const AttributeFraming = () => {
+const AttributeFraming = forwardRef(function AttributeFraming(_props, ref) {
   const {
-    attributeFramingRowData,
-    setAttributeFramingRowData,
-    setCurrentPage,
-    setSelectedOverlay,
-    setOverlay,
-    frameAllAttributes,
-    setFrameAllAttributes,
-    unframedAttributeList,
-    setUnframedAttributeList
+    setCurrentPage
   } = useContext(Context);
 
-  const { t } = useTranslation();
+  const {
+    getSchema,
+    updateSchema,
+    setSelectedOverlay
+  } = useMultiSchema();
+  
+  const schemaState = getSchema();
+  const attributeFramingRowData = schemaState?.attributeFramingData || [];
+  const frameAllAttributes = schemaState?.frameAllAttributes || false;
+  const unframedAttributeList = schemaState?.unframedAttributeList || [];
+  
+  // Setter functions that update MultiSchemaContext
+  const setAttributeFramingRowData = useCallback((data) => {
+    updateSchema({ attributeFramingData: data });
+  }, [updateSchema]);
+  
+  const setFrameAllAttributes = useCallback((value) => {
+    updateSchema({ frameAllAttributes: value });
+  }, [updateSchema]);
+  
+  const setUnframedAttributeList = useCallback((list) => {
+    updateSchema({ unframedAttributeList: list });
+  }, [updateSchema]);
+  
+  const { t, i18n } = useTranslation();
   const gridRef = useRef();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isLoadingPredicates, setIsLoadingPredicates] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [gridReady, setGridReady] = useState(false);
+  
+  // Use centralized delete handler
+  const deleteHandler = useDeleteOverlayHandler(FIELD_ATTRIBUTE_FRAMING_OVERLAY);
 
   const hasUnframedAttributes = unframedAttributeList && unframedAttributeList.length > 0;
 
@@ -1126,8 +1149,9 @@ const AttributeFraming = () => {
       console.warn("Error stopping grid editing:", error);
     }
 
-    const displayedFramedAttributes =
-      gridRef.current?.api?.getRenderedNodes()?.map((node) => node?.data) || [];
+    const displayedFramedAttributes = gridRef.current?.api
+      ? getAllGridRowData(gridRef.current.api)
+      : [];
 
     // Update with any current changes from the grid
     const updatedAttributeFramingRowData = updateFramedAttributes(
@@ -1226,7 +1250,7 @@ const AttributeFraming = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Subject"),
-          helpText: t("This is the name for the attribute and, for example...")
+          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
         }
       },
       {
@@ -1238,7 +1262,7 @@ const AttributeFraming = () => {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Predicate"),
-          helpText: t("Mapping vocabulary ...")
+          helpText: t("Mapping vocabulary to reasonate the relationship between the attribute and ontologies terms")
         }
       },
       {
@@ -1314,20 +1338,7 @@ const AttributeFraming = () => {
       ? `${t("Unframed attributes")}: [${unframedAttributeList.join(", ")}]`
       : t("No attributes to frame");
 
-  const handleDeleteCurrentOverlay = () => {
-    setOverlay((prev) => ({
-      ...prev,
-      [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: {
-        ...prev[FIELD_ATTRIBUTE_FRAMING_OVERLAY],
-        selected: false
-      }
-    }));
-
-    setSelectedOverlay("");
-    setCurrentPage("Overlays");
-  };
-
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (!gridReady || !gridRef.current?.api) {
       console.warn("Grid not ready for save operation");
       return;
@@ -1335,14 +1346,27 @@ const AttributeFraming = () => {
 
     try {
       gridRef.current.api.stopEditing();
-      const rowData = gridRef.current.api.getRenderedNodes()?.map((node) => node?.data);
-      if (rowData) {
+      const rowData = getAllGridRowData(gridRef.current.api);
+      if (rowData.length > 0) {
         setAttributeFramingRowData(rowData);
       }
     } catch (error) {
       console.error("Error saving grid data:", error);
     }
-  };
+  }, [gridReady, setAttributeFramingRowData]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: handleSave
+    }),
+    [handleSave]
+  );
+
+  const handleLeaveToOverlays = useCallback(() => {
+    handleSave();
+    setCurrentPage("Overlays");
+  }, [handleSave, setCurrentPage]);
 
   const handleForward = () => {
     handleSave();
@@ -1359,12 +1383,11 @@ const AttributeFraming = () => {
       isForward
       isBack
       pageForward={handleForward}
-      pageBack={handleBack}
-      backText="Remove overlay"
+      pageBack={handleLeaveToOverlays}
     >
       {showDeleteConfirmation && (
         <DeleteConfirmation
-          removeFromSelected={handleDeleteCurrentOverlay}
+          removeFromSelected={deleteHandler}
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}
@@ -1378,7 +1401,7 @@ const AttributeFraming = () => {
           }
         />
       )}
-      <Box sx={{ my: "2rem" }}>
+      <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         {isLoadingPredicates ? (
           <Spinner text="Framing Attributes..." size={36} />
         ) : (
@@ -1444,13 +1467,16 @@ const AttributeFraming = () => {
             >
               <style>{gridStyles}</style>
               <AgGridReact
+                key={i18n.language}
                 ref={gridRef}
                 rowData={attributeFramingRowData}
                 columnDefs={columnDefs}
                 domLayout="autoHeight"
+                suppressRowHoverHighlight
                 stopEditingWhenCellsLoseFocus
                 suppressHorizontalScroll={false}
                 onGridReady={() => setGridReady(true)}
+                overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
               />
             </Box>
           </Box>
@@ -1458,6 +1484,6 @@ const AttributeFraming = () => {
       </Box>
     </BackNextSkeleton>
   );
-};
+});
 
 export default AttributeFraming;

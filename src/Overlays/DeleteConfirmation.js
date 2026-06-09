@@ -3,29 +3,38 @@ import React from "react";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CustomPalette } from "../constants/customPalette";
 
-const DeleteConfirmation = ({ removeFromSelected, closeModal }) => (
-  <Box style={{ position: "relative" }}>
-    <Box
-      sx={{
+const panelSx = (variant) => ({
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-around",
+  alignItems: "center",
+  width: "40rem",
+  minHeight: "15rem",
+  p: 3,
+  boxShadow: 20,
+  borderRadius: "0.5rem",
+  backgroundColor: CustomPalette.WHITE,
+  border: "1px solid",
+  borderColor: CustomPalette.PRIMARY,
+  ...(variant === "overlay"
+    ? {
         position: "absolute",
         left: "50%",
         top: "50%",
         zIndex: 100,
-        transform: "translate(-50%, 0%)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-around",
-        alignItems: "center",
-        width: "40rem",
-        minHeight: "15rem",
-        p: 3,
-        boxShadow: 20,
-        borderRadius: "0.5rem",
-        backgroundColor: CustomPalette.WHITE,
-        border: "1px solid",
-        borderColor: CustomPalette.PRIMARY
-      }}
-    >
+        transform: "translate(-50%, 0%)"
+      }
+    : {})
+});
+
+const DeleteConfirmation = ({
+  removeFromSelected,
+  closeModal,
+  confirmationMessage = "Are you sure you want to remove this single feature?",
+  variant = "overlay"
+}) => {
+  const inner = (
+    <Box sx={panelSx(variant)}>
       <Box
         sx={{
           display: "flex",
@@ -49,8 +58,8 @@ const DeleteConfirmation = ({ removeFromSelected, closeModal }) => (
         </Typography>
       </Box>
 
-      <Typography variant="h6">
-        Are you sure you want to remove this single feature?
+      <Typography variant="body1" sx={{ textAlign: "center", px: 1 }}>
+        {confirmationMessage}
       </Typography>
       <Box sx={{ alignSelf: "flex-end" }}>
         <Button
@@ -83,7 +92,10 @@ const DeleteConfirmation = ({ removeFromSelected, closeModal }) => (
         </Button>
       </Box>
     </Box>
-  </Box>
-);
+  );
+
+  if (variant === "contained") return inner;
+  return <Box style={{ position: "relative" }}>{inner}</Box>;
+};
 
 export default DeleteConfirmation;

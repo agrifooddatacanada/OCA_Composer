@@ -2,63 +2,136 @@ import React, { useContext, useState } from "react";
 import { TextField, Typography, Box, Tooltip, Button } from "@mui/material";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { languageCodesObject } from "../constants/isoCodes";
-import Classification from "./Classification";
-import { useTranslation } from "react-i18next";
+import { langCodeOCAFromName, langTwoLettersFromName, LanguageConstants } from "../utils/languageUtils";
+import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
+import { TOOLTIP_ICON_GAP } from "../constants/constants";
+import { useMultiSchema } from "../schema/schemaContext";
 
 export default function SchemaInput({
   language,
   setShowIsoInput,
   setEditingLanguage,
-  index
+  languages,
+  setLanguages
 }) {
   const { t } = useTranslation();
   const {
-    schemaDescription,
-    setSchemaDescription,
-    languages,
-    setLanguages,
     customIsos,
+    ocaPackage
   } = useContext(Context);
   const [deleteHover, setDeleteHover] = useState(false);
   const nameFieldId = `schema-name${language}`;
   const descriptionFieldId = `schema-description${language}`;
+  const { getSchema, updateSchema, currentSchemaId } = useMultiSchema();
+
+  // Convert language name to OCA code for accessing overlays
+  const langCodeOCA = langCodeOCAFromName(language);
+
+  // Get schema data from MultiSchemaContext (works for both manual and imported schemas)
+  // MultiSchemaContext handles null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
+  const schemaState = getSchema() || {};
+  const metaState = schemaState.metadata || {};
+  const metaLocalized = metaState.localized || {};
+  const primaryLanguage = languages?.[0] || LanguageConstants.DEFAULT_LANG_NAME; // safe fallback for callers that reference languages[0]
+  
+  // Priority: localized metadata > OCA package data (on initial load) > empty string
+  let schemaName = "";
+  let currentSchemaDescription = "";
+  
+  if (metaLocalized[langCodeOCA]) {
+    // Use localized data for this language from schema state
+    schemaName = metaLocalized[langCodeOCA]?.name ?? "";
+    currentSchemaDescription = metaLocalized[langCodeOCA]?.description ?? "";
+  } else if (ocaPackage && currentSchemaId) {
+    // Fall back to OCA package data on initial load (imported schemas only)
+    const currentSchemaData = getSchemaDataById(ocaPackage, currentSchemaId, langCodeOCA);
+    schemaName = currentSchemaData?.schemaName || "";
+    currentSchemaDescription = currentSchemaData?.schemaDescription || "";
+  }
+  // else: both remain empty strings (brand new, no data yet)
+
+  // Debug logs removed to reduce console noise during schema-aware editing
 
   const handleNameField = (e) => {
-    e.preventDefault();
-
-    let newSchema = JSON.parse(JSON.stringify(schemaDescription));
-    let newText = e.target.value;
-    newSchema = {
-      ...newSchema,
-      [language]: { ...newSchema[language], name: newText },
+    const newText = e.target.value;
+    
+    // Trust MultiSchemaContext to handle null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
+    const st = getSchema() || {};
+    const prevMeta = st.metadata || {};
+    const prevLoc = prevMeta.localized || {};
+    const nextLocalized = {
+      ...prevLoc,
+      [langCodeOCA]: { ...(prevLoc[langCodeOCA] || {}), name: newText }
     };
-    setSchemaDescription(newSchema);
+    // Ensure we always have localized structure, initialize English if missing
+    if (!nextLocalized.eng) {
+      nextLocalized.eng = {
+        name: prevMeta.name || newText,
+        description: prevMeta.description || ""
+      };
+    }
+    // Only update the global name field if editing English (primary language)
+    const nextMeta =
+      langCodeOCA === "eng"
+        ? { ...prevMeta, name: newText, localized: nextLocalized }
+        : { ...prevMeta, localized: nextLocalized };
+    
+    updateSchema({ metadata: nextMeta });
   };
 
   const handleDescriptionField = (e) => {
-    e.preventDefault();
-
-    let newSchema = JSON.parse(JSON.stringify(schemaDescription));
-    let newText = e.target.value;
-    newSchema = {
-      ...newSchema,
-      [language]: { ...newSchema[language], description: newText },
+    const newText = e.target.value;
+    
+    // Trust MultiSchemaContext to handle null schemaId via MANUAL_CREATION_SCHEMA_ID fallback
+    const st = getSchema() || {};
+    const prevMeta = st.metadata || {};
+    const prevLoc = prevMeta.localized || {};
+    const nextLocalized = {
+      ...prevLoc,
+      [langCodeOCA]: { ...(prevLoc[langCodeOCA] || {}), description: newText }
     };
-    setSchemaDescription(newSchema);
+    // Ensure we always have localized structure, initialize English if missing
+    if (!nextLocalized.eng) {
+      nextLocalized.eng = {
+        name: prevMeta.name || "",
+        description: prevMeta.description || newText
+      };
+    }
+    // Only update the global description field if editing English (primary language)
+    const nextMeta =
+      langCodeOCA === "eng"
+        ? { ...prevMeta, description: newText, localized: nextLocalized }
+        : { ...prevMeta, localized: nextLocalized };
+    
+    updateSchema({ metadata: nextMeta });
   };
 
   const handleDelete = () => {
     const languageIndex = languages.indexOf(language);
-    let newLanguageArray = [...languages];
+    const newLanguageArray = [...languages];
     newLanguageArray.splice(languageIndex, 1);
     setLanguages(newLanguageArray);
-    const newSchemaDescription = JSON.parse(JSON.stringify(schemaDescription));
-    delete newSchemaDescription[language];
-    setSchemaDescription(newSchemaDescription);
+    
+    // Also remove from schema metadata
+    if (currentSchemaId) {
+      const st = getSchema() || {};
+      const prevMeta = st.metadata || {};
+      const prevLoc = prevMeta.localized || {};
+      const nextLocalized = { ...prevLoc };
+      delete nextLocalized[langCodeOCA];
+      
+      updateSchema({
+        metadata: {
+          ...prevMeta,
+          localized: nextLocalized,
+          languages: newLanguageArray
+        }
+      });
+    }
   };
 
   return (
@@ -68,17 +141,13 @@ export default function SchemaInput({
           display: "flex",
           flexDirection: "column",
           mt: 1,
-          height: "10.5rem",
         }}
       >
-        {index === 0 ? <Classification /> : (
-          <Box sx={{ marginBottom: '1rem', height: '5rem' }} />
-        )}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-start",
+            alignItems: "flex-start"
           }}
         >
           <Typography
@@ -88,10 +157,10 @@ export default function SchemaInput({
               textAlign: "left",
               textTransform: "capitalize",
               maxWidth: "20rem",
-              wordBreak: "break-word",
+              wordBreak: "break-word"
             }}
           >
-            {language}
+            {t(language, { defaultValue: language })}
           </Typography>
           {languages.length > 1 && (
             <Box
@@ -105,7 +174,7 @@ export default function SchemaInput({
                     pr: 1,
                     color: CustomPalette.PRIMARY,
                     transform: "scale(1.2)",
-                    transition: "all 0.2s ease-in-out",
+                    transition: "all 0.2s ease-in-out"
                   }}
                 />
               ) : (
@@ -113,7 +182,7 @@ export default function SchemaInput({
                   sx={{
                     pr: 1,
                     color: CustomPalette.GREY_600,
-                    transition: "all 0.2s ease-in-out",
+                    transition: "all 0.2s ease-in-out"
                   }}
                 />
               )}
@@ -125,17 +194,17 @@ export default function SchemaInput({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-
+            marginTop: "0.35rem"
           }}
         >
           <Box>
             <Typography variant="body2" sx={{ fontStyle: "italic" }}>
-              ISO Code:{" "}
-              {languageCodesObject[language.toLowerCase()] ||
+              {t("ISO Code")}:{" "}
+              {langTwoLettersFromName(language) ||
                 customIsos[language.toLowerCase()]}
             </Typography>
           </Box>
-          {!languageCodesObject[language.toLowerCase()] && (
+          {!langTwoLettersFromName(language) && (
             <Button
               variant="contained"
               color="button"
@@ -156,7 +225,8 @@ export default function SchemaInput({
           sx={{
             display: "flex",
             alignItems: "center",
-            color: CustomPalette.GREY_600,
+            gap: TOOLTIP_ICON_GAP,
+            color: CustomPalette.GREY_600
           }}
         >
           <Typography
@@ -165,15 +235,17 @@ export default function SchemaInput({
               fontWeight: "bold",
               textAlign: "left",
               margin: "0.5rem 0 0.5rem 0",
-              width: "8rem",
-              color: CustomPalette.BLACK,
+              flexShrink: 0,
+              color: CustomPalette.BLACK
             }}
           >
-            {t('Name of Schema')}
+            {t("Name of Schema")}
           </Typography>
-          {language === languages[0] && (
+          {language === primaryLanguage && (
             <Tooltip
-              title={t("The name of the schema. It is recommended to use a more general...")}
+              title={t(
+                "The name of the schema. It is recommended to use a more general name rather than one that identifies a specific dataset or experiment."
+              )}
               placement="right"
               arrow
             >
@@ -187,19 +259,18 @@ export default function SchemaInput({
           onChange={handleNameField}
           inputProps={{
             style: {
-              height: "0.2rem",
-            },
+              height: "0.2rem"
+            }
           }}
-          value={
-            schemaDescription[language] && schemaDescription[language].name
-          }
+          value={schemaName || ""}
         />
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
+            gap: TOOLTIP_ICON_GAP,
             margin: "2rem 0 0.5rem 0",
-            color: CustomPalette.GREY_600,
+            color: CustomPalette.GREY_600
           }}
         >
           <Typography
@@ -207,15 +278,15 @@ export default function SchemaInput({
               fontSize: 15,
               fontWeight: "bold",
               textAlign: "left",
-              color: CustomPalette.BLACK,
-              width: "6rem",
+              flexShrink: 0,
+              color: CustomPalette.BLACK
             }}
           >
-            {t('Description')}
+            {t("Description")}
           </Typography>
-          {language === languages[0] && (
+          {language === primaryLanguage && (
             <Tooltip
-              title={t('The description of the schema that will help yourself...')}
+              title={t("The description of the schema that will help yourself and others determine what kind of data the schema describes.")}
               placement="right"
               arrow
             >
@@ -224,15 +295,12 @@ export default function SchemaInput({
           )}
         </Box>
         <TextField
-          multiline={true}
+          multiline
           rows="5"
           id={descriptionFieldId}
           type="text"
           onChange={handleDescriptionField}
-          value={
-            schemaDescription[language] &&
-            schemaDescription[language].description
-          }
+          value={currentSchemaDescription || ""}
         />
       </Box>
     </Box>

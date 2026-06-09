@@ -17,4 +17,6 @@ export const messages = {
   blankEntries:
     "Uploaded file contains blank entries. They will need to be deleted or updated on a future page.",
   fileSizeLimit: "Please upload a file smaller than 1 MB. Only data headers in the first row are needed.",
+  delimiterMismatchWarning: (expectedType, uploadedType) =>
+    `Schema delimiter expects ${expectedType}, but you uploaded ${uploadedType}. You can continue, but parsing or validation results may not match the schema as expected.`,
 };

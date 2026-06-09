@@ -1,15 +1,29 @@
-import React, { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
-import { AgGridReact } from "ag-grid-react";
 import { Box, List, ListItem, ListItemText, MenuItem, Typography } from "@mui/material";
+import { AgGridReact } from "../components/AgGridReact";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { Context } from "../App";
 import Languages from "./Languages";
-import { greyCellStyle, gridStyles } from "../constants/styles";
+import {
+  greyCellStyle,
+  gridStyles,
+  AG_GRID_DROPDOWN_CELL_CLASS
+} from "../constants/styles";
 import { DropdownMenuList } from "../components/DropdownMenuCell";
 import { CustomPalette } from "../constants/customPalette";
-import { codesToLanguages } from "../constants/isoCodes";
+import { useMultiSchema } from "../schema/schemaContext";
+import { getUILangName, LanguageConstants } from "../utils/languageUtils";
 
 export const DataHeaderRenderer = memo((props) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -79,7 +93,6 @@ const AttributeMatch = () => {
   const { t } = useTranslation();
   const {
     setCurrentDataValidatorPage,
-    languages,
     matchingRowData,
     setMatchingRowData,
     schemaDataConformantHeader,
@@ -90,13 +103,37 @@ const AttributeMatch = () => {
     notToVerifyAttributes,
     setNotToVerifyAttributes
   } = useContext(Context);
+
+  const {
+    getLanguages,
+    getAttributesList,
+    getSchema,
+    schemaStates,
+    currentSchemaId,
+    ocaPackage
+  } = useMultiSchema();
+  const _rawLanguages = getLanguages();
+  const languages =
+    Array.isArray(_rawLanguages) && _rawLanguages.length
+      ? _rawLanguages
+      : [LanguageConstants.DEFAULT_LANG_NAME];
+
+  const attributeSignature = useMemo(() => {
+    const names = getAttributesList();
+    return Array.isArray(names) ? names.join("\0") : "";
+  }, [schemaStates, currentSchemaId, ocaPackage]);
+
   const [type, setType] = useState(() => {
-    // split the language code into the base language code (e.g. from US-en to en)
-    const siteLanguageCode = (i18next.resolvedLanguage || i18next.language).split("-")[0];
-    const siteLanguage = codesToLanguages[siteLanguageCode];
-    return siteLanguage === "English"
-      ? languages[0]
-      : languages.find((language) => language.includes(siteLanguage));
+    const siteLanguage = getUILangName();
+    const langNames =
+      Array.isArray(languages) && languages.length
+        ? languages
+        : [LanguageConstants.DEFAULT_LANG_NAME];
+    const chosen =
+      siteLanguage === "English"
+        ? langNames[0]
+        : langNames.find((language) => language.includes(siteLanguage)) || langNames[0];
+    return chosen || LanguageConstants.DEFAULT_LANG_NAME;
   });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [columnDefs, setColumnDefs] = useState([]);
@@ -195,15 +232,19 @@ const AttributeMatch = () => {
 
   // Change selected language when site language changes
   useEffect(() => {
-    // split the language code into the base language code (e.g. from US-en to en)
-    const siteLanguageCode = (i18next.resolvedLanguage || i18next.language).split("-")[0];
-    const siteLanguage = codesToLanguages[siteLanguageCode];
-    setType(
+    const siteLanguage = getUILangName();
+    const langNames =
+      Array.isArray(languages) && languages.length
+        ? languages
+        : [LanguageConstants.DEFAULT_LANG_NAME];
+    const newType =
       siteLanguage === "English"
-        ? languages[0]
-        : languages.find((language) => language.includes(siteLanguage))
-    );
-  }, [i18next.language]);
+        ? langNames[0] || LanguageConstants.DEFAULT_LANG_NAME
+        : langNames.find((language) => language.includes(siteLanguage)) ||
+          langNames[0] ||
+          LanguageConstants.DEFAULT_LANG_NAME;
+    setType(newType);
+  }, [i18next.language, languages]);
 
   useEffect(() => {
     if (ogSchemaDataConformantHeaderRef.current.length === 0) {
@@ -212,21 +253,41 @@ const AttributeMatch = () => {
 
     const unassignedVariables = [...ogSchemaDataConformantHeaderRef.current];
     if (firstTimeMatchingRef.current) {
-      const newMatchingRowData = [];
       if (matchingRowData && matchingRowData?.length > 0) {
-        for (const node of matchingRowData) {
+        const newMatchingRowData = matchingRowData.map((node) => {
           const index = matchingFunction(unassignedVariables, node.Attribute);
-          newMatchingRowData.push({
-            ...node,
-            Dataset: index !== -1 ? unassignedVariables[index] : ""
+          const DatasetVal = index !== -1 ? unassignedVariables[index] : "";
+          if (index !== -1) unassignedVariables.splice(index, 1);
+          return { ...node, Dataset: DatasetVal };
+        });
+        setMatchingRowData(newMatchingRowData);
+      } else {
+        const attributeNames = Array.isArray(getAttributesList())
+          ? getAttributesList()
+          : [];
+        if (attributeNames.length > 0) {
+          const schema = getSchema();
+          const lanAttributeRowData = schema?.lanAttributeRowData || {};
+          const langLabelArray = lanAttributeRowData[type] || [];
+          const labelMap = {};
+          langLabelArray.forEach((l) => {
+            labelMap[l.Attribute] = l.Label || "";
           });
-          if (index !== -1) {
-            unassignedVariables.splice(index, 1);
-          }
+
+          const newMatchingRowData = attributeNames.map((attr) => {
+            const index = matchingFunction(unassignedVariables, attr);
+            const datasetMatch = index !== -1 ? unassignedVariables[index] : "";
+            if (index !== -1) unassignedVariables.splice(index, 1);
+            return {
+              Attribute: attr,
+              [type]: labelMap[attr] || "",
+              Dataset: datasetMatch
+            };
+          });
+
+          setMatchingRowData(newMatchingRowData);
         }
       }
-
-      setMatchingRowData(newMatchingRowData);
     } else {
       for (const node of matchingRowData) {
         const index = unassignedVariables.indexOf(node.Dataset);
@@ -237,7 +298,7 @@ const AttributeMatch = () => {
     }
 
     setNotToVerifyAttributes(unassignedVariables);
-  }, [schemaDataConformantHeader]);
+  }, [schemaDataConformantHeader, attributeSignature, type, matchingFunction]);
 
   useEffect(() => {
     const columnDefs = [
@@ -266,6 +327,7 @@ const AttributeMatch = () => {
           {
             headerName: t("Dataset"),
             field: "Dataset",
+            cellClass: AG_GRID_DROPDOWN_CELL_CLASS,
             cellRendererFramework: DataHeaderRenderer,
             cellRendererParams: (params) => ({
               dataHeaders: ogSchemaDataConformantHeaderRef.current,
@@ -280,6 +342,14 @@ const AttributeMatch = () => {
     setColumnDefs(columnDefs);
   }, [type, t]);
 
+  // helper that checks if all attributes are matched to their respective datasets and disables the forward button if not
+  // const areAllColumnsMatched = useCallback(
+  //   () =>
+  //     matchingRowData.length > 0 &&
+  //     matchingRowData.every((row) => row.Dataset && row.Dataset !== ""),
+  //   [matchingRowData]
+  // );
+
   return (
     <>
       <BackNextSkeleton
@@ -292,14 +362,17 @@ const AttributeMatch = () => {
         }}
         isForward
         pageForward={handleSavePage}
-        middleText={t("You must match your dataset columns...")}
+        middleText={t(
+          "You must match your dataset columns (variables) to the attributes in your schema. The verifier attempts to match names automatically. If there are mismatches or unassigned matches you can correct that here."
+        )}
       />
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
           flex: 1,
-          marginTop: "20px"
+          marginTop: "20px",
+          mb: BETWEEN_SECTION_SPACING
         }}
       >
         <Box

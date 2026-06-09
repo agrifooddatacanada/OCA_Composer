@@ -13,21 +13,28 @@ import { CustomPalette } from "../constants/customPalette";
 import AccordionItemWrapper from "./AccordionItemWrapper";
 import Drop from "../StartSchema/Drop";
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import useGenerateReadMe from "../ViewSchema/useGenerateReadMe";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
-import useGenerateReadMeV2 from "../ViewSchema/useGenerateReadMeV2";
-import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
+import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
+import { useHandleSchemaFileDrop } from "../OCADataValidator/useHandleSchemaFileDrop";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { CATALOGUE_INFO_KEY } from "../constants/catalogueInfo";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
+import { syncLandingSchemaDrop } from "../utils/landingSchemaUpload";
+import {
+  isOcaPackageIntegrityValid,
+  shouldVerifyOcaPackageCryptographically
+} from "../utils/verifyOcaIntegrity";
 
-const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
+const UseASchemaAccordionItem = () => {
   const navigate = useNavigate();
-  const { zipToReadme, jsonToReadme, OCAPackage } = useContext(Context);
+  const { zipToReadme, jsonToReadme, setSummaryExportMode } = useContext(Context);
+  const { ocaPackage } = useMultiSchema();
   const { toTextFile } = useGenerateReadMe();
-  const { jsonToTextFile } = useGenerateReadMeV2();
+  const { jsonToTextFile } = useGenerateTextReadmeFromJson();
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
   const { generateMarkdownReadMeFromJson } = useGenerateMarkdownReadMeFromJson();
   const { t } = useTranslation();
@@ -42,26 +49,32 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
     setCurrentPage
   } = useHandleAllDrop();
 
-  const { setJsonRawFile } = useHandleJsonDrop();
+  const { setSchemaRawFile } = useHandleSchemaFileDrop();
 
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
-  const navigateToMetadataPage = () => {
+  const navigateToEditSchema = () => {
     setCurrentPage("Metadata");
     navigate("/start");
+    window.scrollTo(0, 0);
   };
 
   const navigateToViewPage = () => {
-    setCurrentPage("View");
-    navigate("/start");
+    setSummaryExportMode(false);
+    navigate("/start", { state: { openView: true } });
   };
 
   const setFile = (acceptedFiles) => {
-    setRawFile(acceptedFiles);
-    setJsonRawFile(acceptedFiles);
+    syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles);
   };
 
   const disableButtonCheck = rawFile.length === 0 || loading === true;
+
+  let isInvalidOcaPackage = false;
+  if (ocaPackage && shouldVerifyOcaPackageCryptographically(ocaPackage)) {
+    isInvalidOcaPackage = !isOcaPackageIntegrityValid(ocaPackage);
+  }
+
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
 
   const handleClickMarkdownReadme = () => {
@@ -151,7 +164,7 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
           <Button
             variant="contained"
             color="navButton"
-            onClick={navigateToMetadataPage}
+            onClick={navigateToEditSchema}
             sx={buttonStyles}
             disabled={disableButtonCheck}
           >
@@ -162,7 +175,8 @@ const UseASchemaAccordionItem = ({ isInvalidOcaPackage }) => {
             color="navButton"
             onClick={() => {
               if (Object.keys(jsonToReadme).length > 0) {
-                jsonToTextFile(jsonToReadme, OCAPackage);
+                // Schema name will be extracted from jsonToReadme automatically
+                jsonToTextFile(jsonToReadme, ocaPackage);
               } else if (zipToReadme.length > 0) {
                 toTextFile(zipToReadme);
               }

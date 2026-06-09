@@ -3,7 +3,8 @@ import {
   AccordionSummary,
   Box,
   Button,
-  Typography
+  Typography,
+  Tooltip
 } from "@mui/material";
 import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,39 +16,46 @@ import AccordionItemWrapper from "./AccordionItemWrapper";
 import CustomAnchorLink from "../components/CustomAnchorLink";
 import Drop from "../StartSchema/Drop";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
-import { useHandleJsonDrop } from "../OCADataValidator/useHandleJsonDrop";
+import { useHandleSchemaFileDrop } from "../OCADataValidator/useHandleSchemaFileDrop";
 import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 import useHandleAllDrop from "../StartSchema/useHandleAllDrop";
 import InvalidOCAPackageMessage from "./InvalidOCAPackageMessage";
+import { hasMultipleSchemas } from "../utils/schemaUtils";
+import { syncLandingSchemaDrop } from "../utils/landingSchemaUpload";
 
 const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setCurrentDataValidatorPage } = useContext(Context);
+  const { ocaPackage } = useMultiSchema();
+  const isMultiSchema = hasMultipleSchemas(ocaPackage);
   const {
-    jsonRawFile,
-    setJsonRawFile,
+    schemaRawFile,
+    setSchemaRawFile,
     jsonLoading,
     overallLoading,
     jsonDropDisabled,
     jsonDropMessage,
     setJsonDropMessage,
     setJsonLoading
-  } = useHandleJsonDrop();
+  } = useHandleSchemaFileDrop();
 
   const handleMoveToPreviewSchema = () => {
     navigate("/oca-data-verifier");
     setCurrentDataValidatorPage("SchemaViewDataValidator");
   };
 
-  const { setRawFile } = useHandleAllDrop();
+  const { setRawFile, rawFile, loading: startLoading } = useHandleAllDrop();
 
   const setFile = (acceptedFiles) => {
-    setRawFile(acceptedFiles);
-    setJsonRawFile(acceptedFiles);
+    syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles);
   };
 
-  const disableButtonCheck = jsonRawFile.length === 0 || jsonLoading;
+  const disableButtonCheck =
+    (rawFile.length === 0 && schemaRawFile.length === 0) ||
+    jsonLoading ||
+    startLoading;
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
 
   return (
@@ -72,7 +80,7 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
         <Drop
           setFile={setFile}
           setLoading={overallLoading}
-          loading={jsonLoading}
+          loading={jsonLoading || startLoading}
           dropDisabled={jsonDropDisabled}
           dropMessage={jsonDropMessage}
           setDropMessage={setJsonDropMessage}
@@ -96,26 +104,31 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
             </Box>
           )}
           <GenerateDataEntryExcel
-            rawFile={jsonRawFile}
+            rawFile={rawFile.length > 0 ? rawFile : schemaRawFile}
             setLoading={setJsonLoading}
-            disableButtonCheck={disableAdditionalSchemaTools}
+            disableButtonCheck={disableAdditionalSchemaTools || isMultiSchema}
+            isMultiSchema={isMultiSchema}
           />
-          <Button
-            variant="contained"
-            color="navButton"
-            onClick={handleMoveToPreviewSchema}
-            sx={{
-              backgroundColor: CustomPalette.PRIMARY,
-              ":hover": { backgroundColor: CustomPalette.SECONDARY },
-              width: "100%",
-              maxWidth: "300px",
-              marginTop: "20px",
-              marginBottom: "20px"
-            }}
-            disabled={disableAdditionalSchemaTools}
+          <Tooltip
+            title={isMultiSchema ? t("Not available for multi-level schemas") : ""}
+            arrow
           >
-            {t("Enter/Verify Data in Webpage")}
-          </Button>
+            <span style={{ width: "100%", maxWidth: "300px", display: "inline-block", marginTop: "20px", marginBottom: "20px" }}>
+              <Button
+                variant="contained"
+                color="navButton"
+                onClick={handleMoveToPreviewSchema}
+                sx={{
+                  backgroundColor: CustomPalette.PRIMARY,
+                  ":hover": { backgroundColor: CustomPalette.SECONDARY },
+                  width: "100%"
+                }}
+                disabled={disableAdditionalSchemaTools || isMultiSchema}
+              >
+                {t("Enter/Verify Data in Webpage")}
+              </Button>
+            </span>
+          </Tooltip>
         </Box>
 
         <div

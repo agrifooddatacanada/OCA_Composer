@@ -3,13 +3,13 @@ import { Box, Button, Typography, Input, Alert } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
-import { removeSpacesFromString } from "../constants/removeSpaces";
+import { removeSpacesFromString } from "../utils/stringUtils";
 
 export default function IsoCard({
   setShowIsoInput,
   language,
   defaultButton,
-  addCustomButton,
+  addCustomButton
 }) {
   const [iso, setIso] = useState("");
   const [message, setMessage] = useState("");
@@ -28,27 +28,25 @@ export default function IsoCard({
     .toLowerCase();
 
   while (defaultCode.length < 2) {
-    defaultCode = defaultCode + "a";
+    defaultCode += "a";
   }
 
   const handleSave = () => {
     let newIsos = JSON.parse(JSON.stringify(customIsos));
-    let newText = removeSpacesFromString(iso);
+    const newText = removeSpacesFromString(iso);
     const invalidCharactersRegex = /[^a-zA-Z]/;
 
     if (newText.length > 1 && newText.length < 11) {
       const containsInvalidCharacter = invalidCharactersRegex.test(newText);
       if (containsInvalidCharacter) {
-        setMessage(
-          "ISO codes cannot contain special characters, numbers or spaces"
-        );
+        setMessage("ISO codes cannot contain special characters, numbers or spaces");
         setTimeout(() => {
           setMessage("");
         }, 2000);
       } else {
         newIsos = {
           ...newIsos,
-          [language.toLowerCase()]: newText,
+          [language.toLowerCase()]: newText
         };
         setCustomIsos(newIsos);
         setShowIsoInput(false);
@@ -65,7 +63,7 @@ export default function IsoCard({
     let newIsos = JSON.parse(JSON.stringify(customIsos));
     newIsos = {
       ...newIsos,
-      [language.toLowerCase()]: defaultCode,
+      [language.toLowerCase()]: defaultCode
     };
     setCustomIsos(newIsos);
     setShowIsoInput(false);
@@ -78,7 +76,7 @@ export default function IsoCard({
         top: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: 50,
+        zIndex: 50
       }}
     >
       <Box
@@ -99,7 +97,7 @@ export default function IsoCard({
           backgroundColor: CustomPalette.WHITE,
           border: "1px solid",
           borderColor: CustomPalette.RED_100,
-          animation: appearAnimation,
+          animation: appearAnimation
         }}
       >
         <Box
@@ -109,7 +107,7 @@ export default function IsoCard({
             alignItems: "center",
             width: "100%",
             backgroundColor: CustomPalette.RED_100,
-            mb: 2,
+            mb: 2
           }}
         >
           <ErrorOutlineIcon
@@ -117,7 +115,7 @@ export default function IsoCard({
               color: CustomPalette.SECONDARY,
               p: 1,
               pl: 0,
-              fontSize: 35,
+              fontSize: 35
             }}
           />
         </Box>
@@ -129,16 +127,13 @@ export default function IsoCard({
               whiteSpace: "pre-line",
               display: "flex",
               alignItems: "center",
-              bottom: 120,
+              bottom: 120
             }}
           >
             {message}
           </Alert>
         )}
-        <Typography
-          variant="h5"
-          sx={{ p: 1, width: "30rem", wordBreak: "break-word" }}
-        >
+        <Typography variant="h5" sx={{ p: 1, width: "30rem", wordBreak: "break-word" }}>
           An ISO code for{" "}
           <Box>
             <em>{language}</em>{" "}
@@ -153,7 +148,7 @@ export default function IsoCard({
             display: "flex",
             height: "6rem",
             width: "30rem",
-            justifyContent: "space-between",
+            justifyContent: "space-between"
           }}
         >
           <Box
@@ -164,11 +159,11 @@ export default function IsoCard({
               width: "13rem",
               borderRight: `2px solid ${CustomPalette.RED_100}`,
               paddingRight: 4.3,
-              paddingTop: 2,
+              paddingTop: 2
             }}
           >
             <Input
-              id={language + "_ISO"}
+              id={`${language}_ISO`}
               type="text"
               onChange={handleIsoField}
               inputProps={{ style: { textAlign: "center" } }}
@@ -185,7 +180,7 @@ export default function IsoCard({
               sx={{
                 width: "13rem",
                 display: "flex",
-                justifyContent: "space-around",
+                justifyContent: "space-around"
               }}
             >
               save custom ISO
@@ -203,7 +198,7 @@ export default function IsoCard({
               height: "3rem",
               display: "flex",
               justifyContent: "space-around",
-              alignSelf: "center",
+              alignSelf: "center"
             }}
           >
             Select default code: <em>{defaultCode}</em>

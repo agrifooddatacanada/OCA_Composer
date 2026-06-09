@@ -1,11 +1,10 @@
-import React from 'react';
+import React from "react";
 import { Box, Button, Typography } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import { CustomPalette } from "../constants/customPalette";
 
 export default function WarningPopup({ action }) {
-
   const appearAnimation =
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
   return (
@@ -18,7 +17,7 @@ export default function WarningPopup({ action }) {
         height: "100vh",
         zIndex: 50,
         backdropFilter: "blur(5px)",
-        backgroundColor: "rgba(0, 0, 0, 0.3)",
+        backgroundColor: "rgba(0, 0, 0, 0.3)"
       }}
     >
       <Box
@@ -39,7 +38,7 @@ export default function WarningPopup({ action }) {
           backgroundColor: CustomPalette.WHITE,
           border: "1px solid",
           borderColor: CustomPalette.RED_100,
-          animation: appearAnimation,
+          animation: appearAnimation
         }}
       >
         <Box
@@ -48,8 +47,7 @@ export default function WarningPopup({ action }) {
             justifyContent: "center",
             alignItems: "center",
             width: "100%",
-            backgroundColor: CustomPalette.RED_100,
-
+            backgroundColor: CustomPalette.RED_100
           }}
         >
           <ErrorOutlineIcon
@@ -57,12 +55,13 @@ export default function WarningPopup({ action }) {
               color: CustomPalette.SECONDARY,
               p: 1,
               pl: 0,
-              fontSize: 35,
+              fontSize: 35
             }}
           />
         </Box>
         <Typography variant="h5" sx={{ p: 1 }}>
-          Reminder: your data has attributes that are flagged as containing sensitive data. Ensure you are applying the appropriate security for this dataset
+          Reminder: your data has attributes that are flagged as containing sensitive
+          data. Ensure you are applying the appropriate security for this dataset
         </Typography>
 
         <Button
@@ -75,7 +74,7 @@ export default function WarningPopup({ action }) {
             justifyContent: "space-around",
             backgroundColor: CustomPalette.PRIMARY,
             ":hover": {
-              backgroundColor: CustomPalette.SECONDARY,
+              backgroundColor: CustomPalette.SECONDARY
             }
           }}
         >

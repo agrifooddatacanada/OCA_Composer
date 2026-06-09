@@ -18,7 +18,11 @@ import {
   UNIT,
   overlays
 } from "../constants/constants";
-import { replaceAttributeCharsInParsedJson } from "../constants/utils";
+import { replaceAttributeCharsInParsedJson } from "../utils/helpers";
+import {
+  coerceIfLegacyTopLevelBundle,
+  getRootCaptureBaseId
+} from "../utils/packageUtils";
 
 const useHandleOCAFileUpload = () => {
   const {
@@ -133,13 +137,12 @@ const useHandleOCAFileUpload = () => {
       const reader = new FileReader();
 
       reader.onload = async (e) => {
-        const jsonFile = JSON.parse(e.target.result);
-        // If the file is an OCA package
+        const jsonFile = coerceIfLegacyTopLevelBundle(JSON.parse(e.target.result));
         if (jsonFile?.oca_bundle?.bundle) {
           const modifiedBundle = replaceAttributeCharsInParsedJson(
             jsonFile.oca_bundle.bundle
           );
-          const captureBaseSaid = jsonFile?.oca_bundle?.bundle?.capture_base?.d;
+          const captureBaseSaid = getRootCaptureBaseId(jsonFile);
 
           const hasExtensionOverlays = Object.keys(jsonFile?.extensions || {}).length > 0;
 
@@ -152,8 +155,6 @@ const useHandleOCAFileUpload = () => {
           } else {
             handleBundleJSONDrop(modifiedBundle, fileNumber);
           }
-        } else if (jsonFile?.bundle) {
-          handleBundleJSONDrop(jsonFile.bundle, fileNumber);
         } else if (jsonFile?.schema?.[0]) {
           handleBundleJSONDrop(jsonFile.schema[0], fileNumber);
         } else {
