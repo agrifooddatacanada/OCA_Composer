@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Description from "./Description";
 import LanguageSelection from "./LanguageSelection";
-import NavigationCard from "../components/NavigationCard";
+import ErrorPopup from "../ViewSchema/ErrorPopup";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -39,7 +39,7 @@ const SchemaMetadata = forwardRef(
     // Local component state
     const [showLanguages, setShowLanguages] = useState(false);
     const [showCard, setShowCard] = useState(false);
-    const [fieldArray, setFieldArray] = useState([]);
+    const [showBlockingCard, setShowBlockingCard] = useState(false);
     const [showIsoInput, setShowIsoInput] = useState(false);
     const [editingLanguage, setEditingLanguage] = useState("");
 
@@ -153,78 +153,48 @@ const SchemaMetadata = forwardRef(
       updateSchema(metadataUpdate);
     };
 
-    // Reusable validation function
     const validateSchemaMetadata = useCallback(() => {
       const spacesArray = [];
-
-      // MultiSchemaContext handles both manual (null schemaId) and imported schemas
-      // via MANUAL_CREATION_SCHEMA_ID fallback
       const metadata = schemaState?.metadata || {};
       const localized = metadata.localized || {};
 
-      // If no localized data exists yet, both name and description are missing
-      if (Object.keys(localized).length === 0) {
-        spacesArray.push(t("Name of Schema"));
-        spacesArray.push(t("Description"));
-        return spacesArray;
-      }
-
-      // Validate that at least one language has both name and description filled
-      let hasValidLanguage = false;
-
-      Object.entries(localized).forEach(([, langData]) => {
-        if (langData && typeof langData === "object") {
-          const name =
-            typeof langData.name === "string" ? langData.name.trim() : langData.name;
-          const description =
-            typeof langData.description === "string"
-              ? langData.description.trim()
-              : langData.description;
-
-          // If this language has both fields filled, mark as valid
-          if (name && name !== "" && description && description !== "") {
-            hasValidLanguage = true;
-          }
-        }
+      const hasDescription = Object.values(localized).some((langData) => {
+        if (!langData || typeof langData !== "object") return false;
+        const desc =
+          typeof langData.description === "string" ? langData.description.trim() : "";
+        return desc !== "";
       });
 
-      // Only report errors if NO language has complete data
-      if (!hasValidLanguage) {
-        // Check what's specifically missing
-        let missingName = true;
-        let missingDescription = true;
-
-        Object.entries(localized).forEach(([, langData]) => {
-          if (langData && typeof langData === "object") {
-            const name =
-              typeof langData.name === "string" ? langData.name.trim() : langData.name;
-            const description =
-              typeof langData.description === "string"
-                ? langData.description.trim()
-                : langData.description;
-
-            if (name && name !== "") missingName = false;
-            if (description && description !== "") missingDescription = false;
-          }
-        });
-
-        if (missingName) spacesArray.push(t("Name of Schema"));
-        if (missingDescription) spacesArray.push(t("Description"));
+      if (!hasDescription) {
+        spacesArray.push(t("Description"));
       }
 
       return spacesArray;
-    }, [schemaDescription, languages, schemaState, setSchemaDescription, t]);
+    }, [schemaState, t]);
 
     const [pendingNavigationTarget, setPendingNavigationTarget] = useState(null);
+
+    const isMissingName = useCallback(() => {
+      const metadata = schemaState?.metadata || {};
+      const localized = metadata.localized || {};
+      if (Object.keys(localized).length === 0) return true;
+      return !Object.values(localized).some((langData) => {
+        if (!langData || typeof langData !== "object") return false;
+        const name = typeof langData.name === "string" ? langData.name.trim() : "";
+        return name !== "";
+      });
+    }, [schemaState]);
 
     // Expose validation function to parent component
     useImperativeHandle(ref, () => ({
       validateSchemaMetadata: () => validateSchemaMetadata(),
       showValidationPopup: (targetPage) => {
-        // Trigger the same popup as NEXT button
+        if (isMissingName()) {
+          setShowBlockingCard(true);
+          return false;
+        }
         const validationErrors = validateSchemaMetadata();
         if (validationErrors.length >= 1) {
-          setFieldArray(validationErrors);
           setShowCard(true);
           setPendingNavigationTarget(targetPage || null);
           return false;
@@ -234,9 +204,12 @@ const SchemaMetadata = forwardRef(
     }));
 
     const handleForward = () => {
+      if (isMissingName()) {
+        setShowBlockingCard(true);
+        return;
+      }
       const validationErrors = validateSchemaMetadata();
       if (validationErrors.length >= 1) {
-        setFieldArray(validationErrors);
         setShowCard(true);
       } else {
         pageForward();
@@ -306,29 +279,52 @@ const SchemaMetadata = forwardRef(
         isForward
         pageForward={handleForward}
       >
+        {showBlockingCard && (
+          <ErrorPopup onClose={() => setShowBlockingCard(false)}>
+            <Box>
+              <Typography variant="h5" sx={{ mb: 1 }}>
+                {t("A schema name is required to continue.")}
+              </Typography>
+            </Box>
+          </ErrorPopup>
+        )}
         {showCard && (
-          <NavigationCard
-            fieldArray={fieldArray}
-            setShowCard={(show) => {
-              setShowCard(show);
-              if (!show) {
-                setPendingNavigationTarget(null);
-              }
-            }}
-            handleForward={() => {
+          <ErrorPopup
+            onClose={() => {
               setShowCard(false);
-              if (pendingNavigationTarget) {
-                if (typeof onContinueNavigation === "function") {
-                  onContinueNavigation(pendingNavigationTarget);
-                } else {
-                  setCurrentPage(pendingNavigationTarget);
-                }
-                setPendingNavigationTarget(null);
-              } else {
-                pageForward();
-              }
+              setPendingNavigationTarget(null);
             }}
-          />
+          >
+            <Box>
+              <Typography variant="h5" sx={{ mb: 1 }}>
+                {t("Schema description is empty. Continue without it?")}
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              color="navButton"
+              onClick={() => {
+                setShowCard(false);
+                if (pendingNavigationTarget) {
+                  if (typeof onContinueNavigation === "function") {
+                    onContinueNavigation(pendingNavigationTarget);
+                  } else {
+                    setCurrentPage(pendingNavigationTarget);
+                  }
+                  setPendingNavigationTarget(null);
+                } else {
+                  pageForward();
+                }
+              }}
+              sx={{
+                mt: 1,
+                backgroundColor: CustomPalette.PRIMARY,
+                ":hover": { backgroundColor: CustomPalette.SECONDARY }
+              }}
+            >
+              {t("Continue")}
+            </Button>
+          </ErrorPopup>
         )}
         {showIsoInput && (
           <IsoCard
