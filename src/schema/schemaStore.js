@@ -105,6 +105,8 @@ export const createDefaultSchemaState = () => ({
   enableDecimalSeparator: false,
   enableFileDelimiter: false,
   enableArrayDelimiter: false,
+  // Example overlay — maps attribute name to an example value string
+  exampleData: {},
   // Flags
   frameAllUnits: false,
   frameAllAttributes: false,
@@ -247,7 +249,11 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
   
   const getOverlaySelections = () => {
     const state = getSchema();
-    return state?.overlaySelections || overlayItems;
+    const stored = state?.overlaySelections;
+    if (!stored) return overlayItems;
+    // Merge so that any overlay added to overlayItems after the state was
+    // initialized (e.g. new overlays, HMR) is always present in the result.
+    return { ...overlayItems, ...stored };
   };
 
   const updateOverlaySelection = (overlayKey, selected) => {
@@ -487,6 +493,7 @@ export const makeSchemaStore = ({ getAllSchemaStates, setSchemaStates, getCurren
         return didRename ? nextLan : lan;
       })();
 
+      updatedState.exampleData = renameOverlayMapKeys(currentState.exampleData || {});
       updatedState.unitFramedData = renameInArrayOfObjectsAttribute(currentState.unitFramedData);
       updatedState.attributeFramingData = renameInArrayOfObjectsAttribute(currentState.attributeFramingData);
       updatedState.dataStandardsData = renameInArrayOfObjectsAttribute(currentState.dataStandardsData);

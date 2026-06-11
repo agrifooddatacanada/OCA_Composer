@@ -33,6 +33,7 @@ import {
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER,
+  FIELD_EXAMPLE_OVERLAY,
   overlayItems
 } from "../constants/constants";
 import {
@@ -186,6 +187,7 @@ const useOCAExport = () => {
     const enableDecimalSeparator = !!schemaState?.enableDecimalSeparator;
     const enableFileDelimiter = !!schemaState?.enableFileDelimiter;
     const enableArrayDelimiter = !!schemaState?.enableArrayDelimiter;
+    const exampleData = schemaState?.exampleData || {};
     const overlaySelections = schemaState?.overlaySelections || overlay;
     const classificationCode = metadata?.classification || null;
 
@@ -660,6 +662,45 @@ const useOCAExport = () => {
               attributes: { ...arrayDelimiterData }
             }
           }
+        : {}),
+      ...(overlaySelections[FIELD_EXAMPLE_OVERLAY] &&
+      Object.keys(exampleData).length > 0
+        ? (() => {
+            // Build per-language attribute_examples maps.
+            // exampleData shape: { attributeName: { language: value } }
+            // Legacy flat shape ({ attributeName: value }) is also supported as a fallback.
+            const exampleOverlaysObj = {};
+            languages.forEach((language) => {
+              const langCode = langCodeOCAFromName(language);
+              const filteredExamples = {};
+              attributesList.forEach((attrName) => {
+                const attrEntry = exampleData[attrName];
+                let val;
+                if (attrEntry && typeof attrEntry === "object" && !Array.isArray(attrEntry)) {
+                  // Per-language shape
+                  val = attrEntry[language];
+                } else {
+                  // Legacy flat shape — same value for all languages
+                  val = attrEntry;
+                }
+                if (val !== undefined && val !== null && String(val).trim() !== "") {
+                  filteredExamples[attrName] = String(val);
+                }
+              });
+              if (Object.keys(filteredExamples).length > 0) {
+                exampleOverlaysObj[langCode] = {
+                  language: langCode,
+                  attribute_examples: filteredExamples
+                };
+              }
+            });
+            if (Object.keys(exampleOverlaysObj).length === 0) return {};
+            return {
+              example_overlay: {
+                example_overlays: exampleOverlaysObj
+              }
+            };
+          })()
         : {})
     };
 

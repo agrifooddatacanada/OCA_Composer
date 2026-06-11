@@ -1,14 +1,14 @@
-import React, { useContext, useEffect, useMemo } from 'react';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import { Box, Tooltip, Typography } from '@mui/material';
-import { CustomPalette } from '../constants/customPalette';
-import { classification, parseClassificationCode, groupCodes, divisionCodes, TOOLTIP_ICON_GAP } from '../constants/constants';
-import { Context } from '../App';
-import { useMultiSchema } from '../schema/schemaContext';
+import React, { useContext, useEffect, useMemo } from "react";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import { Box, Tooltip, Typography } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+import { CustomPalette } from "../constants/customPalette";
+import { classification, parseClassificationCode, groupCodes, divisionCodes, TOOLTIP_ICON_GAP } from "../constants/constants";
+import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
 
 const Classification = () => {
   const { t } = useTranslation();

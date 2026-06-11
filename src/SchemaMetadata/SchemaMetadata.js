@@ -56,13 +56,13 @@ const SchemaMetadata = forwardRef(({
     const result = {};
     const metadata = schemaState?.metadata || {};
     
-    languages.forEach(lang => {
+    languages.forEach((lang) => {
       // Use OCA language code for storage lookup
       const langCode = langCodeOCAFromName(lang);
       const localized = metadata.localized?.[langCode] || {};
       
       // Use English root metadata as fallback for English language
-      const isEnglish = langCode === 'eng';
+      const isEnglish = langCode === "eng";
       result[lang] = { 
         name: localized.name || (isEnglish ? metadata.name : "") || "", 
         description: localized.description || (isEnglish ? metadata.description : "") || ""
@@ -79,7 +79,7 @@ const SchemaMetadata = forwardRef(({
 
   const setSchemaDescription = (newDescription) => {
     // Convert the language object format to proper localized structure
-    if (typeof newDescription === 'object' && !Array.isArray(newDescription)) {
+    if (typeof newDescription === "object" && !Array.isArray(newDescription)) {
       // Start with existing localized data to preserve all languages
       const currentLocalized = schemaState?.metadata?.localized || {};
       const localized = { ...currentLocalized };
@@ -96,7 +96,7 @@ const SchemaMetadata = forwardRef(({
         };
         
         // Use English as the root name/description if available
-        if (langCode === 'eng') {
+        if (langCode === "eng") {
           rootName = data.name || "";
           rootDescription = data.description || "";
         }
@@ -106,7 +106,7 @@ const SchemaMetadata = forwardRef(({
         metadata: {
           name: rootName,
           description: rootDescription,
-          localized: localized
+          localized,
         }
       });
     } else {
@@ -125,7 +125,7 @@ const SchemaMetadata = forwardRef(({
     const currentLocalized = schemaState?.metadata?.localized || {};
     const updatedLocalized = { ...currentLocalized };
     
-    newLanguages.forEach(langName => {
+    newLanguages.forEach((langName) => {
       // Use OCA language code for storage
       const langCode = langCodeOCAFromName(langName);
       
@@ -163,8 +163,8 @@ const SchemaMetadata = forwardRef(({
     
     // If no localized data exists yet, both name and description are missing
     if (Object.keys(localized).length === 0) {
-      spacesArray.push(t('Name of Schema'));
-      spacesArray.push(t('Description'));
+      spacesArray.push(t("Name of Schema"));
+      spacesArray.push(t("Description"));
       return spacesArray;
     }
     
@@ -172,12 +172,12 @@ const SchemaMetadata = forwardRef(({
     let hasValidLanguage = false;
     
     Object.entries(localized).forEach(([langCode, langData]) => {
-      if (langData && typeof langData === 'object') {
-        const name = typeof langData.name === 'string' ? langData.name.trim() : langData.name;
-        const description = typeof langData.description === 'string' ? langData.description.trim() : langData.description;
+      if (langData && typeof langData === "object") {
+        const name = typeof langData.name === "string" ? langData.name.trim() : langData.name;
+        const description = typeof langData.description === "string" ? langData.description.trim() : langData.description;
         
         // If this language has both fields filled, mark as valid
-        if (name && name !== '' && description && description !== '') {
+        if (name && name !== "" && description && description !== "") {
           hasValidLanguage = true;
         }
       }
@@ -190,17 +190,17 @@ const SchemaMetadata = forwardRef(({
       let missingDescription = true;
       
       Object.entries(localized).forEach(([langCode, langData]) => {
-        if (langData && typeof langData === 'object') {
-          const name = typeof langData.name === 'string' ? langData.name.trim() : langData.name;
-          const description = typeof langData.description === 'string' ? langData.description.trim() : langData.description;
+        if (langData && typeof langData === "object") {
+          const name = typeof langData.name === "string" ? langData.name.trim() : langData.name;
+          const description = typeof langData.description === "string" ? langData.description.trim() : langData.description;
           
-          if (name && name !== '') missingName = false;
-          if (description && description !== '') missingDescription = false;
+          if (name && name !== "'") missingName = false;
+          if (description && description !== "") missingDescription = false;
         }
       });
       
-      if (missingName) spacesArray.push(t('Name of Schema'));
-      if (missingDescription) spacesArray.push(t('Description'));
+      if (missingName) spacesArray.push(t("Name of Schema"));
+      if (missingDescription) spacesArray.push(t("Description"));
     }
     
     return spacesArray;
@@ -412,6 +412,6 @@ const SchemaMetadata = forwardRef(({
   );
 });
 
-SchemaMetadata.displayName = 'SchemaMetadata';
+SchemaMetadata.displayName = "SchemaMetadata";
 
 export default SchemaMetadata;

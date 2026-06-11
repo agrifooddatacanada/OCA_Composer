@@ -4,6 +4,7 @@
  * - Data clearing utilities
  */
 
+import { useContext, useCallback } from "react";
 import {
   FIELD_CHARACTER_ENCODING_OVERLAY,
   FIELD_FORMAT_OVERLAY,
@@ -14,11 +15,11 @@ import {
   FIELD_CONFORMANCE_OVERLAY,
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-  FIELD_DATA_SEPARATOR_OVERLAY
-} from '../constants/constants';
-import { useMultiSchema } from '../schema/schemaContext';
-import { useContext, useCallback } from 'react';
-import { Context } from '../App';
+  FIELD_DATA_SEPARATOR_OVERLAY,
+  FIELD_EXAMPLE_OVERLAY
+} from "../constants/constants";
+import { useMultiSchema } from "../schema/schemaContext";
+import { Context } from "../App";
 
 /**
  * Get the reset values for an overlay
@@ -55,7 +56,8 @@ export const resetOverlayValues = (overlayType) => {
       enableDecimalSeparator: false,
       enableFileDelimiter: false,
       enableArrayDelimiter: false
-    }
+    },
+    [FIELD_EXAMPLE_OVERLAY]: { exampleData: {} }
   };
 
   const clearData = overlayConfig[overlayType];

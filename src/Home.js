@@ -28,6 +28,7 @@ import Range from "./Overlays/Range";
 import AttributeFraming from "./Overlays/AttributeFraming";
 import FormatRuleV2 from "./Overlays/FormatRuleV2";
 import DataSeparator from "./Overlays/DataSeparator";
+import ExampleOverlay from "./Overlays/ExampleOverlay";
 import { Context } from "./App";
 import Header from "./Header/Header";
 import Footer from "./Footer/Footer";
@@ -63,7 +64,8 @@ const OVERLAY_SUB_PAGES = new Set([
   "Range",
   "AttributeFraming",
   "FormatRules",
-  "DataSeparator"
+  "DataSeparator",
+  "ExampleOverlay"
 ]);
 
 const ENTRY_CODES_FLOW_PAGES = new Set([
@@ -533,6 +535,7 @@ const Home = ({
         {currentPage === "AttributeFraming" && <AttributeFraming ref={attributeFramingRef} />}
         {currentPage === "FormatRules" && <FormatRuleV2 ref={formatRulesRef} />}
         {currentPage === "DataSeparator" && <DataSeparator />}
+        {currentPage === "ExampleOverlay" && <ExampleOverlay />}
       </Box>
       <Footer />
     </>

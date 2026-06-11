@@ -771,5 +771,13 @@
   "or email": "or email",
   "raise an issue": "raise an issue",
   "tree node field count_one": "{{count}} field",
-  "tree node field count_other": "{{count}} fields"
+  "tree node field count_other": "{{count}} fields",
+  "Example Values": "Example Values",
+  "Provide a representative example value for each attribute. These examples help users understand the expected format and content of each field.": "Provide a representative example value for each attribute. These examples help users understand the expected format and content of each field.",
+  "There are no attributes defined in your schema yet.": "There are no attributes defined in your schema yet.",
+  "Example": "Example",
+  "Examples": "Examples",
+  "Example value": "Example value",
+  "e.g. {{placeholder}}": "e.g. {{placeholder}}",
+  "Enter a sample value that illustrates what valid data looks like for this attribute.": "Enter a sample value that illustrates what valid data looks like for this attribute."
 }
