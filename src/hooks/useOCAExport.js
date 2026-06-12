@@ -9,7 +9,11 @@ import {
   getPackageBundle,
   getPackageDependencies,
   getPackageBundleId,
-  getRootCaptureBaseId
+  getRootCaptureBaseId,
+  getApiGeneratedBundle,
+  getApiGeneratedBundleDigest,
+  alignAdcExtensionKeysToPackageBundles,
+  normalizeNonSaidBundleDigestsForOcaPackage
 } from "../utils/packageUtils";
 import {
   ADC,
@@ -187,7 +191,9 @@ const useOCAExport = () => {
     const enableDecimalSeparator = !!schemaState?.enableDecimalSeparator;
     const enableFileDelimiter = !!schemaState?.enableFileDelimiter;
     const enableArrayDelimiter = !!schemaState?.enableArrayDelimiter;
-    const overlaySelections = schemaState?.overlaySelections || overlay;
+    const overlaySelections = {
+      ...(schemaState?.overlaySelections || overlayItems)
+    };
     const classificationCode = metadata?.classification || null;
 
     // Build schema description for each language
@@ -665,15 +671,22 @@ const useOCAExport = () => {
     };
 
     const extensionOverlays = [extensionOverlayPayload];
+    const generatedBundleDigest = getApiGeneratedBundleDigest(bundle);
+    if (!generatedBundleDigest) {
+      throw new Error(
+        `Export failed: generated bundle is missing a digest for schema ${schemaId}`
+      );
+    }
+
     const extension = {
       extensions: {
         [ADC]: {
-          [getPackageBundleId(bundle) || "bundle_id"]: extensionOverlays
+          [generatedBundleDigest]: extensionOverlays
         }
       }
     };
 
-    return { bundle, extension, textDSL: data };
+    return { bundle, extension, textDSL: data, generatedBundleDigest };
   };
 
   const getSchemaMaterializationKey = (schemaId) => {
@@ -780,13 +793,21 @@ const useOCAExport = () => {
     });
   };
 
+  const prepareExtensionForOcaPackage = (extension, bundlePayload) => {
+    const adcMerged = { ...(extension?.extensions?.adc || {}) };
+    alignAdcExtensionKeysToPackageBundles(adcMerged, bundlePayload);
+    normalizeNonSaidBundleDigestsForOcaPackage(bundlePayload, adcMerged);
+    return { extensions: { adc: adcMerged } };
+  };
+
   const generateOcaPackageJson = (extension, bundlePayload) => {
-    validateExtension(extension);
+    const alignedExtension = prepareExtensionForOcaPackage(extension, bundlePayload);
+    validateExtension(alignedExtension);
     try {
-      const ocaPackageService = new OcaPackage(extension, bundlePayload);
+      const ocaPackageService = new OcaPackage(alignedExtension, bundlePayload);
       return JSON.parse(ocaPackageService.GenerateOcaPackage());
     } catch (e) {
-      console.error("Failed to generate OCA package from extension:", e, extension);
+      console.error("Failed to generate OCA package from extension:", e, alignedExtension);
       throw new Error(`Failed to parse Extension JSON: ${e.message}`);
     }
   };
@@ -833,7 +854,7 @@ const useOCAExport = () => {
       if (!st?.initialized) return;
       const result = await buildPackageFromTextDSL(bid);
 
-      const generatedBundle = getPackageBundle(result.bundle);
+      const generatedBundle = getApiGeneratedBundle(result.bundle);
       if (generatedBundle?.d) {
         generatedBundleByOriginalId[bid] = generatedBundle;
         setResolvedSaidForSchema(saidByReferenceToken, bid, generatedBundle.d);
@@ -926,14 +947,15 @@ const useOCAExport = () => {
     for (const childId of childSchemaIds) {
       const childState = schemaStates[childId];
       if (childState?.attributes && childState.attributes.length > 0) {
-        const { bundle: childBundle, extension: childExtension } =
+        const { bundle: childApiBundle, extension: childExtension } =
           // eslint-disable-next-line no-await-in-loop
           await buildPackageFromTextDSL(childId);
-        const said = childBundle?.bundle?.d;
+        const childGeneratedBundle = getApiGeneratedBundle(childApiBundle);
+        const said = childGeneratedBundle?.d;
         if (said) {
           childBuilds.push({
             schemaId: childId,
-            bundle: childBundle.bundle,
+            bundle: childGeneratedBundle,
             extension: childExtension
           });
         }
@@ -941,25 +963,38 @@ const useOCAExport = () => {
     }
 
     const { bundle, extension, textDSL } = await buildPackageFromTextDSL(rootSchemaId);
+    const rootGeneratedBundle = getApiGeneratedBundle(bundle);
+    const rootDigest = rootGeneratedBundle?.d;
+    if (!rootDigest) {
+      throw new Error("Export failed: generated root bundle is missing a digest.");
+    }
+
+    const adcMerged = {
+      ...extension.extensions.adc,
+      ...childBuilds
+        .map((b) => b.extension)
+        .reduce((acc, childExt) => {
+          if (childExt?.extensions?.adc) {
+            return { ...acc, ...childExt.extensions.adc };
+          }
+          return acc;
+        }, {})
+    };
+
+    // Provisional editor ids (e.g. manual-creation-schema) must be re-keyed to the API bundle digest.
+    if (adcMerged[rootSchemaId] && !adcMerged[rootDigest]) {
+      adcMerged[rootDigest] = adcMerged[rootSchemaId];
+      delete adcMerged[rootSchemaId];
+    }
 
     const mergedExtension = {
       extensions: {
-        adc: {
-          ...extension.extensions.adc,
-          ...childBuilds
-            .map((b) => b.extension)
-            .reduce((acc, childExt) => {
-              if (childExt?.extensions?.adc) {
-                return { ...acc, ...childExt.extensions.adc };
-              }
-              return acc;
-            }, {})
-        }
+        adc: adcMerged
       }
     };
 
     const saidByReferenceToken = {};
-    setResolvedSaidForSchema(saidByReferenceToken, rootSchemaId, bundle.bundle.d);
+    setResolvedSaidForSchema(saidByReferenceToken, rootSchemaId, rootDigest);
     childBuilds.forEach(({ schemaId, bundle: childBundle }) => {
       setResolvedSaidForSchema(saidByReferenceToken, schemaId, childBundle.d);
     });
@@ -973,7 +1008,7 @@ const useOCAExport = () => {
 
     const resolveManualSaid = createResolveSaid(saidByReferenceToken);
 
-    const finalBundle = deepCloneJson(bundle.bundle);
+    const finalBundle = deepCloneJson(rootGeneratedBundle);
     const finalDependencies = childBuilds.map(({ bundle: childBundle }) =>
       deepCloneJson(childBundle)
     );

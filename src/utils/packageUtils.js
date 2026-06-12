@@ -223,6 +223,47 @@ function rewriteRefsInCaptureAttributes(attributes, idMap) {
   });
 }
 
+/**
+ * Resolve the bundle object from a generateOCABundle / fetchOCABundle API response.
+ * Accepts nested `{ bundle: {...} }` or a bare bundle object.
+ */
+export function getApiGeneratedBundle(apiResponse) {
+  if (!apiResponse) return null;
+  const fromHelper = getPackageBundle(apiResponse);
+  if (fromHelper?.d) return fromHelper;
+  if (apiResponse?.d && apiResponse?.capture_base) return apiResponse;
+  return null;
+}
+
+export function getApiGeneratedBundleDigest(apiResponse) {
+  return getApiGeneratedBundle(apiResponse)?.d || null;
+}
+
+/**
+ * OcaPackage matches extensions.adc input keys to bundle.d (not capture_base.d).
+ * Re-key entries when the composer used a provisional schema id or capture_base digest.
+ */
+export function alignAdcExtensionKeysToPackageBundles(adcMerged, bundlePayload) {
+  if (!adcMerged || typeof adcMerged !== "object") return adcMerged;
+
+  const root = getPackageBundle(bundlePayload);
+  const deps = getPackageDependencies(bundlePayload) || [];
+  const bundles = [root, ...deps].filter(Boolean);
+
+  bundles.forEach((b) => {
+    const bundleDigest = b?.d;
+    if (!bundleDigest || adcMerged[bundleDigest] !== undefined) return;
+
+    const captureBaseDigest = b.capture_base?.d;
+    if (captureBaseDigest && adcMerged[captureBaseDigest] !== undefined) {
+      adcMerged[bundleDigest] = adcMerged[captureBaseDigest];
+      delete adcMerged[captureBaseDigest];
+    }
+  });
+
+  return adcMerged;
+}
+
 export function normalizeNonSaidBundleDigestsForOcaPackage(pkg, adcMerged) {
   if (!pkg || typeof pkg !== "object" || !adcMerged || typeof adcMerged !== "object")
     return;
