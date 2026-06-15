@@ -1,5 +1,5 @@
 {
-  "AgreementScale": {
+  "agreement_scale": {
     "id": 1,
     "name": {
       "en": "Agreement scale",
@@ -86,7 +86,7 @@
       }
     ]
   },
-  "CanadianProvinces": {
+  "canadian_provinces": {
     "id": 2,
     "name": {
       "en": "Canadian Provinces",
@@ -203,7 +203,7 @@
       }
     ]
   },
-  "ComfortLevelScale": {
+  "comfort_level": {
     "id": 3,
     "name": {
       "en": "Comfort level scale",
@@ -285,7 +285,7 @@
       }
     ]
   },
-  "AwarenessOfConcept": {
+  "concept_awareness": {
     "id": 4,
     "name": {
       "en": "Awareness of concept",
@@ -342,7 +342,7 @@
       }
     ]
   },
-  "DataQualityCodes": {
+  "data_quality_codes": {
     "id": 5,
     "name": {
       "en": "Data Quality Codes",
@@ -612,7 +612,7 @@
       }
     ]
   },
-  "Days": {
+  "days": {
     "id": 6,
     "name": {
       "en": "days",
@@ -672,7 +672,7 @@
       }
     ]
   },
-  "Highest level of education (Statistics Canada)": {
+  "education_level_stats_can": {
     "id": 7,
     "name": {
       "en": "Highest level of education (Statistics Canada)",
@@ -779,7 +779,7 @@
       }
     ]
   },
-  "EducationLevel": {
+  "education_level": {
     "id": 8,
     "name": {
       "en": "Education level",
@@ -861,7 +861,7 @@
       }
     ]
   },
-  "EightPointCardinality": {
+  "eight_point_cardinality": {
     "id": 9,
     "name": {
       "en": "Eight Point Cardinality",
@@ -926,7 +926,7 @@
       }
     ]
   },
-  "FrequencyScale": {
+  "frequency": {
     "id": 10,
     "name": {
       "en": "Frequency scale",
@@ -994,7 +994,7 @@
       }
     ]
   },
-  "GenderIdentity": {
+  "gender": {
     "id": 11,
     "name": {
       "en": "Gender identity",
@@ -1061,7 +1061,7 @@
       }
     ]
   },
-  "HouseholdStructure": {
+  "household_composition": {
     "id": 12,
     "name": {
       "en": "Household structure",
@@ -1133,7 +1133,7 @@
       }
     ]
   },
-  "Months": {
+  "months": {
     "id": 13,
     "name": {
       "en": "months",
@@ -1244,7 +1244,7 @@
       }
     ]
   },
-  "ParentMaterialChemicalProperty": {
+  "parent_material_chemical_property": {
     "id": 14,
     "name": {
       "en": "Parent material chemical property",
@@ -1309,7 +1309,7 @@
       }
     ]
   },
-  "ParentMaterialTexture": {
+  "parent_material_texture": {
     "id": 15,
     "name": {
       "en": "Parent material texture",
@@ -1424,7 +1424,7 @@
       }
     ]
   },
-  "SixteenPointCardinality": {
+  "sixteen_point_cardinality": {
     "id": 16,
     "name": {
       "en": "Sixteen Point Cardinality",
@@ -1533,7 +1533,7 @@
       }
     ]
   },
-  "SoilAerationStatus": {
+  "soil_aeration_status": {
     "id": 17,
     "name": {
       "en": "Soil aeration status",
@@ -1573,7 +1573,7 @@
       }
     ]
   },
-  "BulkDensityClass": {
+  "soil_bulk_density": {
     "id": 18,
     "name": {
       "en": "Bulk density class",
@@ -1613,7 +1613,7 @@
       }
     ]
   },
-  "Carbon-to-Nitrogen (C:N) ratio class": {
+  "soil_carbon_to_nitrogen_ratio": {
     "id": 19,
     "name": {
       "en": "Carbon-to-Nitrogen (C:N) ratio class",
@@ -1653,7 +1653,7 @@
       }
     ]
   },
-  "SoilColloidFractionClass": {
+  "soil_colloid_fraction": {
     "id": 20,
     "name": {
       "en": "Soil colloid fraction class",
@@ -1693,7 +1693,7 @@
       }
     ]
   },
-  "SoilCompressibilityClass": {
+  "soil_compressibility": {
     "id": 21,
     "name": {
       "en": "Soil compressibility class",
@@ -1733,7 +1733,7 @@
       }
     ]
   },
-  "SoilDrainageClass": {
+  "soil_drainage": {
     "id": 22,
     "name": {
       "en": "Soil Drainage Class",
@@ -1798,7 +1798,7 @@
       }
     ]
   },
-  "EffectiveRootingDepthClass": {
+  "soil_effective_rooting_depth": {
     "id": 23,
     "name": {
       "en": "Effective rooting depth class",
@@ -1848,7 +1848,7 @@
       }
     ]
   },
-  "SoilErodibilityClass": {
+  "soil_erodibility": {
     "id": 24,
     "name": {
       "en": "Soil erodibility class",
@@ -1888,7 +1888,7 @@
       }
     ]
   },
-  "SoilFertilityClass": {
+  "soil_fertility": {
     "id": 25,
     "name": {
       "en": "Soil fertility class",
@@ -1928,7 +1928,7 @@
       }
     ]
   },
-  "SoilMineralContentType": {
+  "soil_mineral_content_type": {
     "id": 26,
     "name": {
       "en": "Soil mineral content type",
@@ -1973,7 +1973,7 @@
       }
     ]
   },
-  "SoilOrganicMatterClass": {
+  "soil_organic_matter": {
     "id": 27,
     "name": {
       "en": "Soil organic matter class",
@@ -2023,7 +2023,7 @@
       }
     ]
   },
-  "SoilPermeabilityClass": {
+  "soil_permeability": {
     "id": 28,
     "name": {
       "en": "Soil permeability class",
@@ -2073,7 +2073,7 @@
       }
     ]
   },
-  "SoilPhClass": {
+  "soil_ph": {
     "id": 29,
     "name": {
       "en": "Soil pH class",
@@ -2153,7 +2153,7 @@
       }
     ]
   },
-  "SoilPlasticityClass": {
+  "soil_plasticity": {
     "id": 30,
     "name": {
       "en": "Soil plasticity class",
@@ -2193,7 +2193,7 @@
       }
     ]
   },
-  "SoilPorosityClass": {
+  "soil_porosity": {
     "id": 31,
     "name": {
       "en": "Soil porosity class",
@@ -2243,7 +2243,7 @@
       }
     ]
   },
-  "Soil salinity type (dominant anion)": {
+  "soil_salinity_type": {
     "id": 32,
     "name": {
       "en": "Soil salinity type (dominant anion)",
@@ -2288,7 +2288,7 @@
       }
     ]
   },
-  "Soil salinity class (ECe)": {
+  "soil_salinity": {
     "id": 33,
     "name": {
       "en": "Soil salinity class (ECe)",
@@ -2338,7 +2338,7 @@
       }
     ]
   },
-  "Soil sodicity class (SAR/ESP)": {
+  "soil_sodicity": {
     "id": 34,
     "name": {
       "en": "Soil sodicity class (SAR/ESP)",
@@ -2373,7 +2373,7 @@
       }
     ]
   },
-  "SoilStructureType": {
+  "soil_structure": {
     "id": 35,
     "name": {
       "en": "Soil structure type",
@@ -2433,7 +2433,7 @@
       }
     ]
   },
-  "SoilTextureClass": {
+  "soil_texture": {
     "id": 36,
     "name": {
       "en": "Soil texture class",
@@ -2518,7 +2518,7 @@
       }
     ]
   },
-  "MaturityLevels": {
+  "standards_stages": {
     "id": 37,
     "name": {
       "en": "Maturity Levels",
@@ -2590,7 +2590,7 @@
       }
     ]
   },
-  "SupportScale": {
+  "support_concept": {
     "id": 38,
     "name": {
       "en": "Support scale",
@@ -2672,7 +2672,7 @@
       }
     ]
   },
-  "Thirty-two Point Cardinality": {
+  "thirty_two_point_cardinality": {
     "id": 39,
     "name": {
       "en": "Thirty-two Point Cardinality",
@@ -2857,7 +2857,7 @@
       }
     ]
   },
-  "WaterTableCharacteristics": {
+  "water_table_characteristics": {
     "id": 40,
     "name": {
       "en": "Water Table Characteristics",
