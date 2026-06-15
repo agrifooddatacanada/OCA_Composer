@@ -580,6 +580,13 @@ export default function ViewSchema({
             const unitFramingData = (schemaState.unitFramedData || []).find(
               (u) => u.Attribute === attr.Attribute
             );
+
+            // Build per-language example values map
+            const exampleDataMap = schemaState.exampleData || {};
+            const examplesObj = {};
+            filteredLanguages.forEach((lang) => {
+              examplesObj[lang] = exampleDataMap[attr.Attribute]?.[lang] || "";
+            });
             
             return {
               Attribute: attr.Attribute,
@@ -599,7 +606,8 @@ export default function ViewSchema({
               UpperInclusive: range.upper_inclusive ?? false,
               // Add unit framing field (UCUM code). If no unitFramedData exists, try to derive a UCUM code from the attribute Unit.
               "Unit Framing":
-                unitFramingData?.["UCUM Code"] || (attr.Unit ? (searchUnits(attr.Unit).firstMatch?.code || "") : "")
+                unitFramingData?.["UCUM Code"] || (attr.Unit ? (searchUnits(attr.Unit).firstMatch?.code || "") : ""),
+              Examples: examplesObj
             };
           });
 
