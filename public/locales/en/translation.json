@@ -1,4 +1,13 @@
 {
+  "Some example values do not agree with the range or format overlays:": "Some example values do not agree with the range or format overlays:",
+  "{{attribute}} (example \"{{value}}\") {{problem}}.": "{{attribute}} (example \"{{value}}\") {{problem}}.",
+  "does not match the expected format ({{format}})": "does not match the expected format ({{format}})",
+  "is below the lower bound {{bound}}": "is below the lower bound {{bound}}",
+  "is above the upper bound {{bound}}": "is above the upper bound {{bound}}",
+  "is before the lower bound {{bound}}": "is before the lower bound {{bound}}",
+  "is after the upper bound {{bound}}": "is after the upper bound {{bound}}",
+  "equals the exclusive lower bound {{bound}}": "equals the exclusive lower bound {{bound}}",
+  "equals the exclusive upper bound {{bound}}": "equals the exclusive upper bound {{bound}}",
   "Metadata": "Metadata",
   "TYPE IN COLUMN NAMES": "Type In Column Names",
   "Click here to select a .csv file or schema bundle, or drag and drop one here.": "Click here to select a .csv file or schema bundle, or drag and drop one here.",

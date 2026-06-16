@@ -1,4 +1,13 @@
 {
+  "Some example values do not agree with the range or format overlays:": "Certaines valeurs d'exemple ne correspondent pas aux superpositions de plage ou de format :",
+  "{{attribute}} (example \"{{value}}\") {{problem}}.": "{{attribute}} (exemple « {{value}} ») {{problem}}.",
+  "does not match the expected format ({{format}})": "ne correspond pas au format attendu ({{format}})",
+  "is below the lower bound {{bound}}": "est inférieure à la borne inférieure {{bound}}",
+  "is above the upper bound {{bound}}": "est supérieure à la borne supérieure {{bound}}",
+  "is before the lower bound {{bound}}": "est antérieure à la borne inférieure {{bound}}",
+  "is after the upper bound {{bound}}": "est postérieure à la borne supérieure {{bound}}",
+  "equals the exclusive lower bound {{bound}}": "est égale à la borne inférieure exclusive {{bound}}",
+  "equals the exclusive upper bound {{bound}}": "est égale à la borne supérieure exclusive {{bound}}",
   "Metadata": "Métadonnées",
   "TYPE IN COLUMN NAMES": "Taper les noms de colonnes",
   "Import a spreadsheet by click or drag-and-drop.": "Importer une feuille de calcul\n(Cliquer ou glisser-déposer)",

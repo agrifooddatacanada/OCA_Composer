@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect, useCallback, useMemo, Suspense,
 import { useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import i18next from "i18next";
+import { Duration } from "luxon";
 import {
   Box,
   Button,
@@ -29,7 +30,8 @@ import {
   HEADER_TO_CONTENT_GAP_PX,
   BETWEEN_SECTION_SPACING
 } from "../constants/constants";
-import { searchUnits } from "../utils/helpers";
+import { searchUnits, isValidNumber, parseDateString, getFormatRuleDescription } from "../utils/helpers";
+import { matchFormat } from "../OCADataValidator/utils/matchRules";
 import Loading from "../components/Loading";
 import Spinner from "../components/Spinner";
 import BackNextSkeleton from "../components/BackNextSkeleton";
@@ -54,6 +56,162 @@ import LinkCard from "./LinkCard";
 const SchemaVisualizationEmbed = React.lazy(
   () => import("../SchemaVisualization/SchemaVisualizationEmbed")
 );
+
+/**
+ * Checks an example value against a range overlay's bounds.
+ * Mirrors the numeric/DateTime logic used in OCADataValidator/validator.js.
+ *
+ * @returns {{ messageKey: string, params: object } | null} A translatable
+ *   problem descriptor, or null when the value satisfies the range.
+ */
+function checkExampleAgainstRange(attrType, value, range) {
+  const { lower, upper, lower_inclusive, upper_inclusive } = range || {};
+
+  if (attrType.includes("Numeric")) {
+    if (!isValidNumber(value)) return null;
+    const num = Number.parseFloat(value);
+
+    if (isValidNumber(lower)) {
+      const lowerBound = Number.parseFloat(lower);
+      if (num < lowerBound) {
+        return { messageKey: "is below the lower bound {{bound}}", params: { bound: lowerBound } };
+      }
+      if (!lower_inclusive && num === lowerBound) {
+        return { messageKey: "equals the exclusive lower bound {{bound}}", params: { bound: lowerBound } };
+      }
+    }
+
+    if (isValidNumber(upper)) {
+      const upperBound = Number.parseFloat(upper);
+      if (num > upperBound) {
+        return { messageKey: "is above the upper bound {{bound}}", params: { bound: upperBound } };
+      }
+      if (!upper_inclusive && num === upperBound) {
+        return { messageKey: "equals the exclusive upper bound {{bound}}", params: { bound: upperBound } };
+      }
+    }
+    return null;
+  }
+
+  if (attrType.includes("DateTime")) {
+    const valueDate = parseDateString(value);
+    if (!valueDate) return null;
+    const lowerDate = lower ? parseDateString(lower) : null;
+    const upperDate = upper ? parseDateString(upper) : null;
+    const isDuration = Duration.isDuration(valueDate);
+    const valueComparable = isDuration ? valueDate.as("milliseconds") : valueDate;
+
+    if (lowerDate) {
+      const lowerComparable = isDuration ? lowerDate.as("milliseconds") : lowerDate;
+      if (valueComparable < lowerComparable) {
+        return { messageKey: "is before the lower bound {{bound}}", params: { bound: lower } };
+      }
+      if (!lower_inclusive && valueDate.equals(lowerDate)) {
+        return { messageKey: "equals the exclusive lower bound {{bound}}", params: { bound: lower } };
+      }
+    }
+
+    if (upperDate) {
+      const upperComparable = isDuration ? upperDate.as("milliseconds") : upperDate;
+      if (valueComparable > upperComparable) {
+        return { messageKey: "is after the upper bound {{bound}}", params: { bound: upper } };
+      }
+      if (!upper_inclusive && valueDate.equals(upperDate)) {
+        return { messageKey: "equals the exclusive upper bound {{bound}}", params: { bound: upper } };
+      }
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/**
+ * Validates example overlay values against the range and format overlays when
+ * those overlays are present for an attribute. Empty examples and child-schema
+ * references are skipped. Returns one issue per (attribute, language) mismatch.
+ *
+ * @param {object} args
+ * @param {Array}  args.attributes        Schema attributes ([{ Attribute, Type }, ...]).
+ * @param {object} args.attributeFormats  Map of attribute name -> format rule.
+ * @param {object} args.attributeRanges   Map of attribute name -> { lower, upper, lower_inclusive, upper_inclusive }.
+ * @param {object} args.exampleData       Map of attribute name -> { language -> example value }.
+ * @param {Array}  args.languages         Languages to check (falls back to whatever examples exist).
+ * @returns {Array<{ attribute, language, value, type, messageKey, params }>}
+ */
+export function validateExampleValuesAgainstOverlays({
+  attributes = [],
+  attributeFormats = {},
+  attributeRanges = {},
+  exampleData = {},
+  languages = []
+}) {
+  const issues = [];
+
+  attributes.forEach((attr) => {
+    const attrName = attr?.Attribute;
+    if (!attrName) return;
+
+    const attrType = attr?.Type || "";
+    // Skip references to child schemas — examples don't apply to them.
+    if (attrType.startsWith("refs:") || attrType.startsWith("refn:")) return;
+
+    const formatRule = getMapValueForAttributeName(attributeFormats, attrName);
+    const hasFormatRule = !!formatRule && String(formatRule).trim() !== "";
+
+    const range = getMapValueForAttributeName(attributeRanges, attrName) || {};
+    const hasRange =
+      (range.lower !== undefined && String(range.lower).trim() !== "") ||
+      (range.upper !== undefined && String(range.upper).trim() !== "");
+
+    if (!hasFormatRule && !hasRange) return;
+
+    const attrExamples = exampleData[attrName] || {};
+    const langKeys =
+      languages.length > 0 ? languages : Object.keys(attrExamples);
+
+    langKeys.forEach((lang) => {
+      const rawValue = attrExamples[lang];
+      if (rawValue === undefined || rawValue === null || String(rawValue).trim() === "") {
+        return;
+      }
+      const value = String(rawValue);
+
+      // Format overlay agreement.
+      if (hasFormatRule && !matchFormat(attrType, formatRule, value, false)) {
+        // Plain-English description of the rule (translation key) when available,
+        // otherwise fall back to the raw rule so the user still sees the expectation.
+        const formatDescription = getFormatRuleDescription(attrType, formatRule);
+        const expectedFormat = formatDescription || formatRule;
+        issues.push({
+          attribute: attrName,
+          language: lang,
+          value,
+          type: "format",
+          messageKey: "does not match the expected format ({{format}})",
+          params: { format: expectedFormat, formatIsDescription: !!formatDescription }
+        });
+      }
+
+      // Range overlay agreement.
+      if (hasRange) {
+        const rangeProblem = checkExampleAgainstRange(attrType, value, range);
+        if (rangeProblem) {
+          issues.push({
+            attribute: attrName,
+            language: lang,
+            value,
+            type: "range",
+            messageKey: rangeProblem.messageKey,
+            params: rangeProblem.params
+          });
+        }
+      }
+    });
+  });
+
+  return issues;
+}
 
 export default function ViewSchema({
   pageBack,
@@ -92,6 +250,18 @@ export default function ViewSchema({
   const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
 
   const filteredLanguages = React.useMemo(() => [...languages], [languages]);
+
+  // Check example overlay values against the range and format overlays (when present).
+  const exampleValueIssues = useMemo(() => {
+    if (!schemaState) return [];
+    return validateExampleValuesAgainstOverlays({
+      attributes: schemaState.attributes || [],
+      attributeFormats: schemaState.attributeFormats || {},
+      attributeRanges: schemaState.attributeRanges || {},
+      exampleData: schemaState.exampleData || {},
+      languages: filteredLanguages
+    });
+  }, [schemaState, filteredLanguages]);
 
   // Schema language state - defaults to null (use i18n), can be overridden by schema buttons
   const [schemaLanguageOverride, setSchemaLanguageOverride] = useState(null);
@@ -1049,6 +1219,38 @@ export default function ViewSchema({
             </Tooltip>
           </Box>
         </Box>
+        {exampleValueIssues.length > 0 && (
+          <Alert
+            severity="warning"
+            sx={{ width: "100%", mb: `${HEADER_TO_CONTENT_GAP_PX}px` }}
+          >
+            <Typography sx={{ fontWeight: 600, mb: 0.5 }}>
+              {t("Some example values do not agree with the range or format overlays:")}
+            </Typography>
+            <Box component="ul" sx={{ m: 0, pl: 3, textAlign: "left" }}>
+              {exampleValueIssues.map((issue) => {
+                const problemParams = { ...issue.params };
+                // The format description is itself a translation key — translate it
+                // before it's interpolated into the problem sentence.
+                if (problemParams.formatIsDescription && problemParams.format) {
+                  problemParams.format = t(problemParams.format, {
+                    defaultValue: problemParams.format
+                  });
+                }
+                return (
+                  <li key={`${issue.attribute}-${issue.language}-${issue.type}`}>
+                    {t("{{attribute}} (example \"{{value}}\") {{problem}}.", {
+                      attribute: issue.attribute,
+                      value: issue.value,
+                      problem: t(issue.messageKey, { ...problemParams, defaultValue: issue.messageKey })
+                    })}
+                    {filteredLanguages.length > 1 ? ` [${issue.language}]` : ""}
+                  </li>
+                );
+              })}
+            </Box>
+          </Alert>
+        )}
         <ViewGrid
           displayArray={displayArray}
           currentLanguage={getCurrentLanguage()}
