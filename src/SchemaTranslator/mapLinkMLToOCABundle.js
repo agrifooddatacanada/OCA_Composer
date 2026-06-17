@@ -338,12 +338,36 @@ export function buildOverlays(slots, enums, linkmlSchema) {
 }
 
 /**
+ * Extracts the slot/attribute definitions from a LinkML schema.
+ * Handles both standard schemas (top-level `slots:`) and induced class
+ * schemas (class-level `attributes:` with full definitions inline).
+ * @param {Object} linkmlSchema - The parsed LinkML YAML
+ * @returns {Object} A dictionary of slot_name -> slot_definition
+ */
+function extractSlotDefinitions(linkmlSchema) {
+  if (linkmlSchema.slots && Object.keys(linkmlSchema.slots).length > 0) {
+    return linkmlSchema.slots;
+  }
+
+  if (linkmlSchema.attributes && typeof linkmlSchema.attributes === "object") {
+    const firstValue = Object.values(linkmlSchema.attributes)[0];
+    if (firstValue && typeof firstValue === "object" && ("range" in firstValue || "description" in firstValue)) {
+      return linkmlSchema.attributes;
+    }
+  }
+
+  return {};
+}
+
+/**
  * Maps a LinkML schema to an OCA bundle structure.
+ * Supports both standard LinkML schemas (with top-level `slots:`) and
+ * induced class schemas (with `attributes:` containing full definitions).
  * @param {Object} linkmlSchema - The LinkML schema to convert
  * @returns {Object} An OCA bundle
  */
 export function mapLinkMLToOCABundle(linkmlSchema) {
-  const slots = linkmlSchema.slots || {};
+  const slots = extractSlotDefinitions(linkmlSchema);
   const enums = linkmlSchema.enums || {};
 
   // Extract OCA attributes and flagged attributes
