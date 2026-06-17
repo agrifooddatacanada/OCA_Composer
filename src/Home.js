@@ -115,9 +115,7 @@ const isSchemaMetadataComplete = (state) => {
   return values.some((langData) => {
     if (!langData || typeof langData !== "object") return false;
     const name = typeof langData.name === "string" ? langData.name.trim() : "";
-    const description =
-      typeof langData.description === "string" ? langData.description.trim() : "";
-    return name !== "" && description !== "";
+    return name !== "";
   });
 };
 

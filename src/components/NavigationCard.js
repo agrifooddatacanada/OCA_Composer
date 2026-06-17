@@ -4,9 +4,8 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
 
-export default function NavigationCard({ fieldArray, setShowCard, handleForward }) {
+export default function NavigationCard({ setShowCard, handleForward }) {
   const { t } = useTranslation();
-  const arrayDisplay = fieldArray.join(", ");
 
   return (
     <Box style={{ position: "relative" }}>
@@ -22,7 +21,7 @@ export default function NavigationCard({ fieldArray, setShowCard, handleForward 
           justifyContent: "space-around",
           alignItems: "center",
           width: "40rem",
-          minHeight: "15rem",
+          minHeight: "12rem",
           p: 3,
           boxShadow: 20,
           borderRadius: "0.5rem",
@@ -53,17 +52,9 @@ export default function NavigationCard({ fieldArray, setShowCard, handleForward 
             }}
           />
           <Typography variant="body1" sx={{ fontSize: 20, flex: 1, minWidth: 0 }}>
-            {t("There are one or more blank entries in the following field(s)")}
+            {t("Schema description is empty. Continue without it?")}
           </Typography>
         </Box>
-
-        <Typography
-          variant="h5"
-          sx={{ width: "80%", fontSize: 19, wordBreak: "break-word" }}
-        >
-          <em>{arrayDisplay}</em>
-        </Typography>
-        <Typography variant="h6">{t("Do you wish to continue?")}</Typography>
         <Box sx={{ alignSelf: "flex-end" }}>
           <Button
             variant="outlined"
