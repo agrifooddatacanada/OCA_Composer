@@ -1,7 +1,10 @@
 {
-  "Some example values do not agree with the range or format overlays:": "Certaines valeurs d'exemple ne correspondent pas aux superpositions de plage ou de format :",
-  "{{attribute}} (example \"{{value}}\") {{problem}}.": "{{attribute}} (exemple « {{value}} ») {{problem}}.",
+  "Some example values do not agree with the range, format, decimal, or array delimiter overlays:": "Certaines valeurs d'exemple ne correspondent pas aux superpositions de plage, de format, de séparateur décimal ou de délimiteur de tableau :",
+  "{{attribute}} (example \"{{value}}\") {{problem}}.": "{{attribute}} (exemple « {{value}} ») {{- problem}}.",
   "does not match the expected format ({{format}})": "ne correspond pas au format attendu ({{format}})",
+  "uses \"{{found}}\" as the decimal separator but the schema expects \"{{separator}}\"": "utilise « {{found}} » comme séparateur décimal alors que le schéma attend « {{separator}} »",
+  "uses the array delimiter \"{{found}}\" but the schema expects \"{{separator}}\"": "utilise le délimiteur de tableau « {{found}} » alors que le schéma attend « {{separator}} »",
+  "uses multiple array delimiters but the schema expects \"{{separator}}\"": "utilise plusieurs délimiteurs de tableau alors que le schéma attend « {{separator}} »",
   "is below the lower bound {{bound}}": "est inférieure à la borne inférieure {{bound}}",
   "is above the upper bound {{bound}}": "est supérieure à la borne supérieure {{bound}}",
   "is before the lower bound {{bound}}": "est antérieure à la borne inférieure {{bound}}",

@@ -32,6 +32,11 @@ import {
 } from "../constants/constants";
 import { searchUnits, isValidNumber, parseDateString, getFormatRuleDescription } from "../utils/helpers";
 import { matchFormat } from "../OCADataValidator/utils/matchRules";
+import { getFormatPatternForDecimalSeparator } from "../OCADataValidator/utils/decimalFormatPattern";
+import {
+  collectArrayDelimitersOutsideQuotes,
+  formatDelimiterForMessage
+} from "../OCADataValidator/utils/arrayDelimiterOverlay";
 import Loading from "../components/Loading";
 import Spinner from "../components/Spinner";
 import BackNextSkeleton from "../components/BackNextSkeleton";
@@ -127,16 +132,90 @@ function checkExampleAgainstRange(attrType, value, range) {
 }
 
 /**
- * Validates example overlay values against the range and format overlays when
- * those overlays are present for an attribute. Empty examples and child-schema
- * references are skipped. Returns one issue per (attribute, language) mismatch.
+ * Checks an example value against the schema's decimal (Data Separator) overlay.
+ * Only applies to Numeric attributes: a numeric example should use the schema's
+ * configured decimal separator and not the alternative one.
+ *
+ * @returns {{ messageKey: string, params: object } | null} A translatable
+ *   problem descriptor, or null when the value uses the expected separator.
+ */
+function checkExampleAgainstDecimal(attrType, value, decimalSeparator) {
+  if (!attrType.includes("Numeric")) return null;
+
+  const expected = decimalSeparator || ".";
+  // The decimal-separator characters that would be wrong if present in the value.
+  const wrongSeparators = [".", ","].filter((char) => char !== expected);
+  const usedWrong = wrongSeparators.find((char) => value.includes(char));
+  if (!usedWrong) return null;
+
+  // Only flag values that are otherwise valid numbers once the wrong separator is
+  // interpreted as the decimal point — free-text values are left to the format check.
+  const normalized = value.split(usedWrong).join(".");
+  if (!isValidNumber(normalized)) return null;
+
+  return {
+    messageKey: "uses \"{{found}}\" as the decimal separator but the schema expects \"{{separator}}\"",
+    params: { found: usedWrong, separator: expected }
+  };
+}
+
+/**
+ * Checks an example value against the attribute's array delimiter overlay.
+ * Only applies to Array attributes: when the example lists multiple items it
+ * should separate them with the schema's configured delimiter. Mirrors the
+ * warning logic in OCADataValidator/utils/arrayDelimiterOverlay.js.
+ *
+ * @returns {{ messageKey: string, params: object } | null} A translatable
+ *   problem descriptor, or null when the value uses the expected delimiter.
+ */
+function checkExampleAgainstArrayDelimiter(attrType, value, expectedDelim, decimalSeparator) {
+  if (!attrType.includes("Array")) return null;
+  if (!expectedDelim) return null;
+
+  const expected = expectedDelim.length === 1 ? expectedDelim : expectedDelim[0];
+  const found = collectArrayDelimitersOutsideQuotes(value);
+  // For numeric arrays the decimal separator (e.g. ",") would otherwise be
+  // mistaken for an array delimiter, so ignore it here (e.g. "10,6; 11,5").
+  if (attrType.includes("Numeric") && decimalSeparator && decimalSeparator !== expected) {
+    found.delete(decimalSeparator);
+  }
+  // No delimiters means a single-item value — nothing to compare against.
+  if (found.size === 0) return null;
+  if (found.size === 1 && found.has(expected)) return null;
+
+  if (found.size === 1) {
+    const [actual] = [...found];
+    return {
+      messageKey: "uses the array delimiter \"{{found}}\" but the schema expects \"{{separator}}\"",
+      params: {
+        found: formatDelimiterForMessage(actual),
+        separator: formatDelimiterForMessage(expected)
+      }
+    };
+  }
+
+  return {
+    messageKey: "uses multiple array delimiters but the schema expects \"{{separator}}\"",
+    params: { separator: formatDelimiterForMessage(expected) }
+  };
+}
+
+/**
+ * Validates example overlay values against the range, format, and decimal
+ * overlays when those overlays are present for an attribute. Empty examples and
+ * child-schema references are skipped. Returns one issue per (attribute,
+ * language) mismatch.
  *
  * @param {object} args
- * @param {Array}  args.attributes        Schema attributes ([{ Attribute, Type }, ...]).
- * @param {object} args.attributeFormats  Map of attribute name -> format rule.
- * @param {object} args.attributeRanges   Map of attribute name -> { lower, upper, lower_inclusive, upper_inclusive }.
- * @param {object} args.exampleData       Map of attribute name -> { language -> example value }.
- * @param {Array}  args.languages         Languages to check (falls back to whatever examples exist).
+ * @param {Array}   args.attributes        Schema attributes ([{ Attribute, Type }, ...]).
+ * @param {object}  args.attributeFormats  Map of attribute name -> format rule.
+ * @param {object}  args.attributeRanges   Map of attribute name -> { lower, upper, lower_inclusive, upper_inclusive }.
+ * @param {object}  args.exampleData       Map of attribute name -> { language -> example value }.
+ * @param {Array}   args.languages         Languages to check (falls back to whatever examples exist).
+ * @param {string}  args.decimalSeparator     Schema's configured decimal separator (Data Separator overlay).
+ * @param {boolean} args.enableDecimal         Whether the decimal (Data Separator) overlay is active.
+ * @param {object}  args.arrayDelimiterData    Map of attribute name -> array delimiter character.
+ * @param {boolean} args.enableArrayDelimiter  Whether the array delimiter (Data Separator) overlay is active.
  * @returns {Array<{ attribute, language, value, type, messageKey, params }>}
  */
 export function validateExampleValuesAgainstOverlays({
@@ -144,7 +223,11 @@ export function validateExampleValuesAgainstOverlays({
   attributeFormats = {},
   attributeRanges = {},
   exampleData = {},
-  languages = []
+  languages = [],
+  decimalSeparator = ".",
+  enableDecimal = false,
+  arrayDelimiterData = {},
+  enableArrayDelimiter = false
 }) {
   const issues = [];
 
@@ -164,7 +247,12 @@ export function validateExampleValuesAgainstOverlays({
       (range.lower !== undefined && String(range.lower).trim() !== "") ||
       (range.upper !== undefined && String(range.upper).trim() !== "");
 
-    if (!hasFormatRule && !hasRange) return;
+    const arrayDelim = enableArrayDelimiter
+      ? getMapValueForAttributeName(arrayDelimiterData, attrName) || ""
+      : "";
+    const hasArrayDelim = String(arrayDelim).trim() !== "";
+
+    if (!hasFormatRule && !hasRange && !enableDecimal && !hasArrayDelim) return;
 
     const attrExamples = exampleData[attrName] || {};
     const langKeys =
@@ -177,8 +265,33 @@ export function validateExampleValuesAgainstOverlays({
       }
       const value = String(rawValue);
 
-      // Format overlay agreement.
-      if (hasFormatRule && !matchFormat(attrType, formatRule, value, false)) {
+      // Decimal (Data Separator) overlay agreement. Evaluated first because a
+      // wrong decimal separator also breaks the numeric format check; when that's
+      // the root cause we report only the (more specific) decimal issue below.
+      const decimalProblem = enableDecimal
+        ? checkExampleAgainstDecimal(attrType, value, decimalSeparator)
+        : null;
+      if (decimalProblem) {
+        issues.push({
+          attribute: attrName,
+          language: lang,
+          value,
+          type: "decimal",
+          messageKey: decimalProblem.messageKey,
+          params: decimalProblem.params
+        });
+      }
+
+      // Format overlay agreement. For Numeric attributes the format pattern's
+      // decimal point is adapted to the schema's decimal separator so that values
+      // like "10,6" validate against a comma-based schema (mirrors validator.js).
+      // Skipped when the decimal check already flagged the value to avoid a
+      // redundant second message for the same underlying problem.
+      const isNumeric = attrType.includes("Numeric");
+      const effectiveFormat = isNumeric
+        ? getFormatPatternForDecimalSeparator(formatRule, decimalSeparator)
+        : formatRule;
+      if (!decimalProblem && hasFormatRule && !matchFormat(attrType, effectiveFormat, value, false)) {
         // Plain-English description of the rule (translation key) when available,
         // otherwise fall back to the raw rule so the user still sees the expectation.
         const formatDescription = getFormatRuleDescription(attrType, formatRule);
@@ -204,6 +317,21 @@ export function validateExampleValuesAgainstOverlays({
             type: "range",
             messageKey: rangeProblem.messageKey,
             params: rangeProblem.params
+          });
+        }
+      }
+
+      // Array delimiter (Data Separator) overlay agreement.
+      if (hasArrayDelim) {
+        const arrayProblem = checkExampleAgainstArrayDelimiter(attrType, value, arrayDelim, decimalSeparator);
+        if (arrayProblem) {
+          issues.push({
+            attribute: attrName,
+            language: lang,
+            value,
+            type: "array",
+            messageKey: arrayProblem.messageKey,
+            params: arrayProblem.params
           });
         }
       }
@@ -259,7 +387,11 @@ export default function ViewSchema({
       attributeFormats: schemaState.attributeFormats || {},
       attributeRanges: schemaState.attributeRanges || {},
       exampleData: schemaState.exampleData || {},
-      languages: filteredLanguages
+      languages: filteredLanguages,
+      decimalSeparator: schemaState.decimalSeparator || ".",
+      enableDecimal: !!schemaState.enableDecimalSeparator,
+      arrayDelimiterData: schemaState.arrayDelimiterData || {},
+      enableArrayDelimiter: !!schemaState.enableArrayDelimiter
     });
   }, [schemaState, filteredLanguages]);
 
@@ -1225,7 +1357,7 @@ export default function ViewSchema({
             sx={{ width: "100%", mb: `${HEADER_TO_CONTENT_GAP_PX}px` }}
           >
             <Typography sx={{ fontWeight: 600, mb: 0.5 }}>
-              {t("Some example values do not agree with the range or format overlays:")}
+              {t("Some example values do not agree with the range, format, decimal, or array delimiter overlays:")}
             </Typography>
             <Box component="ul" sx={{ m: 0, pl: 3, textAlign: "left" }}>
               {exampleValueIssues.map((issue) => {
