@@ -2,6 +2,28 @@
  * Maps LinkML schemas to OCA bundle structures.
  */
 
+const LINKML_PRIMITIVE_RANGES = new Set([
+  "string",
+  "integer",
+  "boolean",
+  "float",
+  "double",
+  "decimal",
+  "date",
+  "datetime",
+  "date_or_datetime",
+  "time",
+  "uriorcurie",
+  "uri",
+  "curie",
+  "ncname",
+  "nodeidentifier",
+  "object",
+  "jsonpointer",
+  "jsonpath",
+  "category"
+]);
+
 /**
  * Helper: build an overlay block only if data has keys
  * @param {string} type - The type of overlay
@@ -351,12 +373,32 @@ function extractSlotDefinitions(linkmlSchema) {
 
   if (linkmlSchema.attributes && typeof linkmlSchema.attributes === "object") {
     const firstValue = Object.values(linkmlSchema.attributes)[0];
-    if (firstValue && typeof firstValue === "object" && ("range" in firstValue || "description" in firstValue)) {
+    if (
+      firstValue &&
+      typeof firstValue === "object" &&
+      ("range" in firstValue || "description" in firstValue)
+    ) {
       return linkmlSchema.attributes;
     }
   }
 
   return {};
+}
+
+export function findMissingLinkMLEnums(linkmlSchema) {
+  const slots = extractSlotDefinitions(linkmlSchema);
+  const enums = linkmlSchema.enums || {};
+  const classes = linkmlSchema.classes || {};
+  const missing = new Set();
+
+  Object.values(slots).forEach((slot) => {
+    const range = slot?.range;
+    if (!range || LINKML_PRIMITIVE_RANGES.has(range)) return;
+    if (enums[range] || classes[range]) return;
+    if (range.endsWith("Enum")) missing.add(range);
+  });
+
+  return [...missing].sort();
 }
 
 /**
