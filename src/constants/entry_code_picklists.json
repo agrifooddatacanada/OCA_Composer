@@ -1133,8 +1133,78 @@
       }
     ]
   },
-  "months": {
+  "wheat_lodging": {
     "id": 13,
+    "name": {
+      "en": "Wheat Lodging",
+      "fr": "Verse du blé"
+    },
+    "description": {
+      "en": "A visual estimation of lodging before harvest",
+      "fr": "Une estimation visuelle de la verse avant la récolte"
+    },
+    "keywords": {},
+    "category": "general",
+    "source": "https://link.springer.com/article/10.1186/s12870-025-07322-y",
+    "languages": [
+      "en",
+      "fr"
+    ],
+    "headers": [
+      "Code",
+      "en",
+      "fr"
+    ],
+    "rows": [
+      {
+        "Code": "1",
+        "en": "severe lodging making harvesting impossible",
+        "fr": "Verse sévère rendant la récolte impossible."
+      },
+      {
+        "Code": "2",
+        "en": "Intermediate state between significant lodging and severe lodging.",
+        "fr": "État intermédiaire entre verse importante et verse sévère."
+      },
+      {
+        "Code": "3",
+        "en": "plants lodged significantly making machine harvesting difficul",
+        "fr": "Verse importante rendant la récolte mécanique difficile."
+      },
+      {
+        "Code": "4",
+        "en": "Intermediate state between medium lodging and significant lodging.",
+        "fr": "État intermédiaire entre verse modérée et verse importante."
+      },
+      {
+        "Code": "5",
+        "en": "medium degree of lodging",
+        "fr": "Degré moyen de verse."
+      },
+      {
+        "Code": "6",
+        "en": "Intermediate state between slight lodging and medium lodging.",
+        "fr": "État intermédiaire entre légère verse et verse modérée."
+      },
+      {
+        "Code": "7",
+        "en": "plants are slightly lodged or stand upright after lodging",
+        "fr": "Les plantes sont légèrement versées ou se redressent après la verse."
+      },
+      {
+        "Code": "8",
+        "en": "Intermediate state between no lodging and slight lodging.",
+        "fr": "État intermédiaire entre aucune verse et une légère verse."
+      },
+      {
+        "Code": "9",
+        "en": "no lodging",
+        "fr": "Aucune verse."
+      }
+    ]
+  },
+  "months": {
+    "id": 14,
     "name": {
       "en": "months",
       "fr": "mois"
@@ -1245,7 +1315,7 @@
     ]
   },
   "parent_material_chemical_property": {
-    "id": 14,
+    "id": 15,
     "name": {
       "en": "Parent material chemical property",
       "fr": "Propriété chimique du matériau parental"
@@ -1310,7 +1380,7 @@
     ]
   },
   "parent_material_texture": {
-    "id": 15,
+    "id": 16,
     "name": {
       "en": "Parent material texture",
       "fr": "Texture du matériau parental"
@@ -1425,7 +1495,7 @@
     ]
   },
   "sixteen_point_cardinality": {
-    "id": 16,
+    "id": 17,
     "name": {
       "en": "Sixteen Point Cardinality",
       "fr": "Cardinalité à seize points"
@@ -1534,7 +1604,7 @@
     ]
   },
   "soil_aeration_status": {
-    "id": 17,
+    "id": 18,
     "name": {
       "en": "Soil aeration status",
       "fr": "Statut d’aération du sol"
@@ -1574,7 +1644,7 @@
     ]
   },
   "soil_bulk_density": {
-    "id": 18,
+    "id": 19,
     "name": {
       "en": "Bulk density class",
       "fr": "Classe de densité apparente"
@@ -1614,7 +1684,7 @@
     ]
   },
   "soil_carbon_to_nitrogen_ratio": {
-    "id": 19,
+    "id": 20,
     "name": {
       "en": "Carbon-to-Nitrogen (C:N) ratio class",
       "fr": "Classe du rapport carbone-azote (C:N)"
@@ -1654,7 +1724,7 @@
     ]
   },
   "soil_colloid_fraction": {
-    "id": 20,
+    "id": 21,
     "name": {
       "en": "Soil colloid fraction class",
       "fr": "Classe de fraction colloïdale du sol"
@@ -1694,7 +1764,7 @@
     ]
   },
   "soil_compressibility": {
-    "id": 21,
+    "id": 22,
     "name": {
       "en": "Soil compressibility class",
       "fr": "Classe de compressibilité du sol"
@@ -1734,7 +1804,7 @@
     ]
   },
   "soil_drainage": {
-    "id": 22,
+    "id": 23,
     "name": {
       "en": "Soil Drainage Class",
       "fr": "Classe de drainage du sol"
@@ -1799,7 +1869,7 @@
     ]
   },
   "soil_effective_rooting_depth": {
-    "id": 23,
+    "id": 24,
     "name": {
       "en": "Effective rooting depth class",
       "fr": "Classe de profondeur d’enracinement efficace"
@@ -1849,7 +1919,7 @@
     ]
   },
   "soil_erodibility": {
-    "id": 24,
+    "id": 25,
     "name": {
       "en": "Soil erodibility class",
       "fr": "Classe d’érodibilité du sol"
@@ -1889,7 +1959,7 @@
     ]
   },
   "soil_fertility": {
-    "id": 25,
+    "id": 26,
     "name": {
       "en": "Soil fertility class",
       "fr": "Classe de fertilité du sol"
@@ -1929,7 +1999,7 @@
     ]
   },
   "soil_mineral_content_type": {
-    "id": 26,
+    "id": 27,
     "name": {
       "en": "Soil mineral content type",
       "fr": "Type de contenu minéral du sol"
@@ -1974,7 +2044,7 @@
     ]
   },
   "soil_organic_matter": {
-    "id": 27,
+    "id": 28,
     "name": {
       "en": "Soil organic matter class",
       "fr": "Classe de matière organique du sol"
@@ -2024,7 +2094,7 @@
     ]
   },
   "soil_permeability": {
-    "id": 28,
+    "id": 29,
     "name": {
       "en": "Soil permeability class",
       "fr": "Classe de perméabilité du sol"
@@ -2074,7 +2144,7 @@
     ]
   },
   "soil_ph": {
-    "id": 29,
+    "id": 30,
     "name": {
       "en": "Soil pH class",
       "fr": "Classe de pH du sol"
@@ -2154,7 +2224,7 @@
     ]
   },
   "soil_plasticity": {
-    "id": 30,
+    "id": 31,
     "name": {
       "en": "Soil plasticity class",
       "fr": "Classe de plasticité du sol"
@@ -2194,7 +2264,7 @@
     ]
   },
   "soil_porosity": {
-    "id": 31,
+    "id": 32,
     "name": {
       "en": "Soil porosity class",
       "fr": "Classe de porosité du sol"
@@ -2244,7 +2314,7 @@
     ]
   },
   "soil_salinity_type": {
-    "id": 32,
+    "id": 33,
     "name": {
       "en": "Soil salinity type (dominant anion)",
       "fr": "Type de salinité du sol (anion dominant)"
@@ -2289,7 +2359,7 @@
     ]
   },
   "soil_salinity": {
-    "id": 33,
+    "id": 34,
     "name": {
       "en": "Soil salinity class (ECe)",
       "fr": "Classe de salinité du sol (ECe)"
@@ -2339,7 +2409,7 @@
     ]
   },
   "soil_sodicity": {
-    "id": 34,
+    "id": 35,
     "name": {
       "en": "Soil sodicity class (SAR/ESP)",
       "fr": "Classe de sodicité du sol (SAR/ESP)"
@@ -2374,7 +2444,7 @@
     ]
   },
   "soil_structure": {
-    "id": 35,
+    "id": 36,
     "name": {
       "en": "Soil structure type",
       "fr": "Type de structure du sol"
@@ -2434,7 +2504,7 @@
     ]
   },
   "soil_texture": {
-    "id": 36,
+    "id": 37,
     "name": {
       "en": "Soil texture class",
       "fr": "Classe texturale du sol"
@@ -2519,7 +2589,7 @@
     ]
   },
   "standards_stages": {
-    "id": 37,
+    "id": 38,
     "name": {
       "en": "Maturity Levels",
       "fr": "Niveaux de maturité"
@@ -2591,7 +2661,7 @@
     ]
   },
   "support_concept": {
-    "id": 38,
+    "id": 39,
     "name": {
       "en": "Support scale",
       "fr": "Échelle de soutien"
@@ -2673,7 +2743,7 @@
     ]
   },
   "thirty_two_point_cardinality": {
-    "id": 39,
+    "id": 40,
     "name": {
       "en": "Thirty-two Point Cardinality",
       "fr": "Cardinalité à trente-deux points"
@@ -2858,7 +2928,7 @@
     ]
   },
   "water_table_characteristics": {
-    "id": 40,
+    "id": 41,
     "name": {
       "en": "Water Table Characteristics",
       "fr": "Caractéristiques de la nappe phréatique"
