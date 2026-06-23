@@ -1133,11 +1133,11 @@
       }
     ]
   },
-  "wheat_lodging": {
+  "cereal_lodging": {
     "id": 13,
     "name": {
-      "en": "Wheat Lodging",
-      "fr": "Verse du blé"
+      "en": "Cereal Lodging",
+      "fr": "Verse des céréales"
     },
     "description": {
       "en": "A visual estimation of lodging before harvest",
