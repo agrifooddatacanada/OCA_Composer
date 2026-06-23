@@ -79,7 +79,7 @@ export const createDefaultSchemaState = () => ({
   entryCodes: {},
   attributesWithLists: [],
   // Overlay selection state (per-schema) - generated from overlayItems
-  overlaySelections: overlayItems,
+  overlaySelections: { ...overlayItems },
   selectedOverlay: "",
   // Language-specific data
   // IMPORTANT: lanAttributeRowData keys are language NAMES ("English", "French"), not OCA codes ("eng", "fra")

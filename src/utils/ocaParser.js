@@ -194,16 +194,16 @@ export class OCAParser {
     this._processFlaggedAttributes(sensitiveAttributeNames, attributesOrdered);
 
     // Initialize overlay selections based on which overlays are present
-    // Check if ADC extensions exist
+    // Check if ADC extensions exist (fall back from captureBaseId to bundleId)
+    const adcExtensionEntry =
+      flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId] ??
+      flatOcaPackageForParsing?.extensions?.adc?.[bundleId];
     const hasUnitFramingExtension =
-      !!flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId]?.overlays
-        ?.unit_framing;
+      !!adcExtensionEntry?.overlays?.unit_framing;
     const hasRangeExtension =
-      !!flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId]?.overlays?.range;
+      !!adcExtensionEntry?.overlays?.range;
     const formOverlayData =
-      flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId]?.overlays
-        ?.form_overlay ||
-      flatOcaPackageForParsing?.extensions?.adc?.[captureBaseId]?.overlays?.form;
+      adcExtensionEntry?.overlays?.form_overlay || adcExtensionEntry?.overlays?.form;
     const hasFormExtension =
       !!formOverlayData &&
       (Array.isArray(formOverlayData)
@@ -211,7 +211,7 @@ export class OCAParser {
         : !!formOverlayData.form_overlays);
     // Parse Data Separator ADC overlays (decimal/file/array) into UI-shaped fields.
     // Supports both ADC extension shapes: array-of-overlay-objects and { overlays: {...} }.
-    const dataSeparator = this._parseDataSeparatorOverlays(adcExtensions);
+    const dataSeparator = this._parseDataSeparatorOverlays(adcExtensionEntry);
 
     const overlaySelections = this._buildOverlaySelections(
       schemaData.overlays,

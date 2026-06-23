@@ -82,8 +82,7 @@ export default function DraftRestoreDialog() {
       <DialogContent sx={{ mt: 2 }}>
         <DialogContentText sx={{ color: CustomPalette.GREY_800 }}>
           We found an unsaved session from{" "}
-          <strong>{formatTimestamp(draft.timestamp)}</strong>. Would you like to
-          restore it?
+          <strong>{formatTimestamp(draft.timestamp)}</strong>. Would you like to attempt to restore it?
         </DialogContentText>
       </DialogContent>
       <DialogActions sx={{ backgroundColor: CustomPalette.GREY_200, px: 3, py: 2 }}>

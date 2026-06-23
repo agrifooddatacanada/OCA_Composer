@@ -533,9 +533,7 @@ const Cardinality = forwardRef((_, forwardedRef) => {
         <Box
           className={`cardinality-overlay-grid overlay-grid-suppress-hscroll${cardinalityGridFixedViewport ? " overlay-grid-fixed-viewport" : ""} ag-theme-balham${cardinalityGridFixedViewport ? "" : " ag-grid-compact"}`}
           sx={{
-            width: "50%",
-            maxWidth: "600px",
-            minWidth: CARDINALITY_COL_SUM_PX,
+            width: CARDINALITY_COL_SUM_PX,
             boxSizing: "border-box",
             alignSelf: "flex-start",
             ...(!cardinalityGridFixedViewport ? { height: "auto" } : {})
