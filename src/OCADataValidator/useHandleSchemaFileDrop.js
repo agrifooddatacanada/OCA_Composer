@@ -1,11 +1,14 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect } from "react";
 import yaml from "js-yaml";
 import { messages } from "../constants/messages";
 import { ADC, SENSITIVE } from "../constants/constants";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { replaceAttributeCharsInParsedJson } from "../utils/helpers";
-import { mapLinkMLToOCABundle } from "../SchemaTranslator/mapLinkMLToOCABundle";
+import {
+  mapLinkMLToOCABundle,
+  findMissingLinkMLEnums
+} from "../SchemaTranslator/mapLinkMLToOCABundle";
 import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
 import {
   getPackageBundleId,
@@ -13,6 +16,11 @@ import {
   getRootCaptureBaseId
 } from "../utils/packageUtils";
 import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
+import {
+  isLandingJsonSchema,
+  isLandingYamlSchema,
+  isLandingZipSchema
+} from "../utils/landingSchemaUpload";
 // eslint-disable-next-line import/prefer-default-export
 export const useHandleSchemaFileDrop = (
   firstTimeDisplayWarning,
@@ -35,39 +43,42 @@ export const useHandleSchemaFileDrop = (
     setMatchingRowData,
     firstTimeMatchingRef,
     targetResult,
-    setTargetResult
+    setTargetResult,
+    jsonDropMessage,
+    setJsonDropMessage
   } = useContext(Context);
-  const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setOcaPackage } = useMultiSchema();
+  const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setOcaPackage } =
+    useMultiSchema();
   // useZipParser removed - data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
 
-  const [jsonDropMessage, setJsonDropMessage] = useState({
-    message: "",
-    type: ""
-  });
-
-  const finishUploadUi = useCallback(() => {
-    setJsonDropDisabled(true);
-    setJsonDropMessage({ message: "", type: "" });
-    setJsonLoading(false);
-    setDatasetLoading(false);
-    if (datasetRawFile.length === 0) {
-      setDatasetDropDisabled(false);
-    }
-    if (!jsonIsParsed) {
-      setJsonIsParsed(true);
-      setCurrentDataValidatorPage("SchemaViewDataValidator");
-    }
-  }, [
-    datasetRawFile.length,
-    jsonIsParsed,
-    setCurrentDataValidatorPage,
-    setDatasetDropDisabled,
-    setDatasetLoading,
-    setJsonDropDisabled,
-    setJsonDropMessage,
-    setJsonIsParsed,
-    setJsonLoading
-  ]);
+  const finishUploadUi = useCallback(
+    (options = {}) => {
+      setJsonDropDisabled(true);
+      if (!options.preserveDropMessage) {
+        setJsonDropMessage({ message: "", type: "" });
+      }
+      setJsonLoading(false);
+      setDatasetLoading(false);
+      if (datasetRawFile.length === 0) {
+        setDatasetDropDisabled(false);
+      }
+      if (!jsonIsParsed) {
+        setJsonIsParsed(true);
+        setCurrentDataValidatorPage("SchemaViewDataValidator");
+      }
+    },
+    [
+      datasetRawFile.length,
+      jsonIsParsed,
+      setCurrentDataValidatorPage,
+      setDatasetDropDisabled,
+      setDatasetLoading,
+      setJsonDropDisabled,
+      setJsonDropMessage,
+      setJsonIsParsed,
+      setJsonLoading
+    ]
+  );
 
   const overallLoading = useCallback(() => {
     setJsonLoading(true);
@@ -79,6 +90,7 @@ export const useHandleSchemaFileDrop = (
     setJsonDropDisabled(false);
     setSchemaRawFile([]);
     setMatchingRowData([]);
+    setJsonDropMessage({ message: "", type: "" });
     firstTimeMatchingRef.current = true;
     firstTimeDisplayWarning.current = true;
     setShowWarningCard(false);
@@ -95,188 +107,192 @@ export const useHandleSchemaFileDrop = (
             setTargetResult(e);
             const textDecoder = new TextDecoder("utf-8");
             const jsonString = textDecoder.decode(e.target.result);
-          const rawParse = coerceIfLegacyTopLevelBundle(JSON.parse(jsonString));
-          let jsonFile = null;
-          let ocaPackageData = null;
-          if (rawParse?.oca_bundle?.bundle) {
-            ocaPackageData = rawParse;
-            jsonFile = rawParse?.oca_bundle?.bundle;
-            setOcaPackage(rawParse);
-          } else if (rawParse?.schema?.[0]) {
-            jsonFile = rawParse?.schema?.[0];
-          } else {
-            jsonFile = rawParse;
-          }
-
-          if (!jsonFile) {
-            throw new Error("No JSON file found");
-          }
-
-          jsonFile = replaceAttributeCharsInParsedJson(jsonFile);
-
-          // ALSO ensure multi-schema ocaPackage is populated so validator always uses package root
-          try {
-            let pkgToSet = null;
-            if (ocaPackageData) {
-              pkgToSet = ocaPackageData;
-            } else if (jsonFile?.capture_base) {
-              pkgToSet = { bundle: jsonFile };
+            const rawParse = coerceIfLegacyTopLevelBundle(JSON.parse(jsonString));
+            let jsonFile = null;
+            let ocaPackageData = null;
+            if (rawParse?.oca_bundle?.bundle) {
+              ocaPackageData = rawParse;
+              jsonFile = rawParse?.oca_bundle?.bundle;
+              setOcaPackage(rawParse);
+            } else if (rawParse?.schema?.[0]) {
+              jsonFile = rawParse?.schema?.[0];
+            } else {
+              jsonFile = rawParse;
             }
 
-            if (pkgToSet) {
-              setOcaPackage(pkgToSet);
-              try {
-                loadAllSchemasFromOcaPackage(pkgToSet);
-                const rootId = getPackageBundleId(pkgToSet);
-                if (rootId) switchToSchema(rootId, pkgToSet);
-              } catch (err) {
-                // non-fatal; initialization failed but ocaPackage was set — downstream components
-                // should handle missing initialization defensively.
-                console.warn("useHandleSchemaFileDrop: loadAllSchemasFromOcaPackage failed", err);
+            if (!jsonFile) {
+              throw new Error("No JSON file found");
+            }
+
+            jsonFile = replaceAttributeCharsInParsedJson(jsonFile);
+
+            // ALSO ensure multi-schema ocaPackage is populated so validator always uses package root
+            try {
+              let pkgToSet = null;
+              if (ocaPackageData) {
+                pkgToSet = ocaPackageData;
+              } else if (jsonFile?.capture_base) {
+                pkgToSet = { bundle: jsonFile };
               }
+
+              if (pkgToSet) {
+                setOcaPackage(pkgToSet);
+                try {
+                  loadAllSchemasFromOcaPackage(pkgToSet);
+                  const rootId = getPackageBundleId(pkgToSet);
+                  if (rootId) switchToSchema(rootId, pkgToSet);
+                } catch (err) {
+                  // non-fatal; initialization failed but ocaPackage was set — downstream components
+                  // should handle missing initialization defensively.
+                  console.warn(
+                    "useHandleSchemaFileDrop: loadAllSchemasFromOcaPackage failed",
+                    err
+                  );
+                }
+              }
+            } catch (err) {
+              console.error("useHandleSchemaFileDrop: error setting ocaPackage", err);
             }
-          } catch (err) {
-            console.error("useHandleSchemaFileDrop: error setting ocaPackage", err);
-          }
 
-          const languageList = [];
-          const informationList = [];
-          const labelList = [];
-          const metaList = [];
-          const entryList = [];
-          const allJSONFiles = [];
-          let loadRoot;
-          let entryCodeSummary = {};
-          let conformance;
-          let characterEncoding;
-          let loadUnits;
-          let formatRules;
-          let cardinalityData;
-          let dataStandards;
+            const languageList = [];
+            const informationList = [];
+            const labelList = [];
+            const metaList = [];
+            const entryList = [];
+            const allJSONFiles = [];
+            let loadRoot;
+            let entryCodeSummary = {};
+            let conformance;
+            let characterEncoding;
+            let loadUnits;
+            let formatRules;
+            let cardinalityData;
+            let dataStandards;
 
-          // load up metadata file in OCA bundle
-          if (jsonFile?.overlays?.meta) {
-            metaList.push(...jsonFile.overlays.meta);
-            languageList.push(
-              ...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2))
-            );
+            // load up metadata file in OCA bundle
+            if (jsonFile?.overlays?.meta) {
+              metaList.push(...jsonFile.overlays.meta);
+              languageList.push(
+                ...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2))
+              );
 
-            // ONLY for README
-            const readmeMeta = jsonFile.overlays.meta.map((meta) => JSON.stringify(meta));
-            allJSONFiles.push(...readmeMeta);
-          }
-
-          if (jsonFile?.overlays?.information) {
-            informationList.push(...jsonFile.overlays.information);
-
-            // ONLY for README
-            const readmeInformation = jsonFile.overlays.information.map((information) =>
-              JSON.stringify(information)
-            );
-            allJSONFiles.push(...readmeInformation);
-          }
-
-          if (jsonFile?.overlays?.label) {
-            labelList.push(...jsonFile.overlays.label);
-
-            // ONLY for README
-            const readmeLabel = jsonFile.overlays.label.map((label) =>
-              JSON.stringify(label)
-            );
-            allJSONFiles.push(...readmeLabel);
-          }
-
-          if (jsonFile?.capture_base) {
-            const sensitiveOverlay =
-              ocaPackageData?.extensions?.[ADC]?.[
-                getRootCaptureBaseId(ocaPackageData)
-              ]?.overlays?.[SENSITIVE];
-
-            const sensitiveAttributes = Array.isArray(
-              sensitiveOverlay?.sensitive_attributes
-            )
-              ? sensitiveOverlay?.sensitive_attributes
-              : Array.isArray(jsonFile?.capture_base?.flagged_attributes)
-                ? jsonFile?.capture_base?.flagged_attributes
-                : [];
-
-            if (sensitiveAttributes?.length > 0) {
-              setShowWarningCard(true);
+              // ONLY for README
+              const readmeMeta = jsonFile.overlays.meta.map((meta) =>
+                JSON.stringify(meta)
+              );
+              allJSONFiles.push(...readmeMeta);
             }
-            loadRoot = { ...jsonFile.capture_base };
 
-            // ONLY for README
-            allJSONFiles.push(JSON.stringify(loadRoot));
-          }
+            if (jsonFile?.overlays?.information) {
+              informationList.push(...jsonFile.overlays.information);
 
-          if (jsonFile?.overlays?.unit) {
-            loadUnits = { ...jsonFile.overlays.unit };
+              // ONLY for README
+              const readmeInformation = jsonFile.overlays.information.map((information) =>
+                JSON.stringify(information)
+              );
+              allJSONFiles.push(...readmeInformation);
+            }
 
-            // ONLY for README
-            allJSONFiles.push(JSON.stringify(loadUnits));
-          }
+            if (jsonFile?.overlays?.label) {
+              labelList.push(...jsonFile.overlays.label);
 
-          if (jsonFile?.overlays?.conformance) {
-            conformance = { ...jsonFile.overlays.conformance };
+              // ONLY for README
+              const readmeLabel = jsonFile.overlays.label.map((label) =>
+                JSON.stringify(label)
+              );
+              allJSONFiles.push(...readmeLabel);
+            }
 
-            // ONLY for README
-            allJSONFiles.push(JSON.stringify(conformance));
-          }
+            if (jsonFile?.capture_base) {
+              const sensitiveOverlay =
+                ocaPackageData?.extensions?.[ADC]?.[getRootCaptureBaseId(ocaPackageData)]
+                  ?.overlays?.[SENSITIVE];
 
-          if (jsonFile?.overlays?.character_encoding) {
-            characterEncoding = { ...jsonFile.overlays.character_encoding };
+              const sensitiveAttributes = Array.isArray(
+                sensitiveOverlay?.sensitive_attributes
+              )
+                ? sensitiveOverlay?.sensitive_attributes
+                : Array.isArray(jsonFile?.capture_base?.flagged_attributes)
+                  ? jsonFile?.capture_base?.flagged_attributes
+                  : [];
 
-            // ONLY for README
-            allJSONFiles.push(JSON.stringify(characterEncoding));
-          }
+              if (sensitiveAttributes?.length > 0) {
+                setShowWarningCard(true);
+              }
+              loadRoot = { ...jsonFile.capture_base };
 
-          if (jsonFile?.overlays?.entry_code) {
-            entryCodeSummary = { ...jsonFile.overlays.entry_code };
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(loadRoot));
+            }
 
-            // ONLY for README
-            allJSONFiles.push(JSON.stringify(entryCodeSummary));
-          }
+            if (jsonFile?.overlays?.unit) {
+              loadUnits = { ...jsonFile.overlays.unit };
 
-          if (jsonFile?.overlays?.format) {
-            formatRules = { ...jsonFile.overlays.format };
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(loadUnits));
+            }
 
-            // ONLY for README
-            allJSONFiles.push(JSON.stringify(formatRules));
-          }
+            if (jsonFile?.overlays?.conformance) {
+              conformance = { ...jsonFile.overlays.conformance };
 
-          if (jsonFile?.overlays?.entry) {
-            entryList.push(...jsonFile.overlays.entry);
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(conformance));
+            }
 
-            // ONLY for README
-            const readmeEntry = jsonFile.overlays.entry.map((entry) =>
-              JSON.stringify(entry)
-            );
-            allJSONFiles.push(...readmeEntry);
-          }
+            if (jsonFile?.overlays?.character_encoding) {
+              characterEncoding = { ...jsonFile.overlays.character_encoding };
 
-          if (jsonFile?.overlays?.cardinality) {
-            cardinalityData = { ...jsonFile.overlays.cardinality };
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(characterEncoding));
+            }
 
-            // ONLY for README
-            allJSONFiles.push(JSON.stringify(cardinalityData));
-          }
+            if (jsonFile?.overlays?.entry_code) {
+              entryCodeSummary = { ...jsonFile.overlays.entry_code };
 
-          if (jsonFile?.overlays?.standard) {
-            dataStandards = { ...jsonFile.overlays.standard };
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(entryCodeSummary));
+            }
 
-            // ONLY for README
-            allJSONFiles.push(JSON.stringify(dataStandards));
-          }
+            if (jsonFile?.overlays?.format) {
+              formatRules = { ...jsonFile.overlays.format };
 
-          if (!languageList || languageList.length === 0) {
-            throw new Error("No language found in the JSON file");
-          }
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(formatRules));
+            }
 
-          // Data processing handled by loadAllSchemasFromOcaPackage (called during upload)
-          // which uses OCAParser to extract all schema data into MultiSchemaContext
-          
-          setZipToReadme(allJSONFiles);
-          finishUploadUi();
+            if (jsonFile?.overlays?.entry) {
+              entryList.push(...jsonFile.overlays.entry);
+
+              // ONLY for README
+              const readmeEntry = jsonFile.overlays.entry.map((entry) =>
+                JSON.stringify(entry)
+              );
+              allJSONFiles.push(...readmeEntry);
+            }
+
+            if (jsonFile?.overlays?.cardinality) {
+              cardinalityData = { ...jsonFile.overlays.cardinality };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(cardinalityData));
+            }
+
+            if (jsonFile?.overlays?.standard) {
+              dataStandards = { ...jsonFile.overlays.standard };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(dataStandards));
+            }
+
+            if (!languageList || languageList.length === 0) {
+              throw new Error("No language found in the JSON file");
+            }
+
+            // Data processing handled by loadAllSchemasFromOcaPackage (called during upload)
+            // which uses OCAParser to extract all schema data into MultiSchemaContext
+
+            setZipToReadme(allJSONFiles);
+            finishUploadUi();
           } catch (error) {
             setJsonDropMessage({ message: messages.uploadFail, type: "error" });
             setJsonLoading(false);
@@ -303,66 +319,86 @@ export const useHandleSchemaFileDrop = (
         }, 2500);
       }
     },
-    [datasetRawFile.length, finishUploadUi, jsonIsParsed, loadAllSchemasFromOcaPackage, setDatasetDropDisabled, setJsonDropMessage, setJsonLoading, setDatasetLoading, setOcaPackage, setShowWarningCard, setTargetResult, setZipToReadme, switchToSchema]
+    [
+      datasetRawFile.length,
+      finishUploadUi,
+      jsonIsParsed,
+      loadAllSchemasFromOcaPackage,
+      setDatasetDropDisabled,
+      setJsonDropMessage,
+      setJsonLoading,
+      setDatasetLoading,
+      setOcaPackage,
+      setShowWarningCard,
+      setTargetResult,
+      setZipToReadme,
+      switchToSchema
+    ]
   );
 
-  const handleZipDrop = useCallback((acceptedFiles) => {
-    try {
-      const reader = new FileReader();
+  const handleZipDrop = useCallback(
+    (acceptedFiles) => {
+      try {
+        const reader = new FileReader();
 
-      reader.onload = async (e) => {
-        setTargetResult(e);
-        try {
-          const { ocaPackage, allZipFiles, root, captureBase } =
-            await parseOcaZipArrayBuffer(e.target.result);
-          if (captureBase?.flagged_attributes?.length > 0) {
-            setShowWarningCard(true);
+        reader.onload = async (e) => {
+          setTargetResult(e);
+          try {
+            const { ocaPackage, allZipFiles, root, captureBase } =
+              await parseOcaZipArrayBuffer(e.target.result);
+            if (captureBase?.flagged_attributes?.length > 0) {
+              setShowWarningCard(true);
+            }
+            setOcaPackage(ocaPackage);
+            loadAllSchemasFromOcaPackage(ocaPackage);
+            switchToSchema(root, ocaPackage);
+            setZipToReadme(allZipFiles);
+            finishUploadUi();
+          } catch (err) {
+            console.warn(
+              "useHandleSchemaFileDrop: failed to parse zip as OCA package",
+              err
+            );
+            setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+            setJsonLoading(false);
+            setDatasetLoading(false);
+            if (datasetRawFile.length === 0) {
+              setDatasetDropDisabled(false);
+            }
+            setTimeout(() => {
+              setJsonDropMessage({ message: "", type: "" });
+            }, 2500);
           }
-          setOcaPackage(ocaPackage);
-          loadAllSchemasFromOcaPackage(ocaPackage);
-          switchToSchema(root, ocaPackage);
-          setZipToReadme(allZipFiles);
-          finishUploadUi();
-        } catch (err) {
-          console.warn("useHandleSchemaFileDrop: failed to parse zip as OCA package", err);
-          setJsonDropMessage({ message: messages.uploadFail, type: "error" });
-          setJsonLoading(false);
-          setDatasetLoading(false);
-          if (datasetRawFile.length === 0) {
-            setDatasetDropDisabled(false);
-          }
-          setTimeout(() => {
-            setJsonDropMessage({ message: "", type: "" });
-          }, 2500);
+        };
+
+        reader.readAsArrayBuffer(acceptedFiles[0]);
+      } catch (error) {
+        setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+        setJsonLoading(false);
+        setDatasetLoading(false);
+        if (datasetRawFile.length === 0) {
+          setDatasetDropDisabled(false);
         }
-      };
-
-      reader.readAsArrayBuffer(acceptedFiles[0]);
-    } catch (error) {
-      setJsonDropMessage({ message: messages.uploadFail, type: "error" });
-      setJsonLoading(false);
-      setDatasetLoading(false);
-      if (datasetRawFile.length === 0) {
-        setDatasetDropDisabled(false);
+        setTimeout(() => {
+          setJsonDropMessage({ message: "", type: "" });
+        }, 2500);
       }
-      setTimeout(() => {
-        setJsonDropMessage({ message: "", type: "" });
-      }, 2500);
-    }
-  }, [
-    datasetRawFile.length,
-    finishUploadUi,
-    loadAllSchemasFromOcaPackage,
-    setDatasetDropDisabled,
-    setDatasetLoading,
-    setJsonDropMessage,
-    setJsonLoading,
-    setOcaPackage,
-    setShowWarningCard,
-    setTargetResult,
-    setZipToReadme,
-    switchToSchema
-  ]);
+    },
+    [
+      datasetRawFile.length,
+      finishUploadUi,
+      loadAllSchemasFromOcaPackage,
+      setDatasetDropDisabled,
+      setDatasetLoading,
+      setJsonDropMessage,
+      setJsonLoading,
+      setOcaPackage,
+      setShowWarningCard,
+      setTargetResult,
+      setZipToReadme,
+      switchToSchema
+    ]
+  );
 
   const handleYamlDrop = useCallback(
     (acceptedFiles) => {
@@ -377,6 +413,7 @@ export const useHandleSchemaFileDrop = (
             const yamlString = e.target.result;
 
             const linkmlSchema = yaml.load(yamlString);
+            const missingEnums = findMissingLinkMLEnums(linkmlSchema);
             const bundle = mapLinkMLToOCABundle(linkmlSchema);
             const pkg = transformToPackage(bundle);
 
@@ -439,7 +476,15 @@ export const useHandleSchemaFileDrop = (
             switchToSchema(rootSchemaId, pkg);
             setZipToReadme(allJSONFiles);
 
-            finishUploadUi();
+            if (missingEnums.length > 0) {
+              setJsonDropMessage({
+                message: messages.linkmlMissingEnumsWarning(missingEnums),
+                type: "warning"
+              });
+              finishUploadUi({ preserveDropMessage: true });
+            } else {
+              finishUploadUi();
+            }
           } catch (error) {
             setJsonDropMessage({
               message: `${messages.uploadFail}: ${error.message}`,
@@ -485,6 +530,7 @@ export const useHandleSchemaFileDrop = (
       setJsonIsParsed,
       setJsonLoading,
       setOcaPackage,
+      setJsonDropMessage,
       setShowWarningCard,
       setTargetResult,
       setZipToReadme,
@@ -493,19 +539,12 @@ export const useHandleSchemaFileDrop = (
   );
 
   useEffect(() => {
-    if (schemaRawFile && schemaRawFile.length > 0 && schemaRawFile[0].path.includes(".json")) {
+    const file = schemaRawFile?.[0];
+    if (schemaRawFile && schemaRawFile.length > 0 && isLandingJsonSchema(file)) {
       handleJsonDrop(schemaRawFile);
-    } else if (
-      schemaRawFile &&
-      schemaRawFile.length > 0 &&
-      schemaRawFile[0].path.includes(".zip")
-    ) {
+    } else if (schemaRawFile && schemaRawFile.length > 0 && isLandingZipSchema(file)) {
       handleZipDrop(schemaRawFile);
-    } else if (
-      schemaRawFile &&
-      schemaRawFile.length > 0 &&
-      (schemaRawFile[0].path.includes(".yaml") || schemaRawFile[0].path.includes(".yml"))
-    ) {
+    } else if (schemaRawFile && schemaRawFile.length > 0 && isLandingYamlSchema(file)) {
       handleYamlDrop(schemaRawFile);
     } else if (schemaRawFile && schemaRawFile.length > 0) {
       setJsonDropMessage({ message: messages.uploadFail, type: "error" });

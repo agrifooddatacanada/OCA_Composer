@@ -11,6 +11,7 @@ import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerific
 import OCAMerge from "./OCAMerge/OCAMerge";
 import { MultiSchemaProvider } from "./schema/schemaContext";
 import SessionDraftManager from "./components/SessionDraftManager";
+import SchemaUploadWarningPopup from "./SchemaTranslator/SchemaUploadWarningPopup";
 import { getCurrentTheme } from "./utils/themeDetector";
 import { CustomPalette } from "./constants/customPalette";
 import { overlayItems } from "./constants/constants";
@@ -88,6 +89,7 @@ function App() {
   const [selectedOverlaysOCAFile1, setSelectedOverlaysOCAFile1] = useState({});
   const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState({});
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
+  const [jsonDropMessage, setJsonDropMessage] = useState({ message: "", type: "" });
 
   // Theme state
   const [currentTheme, setCurrentTheme] = useState(getCurrentTheme());
@@ -268,6 +270,8 @@ function App() {
               setTargetResult,
               datasetDropMessage,
               setDatasetDropMessage,
+              jsonDropMessage,
+              setJsonDropMessage,
               notToVerifyAttributes,
               setNotToVerifyAttributes,
               currentSchemaId,
@@ -287,6 +291,7 @@ function App() {
             >
               <BrowserRouter>
                 <SessionDraftManager />
+                <SchemaUploadWarningPopup />
                 <Routes>
                   <Route path="/" element={<Landing />} />
                   <Route

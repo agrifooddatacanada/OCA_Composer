@@ -23,81 +23,77 @@ const LandingDropZone = ({
       sx={{
         width: "100%",
         display: "flex",
-        flexDirection: "row",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center"
       }}
-      {...getRootProps({ className: "dropzone" })}
     >
-      <input {...getInputProps()} />
-      <Card
+      <Box
         sx={{
-          border: 1,
-          padding: "8px",
-          paddingLeft: "20px",
-          paddingRight: "20px",
-          height: "80px",
-          width: "300px",
-          marginTop: 3,
+          width: "100%",
           display: "flex",
           flexDirection: "row",
           justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#CDCDCD",
-          alignSelf: "center",
-          cursor: "pointer"
+          alignItems: "center"
         }}
-        onMouseOver={handleHover}
-        onMouseLeave={handleHoverLeave}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        {...getRootProps({ className: "dropzone" })}
       >
-        {/* {dropMessage?.message.length > 0 && (
-          <Alert
-            severity={dropMessage?.type}
-            style={{
-              position: "absolute",
-              zIndex: 9999,
-              left: "70%",
-              transform: "translate(-50%, -110%)",
-            }}
-          >
-            {dropMessage?.message}
-          </Alert>
-        )} */}
-
-        <CardContent>
-          {loading === true ? (
-            <LoopIcon
-              sx={{
-                color: CustomPalette.GREY_300,
-                m: 2,
-                fontSize: "60px",
-                animation: spinningAnimation,
-                transition: "all 0.2s ease-in-out"
-              }}
-            />
-          ) : dropDisabled === true ? (
-            <CheckCircleOutlineIcon
-              sx={{
-                m: 2,
-                fontSize: "60px",
-                color: CustomPalette.PRIMARY
-              }}
-            />
-          ) : (
-            <Tooltip title={t("Drag-and-Drop/Click-to-Find")} arrow>
-              <Typography sx={{ fontSize: "16px", fontWeight: "700" }}>
-                {t("Upload Schema")}
-                <br />
-                {t("(.zip or .json for OCA)")}
-                <br />
-                {t("(.yaml or .yml for LinkML)")}
-              </Typography>
-            </Tooltip>
-          )}
-        </CardContent>
-      </Card>
+        <input {...getInputProps()} />
+        <Card
+          sx={{
+            border: 1,
+            padding: "8px",
+            paddingLeft: "20px",
+            paddingRight: "20px",
+            height: "80px",
+            width: "300px",
+            marginTop: 3,
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#CDCDCD",
+            alignSelf: "center",
+            cursor: "pointer"
+          }}
+          onMouseOver={handleHover}
+          onMouseLeave={handleHoverLeave}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+        >
+          <CardContent>
+            {loading === true ? (
+              <LoopIcon
+                sx={{
+                  color: CustomPalette.GREY_300,
+                  m: 2,
+                  fontSize: "60px",
+                  animation: spinningAnimation,
+                  transition: "all 0.2s ease-in-out"
+                }}
+              />
+            ) : dropDisabled === true ? (
+              <CheckCircleOutlineIcon
+                sx={{
+                  m: 2,
+                  fontSize: "60px",
+                  color: CustomPalette.PRIMARY
+                }}
+              />
+            ) : (
+              <Tooltip title={t("Drag-and-Drop/Click-to-Find")} arrow>
+                <Typography sx={{ fontSize: "16px", fontWeight: "700" }}>
+                  {t("Upload Schema")}
+                  <br />
+                  {t("(.zip or .json for OCA)")}
+                  <br />
+                  {t("(.yaml or .yml for LinkML)")}
+                </Typography>
+              </Tooltip>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   );
 };

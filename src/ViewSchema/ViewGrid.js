@@ -157,14 +157,14 @@ export default function ViewGrid({
   }, [setLoading]);
 
   const computeRowPixelHeight = useCallback((data) => {
-    const opts = { compact: true };
-    const attrH = measureTextHeight(data?.Attribute || "", 104, opts);
-    const unitH = measureTextHeight(data?.Unit || "", 74, opts);
-    const typeH = measureTextHeight(data?.Type || "", 104, opts);
-    const labelH = measureTextHeight(data?.Label || "", 154, opts);
-    const descH = measureTextHeight(data?.Description || "", 334, opts);
+    const measureOpts = { lineHeight: 1.25, padding: "0" };
+    const attrH = measureTextHeight(data?.Attribute || "", 104, measureOpts);
+    const unitH = measureTextHeight(data?.Unit || "", 74, measureOpts);
+    const typeH = measureTextHeight(data?.Type || "", 104, measureOpts);
+    const labelH = measureTextHeight(data?.Label || "", 154, measureOpts);
+    const descH = measureTextHeight(data?.Description || "", 334, measureOpts);
     const maxH = Math.max(attrH, unitH, typeH, labelH, descH);
-    return Math.max(32, maxH + 14);
+    return Math.max(32, maxH + 4);
   }, []);
 
   const getRowHeight = useCallback(
