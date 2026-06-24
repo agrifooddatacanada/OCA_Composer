@@ -1,11 +1,22 @@
 import ExcelJS from "exceljs";
 import JSZip from "jszip";
-import { codesToLanguages } from "../constants/isoCodes";
+import { langTwoLettersFromName } from "../utils/languageUtils";
 import {
   replaceAttributeCharsInJsonString,
-  replaceAttributeCharsInParsedJson
-} from "../constants/utils";
-import { ADC, RANGE, SENSITIVE, UNIT_FRAMING } from "../constants/constants";
+  replaceAttributeCharsInParsedJson,
+  normalizeEscapedQuotes,
+  prettyPrintDelimiter
+} from "../utils/helpers";
+import {
+  ADC,
+  RANGE,
+  SENSITIVE,
+  UNIT_FRAMING,
+  DECIMAL_SEPARATOR,
+  FILE_DELIMITER,
+  ARRAY_DELIMITER
+} from "../constants/constants";
+import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
 
 // Custom error-handling function
 function WorkbookError(message) {
@@ -22,19 +33,16 @@ function readJSON(originJsonData_jsonSaid, e) {
   try {
     const textDecoder = new TextDecoder("utf-8");
     const jsonString = textDecoder.decode(e.target.result);
-    const rawJson = JSON.parse(jsonString);
+    const rawJson = coerceIfLegacyTopLevelBundle(JSON.parse(jsonString));
 
-    // check if the json is a valid oca-package or just a normal oca-bundle
     let json = null;
     if (rawJson.type && rawJson.type.includes("oca_package")) {
       isOcaPackage = true;
       extensions = rawJson.extensions;
       ocaPackageSaid = rawJson?.d || "";
       json = rawJson.oca_bundle.bundle;
-    } else if (rawJson.oca_bundle && rawJson.oca_bundle.bundle) {
+    } else if (rawJson.oca_bundle?.bundle) {
       json = rawJson.oca_bundle.bundle;
-    } else if (rawJson.bundle) {
-      json = rawJson.bundle;
     } else {
       throw new WorkbookError(".. Error in reading the json file ...");
     }
@@ -95,9 +103,8 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   if (selectedLang === "English") {
     selectedLang = DEFAULT_LANGUAGE;
   } else {
-    selectedLang = Object.keys(codesToLanguages).find(
-      (key) => codesToLanguages[key] === selectedLang
-    );
+    // Convert language name (e.g. "English") to 2-letter code (e.g. "en")
+    selectedLang = langTwoLettersFromName(selectedLang);
   }
 
   let inPutJsonResult = null;
@@ -121,30 +128,26 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let rangeOverlay = null;
   let unitFramingOverlay = null;
   let extensionOverlayColumnCount = 0;
+  let decimalSeparatorOverlay = null;
+  let fileDelimiterOverlay = null;
+  let arrayDelimiterOverlay = null;
 
   if (isOcaPackage) {
     const extensions = inPutJsonResult[2];
     if (Object.keys(extensions || {}).length > 0) {
       // For now, use ADC extension overlays for the top-level/main schema bundle
       const overlays = extensions?.[ADC]?.[inPutJsonResult[0].captureBaseSAID]?.overlays;
-      for (const overlayKey of Object.keys(overlays || {})) {
-        if (overlays[overlayKey].type.includes("ordering")) {
-          attribute_ordering_container = overlays[overlayKey].attribute_ordering;
-          entry_code_ordering = overlays[overlayKey].entry_code_ordering;
-        }
-
-        if (overlays[overlayKey].type.includes(SENSITIVE)) {
-          sensitiveOverlay = overlays[overlayKey];
-        }
-
-        if (overlays[overlayKey].type.includes(RANGE)) {
-          rangeOverlay = overlays[overlayKey];
-        }
-
-        if (overlays[overlayKey].type.includes(UNIT_FRAMING)) {
-          unitFramingOverlay = overlays[overlayKey];
-        }
+      const orderingOverlay = overlays?.ordering;
+      if (orderingOverlay) {
+        attribute_ordering_container = orderingOverlay.attribute_ordering;
+        entry_code_ordering = orderingOverlay.entry_code_ordering;
       }
+      sensitiveOverlay = overlays?.[SENSITIVE];
+      rangeOverlay = overlays?.[RANGE];
+      unitFramingOverlay = overlays?.[UNIT_FRAMING];
+      decimalSeparatorOverlay = overlays?.[DECIMAL_SEPARATOR];
+      fileDelimiterOverlay = overlays?.[FILE_DELIMITER];
+      arrayDelimiterOverlay = overlays?.[ARRAY_DELIMITER];
     }
   }
 
@@ -332,10 +335,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     schemaTitle = metaOverlays[0].name;
     schemaDescription = metaOverlays[0].description
       ? // eslint-disable-next-line quotes
-        metaOverlays[0].description
-          .replace(/\\"/g, '"')
-          .replace(/\\'/g, "'")
-          .replace(/\\-/g, "-")
+        normalizeEscapedQuotes(metaOverlays[0].description)
       : "";
     schemaLanguage = metaOverlays[0].language;
     schemaClassification = jsonData.find(
@@ -385,6 +385,36 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   sheet1.getCell(introSectionCurrentRow, 2).value =
     `Schema classification: ${schemaClassification}`;
   introSectionCurrentRow += 2;
+
+  if (decimalSeparatorOverlay || fileDelimiterOverlay) {
+    sheet1.getCell(introSectionCurrentRow, 1).value = "Global Schema Values:";
+    formatFirstPage(sheet1.getCell(introSectionCurrentRow, 1));
+    introSectionCurrentRow++;
+
+    if (decimalSeparatorOverlay) {
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `Decimal Separator: '${decimalSeparatorOverlay.delimiter}'`;
+      introSectionCurrentRow++;
+    }
+
+    if (fileDelimiterOverlay) {
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `File Delimiter: '${prettyPrintDelimiter(fileDelimiterOverlay.delimiter)}'`;
+      introSectionCurrentRow++;
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `Quote Character: ${fileDelimiterOverlay.quote_char}`;
+      introSectionCurrentRow++;
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `Escape Character: '${fileDelimiterOverlay.escape_char}'`;
+      introSectionCurrentRow++;
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `Line Terminator: '${fileDelimiterOverlay.line_terminator}'`;
+      introSectionCurrentRow++;
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `Data Start Row: '${fileDelimiterOverlay.data_start_row}'`;
+      introSectionCurrentRow++;
+    }
+  }
 
   sheet1.getCell(introSectionCurrentRow, 1).value = "What is a schema?";
   formatFirstPage(sheet1.getCell(introSectionCurrentRow, 1));
@@ -869,7 +899,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
 
   if (Object.keys(unitFramingOverlay?.units || {}).length > 0) {
     const unitOverlay = jsonData.find((overlay) => overlay.type.includes("/unit/"));
-    const attributeUnitMap = unitOverlay?.attribute_units || unitOverlay?.attribute_unit;
+    const attributeUnitMap = unitOverlay?.attribute_unit || unitOverlay?.attribute_units;
     if (attributeUnitMap) {
       const columns = ["Unit Framing"];
       const startColumnIndex =
@@ -939,6 +969,33 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     } catch (error) {
       throw new WorkbookError(
         ".. Error in formatting range columns (header and rows) ..."
+      );
+    }
+  }
+
+  if (arrayDelimiterOverlay) {
+    const columns = ["Array Delimiter"];
+    const startColumnIndex = jsonData.length + 3 + extensionOverlayColumnCount - skipped;
+    try {
+      columns.forEach((column, i) => {
+        const columnIndex = startColumnIndex + i;
+        const columnHeaderCell = sheet1.getCell(shift + 1, columnIndex);
+        sheet1.getColumn(columnIndex).width = 15;
+        columnHeaderCell.value = column;
+        formatHeader(columnHeaderCell);
+
+        Object.keys(arrayDelimiterOverlay.attributes).forEach((attribute) => {
+          const rowIndex = mappingAttrKeysandAttrValues[attribute];
+          if (!rowIndex) return;
+
+          const valueCell = sheet1.getCell(shift + rowIndex, columnIndex);
+          valueCell.value = arrayDelimiterOverlay.attributes[attribute];
+        });
+        extensionOverlayColumnCount += 1;
+      });
+    } catch (error) {
+      throw new WorkbookError(
+        ".. Error in formatting array delimiter columns (header and rows) ..."
       );
     }
   }

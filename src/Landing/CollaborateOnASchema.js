@@ -34,7 +34,7 @@ const CollaborateOnASchema = () => {
         </Typography>
         <Typography>
           {t(
-            "To merge schemas you must have the same capture base. The suggested process..."
+            "To merge schemas you must have the same capture base. The suggested process is to create a basic schema with all attributes and then distribute this schema bundle to your collaborators. Everyone can work on their own features of the schema and at the end everything can be combined in a single schema using the OCA merge tool."
           )}
         </Typography>
       </AccordionDetails>

@@ -13,11 +13,11 @@ const UploadButton = ({ isDisabled, uploadFunc }) => {
       disabled={isDisabled}
       onClick={uploadFunc}
       sx={{
-        alignSelf: "flex-end",
         display: "flex",
         justifyContent: "space-around",
         padding: "0.5rem 1rem",
-        margin: "0rem 0.5rem"
+        margin: "0rem 0.5rem",
+        flexShrink: 0
       }}
     >
       {t("Upload Data")}

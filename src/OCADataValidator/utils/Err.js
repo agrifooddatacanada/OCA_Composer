@@ -19,6 +19,7 @@ class FormatErr extends BaseErr {}
 class EntryCodeErr extends BaseErr {}
 class CharacterEcodeErr extends BaseErr {}
 class RangeErr extends BaseErr {}
+class WarningErr extends BaseErr {}
 
 export default class OCADataSetErr {
   constructor() {
@@ -27,6 +28,7 @@ export default class OCADataSetErr {
     this.entryCodeErr = this.createErrInstance(EntryCodeErr);
     this.characterEcodeErr = this.createErrInstance(CharacterEcodeErr);
     this.rangeErr = this.createErrInstance(RangeErr);
+    this.warningErr = this.createErrInstance(WarningErr);
 
     this.missingAttrs = new Set();
     this.unmachedAttrs = new Set();
@@ -111,6 +113,19 @@ export default class OCADataSetErr {
           if (Object.prototype.hasOwnProperty.call(this.rangeErr.errs[i], j)) {
             this.errRows.add(j);
             if (Object.keys(this.rangeErr.errs).includes(i)) {
+              this.errCols.add(i);
+            }
+          }
+        }
+      }
+    }
+
+    for (const i in this.warningErr.errs) {
+      if (Object.prototype.hasOwnProperty.call(this.warningErr.errs, i)) {
+        for (const j in this.warningErr.errs[i]) {
+          if (Object.prototype.hasOwnProperty.call(this.warningErr.errs[i], j)) {
+            this.errRows.add(j);
+            if (Object.keys(this.warningErr.errs).includes(i)) {
               this.errCols.add(i);
             }
           }
@@ -230,11 +245,13 @@ export default class OCADataSetErr {
         row
       );
       const rangeError = this.rowErrorsForErrCollection(this.rangeErr.errs, row);
+      const warningError = this.rowErrorsForErrCollection(this.warningErr.errs, row);
       const mergedErrors = this.mergeErrors(
         formatError,
         entryCodeError,
         characterEncodingError,
-        rangeError
+        rangeError,
+        warningError
       );
       this.errCollection[row] = mergedErrors;
     }

@@ -379,6 +379,7 @@ export const languageNameToAlpha3Codes = {
   chuvash: "chv",
   cornish: "cor",
   corsican: "cos",
+  cree: "cre",
   welsh: "cym",
   danish: "dan",
   german: "deu",
@@ -404,6 +405,8 @@ export const languageNameToAlpha3Codes = {
   hungarian: "hun",
   igbo: "ibo",
   indonesian: "ind",
+  inuktitut: "iku",
+  inupiaq: "ipk",
   icelandic: "isl",
   italian: "ita",
   javanese: "jav",
@@ -440,6 +443,7 @@ export const languageNameToAlpha3Codes = {
   "norwegian bokmål": "nob",
   "northern sotho": "nso",
   occitan: "oci",
+  ojibway: "oji",
   oromo: "orm",
   punjabi: "pan",
   polish: "pol",
@@ -577,7 +581,4 @@ export const alpha3CodesToTwoLetterCodes = {
   zul: "zu"
 };
 
-export const toThreeLetterCode = (twoLetterCode) => {
-  const languageName = codesToLanguages[twoLetterCode];
-  return languageNameToAlpha3Codes[languageName];
-};
+// toThreeLetterCode moved to utils/languageUtils.js as langCodeOCAFromTwoLetters()

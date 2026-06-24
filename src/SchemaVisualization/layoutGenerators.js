@@ -1,0 +1,629 @@
+/**
+ * Layout generators for different visualization modes
+ */
+import dagre from "dagre";
+import {
+  createDependencyMap,
+  processAttributes,
+  getDependencyInfo,
+  truncateText
+} from "./dataUtils";
+
+/**
+ * Find a package dependency for a refn: placeholder name (by bundle id or meta overlay name).
+ */
+const findDependencyForPlaceholderName = (placeholderName, dependencies, langCodeOCA) => {
+  if (!dependencies?.length) return null;
+  return (
+    dependencies.find((dep) => {
+      if (dep.d === placeholderName) return true;
+      const metaOverlays = dep.overlays?.meta;
+      const metaOverlay = Array.isArray(metaOverlays)
+        ? metaOverlays.find((m) => m.language === langCodeOCA) || metaOverlays[0]
+        : null;
+      return metaOverlay?.name === placeholderName;
+    }) || null
+  );
+};
+
+/**
+ * True when the dependency for this refn: name has at least one capture_base attribute.
+ */
+const placeholderDependencyHasNonEmptyAttributes = (
+  placeholderName,
+  dependencies,
+  langCodeOCA
+) => {
+  const dep = findDependencyForPlaceholderName(
+    placeholderName,
+    dependencies,
+    langCodeOCA
+  );
+  const attrs = dep?.capture_base?.attributes;
+  return attrs && typeof attrs === "object" && Object.keys(attrs).length > 0;
+};
+
+/**
+ * For detailed view: refn: fields whose child schema already has attributes should display
+ * as "Child Schema" on the parent (same as refs:), not "Placeholder Child Schema".
+ */
+const enrichFieldsForChildSchemaDisplay = (fields, dependencies, langCodeOCA) =>
+  fields.map((field) => {
+    if (
+      !field.isPlaceholder ||
+      typeof field.type !== "string" ||
+      !field.type.startsWith("refn:")
+    ) {
+      return field;
+    }
+    const placeholderName = field.type.replace("refn:", "");
+    if (
+      !placeholderDependencyHasNonEmptyAttributes(
+        placeholderName,
+        dependencies,
+        langCodeOCA
+      )
+    ) {
+      return field;
+    }
+    return {
+      ...field,
+      isPlaceholder: false,
+      isMaterializedChildSchema: true
+    };
+  });
+
+/**
+ * DATA STRUCTURE DOCUMENTATION
+ *
+ * Node Structure:
+ * Each node in the visualization has three distinct properties:
+ *
+ * - id: Unique technical identifier
+ *   - Used by Dagre for layout calculations and React Flow as unique key
+ *   - Must be globally unique across entire graph
+ *   - Examples: "root", "AddressSchema", "placeholder-root-contact"
+ *
+ * - name/title: Display label for users
+ *   - What users actually see on the node
+ *   - Can be human-readable and localized
+ *   - Examples: "Parent Schema", "Address Schema", "contact\n(placeholder child schema)"
+ *
+ * - type: Node behavior and rendering control
+ *   - Determines React Flow node type mapping and CSS classes
+ *   - Controls visual styling and rendering logic
+ *   - Values: "root", "reference", "placeholder"
+ *
+ * Layout Modes:
+ * - Tree Layout: Hierarchical parent-child structure, minimal node info (schema names only)
+ * - Detailed Layout: Flat network of detailed nodes, all field information visible, connected by edges
+ */
+
+/**
+ * Calculate node dimensions based on expected maximum content for consistent sizing
+ * @param {Object} node - Node object with data
+ * @param {string} viewMode - 'tree' or 'detailed' to determine sizing strategy
+ * @returns {Object} Object with width and height properties
+ */
+const calculateNodeDimensions = (node, viewMode = "detailed") => {
+  if (viewMode === "tree") {
+    return { width: 180, height: 92 };
+  }
+
+  // Complex sizing for detailed view based on expected content
+  const nodeType = node.data?.nodeType;
+
+  if (nodeType === "root") {
+    // Root nodes: assume max 8 fields (as per our limit)
+    const headerHeight = 50;
+    const fieldHeight = 45;
+    const maxFields = 8;
+    const padding = 20;
+
+    return {
+      width: 300, // Wider for root nodes
+      height: headerHeight + maxFields * fieldHeight + padding
+    };
+  }
+
+  // Non-root nodes: expect 3 child schemas/placeholder child schemas + "...X more fields" indicator
+  const headerHeight = 50;
+  const fieldHeight = 45;
+  const expectedVisibleFields = 3; // 3 child schemas/placeholder child schemas
+  const extraRowForTruncation = 1; // There might be a "...more fields" row
+  const padding = 20;
+
+  return {
+    width: 250, // Fixed width for consistent layout
+    height:
+      headerHeight +
+      (expectedVisibleFields + extraRowForTruncation) * fieldHeight +
+      padding
+  };
+};
+
+/**
+ * Apply Dagre layout to nodes and edges
+ * @param {Array} nodes - Array of nodes
+ * @param {Array} edges - Array of edges
+ * @param {string} direction - Layout direction ('TB', 'LR', 'BT', 'RL')
+ * @param {string} viewMode - 'tree' or 'detailed' for sizing strategy
+ * @returns {Object} Object with layouted nodes and edges
+ */
+const getLayoutedElements = (nodes, edges, direction = "TB", viewMode = "detailed") => {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+  // Configure graph with spacing - less spacing needed for tree view with uniform sizes
+  const spacing =
+    viewMode === "tree"
+      ? { nodesep: 50, ranksep: 80, marginx: 20, marginy: 20 }
+      : { nodesep: 80, ranksep: 150, marginx: 30, marginy: 30 };
+
+  dagreGraph.setGraph({
+    rankdir: direction,
+    ...spacing
+  });
+
+  // Add nodes to dagre graph with calculated dimensions
+  nodes.forEach((node) => {
+    const dimensions = calculateNodeDimensions(node, viewMode);
+    dagreGraph.setNode(node.id, {
+      width: dimensions.width,
+      height: dimensions.height
+    });
+  });
+
+  // Add edges to dagre graph
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  // Calculate layout
+  dagre.layout(dagreGraph);
+
+  // Apply positions back to nodes
+  const layoutedNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - nodeWithPosition.width / 2,
+        y: nodeWithPosition.y - nodeWithPosition.height / 2
+      }
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
+};
+
+/**
+ * Generate hierarchical tree layout nodes and edges
+ *
+ * Tree Layout Approach:
+ * - Uses recursive buildHierarchy function to create nested parent-child structure
+ * - Creates minimal nodes showing only schema names and parent-child relationships; no field information
+ * - No cycle detection needed as schema verification prevents cycles at earlier stage
+ *
+ * @param {Object} schemaData - Processed schema data with attributes, dependencies, and overlays
+ * @param {string} langCodeOCA - OCA language code for labels (e.g., "eng", "fra")
+ * @param {string} rootLabel - Translated label for the root node
+ * @returns {Object} Object containing nodes and edges arrays
+ */
+export const generateTreeLayout = (
+  schemaData,
+  langCodeOCA = "eng",
+  rootLabel = "Parent Schema",
+  currentSchemaId = null
+) => {
+  // Expect attributes as we don't use viz where there is one root and no children
+  if (!schemaData || !schemaData.attributes) {
+    return { nodes: [], edges: [] };
+  }
+
+  const { attributes, dependencies, overlays } = schemaData;
+  const dependencyMap = createDependencyMap(dependencies);
+
+  const labelOverlayList = Array.isArray(overlays?.label)
+    ? overlays.label
+    : overlays?.label
+      ? [overlays.label]
+      : [];
+  const labelOverlayRaw =
+    labelOverlayList.find((l) => l.language === langCodeOCA) || labelOverlayList[0] || {};
+  const mergedAttributeLabels = {
+    ...(schemaData.labels || {}),
+    ...(labelOverlayRaw.attribute_labels || {})
+  };
+  const labelOverlay = {
+    ...labelOverlayRaw,
+    attribute_labels: mergedAttributeLabels
+  };
+
+  // Get meta overlay for root schema name using the specified language
+  const rootMetaOverlay = Array.isArray(overlays?.meta)
+    ? overlays.meta.find((m) => m.language === langCodeOCA) || overlays.meta[0]
+    : null;
+
+  // Recursive function to build hierarchical structure
+  const buildHierarchy = ({
+    nodeId,
+    attributes: nodeAttributes,
+    labelOverlay: nodeLabelOverlay,
+    metaOverlay = null,
+    nodeType
+  }) => {
+    const labels = nodeLabelOverlay?.attribute_labels || {};
+    const metaName = typeof metaOverlay?.name === "string" ? metaOverlay.name.trim() : "";
+    const nodeName = metaName || (nodeId === "root" ? rootLabel : nodeId);
+
+    const nodeData = {
+      id: nodeId,
+      name: nodeName,
+      type: nodeType,
+      children: [],
+      schemaAttributes: nodeAttributes || {},
+      attributeLabels: labels
+    };
+
+    // Process all attributes to find child schemas and placeholder child schemas
+    Object.entries(nodeAttributes).forEach(([key, value]) => {
+      const isRefs = typeof value === "string" && value.startsWith("refs:");
+      const isRefn = typeof value === "string" && value.startsWith("refn:");
+
+      if (isRefs) {
+        const refId = value.replace("refs:", "");
+        const refDep = dependencyMap[refId];
+
+        if (refDep) {
+          const refLabelOverlays = refDep.overlays?.label;
+          const refLabelOverlay = Array.isArray(refLabelOverlays)
+            ? refLabelOverlays.find((l) => l.language === langCodeOCA) ||
+              refLabelOverlays[0]
+            : null;
+
+          const refMetaOverlays = refDep.overlays?.meta;
+          const refMetaOverlay = Array.isArray(refMetaOverlays)
+            ? refMetaOverlays.find((m) => m.language === langCodeOCA) ||
+              refMetaOverlays[0]
+            : null;
+
+          const parentFieldLabel = labels[key] || key;
+          const refMetaName =
+            typeof refMetaOverlay?.name === "string" ? refMetaOverlay.name.trim() : "";
+          const useBundledMeta = Boolean(
+            refMetaName && refMetaName !== refId && refMetaOverlay
+          );
+          const metaForChild = useBundledMeta
+            ? refMetaOverlay
+            : { ...(refMetaOverlay || {}), name: parentFieldLabel };
+
+          const childNode = buildHierarchy({
+            nodeId: refId,
+            attributes: refDep.capture_base.attributes,
+            labelOverlay: refLabelOverlay,
+            metaOverlay: metaForChild,
+            nodeType: "reference"
+          });
+          if (childNode) {
+            nodeData.children.push(childNode);
+          }
+        } else {
+          // Dependency not found - use attribute label as fallback name
+          const fallbackName = labels[key] || key;
+          const childNode = buildHierarchy({
+            nodeId: refId,
+            attributes: {},
+            labelOverlay: null,
+            metaOverlay: { name: fallbackName },
+            nodeType: "reference"
+          });
+          if (childNode) {
+            nodeData.children.push(childNode);
+          }
+        }
+      } else if (isRefn) {
+        const placeholderName = value.replace("refn:", "");
+        const refDep = findDependencyForPlaceholderName(
+          placeholderName,
+          dependencies,
+          langCodeOCA
+        );
+
+        const attributesObj = refDep?.capture_base?.attributes;
+        const hasAttributes =
+          attributesObj &&
+          typeof attributesObj === "object" &&
+          Object.keys(attributesObj).length > 0;
+
+        // Get metadata for display name
+        const refMetaOverlays = refDep?.overlays?.meta;
+        const refMetaOverlay = Array.isArray(refMetaOverlays)
+          ? refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0]
+          : null;
+
+        // Default to attribute label as display name
+        const displayName = labels[key] || key;
+
+        // If the placeholder has actual attributes, treat it like a reference
+        // and recursively build its hierarchy
+        if (hasAttributes) {
+          const refLabelOverlays = refDep.overlays?.label;
+          const refLabelOverlay = Array.isArray(refLabelOverlays)
+            ? refLabelOverlays.find((l) => l.language === langCodeOCA) ||
+              refLabelOverlays[0]
+            : null;
+
+          const parentFieldLabel = labels[key] || key;
+          const refMetaName =
+            typeof refMetaOverlay?.name === "string" ? refMetaOverlay.name.trim() : "";
+          const useBundledMeta = Boolean(
+            refMetaName && refMetaName !== placeholderName && refMetaOverlay
+          );
+          const metaForChild = useBundledMeta
+            ? refMetaOverlay
+            : { ...(refMetaOverlay || {}), name: parentFieldLabel };
+
+          const childNode = buildHierarchy({
+            nodeId: refDep.d || placeholderName,
+            attributes: refDep.capture_base.attributes,
+            labelOverlay: refLabelOverlay,
+            metaOverlay: metaForChild,
+            nodeType: "reference"
+          });
+          if (childNode) {
+            nodeData.children.push(childNode);
+          }
+        } else {
+          nodeData.children.push({
+            id: refDep?.d || placeholderName,
+            name: displayName,
+            type: "placeholder",
+            children: [],
+            schemaAttributes: {},
+            attributeLabels: {}
+          });
+        }
+      }
+    });
+
+    return nodeData;
+  };
+
+  // Build the complete hierarchy starting from root
+  const rootData = buildHierarchy({
+    nodeId: "root",
+    attributes,
+    labelOverlay,
+    metaOverlay: rootMetaOverlay,
+    nodeType: "root"
+  });
+
+  if (!rootData) {
+    return { nodes: [], edges: [] };
+  }
+
+  // Build nodes for Dagre layout
+  const nodes = [];
+  const edges = [];
+
+  // Process nodes recursively to build flat structure for Dagre
+  const processNodeForDagre = (nodeData, processedIds = new Set()) => {
+    if (!nodeData || processedIds.has(nodeData.id)) return;
+    processedIds.add(nodeData.id);
+
+    const nodeLabel = truncateText(nodeData.name, 20);
+
+    const rawTreeFields = processAttributes(
+      nodeData.schemaAttributes || {},
+      nodeData.attributeLabels || {}
+    );
+    const treeFields = enrichFieldsForChildSchemaDisplay(
+      rawTreeFields,
+      dependencies,
+      langCodeOCA
+    );
+
+    // Add node to nodes array
+    nodes.push({
+      id: nodeData.id,
+      data: {
+        label: nodeLabel,
+        labelFull: nodeData.name,
+        title: nodeLabel,
+        fields: treeFields,
+        currentSchemaId,
+        nodeId: nodeData.id
+      },
+      type: nodeData.type === "placeholder" ? "placeholderNode" : "treeNode",
+      className: nodeData.type
+    });
+
+    // Process children and create edges
+    if (nodeData.children) {
+      nodeData.children.forEach((child) => {
+        // Add edge from parent to child
+        edges.push({
+          id: `${nodeData.id}-${child.id}`,
+          source: nodeData.id,
+          target: child.id,
+          type: "default",
+          animated: child.type === "placeholder",
+          style: {
+            stroke: "#999",
+            strokeWidth: 1
+          }
+        });
+
+        // Recursively process child
+        processNodeForDagre(child, processedIds);
+      });
+    }
+  };
+
+  // Start processing from parent
+  processNodeForDagre(rootData);
+
+  // Apply Dagre layout (Top-Bottom for tree view)
+  const layoutedElements = getLayoutedElements(nodes, edges, "TB", "tree");
+
+  return { nodes: layoutedElements.nodes, edges: layoutedElements.edges };
+};
+
+/**
+ * Generate detailed-style left-to-right layout nodes and edges
+ *
+ * Detailed Layout Approach:
+ * - Uses non-recursive processNode function to create flat network of detailed nodes
+ * - Each node contains all its field information for detailed viewing
+ * - Edges connect from specific fields to referenced child schema nodes
+ * - sourceHandle identifies which field the connection originates from
+ * - Results in network where schemas are separate nodes connected by field-to-schema edges
+ *
+ * @param {Object} schemaData - Processed schema data with attributes, dependencies, and overlays
+ * @param {string} langCodeOCA - OCA language code for labels (e.g., "eng", "fra")
+ * @param {string} rootLabel - Translated label for the root node
+ * @returns {Object} Object containing nodes and edges arrays
+ */
+export const generateDetailedLayout = (
+  schemaData,
+  langCodeOCA = "eng",
+  rootLabel = "Parent Schema",
+  currentSchemaId = null
+) => {
+  if (!schemaData || !schemaData.attributes) {
+    return { nodes: [], edges: [] };
+  }
+
+  const { attributes, dependencies } = schemaData;
+  const dependencyMap = createDependencyMap(dependencies);
+
+  const allNodes = new Map();
+  const allEdges = [];
+
+  const processNode = (nodeId, nodeType, title, fields, level = 0) => {
+    if (allNodes.has(nodeId)) return;
+
+    const displayFields = enrichFieldsForChildSchemaDisplay(
+      fields,
+      dependencies,
+      langCodeOCA
+    );
+
+    // No more field processing here - handled in UI component
+    const nodeData = {
+      id: nodeId,
+      type: "detailedLR",
+      data: {
+        title: truncateText(title, 20),
+        titleFull: title,
+        fields: displayFields, // Enriched so materialized refn: shows as Child Schema on parent
+        nodeType, // Ensure nodeType is explicitly set
+        currentSchemaId,
+        nodeId
+      },
+      className: nodeType, // Add className for CSS styling (placeholder/reference/root)
+      level
+    };
+
+    allNodes.set(nodeId, nodeData);
+
+    // Process child schemas in this node's fields
+    fields.forEach((field) => {
+      if (field.isReference && field.type.startsWith("refs:")) {
+        const referencedId = field.type.replace("refs:", "");
+        const referencedInfo = getDependencyInfo(
+          referencedId,
+          dependencyMap,
+          langCodeOCA
+        );
+
+        // Use child schema's meta name as the display title
+        // If the dependency isn't found, use the attribute label as fallback
+        const displayTitle =
+          referencedInfo.name !== referencedId
+            ? referencedInfo.name
+            : field.originalName || field.name;
+
+        processNode(
+          referencedId,
+          "reference",
+          displayTitle,
+          referencedInfo.fields,
+          level + 1
+        );
+
+        allEdges.push({
+          id: `${nodeId}-${referencedId}`,
+          source: nodeId,
+          sourceHandle: field.originalName || field.name,
+          target: referencedId
+        });
+      } else if (field.type?.startsWith("refn:")) {
+        const placeholderName = field.type.replace("refn:", "");
+        const dependencyWithAttributes = findDependencyForPlaceholderName(
+          placeholderName,
+          dependencies,
+          langCodeOCA
+        );
+        const hasRealAttributes = placeholderDependencyHasNonEmptyAttributes(
+          placeholderName,
+          dependencies,
+          langCodeOCA
+        );
+        const childId = dependencyWithAttributes?.d || placeholderName;
+
+        let placeholderFields = [];
+        let placeholderTitle = field.originalName || field.name;
+
+        if (hasRealAttributes && dependencyWithAttributes) {
+          const metaOverlays = dependencyWithAttributes.overlays?.meta;
+          const metaOverlay = Array.isArray(metaOverlays)
+            ? metaOverlays.find((m) => m.language === langCodeOCA) || metaOverlays[0]
+            : null;
+
+          if (metaOverlay?.name) {
+            placeholderTitle = metaOverlay.name;
+          }
+
+          const labelOverlays = dependencyWithAttributes.overlays?.label;
+          const labelAttributes = Array.isArray(labelOverlays)
+            ? labelOverlays.find((l) => l.language === langCodeOCA)?.attribute_labels ||
+              {}
+            : {};
+
+          placeholderFields = processAttributes(
+            dependencyWithAttributes.capture_base.attributes,
+            labelAttributes
+          );
+        }
+
+        const nodeType = hasRealAttributes ? "reference" : "placeholder";
+
+        processNode(childId, nodeType, placeholderTitle, placeholderFields, level + 1);
+
+        allEdges.push({
+          id: `${nodeId}-${childId}`,
+          source: nodeId,
+          sourceHandle: field.originalName || field.name,
+          target: childId
+        });
+      }
+    });
+  };
+
+  // Start with parent node
+  const rootFields = processAttributes(attributes, schemaData.labels);
+  processNode("root", "root", rootLabel, rootFields, 0);
+
+  // Convert allNodes Map to array for Dagre
+  const nodes = [];
+  allNodes.forEach((node) => {
+    nodes.push(node);
+  });
+
+  // Apply Dagre layout (Left-Right for detailed view)
+  const layoutedElements = getLayoutedElements(nodes, allEdges, "LR", "detailed");
+
+  return { nodes: layoutedElements.nodes, edges: layoutedElements.edges };
+};

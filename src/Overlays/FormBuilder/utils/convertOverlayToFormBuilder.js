@@ -1,6 +1,28 @@
-// eslint-disable-next-line import/no-unresolved
+// eslint-disable-next-line import/no-unresolved -- uuid@13 "exports" not resolved by default import resolver
 import { v4 as uuidv4 } from "uuid";
 import { languageNameToAlpha3Codes } from "../../../constants/isoCodes";
+import { LanguageConstants } from "../../../utils/languageUtils";
+import {
+  normalizeReferenceButtonTextMap,
+  normalizeShowingAttribute
+} from "./referenceQuestionUtils";
+
+/*
+ * Form builder pages use three parallel fields, and that’s intentional for now:
+ *
+ * - page.items — ordered list of what appears on the page (sections and top-level
+ *   questions, interleaved). This is the list drag-and-drop reorders. Order here
+ *   should match the form overlay’s attribute_order.
+ *
+ * - page.sections / page.questions — lookup tables keyed by id. Don’t use array
+ *   index on these as “display order” for the page; use page.items for that.
+ *
+ * - Section contents: each section still has its own questions[] array. That order
+ *   is the order of fields inside the section, not the same thing as page.items.
+ *
+ * Import walks the overlay’s attribute_order once and fills items in that exact
+ * order so we don’t flatten layouts on load.
+ */
 
 const createQuestionFromAttribute = (
   attribute,
@@ -18,6 +40,15 @@ const createQuestionFromAttribute = (
   if (!attribute) return null;
 
   const attributeInfo = attributeRowData.find((r) => r.Attribute === attribute);
+
+  if (Array.isArray(attributeRowData) && attributeRowData.length > 0 && !attributeInfo) {
+    console.warn(
+      `[FormBuilder] Skipping form overlay reference to unknown attribute "${attribute}" ` +
+        "— it is not present in the current schema's attribute list."
+    );
+    return null;
+  }
+
   const attributeType = attributeInfo?.Type || interactionData?.type || "Text";
 
   const formatRule = formatRuleRowData.find((rule) => rule.Attribute === attribute);
@@ -64,11 +95,13 @@ const createQuestionFromAttribute = (
     const overlayLanguageName =
       languages.find(
         (lang) => languageNameToAlpha3Codes[lang.toLowerCase()] === overlayLangCode
-      ) || languages[0];
+      ) ||
+      languages[0] ||
+      LanguageConstants.DEFAULT_LANG_NAME;
 
     options = savedEntryCodes[attribute].map((entryCodeObj) => {
-      const optionLabels = {};
       const code = entryCodeObj.Code;
+      const optionLabels = {};
 
       languages.forEach((lang) => {
         optionLabels[lang] = entryCodeObj[lang] || code || "";
@@ -78,7 +111,10 @@ const createQuestionFromAttribute = (
         id: uuidv4(),
         code,
         value: code,
-        label: optionLabels[overlayLanguageName] || optionLabels[languages[0]] || code,
+        label:
+          optionLabels[overlayLanguageName] ||
+          optionLabels[languages[0] || LanguageConstants.DEFAULT_LANG_NAME] ||
+          code,
         labels: optionLabels
       };
     });
@@ -100,12 +136,19 @@ const createQuestionFromAttribute = (
     attribute,
     title: titleObj,
     attributeType,
+    ...(interactionData?.type && { interactionType: interactionData.type }),
     formatText,
     ...(Object.keys(placeholderObj).length > 0 && { placeholder: placeholderObj }),
     ...(Object.keys(descriptionObj).length > 0 && { description: descriptionObj }),
     ...(options.length > 0 && { options }),
     ...(booleanValues && { booleanValues }),
-    ...(interactionData?.input_type && { inputType: interactionData.input_type })
+    ...(interactionData?.input_type && { inputType: interactionData.input_type }),
+    ...(interactionData?.referenceButtonText && {
+      referenceButtonText: interactionData.referenceButtonText
+    }),
+    ...(interactionData?.showingAttribute && {
+      showingAttribute: interactionData.showingAttribute
+    })
   };
 
   return question;
@@ -243,13 +286,21 @@ const convertOverlayToFormBuilder = (
     let merged = null;
     const placeholderObj = {};
     const descriptionObj = {};
+    const referenceButtonTextObj = {};
+    let showingAttribute = [];
 
     langCodes.forEach((langCode) => {
       const data = interactionArgs[langCode]?.[attribute];
       if (!data) return;
 
       if (!merged) {
-        const { placeholder, description, ...rest } = data;
+        const {
+          placeholder,
+          description,
+          reference_button_text,
+          showing_attribute,
+          ...rest
+        } = data;
         merged = { ...rest };
       }
 
@@ -270,6 +321,26 @@ const convertOverlayToFormBuilder = (
           descriptionObj[langCode] = data.description;
         }
       }
+
+      if (data.reference_button_text !== undefined) {
+        const originalLang = languages[threeLetterCodes.indexOf(langCode)] || langCode;
+        const normalizedMap = normalizeReferenceButtonTextMap(
+          data.reference_button_text,
+          [originalLang]
+        );
+        const mappedValue =
+          normalizedMap[originalLang] ||
+          normalizedMap[langCode] ||
+          normalizedMap.default ||
+          "";
+        if (mappedValue) {
+          referenceButtonTextObj[originalLang] = mappedValue;
+        }
+      }
+
+      if (showingAttribute.length === 0 && data.showing_attribute !== undefined) {
+        showingAttribute = normalizeShowingAttribute(data.showing_attribute);
+      }
     });
 
     if (Object.keys(placeholderObj).length > 0) {
@@ -277,6 +348,12 @@ const convertOverlayToFormBuilder = (
     }
     if (Object.keys(descriptionObj).length > 0) {
       merged.description = descriptionObj;
+    }
+    if (Object.keys(referenceButtonTextObj).length > 0) {
+      merged.referenceButtonText = referenceButtonTextObj;
+    }
+    if (showingAttribute.length > 0) {
+      merged.showingAttribute = showingAttribute;
     }
 
     return merged;
@@ -303,8 +380,7 @@ const convertOverlayToFormBuilder = (
         descriptions,
         threeLetterCodes,
         languages,
-        pageIndex,
-        overlayLangCode
+        pageIndex
       );
 
     const page = {
@@ -318,12 +394,33 @@ const convertOverlayToFormBuilder = (
     };
 
     const attributeOrder = pageStruct.attribute_order || [];
+
+    // Walk overlay attribute_order once and populate both `sections` /
+    // `questions` as keyed buckets and `items` as the authoritative mixed
+    // ordering (mirror of overlay JSON order). Previously all sections were
+    // appended before questions in `items`, destroying interleaved layouts.
     const sections = [];
-    const directQuestions = [];
+    const directQuestionObjects = [];
+    const items = [];
 
     attributeOrder.forEach((item) => {
       if (typeof item === "string") {
-        directQuestions.push(item);
+        const question = createQuestionFromAttribute(
+          item,
+          getInteractionData(item),
+          languages,
+          threeLetterCodes,
+          descriptions,
+          attributeRowData,
+          formatRuleRowData,
+          savedEntryCodes,
+          attributesWithLists,
+          lanAttributeRowData,
+          overlayLangCode
+        );
+        if (!question) return;
+        directQuestionObjects.push(question);
+        items.push({ kind: "question", id: question.id });
       } else if (item && typeof item === "object" && item.named_section) {
         const sectionId = item.named_section;
         const sectionAttributes = item.attribute_order || [];
@@ -334,8 +431,7 @@ const convertOverlayToFormBuilder = (
           descriptions,
           threeLetterCodes,
           languages,
-          sections.length,
-          overlayLangCode
+          sections.length
         );
 
         const sectionQuestions = sectionAttributes
@@ -357,46 +453,23 @@ const convertOverlayToFormBuilder = (
           )
           .filter(Boolean);
 
-        if (sectionQuestions.length > 0) {
-          sections.push({
-            id: sectionId || uuidv4(),
-            labels: sectionLabelsObj,
-            descriptions: sectionDescriptionsObj,
-            questions: sectionQuestions
-          });
-        }
+        // Skip empty sections entirely so `items` never references a missing section.
+        if (sectionQuestions.length === 0) return;
+
+        const sectionObj = {
+          id: sectionId || uuidv4(),
+          labels: sectionLabelsObj,
+          descriptions: sectionDescriptionsObj,
+          questions: sectionQuestions
+        };
+        sections.push(sectionObj);
+        items.push({ kind: "section", id: sectionObj.id });
       }
     });
 
-    // Create questions for direct attributes (not in sections)
-    const directQuestionObjects = directQuestions
-      .map((attribute) =>
-        createQuestionFromAttribute(
-          attribute,
-          getInteractionData(attribute),
-          languages,
-          threeLetterCodes,
-          descriptions,
-          attributeRowData,
-          formatRuleRowData,
-          savedEntryCodes,
-          attributesWithLists,
-          lanAttributeRowData,
-          overlayLangCode
-        )
-      )
-      .filter(Boolean);
-
     page.questions = directQuestionObjects;
     page.sections = sections;
-
-    // Build items array for drag-and-drop
-    const sectionItems = sections.map((s) => ({ kind: "section", id: s.id }));
-    const questionItems = directQuestionObjects.map((q) => ({
-      kind: "question",
-      id: q.id
-    }));
-    page.items = [...sectionItems, ...questionItems];
+    page.items = items;
 
     formBuilderPages.push(page);
   });

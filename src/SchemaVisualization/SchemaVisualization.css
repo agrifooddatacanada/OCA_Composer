@@ -1,0 +1,525 @@
+/* Schema Visualization Styles */
+
+/* Enhanced placeholder node styling */
+.placeholder-node {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 2px dashed #ff9800;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 140px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(255, 152, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.placeholder-node:hover {
+  box-shadow: 0 6px 12px rgba(255, 152, 0, 0.3);
+}
+
+.placeholder-node.highlighted {
+  /* emphasize glow only */
+  box-shadow: 0 0 0 4px rgba(148, 0, 42, 0.35), 0 4px 10px rgba(148, 0, 42, 0.25);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 2px rgba(148, 0, 42, 0.25), 0 4px 8px rgba(148, 0, 42, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(148, 0, 42, 0.45), 0 6px 12px rgba(148, 0, 42, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 0 2px rgba(148, 0, 42, 0.25), 0 4px 8px rgba(148, 0, 42, 0.15);
+  }
+}
+
+.placeholder-node-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.placeholder-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.placeholder-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f57c00;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.placeholder-status {
+  font-size: 11px;
+  font-weight: 500;
+  color: #ff9800;
+  line-height: 1.2;
+  font-style: italic;
+}
+
+:root {
+  /* Field type colors - more vibrant and distinct backgrounds */
+  --placeholder-bg: #fff8e1;
+  --placeholder-border: #ff9800;
+  --reference-bg: #e8f5e8;
+  --reference-border: #4caf50;
+  --text-bg: #f3f4f6;
+  --text-border: #64748b;
+  --datetime-bg: #e0f7fa;
+  --datetime-border: #00acc1;
+  --numeric-bg: #e3f2fd;
+  --numeric-border: #2196f3;
+  --boolean-bg: #fce4ec;
+  --boolean-border: #e91e63;
+  
+  /* UI component colors */
+  --header-bg: #ffffff;
+  --border-color: #cbd5e1;
+  --default-field-bg: #ffffff;
+  --default-field-border: #cbd5e1;
+  
+  /* Text colors */
+  --header-text-color: #1e293b;
+  
+  /* Background colors */
+  --node-bg: white;
+  
+  /* Border radius tokens */
+  --border-radius-sm: 3px;
+  --border-radius-md: 4px;
+  
+  /* Font size tokens */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+}
+
+.detailed-node {
+  background: var(--node-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  min-width: 175px;
+  position: relative;
+  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease;
+}
+
+.detailed-node:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.detailed-node.highlighted {
+  /* remove border override; show dark red glow only */
+  box-shadow: 0 0 0 4px rgba(148, 0, 42, 0.35), 0 2px 6px rgba(0, 0, 0, 0.12);
+  animation: pulse 2s infinite;
+}
+
+/* Only apply dashed border to tree view placeholders - but tree view doesn't use detailed-node class */
+/* Left-right view placeholders get orange headers, not dashed borders */
+.detailed-node.placeholder {
+  box-sizing: border-box;
+}
+
+.detailed-header {
+  background: var(--header-bg);
+  color: var(--header-text-color);
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: normal;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.detailed-header-title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+/* Placeholder nodes should have orange headers like placeholder fields */
+.detailed-node.placeholder .detailed-header {
+  background: var(--placeholder-bg);
+}
+
+/* Reference nodes should have light brown headers like reference fields */
+.detailed-node.reference .detailed-header {
+  background: var(--header-bg);
+}
+
+.detailed-fields {
+  padding: 0px;
+}
+
+/* Consistent node sizing for better layout */
+.detailed-node {
+  min-width: 200px;
+  max-width: 300px;
+  width: auto;
+}
+
+.detailed-node.root {
+  min-width: 250px;
+  max-width: 400px;
+}
+
+.field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin: 2px 0;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  position: relative;
+  min-height: 36px;
+  line-height: 1.4;
+}
+
+/* Styling for hidden fields indicator */
+.field.hidden-fields-indicator {
+  background: #f8f9fa;
+  border-left: 3px solid #e9ecef;
+  opacity: 0.8;
+}
+
+.field.hidden-fields-indicator:hover {
+  background: #e9ecef;
+}
+
+.field.Text {
+  background: var(--text-bg);
+  border-left: 3px solid var(--text-border);
+}
+
+.field.DateTime {
+  background: var(--datetime-bg);
+  border-left: 3px solid var(--datetime-border);
+}
+
+.field.Numeric {
+  background: var(--numeric-bg);
+  border-left: 3px solid var(--numeric-border);
+}
+
+.field.Boolean {
+  background: var(--boolean-bg);
+  border-left: 3px solid var(--boolean-border);
+}
+
+.field.Reference {
+  background: var(--reference-bg);
+  border-left: 3px solid var(--reference-border);
+}
+
+.field.Placeholder {
+  background: var(--placeholder-bg);
+  border-left: 3px solid var(--placeholder-border);
+}
+
+/* Default styling for array types and other field types */
+.field:not(.Text):not(.DateTime):not(.Numeric):not(.Boolean):not(.Reference):not(.Placeholder) {
+  background: var(--default-field-bg);
+  border-left: 3px solid var(--default-field-border);
+}
+
+.field-name {
+  flex: 1;
+  text-align: left;
+  min-width: 0;
+  color: #1e293b;
+  font-size: var(--font-size-sm);
+  font-weight: normal;
+}
+
+.field-type {
+  color: #64748b;
+  font-size: var(--font-size-xs);
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  margin-left: 16px;
+  text-align: right;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.field-type-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reference-icon {
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+/* Enhanced Schema Visualization Container */
+.schema-visualization-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+/* React Flow edge styling */
+.react-flow__edge-path {
+  stroke-width: 3;
+  transition: stroke-width 0.2s ease;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 4;
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 5, 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 5, 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+@keyframes dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+}
+
+/* Enhanced minimap and controls */
+.react-flow__minimap {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.react-flow__controls {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.react-flow__controls button {
+  border-radius: 4px;
+}
+
+.react-flow__controls button:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.react-flow__background {
+  background: #fafafa;
+}
+
+/* Custom scrollbar for detailed fields */
+.detailed-fields::-webkit-scrollbar {
+  width: 6px;
+}
+
+.detailed-fields::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.detailed-fields::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.detailed-fields::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Disable cursor changes for handles and edges since we don't allow connections */
+.react-flow__handle {
+  cursor: default;
+}
+
+.react-flow__edge {
+  cursor: default;
+}
+
+.react-flow__edge-path {
+  cursor: default;
+}
+
+/* Edit schema button styles */
+.edit-schema-button {
+  background: #94002a; /* match Help with this page */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+.edit-schema-button:hover {
+  background: #ce1141; /* SECONDARY */
+  color: #ffffff;
+  box-shadow: 0 4px 8px rgba(148, 0, 42, 0.3);
+}
+
+.edit-schema-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+.edit-schema-button-small {
+  background: #94002a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 4px;
+  box-shadow: 0 1px 2px rgba(33, 150, 243, 0.2);
+}
+
+.edit-schema-button-small:hover {
+  background: #ce1141;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(148, 0, 42, 0.3);
+}
+
+.edit-schema-button-small:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(33, 150, 243, 0.2);
+}
+
+.edit-schema-button-header {
+  background: #94002a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+  box-shadow: 0 1px 2px rgba(33, 150, 243, 0.2);
+}
+
+.edit-schema-button-header:hover {
+  background: #ce1141;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(148, 0, 42, 0.3);
+}
+
+.edit-schema-button-header:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(33, 150, 243, 0.2);
+}
+
+/* Icon-based edit button for tree nodes */
+.edit-schema-button-icon {
+  background: #94002a;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.edit-schema-button-icon:hover {
+  background: #ce1141;
+  color: #ffffff;
+  box-shadow: 0 4px 8px rgba(148, 0, 42, 0.3);
+}
+
+.edit-schema-button-icon:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+/* Tree node styles */
+.tree-node {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 2px solid #ddd;
+  min-width: 100px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.tree-node:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tree-node.highlighted {
+  /* keep default border; add dark red glow */
+  box-shadow: 0 0 0 4px rgba(148, 0, 42, 0.35), 0 0 12px rgba(148, 0, 42, 0.35);
+  animation: pulse 2s infinite;
+}
+
+.tree-node-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.tree-node-label {
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+  white-space: pre-line;
+  text-align: center;
+}
+
+.tree-node-label-truncated {
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+
+.tree-node-attributes-button {
+  background: transparent;
+  border: none;
+  color: #555;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  padding: 2px 6px;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.tree-node-attributes-button:hover {
+  color: #94002a;
+}

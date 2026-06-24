@@ -2,8 +2,10 @@ import { Duration } from "luxon";
 import OCADataSetErr from "./utils/Err";
 import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
 import { ADC, ALLOWED_BOOLEAN_VALUES, errorCode, RANGE } from "../constants/constants";
-import { isValidNumber, parseDateString } from "../constants/utils";
-
+import { isValidNumber, parseDateString } from "../utils/helpers";
+import { getRootCaptureBaseId } from "../utils/packageUtils";
+import { getFormatPatternForDecimalSeparator } from "./utils/decimalFormatPattern";
+import { getArrayDelimiterMismatchMessage } from "./utils/arrayDelimiterOverlay";
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
 const OCA_VERSION = "1.0";
@@ -43,15 +45,15 @@ export default class OCABundle {
     this.captureBase = null;
     this.overlays = {};
     this.ErrorBuilder = new OCADataSetErr();
-    this.OCAPackage = null;
+    this.ocaPackage = null;
   }
 
   // Load the OCA bundle from a JSON file.
-  async loadedBundle(bundle, OCAPackage) {
+  async loadedBundle(bundle, ocaPackage) {
     try {
       this.captureBase = bundle[CB_KEY];
       this.overlays = bundle[OVERLAYS_KEY];
-      this.OCAPackage = OCAPackage;
+      this.ocaPackage = ocaPackage;
     } catch (error) {
       console.error("Error loading bundle:", error);
       throw error;
@@ -120,6 +122,21 @@ export default class OCABundle {
       return attrCheKey[attrName];
     }
     return defaultCheKey || DEFAULT_ENCODING;
+  }
+
+    /**
+   * Normalizes a numeric string to use '.' as decimal separator for parsing only (e.g. range checks).
+   * Format validation uses strict decimal separator matching instead.
+   * @param {string} str - Raw value (e.g. "3,14" or "3.14").
+   * @param {string} decimalSeparator - The schema's decimal separator (e.g. ',' or '.').
+   * @returns {string} String with '.' as decimal (e.g. "3.14").
+   */
+  // eslint-disable-next-line class-methods-use-this
+  normalizeNumericString(str, decimalSeparator) {
+    if (str == null || String(str).trim() === "") return String(str ?? "");
+    const s = String(str).trim();
+    if (decimalSeparator === ".") return s;
+    return s.split(decimalSeparator).join(".");
   }
 
   // The start validation methods...
@@ -191,23 +208,23 @@ export default class OCABundle {
     let newDataArr = [];
 
     dataArr.forEach((item) => {
-      if (item.includes(",")) {
-        newDataArr = newDataArr.concat(item.split(","));
+      const trimmedItem = item.trim();
+      if (trimmedItem.includes(",")) {
+        newDataArr = newDataArr.concat(trimmedItem.split(",").map((s) => s.trim()));
       } else {
-        newDataArr.push(item);
+        newDataArr.push(trimmedItem);
       }
     });
 
     return newDataArr;
   }
 
-  validateRange(dataset) {
+  validateRange(dataset, decimalSeparator = ".") {
     const rslt = this.ErrorBuilder.rangeErr;
     // For now, use ADC community's extension overlays for the top-level/main schema bundle
     const rangeOverlay =
-      this.OCAPackage?.extensions?.[ADC]?.[
-        this.OCAPackage?.oca_bundle?.bundle?.capture_base?.d
-      ]?.overlays?.[RANGE];
+      this.ocaPackage?.extensions?.[ADC]?.[getRootCaptureBaseId(this.ocaPackage)]
+        ?.overlays?.[RANGE];
 
     if (rangeOverlay?.attributes) {
       Object.keys(rangeOverlay.attributes).forEach((attribute) => {
@@ -218,9 +235,11 @@ export default class OCABundle {
 
         dataset[attribute]?.forEach((rowValue, i) => {
           if (attributeType === "Numeric") {
-            const rowValueNum = Number.parseFloat(rowValue);
-            if (isValidNumber(lower)) {
-              const lowerBound = Number.parseFloat(lower);
+            const normalizedRowValue = this.normalizeNumericString(rowValue, decimalSeparator);
+            const rowValueNum = Number.parseFloat(normalizedRowValue);
+            const normalizedLower = this.normalizeNumericString(lower, decimalSeparator);
+            if (isValidNumber(normalizedLower)) {
+              const lowerBound = Number.parseFloat(normalizedLower);
               if (rowValueNum < lowerBound) {
                 rslt.errs[attribute][i] = {
                   type: errorCode.Range,
@@ -236,8 +255,9 @@ export default class OCABundle {
               }
             }
 
-            if (isValidNumber(upper)) {
-              const upperBound = Number.parseFloat(upper);
+            const normalizedUpper = this.normalizeNumericString(upper, decimalSeparator);
+            if (isValidNumber(normalizedUpper)) {
+              const upperBound = Number.parseFloat(normalizedUpper);
               if (rowValueNum > upperBound) {
                 rslt.errs[attribute][i] = {
                   type: errorCode.Range,
@@ -315,7 +335,7 @@ export default class OCABundle {
    * @param {*} dataset - Dataset to be validated. Input from the user.
    * @returns {Object} - An object of format errors. Example: {attr1: {0: "Format mismatch."}, attr2: {1: "Missing mandatory attribute."}}
    */
-  validateFormat(dataset) {
+  validateFormat(dataset, decimalSeparator = ".") {
     const rslt = this.ErrorBuilder.formatErr;
     const attributes = this.getAttributes();
     for (const attr in attributes) {
@@ -376,11 +396,18 @@ export default class OCABundle {
               }
 
               for (let j = 0; j < nonEmptyDataArr.length; j++) {
+                const isNumeric = (typeof attrType[0] === "string" && attrType[0].includes("Numeric")) || attrType[0] === "Numeric";
+
+                const effectiveAttrFormat = isNumeric 
+                ? getFormatPatternForDecimalSeparator(attrFormat, decimalSeparator) 
+                : attrFormat;
+
+                const valueStr = String(nonEmptyDataArr[j]);
                 if (
                   !matchFormat(
                     attrType[0],
-                    attrFormat,
-                    String(nonEmptyDataArr[j]),
+                    effectiveAttrFormat,
+                    valueStr,
                     hasEntryCodes
                   )
                 ) {
@@ -441,31 +468,38 @@ export default class OCABundle {
               // Not a valid Array format string.
               rslt.errs[attr][i] = NOT_AN_ARRAY_MSG;
             }
-          } else if (
-            !matchFormat(attrType, attrFormat, String(dataEntry), hasEntryCodes)
-          ) {
-            if (attrConformance === "O" && String(dataEntry).trim() === "") {
-              continue;
-            } else if (attrConformance === "M" && String(dataEntry).trim() === "") {
-              rslt.errs[attr][i] = {
-                type: "FE",
-                detail: `${MISSING_MSG} Supported format: ${attrFormat}.`
-              };
-            } else if (attrType.includes("Boolean")) {
-              rslt.errs[attr][i] = {
-                type: "FE",
-                detail: `${FORMAT_ERR_MSG} Supported format: ${JSON.stringify(ALLOWED_BOOLEAN_VALUES)}`
-              };
-            } else if (attrFormat == null) {
-              rslt.errs[attr][i] = {
-                type: "DTE",
-                detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.`
-              };
-            } else {
-              rslt.errs[attr][i] = {
-                type: "FE",
-                detail: `${FORMAT_ERR_MSG}`
-              };
+          } else {
+            const isNumeric =
+              (typeof attrType === "string" && attrType.includes("Numeric")) ||
+              attrType === "Numeric";
+            const effectiveFormat = isNumeric
+              ? getFormatPatternForDecimalSeparator(attrFormat, decimalSeparator)
+              : attrFormat;
+            const valueStr = String(dataEntry);
+            if (!matchFormat(attrType, effectiveFormat, valueStr, hasEntryCodes)) {
+              if (attrConformance === "O" && String(dataEntry).trim() === "") {
+                continue;
+              } else if (attrConformance === "M" && String(dataEntry).trim() === "") {
+                rslt.errs[attr][i] = {
+                  type: "FE",
+                  detail: `${MISSING_MSG} Supported format: ${attrFormat}.`
+                };
+              } else if (attrType.includes("Boolean")) {
+                rslt.errs[attr][i] = {
+                  type: "FE",
+                  detail: `${FORMAT_ERR_MSG} Supported format: ${JSON.stringify(ALLOWED_BOOLEAN_VALUES)}`
+                };
+              } else if (attrFormat == null) {
+                rslt.errs[attr][i] = {
+                  type: "DTE",
+                  detail: `${DATA_TYPE_ERR_MSG} Supported data type: ${attrType}.`
+                };
+              } else {
+                rslt.errs[attr][i] = {
+                  type: "FE",
+                  detail: `${FORMAT_ERR_MSG}`
+                };
+              }
             }
           }
         }
@@ -498,7 +532,7 @@ export default class OCABundle {
         }
 
         const dataEntryWithSpaces = String(dataset[attr][i]);
-        const dataEntry = dataEntryWithSpaces.replace(/,\s*/g, ",");
+        const dataEntry = dataEntryWithSpaces.replace(/([,;|])\s*/g, "$1");
 
         if (attrType.includes("Array") || Array.isArray(attrType)) {
           const dataArr = this.processEntries(dataEntry);
@@ -530,6 +564,39 @@ export default class OCABundle {
               attrEntryCodes[attr]
             )}]`
           };
+        }
+      }
+    }
+    return rslt.errs;
+  }
+
+  /**
+   * Warns when array-typed cell values use a different delimiter than the schema's array_delimiter overlay.
+   */
+  validateArrayDelimiter(dataset, arrayDelimiterData) {
+    const rslt = this.ErrorBuilder.warningErr;
+    const attributes = this.getAttributes();
+    for (const attr in attributes) {
+      if (!Object.prototype.hasOwnProperty.call(attributes, attr)) {
+        continue;
+      }
+      const attrType = this.getAttributeType(attr);
+      if (!attrType.includes("Array") && !Array.isArray(attrType)) {
+        continue;
+      }
+      const schemaDelim = arrayDelimiterData[attr];
+      if (!schemaDelim) {
+        continue;
+      }
+      rslt.errs[attr] = {};
+      for (let i = 0; i < dataset[attr]?.length; i++) {
+        const dataEntry = dataset[attr][i];
+        if (dataEntry === undefined || dataEntry === null) {
+          continue;
+        }
+        const msg = getArrayDelimiterMismatchMessage(dataEntry, schemaDelim);
+        if (msg) {
+          rslt.errs[attr][i] = { type: errorCode.Warning, detail: msg };
         }
       }
     }
@@ -593,13 +660,14 @@ export default class OCABundle {
     return { isError: versionError, message: errorMessage };
   }
 
-  validate(dataset) {
+  validate(dataset, decimalSeparator = ".", arrayDelimiterData = {}) {
     const rslt = this.ErrorBuilder;
     rslt.attErr.errs = this.validateAttribute(dataset);
-    rslt.formatErr.errs = this.validateFormat(dataset);
+    rslt.formatErr.errs = this.validateFormat(dataset, decimalSeparator);
     rslt.entryCodeErr.errs = this.validateEntryCodes(dataset);
     rslt.characterEcodeErr.errs = this.validateCharacterEncoding(dataset);
-    rslt.rangeErr.errs = this.validateRange(dataset);
+    rslt.rangeErr.errs = this.validateRange(dataset, decimalSeparator);
+    rslt.warningErr.errs = this.validateArrayDelimiter(dataset, arrayDelimiterData);
     return rslt.updateErr();
   }
 }

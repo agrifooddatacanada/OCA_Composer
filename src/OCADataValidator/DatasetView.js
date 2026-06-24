@@ -9,11 +9,14 @@ import React, {
   useState
 } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "ag-grid-react";
 import { Box, IconButton, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { AgGridReact } from "../components/AgGridReact";
 import BackNextSkeleton from "../components/BackNextSkeleton";
+import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { Context } from "../App";
+import usePrimaryColor from "../hooks/usePrimaryColor";
+import useFontFamily from "../hooks/useFontFamily";
 import { greyCellStyle, gridStyles } from "../constants/styles";
 import { CustomPalette } from "../constants/customPalette";
 
@@ -42,14 +45,16 @@ export const TrashCanButton = memo(
 
 const DatasetView = () => {
   const { t } = useTranslation();
-  const { currentTheme } = useContext(Context);
+  const primaryColor = usePrimaryColor();
+  const fontFamily = useFontFamily();
   const schemaGridRef = useRef(null);
   const {
     setCurrentDataValidatorPage,
     schemaDataConformantHeader,
     schemaDataConformantRowData,
     setSchemaDataConformantRowData,
-    jsonRawFile
+    schemaRawFile,
+    datasetRawFile
   } = useContext(Context);
 
   const [schemaColumnDefs, setSchemaColumnDefs] = useState([]);
@@ -123,7 +128,11 @@ const DatasetView = () => {
           });
 
           setSchemaDataConformantRowData(result);
-          if (jsonRawFile.length > 0) {
+          if (
+            schemaRawFile.length > 0 ||
+            datasetRawFile.length > 0 ||
+            (schemaDataConformantHeader?.length ?? 0) > 0
+          ) {
             setCurrentDataValidatorPage("AttributeMatchDataValidator");
           } else {
             setCurrentDataValidatorPage("StartDataValidator");
@@ -136,16 +145,17 @@ const DatasetView = () => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          flex: 1
+          flex: 1,
+          mb: BETWEEN_SECTION_SPACING
         }}
       >
         <Typography
           variant="h5"
           sx={{
             mb: 2,
-            color: currentTheme?.primaryColor ?? CustomPalette.PRIMARY,
+            color: primaryColor,
             fontWeight: 500,
-            fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+            fontFamily
           }}
         >
           {t("Schema Data")}
@@ -167,7 +177,7 @@ const DatasetView = () => {
         ) : (
           <Typography
             sx={{
-              fontFamily: currentTheme?.typography?.fontFamily ?? "Roboto, sans-serif"
+              fontFamily
             }}
           >
             {t("No Schema Conformant Data")}

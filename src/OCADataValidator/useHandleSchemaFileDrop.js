@@ -1,0 +1,575 @@
+import { useCallback, useContext, useEffect } from "react";
+import yaml from "js-yaml";
+import { messages } from "../constants/messages";
+import { ADC, SENSITIVE } from "../constants/constants";
+import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
+import { replaceAttributeCharsInParsedJson } from "../utils/helpers";
+import {
+  mapLinkMLToOCABundle,
+  findMissingLinkMLEnums
+} from "../SchemaTranslator/mapLinkMLToOCABundle";
+import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
+import {
+  getPackageBundleId,
+  coerceIfLegacyTopLevelBundle,
+  getRootCaptureBaseId
+} from "../utils/packageUtils";
+import { parseOcaZipArrayBuffer } from "../utils/ocaZipImport";
+import {
+  isLandingJsonSchema,
+  isLandingYamlSchema,
+  isLandingZipSchema
+} from "../utils/landingSchemaUpload";
+// eslint-disable-next-line import/prefer-default-export
+export const useHandleSchemaFileDrop = (
+  firstTimeDisplayWarning,
+  setShowWarningCard = () => {}
+) => {
+  const {
+    setCurrentDataValidatorPage,
+    setZipToReadme,
+    jsonLoading,
+    setJsonLoading,
+    jsonDropDisabled,
+    setJsonDropDisabled,
+    schemaRawFile,
+    setSchemaRawFile,
+    jsonIsParsed,
+    setJsonIsParsed,
+    setDatasetLoading,
+    setDatasetDropDisabled,
+    datasetRawFile,
+    setMatchingRowData,
+    firstTimeMatchingRef,
+    targetResult,
+    setTargetResult,
+    jsonDropMessage,
+    setJsonDropMessage
+  } = useContext(Context);
+  const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setOcaPackage } =
+    useMultiSchema();
+  // useZipParser removed - data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
+
+  const finishUploadUi = useCallback(
+    (options = {}) => {
+      setJsonDropDisabled(true);
+      if (!options.preserveDropMessage) {
+        setJsonDropMessage({ message: "", type: "" });
+      }
+      setJsonLoading(false);
+      setDatasetLoading(false);
+      if (datasetRawFile.length === 0) {
+        setDatasetDropDisabled(false);
+      }
+      if (!jsonIsParsed) {
+        setJsonIsParsed(true);
+        setCurrentDataValidatorPage("SchemaViewDataValidator");
+      }
+    },
+    [
+      datasetRawFile.length,
+      jsonIsParsed,
+      setCurrentDataValidatorPage,
+      setDatasetDropDisabled,
+      setDatasetLoading,
+      setJsonDropDisabled,
+      setJsonDropMessage,
+      setJsonIsParsed,
+      setJsonLoading
+    ]
+  );
+
+  const overallLoading = useCallback(() => {
+    setJsonLoading(true);
+    setDatasetLoading(true);
+  }, [setDatasetLoading, setJsonLoading]);
+
+  const handleClearJSON = useCallback(() => {
+    setJsonIsParsed(false);
+    setJsonDropDisabled(false);
+    setSchemaRawFile([]);
+    setMatchingRowData([]);
+    setJsonDropMessage({ message: "", type: "" });
+    firstTimeMatchingRef.current = true;
+    firstTimeDisplayWarning.current = true;
+    setShowWarningCard(false);
+  }, []);
+
+  const handleJsonDrop = useCallback(
+    (acceptedFiles) => {
+      try {
+        setJsonLoading(true);
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          try {
+            setTargetResult(e);
+            const textDecoder = new TextDecoder("utf-8");
+            const jsonString = textDecoder.decode(e.target.result);
+            const rawParse = coerceIfLegacyTopLevelBundle(JSON.parse(jsonString));
+            let jsonFile = null;
+            let ocaPackageData = null;
+            if (rawParse?.oca_bundle?.bundle) {
+              ocaPackageData = rawParse;
+              jsonFile = rawParse?.oca_bundle?.bundle;
+              setOcaPackage(rawParse);
+            } else if (rawParse?.schema?.[0]) {
+              jsonFile = rawParse?.schema?.[0];
+            } else {
+              jsonFile = rawParse;
+            }
+
+            if (!jsonFile) {
+              throw new Error("No JSON file found");
+            }
+
+            jsonFile = replaceAttributeCharsInParsedJson(jsonFile);
+
+            // ALSO ensure multi-schema ocaPackage is populated so validator always uses package root
+            try {
+              let pkgToSet = null;
+              if (ocaPackageData) {
+                pkgToSet = ocaPackageData;
+              } else if (jsonFile?.capture_base) {
+                pkgToSet = { bundle: jsonFile };
+              }
+
+              if (pkgToSet) {
+                setOcaPackage(pkgToSet);
+                try {
+                  loadAllSchemasFromOcaPackage(pkgToSet);
+                  const rootId = getPackageBundleId(pkgToSet);
+                  if (rootId) switchToSchema(rootId, pkgToSet);
+                } catch (err) {
+                  // non-fatal; initialization failed but ocaPackage was set — downstream components
+                  // should handle missing initialization defensively.
+                  console.warn(
+                    "useHandleSchemaFileDrop: loadAllSchemasFromOcaPackage failed",
+                    err
+                  );
+                }
+              }
+            } catch (err) {
+              console.error("useHandleSchemaFileDrop: error setting ocaPackage", err);
+            }
+
+            const languageList = [];
+            const informationList = [];
+            const labelList = [];
+            const metaList = [];
+            const entryList = [];
+            const allJSONFiles = [];
+            let loadRoot;
+            let entryCodeSummary = {};
+            let conformance;
+            let characterEncoding;
+            let loadUnits;
+            let formatRules;
+            let cardinalityData;
+            let dataStandards;
+
+            // load up metadata file in OCA bundle
+            if (jsonFile?.overlays?.meta) {
+              metaList.push(...jsonFile.overlays.meta);
+              languageList.push(
+                ...jsonFile.overlays.meta.map((meta) => meta.language.slice(0, 2))
+              );
+
+              // ONLY for README
+              const readmeMeta = jsonFile.overlays.meta.map((meta) =>
+                JSON.stringify(meta)
+              );
+              allJSONFiles.push(...readmeMeta);
+            }
+
+            if (jsonFile?.overlays?.information) {
+              informationList.push(...jsonFile.overlays.information);
+
+              // ONLY for README
+              const readmeInformation = jsonFile.overlays.information.map((information) =>
+                JSON.stringify(information)
+              );
+              allJSONFiles.push(...readmeInformation);
+            }
+
+            if (jsonFile?.overlays?.label) {
+              labelList.push(...jsonFile.overlays.label);
+
+              // ONLY for README
+              const readmeLabel = jsonFile.overlays.label.map((label) =>
+                JSON.stringify(label)
+              );
+              allJSONFiles.push(...readmeLabel);
+            }
+
+            if (jsonFile?.capture_base) {
+              const sensitiveOverlay =
+                ocaPackageData?.extensions?.[ADC]?.[getRootCaptureBaseId(ocaPackageData)]
+                  ?.overlays?.[SENSITIVE];
+
+              const sensitiveAttributes = Array.isArray(
+                sensitiveOverlay?.sensitive_attributes
+              )
+                ? sensitiveOverlay?.sensitive_attributes
+                : Array.isArray(jsonFile?.capture_base?.flagged_attributes)
+                  ? jsonFile?.capture_base?.flagged_attributes
+                  : [];
+
+              if (sensitiveAttributes?.length > 0) {
+                setShowWarningCard(true);
+              }
+              loadRoot = { ...jsonFile.capture_base };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(loadRoot));
+            }
+
+            if (jsonFile?.overlays?.unit) {
+              loadUnits = { ...jsonFile.overlays.unit };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(loadUnits));
+            }
+
+            if (jsonFile?.overlays?.conformance) {
+              conformance = { ...jsonFile.overlays.conformance };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(conformance));
+            }
+
+            if (jsonFile?.overlays?.character_encoding) {
+              characterEncoding = { ...jsonFile.overlays.character_encoding };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(characterEncoding));
+            }
+
+            if (jsonFile?.overlays?.entry_code) {
+              entryCodeSummary = { ...jsonFile.overlays.entry_code };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(entryCodeSummary));
+            }
+
+            if (jsonFile?.overlays?.format) {
+              formatRules = { ...jsonFile.overlays.format };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(formatRules));
+            }
+
+            if (jsonFile?.overlays?.entry) {
+              entryList.push(...jsonFile.overlays.entry);
+
+              // ONLY for README
+              const readmeEntry = jsonFile.overlays.entry.map((entry) =>
+                JSON.stringify(entry)
+              );
+              allJSONFiles.push(...readmeEntry);
+            }
+
+            if (jsonFile?.overlays?.cardinality) {
+              cardinalityData = { ...jsonFile.overlays.cardinality };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(cardinalityData));
+            }
+
+            if (jsonFile?.overlays?.standard) {
+              dataStandards = { ...jsonFile.overlays.standard };
+
+              // ONLY for README
+              allJSONFiles.push(JSON.stringify(dataStandards));
+            }
+
+            if (!languageList || languageList.length === 0) {
+              throw new Error("No language found in the JSON file");
+            }
+
+            // Data processing handled by loadAllSchemasFromOcaPackage (called during upload)
+            // which uses OCAParser to extract all schema data into MultiSchemaContext
+
+            setZipToReadme(allJSONFiles);
+            finishUploadUi();
+          } catch (error) {
+            setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+            setJsonLoading(false);
+            setDatasetLoading(false);
+            if (datasetRawFile.length === 0) {
+              setDatasetDropDisabled(false);
+            }
+            setTimeout(() => {
+              setJsonDropMessage({ message: "", type: "" });
+            }, 2500);
+          }
+        };
+
+        reader.readAsArrayBuffer(acceptedFiles[0]);
+      } catch (error) {
+        setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+        setJsonLoading(false);
+        setDatasetLoading(false);
+        if (datasetRawFile.length === 0) {
+          setDatasetDropDisabled(false);
+        }
+        setTimeout(() => {
+          setJsonDropMessage({ message: "", type: "" });
+        }, 2500);
+      }
+    },
+    [
+      datasetRawFile.length,
+      finishUploadUi,
+      jsonIsParsed,
+      loadAllSchemasFromOcaPackage,
+      setDatasetDropDisabled,
+      setJsonDropMessage,
+      setJsonLoading,
+      setDatasetLoading,
+      setOcaPackage,
+      setShowWarningCard,
+      setTargetResult,
+      setZipToReadme,
+      switchToSchema
+    ]
+  );
+
+  const handleZipDrop = useCallback(
+    (acceptedFiles) => {
+      try {
+        const reader = new FileReader();
+
+        reader.onload = async (e) => {
+          setTargetResult(e);
+          try {
+            const { ocaPackage, allZipFiles, root, captureBase } =
+              await parseOcaZipArrayBuffer(e.target.result);
+            if (captureBase?.flagged_attributes?.length > 0) {
+              setShowWarningCard(true);
+            }
+            setOcaPackage(ocaPackage);
+            loadAllSchemasFromOcaPackage(ocaPackage);
+            switchToSchema(root, ocaPackage);
+            setZipToReadme(allZipFiles);
+            finishUploadUi();
+          } catch (err) {
+            console.warn(
+              "useHandleSchemaFileDrop: failed to parse zip as OCA package",
+              err
+            );
+            setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+            setJsonLoading(false);
+            setDatasetLoading(false);
+            if (datasetRawFile.length === 0) {
+              setDatasetDropDisabled(false);
+            }
+            setTimeout(() => {
+              setJsonDropMessage({ message: "", type: "" });
+            }, 2500);
+          }
+        };
+
+        reader.readAsArrayBuffer(acceptedFiles[0]);
+      } catch (error) {
+        setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+        setJsonLoading(false);
+        setDatasetLoading(false);
+        if (datasetRawFile.length === 0) {
+          setDatasetDropDisabled(false);
+        }
+        setTimeout(() => {
+          setJsonDropMessage({ message: "", type: "" });
+        }, 2500);
+      }
+    },
+    [
+      datasetRawFile.length,
+      finishUploadUi,
+      loadAllSchemasFromOcaPackage,
+      setDatasetDropDisabled,
+      setDatasetLoading,
+      setJsonDropMessage,
+      setJsonLoading,
+      setOcaPackage,
+      setShowWarningCard,
+      setTargetResult,
+      setZipToReadme,
+      switchToSchema
+    ]
+  );
+
+  const handleYamlDrop = useCallback(
+    (acceptedFiles) => {
+      try {
+        setJsonLoading(true);
+
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          try {
+            setTargetResult(e);
+            const yamlString = e.target.result;
+
+            const linkmlSchema = yaml.load(yamlString);
+            const missingEnums = findMissingLinkMLEnums(linkmlSchema);
+            const bundle = mapLinkMLToOCABundle(linkmlSchema);
+            const pkg = transformToPackage(bundle);
+
+            const jsonFile = pkg.oca_bundle.bundle;
+            const allJSONFiles = [];
+
+            if (jsonFile?.overlays?.meta) {
+              allJSONFiles.push(...jsonFile.overlays.meta.map((m) => JSON.stringify(m)));
+            }
+            if (jsonFile?.overlays?.information) {
+              allJSONFiles.push(
+                ...jsonFile.overlays.information.map((o) => JSON.stringify(o))
+              );
+            }
+            if (jsonFile?.overlays?.label) {
+              allJSONFiles.push(...jsonFile.overlays.label.map((o) => JSON.stringify(o)));
+            }
+            if (jsonFile?.capture_base) {
+              if (jsonFile.capture_base.flagged_attributes?.length > 0) {
+                setShowWarningCard(true);
+              }
+              allJSONFiles.push(JSON.stringify(jsonFile.capture_base));
+            }
+            if (Array.isArray(jsonFile?.overlays?.unit)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.unit[0]));
+            }
+            if (Array.isArray(jsonFile?.overlays?.conformance)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.conformance[0]));
+            }
+            if (Array.isArray(jsonFile?.overlays?.character_encoding)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.character_encoding[0]));
+            }
+            if (Array.isArray(jsonFile?.overlays?.entry_code)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.entry_code[0]));
+            }
+            if (Array.isArray(jsonFile?.overlays?.format)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.format[0]));
+            }
+            if (jsonFile?.overlays?.entry) {
+              allJSONFiles.push(
+                ...jsonFile.overlays.entry.map((e2) => JSON.stringify(e2))
+              );
+            }
+            if (Array.isArray(jsonFile?.overlays?.cardinality)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.cardinality[0]));
+            }
+            if (Array.isArray(jsonFile?.overlays?.standard)) {
+              allJSONFiles.push(JSON.stringify(jsonFile.overlays.standard[0]));
+            }
+
+            const rootSchemaId =
+              getPackageBundleId(pkg) ?? getRootCaptureBaseId(pkg) ?? "generated_schema";
+
+            setOcaPackage(pkg);
+            try {
+              loadAllSchemasFromOcaPackage(pkg);
+            } catch (err) {
+              console.warn("LinkML: loadAllSchemasFromOcaPackage failed", err);
+            }
+            switchToSchema(rootSchemaId, pkg);
+            setZipToReadme(allJSONFiles);
+
+            if (missingEnums.length > 0) {
+              setJsonDropMessage({
+                message: messages.linkmlMissingEnumsWarning(missingEnums),
+                type: "warning"
+              });
+              finishUploadUi({ preserveDropMessage: true });
+            } else {
+              finishUploadUi();
+            }
+          } catch (error) {
+            setJsonDropMessage({
+              message: `${messages.uploadFail}: ${error.message}`,
+              type: "error"
+            });
+            setJsonLoading(false);
+            setDatasetLoading(false);
+            if (datasetRawFile.length === 0) {
+              setDatasetDropDisabled(false);
+            }
+            setTimeout(() => {
+              setJsonDropMessage({ message: "", type: "" });
+            }, 2500);
+          }
+        };
+
+        reader.readAsText(acceptedFiles[0]);
+      } catch (error) {
+        setJsonDropMessage({
+          message: `${messages.uploadFail}: ${error.message}`,
+          type: "error"
+        });
+        setJsonLoading(false);
+        setDatasetLoading(false);
+        if (datasetRawFile.length === 0) {
+          setDatasetDropDisabled(false);
+        }
+        setTimeout(() => {
+          setJsonDropMessage({ message: "", type: "" });
+        }, 2500);
+      }
+    },
+    [
+      clearAllSchemas,
+      datasetRawFile.length,
+      finishUploadUi,
+      loadAllSchemasFromOcaPackage,
+      jsonIsParsed,
+      setCurrentDataValidatorPage,
+      setDatasetDropDisabled,
+      setDatasetLoading,
+      setJsonDropDisabled,
+      setJsonIsParsed,
+      setJsonLoading,
+      setOcaPackage,
+      setJsonDropMessage,
+      setShowWarningCard,
+      setTargetResult,
+      setZipToReadme,
+      switchToSchema
+    ]
+  );
+
+  useEffect(() => {
+    const file = schemaRawFile?.[0];
+    if (schemaRawFile && schemaRawFile.length > 0 && isLandingJsonSchema(file)) {
+      handleJsonDrop(schemaRawFile);
+    } else if (schemaRawFile && schemaRawFile.length > 0 && isLandingZipSchema(file)) {
+      handleZipDrop(schemaRawFile);
+    } else if (schemaRawFile && schemaRawFile.length > 0 && isLandingYamlSchema(file)) {
+      handleYamlDrop(schemaRawFile);
+    } else if (schemaRawFile && schemaRawFile.length > 0) {
+      setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+      setJsonLoading(false);
+      setDatasetLoading(false);
+      if (datasetRawFile.length === 0) {
+        setDatasetDropDisabled(false);
+      }
+      setTimeout(() => {
+        setJsonDropMessage({ message: "", type: "" });
+      }, 2500);
+    }
+  }, [schemaRawFile]);
+
+  return {
+    schemaRawFile,
+    setSchemaRawFile,
+    jsonLoading,
+    overallLoading,
+    jsonDropDisabled,
+    jsonDropMessage,
+    setJsonDropMessage,
+    setCurrentDataValidatorPage,
+    handleClearJSON,
+    targetResult,
+    setJsonLoading
+  };
+};
