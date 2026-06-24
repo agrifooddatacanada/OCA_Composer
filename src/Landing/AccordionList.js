@@ -21,7 +21,7 @@ import { useMultiSchema } from "../schema/schemaContext";
 import useOCAExport from "../hooks/useOCAExport";
 import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFromJson";
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
-import CollaborateOnASchema from "./CollaborateOnASchema";
+// import CollaborateOnASchema from "./CollaborateOnASchema";
 import { useHandleSchemaFileDrop } from "../OCADataValidator/useHandleSchemaFileDrop";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
@@ -151,7 +151,7 @@ const AccordionList = () => {
         >
           <SchemaAccordionItem />
           <WriteASchemaAccordionItem navigateToStartPage={navigateToStartPage} />
-          <CollaborateOnASchema navigateToStartPage={navigateToStartPage} />
+          {/* <CollaborateOnASchema navigateToStartPage={navigateToStartPage} /> */}
           <StoreASchemaAccordionItem />
           <UseASchemaAccordionItem />
           <UseASchemaWithDataAccordionItem isInvalidOcaPackage={isInvalidOcaPackage} />
