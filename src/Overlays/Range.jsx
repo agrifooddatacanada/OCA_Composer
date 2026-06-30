@@ -24,7 +24,7 @@ import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils
 import { measureTextHeight } from "../utils/measureTextLines";
 import { matchFormat } from "../OCADataValidator/utils/matchRules";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
-import { getAllGridRowData, useOverlayGridOnGridReady } from "./gridUtils";
+import { getAllGridRowData, overlayGridOnFirstDataRendered, useOverlayGridOnGridReady } from "./gridUtils";
 
 const RANGE_FORMAT_ALERT_MS = 3000;
 
@@ -77,6 +77,7 @@ const Range = forwardRef((props, ref) => {
   
   const { t, i18n } = useTranslation();
   const gridRef = useRef();
+  const validateGridRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [shouldRevalidate, setShouldRevalidate] = useState(false);
@@ -202,6 +203,14 @@ const Range = forwardRef((props, ref) => {
 
   const onGridReady = useOverlayGridOnGridReady(setLoading);
 
+  const handleFirstDataRendered = useCallback(
+    (params) => {
+      overlayGridOnFirstDataRendered(params);
+      validateGridRef.current?.({ flashOnError: false });
+    },
+    []
+  );
+
   const flashRangeValidationAlert = useCallback(() => {
     setShowValidationError(true);
     setTimeout(() => {
@@ -231,6 +240,8 @@ const Range = forwardRef((props, ref) => {
     },
     [flashRangeValidationAlert]
   );
+
+  validateGridRef.current = validateGrid;
 
   const handleSave = useCallback(() => {
     if (!gridRef.current?.api) return;
@@ -388,6 +399,7 @@ const Range = forwardRef((props, ref) => {
             suppressRowHoverHighlight
             stopEditingWhenCellsLoseFocus
             onGridReady={onGridReady}
+            onFirstDataRendered={handleFirstDataRendered}
             onCellValueChanged={onCellValueChanged}
             suppressHorizontalScroll
             overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
