@@ -3,7 +3,7 @@ import { Box, Modal } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import { useMultiSchema } from "../schema/schemaContext";
 import { isChildSchemaType } from "../constants/constants";
 import { resolveChildSchemaStateRootId } from "../schema/childSchemaSubtree";

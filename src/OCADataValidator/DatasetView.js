@@ -9,9 +9,9 @@ import React, {
   useState
 } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "../components/AgGridReact";
 import { Box, IconButton, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { AgGridReact } from "../components/AgGridReact";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import { Context } from "../App";
@@ -45,7 +45,6 @@ export const TrashCanButton = memo(
 
 const DatasetView = () => {
   const { t } = useTranslation();
-  const { currentTheme } = useContext(Context);
   const primaryColor = usePrimaryColor();
   const fontFamily = useFontFamily();
   const schemaGridRef = useRef(null);

@@ -1,35 +1,34 @@
-import React, { useRef, useContext, useState, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useRef,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  forwardRef,
+  useImperativeHandle
+} from "react";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
-import i18next from "i18next";
 import { Context } from "../App";
 import LanGrid from "./LanGrid";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import { removeSpacesFromArrayOfObjects } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import Loading from "../components/Loading";
 import { useMultiSchema } from "../schema/schemaContext";
-import { 
-  langCodeOCAFromName,
-  LanguageConstants
-} from "../utils/languageUtils";
+import { langCodeOCAFromName, LanguageConstants } from "../utils/languageUtils";
 
-const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForward }, ref) {
+const LanguageDetails = forwardRef(({ pageBack, pageForward }, ref) => {
   const { t } = useTranslation();
-  
+
   // Use MultiSchemaContext
-  const {
-    getSchema,
-    updateSchema,
-    getLanguages
-  } = useMultiSchema();
+  const { getSchema, updateSchema, getLanguages } = useMultiSchema();
 
   // Global context
-  const {
-    setCurrentPage
-  } = useContext(Context);
+  const { setCurrentPage } = useContext(Context);
 
   // Get schema-specific languages
   const languages = getLanguages();
@@ -41,8 +40,10 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
 
   const filteredLanguages = useMemo(() => [...languages], [languages]);
 
-  const [currentLanguage, setCurrentLanguage] = useState(filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME);
-  
+  const [currentLanguage, setCurrentLanguage] = useState(
+    filteredLanguages[0] || LanguageConstants.DEFAULT_LANG_NAME
+  );
+
   // Update currentLanguage when languages array changes
   // NOTE: We do NOT auto-sync with UI language to preserve user's schema language selection
   useEffect(() => {
@@ -104,7 +105,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
         noSpacesObject[language] = [];
       }
     });
-    
+
     // Save to MultiSchemaContext for both manual and loaded schemas
     // Convert LDAD data to schema overlays
     const schemaState = getSchema();
@@ -118,12 +119,12 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       if (langData.length > 0) {
         // Convert language name to ISO 639-2 (3-letter) code for overlay
         // Use the existing languageNameToAlpha3Codes mapping
-        const languageCode = langCodeOCAFromName(language) || 
-                             language.toLowerCase().slice(0, 3); // Fallback to first 3 chars
-        
+        const languageCode =
+          langCodeOCAFromName(language) || language.toLowerCase().slice(0, 3); // Fallback to first 3 chars
+
         const attributeLabels = {};
         langData.forEach((item) => {
-          if (item.Attribute && item.Label && item.Label.trim() !== '') {
+          if (item.Attribute && item.Label && item.Label.trim() !== "") {
             attributeLabels[item.Attribute] = item.Label;
           }
         });
@@ -144,13 +145,13 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
 
     updateSchema({
       lanAttributeRowData: noSpacesObject, // Keep for compatibility during transition
-      overlays: updatedOverlays,  // Save overlays directly to schema state
+      overlays: updatedOverlays, // Save overlays directly to schema state
       completeSchema: {
         ...currentSchema,
         overlays: updatedOverlays
       }
     });
-    
+
     entryCodesRef.current = attributesWithLists.length > 0;
   };
   const handlePageBack = () => {
@@ -257,7 +258,7 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
         item.Label = item.Attribute;
       });
     }
-    
+
     updateSchema({
       lanAttributeRowData: newLanAttributeRowData
     });
@@ -270,7 +271,9 @@ const LanguageDetails = forwardRef(function LanguageDetails({ pageBack, pageForw
       isForward
       pageForward={pageForwardSave}
     >
-      {loading && lanAttributeRowData[languages[0] || LanguageConstants.DEFAULT_LANG_NAME]?.length > 40 && <Loading />}
+      {loading &&
+        lanAttributeRowData[languages[0] || LanguageConstants.DEFAULT_LANG_NAME]?.length >
+          40 && <Loading />}
       <Box
         sx={{
           margin: "2rem",

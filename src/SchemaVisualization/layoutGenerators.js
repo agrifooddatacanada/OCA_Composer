@@ -12,11 +12,7 @@ import {
 /**
  * Find a package dependency for a refn: placeholder name (by bundle id or meta overlay name).
  */
-const findDependencyForPlaceholderName = (
-  placeholderName,
-  dependencies,
-  langCodeOCA
-) => {
+const findDependencyForPlaceholderName = (placeholderName, dependencies, langCodeOCA) => {
   if (!dependencies?.length) return null;
   return (
     dependencies.find((dep) => {
@@ -44,22 +40,14 @@ const placeholderDependencyHasNonEmptyAttributes = (
     langCodeOCA
   );
   const attrs = dep?.capture_base?.attributes;
-  return (
-    attrs &&
-    typeof attrs === "object" &&
-    Object.keys(attrs).length > 0
-  );
+  return attrs && typeof attrs === "object" && Object.keys(attrs).length > 0;
 };
 
 /**
  * For detailed view: refn: fields whose child schema already has attributes should display
  * as "Child Schema" on the parent (same as refs:), not "Placeholder Child Schema".
  */
-const enrichFieldsForChildSchemaDisplay = (
-  fields,
-  dependencies,
-  langCodeOCA
-) =>
+const enrichFieldsForChildSchemaDisplay = (fields, dependencies, langCodeOCA) =>
   fields.map((field) => {
     if (
       !field.isPlaceholder ||
@@ -242,9 +230,7 @@ export const generateTreeLayout = (
       ? [overlays.label]
       : [];
   const labelOverlayRaw =
-    labelOverlayList.find((l) => l.language === langCodeOCA) ||
-    labelOverlayList[0] ||
-    {};
+    labelOverlayList.find((l) => l.language === langCodeOCA) || labelOverlayList[0] || {};
   const mergedAttributeLabels = {
     ...(schemaData.labels || {}),
     ...(labelOverlayRaw.attribute_labels || {})
@@ -256,7 +242,7 @@ export const generateTreeLayout = (
 
   // Get meta overlay for root schema name using the specified language
   const rootMetaOverlay = Array.isArray(overlays?.meta)
-    ? (overlays.meta.find((m) => m.language === langCodeOCA) || overlays.meta[0])
+    ? overlays.meta.find((m) => m.language === langCodeOCA) || overlays.meta[0]
     : null;
 
   // Recursive function to build hierarchical structure
@@ -268,13 +254,8 @@ export const generateTreeLayout = (
     nodeType
   }) => {
     const labels = nodeLabelOverlay?.attribute_labels || {};
-    const metaName =
-      typeof metaOverlay?.name === "string" ? metaOverlay.name.trim() : "";
-    const nodeName = metaName
-      ? metaName
-      : nodeId === "root"
-        ? rootLabel
-        : nodeId;
+    const metaName = typeof metaOverlay?.name === "string" ? metaOverlay.name.trim() : "";
+    const nodeName = metaName || (nodeId === "root" ? rootLabel : nodeId);
 
     const nodeData = {
       id: nodeId,
@@ -297,21 +278,22 @@ export const generateTreeLayout = (
         if (refDep) {
           const refLabelOverlays = refDep.overlays?.label;
           const refLabelOverlay = Array.isArray(refLabelOverlays)
-            ? (refLabelOverlays.find((l) => l.language === langCodeOCA) || refLabelOverlays[0])
+            ? refLabelOverlays.find((l) => l.language === langCodeOCA) ||
+              refLabelOverlays[0]
             : null;
-          
+
           const refMetaOverlays = refDep.overlays?.meta;
           const refMetaOverlay = Array.isArray(refMetaOverlays)
-            ? (refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0])
+            ? refMetaOverlays.find((m) => m.language === langCodeOCA) ||
+              refMetaOverlays[0]
             : null;
 
           const parentFieldLabel = labels[key] || key;
           const refMetaName =
-            typeof refMetaOverlay?.name === "string"
-              ? refMetaOverlay.name.trim()
-              : "";
-          const useBundledMeta =
-            Boolean(refMetaName && refMetaName !== refId && refMetaOverlay);
+            typeof refMetaOverlay?.name === "string" ? refMetaOverlay.name.trim() : "";
+          const useBundledMeta = Boolean(
+            refMetaName && refMetaName !== refId && refMetaOverlay
+          );
           const metaForChild = useBundledMeta
             ? refMetaOverlay
             : { ...(refMetaOverlay || {}), name: parentFieldLabel };
@@ -353,35 +335,31 @@ export const generateTreeLayout = (
           attributesObj &&
           typeof attributesObj === "object" &&
           Object.keys(attributesObj).length > 0;
-        
+
         // Get metadata for display name
         const refMetaOverlays = refDep?.overlays?.meta;
         const refMetaOverlay = Array.isArray(refMetaOverlays)
-          ? (refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0])
+          ? refMetaOverlays.find((m) => m.language === langCodeOCA) || refMetaOverlays[0]
           : null;
-        
+
         // Default to attribute label as display name
-        let displayName = labels[key] || key;
-        
+        const displayName = labels[key] || key;
+
         // If the placeholder has actual attributes, treat it like a reference
         // and recursively build its hierarchy
         if (hasAttributes) {
           const refLabelOverlays = refDep.overlays?.label;
           const refLabelOverlay = Array.isArray(refLabelOverlays)
-            ? (refLabelOverlays.find((l) => l.language === langCodeOCA) || refLabelOverlays[0])
+            ? refLabelOverlays.find((l) => l.language === langCodeOCA) ||
+              refLabelOverlays[0]
             : null;
 
           const parentFieldLabel = labels[key] || key;
           const refMetaName =
-            typeof refMetaOverlay?.name === "string"
-              ? refMetaOverlay.name.trim()
-              : "";
-          const useBundledMeta =
-            Boolean(
-              refMetaName &&
-                refMetaName !== placeholderName &&
-                refMetaOverlay
-            );
+            typeof refMetaOverlay?.name === "string" ? refMetaOverlay.name.trim() : "";
+          const useBundledMeta = Boolean(
+            refMetaName && refMetaName !== placeholderName && refMetaOverlay
+          );
           const metaForChild = useBundledMeta
             ? refMetaOverlay
             : { ...(refMetaOverlay || {}), name: parentFieldLabel };
@@ -554,7 +532,11 @@ export const generateDetailedLayout = (
     fields.forEach((field) => {
       if (field.isReference && field.type.startsWith("refs:")) {
         const referencedId = field.type.replace("refs:", "");
-        const referencedInfo = getDependencyInfo(referencedId, dependencyMap, langCodeOCA);
+        const referencedInfo = getDependencyInfo(
+          referencedId,
+          dependencyMap,
+          langCodeOCA
+        );
 
         // Use child schema's meta name as the display title
         // If the dependency isn't found, use the attribute label as fallback
@@ -597,8 +579,7 @@ export const generateDetailedLayout = (
         if (hasRealAttributes && dependencyWithAttributes) {
           const metaOverlays = dependencyWithAttributes.overlays?.meta;
           const metaOverlay = Array.isArray(metaOverlays)
-            ? metaOverlays.find((m) => m.language === langCodeOCA) ||
-              metaOverlays[0]
+            ? metaOverlays.find((m) => m.language === langCodeOCA) || metaOverlays[0]
             : null;
 
           if (metaOverlay?.name) {
@@ -607,8 +588,8 @@ export const generateDetailedLayout = (
 
           const labelOverlays = dependencyWithAttributes.overlays?.label;
           const labelAttributes = Array.isArray(labelOverlays)
-            ? labelOverlays.find((l) => l.language === langCodeOCA)
-                ?.attribute_labels || {}
+            ? labelOverlays.find((l) => l.language === langCodeOCA)?.attribute_labels ||
+              {}
             : {};
 
           placeholderFields = processAttributes(
@@ -619,13 +600,7 @@ export const generateDetailedLayout = (
 
         const nodeType = hasRealAttributes ? "reference" : "placeholder";
 
-        processNode(
-          childId,
-          nodeType,
-          placeholderTitle,
-          placeholderFields,
-          level + 1
-        );
+        processNode(childId, nodeType, placeholderTitle, placeholderFields, level + 1);
 
         allEdges.push({
           id: `${nodeId}-${childId}`,

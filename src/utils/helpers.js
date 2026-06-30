@@ -131,6 +131,17 @@ export const replaceCharsInKeys = (obj, replacement = "_") => {
 
 export const hasDisallowedChars = (str) => /[^a-zA-Z0-9_\-.]/.test(str);
 
+export const collectInvalidAttributeNames = (names) => {
+  const invalidNames = [];
+  names.forEach((name) => {
+    const trimmed = typeof name === "string" ? name.trim().replace(/\s+/g, " ") : name;
+    if (trimmed && hasDisallowedChars(trimmed) && !invalidNames.includes(name)) {
+      invalidNames.push(name);
+    }
+  });
+  return invalidNames;
+};
+
 // Sanitize attributes in JSON string from ZIP schema upload
 export const replaceAttributeCharsInJsonString = (jsonString, parsed = false) => {
   const parsedJson = JSON.parse(jsonString);

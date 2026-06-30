@@ -134,7 +134,14 @@ const DataSeparator = () => {
   };
 
   const setEnableDecimalSeparator = (value) => {
-    updateSchema({ enableDecimalSeparator: value });
+    if (value) {
+      updateSchema({
+        enableDecimalSeparator: true,
+        decimalSeparator: schemaState?.decimalSeparator ?? currentDecimal
+      });
+    } else {
+      updateSchema({ enableDecimalSeparator: false });
+    }
   };
 
   const setEnableFileDelimiter = (value) => {
@@ -142,7 +149,18 @@ const DataSeparator = () => {
   };
 
   const setEnableArrayDelimiter = (value) => {
-    updateSchema({ enableArrayDelimiter: value });
+    if (value) {
+      // Seed the array delimiter data with the default delimiter for each attribute
+      const seeded = { ...arrayDelimiterData };
+      arrayAttributes.forEach((attrName) => {
+        if (seeded[attrName] === undefined) {
+          seeded[attrName] = ",";
+        }
+      });
+      updateSchema({ enableArrayDelimiter: true, arrayDelimiterData: seeded });
+    } else {
+      updateSchema({ enableArrayDelimiter: false });
+    }
   };
 
   const setArrayDelimiterForAttribute = (attrName, value) => {

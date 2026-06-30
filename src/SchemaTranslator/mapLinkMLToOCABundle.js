@@ -2,6 +2,28 @@
  * Maps LinkML schemas to OCA bundle structures.
  */
 
+const LINKML_PRIMITIVE_RANGES = new Set([
+  "string",
+  "integer",
+  "boolean",
+  "float",
+  "double",
+  "decimal",
+  "date",
+  "datetime",
+  "date_or_datetime",
+  "time",
+  "uriorcurie",
+  "uri",
+  "curie",
+  "ncname",
+  "nodeidentifier",
+  "object",
+  "jsonpointer",
+  "jsonpath",
+  "category"
+]);
+
 /**
  * Helper: build an overlay block only if data has keys
  * @param {string} type - The type of overlay
@@ -88,12 +110,12 @@ function buildRangeOverlay(slots) {
 
     if (hasMin || hasMax) {
       rangeData[slotName] = {};
-      
+
       if (hasMin) {
         rangeData[slotName].lower = String(slot.minimum_value);
         rangeData[slotName].lower_inclusive = true;
       }
-      
+
       if (hasMax) {
         rangeData[slotName].upper = String(slot.maximum_value);
         rangeData[slotName].upper_inclusive = true;
@@ -116,7 +138,7 @@ function buildRangeOverlay(slots) {
  * @param {Object} linkmlSchema - The LinkML schema
  * @returns {Object|null} A cardinality overlay or null if no cardinality data
  */
-function buildCardinalityOverlay(slots, linkmlSchema) {
+function buildCardinalityOverlay(slots) {
   const cardinalityData = {};
 
   Object.entries(slots).forEach(([slotName, slot]) => {
@@ -149,7 +171,7 @@ function buildCardinalityOverlay(slots, linkmlSchema) {
     }
 
     if (maxCard === null) {
-      maxCard = isMultivalued ? '*' : 1;
+      maxCard = isMultivalued ? "*" : 1;
     }
 
     cardinalityData[slotName] = `${minCard}-${maxCard}`;
@@ -182,7 +204,10 @@ export function buildOverlays(slots, enums, linkmlSchema) {
       key: "attribute_formats",
       data: Object.fromEntries(
         Object.entries(slots)
-          .filter(([, s]) => s.pattern || (s.minimum_value !== undefined || s.maximum_value !== undefined))
+          .filter(
+            ([, s]) =>
+              s.pattern || s.minimum_value !== undefined || s.maximum_value !== undefined
+          )
           .map(([k, s]) => {
             if (s.pattern) {
               return [k, s.pattern];
@@ -227,7 +252,7 @@ export function buildOverlays(slots, enums, linkmlSchema) {
     {
       name: "unit",
       type: "spec/overlays/unit/1.0",
-      key: "attribute_units",  // Correct OCA spec field name (plural)
+      key: "attribute_units", // Correct OCA spec field name (plural)
       data: Object.fromEntries(
         Object.entries(slots)
           .filter(([, slot]) => slot.unit?.ucum_code)
@@ -243,7 +268,7 @@ export function buildOverlays(slots, enums, linkmlSchema) {
         overlays[name] = {
           type,
           capture_base: "",
-          measurement_system: "Metric",  // Default to Metric for LinkML
+          measurement_system: "Metric", // Default to Metric for LinkML
           [key]: data
         };
       }
@@ -299,7 +324,7 @@ export function buildOverlays(slots, enums, linkmlSchema) {
   }
 
   // Cardinality overlay (language-independent)
-  const cardinalityOverlay = buildCardinalityOverlay(slots, linkmlSchema);
+  const cardinalityOverlay = buildCardinalityOverlay(slots);
   if (cardinalityOverlay) {
     overlays.cardinality = cardinalityOverlay;
   }
@@ -335,12 +360,56 @@ export function buildOverlays(slots, enums, linkmlSchema) {
 }
 
 /**
+ * Extracts the slot/attribute definitions from a LinkML schema.
+ * Handles both standard schemas (top-level `slots:`) and induced class
+ * schemas (class-level `attributes:` with full definitions inline).
+ * @param {Object} linkmlSchema - The parsed LinkML YAML
+ * @returns {Object} A dictionary of slot_name -> slot_definition
+ */
+function extractSlotDefinitions(linkmlSchema) {
+  if (linkmlSchema.slots && Object.keys(linkmlSchema.slots).length > 0) {
+    return linkmlSchema.slots;
+  }
+
+  if (linkmlSchema.attributes && typeof linkmlSchema.attributes === "object") {
+    const firstValue = Object.values(linkmlSchema.attributes)[0];
+    if (
+      firstValue &&
+      typeof firstValue === "object" &&
+      ("range" in firstValue || "description" in firstValue)
+    ) {
+      return linkmlSchema.attributes;
+    }
+  }
+
+  return {};
+}
+
+export function findMissingLinkMLEnums(linkmlSchema) {
+  const slots = extractSlotDefinitions(linkmlSchema);
+  const enums = linkmlSchema.enums || {};
+  const classes = linkmlSchema.classes || {};
+  const missing = new Set();
+
+  Object.values(slots).forEach((slot) => {
+    const range = slot?.range;
+    if (!range || LINKML_PRIMITIVE_RANGES.has(range)) return;
+    if (enums[range] || classes[range]) return;
+    if (range.endsWith("Enum")) missing.add(range);
+  });
+
+  return [...missing].sort();
+}
+
+/**
  * Maps a LinkML schema to an OCA bundle structure.
+ * Supports both standard LinkML schemas (with top-level `slots:`) and
+ * induced class schemas (with `attributes:` containing full definitions).
  * @param {Object} linkmlSchema - The LinkML schema to convert
  * @returns {Object} An OCA bundle
  */
 export function mapLinkMLToOCABundle(linkmlSchema) {
-  const slots = linkmlSchema.slots || {};
+  const slots = extractSlotDefinitions(linkmlSchema);
   const enums = linkmlSchema.enums || {};
 
   // Extract OCA attributes and flagged attributes
@@ -360,9 +429,9 @@ export function mapLinkMLToOCABundle(linkmlSchema) {
       if (/Event|Type/.test(slot.range)) {
         range = "Text"; // Default to Text instead of empty string, though originally was ""
       }
-      
+
       if (slot.multivalued) {
-          range = `Array[${range}]`;
+        range = `Array[${range}]`;
       }
 
       return [key, range];
@@ -374,10 +443,10 @@ export function mapLinkMLToOCABundle(linkmlSchema) {
     .map(([key]) => key);
 
   // Generate a deterministic ID based on schema name or timestamp
-  const schemaId = linkmlSchema.name 
-    ? `linkml_${linkmlSchema.name}_${Date.now()}` 
+  const schemaId = linkmlSchema.name
+    ? `linkml_${linkmlSchema.name}_${Date.now()}`
     : `linkml_schema_${Date.now()}`;
-  
+
   const captureBaseId = `${schemaId}_capture_base`;
 
   // Define capture_base separately with digest

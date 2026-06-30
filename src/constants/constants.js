@@ -372,8 +372,7 @@ export const descriptionToFormatCodeText = {
   "Zip code": "^\\d{5,6}(?:[-\\s]\\d{4})?$",
   "Email address": "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+",
   URL: "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
-  "Phone number": "\\+?\\(?\\d{2,4}\\)?[\\d\\s-]{3,}",
-  // eslint-disable-next-line quotes
+  "Phone number": "^\\+?\\d{3}[\\s-]?\\d{3}[\\s-]?\\d{4}$", // eslint-disable-next-line quotes
   'Latitude in formats S30°15\'45.678" or N12°30.999"':
     // eslint-disable-next-line quotes
     `^[NS]\\s?(?:[0-8]?\\d)°\\s?(?:[0-5]?\\d)'?\\s?(?:[0-5]?\\d(?:\\.\\d+)?)"?$`,

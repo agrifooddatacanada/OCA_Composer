@@ -1,17 +1,21 @@
 /**
  * Hook to generate Markdown README from ZIP schema bundles.
- * 
+ *
  * Used by:
  * - "Generate Markdown Readme" button when a ZIP file was uploaded
- * 
+ *
  * Input: ZIP file contents (array of files)
  * Output: Markdown file (.md) with formatted schema documentation
- * 
+ *
  * Note: For JSON packages, see useGenerateMarkdownReadmeFromJson.
  */
 
 import i18next from "i18next";
-import { langNameFromTwoLetters, langTwoLettersFromName, langNameFromCodeOCA } from "../utils/languageUtils";
+import {
+  langNameFromTwoLetters,
+  langTwoLettersFromName,
+  langNameFromCodeOCA
+} from "../utils/languageUtils";
 import { DEFAULT_LANGUAGE_CODE } from "../constants/constants";
 import {
   downloadMarkdownFile,
@@ -50,20 +54,23 @@ const useGenerateMarkdownReadMe = () => {
         ...rest
       });
     });
-    
+
     // Extract languages from the bundle itself (look at meta, label, information, entry overlays)
     const languageSet = new Set();
-    layers.forEach(layer => {
+    layers.forEach((layer) => {
       if (layer.language) {
         // Convert UI code (en, fr) to language name (English, French)
-        const langName = langNameFromTwoLetters(layer.language) || 
-                        // Convert any language code format to language name
-                        (langNameFromCodeOCA(layer.language) || langNameFromTwoLetters(layer.language) || layer.language);
+        const langName =
+          langNameFromTwoLetters(layer.language) ||
+          // Convert any language code format to language name
+          langNameFromCodeOCA(layer.language) ||
+          langNameFromTwoLetters(layer.language) ||
+          layer.language;
         languageSet.add(langName);
       }
     });
     const languages = Array.from(languageSet);
-    
+
     // Ensuring that the currently selected site language is one of the languages of the schema
     const currentLanguageCode = languages.some(
       (language) => language === langNameFromTwoLetters(i18next.language)
@@ -84,7 +91,7 @@ const useGenerateMarkdownReadMe = () => {
 
     // Build language code lookup map
     const languageCodeLookupMap = {};
-    languages.forEach(lang => {
+    languages.forEach((lang) => {
       languageCodeLookupMap[lang.toLowerCase()] = langTwoLettersFromName(lang);
     });
 

@@ -27,6 +27,8 @@ export function measureTextHeight(text, maxWidthPx, options = {}) {
   const compact = options.compact === true;
   const el = getMeasureEl(compact);
   el.style.width = `${maxWidthPx}px`;
+  el.style.lineHeight = String(options.lineHeight ?? (compact ? 1 : 1.5));
+  el.style.padding = options.padding ?? (compact ? "0" : "8px");
   el.textContent = str;
   const height = el.offsetHeight;
   el.textContent = "";

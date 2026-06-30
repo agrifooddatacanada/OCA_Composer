@@ -24,17 +24,17 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
 
   const displayValues = [
     { value: "", label: "" },
-    { value: "Text", label: "Text" },
-    { value: "Binary", label: "Binaryfile" },
-    { value: "Boolean", label: "Boolean" },
-    { value: "DateTime", label: "DateTime" },
     { value: "Numeric", label: "Numeric" },
+    { value: "Text", label: "Text" },
+    { value: "DateTime", label: "DateTime" },
+    { value: "Boolean", label: "Boolean" },
+    { value: "Binary", label: "Binaryfile" },
     { value: TYPE_CHILD_SCHEMA, label: TYPE_CHILD_SCHEMA },
-    { value: "Array[Binary]", label: "Array[Binaryfile]" },
-    { value: "Array[Boolean]", label: "Array[Boolean]" },
-    { value: "Array[DateTime]", label: "Array[DateTime]" },
     { value: "Array[Numeric]", label: "Array[Numeric]" },
-    { value: "Array[Text]", label: "Array[Text]" }
+    { value: "Array[Text]", label: "Array[Text]" },
+    { value: "Array[DateTime]", label: "Array[DateTime]" },
+    { value: "Array[Boolean]", label: "Array[Boolean]" },
+    { value: "Array[Binary]", label: "Array[Binaryfile]" }
   ];
 
   const attributeName = data.Attribute;

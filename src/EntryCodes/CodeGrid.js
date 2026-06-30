@@ -1,12 +1,5 @@
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-  useState
-} from "react";
+import React, { useEffect, useMemo, useRef, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AgGridReact } from "../components/AgGridReact";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { Button, Tooltip, Box } from "@mui/material";
@@ -14,6 +7,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { AgGridReact } from "../components/AgGridReact";
 import {
   TABLE_TO_BUTTON_GAP,
   ENTRY_CODE_DRAG_WIDTH,
@@ -22,7 +16,11 @@ import {
   ENTRY_CODE_DELETE_WIDTH,
   AG_GRID_VIRTUALIZE_MIN_ROWS
 } from "../constants/constants";
-import { agGridEditableCellHoverCss, flexCenter, preWrapWordBreak } from "../constants/styles";
+import {
+  agGridEditableCellHoverCss,
+  flexCenter,
+  preWrapWordBreak
+} from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import { LanguageConstants, langCodeOCAFromName } from "../utils/languageUtils";
@@ -70,7 +68,15 @@ const LanguageHeader = ({ languageNames, languageName }) => {
   );
 };
 
-export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable, onFirstDataRendered: onGridFirstDataRendered, entryCodeData = [], setEntryCodeData }) {
+export default function CodeGrid({
+  index,
+  codeRefs,
+  chosenTable,
+  setChosenTable,
+  onFirstDataRendered: onGridFirstDataRendered,
+  entryCodeData = [],
+  setEntryCodeData
+}) {
   const { t, i18n } = useTranslation();
 
   const { getLanguages } = useMultiSchema();
@@ -194,18 +200,16 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
     });
   }, [codeRefs]);
 
-  const resolveLangCellText = useCallback(
-    (data, field, name) => {
-      if (!data) return "";
-      const oca = data[field];
-      if (oca != null && oca !== "") return oca;
-      const named = data[name];
-      return named != null ? named : "";
-    },
-    []
-  );
+  const resolveLangCellText = useCallback((data, field, name) => {
+    if (!data) return "";
+    const oca = data[field];
+    if (oca != null && oca !== "") return oca;
+    const named = data[name];
+    return named != null ? named : "";
+  }, []);
 
   const columnDefs = useMemo(() => {
+    // eslint-disable-next-line react/no-unstable-nested-components -- ag-grid cell renderer needs row delete handler closure
     const DeleteCell = (params) => {
       const idx = params?.node?.rowIndex ?? params?.rowIndex ?? -1;
       if (idx < 0) return null;
@@ -244,8 +248,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
         d[name] = params.newValue;
         return true;
       },
-      headerComponent: () =>
-        LanguageHeader({ languageNames, languageName: name }),
+      headerComponent: () => LanguageHeader({ languageNames, languageName: name }),
       wrapText: true,
       cellEditor: TextareaCellEditor,
       cellStyle: () => ({ ...preWrapWordBreak, ...flexCenter }),
@@ -405,56 +408,56 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
               : {})
           }}
         >
-        <div
-          className={`entry-codes-grid ag-theme-balham${gridFixedHeightMode ? " entry-codes-grid-fixed-viewport" : " ag-grid-compact"}`}
-          style={{
-            width: "100%",
-            minWidth: 0,
-            height: gridFixedHeightMode ? gridViewportHeight : "fit-content",
-            display: gridFixedHeightMode ? "flex" : undefined,
-            flexDirection: gridFixedHeightMode ? "column" : undefined
-          }}
-        >
-        <style>{`${codeGridStyle}${agGridEditableCellHoverCss}`}</style>
-        <div
-          ref={refContainer}
-          style={{
-            flex: gridFixedHeightMode ? 1 : undefined,
-            minHeight: gridFixedHeightMode ? 0 : undefined,
-            width: "100%"
-          }}
-        >
-          <AgGridReact
-            key={`${i18n.language}-${gridFixedHeightMode ? "fx" : "ah"}`}
-            ref={codeRefs.current[index]}
-            rowData={entryCodeData}
-            getRowId={getRowId}
-            overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            domLayout={gridFixedHeightMode ? undefined : "autoHeight"}
+          <div
+            className={`entry-codes-grid ag-theme-balham${gridFixedHeightMode ? " entry-codes-grid-fixed-viewport" : " ag-grid-compact"}`}
             style={{
               width: "100%",
-              height: gridFixedHeightMode ? "100%" : "auto"
+              minWidth: 0,
+              height: gridFixedHeightMode ? gridViewportHeight : "fit-content",
+              display: gridFixedHeightMode ? "flex" : undefined,
+              flexDirection: gridFixedHeightMode ? "column" : undefined
             }}
-            suppressHorizontalScroll={!gridFixedHeightMode}
-            getRowHeight={getRowHeight}
-            onCellKeyDown={onCellKeyDown}
-            onFirstDataRendered={handleFirstDataRendered}
-            onCellClicked={() => setChosenTable(index)}
-            onRowDragEnd={onRowDragEnd}
-            onRowDragLeave={onRowDragLeave}
-            onCellValueChanged={(e) => {
-              if (e.column.colId === "Code" || ocaFields.includes(e.column.colId)) {
-                e.api.refreshCells({ rowNodes: [e.node], force: true });
-                requestAnimationFrame(() => e.api.resetRowHeights());
-              }
-            }}
-            rowDragManaged
-            suppressScrollOnNewData
-          />
-        </div>
-        </div>
+          >
+            <style>{`${codeGridStyle}${agGridEditableCellHoverCss}`}</style>
+            <div
+              ref={refContainer}
+              style={{
+                flex: gridFixedHeightMode ? 1 : undefined,
+                minHeight: gridFixedHeightMode ? 0 : undefined,
+                width: "100%"
+              }}
+            >
+              <AgGridReact
+                key={`${i18n.language}-${gridFixedHeightMode ? "fx" : "ah"}`}
+                ref={codeRefs.current[index]}
+                rowData={entryCodeData}
+                getRowId={getRowId}
+                overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                domLayout={gridFixedHeightMode ? undefined : "autoHeight"}
+                style={{
+                  width: "100%",
+                  height: gridFixedHeightMode ? "100%" : "auto"
+                }}
+                suppressHorizontalScroll={!gridFixedHeightMode}
+                getRowHeight={getRowHeight}
+                onCellKeyDown={onCellKeyDown}
+                onFirstDataRendered={handleFirstDataRendered}
+                onCellClicked={() => setChosenTable(index)}
+                onRowDragEnd={onRowDragEnd}
+                onRowDragLeave={onRowDragLeave}
+                onCellValueChanged={(e) => {
+                  if (e.column.colId === "Code" || ocaFields.includes(e.column.colId)) {
+                    e.api.refreshCells({ rowNodes: [e.node], force: true });
+                    requestAnimationFrame(() => e.api.resetRowHeights());
+                  }
+                }}
+                rowDragManaged
+                suppressScrollOnNewData
+              />
+            </div>
+          </div>
         </Box>
       </Box>
 
@@ -482,7 +485,7 @@ export default function CodeGrid({ index, codeRefs, chosenTable, setChosenTable,
           }}
           ref={buttonRef}
         >
-        {t("Add Code", { defaultValue: "Add Code" })} <AddCircleIcon />
+          {t("Add Code", { defaultValue: "Add Code" })} <AddCircleIcon />
         </Button>
       </Box>
     </Box>

@@ -9,19 +9,23 @@ import React, {
   useImperativeHandle
 } from "react";
 import { Box } from "@mui/material";
-import { AgGridReact } from "../components/AgGridReact";
 import { useTranslation } from "react-i18next";
+import { AgGridReact } from "../components/AgGridReact";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING, AG_GRID_VIRTUALIZE_MIN_ROWS } from "../constants/constants";
+import {
+  BETWEEN_SECTION_SPACING,
+  AG_GRID_VIRTUALIZE_MIN_ROWS,
+  FIELD_CONFORMANCE_OVERLAY
+} from "../constants/constants";
 import { flexCenter, gridStyles, greyCellStyle } from "../constants/styles";
 import CellHeader from "../components/CellHeader";
 import CheckboxColumnHeader from "../AttributeDetails/CheckboxColumnHeader";
 import DeleteConfirmation from "./DeleteConfirmation";
-import { FIELD_CONFORMANCE_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
+
 const REQUIRED_GRID_WIDTH_PX = 330;
 const REQUIRED_ATTR_COL_WIDTH_PX = Math.round((REQUIRED_GRID_WIDTH_PX * 100) / 170);
 const REQUIRED_CHECK_COL_WIDTH_PX = REQUIRED_GRID_WIDTH_PX - REQUIRED_ATTR_COL_WIDTH_PX;
@@ -44,7 +48,9 @@ const RequiredEntryHeader = ({ gridRef, t }) => {
   return (
     <CheckboxColumnHeader
       label={t("Required")}
-      helpText={t("Check for each attribute where the data entry cannot be left empty in a dataset")}
+      helpText={t(
+        "Check for each attribute where the data entry cannot be left empty in a dataset"
+      )}
       onCheckboxChange={handleCheckboxChange}
       inputRef={inputRef}
     />
@@ -72,45 +78,45 @@ const CheckboxRenderer = ({ value, rowIndex, colDef, api }) => {
   return <input type="checkbox" ref={inputRef} onChange={handleChange} />;
 };
 
-const RequiredEntries = forwardRef(function RequiredEntries(_props, ref) {
+const RequiredEntries = forwardRef((_props, ref) => {
   const { t, i18n } = useTranslation();
-  const {
-    setCurrentPage,
-    setSelectedOverlay,
-  } = useContext(Context);
-  
+  const { setCurrentPage, setSelectedOverlay } = useContext(Context);
+
   // Use MultiSchema context with standard pattern
   const { getSchema, updateSchema } = useMultiSchema();
-  
+
   const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CONFORMANCE_OVERLAY);
-  
+
   // Get attributes data with Required status from schema state
   const requiredEntriesRowData = useMemo(() => {
     if (!schemaState?.attributes) return [];
-    
+
     // Create row data with Attribute name and Required status
     return schemaState.attributes.map((attr) => ({
       Attribute: attr.Attribute,
       [FIELD_CONFORMANCE_OVERLAY]: !!attr.Required
     }));
   }, [schemaState?.attributes]);
-  
-  const setRequiredEntriesRowData = useCallback((newData) => {
-    // Update the attributes in schema state with new Required status
-    const updatedAttributes = schemaState.attributes.map((attr) => {
-      const rowData = newData.find((row) => row.Attribute === attr.Attribute);
-      return {
-        ...attr,
-        Required: rowData ? rowData[FIELD_CONFORMANCE_OVERLAY] : false
-      };
-    });
-    
-    updateSchema({
-      attributes: updatedAttributes
-    });
-  }, [schemaState?.attributes, updateSchema]);
-  
+
+  const setRequiredEntriesRowData = useCallback(
+    (newData) => {
+      // Update the attributes in schema state with new Required status
+      const updatedAttributes = schemaState.attributes.map((attr) => {
+        const rowData = newData.find((row) => row.Attribute === attr.Attribute);
+        return {
+          ...attr,
+          Required: rowData ? rowData[FIELD_CONFORMANCE_OVERLAY] : false
+        };
+      });
+
+      updateSchema({
+        attributes: updatedAttributes
+      });
+    },
+    [schemaState?.attributes, updateSchema]
+  );
+
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const gridRef = useRef();
   const requiredGridFixedViewport =
@@ -118,16 +124,23 @@ const RequiredEntries = forwardRef(function RequiredEntries(_props, ref) {
   const requiredOuterWidthPx = REQUIRED_COLUMN_SUM_PX;
 
   // Add callback to handle data changes in the grid
-  const handleCellValueChanged = useCallback((event) => {
-    // Get all current row data
-    const allRowData = [];
-    event.api.forEachNode((node) => allRowData.push(node.data));
-    // Update schema state with new data
-    setRequiredEntriesRowData(allRowData);
-  }, [setRequiredEntriesRowData]);
+  const handleCellValueChanged = useCallback(
+    (event) => {
+      // Get all current row data
+      const allRowData = [];
+      event.api.forEachNode((node) => allRowData.push(node.data));
+      // Update schema state with new data
+      setRequiredEntriesRowData(allRowData);
+    },
+    [setRequiredEntriesRowData]
+  );
 
   const getRowHeight = useCallback((params) => {
-    const attrH = measureTextHeight(params.data?.Attribute || "", REQUIRED_ATTR_COL_WIDTH_PX, {});
+    const attrH = measureTextHeight(
+      params.data?.Attribute || "",
+      REQUIRED_ATTR_COL_WIDTH_PX,
+      {}
+    );
     return Math.max(32, attrH + 16);
   }, []);
 
@@ -142,13 +155,15 @@ const RequiredEntries = forwardRef(function RequiredEntries(_props, ref) {
         suppressSizeToFit: true,
         cellStyle: () => ({
           ...greyCellStyle,
-          textAlign: "center",
+          textAlign: "center"
         }),
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),
-          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
-        },
+          helpText: t(
+            "Name for the attribute and, for example, the column header in every tabular data set no matter what language"
+          )
+        }
       },
       {
         field: FIELD_CONFORMANCE_OVERLAY,
@@ -163,8 +178,8 @@ const RequiredEntries = forwardRef(function RequiredEntries(_props, ref) {
         },
         cellRenderer: CheckboxRenderer,
         checkboxSelection: false,
-        cellStyle: () => flexCenter,
-      },
+        cellStyle: () => flexCenter
+      }
     ],
     [t]
   );
@@ -201,10 +216,13 @@ const RequiredEntries = forwardRef(function RequiredEntries(_props, ref) {
     setCurrentPage("Overlays");
   };
 
-
-
   return (
-    <BackNextSkeleton isForward pageForward={handleForward} isBack pageBack={handleLeaveToOverlays}>
+    <BackNextSkeleton
+      isForward
+      pageForward={handleForward}
+      isBack
+      pageBack={handleLeaveToOverlays}
+    >
       {showDeleteConfirmation && (
         <DeleteConfirmation
           removeFromSelected={deleteHandler}
@@ -222,7 +240,7 @@ const RequiredEntries = forwardRef(function RequiredEntries(_props, ref) {
           minWidth: requiredOuterWidthPx,
           maxWidth: requiredOuterWidthPx,
           boxSizing: "border-box",
-          textAlign: "left",
+          textAlign: "left"
         }}
       >
         <div

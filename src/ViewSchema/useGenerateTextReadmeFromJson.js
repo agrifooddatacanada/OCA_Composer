@@ -46,7 +46,8 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
   const overlayTexts = {};
 
   const hasAttrOrder = orderingOverlay?.attribute_ordering?.length > 0;
-  const hasEntryCodeOrder = Object.keys(orderingOverlay?.entry_code_ordering || {}).length > 0;
+  const hasEntryCodeOrder =
+    Object.keys(orderingOverlay?.entry_code_ordering || {}).length > 0;
 
   // capture_base (if present)
   if (bundle.capture_base) {
@@ -54,7 +55,10 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
     const layer_name = bundle.capture_base.type;
     const { classification } = bundle.capture_base;
     const schema_attributes = hasAttrOrder
-      ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, bundle.capture_base.attributes)
+      ? getOrderedAttributeMap(
+          orderingOverlay.attribute_ordering,
+          bundle.capture_base.attributes
+        )
       : bundle.capture_base.attributes;
 
     overlaySaids[layer_name] = said;
@@ -63,9 +67,12 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
       `SAID/digest: ${said}\n` +
       `Classification: ${classification}\n` +
       "\n" +
-      `Schema attributes: data type\n` +
+      "Schema attributes: data type\n" +
       `${Object.entries(schema_attributes)
-        .map(([key, value]) => `    ${key}: ${Array.isArray(value) ? `Array[${value[0]}]` : value}`)
+        .map(
+          ([key, value]) =>
+            `    ${key}: ${Array.isArray(value) ? `Array[${value[0]}]` : value}`
+        )
         .join("\n")}\n` +
       "\n";
   }
@@ -102,7 +109,10 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
         const layer_name = overlay.type;
         const lang = overlay.language;
         const schema_attributes = hasAttrOrder
-          ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, overlay.attribute_labels)
+          ? getOrderedAttributeMap(
+              orderingOverlay.attribute_ordering,
+              overlay.attribute_labels
+            )
           : overlay.attribute_labels;
         overlaySaids[`${layer_name} (${lang})`] = said;
         return (
@@ -121,14 +131,19 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
 
   // information (language-specific)
   if (overlays.information) {
-    const infos = Array.isArray(overlays.information) ? overlays.information : [overlays.information];
+    const infos = Array.isArray(overlays.information)
+      ? overlays.information
+      : [overlays.information];
     overlayTexts.information = infos
       .map((overlay) => {
         const said = overlay.d;
         const layer_name = overlay.type;
         const lang = overlay.language;
         const schema_attributes = hasAttrOrder
-          ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, overlay.attribute_information)
+          ? getOrderedAttributeMap(
+              orderingOverlay.attribute_ordering,
+              overlay.attribute_information
+            )
           : overlay.attribute_information;
         overlaySaids[`${layer_name} (${lang})`] = said;
         return (
@@ -163,7 +178,9 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
       `Measurement system: ${measurement_system}\n` +
       "\n" +
       `Schema attributes: ${layer_name}\n` +
-      `${Object.entries(schema_attributes).map(([key, value]) => `    ${key}: ${value}`).join("\n")}\n` +
+      `${Object.entries(schema_attributes)
+        .map(([key, value]) => `    ${key}: ${value}`)
+        .join("\n")}\n` +
       "\n";
   }
 
@@ -172,7 +189,10 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
     const overlay = overlays.conformance;
     const said = overlay.d;
     const schema_attributes = hasAttrOrder
-      ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, overlay.attribute_conformance)
+      ? getOrderedAttributeMap(
+          orderingOverlay.attribute_ordering,
+          overlay.attribute_conformance
+        )
       : overlay.attribute_conformance;
     const layer_name = overlay.type;
     overlaySaids[layer_name] = said;
@@ -181,7 +201,9 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
       `SAID/digest: ${said}\n` +
       "\n" +
       `Schema attributes: ${layer_name}\n` +
-      `${Object.entries(schema_attributes).map(([key, value]) => `    ${key}: ${value}`).join("\n")}\n` +
+      `${Object.entries(schema_attributes)
+        .map(([key, value]) => `    ${key}: ${value}`)
+        .join("\n")}\n` +
       "\n";
   }
 
@@ -191,7 +213,10 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
     const said = overlay.d;
     const layer_name = overlay.type;
     const schema_attributes = hasAttrOrder
-      ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, overlay.attribute_character_encoding)
+      ? getOrderedAttributeMap(
+          orderingOverlay.attribute_ordering,
+          overlay.attribute_character_encoding
+        )
       : overlay.attribute_character_encoding;
     overlaySaids[layer_name] = said;
     overlayTexts.character_encoding =
@@ -199,7 +224,9 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
       `SAID/digest: ${said}\n` +
       "\n" +
       `Schema attributes: ${layer_name}\n` +
-      `${Object.entries(schema_attributes).map(([key, value]) => `    ${key}: ${value}`).join("\n")}\n` +
+      `${Object.entries(schema_attributes)
+        .map(([key, value]) => `    ${key}: ${value}`)
+        .join("\n")}\n` +
       "\n";
   }
 
@@ -209,7 +236,10 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
     const said = overlay.d;
     const layer_name = overlay.type;
     const schema_attributes = hasAttrOrder
-      ? getOrderedAttributeMap(orderingOverlay.attribute_ordering, overlay.attribute_formats)
+      ? getOrderedAttributeMap(
+          orderingOverlay.attribute_ordering,
+          overlay.attribute_formats
+        )
       : overlay.attribute_formats;
     overlaySaids[layer_name] = said;
     overlayTexts.format =
@@ -217,7 +247,9 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
       `SAID/digest: ${said}\n` +
       "\n" +
       `Schema attributes: ${layer_name}\n` +
-      `${Object.entries(schema_attributes).map(([key, value]) => `    ${key}: ${value}`).join("\n")}\n` +
+      `${Object.entries(schema_attributes)
+        .map(([key, value]) => `    ${key}: ${value}`)
+        .join("\n")}\n` +
       "\n";
   }
 
@@ -235,7 +267,9 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
       `SAID/digest: ${said}\n` +
       "\n" +
       `Schema attributes: ${layer_name}\n` +
-      `${Object.entries(schema_attributes).map(([key, value]) => `    ${key}: [${value}]`).join("\n")}\n` +
+      `${Object.entries(schema_attributes)
+        .map(([key, value]) => `    ${key}: [${value}]`)
+        .join("\n")}\n` +
       "\n";
   }
 
@@ -248,7 +282,10 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
         const layer_name = overlay.type;
         const lang = overlay.language;
         const schema_attributes = hasEntryCodeOrder
-          ? getOrderedEntries(orderingOverlay.entry_code_ordering, overlay.attribute_entries)
+          ? getOrderedEntries(
+              orderingOverlay.entry_code_ordering,
+              overlay.attribute_entries
+            )
           : overlay.attribute_entries;
         overlaySaids[`${layer_name} (${lang})`] = said;
         const body = Object.entries(schema_attributes)
@@ -269,9 +306,7 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
 
 const getFormOverlayArray = (extensionOverlays = {}) => {
   const formOverlayData =
-    extensionOverlays.form_overlay ||
-    extensionOverlays.form ||
-    extensionOverlays[FORM];
+    extensionOverlays.form_overlay || extensionOverlays.form || extensionOverlays[FORM];
 
   return Array.isArray(formOverlayData)
     ? formOverlayData
@@ -339,7 +374,9 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
     );
 
     if (hasAttributeOrdering) {
-      lines.push(`Attribute ordering: ${orderingOverlay.attribute_ordering.join(", ")}\n`);
+      lines.push(
+        `Attribute ordering: ${orderingOverlay.attribute_ordering.join(", ")}\n`
+      );
     }
 
     if (hasEntryCodeOrdering) {
@@ -349,7 +386,10 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
       });
     }
 
-    lines.push("\n", "******************************************************************\n");
+    lines.push(
+      "\n",
+      "******************************************************************\n"
+    );
   }
 
   if (Object.prototype.hasOwnProperty.call(extensionOverlays, SENSITIVE)) {
@@ -397,7 +437,10 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
         lines.push(rangeText, "\n");
       });
 
-      lines.push("\n", "******************************************************************\n");
+      lines.push(
+        "\n",
+        "******************************************************************\n"
+      );
     }
   }
 
@@ -428,10 +471,16 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
       Object.entries(unitOverlayData).forEach(([attribute, unit]) => {
         const unitFramingData = unitFramingOverlay.units[unit];
         if (!unitFramingData) return;
-        lines.push(`   ${attribute}: unit: ${unit}, UCUM code: ${unitFramingData.term_id}`, "\n");
+        lines.push(
+          `   ${attribute}: unit: ${unit}, UCUM code: ${unitFramingData.term_id}`,
+          "\n"
+        );
       });
 
-      lines.push("\n", "******************************************************************\n");
+      lines.push(
+        "\n",
+        "******************************************************************\n"
+      );
     }
   }
 
@@ -491,7 +540,10 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
         lines.push(`   ${attribute}: ${prettyDelimiter(delimiter)}\n`);
       });
 
-      lines.push("\n", "******************************************************************\n");
+      lines.push(
+        "\n",
+        "******************************************************************\n"
+      );
     }
   }
 
@@ -635,7 +687,9 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
         `Layer name: ${layer_name}\n${firstSaid ? `SAID/digest: ${firstSaid}\n` : ""}\n`
       );
       lines.push(form_overlays_txt.join(""));
-      lines.push("\n******************************************************************\n");
+      lines.push(
+        "\n******************************************************************\n"
+      );
     }
   }
 
@@ -644,21 +698,25 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
 
 /**
  * Hook to generate text-based README (OCA_READ_ME/1.0 format) from JSON OCA packages.
- * 
+ *
  * Used by:
  * - "Download README" button in ViewSchema
  * - "Download README" button in Landing page accordions
  * - Export flow in useOCAExport
- * 
+ *
  * Input: JSON OCA package (already parsed)
  * Output: Text file (.txt) with human-readable schema documentation
- * 
+ *
  * @param {Object} jsonData - The JSON bundle data
  * @param {Object} ocaPackage - The full OCA package (optional, used for ordering/extensions)
  * @param {string|Object} schemaNameOrDescription - Optional: schema name string or legacy schemaDescription object
  */
 const useGenerateTextReadmeFromJson = () => {
-  const jsonToTextFile = async (jsonData, ocaPackage = null, schemaNameOrDescription = null) => {
+  const jsonToTextFile = async (
+    jsonData,
+    ocaPackage = null,
+    schemaNameOrDescription = null
+  ) => {
     // Step 1: --- Read json schema bundle
     const json_bundle = jsonData;
 
@@ -686,10 +744,12 @@ const useGenerateTextReadmeFromJson = () => {
     const overlay_texts = {};
 
     // Step 3: --- Converting schema overlays from objects to texts
-    const { overlaySaids: rootSaids, overlayTexts: rootTexts } = buildOverlayMaps(json_bundle, orderingOverlay || {});
+    const { overlaySaids: rootSaids, overlayTexts: rootTexts } = buildOverlayMaps(
+      json_bundle,
+      orderingOverlay || {}
+    );
     Object.assign(overlay_saids, rootSaids);
     Object.assign(overlay_texts, rootTexts);
-
 
     // Step 4: --- Constructing OCA ReadMe file
     const manifest = [];
@@ -701,7 +761,8 @@ const useGenerateTextReadmeFromJson = () => {
       ocaPackage,
       json_bundle.capture_base.d
     );
-    const rootExtensionManifestEntries = getExtensionManifestEntries(rootExtensionOverlays);
+    const rootExtensionManifestEntries =
+      getExtensionManifestEntries(rootExtensionOverlays);
     if (rootExtensionManifestEntries.length > 0) {
       manifest.push("\n", ...rootExtensionManifestEntries);
     }
@@ -774,7 +835,10 @@ const useGenerateTextReadmeFromJson = () => {
 
     text_file.push("END_OCA_BUNDLE\n");
 
-    const rootExtensionLines = getExtensionSectionLines(rootExtensionOverlays, json_bundle);
+    const rootExtensionLines = getExtensionSectionLines(
+      rootExtensionOverlays,
+      json_bundle
+    );
     if (rootExtensionLines.length > 0) {
       text_file.push(
         "\n",
@@ -788,33 +852,41 @@ const useGenerateTextReadmeFromJson = () => {
     // Document child schemas if any (stored in dependencies array)
     // Use helper to handle both package formats: {dependencies: [...]} and {oca_bundle: {dependencies: [...]}}
     const childSchemas = getPackageDependencies(ocaPackage);
-    
+
     if (Array.isArray(childSchemas) && childSchemas.length > 0) {
       text_file.push("\nBEGIN_CHILD_SCHEMAS\n");
-      text_file.push("******************************************************************\n");
-      
+      text_file.push(
+        "******************************************************************\n"
+      );
+
       childSchemas.forEach((childBundle, index) => {
         const childCaptureBase = childBundle?.capture_base;
-        
+
         if (!childCaptureBase) return;
-        
+
         // Get child meta overlay for name/description
         const childMetaOverlays = childBundle?.overlays?.meta || [];
-        const childMetaOverlay = Array.isArray(childMetaOverlays) 
-          ? childMetaOverlays[0] 
+        const childMetaOverlay = Array.isArray(childMetaOverlays)
+          ? childMetaOverlays[0]
           : childMetaOverlays;
-        
+
         text_file.push(`\nCHILD SCHEMA ${index + 1}\n`);
-        text_file.push("******************************************************************\n");
+        text_file.push(
+          "******************************************************************\n"
+        );
         text_file.push(`Schema SAID: ${childCaptureBase.d}\n`);
-        text_file.push(`Schema Name: ${childMetaOverlay?.name || "Unnamed Child Schema"}\n`);
+        text_file.push(
+          `Schema Name: ${childMetaOverlay?.name || "Unnamed Child Schema"}\n`
+        );
         text_file.push(`Description: ${childMetaOverlay?.description || ""}\n\n`);
-        
+
         text_file.push("Schema attributes: data type\n");
         const childAttributes = childCaptureBase.attributes || {};
         Object.keys(childAttributes).forEach((attrName) => {
           const attrType = childAttributes[attrName];
-          const typeDisplay = Array.isArray(attrType) ? `Array[${attrType[0]}]` : attrType;
+          const typeDisplay = Array.isArray(attrType)
+            ? `Array[${attrType[0]}]`
+            : attrType;
           text_file.push(`    ${attrName}: ${typeDisplay}\n`);
         });
 
@@ -831,9 +903,8 @@ const useGenerateTextReadmeFromJson = () => {
           ocaPackage,
           childCaptureBase.d
         );
-        const childExtensionManifestEntries = getExtensionManifestEntries(
-          childExtensionOverlays
-        );
+        const childExtensionManifestEntries =
+          getExtensionManifestEntries(childExtensionOverlays);
         const childExtensionLines = getExtensionSectionLines(
           childExtensionOverlays,
           childBundle
@@ -858,14 +929,29 @@ const useGenerateTextReadmeFromJson = () => {
         );
 
         if (childTexts.capture_base) {
-          text_file.push(childTexts.capture_base, "******************************************************************\n");
+          text_file.push(
+            childTexts.capture_base,
+            "******************************************************************\n"
+          );
         }
 
         // render in same order as root
-        ["meta","label","information","unit","conformance","character_encoding","format","entry_code","entry"].forEach((k) => {
+        [
+          "meta",
+          "label",
+          "information",
+          "unit",
+          "conformance",
+          "character_encoding",
+          "format",
+          "entry_code",
+          "entry"
+        ].forEach((k) => {
           if (childTexts[k]) {
             text_file.push(childTexts[k]);
-            text_file.push("******************************************************************\n");
+            text_file.push(
+              "******************************************************************\n"
+            );
           }
         });
 
@@ -879,37 +965,29 @@ const useGenerateTextReadmeFromJson = () => {
           text_file.push(...childExtensionLines);
           text_file.push("END_OCA_PACKAGE_EXTENSIONS\n");
         }
-
-
-
-
-
-
-
-
-
-
       });
-      
+
       text_file.push("END_CHILD_SCHEMAS\n");
-      text_file.push("******************************************************************\n");
+      text_file.push(
+        "******************************************************************\n"
+      );
     }
 
     const text = text_file.join("");
     const textBlob = new Blob([text], { type: "text/plain" });
     const downloadUrl = URL.createObjectURL(textBlob);
-    
+
     // Extract schema name from JSON bundle if not provided
     let nameForFile = schemaNameOrDescription;
     if (!nameForFile && json_bundle?.overlays?.meta) {
       // Get English meta overlay or first available
-      const metaOverlays = Array.isArray(json_bundle.overlays.meta) 
-        ? json_bundle.overlays.meta 
+      const metaOverlays = Array.isArray(json_bundle.overlays.meta)
+        ? json_bundle.overlays.meta
         : [json_bundle.overlays.meta];
       const engMeta = metaOverlays.find((m) => m.language === "eng") || metaOverlays[0];
       nameForFile = engMeta?.name || null;
     }
-    
+
     // Filename format: <Schema>_OCA_package_README.txt (matches package naming + _README)
     const descriptiveFileName = getDescriptiveFileName(
       nameForFile,

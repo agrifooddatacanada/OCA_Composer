@@ -1,6 +1,5 @@
 import React, {
   useRef,
-  useContext,
   useState,
   useEffect,
   useLayoutEffect,
@@ -19,15 +18,21 @@ import {
   removeSpacesFromArrayOfObjects
 } from "../utils/stringUtils";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
-import { hasDisallowedChars } from "../utils/helpers";
-import { FIELD_RANGE_OVERLAY, TYPE_CHILD_SCHEMA, FIELD_UNIT_FRAMING_OVERLAY, TABLE_TO_BUTTON_GAP, isUnitEligibleAttributeType } from "../constants/constants";
+import {
+  BETWEEN_SECTION_SPACING,
+  FIELD_RANGE_OVERLAY,
+  TYPE_CHILD_SCHEMA,
+  FIELD_UNIT_FRAMING_OVERLAY,
+  TABLE_TO_BUTTON_GAP,
+  isUnitEligibleAttributeType
+} from "../constants/constants";
+import { collectInvalidAttributeNames } from "../utils/helpers";
 import ErrorPopup from "../ViewSchema/ErrorPopup";
-import { langNameFromTwoLetters, langCodeOCAFromName } from "../utils/languageUtils";
+import InvalidAttributeNamesModal from "../components/InvalidAttributeNamesModal";
 
 const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
   const { t, i18n } = useTranslation();
-  
+
   // Use only MultiSchemaContext - unified approach
   const {
     currentSchemaId,
@@ -36,7 +41,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     getOverlaySelections,
     updateOverlaySelection
   } = useMultiSchema();
-  
 
   const [attributeRowData, setAttributeRowData] = useState(() => {
     const schema = getSchema();
@@ -52,7 +56,15 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
   const [showAddAttribute, setShowAddAttribute] = useState(false);
   const [addByTab, setAddByTab] = useState(false);
   const [showCard, setShowCard] = useState(false);
-  const [showInvalidCharModal, setShowInvalidCharModal] = useState(false);
+  const [invalidCharModal, setInvalidCharModal] = useState({ open: false, names: [] });
+
+  const openInvalidCharModal = useCallback((names = []) => {
+    setInvalidCharModal({ open: true, names });
+  }, []);
+
+  const closeInvalidCharModal = useCallback(() => {
+    setInvalidCharModal({ open: false, names: [] });
+  }, []);
   const [loading, setLoading] = useState(true);
 
   const navigationSafe = useRef();
@@ -86,30 +98,30 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
   // Initialize or refresh data when switching to edit a schema
   /**
    * Initialization and Data Synchronization Effect
-   * 
+   *
    * This effect handles loading attribute data from MultiSchemaContext and displaying it in the grid.
    * It runs when the component mounts or when currentSchemaId/completeSchema changes.
-   * 
+   *
    * DATA SOURCE PRIORITY (in order):
    * 1. schemaState.attributes (if non-empty) - User's working copy, preserves edits/deletions
    * 2. completeSchema.attributes (if no schemaState.attributes) - Original OCA data from file
-   * 
+   *
    * CRITICAL SCENARIOS:
    * A. File Upload (OCAParser initialized):
    *    - OCAParser already created schemaState.attributes=[] (even if empty)
    *    - hasAttributesArray=true, so we SKIP completeSchema initialization
    *    - This preserves labels in lanAttributeRowData from OCAParser
-   * 
+   *
    * B. Manual Creation:
    *    - User enters attributes in CreateManually
    *    - schemaState.attributes=[] initially, populated as user adds
    *    - hasAttributesArray=true, so we use schemaState.attributes
-   * 
+   *
    * C. User Deleted All Attributes:
    *    - schemaState.attributes=[], schemaState.initialized=true
    *    - hasAttributesArray=true, so we don't re-populate from completeSchema
    *    - Empty state is intentional and should be preserved
-   * 
+   *
    * D. Brand New Schema (never touched):
    *    - schemaState.attributes=undefined (not set)
    *    - hasAttributesArray=false, so we CAN initialize from completeSchema
@@ -117,17 +129,16 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
   useEffect(() => {
     // Get schema state (MultiSchemaContext handles the fallback internally)
     const schemaState = getSchema();
-    
-    // Get current language code for schema data
-    const schemaLanguageName = langNameFromTwoLetters(i18n.language);
-    const languageCode = langCodeOCAFromName(schemaLanguageName);
+
     // NEW UNIFIED APPROACH: Get complete schema data directly
     const completeSchema = getSchema();
 
     // Skip if already initialized for this schema AND data hasn't changed
-    if (initializedSchemaRef.current === currentSchemaId && 
-        schemaState?.attributes && 
-        JSON.stringify(schemaState.attributes) === JSON.stringify(attributeRowData)) {
+    if (
+      initializedSchemaRef.current === currentSchemaId &&
+      schemaState?.attributes &&
+      JSON.stringify(schemaState.attributes) === JSON.stringify(attributeRowData)
+    ) {
       return;
     }
 
@@ -138,7 +149,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       // Avoid redundant updates to prevent flicker
       const sameAttrs =
         JSON.stringify(attributeRowData) === JSON.stringify(schemaState.attributes);
-      
+
       // If attributes don't match, merge carefully to preserve _rid values
       if (!sameAttrs) {
         // If attributeRowData is empty, just use schemaState.attributes directly
@@ -150,12 +161,16 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
           );
         } else {
           const mergedAttributes = schemaState.attributes.map((schemaAttr) => {
-            const existingAttr = attributeRowData.find(existing => existing.Attribute === schemaAttr.Attribute);
+            const existingAttr = attributeRowData.find(
+              (existing) => existing.Attribute === schemaAttr.Attribute
+            );
             // Preserve _rid if it exists in current data
             const nextAttr = isUnitEligibleAttributeType(schemaAttr.Type)
               ? schemaAttr
               : { ...schemaAttr, Unit: "" };
-            return existingAttr?._rid ? { ...nextAttr, _rid: existingAttr._rid } : nextAttr;
+            return existingAttr?._rid
+              ? { ...nextAttr, _rid: existingAttr._rid }
+              : nextAttr;
           });
           setAttributeRowData(mergedAttributes);
         }
@@ -184,7 +199,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
             (Array.isArray(completeSchema.overlays.entry_code)
               ? completeSchema.overlays.entry_code.some(
                   (entryOverlay) =>
-                    entryOverlay.attribute_entry_codes && entryOverlay.attribute_entry_codes[key]
+                    entryOverlay.attribute_entry_codes &&
+                    entryOverlay.attribute_entry_codes[key]
                 )
               : completeSchema.overlays.entry_code.attribute_entry_codes &&
                 completeSchema.overlays.entry_code.attribute_entry_codes[key]));
@@ -241,7 +257,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     } else {
       initializedSchemaRef.current = currentSchemaId;
     }
-  }, [currentSchemaId, i18n.language]); // Removed function dependencies that cause infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getSchema/updateSchema/attributeRowData omitted to avoid init loops
+  }, [currentSchemaId, i18n.language]);
 
   // Intentionally removed continuous auto-sync to prevent flicker.
 
@@ -250,7 +267,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     setCanDelete(attributeRowData.length > 0);
   }, [attributeRowData.length]);
 
-/**
+  /**
    * Helpers for unitFramedData merge and comparison
    * - buildMergedUnitFramedData: merge persisted rows with attributes, preserving manual edits
    * - unitFramedKey / areUnitFramedEqual: compare only the meaningful fields
@@ -260,7 +277,10 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     const index = new Map(persisted.map((r) => [`${r.Attribute}|||${r.Unit}`, r]));
 
     return attributes
-      .filter((a) => isUnitEligibleAttributeType(a.Type) && a.Unit && String(a.Unit).trim() !== "")
+      .filter(
+        (a) =>
+          isUnitEligibleAttributeType(a.Type) && a.Unit && String(a.Unit).trim() !== ""
+      )
       .map((attr) => {
         const key = `${attr.Attribute}|||${attr.Unit}`;
         const existing = index.get(key);
@@ -278,7 +298,8 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       });
   };
 
-  const unitFramedKey = (r = {}) => `${r.Attribute || ""}|||${r.Unit || ""}|||${r["UCUM Code"] || ""}`;
+  const unitFramedKey = (r = {}) =>
+    `${r.Attribute || ""}|||${r.Unit || ""}|||${r["UCUM Code"] || ""}`;
   const areUnitFramedEqual = (a = [], b = []) => {
     if (a.length !== b.length) return false;
     const aKeys = a.map(unitFramedKey).sort();
@@ -292,12 +313,12 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
   useEffect(() => {
     const schemaState = getSchema();
     const overlaySelections = getOverlaySelections(currentSchemaId);
-    
+
     // Don't auto-sync if overlay is not selected (prevents repopulation after deletion)
     if (!overlaySelections || !overlaySelections[FIELD_UNIT_FRAMING_OVERLAY]) {
       return;
     }
-    
+
     const persisted = schemaState?.unitFramedData || [];
 
     const merged = buildMergedUnitFramedData(attributeRowData, persisted);
@@ -305,6 +326,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     if (!areUnitFramedEqual(persisted, merged)) {
       updateSchema({ unitFramedData: merged });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- context helpers omitted to avoid sync loops
   }, [attributeRowData]);
 
   // Stops grid editing when clicking outside grid
@@ -364,14 +386,13 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
         blankType: t("Please enter a Type for all attributes.")
       };
       let codeInjection = false;
-      let hasDisallowedCharacters = false;
+      const invalidNames = collectInvalidAttributeNames(
+        currentAttributeRowData.map((item) => item.Attribute)
+      );
+      const hasDisallowedCharacters = invalidNames.length > 0;
 
       currentAttributeRowData.forEach((item) => {
         const attributeName = removeSpacesFromString(item.Attribute);
-
-        if (hasDisallowedChars(attributeName)) {
-          hasDisallowedCharacters = true;
-        }
 
         if (
           attributeName.includes("/>") ||
@@ -394,7 +415,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       });
 
       if (hasDisallowedCharacters) {
-        return "disallowed";
+        return { type: "disallowed", names: invalidNames };
       }
 
       if (duplicateAttributes.length > 0) {
@@ -430,7 +451,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
 
       // Check range overlay selection using MultiSchemaContext
       const overlaySelections = getOverlaySelections(currentSchemaId);
-      
+
       if (overlaySelections && overlaySelections[FIELD_RANGE_OVERLAY]) {
         const hasValidAttribute = noSpacesArray.some(
           (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
@@ -446,16 +467,14 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
 
     const validationResult = validateForward();
 
-    if (typeof validationResult === "string") {
-      if (validationResult === "disallowed") {
-        setShowInvalidCharModal(true);
-      } else {
-        setErrorMessage(validationResult);
-        setTimeout(() => {
-          setErrorMessage("");
-        }, [2000]);
-      }
-    } else {
+    if (validationResult?.type === "disallowed") {
+      openInvalidCharModal(validationResult.names);
+    } else if (typeof validationResult === "string") {
+      setErrorMessage(validationResult);
+      setTimeout(() => {
+        setErrorMessage("");
+      }, [2000]);
+    } else if (validationResult) {
       const newAttributesWithLists = [];
       currentAttributeRowData.forEach((item) => {
         if (item.List === true) {
@@ -470,7 +489,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
         attributes: currentAttributeRowData,
         attributesWithLists: newAttributesWithLists
       });
-      
+
       if (newAttributesWithLists.length > 0) {
         entryCodesRef.current = true;
       } else {
@@ -481,22 +500,26 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       // Sync lanAttributeRowData: filter out deleted attributes while preserving existing labels
       const schemaState = getSchema();
       const currentLanAttributeRowData = schemaState?.lanAttributeRowData || {};
-      
+
       // Create a set of current attribute names for fast lookup
-      const currentAttributeNames = new Set(currentAttributeRowData.map(attr => attr.Attribute));
-      
+      const currentAttributeNames = new Set(
+        currentAttributeRowData.map((attr) => attr.Attribute)
+      );
+
       // Filter each language's data to only include current attributes
       // This preserves the original labels/descriptions while removing deleted attributes
       // NOTE: lanAttributeRowData is keyed by language NAMES ("English", "French"), not OCA codes
       const updatedLanAttributeRowData = {};
-      Object.keys(currentLanAttributeRowData).forEach(languageName => {
-        const filteredData = currentLanAttributeRowData[languageName].filter(
-          item => currentAttributeNames.has(item.Attribute)
+      Object.keys(currentLanAttributeRowData).forEach((languageName) => {
+        const filteredData = currentLanAttributeRowData[languageName].filter((item) =>
+          currentAttributeNames.has(item.Attribute)
         );
-        
+
         // Only add new entries if an attribute doesn't already have label data
-        attributeRowData.forEach(attr => {
-          const existingEntry = filteredData.find(item => item.Attribute === attr.Attribute);
+        attributeRowData.forEach((attr) => {
+          const existingEntry = filteredData.find(
+            (item) => item.Attribute === attr.Attribute
+          );
           if (!existingEntry) {
             // New attribute - add with default label
             filteredData.push({
@@ -507,23 +530,26 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
             });
           }
         });
-        
+
         updatedLanAttributeRowData[languageName] = filteredData;
       });
-      
+
       // attributesList is computed automatically from attributes
       // Persist unit framing for attributes that have a Unit set.
       // Preserve any existing unitFramed rows when Attribute+Unit match and retain deleted flags.
       const existingUnitFramed = schemaState?.unitFramedData || [];
       const deletedRows = existingUnitFramed.filter((r) => r.deleted === true);
       const newUnitFramedData = attributeRowData
-        .filter((a) => isUnitEligibleAttributeType(a.Type) && a.Unit && String(a.Unit).trim() !== "")
+        .filter(
+          (a) =>
+            isUnitEligibleAttributeType(a.Type) && a.Unit && String(a.Unit).trim() !== ""
+        )
         .map((attr) => {
           const existingRow = existingUnitFramed.find(
             (r) => r.Attribute === attr.Attribute && r.Unit === attr.Unit
           );
           if (existingRow) return existingRow;
-          
+
           // New unit - don't auto-populate UCUM, just create empty row
           return {
             Attribute: attr.Attribute,
@@ -538,7 +564,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
       // If we have framed units, ensure the Unit Framing overlay is enabled for this schema
       if (newUnitFramedData.length > 0) {
         // Only enable if there's actual UCUM data, not just units
-        const hasActualFraming = newUnitFramedData.some(row => row["UCUM Code"]);
+        const hasActualFraming = newUnitFramedData.some((row) => row["UCUM Code"]);
         if (hasActualFraming) {
           updateOverlaySelection(FIELD_UNIT_FRAMING_OVERLAY, true);
         }
@@ -561,18 +587,22 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     if (!attributeRowData || attributeRowData.length === 0) {
       return { isValid: true, errors: [] }; // No data to validate
     }
-    
+
     const hasBlankTypes = attributeRowData.some(
       (attr) => !attr?.Type || attr.Type === ""
     );
-    
+
     if (hasBlankTypes) {
       return {
         isValid: false,
-        errors: [t("There are one or more blank entries in the Type column. Please provide valid data types for all attributes.")]
+        errors: [
+          t(
+            "There are one or more blank entries in the Type column. Please provide valid data types for all attributes."
+          )
+        ]
       };
     }
-    
+
     return { isValid: true, errors: [] };
   }, [attributeRowData, t]);
 
@@ -604,13 +634,16 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     const deletedRows = existingUnitFramed.filter((r) => r.deleted === true);
 
     const newUnitFramedData = currentData
-      .filter((a) => isUnitEligibleAttributeType(a.Type) && a.Unit && String(a.Unit).trim() !== "")
+      .filter(
+        (a) =>
+          isUnitEligibleAttributeType(a.Type) && a.Unit && String(a.Unit).trim() !== ""
+      )
       .map((attr) => {
         const existingRow = existingUnitFramed.find(
           (r) => r.Attribute === attr.Attribute && r.Unit === attr.Unit
         );
         if (existingRow) return existingRow;
-        
+
         // New unit - don't auto-populate UCUM, just create empty row
         return {
           Attribute: attr.Attribute,
@@ -625,7 +658,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     // If we have framed units, ensure the Unit Framing overlay is enabled for this schema
     if (newUnitFramedData.length > 0) {
       // Only enable if there's actual UCUM data, not just units
-      const hasActualFraming = newUnitFramedData.some(row => row["UCUM Code"]);
+      const hasActualFraming = newUnitFramedData.some((row) => row["UCUM Code"]);
       if (hasActualFraming) {
         updateOverlaySelection(FIELD_UNIT_FRAMING_OVERLAY, true);
       }
@@ -643,7 +676,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
   useImperativeHandle(ref, () => ({
     save: saveWithoutValidation, // Changed from handleSave to avoid validation on backward navigation
     getCurrentData: () => attributeRowData,
-    validate: validate,
+    validate,
     showValidationPopup: () => {
       // Trigger the same popup as NEXT button
       const result = validate();
@@ -680,7 +713,7 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
     updateSchema({
       attributes: attributeRowData
     });
-    
+
     // Always allow backward navigation
     pageBack();
   };
@@ -704,31 +737,11 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
           </Box>
         </ErrorPopup>
       )}
-      {showInvalidCharModal && (
-        <ErrorPopup onClose={() => setShowInvalidCharModal(false)}>
-          <Box sx={{ textAlign: "center", mb: 2 }}>
-            <Typography variant="h6" fontWeight="semibold" sx={{ mb: 2 }}>
-              {t("Attribute names are limited to the following characters:")}
-            </Typography>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: 1, columnGap: 3, textAlign: "left" }}>
-                {[
-                  { label: "Numbers", value: "0-9" },
-                  { label: "Letters", value: "a-z, A-Z" },
-                  { label: "Underline", value: "_" },
-                  { label: "Hyphen", value: "-" },
-                  { label: "Period", value: "." }
-                ].map((item, i) => (
-                  <React.Fragment key={i}>
-                    <Typography variant="body1">{t(item.label)}:</Typography>
-                    <Typography variant="body1">{item.value}</Typography>
-                  </React.Fragment>
-                ))}
-              </Box>
-            </Box>
-          </Box>
-        </ErrorPopup>
-      )}
+      <InvalidAttributeNamesModal
+        open={invalidCharModal.open}
+        onClose={closeInvalidCharModal}
+        invalidNames={invalidCharModal.names}
+      />
       {/* We removed the generic errorMessage ErrorPopup to restore the inline error display for other general errors */}
       <Box
         sx={{
@@ -750,42 +763,42 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
             pointerEvents: loading ? "none" : "auto"
           }}
         >
-        <div ref={refContainer}>
-          <Grid
-            gridRef={gridRef}
-            addButton1={addButton1}
-            addButton2={addButton2}
-            setErrorMessage={setErrorMessage}
-            canDelete={canDelete}
-            setCanDelete={setCanDelete}
-            setAddByTab={setAddByTab}
-            typesObjectRef={typesObjectRef}
-            loading={loading}
-            setLoading={setLoading}
-            attributeRowData={attributeRowData}
-            setAttributeRowData={setAttributeRowData}
-            onRowOrderCommitted={(rows) => updateSchema({ attributes: rows })}
-            triggerInvalidCharModal={() => setShowInvalidCharModal(true)}
-          />
-        </div>
-        <Box sx={{ mt: TABLE_TO_BUTTON_GAP, mb: BETWEEN_SECTION_SPACING, mr: "2rem" }}>
-          <AddAttribute
-            addButton1={addButton1}
-            addButton2={addButton2}
-            gridRef={gridRef}
-            setErrorMessage={setErrorMessage}
-            setCanDelete={setCanDelete}
-            showAddAttribute={showAddAttribute}
-            setShowAddAttribute={setShowAddAttribute}
-            addByTab={addByTab}
-            setAddByTab={setAddByTab}
-            typesObjectRef={typesObjectRef}
-            attributeRowData={attributeRowData}
-            setAttributeRowData={setAttributeRowData}
-            errorMessage={errorMessage}
-            triggerInvalidCharModal={() => setShowInvalidCharModal(true)}
-          />
-        </Box>
+          <div ref={refContainer}>
+            <Grid
+              gridRef={gridRef}
+              addButton1={addButton1}
+              addButton2={addButton2}
+              setErrorMessage={setErrorMessage}
+              canDelete={canDelete}
+              setCanDelete={setCanDelete}
+              setAddByTab={setAddByTab}
+              typesObjectRef={typesObjectRef}
+              loading={loading}
+              setLoading={setLoading}
+              attributeRowData={attributeRowData}
+              setAttributeRowData={setAttributeRowData}
+              onRowOrderCommitted={(rows) => updateSchema({ attributes: rows })}
+              triggerInvalidCharModal={(names = []) => openInvalidCharModal(names)}
+            />
+          </div>
+          <Box sx={{ mt: TABLE_TO_BUTTON_GAP, mb: BETWEEN_SECTION_SPACING, mr: "2rem" }}>
+            <AddAttribute
+              addButton1={addButton1}
+              addButton2={addButton2}
+              gridRef={gridRef}
+              setErrorMessage={setErrorMessage}
+              setCanDelete={setCanDelete}
+              showAddAttribute={showAddAttribute}
+              setShowAddAttribute={setShowAddAttribute}
+              addByTab={addByTab}
+              setAddByTab={setAddByTab}
+              typesObjectRef={typesObjectRef}
+              attributeRowData={attributeRowData}
+              setAttributeRowData={setAttributeRowData}
+              errorMessage={errorMessage}
+              triggerInvalidCharModal={(names = []) => openInvalidCharModal(names)}
+            />
+          </Box>
         </Box>
       </Box>
     </BackNextSkeleton>

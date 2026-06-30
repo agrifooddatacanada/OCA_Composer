@@ -7,7 +7,15 @@ import {
   normalizeEscapedQuotes,
   prettyPrintDelimiter
 } from "../utils/helpers";
-import { ADC, RANGE, SENSITIVE, UNIT_FRAMING, DECIMAL_SEPARATOR, FILE_DELIMITER, ARRAY_DELIMITER } from "../constants/constants";
+import {
+  ADC,
+  RANGE,
+  SENSITIVE,
+  UNIT_FRAMING,
+  DECIMAL_SEPARATOR,
+  FILE_DELIMITER,
+  ARRAY_DELIMITER
+} from "../constants/constants";
 import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
 
 // Custom error-handling function
@@ -129,36 +137,17 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     if (Object.keys(extensions || {}).length > 0) {
       // For now, use ADC extension overlays for the top-level/main schema bundle
       const overlays = extensions?.[ADC]?.[inPutJsonResult[0].captureBaseSAID]?.overlays;
-      for (const overlayKey of Object.keys(overlays || {})) {
-        if (overlays[overlayKey].type.includes("ordering")) {
-          attribute_ordering_container = overlays[overlayKey].attribute_ordering;
-          entry_code_ordering = overlays[overlayKey].entry_code_ordering;
-        }
-
-        if (overlays[overlayKey].type.includes(SENSITIVE)) {
-          sensitiveOverlay = overlays[overlayKey];
-        }
-
-        if (overlays[overlayKey].type.includes(RANGE)) {
-          rangeOverlay = overlays[overlayKey];
-        }
-
-        if (overlays[overlayKey].type.includes(UNIT_FRAMING)) {
-          unitFramingOverlay = overlays[overlayKey];
-        }
-
-        if (overlays[overlayKey].type.includes(DECIMAL_SEPARATOR)) {
-          decimalSeparatorOverlay = overlays[overlayKey];
-        }
-
-        if (overlays[overlayKey].type.includes(FILE_DELIMITER)) {
-          fileDelimiterOverlay = overlays[overlayKey];
-        }
-
-        if (overlays[overlayKey].type.includes(ARRAY_DELIMITER)) {
-          arrayDelimiterOverlay = overlays[overlayKey];
-        }
+      const orderingOverlay = overlays?.ordering;
+      if (orderingOverlay) {
+        attribute_ordering_container = orderingOverlay.attribute_ordering;
+        entry_code_ordering = orderingOverlay.entry_code_ordering;
       }
+      sensitiveOverlay = overlays?.[SENSITIVE];
+      rangeOverlay = overlays?.[RANGE];
+      unitFramingOverlay = overlays?.[UNIT_FRAMING];
+      decimalSeparatorOverlay = overlays?.[DECIMAL_SEPARATOR];
+      fileDelimiterOverlay = overlays?.[FILE_DELIMITER];
+      arrayDelimiterOverlay = overlays?.[ARRAY_DELIMITER];
     }
   }
 
@@ -403,20 +392,26 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     introSectionCurrentRow++;
 
     if (decimalSeparatorOverlay) {
-      sheet1.getCell(introSectionCurrentRow, 2).value = `Decimal Separator: '${decimalSeparatorOverlay.delimiter}'`;
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `Decimal Separator: '${decimalSeparatorOverlay.delimiter}'`;
       introSectionCurrentRow++;
     }
-    
+
     if (fileDelimiterOverlay) {
-      sheet1.getCell(introSectionCurrentRow, 2).value = `File Delimiter: '${prettyPrintDelimiter(fileDelimiterOverlay.delimiter)}'`;
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `File Delimiter: '${prettyPrintDelimiter(fileDelimiterOverlay.delimiter)}'`;
       introSectionCurrentRow++;
-      sheet1.getCell(introSectionCurrentRow, 2).value = `Quote Character: ${fileDelimiterOverlay.quote_char}`;
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `Quote Character: ${fileDelimiterOverlay.quote_char}`;
       introSectionCurrentRow++;
-      sheet1.getCell(introSectionCurrentRow, 2).value = `Escape Character: '${fileDelimiterOverlay.escape_char}'`;
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `Escape Character: '${fileDelimiterOverlay.escape_char}'`;
       introSectionCurrentRow++;
-      sheet1.getCell(introSectionCurrentRow, 2).value = `Line Terminator: '${fileDelimiterOverlay.line_terminator}'`;
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `Line Terminator: '${fileDelimiterOverlay.line_terminator}'`;
       introSectionCurrentRow++;
-      sheet1.getCell(introSectionCurrentRow, 2).value = `Data Start Row: '${fileDelimiterOverlay.data_start_row}'`;
+      sheet1.getCell(introSectionCurrentRow, 2).value =
+        `Data Start Row: '${fileDelimiterOverlay.data_start_row}'`;
       introSectionCurrentRow++;
     }
   }

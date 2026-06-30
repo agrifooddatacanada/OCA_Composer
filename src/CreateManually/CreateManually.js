@@ -1,13 +1,11 @@
 import React, { useContext, useState, useRef, useCallback, useEffect } from "react";
-import { AgGridReact } from "../components/AgGridReact";
 import { useTranslation } from "react-i18next";
-import { Box, Button, Alert, Typography, ButtonBase, Stepper, Step, StepLabel } from "@mui/material";
+import { Box, Button, Alert, ButtonBase, Stepper, Step, StepLabel } from "@mui/material";
 
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { AgGridReact } from "../components/AgGridReact";
 
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -18,12 +16,16 @@ import { removeSpacesFromString } from "../utils/stringUtils";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import { hasDisallowedChars } from "../utils/helpers";
+import { collectInvalidAttributeNames } from "../utils/helpers";
 import TextareaCellEditor from "../components/TextareaCellEditor";
 import { measureTextHeight } from "../utils/measureTextLines";
-import { flexCenter, preWrapWordBreak, agGridEditableCellHoverCss } from "../constants/styles";
+import {
+  flexCenter,
+  preWrapWordBreak,
+  agGridEditableCellHoverCss
+} from "../constants/styles";
 import { TABLE_TO_BUTTON_GAP, BETWEEN_SECTION_SPACING } from "../constants/constants";
-import ErrorPopup from "../ViewSchema/ErrorPopup";
+import InvalidAttributeNamesModal from "../components/InvalidAttributeNamesModal";
 
 // !important overrides default grid style that sets the minimum height of the grid container
 // Without the min-height, it looks awkward when the component is empty or has only a couple attributes
@@ -111,8 +113,20 @@ const gridStyle = `
 `;
 
 const DeleteRenderer = ({ node, onDelete }) => (
-  <Box className="delete-icon-wrapper" sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: "100%", width: "100%" }}>
-    <DeleteOutlineIcon sx={{ color: CustomPalette.GREY_600 }} className="delete-icon-outline" />
+  <Box
+    className="delete-icon-wrapper"
+    sx={{
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "100%",
+      width: "100%"
+    }}
+  >
+    <DeleteOutlineIcon
+      sx={{ color: CustomPalette.GREY_600 }}
+      className="delete-icon-outline"
+    />
     <DeleteForeverIcon
       onClick={() => onDelete(node.rowIndex)}
       sx={{ color: CustomPalette.PRIMARY, cursor: "pointer" }}
@@ -132,14 +146,21 @@ export default function CreateManually() {
   const { setCurrentPage } = useContext(Context);
 
   // Use MultiSchemaContext for all attribute management
-  const { updateSchema, getSchema, getAttributesList } = useMultiSchema();
+  const { updateSchema, getAttributesList } = useMultiSchema();
 
   const [rowData, setRowData] = useState([{ Name: "" }]);
-  const [addErrorMessage, setAddErrorMessage] = useState("");
   const [forwardErrorMessage, setForwardErrorMessage] = useState("");
   const [backErrorMessage, setBackErrorMessage] = useState("");
   const [duplicateWarning, setDuplicateWarning] = useState("");
-  const [showInvalidCharModal, setShowInvalidCharModal] = useState(false);
+  const [invalidCharModal, setInvalidCharModal] = useState({ open: false, names: [] });
+
+  const openInvalidCharModal = useCallback((names = []) => {
+    setInvalidCharModal({ open: true, names });
+  }, []);
+
+  const closeInvalidCharModal = useCallback(() => {
+    setInvalidCharModal({ open: false, names: [] });
+  }, []);
   // Get current attributes from MultiSchemaContext (computed from attributes array)
   const attributesList = getAttributesList();
 
@@ -158,6 +179,7 @@ export default function CreateManually() {
       setRowData(allRowData);
     }
     // Don't watch rowData - let it be managed by user actions only
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- length only; full list would re-sync on every context update
   }, [attributesList.length]);
 
   useEffect(() => {
@@ -177,7 +199,9 @@ export default function CreateManually() {
       wrapText: true,
       cellEditor: TextareaCellEditor,
       cellEditorParams: {
-        context: { triggerInvalidCharModal: () => setShowInvalidCharModal(true) },
+        context: {
+          triggerInvalidCharModal: (names = []) => openInvalidCharModal(names)
+        },
         enforceAttributeNamingRules: true
       },
       cellStyle: () => ({
@@ -252,12 +276,13 @@ export default function CreateManually() {
     let spacesCounter = 0;
     let errorIndex = 0;
     let codeInjection = false;
-    let hasDisallowedCharacters = false;
+    const invalidNames = collectInvalidAttributeNames(
+      gridRef.current.props.rowData.map((row) => row.Name)
+    );
     gridRef.current.props.rowData.forEach((row, index) => {
       const attributeName = removeSpacesFromString(row.Name);
 
-      if (hasDisallowedChars(attributeName)) {
-        hasDisallowedCharacters = true;
+      if (invalidNames.includes(row.Name) || invalidNames.includes(attributeName)) {
         errorIndex = index;
       }
 
@@ -281,8 +306,8 @@ export default function CreateManually() {
       }
     });
 
-    if (hasDisallowedCharacters) {
-      setShowInvalidCharModal(true);
+    if (invalidNames.length > 0) {
+      openInvalidCharModal(invalidNames);
       gridRef.current.api.setFocusedCell(errorIndex, "Name");
       return;
     }
@@ -324,11 +349,6 @@ export default function CreateManually() {
     }
   };
 
-  const addRowSuccess = () => {
-    const newRow = { Name: "" };
-    setRowData((prevState) => [...prevState, newRow]);
-  };
-
   const handleAddRow = () => {
     gridRef.current.api.stopEditing();
     const newRow = { Name: "" };
@@ -337,7 +357,7 @@ export default function CreateManually() {
 
   const pageForwardSuccess = (attributes) => {
     // Save to MultiSchemaContext only
-    const attributeRowData = attributes.map(attr => ({
+    const attributeRowData = attributes.map((attr) => ({
       Attribute: attr,
       Type: "", // Will be filled in AttributeDetails
       Description: "",
@@ -345,12 +365,12 @@ export default function CreateManually() {
       EntryCodes: [],
       List: false
     }));
-    
+
     // attributesList is computed automatically from attributes
     updateSchema({
       attributes: attributeRowData
     });
-    
+
     setCurrentPage("Metadata");
   };
 
@@ -360,7 +380,7 @@ export default function CreateManually() {
 
   const pageBackSuccess = (attributes) => {
     // Save to MultiSchemaContext only
-    const attributeRowData = attributes.map(attr => ({
+    const attributeRowData = attributes.map((attr) => ({
       Attribute: attr,
       Type: "",
       Description: "",
@@ -368,7 +388,7 @@ export default function CreateManually() {
       EntryCodes: [],
       List: false
     }));
-    
+
     // attributesList is computed automatically from attributes
     updateSchema({
       attributes: attributeRowData
@@ -388,13 +408,7 @@ export default function CreateManually() {
     validateRowData(setBackErrorMessage, pageBackSuccess, pageBackReset);
   };
 
-  const handleClearAll = () => {
-    // Clear MultiSchemaContext data (attributesList is computed automatically)
-    updateSchema({
-      attributes: []
-    });
-    setRowData([{ Name: "" }]);
-  };  // Stops grid editing when clicking outside grid
+  // Stops grid editing when clicking outside grid
   useEffect(() => {
     const handleClickOutsideGrid = (event) => {
       if (
@@ -422,7 +436,6 @@ export default function CreateManually() {
     document.dispatchEvent(onMouseUpEvent);
   };
 
-  const savedAttributeName = useRef("");
   const revertingDuplicate = useRef(false);
 
   // Handles 'attribute' column updates
@@ -438,7 +451,8 @@ export default function CreateManually() {
     const currentIndex = e.rowIndex;
     const allAttributeNames = gridRef.current.props.rowData.map((item) => item.Name);
     if (e.newValue) {
-      const isDuplicate = allAttributeNames.filter((item) => item === e.newValue).length > 1;
+      const isDuplicate =
+        allAttributeNames.filter((item) => item === e.newValue).length > 1;
       if (isDuplicate) {
         setDuplicateWarning(t("Please enter a unique name."));
         revertingDuplicate.current = true;
@@ -455,16 +469,34 @@ export default function CreateManually() {
   return (
     <Box sx={{ width: "100%" }}>
       {/* Pseudo-stepper for consistent layout */}
-      <Box sx={{ px: 10, py: 4, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Box
+        sx={{
+          px: 10,
+          py: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center"
+        }}
+      >
         <Stepper activeStep={0} alternativeLabel sx={{ width: "100%" }}>
           <Step
             sx={{
               "& .MuiStepLabel-root": { alignItems: "center" },
-              "& .MuiStepLabel-labelContainer": { display: "flex", justifyContent: "center" }
+              "& .MuiStepLabel-labelContainer": {
+                display: "flex",
+                justifyContent: "center"
+              }
             }}
           >
             <StepLabel icon={<Box sx={{ width: 24, height: 24 }} />}>
-              <Box sx={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <Box
+                sx={{
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center"
+                }}
+              >
                 <ButtonBase
                   component="span"
                   sx={{
@@ -516,33 +548,21 @@ export default function CreateManually() {
             position: "relative"
           }}
         >
-          {showInvalidCharModal && (
-            <ErrorPopup onClose={() => setShowInvalidCharModal(false)}>
-              <Box sx={{ textAlign: "center", mb: 2 }}>
-                <Typography variant="h6" fontWeight="semibold" sx={{ mb: 2 }}>
-                  {t("Attribute names are limited to the following characters:")}
-                </Typography>
-                <Box sx={{ display: "flex", justifyContent: "center" }}>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: 1, columnGap: 3, textAlign: "left" }}>
-                    {[
-                      { label: "Numbers", value: "0-9" },
-                      { label: "Letters", value: "a-z, A-Z" },
-                      { label: "Underline", value: "_" },
-                      { label: "Hyphen", value: "-" },
-                      { label: "Period", value: "." }
-                    ].map((item, i) => (
-                      <React.Fragment key={i}>
-                        <Typography variant="body1">{t(item.label)}:</Typography>
-                        <Typography variant="body1">{item.value}</Typography>
-                      </React.Fragment>
-                    ))}
-                  </Box>
-                </Box>
-              </Box>
-            </ErrorPopup>
-          )}
+          <InvalidAttributeNamesModal
+            open={invalidCharModal.open}
+            onClose={closeInvalidCharModal}
+            invalidNames={invalidCharModal.names}
+          />
 
-          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", minHeight: "60px" }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "100%",
+              minHeight: "60px"
+            }}
+          >
             {duplicateWarning && (
               <Alert
                 severity="error"
@@ -565,9 +585,7 @@ export default function CreateManually() {
                   py: 0
                 }}
               >
-                <Box sx={{ pl: 2, pr: 2 }}>
-                  {backErrorMessage}
-                </Box>
+                <Box sx={{ pl: 2, pr: 2 }}>{backErrorMessage}</Box>
               </Alert>
             )}
             {forwardErrorMessage.length > 0 && (
@@ -585,52 +603,58 @@ export default function CreateManually() {
           </Box>
           <Box sx={{ width: 565 }}>
             <Box style={{ display: "flex" }}>
-              <Box className="create-schema-grid ag-theme-balham" style={{ width: 565, overflowX: "hidden" }} ref={refContainer}>
-            <style>{`${gridStyle}${agGridEditableCellHoverCss}`}</style>
-            <AgGridReact
-              ref={gridRef}
-              rowData={rowData}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              domLayout="autoHeight"
-              getRowHeight={getRowHeight}
-              suppressHorizontalScroll
-              rowDragManaged
-              animateRows
-              onRowDragEnd={(e) => onRowDragEnd(e)}
-              onCellKeyDown={onCellKeyDown}
-              onRowDragLeave={(e) => onRowDragLeave(e)}
-              onCellValueChanged={(e) => handleCellValueChanged(e)}
-              overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
-            />
+              <Box
+                className="create-schema-grid ag-theme-balham"
+                style={{ width: 565, overflowX: "hidden" }}
+                ref={refContainer}
+              >
+                <style>{`${gridStyle}${agGridEditableCellHoverCss}`}</style>
+                <AgGridReact
+                  ref={gridRef}
+                  rowData={rowData}
+                  columnDefs={columnDefs}
+                  defaultColDef={defaultColDef}
+                  domLayout="autoHeight"
+                  getRowHeight={getRowHeight}
+                  suppressHorizontalScroll
+                  rowDragManaged
+                  animateRows
+                  onRowDragEnd={(e) => onRowDragEnd(e)}
+                  onCellKeyDown={onCellKeyDown}
+                  onRowDragLeave={(e) => onRowDragLeave(e)}
+                  onCellValueChanged={(e) => handleCellValueChanged(e)}
+                  overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
+                />
+              </Box>
+            </Box>
+            <Box
+              sx={{
+                mt: TABLE_TO_BUTTON_GAP,
+                mb: BETWEEN_SECTION_SPACING,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end"
+              }}
+            >
+              <Button
+                onClick={handleAddRow}
+                color="button"
+                variant="contained"
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignSelf: "flex-end",
+                  m: 0,
+                  mb: 2
+                }}
+                ref={addRef}
+              >
+                {t("Add row")} &nbsp;
+                <AddCircleIcon />
+              </Button>
+            </Box>
           </Box>
         </Box>
-        <Box sx={{ mt: TABLE_TO_BUTTON_GAP, mb: BETWEEN_SECTION_SPACING, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-          <Button
-            onClick={handleAddRow}
-            color="button"
-            variant="contained"
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignSelf: "flex-end",
-              m: 0,
-              mb: 2
-            }}
-            ref={addRef}
-          >
-            {t("Add row")} &nbsp;
-            <AddCircleIcon />
-          </Button>
-
-          {addErrorMessage.length > 0 && (
-            <Alert severity="error" sx={{ maxWidth: "42ch" }}>
-              {addErrorMessage}
-            </Alert>
-          )}
-        </Box>
-      </Box>
-      </Box>
       </BackNextSkeleton>
     </Box>
   );

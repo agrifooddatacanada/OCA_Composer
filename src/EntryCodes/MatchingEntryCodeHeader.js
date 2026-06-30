@@ -1,10 +1,19 @@
-import React, { forwardRef, memo, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import BackNextSkeleton from '../components/BackNextSkeleton';
-import { Context } from '../App';
-import { useMultiSchema } from '../schema/schemaContext';
-import { LanguageConstants } from '../utils/languageUtils';
-import { Box, MenuItem } from '@mui/material';
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
+import { useTranslation } from "react-i18next";
+import { Box, MenuItem } from "@mui/material";
+import BackNextSkeleton from "../components/BackNextSkeleton";
+import { Context } from "../App";
+import { useMultiSchema } from "../schema/schemaContext";
+import { LanguageConstants } from "../utils/languageUtils";
 import {
   gridStyles,
   greyCellStyle,
@@ -13,11 +22,11 @@ import {
   matchingEntryCodeMenuItemSx,
   matchingEntryCodeSelectHostBoxSx,
   AG_GRID_DROPDOWN_CELL_CLASS
-} from '../constants/styles';
-import { AgGridReact } from '../components/AgGridReact';
-import { DropdownMenuList } from '../components/DropdownMenuCell';
+} from "../constants/styles";
+import { AgGridReact } from "../components/AgGridReact";
+import { DropdownMenuList } from "../components/DropdownMenuCell";
 
-const INTERNAL_CODE_ROW_KEY = 'Code';
+const INTERNAL_CODE_ROW_KEY = "Code";
 
 function normalizeHeader(h) {
   return String(h ?? "")
@@ -68,14 +77,17 @@ function headerMatchesPrimaryLabelColumn(header) {
 }
 
 export const DataHeaderRenderer = memo(
-  forwardRef((props, ref) => {
+  forwardRef((props) => {
     const { t } = useTranslation();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const formatImportedColumnLabel = useCallback((value) => {
-      if (value === 'en') return t('English');
-      if (value === 'fr') return t('French');
-      return t(value, { defaultValue: value });
-    }, [t]);
+    const formatImportedColumnLabel = useCallback(
+      (value) => {
+        if (value === "en") return t("English");
+        if (value === "fr") return t("French");
+        return t(value, { defaultValue: value });
+      },
+      [t]
+    );
 
     const handleChange = (e) => {
       props.changeDataFromTable(e);
@@ -93,44 +105,36 @@ export const DataHeaderRenderer = memo(
       }
     };
 
-    const typesDisplay = props?.dataHeaders.map((value, index) => {
-      return (
-        <MenuItem
-          key={index + "_" + value}
-          value={value}
-          sx={matchingEntryCodeMenuItemSx}
-        >
-          {value === "" ? "" : formatImportedColumnLabel(value)}
-        </MenuItem>
-      );
-    });
+    const typesDisplay = props?.dataHeaders.map((value) => (
+      <MenuItem key={value || "empty"} value={value} sx={matchingEntryCodeMenuItemSx}>
+        {value === "" ? "" : formatImportedColumnLabel(value)}
+      </MenuItem>
+    ));
 
     const renderDisplayValue = (value) => {
       if (value === "" || value == null) return "\u200B";
       return formatImportedColumnLabel(value);
     };
 
+    if (!props?.dataHeaders.length) {
+      return null;
+    }
+
     return (
-      <>
-        {
-          props?.dataHeaders.length > 0 ?
-            <Box sx={matchingEntryCodeSelectHostBoxSx}>
-              <DropdownMenuList
-                stretchInCell
-                selectChevronPaddingPx={22}
-                handleKeyDown={handleKeyDown}
-                type={props.node.data.matchingDataHeader}
-                handleChange={handleChange}
-                handleClick={handleClick}
-                isDropdownOpen={isDropdownOpen}
-                setIsDropdownOpen={setIsDropdownOpen}
-                typesDisplay={typesDisplay}
-                renderDisplayValue={renderDisplayValue}
-              />
-            </Box> :
-            <></>
-        }
-      </>
+      <Box sx={matchingEntryCodeSelectHostBoxSx}>
+        <DropdownMenuList
+          stretchInCell
+          selectChevronPaddingPx={22}
+          handleKeyDown={handleKeyDown}
+          type={props.node.data.matchingDataHeader}
+          handleChange={handleChange}
+          handleClick={handleClick}
+          isDropdownOpen={isDropdownOpen}
+          setIsDropdownOpen={setIsDropdownOpen}
+          typesDisplay={typesDisplay}
+          renderDisplayValue={renderDisplayValue}
+        />
+      </Box>
     );
   })
 );
@@ -147,16 +151,18 @@ const MatchingEntryCodeHeader = () => {
     setTempEntryCodeSummary,
     setTempEntryList
   } = useContext(Context);
-  
+
   const { getSchema, updateSchema } = useMultiSchema();
   const schemaState = getSchema();
   const attributeRowData = schemaState?.attributes || [];
-  
-  const languages = schemaState?.metadata?.languages || [LanguageConstants.DEFAULT_LANG_NAME];
-  
-  const listAttributes = attributeRowData.filter(attr => attr.List === true);
+
+  const languages = schemaState?.metadata?.languages || [
+    LanguageConstants.DEFAULT_LANG_NAME
+  ];
+
+  const listAttributes = attributeRowData.filter((attr) => attr.List === true);
   const targetAttributeName = listAttributes[chosenEntryCodeIndex]?.Attribute;
-  
+
   const gridRef = useRef();
 
   const matchingFunction = useCallback((unassignedVar, attr) => {
@@ -216,8 +222,11 @@ const MatchingEntryCodeHeader = () => {
     const assignedData = [];
     const matchingEntryCodeMap = {};
     for (const ec of currentData) {
-      matchingEntryCodeMap[ec.matchingDataHeader] = ec.matchingDataHeader in matchingEntryCodeMap ? [...matchingEntryCodeMap[ec.matchingDataHeader], ec.lang] : [ec.lang];
-      if (ec?.matchingDataHeader !== '') {
+      matchingEntryCodeMap[ec.matchingDataHeader] =
+        ec.matchingDataHeader in matchingEntryCodeMap
+          ? [...matchingEntryCodeMap[ec.matchingDataHeader], ec.lang]
+          : [ec.lang];
+      if (ec?.matchingDataHeader !== "") {
         assignedData.push(ec.matchingDataHeader);
       }
     }
@@ -226,7 +235,7 @@ const MatchingEntryCodeHeader = () => {
     for (const row of tempEntryCodeRowData) {
       let hasItem = false;
       for (const assign of assignedData) {
-        if (assign in row && row[assign] !== '') {
+        if (assign in row && row[assign] !== "") {
           hasItem = true;
           break;
         }
@@ -240,13 +249,13 @@ const MatchingEntryCodeHeader = () => {
         }
         for (const lang of newLanguages) {
           if (!(lang in newRow)) {
-            newRow[lang] = '';
+            newRow[lang] = "";
           }
         }
         newRowData.push(newRow);
       }
     }
-    
+
     if (targetAttributeName) {
       const currentEntryCodes = schemaState?.entryCodes || {};
       updateSchema({
@@ -260,7 +269,7 @@ const MatchingEntryCodeHeader = () => {
       setTempEntryCodeSummary(undefined);
       setTempEntryList([]);
     }
-    setCurrentPage('Codes');
+    setCurrentPage("Codes");
   };
 
   const changeDataFromTable = useCallback((e, params) => {
@@ -269,9 +278,7 @@ const MatchingEntryCodeHeader = () => {
     if (langKey === undefined) return;
     setMatchingRows((prev) =>
       prev.map((row) =>
-        row.lang === langKey
-          ? { ...row, matchingDataHeader: value }
-          : row
+        row.lang === langKey ? { ...row, matchingDataHeader: value } : row
       )
     );
   }, []);
@@ -284,35 +291,36 @@ const MatchingEntryCodeHeader = () => {
     [t]
   );
 
-  const columnDefs = useMemo(() => {
-    return [
+  const columnDefs = useMemo(
+    () => [
       {
         headerName: t("Assigned Column Name"),
-        field: 'lang',
+        field: "lang",
         width: 240,
         suppressSizeToFit: true,
         editable: false,
-        cellClass: 'matching-entry-code-assigned-cell',
+        cellClass: "matching-entry-code-assigned-cell",
         cellStyle: () => greyCellStyle,
-        valueFormatter: (p) => formatAssignedColumnCell(p.value),
+        valueFormatter: (p) => formatAssignedColumnCell(p.value)
       },
       {
         headerName: t("Imported Column Name"),
-        field: 'matchingDataHeader',
+        field: "matchingDataHeader",
         width: 240,
         suppressSizeToFit: true,
         cellClass: `matching-entry-code-data-header-cell ${AG_GRID_DROPDOWN_CELL_CLASS}`,
         cellRendererFramework: DataHeaderRenderer,
         cellRendererParams: (params) => ({
-          dataHeaders: ['', ...entryCodeHeaders],
+          dataHeaders: ["", ...entryCodeHeaders],
           onRefresh: () => {
             gridRef.current?.api?.redrawRows({ rowNodes: [params.node] });
           },
           changeDataFromTable: (e) => changeDataFromTable(e, params)
-        }),
+        })
       }
-    ];
-  }, [entryCodeHeaders, changeDataFromTable, t, formatAssignedColumnCell]);
+    ],
+    [entryCodeHeaders, changeDataFromTable, t, formatAssignedColumnCell]
+  );
 
   const [gridLayoutReady, setGridLayoutReady] = useState(false);
 
@@ -328,7 +336,7 @@ const MatchingEntryCodeHeader = () => {
     <>
       <BackNextSkeleton
         isBack
-        pageBack={() => setCurrentPage('UploadEntryCodes')}
+        pageBack={() => setCurrentPage("UploadEntryCodes")}
         isForward
         pageForward={handleSave}
       />
@@ -352,7 +360,6 @@ const MatchingEntryCodeHeader = () => {
           </div>
         </div>
       </Box>
-
     </>
   );
 };

@@ -14,7 +14,11 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { AgGridReact } from "../components/AgGridReact";
-import { greyCellStyle, gridStyles, AG_GRID_DROPDOWN_CELL_CLASS } from "../constants/styles";
+import {
+  greyCellStyle,
+  gridStyles,
+  AG_GRID_DROPDOWN_CELL_CLASS
+} from "../constants/styles";
 import "../App.css";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -90,15 +94,15 @@ const convertToCSV = (data, newHeader) => {
   return csv;
 };
 
-const flaggedHeader = (
-  props,
+function FlaggedHeader({
+  agGridParams: props,
   lanAttributeRowData,
   formatRuleRowData,
   characterEncodingRowData,
   cardinalityData,
   lang,
   ocaPackage = null
-) => {
+}) {
   const { getSchema } = useMultiSchema();
   const schemaState = getSchema();
   const labelDescription = lanAttributeRowData[lang];
@@ -109,10 +113,10 @@ const flaggedHeader = (
   const formatRegex = formatRule?.[CUSTOM_FORMAT_RULE] || formatRule?.FormatText || "";
   const attributeType = formatRule?.Type;
   const decimalSeparator = schemaState?.decimalSeparator || ".";
-  const displayFormatRegex = 
-    attributeType?.includes("Numeric") && formatRegex 
-    ? getFormatPatternForDecimalSeparator(formatRegex, decimalSeparator) 
-    : formatRegex;
+  const displayFormatRegex =
+    attributeType?.includes("Numeric") && formatRegex
+      ? getFormatPatternForDecimalSeparator(formatRegex, decimalSeparator)
+      : formatRegex;
 
   let selectedOption = [];
   if (attributeType?.includes("Date")) {
@@ -134,8 +138,7 @@ const flaggedHeader = (
 
   // For now, use ADC community's extension overlays for the top-level/main schema bundle
   const rangeOverlay =
-    ocaPackage?.extensions?.[ADC]?.[getRootCaptureBaseId(ocaPackage)]
-      ?.overlays?.[RANGE];
+    ocaPackage?.extensions?.[ADC]?.[getRootCaptureBaseId(ocaPackage)]?.overlays?.[RANGE];
   const rangeData = rangeOverlay?.attributes?.[props?.displayName];
 
   return (
@@ -219,9 +222,7 @@ const flaggedHeader = (
                     <br />
                     <Typography sx={{ fontWeight: "bold" }}>Required:</Typography>
                     <Typography>
-                      {characterEncoding?.[
-                        "Required Entry"
-                      ]?.toString() || ""}
+                      {characterEncoding?.["Required Entry"]?.toString() || ""}
                     </Typography>
                   </>
                 )}
@@ -309,7 +310,7 @@ const flaggedHeader = (
       }
     />
   );
-};
+}
 
 const OCADataValidatorCheck = ({
   showWarningCard,
@@ -330,7 +331,7 @@ const OCADataValidatorCheck = ({
   } = useContext(Context);
 
   // Get schema data and uploaded package from MultiSchemaContext
-  const { currentSchemaId, getSchema, ocaPackage, getAttributesList, getLanguages } = useMultiSchema();
+  const { getSchema, ocaPackage, getAttributesList, getLanguages } = useMultiSchema();
   const schemaState = getSchema();
 
   // Validator MUST use the package root bundle when available (multi-schema flow).
@@ -340,20 +341,30 @@ const OCADataValidatorCheck = ({
   if (ocaPackage) {
     bundleForValidator = getPackageBundle(ocaPackage);
     if (!bundleForValidator) {
-      console.error("OCADataValidatorCheck: ocaPackage present but root bundle missing — cannot validate");
+      console.error(
+        "OCADataValidatorCheck: ocaPackage present but root bundle missing — cannot validate"
+      );
     }
-  } else if (schemaState && Array.isArray(schemaState.attributes) && schemaState.attributes.length > 0) {
+  } else if (
+    schemaState &&
+    Array.isArray(schemaState.attributes) &&
+    schemaState.attributes.length > 0
+  ) {
     // derive minimal capture_base from schema editor state (manual creation)
     const capture_base = { attributes: {} };
     schemaState.attributes.forEach((a) => {
       capture_base.attributes[a.Attribute] = a.Type || "Text";
     });
     bundleForValidator = { capture_base };
-    console.debug("OCADataValidatorCheck: derived validator bundle from schemaState (manual)");
+    console.debug(
+      "OCADataValidatorCheck: derived validator bundle from schemaState (manual)"
+    );
   } else {
-    console.error("OCADataValidatorCheck: no ocaPackage and no schemaState available — validation disabled");
+    console.error(
+      "OCADataValidatorCheck: no ocaPackage and no schemaState available — validation disabled"
+    );
   }
-  
+
   // Extract data from schema state (single schema for Data Validator)
   // Prefer MultiSchema helpers (root-schema aware) — fallback to schemaState when necessary.
   const languages = getLanguages?.() || schemaState?.metadata?.languages || [];
@@ -448,16 +459,18 @@ const OCADataValidatorCheck = ({
       flex: 1,
       minWidth: 100,
       tooltipComponent: CustomTooltip,
-      headerComponent: (params) =>
-        flaggedHeader(
-          params,
-          lanAttributeRowData,
-          formatRuleRowData,
-          characterEncodingRowData,
-          cardinalityData,
-          langRef.current,
-          ocaPackage
-        ),
+      // eslint-disable-next-line react/no-unstable-nested-components -- ag-grid header needs per-column closure over validator state
+      headerComponent: (params) => (
+        <FlaggedHeader
+          agGridParams={params}
+          lanAttributeRowData={lanAttributeRowData}
+          formatRuleRowData={formatRuleRowData}
+          characterEncodingRowData={characterEncodingRowData}
+          cardinalityData={cardinalityData}
+          lang={langRef.current}
+          ocaPackage={ocaPackage}
+        />
+      ),
       cellRendererParams: (params) => ({
         dataHeaders: savedEntryCodes,
         lang: langRef.current,
@@ -549,7 +562,10 @@ const OCADataValidatorCheck = ({
       return currData.every((row) => {
         if (!row.error) return true;
         return Object.values(row.error).every(
-          (cellErrors) => !cellErrors || cellErrors.length === 0 || cellErrors.every((error) => error?.type === errorCode.Warning)
+          (cellErrors) =>
+            !cellErrors ||
+            cellErrors.length === 0 ||
+            cellErrors.every((error) => error?.type === errorCode.Warning)
         );
       });
     } catch (error) {
@@ -637,7 +653,9 @@ const OCADataValidatorCheck = ({
     setFirstValidate(true);
 
     if (!bundleForValidator) {
-      console.error("handleValidate: no validator bundle available — aborting validation");
+      console.error(
+        "handleValidate: no validator bundle available — aborting validation"
+      );
       gridRef.current?.api?.hideLoadingOverlay?.();
       setRevalidateData(true);
       return;
@@ -659,7 +677,11 @@ const OCADataValidatorCheck = ({
         }
       }
     });
-    const validate = bundle.validate(prepareInput, schemaState?.decimalSeparator || ".", schemaState?.arrayDelimiterData || {});
+    const validate = bundle.validate(
+      prepareInput,
+      schemaState?.decimalSeparator || ".",
+      schemaState?.arrayDelimiterData || {}
+    );
 
     // Update `rowData` with validation results
     const updatedRowData = newData.map((data, index) => ({
@@ -748,7 +770,8 @@ const OCADataValidatorCheck = ({
       newData.forEach((data) => {
         const row = schemaConformantDataHeaders.map((header) => {
           const value = data[header] || "";
-          const isNumeric = (bundleForValidator?.capture_base?.attributes || {})[header] === "Numeric";
+          const isNumeric =
+            (bundleForValidator?.capture_base?.attributes || {})[header] === "Numeric";
 
           // Convert string to number if the attribute is marked as Numeric
           if (isNumeric && typeof value === "string") {
@@ -1127,7 +1150,10 @@ const OCADataValidatorCheck = ({
         (row) =>
           !row?.error ||
           Object.values(row.error).every(
-            (cellErrors) => !cellErrors || cellErrors.length === 0 || cellErrors.every((error) => error?.type === errorCode.Warning)
+            (cellErrors) =>
+              !cellErrors ||
+              cellErrors.length === 0 ||
+              cellErrors.every((error) => error?.type === errorCode.Warning)
           )
       );
     }
@@ -1228,272 +1254,272 @@ const OCADataValidatorCheck = ({
             flex: 1
           }}
         >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignContent: "space-between"
-          }}
-        >
           <Box
             sx={{
               display: "flex",
-              flexDirection: "column",
-              marginTop: "2rem",
-              gap: "10px",
-              flex: 1
+              flexDirection: "row",
+              alignContent: "space-between"
             }}
           >
             <Box
               sx={{
                 display: "flex",
                 flexDirection: "column",
-                paddingLeft: "2rem",
+                marginTop: "2rem",
+                gap: "10px",
+                flex: 1
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  paddingLeft: "2rem",
+                  gap: "10px"
+                }}
+              >
+                <Languages
+                  type={langRef.current}
+                  handleChange={handleChange}
+                  handleClick={() => {}}
+                  isDropdownOpen={isDropdownOpen}
+                  setIsDropdownOpen={setIsDropdownOpen}
+                  languages={languages}
+                />
+                <ErrorFilterSelect
+                  errorName={errorName}
+                  setErrorNameList={setErrorNameList}
+                  disabled={!firstValidate}
+                />
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    paddingRight: "20px",
+                    alignItems: "center",
+                    marginTop: "15px"
+                  }}
+                >
+                  <Button
+                    color="button"
+                    variant="contained"
+                    target="_blank"
+                    style={{ width: "120px", height: "40px" }}
+                    onClick={handleValidate}
+                    disabled={isValidateButtonEnabled}
+                    sx={{
+                      fontFamily
+                    }}
+                  >
+                    {t("Verify")}
+                  </Button>
+                  {revalidateData && (
+                    <Typography
+                      sx={{
+                        marginLeft: "20px",
+                        color: "red",
+                        fontWeight: "bold",
+                        fontFamily
+                      }}
+                    >
+                      {t("Please re-verify the data!")}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                marginTop: "2rem",
                 gap: "10px"
               }}
             >
-              <Languages
-                type={langRef.current}
-                handleChange={handleChange}
-                handleClick={() => {}}
-                isDropdownOpen={isDropdownOpen}
-                setIsDropdownOpen={setIsDropdownOpen}
-                languages={languages}
-              />
-              <ErrorFilterSelect
-                errorName={errorName}
-                setErrorNameList={setErrorNameList}
-                disabled={!firstValidate}
+              <CustomAnchorLink
+                text={t("Verification Rules")}
+                onClick={toggleDrawer(true)}
+                overrideStyle={{
+                  textAlign: "right",
+                  marginRight: "2rem",
+                  fontFamily
+                }}
               />
               <Box
                 sx={{
                   display: "flex",
-                  flexDirection: "row",
-                  paddingRight: "20px",
                   alignItems: "center",
-                  marginTop: "15px"
+                  marginRight: "2rem"
                 }}
               >
-                <Button
-                  color="button"
-                  variant="contained"
-                  target="_blank"
-                  style={{ width: "120px", height: "40px" }}
-                  onClick={handleValidate}
-                  disabled={isValidateButtonEnabled}
-                  sx={{
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: "#d2f8d2",
+                    marginRight: "15px"
+                  }}
+                />
+                <span
+                  style={{
                     fontFamily
                   }}
                 >
-                  {t("Verify")}
-                </Button>
-                {revalidateData && (
-                  <Typography
-                    sx={{
-                      marginLeft: "20px",
-                      color: "red",
-                      fontWeight: "bold",
-                      fontFamily
-                    }}
-                  >
-                    {t("Please re-verify the data!")}
-                  </Typography>
-                )}
+                  {t("Pass Verification")}
+                </span>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginRight: "2rem"
+                }}
+              >
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: "#ffd7e9",
+                    marginRight: "15px"
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily
+                  }}
+                >
+                  {t("Fail Verification")}
+                </span>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginRight: "2rem"
+                }}
+              >
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: "#fff9c4",
+                    marginRight: "15px"
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily
+                  }}
+                >
+                  {t("Warning")}
+                </span>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginRight: "2rem"
+                }}
+              >
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: "#ededed",
+                    marginRight: "15px"
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily
+                  }}
+                >
+                  {t("Unmatched Attributes")}
+                </span>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginRight: "2rem"
+                }}
+              >
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: "#ffffff",
+                    marginRight: "15px",
+                    border: "1px solid #ededed"
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily
+                  }}
+                >
+                  {t("Unverified Data")}
+                </span>
               </Box>
             </Box>
           </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              marginTop: "2rem",
-              gap: "10px"
-            }}
-          >
-            <CustomAnchorLink
-              text={t("Verification Rules")}
-              onClick={toggleDrawer(true)}
-              overrideStyle={{
-                textAlign: "right",
-                marginRight: "2rem",
-                fontFamily
-              }}
-            />
+          <div style={{ margin: "2rem" }}>
+            <div className="ag-theme-balham" style={{ height: "45vh" }}>
+              <style>{gridStyles}</style>
+              <AgGridReact
+                ref={gridRef}
+                rowData={filterRowData}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                overlayLoadingTemplate='<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
+                tooltipShowDelay={0}
+                tooltipHideDelay={5000}
+                tooltipMouseTrack
+                onCellValueChanged={onCellValueChanged}
+                suppressRowHoverHighlight
+                onCellKeyDown={onCellKeyDown}
+                suppressFieldDotNotation
+                onGridReady={() => {
+                  // Wait for row data to be loaded before validating
+                  setTimeout(() => {
+                    handleValidate();
+                  }, 0);
+                }}
+              />
+            </div>
             <Box
               sx={{
                 display: "flex",
-                alignItems: "center",
-                marginRight: "2rem"
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                marginTop: "2rem"
               }}
             >
-              <div
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  backgroundColor: "#d2f8d2",
-                  marginRight: "15px"
-                }}
-              />
-              <span
-                style={{
-                  fontFamily
-                }}
-              >
-                {t("Pass Verification")}
-              </span>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                marginRight: "2rem"
-              }}
-            >
-              <div
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  backgroundColor: "#ffd7e9",
-                  marginRight: "15px"
-                }}
-              />
-              <span
-                style={{
-                  fontFamily
+              <Button
+                onClick={handleAddRow}
+                color="button"
+                variant="contained"
+                disabled={!errorName.includes(SHOW_ALL_DATA)}
+                sx={{
+                  alignSelf: "flex-end",
+                  width: "9rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-around"
                 }}
               >
-                {t("Fail Verification")}
-              </span>
+                {t("Add row")} <AddCircleIcon />
+              </Button>
             </Box>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                marginRight: "2rem"
-              }}
-            >
-              <div
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  backgroundColor: "#fff9c4",
-                  marginRight: "15px"
-                }}
-              />
-              <span
-                style={{
-                  fontFamily
-                }}
-              >
-                {t("Warning")}
-              </span>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                marginRight: "2rem"
-              }}
-            >
-              <div
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  backgroundColor: "#ededed",
-                  marginRight: "15px"
-                }}
-              />
-              <span
-                style={{
-                  fontFamily
-                }}
-              >
-                {t("Unmatched Attributes")}
-              </span>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                marginRight: "2rem"
-              }}
-            >
-              <div
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  backgroundColor: "#ffffff",
-                  marginRight: "15px",
-                  border: "1px solid #ededed"
-                }}
-              />
-              <span
-                style={{
-                  fontFamily
-                }}
-              >
-                {t("Unverified Data")}
-              </span>
-            </Box>
-          </Box>
-        </Box>
-
-        <div style={{ margin: "2rem" }}>
-          <div className="ag-theme-balham" style={{ height: "45vh" }}>
-            <style>{gridStyles}</style>
-            <AgGridReact
-              ref={gridRef}
-              rowData={filterRowData}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              overlayLoadingTemplate='<div aria-live="polite" aria-atomic="true" style="height:100px; width:100px; background: url(https://ag-grid.com/images/ag-grid-loading-spinner.svg) center / contain no-repeat; margin: 0 auto;" aria-label="loading"></div>'
-              tooltipShowDelay={0}
-              tooltipHideDelay={5000}
-              tooltipMouseTrack
-              onCellValueChanged={onCellValueChanged}
-              suppressRowHoverHighlight
-              onCellKeyDown={onCellKeyDown}
-              suppressFieldDotNotation
-              onGridReady={() => {
-                // Wait for row data to be loaded before validating
-                setTimeout(() => {
-                  handleValidate();
-                }, 0);
-              }}
-            />
           </div>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              marginTop: "2rem"
-            }}
-          >
-            <Button
-              onClick={handleAddRow}
-              color="button"
-              variant="contained"
-              disabled={!errorName.includes(SHOW_ALL_DATA)}
-              sx={{
-                alignSelf: "flex-end",
-                width: "9rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-around"
-              }}
-            >
-              {t("Add row")} <AddCircleIcon />
-            </Button>
-          </Box>
-        </div>
+        </Box>
+        {firstTimeDisplayWarning.current && showWarningCard && (
+          <WarningPopup action={handleDismissWarning} />
+        )}
+        <Drawer open={open}>{DrawerList}</Drawer>
       </Box>
-      {firstTimeDisplayWarning.current && showWarningCard && (
-        <WarningPopup action={handleDismissWarning} />
-      )}
-      <Drawer open={open}>{DrawerList}</Drawer>
-    </Box>
     </Box>
   );
 };

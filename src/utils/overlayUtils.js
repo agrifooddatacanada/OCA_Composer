@@ -30,13 +30,22 @@ export const resetOverlayValues = (overlayType) => {
   // Overlay data field configuration
   const overlayConfig = {
     [FIELD_CHARACTER_ENCODING_OVERLAY]: { characterEncodingData: {} },
-    [FIELD_FORMAT_OVERLAY]: { attributeFormats: {}, attributeRanges: {}, formatRuleData: [], rangeData: [] },
+    [FIELD_FORMAT_OVERLAY]: {
+      attributeFormats: {},
+      attributeRanges: {},
+      formatRuleData: [],
+      rangeData: []
+    },
     [FIELD_FORM_INFORMATION_OVERLAY]: { FormInformationRowData: [] },
     [FIELD_RANGE_OVERLAY]: { attributeRanges: {}, rangeData: [] },
     [FIELD_CARDINALITY_OVERLAY]: { attributeCardinality: {}, cardinalityData: undefined }, // undefined = uninitialized state
-    [FIELD_UNIT_FRAMING_OVERLAY]: { unitFramedData: undefined, frameAllUnits: false, unframedUnitList: [] },
-    [FIELD_CONFORMANCE_OVERLAY]: { 
-      requiredEntries: undefined, 
+    [FIELD_UNIT_FRAMING_OVERLAY]: {
+      unitFramedData: undefined,
+      frameAllUnits: false,
+      unframedUnitList: []
+    },
+    [FIELD_CONFORMANCE_OVERLAY]: {
+      requiredEntries: undefined,
       conformanceRowData: [],
       // Special case: also clear Required flags from attributes
       _requiresAttributeUpdate: true
@@ -47,7 +56,8 @@ export const resetOverlayValues = (overlayType) => {
       decimalSeparator: ".",
       fileDelimiterData: {
         fieldDelimiter: ",",
-        quoteChar: "\"",
+        // eslint-disable-next-line quotes -- Prettier formats a double-quote char as single-quoted
+        quoteChar: '"',
         escapeChar: "\\",
         lineTerminator: "lf",
         dataStartRow: 1
@@ -65,7 +75,7 @@ export const resetOverlayValues = (overlayType) => {
     console.warn(`Unknown overlay type: ${overlayType}`);
     return {};
   }
-  
+
   return clearData;
 };
 
@@ -79,20 +89,24 @@ export const resetOverlayValues = (overlayType) => {
  * @param {string} overlayType - The overlay type constant
  * @param {Object} context - Required context methods
  */
-export const deleteOverlayData = (overlayType, { updateSchema, updateOverlaySelection, getSchema }) => {
+export const deleteOverlayData = (
+  overlayType,
+  { updateSchema, updateOverlaySelection, getSchema }
+) => {
   // Clear the overlay data
   const resetValues = resetOverlayValues(overlayType);
-  
+
   // Handle special case for conformance overlay (Required Entries)
   if (overlayType === FIELD_CONFORMANCE_OVERLAY) {
     const schemaState = getSchema();
-    
+
     // Clear Required flags from all attributes
-    const updatedAttributes = schemaState?.attributes?.map((attr) => ({
-      ...attr,
-      Required: false
-    })) || [];
-    
+    const updatedAttributes =
+      schemaState?.attributes?.map((attr) => ({
+        ...attr,
+        Required: false
+      })) || [];
+
     updateSchema({
       ...resetValues,
       attributes: updatedAttributes
@@ -100,10 +114,10 @@ export const deleteOverlayData = (overlayType, { updateSchema, updateOverlaySele
   } else if (Object.keys(resetValues).length > 0) {
     updateSchema(resetValues);
   }
-  
+
   // Update selection state to deselected
   updateOverlaySelection(overlayType, false);
-  
+
   // Special case: Format overlay also affects range overlay
   if (overlayType === FIELD_FORMAT_OVERLAY) {
     updateOverlaySelection(FIELD_RANGE_OVERLAY, false);
@@ -112,23 +126,30 @@ export const deleteOverlayData = (overlayType, { updateSchema, updateOverlaySele
 
 /**
  * Hook for overlay deletion with optional navigation
- * @param {string} overlayType - The overlay type constant  
+ * @param {string} overlayType - The overlay type constant
  * @param {boolean} shouldNavigate - Whether to navigate back to Overlays page (default: true)
  * @returns {Function} Delete handler function
  */
 export const useDeleteOverlayHandler = (overlayType, shouldNavigate = true) => {
   const { updateSchema, updateOverlaySelection, getSchema } = useMultiSchema();
   const { setCurrentPage } = useContext(Context);
-  
+
   return useCallback(() => {
     // Execute core deletion logic
     deleteOverlayData(overlayType, { updateSchema, updateOverlaySelection, getSchema });
-    
+
     // Navigate back to overlays page if requested
     if (shouldNavigate) {
       setCurrentPage("Overlays");
     }
-  }, [overlayType, shouldNavigate, updateSchema, updateOverlaySelection, getSchema, setCurrentPage]);
+  }, [
+    overlayType,
+    shouldNavigate,
+    updateSchema,
+    updateOverlaySelection,
+    getSchema,
+    setCurrentPage
+  ]);
 };
 
 /**
@@ -140,11 +161,11 @@ export const getListOfSelectedOverlays = (overlay) => {
   const selectedKeys = [];
   const unselectedKeys = [];
   // Temporarily excluding these features
-  const keysToExclude = [FIELD_DATA_STANDARDS_OVERLAY];
+  const keysToExclude = [FIELD_DATA_STANDARDS_OVERLAY, FIELD_ATTRIBUTE_FRAMING_OVERLAY];
 
   Object.entries(overlay).forEach(([key, value]) => {
     if (keysToExclude.includes(key)) return;
-    
+
     if (value) {
       selectedKeys.push(key);
     } else {

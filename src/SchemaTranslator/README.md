@@ -146,8 +146,18 @@ Currently, the translator processes LinkML schemas **without validation**. While
 The translator currently:
 - Parses YAML content using `js-yaml` 
 - Processes `slots` and `enums` objects if present (defaults to empty objects if missing)
-- Maps available slots to OCA attributes with basic type conversion
+- Supports **induced class schemas** (with `attributes:` containing fully-resolved slot definitions)
+- Maps available slots/attributes to OCA attributes with basic type conversion
 - Generates overlays based on available LinkML properties
+
+### Supported Input Formats
+
+The translator accepts two LinkML YAML formats:
+
+1. **Standard schema** — top-level `slots:` dictionary (original behavior)
+2. **Induced class schema** — class-level `attributes:` dictionary with full definitions inline (e.g., output from `SchemaView.induced_class()`)
+
+Detection is automatic: if `slots:` is present it takes priority; otherwise `attributes:` is used if its values contain object definitions (with `range` or `description` fields).
 
 ### Validation Limitations
 

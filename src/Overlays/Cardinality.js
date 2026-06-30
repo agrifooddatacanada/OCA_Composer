@@ -20,22 +20,25 @@ import {
   Button,
   Tooltip
 } from "@mui/material"; // Import necessary components for the dialog/pop-up
-import { AgGridReact } from "../components/AgGridReact";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
+import { AgGridReact } from "../components/AgGridReact";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { AG_GRID_VIRTUALIZE_MIN_ROWS, BETWEEN_SECTION_SPACING } from "../constants/constants";
+import {
+  AG_GRID_VIRTUALIZE_MIN_ROWS,
+  BETWEEN_SECTION_SPACING,
+  FIELD_CARDINALITY_OVERLAY
+} from "../constants/constants";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
 import { gridStyles, greyCellStyle } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
-import CustomPalette from "../constants/customPalette";
+import { CustomPalette } from "../constants/customPalette";
 import Loading from "../components/Loading";
 import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
-import { FIELD_CARDINALITY_OVERLAY } from "../constants/constants";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { getAllGridRowData, useOverlayGridOnGridReady } from "./gridUtils";
 import "../App.css";
@@ -47,12 +50,10 @@ const gridOptions = {
   stopEditingWhenCellsLoseFocus: true
 };
 
-const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
+const Cardinality = forwardRef((_, forwardedRef) => {
   const { t, i18n } = useTranslation();
-  const {
-    setCurrentPage
-  } = useContext(Context);
-  
+  const { setCurrentPage } = useContext(Context);
+
   // Use MultiSchema context with standard pattern
   const {
     getSchema,
@@ -63,16 +64,18 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
   } = useMultiSchema();
   const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_CARDINALITY_OVERLAY);
-  
+
   // Get cardinality data - computed from attributes + attributeCardinality
   const cardinalityData = useMemo(() => {
     const computed = getCardinalityData();
-    
+
     // Use first available language (like agreeable-mushroom does)
     // This ensures we always have labels even if UI language doesn't match schema languages
     const firstLanguage = Object.keys(schemaState?.lanAttributeRowData || {})?.[0];
-    const labelData = firstLanguage ? (schemaState?.lanAttributeRowData[firstLanguage] || []) : [];
-    
+    const labelData = firstLanguage
+      ? schemaState?.lanAttributeRowData[firstLanguage] || []
+      : [];
+
     // Add Label and convert Cardinality field name to EntryLimit for UI compatibility
     return computed
       .filter((item) => item?.Type?.includes("Array"))
@@ -84,8 +87,13 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
           Label: labelInfo?.Label || ""
         };
       });
-  }, [getCardinalityData, schemaState?.attributes, schemaState?.attributeCardinality, schemaState?.lanAttributeRowData]);
-  
+  }, [
+    getCardinalityData,
+    schemaState?.attributes,
+    schemaState?.attributeCardinality,
+    schemaState?.lanAttributeRowData
+  ]);
+
   const gridRef = useRef();
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -98,7 +106,10 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
   // Initialize attributeCardinality if not exists (empty object is fine)
   useEffect(() => {
     // Only initialize if attributeCardinality doesn't exist yet
-    if (schemaState?.attributes && typeof schemaState?.attributeCardinality === 'undefined') {
+    if (
+      schemaState?.attributes &&
+      typeof schemaState?.attributeCardinality === "undefined"
+    ) {
       updateSchema({ attributeCardinality: {} });
     }
   }, [schemaState?.attributes, schemaState?.attributeCardinality, updateSchema]);
@@ -142,10 +153,7 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
       const entryLimit = params?.data.EntryLimit;
       const selectedDataToSave = { ...params?.data, rowIndex: params?.rowIndex };
 
-      if (
-        entryLimit !== null &&
-        entryLimit !== undefined
-      ) {
+      if (entryLimit !== null && entryLimit !== undefined) {
         if (entryLimit?.includes("-")) {
           const [MIN, MAX] = entryLimit.split("-").map((value) => value.trim());
           setSelectedCellData(selectedDataToSave);
@@ -187,7 +195,9 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
       return { mode: "empty", exact: "", min: "", max: "", normalized: "" };
     }
 
-    const openIntervalMatch = input.match(/^\[\s*([^,\]]+)\s*,\s*(∞|inf|infinity)\s*\)$/i);
+    const openIntervalMatch = input.match(
+      /^\[\s*([^,\]]+)\s*,\s*(∞|inf|infinity)\s*\)$/i
+    );
     if (openIntervalMatch) {
       const min = openIntervalMatch[1].trim();
       return {
@@ -281,7 +291,11 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
     const onKeyDown = (ev) => {
       const key = ev?.key;
       const code = ev?.code;
-      const isDeleteKey = key === "Delete" || code === "Delete" || key === "Backspace" || code === "Backspace";
+      const isDeleteKey =
+        key === "Delete" ||
+        code === "Delete" ||
+        key === "Backspace" ||
+        code === "Backspace";
       if (!isDeleteKey) return;
 
       const api = gridRef.current?.api;
@@ -323,7 +337,11 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
       const domEvent = e?.event;
       const key = domEvent?.key;
       const code = domEvent?.code;
-      const isDeleteKey = key === "Delete" || code === "Delete" || key === "Backspace" || code === "Backspace";
+      const isDeleteKey =
+        key === "Delete" ||
+        code === "Delete" ||
+        key === "Backspace" ||
+        code === "Backspace";
       const normalizedColId = String(colField || "").trim();
       const isEntryLimitCol =
         normalizedColId === "EntryLimit" ||
@@ -398,23 +416,21 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
         return;
       }
 
-      const getRowToUpdate = gridRef.current.api.getRowNode(
-        selectedCellData.rowIndex
-      );
-      const entryLimitValue = exactValue
-        ? exactValue
-        : minValue !== "" && maxValue !== ""
+      const getRowToUpdate = gridRef.current.api.getRowNode(selectedCellData.rowIndex);
+      const entryLimitValue =
+        exactValue ||
+        (minValue !== "" && maxValue !== ""
           ? `${minValue}-${maxValue}`
           : minValue !== "" && maxValue === ""
             ? `${minValue}-`
             : maxValue !== ""
               ? `-${maxValue}`
-              : "";
+              : "");
       getRowToUpdate.setData({
         ...selectedCellData,
         EntryLimit: entryLimitValue
       });
-      
+
       if (minValue !== "" && maxValue !== "") {
         setExactValue("");
       } else if (minValue === "" && maxValue === "" && exactValue === "") {
@@ -450,7 +466,9 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Attribute"),
-          helpText: t("Name for the attribute and, for example, the column header in every tabular data set no matter what language")
+          helpText: t(
+            "Name for the attribute and, for example, the column header in every tabular data set no matter what language"
+          )
         }
       },
       {
@@ -474,9 +492,7 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
         headerComponent: CellHeader,
         headerComponentParams: {
           headerText: t("Entry Limit"),
-          helpText: t(
-            "Describes the number of occurrences of an element."
-          )
+          helpText: t("Describes the number of occurrences of an element.")
         },
         valueGetter: (params) => backendToUiInterval(params.data?.EntryLimit ?? ""),
         valueSetter: (params) => {
@@ -517,9 +533,7 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
         <Box
           className={`cardinality-overlay-grid overlay-grid-suppress-hscroll${cardinalityGridFixedViewport ? " overlay-grid-fixed-viewport" : ""} ag-theme-balham${cardinalityGridFixedViewport ? "" : " ag-grid-compact"}`}
           sx={{
-            width: "50%",
-            maxWidth: "600px",
-            minWidth: CARDINALITY_COL_SUM_PX,
+            width: CARDINALITY_COL_SUM_PX,
             boxSizing: "border-box",
             alignSelf: "flex-start",
             ...(!cardinalityGridFixedViewport ? { height: "auto" } : {})
@@ -565,91 +579,103 @@ const Cardinality = forwardRef(function Cardinality(_, forwardedRef) {
           }}
         >
           {selectedCellData && (
-            <>
-              <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "10px"
-                }}
-              >
-                <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
-                  <Box sx={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                    <TextField
-                      label={t("Exact")}
-                      variant="outlined"
-                      value={exactValue}
-                      onChange={(e) => handleValueChange(e.target.value, "exact")}
-                      style={{
-                        backgroundColor: minValue || maxValue ? "#f2f2f2" : "white"
-                      }}
-                      disabled={minValue || maxValue}
-                    />
-                    <Tooltip
-                      title={t(
-                        "For each attribute you can specify the exact, minimum or maximum ..."
-                      )}
-                      placement="top"
-                      arrow
-                    >
-                      <HelpOutlineIcon
-                        sx={{
-                          position: "absolute",
-                          left: "100%",
-                          marginLeft: "10px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          fontSize: 18,
-                          color: "#ccc"
-                        }}
-                      />
-                    </Tooltip>
-                  </Box>
-                </Box>
-                <Typography variant="h6" align="center" style={{ marginBottom: "0px" }}>
-                or
-                </Typography>
-                <Box sx={{ display: "flex", gap: "10px", width: "100%", justifyContent: "center" }}>
-                  <TextField
-                    label={t("Minimum")}
-                    variant="outlined"
-                    value={minValue}
-                    onChange={(e) => handleValueChange(e.target.value, "min")}
-                    style={{
-                      backgroundColor: exactValue ? "#f2f2f2" : "white"
-                    }}
-                    disabled={exactValue}
-                  />
-                  <TextField
-                    label={t("Maximum")}
-                    variant="outlined"
-                    value={maxValue}
-                    onChange={(e) => handleValueChange(e.target.value, "max")}
-                    style={{
-                      backgroundColor: exactValue ? "#f2f2f2" : "white"
-                    }}
-                    disabled={exactValue}
-                  />
-                </Box>
-                <Button
-                  variant="contained"
-                  color="navButton"
-                  onClick={handleApplyValues}
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px"
+              }}
+            >
+              <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                <Box
                   sx={{
-                    backgroundColor: CustomPalette.PRIMARY,
-                    ":hover": { backgroundColor: CustomPalette.SECONDARY },
-                    width: "100%",
-                    maxWidth: "100px",
-                    marginTop: "10px"
+                    position: "relative",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center"
                   }}
                 >
-                  {t("Apply")}
-                </Button>
+                  <TextField
+                    label={t("Exact")}
+                    variant="outlined"
+                    value={exactValue}
+                    onChange={(e) => handleValueChange(e.target.value, "exact")}
+                    style={{
+                      backgroundColor: minValue || maxValue ? "#f2f2f2" : "white"
+                    }}
+                    disabled={minValue || maxValue}
+                  />
+                  <Tooltip
+                    title={t(
+                      "For each attribute you can specify the exact, minimum or maximum ..."
+                    )}
+                    placement="top"
+                    arrow
+                  >
+                    <HelpOutlineIcon
+                      sx={{
+                        position: "absolute",
+                        left: "100%",
+                        marginLeft: "10px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        fontSize: 18,
+                        color: "#ccc"
+                      }}
+                    />
+                  </Tooltip>
+                </Box>
               </Box>
-            </>
+              <Typography variant="h6" align="center" style={{ marginBottom: "0px" }}>
+                or
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: "10px",
+                  width: "100%",
+                  justifyContent: "center"
+                }}
+              >
+                <TextField
+                  label={t("Minimum")}
+                  variant="outlined"
+                  value={minValue}
+                  onChange={(e) => handleValueChange(e.target.value, "min")}
+                  style={{
+                    backgroundColor: exactValue ? "#f2f2f2" : "white"
+                  }}
+                  disabled={exactValue}
+                />
+                <TextField
+                  label={t("Maximum")}
+                  variant="outlined"
+                  value={maxValue}
+                  onChange={(e) => handleValueChange(e.target.value, "max")}
+                  style={{
+                    backgroundColor: exactValue ? "#f2f2f2" : "white"
+                  }}
+                  disabled={exactValue}
+                />
+              </Box>
+              <Button
+                variant="contained"
+                color="navButton"
+                onClick={handleApplyValues}
+                sx={{
+                  backgroundColor: CustomPalette.PRIMARY,
+                  ":hover": { backgroundColor: CustomPalette.SECONDARY },
+                  width: "100%",
+                  maxWidth: "100px",
+                  marginTop: "10px"
+                }}
+              >
+                {t("Apply")}
+              </Button>
+            </Box>
           )}
         </Box>
       </Box>

@@ -11,9 +11,9 @@ import { getPackageDependencies } from "./packageUtils";
  */
 export const hasMultipleSchemas = (ocaPackage) => {
   if (!ocaPackage) return false;
-  
+
   const dependencies = getPackageDependencies(ocaPackage);
-  
+
   return dependencies.length > 0;
 };
 
@@ -25,11 +25,14 @@ export const hasMultipleSchemas = (ocaPackage) => {
  */
 export const hasActualDependencies = (ocaPackage) => {
   if (!ocaPackage) return false;
-  
+
   const dependencies = getPackageDependencies(ocaPackage);
-  
-  return dependencies.length > 0 && dependencies.some(dep => {
-    const attributes = dep?.capture_base?.attributes || {};
-    return Object.keys(attributes).length > 0;
-  });
+
+  return (
+    dependencies.length > 0 &&
+    dependencies.some((dep) => {
+      const attributes = dep?.capture_base?.attributes || {};
+      return Object.keys(attributes).length > 0;
+    })
+  );
 };

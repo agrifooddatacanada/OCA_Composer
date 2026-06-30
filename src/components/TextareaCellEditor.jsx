@@ -29,7 +29,6 @@ const TextareaCellEditor = forwardRef((props, ref) => {
       const initialValue = (props.value ?? "") + props.charPress;
       if (strictAttrName && hasDisallowedChars(initialValue)) {
         if (props.context?.triggerInvalidCharModal) {
-          // Wrap in a setTimeout so the context method is called after render cycle
           setTimeout(() => props.context.triggerInvalidCharModal(), 0);
         }
         return props.value ?? ""; // Reject the charPress, retain old value

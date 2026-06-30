@@ -3,24 +3,18 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ReactGA from "react-ga4";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
 import "./App.css";
-import CustomTheme from "./constants/theme";
 import Home from "./Home";
-import StartSchemaHelp from "./UsersHelp/Start_Schema_Help";
 import Landing from "./Landing/Landing";
-// import HelpStorage from "./Landing/HelpStorage";
 import OCADataValidator from "./OCADataValidator/OCADataValidator";
 import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
-import { MultiSchemaProvider, useMultiSchema } from "./schema/schemaContext";
+import { MultiSchemaProvider } from "./schema/schemaContext";
+import SessionDraftManager from "./components/SessionDraftManager";
+import SchemaUploadWarningPopup from "./SchemaTranslator/SchemaUploadWarningPopup";
 import { getCurrentTheme } from "./utils/themeDetector";
 import { CustomPalette } from "./constants/customPalette";
-// import Tutorial from "./Tutorial/Tutorial";
-import { LanguageConstants } from "./utils/languageUtils";
-import {
-  CUSTOM_FORMAT_RULE,
-  overlayItems
-} from "./constants/constants";
+import { overlayItems } from "./constants/constants";
 // import { environVariables } from "./components/environmentConfig";
 
 export const Context = createContext();
@@ -95,6 +89,7 @@ function App() {
   const [selectedOverlaysOCAFile1, setSelectedOverlaysOCAFile1] = useState({});
   const [selectedOverlaysOCAFile2, setSelectedOverlaysOCAFile2] = useState({});
   const [datasetDropMessage, setDatasetDropMessage] = useState({ message: "", type: "" });
+  const [jsonDropMessage, setJsonDropMessage] = useState({ message: "", type: "" });
 
   // Theme state
   const [currentTheme, setCurrentTheme] = useState(getCurrentTheme());
@@ -197,6 +192,7 @@ function App() {
             value={{
               divisionGroup,
               setDivisionGroup,
+              currentPage,
               setCurrentPage,
               history,
               setHistory,
@@ -274,6 +270,8 @@ function App() {
               setTargetResult,
               datasetDropMessage,
               setDatasetDropMessage,
+              jsonDropMessage,
+              setJsonDropMessage,
               notToVerifyAttributes,
               setNotToVerifyAttributes,
               currentSchemaId,
@@ -292,6 +290,8 @@ function App() {
               }}
             >
               <BrowserRouter>
+                <SessionDraftManager />
+                <SchemaUploadWarningPopup />
                 <Routes>
                   <Route path="/" element={<Landing />} />
                   <Route
@@ -306,12 +306,6 @@ function App() {
                     }
                   />
                   <Route path="/oca-data-verifier" element={<OCADataValidator />} />
-                  {/* <Route
-                    path='/help_designing_datasets'
-                    element={<GuidanceForDesigningDataSets />}
-                  /> */}
-                  {/* <Route path="/help_storage" element={<HelpStorage />} /> */}
-                  <Route path="/start_schema_help" element={<StartSchemaHelp />} />
                   <Route path="/learn_schema_rule" element={<LearnAboutSchemaRule />} />
                   <Route
                     path="/learn_data_verification"
@@ -322,7 +316,6 @@ function App() {
                     path="/oca-merge"
                     element={<OCAMerge currentOCAMergePage={currentOCAMergePage} />}
                   />
-                  {/* <Route path="/tutorial" element={<Tutorial />} /> */}
                 </Routes>
               </BrowserRouter>
             </Box>
