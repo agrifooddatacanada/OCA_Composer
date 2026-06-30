@@ -42,6 +42,7 @@ const SchemaMetadata = forwardRef(({
   // Local component state
   const [showLanguages, setShowLanguages] = useState(false);
   const [showCard, setShowCard] = useState(false);
+  const [showBlockingCard, setShowBlockingCard] = useState(false);
   const [fieldArray, setFieldArray] = useState([]);
   const [showIsoInput, setShowIsoInput] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState("");
@@ -49,7 +50,6 @@ const SchemaMetadata = forwardRef(({
   // Global context for app-level state
   const {
     schemaDescription: globalSchemaDescription,
-    languages: globalLanguages,
     history,
     setHistory,
     setCurrentPage
@@ -57,31 +57,31 @@ const SchemaMetadata = forwardRef(({
 
   // Use schema-specific languages (each schema has its own independent language list)
   const languages = schemaState?.metadata?.languages || [];
-  
+
   // Build schemaDescription from MultiSchemaContext metadata
   // Structure: { English: { name: "...", description: "..." }, French: { ... } }
   const schemaDescription = (() => {
     const result = {};
     const metadata = schemaState?.metadata || {};
-    
+
     languages.forEach((lang) => {
       // Use OCA language code for storage lookup
       const langCode = langCodeOCAFromName(lang);
       const localized = metadata.localized?.[langCode] || {};
-      
+
       // Use English root metadata as fallback for English language
       const isEnglish = langCode === "eng";
-      result[lang] = { 
-        name: localized.name || (isEnglish ? metadata.name : "") || "", 
+      result[lang] = {
+        name: localized.name || (isEnglish ? metadata.name : "") || "",
         description: localized.description || (isEnglish ? metadata.description : "") || ""
       };
     });
-    
+
     // Fallback to global context if metadata is empty
     if (!metadata.name && !metadata.description && !metadata.localized) {
       return globalSchemaDescription || result;
     }
-    
+
     return result;
   })();
 
@@ -89,161 +89,41 @@ const SchemaMetadata = forwardRef(({
     // Convert the language object format to proper localized structure
     if (typeof newDescription === "object" && !Array.isArray(newDescription)) {
       // Start with existing localized data to preserve all languages
-const SchemaMetadata = forwardRef(
-  ({ pageBack, pageForward, onContinueNavigation }, ref) => {
-    const navigate = useNavigate();
-    const { t } = useTranslation();
-
-    // Schema data hook
-    // Use MultiSchema context with standard pattern
-    const { getSchema, updateSchema } = useMultiSchema();
-    const schemaState = getSchema();
-
-    // Local component state
-    const [showLanguages, setShowLanguages] = useState(false);
-    const [showCard, setShowCard] = useState(false);
-    const [showBlockingCard, setShowBlockingCard] = useState(false);
-    const [showIsoInput, setShowIsoInput] = useState(false);
-    const [editingLanguage, setEditingLanguage] = useState("");
-
-    // Global context for app-level state
-    const {
-      schemaDescription: globalSchemaDescription,
-      history,
-      setHistory,
-      setCurrentPage
-    } = useContext(Context);
-
-    // Use schema-specific languages (each schema has its own independent language list)
-    const languages = schemaState?.metadata?.languages || [];
-
-    // Build schemaDescription from MultiSchemaContext metadata
-    // Structure: { English: { name: "...", description: "..." }, French: { ... } }
-    const schemaDescription = (() => {
-      const result = {};
-      const metadata = schemaState?.metadata || {};
-
-      languages.forEach((lang) => {
-        // Use OCA language code for storage lookup
-        const langCode = langCodeOCAFromName(lang);
-        const localized = metadata.localized?.[langCode] || {};
-
-        // Use English root metadata as fallback for English language
-        const isEnglish = langCode === "eng";
-        result[lang] = {
-          name: localized.name || (isEnglish ? metadata.name : "") || "",
-          description:
-            localized.description || (isEnglish ? metadata.description : "") || ""
-        };
-      });
-
-      // Fallback to global context if metadata is empty
-      if (!metadata.name && !metadata.description && !metadata.localized) {
-        return globalSchemaDescription || result;
-      }
-
-      return result;
-    })();
-
-    const setSchemaDescription = (newDescription) => {
-      // Convert the language object format to proper localized structure
-      if (typeof newDescription === "object" && !Array.isArray(newDescription)) {
-        // Start with existing localized data to preserve all languages
-        const currentLocalized = schemaState?.metadata?.localized || {};
-        const localized = { ...currentLocalized };
-        let rootName = schemaState?.metadata?.name || "";
-        let rootDescription = schemaState?.metadata?.description || "";
-
-        Object.entries(newDescription).forEach(([langName, data]) => {
-          // Use OCA language code for storage
-          const langCode = langCodeOCAFromName(langName);
-
-          localized[langCode] = {
-            name: data.name || "",
-            description: data.description || ""
-          };
-
-          // Use English as the root name/description if available
-          if (langCode === "eng") {
-            rootName = data.name || "";
-            rootDescription = data.description || "";
-          }
-        });
-
-        updateSchema({
-          metadata: {
-            name: rootName,
-            description: rootDescription,
-            localized
-          }
-        });
-      } else {
-        // Handle string or other formats
-        updateSchema({
-          metadata: {
-            ...schemaState?.metadata,
-            description: newDescription
-          }
-        });
-      }
-    };
-
-    const setLanguages = (newLanguages) => {
-      // Initialize localized entries for any new languages that don't have them yet
       const currentLocalized = schemaState?.metadata?.localized || {};
-      const updatedLocalized = { ...currentLocalized };
+      const localized = { ...currentLocalized };
+      let rootName = schemaState?.metadata?.name || "";
+      let rootDescription = schemaState?.metadata?.description || "";
 
-      newLanguages.forEach((langName) => {
+      Object.entries(newDescription).forEach(([langName, data]) => {
         // Use OCA language code for storage
         const langCode = langCodeOCAFromName(langName);
-        
+
         localized[langCode] = {
           name: data.name || "",
           description: data.description || ""
         };
-        
+
         // Use English as the root name/description if available
         if (langCode === "eng") {
           rootName = data.name || "";
           rootDescription = data.description || "";
         }
       });
-      
+
       updateSchema({
         metadata: {
           name: rootName,
           description: rootDescription,
-          localized,
-
-        // Only initialize if this language doesn't have an entry yet
-        if (!updatedLocalized[langCode]) {
-          updatedLocalized[langCode] = {
-            name: "",
-            description: ""
-          };
+          localized
         }
       });
-
-      const metadataUpdate = {
+    } else {
+      // Handle string or other formats
+      updateSchema({
         metadata: {
-          languages: newLanguages,
-          localized: updatedLocalized
+          ...schemaState?.metadata,
+          description: newDescription
         }
-      };
-
-      updateSchema(metadataUpdate);
-    };
-
-    const validateSchemaMetadata = useCallback(() => {
-      const spacesArray = [];
-      const metadata = schemaState?.metadata || {};
-      const localized = metadata.localized || {};
-
-      const hasDescription = Object.values(localized).some((langData) => {
-        if (!langData || typeof langData !== "object") return false;
-        const desc =
-          typeof langData.description === "string" ? langData.description.trim() : "";
-        return desc !== "";
       });
     }
   };
@@ -252,11 +132,11 @@ const SchemaMetadata = forwardRef(
     // Initialize localized entries for any new languages that don't have them yet
     const currentLocalized = schemaState?.metadata?.localized || {};
     const updatedLocalized = { ...currentLocalized };
-    
+
     newLanguages.forEach((langName) => {
       // Use OCA language code for storage
       const langCode = langCodeOCAFromName(langName);
-      
+
       // Only initialize if this language doesn't have an entry yet
       if (!updatedLocalized[langCode]) {
         updatedLocalized[langCode] = {
@@ -265,16 +145,15 @@ const SchemaMetadata = forwardRef(
         };
       }
     });
-    
+
     const metadataUpdate = {
       metadata: {
         languages: newLanguages,
         localized: updatedLocalized
       }
     };
-    
+
     updateSchema(metadataUpdate);
-  
   };
 
   const toTitleCase = (str) =>
@@ -288,49 +167,49 @@ const SchemaMetadata = forwardRef(
     // via MANUAL_CREATION_SCHEMA_ID fallback
     const metadata = schemaState?.metadata || {};
     const localized = metadata.localized || {};
-    
+
     // If no localized data exists yet, both name and description are missing
     if (Object.keys(localized).length === 0) {
       spacesArray.push(t("Name of Schema"));
       spacesArray.push(t("Description"));
       return spacesArray;
     }
-    
+
     // Validate that at least one language has both name and description filled
     let hasValidLanguage = false;
-    
+
     Object.entries(localized).forEach(([langCode, langData]) => {
       if (langData && typeof langData === "object") {
         const name = typeof langData.name === "string" ? langData.name.trim() : langData.name;
         const description = typeof langData.description === "string" ? langData.description.trim() : langData.description;
-        
+
         // If this language has both fields filled, mark as valid
         if (name && name !== "" && description && description !== "") {
           hasValidLanguage = true;
         }
       }
     });
-    
+
     // Only report errors if NO language has complete data
     if (!hasValidLanguage) {
       // Check what's specifically missing
       let missingName = true;
       let missingDescription = true;
-      
+
       Object.entries(localized).forEach(([langCode, langData]) => {
         if (langData && typeof langData === "object") {
           const name = typeof langData.name === "string" ? langData.name.trim() : langData.name;
           const description = typeof langData.description === "string" ? langData.description.trim() : langData.description;
-          
+
           if (name && name !== "'") missingName = false;
           if (description && description !== "") missingDescription = false;
         }
       });
-      
+
       if (missingName) spacesArray.push(t("Name of Schema"));
       if (missingDescription) spacesArray.push(t("Description"));
     }
-    
+
     return spacesArray;
   }, [schemaDescription, languages, schemaState, setSchemaDescription, t]);
 
@@ -338,217 +217,221 @@ const SchemaMetadata = forwardRef(
 
   // Expose validation function to parent component
   useImperativeHandle(ref, () => ({
-    validateSchemaMetadata: () => {
-      return validateSchemaMetadata();
-    },
+    validateSchemaMetadata: () => validateSchemaMetadata(),
     showValidationPopup: (targetPage) => {
       // Trigger the same popup as NEXT button
       const validationErrors = validateSchemaMetadata();
       if (validationErrors.length >= 1) {
+        setFieldArray(validationErrors);
         setShowCard(true);
-      } else {
-        pageForward();
+        setPendingNavigationTarget(targetPage || null);
+        return false;
       }
-    };
+      return true;
+    }
+  }));
 
-    // When showIsoInput component is visible, prevents user from clicking other buttons on the screen
-    const defaultButton = useRef();
-    const addCustomButton = useRef();
+  const handleForward = () => {
+    const validationErrors = validateSchemaMetadata();
+    if (validationErrors.length >= 1) {
+      setFieldArray(validationErrors);
+      setShowCard(true);
+    } else {
+      pageForward();
+    }
+  };
 
-    useEffect(() => {
-      const handleDisableClick = (event) => {
-        if (showIsoInput) {
-          const { target } = event;
-          if (target !== defaultButton.current && target !== addCustomButton.current) {
-            event.stopPropagation();
-          }
-        }
-      };
+  // When showIsoInput component is visible, prevents user from clicking other buttons on the screen
+  const defaultButton = useRef();
+  const addCustomButton = useRef();
 
+  useEffect(() => {
+    const handleDisableClick = (event) => {
       if (showIsoInput) {
-        document.addEventListener("click", handleDisableClick, true);
-      }
-
-      return () => {
-        document.removeEventListener("click", handleDisableClick, true);
-      };
-    }, [showIsoInput]);
-
-    const moveBackward = () => {
-      let originPage = null;
-      let targetIndex = -1;
-
-      // Look backward in history to find the first pre-stepper page
-      for (let i = history.length - 2; i >= 0; i--) {
-        if (
-          history[i] === "Landing" ||
-          history[i] === "Start" ||
-          history[i] === "Create"
-        ) {
-          originPage = history[i];
-          targetIndex = i;
-          break;
+        const { target } = event;
+        if (target !== defaultButton.current && target !== addCustomButton.current) {
+          event.stopPropagation();
         }
-      }
-
-      if (originPage === "Landing") {
-        setHistory((prev) => prev.slice(0, targetIndex + 1));
-        setCurrentPage("Landing");
-        navigate("/");
-      } else if (originPage === "Create") {
-        setHistory((prev) => prev.slice(0, targetIndex + 1));
-        setCurrentPage("Create");
-      } else if (originPage === "Start") {
-        setHistory((prev) => prev.slice(0, targetIndex + 1));
-        setCurrentPage("Start");
-      } else {
-        // Fallback if none found
-        pageBack();
       }
     };
 
-    return (
-      <BackNextSkeleton
-        isBack
-        pageBack={moveBackward}
-        isForward
-        pageForward={handleForward}
-      >
-        {showBlockingCard && (
-          <ErrorPopup onClose={() => setShowBlockingCard(false)}>
-            <Box>
-              <Typography variant="h5" sx={{ mb: 1 }}>
-                {t("A schema name is required to continue.")}
-              </Typography>
-            </Box>
-          </ErrorPopup>
-        )}
-        {showCard && (
-          <ErrorPopup
-            onClose={() => {
-              setShowCard(false);
-              setPendingNavigationTarget(null);
-            }}
-          >
-            <Box>
-              <Typography variant="h5" sx={{ mb: 1 }}>
-                {t("Schema description is empty. Continue without it?")}
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              color="navButton"
-              onClick={() => {
-                setShowCard(false);
-                if (pendingNavigationTarget) {
-                  if (typeof onContinueNavigation === "function") {
-                    onContinueNavigation(pendingNavigationTarget);
-                  } else {
-                    setCurrentPage(pendingNavigationTarget);
-                  }
-                  setPendingNavigationTarget(null);
-                } else {
-                  pageForward();
-                }
-              }}
-              sx={{
-                mt: 1,
-                backgroundColor: CustomPalette.PRIMARY,
-                ":hover": { backgroundColor: CustomPalette.SECONDARY }
-              }}
-            >
-              {t("Continue")}
-            </Button>
-          </ErrorPopup>
-        )}
-        {showIsoInput && (
-          <IsoCard
-            setShowIsoInput={setShowIsoInput}
-            language={editingLanguage}
-            defaultButton={defaultButton}
-            addCustomButton={addCustomButton}
-          />
-        )}
-        <Box
-          sx={{
-            mt: 2,
-            mb: BETWEEN_SECTION_SPACING,
-            width: "100%"
+    if (showIsoInput) {
+      document.addEventListener("click", handleDisableClick, true);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleDisableClick, true);
+    };
+  }, [showIsoInput]);
+
+  const moveBackward = () => {
+    let originPage = null;
+    let targetIndex = -1;
+
+    // Look backward in history to find the first pre-stepper page
+    for (let i = history.length - 2; i >= 0; i--) {
+      if (
+        history[i] === "Landing" ||
+        history[i] === "Start" ||
+        history[i] === "Create"
+      ) {
+        originPage = history[i];
+        targetIndex = i;
+        break;
+      }
+    }
+
+    if (originPage === "Landing") {
+      setHistory((prev) => prev.slice(0, targetIndex + 1));
+      setCurrentPage("Landing");
+      navigate("/");
+    } else if (originPage === "Create") {
+      setHistory((prev) => prev.slice(0, targetIndex + 1));
+      setCurrentPage("Create");
+    } else if (originPage === "Start") {
+      setHistory((prev) => prev.slice(0, targetIndex + 1));
+      setCurrentPage("Start");
+    } else {
+      // Fallback if none found
+      pageBack();
+    }
+  };
+
+  return (
+    <BackNextSkeleton
+      isBack
+      pageBack={moveBackward}
+      isForward
+      pageForward={handleForward}
+    >
+      {showBlockingCard && (
+        <ErrorPopup onClose={() => setShowBlockingCard(false)}>
+          <Box>
+            <Typography variant="h5" sx={{ mb: 1 }}>
+              {t("A schema name is required to continue.")}
+            </Typography>
+          </Box>
+        </ErrorPopup>
+      )}
+      {showCard && (
+        <ErrorPopup
+          onClose={() => {
+            setShowCard(false);
+            setPendingNavigationTarget(null);
           }}
         >
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Typography
+          <Box>
+            <Typography variant="h5" sx={{ mb: 1 }}>
+              {t("Schema description is empty. Continue without it?")}
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            color="navButton"
+            onClick={() => {
+              setShowCard(false);
+              if (pendingNavigationTarget) {
+                if (typeof onContinueNavigation === "function") {
+                  onContinueNavigation(pendingNavigationTarget);
+                } else {
+                  setCurrentPage(pendingNavigationTarget);
+                }
+                setPendingNavigationTarget(null);
+              } else {
+                pageForward();
+              }
+            }}
+            sx={{
+              mt: 1,
+              backgroundColor: CustomPalette.PRIMARY,
+              ":hover": { backgroundColor: CustomPalette.SECONDARY }
+            }}
+          >
+            {t("Continue")}
+          </Button>
+        </ErrorPopup>
+      )}
+      {showIsoInput && (
+        <IsoCard
+          setShowIsoInput={setShowIsoInput}
+          language={editingLanguage}
+          defaultButton={defaultButton}
+          addCustomButton={addCustomButton}
+        />
+      )}
+      <Box
+        sx={{
+          mt: 2,
+          mb: BETWEEN_SECTION_SPACING,
+          width: "100%"
+        }}
+      >
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Typography
+            sx={{
+              fontSize: 20,
+              fontWeight: "bold",
+              textAlign: "left",
+              margin: "1rem 0 1rem 0",
+              color: CustomPalette.PRIMARY
+            }}
+          >
+            {t("Schema Description")}
+          </Typography>
+          <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
+            <Box
               sx={{
-                fontSize: 20,
-                fontWeight: "bold",
-                textAlign: "left",
-                margin: "1rem 0 1rem 0",
-                color: CustomPalette.PRIMARY
+                alignSelf: "flex-end",
+                position: "absolute",
+                zIndex: "1000",
+                top: 70,
+                width: "100%"
               }}
             >
-              {t("Schema Description")}
-            </Typography>
-            <Box sx={{ position: "relative", alignSelf: "flex-end" }}>
-              <Box
-                sx={{
-                  alignSelf: "flex-end",
-                  position: "absolute",
-                  zIndex: "1000",
-                  top: 70,
-                  width: "100%"
-                }}
-              >
-                {showLanguages && (
-                  <LanguageSelection
-                    setShowLanguages={setShowLanguages}
-                    setEditingLanguage={setEditingLanguage}
-                    setShowIsoInput={setShowIsoInput}
-                    languages={languages}
-                    setLanguages={setLanguages}
-                    schemaDescription={schemaDescription}
-                    setSchemaDescription={setSchemaDescription}
-                  />
+              {showLanguages && (
+                <LanguageSelection
+                  setShowLanguages={setShowLanguages}
+                  setEditingLanguage={setEditingLanguage}
+                  setShowIsoInput={setShowIsoInput}
+                  languages={languages}
+                  setLanguages={setLanguages}
+                  schemaDescription={schemaDescription}
+                  setSchemaDescription={setSchemaDescription}
+                />
+              )}
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                color: CustomPalette.GREY_600
+              }}
+            >
+              <Tooltip
+                title={t(
+                  "Add another language to your schema. Without changing the basic structure of your schema, you can ensure it can be shared and used in different languages."
                 )}
-              </Box>
-              <Box
+                placement="left"
+                arrow
+              >
+                <HelpOutlineIcon sx={{ fontSize: 15 }} />
+              </Tooltip>
+              <Button
+                color="button"
+                onClick={() => setShowLanguages(!showLanguages)}
+                variant="contained"
                 sx={{
                   display: "flex",
-                  alignItems: "center",
-                  color: CustomPalette.GREY_600
+                  justifyContent: "space-between",
+                  width: "11rem",
+                  m: 2
                 }}
               >
-                <Tooltip
-                  title={t(
-                    "Add another language to your schema. Without changing the basic structure of your schema, you can ensure it can be shared and used in different languages."
-                  )}
-                  placement="left"
-                  arrow
-                >
-                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                </Tooltip>
-                <Button
-                  color="button"
-                  onClick={() => setShowLanguages(!showLanguages)}
-                  variant="contained"
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "11rem",
-                    m: 2
-                  }}
-                >
-                  {t("Add Language")}
-                  {showLanguages === true ? <RemoveCircleIcon /> : <AddCircleIcon />}
-                </Button>
-              </Box>
+                {t("Add Language")}
+                {showLanguages === true ? <RemoveCircleIcon /> : <AddCircleIcon />}
+              </Button>
             </Box>
           </Box>
-          <Description
-            setShowIsoInput={setShowIsoInput}
-            setEditingLanguage={setEditingLanguage}
-            languages={languages}
-            setLanguages={setLanguages}
-          />
         </Box>
         <Description
           setShowIsoInput={setShowIsoInput}

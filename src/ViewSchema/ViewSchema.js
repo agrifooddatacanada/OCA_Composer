@@ -1331,6 +1331,39 @@ export default function ViewSchema({
                   </Box>
                 </Box>
 
+                {/* Visualization embed */}
+                <Box sx={{ marginBottom: 0, width: "100%", minHeight: 500 }}>
+                  <Suspense
+                    fallback={
+                      <Box
+                        sx={{
+                          width: "100%",
+                          height: 500,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          border: `1px solid ${CustomPalette.GREY_300}`,
+                          borderRadius: 2,
+                          backgroundColor: "#f8f9fa"
+                        }}
+                      >
+                        <Spinner size={40} text="" />
+                      </Box>
+                    }
+                  >
+                    <SchemaVisualizationEmbed
+                      key={`viz-${vizVersion}-${getPackageBundleId(pkgFromState)}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
+                      schemaLanguageOverride={getCurrentLanguage()}
+                      pkg={pkgFromState}
+                      viewMode={visualizationMode}
+                      currentSchemaId={currentSchemaId}
+                      setCurrentSchemaId={handleSchemaSwitch}
+                    />
+                  </Suspense>
+                </Box>
+              </>
+            )}
+
         <Box
           sx={{
             display: "flex",
@@ -1401,54 +1434,6 @@ export default function ViewSchema({
           setLoading={setLoading}
           packageWithEdits={pkgFromState}
         />
-        {addClearButton && isPageForward && isExport && summaryExportMode && (
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4, width: "100%" }}>
-            <Button
-              color="warning"
-              variant="outlined"
-              onClick={() => setShowConfirmReset(true)}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                marginTop: BETWEEN_SECTION_SPACING,
-                marginBottom: `${HEADER_TO_CONTENT_GAP_PX}px`
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: 20,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                  margin: 0,
-                  lineHeight: 1.5,
-                  color: primaryColor
-                }}
-              >
-                {t("Schema Details")}
-              </Typography>
-              <Box
-                sx={{
-                  marginLeft: "1rem",
-                  color: CustomPalette.GREY_600,
-                  display: "flex",
-                  alignItems: "center"
-                }}
-              >
-                <Tooltip
-                  title={t("Attributes and all details relevant to them")}
-                  placement="right"
-                  arrow
-                >
-                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                </Tooltip>
-              </Box>
-            </Box>
-            <ViewGrid
-              displayArray={displayArray}
-              currentLanguage={getCurrentLanguage()}
-              setLoading={setLoading}
-              packageWithEdits={pkgFromState}
-            />
             {addClearButton && isPageForward && isExport && summaryExportMode && (
               <Box
                 sx={{ display: "flex", justifyContent: "flex-end", mt: 4, width: "100%" }}
