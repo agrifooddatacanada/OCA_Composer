@@ -1075,11 +1075,19 @@ export class OCAParser {
     const byLangCode = {};
 
     if (Array.isArray(adcExtensions)) {
-      // Pre-processed shape: [{ example_overlay: { example_overlays: { "eng": {language, attribute_examples}, ... } } }]
+      // Pre-processed shape: [{ example_overlay: { example_overlays: [ { language, attribute_examples }, ... ] } }]
+      // Older files may use an object keyed by language code; both shapes are supported.
       const dynOverlay = adcExtensions.find((ov) => ov?.example_overlay)?.example_overlay;
-      const exampleOverlaysObj = dynOverlay?.example_overlays;
-      if (exampleOverlaysObj && typeof exampleOverlaysObj === "object" && !Array.isArray(exampleOverlaysObj)) {
-        Object.entries(exampleOverlaysObj).forEach(([langCode, entry]) => {
+      const exampleOverlays = dynOverlay?.example_overlays;
+      if (Array.isArray(exampleOverlays)) {
+        exampleOverlays.forEach((entry) => {
+          if (entry?.language && entry?.attribute_examples) {
+            byLangCode[entry.language] = entry.attribute_examples;
+          }
+        });
+      } else if (exampleOverlays && typeof exampleOverlays === "object") {
+        // Legacy object-keyed shape: { "eng": { language, attribute_examples }, ... }
+        Object.entries(exampleOverlays).forEach(([langCode, entry]) => {
           if (entry?.attribute_examples) {
             byLangCode[langCode] = entry.attribute_examples;
           }

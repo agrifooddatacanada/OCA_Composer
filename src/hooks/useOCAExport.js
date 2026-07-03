@@ -674,7 +674,9 @@ const useOCAExport = () => {
             // Build per-language attribute_examples maps.
             // exampleData shape: { attributeName: { language: value } }
             // Legacy flat shape ({ attributeName: value }) is also supported as a fallback.
-            const exampleOverlaysObj = {};
+            // The oca_package library expects `example_overlays` to be an array of
+            // { language, attribute_examples } overlay objects.
+            const exampleOverlays = [];
             languages.forEach((language) => {
               const langCode = langCodeOCAFromName(language);
               const filteredExamples = {};
@@ -693,16 +695,16 @@ const useOCAExport = () => {
                 }
               });
               if (Object.keys(filteredExamples).length > 0) {
-                exampleOverlaysObj[langCode] = {
+                exampleOverlays.push({
                   language: langCode,
                   attribute_examples: filteredExamples
-                };
+                });
               }
             });
-            if (Object.keys(exampleOverlaysObj).length === 0) return {};
+            if (exampleOverlays.length === 0) return {};
             return {
               example_overlay: {
-                example_overlays: exampleOverlaysObj
+                example_overlays: exampleOverlays
               }
             };
           })()
