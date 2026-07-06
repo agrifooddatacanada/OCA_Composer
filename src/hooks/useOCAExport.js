@@ -38,6 +38,7 @@ import {
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER,
+  FIELD_EXAMPLE_OVERLAY,
   overlayItems
 } from "../constants/constants";
 import {
@@ -191,9 +192,8 @@ const useOCAExport = () => {
     const enableDecimalSeparator = !!schemaState?.enableDecimalSeparator;
     const enableFileDelimiter = !!schemaState?.enableFileDelimiter;
     const enableArrayDelimiter = !!schemaState?.enableArrayDelimiter;
-    const overlaySelections = {
-      ...(schemaState?.overlaySelections || overlayItems)
-    };
+    const exampleData = schemaState?.exampleData || {};
+    const overlaySelections = schemaState?.overlaySelections || overlay;
     const classificationCode = metadata?.classification || null;
 
     // Build schema description for each language
@@ -667,6 +667,47 @@ const useOCAExport = () => {
               attributes: { ...arrayDelimiterData }
             }
           }
+        : {}),
+      ...(overlaySelections[FIELD_EXAMPLE_OVERLAY] &&
+      Object.keys(exampleData).length > 0
+        ? (() => {
+            // Build per-language attribute_examples maps.
+            // exampleData shape: { attributeName: { language: value } }
+            // Legacy flat shape ({ attributeName: value }) is also supported as a fallback.
+            // The oca_package library expects `example_overlays` to be an array of
+            // { language, attribute_examples } overlay objects.
+            const exampleOverlays = [];
+            languages.forEach((language) => {
+              const langCode = langCodeOCAFromName(language);
+              const filteredExamples = {};
+              attributesList.forEach((attrName) => {
+                const attrEntry = exampleData[attrName];
+                let val;
+                if (attrEntry && typeof attrEntry === "object" && !Array.isArray(attrEntry)) {
+                  // Per-language shape
+                  val = attrEntry[language];
+                } else {
+                  // Legacy flat shape — same value for all languages
+                  val = attrEntry;
+                }
+                if (val !== undefined && val !== null && String(val).trim() !== "") {
+                  filteredExamples[attrName] = String(val);
+                }
+              });
+              if (Object.keys(filteredExamples).length > 0) {
+                exampleOverlays.push({
+                  language: langCode,
+                  attribute_examples: filteredExamples
+                });
+              }
+            });
+            if (exampleOverlays.length === 0) return {};
+            return {
+              example_overlay: {
+                example_overlays: exampleOverlays
+              }
+            };
+          })()
         : {})
     };
 

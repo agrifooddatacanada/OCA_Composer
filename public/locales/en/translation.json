@@ -1,4 +1,16 @@
 {
+  "Some example values do not agree with the range, format, decimal, or array delimiter overlays:": "Some example values do not agree with the range, format, decimal, or array delimiter overlays:",
+  "{{attribute}} (example \"{{value}}\") {{problem}}.": "{{attribute}} (example \"{{value}}\") {{- problem}}.",
+  "does not match the expected format ({{format}})": "does not match the expected format ({{format}})",
+  "uses \"{{found}}\" as the decimal separator but the schema expects \"{{separator}}\"": "uses \"{{found}}\" as the decimal separator but the schema expects \"{{separator}}\"",
+  "uses the array delimiter \"{{found}}\" but the schema expects \"{{separator}}\"": "uses the array delimiter \"{{found}}\" but the schema expects \"{{separator}}\"",
+  "uses multiple array delimiters but the schema expects \"{{separator}}\"": "uses multiple array delimiters but the schema expects \"{{separator}}\"",
+  "is below the lower bound {{bound}}": "is below the lower bound {{bound}}",
+  "is above the upper bound {{bound}}": "is above the upper bound {{bound}}",
+  "is before the lower bound {{bound}}": "is before the lower bound {{bound}}",
+  "is after the upper bound {{bound}}": "is after the upper bound {{bound}}",
+  "equals the exclusive lower bound {{bound}}": "equals the exclusive lower bound {{bound}}",
+  "equals the exclusive upper bound {{bound}}": "equals the exclusive upper bound {{bound}}",
   "Metadata": "Metadata",
   "TYPE IN COLUMN NAMES": "Type In Column Names",
   "Click here to select a .csv file or schema bundle, or drag and drop one here.": "Click here to select a .csv file or schema bundle, or drag and drop one here.",
@@ -779,5 +791,13 @@
   "or email": "or email",
   "raise an issue": "raise an issue",
   "tree node field count_one": "{{count}} field",
-  "tree node field count_other": "{{count}} fields"
+  "tree node field count_other": "{{count}} fields",
+  "Example Values": "Example Values",
+  "Provide a representative example value for each attribute. These examples help users understand the expected format and content of each field.": "Provide a representative example value for each attribute. These examples help users understand the expected format and content of each field.",
+  "There are no attributes defined in your schema yet.": "There are no attributes defined in your schema yet.",
+  "Example": "Example",
+  "Examples": "Examples",
+  "Example value": "Example value",
+  "e.g. {{placeholder}}": "e.g. {{placeholder}}",
+  "Enter a sample value that illustrates what valid data looks like for this attribute.": "Enter a sample value that illustrates what valid data looks like for this attribute."
 }

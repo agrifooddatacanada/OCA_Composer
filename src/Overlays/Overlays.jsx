@@ -24,7 +24,8 @@ import {
   FIELD_RANGE_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORMAT_OVERLAY,
-  FIELD_DATA_SEPARATOR_OVERLAY
+  FIELD_DATA_SEPARATOR_OVERLAY,
+  FIELD_EXAMPLE_OVERLAY
 } from "../constants/constants";
 import { deleteOverlayData, getListOfSelectedOverlays } from "../utils/overlayUtils";
 
@@ -40,7 +41,8 @@ const OVERLAY_TO_PAGE = {
   [FIELD_RANGE_OVERLAY]: "Range",
   [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: "AttributeFraming",
   [FIELD_FORMAT_OVERLAY]: "FormatRules",
-  [FIELD_DATA_SEPARATOR_OVERLAY]: "DataSeparator"
+  [FIELD_DATA_SEPARATOR_OVERLAY]: "DataSeparator",
+  [FIELD_EXAMPLE_OVERLAY]: "ExampleOverlay"
 };
 
 const Overlays = ({ pageBack, pageForward }) => {
@@ -201,7 +203,7 @@ const Overlays = ({ pageBack, pageForward }) => {
                         onClick={() => addToSelected(overlayKey)}
                         disabled={isDisabled}
                       >
-                        <AddCircleIcon sx={{ color: CustomPalette.PRIMARY}} />
+                        <AddCircleIcon sx={{ color: CustomPalette.PRIMARY }} />
                         <ListItemText primary={t(displayName)} sx={{ marginLeft: 2 }} />
                         {isDisabled && (
                           <HelpOutlineIcon sx={{ fontSize: 18, marginLeft: "6px", color: "#6b7280" }} />

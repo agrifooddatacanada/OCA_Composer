@@ -1,4 +1,16 @@
 {
+  "Some example values do not agree with the range, format, decimal, or array delimiter overlays:": "Certaines valeurs d'exemple ne correspondent pas aux superpositions de plage, de format, de séparateur décimal ou de délimiteur de tableau :",
+  "{{attribute}} (example \"{{value}}\") {{problem}}.": "{{attribute}} (exemple « {{value}} ») {{- problem}}.",
+  "does not match the expected format ({{format}})": "ne correspond pas au format attendu ({{format}})",
+  "uses \"{{found}}\" as the decimal separator but the schema expects \"{{separator}}\"": "utilise « {{found}} » comme séparateur décimal alors que le schéma attend « {{separator}} »",
+  "uses the array delimiter \"{{found}}\" but the schema expects \"{{separator}}\"": "utilise le délimiteur de tableau « {{found}} » alors que le schéma attend « {{separator}} »",
+  "uses multiple array delimiters but the schema expects \"{{separator}}\"": "utilise plusieurs délimiteurs de tableau alors que le schéma attend « {{separator}} »",
+  "is below the lower bound {{bound}}": "est inférieure à la borne inférieure {{bound}}",
+  "is above the upper bound {{bound}}": "est supérieure à la borne supérieure {{bound}}",
+  "is before the lower bound {{bound}}": "est antérieure à la borne inférieure {{bound}}",
+  "is after the upper bound {{bound}}": "est postérieure à la borne supérieure {{bound}}",
+  "equals the exclusive lower bound {{bound}}": "est égale à la borne inférieure exclusive {{bound}}",
+  "equals the exclusive upper bound {{bound}}": "est égale à la borne supérieure exclusive {{bound}}",
   "Metadata": "Métadonnées",
   "TYPE IN COLUMN NAMES": "Taper les noms de colonnes",
   "Import a spreadsheet by click or drag-and-drop.": "Importer une feuille de calcul\n(Cliquer ou glisser-déposer)",
@@ -780,5 +792,13 @@
   "Tree": "Tree",
   "Tree View": "Tree View",
   "Upload Entry Codes": "Upload Entry Codes",
-  "Visualize Schema": "Visualize Schema"
+  "Visualize Schema": "Visualize Schema",
+  "Example Values": "Valeurs d'exemple",
+  "Provide a representative example value for each attribute. These examples help users understand the expected format and content of each field.": "Fournissez une valeur d'exemple représentative pour chaque attribut. Ces exemples aident les utilisateurs à comprendre le format et le contenu attendus de chaque champ.",
+  "There are no attributes defined in your schema yet.": "Aucun attribut n'est encore défini dans votre schéma.",
+  "Example": "Exemple",
+  "Examples": "Exemples",
+  "Example value": "Valeur d'exemple",
+  "e.g. {{placeholder}}": "p. ex. {{placeholder}}",
+  "Enter a sample value that illustrates what valid data looks like for this attribute.": "Saisissez un exemple de valeur qui illustre à quoi ressemblent des données valides pour cet attribut."
 }

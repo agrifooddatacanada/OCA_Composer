@@ -6,13 +6,7 @@ import { Box, Tooltip, Typography } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
 import { CustomPalette } from "../constants/customPalette";
-import {
-  classification,
-  parseClassificationCode,
-  groupCodes,
-  divisionCodes,
-  TOOLTIP_ICON_GAP
-} from "../constants/constants";
+import { classification, parseClassificationCode, groupCodes, divisionCodes, TOOLTIP_ICON_GAP } from "../constants/constants";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 

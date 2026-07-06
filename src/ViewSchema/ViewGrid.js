@@ -25,6 +25,7 @@ import {
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_DATA_SEPARATOR_OVERLAY,
+  FIELD_EXAMPLE_OVERLAY,
   MAX_ATTR_DESCRIPTION_CHARS,
   MAX_ATTR_LABEL_CHARS,
   UNIT_FRAMING,
@@ -452,6 +453,18 @@ export default function ViewGrid({
             },
             cellRenderer: CheckboxRenderer
           });
+        } else if (overlayKey === FIELD_EXAMPLE_OVERLAY) {
+          predefinedColumns.push({
+            field: FIELD_EXAMPLE_OVERLAY,
+            width: 160,
+            autoHeight: true,
+            wrapText: true,
+            headerComponent: CellHeader,
+            headerComponentParams: {
+              headerText: t("Examples"),
+              helpText: t("A representative example value that illustrates what valid data looks like for this attribute")
+            }
+          });
         } else if (overlayKey === FIELD_DATA_SEPARATOR_OVERLAY) {
           // Data Separator is the only overlay with an attribute-specific part
           // (the Array Delimiter). Only surface the column when the user has
@@ -570,7 +583,13 @@ export default function ViewGrid({
       item.Label =
         item.Label && item.Label[currentLanguage] ? item.Label[currentLanguage] : "";
       item.List =
-        item.List && item.List[currentLanguage] ? item.List[currentLanguage] : "";
+        item.List && item.List[currentLanguage]
+          ? item.List[currentLanguage]
+          : "";
+      item.Examples =
+        item.Examples && item.Examples[currentLanguage]
+          ? item.Examples[currentLanguage]
+          : "";
 
       // Get cardinality value from object
       const cardinalityValue = getMapValueForAttributeName(
