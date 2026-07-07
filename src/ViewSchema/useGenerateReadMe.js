@@ -41,6 +41,8 @@ const useGenerateReadMe = () => {
     const textFile = [];
     const variablesArray = [];
     const manifest = [];
+    // Collects example overlay entries found in the ZIP for the extensions section
+    const exampleOverlayEntries = [];
     let Layer_name = null;
     let SAID = null;
 
@@ -58,6 +60,13 @@ const useGenerateReadMe = () => {
       }
 
       if (hasFilesProperty) {
+        continue;
+      }
+
+      // Detect example overlay before the type string is truncated, and
+      // collect it for the OCA_PACKAGE_EXTENSIONS section instead of OCA_BUNDLE.
+      if (json.type?.includes("example") && json.attribute_examples) {
+        exampleOverlayEntries.push(json);
         continue;
       }
 
@@ -228,6 +237,33 @@ const useGenerateReadMe = () => {
     });
 
     textFile.push("\nEND_OCA_BUNDLE");
+
+    if (exampleOverlayEntries.length > 0) {
+      textFile.push(
+        "\n\nBEGIN_OCA_PACKAGE_EXTENSIONS\n",
+        "**********************************************************************\n"
+      );
+      exampleOverlayEntries.forEach((entry) => {
+        const { type, d: said, language, attribute_examples } = entry;
+        textFile.push(`Layer name: ${type}\n`);
+        if (said) {
+          textFile.push(`SAID/digest: ${said}\n`);
+        }
+        if (language) {
+          textFile.push(`Language: ${language}\n`);
+        }
+        textFile.push("\n", `Schema attributes: ${type}\n`);
+        Object.entries(attribute_examples).forEach(([attribute, example]) => {
+          textFile.push(`   ${attribute}: ${example}\n`);
+        });
+        textFile.push(
+          "\n",
+          "**********************************************************************\n"
+        );
+      });
+      textFile.push("END_OCA_PACKAGE_EXTENSIONS\n");
+    }
+
     const text = textFile.join("");
     const textBlob = new Blob([text], { type: "text/plain" });
     const downloadUrl = URL.createObjectURL(textBlob);
