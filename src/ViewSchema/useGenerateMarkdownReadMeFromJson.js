@@ -190,6 +190,16 @@ const useGenerateMarkdownReadMeFromJson = () => {
       const overlayNames = Object.keys(overlays);
       overlayNames.forEach((overlayName) => {
         const overlay = overlays[overlayName];
+        if (Array.isArray(overlay)) {
+          overlay.forEach((entry) => {
+            layersForSaidTable.push({
+              name: overlayName,
+              digest: entry.d,
+              type: entry.type
+            });
+          });
+          return;
+        }
         layersForSaidTable.push({
           name: overlayName,
           digest: overlay.d,
