@@ -7,6 +7,7 @@ import {
 import { getPackageDependencies } from "../utils/packageUtils";
 import {
   ADC,
+  EXAMPLE,
   FORM,
   RANGE,
   SENSITIVE,
@@ -545,6 +546,29 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
         "******************************************************************\n"
       );
     }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(extensionOverlays, EXAMPLE)) {
+    const exampleOverlayEntries = extensionOverlays[EXAMPLE];
+    const entries = Array.isArray(exampleOverlayEntries)
+      ? exampleOverlayEntries
+      : [exampleOverlayEntries];
+
+    entries.forEach((entry) => {
+      if (!entry?.attribute_examples) return;
+      const { type, d: said, language, attribute_examples } = entry;
+      lines.push(
+        `Layer name: ${type}\n`,
+        ...(said ? [`SAID/digest: ${said}\n`] : []),
+        `Language: ${language}\n`,
+        "\n",
+        `Schema attributes: ${type}\n`
+      );
+      Object.entries(attribute_examples).forEach(([attribute, example]) => {
+        lines.push(`   ${attribute}: ${example}\n`);
+      });
+      lines.push("\n", "******************************************************************\n");
+    });
   }
 
   const formOverlayArray = getFormOverlayArray(extensionOverlays);

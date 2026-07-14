@@ -31,7 +31,8 @@ import {
   UNIT_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
-  ARRAY_DELIMITER
+  ARRAY_DELIMITER,
+  EXAMPLE
 } from "../constants/constants";
 import {
   downloadMarkdownFile,
@@ -159,6 +160,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
   const arrayDelimiterOverlay =
     pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[ARRAY_DELIMITER];
 
+  const exampleOverlay =
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[EXAMPLE];
+
   const generateMarkdownReadMeFromJson = (schemaData, catalogueData) => {
     // Extract languages from the entire package
     const languages = getPackageLanguages(pkg);
@@ -186,6 +190,16 @@ const useGenerateMarkdownReadMeFromJson = () => {
       const overlayNames = Object.keys(overlays);
       overlayNames.forEach((overlayName) => {
         const overlay = overlays[overlayName];
+        if (Array.isArray(overlay)) {
+          overlay.forEach((entry) => {
+            layersForSaidTable.push({
+              name: overlayName,
+              digest: entry.d,
+              type: entry.type
+            });
+          });
+          return;
+        }
         layersForSaidTable.push({
           name: overlayName,
           digest: overlay.d,
@@ -250,7 +264,8 @@ const useGenerateMarkdownReadMeFromJson = () => {
       attributeNames,
       languages,
       languageCodeLookupMap,
-      orderingOverlay
+      orderingOverlay,
+      exampleOverlay
     });
     fileContent += generateSAIDTableForJson(
       {
@@ -290,6 +305,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
 
         const childUnitFramingOverlay =
           pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[UNIT_FRAMING];
+
+        const childExampleOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[EXAMPLE];
 
         const { layers: childLayers, layersForSaidTable: childLayersForSaidTable } =
           buildLayersAndSaidRows(childSchemaData);
@@ -375,7 +393,8 @@ const useGenerateMarkdownReadMeFromJson = () => {
           attributeNames: childAttributeNames,
           languages: childLanguages,
           languageCodeLookupMap: childLanguageCodeLookupMap,
-          orderingOverlay: childOrderingOverlay
+          orderingOverlay: childOrderingOverlay,
+          exampleOverlay: childExampleOverlay
         });
         fileContent += generateSAIDTableForJson(
           {

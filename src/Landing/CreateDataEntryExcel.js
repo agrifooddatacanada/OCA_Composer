@@ -9,6 +9,7 @@ import {
 } from "../utils/helpers";
 import {
   ADC,
+  EXAMPLE,
   RANGE,
   SENSITIVE,
   UNIT_FRAMING,
@@ -131,6 +132,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let decimalSeparatorOverlay = null;
   let fileDelimiterOverlay = null;
   let arrayDelimiterOverlay = null;
+  let exampleOverlayEntries = null;
 
   if (isOcaPackage) {
     const extensions = inPutJsonResult[2];
@@ -148,6 +150,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       decimalSeparatorOverlay = overlays?.[DECIMAL_SEPARATOR];
       fileDelimiterOverlay = overlays?.[FILE_DELIMITER];
       arrayDelimiterOverlay = overlays?.[ARRAY_DELIMITER];
+      exampleOverlayEntries = overlays?.[EXAMPLE];
     }
   }
 
@@ -997,6 +1000,40 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       throw new WorkbookError(
         ".. Error in formatting array delimiter columns (header and rows) ..."
       );
+    }
+  }
+
+  if (Array.isArray(exampleOverlayEntries) && exampleOverlayEntries.length > 0) {
+    // Find the example values for the selected language, falling back to the first entry
+    const exampleEntry =
+      exampleOverlayEntries.find((e) => e.language?.startsWith(selectedLang)) ||
+      exampleOverlayEntries[0];
+    const attributeExamples = exampleEntry?.attribute_examples;
+
+    if (attributeExamples && Object.keys(attributeExamples).length > 0) {
+      const columnIndex = jsonData.length + 3 + extensionOverlayColumnCount - skipped;
+      try {
+        sheet1.getColumn(columnIndex).width = 20;
+        sheet1.getCell(shift + 1, columnIndex).value = "Example";
+        formatHeader(sheet1.getCell(shift + 1, columnIndex));
+
+        for (let row = 2; row <= attributeNames.length + 1; row++) {
+          sheet1.getCell(shift + row, columnIndex).value = null;
+          formatAttr(sheet1.getCell(shift + row, columnIndex));
+        }
+
+        Object.entries(attributeExamples).forEach(([attrName, example]) => {
+          const rowIndex = mappingAttrKeysandAttrValues[attrName];
+          if (rowIndex) {
+            sheet1.getCell(shift + rowIndex, columnIndex).value = example;
+          }
+        });
+        extensionOverlayColumnCount += 1;
+      } catch (error) {
+        throw new WorkbookError(
+          ".. Error in formatting example column (header and rows) ..."
+        );
+      }
     }
   }
 
