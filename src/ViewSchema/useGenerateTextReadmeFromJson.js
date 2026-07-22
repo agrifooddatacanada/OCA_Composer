@@ -88,13 +88,14 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
         const said = overlay.d;
         const layer_name = overlay.type;
         const lang = overlay.language;
-        const { description } = overlay;
+        const { description, name } = overlay;
         overlaySaids[`${layer_name} (${lang})`] = said;
         return (
           `Layer name: ${layer_name}\n` +
           `SAID/digest: ${said}\n` +
           `Language: ${lang}\n` +
           `Description: ${description ? normalizeEscapedQuotes(description) : ""}\n` +
+          `Name: ${name ? normalizeEscapedQuotes(name) : ""}\n` +
           "\n"
         );
       })
