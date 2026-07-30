@@ -15,7 +15,8 @@ import {
   FIELD_CONFORMANCE_OVERLAY,
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-  FIELD_DATA_SEPARATOR_OVERLAY
+  FIELD_DATA_SEPARATOR_OVERLAY,
+  FIELD_EXAMPLE_OVERLAY
 } from "../constants/constants";
 import { useMultiSchema } from "../schema/schemaContext";
 import { Context } from "../App";
@@ -65,7 +66,8 @@ export const resetOverlayValues = (overlayType) => {
       enableDecimalSeparator: false,
       enableFileDelimiter: false,
       enableArrayDelimiter: false
-    }
+    },
+    [FIELD_EXAMPLE_OVERLAY]: { exampleData: {} }
   };
 
   const clearData = overlayConfig[overlayType];

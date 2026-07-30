@@ -10,7 +10,13 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import i18next from "i18next";
-import { Box, Button, Typography, Tooltip, Alert } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  Tooltip,
+  Alert
+} from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -30,6 +36,7 @@ import {
   BETWEEN_SECTION_SPACING
 } from "../constants/constants";
 import { searchUnits } from "../utils/helpers";
+import { validateExampleValuesAgainstOverlays } from "../utils/exampleValidation";
 import Loading from "../components/Loading";
 import Spinner from "../components/Spinner";
 import BackNextSkeleton from "../components/BackNextSkeleton";
@@ -93,6 +100,22 @@ export default function ViewSchema({
   ];
 
   const filteredLanguages = React.useMemo(() => [...languages], [languages]);
+
+  // Check example overlay values against the range and format overlays (when present).
+  const exampleValueIssues = useMemo(() => {
+    if (!schemaState) return [];
+    return validateExampleValuesAgainstOverlays({
+      attributes: schemaState.attributes || [],
+      attributeFormats: schemaState.attributeFormats || {},
+      attributeRanges: schemaState.attributeRanges || {},
+      exampleData: schemaState.exampleData || {},
+      languages: filteredLanguages,
+      decimalSeparator: schemaState.decimalSeparator || ".",
+      enableDecimal: !!schemaState.enableDecimalSeparator,
+      arrayDelimiterData: schemaState.arrayDelimiterData || {},
+      enableArrayDelimiter: !!schemaState.enableArrayDelimiter
+    });
+  }, [schemaState, filteredLanguages]);
 
   // Schema language state - defaults to null (use i18n), can be overridden by schema buttons
   const [schemaLanguageOverride, setSchemaLanguageOverride] = useState(null);
@@ -541,6 +564,13 @@ export default function ViewSchema({
               (u) => u.Attribute === attr.Attribute
             );
 
+            // Build per-language example values map
+            const exampleDataMap = schemaState.exampleData || {};
+            const examplesObj = {};
+            filteredLanguages.forEach((lang) => {
+              examplesObj[lang] = exampleDataMap[attr.Attribute]?.[lang] || "";
+            });
+            
             return {
               Attribute: attr.Attribute,
               Type: displayType,
@@ -560,8 +590,8 @@ export default function ViewSchema({
               UpperInclusive: range.upper_inclusive ?? false,
               // Add unit framing field (UCUM code). If no unitFramedData exists, try to derive a UCUM code from the attribute Unit.
               "Unit Framing":
-                unitFramingData?.["UCUM Code"] ||
-                (attr.Unit ? searchUnits(attr.Unit).firstMatch?.code || "" : "")
+                unitFramingData?.["UCUM Code"] || (attr.Unit ? (searchUnits(attr.Unit).firstMatch?.code || "") : ""),
+              Examples: examplesObj
             };
           });
 
@@ -1049,49 +1079,76 @@ export default function ViewSchema({
               </>
             )}
 
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                marginTop: BETWEEN_SECTION_SPACING,
-                marginBottom: `${HEADER_TO_CONTENT_GAP_PX}px`
-              }}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            marginTop: BETWEEN_SECTION_SPACING,
+            marginBottom: `${HEADER_TO_CONTENT_GAP_PX}px`
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 20,
+              fontWeight: "bold",
+              textAlign: "left",
+              margin: 0,
+              lineHeight: 1.5,
+              color: primaryColor
+            }}
+          >
+            {t("Schema Details")}
+          </Typography>
+          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
+            <Tooltip
+              title={t(
+                "Attributes and all details relevant to them"
+              )}
+              placement="right"
+              arrow
             >
-              <Typography
-                sx={{
-                  fontSize: 20,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                  margin: 0,
-                  lineHeight: 1.5,
-                  color: primaryColor
-                }}
-              >
-                {t("Schema Details")}
-              </Typography>
-              <Box
-                sx={{
-                  marginLeft: "1rem",
-                  color: CustomPalette.GREY_600,
-                  display: "flex",
-                  alignItems: "center"
-                }}
-              >
-                <Tooltip
-                  title={t("Attributes and all details relevant to them")}
-                  placement="right"
-                  arrow
-                >
-                  <HelpOutlineIcon sx={{ fontSize: 15 }} />
-                </Tooltip>
-              </Box>
+              <HelpOutlineIcon sx={{ fontSize: 15 }} />
+            </Tooltip>
+          </Box>
+        </Box>
+        {exampleValueIssues.length > 0 && (
+          <Alert
+            severity="warning"
+            sx={{ width: "100%", mb: `${HEADER_TO_CONTENT_GAP_PX}px` }}
+          >
+            <Typography sx={{ fontWeight: 600, mb: 0.5 }}>
+              {t("Some example values do not agree with the range, format, decimal, or array delimiter overlays:")}
+            </Typography>
+            <Box component="ul" sx={{ m: 0, pl: 3, textAlign: "left" }}>
+              {exampleValueIssues.map((issue) => {
+                const problemParams = { ...issue.params };
+                // The format description is itself a translation key — translate it
+                // before it's interpolated into the problem sentence.
+                if (problemParams.formatIsDescription && problemParams.format) {
+                  problemParams.format = t(problemParams.format, {
+                    defaultValue: problemParams.format
+                  });
+                }
+                return (
+                  <li key={`${issue.attribute}-${issue.language}-${issue.type}`}>
+                    {t("{{attribute}} (example \"{{value}}\") {{problem}}.", {
+                      attribute: issue.attribute,
+                      value: issue.value,
+                      problem: t(issue.messageKey, { ...problemParams, defaultValue: issue.messageKey })
+                    })}
+                    {filteredLanguages.length > 1 ? ` [${issue.language}]` : ""}
+                  </li>
+                );
+              })}
             </Box>
-            <ViewGrid
-              displayArray={displayArray}
-              currentLanguage={getCurrentLanguage()}
-              setLoading={setLoading}
-              packageWithEdits={pkgFromState}
-            />
+          </Alert>
+        )}
+        <ViewGrid
+          displayArray={displayArray}
+          currentLanguage={getCurrentLanguage()}
+          setLoading={setLoading}
+          packageWithEdits={pkgFromState}
+        />
             {addClearButton && isPageForward && isExport && summaryExportMode && (
               <Box
                 sx={{ display: "flex", justifyContent: "flex-end", mt: 4, width: "100%" }}

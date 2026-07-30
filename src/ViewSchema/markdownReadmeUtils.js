@@ -201,10 +201,15 @@ export const generateLanguageSpecificSchemaDetailsTable = ({
   attributeNames,
   languages,
   languageCodeLookupMap,
-  orderingOverlay = null
+  orderingOverlay = null,
+  exampleOverlay = null
 }) => {
   const markdownContent = ["## Language-specific schema details\n\n"];
+  const hasExamples = Array.isArray(exampleOverlay) && exampleOverlay.length > 0;
   const columns = ["Attribute", "Label", "Description", "List"];
+  if (hasExamples) {
+    columns.push("Example");
+  }
 
   languages.forEach((language) => {
     markdownContent.push(`### ${language}\n\n`);
@@ -219,6 +224,9 @@ export const generateLanguageSpecificSchemaDetailsTable = ({
     const entryOverlay = layers.find(
       (layer) => layer.layerName.includes("entry/") && layer.language === languageCode
     );
+    const exampleOverlayForLanguage = hasExamples
+      ? exampleOverlay.find((ov) => ov.language === languageCode)
+      : null;
 
     const rows = attributeNames.map((attribute) => {
       const row = [attribute];
@@ -242,6 +250,12 @@ export const generateLanguageSpecificSchemaDetailsTable = ({
       }
 
       row.push(label, description, list);
+
+      if (hasExamples) {
+        const example = exampleOverlayForLanguage?.attribute_examples?.[attribute] || "";
+        row.push(example);
+      }
+
       return row;
     });
 

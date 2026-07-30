@@ -118,11 +118,18 @@ const useGenerateMarkdownReadMe = () => {
       captureBaseOverlay,
       attributeNames
     });
+    // Extract example overlays from the layers (may be present if the ZIP bundle includes them)
+    const exampleLayersFromBundle = layers.filter((layer) =>
+      layer.layerName.includes("example")
+    );
+    const exampleOverlay = exampleLayersFromBundle.length > 0 ? exampleLayersFromBundle : null;
+
     fileContent += generateLanguageSpecificSchemaDetailsTable({
       layers,
       attributeNames,
       languages,
-      languageCodeLookupMap
+      languageCodeLookupMap,
+      exampleOverlay
     });
     fileContent += generateSAIDTable(captureBaseSAID, layerToSAIDMap);
     fileContent += generateCreationTimestamp();

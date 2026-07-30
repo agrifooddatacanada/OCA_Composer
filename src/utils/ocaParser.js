@@ -10,12 +10,14 @@ import {
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_DATA_SEPARATOR_OVERLAY,
+  FIELD_EXAMPLE_OVERLAY,
   TYPE_CHILD_SCHEMA,
   TYPE_PLACEHOLDER_CHILD_SCHEMA,
   SENSITIVE,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
-  ARRAY_DELIMITER
+  ARRAY_DELIMITER,
+  EXAMPLE
 } from "../constants/constants";
 import {
   langNameFromTwoLetters,
@@ -213,12 +215,16 @@ export class OCAParser {
     // Supports both ADC extension shapes: array-of-overlay-objects and { overlays: {...} }.
     const dataSeparator = this._parseDataSeparatorOverlays(adcExtensionEntry);
 
+    // Parse Example ADC overlay into UI-shaped exampleData map.
+    const exampleParsed = this._parseExampleOverlay(adcExtensions);
+
     const overlaySelections = this._buildOverlaySelections(
       schemaData.overlays,
       hasUnitFramingExtension,
       hasRangeExtension,
       hasFormExtension,
-      dataSeparator.hasAny
+      dataSeparator.hasAny,
+      exampleParsed.hasAny
     );
 
     // Build localized metadata from meta overlays
@@ -250,7 +256,9 @@ export class OCAParser {
       enableFileDelimiter: dataSeparator.enableFileDelimiter,
       arrayDelimiterData: dataSeparator.arrayDelimiterData,
       enableArrayDelimiter: dataSeparator.enableArrayDelimiter,
-      initialized: true // CRITICAL: Marks schema as parsed (don't re-parse)
+      // Example overlay fields (imported from ADC extensions)
+      exampleData: exampleParsed.exampleData,
+      initialized: true  // CRITICAL: Marks schema as parsed (don't re-parse)
     };
   }
 
@@ -926,13 +934,7 @@ export class OCAParser {
    * Build overlay selections based on present overlays
    * @private
    */
-  static _buildOverlaySelections(
-    overlays,
-    hasUnitFramingExtension = false,
-    hasRangeExtension = false,
-    hasFormExtension = false,
-    hasDataSeparatorExtension = false
-  ) {
+  static _buildOverlaySelections(overlays, hasUnitFramingExtension = false, hasRangeExtension = false, hasFormExtension = false, hasDataSeparatorExtension = false, hasExampleExtension = false) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
@@ -952,7 +954,8 @@ export class OCAParser {
       [FIELD_RANGE_OVERLAY]: hasRangeExtension,
       [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
       [FIELD_FORM_INFORMATION_OVERLAY]: hasFormExtension,
-      [FIELD_DATA_SEPARATOR_OVERLAY]: hasDataSeparatorExtension
+      [FIELD_DATA_SEPARATOR_OVERLAY]: hasDataSeparatorExtension,
+      [FIELD_EXAMPLE_OVERLAY]: hasExampleExtension
     };
     return selections;
   }
@@ -1037,6 +1040,83 @@ export class OCAParser {
       result.enableArrayDelimiter = true;
       result.hasAny = true;
     }
+
+    return result;
+  }
+
+  /**
+   * Parse Example ADC extension overlay into the UI state shape.
+   *
+   * Handles two supported ADC shapes:
+   *
+   *   Pre-processed (input to oca_package library, array of overlay objects):
+   *     [ { example_overlay: { example_overlays: { "eng": { language: "eng", attribute_examples: {...} } } } } ]
+   *
+   *   Post-processed (output from oca_package library, object with overlays map):
+   *     { overlays: { example: [ { d, capture_base, type, language, attribute_examples: {...} } ] } }
+   *
+   * Parses all language entries so the UI can show per-language example inputs.
+   *
+   * Returns:
+   *   - exampleData: { attributeName: { languageName: "example value string" } }
+   *   - hasAny: true when at least one example value was found
+   *
+   * @private
+   */
+  static _parseExampleOverlay(adcExtensions) {
+    const result = {
+      exampleData: {},
+      hasAny: false
+    };
+
+    if (!adcExtensions) return result;
+
+    // Collect { langCode: { attributeName: value } } from the source shape.
+    const byLangCode = {};
+
+    if (Array.isArray(adcExtensions)) {
+      // Pre-processed shape: [{ example_overlay: { example_overlays: [ { language, attribute_examples }, ... ] } }]
+      // Older files may use an object keyed by language code; both shapes are supported.
+      const dynOverlay = adcExtensions.find((ov) => ov?.example_overlay)?.example_overlay;
+      const exampleOverlays = dynOverlay?.example_overlays;
+      if (Array.isArray(exampleOverlays)) {
+        exampleOverlays.forEach((entry) => {
+          if (entry?.language && entry?.attribute_examples) {
+            byLangCode[entry.language] = entry.attribute_examples;
+          }
+        });
+      } else if (exampleOverlays && typeof exampleOverlays === "object") {
+        // Legacy object-keyed shape: { "eng": { language, attribute_examples }, ... }
+        Object.entries(exampleOverlays).forEach(([langCode, entry]) => {
+          if (entry?.attribute_examples) {
+            byLangCode[langCode] = entry.attribute_examples;
+          }
+        });
+      }
+    } else {
+      // Post-processed shape: { overlays: { example: [ {d, capture_base, type, language, attribute_examples} ] } }
+      const overlays = adcExtensions?.overlays || {};
+      const exampleArr = overlays[EXAMPLE] || overlays.example_overlay;
+      const entries = Array.isArray(exampleArr) ? exampleArr : (exampleArr ? [exampleArr] : []);
+      entries.forEach((entry) => {
+        if (entry?.language && entry?.attribute_examples) {
+          byLangCode[entry.language] = entry.attribute_examples;
+        }
+      });
+    }
+
+    Object.entries(byLangCode).forEach(([langCode, attributeExamples]) => {
+      if (!attributeExamples || typeof attributeExamples !== "object") return;
+      // Resolve full language name ("English", "French") from OCA code ("eng", "fra")
+      const langName = langNameFromCodeOCA(langCode) || langNameFromTwoLetters(langCode) || langCode;
+      Object.entries(attributeExamples).forEach(([attr, value]) => {
+        if (value !== undefined && value !== null) {
+          if (!result.exampleData[attr]) result.exampleData[attr] = {};
+          result.exampleData[attr][langName] = String(value);
+          result.hasAny = true;
+        }
+      });
+    });
 
     return result;
   }
