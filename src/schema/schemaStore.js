@@ -21,7 +21,8 @@ import {
 import {
   isRangeEligibleAttributeType,
   overlayItems,
-  CUSTOM_FORMAT_RULE
+  CUSTOM_FORMAT_RULE,
+  DEFAULT_ATTRIBUTE_FRAMING_METADATA
 } from "../constants/constants";
 
 export const createDefaultSchemaState = () => ({
@@ -98,6 +99,8 @@ export const createDefaultSchemaState = () => ({
   unitData: [],
   unitFramedData: [],
   attributeFramingData: [],
+  // Attribute Framing overlay metadata (ADC extension) - user-editable framing_metadata
+  attributeFramingMetadata: { ...DEFAULT_ATTRIBUTE_FRAMING_METADATA },
   // Data Separator overlay (ADC extension) - per-schema
   decimalSeparator: ".",
   fileDelimiterData: {

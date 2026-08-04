@@ -27,15 +27,14 @@ import {
   FormControl,
   CircularProgress
 } from "@mui/material";
-import { AgGridReact } from "../components/AgGridReact";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import SearchIcon from "@mui/icons-material/Search";
+import { AgGridReact } from "../components/AgGridReact";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import Spinner from "../components/Spinner";
 import { gridStyles, preWrapWordBreak } from "../constants/styles";
@@ -43,8 +42,10 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import { getAllGridRowData } from "./gridUtils";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import {
+  BETWEEN_SECTION_SPACING,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-  ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS
+  ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS,
+  DEFAULT_ATTRIBUTE_FRAMING_METADATA
 } from "../constants/constants";
 import { CustomPalette } from "../constants/customPalette";
 import {
@@ -1075,7 +1076,7 @@ const updateFramedAttributes = (attributeFramingRowData, displayedFramedAttribut
       : row;
   });
 
-const AttributeFraming = forwardRef(function AttributeFraming(_props, ref) {
+const AttributeFraming = forwardRef((_props, ref) => {
   const {
     setCurrentPage
   } = useContext(Context);
@@ -1087,10 +1088,21 @@ const AttributeFraming = forwardRef(function AttributeFraming(_props, ref) {
   } = useMultiSchema();
   
   const schemaState = getSchema();
-  const attributeFramingRowData = schemaState?.attributeFramingData || [];
+  const attributeFramingRowData = useMemo(
+    () => schemaState?.attributeFramingData || [],
+    [schemaState?.attributeFramingData]
+  );
   const frameAllAttributes = schemaState?.frameAllAttributes || false;
   const unframedAttributeList = schemaState?.unframedAttributeList || [];
-  
+  const attributes = useMemo(
+    () => schemaState?.attributes || [],
+    [schemaState?.attributes]
+  );
+  const framingMetadata = useMemo(
+    () => schemaState?.attributeFramingMetadata || DEFAULT_ATTRIBUTE_FRAMING_METADATA,
+    [schemaState?.attributeFramingMetadata]
+  );
+
   // Setter functions that update MultiSchemaContext
   const setAttributeFramingRowData = useCallback((data) => {
     updateSchema({ attributeFramingData: data });
@@ -1103,6 +1115,40 @@ const AttributeFraming = forwardRef(function AttributeFraming(_props, ref) {
   const setUnframedAttributeList = useCallback((list) => {
     updateSchema({ unframedAttributeList: list });
   }, [updateSchema]);
+
+  const handleMetadataChange = useCallback(
+    (field, value) => {
+      updateSchema({
+        attributeFramingMetadata: { ...framingMetadata, [field]: value }
+      });
+    },
+    [updateSchema, framingMetadata]
+  );
+
+  // Seed one framing row per schema attribute the first time the editor is
+  // opened with no persisted framing data. Uses a ref so intentionally cleared
+  // rows are not re-seeded within the same mount.
+  const hasSeededRef = useRef(false);
+  useEffect(() => {
+    if (hasSeededRef.current) return;
+    if (attributeFramingRowData.length > 0) {
+      hasSeededRef.current = true;
+      return;
+    }
+    const seeded = attributes
+      .filter((attr) => attr?.Attribute && String(attr.Attribute).trim() !== "")
+      .map((attr) => ({
+        Attribute: attr.Attribute,
+        objectId: "",
+        description: "",
+        predicateId: "",
+        mappingJustification: ""
+      }));
+    if (seeded.length > 0) {
+      hasSeededRef.current = true;
+      setAttributeFramingRowData(seeded);
+    }
+  }, [attributes, attributeFramingRowData, setAttributeFramingRowData]);
   
   const { t, i18n } = useTranslation();
   const gridRef = useRef();
@@ -1200,22 +1246,25 @@ const AttributeFraming = forwardRef(function AttributeFraming(_props, ref) {
     gridReady
   ]);
 
-  const handleEdit = (rowIndex) => {
+  const handleEdit = useCallback((rowIndex) => {
     setEditingRowIndex(rowIndex);
     setShowEditModal(true);
-  };
+  }, []);
 
-  const handleDelete = (rowIndex) => {
-    const updatedRowData = attributeFramingRowData.filter(
-      (_, index) => index !== rowIndex
-    );
+  const handleDelete = useCallback(
+    (rowIndex) => {
+      const updatedRowData = attributeFramingRowData.filter(
+        (_, index) => index !== rowIndex
+      );
 
-    setAttributeFramingRowData(updatedRowData);
+      setAttributeFramingRowData(updatedRowData);
 
-    if (editingRowIndex !== null && editingRowIndex > rowIndex) {
-      setEditingRowIndex(editingRowIndex - 1);
-    }
-  };
+      if (editingRowIndex !== null && editingRowIndex > rowIndex) {
+        setEditingRowIndex(editingRowIndex - 1);
+      }
+    },
+    [attributeFramingRowData, setAttributeFramingRowData, editingRowIndex]
+  );
 
   const handleEditSave = (selectedItem) => {
     if (selectedItem && editingRowIndex !== null) {
@@ -1329,7 +1378,7 @@ const AttributeFraming = forwardRef(function AttributeFraming(_props, ref) {
         })
       }
     ],
-    [t]
+    [t, handleEdit, handleDelete]
   );
 
   const unframedAttributesText = frameAllAttributes
@@ -1374,10 +1423,6 @@ const AttributeFraming = forwardRef(function AttributeFraming(_props, ref) {
     setCurrentPage("Overlays");
   };
 
-  const handleBack = () => {
-    setShowDeleteConfirmation(true);
-  };
-
   return (
     <BackNextSkeleton
       isForward
@@ -1416,6 +1461,83 @@ const AttributeFraming = forwardRef(function AttributeFraming(_props, ref) {
               overflow: "visible"
             }}
           >
+            <Paper
+              variant="outlined"
+              sx={{
+                width: "100%",
+                maxWidth: "900px",
+                p: { xs: 2, sm: 3 },
+                borderColor: CustomPalette.GREY_300
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ color: CustomPalette.PRIMARY, mb: 0.5 }}
+              >
+                {t("Framing source")}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: "text.secondary", mb: 2 }}
+              >
+                {t(
+                  "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata."
+                )}
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t("ID")}
+                    placeholder="FOODON"
+                    value={framingMetadata.id || ""}
+                    onChange={(e) => handleMetadataChange("id", e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t("Label")}
+                    placeholder="Food Ontology"
+                    value={framingMetadata.label || ""}
+                    onChange={(e) => handleMetadataChange("label", e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={8}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t("Location")}
+                    placeholder="https://..."
+                    value={framingMetadata.location || ""}
+                    onChange={(e) => handleMetadataChange("location", e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t("Version")}
+                    placeholder="1.0"
+                    value={framingMetadata.version || ""}
+                    onChange={(e) => handleMetadataChange("version", e.target.value)}
+                  />
+                </Grid>
+              </Grid>
+              {framingMetadata.imports &&
+                Object.keys(framingMetadata.imports).length > 0 && (
+                  <Typography
+                    variant="caption"
+                    sx={{ display: "block", mt: 1.5, color: "text.secondary" }}
+                  >
+                    {t("Imported framing sources")}:{" "}
+                    {Object.keys(framingMetadata.imports).join(", ")}
+                  </Typography>
+                )}
+            </Paper>
+
             <Box
               sx={{
                 display: "flex",
@@ -1485,5 +1607,7 @@ const AttributeFraming = forwardRef(function AttributeFraming(_props, ref) {
     </BackNextSkeleton>
   );
 });
+
+AttributeFraming.displayName = "AttributeFraming";
 
 export default AttributeFraming;

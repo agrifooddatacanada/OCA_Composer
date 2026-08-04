@@ -172,10 +172,7 @@ const Overlays = ({ pageBack, pageForward }) => {
             >
               {unselectedKeys
                 .filter(
-                  (overlayKey) =>
-                    overlayKey &&
-                    overlayKey.trim() !== "" &&
-                    overlayKey !== FIELD_ATTRIBUTE_FRAMING_OVERLAY
+                  (overlayKey) => overlayKey && overlayKey.trim() !== ""
                 )
                 .map((overlayKey) => {
                 const displayName = overlayKey;

@@ -17,7 +17,9 @@ import {
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER,
-  EXAMPLE
+  EXAMPLE,
+  ATTRIBUTE_FRAMING,
+  DEFAULT_ATTRIBUTE_FRAMING_METADATA
 } from "../constants/constants";
 import {
   langNameFromTwoLetters,
@@ -218,13 +220,17 @@ export class OCAParser {
     // Parse Example ADC overlay into UI-shaped exampleData map.
     const exampleParsed = this._parseExampleOverlay(adcExtensions);
 
+    // Parse Attribute Framing ADC overlay into UI-shaped grid rows + metadata.
+    const attributeFramingParsed = this._parseAttributeFramingOverlay(adcExtensions);
+
     const overlaySelections = this._buildOverlaySelections(
       schemaData.overlays,
       hasUnitFramingExtension,
       hasRangeExtension,
       hasFormExtension,
       dataSeparator.hasAny,
-      exampleParsed.hasAny
+      exampleParsed.hasAny,
+      attributeFramingParsed.hasAny
     );
 
     // Build localized metadata from meta overlays
@@ -258,6 +264,9 @@ export class OCAParser {
       enableArrayDelimiter: dataSeparator.enableArrayDelimiter,
       // Example overlay fields (imported from ADC extensions)
       exampleData: exampleParsed.exampleData,
+      // Attribute Framing overlay fields (imported from ADC extensions)
+      attributeFramingData: attributeFramingParsed.attributeFramingData,
+      attributeFramingMetadata: attributeFramingParsed.attributeFramingMetadata,
       initialized: true  // CRITICAL: Marks schema as parsed (don't re-parse)
     };
   }
@@ -934,7 +943,7 @@ export class OCAParser {
    * Build overlay selections based on present overlays
    * @private
    */
-  static _buildOverlaySelections(overlays, hasUnitFramingExtension = false, hasRangeExtension = false, hasFormExtension = false, hasDataSeparatorExtension = false, hasExampleExtension = false) {
+  static _buildOverlaySelections(overlays, hasUnitFramingExtension = false, hasRangeExtension = false, hasFormExtension = false, hasDataSeparatorExtension = false, hasExampleExtension = false, hasAttributeFramingExtension = false) {
     const charEncodingOverlay = overlays?.character_encoding;
     const formatOverlay = overlays?.format;
     const cardinalityOverlay = overlays?.cardinality;
@@ -952,7 +961,7 @@ export class OCAParser {
         !!(unitOverlay?.attribute_units || unitOverlay?.attribute_unit) &&
         hasUnitFramingExtension, // Only enable if explicit framing exists
       [FIELD_RANGE_OVERLAY]: hasRangeExtension,
-      [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: false,
+      [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: hasAttributeFramingExtension,
       [FIELD_FORM_INFORMATION_OVERLAY]: hasFormExtension,
       [FIELD_DATA_SEPARATOR_OVERLAY]: hasDataSeparatorExtension,
       [FIELD_EXAMPLE_OVERLAY]: hasExampleExtension
@@ -1039,6 +1048,77 @@ export class OCAParser {
       result.arrayDelimiterData = { ...arrayOverlay.attributes };
       result.enableArrayDelimiter = true;
       result.hasAny = true;
+    }
+
+    return result;
+  }
+
+  /**
+   * Parse Attribute Framing ADC extension overlay into the UI state shape.
+   *
+   * Handles both supported ADC shapes:
+   *   - Pre-processed (array): [{ attribute_framing_overlay: { type, framing_metadata, attributes } }]
+   *   - Post-processed (object): { overlays: { attribute_framing: { d, capture_base, type, framing_metadata, attributes } } }
+   *
+   * The exported `attributes` map has shape:
+   *   { "<AttrName>": { description, framing_justification, predicate_id, term_id } }
+   * which is mapped back to the AttributeFraming.jsx grid row shape:
+   *   { Attribute, objectId, description, predicateId, mappingJustification }
+   *
+   * Returns:
+   *   - attributeFramingData: array of grid rows
+   *   - attributeFramingMetadata: { id, label, location, version, imports? }
+   *   - hasAny: true when the overlay is present (used to flip the overlay
+   *     selection on so it appears as "already added" after import).
+   *
+   * @private
+   */
+  static _parseAttributeFramingOverlay(adcExtensions) {
+    const result = {
+      attributeFramingData: [],
+      attributeFramingMetadata: { ...DEFAULT_ATTRIBUTE_FRAMING_METADATA },
+      hasAny: false
+    };
+
+    if (!adcExtensions) return result;
+
+    let overlay;
+    if (Array.isArray(adcExtensions)) {
+      overlay = adcExtensions.find(
+        (ov) => ov?.attribute_framing_overlay
+      )?.attribute_framing_overlay;
+    } else {
+      const overlays = adcExtensions?.overlays || {};
+      overlay = overlays.attribute_framing_overlay || overlays[ATTRIBUTE_FRAMING];
+    }
+
+    if (!overlay) return result;
+
+    result.hasAny = true;
+
+    if (overlay.framing_metadata && typeof overlay.framing_metadata === "object") {
+      const meta = overlay.framing_metadata;
+      result.attributeFramingMetadata = {
+        id: meta.id ?? DEFAULT_ATTRIBUTE_FRAMING_METADATA.id,
+        label: meta.label ?? DEFAULT_ATTRIBUTE_FRAMING_METADATA.label,
+        location: meta.location ?? DEFAULT_ATTRIBUTE_FRAMING_METADATA.location,
+        version: meta.version ?? DEFAULT_ATTRIBUTE_FRAMING_METADATA.version,
+        ...(meta.imports && typeof meta.imports === "object"
+          ? { imports: meta.imports }
+          : {})
+      };
+    }
+
+    if (overlay.attributes && typeof overlay.attributes === "object") {
+      result.attributeFramingData = Object.entries(overlay.attributes).map(
+        ([attribute, framing]) => ({
+          Attribute: attribute,
+          objectId: framing?.term_id || "",
+          description: framing?.description || "",
+          predicateId: framing?.predicate_id || "",
+          mappingJustification: framing?.framing_justification || ""
+        })
+      );
     }
 
     return result;

@@ -33,6 +33,10 @@ import {
   FIELD_CARDINALITY_OVERLAY,
   RANGE,
   ATTRIBUTE_FRAMING,
+  ATTRIBUTE_FRAME_ID,
+  ATTRIBUTE_FRAME_LABEL,
+  ATTRIBUTE_FRAME_LOCATION,
+  ATTRIBUTE_FRAME_VERSION,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_DATA_SEPARATOR_OVERLAY,
   DECIMAL_SEPARATOR,
@@ -180,6 +184,11 @@ const useOCAExport = () => {
     const attributeCardinality = schemaState?.attributeCardinality || {};
     const attributeRanges = schemaState?.attributeRanges || {};
     const attributeFramingRowData = schemaState?.attributeFramingData || [];
+    const attributeFramingMetadata =
+      schemaState?.attributeFramingMetadata &&
+      typeof schemaState.attributeFramingMetadata === "object"
+        ? schemaState.attributeFramingMetadata
+        : {};
     const unitFramedRowData = schemaState?.unitFramedData || [];
     const decimalSeparator = schemaState?.decimalSeparator || ".";
     const fileDelimiterData = schemaState?.fileDelimiterData || {};
@@ -613,11 +622,16 @@ const useOCAExport = () => {
             attribute_framing_overlay: {
               type: ATTRIBUTE_FRAMING,
               framing_metadata: {
-                id: "FOODON",
-                label: "Food Ontology",
+                id: attributeFramingMetadata.id ?? ATTRIBUTE_FRAME_ID,
+                label: attributeFramingMetadata.label ?? ATTRIBUTE_FRAME_LABEL,
                 location:
-                  "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl",
-                version: "1.0"
+                  attributeFramingMetadata.location ?? ATTRIBUTE_FRAME_LOCATION,
+                version: attributeFramingMetadata.version ?? ATTRIBUTE_FRAME_VERSION,
+                ...(attributeFramingMetadata.imports &&
+                typeof attributeFramingMetadata.imports === "object" &&
+                Object.keys(attributeFramingMetadata.imports).length > 0
+                  ? { imports: attributeFramingMetadata.imports }
+                  : {})
               },
               attributes: getAttributeFramingInput(
                 attributeFramingRowData,

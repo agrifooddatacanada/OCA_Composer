@@ -438,9 +438,7 @@ export const getAttributesFramedThatAlreadyExistInOcaPackage = (OCAPackage) => {
   const captureBaseSaid = getRootCaptureBaseId(OCAPackage);
 
   const attributeFramingOverlay = hasAttributeFramingOverlay(OCAPackage)
-    ? OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.find(
-        (overlay) => overlay.attribute_framing
-      )?.attribute_framing
+    ? OCAPackage.extensions?.[ADC]?.[captureBaseSaid]?.overlays?.attribute_framing
     : undefined;
 
   if (!attributeFramingOverlay) return {};
