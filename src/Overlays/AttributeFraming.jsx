@@ -170,16 +170,40 @@ const AttributeFraming = forwardRef((_props, ref) => {
   } = useMultiSchema();
 
   const schemaState = getSchema();
-  const attributeFramingRowData = useMemo(
-    () => schemaState?.attributeFramingData || [],
-    [schemaState?.attributeFramingData]
-  );
-  const frameAllAttributes = schemaState?.frameAllAttributes || false;
-  const unframedAttributeList = schemaState?.unframedAttributeList || [];
   const attributes = useMemo(
     () => schemaState?.attributes || [],
     [schemaState?.attributes]
   );
+  // Reconcile persisted framing rows with the current attribute list so every
+  // schema attribute always has a row here - framed or not. Without this,
+  // attributes that have no framing yet (e.g. because the imported OCA
+  // package's attribute_framing overlay only lists attributes that ARE
+  // framed) would simply be missing from the grid, and "all attributes are
+  // framed" would be computed over that incomplete subset.
+  const attributeFramingRowData = useMemo(() => {
+    const persisted = Array.isArray(schemaState?.attributeFramingData)
+      ? schemaState.attributeFramingData
+      : [];
+    const persistedByAttribute = new Map(
+      persisted.map((row) => [row.Attribute, row])
+    );
+    return attributes
+      .filter((attr) => attr?.Attribute && String(attr.Attribute).trim() !== "")
+      .map((attr) => {
+        const existing = persistedByAttribute.get(attr.Attribute);
+        return (
+          existing || {
+            Attribute: attr.Attribute,
+            objectId: "",
+            description: "",
+            predicateId: "",
+            mappingJustification: ""
+          }
+        );
+      });
+  }, [schemaState?.attributeFramingData, attributes]);
+  const frameAllAttributes = schemaState?.frameAllAttributes || false;
+  const unframedAttributeList = schemaState?.unframedAttributeList || [];
   const framingMetadata = useMemo(
     () => schemaState?.attributeFramingMetadata || DEFAULT_ATTRIBUTE_FRAMING_METADATA,
     [schemaState?.attributeFramingMetadata]
@@ -206,31 +230,6 @@ const AttributeFraming = forwardRef((_props, ref) => {
     },
     [updateSchema, framingMetadata]
   );
-
-  // Seed one framing row per schema attribute the first time the editor is
-  // opened with no persisted framing data. Uses a ref so intentionally cleared
-  // rows are not re-seeded within the same mount.
-  const hasSeededRef = useRef(false);
-  useEffect(() => {
-    if (hasSeededRef.current) return;
-    if (attributeFramingRowData.length > 0) {
-      hasSeededRef.current = true;
-      return;
-    }
-    const seeded = attributes
-      .filter((attr) => attr?.Attribute && String(attr.Attribute).trim() !== "")
-      .map((attr) => ({
-        Attribute: attr.Attribute,
-        objectId: "",
-        description: "",
-        predicateId: "",
-        mappingJustification: ""
-      }));
-    if (seeded.length > 0) {
-      hasSeededRef.current = true;
-      setAttributeFramingRowData(seeded);
-    }
-  }, [attributes, attributeFramingRowData, setAttributeFramingRowData]);
 
   const { t, i18n } = useTranslation();
   const gridRef = useRef();
@@ -269,10 +268,21 @@ const AttributeFraming = forwardRef((_props, ref) => {
     setAttributeFramingRowData(displayedRows);
   }, [setAttributeFramingRowData]);
 
+  // Every schema attribute always has a row (see attributeFramingRowData
+  // above), so "delete" clears this attribute's framing rather than removing
+  // the row - otherwise it would just reappear blank on the next render.
   const handleDelete = useCallback(
     (rowIndex) => {
-      const updatedRowData = attributeFramingRowData.filter(
-        (_, index) => index !== rowIndex
+      const updatedRowData = attributeFramingRowData.map((row, index) =>
+        index === rowIndex
+          ? {
+              ...row,
+              objectId: "",
+              description: "",
+              predicateId: "",
+              mappingJustification: ""
+            }
+          : row
       );
       setAttributeFramingRowData(updatedRowData);
     },
