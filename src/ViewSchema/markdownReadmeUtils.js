@@ -272,6 +272,7 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   sensitiveAttributes = [],
   rangeOverlay = null,
   unitFramingOverlay = null,
+  attributeFramingOverlay = null,
   arrayDelimiterOverlay = null
 }) => {
   const hcfFlaggedAttributes = Array.isArray(captureBaseOverlay.flagged_attributes)
@@ -299,6 +300,7 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   const standardOverlay = layers.find((layer) => layer.layerName.includes("standard"));
 
   const unitFramingUnits = Object.keys(unitFramingOverlay?.units || {});
+  const attributeFramingAttributes = attributeFramingOverlay?.attributes || {};
 
   if (conformanceOverlay?.attribute_conformance) {
     columns.push("Required entry");
@@ -322,6 +324,10 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
 
   if (unitFramingUnits.length > 0) {
     columns.push("Unit Framing");
+  }
+
+  if (Object.keys(attributeFramingAttributes).length > 0) {
+    columns.push("Attribute Framing");
   }
 
   if (arrayDelimiterOverlay) {
@@ -386,6 +392,10 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
       row.push(unitFramingData.term_id);
     }
 
+    if (Object.keys(attributeFramingAttributes).length > 0) {
+      row.push(attributeFramingAttributes[attribute]?.term_id || "");
+    }
+
     if (arrayDelimiterOverlay?.attributes?.[attribute]) {
       const arrayDelimiter = arrayDelimiterOverlay.attributes[attribute];
       row.push(prettyPrintDelimiter(arrayDelimiter));
@@ -404,6 +414,52 @@ export const generateUnitFramingMetadataTable = (unitFramingMetadata) => {
   const columns = ["Term", "Value"];
   const rows = Object.entries(unitFramingMetadata);
   markdownContent.push(generateTable(columns, rows), "\n\n");
+  return markdownContent.join("");
+};
+
+// Attribute Framing's term_id is surfaced as its own column in the
+// language-independent table (matching how Unit Framing shows its term_id).
+// This section covers the rest: the framing source metadata, any imported
+// supporting vocabularies, and the per-attribute predicate/description/
+// justification fields that don't fit in the language-independent table.
+export const generateAttributeFramingTable = (attributeFramingOverlay) => {
+  const markdownContent = ["### Attribute framing \n\n"];
+
+  const { imports, ...framingMetadata } = attributeFramingOverlay?.framing_metadata || {};
+  const columns = ["Term", "Value"];
+  const rows = Object.entries(framingMetadata);
+  markdownContent.push(generateTable(columns, rows), "\n\n");
+
+  if (imports && typeof imports === "object" && Object.keys(imports).length > 0) {
+    markdownContent.push("#### Imported vocabularies\n\n");
+    const importColumns = ["ID", "Label", "Location", "Version"];
+    const importRows = Object.entries(imports).map(([id, imp]) => [
+      id,
+      imp?.label || "",
+      imp?.location || "",
+      imp?.version || ""
+    ]);
+    markdownContent.push(generateTable(importColumns, importRows), "\n\n");
+  }
+
+  const attributeEntries = Object.entries(attributeFramingOverlay?.attributes || {});
+  if (attributeEntries.length > 0) {
+    markdownContent.push("#### Attribute-specific framing\n\n");
+    const attributeColumns = [
+      "Attribute",
+      "Predicate",
+      "Description",
+      "Framing Justification"
+    ];
+    const attributeRows = attributeEntries.map(([attribute, framing]) => [
+      attribute,
+      framing?.predicate_id || "",
+      framing?.description || "",
+      framing?.framing_justification || ""
+    ]);
+    markdownContent.push(generateTable(attributeColumns, attributeRows), "\n\n");
+  }
+
   return markdownContent.join("");
 };
 

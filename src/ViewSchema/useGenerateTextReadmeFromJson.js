@@ -12,6 +12,7 @@ import {
   RANGE,
   SENSITIVE,
   UNIT_FRAMING,
+  ATTRIBUTE_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER
@@ -475,6 +476,52 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
         if (!unitFramingData) return;
         lines.push(
           `   ${attribute}: unit: ${unit}, UCUM code: ${unitFramingData.term_id}`,
+          "\n"
+        );
+      });
+
+      lines.push(
+        "\n",
+        "******************************************************************\n"
+      );
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(extensionOverlays, ATTRIBUTE_FRAMING)) {
+    const attributeFramingOverlay = extensionOverlays[ATTRIBUTE_FRAMING];
+    const framedAttributes = attributeFramingOverlay?.attributes || {};
+
+    if (Object.keys(framedAttributes).length > 0) {
+      lines.push(
+        `Layer name: ${attributeFramingOverlay.type}\n`,
+        `SAID/digest: ${attributeFramingOverlay.d}\n\n`
+      );
+
+      if (attributeFramingOverlay.framing_metadata) {
+        const { imports, ...framingMetadata } = attributeFramingOverlay.framing_metadata;
+
+        lines.push("Attribute frame\n");
+        Object.entries(framingMetadata).forEach(([key, value]) => {
+          lines.push(`   "${key}": "${value}"\n`);
+        });
+        lines.push("\n");
+
+        if (imports && Object.keys(imports).length > 0) {
+          lines.push("Imported vocabularies\n");
+          Object.entries(imports).forEach(([id, imp]) => {
+            lines.push(
+              `   ${id}: label: ${imp?.label || ""}, location: ${imp?.location || ""}, version: ${imp?.version || ""}\n`
+            );
+          });
+          lines.push("\n");
+        }
+      }
+
+      lines.push(`Schema attributes: ${attributeFramingOverlay.type}\n`);
+
+      Object.entries(framedAttributes).forEach(([attribute, framing]) => {
+        lines.push(
+          `   ${attribute}: predicate: ${framing?.predicate_id || ""}, term_id: ${framing?.term_id || ""}, description: ${framing?.description || ""}, framing_justification: ${framing?.framing_justification || ""}`,
           "\n"
         );
       });

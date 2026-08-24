@@ -29,6 +29,7 @@ import {
   RANGE,
   SENSITIVE,
   UNIT_FRAMING,
+  ATTRIBUTE_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER,
@@ -45,7 +46,8 @@ import {
   generateSAIDTableForJson,
   generateSchemaInformation,
   generateSchemaQuickView,
-  generateUnitFramingMetadataTable
+  generateUnitFramingMetadataTable,
+  generateAttributeFramingTable
 } from "./markdownReadmeUtils";
 
 const getModifiedLayer = (overlay) => {
@@ -151,6 +153,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
   const unitFramingOverlay =
     pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[UNIT_FRAMING];
 
+  const attributeFramingOverlay =
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[ATTRIBUTE_FRAMING];
+
   const decimalSeparatorOverlay =
     pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[DECIMAL_SEPARATOR];
 
@@ -252,12 +257,16 @@ const useGenerateMarkdownReadMeFromJson = () => {
       sensitiveAttributes,
       rangeOverlay,
       unitFramingOverlay,
+      attributeFramingOverlay,
       arrayDelimiterOverlay
     });
     if (unitFramingOverlay?.framing_metadata) {
       fileContent += generateUnitFramingMetadataTable(
         unitFramingOverlay.framing_metadata
       );
+    }
+    if (attributeFramingOverlay?.framing_metadata || attributeFramingOverlay?.attributes) {
+      fileContent += generateAttributeFramingTable(attributeFramingOverlay);
     }
     fileContent += generateLanguageSpecificSchemaDetailsTable({
       layers,
@@ -305,6 +314,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
 
         const childUnitFramingOverlay =
           pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[UNIT_FRAMING];
+
+        const childAttributeFramingOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[ATTRIBUTE_FRAMING];
 
         const childExampleOverlay =
           pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[EXAMPLE];
@@ -381,12 +393,19 @@ const useGenerateMarkdownReadMeFromJson = () => {
           attributeNames: childAttributeNames,
           sensitiveAttributes: childSensitiveAttributes,
           rangeOverlay: childRangeOverlay,
-          unitFramingOverlay: childUnitFramingOverlay
+          unitFramingOverlay: childUnitFramingOverlay,
+          attributeFramingOverlay: childAttributeFramingOverlay
         });
         if (childUnitFramingOverlay?.framing_metadata) {
           fileContent += generateUnitFramingMetadataTable(
             childUnitFramingOverlay.framing_metadata
           );
+        }
+        if (
+          childAttributeFramingOverlay?.framing_metadata ||
+          childAttributeFramingOverlay?.attributes
+        ) {
+          fileContent += generateAttributeFramingTable(childAttributeFramingOverlay);
         }
         fileContent += generateLanguageSpecificSchemaDetailsTable({
           layers: childLayers,
