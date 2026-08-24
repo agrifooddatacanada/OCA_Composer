@@ -14,7 +14,9 @@ import React, {
 import { useTranslation } from "react-i18next";
 import {
   Box,
+  Button,
   IconButton,
+  Modal,
   TextField,
   Grid,
   Typography,
@@ -158,6 +160,194 @@ const DeleteButton = ({ node, onDelete }) => {
   );
 };
 
+// Modal for manually adding/editing/removing the supporting vocabularies
+// referenced by the primary framing source (e.g. dcterms, foaf alongside
+// dcat). Edits are staged locally and only committed to schema state on Save,
+// so a canceled edit never leaves partial rows behind.
+const ImportsEditorModal = ({ open, onClose, onSave, initialImports }) => {
+  const { t } = useTranslation();
+  const [rows, setRows] = useState([]);
+  const nextKeyRef = useRef(0);
+  const makeEmptyRow = () => ({
+    key: nextKeyRef.current++,
+    id: "",
+    label: "",
+    location: "",
+    version: ""
+  });
+
+  useEffect(() => {
+    if (!open) return;
+    nextKeyRef.current = 0;
+    const seeded = Object.entries(initialImports || {}).map(([id, imp]) => ({
+      key: nextKeyRef.current++,
+      id,
+      label: imp?.label || "",
+      location: imp?.location || "",
+      version: imp?.version || ""
+    }));
+    setRows(seeded.length > 0 ? seeded : [makeEmptyRow()]);
+  }, [open, initialImports]);
+
+  const handleFieldChange = (index, field, value) => {
+    setRows((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+    );
+  };
+
+  const handleAddRow = () => {
+    setRows((prev) => [...prev, makeEmptyRow()]);
+  };
+
+  const handleRemoveRow = (index) => {
+    setRows((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSave = () => {
+    const importsObj = {};
+    rows.forEach((row) => {
+      const id = row.id.trim();
+      if (!id) return;
+      importsObj[id] = {
+        ...(row.label.trim() ? { label: row.label.trim() } : {}),
+        ...(row.location.trim() ? { location: row.location.trim() } : {}),
+        ...(row.version.trim() ? { version: row.version.trim() } : {})
+      };
+    });
+    onSave(importsObj);
+    onClose();
+  };
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      aria-labelledby="imports-editor-modal"
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 2,
+        backdropFilter: "blur(4px)",
+        backgroundColor: "rgba(0, 0, 0, 0.3)"
+      }}
+    >
+      <Paper
+        sx={{
+          width: { xs: "95vw", sm: "90vw", md: "950px" },
+          maxWidth: "950px",
+          maxHeight: "90vh",
+          overflow: "auto",
+          p: { xs: 2.5, sm: 4 }
+        }}
+      >
+        <Typography variant="h5" sx={{ color: CustomPalette.PRIMARY, mb: 0.75 }}>
+          {t("Manage imported vocabularies")}
+        </Typography>
+        <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
+          {t(
+            "Add supporting vocabularies referenced by the primary framing source above (for example, dcterms or foaf alongside dcat)."
+          )}
+        </Typography>
+
+        {rows.map((row, index) => (
+          <Grid
+            container
+            spacing={2.5}
+            key={row.key}
+            sx={{ mb: 2.5, alignItems: "center" }}
+          >
+            <Grid item xs={12} sm={6} md={2.5}>
+              <TextField
+                fullWidth
+                label={t("ID")}
+                placeholder="dcterms"
+                value={row.id}
+                onChange={(e) => handleFieldChange(index, "id", e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                label={t("Label")}
+                placeholder="DCMI Metadata Terms"
+                value={row.label}
+                onChange={(e) => handleFieldChange(index, "label", e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label={t("Location")}
+                placeholder="https://..."
+                value={row.location}
+                onChange={(e) => handleFieldChange(index, "location", e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={9} sm={5} md={2}>
+              <TextField
+                fullWidth
+                label={t("Version")}
+                placeholder="1.1"
+                value={row.version}
+                onChange={(e) => handleFieldChange(index, "version", e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={3} sm={1} md={0.5} sx={{ display: "flex", justifyContent: "center" }}>
+              <IconButton
+                onClick={() => handleRemoveRow(index)}
+                sx={{
+                  color: CustomPalette.GREY_600,
+                  "&:hover": { color: CustomPalette.PRIMARY }
+                }}
+              >
+                <DeleteOutlineIcon />
+              </IconButton>
+            </Grid>
+          </Grid>
+        ))}
+
+        <Button
+          variant="text"
+          onClick={handleAddRow}
+          sx={{ color: CustomPalette.PRIMARY, mt: 1, fontSize: "1rem" }}
+        >
+          + {t("Add import")}
+        </Button>
+
+        <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end", gap: 2 }}>
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={onClose}
+            sx={{
+              borderColor: CustomPalette.PRIMARY,
+              color: CustomPalette.PRIMARY,
+              "&:hover": {
+                borderColor: CustomPalette.SECONDARY,
+                backgroundColor: CustomPalette.PINK_200
+              }
+            }}
+          >
+            {t("Cancel")}
+          </Button>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleSave}
+            sx={{
+              backgroundColor: CustomPalette.PRIMARY,
+              "&:hover": { backgroundColor: CustomPalette.SECONDARY }
+            }}
+          >
+            {t("Save")}
+          </Button>
+        </Box>
+      </Paper>
+    </Modal>
+  );
+};
+
 const AttributeFraming = forwardRef((_props, ref) => {
   const {
     setCurrentPage
@@ -231,9 +421,19 @@ const AttributeFraming = forwardRef((_props, ref) => {
     [updateSchema, framingMetadata]
   );
 
+  const handleImportsSave = useCallback(
+    (importsObj) => {
+      updateSchema({
+        attributeFramingMetadata: { ...framingMetadata, imports: importsObj }
+      });
+    },
+    [updateSchema, framingMetadata]
+  );
+
   const { t, i18n } = useTranslation();
   const gridRef = useRef();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showImportsModal, setShowImportsModal] = useState(false);
   const [gridReady, setGridReady] = useState(false);
 
   // Use centralized delete handler
@@ -403,6 +603,11 @@ const AttributeFraming = forwardRef((_props, ref) => {
     [t, handleDelete, predicateOptions, justificationOptions, handleCellChanged]
   );
 
+  const importEntries = useMemo(
+    () => Object.entries(framingMetadata.imports || {}),
+    [framingMetadata.imports]
+  );
+
   const unframedAttributesText = frameAllAttributes
     ? t("All attributes are framed")
     : hasUnframedAttributes
@@ -463,6 +668,12 @@ const AttributeFraming = forwardRef((_props, ref) => {
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}
+      <ImportsEditorModal
+        open={showImportsModal}
+        onClose={() => setShowImportsModal(false)}
+        onSave={handleImportsSave}
+        initialImports={framingMetadata.imports}
+      />
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         <Box
           sx={{
@@ -540,16 +751,43 @@ const AttributeFraming = forwardRef((_props, ref) => {
                 />
               </Grid>
             </Grid>
-            {framingMetadata.imports &&
-              Object.keys(framingMetadata.imports).length > 0 && (
-                <Typography
-                  variant="caption"
-                  sx={{ display: "block", mt: 1.5, color: "text.secondary" }}
-                >
-                  {t("Imported framing sources")}:{" "}
-                  {Object.keys(framingMetadata.imports).join(", ")}
-                </Typography>
-              )}
+
+            <Box
+              sx={{
+                mt: 2,
+                pt: 2,
+                borderTop: `1px solid ${CustomPalette.GREY_300}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 1
+              }}
+            >
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                {importEntries.length > 0
+                  ? `${t("Imported vocabularies")}: ${importEntries
+                      .map(([id, imp]) => (imp?.label ? `${id} (${imp.label})` : id))
+                      .join(", ")}`
+                  : t("No supporting vocabularies imported yet")}
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setShowImportsModal(true)}
+                sx={{
+                  borderColor: CustomPalette.PRIMARY,
+                  color: CustomPalette.PRIMARY,
+                  whiteSpace: "nowrap",
+                  "&:hover": {
+                    borderColor: CustomPalette.SECONDARY,
+                    backgroundColor: CustomPalette.PINK_200
+                  }
+                }}
+              >
+                {t("Add import")}
+              </Button>
+            </Box>
           </Paper>
 
           <Box
