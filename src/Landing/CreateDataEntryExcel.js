@@ -13,6 +13,7 @@ import {
   RANGE,
   SENSITIVE,
   UNIT_FRAMING,
+  ATTRIBUTE_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER
@@ -128,6 +129,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let sensitiveOverlay = null;
   let rangeOverlay = null;
   let unitFramingOverlay = null;
+  let attributeFramingOverlay = null;
   let extensionOverlayColumnCount = 0;
   let decimalSeparatorOverlay = null;
   let fileDelimiterOverlay = null;
@@ -147,6 +149,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       sensitiveOverlay = overlays?.[SENSITIVE];
       rangeOverlay = overlays?.[RANGE];
       unitFramingOverlay = overlays?.[UNIT_FRAMING];
+      attributeFramingOverlay = overlays?.[ATTRIBUTE_FRAMING];
       decimalSeparatorOverlay = overlays?.[DECIMAL_SEPARATOR];
       fileDelimiterOverlay = overlays?.[FILE_DELIMITER];
       arrayDelimiterOverlay = overlays?.[ARRAY_DELIMITER];
@@ -938,6 +941,37 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     }
   }
 
+  if (Object.keys(attributeFramingOverlay?.attributes || {}).length > 0) {
+    const columns = ["Attribute Framing"];
+    const startColumnIndex = jsonData.length + 3 + extensionOverlayColumnCount - skipped;
+    try {
+      columns.forEach((column, i) => {
+        const columnIndex = startColumnIndex + i;
+        const columnHeaderCell = sheet1.getCell(shift + 1, columnIndex);
+
+        sheet1.getColumn(columnIndex).width = 15;
+        columnHeaderCell.value = column;
+        formatHeader(columnHeaderCell);
+
+        attributeNames.forEach((attribute) => {
+          const rowIndex = mappingAttrKeysandAttrValues[attribute];
+          if (!rowIndex) return;
+
+          const attributeFramingData = attributeFramingOverlay.attributes[attribute];
+          if (!attributeFramingData) return;
+
+          const valueCell = sheet1.getCell(shift + rowIndex, columnIndex);
+          valueCell.value = attributeFramingData.term_id;
+        });
+        extensionOverlayColumnCount += 1;
+      });
+    } catch (error) {
+      throw new WorkbookError(
+        ".. Error in formatting attribute framing columns (header and rows) ..."
+      );
+    }
+  }
+
   if (rangeOverlay?.attributes) {
     const columns = ["Lower Bound", "Inclusive", "Upper Bound", "Inclusive"];
     const startColumnIndex = jsonData.length + 3 + extensionOverlayColumnCount - skipped;
@@ -1047,7 +1081,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   sheet1.getCell(lookUpStart, 2).value = null;
   formatLookupHeader(sheet1.getCell(lookUpStart, 2));
 
-  if (unitFramingOverlay?.framing_metadata) {
+  if (unitFramingOverlay?.framing_metadata || attributeFramingOverlay?.framing_metadata) {
     sheet1.getCell(lookUpStart, 3).value = "Framing references";
     formatLookupHeader(sheet1.getCell(lookUpStart, 3));
 
@@ -1057,21 +1091,61 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     sheet1.getCell(lookUpStart, 5).value = null;
     formatLookupHeader(sheet1.getCell(lookUpStart, 5));
 
-    sheet1.getCell(lookUpStart + 1, 3).value = "Unit framing";
-    formatLookupValue(sheet1.getCell(lookUpStart + 1, 3));
+    let metadataRow = lookUpStart + 1;
 
-    let metadataRow = lookUpStart + 2;
-
-    for (const [property, value] of Object.entries(
-      unitFramingOverlay?.framing_metadata
-    )) {
-      sheet1.getCell(metadataRow, 4).value = property;
-      formatLookupAttr(sheet1.getCell(metadataRow, 4));
-
-      sheet1.getCell(metadataRow, 5).value = value;
-      formatLookupValue(sheet1.getCell(metadataRow, 5));
-
+    if (unitFramingOverlay?.framing_metadata) {
+      sheet1.getCell(metadataRow, 3).value = "Unit framing";
+      formatLookupValue(sheet1.getCell(metadataRow, 3));
       metadataRow++;
+
+      for (const [property, value] of Object.entries(
+        unitFramingOverlay.framing_metadata
+      )) {
+        sheet1.getCell(metadataRow, 4).value = property;
+        formatLookupAttr(sheet1.getCell(metadataRow, 4));
+
+        sheet1.getCell(metadataRow, 5).value = value;
+        formatLookupValue(sheet1.getCell(metadataRow, 5));
+
+        metadataRow++;
+      }
+    }
+
+    if (attributeFramingOverlay?.framing_metadata) {
+      const { imports, ...attributeFramingMetadata } =
+        attributeFramingOverlay.framing_metadata;
+
+      sheet1.getCell(metadataRow, 3).value = "Attribute framing";
+      formatLookupValue(sheet1.getCell(metadataRow, 3));
+      metadataRow++;
+
+      for (const [property, value] of Object.entries(attributeFramingMetadata)) {
+        sheet1.getCell(metadataRow, 4).value = property;
+        formatLookupAttr(sheet1.getCell(metadataRow, 4));
+
+        sheet1.getCell(metadataRow, 5).value = value;
+        formatLookupValue(sheet1.getCell(metadataRow, 5));
+
+        metadataRow++;
+      }
+
+      if (imports && Object.keys(imports).length > 0) {
+        Object.entries(imports).forEach(([id, imp]) => {
+          sheet1.getCell(metadataRow, 4).value = `import: ${id}`;
+          formatLookupAttr(sheet1.getCell(metadataRow, 4));
+
+          sheet1.getCell(metadataRow, 5).value = [
+            imp?.label ? `label: ${imp.label}` : null,
+            imp?.location ? `location: ${imp.location}` : null,
+            imp?.version ? `version: ${imp.version}` : null
+          ]
+            .filter(Boolean)
+            .join(", ");
+          formatLookupValue(sheet1.getCell(metadataRow, 5));
+
+          metadataRow++;
+        });
+      }
     }
   }
 

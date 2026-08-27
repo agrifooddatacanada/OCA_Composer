@@ -377,28 +377,34 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
       row.push(standard);
     }
 
-    if (rangeOverlay?.attributes?.[attribute]) {
+    // These columns are added to the table if the overlay has data for ANY
+    // attribute (see columns.push calls above), so every row must push a
+    // value for them - even a blank one - whenever the column exists.
+    // Otherwise, a row missing data for one of these columns would push
+    // nothing for that cell and shift all subsequent values (e.g. Attribute
+    // Framing's term_id) left into the wrong column.
+    if (rangeOverlay?.attributes) {
       const rangeData = rangeOverlay.attributes[attribute];
       row.push(
-        rangeData.lower,
-        rangeData.lower_inclusive,
-        rangeData.upper,
-        rangeData.upper_inclusive
+        rangeData?.lower ?? "",
+        rangeData?.lower_inclusive ?? "",
+        rangeData?.upper ?? "",
+        rangeData?.upper_inclusive ?? ""
       );
     }
 
-    if (unitFramingOverlay?.units?.[unit]) {
-      const unitFramingData = unitFramingOverlay.units[unit];
-      row.push(unitFramingData.term_id);
+    if (unitFramingUnits.length > 0) {
+      const unitFramingData = unitFramingOverlay?.units?.[unit];
+      row.push(unitFramingData?.term_id || "");
     }
 
     if (Object.keys(attributeFramingAttributes).length > 0) {
       row.push(attributeFramingAttributes[attribute]?.term_id || "");
     }
 
-    if (arrayDelimiterOverlay?.attributes?.[attribute]) {
-      const arrayDelimiter = arrayDelimiterOverlay.attributes[attribute];
-      row.push(prettyPrintDelimiter(arrayDelimiter));
+    if (arrayDelimiterOverlay) {
+      const arrayDelimiter = arrayDelimiterOverlay?.attributes?.[attribute];
+      row.push(arrayDelimiter ? prettyPrintDelimiter(arrayDelimiter) : "");
     }
 
     return row;
