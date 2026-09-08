@@ -17,6 +17,7 @@ import {
   Button,
   IconButton,
   Modal,
+  Popover,
   TextField,
   Grid,
   Typography,
@@ -25,8 +26,10 @@ import {
   MenuItem,
   FormControl
 } from "@mui/material";
+import { Add as AddIcon, Close as CloseIcon } from "@mui/icons-material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { v4 as uuidv4 } from "uuid";
 import { AgGridReact } from "../components/AgGridReact";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -39,8 +42,7 @@ import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import {
   BETWEEN_SECTION_SPACING,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-  ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS,
-  DEFAULT_ATTRIBUTE_FRAMING_METADATA
+  ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS
 } from "../constants/constants";
 import { CustomPalette } from "../constants/customPalette";
 
@@ -49,6 +51,13 @@ import { CustomPalette } from "../constants/customPalette";
 let globalGridRef = null;
 
 const MAX_TEXT_WIDTH = "600px";
+
+const makeBlankMetadata = () => ({ id: "", label: "", location: "", version: "" });
+const makeBlankSource = () => ({
+  key: uuidv4(),
+  metadata: makeBlankMetadata(),
+  rows: []
+});
 
 const DropdownCellRenderer = ({
   value,
@@ -161,9 +170,9 @@ const DeleteButton = ({ node, onDelete }) => {
 };
 
 // Modal for manually adding/editing/removing the supporting vocabularies
-// referenced by the primary framing source (e.g. dcterms, foaf alongside
-// dcat). Edits are staged locally and only committed to schema state on Save,
-// so a canceled edit never leaves partial rows behind.
+// referenced by the active tab's primary framing source (e.g. dcterms, foaf
+// alongside dcat). Edits are staged locally and only committed to schema
+// state on Save, so a canceled edit never leaves partial rows behind.
 const ImportsEditorModal = ({ open, onClose, onSave, initialImports }) => {
   const { t } = useTranslation();
   const [rows, setRows] = useState([]);
@@ -355,28 +364,88 @@ const AttributeFraming = forwardRef((_props, ref) => {
 
   const {
     getSchema,
+    getCurrentSchemaId,
     updateSchema,
     setSelectedOverlay
   } = useMultiSchema();
 
   const schemaState = getSchema();
+  const currentSchemaId = getCurrentSchemaId();
   const attributes = useMemo(
     () => schemaState?.attributes || [],
     [schemaState?.attributes]
   );
-  // Reconcile persisted framing rows with the current attribute list so every
-  // schema attribute always has a row here - framed or not. Without this,
-  // attributes that have no framing yet (e.g. because the imported OCA
-  // package's attribute_framing overlay only lists attributes that ARE
-  // framed) would simply be missing from the grid, and "all attributes are
-  // framed" would be computed over that incomplete subset.
-  const attributeFramingRowData = useMemo(() => {
-    const persisted = Array.isArray(schemaState?.attributeFramingData)
-      ? schemaState.attributeFramingData
-      : [];
-    const persistedByAttribute = new Map(
-      persisted.map((row) => [row.Attribute, row])
+
+  // Each attribute can be framed against several independent vocabularies at
+  // once (e.g. FOODON and ENVO), so framing sources live in local state as a
+  // tabbed list, mirrored into schema state on every edit - same pattern used
+  // by FormBuilder for its per-schema "pages" list. There is always at least
+  // one source once this overlay's page is open (an empty tab list would
+  // leave the user with nothing to edit); the "Add source" button is for the
+  // 2nd and later sources.
+  const [sources, setSourcesLocal] = useState(() => {
+    const persisted = schemaState?.attributeFramingSources;
+    return Array.isArray(persisted) && persisted.length > 0
+      ? persisted
+      : [makeBlankSource()];
+  });
+  const [activeIndex, setActiveIndex] = useState(0);
+  const lastSyncedSchemaIdRef = useRef(currentSchemaId);
+
+  // Re-seed the local tab list whenever the active schema changes (multi-schema
+  // packages), mirroring FormBuilder's schema-switch re-seed effect.
+  useEffect(() => {
+    if (lastSyncedSchemaIdRef.current === currentSchemaId) return;
+    lastSyncedSchemaIdRef.current = currentSchemaId;
+    const persisted = schemaState?.attributeFramingSources;
+    setSourcesLocal(
+      Array.isArray(persisted) && persisted.length > 0
+        ? persisted
+        : [makeBlankSource()]
     );
+    setActiveIndex(0);
+    // schemaState intentionally not in deps: this effect is strictly a
+    // schema-switch hook, not a "keep sources mirrored to schemaState" loop
+    // (applySources owns that direction).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSchemaId]);
+
+  // Mutates local tab list AND mirrors it into global schemaState in the same tick.
+  const applySources = useCallback(
+    (updaterOrValue) => {
+      setSourcesLocal((prev) => {
+        const next =
+          typeof updaterOrValue === "function" ? updaterOrValue(prev) : updaterOrValue;
+        updateSchema({ attributeFramingSources: next });
+        return next;
+      });
+    },
+    [updateSchema]
+  );
+
+  const updateActiveSource = useCallback(
+    (updater) => {
+      applySources((prev) =>
+        prev.map((source, index) =>
+          index === activeIndex ? { ...source, ...updater(source) } : source
+        )
+      );
+    },
+    [applySources, activeIndex]
+  );
+
+  const activeSource = sources[activeIndex] || sources[0] || null;
+  const activeMetadata = activeSource?.metadata || makeBlankMetadata();
+
+  // Reconcile the active source's persisted rows with the current attribute
+  // list so every schema attribute always has a row here - framed or not.
+  // Without this, attributes that have no framing yet (e.g. because the
+  // imported OCA package's attribute_framing overlay only lists attributes
+  // that ARE framed) would simply be missing from the grid, and "all
+  // attributes are framed" would be computed over that incomplete subset.
+  const activeRowData = useMemo(() => {
+    const persisted = Array.isArray(activeSource?.rows) ? activeSource.rows : [];
+    const persistedByAttribute = new Map(persisted.map((row) => [row.Attribute, row]));
     return attributes
       .filter((attr) => attr?.Attribute && String(attr.Attribute).trim() !== "")
       .map((attr) => {
@@ -391,43 +460,51 @@ const AttributeFraming = forwardRef((_props, ref) => {
           }
         );
       });
-  }, [schemaState?.attributeFramingData, attributes]);
-  const frameAllAttributes = schemaState?.frameAllAttributes || false;
-  const unframedAttributeList = schemaState?.unframedAttributeList || [];
-  const framingMetadata = useMemo(
-    () => schemaState?.attributeFramingMetadata || DEFAULT_ATTRIBUTE_FRAMING_METADATA,
-    [schemaState?.attributeFramingMetadata]
+  }, [activeSource, attributes]);
+
+  const setActiveRowData = useCallback(
+    (rows) => {
+      updateActiveSource(() => ({ rows }));
+    },
+    [updateActiveSource]
   );
-
-  // Setter functions that update MultiSchemaContext
-  const setAttributeFramingRowData = useCallback((data) => {
-    updateSchema({ attributeFramingData: data });
-  }, [updateSchema]);
-
-  const setFrameAllAttributes = useCallback((value) => {
-    updateSchema({ frameAllAttributes: value });
-  }, [updateSchema]);
-
-  const setUnframedAttributeList = useCallback((list) => {
-    updateSchema({ unframedAttributeList: list });
-  }, [updateSchema]);
 
   const handleMetadataChange = useCallback(
     (field, value) => {
-      updateSchema({
-        attributeFramingMetadata: { ...framingMetadata, [field]: value }
-      });
+      updateActiveSource((source) => ({
+        metadata: { ...(source.metadata || makeBlankMetadata()), [field]: value }
+      }));
     },
-    [updateSchema, framingMetadata]
+    [updateActiveSource]
   );
 
   const handleImportsSave = useCallback(
     (importsObj) => {
-      updateSchema({
-        attributeFramingMetadata: { ...framingMetadata, imports: importsObj }
+      updateActiveSource((source) => ({
+        metadata: { ...(source.metadata || makeBlankMetadata()), imports: importsObj }
+      }));
+    },
+    [updateActiveSource]
+  );
+
+  const handleAddSource = useCallback(() => {
+    const next = [...sources, makeBlankSource()];
+    applySources(next);
+    setActiveIndex(next.length - 1);
+  }, [sources, applySources]);
+
+  const handleRemoveSource = useCallback(
+    (index) => {
+      if (sources.length <= 1) return;
+      const next = sources.filter((_, i) => i !== index);
+      applySources(next);
+      setActiveIndex((current) => {
+        if (index < current) return current - 1;
+        if (index === current) return Math.min(current, next.length - 1);
+        return current;
       });
     },
-    [updateSchema, framingMetadata]
+    [sources, applySources]
   );
 
   const { t, i18n } = useTranslation();
@@ -435,27 +512,27 @@ const AttributeFraming = forwardRef((_props, ref) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [showImportsModal, setShowImportsModal] = useState(false);
   const [gridReady, setGridReady] = useState(false);
+  const [removeSourceAnchor, setRemoveSourceAnchor] = useState(null);
 
   // Use centralized delete handler
   const deleteHandler = useDeleteOverlayHandler(FIELD_ATTRIBUTE_FRAMING_OVERLAY);
 
-  const hasUnframedAttributes = unframedAttributeList && unframedAttributeList.length > 0;
-
-  // Update unframed attributes list whenever attributeFramingRowData changes
-  useEffect(() => {
-    if (attributeFramingRowData && attributeFramingRowData.length > 0) {
-      const unframed = attributeFramingRowData
-        .filter((row) => !row.objectId || row.objectId.trim() === "")
-        .map((row) => row.Attribute);
-      setUnframedAttributeList(unframed);
-
-      // Update frameAllAttributes based on whether all attributes are framed
-      const allFramed = attributeFramingRowData.every(
-        (row) => row.objectId && row.objectId.trim() !== ""
-      );
-      setFrameAllAttributes(allFramed && attributeFramingRowData.length > 0);
+  // Unframed-attributes status is purely derived from the active tab's rows -
+  // no need to persist it in schema state.
+  const { frameAllAttributes, unframedAttributeList } = useMemo(() => {
+    if (activeRowData.length === 0) {
+      return { frameAllAttributes: false, unframedAttributeList: [] };
     }
-  }, [attributeFramingRowData, setUnframedAttributeList, setFrameAllAttributes]);
+    const unframed = activeRowData
+      .filter((row) => !row.objectId || row.objectId.trim() === "")
+      .map((row) => row.Attribute);
+    const allFramed = activeRowData.every(
+      (row) => row.objectId && row.objectId.trim() !== ""
+    );
+    return { frameAllAttributes: allFramed, unframedAttributeList: unframed };
+  }, [activeRowData]);
+
+  const hasUnframedAttributes = unframedAttributeList.length > 0;
 
   // Commit whatever is currently displayed in the grid back into schema state.
   // Wired to every editable/selectable column so manual edits are persisted
@@ -465,15 +542,15 @@ const AttributeFraming = forwardRef((_props, ref) => {
     if (!api) return;
     const displayedRows = getAllGridRowData(api);
     if (displayedRows.length === 0) return;
-    setAttributeFramingRowData(displayedRows);
-  }, [setAttributeFramingRowData]);
+    setActiveRowData(displayedRows);
+  }, [setActiveRowData]);
 
-  // Every schema attribute always has a row (see attributeFramingRowData
-  // above), so "delete" clears this attribute's framing rather than removing
-  // the row - otherwise it would just reappear blank on the next render.
+  // Every schema attribute always has a row (see activeRowData above), so
+  // "delete" clears this attribute's framing rather than removing the row -
+  // otherwise it would just reappear blank on the next render.
   const handleDelete = useCallback(
     (rowIndex) => {
-      const updatedRowData = attributeFramingRowData.map((row, index) =>
+      const updatedRowData = activeRowData.map((row, index) =>
         index === rowIndex
           ? {
               ...row,
@@ -484,9 +561,9 @@ const AttributeFraming = forwardRef((_props, ref) => {
             }
           : row
       );
-      setAttributeFramingRowData(updatedRowData);
+      setActiveRowData(updatedRowData);
     },
-    [attributeFramingRowData, setAttributeFramingRowData]
+    [activeRowData, setActiveRowData]
   );
 
   const predicateOptions = useMemo(
@@ -604,8 +681,8 @@ const AttributeFraming = forwardRef((_props, ref) => {
   );
 
   const importEntries = useMemo(
-    () => Object.entries(framingMetadata.imports || {}),
-    [framingMetadata.imports]
+    () => Object.entries(activeMetadata.imports || {}),
+    [activeMetadata.imports]
   );
 
   const unframedAttributesText = frameAllAttributes
@@ -624,12 +701,12 @@ const AttributeFraming = forwardRef((_props, ref) => {
       gridRef.current.api.stopEditing();
       const rowData = getAllGridRowData(gridRef.current.api);
       if (rowData.length > 0) {
-        setAttributeFramingRowData(rowData);
+        setActiveRowData(rowData);
       }
     } catch (error) {
       console.error("Error saving grid data:", error);
     }
-  }, [gridReady, setAttributeFramingRowData]);
+  }, [gridReady, setActiveRowData]);
 
   useImperativeHandle(
     ref,
@@ -672,13 +749,42 @@ const AttributeFraming = forwardRef((_props, ref) => {
         open={showImportsModal}
         onClose={() => setShowImportsModal(false)}
         onSave={handleImportsSave}
-        initialImports={framingMetadata.imports}
+        initialImports={activeMetadata.imports}
       />
+      <Popover
+        open={Boolean(removeSourceAnchor)}
+        anchorEl={removeSourceAnchor?.el}
+        onClose={() => setRemoveSourceAnchor(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        transformOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Box sx={{ p: 2, maxWidth: 280 }}>
+          <Typography variant="body2" sx={{ mb: 1.5 }}>
+            {t("Remove this framing source and its data? This cannot be undone.")}
+          </Typography>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+            <Button size="small" onClick={() => setRemoveSourceAnchor(null)}>
+              {t("Cancel")}
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="error"
+              onClick={() => {
+                handleRemoveSource(removeSourceAnchor.index);
+                setRemoveSourceAnchor(null);
+              }}
+            >
+              {t("Remove")}
+            </Button>
+          </Box>
+        </Box>
+      </Popover>
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         <Box
           sx={{
             margin: { xs: "1rem", sm: "2rem" },
-            gap: "2rem",
+            gap: "1rem",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -686,6 +792,93 @@ const AttributeFraming = forwardRef((_props, ref) => {
             overflow: "visible"
           }}
         >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "flex-end",
+              flexWrap: "wrap",
+              width: "100%",
+              maxWidth: "900px",
+              borderBottom: `1px solid ${CustomPalette.GREY_300}`
+            }}
+          >
+            {sources.map((source, index) => {
+              const selected = index === activeIndex;
+              const label =
+                source.metadata?.label ||
+                source.metadata?.id ||
+                `${t("Source")} ${index + 1}`;
+              return (
+                <Box
+                  key={source.key}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    borderBottom: "2px solid",
+                    borderBottomColor: selected ? CustomPalette.PRIMARY : "transparent",
+                    mb: "-1px"
+                  }}
+                >
+                  <Button
+                    onClick={() => setActiveIndex(index)}
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: selected ? 600 : 400,
+                      borderRadius: 0,
+                      px: 1.5,
+                      py: 1,
+                      minWidth: "auto",
+                      color: selected ? CustomPalette.PRIMARY : CustomPalette.GREY_600,
+                      "&:hover": {
+                        bgcolor: "rgba(0, 0, 0, 0.04)",
+                        color: CustomPalette.PRIMARY
+                      }
+                    }}
+                  >
+                    <Typography
+                      noWrap
+                      variant="body2"
+                      sx={{ fontWeight: "inherit", maxWidth: "180px" }}
+                    >
+                      {label}
+                    </Typography>
+                  </Button>
+                  {sources.length > 1 && (
+                    <IconButton
+                      size="small"
+                      onClick={(e) =>
+                        setRemoveSourceAnchor({ el: e.currentTarget, index })
+                      }
+                      sx={{
+                        color: CustomPalette.GREY_600,
+                        mr: 0.5,
+                        "&:hover": { color: CustomPalette.PRIMARY }
+                      }}
+                    >
+                      <CloseIcon sx={{ fontSize: "16px" }} />
+                    </IconButton>
+                  )}
+                </Box>
+              );
+            })}
+            <Button
+              startIcon={<AddIcon />}
+              onClick={handleAddSource}
+              variant="text"
+              sx={{
+                textTransform: "none",
+                color: CustomPalette.PRIMARY,
+                ml: 1,
+                mb: 0.5,
+                whiteSpace: "nowrap"
+              }}
+            >
+              {t("Add source")}
+            </Button>
+          </Box>
+
           <Paper
             variant="outlined"
             sx={{
@@ -716,7 +909,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
                   size="small"
                   label={t("ID")}
                   placeholder="FOODON"
-                  value={framingMetadata.id || ""}
+                  value={activeMetadata.id || ""}
                   onChange={(e) => handleMetadataChange("id", e.target.value)}
                 />
               </Grid>
@@ -726,7 +919,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
                   size="small"
                   label={t("Label")}
                   placeholder="Food Ontology"
-                  value={framingMetadata.label || ""}
+                  value={activeMetadata.label || ""}
                   onChange={(e) => handleMetadataChange("label", e.target.value)}
                 />
               </Grid>
@@ -736,7 +929,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
                   size="small"
                   label={t("Location")}
                   placeholder="https://..."
-                  value={framingMetadata.location || ""}
+                  value={activeMetadata.location || ""}
                   onChange={(e) => handleMetadataChange("location", e.target.value)}
                 />
               </Grid>
@@ -746,7 +939,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
                   size="small"
                   label={t("Version")}
                   placeholder="1.0"
-                  value={framingMetadata.version || ""}
+                  value={activeMetadata.version || ""}
                   onChange={(e) => handleMetadataChange("version", e.target.value)}
                 />
               </Grid>
@@ -814,9 +1007,9 @@ const AttributeFraming = forwardRef((_props, ref) => {
           >
             <style>{gridStyles}</style>
             <AgGridReact
-              key={i18n.language}
+              key={`${activeSource?.key}-${i18n.language}`}
               ref={gridRef}
-              rowData={attributeFramingRowData}
+              rowData={activeRowData}
               columnDefs={columnDefs}
               domLayout="autoHeight"
               suppressRowHoverHighlight

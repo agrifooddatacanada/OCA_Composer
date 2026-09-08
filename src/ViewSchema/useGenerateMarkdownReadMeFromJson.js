@@ -50,6 +50,15 @@ import {
   generateAttributeFramingTable
 } from "./markdownReadmeUtils";
 
+// An attribute can be framed against several independent vocabularies at
+// once, so the attribute_framing ADC overlay is an array of sources. A bare
+// (non-array) overlay object is also accepted for backward compatibility with
+// packages exported before multi-source support existed.
+const hasAttributeFramingContent = (attributeFramingOverlay) =>
+  Array.isArray(attributeFramingOverlay)
+    ? attributeFramingOverlay.length > 0
+    : !!(attributeFramingOverlay?.framing_metadata || attributeFramingOverlay?.attributes);
+
 const getModifiedLayer = (overlay) => {
   const { capture_base, type, d: digest, ...rest } = overlay;
   return {
@@ -265,7 +274,7 @@ const useGenerateMarkdownReadMeFromJson = () => {
         unitFramingOverlay.framing_metadata
       );
     }
-    if (attributeFramingOverlay?.framing_metadata || attributeFramingOverlay?.attributes) {
+    if (hasAttributeFramingContent(attributeFramingOverlay)) {
       fileContent += generateAttributeFramingTable(attributeFramingOverlay);
     }
     fileContent += generateLanguageSpecificSchemaDetailsTable({
@@ -401,10 +410,7 @@ const useGenerateMarkdownReadMeFromJson = () => {
             childUnitFramingOverlay.framing_metadata
           );
         }
-        if (
-          childAttributeFramingOverlay?.framing_metadata ||
-          childAttributeFramingOverlay?.attributes
-        ) {
+        if (hasAttributeFramingContent(childAttributeFramingOverlay)) {
           fileContent += generateAttributeFramingTable(childAttributeFramingOverlay);
         }
         fileContent += generateLanguageSpecificSchemaDetailsTable({

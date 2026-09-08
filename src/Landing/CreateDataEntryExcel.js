@@ -129,7 +129,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let sensitiveOverlay = null;
   let rangeOverlay = null;
   let unitFramingOverlay = null;
-  let attributeFramingOverlay = null;
+  let attributeFramingSources = [];
   let extensionOverlayColumnCount = 0;
   let decimalSeparatorOverlay = null;
   let fileDelimiterOverlay = null;
@@ -149,7 +149,16 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       sensitiveOverlay = overlays?.[SENSITIVE];
       rangeOverlay = overlays?.[RANGE];
       unitFramingOverlay = overlays?.[UNIT_FRAMING];
-      attributeFramingOverlay = overlays?.[ATTRIBUTE_FRAMING];
+      // An attribute can be framed against several independent vocabularies at
+      // once, so the attribute_framing ADC overlay is an array of sources. A
+      // bare (non-array) overlay object is also accepted for backward
+      // compatibility with packages exported before multi-source support existed.
+      const rawAttributeFramingOverlay = overlays?.[ATTRIBUTE_FRAMING];
+      attributeFramingSources = Array.isArray(rawAttributeFramingOverlay)
+        ? rawAttributeFramingOverlay
+        : rawAttributeFramingOverlay
+          ? [rawAttributeFramingOverlay]
+          : [];
       decimalSeparatorOverlay = overlays?.[DECIMAL_SEPARATOR];
       fileDelimiterOverlay = overlays?.[FILE_DELIMITER];
       arrayDelimiterOverlay = overlays?.[ARRAY_DELIMITER];
@@ -941,23 +950,31 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     }
   }
 
-  if (Object.keys(attributeFramingOverlay?.attributes || {}).length > 0) {
-    const columns = ["Attribute Framing"];
+  // One column per framing source - an attribute can be framed against
+  // several independent vocabularies at once (e.g. FOODON and ENVO).
+  const attributeFramingSourcesWithData = attributeFramingSources.filter(
+    (source) => Object.keys(source?.attributes || {}).length > 0
+  );
+
+  if (attributeFramingSourcesWithData.length > 0) {
     const startColumnIndex = jsonData.length + 3 + extensionOverlayColumnCount - skipped;
     try {
-      columns.forEach((column, i) => {
+      attributeFramingSourcesWithData.forEach((source, i) => {
         const columnIndex = startColumnIndex + i;
         const columnHeaderCell = sheet1.getCell(shift + 1, columnIndex);
+        const sourceLabel = source.framing_metadata?.label || source.framing_metadata?.id || "";
 
         sheet1.getColumn(columnIndex).width = 15;
-        columnHeaderCell.value = column;
+        columnHeaderCell.value = sourceLabel
+          ? `Attribute Framing: ${sourceLabel}`
+          : "Attribute Framing";
         formatHeader(columnHeaderCell);
 
         attributeNames.forEach((attribute) => {
           const rowIndex = mappingAttrKeysandAttrValues[attribute];
           if (!rowIndex) return;
 
-          const attributeFramingData = attributeFramingOverlay.attributes[attribute];
+          const attributeFramingData = source.attributes[attribute];
           if (!attributeFramingData) return;
 
           const valueCell = sheet1.getCell(shift + rowIndex, columnIndex);
@@ -1081,7 +1098,11 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   sheet1.getCell(lookUpStart, 2).value = null;
   formatLookupHeader(sheet1.getCell(lookUpStart, 2));
 
-  if (unitFramingOverlay?.framing_metadata || attributeFramingOverlay?.framing_metadata) {
+  const attributeFramingSourcesWithMetadata = attributeFramingSources.filter(
+    (source) => source?.framing_metadata
+  );
+
+  if (unitFramingOverlay?.framing_metadata || attributeFramingSourcesWithMetadata.length > 0) {
     sheet1.getCell(lookUpStart, 3).value = "Framing references";
     formatLookupHeader(sheet1.getCell(lookUpStart, 3));
 
@@ -1111,11 +1132,15 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       }
     }
 
-    if (attributeFramingOverlay?.framing_metadata) {
-      const { imports, ...attributeFramingMetadata } =
-        attributeFramingOverlay.framing_metadata;
+    // An attribute can be framed against several independent vocabularies at
+    // once, so each source gets its own "Attribute framing: <label>" block.
+    attributeFramingSourcesWithMetadata.forEach((source) => {
+      const { imports, ...attributeFramingMetadata } = source.framing_metadata;
+      const sourceLabel = attributeFramingMetadata.label || attributeFramingMetadata.id || "";
 
-      sheet1.getCell(metadataRow, 3).value = "Attribute framing";
+      sheet1.getCell(metadataRow, 3).value = sourceLabel
+        ? `Attribute framing: ${sourceLabel}`
+        : "Attribute framing";
       formatLookupValue(sheet1.getCell(metadataRow, 3));
       metadataRow++;
 
@@ -1146,7 +1171,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
           metadataRow++;
         });
       }
-    }
+    });
   }
 
   let offset = 0;

@@ -16,8 +16,7 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_DATA_SEPARATOR_OVERLAY,
-  FIELD_EXAMPLE_OVERLAY,
-  DEFAULT_ATTRIBUTE_FRAMING_METADATA
+  FIELD_EXAMPLE_OVERLAY
 } from "../constants/constants";
 import { useMultiSchema } from "../schema/schemaContext";
 import { Context } from "../App";
@@ -53,10 +52,7 @@ export const resetOverlayValues = (overlayType) => {
     },
     [FIELD_DATA_STANDARDS_OVERLAY]: { dataStandardsData: [] },
     [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: {
-      attributeFramingData: [],
-      frameAllAttributes: false,
-      unframedAttributeList: [],
-      attributeFramingMetadata: { ...DEFAULT_ATTRIBUTE_FRAMING_METADATA }
+      attributeFramingSources: []
     },
     [FIELD_DATA_SEPARATOR_OVERLAY]: {
       decimalSeparator: ".",
