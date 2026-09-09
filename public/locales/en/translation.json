@@ -799,5 +799,20 @@
   "Examples": "Examples",
   "Example value": "Example value",
   "e.g. {{placeholder}}": "e.g. {{placeholder}}",
-  "Enter a sample value that illustrates what valid data looks like for this attribute.": "Enter a sample value that illustrates what valid data looks like for this attribute."
+  "Enter a sample value that illustrates what valid data looks like for this attribute.": "Enter a sample value that illustrates what valid data looks like for this attribute.",
+  "Manage imported vocabularies": "Manage imported vocabularies",
+  "Add supporting vocabularies referenced by the primary framing source above (for example, dcterms or foaf alongside dcat).": "Add supporting vocabularies referenced by the primary framing source above (for example, dcterms or foaf alongside dcat).",
+  "ID": "ID",
+  "Location": "Location",
+  "Add import": "Add import",
+  "Select a predicate...": "Select a predicate...",
+  "Select a justification...": "Select a justification...",
+  "Ontology term identifier for this attribute, entered manually (e.g. FOODON:00002403)": "Ontology term identifier for this attribute, entered manually (e.g. FOODON:00002403)",
+  "Remove this framing source and its data? This cannot be undone.": "Remove this framing source and its data? This cannot be undone.",
+  "Remove": "Remove",
+  "Add source": "Add source",
+  "Framing source": "Framing source",
+  "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.": "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.",
+  "Imported vocabularies": "Imported vocabularies",
+  "No supporting vocabularies imported yet": "No supporting vocabularies imported yet"
 }

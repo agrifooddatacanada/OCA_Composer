@@ -983,7 +983,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
             </Box>
           </Paper>
 
-          <Box
+          {/* <Box
             sx={{
               textAlign: "center",
               fontSize: "0.9rem",
@@ -993,7 +993,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
             }}
           >
             {unframedAttributesText}
-          </Box>
+          </Box> */}
 
           <Box
             className="ag-theme-balham"

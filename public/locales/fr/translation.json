@@ -800,5 +800,20 @@
   "Examples": "Exemples",
   "Example value": "Valeur d'exemple",
   "e.g. {{placeholder}}": "p. ex. {{placeholder}}",
-  "Enter a sample value that illustrates what valid data looks like for this attribute.": "Saisissez un exemple de valeur qui illustre à quoi ressemblent des données valides pour cet attribut."
+  "Enter a sample value that illustrates what valid data looks like for this attribute.": "Saisissez un exemple de valeur qui illustre à quoi ressemblent des données valides pour cet attribut.",
+  "Manage imported vocabularies": "Gérer les vocabulaires importés",
+  "Add supporting vocabularies referenced by the primary framing source above (for example, dcterms or foaf alongside dcat).": "Ajoutez les vocabulaires complémentaires référencés par la source d'encadrement principale ci-dessus (par exemple, dcterms ou foaf en plus de dcat).",
+  "ID": "ID",
+  "Location": "Emplacement",
+  "Add import": "Ajouter une importation",
+  "Select a predicate...": "Sélectionnez un prédicat...",
+  "Select a justification...": "Sélectionnez une justification...",
+  "Ontology term identifier for this attribute, entered manually (e.g. FOODON:00002403)": "Identifiant du terme d'ontologie pour cet attribut, saisi manuellement (ex. FOODON:00002403)",
+  "Remove this framing source and its data? This cannot be undone.": "Supprimer cette source d'encadrement et ses données ? Cette action est irréversible.",
+  "Remove": "Supprimer",
+  "Add source": "Ajouter une source",
+  "Framing source": "Source d'encadrement",
+  "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.": "Décrivez l'ontologie ou le vocabulaire par rapport auquel ces attributs sont encadrés. Ceci est stocké comme métadonnées d'encadrement de la superposition.",
+  "Imported vocabularies": "Vocabulaires importés",
+  "No supporting vocabularies imported yet": "Aucun vocabulaire complémentaire importé pour le moment"
 }
