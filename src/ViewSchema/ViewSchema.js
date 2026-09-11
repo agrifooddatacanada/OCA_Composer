@@ -23,6 +23,7 @@ import { useMultiSchema } from "../schema/schemaContext";
 import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
+import AttributeFramingTable from "./AttributeFramingTable";
 import {
   getBestLangName,
   langCodeOCAFromName,
@@ -33,7 +34,8 @@ import {
   isChildSchemaType,
   MANUAL_CREATION_SCHEMA_ID,
   HEADER_TO_CONTENT_GAP_PX,
-  BETWEEN_SECTION_SPACING
+  BETWEEN_SECTION_SPACING,
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY
 } from "../constants/constants";
 import { searchUnits } from "../utils/helpers";
 import { validateExampleValuesAgainstOverlays } from "../utils/exampleValidation";
@@ -88,7 +90,8 @@ export default function ViewSchema({
     getSchema,
     updateSchema,
     schemaStates,
-    ocaPackage
+    ocaPackage,
+    getOverlaySelections
   } = useMultiSchema();
 
   const primaryColor = usePrimaryColor();
@@ -1149,6 +1152,9 @@ export default function ViewSchema({
           setLoading={setLoading}
           packageWithEdits={pkgFromState}
         />
+        {getOverlaySelections()[FIELD_ATTRIBUTE_FRAMING_OVERLAY] && (
+          <AttributeFramingTable sources={schemaState.attributeFramingSources || []} />
+        )}
             {addClearButton && isPageForward && isExport && summaryExportMode && (
               <Box
                 sx={{ display: "flex", justifyContent: "flex-end", mt: 4, width: "100%" }}

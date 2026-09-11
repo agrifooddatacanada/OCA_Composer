@@ -814,5 +814,6 @@
   "Framing source": "Framing source",
   "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.": "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.",
   "Imported vocabularies": "Imported vocabularies",
-  "No supporting vocabularies imported yet": "No supporting vocabularies imported yet"
+  "No supporting vocabularies imported yet": "No supporting vocabularies imported yet",
+  "Ontology terms and mapping details framed against each attribute, per framing source": "Ontology terms and mapping details framed against each attribute, per framing source"
 }

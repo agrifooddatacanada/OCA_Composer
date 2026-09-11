@@ -815,5 +815,6 @@
   "Framing source": "Source d'encadrement",
   "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.": "Décrivez l'ontologie ou le vocabulaire par rapport auquel ces attributs sont encadrés. Ceci est stocké comme métadonnées d'encadrement de la superposition.",
   "Imported vocabularies": "Vocabulaires importés",
-  "No supporting vocabularies imported yet": "Aucun vocabulaire complémentaire importé pour le moment"
+  "No supporting vocabularies imported yet": "Aucun vocabulaire complémentaire importé pour le moment",
+  "Ontology terms and mapping details framed against each attribute, per framing source": "Termes d'ontologie et détails de mappage encadrés pour chaque attribut, par source d'encadrement"
 }
