@@ -33,6 +33,10 @@ import {
   FIELD_CARDINALITY_OVERLAY,
   RANGE,
   ATTRIBUTE_FRAMING,
+  ATTRIBUTE_FRAME_ID,
+  ATTRIBUTE_FRAME_LABEL,
+  ATTRIBUTE_FRAME_LOCATION,
+  ATTRIBUTE_FRAME_VERSION,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_DATA_SEPARATOR_OVERLAY,
   DECIMAL_SEPARATOR,
@@ -179,7 +183,7 @@ const useOCAExport = () => {
     const characterEncodingRowData = schemaState?.characterEncodingData || {};
     const attributeCardinality = schemaState?.attributeCardinality || {};
     const attributeRanges = schemaState?.attributeRanges || {};
-    const attributeFramingRowData = schemaState?.attributeFramingData || [];
+    const attributeFramingSources = schemaState?.attributeFramingSources || [];
     const unitFramedRowData = schemaState?.unitFramedData || [];
     const decimalSeparator = schemaState?.decimalSeparator || ".";
     const fileDelimiterData = schemaState?.fileDelimiterData || {};
@@ -608,23 +612,40 @@ const useOCAExport = () => {
             }
           }
         : {}),
+      // Each attribute-framing source is an independent vocabulary the schema's
+      // attributes are framed against; the oca_package library expects them as
+      // an array (attribute_framing_overlays), the same array-of-instances
+      // pattern used for example_overlay/example_overlays above.
       ...(overlaySelections[FIELD_ATTRIBUTE_FRAMING_OVERLAY]
-        ? {
-            attribute_framing_overlay: {
-              type: ATTRIBUTE_FRAMING,
-              framing_metadata: {
-                id: "FOODON",
-                label: "Food Ontology",
-                location:
-                  "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl",
-                version: "1.0"
-              },
-              attributes: getAttributeFramingInput(
-                attributeFramingRowData,
-                attributesList
-              )
-            }
-          }
+        ? (() => {
+            const builtAttributeFramingOverlays = attributeFramingSources
+              .map((source) => {
+                const metadata = source?.metadata || {};
+                return {
+                  type: ATTRIBUTE_FRAMING,
+                  framing_metadata: {
+                    id: metadata.id ?? ATTRIBUTE_FRAME_ID,
+                    label: metadata.label ?? ATTRIBUTE_FRAME_LABEL,
+                    location: metadata.location ?? ATTRIBUTE_FRAME_LOCATION,
+                    version: metadata.version ?? ATTRIBUTE_FRAME_VERSION,
+                    ...(metadata.imports &&
+                    typeof metadata.imports === "object" &&
+                    Object.keys(metadata.imports).length > 0
+                      ? { imports: metadata.imports }
+                      : {})
+                  },
+                  attributes: getAttributeFramingInput(source?.rows || [], attributesList)
+                };
+              })
+              .filter((entry) => Object.keys(entry.attributes).length > 0);
+            return builtAttributeFramingOverlays.length > 0
+              ? {
+                  attribute_framing_overlay: {
+                    attribute_framing_overlays: builtAttributeFramingOverlays
+                  }
+                }
+              : {};
+          })()
         : {}),
       ...(overlaySelections[FIELD_FORM_INFORMATION_OVERLAY]
         ? {

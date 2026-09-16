@@ -637,6 +637,19 @@ export const RANGE = "range";
 
 // Attribute Framing Overlay
 export const ATTRIBUTE_FRAMING = "attribute_framing";
+// Default framing_metadata for the Attribute Framing overlay.
+// These are user-editable in the Attribute Framing editor.
+export const ATTRIBUTE_FRAME_ID = "FOODON";
+export const ATTRIBUTE_FRAME_LABEL = "Food Ontology";
+export const ATTRIBUTE_FRAME_LOCATION =
+  "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl";
+export const ATTRIBUTE_FRAME_VERSION = "1.0";
+export const DEFAULT_ATTRIBUTE_FRAMING_METADATA = {
+  id: ATTRIBUTE_FRAME_ID,
+  label: ATTRIBUTE_FRAME_LABEL,
+  location: ATTRIBUTE_FRAME_LOCATION,
+  version: ATTRIBUTE_FRAME_VERSION
+};
 
 // Data Separator Overlays (ADC extension)
 export const DECIMAL_SEPARATOR = "decimal_separator";

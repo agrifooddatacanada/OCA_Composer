@@ -272,6 +272,7 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   sensitiveAttributes = [],
   rangeOverlay = null,
   unitFramingOverlay = null,
+  attributeFramingOverlay = null,
   arrayDelimiterOverlay = null
 }) => {
   const hcfFlaggedAttributes = Array.isArray(captureBaseOverlay.flagged_attributes)
@@ -299,6 +300,17 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   const standardOverlay = layers.find((layer) => layer.layerName.includes("standard"));
 
   const unitFramingUnits = Object.keys(unitFramingOverlay?.units || {});
+  // An attribute can be framed against several independent vocabularies at
+  // once, so attributeFramingOverlay is an array of sources (one column per
+  // source below). A bare (non-array) overlay object is also accepted for
+  // backward compatibility with data captured before multi-source support.
+  const attributeFramingSources = (
+    Array.isArray(attributeFramingOverlay)
+      ? attributeFramingOverlay
+      : attributeFramingOverlay
+        ? [attributeFramingOverlay]
+        : []
+  ).filter((source) => Object.keys(source?.attributes || {}).length > 0);
 
   if (conformanceOverlay?.attribute_conformance) {
     columns.push("Required entry");
@@ -323,6 +335,11 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
   if (unitFramingUnits.length > 0) {
     columns.push("Unit Framing");
   }
+
+  attributeFramingSources.forEach((source) => {
+    const sourceLabel = source.framing_metadata?.label || source.framing_metadata?.id || "";
+    columns.push(sourceLabel ? `Attribute Framing: ${sourceLabel}` : "Attribute Framing");
+  });
 
   if (arrayDelimiterOverlay) {
     columns.push("Array Delimiter");
@@ -371,24 +388,34 @@ export const generateLanguageIndependentSchemaDetailsTable = ({
       row.push(standard);
     }
 
-    if (rangeOverlay?.attributes?.[attribute]) {
+    // These columns are added to the table if the overlay has data for ANY
+    // attribute (see columns.push calls above), so every row must push a
+    // value for them - even a blank one - whenever the column exists.
+    // Otherwise, a row missing data for one of these columns would push
+    // nothing for that cell and shift all subsequent values (e.g. Attribute
+    // Framing's term_id) left into the wrong column.
+    if (rangeOverlay?.attributes) {
       const rangeData = rangeOverlay.attributes[attribute];
       row.push(
-        rangeData.lower,
-        rangeData.lower_inclusive,
-        rangeData.upper,
-        rangeData.upper_inclusive
+        rangeData?.lower ?? "",
+        rangeData?.lower_inclusive ?? "",
+        rangeData?.upper ?? "",
+        rangeData?.upper_inclusive ?? ""
       );
     }
 
-    if (unitFramingOverlay?.units?.[unit]) {
-      const unitFramingData = unitFramingOverlay.units[unit];
-      row.push(unitFramingData.term_id);
+    if (unitFramingUnits.length > 0) {
+      const unitFramingData = unitFramingOverlay?.units?.[unit];
+      row.push(unitFramingData?.term_id || "");
     }
 
-    if (arrayDelimiterOverlay?.attributes?.[attribute]) {
-      const arrayDelimiter = arrayDelimiterOverlay.attributes[attribute];
-      row.push(prettyPrintDelimiter(arrayDelimiter));
+    attributeFramingSources.forEach((source) => {
+      row.push(source.attributes?.[attribute]?.term_id || "");
+    });
+
+    if (arrayDelimiterOverlay) {
+      const arrayDelimiter = arrayDelimiterOverlay?.attributes?.[attribute];
+      row.push(arrayDelimiter ? prettyPrintDelimiter(arrayDelimiter) : "");
     }
 
     return row;
@@ -404,6 +431,70 @@ export const generateUnitFramingMetadataTable = (unitFramingMetadata) => {
   const columns = ["Term", "Value"];
   const rows = Object.entries(unitFramingMetadata);
   markdownContent.push(generateTable(columns, rows), "\n\n");
+  return markdownContent.join("");
+};
+
+// Attribute Framing's term_id is surfaced as its own column (one per source)
+// in the language-independent table (matching how Unit Framing shows its
+// term_id). This section covers the rest for each framing source: its
+// metadata, any imported supporting vocabularies, and the per-attribute
+// predicate/description/justification fields that don't fit in the
+// language-independent table. An attribute can be framed against several
+// independent vocabularies at once, so attributeFramingOverlay is an array of
+// sources - one full "### Attribute framing" section is emitted per source.
+// A bare (non-array) overlay object is also accepted for backward
+// compatibility with data captured before multi-source support.
+export const generateAttributeFramingTable = (attributeFramingOverlay) => {
+  const sources = Array.isArray(attributeFramingOverlay)
+    ? attributeFramingOverlay
+    : attributeFramingOverlay
+      ? [attributeFramingOverlay]
+      : [];
+
+  const markdownContent = [];
+
+  sources.forEach((source) => {
+    const { imports, ...framingMetadata } = source?.framing_metadata || {};
+    const sourceLabel = framingMetadata.label || framingMetadata.id || "";
+    markdownContent.push(
+      `### Attribute framing${sourceLabel ? `: ${sourceLabel}` : ""} \n\n`
+    );
+
+    const columns = ["Term", "Value"];
+    const rows = Object.entries(framingMetadata);
+    markdownContent.push(generateTable(columns, rows), "\n\n");
+
+    if (imports && typeof imports === "object" && Object.keys(imports).length > 0) {
+      markdownContent.push("#### Imported vocabularies\n\n");
+      const importColumns = ["ID", "Label", "Location", "Version"];
+      const importRows = Object.entries(imports).map(([id, imp]) => [
+        id,
+        imp?.label || "",
+        imp?.location || "",
+        imp?.version || ""
+      ]);
+      markdownContent.push(generateTable(importColumns, importRows), "\n\n");
+    }
+
+    const attributeEntries = Object.entries(source?.attributes || {});
+    if (attributeEntries.length > 0) {
+      markdownContent.push("#### Attribute-specific framing\n\n");
+      const attributeColumns = [
+        "Attribute",
+        "Predicate",
+        "Description",
+        "Framing Justification"
+      ];
+      const attributeRows = attributeEntries.map(([attribute, framing]) => [
+        attribute,
+        framing?.predicate_id || "",
+        framing?.description || "",
+        framing?.framing_justification || ""
+      ]);
+      markdownContent.push(generateTable(attributeColumns, attributeRows), "\n\n");
+    }
+  });
+
   return markdownContent.join("");
 };
 

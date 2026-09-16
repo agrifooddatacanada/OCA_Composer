@@ -29,6 +29,7 @@ import {
   RANGE,
   SENSITIVE,
   UNIT_FRAMING,
+  ATTRIBUTE_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER,
@@ -45,8 +46,18 @@ import {
   generateSAIDTableForJson,
   generateSchemaInformation,
   generateSchemaQuickView,
-  generateUnitFramingMetadataTable
+  generateUnitFramingMetadataTable,
+  generateAttributeFramingTable
 } from "./markdownReadmeUtils";
+
+// An attribute can be framed against several independent vocabularies at
+// once, so the attribute_framing ADC overlay is an array of sources. A bare
+// (non-array) overlay object is also accepted for backward compatibility with
+// packages exported before multi-source support existed.
+const hasAttributeFramingContent = (attributeFramingOverlay) =>
+  Array.isArray(attributeFramingOverlay)
+    ? attributeFramingOverlay.length > 0
+    : !!(attributeFramingOverlay?.framing_metadata || attributeFramingOverlay?.attributes);
 
 const getModifiedLayer = (overlay) => {
   const { capture_base, type, d: digest, ...rest } = overlay;
@@ -151,6 +162,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
   const unitFramingOverlay =
     pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[UNIT_FRAMING];
 
+  const attributeFramingOverlay =
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[ATTRIBUTE_FRAMING];
+
   const decimalSeparatorOverlay =
     pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[DECIMAL_SEPARATOR];
 
@@ -252,12 +266,16 @@ const useGenerateMarkdownReadMeFromJson = () => {
       sensitiveAttributes,
       rangeOverlay,
       unitFramingOverlay,
+      attributeFramingOverlay,
       arrayDelimiterOverlay
     });
     if (unitFramingOverlay?.framing_metadata) {
       fileContent += generateUnitFramingMetadataTable(
         unitFramingOverlay.framing_metadata
       );
+    }
+    if (hasAttributeFramingContent(attributeFramingOverlay)) {
+      fileContent += generateAttributeFramingTable(attributeFramingOverlay);
     }
     fileContent += generateLanguageSpecificSchemaDetailsTable({
       layers,
@@ -305,6 +323,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
 
         const childUnitFramingOverlay =
           pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[UNIT_FRAMING];
+
+        const childAttributeFramingOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[ATTRIBUTE_FRAMING];
 
         const childExampleOverlay =
           pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[EXAMPLE];
@@ -381,12 +402,16 @@ const useGenerateMarkdownReadMeFromJson = () => {
           attributeNames: childAttributeNames,
           sensitiveAttributes: childSensitiveAttributes,
           rangeOverlay: childRangeOverlay,
-          unitFramingOverlay: childUnitFramingOverlay
+          unitFramingOverlay: childUnitFramingOverlay,
+          attributeFramingOverlay: childAttributeFramingOverlay
         });
         if (childUnitFramingOverlay?.framing_metadata) {
           fileContent += generateUnitFramingMetadataTable(
             childUnitFramingOverlay.framing_metadata
           );
+        }
+        if (hasAttributeFramingContent(childAttributeFramingOverlay)) {
+          fileContent += generateAttributeFramingTable(childAttributeFramingOverlay);
         }
         fileContent += generateLanguageSpecificSchemaDetailsTable({
           layers: childLayers,

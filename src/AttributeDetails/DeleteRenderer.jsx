@@ -75,8 +75,11 @@ const DeleteRenderer = ({
       const nextUnitFramedData = (schemaState.unitFramedData || []).filter(
         (unit) => unit.Attribute !== data.Attribute
       );
-      const nextAttributeFramingData = (schemaState.attributeFramingData || []).filter(
-        (framing) => framing.Attribute !== data.Attribute
+      const nextAttributeFramingSources = (schemaState.attributeFramingSources || []).map(
+        (source) => ({
+          ...source,
+          rows: (source.rows || []).filter((framing) => framing.Attribute !== data.Attribute)
+        })
       );
 
       const nextCharacterEncodingData = { ...(schemaState.characterEncodingData || {}) };
@@ -92,7 +95,7 @@ const DeleteRenderer = ({
         cardinalityData: nextCardinalityData,
         dataStandardsData: nextDataStandardsData,
         unitFramedData: nextUnitFramedData,
-        attributeFramingData: nextAttributeFramingData,
+        attributeFramingSources: nextAttributeFramingSources,
         characterEncodingData: nextCharacterEncodingData
       });
     }

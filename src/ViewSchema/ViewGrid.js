@@ -22,7 +22,6 @@ import {
   FIELD_FORMAT_OVERLAY,
   FIELD_CONFORMANCE_OVERLAY,
   FIELD_CARDINALITY_OVERLAY,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_DATA_SEPARATOR_OVERLAY,
   FIELD_EXAMPLE_OVERLAY,
@@ -396,17 +395,6 @@ export default function ViewGrid({
             headerComponentParams: {
               headerText: t("Cardinality"),
               helpText: t("The cardinality that is applied to the attribute")
-            }
-          });
-        } else if (overlayKey === FIELD_ATTRIBUTE_FRAMING_OVERLAY) {
-          predefinedColumns.push({
-            field: FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-            width: 180,
-            autoHeight: true,
-            headerComponent: CellHeader,
-            headerComponentParams: {
-              headerText: t("Attribute Framing"),
-              helpText: t("The attribute framing that is applied to the attribute")
             }
           });
         } else if (overlayKey === FIELD_UNIT_FRAMING_OVERLAY) {

@@ -51,7 +51,9 @@ export const resetOverlayValues = (overlayType) => {
       _requiresAttributeUpdate: true
     },
     [FIELD_DATA_STANDARDS_OVERLAY]: { dataStandardsData: [] },
-    [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { attributeFramingData: [] },
+    [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: {
+      attributeFramingSources: []
+    },
     [FIELD_DATA_SEPARATOR_OVERLAY]: {
       decimalSeparator: ".",
       fileDelimiterData: {
@@ -161,7 +163,7 @@ export const getListOfSelectedOverlays = (overlay) => {
   const selectedKeys = [];
   const unselectedKeys = [];
   // Temporarily excluding these features
-  const keysToExclude = [FIELD_DATA_STANDARDS_OVERLAY, FIELD_ATTRIBUTE_FRAMING_OVERLAY];
+  const keysToExclude = [FIELD_DATA_STANDARDS_OVERLAY];
 
   Object.entries(overlay).forEach(([key, value]) => {
     if (keysToExclude.includes(key)) return;
