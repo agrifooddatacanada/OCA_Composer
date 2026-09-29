@@ -84,6 +84,8 @@ const DeleteRenderer = ({
 
       const nextCharacterEncodingData = { ...(schemaState.characterEncodingData || {}) };
       delete nextCharacterEncodingData[data.Attribute];
+      const nextEntryCodeFramingSources = { ...(schemaState.entryCodeFramingSources || {}) };
+      delete nextEntryCodeFramingSources[data.Attribute];
 
       updateSchema({
         attributes: newAttributeRowData,
@@ -96,6 +98,7 @@ const DeleteRenderer = ({
         dataStandardsData: nextDataStandardsData,
         unitFramedData: nextUnitFramedData,
         attributeFramingSources: nextAttributeFramingSources,
+        entryCodeFramingSources: nextEntryCodeFramingSources,
         characterEncodingData: nextCharacterEncodingData
       });
     }

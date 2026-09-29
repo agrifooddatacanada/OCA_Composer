@@ -815,5 +815,18 @@
   "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.": "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.",
   "Imported vocabularies": "Imported vocabularies",
   "No supporting vocabularies imported yet": "No supporting vocabularies imported yet",
-  "Ontology terms and mapping details framed against each attribute, per framing source": "Ontology terms and mapping details framed against each attribute, per framing source"
+  "Ontology terms and mapping details framed against each attribute, per framing source": "Ontology terms and mapping details framed against each attribute, per framing source",
+  "Framing": "Framing",
+  "Framed": "Framed",
+  "Frame these entry codes to terms from an ontology or controlled vocabulary.": "Frame these entry codes to terms from an ontology or controlled vocabulary.",
+  "Entry code framing": "Entry code framing",
+  "Frame the entry codes of this list to terms from an ontology or controlled vocabulary. Not every code must be framed.": "Frame the entry codes of this list to terms from an ontology or controlled vocabulary. Not every code must be framed.",
+  "Describe the ontology or vocabulary these entry codes are framed against. This is stored as the overlay's framing metadata.": "Describe the ontology or vocabulary these entry codes are framed against. This is stored as the overlay's framing metadata.",
+  "The entry code being framed": "The entry code being framed",
+  "The label of the entry code in the first schema language": "The label of the entry code in the first schema language",
+  "Relationship between the entry code and the vocabulary term": "Relationship between the entry code and the vocabulary term",
+  "Vocabulary term identifier for this entry code, entered manually (e.g. SNOMEDCT:119361006)": "Vocabulary term identifier for this entry code, entered manually (e.g. SNOMEDCT:119361006)",
+  "Add entry codes to this list before framing them.": "Add entry codes to this list before framing them.",
+  "Each framing source needs an ID.": "Each framing source needs an ID.",
+  "Each framing source needs a unique ID.": "Each framing source needs a unique ID."
 }

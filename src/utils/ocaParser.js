@@ -20,7 +20,8 @@ import {
   ARRAY_DELIMITER,
   EXAMPLE,
   ATTRIBUTE_FRAMING,
-  DEFAULT_ATTRIBUTE_FRAMING_METADATA
+  DEFAULT_ATTRIBUTE_FRAMING_METADATA,
+  ENTRY_CODE_FRAMING
 } from "../constants/constants";
 import {
   langNameFromTwoLetters,
@@ -224,6 +225,8 @@ export class OCAParser {
     // Parse Attribute Framing ADC overlay into UI-shaped grid rows + metadata.
     const attributeFramingParsed = this._parseAttributeFramingOverlay(adcExtensions);
 
+    const entryCodeFramingSources = this._parseEntryCodeFramingOverlay(adcExtensions);
+
     const overlaySelections = this._buildOverlaySelections(
       schemaData.overlays,
       hasUnitFramingExtension,
@@ -265,6 +268,7 @@ export class OCAParser {
       exampleData: exampleParsed.exampleData,
       // Attribute Framing overlay fields (imported from ADC extensions)
       attributeFramingSources: attributeFramingParsed.attributeFramingSources,
+      entryCodeFramingSources,
       initialized: true  // CRITICAL: Marks schema as parsed (don't re-parse)
     };
   }
@@ -1138,6 +1142,74 @@ export class OCAParser {
     }
 
     return { key: uuidv4(), metadata, rows };
+  }
+
+  /**
+   * Parse Entry Code Framing ADC extension overlays into the UI state shape.
+   *
+   * Accepts the same two ADC shapes as attribute framing:
+   *   - Pre-processed (array): [{ entry_code_framing_overlay: { entry_code_framing_overlays: [...] } }]
+   *     (a bare { framing_metadata, entry_codes } is read as a single source)
+   *   - Post-processed (object): { overlays: { entry_code_framing: [...] } }
+   *
+   * Each overlay is one vocabulary covering any number of lists:
+   *   entry_codes: { "<Attr>": { "<Code>": { description, framing_justification, predicate_id, term_id } } }
+   * The UI edits framing per list, so each overlay is split into one source per
+   * attribute it frames.
+   *
+   * Returns { "<Attr>": [{ key, metadata, rows: [{ Code, objectId, description, predicateId, mappingJustification }] }] }
+   *
+   * @private
+   */
+  static _parseEntryCodeFramingOverlay(adcExtensions) {
+    const result = {};
+    if (!adcExtensions) return result;
+
+    let rawOverlays = [];
+    if (Array.isArray(adcExtensions)) {
+      adcExtensions
+        .map((ov) => ov?.entry_code_framing_overlay)
+        .filter(Boolean)
+        .forEach((overlay) => {
+          if (Array.isArray(overlay.entry_code_framing_overlays)) {
+            rawOverlays.push(...overlay.entry_code_framing_overlays);
+          } else {
+            rawOverlays.push(overlay);
+          }
+        });
+    } else {
+      const overlay = adcExtensions?.overlays?.[ENTRY_CODE_FRAMING];
+      rawOverlays = Array.isArray(overlay) ? overlay : overlay ? [overlay] : [];
+    }
+
+    rawOverlays.forEach((overlay) => {
+      const entryCodes = overlay?.entry_codes;
+      if (!entryCodes || typeof entryCodes !== "object") return;
+      const meta = overlay.framing_metadata || {};
+      const metadata = {
+        id: meta.id || "",
+        label: meta.label || "",
+        location: meta.location || "",
+        version: meta.version || "",
+        ...(meta.imports && typeof meta.imports === "object" ? { imports: meta.imports } : {})
+      };
+
+      Object.entries(entryCodes).forEach(([attribute, codes]) => {
+        if (!codes || typeof codes !== "object") return;
+        const rows = Object.entries(codes).map(([code, framing]) => ({
+          Code: code,
+          objectId: framing?.term_id || "",
+          description: framing?.description || "",
+          predicateId: framing?.predicate_id || "",
+          mappingJustification: framing?.framing_justification || ""
+        }));
+        if (rows.length === 0) return;
+        if (!result[attribute]) result[attribute] = [];
+        result[attribute].push({ key: uuidv4(), metadata: { ...metadata }, rows });
+      });
+    });
+
+    return result;
   }
 
   /**

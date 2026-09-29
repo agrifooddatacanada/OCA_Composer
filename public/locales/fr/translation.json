@@ -816,5 +816,18 @@
   "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.": "Décrivez l'ontologie ou le vocabulaire par rapport auquel ces attributs sont encadrés. Ceci est stocké comme métadonnées d'encadrement de la superposition.",
   "Imported vocabularies": "Vocabulaires importés",
   "No supporting vocabularies imported yet": "Aucun vocabulaire complémentaire importé pour le moment",
-  "Ontology terms and mapping details framed against each attribute, per framing source": "Termes d'ontologie et détails de mappage encadrés pour chaque attribut, par source d'encadrement"
+  "Ontology terms and mapping details framed against each attribute, per framing source": "Termes d'ontologie et détails de mappage encadrés pour chaque attribut, par source d'encadrement",
+  "Framing": "Encadrement",
+  "Framed": "Encadré",
+  "Frame these entry codes to terms from an ontology or controlled vocabulary.": "Encadrez ces codes d'entrée avec des termes d'une ontologie ou d'un vocabulaire contrôlé.",
+  "Entry code framing": "Encadrement des codes d'entrée",
+  "Frame the entry codes of this list to terms from an ontology or controlled vocabulary. Not every code must be framed.": "Encadrez les codes d'entrée de cette liste avec des termes d'une ontologie ou d'un vocabulaire contrôlé. Il n'est pas nécessaire d'encadrer chaque code.",
+  "Describe the ontology or vocabulary these entry codes are framed against. This is stored as the overlay's framing metadata.": "Décrivez l'ontologie ou le vocabulaire par rapport auquel ces codes d'entrée sont encadrés. Ceci est stocké comme métadonnées d'encadrement de la superposition.",
+  "The entry code being framed": "Le code d'entrée encadré",
+  "The label of the entry code in the first schema language": "L'étiquette du code d'entrée dans la première langue du schéma",
+  "Relationship between the entry code and the vocabulary term": "Relation entre le code d'entrée et le terme du vocabulaire",
+  "Vocabulary term identifier for this entry code, entered manually (e.g. SNOMEDCT:119361006)": "Identifiant du terme de vocabulaire pour ce code d'entrée, saisi manuellement (p. ex. SNOMEDCT:119361006)",
+  "Add entry codes to this list before framing them.": "Ajoutez des codes d'entrée à cette liste avant de les encadrer.",
+  "Each framing source needs an ID.": "Chaque source d'encadrement doit avoir un ID.",
+  "Each framing source needs a unique ID.": "Chaque source d'encadrement doit avoir un ID unique."
 }

@@ -651,6 +651,9 @@ export const DEFAULT_ATTRIBUTE_FRAMING_METADATA = {
   version: ATTRIBUTE_FRAME_VERSION
 };
 
+// Entry Code Framing Overlay (ADC extension)
+export const ENTRY_CODE_FRAMING = "entry_code_framing";
+
 // Data Separator Overlays (ADC extension)
 export const DECIMAL_SEPARATOR = "decimal_separator";
 export const FILE_DELIMITER = "file_delimiter";
