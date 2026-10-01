@@ -59,6 +59,18 @@ const makeBlankSource = () => ({
   rows: []
 });
 
+const FRAMING_DROPDOWN_CELL_CLASS = "framing-dropdown-cell";
+
+// autoHeight wraps the renderer in shrink-to-fit wrappers; stretch them so the
+// Select (and its arrow) spans the full cell width.
+const framingDropdownCellCss = `
+.ag-cell.${FRAMING_DROPDOWN_CELL_CLASS} .ag-cell-wrapper,
+.ag-cell.${FRAMING_DROPDOWN_CELL_CLASS} .ag-cell-value {
+  width: 100%;
+  min-width: 0;
+}
+`;
+
 const DropdownCellRenderer = ({
   value,
   rowIndex,
@@ -602,6 +614,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
         autoHeight: true,
         editable: false,
         cellStyle: preWrapWordBreak,
+        cellClass: FRAMING_DROPDOWN_CELL_CLASS,
         cellRenderer: DropdownCellRenderer,
         cellRendererParams: {
           fieldName: "predicateId",
@@ -649,6 +662,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
         autoHeight: true,
         editable: false,
         cellStyle: preWrapWordBreak,
+        cellClass: FRAMING_DROPDOWN_CELL_CLASS,
         cellRenderer: DropdownCellRenderer,
         cellRendererParams: {
           fieldName: "mappingJustification",
@@ -1006,6 +1020,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
             }}
           >
             <style>{gridStyles}</style>
+            <style>{framingDropdownCellCss}</style>
             <AgGridReact
               key={`${activeSource?.key}-${i18n.language}`}
               ref={gridRef}
