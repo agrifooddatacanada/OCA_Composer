@@ -828,5 +828,7 @@
   "Vocabulary term identifier for this entry code, entered manually (e.g. SNOMEDCT:119361006)": "Vocabulary term identifier for this entry code, entered manually (e.g. SNOMEDCT:119361006)",
   "Add entry codes to this list before framing them.": "Add entry codes to this list before framing them.",
   "Each framing source needs an ID.": "Each framing source needs an ID.",
-  "Each framing source needs a unique ID.": "Each framing source needs a unique ID."
+  "Each framing source needs a unique ID.": "Each framing source needs a unique ID.",
+  "Used in": "Used in",
+  "Pick a framing source from another list to fill in its details.": "Pick a framing source from another list to fill in its details."
 }

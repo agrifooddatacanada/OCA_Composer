@@ -16,6 +16,20 @@ import {
   makeBlankSource
 } from "../Overlays/FramingComponents";
 
+// gridStyles centers cell content, which shrinks the dropdown to its text and
+// leaves the arrow right after the label; stretch it so the arrow sits at the
+// cell's right edge, with room reserved so long values don't run under it.
+const DROPDOWN_CELL_CLASS = "entry-code-framing-dropdown-cell";
+const dropdownCellStyles = `
+.${DROPDOWN_CELL_CLASS} .ag-cell-wrapper,
+.${DROPDOWN_CELL_CLASS} .ag-cell-value {
+  width: 100%;
+}
+.${DROPDOWN_CELL_CLASS} .MuiSelect-select.MuiSelect-select {
+  padding-right: 24px;
+}
+`;
+
 const makeBlankRow = (code) => ({
   Code: code,
   objectId: "",
@@ -53,7 +67,15 @@ const mergeRows = (source, displayedRows) => {
 
 // Popup editor for framing one attribute's entry code list against one or more
 // vocabularies. Edits are staged locally and only handed to onSave on Save.
-const EntryCodeFramingModal = ({ open, onClose, onSave, attributeName, codes, initialSources }) => {
+const EntryCodeFramingModal = ({
+  open,
+  onClose,
+  onSave,
+  attributeName,
+  codes,
+  initialSources,
+  sourceSuggestions = []
+}) => {
   const { t, i18n } = useTranslation();
   const gridRef = useRef();
   const [sources, setSources] = useState([]);
@@ -132,6 +154,33 @@ const EntryCodeFramingModal = ({ open, onClose, onSave, attributeName, codes, in
     (importsObj) => {
       updateActiveSource((source) => ({
         metadata: { ...(source.metadata || makeBlankMetadata()), imports: importsObj }
+      }));
+    },
+    [updateActiveSource]
+  );
+
+  const availableSuggestions = useMemo(() => {
+    const idsInOtherTabs = new Set(
+      sources
+        .filter((_, index) => index !== activeIndex)
+        .map((source) => String(source.metadata?.id ?? "").trim())
+        .filter(Boolean)
+    );
+    return sourceSuggestions.filter(
+      (suggestion) => !idsInOtherTabs.has(String(suggestion.metadata.id).trim())
+    );
+  }, [sourceSuggestions, sources, activeIndex]);
+
+  const handleApplySuggestion = useCallback(
+    (metadata) => {
+      updateActiveSource(() => ({
+        metadata: {
+          id: metadata.id || "",
+          label: metadata.label || "",
+          location: metadata.location || "",
+          version: metadata.version || "",
+          ...(metadata.imports ? { imports: JSON.parse(JSON.stringify(metadata.imports)) } : {})
+        }
       }));
     },
     [updateActiveSource]
@@ -232,6 +281,7 @@ const EntryCodeFramingModal = ({ open, onClose, onSave, attributeName, codes, in
         autoHeight: true,
         editable: false,
         cellStyle: preWrapWordBreak,
+        cellClass: DROPDOWN_CELL_CLASS,
         cellRenderer: DropdownCellRenderer,
         cellRendererParams: {
           fieldName: "predicateId",
@@ -279,6 +329,7 @@ const EntryCodeFramingModal = ({ open, onClose, onSave, attributeName, codes, in
         autoHeight: true,
         editable: false,
         cellStyle: preWrapWordBreak,
+        cellClass: DROPDOWN_CELL_CLASS,
         cellRenderer: DropdownCellRenderer,
         cellRendererParams: {
           fieldName: "mappingJustification",
@@ -368,6 +419,8 @@ const EntryCodeFramingModal = ({ open, onClose, onSave, attributeName, codes, in
           )}
           onMetadataChange={handleMetadataChange}
           onImportsSave={handleImportsSave}
+          suggestions={availableSuggestions}
+          onApplySuggestion={handleApplySuggestion}
           maxWidth="100%"
         />
 
@@ -381,6 +434,7 @@ const EntryCodeFramingModal = ({ open, onClose, onSave, attributeName, codes, in
           }}
         >
           <style>{gridStyles}</style>
+          <style>{dropdownCellStyles}</style>
           <AgGridReact
             key={`${activeSource?.key}-${i18n.language}`}
             ref={gridRef}

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Autocomplete,
   Box,
   Button,
   IconButton,
@@ -451,16 +452,72 @@ export const FramingSourceTabs = ({
 
 // Framing metadata (primary vocabulary) form plus the imported sub-vocabularies
 // summary for the active framing source.
+// `suggestions` ([{ metadata, usedIn: string[] }]) turns the ID field into an
+// autocomplete; picking one hands its metadata to `onApplySuggestion`.
 export const FramingSourceMetadataPanel = ({
   metadata,
   description,
   onMetadataChange,
   onImportsSave,
+  suggestions = [],
+  onApplySuggestion,
   maxWidth = "900px"
 }) => {
   const { t } = useTranslation();
   const [showImportsModal, setShowImportsModal] = useState(false);
   const importEntries = Object.entries(metadata.imports || {});
+
+  const idField =
+    suggestions.length > 0 && onApplySuggestion ? (
+      <Autocomplete
+        freeSolo
+        openOnFocus
+        options={suggestions}
+        value={metadata.id || null}
+        inputValue={metadata.id || ""}
+        getOptionLabel={(option) =>
+          typeof option === "string" ? option : option.metadata.id
+        }
+        onInputChange={(_e, value, reason) => {
+          if (reason === "input" || reason === "clear") onMetadataChange("id", value);
+        }}
+        onChange={(_e, option) => {
+          if (option && typeof option === "object") onApplySuggestion(option.metadata);
+        }}
+        renderOption={(props, option) => (
+          <Box component="li" {...props} key={option.key}>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {option.metadata.id}
+                {option.metadata.label ? ` · ${option.metadata.label}` : ""}
+                {option.metadata.version ? ` · v${option.metadata.version}` : ""}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                {t("Used in")}: {option.usedIn.join(", ")}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            size="small"
+            label={t("ID")}
+            placeholder="FOODON"
+            helperText={t("Pick a framing source from another list to fill in its details.")}
+          />
+        )}
+      />
+    ) : (
+      <TextField
+        fullWidth
+        size="small"
+        label={t("ID")}
+        placeholder="FOODON"
+        value={metadata.id || ""}
+        onChange={(e) => onMetadataChange("id", e.target.value)}
+      />
+    );
 
   return (
     <>
@@ -487,14 +544,7 @@ export const FramingSourceMetadataPanel = ({
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              size="small"
-              label={t("ID")}
-              placeholder="FOODON"
-              value={metadata.id || ""}
-              onChange={(e) => onMetadataChange("id", e.target.value)}
-            />
+            {idField}
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField

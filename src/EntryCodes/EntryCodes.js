@@ -486,6 +486,33 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
       .filter(({ Code }) => Code !== "" && !seen.has(Code) && seen.add(Code));
   }, [framingIndex, localEntryCodeRowData, languages]);
 
+  const framingSourceSuggestions = useMemo(() => {
+    if (!framingAttribute) return [];
+    const byMetadata = new Map();
+    selectedAttributesList
+      .filter((attr) => attr !== framingAttribute)
+      .forEach((attr) => {
+        (entryCodeFramingSources[attr] || []).forEach((source) => {
+          const metadata = source?.metadata || {};
+          if (!String(metadata.id ?? "").trim()) return;
+          const signature = JSON.stringify([
+            metadata.id,
+            metadata.label,
+            metadata.location,
+            metadata.version,
+            metadata.imports || {}
+          ]);
+          const existing = byMetadata.get(signature);
+          if (existing) {
+            if (!existing.usedIn.includes(attr)) existing.usedIn.push(attr);
+          } else {
+            byMetadata.set(signature, { key: signature, metadata, usedIn: [attr] });
+          }
+        });
+      });
+    return [...byMetadata.values()];
+  }, [framingAttribute, selectedAttributesList, entryCodeFramingSources]);
+
   const openFraming = (index) => {
     codeRefs.current?.[index]?.current?.api?.stopEditing();
     setFramingIndex(index);
@@ -557,6 +584,7 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
         attributeName={framingAttribute}
         codes={framingCodes}
         initialSources={framingAttribute ? entryCodeFramingSources[framingAttribute] : null}
+        sourceSuggestions={framingSourceSuggestions}
       />
       <Box
         sx={{
