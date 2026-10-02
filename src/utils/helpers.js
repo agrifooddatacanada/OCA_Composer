@@ -13,6 +13,7 @@ import {
   DEFAULT_LANGUAGE,
   ENTRY_CODE_FRAMING,
   FIELD_CARDINALITY_OVERLAY,
+  FIELD_ENTRY_CODE_FRAMING_OVERLAY,
   FIELD_FORMAT_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_RANGE_OVERLAY,
@@ -1525,6 +1526,15 @@ export const getCardinalityOverlayDisabledReason = (overlayKey, attributes) => {
   );
 };
 
+export const shouldDisableEntryCodeFramingOverlay = (overlayKey, attributes) =>
+  overlayKey === FIELD_ENTRY_CODE_FRAMING_OVERLAY &&
+  !attributes.some((attr) => attr?.List === true);
+
+export const getEntryCodeFramingOverlayDisabledReason = (overlayKey, attributes) =>
+  shouldDisableEntryCodeFramingOverlay(overlayKey, attributes)
+    ? i18next.t("Entry code framing requires at least one attribute with a list.")
+    : "";
+
 export const getRangeOverlayDisabledReason = (
   overlayKey,
   selectedKeys,
@@ -1599,7 +1609,8 @@ export const isOverlayAddDisabled = (
       formatRuleData
     ) ||
     shouldDisableFormInformationOverlay(overlayKey, selectedKeys) ||
-    shouldDisableCardinalityOverlay(overlayKey, attributes)
+    shouldDisableCardinalityOverlay(overlayKey, attributes) ||
+    shouldDisableEntryCodeFramingOverlay(overlayKey, attributes)
   );
 };
 
@@ -1629,6 +1640,7 @@ export const getOverlayAddDisabledReason = (
       formatRuleData
     ) ||
     getCardinalityOverlayDisabledReason(overlayKey, attributes) ||
+    getEntryCodeFramingOverlayDisabledReason(overlayKey, attributes) ||
     ""
   );
 };

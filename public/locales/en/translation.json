@@ -820,6 +820,8 @@
   "Framed": "Framed",
   "Frame these entry codes to terms from an ontology or controlled vocabulary.": "Frame these entry codes to terms from an ontology or controlled vocabulary.",
   "Entry code framing": "Entry code framing",
+  "Entry Code Framing": "Entry Code Framing",
+  "Entry code framing requires at least one attribute with a list.": "Entry code framing requires at least one attribute with a list.",
   "Frame the entry codes of this list to terms from an ontology or controlled vocabulary. Not every code must be framed.": "Frame the entry codes of this list to terms from an ontology or controlled vocabulary. Not every code must be framed.",
   "Describe the ontology or vocabulary these entry codes are framed against. This is stored as the overlay's framing metadata.": "Describe the ontology or vocabulary these entry codes are framed against. This is stored as the overlay's framing metadata.",
   "The entry code being framed": "The entry code being framed",

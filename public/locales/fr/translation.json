@@ -821,6 +821,8 @@
   "Framed": "Encadré",
   "Frame these entry codes to terms from an ontology or controlled vocabulary.": "Encadrez ces codes d'entrée avec des termes d'une ontologie ou d'un vocabulaire contrôlé.",
   "Entry code framing": "Encadrement des codes d'entrée",
+  "Entry Code Framing": "Encadrement des codes d'entrée",
+  "Entry code framing requires at least one attribute with a list.": "L'encadrement des codes d'entrée nécessite au moins un attribut avec une liste.",
   "Frame the entry codes of this list to terms from an ontology or controlled vocabulary. Not every code must be framed.": "Encadrez les codes d'entrée de cette liste avec des termes d'une ontologie ou d'un vocabulaire contrôlé. Il n'est pas nécessaire d'encadrer chaque code.",
   "Describe the ontology or vocabulary these entry codes are framed against. This is stored as the overlay's framing metadata.": "Décrivez l'ontologie ou le vocabulaire par rapport auquel ces codes d'entrée sont encadrés. Ceci est stocké comme métadonnées d'encadrement de la superposition.",
   "The entry code being framed": "Le code d'entrée encadré",

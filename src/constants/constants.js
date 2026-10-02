@@ -109,6 +109,9 @@ export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
 export const FIELD_FORM_INFORMATION_OVERLAY = "Form Information";
 export const FIELD_DATA_SEPARATOR_OVERLAY = "Data Separator";
 export const FIELD_EXAMPLE_OVERLAY = "Examples";
+// Not part of overlayItems: whether it is added is derived from the schema's
+// entryCodeFramingSources, which are edited on the Entry Codes page.
+export const FIELD_ENTRY_CODE_FRAMING_OVERLAY = "Entry Code Framing";
 
 export const overlayItems = {
   [FIELD_CHARACTER_ENCODING_OVERLAY]: false,
