@@ -13,6 +13,7 @@ import {
   SENSITIVE,
   UNIT_FRAMING,
   ATTRIBUTE_FRAMING,
+  ENTRY_CODE_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER
@@ -543,6 +544,80 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
           "******************************************************************\n"
         );
       }
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(extensionOverlays, ENTRY_CODE_FRAMING)) {
+    // Entry code framing is stored as one overlay per vocabulary (source), and
+    // each overlay can frame the entry codes of several lists. The output is
+    // grouped by list instead: one block per (list, source), with all the
+    // sources of a list emitted together, in overlay order. Lists follow the
+    // schema's attribute ordering when present, then order of first appearance.
+    // A bare (non-array) overlay object is also accepted.
+    const rawEntryCodeFramingOverlay = extensionOverlays[ENTRY_CODE_FRAMING];
+    const entryCodeFramingSources = Array.isArray(rawEntryCodeFramingOverlay)
+      ? rawEntryCodeFramingOverlay
+      : rawEntryCodeFramingOverlay
+        ? [rawEntryCodeFramingOverlay]
+        : [];
+
+    const sourcesByList = new Map();
+    entryCodeFramingSources.forEach((overlay) => {
+      Object.entries(overlay?.entry_codes || {}).forEach(([list, codes]) => {
+        if (!codes || Object.keys(codes).length === 0) return;
+        if (!sourcesByList.has(list)) sourcesByList.set(list, []);
+        sourcesByList.get(list).push({ overlay, codes });
+      });
+    });
+
+    const attributeOrder = extensionOverlays.ordering?.attribute_ordering || [];
+    const orderedLists = [
+      ...attributeOrder.filter((list) => sourcesByList.has(list)),
+      ...[...sourcesByList.keys()].filter((list) => !attributeOrder.includes(list))
+    ];
+
+    orderedLists.forEach((list) => {
+      sourcesByList.get(list).forEach(({ overlay, codes }) => {
+        lines.push(
+          `Layer name: ${overlay.type}\n`,
+          `SAID/digest: ${overlay.d}\n\n`,
+          `Entry code list: ${list}\n\n`
+        );
+
+        if (overlay.framing_metadata) {
+          const { imports, ...framingMetadata } = overlay.framing_metadata;
+
+          lines.push("Entry code frame\n");
+          Object.entries(framingMetadata).forEach(([key, value]) => {
+            lines.push(`   "${key}": "${value}"\n`);
+          });
+          lines.push("\n");
+
+          if (imports && Object.keys(imports).length > 0) {
+            lines.push("Imported vocabularies\n");
+            Object.entries(imports).forEach(([id, imp]) => {
+              lines.push(
+                `   ${id}: label: ${imp?.label || ""}, location: ${imp?.location || ""}, version: ${imp?.version || ""}\n`
+              );
+            });
+            lines.push("\n");
+          }
+        }
+
+        lines.push(`Schema entry codes: ${overlay.type}\n`);
+
+        Object.entries(codes).forEach(([entryCode, framing]) => {
+          lines.push(
+            `   ${entryCode}: predicate: ${framing?.predicate_id || ""}, term_id: ${framing?.term_id || ""}, description: ${framing?.description || ""}, framing_justification: ${framing?.framing_justification || ""}`,
+            "\n"
+          );
+        });
+
+        lines.push(
+          "\n",
+          "******************************************************************\n"
+        );
+      });
     });
   }
 

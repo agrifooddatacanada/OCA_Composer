@@ -30,6 +30,7 @@ import {
   SENSITIVE,
   UNIT_FRAMING,
   ATTRIBUTE_FRAMING,
+  ENTRY_CODE_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER,
@@ -47,7 +48,8 @@ import {
   generateSchemaInformation,
   generateSchemaQuickView,
   generateUnitFramingMetadataTable,
-  generateAttributeFramingTable
+  generateAttributeFramingTable,
+  generateEntryCodeFramingTable
 } from "./markdownReadmeUtils";
 
 // An attribute can be framed against several independent vocabularies at
@@ -58,6 +60,13 @@ const hasAttributeFramingContent = (attributeFramingOverlay) =>
   Array.isArray(attributeFramingOverlay)
     ? attributeFramingOverlay.length > 0
     : !!(attributeFramingOverlay?.framing_metadata || attributeFramingOverlay?.attributes);
+
+// Entry code framing is one overlay per vocabulary, so the entry_code_framing
+// ADC overlay is an array of sources (a bare overlay object is also accepted).
+const hasEntryCodeFramingContent = (entryCodeFramingOverlay) =>
+  Array.isArray(entryCodeFramingOverlay)
+    ? entryCodeFramingOverlay.length > 0
+    : !!(entryCodeFramingOverlay?.framing_metadata || entryCodeFramingOverlay?.entry_codes);
 
 const getModifiedLayer = (overlay) => {
   const { capture_base, type, d: digest, ...rest } = overlay;
@@ -164,6 +173,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
 
   const attributeFramingOverlay =
     pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[ATTRIBUTE_FRAMING];
+
+  const entryCodeFramingOverlay =
+    pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[ENTRY_CODE_FRAMING];
 
   const decimalSeparatorOverlay =
     pkg?.extensions?.[ADC]?.[rootCaptureBaseId]?.overlays?.[DECIMAL_SEPARATOR];
@@ -277,6 +289,12 @@ const useGenerateMarkdownReadMeFromJson = () => {
     if (hasAttributeFramingContent(attributeFramingOverlay)) {
       fileContent += generateAttributeFramingTable(attributeFramingOverlay);
     }
+    if (hasEntryCodeFramingContent(entryCodeFramingOverlay)) {
+      fileContent += generateEntryCodeFramingTable(
+        entryCodeFramingOverlay,
+        attributeNames
+      );
+    }
     fileContent += generateLanguageSpecificSchemaDetailsTable({
       layers,
       attributeNames,
@@ -326,6 +344,9 @@ const useGenerateMarkdownReadMeFromJson = () => {
 
         const childAttributeFramingOverlay =
           pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[ATTRIBUTE_FRAMING];
+
+        const childEntryCodeFramingOverlay =
+          pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[ENTRY_CODE_FRAMING];
 
         const childExampleOverlay =
           pkg?.extensions?.[ADC]?.[childCaptureBaseId]?.overlays?.[EXAMPLE];
@@ -412,6 +433,12 @@ const useGenerateMarkdownReadMeFromJson = () => {
         }
         if (hasAttributeFramingContent(childAttributeFramingOverlay)) {
           fileContent += generateAttributeFramingTable(childAttributeFramingOverlay);
+        }
+        if (hasEntryCodeFramingContent(childEntryCodeFramingOverlay)) {
+          fileContent += generateEntryCodeFramingTable(
+            childEntryCodeFramingOverlay,
+            childAttributeNames
+          );
         }
         fileContent += generateLanguageSpecificSchemaDetailsTable({
           layers: childLayers,
