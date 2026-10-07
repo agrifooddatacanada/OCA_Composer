@@ -14,6 +14,7 @@ import {
   SENSITIVE,
   UNIT_FRAMING,
   ATTRIBUTE_FRAMING,
+  ENTRY_CODE_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER
@@ -130,6 +131,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let rangeOverlay = null;
   let unitFramingOverlay = null;
   let attributeFramingSources = [];
+  let entryCodeFramingSources = [];
   let extensionOverlayColumnCount = 0;
   let decimalSeparatorOverlay = null;
   let fileDelimiterOverlay = null;
@@ -158,6 +160,14 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         ? rawAttributeFramingOverlay
         : rawAttributeFramingOverlay
           ? [rawAttributeFramingOverlay]
+          : [];
+      // Entry code framing is one overlay per vocabulary (source); each can
+      // frame the entry codes of several lists (entry_codes: { list: { code: ... } }).
+      const rawEntryCodeFramingOverlay = overlays?.[ENTRY_CODE_FRAMING];
+      entryCodeFramingSources = Array.isArray(rawEntryCodeFramingOverlay)
+        ? rawEntryCodeFramingOverlay
+        : rawEntryCodeFramingOverlay
+          ? [rawEntryCodeFramingOverlay]
           : [];
       decimalSeparatorOverlay = overlays?.[DECIMAL_SEPARATOR];
       fileDelimiterOverlay = overlays?.[FILE_DELIMITER];
@@ -1102,7 +1112,38 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     (source) => source?.framing_metadata
   );
 
-  if (unitFramingOverlay?.framing_metadata || attributeFramingSourcesWithMetadata.length > 0) {
+  // Entry code framing, grouped by list: { list: [source overlays framing it] }.
+  // Sources of the same list stay together, in overlay order.
+  const entryCodeFramingSourcesByList = new Map();
+  entryCodeFramingSources.forEach((source) => {
+    Object.entries(source?.entry_codes || {}).forEach(([list, codes]) => {
+      if (!codes || Object.keys(codes).length === 0) return;
+      if (!entryCodeFramingSourcesByList.has(list)) {
+        entryCodeFramingSourcesByList.set(list, []);
+      }
+      entryCodeFramingSourcesByList.get(list).push(source);
+    });
+  });
+
+  // One metadata block per vocabulary (a vocabulary can frame several lists),
+  // ordered by the first list that uses it.
+  const entryCodeFramingSourcesWithMetadata = [];
+  entryCodeFramingSourcesByList.forEach((sources) => {
+    sources.forEach((source) => {
+      if (
+        source?.framing_metadata &&
+        !entryCodeFramingSourcesWithMetadata.includes(source)
+      ) {
+        entryCodeFramingSourcesWithMetadata.push(source);
+      }
+    });
+  });
+
+  if (
+    unitFramingOverlay?.framing_metadata ||
+    attributeFramingSourcesWithMetadata.length > 0 ||
+    entryCodeFramingSourcesWithMetadata.length > 0
+  ) {
     sheet1.getCell(lookUpStart, 3).value = "Framing references";
     formatLookupHeader(sheet1.getCell(lookUpStart, 3));
 
@@ -1172,6 +1213,45 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         });
       }
     });
+
+    entryCodeFramingSourcesWithMetadata.forEach((source) => {
+      const { imports, ...entryCodeFramingMetadata } = source.framing_metadata;
+      const sourceLabel = entryCodeFramingMetadata.label || entryCodeFramingMetadata.id || "";
+
+      sheet1.getCell(metadataRow, 3).value = sourceLabel
+        ? `Entry code framing: ${sourceLabel}`
+        : "Entry code framing";
+      formatLookupValue(sheet1.getCell(metadataRow, 3));
+      metadataRow++;
+
+      for (const [property, value] of Object.entries(entryCodeFramingMetadata)) {
+        sheet1.getCell(metadataRow, 4).value = property;
+        formatLookupAttr(sheet1.getCell(metadataRow, 4));
+
+        sheet1.getCell(metadataRow, 5).value = value;
+        formatLookupValue(sheet1.getCell(metadataRow, 5));
+
+        metadataRow++;
+      }
+
+      if (imports && Object.keys(imports).length > 0) {
+        Object.entries(imports).forEach(([id, imp]) => {
+          sheet1.getCell(metadataRow, 4).value = `import: ${id}`;
+          formatLookupAttr(sheet1.getCell(metadataRow, 4));
+
+          sheet1.getCell(metadataRow, 5).value = [
+            imp?.label ? `label: ${imp.label}` : null,
+            imp?.location ? `location: ${imp.location}` : null,
+            imp?.version ? `version: ${imp.version}` : null
+          ]
+            .filter(Boolean)
+            .join(", ");
+          formatLookupValue(sheet1.getCell(metadataRow, 5));
+
+          metadataRow++;
+        });
+      }
+    });
   }
 
   let offset = 0;
@@ -1204,6 +1284,42 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       sheet1.getCell(i, 2).value = keys[i - startRow];
       formatLookupValue(sheet1.getCell(i, 2));
     }
+  }
+
+  // Entry code framing: next to each list's lookup table (label | code), one
+  // column per framing source holding the framed term_id of each code. The
+  // sources of a list sit side by side, and each lookup block has its own
+  // header row (the row with the list name). They start after the "Framing
+  // references" columns (3-5) so the two never overlap.
+  const ENTRY_CODE_FRAMING_START_COLUMN = 7;
+  try {
+    for (const [attrName, [startRow, endRow]] of lookUpTable) {
+      const listSources = entryCodeFramingSourcesByList.get(attrName) || [];
+      if (listSources.length === 0) continue;
+
+      const codes = Object.keys(lookupEntries[attrName]);
+      listSources.forEach((source, sourceIndex) => {
+        const columnIndex = ENTRY_CODE_FRAMING_START_COLUMN + sourceIndex;
+        const sourceLabel = source.framing_metadata?.label || source.framing_metadata?.id || "";
+
+        const headerCell = sheet1.getCell(startRow - 1, columnIndex);
+        headerCell.value = sourceLabel
+          ? `Entry Code Framing: ${sourceLabel}`
+          : "Entry Code Framing";
+        formatLookupAttr(headerCell);
+
+        for (let row = startRow; row <= endRow; row++) {
+          const framingData = source.entry_codes[attrName]?.[codes[row - startRow]];
+          if (!framingData) continue;
+
+          const valueCell = sheet1.getCell(row, columnIndex);
+          valueCell.value = framingData.term_id;
+          formatLookupValue(valueCell);
+        }
+      });
+    }
+  } catch (error) {
+    throw new WorkbookError(".. Error in formatting entry code framing columns ..");
   }
 
   for (const [attrName, [start, end]] of lookUpTable) {

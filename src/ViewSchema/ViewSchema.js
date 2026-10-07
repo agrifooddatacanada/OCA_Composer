@@ -24,6 +24,7 @@ import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
 import AttributeFramingTable from "./AttributeFramingTable";
+import EntryCodeFramingTable from "./EntryCodeFramingTable";
 import {
   getBestLangName,
   langCodeOCAFromName,
@@ -103,6 +104,24 @@ export default function ViewSchema({
   ];
 
   const filteredLanguages = React.useMemo(() => [...languages], [languages]);
+
+  // Entry code framing is only shown for attributes that are (still) lists.
+  const listAttributeNames = useMemo(
+    () =>
+      (schemaState?.attributes || [])
+        .filter((attr) => attr.List === true)
+        .map((attr) => attr.Attribute),
+    [schemaState?.attributes]
+  );
+  const entryCodeFramingSourcesForLists = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(schemaState?.entryCodeFramingSources || {}).filter(([attribute]) =>
+          listAttributeNames.includes(attribute)
+        )
+      ),
+    [schemaState?.entryCodeFramingSources, listAttributeNames]
+  );
 
   // Check example overlay values against the range and format overlays (when present).
   const exampleValueIssues = useMemo(() => {
@@ -1155,6 +1174,10 @@ export default function ViewSchema({
         {getOverlaySelections()[FIELD_ATTRIBUTE_FRAMING_OVERLAY] && (
           <AttributeFramingTable sources={schemaState.attributeFramingSources || []} />
         )}
+        <EntryCodeFramingTable
+          entryCodeFramingSources={entryCodeFramingSourcesForLists}
+          listOrder={listAttributeNames}
+        />
             {addClearButton && isPageForward && isExport && summaryExportMode && (
               <Box
                 sx={{ display: "flex", justifyContent: "flex-end", mt: 4, width: "100%" }}
