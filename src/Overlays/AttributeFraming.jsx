@@ -50,7 +50,6 @@ import { CustomPalette } from "../constants/customPalette";
 // currently mounted AttributeFraming grid's API to commit edits.
 let globalGridRef = null;
 
-const MAX_TEXT_WIDTH = "600px";
 
 const makeBlankMetadata = () => ({ id: "", label: "", location: "", version: "" });
 const makeBlankSource = () => ({
@@ -531,20 +530,20 @@ const AttributeFraming = forwardRef((_props, ref) => {
 
   // Unframed-attributes status is purely derived from the active tab's rows -
   // no need to persist it in schema state.
-  const { frameAllAttributes, unframedAttributeList } = useMemo(() => {
-    if (activeRowData.length === 0) {
-      return { frameAllAttributes: false, unframedAttributeList: [] };
-    }
-    const unframed = activeRowData
-      .filter((row) => !row.objectId || row.objectId.trim() === "")
-      .map((row) => row.Attribute);
-    const allFramed = activeRowData.every(
-      (row) => row.objectId && row.objectId.trim() !== ""
-    );
-    return { frameAllAttributes: allFramed, unframedAttributeList: unframed };
-  }, [activeRowData]);
+  // const { frameAllAttributes, unframedAttributeList } = useMemo(() => {
+  //   if (activeRowData.length === 0) {
+  //     return { frameAllAttributes: false, unframedAttributeList: [] };
+  //   }
+  //   const unframed = activeRowData
+  //     .filter((row) => !row.objectId || row.objectId.trim() === "")
+  //     .map((row) => row.Attribute);
+  //   const allFramed = activeRowData.every(
+  //     (row) => row.objectId && row.objectId.trim() !== ""
+  //   );
+  //   return { frameAllAttributes: allFramed, unframedAttributeList: unframed };
+  // }, [activeRowData]);
 
-  const hasUnframedAttributes = unframedAttributeList.length > 0;
+  // const hasUnframedAttributes = unframedAttributeList.length > 0;
 
   // Commit whatever is currently displayed in the grid back into schema state.
   // Wired to every editable/selectable column so manual edits are persisted
@@ -699,11 +698,11 @@ const AttributeFraming = forwardRef((_props, ref) => {
     [activeMetadata.imports]
   );
 
-  const unframedAttributesText = frameAllAttributes
-    ? t("All attributes are framed")
-    : hasUnframedAttributes
-      ? `${t("Unframed attributes")}: [${unframedAttributeList.join(", ")}]`
-      : t("No attributes to frame");
+  // const unframedAttributesText = frameAllAttributes
+  //   ? t("All attributes are framed")
+  //   : hasUnframedAttributes
+  //     ? `${t("Unframed attributes")}: [${unframedAttributeList.join(", ")}]`
+  //     : t("No attributes to frame");
 
   const handleSave = useCallback(() => {
     if (!gridReady || !gridRef.current?.api) {
@@ -992,7 +991,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
                   }
                 }}
               >
-                {t("Add import")}
+                {t("Edit import")}
               </Button>
             </Box>
           </Paper>
