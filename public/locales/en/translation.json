@@ -518,6 +518,7 @@
   "Edit this schema": "Edit this schema",
   "Select node to see hidden fields": "Select node to see hidden fields",
   "Form Information": "Form Information",
+  "Tip: adding Format first lets DateTime and Numeric placeholders inherit sensible defaults automatically.": "Tip: adding Format first lets DateTime and Numeric placeholders inherit sensible defaults automatically.",
   "Answer Type": "Answer Type",
   "Placeholder": "Placeholder",
   "Shown to users in forms when expecting free text input. Only available for Text and Array[Text] types.": "Shown to users in forms when expecting free text input. Only available for Text and Array[Text] types.",
