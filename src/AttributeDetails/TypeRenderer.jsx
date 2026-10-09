@@ -96,6 +96,10 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     const schemaUpdate = { attributes: updatedAttributeRowData };
     if (typeChanged) {
       schemaUpdate.attributeFormats = removeAttributeFromMap(schemaState.attributeFormats, attributeName);
+      schemaUpdate.characterEncodingData = removeAttributeFromMap(
+        schemaState.characterEncodingData,
+        attributeName
+      );
     }
 
     if (newType === TYPE_CHILD_SCHEMA) {
@@ -196,9 +200,14 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       });
       setAttributeRowData(updatedAttributeRowData);
 
+      const schemaState = getSchema() || {};
       updateSchema({
         attributes: updatedAttributeRowData,
-        attributeFormats: removeAttributeFromMap((getSchema() || {}).attributeFormats, attributeName)
+        attributeFormats: removeAttributeFromMap(schemaState.attributeFormats, attributeName),
+        characterEncodingData: removeAttributeFromMap(
+          schemaState.characterEncodingData,
+          attributeName
+        )
       });
     }
   };
