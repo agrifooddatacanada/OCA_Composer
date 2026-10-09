@@ -211,7 +211,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
 
       const updatedAttributeRowData = attributeRowData.map((item) => {
         if (item.Attribute === attributeName) {
-          const next = { ...item, Type: "" };
+          const next = { ...item, Type: "", Unit: "" };
           delete next.OriginalType;
           return next;
         }
