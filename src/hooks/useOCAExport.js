@@ -28,6 +28,7 @@ import {
   FIELD_FORMAT_OVERLAY,
   FIELD_RANGE_OVERLAY,
   FIELD_CHARACTER_ENCODING_OVERLAY,
+  isCharacterEncodingEligibleAttributeType,
   FIELD_UNIT_FRAMING_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_CARDINALITY_OVERLAY,
@@ -500,6 +501,8 @@ const useOCAExport = () => {
       let hasEncoding = false;
 
       attributesList.forEach((item, index) => {
+        if (!isCharacterEncodingEligibleAttributeType(attributeRowData[index]?.Type)) return;
+
         // characterEncodingRowData can be either:
         // - an object mapping attributeName -> encoding (schema state)
         // - an array of row objects [{ Attribute, "Character Encoding" }] (legacy/UI)
