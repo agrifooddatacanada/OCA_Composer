@@ -7,7 +7,8 @@ import {
   TYPE_CHILD_SCHEMA,
   TYPE_PLACEHOLDER_CHILD_SCHEMA,
   isChildSchemaType,
-  isUnitEligibleAttributeType
+  isUnitEligibleAttributeType,
+  isRangeEligibleAttributeType
 } from "../constants/constants";
 import { resolveChildSchemaStateRootId } from "../schema/childSchemaSubtree";
 import DeleteConfirmation from "../Overlays/DeleteConfirmation";
@@ -101,6 +102,13 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       if (lostArray) {
         schemaUpdate.attributeCardinality = removeAttributeFromMap(
           schemaState.attributeCardinality,
+          attributeName
+        );
+      }
+
+      if (!isRangeEligibleAttributeType(newType)) {
+        schemaUpdate.attributeRanges = removeAttributeFromMap(
+          schemaState.attributeRanges,
           attributeName
         );
       }
@@ -216,6 +224,10 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
           attributeName
         );
       }
+      schemaUpdate.attributeRanges = removeAttributeFromMap(
+        schemaState.attributeRanges,
+        attributeName
+      );
       updateSchema(schemaUpdate);
     }
   };

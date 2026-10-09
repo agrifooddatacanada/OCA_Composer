@@ -1,5 +1,6 @@
 import { langCodeOCAFromName } from "../utils/languageUtils";
-import { normalizeAttributeNameKey } from "../utils/stringUtils";
+import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
+import { isRangeEligibleAttributeType } from "../constants/constants";
 
 // ============================================================================
 // HELPERS
@@ -191,6 +192,10 @@ function applyRangeOverlay(ocaSchema, editorState) {
   if (Object.keys(attributeRanges).length === 0) return;
 
   const normalizedToRaw = getNormalizedAttributeToRawMap(editorState);
+  const attributeTypeByName = new Map(
+    (editorState?.attributes || []).map((a) => [a.Attribute, a.Type])
+  );
+  const attributeFormats = editorState.attributeFormats || {};
 
   const rangeOverlay = {
     d: ocaSchema.overlays?.range?.d,
@@ -202,14 +207,17 @@ function applyRangeOverlay(ocaSchema, editorState) {
   Object.entries(attributeRanges).forEach(([attrName, range]) => {
     if (!(range.lower || range.upper)) return;
     const rawAttrName = normalizedToRaw.get(normalizeAttributeNameKey(attrName));
-    if (rawAttrName) {
-      rangeOverlay.attributes[rawAttrName] = {
-        lower: range.lower || "",
-        lower_inclusive: range.lower_inclusive || false,
-        upper: range.upper || "",
-        upper_inclusive: range.upper_inclusive || false
-      };
-    }
+    if (!rawAttrName) return;
+    if (!isRangeEligibleAttributeType(attributeTypeByName.get(rawAttrName))) return;
+    const formatRule = getMapValueForAttributeName(attributeFormats, rawAttrName);
+    if (!formatRule || String(formatRule).trim() === "") return;
+
+    rangeOverlay.attributes[rawAttrName] = {
+      lower: range.lower || "",
+      lower_inclusive: range.lower_inclusive || false,
+      upper: range.upper || "",
+      upper_inclusive: range.upper_inclusive || false
+    };
   });
 
   if (Object.keys(rangeOverlay.attributes).length > 0) {
