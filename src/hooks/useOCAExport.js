@@ -361,7 +361,8 @@ const useOCAExport = () => {
     ) {
       let cardinalityText = "";
       // Iterate over current attributes only (prevents deleted attributes from appearing)
-      attributesList.forEach((attrName) => {
+      attributesList.forEach((attrName, index) => {
+        if (!String(attributeRowData[index]?.Type).includes("Array")) return;
         const cardinalityValue = getMapValueForAttributeName(
           attributeCardinality,
           attrName

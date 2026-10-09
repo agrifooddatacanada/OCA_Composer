@@ -112,6 +112,12 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
           attributeName
         );
       }
+
+      if (!isUnitEligibleAttributeType(newType) && Array.isArray(schemaState.unitFramedData)) {
+        schemaUpdate.unitFramedData = schemaState.unitFramedData.filter(
+          (row) => row.Attribute !== attributeName
+        );
+      }
     }
 
     if (newType === TYPE_CHILD_SCHEMA) {
@@ -228,6 +234,11 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
         schemaState.attributeRanges,
         attributeName
       );
+      if (Array.isArray(schemaState.unitFramedData)) {
+        schemaUpdate.unitFramedData = schemaState.unitFramedData.filter(
+          (row) => row.Attribute !== attributeName
+        );
+      }
       updateSchema(schemaUpdate);
     }
   };

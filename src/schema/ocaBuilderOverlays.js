@@ -141,6 +141,9 @@ function applyCardinalityOverlay(ocaSchema, editorState) {
   if (Object.keys(attributeCardinality).length === 0) return;
 
   const normalizedToRaw = getNormalizedAttributeToRawMap(editorState);
+  const attributeTypeByName = new Map(
+    (editorState?.attributes || []).map((a) => [a.Attribute, a.Type])
+  );
 
   const cardinalityOverlay = {
     d: ocaSchema.overlays?.cardinality?.d,
@@ -152,9 +155,9 @@ function applyCardinalityOverlay(ocaSchema, editorState) {
   Object.entries(attributeCardinality).forEach(([attrName, cardValue]) => {
     if (!cardValue) return;
     const rawAttrName = normalizedToRaw.get(normalizeAttributeNameKey(attrName));
-    if (rawAttrName) {
-      cardinalityOverlay.attribute_cardinality[rawAttrName] = cardValue;
-    }
+    if (!rawAttrName) return;
+    if (!String(attributeTypeByName.get(rawAttrName)).includes("Array")) return;
+    cardinalityOverlay.attribute_cardinality[rawAttrName] = cardValue;
   });
 
   if (Object.keys(cardinalityOverlay.attribute_cardinality).length > 0) {
