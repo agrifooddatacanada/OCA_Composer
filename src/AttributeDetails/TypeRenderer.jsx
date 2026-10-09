@@ -96,6 +96,14 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     const schemaUpdate = { attributes: updatedAttributeRowData };
     if (typeChanged) {
       schemaUpdate.attributeFormats = removeAttributeFromMap(schemaState.attributeFormats, attributeName);
+
+      const lostArray = String(prevType).includes("Array") && !String(newType).includes("Array");
+      if (lostArray) {
+        schemaUpdate.attributeCardinality = removeAttributeFromMap(
+          schemaState.attributeCardinality,
+          attributeName
+        );
+      }
     }
 
     if (newType === TYPE_CHILD_SCHEMA) {
@@ -182,6 +190,7 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
         setShowChildSchemaDeleteModal(true);
         return;
       }
+      const prevType = rowType();
       skipSyncRef.current = true;
       setType("");
       typesObjectRef.current[attributeName] = "";
@@ -196,10 +205,18 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       });
       setAttributeRowData(updatedAttributeRowData);
 
-      updateSchema({
+      const schemaState = getSchema() || {};
+      const schemaUpdate = {
         attributes: updatedAttributeRowData,
-        attributeFormats: removeAttributeFromMap((getSchema() || {}).attributeFormats, attributeName)
-      });
+        attributeFormats: removeAttributeFromMap(schemaState.attributeFormats, attributeName)
+      };
+      if (String(prevType).includes("Array")) {
+        schemaUpdate.attributeCardinality = removeAttributeFromMap(
+          schemaState.attributeCardinality,
+          attributeName
+        );
+      }
+      updateSchema(schemaUpdate);
     }
   };
 
