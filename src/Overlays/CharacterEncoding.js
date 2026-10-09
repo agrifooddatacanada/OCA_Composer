@@ -20,8 +20,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import {
   BETWEEN_SECTION_SPACING,
   AG_GRID_VIRTUALIZE_MIN_ROWS,
-  FIELD_CHARACTER_ENCODING_OVERLAY,
-  isCharacterEncodingEligibleAttributeType
+  FIELD_CHARACTER_ENCODING_OVERLAY
 } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import {
@@ -47,9 +46,7 @@ const CharacterEncoding = forwardRef((_props, ref) => {
   // Get character encoding data, initialize with attributes if empty
   const characterEncodingRowData = useMemo(() => {
     const characterEncodingData = schemaState?.characterEncodingData || {};
-    const attributes = (schemaState?.attributes || []).filter((attr) =>
-      isCharacterEncodingEligibleAttributeType(attr.Type)
-    );
+    const attributes = schemaState?.attributes || [];
 
     // Convert data to UI format or initialize with attributes if empty
     if (Object.keys(characterEncodingData).length > 0) {

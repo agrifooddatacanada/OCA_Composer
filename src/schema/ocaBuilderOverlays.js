@@ -1,6 +1,5 @@
 import { langCodeOCAFromName } from "../utils/languageUtils";
 import { normalizeAttributeNameKey } from "../utils/stringUtils";
-import { isCharacterEncodingEligibleAttributeType } from "../constants/constants";
 
 // ============================================================================
 // HELPERS
@@ -119,10 +118,6 @@ function applyCharacterEncodingOverlay(ocaSchema, editorState) {
   const charEncoding = editorState.characterEncodingData || {};
   if (Object.keys(charEncoding).length === 0) return;
 
-  const attributeTypeByName = new Map(
-    (editorState?.attributes || []).map((a) => [a.Attribute, a.Type])
-  );
-
   const charEncodingOverlay = {
     d: ocaSchema.overlays?.character_encoding?.d,
     capture_base: ocaSchema.capture_base.d,
@@ -131,9 +126,7 @@ function applyCharacterEncodingOverlay(ocaSchema, editorState) {
   };
 
   Object.entries(charEncoding).forEach(([attr, encoding]) => {
-    if (!encoding) return;
-    if (!isCharacterEncodingEligibleAttributeType(attributeTypeByName.get(attr))) return;
-    charEncodingOverlay.attribute_character_encoding[attr] = encoding;
+    if (encoding) charEncodingOverlay.attribute_character_encoding[attr] = encoding;
   });
 
   if (Object.keys(charEncodingOverlay.attribute_character_encoding).length > 0) {

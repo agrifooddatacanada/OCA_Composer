@@ -32,7 +32,6 @@ import {
 import {
   TYPE_CHILD_SCHEMA,
   isChildSchemaType,
-  isCharacterEncodingEligibleAttributeType,
   MANUAL_CREATION_SCHEMA_ID,
   HEADER_TO_CONTENT_GAP_PX,
   BETWEEN_SECTION_SPACING
@@ -838,9 +837,8 @@ export default function ViewSchema({
               displayType = TYPE_CHILD_SCHEMA;
             }
 
-            const charEncoding = isCharacterEncodingEligibleAttributeType(attr.Type)
-              ? (schemaState.characterEncodingData || {})[attr.Attribute] || ""
-              : "";
+            const charEncoding =
+              (schemaState.characterEncodingData || {})[attr.Attribute] || "";
 
             // Get range data for this attribute from object
             const range =

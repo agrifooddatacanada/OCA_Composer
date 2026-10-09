@@ -97,14 +97,6 @@ export const isFormatEligibleAttributeType = (typeStr) => {
   return FORMAT_OVERLAY_ELIGIBLE_BASE.has(base);
 };
 
-/** Character encoding only applies to text-like data: Text, Binary, or Array[…] of those. */
-const CHARACTER_ENCODING_ELIGIBLE_BASE = new Set(["Text", "Binary"]);
-
-export const isCharacterEncodingEligibleAttributeType = (typeStr) => {
-  const base = getScalarOrArrayElementTypeForRange(typeStr);
-  return CHARACTER_ENCODING_ELIGIBLE_BASE.has(base);
-};
-
 // Fields for overlay items
 export const FIELD_CHARACTER_ENCODING_OVERLAY = "Character Encoding";
 export const FIELD_FORMAT_OVERLAY = "Format";
