@@ -816,5 +816,6 @@
   "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.": "Décrivez l'ontologie ou le vocabulaire par rapport auquel ces attributs sont encadrés. Ceci est stocké comme métadonnées d'encadrement de la superposition.",
   "Imported vocabularies": "Vocabulaires importés",
   "No supporting vocabularies imported yet": "Aucun vocabulaire complémentaire importé pour le moment",
-  "Ontology terms and mapping details framed against each attribute, per framing source": "Termes d'ontologie et détails de mappage encadrés pour chaque attribut, par source d'encadrement"
+  "Ontology terms and mapping details framed against each attribute, per framing source": "Termes d'ontologie et détails de mappage encadrés pour chaque attribut, par source d'encadrement",
+  "This LinkML schema references enumeration types that are not included: {{enumNames}}. Entry codes for the affected attributes will not be generated. Include the missing enum definitions from the parent schema.": "Ce schéma LinkML référence des types d'énumération qui ne sont pas inclus : {{enumNames}}. Les codes d'entrée pour les attributs concernés ne seront pas générés. Veuillez inclure les définitions d'énumération manquantes du schéma parent."
 }

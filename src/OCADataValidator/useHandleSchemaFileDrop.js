@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import yaml from "js-yaml";
 import { messages } from "../constants/messages";
 import { ADC, SENSITIVE } from "../constants/constants";
@@ -49,6 +50,7 @@ export const useHandleSchemaFileDrop = (
   } = useContext(Context);
   const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setOcaPackage } =
     useMultiSchema();
+  const { t } = useTranslation();
   // useZipParser removed - data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
 
   const finishUploadUi = useCallback(
@@ -478,7 +480,10 @@ export const useHandleSchemaFileDrop = (
 
             if (missingEnums.length > 0) {
               setJsonDropMessage({
-                message: messages.linkmlMissingEnumsWarning(missingEnums),
+                message: t(
+                  "This LinkML schema references enumeration types that are not included: {{enumNames}}. Entry codes for the affected attributes will not be generated. Include the missing enum definitions from the parent schema.",
+                  { enumNames: missingEnums.join(", ") }
+                ),
                 type: "warning"
               });
               finishUploadUi({ preserveDropMessage: true });
