@@ -406,16 +406,20 @@ export const useHandleSchemaFileDrop = (
               typeof linkmlSchema !== "object" ||
               Array.isArray(linkmlSchema)
             ) {
-              throw new Error(
-                "Invalid LinkML schema: expected a YAML mapping (object), not a list or scalar value."
+              const schemaFormatError = new Error(
+                "This LinkML schema file isn't formatted correctly. It should contain named attribute (slot) definitions, not a plain list or single value."
               );
+              schemaFormatError.isSchemaValidationError = true;
+              throw schemaFormatError;
             }
             const missingEnums = findMissingLinkMLEnums(linkmlSchema);
             const bundle = mapLinkMLToOCABundle(linkmlSchema);
             if (Object.keys(bundle.capture_base.attributes).length === 0) {
-              throw new Error(
-                "Invalid LinkML schema: no attribute (slot) definitions found."
+              const noAttributesError = new Error(
+                "This LinkML schema doesn't contain any attribute (slot) definitions. Please check the file and try again."
               );
+              noAttributesError.isSchemaValidationError = true;
+              throw noAttributesError;
             }
             const pkg = transformToPackage(bundle);
 
@@ -489,7 +493,9 @@ export const useHandleSchemaFileDrop = (
             }
           } catch (error) {
             setJsonDropMessage({
-              message: `${messages.uploadFail}: ${error.message}`,
+              message: error.isSchemaValidationError
+                ? error.message
+                : `${messages.uploadFail}: ${error.message}`,
               type: "error"
             });
             setJsonLoading(false);
