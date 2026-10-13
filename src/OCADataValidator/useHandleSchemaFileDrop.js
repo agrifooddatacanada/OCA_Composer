@@ -300,9 +300,6 @@ export const useHandleSchemaFileDrop = (
             if (datasetRawFile.length === 0) {
               setDatasetDropDisabled(false);
             }
-            setTimeout(() => {
-              setJsonDropMessage({ message: "", type: "" });
-            }, 2500);
           }
         };
 
@@ -314,9 +311,6 @@ export const useHandleSchemaFileDrop = (
         if (datasetRawFile.length === 0) {
           setDatasetDropDisabled(false);
         }
-        setTimeout(() => {
-          setJsonDropMessage({ message: "", type: "" });
-        }, 2500);
       }
     },
     [
@@ -365,9 +359,6 @@ export const useHandleSchemaFileDrop = (
             if (datasetRawFile.length === 0) {
               setDatasetDropDisabled(false);
             }
-            setTimeout(() => {
-              setJsonDropMessage({ message: "", type: "" });
-            }, 2500);
           }
         };
 
@@ -379,9 +370,6 @@ export const useHandleSchemaFileDrop = (
         if (datasetRawFile.length === 0) {
           setDatasetDropDisabled(false);
         }
-        setTimeout(() => {
-          setJsonDropMessage({ message: "", type: "" });
-        }, 2500);
       }
     },
     [
@@ -509,9 +497,6 @@ export const useHandleSchemaFileDrop = (
             if (datasetRawFile.length === 0) {
               setDatasetDropDisabled(false);
             }
-            setTimeout(() => {
-              setJsonDropMessage({ message: "", type: "" });
-            }, 2500);
           }
         };
 
@@ -526,9 +511,6 @@ export const useHandleSchemaFileDrop = (
         if (datasetRawFile.length === 0) {
           setDatasetDropDisabled(false);
         }
-        setTimeout(() => {
-          setJsonDropMessage({ message: "", type: "" });
-        }, 2500);
       }
     },
     [
@@ -567,9 +549,6 @@ export const useHandleSchemaFileDrop = (
       if (datasetRawFile.length === 0) {
         setDatasetDropDisabled(false);
       }
-      setTimeout(() => {
-        setJsonDropMessage({ message: "", type: "" });
-      }, 2500);
     }
   }, [schemaRawFile]);
 
