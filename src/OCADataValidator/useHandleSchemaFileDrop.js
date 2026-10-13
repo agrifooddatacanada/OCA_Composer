@@ -294,7 +294,10 @@ export const useHandleSchemaFileDrop = (
             setZipToReadme(allJSONFiles);
             finishUploadUi();
           } catch (error) {
-            setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+            setJsonDropMessage({
+              message: `${messages.uploadFail}: ${error.message}`,
+              type: "error"
+            });
             setJsonLoading(false);
             setDatasetLoading(false);
             if (datasetRawFile.length === 0) {
@@ -305,7 +308,10 @@ export const useHandleSchemaFileDrop = (
 
         reader.readAsArrayBuffer(acceptedFiles[0]);
       } catch (error) {
-        setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+        setJsonDropMessage({
+          message: `${messages.uploadFail}: ${error.message}`,
+          type: "error"
+        });
         setJsonLoading(false);
         setDatasetLoading(false);
         if (datasetRawFile.length === 0) {
@@ -353,7 +359,12 @@ export const useHandleSchemaFileDrop = (
               "useHandleSchemaFileDrop: failed to parse zip as OCA package",
               err
             );
-            setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+            setJsonDropMessage({
+              message: err.isSchemaValidationError
+                ? err.message
+                : `${messages.uploadFail}: ${err.message}`,
+              type: "error"
+            });
             setJsonLoading(false);
             setDatasetLoading(false);
             if (datasetRawFile.length === 0) {
@@ -364,7 +375,10 @@ export const useHandleSchemaFileDrop = (
 
         reader.readAsArrayBuffer(acceptedFiles[0]);
       } catch (error) {
-        setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+        setJsonDropMessage({
+          message: `${messages.uploadFail}: ${error.message}`,
+          type: "error"
+        });
         setJsonLoading(false);
         setDatasetLoading(false);
         if (datasetRawFile.length === 0) {
