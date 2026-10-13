@@ -413,8 +413,22 @@ export const useHandleSchemaFileDrop = (
             const yamlString = e.target.result;
 
             const linkmlSchema = yaml.load(yamlString);
+            if (
+              !linkmlSchema ||
+              typeof linkmlSchema !== "object" ||
+              Array.isArray(linkmlSchema)
+            ) {
+              throw new Error(
+                "Invalid LinkML schema: expected a YAML mapping (object), not a list or scalar value."
+              );
+            }
             const missingEnums = findMissingLinkMLEnums(linkmlSchema);
             const bundle = mapLinkMLToOCABundle(linkmlSchema);
+            if (Object.keys(bundle.capture_base.attributes).length === 0) {
+              throw new Error(
+                "Invalid LinkML schema: no attribute (slot) definitions found."
+              );
+            }
             const pkg = transformToPackage(bundle);
 
             const jsonFile = pkg.oca_bundle.bundle;
