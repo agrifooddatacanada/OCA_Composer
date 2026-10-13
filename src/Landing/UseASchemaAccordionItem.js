@@ -38,18 +38,10 @@ const UseASchemaAccordionItem = () => {
   const { generateMarkdownReadMe } = useGenerateMarkdownReadMe();
   const { generateMarkdownReadMeFromJson } = useGenerateMarkdownReadMeFromJson();
   const { t } = useTranslation();
-  const {
-    rawFile,
-    setRawFile,
-    setLoading,
-    loading,
-    dropDisabled,
-    dropMessage,
-    setDropMessage,
-    setCurrentPage
-  } = useHandleAllDrop();
+  const { setRawFile, setLoading, loading, dropMessage, setDropMessage, setCurrentPage } =
+    useHandleAllDrop();
 
-  const { setSchemaRawFile } = useHandleSchemaFileDrop();
+  const { setSchemaRawFile, jsonDropDisabled } = useHandleSchemaFileDrop();
 
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
@@ -68,7 +60,10 @@ const UseASchemaAccordionItem = () => {
     syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles);
   };
 
-  const disableButtonCheck = rawFile.length === 0 || loading === true;
+  // A schema is only usable once useHandleSchemaFileDrop actually finished
+  // parsing it successfully (jsonDropDisabled) — rawFile.length > 0 merely
+  // means *something* was dropped, regardless of whether parsing failed.
+  const disableButtonCheck = !jsonDropDisabled;
 
   let isInvalidOcaPackage = false;
   if (ocaPackage && shouldVerifyOcaPackageCryptographically(ocaPackage)) {
@@ -131,7 +126,7 @@ const UseASchemaAccordionItem = () => {
           setFile={setFile}
           setLoading={setLoading}
           loading={loading}
-          dropDisabled={dropDisabled}
+          dropDisabled={jsonDropDisabled}
           dropMessage={dropMessage}
           setDropMessage={setDropMessage}
           version={1}
