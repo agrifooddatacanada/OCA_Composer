@@ -815,5 +815,6 @@
   "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.": "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata.",
   "Imported vocabularies": "Imported vocabularies",
   "No supporting vocabularies imported yet": "No supporting vocabularies imported yet",
-  "Ontology terms and mapping details framed against each attribute, per framing source": "Ontology terms and mapping details framed against each attribute, per framing source"
+  "Ontology terms and mapping details framed against each attribute, per framing source": "Ontology terms and mapping details framed against each attribute, per framing source",
+  "This LinkML schema references enumeration types that are not included: {{enumNames}}. Entry codes for the affected attributes will not be generated. Include the missing enum definitions from the parent schema.": "This LinkML schema references enumeration types that are not included: {{enumNames}}. Entry codes for the affected attributes will not be generated. Include the missing enum definitions from the parent schema."
 }
