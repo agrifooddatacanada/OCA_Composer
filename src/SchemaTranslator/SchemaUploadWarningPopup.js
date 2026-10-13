@@ -6,7 +6,10 @@ import ErrorPopup from "../ViewSchema/ErrorPopup";
 export default function SchemaUploadWarningPopup() {
   const { jsonDropMessage, setJsonDropMessage } = useContext(Context);
 
-  if (jsonDropMessage?.type !== "warning" || !jsonDropMessage?.message) {
+  if (
+    (jsonDropMessage?.type !== "warning" && jsonDropMessage?.type !== "error") ||
+    !jsonDropMessage?.message
+  ) {
     return null;
   }
 
