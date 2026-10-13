@@ -27,6 +27,15 @@ const hasFramingData = (row) =>
     row?.objectId || row?.description || row?.predicateId || row?.mappingJustification
   );
 
+// The accordions hold AG Grid tables that size themselves (autoHeight) only
+// after they mount, which happens as the accordion opens. MUI's Collapse
+// animates to the height it measures when the open starts, i.e. before the grid
+// has rendered, so the section would open at the wrong height and clip or
+// overflow its content until the animation settles. Opening instantly (no
+// height animation) lets the section take its natural height as the grid
+// renders. unmountOnExit keeps closed lists from rendering their grids.
+const ACCORDION_TRANSITION_PROPS = { unmountOnExit: true, timeout: 0 };
+
 const defaultColDef = {
   width: 150,
   editable: false,
@@ -235,7 +244,7 @@ export default function EntryCodeFramingTable({
   return (
     <Box sx={{ width: "100%", marginTop: BETWEEN_SECTION_SPACING }}>
       {/* Unmounting on collapse keeps the grids from rendering at zero width. */}
-      <AccordionItemWrapper TransitionProps={{ unmountOnExit: true }} sx={{ marginTop: 0 }}>
+      <AccordionItemWrapper TransitionProps={ACCORDION_TRANSITION_PROPS} sx={{ marginTop: 0 }}>
         <AccordionSummary
           expandIcon={
             <ExpandMoreIcon sx={{ color: CustomPalette.PRIMARY, fontSize: 40 }} />
@@ -280,7 +289,7 @@ export default function EntryCodeFramingTable({
           {lists.map(({ name, sources }) => (
             <AccordionItemWrapper
               key={name}
-              TransitionProps={{ unmountOnExit: true }}
+              TransitionProps={ACCORDION_TRANSITION_PROPS}
               defaultExpanded={lists.length === 1}
               sx={{ marginTop: 1 }}
             >
