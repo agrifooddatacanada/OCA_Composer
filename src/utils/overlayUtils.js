@@ -16,7 +16,8 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_DATA_SEPARATOR_OVERLAY,
-  FIELD_EXAMPLE_OVERLAY
+  FIELD_EXAMPLE_OVERLAY,
+  FIELD_ENTRY_CODE_FRAMING_OVERLAY
 } from "../constants/constants";
 import { useMultiSchema } from "../schema/schemaContext";
 import { Context } from "../App";
@@ -69,7 +70,8 @@ export const resetOverlayValues = (overlayType) => {
       enableFileDelimiter: false,
       enableArrayDelimiter: false
     },
-    [FIELD_EXAMPLE_OVERLAY]: { exampleData: {} }
+    [FIELD_EXAMPLE_OVERLAY]: { exampleData: {} },
+    [FIELD_ENTRY_CODE_FRAMING_OVERLAY]: { entryCodeFramingSources: {} }
   };
 
   const clearData = overlayConfig[overlayType];
@@ -116,6 +118,9 @@ export const deleteOverlayData = (
   } else if (Object.keys(resetValues).length > 0) {
     updateSchema(resetValues);
   }
+
+  // Entry code framing has no stored selection; clearing its data deselects it.
+  if (overlayType === FIELD_ENTRY_CODE_FRAMING_OVERLAY) return;
 
   // Update selection state to deselected
   updateOverlaySelection(overlayType, false);

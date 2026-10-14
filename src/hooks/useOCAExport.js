@@ -52,6 +52,7 @@ import {
   getTransformedEntryCodes,
   getUnitFramingInput,
   getAttributeFramingInput,
+  getEntryCodeFramingInput,
   getFormInformationInput,
   normalizeEscapedQuotes,
   escapeForOCADoubleQuotedValue,
@@ -184,6 +185,7 @@ const useOCAExport = () => {
     const attributeCardinality = schemaState?.attributeCardinality || {};
     const attributeRanges = schemaState?.attributeRanges || {};
     const attributeFramingSources = schemaState?.attributeFramingSources || [];
+    const entryCodeFramingSources = schemaState?.entryCodeFramingSources || {};
     const unitFramedRowData = schemaState?.unitFramedData || [];
     const decimalSeparator = schemaState?.decimalSeparator || ".";
     const fileDelimiterData = schemaState?.fileDelimiterData || {};
@@ -647,6 +649,19 @@ const useOCAExport = () => {
               : {};
           })()
         : {}),
+      ...(() => {
+        const entryCodeFramingOverlays = getEntryCodeFramingInput(
+          entryCodeFramingSources,
+          filteredEntryCodes
+        );
+        return entryCodeFramingOverlays.length > 0
+          ? {
+              entry_code_framing_overlay: {
+                entry_code_framing_overlays: entryCodeFramingOverlays
+              }
+            }
+          : {};
+      })(),
       ...(overlaySelections[FIELD_FORM_INFORMATION_OVERLAY]
         ? {
             form_overlay: {

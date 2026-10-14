@@ -14,6 +14,7 @@ import {
   SENSITIVE,
   UNIT_FRAMING,
   ATTRIBUTE_FRAMING,
+  ENTRY_CODE_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER
@@ -130,6 +131,7 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let rangeOverlay = null;
   let unitFramingOverlay = null;
   let attributeFramingSources = [];
+  let entryCodeFramingSources = [];
   let extensionOverlayColumnCount = 0;
   let decimalSeparatorOverlay = null;
   let fileDelimiterOverlay = null;
@@ -158,6 +160,14 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         ? rawAttributeFramingOverlay
         : rawAttributeFramingOverlay
           ? [rawAttributeFramingOverlay]
+          : [];
+      // Entry code framing is one overlay per vocabulary (source); each can
+      // frame the entry codes of several lists (entry_codes: { list: { code: ... } }).
+      const rawEntryCodeFramingOverlay = overlays?.[ENTRY_CODE_FRAMING];
+      entryCodeFramingSources = Array.isArray(rawEntryCodeFramingOverlay)
+        ? rawEntryCodeFramingOverlay
+        : rawEntryCodeFramingOverlay
+          ? [rawEntryCodeFramingOverlay]
           : [];
       decimalSeparatorOverlay = overlays?.[DECIMAL_SEPARATOR];
       fileDelimiterOverlay = overlays?.[FILE_DELIMITER];
@@ -1102,7 +1112,25 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     (source) => source?.framing_metadata
   );
 
-  if (unitFramingOverlay?.framing_metadata || attributeFramingSourcesWithMetadata.length > 0) {
+  // Entry code framing, grouped by list: { list: [source overlays framing it] }.
+  // Sources of the same list stay together, in overlay order.
+  const entryCodeFramingSourcesByList = new Map();
+  entryCodeFramingSources.forEach((source) => {
+    Object.entries(source?.entry_codes || {}).forEach(([list, codes]) => {
+      if (!codes || Object.keys(codes).length === 0) return;
+      if (!entryCodeFramingSourcesByList.has(list)) {
+        entryCodeFramingSourcesByList.set(list, []);
+      }
+      entryCodeFramingSourcesByList.get(list).push(source);
+    });
+  });
+
+  let lastReferenceRow = lookUpStart;
+
+  if (
+    unitFramingOverlay?.framing_metadata ||
+    attributeFramingSourcesWithMetadata.length > 0
+  ) {
     sheet1.getCell(lookUpStart, 3).value = "Framing references";
     formatLookupHeader(sheet1.getCell(lookUpStart, 3));
 
@@ -1172,6 +1200,8 @@ export async function CreateDataEntryExcel(data, selectedLang) {
         });
       }
     });
+
+    lastReferenceRow = metadataRow - 1;
   }
 
   let offset = 0;
@@ -1203,6 +1233,102 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       formatLookupValue(sheet1.getCell(i, 1));
       sheet1.getCell(i, 2).value = keys[i - startRow];
       formatLookupValue(sheet1.getCell(i, 2));
+    }
+  }
+
+  // Entry code framing section (same layout as the READMEs): grouped by list,
+  // and within each list one block per framing source holding its metadata,
+  // imported vocabularies, and a table of the framed entry codes. Placed below
+  // the lookup tables / framing references so it never overlaps them.
+  if (entryCodeFramingSourcesByList.size > 0) {
+    try {
+      let row = Math.max(lookUpStart + offset, lastReferenceRow) + 3;
+
+      sheet1.getCell(row, 1).value = "Entry code framing";
+      formatLookupHeader(sheet1.getCell(row, 1));
+      for (let col = 2; col <= 5; col++) {
+        sheet1.getCell(row, col).value = null;
+        formatLookupHeader(sheet1.getCell(row, col));
+      }
+      row += 2;
+
+      // Lists follow the attribute order, then order of first appearance.
+      const orderedLists = [
+        ...attributeNames.filter((attr) => entryCodeFramingSourcesByList.has(attr)),
+        ...[...entryCodeFramingSourcesByList.keys()].filter(
+          (attr) => !attributeNames.includes(attr)
+        )
+      ];
+
+      orderedLists.forEach((list) => {
+        sheet1.getCell(row, 1).value = `Entry code framing: ${list}`;
+        formatLookupAttr(sheet1.getCell(row, 1));
+        row += 2;
+
+        entryCodeFramingSourcesByList.get(list).forEach((source) => {
+          const { imports, ...framingMetadata } = source.framing_metadata || {};
+          const sourceLabel = framingMetadata.label || framingMetadata.id || "";
+
+          sheet1.getCell(row, 1).value = sourceLabel ? `Source: ${sourceLabel}` : "Source";
+          formatLookupAttr(sheet1.getCell(row, 1));
+          row++;
+
+          for (const [property, value] of Object.entries(framingMetadata)) {
+            sheet1.getCell(row, 2).value = property;
+            formatLookupAttr(sheet1.getCell(row, 2));
+            sheet1.getCell(row, 3).value = value;
+            formatLookupValue(sheet1.getCell(row, 3));
+            row++;
+          }
+
+          if (imports && Object.keys(imports).length > 0) {
+            Object.entries(imports).forEach(([id, imp]) => {
+              sheet1.getCell(row, 2).value = `import: ${id}`;
+              formatLookupAttr(sheet1.getCell(row, 2));
+              sheet1.getCell(row, 3).value = [
+                imp?.label ? `label: ${imp.label}` : null,
+                imp?.location ? `location: ${imp.location}` : null,
+                imp?.version ? `version: ${imp.version}` : null
+              ]
+                .filter(Boolean)
+                .join(", ");
+              formatLookupValue(sheet1.getCell(row, 3));
+              row++;
+            });
+          }
+          row++;
+
+          [
+            "Entry code",
+            "Predicate",
+            "Term ID",
+            "Description",
+            "Framing Justification"
+          ].forEach((header, i) => {
+            sheet1.getCell(row, i + 1).value = header;
+            formatLookupHeader(sheet1.getCell(row, i + 1));
+          });
+          row++;
+
+          Object.entries(source.entry_codes[list] || {}).forEach(([code, framing]) => {
+            [
+              code,
+              framing?.predicate_id || "",
+              framing?.term_id || "",
+              framing?.description || "",
+              framing?.framing_justification || ""
+            ].forEach((value, i) => {
+              sheet1.getCell(row, i + 1).value = value;
+              formatLookupValue(sheet1.getCell(row, i + 1));
+            });
+            row++;
+          });
+          row++;
+        });
+        row++;
+      });
+    } catch (error) {
+      throw new WorkbookError(".. Error in formatting entry code framing section ..");
     }
   }
 
