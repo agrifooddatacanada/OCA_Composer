@@ -1,0 +1,70 @@
+{
+  "v": "OCAB10JSON0010eb_",
+  "d": "EAt535FrenchOnlySchemaBundleDigestPlaceholder01",
+  "capture_base": {
+    "d": "EAt535FrenchOnlySchemaCaptureBaseDigestPlace02",
+    "type": "spec/capture_base/1.0",
+    "classification": "",
+    "attributes": {
+      "DateDeNaissance": "Text",
+      "Poids": "Numeric"
+    },
+    "flagged_attributes": []
+  },
+  "overlays": {
+    "character_encoding": {
+      "d": "EAt535FrenchOnlySchemaCharEncDigestPlace03",
+      "type": "spec/overlays/character_encoding/1.0",
+      "capture_base": "EAt535FrenchOnlySchemaCaptureBaseDigestPlace02",
+      "attribute_character_encoding": {
+        "DateDeNaissance": "utf-8",
+        "Poids": "utf-8"
+      }
+    },
+    "format": {
+      "d": "EAt535FrenchOnlySchemaFormatDigestPlace04",
+      "type": "spec/overlays/format/1.0",
+      "capture_base": "EAt535FrenchOnlySchemaCaptureBaseDigestPlace02",
+      "attribute_formats": {
+        "DateDeNaissance": "[A-Z0-9]{9}",
+        "Poids": "[A-Z0-9]{9}"
+      }
+    },
+    "meta": [
+      {
+        "d": "EAt535FrenchOnlySchemaMetaFraDigestPlace05",
+        "language": "fra",
+        "type": "spec/overlays/meta/1.0",
+        "capture_base": "EAt535FrenchOnlySchemaCaptureBaseDigestPlace02",
+        "description": "Un schéma qui ne contient des métadonnées qu'en français, sans aucune traduction anglaise.",
+        "name": "Schéma en français seulement"
+      }
+    ],
+    "label": [
+      {
+        "d": "EAt535FrenchOnlySchemaLabelFraDigestPlace06",
+        "language": "fra",
+        "type": "spec/overlays/label/1.0",
+        "capture_base": "EAt535FrenchOnlySchemaCaptureBaseDigestPlace02",
+        "attribute_labels": {
+          "DateDeNaissance": "Date de naissance",
+          "Poids": "Poids en kilogrammes"
+        },
+        "attribute_categories": [],
+        "category_labels": {}
+      }
+    ],
+    "information": [
+      {
+        "d": "EAt535FrenchOnlySchemaInfoFraDigestPlace07",
+        "language": "fra",
+        "type": "spec/overlays/information/1.0",
+        "capture_base": "EAt535FrenchOnlySchemaCaptureBaseDigestPlace02",
+        "attribute_information": {
+          "DateDeNaissance": "La date de naissance de l'animal",
+          "Poids": "Le poids de l'animal en kilogrammes"
+        }
+      }
+    ]
+  }
+}
