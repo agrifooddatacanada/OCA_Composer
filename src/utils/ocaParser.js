@@ -1249,7 +1249,11 @@ export class OCAParser {
       });
     }
 
-    if (!languageCodesSet.has(LanguageConstants.DEFAULT_OCA_CODE)) {
+    // Only fabricate an English placeholder when the bundle declared no
+    // language at all (e.g. missing/empty meta overlays). A bundle whose
+    // only meta overlay is in another language (recognized or not) must not
+    // get a bogus "English" entry mislabeled with that other language's text.
+    if (languageCodesSet.size === 0) {
       localized[LanguageConstants.DEFAULT_OCA_CODE] = {
         name: normalizeEscapedQuotes(schemaData.schemaName || schemaId),
         description: normalizeEscapedQuotes(schemaData.schemaDescription || "")
