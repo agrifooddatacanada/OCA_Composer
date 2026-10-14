@@ -186,12 +186,7 @@ export default function Grid({
       cancelAnimationFrame(frame);
       ro?.disconnect();
     };
-  }, [
-    attrGridFixedViewport,
-    attributeRowData.length,
-    i18n.language,
-    scheduleAttributeGridShellWidth
-  ]);
+  }, [attrGridFixedViewport, i18n.language, scheduleAttributeGridShellWidth]);
 
   useEffect(() => {
     const onResize = () => scheduleAttributeGridShellWidth();
