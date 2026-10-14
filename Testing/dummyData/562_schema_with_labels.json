@@ -1,0 +1,75 @@
+{
+  "v": "OCAB10JSON0010eb_",
+  "d": "EAt562SchemaWithLabelsBundleDigestPlaceholder01",
+  "capture_base": {
+    "d": "EAt562SchemaWithLabelsCaptureBaseDigestPlace02",
+    "type": "spec/capture_base/1.0",
+    "classification": "",
+    "attributes": {
+      "attr_first_name": "Text",
+      "attr_last_name": "Text",
+      "attr_age_years": "Numeric"
+    },
+    "flagged_attributes": []
+  },
+  "overlays": {
+    "character_encoding": {
+      "d": "EAt562SchemaWithLabelsCharEncDigestPlace03",
+      "type": "spec/overlays/character_encoding/1.0",
+      "capture_base": "EAt562SchemaWithLabelsCaptureBaseDigestPlace02",
+      "attribute_character_encoding": {
+        "attr_first_name": "utf-8",
+        "attr_last_name": "utf-8",
+        "attr_age_years": "utf-8"
+      }
+    },
+    "format": {
+      "d": "EAt562SchemaWithLabelsFormatDigestPlace04",
+      "type": "spec/overlays/format/1.0",
+      "capture_base": "EAt562SchemaWithLabelsCaptureBaseDigestPlace02",
+      "attribute_formats": {
+        "attr_first_name": "[A-Z0-9]{9}",
+        "attr_last_name": "[A-Z0-9]{9}",
+        "attr_age_years": "[A-Z0-9]{9}"
+      }
+    },
+    "meta": [
+      {
+        "d": "EAt562SchemaWithLabelsMetaEngDigestPlace05",
+        "language": "eng",
+        "type": "spec/overlays/meta/1.0",
+        "capture_base": "EAt562SchemaWithLabelsCaptureBaseDigestPlace02",
+        "description": "A schema whose attribute Labels deliberately differ from their internal Attribute names, for testing CSV-dataset matching by Label.",
+        "name": "Schema with Attribute/Label mismatch"
+      }
+    ],
+    "label": [
+      {
+        "d": "EAt562SchemaWithLabelsLabelEngDigestPlace06",
+        "language": "eng",
+        "type": "spec/overlays/label/1.0",
+        "capture_base": "EAt562SchemaWithLabelsCaptureBaseDigestPlace02",
+        "attribute_labels": {
+          "attr_first_name": "First Name",
+          "attr_last_name": "Last Name",
+          "attr_age_years": "Age in Years"
+        },
+        "attribute_categories": [],
+        "category_labels": {}
+      }
+    ],
+    "information": [
+      {
+        "d": "EAt562SchemaWithLabelsInfoEngDigestPlace07",
+        "language": "eng",
+        "type": "spec/overlays/information/1.0",
+        "capture_base": "EAt562SchemaWithLabelsCaptureBaseDigestPlace02",
+        "attribute_information": {
+          "attr_first_name": "Person's given name",
+          "attr_last_name": "Person's family name",
+          "attr_age_years": "Person's age in whole years"
+        }
+      }
+    ]
+  }
+}
