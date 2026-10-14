@@ -233,12 +233,17 @@ const AttributeMatch = () => {
   // Dataset columns are commonly named after an attribute's display Label
   // rather than its internal Attribute name. Fall back to matching the
   // Label whenever the Attribute name itself doesn't match anything.
+  // Label matches are exact-only (no substring pass): unlike Attribute names,
+  // Labels aren't guaranteed unique across attributes, so a loose substring
+  // match on a generic Label (e.g. "Date", "Other") could silently steal a
+  // column intended for a different attribute.
   const matchByAttributeOrLabel = useCallback(
     (unassignedVar, attr, label) => {
       const index = matchingFunction(unassignedVar, attr);
       if (index !== -1) return index;
-      if (label) return matchingFunction(unassignedVar, label);
-      return -1;
+      if (!label) return -1;
+      const lowerLabel = label.toLowerCase();
+      return unassignedVar.findIndex((v) => v.toLowerCase() === lowerLabel);
     },
     [matchingFunction]
   );
