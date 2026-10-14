@@ -404,7 +404,7 @@ export default function CodeGrid({
             maxWidth: "100%",
             boxSizing: "border-box",
             ...(manyCodes && !gridFixedHeightMode
-              ? { maxHeight: "min(70vh, 560px)", overflowY: "auto" }
+              ? { maxHeight: "min(70vh, 560px)", overflowY: "auto", scrollbarGutter: "stable" }
               : {})
           }}
         >
