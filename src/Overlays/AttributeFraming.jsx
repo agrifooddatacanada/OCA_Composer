@@ -38,6 +38,323 @@ import {
 
 const MAX_TEXT_WIDTH = "600px";
 
+const makeBlankMetadata = () => ({ id: "", label: "", location: "", version: "" });
+const makeBlankSource = () => ({
+  key: uuidv4(),
+  metadata: makeBlankMetadata(),
+  rows: []
+});
+
+const FRAMING_DROPDOWN_CELL_CLASS = "framing-dropdown-cell";
+
+// autoHeight wraps the renderer in shrink-to-fit wrappers; stretch them so the
+// Select (and its arrow) spans the full cell width.
+const framingDropdownCellCss = `
+.ag-cell.${FRAMING_DROPDOWN_CELL_CLASS} .ag-cell-wrapper,
+.ag-cell.${FRAMING_DROPDOWN_CELL_CLASS} .ag-cell-value {
+  width: 100%;
+  min-width: 0;
+}
+`;
+
+const DropdownCellRenderer = ({
+  value,
+  rowIndex,
+  fieldName,
+  options,
+  maxTextLength = 25,
+  onValueChanged
+}) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedValue, setSelectedValue] = useState(value || options[0]?.value);
+
+  const handleChange = (e) => {
+    const newValue = e.target.value;
+    setSelectedValue(newValue);
+
+    if (globalGridRef && globalGridRef.current && globalGridRef.current.api) {
+      const node = globalGridRef.current.api.getRowNode(rowIndex);
+      if (node) {
+        node.setDataValue(fieldName, newValue);
+      }
+    }
+    setIsDropdownOpen(false);
+    if (onValueChanged) onValueChanged();
+  };
+
+  useEffect(() => {
+    setSelectedValue(value || options[0]?.value);
+  }, [value, options]);
+
+  const getDisplayText = (value) => {
+    const option = options.find((opt) => opt.value === value);
+    const text = option ? option.label : value;
+    return text.length > maxTextLength ? `${text.substring(0, maxTextLength)}...` : text;
+  };
+
+  const getFullText = (value) => {
+    const option = options.find((opt) => opt.value === value);
+    return option ? option.label : value;
+  };
+
+  return (
+    <Box sx={{ height: "100%", display: "flex", alignItems: "center", width: "100%" }}>
+      <FormControl fullWidth variant="standard" sx={{ height: "100%" }}>
+        <Select
+          value={selectedValue}
+          onChange={handleChange}
+          variant="standard"
+          disableUnderline
+          title={getFullText(selectedValue)}
+          sx={{
+            height: "100%",
+            fontSize: "small",
+            "& .MuiSelect-select": {
+              padding: "4px 8px",
+              fontSize: "12px",
+              color: CustomPalette.GREY_800,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: "1.2",
+              minHeight: "auto"
+            }
+          }}
+          open={isDropdownOpen}
+          onClose={() => setIsDropdownOpen(false)}
+          onOpen={() => setIsDropdownOpen(true)}
+          renderValue={(value) => getDisplayText(value)}
+        >
+          {options.map((option) => (
+            <MenuItem
+              key={option.value}
+              value={option.value}
+              sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+            >
+              {option.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Box>
+  );
+};
+
+const DeleteButton = ({ node, onDelete }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <IconButton
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={() => onDelete(node.rowIndex)}
+      sx={{
+        color: isHovered ? CustomPalette.PRIMARY : CustomPalette.GREY_600,
+        transition: "all 0.2s ease-in-out",
+        padding: "4px",
+        "&:hover": {
+          backgroundColor: `${CustomPalette.PRIMARY}10`,
+          transform: "scale(1.05)"
+        }
+      }}
+    >
+      {isHovered ? (
+        <DeleteForeverIcon fontSize="small" />
+      ) : (
+        <DeleteOutlineIcon fontSize="small" />
+      )}
+    </IconButton>
+  );
+};
+
+// Modal for manually adding/editing/removing the supporting vocabularies
+// referenced by the active tab's primary framing source (e.g. dcterms, foaf
+// alongside dcat). Edits are staged locally and only committed to schema
+// state on Save, so a canceled edit never leaves partial rows behind.
+const ImportsEditorModal = ({ open, onClose, onSave, initialImports }) => {
+  const { t } = useTranslation();
+  const [rows, setRows] = useState([]);
+  const nextKeyRef = useRef(0);
+  const makeEmptyRow = () => ({
+    key: nextKeyRef.current++,
+    id: "",
+    label: "",
+    location: "",
+    version: ""
+  });
+
+  useEffect(() => {
+    if (!open) return;
+    nextKeyRef.current = 0;
+    const seeded = Object.entries(initialImports || {}).map(([id, imp]) => ({
+      key: nextKeyRef.current++,
+      id,
+      label: imp?.label || "",
+      location: imp?.location || "",
+      version: imp?.version || ""
+    }));
+    setRows(seeded.length > 0 ? seeded : [makeEmptyRow()]);
+  }, [open, initialImports]);
+
+  const handleFieldChange = (index, field, value) => {
+    setRows((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+    );
+  };
+
+  const handleAddRow = () => {
+    setRows((prev) => [...prev, makeEmptyRow()]);
+  };
+
+  const handleRemoveRow = (index) => {
+    setRows((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSave = () => {
+    const importsObj = {};
+    rows.forEach((row) => {
+      const id = row.id.trim();
+      if (!id) return;
+      importsObj[id] = {
+        ...(row.label.trim() ? { label: row.label.trim() } : {}),
+        ...(row.location.trim() ? { location: row.location.trim() } : {}),
+        ...(row.version.trim() ? { version: row.version.trim() } : {})
+      };
+    });
+    onSave(importsObj);
+    onClose();
+  };
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      aria-labelledby="imports-editor-modal"
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 2,
+        backdropFilter: "blur(4px)",
+        backgroundColor: "rgba(0, 0, 0, 0.3)"
+      }}
+    >
+      <Paper
+        sx={{
+          width: { xs: "95vw", sm: "90vw", md: "950px" },
+          maxWidth: "950px",
+          maxHeight: "90vh",
+          overflow: "auto",
+          p: { xs: 2.5, sm: 4 }
+        }}
+      >
+        <Typography variant="h5" sx={{ color: CustomPalette.PRIMARY, mb: 0.75 }}>
+          {t("Manage imported vocabularies")}
+        </Typography>
+        <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
+          {t(
+            "Add supporting vocabularies referenced by the primary framing source above (for example, dcterms or foaf alongside dcat)."
+          )}
+        </Typography>
+
+        {rows.map((row, index) => (
+          <Grid
+            container
+            spacing={2.5}
+            key={row.key}
+            sx={{ mb: 2.5, alignItems: "center" }}
+          >
+            <Grid item xs={12} sm={6} md={2.5}>
+              <TextField
+                fullWidth
+                label={t("ID")}
+                placeholder="dcterms"
+                value={row.id}
+                onChange={(e) => handleFieldChange(index, "id", e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                label={t("Label")}
+                placeholder="DCMI Metadata Terms"
+                value={row.label}
+                onChange={(e) => handleFieldChange(index, "label", e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label={t("Location")}
+                placeholder="https://..."
+                value={row.location}
+                onChange={(e) => handleFieldChange(index, "location", e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={9} sm={5} md={2}>
+              <TextField
+                fullWidth
+                label={t("Version")}
+                placeholder="1.1"
+                value={row.version}
+                onChange={(e) => handleFieldChange(index, "version", e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={3} sm={1} md={0.5} sx={{ display: "flex", justifyContent: "center" }}>
+              <IconButton
+                onClick={() => handleRemoveRow(index)}
+                sx={{
+                  color: CustomPalette.GREY_600,
+                  "&:hover": { color: CustomPalette.PRIMARY }
+                }}
+              >
+                <DeleteOutlineIcon />
+              </IconButton>
+            </Grid>
+          </Grid>
+        ))}
+
+        <Button
+          variant="text"
+          onClick={handleAddRow}
+          sx={{ color: CustomPalette.PRIMARY, mt: 1, fontSize: "1rem" }}
+        >
+          + {t("Add import")}
+        </Button>
+
+        <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end", gap: 2 }}>
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={onClose}
+            sx={{
+              borderColor: CustomPalette.PRIMARY,
+              color: CustomPalette.PRIMARY,
+              "&:hover": {
+                borderColor: CustomPalette.SECONDARY,
+                backgroundColor: CustomPalette.PINK_200
+              }
+            }}
+          >
+            {t("Cancel")}
+          </Button>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleSave}
+            sx={{
+              backgroundColor: CustomPalette.PRIMARY,
+              "&:hover": { backgroundColor: CustomPalette.SECONDARY }
+            }}
+          >
+            {t("Save")}
+          </Button>
+        </Box>
+      </Paper>
+    </Modal>
+  );
+};
+
 const AttributeFraming = forwardRef((_props, ref) => {
   const {
     setCurrentPage
@@ -281,6 +598,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
         autoHeight: true,
         editable: false,
         cellStyle: preWrapWordBreak,
+        cellClass: FRAMING_DROPDOWN_CELL_CLASS,
         cellRenderer: DropdownCellRenderer,
         cellRendererParams: {
           fieldName: "predicateId",
@@ -328,6 +646,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
         autoHeight: true,
         editable: false,
         cellStyle: preWrapWordBreak,
+        cellClass: FRAMING_DROPDOWN_CELL_CLASS,
         cellRenderer: DropdownCellRenderer,
         cellRendererParams: {
           fieldName: "mappingJustification",
@@ -470,6 +789,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
             }}
           >
             <style>{gridStyles}</style>
+            <style>{framingDropdownCellCss}</style>
             <AgGridReact
               key={`${activeSource?.key}-${i18n.language}`}
               ref={gridRef}
