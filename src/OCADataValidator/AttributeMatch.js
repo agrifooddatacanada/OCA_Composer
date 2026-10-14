@@ -230,6 +230,19 @@ const AttributeMatch = () => {
     return -1;
   }, []);
 
+  // Dataset columns are commonly named after an attribute's display Label
+  // rather than its internal Attribute name. Fall back to matching the
+  // Label whenever the Attribute name itself doesn't match anything.
+  const matchByAttributeOrLabel = useCallback(
+    (unassignedVar, attr, label) => {
+      const index = matchingFunction(unassignedVar, attr);
+      if (index !== -1) return index;
+      if (label) return matchingFunction(unassignedVar, label);
+      return -1;
+    },
+    [matchingFunction]
+  );
+
   // Change selected language when site language changes
   useEffect(() => {
     const siteLanguage = getUILangName();
@@ -255,7 +268,11 @@ const AttributeMatch = () => {
     if (firstTimeMatchingRef.current) {
       if (matchingRowData && matchingRowData?.length > 0) {
         const newMatchingRowData = matchingRowData.map((node) => {
-          const index = matchingFunction(unassignedVariables, node.Attribute);
+          const index = matchByAttributeOrLabel(
+            unassignedVariables,
+            node.Attribute,
+            node[type]
+          );
           const DatasetVal = index !== -1 ? unassignedVariables[index] : "";
           if (index !== -1) unassignedVariables.splice(index, 1);
           return { ...node, Dataset: DatasetVal };
@@ -275,7 +292,11 @@ const AttributeMatch = () => {
           });
 
           const newMatchingRowData = attributeNames.map((attr) => {
-            const index = matchingFunction(unassignedVariables, attr);
+            const index = matchByAttributeOrLabel(
+              unassignedVariables,
+              attr,
+              labelMap[attr]
+            );
             const datasetMatch = index !== -1 ? unassignedVariables[index] : "";
             if (index !== -1) unassignedVariables.splice(index, 1);
             return {
@@ -298,7 +319,7 @@ const AttributeMatch = () => {
     }
 
     setNotToVerifyAttributes(unassignedVariables);
-  }, [schemaDataConformantHeader, attributeSignature, type, matchingFunction]);
+  }, [schemaDataConformantHeader, attributeSignature, type, matchByAttributeOrLabel]);
 
   useEffect(() => {
     const columnDefs = [
