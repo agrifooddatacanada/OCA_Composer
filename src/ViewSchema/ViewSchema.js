@@ -35,7 +35,9 @@ import {
   MANUAL_CREATION_SCHEMA_ID,
   HEADER_TO_CONTENT_GAP_PX,
   BETWEEN_SECTION_SPACING,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  isRangeEligibleAttributeType,
+  isUnitEligibleAttributeType
 } from "../constants/constants";
 import { searchUnits } from "../utils/helpers";
 import { validateExampleValuesAgainstOverlays } from "../utils/exampleValidation";
@@ -558,14 +560,23 @@ export default function ViewSchema({
             const charEncoding =
               (schemaState.characterEncodingData || {})[attr.Attribute] || "";
 
-            // Get range data for this attribute from object
-            const range =
-              getMapValueForAttributeName(attributeRanges, attr.Attribute) || {};
+            const formatRule =
+              getMapValueForAttributeName(attributeFormats, attr.Attribute) || "";
 
-            // Find unit framing data for this attribute
-            const unitFramingData = (schemaState.unitFramedData || []).find(
-              (u) => u.Attribute === attr.Attribute
-            );
+            // Get range data for this attribute from object (only applies to
+            // Numeric/DateTime attributes with a current format rule)
+            const range =
+              isRangeEligibleAttributeType(attr.Type) && formatRule
+                ? getMapValueForAttributeName(attributeRanges, attr.Attribute) || {}
+                : {};
+
+            // Find unit framing data for this attribute (only applies to
+            // Numeric/DateTime attributes)
+            const unitFramingData = isUnitEligibleAttributeType(attr.Type)
+              ? (schemaState.unitFramedData || []).find(
+                  (u) => u.Attribute === attr.Attribute
+                )
+              : undefined;
 
             // Build per-language example values map
             const exampleDataMap = schemaState.exampleData || {};
@@ -580,8 +591,7 @@ export default function ViewSchema({
               Description: descriptionObj,
               Label: labelObj,
               Required: !!attr.Required,
-              "Format Rule":
-                getMapValueForAttributeName(attributeFormats, attr.Attribute) || "",
+              "Format Rule": formatRule,
               "Character Encoding": charEncoding,
               List: listObj,
               Unit: attr.Unit || "",

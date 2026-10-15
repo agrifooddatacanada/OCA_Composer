@@ -43,7 +43,8 @@ import {
   FILE_DELIMITER,
   ARRAY_DELIMITER,
   FIELD_EXAMPLE_OVERLAY,
-  overlayItems
+  overlayItems,
+  isUnitEligibleAttributeType
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -573,7 +574,11 @@ const useOCAExport = () => {
       formatRuleRowData,
       attributesList
     );
-    const retainedUniqueFramedUnits = unitFramedRowData.filter((row) => !row.deleted);
+    const retainedUniqueFramedUnits = unitFramedRowData.filter((row) => {
+      if (row.deleted) return false;
+      const attr = attributeRowData.find((a) => a.Attribute === row.Attribute);
+      return attr && isUnitEligibleAttributeType(attr.Type);
+    });
 
     const extensionOverlayPayload = {
       ordering_overlay: {
