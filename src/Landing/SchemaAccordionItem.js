@@ -10,15 +10,20 @@ import CustomAnchorLink from "../components/CustomAnchorLink";
 const SchemaAccordionItem = () => {
   const { t } = useTranslation();
 
-  const downloadExampleSchema = () => {
+  const downloadExampleSchema = async () => {
     const zipFilePath = "Package_example.json";
 
+    const response = await fetch(zipFilePath);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
     const link = document.createElement("a");
-    link.href = zipFilePath;
+    link.href = blobUrl;
     link.download = "Package_example.json";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
   };
 
   return (
