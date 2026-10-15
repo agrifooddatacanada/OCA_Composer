@@ -24,7 +24,8 @@ import {
 // eslint-disable-next-line import/prefer-default-export
 export const useHandleSchemaFileDrop = (
   firstTimeDisplayWarning,
-  setShowWarningCard = () => {}
+  setShowWarningCard = () => {},
+  setLegacyFlaggedAttributesDetected = () => {}
 ) => {
   const {
     setCurrentDataValidatorPage,
@@ -208,16 +209,26 @@ export const useHandleSchemaFileDrop = (
                 ocaPackageData?.extensions?.[ADC]?.[getRootCaptureBaseId(ocaPackageData)]
                   ?.overlays?.[SENSITIVE];
 
-              const sensitiveAttributes = Array.isArray(
-                sensitiveOverlay?.sensitive_attributes
+              const hasSensitiveOverlay =
+                Array.isArray(sensitiveOverlay?.sensitive_attributes) &&
+                sensitiveOverlay.sensitive_attributes.length > 0;
+              const legacyFlaggedAttributes = Array.isArray(
+                jsonFile?.capture_base?.flagged_attributes
               )
-                ? sensitiveOverlay?.sensitive_attributes
-                : Array.isArray(jsonFile?.capture_base?.flagged_attributes)
-                  ? jsonFile?.capture_base?.flagged_attributes
-                  : [];
+                ? jsonFile.capture_base.flagged_attributes
+                : [];
+
+              const sensitiveAttributes = hasSensitiveOverlay
+                ? sensitiveOverlay.sensitive_attributes
+                : legacyFlaggedAttributes;
 
               if (sensitiveAttributes?.length > 0) {
                 setShowWarningCard(true);
+              }
+              // flagged_attributes predates the OCA sensitive overlay (HCF-era bundles);
+              // flag it separately so the UI can tell users their schema used the legacy format.
+              if (!hasSensitiveOverlay && legacyFlaggedAttributes.length > 0) {
+                setLegacyFlaggedAttributesDetected(true);
               }
               loadRoot = { ...jsonFile.capture_base };
 
@@ -330,6 +341,7 @@ export const useHandleSchemaFileDrop = (
       setDatasetLoading,
       setOcaPackage,
       setShowWarningCard,
+      setLegacyFlaggedAttributesDetected,
       setTargetResult,
       setZipToReadme,
       switchToSchema
@@ -348,6 +360,7 @@ export const useHandleSchemaFileDrop = (
               await parseOcaZipArrayBuffer(e.target.result);
             if (captureBase?.flagged_attributes?.length > 0) {
               setShowWarningCard(true);
+              setLegacyFlaggedAttributesDetected(true);
             }
             setOcaPackage(ocaPackage);
             loadAllSchemasFromOcaPackage(ocaPackage);
@@ -394,6 +407,7 @@ export const useHandleSchemaFileDrop = (
       setJsonLoading,
       setOcaPackage,
       setShowWarningCard,
+      setLegacyFlaggedAttributesDetected,
       setTargetResult,
       setZipToReadme,
       switchToSchema

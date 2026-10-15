@@ -68,17 +68,19 @@ const AccordionList = () => {
     setCurrentPage
   } = useHandleAllDrop();
 
-  const [showWarningCard, setShowWarningCard] = useState(false);
+  const [legacyFlaggedAttributesDetected, setLegacyFlaggedAttributesDetected] =
+    useState(false);
   const firstTimeDisplayWarning = useRef(true);
   const { setSchemaRawFile } = useHandleSchemaFileDrop(
     firstTimeDisplayWarning,
-    setShowWarningCard
+    undefined,
+    setLegacyFlaggedAttributesDetected
   );
   const { resetToDefaults } = useOCAExport();
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
 
   const handleDismissWarning = useCallback(() => {
-    setShowWarningCard(false);
+    setLegacyFlaggedAttributesDetected(false);
     firstTimeDisplayWarning.current = false;
   }, []);
 
@@ -338,8 +340,13 @@ const AccordionList = () => {
           </Box>
         </Box>
       </Box>
-      {firstTimeDisplayWarning.current && showWarningCard && (
-        <WarningPopup action={handleDismissWarning} />
+      {firstTimeDisplayWarning.current && legacyFlaggedAttributesDetected && (
+        <WarningPopup
+          action={handleDismissWarning}
+          message={t(
+            "This schema uses the legacy 'flagged_attributes' field to mark sensitive data. The OCA specification now uses a dedicated Sensitive Overlay for this instead — your sensitivity settings have been carried over and will be saved in the new format when you export."
+          )}
+        />
       )}
     </Box>
   );
