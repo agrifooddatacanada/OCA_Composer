@@ -10,7 +10,10 @@ import CustomAnchorLink from "../components/CustomAnchorLink";
 const SchemaAccordionItem = () => {
   const { t } = useTranslation();
 
-  const downloadExampleSchema = async () => {
+  const downloadExampleSchema = async (event) => {
+    // CustomAnchorLink always renders target="_blank"; without this the browser
+    // still opens href="" in a new tab alongside the download below.
+    event.preventDefault();
     const zipFilePath = "Package_example.json";
 
     const response = await fetch(zipFilePath);
