@@ -365,6 +365,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
 
   const formatGridScrollViewport = gridRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
   const noAttributes = (schemaState?.attributes || []).length === 0;
+  const noFormatEligibleAttributes = !noAttributes && gridRowData.length === 0;
 
   return (
     <BackNextSkeleton
@@ -397,6 +398,11 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           flexDirection: "column"
         }}
       >
+        {noFormatEligibleAttributes && (
+          <Alert severity="info">
+            {t("Format rules cannot be applied to Child Schema attributes.")}
+          </Alert>
+        )}
         <Box
           className={`format-rule-v2-grid overlay-grid-suppress-hscroll ag-theme-balham${formatGridScrollViewport ? "" : " ag-grid-compact"}`}
           sx={{
