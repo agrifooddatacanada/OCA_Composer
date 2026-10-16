@@ -7,7 +7,8 @@ import {
   TYPE_CHILD_SCHEMA,
   TYPE_PLACEHOLDER_CHILD_SCHEMA,
   isChildSchemaType,
-  isUnitEligibleAttributeType
+  isUnitEligibleAttributeType,
+  isRangeEligibleAttributeType
 } from "../constants/constants";
 import { resolveChildSchemaStateRootId } from "../schema/childSchemaSubtree";
 import DeleteConfirmation from "../Overlays/DeleteConfirmation";
@@ -96,6 +97,27 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
     const schemaUpdate = { attributes: updatedAttributeRowData };
     if (typeChanged) {
       schemaUpdate.attributeFormats = removeAttributeFromMap(schemaState.attributeFormats, attributeName);
+
+      const lostArray = String(prevType).includes("Array") && !String(newType).includes("Array");
+      if (lostArray) {
+        schemaUpdate.attributeCardinality = removeAttributeFromMap(
+          schemaState.attributeCardinality,
+          attributeName
+        );
+      }
+
+      if (!isRangeEligibleAttributeType(newType)) {
+        schemaUpdate.attributeRanges = removeAttributeFromMap(
+          schemaState.attributeRanges,
+          attributeName
+        );
+      }
+
+      if (!isUnitEligibleAttributeType(newType) && Array.isArray(schemaState.unitFramedData)) {
+        schemaUpdate.unitFramedData = schemaState.unitFramedData.filter(
+          (row) => row.Attribute !== attributeName
+        );
+      }
     }
 
     if (newType === TYPE_CHILD_SCHEMA) {
@@ -182,13 +204,14 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
         setShowChildSchemaDeleteModal(true);
         return;
       }
+      const prevType = rowType();
       skipSyncRef.current = true;
       setType("");
       typesObjectRef.current[attributeName] = "";
 
       const updatedAttributeRowData = attributeRowData.map((item) => {
         if (item.Attribute === attributeName) {
-          const next = { ...item, Type: "" };
+          const next = { ...item, Type: "", Unit: "" };
           delete next.OriginalType;
           return next;
         }
@@ -196,10 +219,27 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
       });
       setAttributeRowData(updatedAttributeRowData);
 
-      updateSchema({
+      const schemaState = getSchema() || {};
+      const schemaUpdate = {
         attributes: updatedAttributeRowData,
-        attributeFormats: removeAttributeFromMap((getSchema() || {}).attributeFormats, attributeName)
-      });
+        attributeFormats: removeAttributeFromMap(schemaState.attributeFormats, attributeName)
+      };
+      if (String(prevType).includes("Array")) {
+        schemaUpdate.attributeCardinality = removeAttributeFromMap(
+          schemaState.attributeCardinality,
+          attributeName
+        );
+      }
+      schemaUpdate.attributeRanges = removeAttributeFromMap(
+        schemaState.attributeRanges,
+        attributeName
+      );
+      if (Array.isArray(schemaState.unitFramedData)) {
+        schemaUpdate.unitFramedData = schemaState.unitFramedData.filter(
+          (row) => row.Attribute !== attributeName
+        );
+      }
+      updateSchema(schemaUpdate);
     }
   };
 

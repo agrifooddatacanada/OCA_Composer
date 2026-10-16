@@ -9,7 +9,7 @@ import React, {
   useImperativeHandle,
   useMemo
 } from "react";
-import { Box, TextField, Autocomplete, Popper, Button, Typography } from "@mui/material";
+import { Alert, Box, TextField, Autocomplete, Popper, Button, Typography } from "@mui/material";
 import MuiLink from "@mui/material/Link";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
@@ -441,6 +441,8 @@ const UnitFraming = forwardRef((props, ref) => {
 
   const { tempToDisplayRowData } = useUnitData(unitFramedRowData);
 
+  const noUnitsSet = !noAttributes && tempToDisplayRowData.length === 0;
+
   const hasUnframedUnits = unframedUnitList.length > 0;
   const allUnitsAreFramed = unitFramedRowData.length > 0 && !hasUnframedUnits;
 
@@ -632,6 +634,11 @@ const UnitFraming = forwardRef((props, ref) => {
                 : t("Frame all units")}
           </Button>
         </Box>
+        {noUnitsSet && (
+          <Alert severity="info">
+            {t("Set a Unit on a Numeric or DateTime attribute to add unit framing data.")}
+          </Alert>
+        )}
         <Box
           className="unit-framing-grid ag-theme-balham ag-grid-compact"
           sx={{
