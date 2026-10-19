@@ -38,13 +38,6 @@ import {
 
 const MAX_TEXT_WIDTH = "600px";
 
-const makeBlankMetadata = () => ({ id: "", label: "", location: "", version: "" });
-const makeBlankSource = () => ({
-  key: uuidv4(),
-  metadata: makeBlankMetadata(),
-  rows: []
-});
-
 const FRAMING_DROPDOWN_CELL_CLASS = "framing-dropdown-cell";
 
 // autoHeight wraps the renderer in shrink-to-fit wrappers; stretch them so the
