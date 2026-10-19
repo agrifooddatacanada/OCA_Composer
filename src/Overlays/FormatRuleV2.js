@@ -399,7 +399,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           className={`format-rule-v2-grid overlay-grid-suppress-hscroll ag-theme-balham${formatGridScrollViewport ? "" : " ag-grid-compact"}`}
           sx={{
             width: 790,
-            overflow: "hidden",
+            ...(formatGridScrollViewport || gridRowData.length > 0 ? { overflow: "hidden" } : {}),
             ...(formatGridScrollViewport
               ? {
                   height: "min(70vh, 560px)",
@@ -408,16 +408,20 @@ const FormatRulesV2 = forwardRef((props, ref) => {
                 }
               : {
                   "& .ag-root-wrapper": { height: "auto" },
-                  "& .ag-root-wrapper-body.ag-layout-auto-height": {
-                    alignItems: "flex-start"
-                  },
-                  "& .ag-layout-auto-height .ag-center-cols-clipper": { minHeight: 0 },
-                  "& .ag-layout-auto-height .ag-center-cols-container": { minHeight: 0 },
-                  "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
-                    flex: "0 0 auto",
-                    height: "auto",
-                    minHeight: 0
-                  }
+                  ...(gridRowData.length > 0
+                    ? {
+                        "& .ag-root-wrapper-body.ag-layout-auto-height": {
+                          alignItems: "flex-start"
+                        },
+                        "& .ag-layout-auto-height .ag-center-cols-clipper": { minHeight: 0 },
+                        "& .ag-layout-auto-height .ag-center-cols-container": { minHeight: 0 },
+                        "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
+                          flex: "0 0 auto",
+                          height: "auto",
+                          minHeight: 0
+                        }
+                      }
+                    : {})
                 })
           }}
         >

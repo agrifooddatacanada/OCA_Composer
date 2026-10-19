@@ -638,12 +638,16 @@ const UnitFraming = forwardRef((props, ref) => {
           className="unit-framing-grid ag-theme-balham ag-grid-compact"
           sx={{
             width: GRID_WIDTH,
-            overflow: "hidden",
-            "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
-              flex: "0 0 auto",
-              height: "auto",
-              minHeight: 0
-            }
+            ...(tempToDisplayRowData.length > 0
+              ? {
+                  overflow: "hidden",
+                  "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
+                    flex: "0 0 auto",
+                    height: "auto",
+                    minHeight: 0
+                  }
+                }
+              : {})
           }}
         >
           <style>{gridStyles}</style>
