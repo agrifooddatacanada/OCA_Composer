@@ -19,12 +19,7 @@ import { useTranslation } from "react-i18next";
 import { styled } from "@mui/material/styles";
 import { AgGridReact } from "../components/AgGridReact";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import {
-  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
-  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
-  BETWEEN_SECTION_SPACING,
-  FIELD_UNIT_FRAMING_OVERLAY
-} from "../constants/constants";
+import { BETWEEN_SECTION_SPACING, FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, greyCellStyle, preWrapWordBreak } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
@@ -647,12 +642,8 @@ const UnitFraming = forwardRef((props, ref) => {
             "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
               flex: "0 0 auto",
               height: "auto",
-              minHeight:
-                tempToDisplayRowData.length === 0 ? AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX : 0
-            },
-            ...(tempToDisplayRowData.length === 0
-              ? { minHeight: AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX }
-              : {})
+              minHeight: 0
+            }
           }}
         >
           <style>{gridStyles}</style>
