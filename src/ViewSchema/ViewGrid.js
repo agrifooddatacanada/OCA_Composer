@@ -53,7 +53,6 @@ const viewGridStyles = `
 }
 
 .ag-body-viewport-wrapper.ag-layout-normal {
-  overflow-x: scroll;
   overflow-y: scroll;
 }
 
