@@ -125,7 +125,7 @@ export const codeGridStyle = `
   .entry-codes-grid .ag-root-wrapper-body.ag-layout-auto-height {
     min-height: unset !important;
   }
-  .entry-codes-grid .ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
+  .entry-codes-grid .ag-root-wrapper:has(.ag-overlay:not(.ag-hidden) .ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
     min-height: 88px !important;
   }
   .entry-codes-grid .ag-row .delete-icon-solid {
