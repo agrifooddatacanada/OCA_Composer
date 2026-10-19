@@ -8,7 +8,8 @@ import {
   TYPE_PLACEHOLDER_CHILD_SCHEMA,
   isChildSchemaType,
   isUnitEligibleAttributeType,
-  isRangeEligibleAttributeType
+  isRangeEligibleAttributeType,
+  isFormatEligibleAttributeType
 } from "../constants/constants";
 import { resolveChildSchemaStateRootId } from "../schema/childSchemaSubtree";
 import DeleteConfirmation from "../Overlays/DeleteConfirmation";
@@ -96,7 +97,9 @@ const TypeRenderer = ({ data, attributeRowData, typesObjectRef, dropRefs, setAtt
 
     const schemaUpdate = { attributes: updatedAttributeRowData };
     if (typeChanged) {
-      schemaUpdate.attributeFormats = removeAttributeFromMap(schemaState.attributeFormats, attributeName);
+      if (!isFormatEligibleAttributeType(newType)) {
+        schemaUpdate.attributeFormats = removeAttributeFromMap(schemaState.attributeFormats, attributeName);
+      }
 
       const lostArray = String(prevType).includes("Array") && !String(newType).includes("Array");
       if (lostArray) {
