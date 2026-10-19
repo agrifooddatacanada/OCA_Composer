@@ -33,7 +33,6 @@ import {
   AG_GRID_VIRTUALIZE_MIN_ROWS,
   BETWEEN_SECTION_SPACING,
   CUSTOM_FORMAT_RULE,
-  FIELD_RANGE_OVERLAY,
   isChildSchemaType,
   isRangeEligibleAttributeType,
   MAX_ATTR_DESCRIPTION_CHARS
@@ -58,7 +57,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   // Use MultiSchema context with standard pattern
   const {
     getSchema,
-    updateOverlaySelection,
     setSelectedOverlay,
     getRangeData,
     setFormatRuleRowData,
@@ -158,11 +156,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     });
 
     setRangeRowData(newRangeRowData);
-
-    if (newRangeRowData.length === 0) {
-      updateOverlaySelection(FIELD_RANGE_OVERLAY, false);
-    }
-  }, [rangeRowData, setFormatRuleRowData, setRangeRowData, updateOverlaySelection]);
+  }, [rangeRowData, setFormatRuleRowData, setRangeRowData]);
 
   const handleForward = useCallback(() => {
     handleSave();
