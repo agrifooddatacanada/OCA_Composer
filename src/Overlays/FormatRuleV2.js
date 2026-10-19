@@ -418,9 +418,10 @@ const FormatRulesV2 = forwardRef((props, ref) => {
                   "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
                     flex: "0 0 auto",
                     height: "auto",
-                    minHeight: noAttributes ? AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX : 0
+                    minHeight:
+                      gridRowData.length === 0 ? AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX : 0
                   },
-                  ...(noAttributes
+                  ...(gridRowData.length === 0
                     ? { minHeight: AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX }
                     : {})
                 })
