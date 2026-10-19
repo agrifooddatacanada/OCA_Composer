@@ -12,7 +12,8 @@ import React, {
   useImperativeHandle
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Box } from "@mui/material";
+import { Box, Button, Grid, IconButton, Modal, Paper, TextField, Typography } from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { AgGridReact } from "../components/AgGridReact";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -35,6 +36,7 @@ import {
   makeBlankMetadata,
   makeBlankSource
 } from "./FramingComponents";
+import { CustomPalette } from "../constants/customPalette";
 
 const MAX_TEXT_WIDTH = "600px";
 
@@ -49,116 +51,6 @@ const framingDropdownCellCss = `
   min-width: 0;
 }
 `;
-
-const DropdownCellRenderer = ({
-  value,
-  rowIndex,
-  fieldName,
-  options,
-  maxTextLength = 25,
-  onValueChanged
-}) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(value || options[0]?.value);
-
-  const handleChange = (e) => {
-    const newValue = e.target.value;
-    setSelectedValue(newValue);
-
-    if (globalGridRef && globalGridRef.current && globalGridRef.current.api) {
-      const node = globalGridRef.current.api.getRowNode(rowIndex);
-      if (node) {
-        node.setDataValue(fieldName, newValue);
-      }
-    }
-    setIsDropdownOpen(false);
-    if (onValueChanged) onValueChanged();
-  };
-
-  useEffect(() => {
-    setSelectedValue(value || options[0]?.value);
-  }, [value, options]);
-
-  const getDisplayText = (value) => {
-    const option = options.find((opt) => opt.value === value);
-    const text = option ? option.label : value;
-    return text.length > maxTextLength ? `${text.substring(0, maxTextLength)}...` : text;
-  };
-
-  const getFullText = (value) => {
-    const option = options.find((opt) => opt.value === value);
-    return option ? option.label : value;
-  };
-
-  return (
-    <Box sx={{ height: "100%", display: "flex", alignItems: "center", width: "100%" }}>
-      <FormControl fullWidth variant="standard" sx={{ height: "100%" }}>
-        <Select
-          value={selectedValue}
-          onChange={handleChange}
-          variant="standard"
-          disableUnderline
-          title={getFullText(selectedValue)}
-          sx={{
-            height: "100%",
-            fontSize: "small",
-            "& .MuiSelect-select": {
-              padding: "4px 8px",
-              fontSize: "12px",
-              color: CustomPalette.GREY_800,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              lineHeight: "1.2",
-              minHeight: "auto"
-            }
-          }}
-          open={isDropdownOpen}
-          onClose={() => setIsDropdownOpen(false)}
-          onOpen={() => setIsDropdownOpen(true)}
-          renderValue={(value) => getDisplayText(value)}
-        >
-          {options.map((option) => (
-            <MenuItem
-              key={option.value}
-              value={option.value}
-              sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-            >
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </Box>
-  );
-};
-
-const DeleteButton = ({ node, onDelete }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <IconButton
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={() => onDelete(node.rowIndex)}
-      sx={{
-        color: isHovered ? CustomPalette.PRIMARY : CustomPalette.GREY_600,
-        transition: "all 0.2s ease-in-out",
-        padding: "4px",
-        "&:hover": {
-          backgroundColor: `${CustomPalette.PRIMARY}10`,
-          transform: "scale(1.05)"
-        }
-      }}
-    >
-      {isHovered ? (
-        <DeleteForeverIcon fontSize="small" />
-      ) : (
-        <DeleteOutlineIcon fontSize="small" />
-      )}
-    </IconButton>
-  );
-};
 
 // Modal for manually adding/editing/removing the supporting vocabularies
 // referenced by the active tab's primary framing source (e.g. dcterms, foaf
