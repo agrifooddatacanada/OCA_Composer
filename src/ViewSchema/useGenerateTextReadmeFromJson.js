@@ -12,6 +12,8 @@ import {
   RANGE,
   SENSITIVE,
   UNIT_FRAMING,
+  ATTRIBUTE_FRAMING,
+  ENTRY_CODE_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER
@@ -88,13 +90,14 @@ const buildOverlayMaps = (bundle = {}, orderingOverlay = {}) => {
         const said = overlay.d;
         const layer_name = overlay.type;
         const lang = overlay.language;
-        const { description } = overlay;
+        const { description, name } = overlay;
         overlaySaids[`${layer_name} (${lang})`] = said;
         return (
           `Layer name: ${layer_name}\n` +
           `SAID/digest: ${said}\n` +
           `Language: ${lang}\n` +
           `Description: ${description ? normalizeEscapedQuotes(description) : ""}\n` +
+          `Name: ${name ? normalizeEscapedQuotes(name) : ""}\n` +
           "\n"
         );
       })
@@ -483,6 +486,139 @@ const getExtensionSectionLines = (extensionOverlays = {}, schemaBundle = {}) => 
         "******************************************************************\n"
       );
     }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(extensionOverlays, ATTRIBUTE_FRAMING)) {
+    // An attribute can be framed against several independent vocabularies at
+    // once, so the attribute_framing ADC overlay is an array of sources - one
+    // full block is emitted per source. A bare (non-array) overlay object is
+    // also accepted for backward compatibility with packages exported before
+    // multi-source support existed.
+    const rawAttributeFramingOverlay = extensionOverlays[ATTRIBUTE_FRAMING];
+    const attributeFramingSources = Array.isArray(rawAttributeFramingOverlay)
+      ? rawAttributeFramingOverlay
+      : rawAttributeFramingOverlay
+        ? [rawAttributeFramingOverlay]
+        : [];
+
+    attributeFramingSources.forEach((attributeFramingOverlay) => {
+      const framedAttributes = attributeFramingOverlay?.attributes || {};
+
+      if (Object.keys(framedAttributes).length > 0) {
+        lines.push(
+          `Layer name: ${attributeFramingOverlay.type}\n`,
+          `SAID/digest: ${attributeFramingOverlay.d}\n\n`
+        );
+
+        if (attributeFramingOverlay.framing_metadata) {
+          const { imports, ...framingMetadata } = attributeFramingOverlay.framing_metadata;
+
+          lines.push("Attribute frame\n");
+          Object.entries(framingMetadata).forEach(([key, value]) => {
+            lines.push(`   "${key}": "${value}"\n`);
+          });
+          lines.push("\n");
+
+          if (imports && Object.keys(imports).length > 0) {
+            lines.push("Imported vocabularies\n");
+            Object.entries(imports).forEach(([id, imp]) => {
+              lines.push(
+                `   ${id}: label: ${imp?.label || ""}, location: ${imp?.location || ""}, version: ${imp?.version || ""}\n`
+              );
+            });
+            lines.push("\n");
+          }
+        }
+
+        lines.push(`Schema attributes: ${attributeFramingOverlay.type}\n`);
+
+        Object.entries(framedAttributes).forEach(([attribute, framing]) => {
+          lines.push(
+            `   ${attribute}: predicate: ${framing?.predicate_id || ""}, term_id: ${framing?.term_id || ""}, description: ${framing?.description || ""}, framing_justification: ${framing?.framing_justification || ""}`,
+            "\n"
+          );
+        });
+
+        lines.push(
+          "\n",
+          "******************************************************************\n"
+        );
+      }
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(extensionOverlays, ENTRY_CODE_FRAMING)) {
+    // Entry code framing is stored as one overlay per vocabulary (source), and
+    // each overlay can frame the entry codes of several lists. The output is
+    // grouped by list instead: one block per (list, source), with all the
+    // sources of a list emitted together, in overlay order. Lists follow the
+    // schema's attribute ordering when present, then order of first appearance.
+    // A bare (non-array) overlay object is also accepted.
+    const rawEntryCodeFramingOverlay = extensionOverlays[ENTRY_CODE_FRAMING];
+    const entryCodeFramingSources = Array.isArray(rawEntryCodeFramingOverlay)
+      ? rawEntryCodeFramingOverlay
+      : rawEntryCodeFramingOverlay
+        ? [rawEntryCodeFramingOverlay]
+        : [];
+
+    const sourcesByList = new Map();
+    entryCodeFramingSources.forEach((overlay) => {
+      Object.entries(overlay?.entry_codes || {}).forEach(([list, codes]) => {
+        if (!codes || Object.keys(codes).length === 0) return;
+        if (!sourcesByList.has(list)) sourcesByList.set(list, []);
+        sourcesByList.get(list).push({ overlay, codes });
+      });
+    });
+
+    const attributeOrder = extensionOverlays.ordering?.attribute_ordering || [];
+    const orderedLists = [
+      ...attributeOrder.filter((list) => sourcesByList.has(list)),
+      ...[...sourcesByList.keys()].filter((list) => !attributeOrder.includes(list))
+    ];
+
+    orderedLists.forEach((list) => {
+      sourcesByList.get(list).forEach(({ overlay, codes }) => {
+        lines.push(
+          `Layer name: ${overlay.type}\n`,
+          `SAID/digest: ${overlay.d}\n\n`,
+          `Entry code list: ${list}\n\n`
+        );
+
+        if (overlay.framing_metadata) {
+          const { imports, ...framingMetadata } = overlay.framing_metadata;
+
+          lines.push("Entry code frame\n");
+          Object.entries(framingMetadata).forEach(([key, value]) => {
+            lines.push(`   "${key}": "${value}"\n`);
+          });
+          lines.push("\n");
+
+          if (imports && Object.keys(imports).length > 0) {
+            lines.push("Imported vocabularies\n");
+            Object.entries(imports).forEach(([id, imp]) => {
+              lines.push(
+                `   ${id}: label: ${imp?.label || ""}, location: ${imp?.location || ""}, version: ${imp?.version || ""}\n`
+              );
+            });
+            lines.push("\n");
+          }
+        }
+
+        lines.push(`Schema entry codes: ${overlay.type}\n`);
+
+        Object.entries(codes).forEach(([entryCode, framing]) => {
+          lines.push(
+            `   ${entryCode}: predicate: ${framing?.predicate_id || ""}, term_id: ${framing?.term_id || ""}, description: ${framing?.description || ""}, framing_justification: ${framing?.framing_justification || ""}`,
+            "\n"
+          );
+        });
+
+        lines.push(
+          "\n",
+          "******************************************************************\n"
+        );
+      });
+    });
   }
 
   // Data Separator overlays (ADC extensions): decimal_separator, file_delimiter, array_delimiter.

@@ -13,6 +13,8 @@ import {
   RANGE,
   SENSITIVE,
   UNIT_FRAMING,
+  ATTRIBUTE_FRAMING,
+  ENTRY_CODE_FRAMING,
   DECIMAL_SEPARATOR,
   FILE_DELIMITER,
   ARRAY_DELIMITER
@@ -128,6 +130,8 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   let sensitiveOverlay = null;
   let rangeOverlay = null;
   let unitFramingOverlay = null;
+  let attributeFramingSources = [];
+  let entryCodeFramingSources = [];
   let extensionOverlayColumnCount = 0;
   let decimalSeparatorOverlay = null;
   let fileDelimiterOverlay = null;
@@ -147,6 +151,24 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       sensitiveOverlay = overlays?.[SENSITIVE];
       rangeOverlay = overlays?.[RANGE];
       unitFramingOverlay = overlays?.[UNIT_FRAMING];
+      // An attribute can be framed against several independent vocabularies at
+      // once, so the attribute_framing ADC overlay is an array of sources. A
+      // bare (non-array) overlay object is also accepted for backward
+      // compatibility with packages exported before multi-source support existed.
+      const rawAttributeFramingOverlay = overlays?.[ATTRIBUTE_FRAMING];
+      attributeFramingSources = Array.isArray(rawAttributeFramingOverlay)
+        ? rawAttributeFramingOverlay
+        : rawAttributeFramingOverlay
+          ? [rawAttributeFramingOverlay]
+          : [];
+      // Entry code framing is one overlay per vocabulary (source); each can
+      // frame the entry codes of several lists (entry_codes: { list: { code: ... } }).
+      const rawEntryCodeFramingOverlay = overlays?.[ENTRY_CODE_FRAMING];
+      entryCodeFramingSources = Array.isArray(rawEntryCodeFramingOverlay)
+        ? rawEntryCodeFramingOverlay
+        : rawEntryCodeFramingOverlay
+          ? [rawEntryCodeFramingOverlay]
+          : [];
       decimalSeparatorOverlay = overlays?.[DECIMAL_SEPARATOR];
       fileDelimiterOverlay = overlays?.[FILE_DELIMITER];
       arrayDelimiterOverlay = overlays?.[ARRAY_DELIMITER];
@@ -938,6 +960,45 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     }
   }
 
+  // One column per framing source - an attribute can be framed against
+  // several independent vocabularies at once (e.g. FOODON and ENVO).
+  const attributeFramingSourcesWithData = attributeFramingSources.filter(
+    (source) => Object.keys(source?.attributes || {}).length > 0
+  );
+
+  if (attributeFramingSourcesWithData.length > 0) {
+    const startColumnIndex = jsonData.length + 3 + extensionOverlayColumnCount - skipped;
+    try {
+      attributeFramingSourcesWithData.forEach((source, i) => {
+        const columnIndex = startColumnIndex + i;
+        const columnHeaderCell = sheet1.getCell(shift + 1, columnIndex);
+        const sourceLabel = source.framing_metadata?.label || source.framing_metadata?.id || "";
+
+        sheet1.getColumn(columnIndex).width = 15;
+        columnHeaderCell.value = sourceLabel
+          ? `Attribute Framing: ${sourceLabel}`
+          : "Attribute Framing";
+        formatHeader(columnHeaderCell);
+
+        attributeNames.forEach((attribute) => {
+          const rowIndex = mappingAttrKeysandAttrValues[attribute];
+          if (!rowIndex) return;
+
+          const attributeFramingData = source.attributes[attribute];
+          if (!attributeFramingData) return;
+
+          const valueCell = sheet1.getCell(shift + rowIndex, columnIndex);
+          valueCell.value = attributeFramingData.term_id;
+        });
+        extensionOverlayColumnCount += 1;
+      });
+    } catch (error) {
+      throw new WorkbookError(
+        ".. Error in formatting attribute framing columns (header and rows) ..."
+      );
+    }
+  }
+
   if (rangeOverlay?.attributes) {
     const columns = ["Lower Bound", "Inclusive", "Upper Bound", "Inclusive"];
     const startColumnIndex = jsonData.length + 3 + extensionOverlayColumnCount - skipped;
@@ -1047,7 +1108,29 @@ export async function CreateDataEntryExcel(data, selectedLang) {
   sheet1.getCell(lookUpStart, 2).value = null;
   formatLookupHeader(sheet1.getCell(lookUpStart, 2));
 
-  if (unitFramingOverlay?.framing_metadata) {
+  const attributeFramingSourcesWithMetadata = attributeFramingSources.filter(
+    (source) => source?.framing_metadata
+  );
+
+  // Entry code framing, grouped by list: { list: [source overlays framing it] }.
+  // Sources of the same list stay together, in overlay order.
+  const entryCodeFramingSourcesByList = new Map();
+  entryCodeFramingSources.forEach((source) => {
+    Object.entries(source?.entry_codes || {}).forEach(([list, codes]) => {
+      if (!codes || Object.keys(codes).length === 0) return;
+      if (!entryCodeFramingSourcesByList.has(list)) {
+        entryCodeFramingSourcesByList.set(list, []);
+      }
+      entryCodeFramingSourcesByList.get(list).push(source);
+    });
+  });
+
+  let lastReferenceRow = lookUpStart;
+
+  if (
+    unitFramingOverlay?.framing_metadata ||
+    attributeFramingSourcesWithMetadata.length > 0
+  ) {
     sheet1.getCell(lookUpStart, 3).value = "Framing references";
     formatLookupHeader(sheet1.getCell(lookUpStart, 3));
 
@@ -1057,22 +1140,68 @@ export async function CreateDataEntryExcel(data, selectedLang) {
     sheet1.getCell(lookUpStart, 5).value = null;
     formatLookupHeader(sheet1.getCell(lookUpStart, 5));
 
-    sheet1.getCell(lookUpStart + 1, 3).value = "Unit framing";
-    formatLookupValue(sheet1.getCell(lookUpStart + 1, 3));
+    let metadataRow = lookUpStart + 1;
 
-    let metadataRow = lookUpStart + 2;
-
-    for (const [property, value] of Object.entries(
-      unitFramingOverlay?.framing_metadata
-    )) {
-      sheet1.getCell(metadataRow, 4).value = property;
-      formatLookupAttr(sheet1.getCell(metadataRow, 4));
-
-      sheet1.getCell(metadataRow, 5).value = value;
-      formatLookupValue(sheet1.getCell(metadataRow, 5));
-
+    if (unitFramingOverlay?.framing_metadata) {
+      sheet1.getCell(metadataRow, 3).value = "Unit framing";
+      formatLookupValue(sheet1.getCell(metadataRow, 3));
       metadataRow++;
+
+      for (const [property, value] of Object.entries(
+        unitFramingOverlay.framing_metadata
+      )) {
+        sheet1.getCell(metadataRow, 4).value = property;
+        formatLookupAttr(sheet1.getCell(metadataRow, 4));
+
+        sheet1.getCell(metadataRow, 5).value = value;
+        formatLookupValue(sheet1.getCell(metadataRow, 5));
+
+        metadataRow++;
+      }
     }
+
+    // An attribute can be framed against several independent vocabularies at
+    // once, so each source gets its own "Attribute framing: <label>" block.
+    attributeFramingSourcesWithMetadata.forEach((source) => {
+      const { imports, ...attributeFramingMetadata } = source.framing_metadata;
+      const sourceLabel = attributeFramingMetadata.label || attributeFramingMetadata.id || "";
+
+      sheet1.getCell(metadataRow, 3).value = sourceLabel
+        ? `Attribute framing: ${sourceLabel}`
+        : "Attribute framing";
+      formatLookupValue(sheet1.getCell(metadataRow, 3));
+      metadataRow++;
+
+      for (const [property, value] of Object.entries(attributeFramingMetadata)) {
+        sheet1.getCell(metadataRow, 4).value = property;
+        formatLookupAttr(sheet1.getCell(metadataRow, 4));
+
+        sheet1.getCell(metadataRow, 5).value = value;
+        formatLookupValue(sheet1.getCell(metadataRow, 5));
+
+        metadataRow++;
+      }
+
+      if (imports && Object.keys(imports).length > 0) {
+        Object.entries(imports).forEach(([id, imp]) => {
+          sheet1.getCell(metadataRow, 4).value = `import: ${id}`;
+          formatLookupAttr(sheet1.getCell(metadataRow, 4));
+
+          sheet1.getCell(metadataRow, 5).value = [
+            imp?.label ? `label: ${imp.label}` : null,
+            imp?.location ? `location: ${imp.location}` : null,
+            imp?.version ? `version: ${imp.version}` : null
+          ]
+            .filter(Boolean)
+            .join(", ");
+          formatLookupValue(sheet1.getCell(metadataRow, 5));
+
+          metadataRow++;
+        });
+      }
+    });
+
+    lastReferenceRow = metadataRow - 1;
   }
 
   let offset = 0;
@@ -1104,6 +1233,102 @@ export async function CreateDataEntryExcel(data, selectedLang) {
       formatLookupValue(sheet1.getCell(i, 1));
       sheet1.getCell(i, 2).value = keys[i - startRow];
       formatLookupValue(sheet1.getCell(i, 2));
+    }
+  }
+
+  // Entry code framing section (same layout as the READMEs): grouped by list,
+  // and within each list one block per framing source holding its metadata,
+  // imported vocabularies, and a table of the framed entry codes. Placed below
+  // the lookup tables / framing references so it never overlaps them.
+  if (entryCodeFramingSourcesByList.size > 0) {
+    try {
+      let row = Math.max(lookUpStart + offset, lastReferenceRow) + 3;
+
+      sheet1.getCell(row, 1).value = "Entry code framing";
+      formatLookupHeader(sheet1.getCell(row, 1));
+      for (let col = 2; col <= 5; col++) {
+        sheet1.getCell(row, col).value = null;
+        formatLookupHeader(sheet1.getCell(row, col));
+      }
+      row += 2;
+
+      // Lists follow the attribute order, then order of first appearance.
+      const orderedLists = [
+        ...attributeNames.filter((attr) => entryCodeFramingSourcesByList.has(attr)),
+        ...[...entryCodeFramingSourcesByList.keys()].filter(
+          (attr) => !attributeNames.includes(attr)
+        )
+      ];
+
+      orderedLists.forEach((list) => {
+        sheet1.getCell(row, 1).value = `Entry code framing: ${list}`;
+        formatLookupAttr(sheet1.getCell(row, 1));
+        row += 2;
+
+        entryCodeFramingSourcesByList.get(list).forEach((source) => {
+          const { imports, ...framingMetadata } = source.framing_metadata || {};
+          const sourceLabel = framingMetadata.label || framingMetadata.id || "";
+
+          sheet1.getCell(row, 1).value = sourceLabel ? `Source: ${sourceLabel}` : "Source";
+          formatLookupAttr(sheet1.getCell(row, 1));
+          row++;
+
+          for (const [property, value] of Object.entries(framingMetadata)) {
+            sheet1.getCell(row, 2).value = property;
+            formatLookupAttr(sheet1.getCell(row, 2));
+            sheet1.getCell(row, 3).value = value;
+            formatLookupValue(sheet1.getCell(row, 3));
+            row++;
+          }
+
+          if (imports && Object.keys(imports).length > 0) {
+            Object.entries(imports).forEach(([id, imp]) => {
+              sheet1.getCell(row, 2).value = `import: ${id}`;
+              formatLookupAttr(sheet1.getCell(row, 2));
+              sheet1.getCell(row, 3).value = [
+                imp?.label ? `label: ${imp.label}` : null,
+                imp?.location ? `location: ${imp.location}` : null,
+                imp?.version ? `version: ${imp.version}` : null
+              ]
+                .filter(Boolean)
+                .join(", ");
+              formatLookupValue(sheet1.getCell(row, 3));
+              row++;
+            });
+          }
+          row++;
+
+          [
+            "Entry code",
+            "Predicate",
+            "Term ID",
+            "Description",
+            "Framing Justification"
+          ].forEach((header, i) => {
+            sheet1.getCell(row, i + 1).value = header;
+            formatLookupHeader(sheet1.getCell(row, i + 1));
+          });
+          row++;
+
+          Object.entries(source.entry_codes[list] || {}).forEach(([code, framing]) => {
+            [
+              code,
+              framing?.predicate_id || "",
+              framing?.term_id || "",
+              framing?.description || "",
+              framing?.framing_justification || ""
+            ].forEach((value, i) => {
+              sheet1.getCell(row, i + 1).value = value;
+              formatLookupValue(sheet1.getCell(row, i + 1));
+            });
+            row++;
+          });
+          row++;
+        });
+        row++;
+      });
+    } catch (error) {
+      throw new WorkbookError(".. Error in formatting entry code framing section ..");
     }
   }
 

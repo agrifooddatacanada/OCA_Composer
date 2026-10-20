@@ -14,8 +14,10 @@ const AccordionStyle = {
   }
 };
 
-const AccordionItemWrapper = ({ children }) => (
-  <Accordion elevation={0} sx={AccordionStyle}>
+// Extra props (e.g. defaultExpanded, TransitionProps) are forwarded to the
+// Accordion, and sx overrides are merged over the default style.
+const AccordionItemWrapper = ({ children, sx, ...rest }) => (
+  <Accordion elevation={0} sx={{ ...AccordionStyle, ...sx }} {...rest}>
     {children}
   </Accordion>
 );

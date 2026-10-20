@@ -20,7 +20,6 @@ import {
 import BackNextSkeleton from "../components/BackNextSkeleton";
 import {
   BETWEEN_SECTION_SPACING,
-  FIELD_RANGE_OVERLAY,
   TYPE_CHILD_SCHEMA,
   FIELD_UNIT_FRAMING_OVERLAY,
   TABLE_TO_BUTTON_GAP,
@@ -448,19 +447,6 @@ const AttributeDetails = forwardRef(({ pageBack, pageForward }, ref) => {
 
       const noSpacesArray = removeSpacesFromArrayOfObjects(newAttributeRowData);
       setAttributeRowData(noSpacesArray);
-
-      // Check range overlay selection using MultiSchemaContext
-      const overlaySelections = getOverlaySelections(currentSchemaId);
-
-      if (overlaySelections && overlaySelections[FIELD_RANGE_OVERLAY]) {
-        const hasValidAttribute = noSpacesArray.some(
-          (attribute) => attribute.Type === "Numeric" || attribute.Type === "DateTime"
-        );
-
-        if (!hasValidAttribute) {
-          updateOverlaySelection(FIELD_RANGE_OVERLAY, false);
-        }
-      }
 
       return allAttributes;
     };

@@ -109,6 +109,9 @@ export const FIELD_ATTRIBUTE_FRAMING_OVERLAY = "Attribute Framing";
 export const FIELD_FORM_INFORMATION_OVERLAY = "Form Information";
 export const FIELD_DATA_SEPARATOR_OVERLAY = "Data Separator";
 export const FIELD_EXAMPLE_OVERLAY = "Examples";
+// Not part of overlayItems: whether it is added is derived from the schema's
+// entryCodeFramingSources, which are edited on the Entry Codes page.
+export const FIELD_ENTRY_CODE_FRAMING_OVERLAY = "Entry Code Framing";
 
 export const overlayItems = {
   [FIELD_CHARACTER_ENCODING_OVERLAY]: false,
@@ -637,6 +640,22 @@ export const RANGE = "range";
 
 // Attribute Framing Overlay
 export const ATTRIBUTE_FRAMING = "attribute_framing";
+// Default framing_metadata for the Attribute Framing overlay.
+// These are user-editable in the Attribute Framing editor.
+export const ATTRIBUTE_FRAME_ID = "FOODON";
+export const ATTRIBUTE_FRAME_LABEL = "Food Ontology";
+export const ATTRIBUTE_FRAME_LOCATION =
+  "https://raw.githubusercontent.com/FoodOntology/foodon/master/foodon.owl";
+export const ATTRIBUTE_FRAME_VERSION = "1.0";
+export const DEFAULT_ATTRIBUTE_FRAMING_METADATA = {
+  id: ATTRIBUTE_FRAME_ID,
+  label: ATTRIBUTE_FRAME_LABEL,
+  location: ATTRIBUTE_FRAME_LOCATION,
+  version: ATTRIBUTE_FRAME_VERSION
+};
+
+// Entry Code Framing Overlay (ADC extension)
+export const ENTRY_CODE_FRAMING = "entry_code_framing";
 
 // Data Separator Overlays (ADC extension)
 export const DECIMAL_SEPARATOR = "decimal_separator";
