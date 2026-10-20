@@ -16,6 +16,19 @@ export const codeGridStyle = `
   .entry-codes-grid.ag-theme-balham .ag-root-wrapper {
     border: none !important;
   }
+  /* AG Grid's own horizontal scroll is suppressed (see CodeGrid.js) in
+     favour of a native overflow-x on the grid's wrapper, so the
+     sticky-positioned pinned columns below need an unbroken chain of
+     visible overflow up to that wrapper - these ancestors default to
+     overflow:hidden, which would otherwise anchor stickiness to
+     themselves (same width as the content, so it would have no effect). */
+  .entry-codes-grid.ag-theme-balham .ag-root-wrapper,
+  .entry-codes-grid .ag-root.ag-layout-auto-height,
+  .entry-codes-grid .ag-body-clipper,
+  .entry-codes-grid .ag-body-viewport,
+  .entry-codes-grid .ag-header-viewport {
+    overflow: visible !important;
+  }
   .entry-codes-grid .ag-root-wrapper-body,
   .entry-codes-grid .ag-body,
   .entry-codes-grid .ag-body-clipper,
