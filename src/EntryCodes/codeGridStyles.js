@@ -152,9 +152,6 @@ export const codeGridStyle = `
   .entry-codes-grid .ag-cell .ag-drag-handle {
     margin-right: 0;
   }
-  .entry-codes-grid-fixed-viewport.ag-theme-balham .ag-root-wrapper {
-    height: 100%;
-  }
   .entry-codes-grid .ag-horizontal-left-spacer,
   .entry-codes-grid .ag-horizontal-right-spacer {
     scrollbar-width: none;

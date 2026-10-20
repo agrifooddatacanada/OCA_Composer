@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useCallback, useState } from "react";
+import React, { useEffect, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
@@ -13,8 +13,7 @@ import {
   ENTRY_CODE_DRAG_WIDTH,
   ENTRY_CODE_CODE_WIDTH,
   ENTRY_CODE_LANG_WIDTH,
-  ENTRY_CODE_DELETE_WIDTH,
-  AG_GRID_VIRTUALIZE_MIN_ROWS
+  ENTRY_CODE_DELETE_WIDTH
 } from "../constants/constants";
 import {
   agGridEditableCellHoverCss,
@@ -27,6 +26,13 @@ import { LanguageConstants, langCodeOCAFromName } from "../utils/languageUtils";
 import { useMultiSchema } from "../schema/schemaContext";
 import { codeGridStyle } from "./codeGridStyles";
 import { CustomPalette } from "../constants/customPalette";
+
+// Rows beyond this count get capped behind a vertical scrollbar instead of
+// growing the table indefinitely.
+const VISIBLE_ROW_CAP = 6;
+// ag-theme-balham's default header height (the project's own ag-grid-compact
+// class only resets root/clipper min-heights, not this).
+const ENTRY_CODE_HEADER_HEIGHT_PX = 32;
 
 const CodeHeader = () => {
   const { t } = useTranslation();
@@ -92,7 +98,6 @@ export default function CodeGrid({
   );
 
   const refContainer = useRef(null);
-  const frameRef = useRef(null);
   const buttonRef = useRef();
   const entryCodeDataRef = useRef(entryCodeData);
   entryCodeDataRef.current = entryCodeData;
@@ -111,8 +116,6 @@ export default function CodeGrid({
     return id;
   }, []);
 
-  const manyCodes = entryCodeData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
-
   const minTablePx = useMemo(
     () =>
       ENTRY_CODE_DRAG_WIDTH +
@@ -121,37 +124,6 @@ export default function CodeGrid({
       ENTRY_CODE_DELETE_WIDTH,
     [langSpecs.length]
   );
-
-  const [wideTable, setWideTable] = useState(false);
-
-  useEffect(() => {
-    const el = frameRef.current;
-    if (!el) return;
-    const measure = () => {
-      const w = el.clientWidth;
-      if (w <= 0) return;
-      setWideTable(w < minTablePx);
-    };
-    measure();
-    const ro = new ResizeObserver(() => measure());
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [minTablePx]);
-
-  const gridFixedHeightMode = wideTable;
-  // Rows virtualize past AG_GRID_VIRTUALIZE_MIN_ROWS, so below that a flat
-  // height would leave a gap under a short list; size to the actual row
-  // count instead (56px matches the row-height floor in getRowHeight below,
-  // 40px covers the header), capped at the same ceiling as the virtualized case.
-  const fewCodesViewportHeight = Math.min(
-    Math.max(entryCodeData.length * 56 + 40, 120),
-    420
-  );
-  const gridViewportHeight = wideTable
-    ? manyCodes
-      ? "min(70vh, 560px)"
-      : `min(${fewCodesViewportHeight}px, 70vh)`
-    : "auto";
 
   const handleDeleteRow = useCallback(
     (elementIndex) => {
@@ -323,6 +295,14 @@ export default function CodeGrid({
     [langSpecs, resolveLangCellText]
   );
 
+  const capVisibleRows = entryCodeData.length > VISIBLE_ROW_CAP;
+  const capHeightPx = useMemo(() => {
+    const rowsHeight = entryCodeData
+      .slice(0, VISIBLE_ROW_CAP)
+      .reduce((total, row) => total + getRowHeight({ data: row }), 0);
+    return ENTRY_CODE_HEADER_HEIGHT_PX + rowsHeight;
+  }, [entryCodeData, getRowHeight]);
+
   const prevRowCountRef = useRef(0);
   useEffect(() => {
     const rowCount = entryCodeData?.length ?? 0;
@@ -397,58 +377,39 @@ export default function CodeGrid({
       sx={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box" }}
     >
       <Box
-        ref={frameRef}
         sx={{
           width: "100%",
           maxWidth: "100%",
           minWidth: 0,
-          overflowX: "hidden",
-          overflowY: gridFixedHeightMode ? "hidden" : "visible"
+          overflowX: "auto"
         }}
       >
         <Box
           sx={{
-            width: gridFixedHeightMode ? "100%" : `min(${minTablePx}px, 100%)`,
-            maxWidth: "100%",
+            width: `${minTablePx}px`,
             boxSizing: "border-box",
-            ...(manyCodes && !gridFixedHeightMode
-              ? { maxHeight: "min(70vh, 560px)", overflowY: "auto" }
+            ...(capVisibleRows
+              ? { maxHeight: `min(${capHeightPx}px, 70vh, 560px)`, overflowY: "auto" }
               : {})
           }}
         >
           <div
-            className={`entry-codes-grid ag-theme-balham${gridFixedHeightMode ? " entry-codes-grid-fixed-viewport" : " ag-grid-compact"}`}
-            style={{
-              width: "100%",
-              minWidth: 0,
-              height: gridFixedHeightMode ? gridViewportHeight : "fit-content",
-              display: gridFixedHeightMode ? "flex" : undefined,
-              flexDirection: gridFixedHeightMode ? "column" : undefined
-            }}
+            className="entry-codes-grid ag-theme-balham ag-grid-compact"
+            style={{ width: "100%", minWidth: 0, height: "fit-content" }}
           >
             <style>{`${codeGridStyle}${agGridEditableCellHoverCss}`}</style>
-            <div
-              ref={refContainer}
-              style={{
-                flex: gridFixedHeightMode ? 1 : undefined,
-                minHeight: gridFixedHeightMode ? 0 : undefined,
-                width: "100%"
-              }}
-            >
+            <div ref={refContainer} style={{ width: "100%" }}>
               <AgGridReact
-                key={`${i18n.language}-${gridFixedHeightMode ? "fx" : "ah"}`}
+                key={i18n.language}
                 ref={codeRefs.current[index]}
                 rowData={entryCodeData}
                 getRowId={getRowId}
                 overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
-                domLayout={gridFixedHeightMode ? undefined : "autoHeight"}
-                style={{
-                  width: "100%",
-                  height: gridFixedHeightMode ? "100%" : "auto"
-                }}
-                suppressHorizontalScroll={!gridFixedHeightMode}
+                domLayout="autoHeight"
+                style={{ width: "100%", height: "auto" }}
+                suppressHorizontalScroll
                 getRowHeight={getRowHeight}
                 onCellKeyDown={onCellKeyDown}
                 onFirstDataRendered={handleFirstDataRendered}
