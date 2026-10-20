@@ -139,10 +139,18 @@ export default function CodeGrid({
   }, [minTablePx]);
 
   const gridFixedHeightMode = wideTable;
+  // Rows virtualize past AG_GRID_VIRTUALIZE_MIN_ROWS, so below that a flat
+  // height would leave a gap under a short list; size to the actual row
+  // count instead (56px matches the row-height floor in getRowHeight below,
+  // 40px covers the header), capped at the same ceiling as the virtualized case.
+  const fewCodesViewportHeight = Math.min(
+    Math.max(entryCodeData.length * 56 + 40, 120),
+    420
+  );
   const gridViewportHeight = wideTable
     ? manyCodes
       ? "min(70vh, 560px)"
-      : "min(420px, min(70vh, 560px))"
+      : `min(${fewCodesViewportHeight}px, 70vh)`
     : "auto";
 
   const handleDeleteRow = useCallback(
