@@ -9,7 +9,7 @@ import React, {
   useImperativeHandle,
   useMemo
 } from "react";
-import { Box, TextField, Autocomplete, Popper, Button, Typography } from "@mui/material";
+import { Alert, Box, TextField, Autocomplete, Popper, Button, Typography } from "@mui/material";
 import MuiLink from "@mui/material/Link";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
@@ -19,12 +19,7 @@ import { useTranslation } from "react-i18next";
 import { styled } from "@mui/material/styles";
 import { AgGridReact } from "../components/AgGridReact";
 import BackNextSkeleton from "../components/BackNextSkeleton";
-import {
-  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
-  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
-  BETWEEN_SECTION_SPACING,
-  FIELD_UNIT_FRAMING_OVERLAY
-} from "../constants/constants";
+import { BETWEEN_SECTION_SPACING, FIELD_UNIT_FRAMING_OVERLAY } from "../constants/constants";
 import CellHeader from "../components/CellHeader";
 import { gridStyles, greyCellStyle, preWrapWordBreak } from "../constants/styles";
 import { measureTextHeight } from "../utils/measureTextLines";
@@ -441,6 +436,8 @@ const UnitFraming = forwardRef((props, ref) => {
 
   const { tempToDisplayRowData } = useUnitData(unitFramedRowData);
 
+  const noUnitsSet = !noAttributes && tempToDisplayRowData.length === 0;
+
   const hasUnframedUnits = unframedUnitList.length > 0;
   const allUnitsAreFramed = unitFramedRowData.length > 0 && !hasUnframedUnits;
 
@@ -632,18 +629,24 @@ const UnitFraming = forwardRef((props, ref) => {
                 : t("Frame all units")}
           </Button>
         </Box>
+        {noUnitsSet && (
+          <Alert severity="info">
+            {t("Set a Unit on a Numeric or DateTime attribute to add unit framing data.")}
+          </Alert>
+        )}
         <Box
           className="unit-framing-grid ag-theme-balham ag-grid-compact"
           sx={{
             width: GRID_WIDTH,
-            overflow: "hidden",
-            "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
-              flex: "0 0 auto",
-              height: "auto",
-              minHeight: noAttributes ? AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX : 0
-            },
-            ...(noAttributes
-              ? { minHeight: AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX }
+            ...(tempToDisplayRowData.length > 0
+              ? {
+                  overflow: "hidden",
+                  "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
+                    flex: "0 0 auto",
+                    height: "auto",
+                    minHeight: 0
+                  }
+                }
               : {})
           }}
         >

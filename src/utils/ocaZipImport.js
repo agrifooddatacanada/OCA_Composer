@@ -5,6 +5,14 @@ export async function parseOcaZipArrayBuffer(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);
   const allZipFiles = [];
 
+  if (!zip.files["meta.json"]) {
+    const noMetaError = new Error(
+      "This zip file doesn't look like a valid OCA package — no meta.json found at the top level of the archive."
+    );
+    noMetaError.isSchemaValidationError = true;
+    throw noMetaError;
+  }
+
   const loadMetadataFile = await zip.files["meta.json"].async("text");
   const metadataJson = JSON.parse(loadMetadataFile);
   const { root } = metadataJson;
