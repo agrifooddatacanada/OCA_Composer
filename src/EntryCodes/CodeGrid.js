@@ -381,52 +381,49 @@ export default function CodeGrid({
           width: "100%",
           maxWidth: "100%",
           minWidth: 0,
-          overflowX: "auto"
+          boxSizing: "border-box",
+          ...(capVisibleRows
+            ? { maxHeight: `min(${capHeightPx}px, 70vh, 560px)`, overflowY: "auto" }
+            : {})
         }}
       >
-        <Box
-          sx={{
-            width: `${minTablePx}px`,
-            boxSizing: "border-box",
-            ...(capVisibleRows
-              ? { maxHeight: `min(${capHeightPx}px, 70vh, 560px)`, overflowY: "auto" }
-              : {})
-          }}
-        >
-          <div
-            className="entry-codes-grid ag-theme-balham ag-grid-compact"
-            style={{ width: "100%", minWidth: 0, height: "fit-content" }}
-          >
-            <style>{`${codeGridStyle}${agGridEditableCellHoverCss}`}</style>
-            <div ref={refContainer} style={{ width: "100%" }}>
-              <AgGridReact
-                key={i18n.language}
-                ref={codeRefs.current[index]}
-                rowData={entryCodeData}
-                getRowId={getRowId}
-                overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                domLayout="autoHeight"
-                style={{ width: "100%", height: "auto" }}
-                suppressHorizontalScroll
-                getRowHeight={getRowHeight}
-                onCellKeyDown={onCellKeyDown}
-                onFirstDataRendered={handleFirstDataRendered}
-                onCellClicked={() => setChosenTable(index)}
-                onRowDragEnd={onRowDragEnd}
-                onRowDragLeave={onRowDragLeave}
-                onCellValueChanged={(e) => {
-                  if (e.column.colId === "Code" || ocaFields.includes(e.column.colId)) {
-                    e.api.refreshCells({ rowNodes: [e.node], force: true });
-                    requestAnimationFrame(() => e.api.resetRowHeights());
-                  }
-                }}
-                rowDragManaged
-                suppressScrollOnNewData
-              />
+        <Box sx={{ width: "100%", overflowX: "auto" }}>
+          <Box sx={{ width: `${minTablePx}px` }}>
+            <div
+              className="entry-codes-grid ag-theme-balham ag-grid-compact"
+              style={{ width: "100%", minWidth: 0, height: "fit-content" }}
+            >
+              <style>{`${codeGridStyle}${agGridEditableCellHoverCss}`}</style>
+              <div ref={refContainer} style={{ width: "100%" }}>
+                <AgGridReact
+                  key={i18n.language}
+                  ref={codeRefs.current[index]}
+                  rowData={entryCodeData}
+                  getRowId={getRowId}
+                  overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
+                  columnDefs={columnDefs}
+                  defaultColDef={defaultColDef}
+                  domLayout="autoHeight"
+                  style={{ width: "100%", height: "auto" }}
+                  suppressHorizontalScroll
+                  getRowHeight={getRowHeight}
+                  onCellKeyDown={onCellKeyDown}
+                  onFirstDataRendered={handleFirstDataRendered}
+                  onCellClicked={() => setChosenTable(index)}
+                  onRowDragEnd={onRowDragEnd}
+                  onRowDragLeave={onRowDragLeave}
+                  onCellValueChanged={(e) => {
+                    if (e.column.colId === "Code" || ocaFields.includes(e.column.colId)) {
+                      e.api.refreshCells({ rowNodes: [e.node], force: true });
+                      requestAnimationFrame(() => e.api.resetRowHeights());
+                    }
+                  }}
+                  rowDragManaged
+                  suppressScrollOnNewData
+                />
+              </div>
             </div>
-          </div>
+          </Box>
         </Box>
       </Box>
 

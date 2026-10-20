@@ -74,6 +74,24 @@ export const codeGridStyle = `
   .entry-codes-grid .ag-pinned-right-cols-container {
     border-left: none !important;
   }
+  /* The grid's own horizontal scroll is suppressed in favour of a native
+     overflow-x on its wrapper (see CodeGrid.js), so AG Grid's pinned-column
+     containers no longer stay fixed on their own; stick them to the
+     scrolling wrapper's edges instead so Drag/Delete stay reachable. */
+  .entry-codes-grid .ag-pinned-left-header,
+  .entry-codes-grid .ag-pinned-left-cols-container {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: #fff;
+  }
+  .entry-codes-grid .ag-pinned-right-header,
+  .entry-codes-grid .ag-pinned-right-cols-container {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background-color: #fff;
+  }
   .entry-codes-grid .ag-pinned-right-header .ag-header-cell-resize::after {
     display: none !important;
   }
