@@ -4,7 +4,10 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import { CustomPalette } from "../constants/customPalette";
 
-export default function WarningPopup({ action }) {
+const DEFAULT_MESSAGE =
+  "Reminder: your data has attributes that are flagged as containing sensitive data. Ensure you are applying the appropriate security for this dataset";
+
+export default function WarningPopup({ action, message = DEFAULT_MESSAGE }) {
   const appearAnimation =
     "fade-in 0.5s ease forwards; @keyframes fade-in {0% {opacity: 0;transform: translate(-50%, 0%) scale(0.5);}100% {opacity: 1;transform: translate(-50%, 0%) scale(1);}}";
   return (
@@ -60,8 +63,7 @@ export default function WarningPopup({ action }) {
           />
         </Box>
         <Typography variant="h5" sx={{ p: 1 }}>
-          Reminder: your data has attributes that are flagged as containing sensitive
-          data. Ensure you are applying the appropriate security for this dataset
+          {message}
         </Typography>
 
         <Button
