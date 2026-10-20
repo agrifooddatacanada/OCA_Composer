@@ -53,6 +53,7 @@ const viewGridStyles = `
 }
 
 .ag-body-viewport-wrapper.ag-layout-normal {
+  overflow-x: scroll;
   overflow-y: scroll;
 }
 
@@ -67,6 +68,10 @@ const viewGridStyles = `
 
 .ag-cell[col-id="Format Rule"] {
   padding: 6px !important;
+}
+
+.view-schema-grid .ag-header-viewport {
+  padding-right: 17px;
 }
 
 .view-schema-grid .ag-pinned-left-cols-container {
