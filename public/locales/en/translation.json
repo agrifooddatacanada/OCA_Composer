@@ -832,5 +832,6 @@
   "Each framing source needs an ID.": "Each framing source needs an ID.",
   "Each framing source needs a unique ID.": "Each framing source needs a unique ID.",
   "Used in": "Used in",
-  "Pick a framing source from another list to fill in its details.": "Pick a framing source from another list to fill in its details."
+  "Pick a framing source from another list to fill in its details.": "Pick a framing source from another list to fill in its details.",
+  "This LinkML schema references enumeration types that are not included: {{enumNames}}. Entry codes for the affected attributes will not be generated. Include the missing enum definitions from the parent schema.": "This LinkML schema references enumeration types that are not included: {{enumNames}}. Entry codes for the affected attributes will not be generated. Include the missing enum definitions from the parent schema."
 }

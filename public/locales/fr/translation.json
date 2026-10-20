@@ -833,5 +833,6 @@
   "Each framing source needs an ID.": "Chaque source d'encadrement doit avoir un ID.",
   "Each framing source needs a unique ID.": "Chaque source d'encadrement doit avoir un ID unique.",
   "Used in": "Utilisé dans",
-  "Pick a framing source from another list to fill in its details.": "Choisissez une source d'encadrement d'une autre liste pour remplir ses détails."
+  "Pick a framing source from another list to fill in its details.": "Choisissez une source d'encadrement d'une autre liste pour remplir ses détails.",
+  "This LinkML schema references enumeration types that are not included: {{enumNames}}. Entry codes for the affected attributes will not be generated. Include the missing enum definitions from the parent schema.": "Ce schéma LinkML référence des types d'énumération qui ne sont pas inclus : {{enumNames}}. Les codes d'entrée pour les attributs concernés ne seront pas générés. Veuillez inclure les définitions d'énumération manquantes du schéma parent."
 }
