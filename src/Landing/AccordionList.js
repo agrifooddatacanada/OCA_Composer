@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useCallback, useContext, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Box, Button, Typography, useMediaQuery, Tooltip } from "@mui/material";
@@ -23,6 +23,7 @@ import useGenerateTextReadmeFromJson from "../ViewSchema/useGenerateTextReadmeFr
 import GenerateDataEntryExcel from "./GenerateDataEntryExcel";
 // import CollaborateOnASchema from "./CollaborateOnASchema";
 import { useHandleSchemaFileDrop } from "../OCADataValidator/useHandleSchemaFileDrop";
+import WarningPopup from "../OCADataValidator/WarningPopup";
 import useGenerateMarkdownReadMe from "../ViewSchema/useGenerateMarkdownReadMe";
 import useGenerateMarkdownReadMeFromJson from "../ViewSchema/useGenerateMarkdownReadMeFromJson";
 import CatalogueInfo from "../CatalogueInfo/CatalogueInfo";
@@ -66,9 +67,21 @@ const AccordionList = () => {
     setCurrentPage
   } = useHandleAllDrop();
 
-  const { setSchemaRawFile, jsonDropDisabled } = useHandleSchemaFileDrop();
+  const [legacyFlaggedAttributesDetected, setLegacyFlaggedAttributesDetected] =
+    useState(false);
+  const firstTimeDisplayWarning = useRef(true);
+  const { setSchemaRawFile, jsonDropDisabled } = useHandleSchemaFileDrop(
+    firstTimeDisplayWarning,
+    undefined,
+    setLegacyFlaggedAttributesDetected
+  );
   const { resetToDefaults } = useOCAExport();
   const { getFromLocalStorage } = useLocalStorage(CATALOGUE_INFO_KEY);
+
+  const handleDismissWarning = useCallback(() => {
+    setLegacyFlaggedAttributesDetected(false);
+    firstTimeDisplayWarning.current = false;
+  }, []);
 
   const navigateToStartPage = () => {
     resetToDefaults();
@@ -329,6 +342,14 @@ const AccordionList = () => {
           </Box>
         </Box>
       </Box>
+      {firstTimeDisplayWarning.current && legacyFlaggedAttributesDetected && (
+        <WarningPopup
+          action={handleDismissWarning}
+          message={t(
+            "This schema uses the legacy 'flagged_attributes' field to mark sensitive data. The OCA specification now uses a dedicated Sensitive Overlay for this instead — your sensitivity settings have been carried over and will be saved in the new format when you export."
+          )}
+        />
+      )}
     </Box>
   );
 };

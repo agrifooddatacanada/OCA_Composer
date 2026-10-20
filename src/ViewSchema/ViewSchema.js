@@ -24,6 +24,7 @@ import { CustomPalette } from "../constants/customPalette";
 import SchemaDescription from "./SchemaDescription";
 import ViewGrid from "./ViewGrid";
 import AttributeFramingTable from "./AttributeFramingTable";
+import EntryCodeFramingTable from "./EntryCodeFramingTable";
 import {
   getBestLangName,
   langCodeOCAFromName,
@@ -35,7 +36,9 @@ import {
   MANUAL_CREATION_SCHEMA_ID,
   HEADER_TO_CONTENT_GAP_PX,
   BETWEEN_SECTION_SPACING,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY
+  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
+  isRangeEligibleAttributeType,
+  isUnitEligibleAttributeType
 } from "../constants/constants";
 import { searchUnits } from "../utils/helpers";
 import { validateExampleValuesAgainstOverlays } from "../utils/exampleValidation";
@@ -103,6 +106,24 @@ export default function ViewSchema({
   ];
 
   const filteredLanguages = React.useMemo(() => [...languages], [languages]);
+
+  // Entry code framing is only shown for attributes that are (still) lists.
+  const listAttributeNames = useMemo(
+    () =>
+      (schemaState?.attributes || [])
+        .filter((attr) => attr.List === true)
+        .map((attr) => attr.Attribute),
+    [schemaState?.attributes]
+  );
+  const entryCodeFramingSourcesForLists = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(schemaState?.entryCodeFramingSources || {}).filter(([attribute]) =>
+          listAttributeNames.includes(attribute)
+        )
+      ),
+    [schemaState?.entryCodeFramingSources, listAttributeNames]
+  );
 
   // Check example overlay values against the range and format overlays (when present).
   const exampleValueIssues = useMemo(() => {
@@ -558,14 +579,23 @@ export default function ViewSchema({
             const charEncoding =
               (schemaState.characterEncodingData || {})[attr.Attribute] || "";
 
-            // Get range data for this attribute from object
-            const range =
-              getMapValueForAttributeName(attributeRanges, attr.Attribute) || {};
+            const formatRule =
+              getMapValueForAttributeName(attributeFormats, attr.Attribute) || "";
 
-            // Find unit framing data for this attribute
-            const unitFramingData = (schemaState.unitFramedData || []).find(
-              (u) => u.Attribute === attr.Attribute
-            );
+            // Get range data for this attribute from object (only applies to
+            // Numeric/DateTime attributes with a current format rule)
+            const range =
+              isRangeEligibleAttributeType(attr.Type) && formatRule
+                ? getMapValueForAttributeName(attributeRanges, attr.Attribute) || {}
+                : {};
+
+            // Find unit framing data for this attribute (only applies to
+            // Numeric/DateTime attributes)
+            const unitFramingData = isUnitEligibleAttributeType(attr.Type)
+              ? (schemaState.unitFramedData || []).find(
+                  (u) => u.Attribute === attr.Attribute
+                )
+              : undefined;
 
             // Build per-language example values map
             const exampleDataMap = schemaState.exampleData || {};
@@ -580,8 +610,7 @@ export default function ViewSchema({
               Description: descriptionObj,
               Label: labelObj,
               Required: !!attr.Required,
-              "Format Rule":
-                getMapValueForAttributeName(attributeFormats, attr.Attribute) || "",
+              "Format Rule": formatRule,
               "Character Encoding": charEncoding,
               List: listObj,
               Unit: attr.Unit || "",
@@ -1155,6 +1184,10 @@ export default function ViewSchema({
         {getOverlaySelections()[FIELD_ATTRIBUTE_FRAMING_OVERLAY] && (
           <AttributeFramingTable sources={schemaState.attributeFramingSources || []} />
         )}
+        <EntryCodeFramingTable
+          entryCodeFramingSources={entryCodeFramingSourcesForLists}
+          listOrder={listAttributeNames}
+        />
             {addClearButton && isPageForward && isExport && summaryExportMode && (
               <Box
                 sx={{ display: "flex", justifyContent: "flex-end", mt: 4, width: "100%" }}

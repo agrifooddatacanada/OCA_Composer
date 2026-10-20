@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import yaml from "js-yaml";
 import { messages } from "../constants/messages";
 import { ADC, SENSITIVE } from "../constants/constants";
@@ -24,7 +25,8 @@ import {
 // eslint-disable-next-line import/prefer-default-export
 export const useHandleSchemaFileDrop = (
   firstTimeDisplayWarning,
-  setShowWarningCard = () => {}
+  setShowWarningCard = () => {},
+  setLegacyFlaggedAttributesDetected = () => {}
 ) => {
   const {
     setCurrentDataValidatorPage,
@@ -49,6 +51,7 @@ export const useHandleSchemaFileDrop = (
   } = useContext(Context);
   const { clearAllSchemas, switchToSchema, loadAllSchemasFromOcaPackage, setOcaPackage } =
     useMultiSchema();
+  const { t } = useTranslation();
   // useZipParser removed - data processing now handled by loadAllSchemasFromOcaPackage -> OCAParser
 
   const finishUploadUi = useCallback(
@@ -208,16 +211,26 @@ export const useHandleSchemaFileDrop = (
                 ocaPackageData?.extensions?.[ADC]?.[getRootCaptureBaseId(ocaPackageData)]
                   ?.overlays?.[SENSITIVE];
 
-              const sensitiveAttributes = Array.isArray(
-                sensitiveOverlay?.sensitive_attributes
+              const hasSensitiveOverlay =
+                Array.isArray(sensitiveOverlay?.sensitive_attributes) &&
+                sensitiveOverlay.sensitive_attributes.length > 0;
+              const legacyFlaggedAttributes = Array.isArray(
+                jsonFile?.capture_base?.flagged_attributes
               )
-                ? sensitiveOverlay?.sensitive_attributes
-                : Array.isArray(jsonFile?.capture_base?.flagged_attributes)
-                  ? jsonFile?.capture_base?.flagged_attributes
-                  : [];
+                ? jsonFile.capture_base.flagged_attributes
+                : [];
+
+              const sensitiveAttributes = hasSensitiveOverlay
+                ? sensitiveOverlay.sensitive_attributes
+                : legacyFlaggedAttributes;
 
               if (sensitiveAttributes?.length > 0) {
                 setShowWarningCard(true);
+              }
+              // flagged_attributes predates the OCA sensitive overlay (HCF-era bundles);
+              // flag it separately so the UI can tell users their schema used the legacy format.
+              if (!hasSensitiveOverlay && legacyFlaggedAttributes.length > 0) {
+                setLegacyFlaggedAttributesDetected(true);
               }
               loadRoot = { ...jsonFile.capture_base };
 
@@ -330,6 +343,7 @@ export const useHandleSchemaFileDrop = (
       setDatasetLoading,
       setOcaPackage,
       setShowWarningCard,
+      setLegacyFlaggedAttributesDetected,
       setTargetResult,
       setZipToReadme,
       switchToSchema
@@ -348,6 +362,7 @@ export const useHandleSchemaFileDrop = (
               await parseOcaZipArrayBuffer(e.target.result);
             if (captureBase?.flagged_attributes?.length > 0) {
               setShowWarningCard(true);
+              setLegacyFlaggedAttributesDetected(true);
             }
             setOcaPackage(ocaPackage);
             loadAllSchemasFromOcaPackage(ocaPackage);
@@ -396,6 +411,7 @@ export const useHandleSchemaFileDrop = (
       setJsonLoading,
       setOcaPackage,
       setShowWarningCard,
+      setLegacyFlaggedAttributesDetected,
       setTargetResult,
       setZipToReadme,
       switchToSchema
@@ -498,7 +514,10 @@ export const useHandleSchemaFileDrop = (
 
             if (missingEnums.length > 0) {
               setJsonDropMessage({
-                message: messages.linkmlMissingEnumsWarning(missingEnums),
+                message: t(
+                  "This LinkML schema references enumeration types that are not included: {{enumNames}}. Entry codes for the affected attributes will not be generated. Include the missing enum definitions from the parent schema.",
+                  { enumNames: missingEnums.join(", ") }
+                ),
                 type: "warning"
               });
               finishUploadUi({ preserveDropMessage: true });

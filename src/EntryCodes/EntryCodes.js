@@ -18,6 +18,7 @@ import BackNextSkeleton from "../components/BackNextSkeleton";
 import Loading from "../components/Loading";
 import { BETWEEN_SECTION_SPACING } from "../constants/constants";
 import WarningEntryCodeDelete from "./WarningEntryCodeDelete";
+import EntryCodeFramingModal from "./EntryCodeFramingModal";
 import { useMultiSchema } from "../schema/schemaContext";
 import { langCodeOCAFromName, langNameFromCodeOCA } from "../utils/languageUtils";
 import { getPackageBundle } from "../utils/packageUtils";
@@ -55,6 +56,11 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
     () => schemaState?.attributesWithLists || [],
     [schemaState?.attributesWithLists]
   );
+  const entryCodeFramingSources = useMemo(
+    () => schemaState?.entryCodeFramingSources || {},
+    [schemaState?.entryCodeFramingSources]
+  );
+  const [framingIndex, setFramingIndex] = useState(null);
   const [chosenTable, setChosenTable] = useState(0);
   const codeRefs = useRef();
   const pageForwardDisabledRef = useRef(false);
@@ -461,6 +467,68 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
     validate
   }));
 
+  const framingAttribute =
+    framingIndex !== null ? selectedAttributesList[framingIndex] : null;
+
+  const framingCodes = useMemo(() => {
+    if (framingIndex === null) return [];
+    const rows = Array.isArray(localEntryCodeRowData[framingIndex])
+      ? localEntryCodeRowData[framingIndex]
+      : [];
+    const firstLanguage = languages[0];
+    const firstLanguageCode = langCodeOCAFromName(firstLanguage);
+    const seen = new Set();
+    return rows
+      .map((row) => ({
+        Code: String(row?.Code ?? "").trim(),
+        label: row?.[firstLanguage] || row?.[firstLanguageCode] || ""
+      }))
+      .filter(({ Code }) => Code !== "" && !seen.has(Code) && seen.add(Code));
+  }, [framingIndex, localEntryCodeRowData, languages]);
+
+  const framingSourceSuggestions = useMemo(() => {
+    if (!framingAttribute) return [];
+    const byMetadata = new Map();
+    selectedAttributesList
+      .filter((attr) => attr !== framingAttribute)
+      .forEach((attr) => {
+        (entryCodeFramingSources[attr] || []).forEach((source) => {
+          const metadata = source?.metadata || {};
+          if (!String(metadata.id ?? "").trim()) return;
+          const signature = JSON.stringify([
+            metadata.id,
+            metadata.label,
+            metadata.location,
+            metadata.version,
+            metadata.imports || {}
+          ]);
+          const existing = byMetadata.get(signature);
+          if (existing) {
+            if (!existing.usedIn.includes(attr)) existing.usedIn.push(attr);
+          } else {
+            byMetadata.set(signature, { key: signature, metadata, usedIn: [attr] });
+          }
+        });
+      });
+    return [...byMetadata.values()];
+  }, [framingAttribute, selectedAttributesList, entryCodeFramingSources]);
+
+  const openFraming = (index) => {
+    codeRefs.current?.[index]?.current?.api?.stopEditing();
+    setFramingIndex(index);
+  };
+
+  const saveFraming = (sources) => {
+    if (!framingAttribute) return;
+    const next = { ...entryCodeFramingSources };
+    if (sources.length > 0) {
+      next[framingAttribute] = sources;
+    } else {
+      delete next[framingAttribute];
+    }
+    updateSchema({ entryCodeFramingSources: next });
+  };
+
   const allCodesDisplay = selectedAttributesList.map((item, index) => (
     <SingleTable
       attribute={selectedAttributes[index]}
@@ -482,6 +550,8 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
         });
       }}
       setWarningNextPage={setWarningNextPage}
+      onOpenFraming={() => openFraming(index)}
+      isFramed={(entryCodeFramingSources[item] || []).length > 0}
     />
   ));
 
@@ -507,6 +577,15 @@ const EntryCodes = forwardRef(({ pageBack, pageForward, onValidationError }, ref
           }}
         />
       )}
+      <EntryCodeFramingModal
+        open={Boolean(framingAttribute)}
+        onClose={() => setFramingIndex(null)}
+        onSave={saveFraming}
+        attributeName={framingAttribute}
+        codes={framingCodes}
+        initialSources={framingAttribute ? entryCodeFramingSources[framingAttribute] : null}
+        sourceSuggestions={framingSourceSuggestions}
+      />
       <Box
         sx={{
           width: "90%",

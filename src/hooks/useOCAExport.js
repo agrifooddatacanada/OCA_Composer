@@ -43,7 +43,8 @@ import {
   FILE_DELIMITER,
   ARRAY_DELIMITER,
   FIELD_EXAMPLE_OVERLAY,
-  overlayItems
+  overlayItems,
+  isUnitEligibleAttributeType
 } from "../constants/constants";
 import {
   generateOCABundle,
@@ -52,6 +53,7 @@ import {
   getTransformedEntryCodes,
   getUnitFramingInput,
   getAttributeFramingInput,
+  getEntryCodeFramingInput,
   getFormInformationInput,
   normalizeEscapedQuotes,
   escapeForOCADoubleQuotedValue,
@@ -184,6 +186,7 @@ const useOCAExport = () => {
     const attributeCardinality = schemaState?.attributeCardinality || {};
     const attributeRanges = schemaState?.attributeRanges || {};
     const attributeFramingSources = schemaState?.attributeFramingSources || [];
+    const entryCodeFramingSources = schemaState?.entryCodeFramingSources || {};
     const unitFramedRowData = schemaState?.unitFramedData || [];
     const decimalSeparator = schemaState?.decimalSeparator || ".";
     const fileDelimiterData = schemaState?.fileDelimiterData || {};
@@ -361,7 +364,8 @@ const useOCAExport = () => {
     ) {
       let cardinalityText = "";
       // Iterate over current attributes only (prevents deleted attributes from appearing)
-      attributesList.forEach((attrName) => {
+      attributesList.forEach((attrName, index) => {
+        if (!String(attributeRowData[index]?.Type).includes("Array")) return;
         const cardinalityValue = getMapValueForAttributeName(
           attributeCardinality,
           attrName
@@ -572,7 +576,11 @@ const useOCAExport = () => {
       formatRuleRowData,
       attributesList
     );
-    const retainedUniqueFramedUnits = unitFramedRowData.filter((row) => !row.deleted);
+    const retainedUniqueFramedUnits = unitFramedRowData.filter((row) => {
+      if (row.deleted) return false;
+      const attr = attributeRowData.find((a) => a.Attribute === row.Attribute);
+      return attr && isUnitEligibleAttributeType(attr.Type);
+    });
 
     const extensionOverlayPayload = {
       ordering_overlay: {
@@ -647,6 +655,19 @@ const useOCAExport = () => {
               : {};
           })()
         : {}),
+      ...(() => {
+        const entryCodeFramingOverlays = getEntryCodeFramingInput(
+          entryCodeFramingSources,
+          filteredEntryCodes
+        );
+        return entryCodeFramingOverlays.length > 0
+          ? {
+              entry_code_framing_overlay: {
+                entry_code_framing_overlays: entryCodeFramingOverlays
+              }
+            }
+          : {};
+      })(),
       ...(overlaySelections[FIELD_FORM_INFORMATION_OVERLAY]
         ? {
             form_overlay: {
