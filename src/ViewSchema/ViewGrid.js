@@ -579,11 +579,10 @@ export default function ViewGrid({
           ? item.Examples[currentLanguage]
           : "";
 
-      // Get cardinality value from object
-      const cardinalityValue = getMapValueForAttributeName(
-        attributeCardinality,
-        item.Attribute
-      );
+      // Get cardinality value from object (only applies to Array[...] types)
+      const cardinalityValue = String(item.Type).includes("Array")
+        ? getMapValueForAttributeName(attributeCardinality, item.Attribute)
+        : "";
       if (cardinalityValue) {
         item.Cardinality = cardinalityValue;
       }
