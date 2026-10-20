@@ -11,7 +11,9 @@ import {
   CUSTOM_FORMAT_RULE,
   customDateFormatParsers,
   DEFAULT_LANGUAGE,
+  ENTRY_CODE_FRAMING,
   FIELD_CARDINALITY_OVERLAY,
+  FIELD_ENTRY_CODE_FRAMING_OVERLAY,
   FIELD_FORMAT_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_RANGE_OVERLAY,
@@ -558,6 +560,73 @@ export const getAttributeFramingInput = (
     };
   }
   return attributeFramingInput;
+};
+
+// Entry code framing is edited per list, but the overlay is one instance per
+// vocabulary (framing_metadata.id must be unique within the overlay type), so
+// sources sharing an id across lists are merged into a single overlay.
+export const getEntryCodeFramingInput = (
+  entryCodeFramingSourcesByAttribute,
+  entryCodesByAttribute
+) => {
+  const overlaysById = new Map();
+
+  Object.entries(entryCodeFramingSourcesByAttribute || {}).forEach(
+    ([attribute, sources]) => {
+      if (!Array.isArray(sources)) return;
+      const validCodes = new Set(
+        (entryCodesByAttribute?.[attribute] || [])
+          .map((entry) => String(entry?.Code ?? "").trim())
+          .filter(Boolean)
+      );
+      if (validCodes.size === 0) return;
+
+      sources.forEach((source) => {
+        const metadata = source?.metadata || {};
+        const id = String(metadata.id ?? "").trim();
+        if (!id) return;
+
+        const framedCodes = {};
+        (source.rows || []).forEach((row) => {
+          const code = String(row?.Code ?? "").trim();
+          const termId = String(row?.objectId ?? "").trim();
+          if (!termId || !validCodes.has(code)) return;
+          const description = String(row.description ?? "").trim();
+          framedCodes[code] = {
+            ...(description ? { description } : {}),
+            framing_justification: row.mappingJustification || "",
+            predicate_id: row.predicateId || "",
+            term_id: termId
+          };
+        });
+        if (Object.keys(framedCodes).length === 0) return;
+
+        let overlay = overlaysById.get(id);
+        if (!overlay) {
+          overlay = {
+            type: ENTRY_CODE_FRAMING,
+            framing_metadata: {
+              id,
+              label: metadata.label || "",
+              location: metadata.location || "",
+              version: metadata.version || ""
+            },
+            entry_codes: {}
+          };
+          overlaysById.set(id, overlay);
+        }
+        if (metadata.imports && Object.keys(metadata.imports).length > 0) {
+          overlay.framing_metadata.imports = {
+            ...(overlay.framing_metadata.imports || {}),
+            ...metadata.imports
+          };
+        }
+        overlay.entry_codes[attribute] = framedCodes;
+      });
+    }
+  );
+
+  return [...overlaysById.values()];
 };
 
 export const getRangeOverlayInput = (
@@ -1457,6 +1526,15 @@ export const getCardinalityOverlayDisabledReason = (overlayKey, attributes) => {
   );
 };
 
+export const shouldDisableEntryCodeFramingOverlay = (overlayKey, attributes) =>
+  overlayKey === FIELD_ENTRY_CODE_FRAMING_OVERLAY &&
+  !attributes.some((attr) => attr?.List === true);
+
+export const getEntryCodeFramingOverlayDisabledReason = (overlayKey, attributes) =>
+  shouldDisableEntryCodeFramingOverlay(overlayKey, attributes)
+    ? i18next.t("Entry code framing requires at least one attribute with a list.")
+    : "";
+
 export const getRangeOverlayDisabledReason = (
   overlayKey,
   selectedKeys,
@@ -1531,7 +1609,8 @@ export const isOverlayAddDisabled = (
       formatRuleData
     ) ||
     shouldDisableFormInformationOverlay(overlayKey, selectedKeys) ||
-    shouldDisableCardinalityOverlay(overlayKey, attributes)
+    shouldDisableCardinalityOverlay(overlayKey, attributes) ||
+    shouldDisableEntryCodeFramingOverlay(overlayKey, attributes)
   );
 };
 
@@ -1561,6 +1640,7 @@ export const getOverlayAddDisabledReason = (
       formatRuleData
     ) ||
     getCardinalityOverlayDisabledReason(overlayKey, attributes) ||
+    getEntryCodeFramingOverlayDisabledReason(overlayKey, attributes) ||
     ""
   );
 };
