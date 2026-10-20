@@ -307,29 +307,29 @@ export const useHandleSchemaFileDrop = (
             setZipToReadme(allJSONFiles);
             finishUploadUi();
           } catch (error) {
-            setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+            setJsonDropMessage({
+              message: `${messages.uploadFail}: ${error.message}`,
+              type: "error"
+            });
             setJsonLoading(false);
             setDatasetLoading(false);
             if (datasetRawFile.length === 0) {
               setDatasetDropDisabled(false);
             }
-            setTimeout(() => {
-              setJsonDropMessage({ message: "", type: "" });
-            }, 2500);
           }
         };
 
         reader.readAsArrayBuffer(acceptedFiles[0]);
       } catch (error) {
-        setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+        setJsonDropMessage({
+          message: `${messages.uploadFail}: ${error.message}`,
+          type: "error"
+        });
         setJsonLoading(false);
         setDatasetLoading(false);
         if (datasetRawFile.length === 0) {
           setDatasetDropDisabled(false);
         }
-        setTimeout(() => {
-          setJsonDropMessage({ message: "", type: "" });
-        }, 2500);
       }
     },
     [
@@ -374,29 +374,31 @@ export const useHandleSchemaFileDrop = (
               "useHandleSchemaFileDrop: failed to parse zip as OCA package",
               err
             );
-            setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+            setJsonDropMessage({
+              message: err.isSchemaValidationError
+                ? err.message
+                : `${messages.uploadFail}: ${err.message}`,
+              type: "error"
+            });
             setJsonLoading(false);
             setDatasetLoading(false);
             if (datasetRawFile.length === 0) {
               setDatasetDropDisabled(false);
             }
-            setTimeout(() => {
-              setJsonDropMessage({ message: "", type: "" });
-            }, 2500);
           }
         };
 
         reader.readAsArrayBuffer(acceptedFiles[0]);
       } catch (error) {
-        setJsonDropMessage({ message: messages.uploadFail, type: "error" });
+        setJsonDropMessage({
+          message: `${messages.uploadFail}: ${error.message}`,
+          type: "error"
+        });
         setJsonLoading(false);
         setDatasetLoading(false);
         if (datasetRawFile.length === 0) {
           setDatasetDropDisabled(false);
         }
-        setTimeout(() => {
-          setJsonDropMessage({ message: "", type: "" });
-        }, 2500);
       }
     },
     [
@@ -429,8 +431,26 @@ export const useHandleSchemaFileDrop = (
             const yamlString = e.target.result;
 
             const linkmlSchema = yaml.load(yamlString);
+            if (
+              !linkmlSchema ||
+              typeof linkmlSchema !== "object" ||
+              Array.isArray(linkmlSchema)
+            ) {
+              const schemaFormatError = new Error(
+                "This LinkML schema file isn't formatted correctly. It should contain named attribute (slot) definitions, not a plain list or single value."
+              );
+              schemaFormatError.isSchemaValidationError = true;
+              throw schemaFormatError;
+            }
             const missingEnums = findMissingLinkMLEnums(linkmlSchema);
             const bundle = mapLinkMLToOCABundle(linkmlSchema);
+            if (Object.keys(bundle.capture_base.attributes).length === 0) {
+              const noAttributesError = new Error(
+                "This LinkML schema doesn't contain any attribute (slot) definitions. Please check the file and try again."
+              );
+              noAttributesError.isSchemaValidationError = true;
+              throw noAttributesError;
+            }
             const pkg = transformToPackage(bundle);
 
             const jsonFile = pkg.oca_bundle.bundle;
@@ -506,7 +526,9 @@ export const useHandleSchemaFileDrop = (
             }
           } catch (error) {
             setJsonDropMessage({
-              message: `${messages.uploadFail}: ${error.message}`,
+              message: error.isSchemaValidationError
+                ? error.message
+                : `${messages.uploadFail}: ${error.message}`,
               type: "error"
             });
             setJsonLoading(false);
@@ -514,9 +536,6 @@ export const useHandleSchemaFileDrop = (
             if (datasetRawFile.length === 0) {
               setDatasetDropDisabled(false);
             }
-            setTimeout(() => {
-              setJsonDropMessage({ message: "", type: "" });
-            }, 2500);
           }
         };
 
@@ -531,9 +550,6 @@ export const useHandleSchemaFileDrop = (
         if (datasetRawFile.length === 0) {
           setDatasetDropDisabled(false);
         }
-        setTimeout(() => {
-          setJsonDropMessage({ message: "", type: "" });
-        }, 2500);
       }
     },
     [
@@ -572,9 +588,6 @@ export const useHandleSchemaFileDrop = (
       if (datasetRawFile.length === 0) {
         setDatasetDropDisabled(false);
       }
-      setTimeout(() => {
-        setJsonDropMessage({ message: "", type: "" });
-      }, 2500);
     }
   }, [schemaRawFile]);
 

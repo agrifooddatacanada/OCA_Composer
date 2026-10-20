@@ -62,7 +62,6 @@ const AccordionList = () => {
     setRawFile,
     setLoading,
     loading,
-    dropDisabled,
     dropMessage,
     setDropMessage,
     setCurrentPage
@@ -71,7 +70,7 @@ const AccordionList = () => {
   const [legacyFlaggedAttributesDetected, setLegacyFlaggedAttributesDetected] =
     useState(false);
   const firstTimeDisplayWarning = useRef(true);
-  const { setSchemaRawFile } = useHandleSchemaFileDrop(
+  const { setSchemaRawFile, jsonDropDisabled } = useHandleSchemaFileDrop(
     firstTimeDisplayWarning,
     undefined,
     setLegacyFlaggedAttributesDetected
@@ -123,7 +122,10 @@ const AccordionList = () => {
     }
   };
 
-  const disableButtonCheck = rawFile.length === 0 || loading === true;
+  // A schema is only usable once useHandleSchemaFileDrop actually finished
+  // parsing it successfully (jsonDropDisabled) — rawFile.length > 0 merely
+  // means *something* was dropped, regardless of whether parsing failed.
+  const disableButtonCheck = !jsonDropDisabled;
   const isMultiSchema = hasMultipleSchemas(ocaPackage);
   let isInvalidOcaPackage = false;
 
@@ -229,7 +231,7 @@ const AccordionList = () => {
             setFile={setFile}
             setLoading={setLoading}
             loading={loading}
-            dropDisabled={dropDisabled}
+            dropDisabled={jsonDropDisabled}
             dropMessage={dropMessage}
             setDropMessage={setDropMessage}
             version={1}
