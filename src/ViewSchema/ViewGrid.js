@@ -69,10 +69,6 @@ const viewGridStyles = `
   padding: 6px !important;
 }
 
-.view-schema-grid .ag-header-viewport {
-  padding-right: 17px;
-}
-
 .view-schema-grid .ag-pinned-left-cols-container {
   border-right: 1px solid var(--ag-border-color, #babfc7);
 }
