@@ -378,7 +378,7 @@ export default function CodeGrid({
     >
       <Box
         sx={{
-          width: "100%",
+          width: `min(${minTablePx}px, 100%)`,
           maxWidth: "100%",
           minWidth: 0,
           boxSizing: "border-box",
