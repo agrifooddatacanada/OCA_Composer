@@ -27,19 +27,14 @@ import {
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   ATTRIBUTE_FRAMING_DROPDOWN_OPTIONS
 } from "../constants/constants";
-import { CustomPalette } from "../constants/customPalette";
-
-// Shared with DropdownCellRenderer so its onChange handler can reach the
-// currently mounted AttributeFraming grid's API to commit edits.
-let globalGridRef = null;
-
-
-const makeBlankMetadata = () => ({ id: "", label: "", location: "", version: "" });
-const makeBlankSource = () => ({
-  key: uuidv4(),
-  metadata: makeBlankMetadata(),
-  rows: []
-});
+import {
+  DeleteButton,
+  DropdownCellRenderer,
+  FramingSourceMetadataPanel,
+  FramingSourceTabs,
+  makeBlankMetadata,
+  makeBlankSource
+} from "./FramingComponents";
 
 const FRAMING_DROPDOWN_CELL_CLASS = "framing-dropdown-cell";
 
@@ -424,208 +419,22 @@ const AttributeFraming = forwardRef((_props, ref) => {
             overflow: "visible"
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "flex-end",
-              flexWrap: "wrap",
-              width: "100%",
-              maxWidth: "900px",
-              borderBottom: `1px solid ${CustomPalette.GREY_300}`
-            }}
-          >
-            {sources.map((source, index) => {
-              const selected = index === activeIndex;
-              const label =
-                source.metadata?.label ||
-                source.metadata?.id ||
-                `${t("Source")} ${index + 1}`;
-              return (
-                <Box
-                  key={source.key}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    borderBottom: "2px solid",
-                    borderBottomColor: selected ? CustomPalette.PRIMARY : "transparent",
-                    mb: "-1px"
-                  }}
-                >
-                  <Button
-                    onClick={() => setActiveIndex(index)}
-                    variant="text"
-                    color="inherit"
-                    sx={{
-                      textTransform: "none",
-                      fontWeight: selected ? 600 : 400,
-                      borderRadius: 0,
-                      px: 1.5,
-                      py: 1,
-                      minWidth: "auto",
-                      color: selected ? CustomPalette.PRIMARY : CustomPalette.GREY_600,
-                      "&:hover": {
-                        bgcolor: "rgba(0, 0, 0, 0.04)",
-                        color: CustomPalette.PRIMARY
-                      }
-                    }}
-                  >
-                    <Typography
-                      noWrap
-                      variant="body2"
-                      sx={{ fontWeight: "inherit", maxWidth: "180px" }}
-                    >
-                      {label}
-                    </Typography>
-                  </Button>
-                  {sources.length > 1 && (
-                    <IconButton
-                      size="small"
-                      onClick={(e) =>
-                        setRemoveSourceAnchor({ el: e.currentTarget, index })
-                      }
-                      sx={{
-                        color: CustomPalette.GREY_600,
-                        mr: 0.5,
-                        "&:hover": { color: CustomPalette.PRIMARY }
-                      }}
-                    >
-                      <CloseIcon sx={{ fontSize: "16px" }} />
-                    </IconButton>
-                  )}
-                </Box>
-              );
-            })}
-            <Button
-              startIcon={<AddIcon />}
-              onClick={handleAddSource}
-              variant="text"
-              sx={{
-                textTransform: "none",
-                color: CustomPalette.PRIMARY,
-                ml: 1,
-                mb: 0.5,
-                whiteSpace: "nowrap"
-              }}
-            >
-              {t("Add source")}
-            </Button>
-          </Box>
+          <FramingSourceTabs
+            sources={sources}
+            activeIndex={activeIndex}
+            onSelect={setActiveIndex}
+            onAdd={handleAddSource}
+            onRemove={handleRemoveSource}
+          />
 
-          <Paper
-            variant="outlined"
-            sx={{
-              width: "100%",
-              maxWidth: "900px",
-              p: { xs: 2, sm: 3 },
-              borderColor: CustomPalette.GREY_300
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{ color: CustomPalette.PRIMARY, mb: 0.5 }}
-            >
-              {t("Framing source")}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: "text.secondary", mb: 2 }}
-            >
-              {t(
-                "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata."
-              )}
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label={t("ID")}
-                  placeholder="FOODON"
-                  value={activeMetadata.id || ""}
-                  onChange={(e) => handleMetadataChange("id", e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label={t("Label")}
-                  placeholder="Food Ontology"
-                  value={activeMetadata.label || ""}
-                  onChange={(e) => handleMetadataChange("label", e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} sm={8}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label={t("Location")}
-                  placeholder="https://..."
-                  value={activeMetadata.location || ""}
-                  onChange={(e) => handleMetadataChange("location", e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label={t("Version")}
-                  placeholder="1.0"
-                  value={activeMetadata.version || ""}
-                  onChange={(e) => handleMetadataChange("version", e.target.value)}
-                />
-              </Grid>
-            </Grid>
-
-            <Box
-              sx={{
-                mt: 2,
-                pt: 2,
-                borderTop: `1px solid ${CustomPalette.GREY_300}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: 1
-              }}
-            >
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {importEntries.length > 0
-                  ? `${t("Imported vocabularies")}: ${importEntries
-                      .map(([id, imp]) => (imp?.label ? `${id} (${imp.label})` : id))
-                      .join(", ")}`
-                  : t("No supporting vocabularies imported yet")}
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => setShowImportsModal(true)}
-                sx={{
-                  borderColor: CustomPalette.PRIMARY,
-                  color: CustomPalette.PRIMARY,
-                  whiteSpace: "nowrap",
-                  "&:hover": {
-                    borderColor: CustomPalette.SECONDARY,
-                    backgroundColor: CustomPalette.PINK_200
-                  }
-                }}
-              >
-                {t("Edit import")}
-              </Button>
-            </Box>
-          </Paper>
-
-          {/* <Box
-            sx={{
-              textAlign: "center",
-              fontSize: "0.9rem",
-              color: "text.secondary",
-              maxWidth: MAX_TEXT_WIDTH,
-              wordWrap: "break-word"
-            }}
-          >
-            {unframedAttributesText}
-          </Box> */}
+          <FramingSourceMetadataPanel
+            metadata={activeMetadata}
+            description={t(
+              "Describe the ontology or vocabulary these attributes are framed against. This is stored as the overlay's framing metadata."
+            )}
+            onMetadataChange={handleMetadataChange}
+            onImportsSave={handleImportsSave}
+          />
 
           <Box
             className="ag-theme-balham"
