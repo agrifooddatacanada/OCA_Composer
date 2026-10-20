@@ -15,7 +15,6 @@ import {
   FIELD_CARDINALITY_OVERLAY,
   FIELD_ENTRY_CODE_FRAMING_OVERLAY,
   FIELD_FORMAT_OVERLAY,
-  FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_RANGE_OVERLAY,
   isFormatEligibleAttributeType,
   isRangeEligibleAttributeType,
@@ -1509,10 +1508,6 @@ export const shouldDisableRangeOverlay = (
   return !hasAttributesWithFormatRules || !selectedKeys.includes(FIELD_FORMAT_OVERLAY);
 };
 
-export const shouldDisableFormInformationOverlay = (overlayKey, selectedKeys) =>
-  overlayKey === FIELD_FORM_INFORMATION_OVERLAY &&
-  !selectedKeys.includes(FIELD_FORMAT_OVERLAY);
-
 export const shouldDisableCardinalityOverlay = (overlayKey, attributes) => {
   if (overlayKey !== FIELD_CARDINALITY_OVERLAY) return false;
   return !attributes.some((attr) => attr?.Type && String(attr.Type).includes("Array"));
@@ -1578,11 +1573,6 @@ export const getRangeOverlayDisabledReason = (
   return "";
 };
 
-export const getFormInformationDisabledReason = (overlayKey, selectedKeys) =>
-  shouldDisableFormInformationOverlay(overlayKey, selectedKeys)
-    ? i18next.t("Form Information requires 'Format' to be added first.")
-    : "";
-
 export const hasAnyAttributes = (attributes) =>
   Array.isArray(attributes) && attributes.length > 0;
 
@@ -1608,7 +1598,6 @@ export const isOverlayAddDisabled = (
       rangeRowData,
       formatRuleData
     ) ||
-    shouldDisableFormInformationOverlay(overlayKey, selectedKeys) ||
     shouldDisableCardinalityOverlay(overlayKey, attributes) ||
     shouldDisableEntryCodeFramingOverlay(overlayKey, attributes)
   );
@@ -1631,7 +1620,6 @@ export const getOverlayAddDisabledReason = (
     );
   }
   return (
-    getFormInformationDisabledReason(overlayKey, selectedKeys) ||
     getRangeOverlayDisabledReason(
       overlayKey,
       selectedKeys,
